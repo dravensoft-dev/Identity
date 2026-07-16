@@ -1,0 +1,59 @@
+<!-- @dsCard group="Components" viewport="760x380" name="Table · Avatar" subtitle="Datos densos e identidad" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css">
+<style>
+body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:24px}
+.row{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;margin-bottom:20px}
+.sub{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:-4px}
+</style>
+<script type="importmap">
+{"imports":{"react":"https://esm.sh/react@18","react/jsx-runtime":"https://esm.sh/react@18/jsx-runtime","react-dom/client":"https://esm.sh/react-dom@18/client"}}
+</script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="../../jsx-loader.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-type="module" data-presets="react">
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+const { Table } = await arenaImport('../../components/display/Table.jsx');
+const { Avatar } = await arenaImport('../../components/display/Avatar.jsx');
+const { Badge } = await arenaImport('../../components/display/Badge.jsx');
+function Demo(){
+  const rows=[
+    {build:'#4821',proyecto:'Portal de clientes',estado:'ok',p95:'128 ms'},
+    {build:'#4820',proyecto:'Pasarela de pagos',estado:'fallo',p95:'340 ms'},
+    {build:'#4819',proyecto:'Panel interno',estado:'ok',p95:'96 ms'},
+  ];
+  return (
+    <div>
+      <div className="sub" style={{marginBottom:12}}>Avatar — persona · entidad · presencia</div>
+      <div className="row" style={{alignItems:'center'}}>
+        <Avatar name="Lucía Fernández" status="online" />
+        <Avatar name="Marco Ruiz" size="lg" status="busy" />
+        <Avatar name="Aurora Bank" shape="rounded" />
+        <Avatar name="QA Bot" size="sm" status="offline" />
+      </div>
+      <div className="sub" style={{marginBottom:12}}>Table — con Badge en celda</div>
+      <Table
+        columns={[
+          {key:'build',header:'Build',mono:true,width:90},
+          {key:'proyecto',header:'Proyecto'},
+          {key:'estado',header:'Estado',render:(v)=><Badge tone={v==='ok'?'success':'danger'} dot>{v==='ok'?'Desplegado':'Caído'}</Badge>},
+          {key:'p95',header:'p95',align:'right',mono:true},
+        ]}
+        rows={rows} getRowKey={r=>r.build} onRowClick={()=>{}} />
+    </div>
+  );
+}
+
+createRoot(document.getElementById('root')).render(<Demo/>);
+</script>
+</body>
+</html>

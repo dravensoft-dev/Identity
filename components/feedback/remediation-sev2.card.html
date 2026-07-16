@@ -1,0 +1,110 @@
+<!-- @dsCard group="Components" viewport="900x600" name="Remediación (sev. 2)" subtitle="Skeleton · Breadcrumbs · Switch confirm · IconButton label · BulkActionBar · densidad · Onboarding" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css">
+<style>
+body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:24px}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;margin-bottom:22px}
+.sub{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:-2px}
+.pane{flex:1 1 300px;background:var(--surface-card);border:1px solid var(--line);border-radius:var(--r-md);padding:16px}
+.pane h4{margin:0 0 12px;font-family:var(--font-body);font-size:13px;color:var(--mute)}
+</style>
+<script type="importmap">
+{"imports":{"react":"https://esm.sh/react@18","react/jsx-runtime":"https://esm.sh/react@18/jsx-runtime","react-dom/client":"https://esm.sh/react-dom@18/client"}}
+</script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="../../jsx-loader.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-type="module" data-presets="react">
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+const { Skeleton } = await arenaImport('../../components/display/Skeleton.jsx');
+const { Breadcrumbs } = await arenaImport('../../components/navigation/Breadcrumbs.jsx');
+const { Switch } = await arenaImport('../../components/forms/Switch.jsx');
+const { IconButton } = await arenaImport('../../components/forms/IconButton.jsx');
+const { BulkActionBar } = await arenaImport('../../components/navigation/BulkActionBar.jsx');
+const { Onboarding } = await arenaImport('../../components/feedback/Onboarding.jsx');
+const { ConfirmDialog } = await arenaImport('../../components/feedback/ConfirmDialog.jsx');
+const { Toast } = await arenaImport('../../components/feedback/Toast.jsx');
+function Demo(){
+  const [pending,setPending]=React.useState(null);
+  const [auto,setAuto]=React.useState(false);
+  const [sel,setSel]=React.useState(3);
+  const [tour,setTour]=React.useState(false);
+  const [step,setStep]=React.useState(0);
+  return (
+    <div>
+      <div className="sub">Skeleton — carga asíncrona (H1)</div>
+      <div className="row">
+        <div className="pane" style={{maxWidth:280}}>
+          <div style={{display:'flex',gap:12,marginBottom:14}}>
+            <Skeleton variant="circle" height={44}/>
+            <Skeleton variant="text" lines={2} width={170}/>
+          </div>
+          <Skeleton variant="block" height={72}/>
+        </div>
+      </div>
+
+      <div className="sub">Breadcrumbs (H3) · IconButton con etiqueta visible (H6)</div>
+      <div className="row">
+        <Breadcrumbs items={[{label:'Proyectos',href:'#'},{label:'Checkout',href:'#'},{label:'Despliegue #482'}]}/>
+        <span style={{flexBasis:'100%'}}/>
+        <IconButton label="Más opciones"><i className="ph-bold ph-dots-three-vertical"/></IconButton>
+        <IconButton variant="solid" showLabel label="Nuevo proyecto"><i className="ph-bold ph-plus"/></IconButton>
+        <IconButton showLabel label="Filtrar"><i className="ph-bold ph-funnel"/></IconButton>
+      </div>
+
+      <div className="sub">Switch de alto impacto con confirmación (H5)</div>
+      <div className="row">
+        <Switch label="Despliegue automático a producción" checked={auto} confirm
+          onRequestChange={setPending} onChange={e=>setAuto(e.target.checked)}/>
+      </div>
+
+      <div className="sub">Acciones masivas (H7)</div>
+      <div className="row">
+        <BulkActionBar count={sel} noun="despliegues" onClear={()=>setSel(0)} actions={[
+          {label:'Reintentar',icon:<i className="ph-bold ph-arrow-clockwise"/>,onClick:()=>{}},
+          {label:'Archivar',icon:<i className="ph-bold ph-archive"/>,onClick:()=>{}},
+          {label:'Eliminar',icon:<i className="ph-bold ph-trash"/>,onClick:()=>{},destructive:true},
+        ]}/>
+        {!sel && <IconButton showLabel label="Restaurar selección" onClick={()=>setSel(3)}><i className="ph-bold ph-check-square"/></IconButton>}
+      </div>
+
+      <div className="sub">Densidad compacta (H7) — mismo componente, scope .arena-compact</div>
+      <div className="row">
+        <div className="pane"><h4>Cómoda</h4><IconButton showLabel label="Guardar"><i className="ph-bold ph-check"/></IconButton></div>
+        <div className="pane arena-compact"><h4>Compacta</h4><IconButton showLabel label="Guardar"><i className="ph-bold ph-check"/></IconButton></div>
+      </div>
+
+      <div className="sub">Onboarding guiado (H10)</div>
+      <div className="row">
+        <IconButton showLabel label="Iniciar recorrido" variant="solid" onClick={()=>{setStep(0);setTour(true);}}><i className="ph-bold ph-compass"/></IconButton>
+      </div>
+
+      {ConfirmDialog && <ConfirmDialog open={pending!==null} title="Activar despliegue automático"
+        confirmLabel="Activar" onCancel={()=>setPending(null)}
+        onConfirm={()=>{setAuto(pending);setPending(null);}}>
+        Cada commit aprobado se desplegará a producción sin revisión manual.
+      </ConfirmDialog>}
+      <Onboarding open={tour} index={step}
+        onNext={()=>setStep(s=>s+1)} onBack={()=>setStep(s=>s-1)}
+        onSkip={()=>setTour(false)} onDone={()=>setTour(false)}
+        steps={[
+          {eyebrow:'Bienvenido',title:'Su primera entrega',body:'Desde aquí desplegará y revertirá con un clic.'},
+          {title:'Paleta de comandos',body:'Pulse ⌘K para ejecutar cualquier acción sin ratón.'},
+          {title:'Listo',body:'Puede reabrir esta guía desde Ayuda cuando quiera.'},
+        ]}/>
+    </div>
+  );
+}
+createRoot(document.getElementById('root')).render(<Demo/>);
+</script>
+</body>
+</html>

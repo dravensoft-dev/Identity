@@ -1,0 +1,39 @@
+<!-- @dsCard group="Components" viewport="700x300" name="Display" subtitle="Card · Badge · Tag" -->
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:24px}.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:16px}.sub{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:-2px}</style>
+<script type="importmap">
+{"imports":{"react":"https://esm.sh/react@18","react/jsx-runtime":"https://esm.sh/react@18/jsx-runtime","react-dom/client":"https://esm.sh/react-dom@18/client"}}
+</script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="../../jsx-loader.js"></script></head><body><div id="root"></div>
+<script type="text/babel" data-type="module" data-presets="react">
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+const { Card } = await arenaImport('../../components/display/Card.jsx');
+const { Badge } = await arenaImport('../../components/display/Badge.jsx');
+const { Tag } = await arenaImport('../../components/display/Tag.jsx');
+function Demo(){return (<div>
+  <div className="sub">Badge — tonos</div>
+  <div className="row">
+    <Badge tone="success" dot>Desplegado</Badge>
+    <Badge tone="warning">En revisión</Badge>
+    <Badge tone="danger" dot>Caído</Badge>
+    <Badge tone="accent">Nuevo</Badge>
+    <Badge tone="gold">Prioridad</Badge>
+    <Badge tone="info">v2.4</Badge>
+    <Badge>Borrador</Badge>
+  </div>
+  <div className="sub">Tag</div>
+  <div className="row"><Tag>TypeScript</Tag><Tag>PostgreSQL</Tag><Tag onRemove={()=>{}}>React</Tag></div>
+  <div className="sub">Card</div>
+  <div className="row" style={{alignItems:'stretch'}}>
+    <Card eyebrow="Entrega" title="Portal de clientes" action={<Badge tone="success" dot>Desplegado</Badge>} style={{width:300}}>
+      <div style={{color:'var(--mute)',fontSize:14,lineHeight:1.6}}>Última publicación hace 2 h · build #4821</div>
+    </Card>
+    <Card accent floating title="Alerta de latencia" style={{width:280}}>
+      <div style={{color:'var(--mute)',fontSize:14,lineHeight:1.6}}>p95 subió a 340 ms en checkout.</div>
+    </Card>
+  </div>
+</div>);}
+createRoot(document.getElementById('root')).render(<Demo/>);
+</script></body></html>

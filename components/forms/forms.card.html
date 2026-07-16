@@ -1,0 +1,71 @@
+<!-- @dsCard group="Components" viewport="700x300" name="Formularios" subtitle="Button · IconButton · Input · Select · Checkbox · Switch" -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css">
+<style>
+body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:24px}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:18px}
+.sub{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:-4px}
+</style>
+<script type="importmap">
+{"imports":{"react":"https://esm.sh/react@18","react/jsx-runtime":"https://esm.sh/react@18/jsx-runtime","react-dom/client":"https://esm.sh/react-dom@18/client"}}
+</script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="../../jsx-loader.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-type="module" data-presets="react">
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+const { Button } = await arenaImport('../../components/forms/Button.jsx');
+const { IconButton } = await arenaImport('../../components/forms/IconButton.jsx');
+const { Input } = await arenaImport('../../components/forms/Input.jsx');
+const { Select } = await arenaImport('../../components/forms/Select.jsx');
+const { Checkbox } = await arenaImport('../../components/forms/Checkbox.jsx');
+const { Switch } = await arenaImport('../../components/forms/Switch.jsx');
+const plus = <i className="ph-bold ph-plus" style={{fontSize:16,lineHeight:1}} />;
+function Demo(){
+  const [chk,setChk]=React.useState(true);
+  const [sw,setSw]=React.useState(true);
+  return (
+    <div>
+      <div className="sub">Button — variantes</div>
+      <div className="row">
+        <Button variant="primary" icon={plus}>Desplegar</Button>
+        <Button variant="secondary">Revertir</Button>
+        <Button variant="ghost">Cancelar</Button>
+        <Button variant="danger">Eliminar</Button>
+        <Button variant="primary" loading>Desplegando</Button>
+        <Button variant="primary" disabled>Bloqueado</Button>
+      </div>
+      <div className="sub">Tamaños · IconButton</div>
+      <div className="row">
+        <Button size="sm" variant="secondary">sm</Button>
+        <Button size="md" variant="secondary">md</Button>
+        <Button size="lg" variant="secondary">lg</Button>
+        <IconButton label="Nuevo" variant="solid">{plus}</IconButton>
+        <IconButton label="Nuevo">{plus}</IconButton>
+      </div>
+      <div className="sub">Input · Select</div>
+      <div className="row" style={{alignItems:'flex-start'}}>
+        <Input label="Repositorio" prefix="git@" placeholder="org/proyecto" style={{width:220}} />
+        <Input label="Correo" error="Formato no válido" defaultValue="hola@" style={{width:200}} />
+        <Select label="Entorno" options={['Producción','Staging','QA']} style={{width:180}} />
+      </div>
+      <div className="sub">Checkbox · Switch</div>
+      <div className="row">
+        <Checkbox checked={chk} onChange={e=>setChk(e.target.checked)} label="Notificar al aprobar" />
+        <Switch checked={sw} onChange={e=>setSw(e.target.checked)} label="Despliegue automático" />
+      </div>
+    </div>
+  );
+}
+createRoot(document.getElementById('root')).render(<Demo/>);
+</script>
+</body>
+</html>
