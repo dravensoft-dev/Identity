@@ -22,7 +22,7 @@ export function Input({
   const handleChange = (e) => { onChange && onChange(e); if (validateOn === 'change') { setTouched(true); runValidate(e.target.value); } };
   const handleBlur = (e) => { setFocus(false); setTouched(true); runValidate(e.target.value); onBlur && onBlur(e); };
 
-  const borderColor = shownError ? 'var(--danger)' : focus ? 'var(--gold)' : isValid ? 'var(--success)' : 'var(--line)';
+  const borderColor = shownError ? 'var(--danger)' : focus ? 'var(--gold)' : isValid ? 'var(--success)' : 'var(--color-base-300)';
   const ring = shownError ? '0 0 0 2px var(--danger-soft)' : focus ? '0 0 0 2px var(--gold-soft)' : isValid ? '0 0 0 2px var(--success-soft)' : 'none';
 
   return (

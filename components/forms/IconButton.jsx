@@ -15,7 +15,7 @@ export function IconButton({ children, size = 'md', variant = 'ghost', label, sh
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       style={{ height: d, width: showLabel ? 'auto' : d, minWidth: d, padding: showLabel ? '0 14px 0 12px' : 0,
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: showLabel ? 8 : 0,
-        background: bg, color, border: variant === 'solid' ? 'none' : '1px solid var(--line)',
+        background: bg, color, border: variant === 'solid' ? 'none' : '1px solid var(--color-base-300)',
         borderRadius: 'var(--r-sm)', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.45 : 1,
         transition: 'background var(--dur-fast) var(--ease-out)', ...style }} {...rest}>
       {children}

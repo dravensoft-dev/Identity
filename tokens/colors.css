@@ -53,8 +53,6 @@
   --ink:var(--color-base-100);
   --ink-2:var(--color-base-200);
   --panel:var(--color-base-200);
-  --panel-2:var(--color-base-300);
-  --line:var(--color-base-300);
   --line-strong:var(--color-neutral);
   --bone:var(--color-base-content);
   --bone-dim:color-mix(in oklab,var(--color-base-content) 82%,transparent);

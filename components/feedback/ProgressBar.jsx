@@ -34,7 +34,7 @@ export function ProgressBar({ value = 0, indeterminate = false, tone = 'accent',
       )}
       <div role="progressbar" aria-valuenow={indeterminate ? undefined : pct} aria-valuemin={0} aria-valuemax={100} aria-label={typeof label === 'string' ? label : 'Progress'}
         className={indeterminate ? 'arena-prog-ind' : undefined}
-        style={{ position: 'relative', height: h, borderRadius: 'var(--r-pill)', background: 'var(--line)', overflow: 'hidden', color }}>
+        style={{ position: 'relative', height: h, borderRadius: 'var(--r-pill)', background: 'var(--color-base-300)', overflow: 'hidden', color }}>
         {!indeterminate && (
           <span style={{ position: 'absolute', inset: 0, width: pct + '%', background: color, borderRadius: 'inherit', transition: 'width var(--dur-mid) var(--ease-out)' }} />
         )}

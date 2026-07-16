@@ -41,12 +41,12 @@ export function ProjectScreen({ onNav, project, onToast }) {
       <Tabs tabs={['Overview', 'Deployments', 'Activity', 'Settings']} value={tab} onChange={setTab} style={{ marginBottom: 22 }} />
 
       {tab === 'Deployments' && (
-        <div style={{ border: '1px solid var(--line)', borderRadius: 'var(--r-lg)', overflow: 'hidden' }}>
+        <div style={{ border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-lg)', overflow: 'hidden' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr auto', gap: 12, padding: '12px 20px', background: 'var(--panel)', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--mute)' }}>
             <span>Build</span><span>Environment</span><span>Status</span><span>Author</span><span>Duration</span><span></span>
           </div>
           {DEPLOYS.map((d, i) => (
-            <div key={d.build} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr auto', gap: 12, padding: '16px 20px', alignItems: 'center', background: 'var(--surface-card)', borderTop: i ? '1px solid var(--line)' : 'none' }}>
+            <div key={d.build} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr auto', gap: 12, padding: '16px 20px', alignItems: 'center', background: 'var(--surface-card)', borderTop: i ? '1px solid var(--color-base-300)' : 'none' }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--gold)' }}>{d.build}</span>
               <span style={{ fontSize: 14, color: 'var(--bone-dim)' }}>{d.env}</span>
               <span><Badge tone={d.status[0]} dot>{d.status[1]}</Badge></span>
@@ -62,7 +62,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
         <Card>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {ACTIVITY.map((a, i) => (
-              <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '14px 0', borderTop: i ? '1px solid var(--line)' : 'none' }}>
+              <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '14px 0', borderTop: i ? '1px solid var(--color-base-300)' : 'none' }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--crimson)' }} />
                 <span style={{ fontSize: 14, color: 'var(--bone-dim)' }}><b style={{ color: 'var(--bone)' }}>{a[0]}</b> {a[1]} <span style={{ color: 'var(--gold)', fontFamily: 'var(--font-mono)', fontSize: 13 }}>{a[2]}</span></span>
                 <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--mute)' }}>{a[3]}</span>

@@ -2,7 +2,7 @@ import React from 'react';
 export function Card({ children, title, eyebrow, action, floating = false, accent = false, style, ...rest }) {
   return (
     <div style={{ background: 'var(--surface-card)',
-      border: '1px solid ' + (accent ? 'var(--crimson)' : 'var(--line)'),
+      border: '1px solid ' + (accent ? 'var(--crimson)' : 'var(--color-base-300)'),
       borderRadius: 'var(--r-lg)', boxShadow: floating ? 'var(--shadow-2)' : 'none',
       overflow: 'hidden', ...style }} {...rest}>
       {(title || eyebrow || action) && (

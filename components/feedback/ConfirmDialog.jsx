@@ -24,7 +24,7 @@ export function ConfirmDialog({ open, onCancel, onConfirm, title, eyebrow = 'Con
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)', marginBottom: 6 }}>Type "{requireText}" to confirm</div>
               <input value={typed} onChange={(e) => setTyped(e.target.value)} autoFocus
                 style={{ width: '100%', height: 42, padding: '0 12px', background: 'var(--surface-input)',
-                  border: '1px solid ' + (locked && typed ? 'var(--danger)' : 'var(--line)'), borderRadius: 'var(--r-sm)',
+                  border: '1px solid ' + (locked && typed ? 'var(--danger)' : 'var(--color-base-300)'), borderRadius: 'var(--r-sm)',
                   color: 'var(--bone)', fontFamily: 'var(--font-mono)', fontSize: 14, outline: 'none' }} />
             </div>
           )}

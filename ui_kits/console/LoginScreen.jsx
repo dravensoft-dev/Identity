@@ -8,7 +8,7 @@ export function LoginScreen({ onLogin }) {
   return (
     <div style={{ minHeight: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: 'radial-gradient(120% 120% at 78% 12%, #2a201c 0%, #141010 60%)', padding: 24 }}>
-      <div style={{ width: 380, background: 'var(--surface-card)', border: '1px solid var(--line)', borderRadius: 'var(--r-lg)', padding: 36, boxShadow: 'var(--shadow-3)' }}>
+      <div style={{ width: 380, background: 'var(--surface-card)', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-lg)', padding: 36, boxShadow: 'var(--shadow-3)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
           <Rotor size={40} />
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 22, letterSpacing: '-.02em', textTransform: 'uppercase', color: 'var(--bone)' }}>Draven<span style={{ color: 'var(--mute)' }}>soft</span></div>

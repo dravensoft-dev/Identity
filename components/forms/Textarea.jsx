@@ -7,7 +7,7 @@ export function Textarea({
 }) {
   const [focus, setFocus] = useState(false);
   const taId = id || (label ? 'ta-' + label.replace(/\s+/g, '-').toLowerCase() : undefined);
-  const borderColor = error ? 'var(--danger)' : focus ? 'var(--gold)' : 'var(--line)';
+  const borderColor = error ? 'var(--danger)' : focus ? 'var(--gold)' : 'var(--color-base-300)';
   const ring = error ? '0 0 0 2px var(--danger-soft)' : focus ? '0 0 0 2px var(--gold-soft)' : 'none';
   const len = typeof value === 'string' ? value.length : 0;
   const grow = (e) => { if (autoResize) { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; } };

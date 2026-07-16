@@ -1,6 +1,6 @@
 import React from 'react';
 const TONES = {
-  neutral: ['var(--panel-2)', 'var(--bone-dim)'],
+  neutral: ['var(--color-base-300)', 'var(--bone-dim)'],
   accent: ['var(--crimson-soft)', 'var(--crimson)'],
   gold: ['var(--gold-soft)', 'var(--gold)'],
   success: ['var(--success-soft)', 'var(--success)'],

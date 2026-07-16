@@ -20,11 +20,11 @@ export function CommandPalette({ open, onClose, commands = [], placeholder = 'Se
       paddingTop: '12vh', background: 'var(--scrim)', backdropFilter: 'blur(var(--scrim-blur))', WebkitBackdropFilter: 'blur(var(--scrim-blur))' }}>
       <div onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true"
         style={{ width: 560, maxWidth: '92vw', background: 'var(--surface-card)', border: '1px solid var(--line-strong)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1px solid var(--line)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1px solid var(--color-base-300)' }}>
           <i className="ph-bold ph-magnifying-glass" style={{ color: 'var(--mute)', fontSize: 18 }} />
           <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} placeholder={placeholder}
             style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 15 }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--mute)', border: '1px solid var(--line)', borderRadius: 'var(--r-xs)', padding: '2px 6px' }}>ESC</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--mute)', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-xs)', padding: '2px 6px' }}>ESC</span>
         </div>
         <div style={{ maxHeight: 320, overflow: 'auto', padding: 6 }}>
           {filtered.length === 0 && <div style={{ padding: '18px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--mute)' }}>No results for "{q}".</div>}

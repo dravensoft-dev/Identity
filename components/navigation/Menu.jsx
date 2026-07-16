@@ -22,7 +22,7 @@ export function Menu({ trigger, items = [], align = 'start', style }) {
           minWidth: 200, padding: 6, background: 'var(--surface-card)', border: '1px solid var(--line-strong)',
           borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-2)', animation: 'arena-menu var(--dur-fast) var(--ease-out)' }}>
           {items.map((it, i) => {
-            if (it.divider) return <div key={i} style={{ height: 1, background: 'var(--line)', margin: '5px 0' }} />;
+            if (it.divider) return <div key={i} style={{ height: 1, background: 'var(--color-base-300)', margin: '5px 0' }} />;
             if (it.header) return <div key={i} style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--mute)', padding: '8px 10px 4px' }}>{it.header}</div>;
             return (
               <MenuItem key={i} item={it} onRun={() => run(it)} />

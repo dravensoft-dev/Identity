@@ -21,7 +21,7 @@ export function Button({
       shadow: hover ? 'var(--glow-accent)' : 'none',
     },
     secondary: {
-      bg: hover ? 'var(--panel-2)' : 'var(--panel)',
+      bg: hover ? 'var(--color-base-300)' : 'var(--panel)',
       color: 'var(--bone)', border: 'var(--line-strong)', shadow: 'none',
     },
     ghost: {
@@ -29,8 +29,8 @@ export function Button({
       color: 'var(--bone-dim)', border: 'transparent', shadow: 'none',
     },
     danger: {
-      bg: hover ? 'var(--danger-strong)' : 'var(--danger)',
-      color: 'var(--on-accent)', border: 'transparent', shadow: 'none',
+      bg: hover ? 'var(--danger-soft)' : 'transparent',
+      color: 'var(--danger)', border: 'var(--danger)', shadow: 'none',
     },
   };
   const p = palettes[variant] || palettes.primary;
