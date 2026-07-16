@@ -1,10 +1,37 @@
 # Arena — Dravensoft Design System
 
+**Version 1.0.0** · MIT License · Dark-first React + CSS-token design system. See [`CHANGELOG.md`](./CHANGELOG.md).
+
 **Arena** is the single interface language under which every Dravensoft software product is built. It takes its name from the venue where a performance is put on display and applauded: every Arena interface should feel *worthy of being exalted* — the same promise the brand makes.
+
+## Getting started
+Arena is distributed as a **copy-in reference kit** — and as a downloadable Agent Skill (`SKILL.md`) — not as an npm package. To use it in a project:
+
+1. **Copy** `tokens/`, `assets/` and `styles.css` into your app (e.g. under `/arena`).
+2. **Link the entry point.** `styles.css` only `@import`s the token files, exposing every design token as a CSS custom property (`--color-*`, `--font-*`, `--r-*`, `--shadow-*`, …) and loading the fonts:
+   ```html
+   <link rel="stylesheet" href="/arena/styles.css" />
+   ```
+3. **Pick the theme.** Dark is the default (`:root`). Add `class="arena-light"` on `<html>` for the warm light theme, or wire the built-in toggle with `theme.js`.
+4. **Use the components.** Copy the `.jsx` files you need from `components/` and import them:
+   ```jsx
+   import { Button } from './components/forms/Button.jsx';
+
+   <Button variant="primary" size="md">Deploy</Button>
+   ```
+   Every component ships a `.d.ts` (types) and a `.prompt.md` (usage, examples, Do/Don't).
+
+### How components are styled
+Components render with **inline `style` objects that read the CSS custom properties** (e.g. `background: 'var(--crimson)'`). They do **not** expose utility classes — there is no `class="btn"`. `styles.css` provides only the token variables and fonts; all component logic lives in the `.jsx`. This keeps each component self-contained and fully themeable: change a token and every component follows.
+
+### Dependencies
+- **Fonts — Google Fonts (CDN).** `tokens/fonts.css` `@import`s Archivo, Familjen Grotesk and Spline Sans Mono. To self-host, replace that `@import` with `@font-face` rules and local files.
+- **Icons — [Phosphor Icons](https://phosphoricons.com) (MIT).** Not bundled. Load the webfont from CDN for prototypes (`@phosphor-icons/web`), or install `@phosphor-icons/react` for production. See the [ICONOGRAPHY](#iconography) section.
+- **React** — the primitives in `components/` are React (JSX). Tokens, guidelines and assets are framework-agnostic and can be used without React.
 
 ## Audience and scope
 - **Audience of the language: general public.** Arena is meant to give identity to **every kind of Dravensoft software**, regardless of who the end user is — from consumer apps to internal tools. Its foundations (color, typography, spacing, accessibility, voice) are general-purpose and don't assume a technical profile.
-- **The Overview (`Arena - Overview.dc.html`) is an example application**, not the language itself. It illustrates Arena applied to the **Delivery Console, a product aimed at developers/technical teams**. That's why it includes data density, domain terminology (build, deploy, p95) and keyboard accelerators specific to that audience.
+- **The Overview (`reference/Arena - Overview.dc.html`) is an example application**, not the language itself. It illustrates Arena applied to the **Delivery Console, a product aimed at developers/technical teams**. That's why it includes data density, domain terminology (build, deploy, p95) and keyboard accelerators specific to that audience.
 - **Implication for audits and evaluations:** findings observed on the example should be split into (a) those that apply to the **language** (tokens, components, patterns — universal) and (b) those specific to the **example's technical context** (jargon, density, shortcuts). The latter are not defects of the language: in a product for a general audience they would be replaced with plain copy, comfortable density and fewer shortcuts. When evaluating Arena for another kind of software, calibrate against that general audience, not against the Console.
 
 ## Why a language of our own (and not Material/Fluent as-is)
@@ -13,7 +40,7 @@ Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default
 - **Rewrites the aesthetic decisions** for the identity: dark-first, contained radii, deep warm shadows, crimson as the voice and gold as distinction, and the **Rotor** as the signature mark.
 
 ## Sources
-- Approved identity manual: `Dravensoft Identity.dc.html` (project root).
+- Approved identity manual: `reference/Dravensoft Identity.dc.html`.
 - Brand: Dravensoft — custom software development / B2B consulting.
 - Concept: pride, spectacle, mastery. Motto: *"Software worthy of being exalted."*
 
@@ -77,10 +104,12 @@ To tell **destructive / risk actions and indicators** apart from the primary act
 - `guidelines/` — specimen cards (`@dsCard`): typography (`type-display`, `type-body`, `type-mono`), color (`colors-neutrals`, `colors-accents`, `colors-status`), spacing (`spacing-scale`), effects (`effects-radius`, `effects-shadow`), iconography (`icons`), brand (`brand-logo`, `brand-rotor`) and the **danger convention** (`components-danger`).
 - `components/` — React primitives: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch), `display/` (Card, Badge, Tag, Avatar, Table, Skeleton), `navigation/` (Tabs, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding), `brand/` (Rotor).
 - `ui_kits/console/` — recreation of the Delivery Console (an example internal product).
+- `reference/` — brand source material: the approved identity manual (`Dravensoft Identity.dc.html`) and the example Overview app (`Arena - Overview.dc.html`).
 - `SKILL.md` — for use as a downloadable Agent Skill.
+- `CHANGELOG.md` — version history.
 
 ## Intentional additions
-- **Consistency tokens (pre-v1.0 publication):** `--danger-strong` (symmetric to `--crimson-strong`/`--gold-strong`) and `--scrim`/`--scrim-blur` (unified modal backdrop, in `tokens/effects.css`). With these, no hardcoded colors (`#fff`, `rgba(20,16,16,.6)`) remain in the components: everything goes through a token, including `--on-accent`. *Current status:* after the migration to daisyUI tokens, the `*-strong` variants **alias to their accent's base color**; they're kept as an extension point in case a theme defines a distinct pressed tone.
+- **Consistency tokens (shipped in v1.0.0):** `--danger-strong` (symmetric to `--crimson-strong`/`--gold-strong`) and `--scrim`/`--scrim-blur` (unified modal backdrop, in `tokens/effects.css`). With these, no hardcoded colors (`#fff`, `rgba(20,16,16,.6)`) remain in the components: everything goes through a token, including `--on-accent`. *Current status:* after the migration to daisyUI tokens, the `*-strong` variants **alias to their accent's base color**; they're kept as an extension point in case a theme defines a distinct pressed tone.
 - **Rotor** (brand component) — wrapper around the symbol for splash/loading states; it doesn't exist as a "component" in the identity but is needed for product.
 - **Phosphor Icons iconography** — set adopted in the absence of one in the identity; Bold weight as the default (see the ICONOGRAPHY section).
 - **Remediation components** (following the Nielsen heuristic audit):
