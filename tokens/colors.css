@@ -1,0 +1,100 @@
+/* ============================================================
+   Arena — Paleta de color (estructura daisyUI)
+   Fuente de verdad: tokens daisyUI (--color-*).
+   Tema por defecto = oscuro (:root). Tema claro = .arena-light.
+   Debajo, una capa de compatibilidad mapea los alias antiguos
+   de Arena a estos tokens para no romper los componentes.
+   ============================================================ */
+
+/* --- Tema oscuro (por defecto) --- */
+:root{
+  /* Base (neutros cálidos) */
+  --color-base-100:#141010;   /* fondo principal */
+  --color-base-200:#1d1715;   /* superficie elevada / card */
+  --color-base-300:#241c19;   /* panel / borde */
+  --color-base-content:#f3ede5;/* texto sobre base */
+
+  /* Marca */
+  --color-primary:#b52a20;    --color-primary-content:#ffffff;   /* carmesí */
+  --color-secondary:#c5a059;  --color-secondary-content:#141010; /* dorado */
+  --color-neutral:#2c221e;    --color-neutral-content:#d8cfc4;   /* superficie neutra */
+
+  /* Estado */
+  --color-info:#3182ce;       --color-info-content:#ffffff;
+  --color-success:#38a169;    --color-success-content:#ffffff;
+  --color-warning:#ecc94b;    --color-warning-content:#141010;
+  --color-error:#e53e3e;      --color-error-content:#ffffff;
+}
+
+/* --- Tema claro — inverso cálido de la base oscura --- */
+.arena-light{
+  --color-base-100:#ffffff;   /* fondo principal — blanco */
+  --color-base-200:#f7f4ef;   /* card / superficie elevada — hueso cálido muy tenue */
+  --color-base-300:#ece6dc;   /* panel / borde — hueso cálido */
+  --color-base-content:#1a1a1a;/* texto — gris casi negro */
+
+  --color-primary:#b52a20;    --color-primary-content:#ffffff;
+  --color-secondary:#c5a059;  --color-secondary-content:#141010;
+  --color-neutral:#cabcad;    --color-neutral-content:#3a2e29;
+
+  --color-info:#3182ce;       --color-info-content:#ffffff;
+  --color-success:#38a169;    --color-success-content:#ffffff;
+  --color-warning:#ecc94b;    --color-warning-content:#141010;
+  --color-error:#e53e3e;      --color-error-content:#ffffff;
+}
+
+/* ============================================================
+   Capa de compatibilidad — alias Arena → tokens daisyUI.
+   Los niveles de texto atenuado se derivan de base-content
+   con color-mix (equivalente al patrón de opacidad de daisyUI).
+   ============================================================ */
+:root,.arena-light{
+  /* neutros crudos */
+  --ink:var(--color-base-100);
+  --ink-2:var(--color-base-200);
+  --panel:var(--color-base-200);
+  --panel-2:var(--color-base-300);
+  --line:var(--color-base-300);
+  --line-strong:var(--color-neutral);
+  --bone:var(--color-base-content);
+  --bone-dim:color-mix(in oklab,var(--color-base-content) 82%,transparent);
+  --mute:color-mix(in oklab,var(--color-base-content) 62%,transparent);
+  --mute-2:color-mix(in oklab,var(--color-base-content) 52%,transparent);
+  --mute-2-disabled:color-mix(in oklab,var(--color-base-content) 40%,transparent);
+
+  /* acentos de marca */
+  --crimson:var(--color-primary);
+  --crimson-strong:var(--color-primary);
+  --crimson-soft:color-mix(in oklab,var(--color-primary) 14%,transparent);
+  --gold:var(--color-secondary);
+  --gold-strong:var(--color-secondary);
+  --gold-soft:color-mix(in oklab,var(--color-secondary) 16%,transparent);
+
+  /* estado */
+  --success:var(--color-success);
+  --success-soft:color-mix(in oklab,var(--color-success) 16%,transparent);
+  --warning:var(--color-warning);
+  --warning-soft:color-mix(in oklab,var(--color-warning) 18%,transparent);
+  --danger:var(--color-error);
+  --danger-strong:var(--color-error);
+  --danger-soft:color-mix(in oklab,var(--color-error) 14%,transparent);
+  --info:var(--color-info);
+  --info-soft:color-mix(in oklab,var(--color-info) 16%,transparent);
+
+  /* alias semánticos */
+  --bg:var(--color-base-100);
+  --bg-raised:var(--color-base-300);
+  --surface-card:var(--color-base-200);
+  --surface-input:var(--color-base-300);
+  --text-strong:var(--color-base-content);
+  --text-body:var(--bone-dim);
+  --text-muted:var(--mute);
+  --text-faint:var(--mute-2);
+  --border:var(--color-base-300);
+  --border-strong:var(--color-neutral);
+  --accent:var(--color-primary);
+  --accent-press:var(--color-primary);
+  --accent-soft:var(--crimson-soft);
+  --focus-ring:var(--color-secondary);
+  --on-accent:var(--color-primary-content);
+}

@@ -1,0 +1,29 @@
+<!-- @dsCard group="Components" viewport="700x260" name="Convención de peligro" subtitle="Outline --error, no relleno" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
+<style>
+body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:24px}
+.wrap{display:flex;flex-direction:column;gap:16px}
+.lede{font-size:14px;color:var(--bone-dim);line-height:1.55;max-width:64ch}
+.tok{font-family:var(--font-mono);font-size:12px;color:var(--danger)}
+.row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end}
+.cell{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.cap{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 18px;font-family:var(--font-body);font-weight:600;font-size:14px;border-radius:var(--r-sm);border:1px solid transparent;cursor:pointer}
+.btn.primary{background:var(--crimson);color:#fff}
+.btn.danger{background:transparent;color:var(--danger);border-color:var(--danger)}
+.btn.final{background:var(--danger);color:var(--color-error-content);border-color:var(--danger)}
+.iconbtn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r-sm);cursor:pointer;background:transparent;color:var(--danger);border:1px solid var(--danger)}
+</style>
+</head><body>
+<div class="wrap">
+<div class="lede">Las acciones destructivas usan <b>fondo transparente</b> con borde y contenido en <span class="tok">--error</span>. El peligro se lee por color, no por peso — nunca compite con el botón primario. El relleno sólido se reserva solo para la confirmación final irreversible.</div>
+<div class="row">
+<div class="cell"><button class="btn primary"><i class="ph-bold ph-rocket-launch"></i>Principal</button><span class="cap">primary · relleno</span></div>
+<div class="cell"><button class="btn danger"><i class="ph-bold ph-trash"></i>Destructiva</button><span class="cap">danger · outline --error</span></div>
+<div class="cell"><button class="iconbtn" aria-label="Eliminar"><i class="ph-bold ph-trash"></i></button><span class="cap">iconbtn danger</span></div>
+<div class="cell"><button class="btn final">Confirmación final</button><span class="cap">excepción · relleno</span></div>
+</div>
+</div>
+</body></html>

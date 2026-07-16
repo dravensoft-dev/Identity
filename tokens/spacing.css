@@ -1,0 +1,39 @@
+:root{
+  /* 4px base grid */
+  --sp-0:0;
+  --sp-1:4px;
+  --sp-2:8px;
+  --sp-3:12px;
+  --sp-4:16px;
+  --sp-5:20px;
+  --sp-6:24px;
+  --sp-8:32px;
+  --sp-10:40px;
+  --sp-12:48px;
+  --sp-16:64px;
+  --sp-20:80px;
+  --sp-24:96px;
+
+  /* Container / layout */
+  --container-max:1240px;
+  --gutter:88px;
+
+  /* Density (H7 rev.3) — comfortable by default. Data-dense surfaces read these
+     instead of hard-coded px so a single scope switch re-densifies rows and controls. */
+  --dz-ctl-h:40px;    /* control height (buttons, inputs, switches row) */
+  --dz-ctl-h-sm:32px;
+  --dz-row-py:12px;   /* table/list row vertical padding */
+  --dz-row-px:16px;   /* row horizontal padding */
+  --dz-stack:12px;    /* gap between stacked items */
+  --dz-cell:14px;     /* cell font-size */
+}
+/* Compact density — for expert/high-volume views. Apply on a container:
+   <div class="arena-compact"> … </div>  (composes with .arena-light) */
+.arena-compact{
+  --dz-ctl-h:32px;
+  --dz-ctl-h-sm:26px;
+  --dz-row-py:7px;
+  --dz-row-px:12px;
+  --dz-stack:8px;
+  --dz-cell:13px;
+}

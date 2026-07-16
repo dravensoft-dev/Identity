@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css">
+<style>
+body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body)}
+.app{background:var(--bg);color:var(--text-strong);transition:background var(--dur-mid) var(--ease-out),color var(--dur-mid) var(--ease-out)}
+.page{max-width:1120px;margin:0 auto}
+.hero{position:relative;padding:52px 48px 40px;border-bottom:1px solid var(--line);background:var(--bg)}
+/* Tema claro — usa el scope oficial .arena-light (tokens/colors.css) */
+.arena-light .hero{background:var(--surface-card)}
+/* Toggle de tema */
+.themebtn{position:absolute;top:28px;right:48px;display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 6px 0 14px;background:var(--panel);border:1px solid var(--line-strong);border-radius:999px;cursor:pointer;font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim);transition:background var(--dur-fast) var(--ease-out),color var(--dur-fast) var(--ease-out)}
+.themebtn:hover{background:var(--panel-2)}
+.themebtn .tk{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--crimson);color:#fff;font-size:15px}
+.arena-light .themebtn .tk{background:var(--gold);color:#1a1310}.brandrow{display:flex;align-items:center;gap:16px}
+.brandname{font-family:var(--font-display);font-weight:900;font-size:44px;letter-spacing:-.02em;text-transform:uppercase;color:var(--bone);line-height:1}
+.kicker{font-family:var(--font-mono);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-top:8px}
+.lede{font-family:var(--font-body);font-size:17px;color:var(--mute);max-width:58ch;line-height:1.6;margin-top:22px}
+.sec{padding:40px 48px;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--crimson)}
+.h2{font-family:var(--font-display);font-weight:900;font-size:32px;letter-spacing:-.01em;margin:10px 0 24px;color:var(--bone)}
+.sub{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin:22px 0 12px}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.rowtop{align-items:flex-start}
+.rowstretch{align-items:stretch}
+.swatches{display:flex;gap:12px;flex-wrap:wrap}
+.sw{flex:1 1 110px;min-width:100px}
+.sw .chip{height:66px;border-radius:var(--r-md);border:1px solid var(--line)}
+.sw .meta{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;color:var(--mute);margin-top:7px}
+/* Paleta estilo daisyUI: cada token es una caja con su nombre en el color -content */
+.palgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}
+.tok{border-radius:var(--r-md);border:1px solid var(--line);padding:11px 12px;min-height:62px;display:flex;flex-direction:column;justify-content:space-between}
+.tok .tn{font-family:var(--font-mono);font-size:12px;font-weight:700;letter-spacing:.02em}
+.tok .tv{font-family:var(--font-mono);font-size:9px;letter-spacing:.02em;opacity:.62;margin-top:6px}
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 18px;font-family:var(--font-body);font-weight:600;font-size:14px;border-radius:var(--r-sm);border:1px solid transparent;cursor:pointer;transition:background var(--dur-fast) var(--ease-out),box-shadow var(--dur-mid) var(--ease-out)}
+.btn.lg{height:48px;padding:0 26px;font-size:15px}
+.btn.sm{height:32px;padding:0 12px;font-size:13px}
+.btn.primary{background:var(--crimson);color:#fff}
+.btn.primary:hover{background:var(--crimson-strong);box-shadow:var(--glow-accent)}
+.btn.secondary{background:var(--panel);color:var(--bone);border-color:var(--line-strong)}
+.btn.secondary:hover{background:var(--panel-2)}
+.btn.ghost{background:transparent;color:var(--bone-dim)}
+.btn.ghost:hover{background:var(--panel)}
+/* Convención de peligro: fondo transparente, borde y contenido en --error.
+   Diferencia una acción destructiva de la acción principal (primary, rellena). */
+.btn.danger{background:transparent;color:var(--danger);border-color:var(--danger)}
+.btn.danger:hover{background:var(--danger-soft)}
+.btn.danger:focus-visible{outline:2px solid var(--danger);outline-offset:2px}
+.spinner{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:aspin .7s linear infinite}
+.dangerdoc{margin-top:12px}
+.tokref{font-family:var(--font-mono);font-size:12px;color:var(--danger)}
+.dangercompare{display:flex;flex-wrap:wrap;gap:28px;margin:20px 0 4px}
+.dcell{display:flex;flex-direction:column;align-items:flex-start;gap:9px}
+.dnote{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.dorules{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:9px;max-width:66ch}
+.dorules li{font-family:var(--font-body);font-size:14px;color:var(--bone-dim);line-height:1.55;padding-left:2px}
+.dorules .do,.dorules .dont{display:inline-block;font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-right:8px;vertical-align:1px}
+.dorules .do{background:var(--success-soft);color:var(--success)}
+.dorules .dont{background:var(--danger-soft);color:var(--danger)}
+@keyframes aspin{to{transform:rotate(360deg)}}
+.iconbtn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r-sm);cursor:pointer;background:var(--crimson);color:#fff;border:none}
+.iconbtn.ghost{background:transparent;color:var(--bone-dim);border:1px solid var(--line)}
+.iconbtn.danger{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+.iconbtn.danger:hover{background:var(--danger-soft)}
+.ico{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* fields */
+.field{display:flex;flex-direction:column;gap:6px}
+.label{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.control{display:flex;align-items:center;gap:8px;height:42px;padding:0 12px;background:var(--surface-input);border:1px solid var(--line);border-radius:var(--r-sm)}
+.control.err{border-color:var(--danger)}
+.control .pfx{font-family:var(--font-mono);font-size:13px;color:var(--mute)}
+.control input,.control select{flex:1;background:transparent;border:none;outline:none;color:var(--bone);font-family:var(--font-body);font-size:14px}
+.errmsg{font-size:12px;color:var(--danger)}
+.check{display:inline-flex;align-items:center;gap:10px;font-size:14px;color:var(--bone-dim)}
+.box{width:20px;height:20px;border-radius:var(--r-xs);background:var(--crimson);border:1px solid var(--crimson);display:inline-flex;align-items:center;justify-content:center}
+.swtrack{width:40px;height:22px;border-radius:999px;background:var(--crimson);padding:2px;display:inline-flex;align-items:center;justify-content:flex-end}
+.swtrack.off{background:var(--line-strong);justify-content:flex-start}
+.swknob{width:18px;height:18px;border-radius:50%;background:#fff}
+/* badges/tags */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.b-neutral{background:var(--panel-2);color:var(--bone-dim)}
+.b-accent{background:var(--crimson-soft);color:var(--crimson)}
+.b-gold{background:var(--gold-soft);color:var(--gold)}
+.b-success{background:var(--success-soft);color:var(--success)}
+.b-warning{background:var(--warning-soft);color:var(--warning)}
+.b-danger{background:var(--danger-soft);color:var(--danger)}
+.b-info{background:var(--info-soft);color:var(--info)}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--panel);color:var(--bone-dim);border:1px solid var(--line);border-radius:var(--r-sm);font-size:13px}
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tab{padding:10px 16px;background:none;border:none;cursor:pointer;font-family:var(--font-body);font-weight:500;font-size:14px;color:var(--mute)}
+.tab.on{color:var(--bone);font-weight:600;box-shadow:inset 0 -2px 0 var(--crimson)}
+/* cards */
+.card{background:var(--surface-card);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.card.accent{border-color:var(--crimson)}
+.card.floating{box-shadow:var(--shadow-2)}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 20px 0}
+.card-eye{font-family:var(--font-mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--crimson);margin-bottom:6px}
+.card-title{font-family:var(--font-display);font-weight:800;font-size:18px;color:var(--bone)}
+.card-body{padding:20px;color:var(--mute);font-size:14px;line-height:1.6}
+/* toast */
+.toast{display:flex;gap:12px;align-items:flex-start;width:320px;padding:14px 16px;background:var(--surface-card);border:1px solid var(--line);border-left:3px solid var(--line-strong);border-radius:var(--r-md);box-shadow:var(--shadow-2)}
+.toast.success{border-left-color:var(--success)}
+.toast.danger{border-left-color:var(--danger)}
+.toast .tt{font-weight:600;font-size:14px;color:var(--bone)}
+.toast .tm{font-size:13px;color:var(--mute);margin-top:2px}
+/* dialog */
+.overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(20,16,16,.6);backdrop-filter:blur(6px)}
+.dialog{width:460px;max-width:92vw;background:var(--surface-card);border:1px solid var(--line-strong);border-radius:var(--r-lg);box-shadow:var(--shadow-3);animation:apop var(--dur-mid) var(--ease-emphatic)}
+@keyframes apop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.dialog .dh{padding:22px 24px 0}
+.dialog .db{padding:16px 24px;color:var(--bone-dim);font-size:15px;line-height:1.6}
+.dialog .df{display:flex;justify-content:flex-end;gap:10px;padding:0 24px 22px}
+.mono-gold{font-family:var(--font-mono);color:var(--gold)}
+/* console mock */
+.console{border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;display:grid;grid-template-columns:200px 1fr;background:var(--bg)}
+.side{border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:4px}
+.side .lg{display:flex;align-items:center;gap:10px;padding:0 6px 18px}
+.side .lg b{font-family:var(--font-display);font-weight:900;font-size:15px;letter-spacing:-.02em;text-transform:uppercase;color:var(--bone)}
+.navitem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r-sm);font-size:14px;color:var(--mute)}
+.navitem.on{background:var(--crimson-soft);color:var(--crimson);font-weight:600}
+.main{display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--line)}
+.topbar .t{font-family:var(--font-display);font-weight:800;font-size:20px;color:var(--bone)}
+.content{padding:24px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.metric{background:var(--surface-card);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 18px}
+.metric .k{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.metric .v{font-family:var(--font-display);font-weight:900;font-size:28px;color:var(--bone);margin-top:6px}
+.pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.pcard .foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:12px;margin-top:12px;font-family:var(--font-mono);font-size:12px}
+.dep{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;padding:14px 18px;align-items:center;background:var(--surface-card);border-top:1px solid var(--line)}
+.dep.head{background:var(--panel);border-top:none;font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.dep .bd{font-family:var(--font-mono);font-size:13px;color:var(--gold)}
+.actline{display:flex;gap:12px;align-items:center;padding:13px 0;border-top:1px solid var(--line)}
+.actline:first-child{border-top:none}
+.actdot{width:8px;height:8px;border-radius:50%;background:var(--crimson)}
+.icogrid{display:flex;gap:22px;flex-wrap:wrap;font-size:28px;color:var(--bone-dim)}
+.icogrid i{width:36px;text-align:center}
+.icogrid .act{color:var(--crimson)}
+.icogrid .duo{color:var(--crimson);font-size:32px}
+.btn i,.iconbtn i{font-size:16px;line-height:1}
+.navitem i,.topbar i{font-size:18px;line-height:1}
+.toast .undo{margin-top:10px;background:none;border:none;padding:0;cursor:pointer;font-family:var(--font-mono);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--crimson)}
+.toast.danger .undo{color:var(--gold)}
+.estate{flex:1 1 320px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding:44px 28px;border-radius:var(--r-lg)}
+.estate .ei{font-size:34px;line-height:1}
+.estate .et{font-family:var(--font-display);font-weight:800;font-size:19px;color:var(--bone)}
+.estate .em{font-size:14px;color:var(--mute);max-width:42ch;line-height:1.6}
+.empty{border:1px dashed var(--line-strong);background:var(--surface-card)}
+.empty .ei{color:var(--mute)}
+.error{border:1px solid var(--danger);background:var(--danger-soft)}
+.error .ei{color:var(--danger)}
+.error .em{color:var(--bone-dim)}
+.error code{font-family:var(--font-mono);font-size:12px;color:var(--mute);background:rgba(0,0,0,.25);padding:4px 10px;border-radius:var(--r-xs)}
+.reqfield{margin-top:14px;text-align:left}
+.reqfield .rl{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
+.reqfield input{width:100%;height:42px;padding:0 12px;background:var(--surface-input);border:1px solid var(--line);border-radius:var(--r-sm);color:var(--bone);font-family:var(--font-mono);font-size:14px;outline:none}
+.palette{position:fixed;inset:0;z-index:1100;display:flex;align-items:flex-start;justify-content:center;padding-top:12vh;background:rgba(20,16,16,.6);backdrop-filter:blur(6px)}
+.palbox{width:560px;max-width:92vw;background:var(--surface-card);border:1px solid var(--line-strong);border-radius:var(--r-lg);box-shadow:var(--shadow-3);overflow:hidden}
+.palhead{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.palhead input{flex:1;background:transparent;border:none;outline:none;color:var(--bone);font-family:var(--font-body);font-size:15px}
+.palkey{font-family:var(--font-mono);font-size:11px;color:var(--mute);border:1px solid var(--line);border-radius:var(--r-xs);padding:2px 6px}
+.pallist{max-height:300px;overflow:auto;padding:6px}
+.palitem{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 12px;border-radius:var(--r-sm);border:none;cursor:pointer;background:transparent;color:var(--bone-dim);font-family:var(--font-body);font-size:14px}
+.palitem:hover{background:var(--crimson-soft);color:var(--crimson)}
+.palitem .sc{margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--mute)}
+/* Excepción documentada: confirmación final irreversible dentro de un diálogo.
+   Aquí sí se rellena en --error como último «punto de no retorno». */
+.dlgbtn-danger{background:var(--danger);color:var(--color-error-content);border-color:var(--danger)}
+.dlgbtn-danger:hover{filter:brightness(1.06)}
+/* remediación sev.2/1 */
+.rgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;align-items:start}
+.rbox{background:var(--surface-card);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px}
+.rbox .rt{font-family:var(--font-body);font-weight:600;font-size:14px;color:var(--bone);margin-bottom:4px}
+.rbox .rd{font-size:13px;color:var(--mute);line-height:1.55;margin-bottom:16px}
+.rtag{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-left:8px}
+.prog{position:relative;height:6px;border-radius:999px;background:var(--line);overflow:hidden}
+.prog>span{position:absolute;inset:0 auto 0 0;border-radius:inherit;background:var(--crimson)}
+.prog.ok>span{background:var(--success)}
+.prog-ind::after{content:"";position:absolute;top:0;bottom:0;width:40%;border-radius:inherit;background:var(--crimson);animation:aprog 1.15s var(--ease-in-out) infinite}
+@keyframes aprog{0%{left:-40%}100%{left:100%}}
+.proglbl{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font-size:13px;color:var(--bone-dim)}
+.proglbl .pv{font-family:var(--font-mono);font-size:12px;color:var(--mute)}
+.skel{background-image:linear-gradient(100deg,var(--panel) 30%,var(--panel-2) 50%,var(--panel) 70%);background-size:220% 100%;animation:askel 1.4s var(--ease-in-out) infinite;border-radius:var(--r-xs)}
+@keyframes askel{0%{background-position:-140% 0}100%{background-position:140% 0}}
+.crumbs{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px;letter-spacing:.04em}
+.crumbs a{color:var(--mute);text-decoration:none}
+.crumbs .cur{color:var(--bone);font-weight:700}
+.crumbs .csep{color:var(--line-strong)}
+.iconlabel{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px 0 12px;background:var(--crimson);color:#fff;border:none;border-radius:var(--r-sm);font-family:var(--font-body);font-weight:600;font-size:14px;cursor:pointer}
+.iconlabel.ghost{background:transparent;color:var(--bone-dim);border:1px solid var(--line)}
+.densebox{border:1px solid var(--line);border-radius:var(--r-md);padding:12px 14px}
+.denserow{display:flex;align-items:center;gap:10px;height:var(--dz-ctl-h);font-family:var(--font-mono);font-size:var(--dz-cell);color:var(--bone-dim);border-top:1px solid var(--line)}
+.denserow:first-child{border-top:none}
+.swconf{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--bone-dim)}
+/* v1.0 — primitivas añadidas para publicación */
+.grp{display:flex;flex-wrap:wrap;gap:44px}
+.radio{display:inline-flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:14px}
+.rdot{width:20px;height:20px;border-radius:50%;flex-shrink:0;margin-top:1px;display:inline-flex;align-items:center;justify-content:center;background:var(--surface-input);border:1px solid var(--line-strong)}
+.rdot.on{border-color:var(--crimson)}
+.rdot.on::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--crimson)}
+.rlbl{display:block;font-size:14px;color:var(--bone-dim);line-height:1.3}
+.rhint{display:block;font-size:12px;color:var(--mute);line-height:1.4}
+.ta{width:100%;padding:10px 12px;background:var(--surface-input);border:1px solid var(--line);border-radius:var(--r-sm);color:var(--bone);font-family:var(--font-body);font-size:14px;line-height:1.55;resize:vertical;outline:none;box-sizing:border-box}
+.ta:focus{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-soft)}
+.tacount{display:flex;justify-content:flex-end;font-family:var(--font-mono);font-size:11px;color:var(--mute);margin-top:6px}
+.menu{width:224px;padding:6px;background:var(--surface-card);border:1px solid var(--line-strong);border-radius:var(--r-md);box-shadow:var(--shadow-2)}
+.mhead{font-family:var(--font-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);padding:8px 10px 4px}
+.mitem{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:9px 10px;border:none;border-radius:var(--r-sm);cursor:pointer;background:transparent;color:var(--bone-dim);font-family:var(--font-body);font-size:14px}
+.mitem:hover{background:var(--crimson-soft);color:var(--crimson)}
+.mitem.danger{color:var(--danger)}
+.mitem.danger:hover{background:var(--danger-soft)}
+.mitem .msc{margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--mute)}
+.mdiv{height:1px;background:var(--line);margin:5px 0}
+.tbl{width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--surface-card)}
+.tbl th{background:var(--panel);text-align:left;padding:var(--dz-row-py) var(--dz-row-px);font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:700;border-bottom:1px solid var(--line)}
+.tbl td{padding:var(--dz-row-py) var(--dz-row-px);font-size:var(--dz-cell);color:var(--bone-dim);border-top:1px solid var(--line)}
+.tbl tbody tr:first-child td{border-top:none}
+.tbl td.mono{font-family:var(--font-mono);color:var(--gold)}
+.tbl td.r,.tbl th.r{text-align:right}
+.av{width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--panel-2);border:1px solid var(--line-strong);font-family:var(--font-display);font-weight:800;font-size:16px;color:var(--bone-dim);position:relative}
+.av.lg{width:56px;height:56px;font-size:22px}
+.av.rounded{border-radius:var(--r-md)}
+.avdot{position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;border:2px solid var(--surface-card)}
+.pg{display:inline-flex;align-items:center;gap:6px}
+.pgbtn{height:34px;min-width:34px;padding:0 8px;border-radius:var(--r-sm);border:1px solid var(--line);background:transparent;color:var(--bone-dim);font-family:var(--font-mono);font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.pgbtn.on{background:var(--crimson);border-color:var(--crimson);color:var(--on-accent)}
+.pgbtn.ell{border:none;cursor:default;color:var(--mute)}
+.pgbtn.nav{font-size:16px}
+.alert{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:var(--r-md);border:1px solid var(--line)}
+.alert>i{font-size:20px;line-height:1;flex-shrink:0;margin-top:1px}
+.alert .at{font-weight:600;font-size:14px;color:var(--bone)}
+.alert .am{font-size:13px;color:var(--bone-dim);line-height:1.55;margin-top:3px}
+.a-info{background:var(--info-soft);border-color:var(--info)}.a-info>i{color:var(--info)}
+.a-success{background:var(--success-soft);border-color:var(--success)}.a-success>i{color:var(--success)}
+.a-warning{background:var(--warning-soft);border-color:var(--warning)}.a-warning>i{color:var(--warning)}
+.a-danger{background:var(--danger-soft);border-color:var(--danger)}.a-danger>i{color:var(--danger)}
+.axc{color:var(--mute);font-size:16px;cursor:pointer;margin-top:1px}
+</style>
+</helmet>
+<div class="app {{ themeCls }}">
+<div class="page">
+<section class="hero">
+<button class="themebtn" onClick="{{ toggleTheme }}"><span>{{ themeLabel }}</span><span class="tk"><i class="{{ themeIcon }}"></i></span></button>
+<div class="brandrow"><img src="assets/rotor-crimson.svg" width="56" height="56" alt="Rotor"><div><div class="brandname">Arena</div><div class="kicker">Sistema de diseño · Dravensoft</div></div></div>
+<p class="lede">Interfaces dignas de ser enaltecidas. Fundamentos, componentes y un producto de ejemplo — todo bajo un mismo lenguaje: negro cálido, carmesí como voz, oro como distinción y el Rotor como firma.</p>
+</section>
+
+<section class="sec">
+<div class="eyebrow">Color</div><div class="h2">Paleta · tokens</div>
+<div style="font-family:var(--font-body);font-size:15px;color:var(--mute);max-width:60ch;line-height:1.6">Estructura de tokens estilo daisyUI: cada color se define junto a su <code style="font-family:var(--font-mono);color:var(--bone-dim)">-content</code> (el color legible encima). Los valores cambian solos con el tema; aquí se ven en el tema activo.</div>
+<div class="sub">Base · neutros cálidos</div>
+<div class="palgrid"><div class="tok" style="background:var(--color-base-100);color:var(--color-base-content)"><span class="tn">base-100</span><span class="tv">fondo · --color-base-100</span></div><div class="tok" style="background:var(--color-base-200);color:var(--color-base-content)"><span class="tn">base-200</span><span class="tv">card · --color-base-200</span></div><div class="tok" style="background:var(--color-base-300);color:var(--color-base-content)"><span class="tn">base-300</span><span class="tv">panel · --color-base-300</span></div><div class="tok" style="background:var(--color-base-content);color:var(--color-base-100)"><span class="tn">base-content</span><span class="tv">texto · --color-base-content</span></div></div>
+<div class="sub">Marca</div>
+<div class="palgrid"><div class="tok" style="background:var(--color-primary);color:var(--color-primary-content)"><span class="tn">primary</span><span class="tv">carmesí · #B52A20</span></div><div class="tok" style="background:var(--color-primary-content);color:var(--color-primary)"><span class="tn">primary-content</span><span class="tv">--color-primary-content</span></div><div class="tok" style="background:var(--color-secondary);color:var(--color-secondary-content)"><span class="tn">secondary</span><span class="tv">oro · #C5A059</span></div><div class="tok" style="background:var(--color-secondary-content);color:var(--color-secondary)"><span class="tn">secondary-content</span><span class="tv">--color-secondary-content</span></div><div class="tok" style="background:var(--color-neutral);color:var(--color-neutral-content)"><span class="tn">neutral</span><span class="tv">superficie · --color-neutral</span></div><div class="tok" style="background:var(--color-neutral-content);color:var(--color-neutral)"><span class="tn">neutral-content</span><span class="tv">--color-neutral-content</span></div></div>
+<div class="sub">Estado</div>
+<div class="palgrid"><div class="tok" style="background:var(--color-info);color:var(--color-info-content)"><span class="tn">info</span><span class="tv">--color-info</span></div><div class="tok" style="background:var(--color-success);color:var(--color-success-content)"><span class="tn">success</span><span class="tv">éxito · --color-success</span></div><div class="tok" style="background:var(--color-warning);color:var(--color-warning-content)"><span class="tn">warning</span><span class="tv">aviso · --color-warning</span></div><div class="tok" style="background:var(--color-error);color:var(--color-error-content)"><span class="tn">error</span><span class="tv">peligro · --color-error</span></div></div>
+</section>
+
+<section class="sec">
+<div class="eyebrow">Tipografía</div><div class="h2">Sistema tipográfico</div>
+<div style="font-family:var(--font-display);font-weight:900;font-size:60px;letter-spacing:-.02em;color:var(--bone);line-height:1">Enaltece</div>
+<div class="sub">Archivo · Display 900/800</div>
+<div style="font-family:var(--font-body);font-size:17px;color:var(--bone-dim);max-width:54ch;line-height:1.6;margin-top:8px">Familjen Grotesk para el cuerpo. Construimos software a medida para empresas que no aceptan lo genérico.</div>
+<div class="mono-gold" style="font-size:13px;margin-top:16px">Spline Sans Mono · deploy #4821 · 99.98% · <span style="color:var(--crimson)">EN PROGRESO</span></div>
+</section>
+
+<section class="sec">
+<div class="eyebrow">Fundamentos</div><div class="h2">Iconografía · Phosphor</div>
+<div style="font-family:var(--font-body);font-size:15px;color:var(--mute);max-width:56ch;line-height:1.6">Peso <b style="color:var(--bone-dim)">Bold</b> como base (presencia acorde al tono audaz), <b style="color:var(--bone-dim)">Fill</b> en carmesí para estado activo y <b style="color:var(--bone-dim)">Duotone</b> para destacar. Licencia MIT.</div>
+<div class="sub">Bold · general</div>
+<div class="icogrid"><i class="ph-bold ph-squares-four"></i><i class="ph-bold ph-rocket-launch"></i><i class="ph-bold ph-git-branch"></i><i class="ph-bold ph-gauge"></i><i class="ph-bold ph-shield-check"></i><i class="ph-bold ph-terminal-window"></i><i class="ph-bold ph-cube"></i><i class="ph-bold ph-bell"></i><i class="ph-bold ph-magnifying-glass"></i><i class="ph-bold ph-gear-six"></i><i class="ph-bold ph-arrow-clockwise"></i><i class="ph-bold ph-plus"></i></div>
+<div class="sub">Fill · activo — Duotone · destacado</div>
+<div class="icogrid"><i class="ph-fill ph-squares-four act"></i><i class="ph-fill ph-shield-check act"></i><i class="ph-fill ph-bell act"></i><i class="ph-duotone ph-rocket-launch duo"></i><i class="ph-duotone ph-gauge duo"></i><i class="ph-duotone ph-lightning duo"></i></div>
+</section>
+
+<section class="sec">
+<div class="eyebrow">Componentes</div><div class="h2">Botones y acciones</div>
+<div class="row">
+<button class="btn primary"><i class="ph-bold ph-rocket-launch"></i>Desplegar</button>
+<button class="btn secondary">Revertir</button>
+<button class="btn ghost">Cancelar</button>
+<button class="btn danger"><i class="ph-bold ph-trash"></i>Eliminar</button>
+<button class="btn primary"><span class="spinner"></span>Desplegando</button>
+<button class="iconbtn"><i class="ph-bold ph-plus"></i></button>
+<button class="iconbtn danger" aria-label="Eliminar"><i class="ph-bold ph-trash"></i></button>
+</div>
+<div class="sub">Convención de peligro</div>
+<div class="dangerdoc">
+<div style="font-family:var(--font-body);font-size:15px;color:var(--bone-dim);max-width:64ch;line-height:1.6">Las acciones destructivas <b style="color:var(--bone-dim)">no</b> se rellenan como la acción principal. Usan <b style="color:var(--bone-dim)">fondo transparente</b> con el <b style="color:var(--bone-dim)">borde y el contenido</b> (texto e íconos) en el token semántico <code class="tokref">--error</code>. Así el peligro se lee por color, no por peso visual, y nunca compite con el botón primario carmesí.</div>
+<div class="dangercompare">
+<div class="dcell"><button class="btn primary">Acción principal</button><div class="dnote">primary · relleno <code class="tokref">--primary</code></div></div>
+<div class="dcell"><button class="btn danger"><i class="ph-bold ph-trash"></i>Acción destructiva</button><div class="dnote">danger · outline <code class="tokref">--error</code></div></div>
+<div class="dcell"><button class="btn dlgbtn-danger">Confirmación final</button><div class="dnote">excepción · relleno solo al confirmar lo irreversible</div></div>
+</div>
+<ul class="dorules">
+<li><span class="do">Hacer</span> reservar el relleno sólido en <code class="tokref">--error</code> solo para el último paso irreversible dentro de un diálogo de confirmación.</li>
+<li><span class="dont">Evitar</span> usar botones de peligro rellenos como disparadores en listas, tarjetas o barras de herramientas.</li>
+<li><span class="do">Hacer</span> aplicar la misma regla a icon buttons de peligro: <code class="tokref">.iconbtn.danger</code> también es transparente con borde <code class="tokref">--error</code>.</li>
+</ul>
+</div>
+</section>
+
+<section class="sec">
+<div class="eyebrow">Componentes</div><div class="h2">Formularios</div>
+<div class="row rowtop">
+<div class="field" style="width:240px"><span class="label">Repositorio</span><div class="control"><span class="pfx">git@</span><input placeholder="org/proyecto"></div></div>
+<div class="field" style="width:220px"><span class="label">Correo</span><div class="control err"><input value="hola@"></div><span class="errmsg">Formato no válido</span></div>
+<div class="field" style="width:180px"><span class="label">Entorno</span><div class="control"><select><option>Producción</option><option>Staging</option><option>QA</option></select></div></div>
+</div>
+<div class="sub">Selección</div>
+<div class="row"><span class="check"><span class="box"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Notificar al aprobar</span><span class="check"><span class="swtrack"><span class="swknob"></span></span>Despliegue automático</span><span class="check"><span class="swtrack off"><span class="swknob"></span></span>Notificar a Slack</span></div>
+</section>
+
+<section class="sec">
+<div class="eyebrow">Componentes</div><div class="h2">Contenido y estado</div>
+<div class="sub">Badges</div>
+<div class="row"><span class="badge b-success"><span class="dot"></span>Desplegado</span><span class="badge b-warning">En revisión</span><span class="badge b-danger"><span class="dot"></span>Caído</span><span class="badge b-accent">Nuevo</span><span class="badge b-gold">Prioridad</span><span class="badge b-info">v2.4</span><span class="badge b-neutral">Borrador</span></div>
+<div class="sub">Tags · Tabs (interactivo)</div>
+<div class="row"><span class="tag">TypeScript</span><span class="tag">PostgreSQL</span><span class="tag">React <i class="ph-bold ph-x" style="color:var(--mute);cursor:pointer"></i></span></div>
+<div class="tabs" style="max-width:520px;margin-top:14px">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4"><button class="tab {{ t.cls }}" onClick="{{ t.pick }}">{{ t.name }}</button></sc-for>
+</div>
+<div style="font-family:var(--font-mono);font-size:13px;color:var(--mute);padding:16px 4px">Vista activa: <span class="mono-gold">{{ tab }}</span></div>
+<div class="sub">Cards</div>
+<div class="row rowstretch">
+<div class="card" style="width:300px"><div class="card-head"><div><div class="card-eye">Aurora Bank</div><div class="card-title">Portal de clientes</div></div><span class="badge b-success"><span class="dot"></span>Desplegado</span></div><div class="card-body">Última publicación hace 2 h · build #4821</div></div>
+<div class="card accent floating" style="width:280px"><div class="card-head"><div><div class="card-title">Alerta de latencia</div></div></div><div class="card-body">p95 subió a 340 ms en checkout.</div></div>
+</div>
+</section>
+
+<section class="sec">
+<div class="eyebrow">Componentes</div><div class="h2">Feedback</div>
+<div class="row rowtop">
+<div class="toast success"><div style="flex:1"><div class="tt">Despliegue completado</div><div class="tm">build #4821 en producción</div></div><i class="ph-bold ph-x" style="color:var(--mute)"></i></div>
+<div class="toast neutral"><div style="flex:1"><div class="tt">Entrega archivada</div><button class="undo">Deshacer</button></div><i class="ph-bold ph-x" style="color:var(--mute)"></i></div>
+<div class="toast danger"><div style="flex:1"><div class="tt">Fallo en el pipeline</div><div class="tm">tests e2e en checkout</div><button class="undo">Ver logs</button></div><i class="ph-bold ph-x" style="color:var(--mute)"></i></div>
+</div>
+<div class="sub">Dialog (interactivo)</div>
+<div class="row"><button class="btn primary" onClick="{{ openDlg }}">Abrir diálogo</button></div>
+</section>
+
+<section class="sec">
+<div class="eyebrow">Remediación · Auditoría heurística</div><div class="h2">Patrones de seguridad y eficiencia</div>
+<div style="font-family:var(--font-body);font-size:15px;color:var(--mute);max-width:60ch;line-height:1.6">Componentes añadidos tras la auditoría heurística. <b style="color:var(--bone-dim)">Severidad 3</b> (rev. 2): deshacer y confirmación (H3/H5), recuperación de errores (H9) y aceleradores para expertos (H7).</div>
+<div class="sub">Confirmación destructiva (H3/H5) · Paleta de comandos (H7)</div>
+<div class="row"><button class="btn danger" onClick="{{ openConfirm }}">Eliminar proyecto…</button><button class="btn secondary" onClick="{{ openPalette }}"><i class="ph-bold ph-terminal-window"></i>Paleta de comandos ⌘K</button></div>
+<div class="sub">Estado vacío · Estado de error con recuperación (H9)</div>
+<div class="row rowtop">
+<div class="estate empty"><div class="ei"><i class="ph-duotone ph-folder-open"></i></div><div class="et">Aún no hay proyectos</div><div class="em">Crea tu primer proyecto para empezar a desplegar.</div><button class="btn primary sm"><i class="ph-bold ph-plus"></i>Nuevo proyecto</button></div>
+<div class="estate error"><div class="ei"><i class="ph-fill ph-warning-octagon"></i></div><div class="et">No se pudo cargar el panel</div><div class="em">Sin conexión con el servicio de métricas.</div><code>ERR_UPSTREAM_504</code><div class="row" style="justify-content:center;margin:0"><button class="btn primary sm">Reintentar</button><button class="btn secondary sm">Ver logs</button></div></div>
+</div>
+</section>
+
+<section class="sec">
+<div class="eyebrow">Remediación · Severidad 2 y 1</div><div class="h2">Estado, navegación y accesibilidad</div>
+<div style="font-family:var(--font-body);font-size:15px;color:var(--mute);max-width:62ch;line-height:1.6">Cierre del resto de hallazgos. <b style="color:var(--bone-dim)">Sev. 2</b> (rev. 3) y <b style="color:var(--bone-dim)">sev. 1</b> (rev. 4): carga asíncrona visible, navegación de retorno, prevención en toggles críticos, densidad configurable, contraste WCAG AA y ayuda guiada.</div>
+<div class="rgrid" style="margin-top:22px">
+<div class="rbox"><div class="rt">ProgressBar<span class="rtag">H1 · sev.1</span></div><div class="rd">Progreso determinado para procesos medibles fuera del splash.</div>
+<div class="proglbl"><span>Desplegando build #4821</span><span class="pv">64%</span></div><div class="prog"><span style="width:64%"></span></div>
+<div class="proglbl" style="margin-top:16px"><span>Publicado</span><span class="pv">100%</span></div><div class="prog ok"><span style="width:100%"></span></div>
+<div class="proglbl" style="margin-top:16px"><span>Conectando…</span></div><div class="prog prog-ind"></div></div>
+<div class="rbox"><div class="rt">Skeleton<span class="rtag">H1 · sev.2</span></div><div class="rd">Placeholder que reserva el layout mientras llegan los datos.</div>
+<div style="display:flex;gap:12px;margin-bottom:14px"><div class="skel" style="width:44px;height:44px;border-radius:50%"></div><div style="flex:1;display:flex;flex-direction:column;gap:9px;justify-content:center"><div class="skel" style="height:11px;width:100%"></div><div class="skel" style="height:11px;width:62%"></div></div></div>
+<div class="skel" style="height:64px;border-radius:var(--r-sm)"></div></div>
+</div>
+<div class="rgrid" style="margin-top:16px">
+<div class="rbox"><div class="rt">Breadcrumbs<span class="rtag">H3 · sev.2</span></div><div class="rd">Ruta de retorno en jerarquías más profundas que las pestañas.</div>
+<div class="crumbs"><a href="#">Proyectos</a><span class="csep">/</span><a href="#">Aurora Bank</a><span class="csep">/</span><span class="cur">Despliegue #482</span></div></div>
+<div class="rbox"><div class="rt">IconButton · etiqueta visible<span class="rtag">H6 · sev.1</span></div><div class="rd">Nombre accesible en todos los estados, no solo en hover.</div>
+<div class="row"><button class="iconlabel"><i class="ph-bold ph-plus"></i>Nuevo proyecto</button><button class="iconlabel ghost"><i class="ph-bold ph-funnel"></i>Filtrar</button><button class="iconbtn ghost" aria-label="Más opciones"><i class="ph-bold ph-dots-three-vertical"></i></button></div></div>
+</div>
+<div class="rgrid" style="margin-top:16px">
+<div class="rbox"><div class="rt">Switch de alto impacto<span class="rtag">H5 · sev.2</span></div><div class="rd">Los toggles de consecuencia alta piden confirmación antes de aplicarse.</div>
+<div class="swconf"><span class="swtrack off"><span class="swknob"></span></span>Despliegue automático a producción<i class="ph-bold ph-shield-check" style="color:var(--mute)"></i></div></div>
+<div class="rbox"><div class="rt">Densidad configurable<span class="rtag">H7 · sev.2</span></div><div class="rd">Mismo componente, dos densidades vía scope <code style="font-family:var(--font-mono);font-size:12px;color:var(--gold)">.arena-compact</code>.</div>
+<div class="row rowstretch" style="gap:12px"><div class="densebox" style="flex:1"><div class="denserow">build #4821</div><div class="denserow">build #4820</div></div><div class="densebox arena-compact" style="flex:1"><div class="denserow">build #4821</div><div class="denserow">build #4820</div><div class="denserow">build #4819</div></div></div></div>
+</div>
+<div class="sub">Acciones masivas (H7) · Onboarding guiado (H10) · Contraste WCAG AA (H8)</div>
+<div style="font-family:var(--font-body);font-size:14px;color:var(--mute);max-width:62ch;line-height:1.6">Se suman <b style="color:var(--bone-dim)">BulkActionBar</b> para operar sobre selecciones, <b style="color:var(--bone-dim)">Onboarding</b> por pasos como ayuda en producto, y el recalibrado de <code style="font-family:var(--font-mono);font-size:12px;color:var(--gold)">--mute-2</code> a ~4,8:1 sobre el fondo para cumplir AA en texto pequeño.</div>
+</section>
+
+<section class="sec">
+<div class="eyebrow">Componentes · v1.0</div><div class="h2">Primitivas añadidas para publicación</div>
+<div style="font-family:var(--font-body);font-size:15px;color:var(--mute);max-width:64ch;line-height:1.6">Cierran la cobertura base del lenguaje antes de la v1.0: selección única, texto largo, menús de acción, datos tabulares, identidad, paginación y avisos persistentes.</div>
+<div class="sub">Radio · Textarea</div>
+<div class="grp">
+<div style="width:300px;display:flex;flex-direction:column;align-items:flex-start"><sc-for list="{{ radios }}" as="r" hint-placeholder-count="3"><label class="radio" onClick="{{ r.pick }}"><span class="rdot {{ r.cls }}"></span><span><span class="rlbl">{{ r.label }}</span><span class="rhint">{{ r.hint }}</span></span></label></sc-for></div>
+<div style="width:340px"><div class="label" style="margin-bottom:6px">Notas del despliegue</div><textarea class="ta" rows="5">Migración de esquema aplicada. Revisar índices de la tabla de sesiones tras el corte.</textarea><div class="tacount">78/280</div></div>
+</div>
+<div class="sub">Menu (desplegable de acciones)</div>
+<div class="menu"><div class="mhead">Despliegue</div><button class="mitem"><i class="ph-bold ph-scroll"></i><span>Ver logs</span></button><button class="mitem"><i class="ph-bold ph-copy"></i><span>Duplicar</span><span class="msc">⌘D</span></button><div class="mdiv"></div><button class="mitem danger"><i class="ph-bold ph-trash"></i><span>Eliminar</span></button></div>
+<div class="sub">Table (respeta tokens de densidad)</div>
+<table class="tbl"><thead><tr><th>Build</th><th>Proyecto</th><th>Estado</th><th class="r">p95</th></tr></thead><tbody><tr><td class="mono">#4821</td><td>Portal de clientes</td><td><span class="badge b-success"><span class="dot"></span>Desplegado</span></td><td class="mono r">128 ms</td></tr><tr><td class="mono">#4820</td><td>Pasarela de pagos</td><td><span class="badge b-danger"><span class="dot"></span>Caído</span></td><td class="mono r">340 ms</td></tr><tr><td class="mono">#4819</td><td>Panel interno</td><td><span class="badge b-success"><span class="dot"></span>Desplegado</span></td><td class="mono r">96 ms</td></tr></tbody></table>
+<div class="grp" style="margin-top:26px;gap:56px;align-items:flex-start">
+<div><div class="sub">Avatar</div><div class="row" style="align-items:center;margin:0"><span class="av">LF<span class="avdot" style="background:var(--success)"></span></span><span class="av lg">MR<span class="avdot" style="background:var(--danger)"></span></span><span class="av rounded">AB</span></div></div>
+<div><div class="sub">Pagination</div><div class="pg"><button class="pgbtn nav" onClick="{{ prevPage }}"><i class="ph-bold ph-caret-left"></i></button><sc-for list="{{ pages }}" as="pg" hint-placeholder-count="7"><button class="pgbtn {{ pg.cls }}" onClick="{{ pg.go }}">{{ pg.label }}</button></sc-for><button class="pgbtn nav" onClick="{{ nextPage }}"><i class="ph-bold ph-caret-right"></i></button></div></div>
+</div>
+<div class="sub">Alert (mensaje persistente inline — no confundir con Toast, que es efímero)</div>
+<div style="display:flex;flex-direction:column;gap:12px;max-width:560px"><div class="alert a-info"><i class="ph-fill ph-info"></i><div><div class="at">Nueva versión disponible</div><div class="am">Arena 1.0 incluye Radio, Textarea, Menu, Table, Avatar, Pagination y Alert.</div></div></div><div class="alert a-warning"><i class="ph-fill ph-warning"></i><div><div class="at">Entorno de staging</div><div class="am">Los cambios aquí no afectan a usuarios reales.</div></div></div><div class="alert a-danger"><i class="ph-fill ph-warning-octagon"></i><div style="flex:1"><div class="at">Certificado caducado</div><div class="am">Renueva el TLS antes de 48 h para evitar cortes.</div></div><i class="ph-bold ph-x axc"></i></div></div>
+</section>
+
+<section class="sec">
+<div class="eyebrow">UI Kit</div><div class="h2">Consola de Entrega</div>
+<div class="console">
+<div class="side">
+<div class="lg"><img src="assets/rotor-crimson.svg" width="26" height="26" alt=""><b>Dravensoft</b></div>
+<div class="navitem on"><i class="ph-fill ph-squares-four"></i>Proyectos</div>
+<div class="navitem"><i class="ph-bold ph-rocket-launch"></i>Despliegues</div>
+<div class="navitem"><i class="ph-bold ph-pulse"></i>Actividad</div>
+<div class="navitem"><i class="ph-bold ph-gear-six"></i>Ajustes</div>
+</div>
+<div class="main">
+<div class="topbar"><div class="t">Proyectos</div><button class="btn primary sm"><i class="ph-bold ph-plus"></i>Nuevo proyecto</button></div>
+<div class="content">
+<div class="metrics"><div class="metric"><div class="k">Proyectos activos</div><div class="v">12</div></div><div class="metric"><div class="k">Despliegues (7d)</div><div class="v">48</div></div><div class="metric"><div class="k">Uptime medio</div><div class="v" style="color:var(--success)">99.98%</div></div><div class="metric"><div class="k">Incidencias</div><div class="v" style="color:var(--crimson)">2</div></div></div>
+<div class="pgrid">
+<div class="card pcard"><div class="card-head"><div><div class="card-eye">Aurora Bank</div><div class="card-title">Portal de clientes</div></div><span class="badge b-success"><span class="dot"></span>Desplegado</span></div><div class="card-body" style="padding-bottom:14px"><div class="row" style="gap:8px"><span class="tag">React</span><span class="tag">Node</span><span class="tag">AWS</span></div><div class="foot"><span class="mono-gold">build #4821</span><span style="color:var(--mute)">hace 2 h</span></div></div></div>
+<div class="card pcard accent"><div class="card-head"><div><div class="card-eye">Aurora Bank</div><div class="card-title">Pasarela de pagos</div></div><span class="badge b-danger"><span class="dot"></span>Caído</span></div><div class="card-body" style="padding-bottom:14px"><div class="row" style="gap:8px"><span class="tag">Rust</span><span class="tag">Kafka</span></div><div class="foot"><span class="mono-gold">build #0918</span><span style="color:var(--mute)">hace 8 min</span></div></div></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<sc-if value="{{ dlg }}" hint-placeholder-val="{{ false }}">
+<div class="overlay" onClick="{{ closeDlg }}"><div class="dialog"><div class="dh"><div class="card-eye">Confirmar</div><div style="font-family:var(--font-display);font-weight:800;font-size:22px;color:var(--bone);letter-spacing:-.01em">Desplegar a producción</div></div><div class="db">Publicarás el build <span class="mono-gold">#4822</span> del Portal de clientes para todos los usuarios de Aurora Bank. Puedes revertir en cualquier momento.</div><div class="df"><button class="btn ghost" onClick="{{ closeDlg }}">Cancelar</button><button class="btn primary" onClick="{{ closeDlg }}">Desplegar #4822</button></div></div></div>
+</sc-if>
+<sc-if value="{{ confirm }}" hint-placeholder-val="{{ false }}">
+<div class="overlay"><div class="dialog"><div class="dh"><div class="card-eye" style="color:var(--danger)">Confirmar</div><div style="font-family:var(--font-display);font-weight:800;font-size:22px;color:var(--bone);letter-spacing:-.01em">Eliminar proyecto</div></div><div class="db">Esta acción no se puede deshacer. Se borrarán 4 despliegues y su historial.<div class="reqfield"><div class="rl">Escribe «ELIMINAR» para confirmar</div><input value="{{ confirmText }}" onInput="{{ onConfirmText }}" placeholder="ELIMINAR"></div></div><div class="df"><button class="btn ghost" onClick="{{ closeConfirm }}">Cancelar</button><button class="btn dlgbtn-danger" disabled="{{ confirmLocked }}" onClick="{{ closeConfirm }}">Eliminar definitivamente</button></div></div></div>
+</sc-if>
+<sc-if value="{{ palette }}" hint-placeholder-val="{{ false }}">
+<div class="palette" onClick="{{ closePalette }}"><div class="palbox" onClick="{{ stop }}"><div class="palhead"><i class="ph-bold ph-magnifying-glass" style="color:var(--mute);font-size:18px"></i><input value="{{ paletteQuery }}" onInput="{{ onPaletteQuery }}" placeholder="Buscar acción o proyecto…"><span class="palkey">ESC</span></div><div class="pallist"><sc-for list="{{ paletteResults }}" as="c" hint-placeholder-count="4"><button class="palitem" onClick="{{ closePalette }}"><i class="{{ c.icon }}"></i><span style="flex:1">{{ c.label }}</span><span class="sc">{{ c.shortcut }}</span></button></sc-for></div></div></div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { tab: 'Despliegues', dlg: false, confirm: false, confirmText: '', palette: false, paletteQuery: '', theme: 'dark', radio: 'staging', page: 3 };
+  componentDidMount() {
+    this._key = (e) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); this.setState({ palette: true, paletteQuery: '' }); }
+      else if (e.key === 'Escape') this.setState({ palette: false, confirm: false, dlg: false });
+    };
+    window.addEventListener('keydown', this._key);
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this._key); }
+  renderVals() {
+    const names = ['Resumen', 'Despliegues', 'Actividad', 'Ajustes'];
+    const commands = [
+      { label: 'Desplegar a producción', icon: 'ph-bold ph-rocket-launch', shortcut: 'D' },
+      { label: 'Revertir último despliegue', icon: 'ph-bold ph-arrow-counter-clockwise', shortcut: '' },
+      { label: 'Abrir Proyectos', icon: 'ph-bold ph-squares-four', shortcut: 'G P' },
+      { label: 'Ir a Ajustes', icon: 'ph-bold ph-gear-six', shortcut: 'G S' },
+      { label: 'Buscar en actividad', icon: 'ph-bold ph-pulse', shortcut: '' },
+    ];
+    const q = this.state.paletteQuery.toLowerCase();
+    const dark = this.state.theme === 'dark';
+    const radioDefs = [
+      { v: 'prod', label: 'Producción', hint: 'Usuarios reales — requiere aprobación' },
+      { v: 'staging', label: 'Staging', hint: '' },
+      { v: 'qa', label: 'QA', hint: '' },
+    ];
+    const total = 12, cur = this.state.page;
+    let seq;
+    if (total <= 7) seq = Array.from({ length: total }, (_, i) => i + 1);
+    else {
+      seq = [1];
+      const from = Math.max(2, cur - 1), to = Math.min(total - 1, cur + 1);
+      if (from > 2) seq.push('…');
+      for (let p = from; p <= to; p++) seq.push(p);
+      if (to < total - 1) seq.push('…');
+      seq.push(total);
+    }
+    return {
+      radios: radioDefs.map((r) => ({ label: r.label, hint: r.hint, cls: r.v === this.state.radio ? 'on' : '', pick: () => this.setState({ radio: r.v }) })),
+      pages: seq.map((p) => p === '…'
+        ? { label: '…', cls: 'ell', go: () => {} }
+        : { label: String(p), cls: p === cur ? 'on' : '', go: () => this.setState({ page: p }) }),
+      prevPage: () => this.setState((s) => ({ page: Math.max(1, s.page - 1) })),
+      nextPage: () => this.setState((s) => ({ page: Math.min(total, s.page + 1) })),
+      themeCls: dark ? '' : 'arena-light',
+      themeLabel: dark ? 'Oscuro' : 'Claro',
+      themeIcon: dark ? 'ph-fill ph-moon' : 'ph-fill ph-sun',
+      toggleTheme: () => this.setState((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
+      tab: this.state.tab,
+      dlg: this.state.dlg,
+      confirm: this.state.confirm,
+      confirmText: this.state.confirmText,
+      confirmLocked: this.state.confirmText.trim() !== 'ELIMINAR',
+      palette: this.state.palette,
+      paletteQuery: this.state.paletteQuery,
+      paletteResults: commands.filter((c) => c.label.toLowerCase().includes(q)),
+      tabs: names.map((name) => ({
+        name,
+        cls: name === this.state.tab ? 'on' : '',
+        pick: () => this.setState({ tab: name }),
+      })),
+      openDlg: () => this.setState({ dlg: true }),
+      closeDlg: () => this.setState({ dlg: false }),
+      openConfirm: () => this.setState({ confirm: true, confirmText: '' }),
+      closeConfirm: () => this.setState({ confirm: false }),
+      onConfirmText: (e) => this.setState({ confirmText: e.target.value }),
+      openPalette: () => this.setState({ palette: true, paletteQuery: '' }),
+      closePalette: () => this.setState({ palette: false }),
+      onPaletteQuery: (e) => this.setState({ paletteQuery: e.target.value }),
+      stop: (e) => e.stopPropagation(),
+    };
+  }
+}
+</script>
+</body>
+</html>

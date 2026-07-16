@@ -1,0 +1,36 @@
+:root{
+  /* Families */
+  --font-display:'Archivo',system-ui,sans-serif;   /* impact — titulares, wordmark */
+  --font-body:'Familjen Grotesk',system-ui,sans-serif; /* cuerpo legible */
+  --font-mono:'Spline Sans Mono',ui-monospace,monospace;  /* datos, etiquetas técnicas */
+
+  /* Weights */
+  --fw-regular:400;
+  --fw-medium:500;
+  --fw-semibold:600;
+  --fw-bold:700;
+  --fw-extrabold:800;
+  --fw-black:900;
+
+  /* Type scale (px) */
+  --fs-display:64px;   /* hero */
+  --fs-h1:44px;
+  --fs-h2:32px;
+  --fs-h3:24px;
+  --fs-h4:19px;
+  --fs-lg:17px;
+  --fs-md:15px;        /* base body */
+  --fs-sm:13px;
+  --fs-xs:11px;        /* mono labels / captions */
+
+  /* Line heights */
+  --lh-tight:0.98;
+  --lh-snug:1.15;
+  --lh-body:1.6;
+
+  /* Tracking */
+  --ls-tight:-0.02em;   /* display */
+  --ls-normal:0;
+  --ls-label:0.22em;    /* mono uppercase labels */
+  --ls-wide:0.34em;     /* eyebrows */
+}
