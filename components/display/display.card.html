@@ -13,25 +13,25 @@ const { Card } = await arenaImport('../../components/display/Card.jsx');
 const { Badge } = await arenaImport('../../components/display/Badge.jsx');
 const { Tag } = await arenaImport('../../components/display/Tag.jsx');
 function Demo(){return (<div>
-  <div className="sub">Badge — tonos</div>
+  <div className="sub">Badge — tones</div>
   <div className="row">
-    <Badge tone="success" dot>Desplegado</Badge>
-    <Badge tone="warning">En revisión</Badge>
-    <Badge tone="danger" dot>Caído</Badge>
-    <Badge tone="accent">Nuevo</Badge>
-    <Badge tone="gold">Prioridad</Badge>
+    <Badge tone="success" dot>Deployed</Badge>
+    <Badge tone="warning">In review</Badge>
+    <Badge tone="danger" dot>Down</Badge>
+    <Badge tone="accent">New</Badge>
+    <Badge tone="gold">Priority</Badge>
     <Badge tone="info">v2.4</Badge>
-    <Badge>Borrador</Badge>
+    <Badge>Draft</Badge>
   </div>
   <div className="sub">Tag</div>
   <div className="row"><Tag>TypeScript</Tag><Tag>PostgreSQL</Tag><Tag onRemove={()=>{}}>React</Tag></div>
   <div className="sub">Card</div>
   <div className="row" style={{alignItems:'stretch'}}>
-    <Card eyebrow="Entrega" title="Portal de clientes" action={<Badge tone="success" dot>Desplegado</Badge>} style={{width:300}}>
-      <div style={{color:'var(--mute)',fontSize:14,lineHeight:1.6}}>Última publicación hace 2 h · build #4821</div>
+    <Card eyebrow="Delivery" title="Client Portal" action={<Badge tone="success" dot>Deployed</Badge>} style={{width:300}}>
+      <div style={{color:'var(--mute)',fontSize:14,lineHeight:1.6}}>Last published 2 h ago · build #4821</div>
     </Card>
-    <Card accent floating title="Alerta de latencia" style={{width:280}}>
-      <div style={{color:'var(--mute)',fontSize:14,lineHeight:1.6}}>p95 subió a 340 ms en checkout.</div>
+    <Card accent floating title="Latency alert" style={{width:280}}>
+      <div style={{color:'var(--mute)',fontSize:14,lineHeight:1.6}}>p95 rose to 340 ms on checkout.</div>
     </Card>
   </div>
 </div>);}

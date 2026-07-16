@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 
-/** Placeholder de carga para datos asíncronos (H1). Reserva el espacio del contenido
- * real —tablas, dashboards, cards— con un barrido cálido en lugar de un salto en blanco.
- * variant: 'text' | 'line' | 'block' | 'circle'. `lines` repite una pila de líneas de texto. */
+/** Loading placeholder for asynchronous data (H1). Reserves the space for the real
+ * content —tables, dashboards, cards— with a warm sweep instead of a blank jump.
+ * variant: 'text' | 'line' | 'block' | 'circle'. `lines` repeats a stack of text lines. */
 let injected = false;
 function useShimmer() {
   useEffect(() => {
@@ -29,14 +29,14 @@ export function Skeleton({ variant = 'block', width, height, lines = 3, radius, 
   if (variant === 'text' || variant === 'line') {
     if (variant === 'text' && lines > 1) {
       return (
-        <div role="status" aria-label="Cargando" style={{ display: 'flex', flexDirection: 'column', gap: 10, width: width || '100%', ...style }}>
+        <div role="status" aria-label="Loading" style={{ display: 'flex', flexDirection: 'column', gap: 10, width: width || '100%', ...style }}>
           {Array.from({ length: lines }).map((_, i) => (
             <div key={i} className="arena-skeleton" style={{ height: 12, borderRadius: 'var(--r-xs)', width: i === lines - 1 ? '62%' : '100%' }} />
           ))}
         </div>
       );
     }
-    return <div className="arena-skeleton" role="status" aria-label="Cargando" style={{ height: height || 12, width: width || '100%', borderRadius: 'var(--r-xs)', ...style }} />;
+    return <div className="arena-skeleton" role="status" aria-label="Loading" style={{ height: height || 12, width: width || '100%', borderRadius: 'var(--r-xs)', ...style }} />;
   }
-  return <div className="arena-skeleton" role="status" aria-label="Cargando" style={{ width: width || '100%', height: height || 96, ...base, ...style }} />;
+  return <div className="arena-skeleton" role="status" aria-label="Loading" style={{ width: width || '100%', height: height || 96, ...base, ...style }} />;
 }

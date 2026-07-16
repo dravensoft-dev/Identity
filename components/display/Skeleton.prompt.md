@@ -1,4 +1,4 @@
-Placeholder de carga para datos asíncronos (H1). Úsalo en tablas y dashboards mientras llega la respuesta; respeta `prefers-reduced-motion`.
+Loading placeholder for asynchronous data (H1). Use it in tables and dashboards while the response arrives; respect `prefers-reduced-motion`.
 
 ```jsx
 {loading
@@ -11,6 +11,6 @@ Placeholder de carga para datos asíncronos (H1). Úsalo en tablas y dashboards 
 </div>
 ```
 
-**Hacer / No hacer**
-- Reproduce la forma del contenido real (mismo alto/ancho aproximado) para evitar el salto de layout al cargar.
-- No lo dejes indefinidamente: si la carga falla, sustitúyelo por `ErrorState`, no por un skeleton eterno.
+**Do / Don't**
+- Reproduce the shape of the real content (same approximate height/width) to avoid layout shift on load.
+- Don't leave it up indefinitely: if the load fails, replace it with `ErrorState`, not an eternal skeleton.

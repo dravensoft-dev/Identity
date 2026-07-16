@@ -1,5 +1,5 @@
 import * as React from 'react';
-/** Selector desplegable nativo estilizado. options: string[] o {value,label}[]. */
+/** Styled native dropdown selector. options: string[] or {value,label}[]. */
 export interface SelectOption { value: string; label: string; }
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;

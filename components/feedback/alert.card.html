@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="640x360" name="Alert" subtitle="Mensaje persistente inline" -->
+<!-- @dsCard group="Components" viewport="640x360" name="Alert" subtitle="Persistent inline message" -->
 <!doctype html>
 <html>
 <head>
@@ -26,10 +26,10 @@ const { Alert } = await arenaImport('../../components/feedback/Alert.jsx');
 function Demo(){
   return (
     <div style={{display:'flex',flexDirection:'column',gap:14,maxWidth:520}}>
-      <Alert tone="info" title="Nueva versión disponible">Arena 1.0 incluye Radio, Table, Menu y Alert.</Alert>
-      <Alert tone="success" title="Despliegue completado">build #4821 en producción.</Alert>
-      <Alert tone="warning" title="Entorno de staging" action={{label:'Ir a producción',onClick:()=>{}}}>Los cambios aquí no afectan a usuarios reales.</Alert>
-      <Alert tone="danger" title="Certificado caducado" onClose={()=>{}}>Renueva el TLS antes de 48 h para evitar cortes.</Alert>
+      <Alert tone="info" title="New version available">Arena 1.0 includes Radio, Table, Menu, and Alert.</Alert>
+      <Alert tone="success" title="Deployment completed">build #4821 in production.</Alert>
+      <Alert tone="warning" title="Staging environment" action={{label:'Go to production',onClick:()=>{}}}>Changes here don't affect real users.</Alert>
+      <Alert tone="danger" title="Certificate expired" onClose={()=>{}}>Renew the TLS within 48 h to avoid outages.</Alert>
     </div>
   );
 }

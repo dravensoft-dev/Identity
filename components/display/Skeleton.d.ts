@@ -1,10 +1,10 @@
 import * as React from 'react';
-/** Placeholder de carga para datos asíncronos (H1). Reserva el layout del contenido real. */
+/** Loading placeholder for asynchronous data (H1). Reserves the layout for the real content. */
 export interface SkeletonProps {
   variant?: 'text' | 'line' | 'block' | 'circle';
   width?: number | string;
   height?: number | string;
-  /** Nº de líneas cuando variant='text'. La última sale más corta. */
+  /** Number of lines when variant='text'. The last one is shorter. */
   lines?: number;
   radius?: string;
   style?: React.CSSProperties;

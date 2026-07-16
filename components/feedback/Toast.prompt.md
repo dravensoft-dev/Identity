@@ -1,12 +1,12 @@
-Notificación efímera. Usa `action` para dar salida al usuario: **Deshacer** tras una acción (H3) o **Reintentar / Ver logs** tras un error (H9). Los toasts de error/crítico llevan **`persist`** para que el host NO los autodescarte (H1); solo se cierran con la × o una acción.
+Ephemeral notification. Use `action` to give the user an out: **Undo** after an action (H3) or **Retry / View logs** after an error (H9). Error/critical toasts carry **`persist`** so the host does NOT auto-dismiss them (H1); they only close via the × or an action.
 
 ```jsx
-<Toast tone="neutral" title="Entrega archivada" action={{ label: 'Deshacer', onClick: undo }} onClose={dismiss} />
-<Toast tone="danger" persist title="Fallo en el pipeline" message="tests e2e en checkout" action={{ label: 'Ver logs', onClick: openLogs }} onClose={dismiss} />
+<Toast tone="neutral" title="Deployment archived" action={{ label: 'Undo', onClick: undo }} onClose={dismiss} />
+<Toast tone="danger" persist title="Pipeline failed" message="e2e tests in checkout" action={{ label: 'View logs', onClick: openLogs }} onClose={dismiss} />
 ```
 
-En el host, respeta `persist`: `if (!toast.persist) setTimeout(dismiss, 4200);`
+On the host, respect `persist`: `if (!toast.persist) setTimeout(dismiss, 4200);`
 
-**Hacer / No hacer**
-- `persist` en todo error/crítico; el cierre usa el icono estándar `ph-x` (H4).
-- No metas mensajes largos en caja alta ni uses el Toast para confirmaciones destructivas (eso es `ConfirmDialog`).
+**Do / Don't**
+- `persist` on every error/critical toast; the close uses the standard `ph-x` icon (H4).
+- Don't cram long messages into all caps, and don't use the Toast for destructive confirmations (that's `ConfirmDialog`).

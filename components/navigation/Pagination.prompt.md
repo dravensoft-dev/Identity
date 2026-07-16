@@ -1,9 +1,9 @@
-Salto entre páginas de un conjunto grande (acompaña a `Table` o listas largas). Colapsa con «…» cuando hay muchas páginas.
+Jumps between pages of a large set (accompanies `Table` or long lists). Collapses with "…" when there are many pages.
 
 ```jsx
 <Pagination page={p} pageCount={12} onChange={setP} />
 ```
 
-**Hacer / No hacer**
-- Colócala bajo la tabla/lista, alineada a la derecha o centrada.
-- Para feeds continuos usa «cargar más» o scroll infinito, no Pagination.
+**Do / Don't**
+- Place it under the table/list, aligned to the right or centered.
+- For continuous feeds use "load more" or infinite scroll, not Pagination.

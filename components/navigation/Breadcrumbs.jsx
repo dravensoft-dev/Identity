@@ -1,10 +1,10 @@
 import React from 'react';
 
-/** Migas de navegación (H3). Ruta de retorno explícita en jerarquías profundas, más allá de las pestañas.
- * `items`: [{ label, href?, onClick? }]. El último es la ubicación actual (no navegable). */
+/** Breadcrumb navigation (H3). Explicit return path in hierarchies deeper than tabs.
+ * `items`: [{ label, href?, onClick? }]. The last one is the current location (not navigable). */
 export function Breadcrumbs({ items = [], separator = '/', style }) {
   return (
-    <nav aria-label="Ruta" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, ...style }}>
+    <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, ...style }}>
       {items.map((it, i) => {
         const last = i === items.length - 1;
         const common = { fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '.04em' };

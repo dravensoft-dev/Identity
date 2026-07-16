@@ -13,14 +13,14 @@ export function LoginScreen({ onLogin }) {
           <Rotor size={40} />
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 22, letterSpacing: '-.02em', textTransform: 'uppercase', color: 'var(--bone)' }}>Draven<span style={{ color: 'var(--mute)' }}>soft</span></div>
         </div>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 6 }}>Consola de entrega</div>
-        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 26, color: 'var(--bone)', marginBottom: 24 }}>Bienvenida de nuevo</div>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 6 }}>Delivery console</div>
+        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 26, color: 'var(--bone)', marginBottom: 24 }}>Welcome back</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <Input label="Correo" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <Input label="Contraseña" type="password" defaultValue="dravensoft" />
-          <Button variant="primary" full onClick={onLogin}>Entrar</Button>
+          <Input label="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input label="Password" type="password" defaultValue="dravensoft" />
+          <Button variant="primary" full onClick={onLogin}>Sign in</Button>
         </div>
-        <div style={{ marginTop: 20, textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--mute)' }}>¿Olvidaste tu contraseña?</div>
+        <div style={{ marginTop: 20, textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--mute)' }}>Forgot your password?</div>
       </div>
     </div>
   );

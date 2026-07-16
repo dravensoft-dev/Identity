@@ -1,5 +1,5 @@
 import React from 'react';
-/** Símbolo de marca. spin=true gira en bucle (usar solo en carga/splash). */
+/** Brand symbol. spin=true loops rotation (use only in loading/splash). */
 export function Rotor({ size = 48, color = 'var(--crimson)', spin = false, style, ...rest }) {
   const blade = 'M50 50 L92 64.3 L75.2 75.2 L64.3 92 Z';
   return (

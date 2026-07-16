@@ -1,9 +1,9 @@
 /*
- * Carga módulos .jsx en el navegador sin paso de build: transforma cada
- * archivo con Babel standalone (JSX -> JS) y reescribe sus imports
- * relativos a blob URLs ya transformadas, de forma recursiva. Los
- * specifiers "bare" (p. ej. 'react') se dejan intactos para que los
- * resuelva el <script type="importmap"> de la página.
+ * Loads .jsx modules in the browser with no build step: transforms each
+ * file with Babel standalone (JSX -> JS) and rewrites its relative
+ * imports to already-transformed blob URLs, recursively. Bare
+ * specifiers (e.g. 'react') are left untouched so the page's
+ * <script type="importmap"> can resolve them.
  */
 (function () {
   const blobUrlCache = new Map();
@@ -14,7 +14,7 @@
 
     const promise = (async () => {
       const res = await fetch(absoluteUrl);
-      if (!res.ok) throw new Error(`jsx-loader: no se pudo cargar ${absoluteUrl} (${res.status})`);
+      if (!res.ok) throw new Error(`jsx-loader: failed to load ${absoluteUrl} (${res.status})`);
       const source = await res.text();
       const { code } = Babel.transform(source, {
         presets: ['react'],

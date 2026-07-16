@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="700x300" name="Formularios" subtitle="Button · IconButton · Input · Select · Checkbox · Switch" -->
+<!-- @dsCard group="Components" viewport="700x300" name="Forms" subtitle="Button · IconButton · Input · Select · Checkbox · Switch" -->
 <!doctype html>
 <html>
 <head>
@@ -34,33 +34,33 @@ function Demo(){
   const [sw,setSw]=React.useState(true);
   return (
     <div>
-      <div className="sub">Button — variantes</div>
+      <div className="sub">Button — variants</div>
       <div className="row">
-        <Button variant="primary" icon={plus}>Desplegar</Button>
-        <Button variant="secondary">Revertir</Button>
-        <Button variant="ghost">Cancelar</Button>
-        <Button variant="danger">Eliminar</Button>
-        <Button variant="primary" loading>Desplegando</Button>
-        <Button variant="primary" disabled>Bloqueado</Button>
+        <Button variant="primary" icon={plus}>Deploy</Button>
+        <Button variant="secondary">Roll back</Button>
+        <Button variant="ghost">Cancel</Button>
+        <Button variant="danger">Delete</Button>
+        <Button variant="primary" loading>Deploying</Button>
+        <Button variant="primary" disabled>Locked</Button>
       </div>
-      <div className="sub">Tamaños · IconButton</div>
+      <div className="sub">Sizes · IconButton</div>
       <div className="row">
         <Button size="sm" variant="secondary">sm</Button>
         <Button size="md" variant="secondary">md</Button>
         <Button size="lg" variant="secondary">lg</Button>
-        <IconButton label="Nuevo" variant="solid">{plus}</IconButton>
-        <IconButton label="Nuevo">{plus}</IconButton>
+        <IconButton label="New" variant="solid">{plus}</IconButton>
+        <IconButton label="New">{plus}</IconButton>
       </div>
       <div className="sub">Input · Select</div>
       <div className="row" style={{alignItems:'flex-start'}}>
-        <Input label="Repositorio" prefix="git@" placeholder="org/proyecto" style={{width:220}} />
-        <Input label="Correo" error="Formato no válido" defaultValue="hola@" style={{width:200}} />
-        <Select label="Entorno" options={['Producción','Staging','QA']} style={{width:180}} />
+        <Input label="Repository" prefix="git@" placeholder="org/project" style={{width:220}} />
+        <Input label="Email" error="Invalid format" defaultValue="hello@" style={{width:200}} />
+        <Select label="Environment" options={['Production','Staging','QA']} style={{width:180}} />
       </div>
       <div className="sub">Checkbox · Switch</div>
       <div className="row">
-        <Checkbox checked={chk} onChange={e=>setChk(e.target.checked)} label="Notificar al aprobar" />
-        <Switch checked={sw} onChange={e=>setSw(e.target.checked)} label="Despliegue automático" />
+        <Checkbox checked={chk} onChange={e=>setChk(e.target.checked)} label="Notify on approval" />
+        <Switch checked={sw} onChange={e=>setSw(e.target.checked)} label="Automatic deployment" />
       </div>
     </div>
   );

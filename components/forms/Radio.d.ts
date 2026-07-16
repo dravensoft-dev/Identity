@@ -1,5 +1,5 @@
 import * as React from 'react';
-/** Grupo de selección única. Controla el valor y reparte estado a los Radio hijos. */
+/** Single-selection group. Controls the value and distributes state to the child Radios. */
 export interface RadioGroupProps {
   value?: string; onChange?: (value: string) => void; name?: string;
   children?: React.ReactNode; style?: React.CSSProperties;

@@ -1,5 +1,5 @@
 import * as React from 'react';
-/** Migas de navegación (H3). Ruta de retorno en jerarquías profundas; el último ítem es la ubicación actual. */
+/** Breadcrumb navigation (H3). Return path in deep hierarchies; the last item is the current location. */
 export interface Crumb { label: string; href?: string; onClick?: (e: React.MouseEvent) => void; }
 export interface BreadcrumbsProps {
   items: Crumb[];

@@ -1,6 +1,6 @@
 import React from 'react';
-/** Estado de error a nivel de sección/pantalla, con recuperación (Reintentar) y detalle opcional. */
-export function ErrorState({ icon, title = 'Algo salió mal', message, code, onRetry, retryLabel = 'Reintentar', secondaryAction, style }) {
+/** Section/screen-level error state, with recovery (Retry) and optional detail. */
+export function ErrorState({ icon, title = 'Something went wrong', message, code, onRetry, retryLabel = 'Retry', secondaryAction, style }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 12,
       padding: '56px 32px', border: '1px solid var(--danger)', borderRadius: 'var(--r-lg)', background: 'var(--danger-soft)', ...style }}>

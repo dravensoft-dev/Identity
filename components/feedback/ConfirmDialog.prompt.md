@@ -1,9 +1,9 @@
-Protege acciones irreversibles (H3, H5). No se cierra al hacer clic fuera. Para lo más destructivo, exige teclear una palabra con `requireText`.
+Protects irreversible actions (H3, H5). Does not close on click-outside. For the most destructive actions, require typing a word with `requireText`.
 
 ```jsx
-<ConfirmDialog open={o} destructive requireText="ELIMINAR"
-  title="Eliminar proyecto" confirmLabel="Eliminar definitivamente"
+<ConfirmDialog open={o} destructive requireText="DELETE"
+  title="Delete project" confirmLabel="Delete permanently"
   onCancel={close} onConfirm={remove}>
-  Esta acción no se puede deshacer. Se borrarán 4 despliegues y su historial.
+  This action cannot be undone. 4 deployments and their history will be deleted.
 </ConfirmDialog>
 ```

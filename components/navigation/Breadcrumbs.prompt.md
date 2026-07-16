@@ -1,13 +1,13 @@
-Migas de navegación (H3). Da una vía de retorno explícita cuando la jerarquía es más profunda que las pestañas. El último ítem es la página actual (no enlazado).
+Breadcrumb navigation (H3). Gives an explicit return path when the hierarchy is deeper than the tabs. The last item is the current page (not linked).
 
 ```jsx
 <Breadcrumbs items={[
-  { label: 'Proyectos', onClick: goProjects },
+  { label: 'Projects', onClick: goProjects },
   { label: 'Checkout', onClick: goProject },
-  { label: 'Despliegue #482' },
+  { label: 'Deployment #482' },
 ]} />
 ```
 
-**Hacer / No hacer**
-- El último ítem es la ubicación actual: sin enlace y en `--bone`.
-- No sustituyas las pestañas por migas ni al revés; conviven (pestañas = secciones hermanas, migas = profundidad).
+**Do / Don't**
+- The last item is the current location: no link, styled in `--bone`.
+- Don't replace tabs with breadcrumbs or vice versa; they coexist (tabs = sibling sections, breadcrumbs = depth).

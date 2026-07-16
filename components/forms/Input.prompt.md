@@ -1,10 +1,10 @@
-Campo de texto con validación (H5). Foco = anillo oro, error = carmesí con icono, válido = verde con check. Requiere las hojas Phosphor cargadas para los iconos de estado.
+Text field with validation (H5). Focus = gold ring, error = crimson with icon, valid = green with check. Requires the Phosphor sheets loaded for the state icons.
 
 ```jsx
-<Input label="Repositorio" required prefix="git@" placeholder="org/proyecto" />
-<Input label="Correo" validateOn="change"
-  validate={(v) => /.+@.+\..+/.test(v) ? null : 'Formato de correo no válido'} />
-<Input label="Slug" valid defaultValue="portal-clientes" hint="Disponible" />
+<Input label="Repository" required prefix="git@" placeholder="org/project" />
+<Input label="Email" validateOn="change"
+  validate={(v) => /.+@.+\..+/.test(v) ? null : 'Invalid email format'} />
+<Input label="Slug" valid defaultValue="customer-portal" hint="Available" />
 ```
 
-Reglas: valida en `blur` por defecto; usa `validateOn="change"` solo para feedback en vivo (contraseñas, disponibilidad). Marca los obligatorios con `required`.
+Rules: validates on `blur` by default; use `validateOn="change"` only for live feedback (passwords, availability). Mark required fields with `required`.

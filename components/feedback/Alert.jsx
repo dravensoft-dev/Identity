@@ -6,9 +6,9 @@ const TONES = {
   danger:  { color: 'var(--danger)',  soft: 'var(--danger-soft)',  icon: 'ph-fill ph-warning-octagon' },
   neutral: { color: 'var(--line-strong)', soft: 'var(--panel)',    icon: 'ph-fill ph-note' },
 };
-/** Mensaje persistente embebido en la página (no efímero). A diferencia de Toast, se queda
- * hasta que se resuelve la condición. Usa `tone` para la severidad; `action` añade un enlace
- * de acción; `onClose` lo hace descartable (cierre único Phosphor ph-x). */
+/** Persistent message embedded in the page (not ephemeral). Unlike Toast, it stays
+ * until the condition is resolved. Use `tone` for severity; `action` adds an action
+ * link; `onClose` makes it dismissible (single Phosphor ph-x close icon). */
 export function Alert({ tone = 'info', title, children, icon, action, onClose, style }) {
   const t = TONES[tone] || TONES.info;
   return (
@@ -28,7 +28,7 @@ export function Alert({ tone = 'info', title, children, icon, action, onClose, s
         )}
       </div>
       {onClose && (
-        <button onClick={onClose} aria-label="Descartar"
+        <button onClick={onClose} aria-label="Dismiss"
           style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 'none', color: 'var(--mute)', cursor: 'pointer', fontSize: 16, lineHeight: 1 }}>
           <i className="ph-bold ph-x" />
         </button>

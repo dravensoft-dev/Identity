@@ -1,5 +1,5 @@
 import * as React from 'react';
-/** Paleta de comandos (Cmd/Ctrl+K). Navegación por flechas, Enter ejecuta, Esc cierra. */
+/** Command palette (Cmd/Ctrl+K). Arrow-key navigation, Enter runs, Esc closes. */
 export interface Command { id?: string; label: string; hint?: string; icon?: React.ReactNode; shortcut?: string; onRun?: () => void; }
 export interface CommandPaletteProps {
   open: boolean; onClose?: () => void; commands?: Command[]; placeholder?: string;

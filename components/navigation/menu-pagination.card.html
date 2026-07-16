@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="720x320" name="Menu · Pagination" subtitle="Desbordamiento y páginas" -->
+<!-- @dsCard group="Components" viewport="720x320" name="Menu · Pagination" subtitle="Overflow and pages" -->
 <!doctype html>
 <html>
 <head>
@@ -30,20 +30,20 @@ function Demo(){
   const [p,setP]=React.useState(3);
   return (
     <div>
-      <div className="sub" style={{marginBottom:12}}>Menu — acciones / desbordamiento</div>
+      <div className="sub" style={{marginBottom:12}}>Menu — actions / overflow</div>
       <div className="row" style={{alignItems:'center'}}>
-        <Menu trigger={<Button variant="secondary" iconRight={<i className="ph-bold ph-caret-down"/>}>Acciones</Button>}
+        <Menu trigger={<Button variant="secondary" iconRight={<i className="ph-bold ph-caret-down"/>}>Actions</Button>}
           items={[
-            {header:'Despliegue'},
-            {label:'Ver logs',icon:<i className="ph-bold ph-scroll"/>,onClick:()=>{}},
-            {label:'Duplicar',icon:<i className="ph-bold ph-copy"/>,shortcut:'⌘D',onClick:()=>{}},
+            {header:'Deployment'},
+            {label:'View logs',icon:<i className="ph-bold ph-scroll"/>,onClick:()=>{}},
+            {label:'Duplicate',icon:<i className="ph-bold ph-copy"/>,shortcut:'⌘D',onClick:()=>{}},
             {divider:true},
-            {label:'Eliminar',icon:<i className="ph-bold ph-trash"/>,destructive:true,onClick:()=>{}},
+            {label:'Delete',icon:<i className="ph-bold ph-trash"/>,destructive:true,onClick:()=>{}},
           ]} />
-        <Menu align="end" trigger={<IconButton label="Más opciones"><i className="ph-bold ph-dots-three-vertical"/></IconButton>}
+        <Menu align="end" trigger={<IconButton label="More options"><i className="ph-bold ph-dots-three-vertical"/></IconButton>}
           items={[
-            {label:'Renombrar',icon:<i className="ph-bold ph-pencil-simple"/>,onClick:()=>{}},
-            {label:'Archivar',icon:<i className="ph-bold ph-archive"/>,onClick:()=>{}},
+            {label:'Rename',icon:<i className="ph-bold ph-pencil-simple"/>,onClick:()=>{}},
+            {label:'Archive',icon:<i className="ph-bold ph-archive"/>,onClick:()=>{}},
           ]} />
       </div>
       <div className="sub" style={{marginBottom:12}}>Pagination</div>

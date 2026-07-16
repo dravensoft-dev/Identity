@@ -1,5 +1,5 @@
 import * as React from 'react';
-/** Mensaje persistente embebido en la página (banner inline). */
+/** Persistent message embedded in the page (inline banner). */
 export interface AlertProps {
   tone?: 'info' | 'success' | 'warning' | 'danger' | 'neutral';
   title?: string; children?: React.ReactNode; icon?: string;

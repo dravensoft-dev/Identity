@@ -1,6 +1,6 @@
-Estado vacío guiado (H9/H10). Da siempre una acción de salida.
+Guided empty state (H9/H10). Always give an exit action.
 
 ```jsx
-<EmptyState icon={<i className="ph-duotone ph-folder-open" />} title="Aún no hay proyectos"
-  message="Crea tu primer proyecto para empezar a desplegar." action={<Button>Nuevo proyecto</Button>} />
+<EmptyState icon={<i className="ph-duotone ph-folder-open" />} title="No projects yet"
+  message="Create your first project to start deploying." action={<Button>New project</Button>} />
 ```

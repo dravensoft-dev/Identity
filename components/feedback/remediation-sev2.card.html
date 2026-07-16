@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="900x600" name="Remediación (sev. 2)" subtitle="Skeleton · Breadcrumbs · Switch confirm · IconButton label · BulkActionBar · densidad · Onboarding" -->
+<!-- @dsCard group="Components" viewport="900x600" name="Remediation (sev. 2)" subtitle="Skeleton · Breadcrumbs · Switch confirm · IconButton label · BulkActionBar · density · Onboarding" -->
 <!doctype html>
 <html>
 <head>
@@ -41,7 +41,7 @@ function Demo(){
   const [step,setStep]=React.useState(0);
   return (
     <div>
-      <div className="sub">Skeleton — carga asíncrona (H1)</div>
+      <div className="sub">Skeleton — async loading (H1)</div>
       <div className="row">
         <div className="pane" style={{maxWidth:280}}>
           <div style={{display:'flex',gap:12,marginBottom:14}}>
@@ -52,54 +52,54 @@ function Demo(){
         </div>
       </div>
 
-      <div className="sub">Breadcrumbs (H3) · IconButton con etiqueta visible (H6)</div>
+      <div className="sub">Breadcrumbs (H3) · IconButton with visible label (H6)</div>
       <div className="row">
-        <Breadcrumbs items={[{label:'Proyectos',href:'#'},{label:'Checkout',href:'#'},{label:'Despliegue #482'}]}/>
+        <Breadcrumbs items={[{label:'Projects',href:'#'},{label:'Checkout',href:'#'},{label:'Deployment #482'}]}/>
         <span style={{flexBasis:'100%'}}/>
-        <IconButton label="Más opciones"><i className="ph-bold ph-dots-three-vertical"/></IconButton>
-        <IconButton variant="solid" showLabel label="Nuevo proyecto"><i className="ph-bold ph-plus"/></IconButton>
-        <IconButton showLabel label="Filtrar"><i className="ph-bold ph-funnel"/></IconButton>
+        <IconButton label="More options"><i className="ph-bold ph-dots-three-vertical"/></IconButton>
+        <IconButton variant="solid" showLabel label="New project"><i className="ph-bold ph-plus"/></IconButton>
+        <IconButton showLabel label="Filter"><i className="ph-bold ph-funnel"/></IconButton>
       </div>
 
-      <div className="sub">Switch de alto impacto con confirmación (H5)</div>
+      <div className="sub">High-impact switch with confirmation (H5)</div>
       <div className="row">
-        <Switch label="Despliegue automático a producción" checked={auto} confirm
+        <Switch label="Automatic deployment to production" checked={auto} confirm
           onRequestChange={setPending} onChange={e=>setAuto(e.target.checked)}/>
       </div>
 
-      <div className="sub">Acciones masivas (H7)</div>
+      <div className="sub">Bulk actions (H7)</div>
       <div className="row">
-        <BulkActionBar count={sel} noun="despliegues" onClear={()=>setSel(0)} actions={[
-          {label:'Reintentar',icon:<i className="ph-bold ph-arrow-clockwise"/>,onClick:()=>{}},
-          {label:'Archivar',icon:<i className="ph-bold ph-archive"/>,onClick:()=>{}},
-          {label:'Eliminar',icon:<i className="ph-bold ph-trash"/>,onClick:()=>{},destructive:true},
+        <BulkActionBar count={sel} noun="deployments" onClear={()=>setSel(0)} actions={[
+          {label:'Retry',icon:<i className="ph-bold ph-arrow-clockwise"/>,onClick:()=>{}},
+          {label:'Archive',icon:<i className="ph-bold ph-archive"/>,onClick:()=>{}},
+          {label:'Delete',icon:<i className="ph-bold ph-trash"/>,onClick:()=>{},destructive:true},
         ]}/>
-        {!sel && <IconButton showLabel label="Restaurar selección" onClick={()=>setSel(3)}><i className="ph-bold ph-check-square"/></IconButton>}
+        {!sel && <IconButton showLabel label="Restore selection" onClick={()=>setSel(3)}><i className="ph-bold ph-check-square"/></IconButton>}
       </div>
 
-      <div className="sub">Densidad compacta (H7) — mismo componente, scope .arena-compact</div>
+      <div className="sub">Compact density (H7) — same component, scope .arena-compact</div>
       <div className="row">
-        <div className="pane"><h4>Cómoda</h4><IconButton showLabel label="Guardar"><i className="ph-bold ph-check"/></IconButton></div>
-        <div className="pane arena-compact"><h4>Compacta</h4><IconButton showLabel label="Guardar"><i className="ph-bold ph-check"/></IconButton></div>
+        <div className="pane"><h4>Comfortable</h4><IconButton showLabel label="Save"><i className="ph-bold ph-check"/></IconButton></div>
+        <div className="pane arena-compact"><h4>Compact</h4><IconButton showLabel label="Save"><i className="ph-bold ph-check"/></IconButton></div>
       </div>
 
-      <div className="sub">Onboarding guiado (H10)</div>
+      <div className="sub">Guided onboarding (H10)</div>
       <div className="row">
-        <IconButton showLabel label="Iniciar recorrido" variant="solid" onClick={()=>{setStep(0);setTour(true);}}><i className="ph-bold ph-compass"/></IconButton>
+        <IconButton showLabel label="Start tour" variant="solid" onClick={()=>{setStep(0);setTour(true);}}><i className="ph-bold ph-compass"/></IconButton>
       </div>
 
-      {ConfirmDialog && <ConfirmDialog open={pending!==null} title="Activar despliegue automático"
-        confirmLabel="Activar" onCancel={()=>setPending(null)}
+      {ConfirmDialog && <ConfirmDialog open={pending!==null} title="Enable automatic deployment"
+        confirmLabel="Enable" onCancel={()=>setPending(null)}
         onConfirm={()=>{setAuto(pending);setPending(null);}}>
-        Cada commit aprobado se desplegará a producción sin revisión manual.
+        Every approved commit will be deployed to production without manual review.
       </ConfirmDialog>}
       <Onboarding open={tour} index={step}
         onNext={()=>setStep(s=>s+1)} onBack={()=>setStep(s=>s-1)}
         onSkip={()=>setTour(false)} onDone={()=>setTour(false)}
         steps={[
-          {eyebrow:'Bienvenido',title:'Su primera entrega',body:'Desde aquí desplegará y revertirá con un clic.'},
-          {title:'Paleta de comandos',body:'Pulse ⌘K para ejecutar cualquier acción sin ratón.'},
-          {title:'Listo',body:'Puede reabrir esta guía desde Ayuda cuando quiera.'},
+          {eyebrow:'Welcome',title:'Your first deployment',body:'From here you will deploy and roll back with one click.'},
+          {title:'Command palette',body:'Press ⌘K to run any action without the mouse.'},
+          {title:'All set',body:'You can reopen this guide from Help anytime.'},
         ]}/>
     </div>
   );

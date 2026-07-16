@@ -1,11 +1,11 @@
 import * as React from 'react';
-/** Notificación efímera. Barra lateral por tono. `action` = botón (Deshacer / Reintentar / Ver logs). */
+/** Ephemeral notification. Side bar colored by tone. `action` = button (Undo / Retry / View logs). */
 export interface ToastAction { label: string; onClick: () => void; }
 export interface ToastProps {
   title?: string; message?: string;
   tone?: 'neutral' | 'success' | 'danger' | 'gold';
   action?: ToastAction;
-  /** Desactiva el autodescarte del host (H1). Úsalo siempre en estados crítico/error. */
+  /** Disables the host's auto-dismiss (H1). Always use it in critical/error states. */
   persist?: boolean;
   onClose?: () => void; style?: React.CSSProperties;
 }

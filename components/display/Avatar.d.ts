@@ -1,5 +1,5 @@
 import * as React from 'react';
-/** Avatar de persona o entidad (imagen o iniciales) con presencia opcional. */
+/** Avatar of a person or entity (image or initials) with optional presence. */
 export interface AvatarProps {
   src?: string; name?: string; size?: 'xs' | 'sm' | 'md' | 'lg';
   shape?: 'circle' | 'rounded'; status?: 'online' | 'busy' | 'away' | 'offline';

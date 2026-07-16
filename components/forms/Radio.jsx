@@ -1,7 +1,7 @@
 import React from 'react';
-/** Selección única. `RadioGroup` gobierna el valor; cada `Radio` es una opción.
- * Seleccionado = punto carmesí dentro del anillo. Usa Radio cuando las opciones son
- * mutuamente excluyentes y conviene verlas todas; para muchas opciones, un Select. */
+/** Single selection. `RadioGroup` governs the value; each `Radio` is an option.
+ * Selected = crimson dot inside the ring. Use Radio when the options are
+ * mutually exclusive and it's good to see them all; for many options, use Select. */
 export function RadioGroup({ value, onChange, name, children, style, ...rest }) {
   const gname = name || 'rg-' + Math.random().toString(36).slice(2, 7);
   const items = React.Children.map(children, (child) =>

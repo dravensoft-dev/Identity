@@ -1,5 +1,5 @@
 import * as React from 'react';
-/** Confirmación para acciones de consecuencia alta. No cierra por clic-fuera. `requireText` exige teclear una palabra. */
+/** Confirmation for high-consequence actions. Does not close on click-outside. `requireText` requires typing a word. */
 export interface ConfirmDialogProps {
   open: boolean; onCancel?: () => void; onConfirm?: () => void;
   title?: string; eyebrow?: string; children?: React.ReactNode;

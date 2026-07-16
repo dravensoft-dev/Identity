@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 /**
- * Campo de texto con validación (H5). Estados visuales: neutro, foco (anillo oro),
- * `error` (borde carmesí + mensaje) y `valid` (borde/check verde). Pasa `required`
- * para marcar el campo; `validate(value)` devuelve un string de error o null y evalúa
- * según `validateOn` ('blur' por defecto | 'change' para validación en vivo).
+ * Text field with validation (H5). Visual states: neutral, focus (gold ring),
+ * `error` (crimson border + message) and `valid` (green border/check). Pass `required`
+ * to mark the field; `validate(value)` returns an error string or null and is evaluated
+ * according to `validateOn` ('blur' by default | 'change' for live validation).
  */
 export function Input({
   label, hint, error, valid = false, required = false,

@@ -1,8 +1,8 @@
 import React from 'react';
-/** Interruptor on/off. Encendido = carmesí.
- * `confirm` (H5): para toggles de alto impacto (p. ej. auto-despliegue). En vez de cambiar al vuelo,
- * el intento de cambio se desvía a `onRequestChange(next)` para que el host abra un ConfirmDialog;
- * `onChange` solo se dispara tras confirmar. Sin `confirm`, se comporta como un switch normal. */
+/** On/off switch. On = crimson.
+ * `confirm` (H5): for high-impact toggles (e.g. auto-deploy). Instead of changing on the fly,
+ * the change attempt is redirected to `onRequestChange(next)` so the host can open a ConfirmDialog;
+ * `onChange` only fires after confirmation. Without `confirm`, it behaves like a normal switch. */
 export function Switch({ checked = false, onChange, onRequestChange, confirm = false, label, disabled = false, style, ...rest }) {
   const guarded = confirm && typeof onRequestChange === 'function';
   const attempt = (e) => {
@@ -16,7 +16,7 @@ export function Switch({ checked = false, onChange, onRequestChange, confirm = f
         <span style={{ width: 18, height: 18, borderRadius: '50%', background: 'var(--on-accent)',
           transform: checked ? 'translateX(18px)' : 'translateX(0)', transition: 'transform var(--dur-mid) var(--ease-out)' }} />
       </span>
-      {label && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--bone-dim)' }}>{label}{confirm && <i className="ph-bold ph-shield-check" title="Requiere confirmación" style={{ fontSize: 14, color: 'var(--mute)' }} />}</span>}
+      {label && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--bone-dim)' }}>{label}{confirm && <i className="ph-bold ph-shield-check" title="Requires confirmation" style={{ fontSize: 14, color: 'var(--mute)' }} />}</span>}
       <input type="checkbox" role="switch" checked={checked} aria-checked={checked} onChange={guarded ? undefined : onChange} disabled={disabled}
         style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }} {...rest} />
     </label>

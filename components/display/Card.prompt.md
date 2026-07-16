@@ -1,7 +1,7 @@
-Contenedor base. Usa `eyebrow` (mono carmesí) + `title` (Archivo) para cabecera.
+Base container. Use `eyebrow` (crimson mono) + `title` (Archivo) for the header.
 
 ```jsx
-<Card eyebrow="Entrega" title="Portal de clientes" action={<Badge tone="success">Desplegado</Badge>}>
+<Card eyebrow="Delivery" title="Client Portal" action={<Badge tone="success">Deployed</Badge>}>
   …
 </Card>
 ```

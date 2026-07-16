@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="760x380" name="Table · Avatar" subtitle="Datos densos e identidad" -->
+<!-- @dsCard group="Components" viewport="760x380" name="Table · Avatar" subtitle="Dense data and identity" -->
 <!doctype html>
 <html>
 <head>
@@ -27,25 +27,25 @@ const { Avatar } = await arenaImport('../../components/display/Avatar.jsx');
 const { Badge } = await arenaImport('../../components/display/Badge.jsx');
 function Demo(){
   const rows=[
-    {build:'#4821',proyecto:'Portal de clientes',estado:'ok',p95:'128 ms'},
-    {build:'#4820',proyecto:'Pasarela de pagos',estado:'fallo',p95:'340 ms'},
-    {build:'#4819',proyecto:'Panel interno',estado:'ok',p95:'96 ms'},
+    {build:'#4821',project:'Client Portal',status:'ok',p95:'128 ms'},
+    {build:'#4820',project:'Payment Gateway',status:'fail',p95:'340 ms'},
+    {build:'#4819',project:'Internal Dashboard',status:'ok',p95:'96 ms'},
   ];
   return (
     <div>
-      <div className="sub" style={{marginBottom:12}}>Avatar — persona · entidad · presencia</div>
+      <div className="sub" style={{marginBottom:12}}>Avatar — person · entity · presence</div>
       <div className="row" style={{alignItems:'center'}}>
-        <Avatar name="Lucía Fernández" status="online" />
+        <Avatar name="Lucy Fernandez" status="online" />
         <Avatar name="Marco Ruiz" size="lg" status="busy" />
         <Avatar name="Aurora Bank" shape="rounded" />
         <Avatar name="QA Bot" size="sm" status="offline" />
       </div>
-      <div className="sub" style={{marginBottom:12}}>Table — con Badge en celda</div>
+      <div className="sub" style={{marginBottom:12}}>Table — with Badge in a cell</div>
       <Table
         columns={[
           {key:'build',header:'Build',mono:true,width:90},
-          {key:'proyecto',header:'Proyecto'},
-          {key:'estado',header:'Estado',render:(v)=><Badge tone={v==='ok'?'success':'danger'} dot>{v==='ok'?'Desplegado':'Caído'}</Badge>},
+          {key:'project',header:'Project'},
+          {key:'status',header:'Status',render:(v)=><Badge tone={v==='ok'?'success':'danger'} dot>{v==='ok'?'Deployed':'Down'}</Badge>},
           {key:'p95',header:'p95',align:'right',mono:true},
         ]}
         rows={rows} getRowKey={r=>r.build} onRowClick={()=>{}} />

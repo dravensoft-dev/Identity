@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="720x340" name="Radio · Textarea" subtitle="Selección única y texto multilínea" -->
+<!-- @dsCard group="Components" viewport="720x340" name="Radio · Textarea" subtitle="Single selection and multi-line text" -->
 <!doctype html>
 <html>
 <head>
@@ -32,15 +32,15 @@ function Demo(){
       <div style={{width:280}}>
         <div className="sub" style={{marginBottom:12}}>RadioGroup</div>
         <RadioGroup value={env} onChange={setEnv}>
-          <Radio value="prod" label="Producción" hint="Usuarios reales — requiere aprobación" />
+          <Radio value="prod" label="Production" hint="Real users — requires approval" />
           <Radio value="staging" label="Staging" />
           <Radio value="qa" label="QA" />
         </RadioGroup>
       </div>
       <div style={{width:320}}>
-        <Textarea label="Notas del despliegue" rows={5} maxLength={280} counter
+        <Textarea label="Deployment notes" rows={5} maxLength={280} counter
           value={notes} onChange={e=>setNotes(e.target.value)}
-          hint="Se adjunta al registro de la entrega." />
+          hint="Attached to the delivery log." />
       </div>
     </div>
   );

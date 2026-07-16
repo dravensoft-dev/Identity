@@ -1,15 +1,15 @@
-Barra de progreso (H1). Da estado visible a procesos medibles fuera del splash: despliegues, subidas, migraciones. Respeta `prefers-reduced-motion` en el modo indeterminado.
+Progress bar (H1). Gives visible status to measurable processes outside the splash: deployments, uploads, migrations. Respects `prefers-reduced-motion` in indeterminate mode.
 
 ```jsx
-<ProgressBar label="Desplegando build #4821" value={64} />
-<ProgressBar tone="success" value={100} label="Publicado" />
-<ProgressBar indeterminate tone="accent" label="Conectando…" />
+<ProgressBar label="Deploying build #4821" value={64} />
+<ProgressBar tone="success" value={100} label="Published" />
+<ProgressBar indeterminate tone="accent" label="Connecting…" />
 ```
 
-**Hacer**
-- Usar el modo *determinado* siempre que exista un porcentaje real; comunica tiempo restante.
-- Alinear `tone` con el estado (success al terminar, danger si falla).
+**Do**
+- Use *determinate* mode whenever a real percentage exists; it communicates remaining time.
+- Align `tone` with the state (success when done, danger if it fails).
 
-**No hacer**
-- No usar `indeterminate` para procesos que sí conoces: degrada la visibilidad (H1).
-- No sustituir un Toast de resultado por la barra; la barra informa del progreso, el Toast del desenlace.
+**Don't**
+- Don't use `indeterminate` for processes you do know: it degrades visibility (H1).
+- Don't replace a result Toast with the bar; the bar reports progress, the Toast reports the outcome.

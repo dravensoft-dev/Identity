@@ -1,5 +1,5 @@
 import * as React from 'react';
-/** Diálogo modal con overlay difuminado. Cierra al hacer clic fuera o via onClose. */
+/** Modal dialog with a blurred overlay. Closes on click-outside or via onClose. */
 export interface DialogProps {
   open: boolean; onClose?: () => void;
   title?: string; eyebrow?: string;

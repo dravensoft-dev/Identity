@@ -1,11 +1,11 @@
-Entrada de texto de varias líneas. Comparte los estados visuales de `Input`.
+Multi-line text input. Shares the same visual states as `Input`.
 
 ```jsx
-<Textarea label="Notas del despliegue" rows={5} maxLength={280} counter
+<Textarea label="Deployment notes" rows={5} maxLength={280} counter
   value={notes} onChange={e=>setNotes(e.target.value)}
-  hint="Se adjunta al registro de la entrega." />
+  hint="Attached to the delivery log." />
 ```
 
-**Hacer / No hacer**
-- Multilínea real (descripciones, notas, mensajes). Para una línea usa `Input`.
-- Con `maxLength`, activa `counter` para que el límite sea visible.
+**Do / Don't**
+- Real multi-line content (descriptions, notes, messages). For a single line use `Input`.
+- With `maxLength`, enable `counter` so the limit is visible.

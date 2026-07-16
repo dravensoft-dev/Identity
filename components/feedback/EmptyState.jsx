@@ -1,5 +1,5 @@
 import React from 'react';
-/** Estado vacío a nivel de sección/pantalla, con una acción clara para avanzar. */
+/** Section/screen-level empty state, with a clear action to move forward. */
 export function EmptyState({ icon, title, message, action, style }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 12,

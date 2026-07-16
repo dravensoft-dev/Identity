@@ -1,5 +1,5 @@
 import * as React from 'react';
-/** Tooltip al pasar el cursor. Fondo hueso sobre oscuro para contraste. */
+/** Tooltip on hover. Bone background over dark for contrast. */
 export interface TooltipProps {
   content: React.ReactNode; children: React.ReactNode; style?: React.CSSProperties;
 }

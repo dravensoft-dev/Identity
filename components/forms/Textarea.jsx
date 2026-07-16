@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-/** Campo de texto multilínea. Mismos estados que Input (neutro, foco oro, error carmesí).
- * `autoResize` crece con el contenido; `counter` con `maxLength` muestra el conteo. */
+/** Multi-line text field. Same states as Input (neutral, gold focus, crimson error).
+ * `autoResize` grows with the content; `counter` with `maxLength` shows the count. */
 export function Textarea({
   label, hint, error, required = false, rows = 4, maxLength, counter = false,
   disabled = false, autoResize = false, style, id, value, onChange, ...rest

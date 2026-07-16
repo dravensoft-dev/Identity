@@ -1,8 +1,8 @@
 import * as React from 'react';
 /**
- * Botón de acción de Arena. Primario carmesí para la acción principal (uno por vista);
- * secondary para acciones neutrales, ghost para terciarias, danger para acciones destructivas.
- * @startingPoint section="Forms" subtitle="Botón con variantes y estados" viewport="700x160"
+ * Arena action button. Primary crimson for the main action (one per view);
+ * secondary for neutral actions, ghost for tertiary ones, danger for destructive actions.
+ * @startingPoint section="Forms" subtitle="Button with variants and states" viewport="700x160"
  */
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';

@@ -1,5 +1,5 @@
 import * as React from 'react';
-/** Navegación por pestañas. Controlado (value+onChange) o no (defaultValue). Activa = subrayado carmesí. */
+/** Tab navigation. Controlled (value+onChange) or uncontrolled (defaultValue). Active = crimson underline. */
 export interface TabItem { value: string; label: string; }
 export interface TabsProps {
   tabs: (string | TabItem)[];

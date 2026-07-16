@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-/** Paleta de comandos (Cmd/Ctrl+K). Acelerador para usuarios expertos: buscar y ejecutar acciones sin ratón. */
-export function CommandPalette({ open, onClose, commands = [], placeholder = 'Buscar acción o proyecto…' }) {
+/** Command palette (Cmd/Ctrl+K). Power-user accelerator: search and run actions without a mouse. */
+export function CommandPalette({ open, onClose, commands = [], placeholder = 'Search for an action or project…' }) {
   const [q, setQ] = useState('');
   const [i, setI] = useState(0);
   const inputRef = useRef(null);
@@ -27,7 +27,7 @@ export function CommandPalette({ open, onClose, commands = [], placeholder = 'Bu
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--mute)', border: '1px solid var(--line)', borderRadius: 'var(--r-xs)', padding: '2px 6px' }}>ESC</span>
         </div>
         <div style={{ maxHeight: 320, overflow: 'auto', padding: 6 }}>
-          {filtered.length === 0 && <div style={{ padding: '18px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--mute)' }}>Sin resultados para «{q}».</div>}
+          {filtered.length === 0 && <div style={{ padding: '18px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--mute)' }}>No results for "{q}".</div>}
           {filtered.map((c, idx) => (
             <button key={c.id || c.label} onMouseEnter={() => setI(idx)} onClick={() => run(c)}
               style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 'var(--r-sm)', border: 'none', cursor: 'pointer',

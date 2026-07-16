@@ -1,6 +1,6 @@
 import * as React from 'react';
-/** Marca "Rotor" de Dravensoft. NO usar como icono funcional. spin solo en splash/carga.
- * @startingPoint section="Brand" subtitle="Símbolo de marca" viewport="700x160" */
+/** Dravensoft's "Rotor" mark. Do NOT use as a functional icon. spin only in splash/loading.
+ * @startingPoint section="Brand" subtitle="Brand symbol" viewport="700x160" */
 export interface RotorProps extends React.HTMLAttributes<HTMLSpanElement> {
   size?: number; color?: string; spin?: boolean;
 }

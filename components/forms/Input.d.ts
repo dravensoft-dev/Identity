@@ -1,6 +1,6 @@
 import * as React from 'react';
-/** Campo de texto con validación (H5). Foco = anillo oro; error = carmesí; válido = verde + check.
- * `validate(value)` devuelve el mensaje de error o null; `validateOn` controla cuándo se evalúa. */
+/** Text field with validation (H5). Focus = gold ring; error = crimson; valid = green + check.
+ * `validate(value)` returns the error message or null; `validateOn` controls when it's evaluated. */
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'prefix'> {
   label?: string; hint?: string; error?: string;
   valid?: boolean; required?: boolean;

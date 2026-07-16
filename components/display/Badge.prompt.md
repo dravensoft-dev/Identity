@@ -1,14 +1,14 @@
-Etiqueta de estado en mono mayúsculas. Texto corto (1–2 palabras); si es más largo, no es un Badge.
+Status label in mono uppercase. Short text (1–2 words); if it's longer, it's not a Badge.
 
 ```jsx
-<Badge tone="success" dot>Desplegado</Badge>
-<Badge tone="warning">En revisión</Badge>
+<Badge tone="success" dot>Deployed</Badge>
+<Badge tone="warning">In review</Badge>
 ```
 
-**Taxonomía de tonos (H4).** Dos familias, no las mezcles:
-- **Estado** — `success` `warning` `danger` `info`: reflejan el estado real del sistema (deploy, servicio, versión). El `dot` refuerza «estado en vivo».
-- **Énfasis** — `accent` (novedad/destacado), `gold` (prioridad/distinción): editoriales, no representan estado. `neutral` = sin carga semántica.
+**Tone taxonomy (H4).** Two families, don't mix them:
+- **Status** — `success` `warning` `danger` `info`: reflect the actual state of the system (deploy, service, version). The `dot` reinforces "live status".
+- **Emphasis** — `accent` (new/featured), `gold` (priority/distinction): editorial, they don't represent status. `neutral` = no semantic weight.
 
-**No hacer**
-- No uses `accent` para comunicar un estado (usa un tono de estado); reserva el carmesí de `accent` para «nuevo/destacado».
-- No pongas frases dentro de un Badge ni `dot` en tonos de énfasis.
+**Don't**
+- Don't use `accent` to communicate a status (use a status tone); reserve `accent`'s crimson for "new/featured".
+- Don't put full sentences inside a Badge, and don't use `dot` on emphasis tones.

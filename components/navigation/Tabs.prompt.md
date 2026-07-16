@@ -1,5 +1,5 @@
-Pestañas de sección. La activa lleva subrayado carmesí.
+Section tabs. The active one has a crimson underline.
 
 ```jsx
-<Tabs tabs={['Resumen','Despliegues','Actividad']} onChange={setView} />
+<Tabs tabs={['Overview','Deployments','Activity']} onChange={setView} />
 ```

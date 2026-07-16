@@ -4,10 +4,10 @@ import { IconButton } from '../../components/forms/IconButton.jsx';
 import { Icon } from './Icon.jsx';
 
 const NAV = [
-  { id: 'dashboard', icon: 'grid', label: 'Proyectos' },
-  { id: 'deploys', icon: 'rocket', label: 'Despliegues' },
-  { id: 'activity', icon: 'activity', label: 'Actividad' },
-  { id: 'settings', icon: 'settings', label: 'Ajustes' },
+  { id: 'dashboard', icon: 'grid', label: 'Projects' },
+  { id: 'deploys', icon: 'rocket', label: 'Deployments' },
+  { id: 'activity', icon: 'activity', label: 'Activity' },
+  { id: 'settings', icon: 'settings', label: 'Settings' },
 ];
 
 export function Shell({ active = 'dashboard', onNav, title, actions, children }) {
@@ -39,8 +39,8 @@ export function Shell({ active = 'dashboard', onNav, title, actions, children })
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 22, color: 'var(--bone)', letterSpacing: '-.01em' }}>{title}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {actions}
-            <IconButton label="Buscar"><Icon name="search" /></IconButton>
-            <IconButton label="Notificaciones"><Icon name="bell" /></IconButton>
+            <IconButton label="Search"><Icon name="search" /></IconButton>
+            <IconButton label="Notifications"><Icon name="bell" /></IconButton>
           </div>
         </header>
         <div style={{ padding: 32, flex: 1, overflow: 'auto' }}>{children}</div>

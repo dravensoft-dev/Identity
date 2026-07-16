@@ -1,11 +1,11 @@
-<!-- @dsCard group="Console" viewport="1280x820" subtitle="Consola de Entrega — login → proyectos → despliegue" name="Consola de Entrega" -->
-<!-- @startingPoint section="Console" subtitle="App de consola completa (login + dashboard + proyecto)" viewport="1280x820" -->
+<!-- @dsCard group="Console" viewport="1280x820" subtitle="Delivery Console — login → projects → deployment" name="Delivery Console" -->
+<!-- @startingPoint section="Console" subtitle="Full console app (login + dashboard + project)" viewport="1280x820" -->
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Consola de Entrega — Dravensoft</title>
+<title>Delivery Console — Dravensoft</title>
 <link rel="stylesheet" href="../../styles.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css">
@@ -45,7 +45,7 @@ function App(){
 
   const nav = (id) => {
     if (id === 'dashboard') { setScreen('dashboard'); setProject(null); }
-    else setScreen('dashboard'); // otras secciones no implementadas en el demo
+    else setScreen('dashboard'); // other sections not implemented in the demo
   };
 
   let view;
@@ -53,7 +53,7 @@ function App(){
     view = <LoginScreen onLogin={() => setScreen('dashboard')} />;
   } else if (screen === 'project') {
     view = <ProjectScreen onNav={nav} project={project}
-      onToast={() => pushToast({ tone: 'success', title: 'Despliegue en curso', message: 'build #4822 → producción' })} />;
+      onToast={() => pushToast({ tone: 'success', title: 'Deployment in progress', message: 'build #4822 → production' })} />;
   } else {
     view = <DashboardScreen onNav={nav}
       onOpenProject={(p) => { setProject(p); setScreen('project'); }} />;

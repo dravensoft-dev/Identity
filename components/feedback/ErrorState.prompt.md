@@ -1,7 +1,7 @@
-Estado de error con vía de recuperación (H9). Ofrece Reintentar y, si aplica, Ver logs + el código de diagnóstico.
+Error state with a recovery path (H9). Offers Retry and, if applicable, View logs + the diagnostic code.
 
 ```jsx
-<ErrorState icon={<i className="ph-fill ph-warning-octagon" />} title="No se pudo cargar el panel"
-  message="No hay conexión con el servicio de métricas." code="ERR_UPSTREAM_504"
-  onRetry={reload} secondaryAction={<Button variant="secondary">Ver logs</Button>} />
+<ErrorState icon={<i className="ph-fill ph-warning-octagon" />} title="Couldn't load the panel"
+  message="No connection to the metrics service." code="ERR_UPSTREAM_504"
+  onRetry={reload} secondaryAction={<Button variant="secondary">View logs</Button>} />
 ```

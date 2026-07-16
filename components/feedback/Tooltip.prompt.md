@@ -1,5 +1,5 @@
-Tooltip breve sobre iconos/acciones.
+Brief tooltip over icons/actions.
 
 ```jsx
-<Tooltip content="Revertir al build anterior"><IconButton label="Revertir">…</IconButton></Tooltip>
+<Tooltip content="Roll back to the previous build"><IconButton label="Roll back">…</IconButton></Tooltip>
 ```

@@ -1,89 +1,89 @@
-# Arena — Sistema de Diseño de Dravensoft
+# Arena — Dravensoft Design System
 
-**Arena** es el lenguaje de interfaz único bajo el que se construyen todos los productos de software de **Dravensoft**. Toma su nombre del escenario donde una obra se exhibe y se aplaude: cada interfaz Arena debe sentirse *digna de ser enaltecida* — la misma promesa de la marca.
+**Arena** is the single interface language under which every Dravensoft software product is built. It takes its name from the venue where a performance is put on display and applauded: every Arena interface should feel *worthy of being exalted* — the same promise the brand makes.
 
-## Audiencia y alcance
-- **Audiencia del lenguaje: público general.** Arena está pensado para dar identidad a **todo tipo de software** de Dravensoft, independientemente de quién sea el usuario final — desde apps de consumo hasta herramientas internas. Sus fundamentos (color, tipografía, espaciado, accesibilidad, voz) son de propósito general y no asumen un perfil técnico.
-- **La Vista general (`Arena - Vista general.dc.html`) es un ejemplo de aplicación**, no el lenguaje en sí. Ilustra Arena aplicado a **la Consola de Entrega, un producto destinado a desarrolladores/equipos técnicos**. Por eso incluye densidad de datos, terminología de dominio (build, deploy, p95) y aceleradores de teclado propios de ese público.
-- **Implicación para auditorías y evaluaciones:** los hallazgos observados sobre el ejemplo deben separarse en (a) los que aplican al **lenguaje** (tokens, componentes, patrones — universales) y (b) los propios del **contexto técnico del ejemplo** (jerga, densidad, atajos). Estos últimos no son defectos del lenguaje: en un producto para público general se sustituirían por copy llano, densidad cómoda y menos atajos. Al evaluar Arena para otro tipo de software, calibrar contra esa audiencia general, no contra la Consola.
+## Audience and scope
+- **Audience of the language: general public.** Arena is meant to give identity to **every kind of Dravensoft software**, regardless of who the end user is — from consumer apps to internal tools. Its foundations (color, typography, spacing, accessibility, voice) are general-purpose and don't assume a technical profile.
+- **The Overview (`Arena - Overview.dc.html`) is an example application**, not the language itself. It illustrates Arena applied to the **Delivery Console, a product aimed at developers/technical teams**. That's why it includes data density, domain terminology (build, deploy, p95) and keyboard accelerators specific to that audience.
+- **Implication for audits and evaluations:** findings observed on the example should be split into (a) those that apply to the **language** (tokens, components, patterns — universal) and (b) those specific to the **example's technical context** (jargon, density, shortcuts). The latter are not defects of the language: in a product for a general audience they would be replaced with plain copy, comfortable density and fewer shortcuts. When evaluating Arena for another kind of software, calibrate against that general audience, not against the Console.
 
-## Por qué un lenguaje propio (y no Material/Fluent tal cual)
-Los sistemas establecidos (Material 3, Fluent, Carbon, Polaris) son **claros por defecto, redondeados y de tono neutral**. La identidad de Dravensoft es lo contrario: **negro cálido dominante, acentos carmesí/oro, geometría afilada y una voz audaz**. Forzar la marca sobre Material produciría una app "genérica con skin". En cambio, Arena:
-- **Adopta principios estructurales probados**: disciplina de tokens y escala tipográfica (inspiración Carbon/IBM), estados y densidad claros (inspiración Material), foco visible y accesible.
-- **Reescribe las decisiones estéticas** para la identidad: dark-first, radios contenidos, sombras cálidas profundas, carmesí como voz y oro como distinción, y el **Rotor** como firma.
+## Why a language of our own (and not Material/Fluent as-is)
+Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default, rounded and neutral in tone**. Dravensoft's identity is the opposite: **dominant warm black, crimson/gold accents, sharp geometry and a bold voice**. Forcing the brand onto Material would produce a "generic with a skin" app. Instead, Arena:
+- **Adopts proven structural principles**: token discipline and a typographic scale (Carbon/IBM-inspired), clear states and density (Material-inspired), visible and accessible focus.
+- **Rewrites the aesthetic decisions** for the identity: dark-first, contained radii, deep warm shadows, crimson as the voice and gold as distinction, and the **Rotor** as the signature mark.
 
-## Fuentes
-- Manual de identidad aprobado: `Identidad Dravensoft.dc.html` (raíz del proyecto).
-- Marca: Dravensoft — desarrollo de software a medida / consultoría B2B.
-- Concepto: orgullo, espectáculo, maestría. Lema: *"Software digno de ser enaltecido"*.
+## Sources
+- Approved identity manual: `Dravensoft Identity.dc.html` (project root).
+- Brand: Dravensoft — custom software development / B2B consulting.
+- Concept: pride, spectacle, mastery. Motto: *"Software worthy of being exalted."*
 
 ---
 
-## CONTENT FUNDAMENTALS (voz y copy)
-- **Idioma:** español (es-ES neutro). Términos técnicos en inglés se respetan (deploy, endpoint, commit).
-- **Persona gramatical:** trato de **usted** en producto empresarial y documentación formal; **tú** solo en material de marketing cercano. Nunca mezclar en una misma superficie.
-- **Tono:** confiado y directo, nunca fanfarrón. Afirma capacidad sin adjetivos vacíos. Ej.: *"Entrega lista para revisión"* > *"¡Increíble entrega completada!"*.
-- **Casing:** títulos en **MAYÚSCULAS con tracking** solo para eyebrows/etiquetas mono (`.22em`); títulos de sección en Archivo peso 800–900 en caja normal (Sentence case). Botones en Sentence case, no Title Case.
-- **Etiquetas de dato/estado:** mono en mayúsculas ("EN PROGRESO", "DESPLEGADO").
-- **Números:** siempre en mono. Métricas con unidad ("14 ms", "99.98%").
-- **Sin emoji** en producto ni documentación. La expresividad viene del color y la tipografía, no de iconos decorativos.
-- **Microcopy:** verbos de acción concretos ("Desplegar", "Aprobar entrega", "Revertir"). Errores útiles y sin culpa ("No pudimos conectar con el servidor. Reintentar.").
+## CONTENT FUNDAMENTALS (voice and copy)
+- **Language:** English (en-US neutral).
+- **Register:** formal and direct in enterprise product and formal documentation; a closer, more casual register only in marketing material. Never mix registers on the same surface.
+- **Tone:** confident and direct, never boastful. State capability without empty adjectives. E.g.: *"Delivery ready for review"* > *"Amazing delivery completed!"*.
+- **Casing:** titles in **UPPERCASE with tracking** only for eyebrows/mono labels (`.22em`); section headings in Archivo weight 800–900 in normal case (Sentence case). Buttons in Sentence case, not Title Case.
+- **Data/status labels:** mono, uppercase ("IN PROGRESS", "DEPLOYED").
+- **Numbers:** always in mono. Metrics with a unit ("14 ms", "99.98%").
+- **No emoji** in product or documentation. Expressiveness comes from color and typography, not decorative icons.
+- **Microcopy:** concrete action verbs ("Deploy", "Approve delivery", "Roll back"). Errors are helpful and blame-free ("We couldn't connect to the server. Retry.").
 
 ## VISUAL FOUNDATIONS
-- **Color — arquitectura de tokens (estructura daisyUI):** la fuente de verdad son tokens `--color-*` con su par `-content` (el color legible encima), definidos en `tokens/colors.css`. Sobre ellos, una **capa de compatibilidad** mapea los alias históricos de Arena (`--bg`, `--surface-card`, `--crimson`, `--gold`, `--danger`, `--mute`…) a los tokens daisyUI, para no romper los componentes existentes. Los niveles de texto atenuado (`--bone-dim`, `--mute`, `--mute-2`) se derivan de `--color-base-content` con `color-mix`, no son hex fijos.
-- **Temas:** el lenguaje es **dark-first** pero soporta dos temas conmutables — **oscuro** (`:root`, por defecto) y **claro** (`.arena-light`, inverso cálido). Los mismos tokens cambian de valor según el tema; los componentes no se reescriben. (La Vista general incluye el toggle en su cabecera.)
-- **Valores clave:** fondo negro cálido `#141010` (base-100); superficies elevadas `#1d1715` (base-200) / `#241c19` (base-300); texto hueso `#f3ede5` (base-content). Un solo acento primario (carmesí `#b52a20`) por vista; oro `#c5a059` reservado para foco, distinción y datos destacados. Máximo un acento dominante por pantalla.
-- **Tipografía:** Archivo (display/titulares, 800–900), Familjen Grotesk (cuerpo, 400–600), Spline Sans Mono (datos, etiquetas, código). Tracking negativo en display (`-0.02em`), tracking amplio en etiquetas mono (`0.22em`).
-- **Espaciado:** grid base 4px; ritmo generoso en marketing (gutter 88px), denso pero respirado en producto.
-- **Fondos:** **siempre planos.** Arena **no utiliza degradados de color** en ninguna superficie — ni heros, ni splash, ni cards, ni acentos. La profundidad se construye con la escala de superficies (`base-100`→`base-200`→`base-300`), el borde hairline y la sombra cálida, nunca con transiciones de color. (Único uso permitido de `linear-gradient`: la animación de *shimmer* neutra del `Skeleton`, que es movimiento de carga, no decoración cromática.) Sin fotos de stock genéricas; imágenes de producto reales o placeholders rayados.
-- **Bordes:** hairline `1px` `#3a2e29`; borde enfatizado `#52413a`. Se usa el borde, no la sombra, para separar en superficies planas.
-- **Sombras:** cálidas y profundas, negativas en spread (`0 12px 28px -12px rgba(0,0,0,.6)`). Glow carmesí solo para el icono de app / CTAs flotantes.
-- **Radios:** contenidos — botones/inputs 6px, cards 14px, tile de app 22%. Nada completamente redondo salvo avatares y switches. **Overlays flotantes:** los modales (Dialog, ConfirmDialog, CommandPalette, Onboarding) usan `--r-lg` (14px); las superficies flotantes menores y no-modales (Toast, Menu, BulkActionBar) usan `--r-md` (10px). La regla: si captura toda la pantalla con scrim, `--r-lg`; si es un panel acotado sobre la UI, `--r-md`.
-- **Cards:** superficie `#1d1715`, borde hairline, radio 14px, sin sombra en listas (borde) y con `--shadow-2` cuando flotan (menús, diálogos).
-- **Animación:** `--ease-out` para entradas, `--ease-emphatic` para el gesto "rotor" (giro al cargar). Duraciones 120/220/420ms. Sin bounce excesivo.
-- **Hover:** aclarar superficie un paso (`#241c19`→`#2c221e`) o subir opacidad; en botones de acento el hover añade el glow carmesí (`--glow-accent`). *Nota:* tras el paso a tokens daisyUI, las variantes `--crimson-strong`/`--gold-strong`/`--danger-strong` **alias al color base** (no hay un tono «fuerte» más oscuro separado); el énfasis en press se consigue con la escala, no con un segundo tono.
-- **Press:** `scale(.98)` en controles pequeños.
-- **Foco:** anillo oro `2px` con offset `2px` — siempre visible, nunca `outline:none` sin reemplazo.
-- **Transparencia/blur:** blur solo en overlays de diálogo (`backdrop-filter: blur(6px)` sobre `rgba(20,16,16,.6)`).
-- **Microcopy en mayúsculas (H2/H6/H8):** reservar `text-transform:uppercase` + mono a **microetiquetas cortas** (≤2 palabras: eyebrows, labels de campo, badges de estado, encabezados de tabla). Los **mensajes, títulos y cualquier texto de lectura van en caja normal** — nunca frases en mayúsculas. Regla práctica: si no cabe en una «pastilla», va en caja normal.
-- **Cierre único (H4):** el descarte con icono usa siempre Phosphor `ph-x` (Tag, Toast). Los **modales** (Dialog/ConfirmDialog) se cierran con su **botón explícito** (Cancelar) o clic-fuera cuando procede, no con el icono; no se mezclan las dos affordances en un mismo componente.
-- **Documentación de componente (H10):** cada `*.prompt.md` incluye ejemplos y, cuando aporta, una sección **Hacer / No hacer** con los errores de uso frecuentes.
+- **Color — token architecture (daisyUI structure):** the source of truth is a set of `--color-*` tokens paired with their `-content` counterpart (the legible color on top), defined in `tokens/colors.css`. On top of them, a **compatibility layer** maps Arena's legacy aliases (`--bg`, `--surface-card`, `--crimson`, `--gold`, `--danger`, `--mute`…) to the daisyUI tokens, so existing components don't break. Muted text levels (`--bone-dim`, `--mute`, `--mute-2`) are derived from `--color-base-content` with `color-mix`, not fixed hex values.
+- **Themes:** the language is **dark-first** but supports two switchable themes — **dark** (`:root`, default) and **light** (`.arena-light`, warm inverse). The same tokens change value per theme; components are never rewritten. (The Overview includes the toggle in its header.)
+- **Key values:** warm black background `#141010` (base-100); elevated surfaces `#1d1715` (base-200) / `#241c19` (base-300); bone text `#f3ede5` (base-content). A single primary accent (crimson `#b52a20`) per view; gold `#c5a059` reserved for focus, distinction and highlighted data. At most one dominant accent per screen.
+- **Typography:** Archivo (display/headlines, 800–900), Familjen Grotesk (body, 400–600), Spline Sans Mono (data, labels, code). Negative tracking on display (`-0.02em`), wide tracking on mono labels (`0.22em`).
+- **Spacing:** 4px base grid; generous rhythm in marketing (88px gutter), dense but breathable in product.
+- **Backgrounds:** **always flat.** Arena **does not use color gradients** on any surface — not heroes, not splash screens, not cards, not accents. Depth is built with the surface scale (`base-100`→`base-200`→`base-300`), the hairline border and the warm shadow, never with color transitions. (The only permitted use of `linear-gradient`: the `Skeleton`'s neutral *shimmer* animation, which is loading motion, not chromatic decoration.) No generic stock photos; real product imagery or striped placeholders.
+- **Borders:** hairline `1px` `#3a2e29`; emphasized border `#52413a`. The border, not the shadow, is used to separate content on flat surfaces.
+- **Shadows:** warm and deep, negative spread (`0 12px 28px -12px rgba(0,0,0,.6)`). Crimson glow only for the app icon / floating CTAs.
+- **Radii:** contained — buttons/inputs 6px, cards 14px, app tile 22%. Nothing fully round except avatars and switches. **Floating overlays:** modals (Dialog, ConfirmDialog, CommandPalette, Onboarding) use `--r-lg` (14px); minor non-modal floating surfaces (Toast, Menu, BulkActionBar) use `--r-md` (10px). The rule: if it captures the whole screen with a scrim, `--r-lg`; if it's a bounded panel over the UI, `--r-md`.
+- **Cards:** surface `#1d1715`, hairline border, 14px radius, no shadow in lists (border only) and `--shadow-2` when floating (menus, dialogs).
+- **Animation:** `--ease-out` for entrances, `--ease-emphatic` for the "rotor" gesture (spin on load). Durations 120/220/420ms. No excessive bounce.
+- **Hover:** lighten the surface one step (`#241c19`→`#2c221e`) or raise opacity; on accent buttons, hover adds the crimson glow (`--glow-accent`). *Note:* after the move to daisyUI tokens, the `--crimson-strong`/`--gold-strong`/`--danger-strong` variants **alias to the base color** (there's no separate darker "strong" tone); press emphasis is achieved with scale, not a second tone.
+- **Press:** `scale(.98)` on small controls.
+- **Focus:** gold ring `2px` with `2px` offset — always visible, never `outline:none` without a replacement.
+- **Transparency/blur:** blur only on dialog overlays (`backdrop-filter: blur(6px)` over `rgba(20,16,16,.6)`).
+- **Uppercase microcopy (H2/H6/H8):** reserve `text-transform:uppercase` + mono for **short microlabels** (≤2 words: eyebrows, field labels, status badges, table headers). **Messages, titles and any reading text go in normal case** — never uppercase sentences. Rule of thumb: if it doesn't fit in a "pill," it goes in normal case.
+- **Single dismiss pattern (H4):** the icon dismiss always uses Phosphor `ph-x` (Tag, Toast). **Modals** (Dialog/ConfirmDialog) are closed with their **explicit button** (Cancel) or a click-outside where appropriate, not the icon; the two affordances are never mixed in the same component.
+- **Component documentation (H10):** every `*.prompt.md` includes examples and, where it adds value, a **Do / Don't** section with the most common usage mistakes.
 
-### Convención de peligro (acciones e indicadores de riesgo)
-Para diferenciar las **acciones e indicadores destructivos / de riesgo** de la acción principal, Arena las distingue por **forma, no por peso**: **fondo transparente** con el **borde y todo su contenido** (texto e iconos) en el token semántico **`--error`** (alias `--danger`). Así el peligro se lee por color y nunca compite visualmente con el botón primario carmesí, que sí va relleno.
-- **Aplica a** todo disparador o indicador de riesgo: botones (`.btn.danger`), icon buttons (`.iconbtn.danger`), ítems de menú (`.mitem.danger`) y equivalentes en listas, tarjetas y barras de herramientas. Hover: aclara con `--danger-soft`. Foco: anillo `--error`.
-- **Regla:** un botón de peligro **relleno** no aparece como disparador en la UI (listas, tarjetas, toolbars). El relleno sólido se reserva por peso visual para la acción principal (carmesí).
-- **Única excepción — confirmación final irreversible:** dentro de un `ConfirmDialog`, el botón del último «punto de no retorno» **sí se rellena** en `--error` sobre `--color-error-content`. Es la única superficie donde el peligro va relleno, precisamente porque no debe confundirse con una acción cualquiera.
-- **Espécimen:** `guidelines/components-danger.html` (los tres estados lado a lado: primary relleno · danger outline · confirmación final rellena).
+### Danger convention (destructive actions and risk indicators)
+To tell **destructive / risk actions and indicators** apart from the primary action, Arena distinguishes them by **shape, not weight**: **transparent background** with the **border and all its content** (text and icons) in the semantic token **`--error`** (alias `--danger`). This way danger reads through color and never visually competes with the filled crimson primary button.
+- **Applies to** every risk trigger or indicator: buttons (`.btn.danger`), icon buttons (`.iconbtn.danger`), menu items (`.mitem.danger`) and equivalents in lists, cards and toolbars. Hover: lightens with `--danger-soft`. Focus: `--error` ring.
+- **Rule:** a **filled** danger button never appears as a trigger in the UI (lists, cards, toolbars). The solid fill is reserved by visual weight for the primary action (crimson).
+- **Only exception — final irreversible confirmation:** inside a `ConfirmDialog`, the button for the final "point of no return" **is** filled in `--error` over `--color-error-content`. It's the only surface where danger is filled, precisely because it must not be confused with an ordinary action.
+- **Specimen:** `guidelines/components-danger.html` (all three states side by side: filled primary · outline danger · filled final confirmation).
 
 ## ICONOGRAPHY
-- **Set oficial: [Phosphor Icons](https://phosphoricons.com)** (licencia MIT, uso comercial libre sin atribución). Elegido por alinearse con la identidad audaz de Dravensoft: es la familia open-source con más variedad de estilo (1.500+ iconos en 6 pesos) y su peso **Bold** tiene la presencia y el alto contraste que pide la marca — el equivalente en iconos de Archivo Black.
-- **Pesos y uso:**
-  - **Bold** (`.ph-bold`) — peso por defecto en toda la UI. Presencia y legibilidad en alto contraste.
-  - **Fill** (`.ph-fill`) — estado activo/seleccionado (p. ej. el ítem de navegación activo, un toggle encendido).
-  - **Duotone** (`.ph-duotone`) — solo para destacar funciones/onboarding, con el acento carmesí en la capa primaria. Efecto premium de dos tonos; usar con moderación.
-- **Carga (CDN):** enlazar la hoja de cada peso usado, p. ej. `https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css`, y aplicar la clase de peso + la del icono: `<i class="ph-bold ph-rocket-launch"></i>`. Producción: instalar `@phosphor-icons/react` (`<Rocket weight="bold"/>`).
-- Tamaños: 16 / 20 / 24 px (vía `font-size`). Color: hereda `currentColor`; acento solo cuando es interactivo/activo.
-- **No** sobrescribir `font-family/weight/style` de las clases `.ph-*` (rompe los glifos).
-- **Sin emoji.** Sin unicode arbitrario como icono. El **Rotor** (`assets/rotor-*.svg`) es marca, no icono de UI: no usarlo como glifo funcional.
-- *Nota de migración:* el UI kit `console/Icon.jsx` usa SVGs propios estilo trazo como puente; la referencia oficial para producto nuevo es Phosphor.
+- **Official set: [Phosphor Icons](https://phosphoricons.com)** (MIT license, free commercial use, no attribution). Chosen for aligning with Dravensoft's bold identity: it's the open-source family with the widest style range (1,500+ icons in 6 weights) and its **Bold** weight has the presence and high contrast the brand calls for — the icon equivalent of Archivo Black.
+- **Weights and use:**
+  - **Bold** (`.ph-bold`) — default weight across the UI. Presence and legibility at high contrast.
+  - **Fill** (`.ph-fill`) — active/selected state (e.g. the active navigation item, a toggle that's on).
+  - **Duotone** (`.ph-duotone`) — only to highlight features/onboarding, with the crimson accent on the primary layer. Premium two-tone effect; use sparingly.
+- **Loading (CDN):** link the stylesheet for each weight used, e.g. `https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css`, and apply the weight class plus the icon class: `<i class="ph-bold ph-rocket-launch"></i>`. Production: install `@phosphor-icons/react` (`<Rocket weight="bold"/>`).
+- Sizes: 16 / 20 / 24 px (via `font-size`). Color: inherits `currentColor`; accent only when interactive/active.
+- **Do not** override `font-family/weight/style` on `.ph-*` classes (breaks the glyphs).
+- **No emoji.** No arbitrary unicode as an icon. The **Rotor** (`assets/rotor-*.svg`) is brand, not a UI icon: don't use it as a functional glyph.
+- *Migration note:* the `console/Icon.jsx` UI kit uses its own stroke-style SVGs as a bridge; the official reference for new product work is Phosphor.
 
 ---
 
-## Índice / manifiesto
-- `styles.css` — punto de entrada global (solo @imports). Consumidores enlazan este archivo.
+## Index / manifest
+- `styles.css` — global entry point (only @imports). Consumers link this file.
 - `tokens/` — `fonts.css`, `colors.css`, `typography.css`, `spacing.css`, `effects.css`.
 - `assets/` — `rotor-crimson/bone/ink.svg`, `app-icon.svg`.
-- `guidelines/` — tarjetas de especímenes (`@dsCard`): tipografía (`type-display`, `type-body`, `type-mono`), color (`colors-neutrals`, `colors-accents`, `colors-status`), espaciado (`spacing-scale`), efectos (`effects-radius`, `effects-shadow`), iconografía (`icons`), marca (`brand-logo`, `brand-rotor`) y la **convención de peligro** (`components-danger`).
-- `components/` — primitivas React: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch), `display/` (Card, Badge, Tag, Avatar, Table, Skeleton), `navigation/` (Tabs, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding), `brand/` (Rotor).
-- `ui_kits/console/` — recreación de la Consola de Entrega (producto interno de ejemplo).
-- `SKILL.md` — para uso como Agent Skill descargable.
+- `guidelines/` — specimen cards (`@dsCard`): typography (`type-display`, `type-body`, `type-mono`), color (`colors-neutrals`, `colors-accents`, `colors-status`), spacing (`spacing-scale`), effects (`effects-radius`, `effects-shadow`), iconography (`icons`), brand (`brand-logo`, `brand-rotor`) and the **danger convention** (`components-danger`).
+- `components/` — React primitives: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch), `display/` (Card, Badge, Tag, Avatar, Table, Skeleton), `navigation/` (Tabs, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding), `brand/` (Rotor).
+- `ui_kits/console/` — recreation of the Delivery Console (an example internal product).
+- `SKILL.md` — for use as a downloadable Agent Skill.
 
 ## Intentional additions
-- **Tokens de consistencia (pre-publicación v1.0):** `--danger-strong` (simétrico a `--crimson-strong`/`--gold-strong`) y `--scrim`/`--scrim-blur` (backdrop unificado de los modales, en `tokens/effects.css`). Con ellos no quedan colores hardcodeados (`#fff`, `rgba(20,16,16,.6)`) en los componentes: todo pasa por token, incluido `--on-accent`. *Estado actual:* tras la migración a tokens daisyUI, las variantes `*-strong` **alias al color base** de su acento; se conservan como punto de extensión por si un tema define un tono pressed diferenciado.
-- **Rotor** (componente de marca) — envoltorio del símbolo para splash/estados de carga; no existe como "componente" en la identidad pero es necesario para producto.
-- **Iconografía Phosphor Icons** — set adoptado por ausencia de uno propio en la identidad; peso Bold como base (ver sección ICONOGRAPHY).
-- **Componentes de remediación** (tras la auditoría heurística de Nielsen):
-  - *Revisión 2 (severidad 3):* `ConfirmDialog` (confirmación de acciones destructivas, H3/H5), `EmptyState` y `ErrorState` (recuperación, H9), `CommandPalette` (acelerador ⌘K, H7), `Toast.action` e `Input` con validación (H5, H9).
-  - *Revisión 3 (severidad 2):* `Skeleton` (carga asíncrona) y `Toast persist` (H1), `Breadcrumbs` (H3), `Switch confirm`/`onRequestChange` (H5), `IconButton showLabel` (H6), `BulkActionBar` y **tokens de densidad** (`--dz-*` + scope `.arena-compact`) (H7), `--mute-2` recalibrado a contraste **WCAG AA** (H8) y `Onboarding` guiado (H10).
-  - *Revisión 4 (severidad 1):* `ProgressBar` determinada (H1); **cierre unificado** con Phosphor `ph-x` en Tag/Toast (H4); **taxonomía de tonos de Badge** aclarada —estado vs. énfasis— (H4/H8); guía de **microcopy en mayúsculas** (H2/H6/H8) y convención de **Hacer/No hacer** en la doc de cada componente (H10). Con esto no quedan hallazgos de severidad ≥1; la severidad máxima vigente es 0.
+- **Consistency tokens (pre-v1.0 publication):** `--danger-strong` (symmetric to `--crimson-strong`/`--gold-strong`) and `--scrim`/`--scrim-blur` (unified modal backdrop, in `tokens/effects.css`). With these, no hardcoded colors (`#fff`, `rgba(20,16,16,.6)`) remain in the components: everything goes through a token, including `--on-accent`. *Current status:* after the migration to daisyUI tokens, the `*-strong` variants **alias to their accent's base color**; they're kept as an extension point in case a theme defines a distinct pressed tone.
+- **Rotor** (brand component) — wrapper around the symbol for splash/loading states; it doesn't exist as a "component" in the identity but is needed for product.
+- **Phosphor Icons iconography** — set adopted in the absence of one in the identity; Bold weight as the default (see the ICONOGRAPHY section).
+- **Remediation components** (following the Nielsen heuristic audit):
+  - *Review 2 (severity 3):* `ConfirmDialog` (destructive action confirmation, H3/H5), `EmptyState` and `ErrorState` (recovery, H9), `CommandPalette` (⌘K accelerator, H7), `Toast.action` and `Input` with validation (H5, H9).
+  - *Review 3 (severity 2):* `Skeleton` (async loading) and `Toast persist` (H1), `Breadcrumbs` (H3), `Switch confirm`/`onRequestChange` (H5), `IconButton showLabel` (H6), `BulkActionBar` and **density tokens** (`--dz-*` + `.arena-compact` scope) (H7), `--mute-2` recalibrated to **WCAG AA** contrast (H8) and guided `Onboarding` (H10).
+  - *Review 4 (severity 1):* determinate `ProgressBar` (H1); **unified dismiss** with Phosphor `ph-x` on Tag/Toast (H4); **Badge tone taxonomy** clarified — status vs. emphasis — (H4/H8); **uppercase microcopy** guidance (H2/H6/H8) and the **Do/Don't** convention in every component's docs (H10). With this, no findings of severity ≥1 remain; the current maximum severity is 0.

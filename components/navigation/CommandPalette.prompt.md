@@ -1,4 +1,4 @@
-Acelerador para expertos (H7). Ábrela con Cmd/Ctrl+K desde el host y pásale la lista de comandos.
+Power-user accelerator (H7). Open it with Cmd/Ctrl+K from the host and pass it the list of commands.
 
 ```jsx
 const [open, setOpen] = useState(false);
@@ -7,7 +7,7 @@ useEffect(() => {
   window.addEventListener('keydown', h); return () => window.removeEventListener('keydown', h);
 }, []);
 <CommandPalette open={open} onClose={() => setOpen(false)} commands={[
-  { label: 'Desplegar a producción', icon: <i className="ph-bold ph-rocket-launch"/>, shortcut: 'D', onRun: deploy },
-  { label: 'Revertir último despliegue', icon: <i className="ph-bold ph-arrow-counter-clockwise"/>, onRun: revert },
+  { label: 'Deploy to production', icon: <i className="ph-bold ph-rocket-launch"/>, shortcut: 'D', onRun: deploy },
+  { label: 'Roll back last deployment', icon: <i className="ph-bold ph-arrow-counter-clockwise"/>, onRun: revert },
 ]} />
 ```

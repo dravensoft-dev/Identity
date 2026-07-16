@@ -1,10 +1,10 @@
-Chip de filtro/tecnología, opcionalmente descartable. La × de descarte usa el icono estándar Phosphor `ph-x` (H4) — el mismo cierre que Toast.
+Filter/technology chip, optionally dismissible. The dismiss × uses the standard Phosphor icon `ph-x` (H4) — the same close as Toast.
 
 ```jsx
 <Tag>TypeScript</Tag>
 <Tag onRemove={()=>drop('react')}>React</Tag>
 ```
 
-**Hacer / No hacer**
-- Usa `onRemove` solo cuando quitar el chip es una acción real del usuario (filtros aplicados), no en etiquetas informativas.
-- No mezcles la × de Tag/Toast con el cierre de los modales: los diálogos se cierran con su botón explícito (Cancelar), no con el icono ph-x.
+**Do / Don't**
+- Use `onRemove` only when removing the chip is a real user action (applied filters), not on informational tags.
+- Don't mix the Tag/Toast × with the modal close: dialogs close with their explicit button (Cancel), not with the ph-x icon.

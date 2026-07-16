@@ -1,37 +1,37 @@
 /* ============================================================
-   Arena — Paleta de color (estructura daisyUI)
-   Fuente de verdad: tokens daisyUI (--color-*).
-   Tema por defecto = oscuro (:root). Tema claro = .arena-light.
-   Debajo, una capa de compatibilidad mapea los alias antiguos
-   de Arena a estos tokens para no romper los componentes.
+   Arena — Color palette (daisyUI structure)
+   Source of truth: daisyUI tokens (--color-*).
+   Default theme = dark (:root). Light theme = .arena-light.
+   Below, a compatibility layer maps Arena's legacy aliases
+   to these tokens so components don't break.
    ============================================================ */
 
-/* --- Tema oscuro (por defecto) --- */
+/* --- Dark theme (default) --- */
 :root{
-  /* Base (neutros cálidos) */
-  --color-base-100:#141010;   /* fondo principal */
-  --color-base-200:#1d1715;   /* superficie elevada / card */
-  --color-base-300:#241c19;   /* panel / borde */
-  --color-base-content:#f3ede5;/* texto sobre base */
+  /* Base (warm neutrals) */
+  --color-base-100:#141010;   /* main background */
+  --color-base-200:#1d1715;   /* elevated surface / card */
+  --color-base-300:#241c19;   /* panel / border */
+  --color-base-content:#f3ede5;/* text on base */
 
-  /* Marca */
-  --color-primary:#b52a20;    --color-primary-content:#ffffff;   /* carmesí */
-  --color-secondary:#c5a059;  --color-secondary-content:#141010; /* dorado */
-  --color-neutral:#2c221e;    --color-neutral-content:#d8cfc4;   /* superficie neutra */
+  /* Brand */
+  --color-primary:#b52a20;    --color-primary-content:#ffffff;   /* crimson */
+  --color-secondary:#c5a059;  --color-secondary-content:#141010; /* gold */
+  --color-neutral:#2c221e;    --color-neutral-content:#d8cfc4;   /* neutral surface */
 
-  /* Estado */
+  /* Status */
   --color-info:#3182ce;       --color-info-content:#ffffff;
   --color-success:#38a169;    --color-success-content:#ffffff;
   --color-warning:#ecc94b;    --color-warning-content:#141010;
   --color-error:#e53e3e;      --color-error-content:#ffffff;
 }
 
-/* --- Tema claro — inverso cálido de la base oscura --- */
+/* --- Light theme — warm inverse of the dark base --- */
 .arena-light{
-  --color-base-100:#ffffff;   /* fondo principal — blanco */
-  --color-base-200:#f7f4ef;   /* card / superficie elevada — hueso cálido muy tenue */
-  --color-base-300:#ece6dc;   /* panel / borde — hueso cálido */
-  --color-base-content:#1a1a1a;/* texto — gris casi negro */
+  --color-base-100:#ffffff;   /* main background — white */
+  --color-base-200:#f7f4ef;   /* card / elevated surface — very faint warm bone */
+  --color-base-300:#ece6dc;   /* panel / border — warm bone */
+  --color-base-content:#1a1a1a;/* text — near-black gray */
 
   --color-primary:#b52a20;    --color-primary-content:#ffffff;
   --color-secondary:#c5a059;  --color-secondary-content:#141010;
@@ -44,12 +44,12 @@
 }
 
 /* ============================================================
-   Capa de compatibilidad — alias Arena → tokens daisyUI.
-   Los niveles de texto atenuado se derivan de base-content
-   con color-mix (equivalente al patrón de opacidad de daisyUI).
+   Compatibility layer — Arena aliases → daisyUI tokens.
+   Muted text levels are derived from base-content with
+   color-mix (equivalent to daisyUI's opacity pattern).
    ============================================================ */
 :root,.arena-light{
-  /* neutros crudos */
+  /* raw neutrals */
   --ink:var(--color-base-100);
   --ink-2:var(--color-base-200);
   --panel:var(--color-base-200);
@@ -62,7 +62,7 @@
   --mute-2:color-mix(in oklab,var(--color-base-content) 52%,transparent);
   --mute-2-disabled:color-mix(in oklab,var(--color-base-content) 40%,transparent);
 
-  /* acentos de marca */
+  /* brand accents */
   --crimson:var(--color-primary);
   --crimson-strong:var(--color-primary);
   --crimson-soft:color-mix(in oklab,var(--color-primary) 14%,transparent);
@@ -70,7 +70,7 @@
   --gold-strong:var(--color-secondary);
   --gold-soft:color-mix(in oklab,var(--color-secondary) 16%,transparent);
 
-  /* estado */
+  /* status */
   --success:var(--color-success);
   --success-soft:color-mix(in oklab,var(--color-success) 16%,transparent);
   --warning:var(--color-warning);
@@ -81,7 +81,7 @@
   --info:var(--color-info);
   --info-soft:color-mix(in oklab,var(--color-info) 16%,transparent);
 
-  /* alias semánticos */
+  /* semantic aliases */
   --bg:var(--color-base-100);
   --bg-raised:var(--color-base-300);
   --surface-card:var(--color-base-200);

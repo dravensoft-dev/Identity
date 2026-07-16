@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-/** Confirmación de acciones de consecuencia alta. NO cierra al hacer clic fuera (evita pérdidas).
- * `requireText` obliga a teclear una palabra para habilitar la acción destructiva. */
-export function ConfirmDialog({ open, onCancel, onConfirm, title, eyebrow = 'Confirmar', children,
-  confirmLabel = 'Confirmar', cancelLabel = 'Cancelar', destructive = false, requireText, width = 460 }) {
+/** Confirmation of high-consequence actions. Does NOT close on click-outside (avoids losses).
+ * `requireText` forces typing a word to enable the destructive action. */
+export function ConfirmDialog({ open, onCancel, onConfirm, title, eyebrow = 'Confirm', children,
+  confirmLabel = 'Confirm', cancelLabel = 'Cancel', destructive = false, requireText, width = 460 }) {
   const [typed, setTyped] = useState('');
   if (!open) return null;
   const locked = requireText ? typed.trim() !== requireText : false;
@@ -21,7 +21,7 @@ export function ConfirmDialog({ open, onCancel, onConfirm, title, eyebrow = 'Con
           {children}
           {requireText && (
             <div style={{ marginTop: 14 }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)', marginBottom: 6 }}>Escribe «{requireText}» para confirmar</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)', marginBottom: 6 }}>Type "{requireText}" to confirm</div>
               <input value={typed} onChange={(e) => setTyped(e.target.value)} autoFocus
                 style={{ width: '100%', height: 42, padding: '0 12px', background: 'var(--surface-input)',
                   border: '1px solid ' + (locked && typed ? 'var(--danger)' : 'var(--line)'), borderRadius: 'var(--r-sm)',

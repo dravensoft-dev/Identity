@@ -1,5 +1,5 @@
 import * as React from 'react';
-/** Estado vacío guiado. `action` suele ser un Button que crea el primer elemento. */
+/** Guided empty state. `action` is usually a Button that creates the first item. */
 export interface EmptyStateProps {
   icon?: React.ReactNode; title?: string; message?: string; action?: React.ReactNode; style?: React.CSSProperties;
 }

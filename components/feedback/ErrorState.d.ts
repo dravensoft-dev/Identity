@@ -1,5 +1,5 @@
 import * as React from 'react';
-/** Estado de error con recuperación. `onRetry` muestra el botón Reintentar; `code` expone el diagnóstico. */
+/** Error state with recovery. `onRetry` shows the Retry button; `code` exposes the diagnostic. */
 export interface ErrorStateProps {
   icon?: React.ReactNode; title?: string; message?: string; code?: string;
   onRetry?: () => void; retryLabel?: string; secondaryAction?: React.ReactNode; style?: React.CSSProperties;

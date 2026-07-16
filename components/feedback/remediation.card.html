@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="820x520" name="Remediación (sev. 3)" subtitle="Toast+acción · ConfirmDialog · EmptyState · ErrorState · CommandPalette" -->
+<!-- @dsCard group="Components" viewport="820x520" name="Remediation (sev. 3)" subtitle="Toast+action · ConfirmDialog · EmptyState · ErrorState · CommandPalette" -->
 <!doctype html>
 <html>
 <head>
@@ -35,29 +35,29 @@ function Demo(){
   React.useEffect(()=>{const h=e=>{if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();setPalette(true);}};window.addEventListener('keydown',h);return()=>window.removeEventListener('keydown',h);},[]);
   return (
     <div>
-      <div className="sub">Toast con acción — Deshacer (H3) · Reintentar/Ver logs (H9)</div>
+      <div className="sub">Toast with action — Undo (H3) · Retry/View logs (H9)</div>
       <div className="row">
-        <Toast tone="neutral" title="Entrega archivada" action={{label:'Deshacer',onClick:()=>{}}} onClose={()=>{}}/>
-        <Toast tone="danger" title="Fallo en el pipeline" message="tests e2e en checkout" action={{label:'Ver logs',onClick:()=>{}}} onClose={()=>{}}/>
+        <Toast tone="neutral" title="Deployment archived" action={{label:'Undo',onClick:()=>{}}} onClose={()=>{}}/>
+        <Toast tone="danger" title="Pipeline failed" message="e2e tests in checkout" action={{label:'View logs',onClick:()=>{}}} onClose={()=>{}}/>
       </div>
       <div className="sub">ConfirmDialog (H3/H5) · CommandPalette (H7)</div>
       <div className="row">
-        <Button variant="danger" onClick={()=>setConfirm(true)}>Eliminar proyecto…</Button>
-        <Button variant="secondary" onClick={()=>setPalette(true)}>Paleta de comandos (⌘K)</Button>
+        <Button variant="danger" onClick={()=>setConfirm(true)}>Delete project…</Button>
+        <Button variant="secondary" onClick={()=>setPalette(true)}>Command palette (⌘K)</Button>
       </div>
       <div className="sub">EmptyState · ErrorState (H9)</div>
       <div className="row">
-        <EmptyState style={{flex:'1 1 320px'}} icon={<i className="ph-duotone ph-folder-open"/>} title="Aún no hay proyectos" message="Crea tu primer proyecto para empezar a desplegar." action={<Button>Nuevo proyecto</Button>}/>
-        <ErrorState style={{flex:'1 1 320px'}} icon={<i className="ph-fill ph-warning-octagon"/>} title="No se pudo cargar el panel" message="Sin conexión con el servicio de métricas." code="ERR_UPSTREAM_504" onRetry={()=>{}} secondaryAction={<Button variant="secondary">Ver logs</Button>}/>
+        <EmptyState style={{flex:'1 1 320px'}} icon={<i className="ph-duotone ph-folder-open"/>} title="No projects yet" message="Create your first project to start deploying." action={<Button>New project</Button>}/>
+        <ErrorState style={{flex:'1 1 320px'}} icon={<i className="ph-fill ph-warning-octagon"/>} title="Couldn't load the panel" message="No connection to the metrics service." code="ERR_UPSTREAM_504" onRetry={()=>{}} secondaryAction={<Button variant="secondary">View logs</Button>}/>
       </div>
-      <ConfirmDialog open={confirm} destructive requireText="ELIMINAR" title="Eliminar proyecto" confirmLabel="Eliminar definitivamente" onCancel={()=>setConfirm(false)} onConfirm={()=>setConfirm(false)}>
-        Esta acción no se puede deshacer. Se borrarán 4 despliegues y su historial.
+      <ConfirmDialog open={confirm} destructive requireText="DELETE" title="Delete project" confirmLabel="Delete permanently" onCancel={()=>setConfirm(false)} onConfirm={()=>setConfirm(false)}>
+        This action cannot be undone. 4 deployments and their history will be deleted.
       </ConfirmDialog>
       <CommandPalette open={palette} onClose={()=>setPalette(false)} commands={[
-        {label:'Desplegar a producción',icon:<i className="ph-bold ph-rocket-launch"/>,shortcut:'D',onRun:()=>{}},
-        {label:'Revertir último despliegue',icon:<i className="ph-bold ph-arrow-counter-clockwise"/>,onRun:()=>{}},
-        {label:'Abrir Proyectos',icon:<i className="ph-bold ph-squares-four"/>,onRun:()=>{}},
-        {label:'Ir a Ajustes',icon:<i className="ph-bold ph-gear-six"/>,onRun:()=>{}},
+        {label:'Deploy to production',icon:<i className="ph-bold ph-rocket-launch"/>,shortcut:'D',onRun:()=>{}},
+        {label:'Roll back last deployment',icon:<i className="ph-bold ph-arrow-counter-clockwise"/>,onRun:()=>{}},
+        {label:'Open Projects',icon:<i className="ph-bold ph-squares-four"/>,onRun:()=>{}},
+        {label:'Go to Settings',icon:<i className="ph-bold ph-gear-six"/>,onRun:()=>{}},
       ]}/>
     </div>
   );

@@ -5,7 +5,7 @@ export function Tag({ children, onRemove, style, ...rest }) {
       background: 'var(--panel)', color: 'var(--bone-dim)', border: '1px solid var(--line)',
       borderRadius: 'var(--r-sm)', fontFamily: 'var(--font-body)', fontSize: 13, ...style }} {...rest}>
       {children}
-      {onRemove && <button onClick={onRemove} aria-label="Quitar" style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 'none', color: 'var(--mute)', cursor: 'pointer', padding: 0, fontSize: 14, lineHeight: 1 }}><i className="ph-bold ph-x" /></button>}
+      {onRemove && <button onClick={onRemove} aria-label="Remove" style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 'none', color: 'var(--mute)', cursor: 'pointer', padding: 0, fontSize: 14, lineHeight: 1 }}><i className="ph-bold ph-x" /></button>}
     </span>
   );
 }

@@ -1,4 +1,4 @@
-Símbolo de marca. Marca, no icono de UI. `spin` solo en splash/estados de carga.
+Brand symbol. Brand, not a UI icon. `spin` only in splash/loading states.
 
 ```jsx
 <Rotor size={64} spin />

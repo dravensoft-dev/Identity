@@ -6,7 +6,7 @@
     if (b) {
       b.setAttribute('data-light', light ? '1' : '0');
       var l = b.querySelector('.tlabel');
-      if (l) l.textContent = light ? 'Claro' : 'Oscuro';
+      if (l) l.textContent = light ? 'Light' : 'Dark';
     }
   }
   function toggle() {

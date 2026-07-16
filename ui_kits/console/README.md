@@ -1,20 +1,20 @@
-# UI Kit — Consola de Entrega
+# UI Kit — Delivery Console
 
-Recreación interactiva de un producto interno de Dravensoft: la consola donde el equipo de delivery supervisa proyectos de clientes, despliegues y actividad. Sirve como demostración del lenguaje **Arena** aplicado a una app real (dark-first, densa pero respirada).
+Interactive recreation of an internal Dravensoft product: the console where the delivery team oversees customer projects, deployments, and activity. Serves as a demonstration of the **Arena** language applied to a real app (dark-first, dense but breathable).
 
-## Flujo del demo (`index.html`)
-1. **Login** — pantalla de acceso con marca (Rotor + wordmark) sobre gradiente cálido.
-2. **Proyectos** (dashboard) — métricas + grid de tarjetas de proyecto con estado de despliegue. Clic en una tarjeta abre el detalle.
-3. **Proyecto** — pestañas Resumen / Despliegues / Actividad / Ajustes; el botón **Desplegar** abre un diálogo de confirmación y lanza un toast.
+## Demo flow (`index.html`)
+1. **Login** — access screen with branding (Rotor + wordmark) over a warm gradient.
+2. **Projects** (dashboard) — metrics + grid of project cards with deployment status. Clicking a card opens its detail.
+3. **Project** — Overview / Deployments / Activity / Settings tabs; the **Deploy** button opens a confirmation dialog and fires a toast.
 
-## Pantallas (JSX)
-- `LoginScreen.jsx` — acceso.
-- `Shell.jsx` — layout base (sidebar de navegación + topbar) reutilizado por dashboard y proyecto.
-- `DashboardScreen.jsx` — métricas y grid de proyectos.
-- `ProjectScreen.jsx` — detalle con pestañas, tabla de despliegues, actividad y ajustes.
-- `Icon.jsx` — wrapper de **Phosphor Icons** (webfont); `weight` bold por defecto, fill para estado activo. Requiere las hojas `@phosphor-icons/web` cargadas en la página host.
+## Screens (JSX)
+- `LoginScreen.jsx` — sign-in.
+- `Shell.jsx` — base layout (navigation sidebar + topbar) reused by the dashboard and project screens.
+- `DashboardScreen.jsx` — metrics and project grid.
+- `ProjectScreen.jsx` — detail view with tabs, deployment table, activity, and settings.
+- `Icon.jsx` — wrapper around **Phosphor Icons** (webfont); `weight` bold by default, fill for active state. Requires the `@phosphor-icons/web` stylesheets loaded in the host page.
 
-## Componentes Arena usados
+## Arena components used
 Button, IconButton, Input, Switch, Card, Badge, Tag, Tabs, Dialog, Toast, Rotor.
 
-Todos los datos son ficticios. El kit copia el diseño del lenguaje Arena; no reinventa componentes (los compone desde `components/`).
+All data is fictitious. The kit follows the Arena language's design; it doesn't reinvent components (it composes them from `components/`).

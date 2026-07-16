@@ -1,8 +1,8 @@
 import React from 'react';
-/** Tabla de datos. `columns`: [{key, header, align, width, mono, render}]. `rows`: objetos.
- * Lee los tokens de densidad (--dz-*), así que dentro de `.arena-compact` se re-densifica sola.
- * `onRowClick` hace las filas interactivas; `selectable` reserva la primera columna. */
-export function Table({ columns = [], rows = [], getRowKey, onRowClick, empty = 'Sin datos.', style }) {
+/** Data table. `columns`: [{key, header, align, width, mono, render}]. `rows`: objects.
+ * Reads the density tokens (--dz-*), so inside `.arena-compact` it re-densifies itself.
+ * `onRowClick` makes rows interactive; `selectable` reserves the first column. */
+export function Table({ columns = [], rows = [], getRowKey, onRowClick, empty = 'No data.', style }) {
   const cellBase = { padding: 'var(--dz-row-py) var(--dz-row-px)', fontSize: 'var(--dz-cell)', textAlign: 'left', verticalAlign: 'middle' };
   return (
     <div style={{ border: '1px solid var(--line)', borderRadius: 'var(--r-lg)', overflow: 'hidden', background: 'var(--surface-card)', ...style }}>

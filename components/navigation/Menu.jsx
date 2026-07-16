@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-/** Menú desplegable (acciones / desbordamiento). `trigger` es el elemento que lo abre
- * (p. ej. un IconButton con ph-dots-three). `items`: [{label, icon, onClick, shortcut,
- * destructive, disabled} | {divider:true} | {header:'Texto'}]. Cierra con Esc o clic fuera. */
+/** Dropdown menu (actions / overflow). `trigger` is the element that opens it
+ * (e.g. an IconButton with ph-dots-three). `items`: [{label, icon, onClick, shortcut,
+ * destructive, disabled} | {divider:true} | {header:'Text'}]. Closes with Esc or an outside click. */
 export function Menu({ trigger, items = [], align = 'start', style }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);

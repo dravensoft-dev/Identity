@@ -1,12 +1,12 @@
 import * as React from 'react';
-/** Barra de progreso (H1). Determinada por defecto (`value` 0–100); `indeterminate` para esperas sin porcentaje. */
+/** Progress bar (H1). Determinate by default (`value` 0–100); `indeterminate` for waits without a percentage. */
 export interface ProgressBarProps {
-  /** 0–100. Ignorado si `indeterminate`. */
+  /** 0–100. Ignored if `indeterminate`. */
   value?: number;
   indeterminate?: boolean;
   tone?: 'accent' | 'gold' | 'success' | 'danger' | 'info';
   label?: React.ReactNode;
-  /** Muestra el % junto a la etiqueta (solo en modo determinado). */
+  /** Shows the % next to the label (determinate mode only). */
   showValue?: boolean;
   size?: 'sm' | 'md' | 'lg';
   style?: React.CSSProperties;

@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 
-/** Barra de progreso (H1). Prefiere el modo *determinado* (`value` 0–100) para procesos
- * medibles —despliegues, subidas, migraciones— y reserva `indeterminate` para esperas sin
- * porcentaje conocido. `tone` alinea el color con el estado (accent por defecto). */
+/** Progress bar (H1). Prefer *determinate* mode (`value` 0–100) for measurable
+ * processes —deployments, uploads, migrations— and reserve `indeterminate` for waits with
+ * no known percentage. `tone` aligns the color with the state (accent by default). */
 let injected = false;
 function useIndeterminate() {
   useEffect(() => {
@@ -32,7 +32,7 @@ export function ProgressBar({ value = 0, indeterminate = false, tone = 'accent',
           {showValue && !indeterminate && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--mute)' }}>{pct}%</span>}
         </div>
       )}
-      <div role="progressbar" aria-valuenow={indeterminate ? undefined : pct} aria-valuemin={0} aria-valuemax={100} aria-label={typeof label === 'string' ? label : 'Progreso'}
+      <div role="progressbar" aria-valuenow={indeterminate ? undefined : pct} aria-valuemin={0} aria-valuemax={100} aria-label={typeof label === 'string' ? label : 'Progress'}
         className={indeterminate ? 'arena-prog-ind' : undefined}
         style={{ position: 'relative', height: h, borderRadius: 'var(--r-pill)', background: 'var(--line)', overflow: 'hidden', color }}>
         {!indeterminate && (

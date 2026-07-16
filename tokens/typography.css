@@ -1,8 +1,8 @@
 :root{
   /* Families */
-  --font-display:'Archivo',system-ui,sans-serif;   /* impact — titulares, wordmark */
-  --font-body:'Familjen Grotesk',system-ui,sans-serif; /* cuerpo legible */
-  --font-mono:'Spline Sans Mono',ui-monospace,monospace;  /* datos, etiquetas técnicas */
+  --font-display:'Archivo',system-ui,sans-serif;   /* impact — headlines, wordmark */
+  --font-body:'Familjen Grotesk',system-ui,sans-serif; /* legible body copy */
+  --font-mono:'Spline Sans Mono',ui-monospace,monospace;  /* data, technical labels */
 
   /* Weights */
   --fw-regular:400;

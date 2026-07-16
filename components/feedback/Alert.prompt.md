@@ -1,13 +1,13 @@
-Mensaje persistente en la página (aviso de estado, condición del sistema, contexto). Se queda hasta que la condición se resuelve — a diferencia de `Toast`, que es efímero.
+Persistent message on the page (status notice, system condition, context). Stays until the condition is resolved — unlike `Toast`, which is ephemeral.
 
 ```jsx
-<Alert tone="warning" title="Entorno de staging"
-  action={{ label:'Ir a producción', onClick:goProd }}>
-  Los cambios aquí no afectan a usuarios reales.
+<Alert tone="warning" title="Staging environment"
+  action={{ label:'Go to production', onClick:goProd }}>
+  Changes here don't affect real users.
 </Alert>
 ```
 
-**Hacer / No hacer**
-- Alert = persistente e inline; Toast = efímero y flotante. No los intercambies.
-- Si es descartable, el cierre es el icono estándar `ph-x` (H4).
-- Reserva `danger` para condiciones que bloquean; para errores de página completa usa `ErrorState`.
+**Do / Don't**
+- Alert = persistent and inline; Toast = ephemeral and floating. Don't swap them.
+- If dismissible, the close is the standard `ph-x` icon (H4).
+- Reserve `danger` for blocking conditions; for full-page errors use `ErrorState`.

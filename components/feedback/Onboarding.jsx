@@ -1,8 +1,8 @@
 import React from 'react';
 
-/** Onboarding guiado (H10). Coachmark por pasos: presenta funciones dentro del producto
- * con progreso, "Saltar" y "Siguiente". Controlado: el host mantiene `index`.
- * `anchorRect` (opcional, un DOMRect) ancla el callout junto a un elemento; sin él flota abajo-derecha. */
+/** Guided onboarding (H10). Step-by-step coachmark: presents features within the product
+ * with progress, "Skip", and "Next". Controlled: the host keeps `index`.
+ * `anchorRect` (optional, a DOMRect) anchors the callout next to an element; without it floats bottom-right. */
 export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip, onDone, anchorRect }) {
   if (!open || !steps.length) return null;
   const step = steps[index] || {};
@@ -28,21 +28,21 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
         {step.title && <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'var(--bone)', letterSpacing: '-.01em' }}>{step.title}</div>}
         {step.body && <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 1.6, color: 'var(--bone-dim)', marginTop: 8 }}>{step.body}</div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 18 }}>
-          <div style={{ display: 'flex', gap: 6, flex: 1 }} aria-label={'Paso ' + (index + 1) + ' de ' + steps.length}>
+          <div style={{ display: 'flex', gap: 6, flex: 1 }} aria-label={'Step ' + (index + 1) + ' of ' + steps.length}>
             {steps.map((_, i) => (
               <span key={i} style={{ width: i === index ? 18 : 7, height: 7, borderRadius: 'var(--r-pill)', background: i === index ? 'var(--crimson)' : 'var(--line-strong)', transition: 'width var(--dur-mid) var(--ease-out)' }} />
             ))}
           </div>
           {index > 0 && (
-            <button onClick={onBack} style={{ ...foot, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontWeight: 700, textTransform: 'uppercase' }}>Atrás</button>
+            <button onClick={onBack} style={{ ...foot, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontWeight: 700, textTransform: 'uppercase' }}>Back</button>
           )}
           {!last && (
-            <button onClick={onSkip} style={{ ...foot, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontWeight: 700, textTransform: 'uppercase' }}>Saltar</button>
+            <button onClick={onSkip} style={{ ...foot, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontWeight: 700, textTransform: 'uppercase' }}>Skip</button>
           )}
           <button onClick={last ? onDone : onNext}
             style={{ height: 34, padding: '0 16px', background: 'var(--crimson)', color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--r-sm)',
               fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
-            {last ? 'Entendido' : 'Siguiente'}
+            {last ? 'Got it' : 'Next'}
           </button>
         </div>
       </div>

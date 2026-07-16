@@ -1,21 +1,21 @@
-Interruptor para ajustes binarios de efecto inmediato.
+Switch for binary settings with immediate effect.
 
 ```jsx
-<Switch checked={dark} onChange={e => setDark(e.target.checked)} label="Tema oscuro" />
+<Switch checked={dark} onChange={e => setDark(e.target.checked)} label="Dark theme" />
 ```
 
-Para toggles de **alto impacto** (H5) usa `confirm` + `onRequestChange`: el cambio se confirma antes de aplicarse.
+For **high-impact** toggles (H5) use `confirm` + `onRequestChange`: the change is confirmed before it's applied.
 
 ```jsx
 const [armed, setArmed] = useState(false);
-const [pending, setPending] = useState(null); // valor propuesto
+const [pending, setPending] = useState(null); // proposed value
 
-<Switch label="Despliegue automático a producción" checked={armed} confirm
+<Switch label="Automatic deployment to production" checked={armed} confirm
   onRequestChange={setPending} onChange={e => setArmed(e.target.checked)} />
 
-<ConfirmDialog open={pending !== null} title="Activar despliegue automático"
-  confirmLabel="Activar" onCancel={() => setPending(null)}
+<ConfirmDialog open={pending !== null} title="Enable automatic deployment"
+  confirmLabel="Enable" onCancel={() => setPending(null)}
   onConfirm={() => { setArmed(pending); setPending(null); }}>
-  Cada commit aprobado se desplegará a producción sin revisión manual.
+  Every approved commit will be deployed to production without manual review.
 </ConfirmDialog>
 ```

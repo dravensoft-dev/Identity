@@ -1,5 +1,5 @@
 import * as React from 'react';
-/** Chip para filtros, tecnologías, etiquetas. `onRemove` muestra la × de descarte. */
+/** Chip for filters, technologies, tags. `onRemove` shows the dismiss ×. */
 export interface TagProps extends React.HTMLAttributes<HTMLSpanElement> {
   onRemove?: () => void;
 }

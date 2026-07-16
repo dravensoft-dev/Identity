@@ -3,7 +3,7 @@ export interface MenuItemDef {
   label?: string; icon?: React.ReactNode; onClick?: () => void; shortcut?: string;
   destructive?: boolean; disabled?: boolean; divider?: boolean; header?: string;
 }
-/** Menú desplegable de acciones / desbordamiento. */
+/** Dropdown menu for actions / overflow. */
 export interface MenuProps {
   trigger: React.ReactNode; items: MenuItemDef[]; align?: 'start' | 'end'; style?: React.CSSProperties;
 }

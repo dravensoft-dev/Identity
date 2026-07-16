@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 const SZ = { sm: 32, md: 40, lg: 48 };
-/** Botón solo-icono. `label` es obligatorio (nombre accesible en TODOS los estados, no solo hover).
- * `showLabel` (H6): muestra el texto junto al icono donde hay espacio — no dependas solo del tooltip
- * en superficies táctiles o de teclado. */
+/** Icon-only button. `label` is required (accessible name in ALL states, not just hover).
+ * `showLabel` (H6): shows the text next to the icon where there's room — don't rely only on the tooltip
+ * on touch or keyboard surfaces. */
 export function IconButton({ children, size = 'md', variant = 'ghost', label, showLabel = false, disabled = false, style, ...rest }) {
   const [hover, setHover] = useState(false);
   const d = SZ[size] || SZ.md;

@@ -1,5 +1,5 @@
-Selector desplegable. options acepta strings u objetos {value,label}.
+Dropdown selector. options accepts strings or {value,label} objects.
 
 ```jsx
-<Select label="Entorno" options={['Producción','Staging','QA']} />
+<Select label="Environment" options={['Production','Staging','QA']} />
 ```

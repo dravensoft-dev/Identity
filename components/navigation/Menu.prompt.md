@@ -1,16 +1,16 @@
-Menú de acciones sobre un disparador (desbordamiento «⋮», más acciones, contexto). No confundir con `CommandPalette` (búsqueda global ⌘K) ni con `Select` (elegir un valor de formulario).
+Actions menu on a trigger (overflow "⋮", more actions, context). Don't confuse with `CommandPalette` (global search ⌘K) or with `Select` (choosing a form value).
 
 ```jsx
-<Menu align="end" trigger={<IconButton label="Más opciones"><i className="ph-bold ph-dots-three-vertical"/></IconButton>}
+<Menu align="end" trigger={<IconButton label="More options"><i className="ph-bold ph-dots-three-vertical"/></IconButton>}
   items={[
-    { label:'Ver logs', icon:<i className="ph-bold ph-scroll"/>, onClick:openLogs },
-    { label:'Duplicar', icon:<i className="ph-bold ph-copy"/>, onClick:dup, shortcut:'⌘D' },
+    { label:'View logs', icon:<i className="ph-bold ph-scroll"/>, onClick:openLogs },
+    { label:'Duplicate', icon:<i className="ph-bold ph-copy"/>, onClick:dup, shortcut:'⌘D' },
     { divider:true },
-    { label:'Eliminar', icon:<i className="ph-bold ph-trash"/>, destructive:true, onClick:del },
+    { label:'Delete', icon:<i className="ph-bold ph-trash"/>, destructive:true, onClick:del },
   ]} />
 ```
 
-**Hacer / No hacer**
-- El disparador debe tener nombre accesible (usa `IconButton label`).
-- Acciones destructivas al final y marcadas `destructive`.
-- Para elegir un valor de un formulario, usa `Select`, no un Menu.
+**Do / Don't**
+- The trigger must have an accessible name (use `IconButton label`).
+- Destructive actions go last and are marked `destructive`.
+- To choose a value from a form, use `Select`, not a Menu.

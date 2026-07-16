@@ -1,5 +1,5 @@
 import * as React from 'react';
-/** Casilla. Marcada = relleno carmesí con check. */
+/** Checkbox. Checked = crimson fill with check. */
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
   checked?: boolean; label?: string;
 }
