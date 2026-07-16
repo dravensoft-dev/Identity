@@ -1,0 +1,21 @@
+{
+  "name": "arena",
+  "displayName": "Arena — Dravensoft Design System",
+  "version": "1.0.0",
+  "description": "Generate well-branded interfaces and assets in Dravensoft's \"Arena\" design language: design tokens, React components, guidelines, and a UI kit.",
+  "author": {
+    "name": "Dravensoft"
+  },
+  "homepage": "https://github.com/dravensoft-dev/Identity",
+  "repository": "https://github.com/dravensoft-dev/Identity",
+  "license": "MIT",
+  "keywords": [
+    "design-system",
+    "ui",
+    "branding",
+    "arena",
+    "dravensoft",
+    "design-tokens",
+    "react"
+  ]
+}

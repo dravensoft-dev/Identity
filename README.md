@@ -5,7 +5,20 @@
 **Arena** is the single interface language under which every Dravensoft software product is built. It takes its name from the venue where a performance is put on display and applauded: every Arena interface should feel *worthy of being exalted* — the same promise the brand makes.
 
 ## Getting started
-Arena is distributed as a **copy-in reference kit** — and as a downloadable Agent Skill (`SKILL.md`) — not as an npm package. To use it in a project:
+Arena ships three ways — as a **Claude Code plugin**, as a **copy-in reference kit**, and as a downloadable **Agent Skill** (`SKILL.md`). It is not an npm package.
+
+### Install as a Claude Code plugin
+Inside Claude Code, add the marketplace and install the plugin:
+
+```
+/plugin marketplace add dravensoft-dev/Identity
+/plugin install arena@dravensoft
+```
+
+This registers the `design` skill under the `arena` plugin. Invoke it explicitly with `/arena:design`, or just ask Claude for Dravensoft-branded UI and it loads automatically. Pull updates with `/plugin marketplace update dravensoft`.
+
+### Use in a project (copy-in kit)
+To use the tokens and components directly in an app:
 
 1. **Copy** `tokens/`, `assets/` and `styles.css` into your app (e.g. under `/arena`).
 2. **Link the entry point.** `styles.css` only `@import`s the token files, exposing every design token as a CSS custom property (`--color-*`, `--font-*`, `--r-*`, `--shadow-*`, …) and loading the fonts:
@@ -105,7 +118,8 @@ To tell **destructive / risk actions and indicators** apart from the primary act
 - `components/` — React primitives: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch), `display/` (Card, Badge, Tag, Avatar, Table, Skeleton), `navigation/` (Tabs, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding), `brand/` (Rotor).
 - `ui_kits/console/` — recreation of the Delivery Console (an example internal product).
 - `reference/` — brand source material: the approved identity manual (`Dravensoft Identity.dc.html`) and the example Overview app (`Arena - Overview.dc.html`).
-- `SKILL.md` — for use as a downloadable Agent Skill.
+- `SKILL.md` — plugin-root Agent Skill (also usable standalone).
+- `.claude-plugin/` — Claude Code plugin manifest (`plugin.json`) and marketplace catalog (`marketplace.json`).
 - `CHANGELOG.md` — version history.
 
 ## Intentional additions

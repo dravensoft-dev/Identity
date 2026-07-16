@@ -1,0 +1,20 @@
+{
+  "name": "dravensoft",
+  "owner": {
+    "name": "Dravensoft"
+  },
+  "description": "Dravensoft's official plugins for Claude Code.",
+  "plugins": [
+    {
+      "name": "arena",
+      "source": ".",
+      "description": "Arena — Dravensoft's design system as an Agent Skill: design tokens, React components, guidelines, and a UI kit for generating well-branded interfaces.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Dravensoft"
+      },
+      "homepage": "https://github.com/dravensoft-dev/Identity",
+      "keywords": ["design-system", "ui", "branding", "arena"]
+    }
+  ]
+}

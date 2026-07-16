@@ -1,5 +1,5 @@
 ---
-name: dravensoft-design
+name: design
 description: Use this skill to generate well-branded interfaces and assets for Dravensoft (design language "Arena"), for production or throwaway prototypes/mocks. Contains design guidelines, colors, type, fonts, assets, and UI kit components.
 user-invocable: true
 ---
