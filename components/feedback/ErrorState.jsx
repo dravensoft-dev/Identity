@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '../forms/Button.jsx';
 /** Section/screen-level error state, with recovery (Retry) and optional detail. */
 export function ErrorState({ icon, title = 'Something went wrong', message, code, onRetry, retryLabel = 'Retry', secondaryAction, style }) {
   return (
@@ -9,7 +10,7 @@ export function ErrorState({ icon, title = 'Something went wrong', message, code
       {message && <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--bone-dim)', maxWidth: '46ch', lineHeight: 1.6 }}>{message}</div>}
       {code && <code style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--mute)', background: 'color-mix(in oklab, var(--color-base-100) 30%, transparent)', padding: '4px 10px', borderRadius: 'var(--r-xs)' }}>{code}</code>}
       <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
-        {onRetry && <button onClick={onRetry} style={{ height: 'var(--dz-ctl-h)', padding: '0 18px', background: 'var(--crimson)', color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--r-sm)', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>{retryLabel}</button>}
+        {onRetry && <Button variant="primary" onClick={onRetry}>{retryLabel}</Button>}
         {secondaryAction}
       </div>
     </div>

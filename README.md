@@ -34,6 +34,8 @@ To use the tokens and components directly in an app:
    ```
    Every component ships a `.d.ts` (types) and a `.prompt.md` (usage, examples, Do/Don't).
 
+   A few components build on another one rather than restating it, so copy the dependency with them: `ConfirmDialog` and `ErrorState` need `forms/Button.jsx`, `ThemeToggle` needs `forms/IconButton.jsx`, and `Calendar` needs `charts/chart-internals.js` for the categorical ramp.
+
 ### How components are styled
 Components render with **inline `style` objects that read the CSS custom properties** (e.g. `background: 'var(--crimson)'`). They do **not** expose utility classes — there is no `class="btn"`. `styles.css` provides only the token variables and fonts; all component logic lives in the `.jsx`. This keeps each component self-contained and fully themeable: change a token and every component follows.
 

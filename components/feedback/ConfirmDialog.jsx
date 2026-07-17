@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button } from '../forms/Button.jsx';
 /** Confirmation of high-consequence actions. Does NOT close on click-outside (avoids losses).
  * `requireText` forces typing a word to enable the destructive action. */
 export function ConfirmDialog({ open, onCancel, onConfirm, title, eyebrow = 'Confirm', children,
@@ -6,7 +7,6 @@ export function ConfirmDialog({ open, onCancel, onConfirm, title, eyebrow = 'Con
   const [typed, setTyped] = useState('');
   if (!open) return null;
   const locked = requireText ? typed.trim() !== requireText : false;
-  const confirmBg = destructive ? 'var(--danger)' : 'var(--crimson)';
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: 'var(--scrim)', backdropFilter: 'blur(var(--scrim-blur))', WebkitBackdropFilter: 'blur(var(--scrim-blur))' }}>
@@ -30,10 +30,17 @@ export function ConfirmDialog({ open, onCancel, onConfirm, title, eyebrow = 'Con
           )}
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '0 24px 22px' }}>
-          <button onClick={onCancel} style={{ height: 'var(--dz-ctl-h)', padding: '0 18px', background: 'transparent', color: 'var(--bone-dim)', border: 'none', borderRadius: 'var(--r-sm)', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>{cancelLabel}</button>
-          <button onClick={onConfirm} disabled={locked}
-            style={{ height: 'var(--dz-ctl-h)', padding: '0 18px', background: confirmBg, color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--r-sm)',
-              fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, cursor: locked ? 'not-allowed' : 'pointer', opacity: locked ? 0.45 : 1 }}>{confirmLabel}</button>
+          <Button variant="ghost" onClick={onCancel}>{cancelLabel}</Button>
+          {/* The point of no return: the only filled danger surface in Arena. Button
+            * has no filled-danger variant by design — danger is outline everywhere
+            * else, and a variant would put this fill one prop away from any caller.
+            * So it stays a local override on the primary button, here and nowhere
+            * else. --color-error-content, not --on-accent: the fill is --error, and
+            * a swapped skin can pair them differently. */}
+          <Button variant="primary" onClick={onConfirm} disabled={locked}
+            style={destructive ? { background: 'var(--danger)', color: 'var(--color-error-content)' } : undefined}>
+            {confirmLabel}
+          </Button>
         </div>
       </div>
     </div>
