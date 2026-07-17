@@ -4,6 +4,28 @@ All notable changes to Arena — Dravensoft Design System are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] — 2026-07-17
+
+Adds `Calendar`, the last component the DAMA migration was missing, and retires the catalog that tracked it. Additive: no breaking changes to any existing API.
+
+### Added
+- **`Calendar`** (`display/`) — week/day schedule on a time grid: toolbar, one column per day, events positioned by their wall-clock span, a live "now" line. Dependency-free, like the charts: no FullCalendar, no third-party widget skinned from outside.
+  - **Overlapping events share the width** of their day instead of covering each other, clustered by connected overlap. This is the component's real weight and the reason it was worth building rather than wrapping — a schedule where one booking hides another is worse than none.
+  - **`timeZone` is required** and is an IANA name. Wall-clock fields come from `Intl.DateTimeFormat.formatToParts`, so a class at 09:00 in Madrid stays at 09:00 for a reader in Lima, with no date library and no `package.json` to add one to.
+  - **The week collapses to a day below `--bp-md`, measured on the container**, not the viewport — the rule `Table` already follows. Passing `view` overrides it.
+  - **Color is identity only:** `CalendarEvent.slot` picks a slot in the categorical ramp, through the same `catColor` the charts use. State (cancelled, tentative) goes on a non-chromatic channel via `renderEvent`. See the note under **Reconciled** below.
+  - Time-grid policy is props with DAMA's values as defaults, not hardcoded: `dayStart` (defaults to the earliest event's hour, or 08:00), `dayEnd` (23:00), `weekStartsOn` (Monday), `hideEmptyWeekend` (Sunday hidden until an event lands on it). Whether the week starts on Monday is a product's call, not the system's.
+- **`components/display/calendar-internals.js`** — the pure date and layout logic (zone reading, overlap clustering, range titles). No React, no DOM. Sibling of `chart-internals.js` and not a component: no quartet.
+
+### Reconciled
+- **`CalendarEvent.color?: string` was never shipped.** The catalog proposed a raw color string, which would have reopened exactly the hole the categorical ramp closed in 1.1.0 — a color outside the token layer, unaware of theme, with no contrast guarantee. It is `slot?: CatSlot` instead, and the ramp now has two consumers and still one entry point.
+- **`onRangeChange` reports the new anchor date, not a delta.** The catalog specified `(delta: number)`, which cannot express the toolbar's "Today" button: Today is a jump to an absolute date, not an offset. It is `(isoDate: string)`.
+- **View switching is container-driven, not viewport-driven.** The catalog specified a hardcoded 768px against the viewport, contradicting Arena's own rule. It reads `--bp-md` through `readBreakpoint` and measures the container.
+- **The `ChartPalette` / `readChartPalette` contract the catalog made a prerequisite does not exist and was not built.** It only ever existed to work around `<canvas>` being unable to inherit CSS. Arena's charts draw SVG, which inherits it; `Calendar` does the same.
+
+### Removed
+- **`components-catalog.md`** — the working document for the DAMA migration, now closed. Ten of its eleven items shipped (1, 2, 4, 5, 6, 7, 8 and 11 in 1.1.0; 3 here). **Item 10 (`List`) was a deliberate skip, not an oversight** — its two DAMA usages are better served by `Shell`'s own nav and by plain markup, and the catalog itself recommended skipping it; recording that here is the point, so the next audit does not re-flag it as an unexplained gap. Item 9 (`SegmentedControl`) ships separately, with its spec already extracted. The file was written against v1.0.0 and had drifted out of date on four counts, all listed under **Reconciled** above — a stale spec in the tree is worse than none. Specs and plans do not live in this repo.
+
 ## [2.0.0] — 2026-07-17
 
 Closes two WCAG failures in the light theme, both from one root cause: Arena is dark-first, and a value tuned against the dark background reached the light theme unmeasured.

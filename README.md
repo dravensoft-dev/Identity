@@ -1,6 +1,6 @@
 # Arena — Dravensoft Design System
 
-**Version 2.0.0** · MIT License · Dark-first React + CSS-token design system. See [`CHANGELOG.md`](./CHANGELOG.md).
+**Version 2.1.0** · MIT License · Dark-first React + CSS-token design system. See [`CHANGELOG.md`](./CHANGELOG.md).
 
 **Arena** is the single interface language under which every Dravensoft software product is built. It takes its name from the venue where a performance is put on display and applauded: every Arena interface should feel *worthy of being exalted* — the same promise the brand makes.
 
@@ -126,11 +126,15 @@ Arena's identity lives in **shape**, not in its hexes. Crimson and gold are Drav
 | The `base-100`→`base-200`→`base-300` surface scale | The warm-black base values |
 | The hairline border, and the warm shadow scale | The status hues |
 | The type scale, the three families, the uppercase-microlabel rule | The 8 categorical slots |
-| Identity vs meaning in charts; one axis; the ramp is never cycled | |
+| Identity vs meaning; one axis in charts; the ramp is never cycled | |
 
 ### The categorical ramp
 
-Eight slots for chart series, authored per theme, **fixed order, never cycled**. A ninth series folds to "Other", small multiples, or direct labels — never a generated hue. They carry **identity only**; when a series *is* a state, a chart's `tone` prop uses the status colors instead.
+Eight slots for colouring N arbitrary entities — chart series, calendar events, any set where the color answers *which thing*. Authored per theme, **fixed order, never cycled**. A ninth entity folds to "Other", small multiples, or direct labels — never a generated hue. The slots carry **identity only**; when a series *is* a state, a chart's `tone` prop uses the status colors instead.
+
+The ramp is one system with one entry point: `catColor(slot)` in `components/charts/chart-internals.js`. `Calendar` reads it from there rather than keeping its own copy — two clamps over one ramp is how a ramp stops being a ramp.
+
+Where a component has no `tone` escape hatch, **state goes on a non-chromatic channel**: a `Calendar` event marks itself cancelled with a strikethrough or a dashed border, never by turning `--danger`. An entity painted a status color while its neighbours carry identity colors makes the palette mean two things at once, and the reader cannot tell which.
 
 | Slot | Name | Hue | Dark | Light |
 |---|---|---|---|---|
@@ -176,7 +180,7 @@ It reads the ramp straight out of `palette.css`, measures both themes against th
 - `scripts/` — `validate-palette.mjs` (the data-viz palette validator, vendored) and `check-ramp.mjs` (asserts the shipped ramp clears every gate in both themes).
 - `assets/` — `rotor-crimson/bone/ink.svg`, `app-icon.svg`.
 - `guidelines/` — specimen cards (`@dsCard`): typography (`type-display`, `type-body`, `type-mono`), color (`colors-neutrals`, `colors-accents`, `colors-status`, `colors-categorical`), spacing (`spacing-scale`), effects (`effects-radius`, `effects-shadow`), iconography (`icons`), brand (`brand-logo`, `brand-rotor`) and the **danger convention** (`components-danger`).
-- `components/` — React primitives: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch, ThemeToggle), `display/` (Card, Badge, Tag, Avatar, Table, Skeleton, StatCard), `navigation/` (Tabs, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar, PageHead), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding, Spinner), `charts/` (ChartCard, BarChart, LineChart, DoughnutChart — dependency-free SVG), `brand/` (Rotor).
+- `components/` — React primitives: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch, ThemeToggle), `display/` (Card, Badge, Tag, Avatar, Table, Skeleton, StatCard, Calendar), `navigation/` (Tabs, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar, PageHead), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding, Spinner), `charts/` (ChartCard, BarChart, LineChart, DoughnutChart — dependency-free SVG), `brand/` (Rotor).
 - `ui_kits/console/` — recreation of the Delivery Console (an example internal product).
 - `reference/` — brand source material: the approved identity manual (`Dravensoft Identity.dc.html`) and the example Overview app (`Arena - Overview.dc.html`).
 - `SKILL.md` — plugin-root Agent Skill (also usable standalone).
