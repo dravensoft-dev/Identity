@@ -64,7 +64,7 @@ export function BarChart({
         ))}
       </svg>
 
-      {hover !== null && (
+      {hover !== null && values[hover] !== undefined && (
         <div style={{
           position: 'absolute', left: PAD.l + hover * step + step / 2, top: yOf(values[hover]) - 8,
           transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',

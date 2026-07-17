@@ -41,7 +41,7 @@ export function DoughnutChart({ labels = [], values = [], slots, valueFormatter,
             onMouseEnter={() => setHover(i)}
             style={{ transition: 'opacity var(--dur-fast) var(--ease-out)' }} />
         ))}
-        {hover !== null && (
+        {hover !== null && segments[hover] && (
           <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle"
             fill="var(--bone)" fontFamily="var(--font-mono)" fontSize="16">
             {Math.round(segments[hover].share * 100)}%

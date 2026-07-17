@@ -82,7 +82,7 @@ export function LineChart({
           onMouseMove={onMove} onMouseLeave={() => setHover(null)} />
       </svg>
 
-      {hover !== null && (
+      {hover !== null && values[hover] !== undefined && (
         <div style={{
           position: 'absolute', left: xOf(hover), top: yOf(values[hover]) - 10,
           transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',
