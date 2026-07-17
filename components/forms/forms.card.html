@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="700x300" name="Forms" subtitle="Button · IconButton · Input · Select · Checkbox · Switch" -->
+<!-- @dsCard group="Components" viewport="700x420" name="Forms" subtitle="Button · IconButton · Input · Select · Checkbox · Switch · date/time" -->
 <!doctype html>
 <html>
 <head>
@@ -56,6 +56,13 @@ function Demo(){
         <Input label="Repository" prefix="git@" placeholder="org/project" style={{width:220}} />
         <Input label="Email" error="Invalid format" defaultValue="hello@" style={{width:200}} />
         <Select label="Environment" options={['Production','Staging','QA']} style={{width:180}} />
+      </div>
+      <div className="sub">Input — native date and time</div>
+      <div className="row" style={{alignItems:'flex-start'}}>
+        <Input label="Deploy date" type="date" required style={{width:200}} />
+        <Input label="Window start" type="time" hint="Local time" style={{width:200}} />
+        <Input label="Cutover" type="datetime-local" style={{width:240}} />
+        <Input label="Deadline" type="date" error="Pick a date in the future" style={{width:200}} />
       </div>
       <div className="sub">Checkbox · Switch</div>
       <div className="row">

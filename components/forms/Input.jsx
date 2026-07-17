@@ -1,15 +1,38 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 /**
  * Text field with validation (H5). Visual states: neutral, focus (gold ring),
  * `error` (crimson border + message) and `valid` (green border/check). Pass `required`
  * to mark the field; `validate(value)` returns an error string or null and is evaluated
  * according to `validateOn` ('blur' by default | 'change' for live validation).
  */
+
+/* The native date/time picker indicator is a vendor pseudo-element: an inline
+ * style cannot reach it, and it ships near-black — invisible on Arena's dark
+ * input surface. This is the one sanctioned exception to "components carry no
+ * CSS": it targets a vendor pseudo-element, never a class of ours. Same
+ * injected <style> pattern as ProgressBar. --picker-invert is theme polarity
+ * (1 dark / 0 light), defined in tokens/colors.css. */
+let injected = false;
+function usePickerIndicator() {
+  useEffect(() => {
+    if (injected || typeof document === 'undefined') return;
+    injected = true;
+    const s = document.createElement('style');
+    s.setAttribute('data-arena-input', '');
+    s.textContent =
+      '.arena-input::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.6;' +
+      'filter:invert(var(--picker-invert,1));transition:opacity var(--dur-fast) var(--ease-out)}' +
+      '.arena-input::-webkit-calendar-picker-indicator:hover{opacity:1}';
+    document.head.appendChild(s);
+  }, []);
+}
+
 export function Input({
   label, hint, error, valid = false, required = false,
   validate, validateOn = 'blur',
-  icon, prefix, disabled = false, style, id, onChange, onBlur, ...rest
+  icon, prefix, disabled = false, style, id, className, onChange, onBlur, ...rest
 }) {
+  usePickerIndicator();
   const [focus, setFocus] = useState(false);
   const [localErr, setLocalErr] = useState(null);
   const [touched, setTouched] = useState(false);
@@ -39,9 +62,10 @@ export function Input({
         {icon && <span style={{ color: 'var(--mute)', display: 'inline-flex' }}>{icon}</span>}
         {prefix && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--mute)' }}>{prefix}</span>}
         <input id={inputId} disabled={disabled} required={required} aria-invalid={!!shownError}
+          className={['arena-input', className].filter(Boolean).join(' ')}
           onFocus={() => setFocus(true)} onBlur={handleBlur} onChange={handleChange}
-          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--bone)',
-            fontFamily: 'var(--font-body)', fontSize: 14 }} {...rest} />
+          style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none',
+            color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 14 }} {...rest} />
         {shownError && <i className="ph-fill ph-warning-circle" style={{ color: 'var(--danger)', fontSize: 16 }} />}
         {isValid && <i className="ph-fill ph-check-circle" style={{ color: 'var(--success)', fontSize: 16 }} />}
       </div>

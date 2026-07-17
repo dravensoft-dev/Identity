@@ -7,5 +7,13 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   validate?: (value: string) => string | null | undefined;
   validateOn?: 'blur' | 'change';
   icon?: React.ReactNode; prefix?: React.ReactNode;
+  /**
+   * @startingPoint Native input type. `date`, `time` and `datetime-local` are
+   * supported and styled for both themes — Arena deliberately ships no
+   * DatePicker; the native control is the sanctioned approach.
+   */
+  type?: React.HTMLInputTypeAttribute;
+  /** Merged with Arena's own class, never replacing it. */
+  className?: string;
 }
 export function Input(props: InputProps): JSX.Element;
