@@ -35,15 +35,15 @@ This registers the `design` skill under the `arena` plugin. Invoke it explicitly
 ### Use in a project (copy-in kit)
 To use the tokens and components directly in an app:
 
-1. **Copy** `tokens/`, `assets/`, `styles.css` and `use-container-width.js` into your app (e.g. under `/arena`). `use-container-width.js` is the shared hook `Table` (and any responsive component) imports; copy it whenever you copy one of those.
+1. **Copy** `tokens/`, `assets/`, `styles.css` and `frameworks/react/use-container-width.js` into your app (e.g. under `/arena`). `use-container-width.js` is the shared hook `Table` (and any responsive component) imports; copy it whenever you copy one of those.
 2. **Link the entry point.** `styles.css` only `@import`s the token files, exposing every design token as a CSS custom property (`--color-*`, `--font-*`, `--r-*`, `--shadow-*`, …) and loading the fonts:
    ```html
    <link rel="stylesheet" href="/arena/styles.css" />
    ```
 3. **Pick the theme.** Dark is the default (`:root`). Add `class="arena-light"` on `<html>` for the warm light theme, or wire the built-in toggle with `theme.js`.
-4. **Use the components.** Copy the `.jsx` files you need from `components/` and import them:
+4. **Use the components.** Copy the `.jsx` files you need from `frameworks/react/components/` and import them:
    ```jsx
-   import { Button } from './components/forms/Button.jsx';
+   import { Button } from './frameworks/react/components/forms/Button.jsx';
 
    <Button variant="primary" size="md">Deploy</Button>
    ```
@@ -57,7 +57,7 @@ Components render with **inline `style` objects that read the CSS custom propert
 ### Dependencies
 - **Fonts — Google Fonts (CDN).** `tokens/fonts.css` `@import`s Archivo, Familjen Grotesk and Spline Sans Mono. To self-host, replace that `@import` with `@font-face` rules and local files.
 - **Icons — [Phosphor Icons](https://phosphoricons.com) (MIT).** Not bundled. Load the webfont from CDN for prototypes (`@phosphor-icons/web`), or install `@phosphor-icons/react` for production. See the [ICONOGRAPHY](#iconography) section.
-- **React** — the primitives in `components/` are React (JSX). Tokens, guidelines and assets are framework-agnostic and can be used without React.
+- **React** — the primitives in `frameworks/react/components/` are React (JSX). Tokens, guidelines and assets are framework-agnostic and can be used without React.
 
 ## Audience and scope
 - **Audience of the language: general public.** Arena is meant to give identity to **every kind of Dravensoft software**, regardless of who the end user is — from consumer apps to internal tools. Its foundations (color, typography, spacing, accessibility, voice) are general-purpose and don't assume a technical profile.
@@ -157,7 +157,7 @@ Two of these numbers the scripts **report without gating**: crimson as text sits
 
 Eight slots for colouring N arbitrary entities — chart series, calendar events, any set where the color answers *which thing*. Authored per theme, **fixed order, never cycled**. A ninth entity folds to "Other", small multiples, or direct labels — never a generated hue. The slots carry **identity only**; when a series *is* a state, a chart's `tone` prop uses the status colors instead.
 
-The ramp is one system with one entry point: `catColor(slot)` in `components/charts/chart-internals.js`. `Calendar` reads it from there rather than keeping its own copy — two clamps over one ramp is how a ramp stops being a ramp.
+The ramp is one system with one entry point: `catColor(slot)` in `frameworks/react/components/charts/chart-internals.js`. `Calendar` reads it from there rather than keeping its own copy — two clamps over one ramp is how a ramp stops being a ramp.
 
 Where a component has no `tone` escape hatch, **state goes on a non-chromatic channel**: a `Calendar` event marks itself cancelled with a strikethrough or a dashed border, never by turning `--danger`. An entity painted a status color while its neighbours carry identity colors makes the palette mean two things at once, and the reader cannot tell which.
 
@@ -201,16 +201,35 @@ It reads the ramp straight out of `palette.css`, measures both themes against th
 ## Index / manifest
 - `styles.css` — global entry point (only @imports). Consumers link this file.
 - `tokens/` — `fonts.css`, `palette.css` (the skin — see [Theming](#theming)), `colors.css` (structure: aliases and derivations), `typography.css`, `spacing.css`, `effects.css`.
-- `use-container-width.js` — shared `useContainerWidth` hook and `readBreakpoint`; responsive components import it. `theme.js` — theme toggle helper. `jsx-loader.js` — in-browser JSX loading for the demo pages.
+- `frameworks/react/use-container-width.js` — shared `useContainerWidth` hook and `readBreakpoint`; responsive components import it. `theme.js` — theme toggle helper. `jsx-loader.js` — in-browser JSX loading for the demo pages.
 - `scripts/` — `validate-palette.mjs` (the data-viz palette validator, vendored), `check-ramp.mjs` (asserts the shipped ramp clears every gate in both themes), `check-text-contrast.mjs` (measures every text level against the real surfaces in both themes) and `check-release.mjs` (asserts the version, the marketplace `ref` and the tag agree, and that the pinned tag actually hands out the version being advertised).
 - `assets/` — `rotor-crimson/bone/ink.svg`, `app-icon.svg`.
 - `guidelines/` — specimen cards (`@dsCard`): typography (`type-display`, `type-body`, `type-mono`), color (`colors-neutrals`, `colors-accents`, `colors-status`, `colors-categorical`), spacing (`spacing-scale`, `spacing-density`), effects (`effects-radius`, `effects-shadow`), iconography (`icons`), brand (`brand-logo`, `brand-rotor`) and the **danger convention** (`components-danger`).
-- `components/` — React primitives: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch, ThemeToggle), `display/` (Card, Badge, Tag, Avatar, Table, Skeleton, StatCard, Calendar), `navigation/` (Tabs, SegmentedControl, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar, PageHead), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding, Spinner), `charts/` (ChartCard, BarChart, LineChart, DoughnutChart — dependency-free SVG), `brand/` (Rotor).
-- `ui_kits/console/` — recreation of the Delivery Console (an example internal product).
+- `frameworks/react/components/` — React primitives: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch, ThemeToggle), `display/` (Card, Badge, Tag, Avatar, Table, Skeleton, StatCard, Calendar), `navigation/` (Tabs, SegmentedControl, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar, PageHead), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding, Spinner), `charts/` (ChartCard, BarChart, LineChart, DoughnutChart — dependency-free SVG), `brand/` (Rotor).
+- `frameworks/react/ui_kits/console/` — recreation of the Delivery Console (an example internal product).
 - `*.dc.html` (repo root) — brand source material: the approved identity manual (`Dravensoft Identity.dc.html`) and the example Overview app (`Arena - Overview.dc.html`). They sit at the root because they load `support.js`, `styles.css`, `theme.js` and `assets/` by relative path.
 - `SKILL.md` — plugin-root Agent Skill (also usable standalone).
 - `.claude-plugin/` — Claude Code plugin manifest (`plugin.json`) and marketplace catalog (`marketplace.json`).
 - `CHANGELOG.md` — version history.
+
+### Framework layers (`frameworks/`)
+
+Arena's pure design language — `tokens/`, `guidelines/`, `assets/`, `scripts/`,
+`styles.css` — lives at the repo root and is framework-agnostic. Everything
+framework-bound lives under `frameworks/`, so a new framework is added without
+touching the language:
+
+- `frameworks/react/` — the React primitives, the example Console app, and the
+  `useContainerWidth` hook.
+- `frameworks/angular/` — Angular support (see the Angular spec; placeholder today).
+- `frameworks/tailwind/` — a **shared**, token-derived Tailwind v4 layer (a
+  `@theme` preset + per-component class/variant manifests). It is authored once,
+  not per framework, because the token→utility mapping is pure CSS and a
+  component's Tailwind recipe is data. It derives every utility from an existing
+  token and introduces no new value.
+
+Pick the layer you need: raw tokens, a framework's primitives, or the Tailwind
+layer on top.
 
 ## Intentional additions
 - **Consistency tokens (shipped in v1.0.0):** `--danger-strong` (symmetric to `--crimson-strong`/`--gold-strong`) and `--scrim`/`--scrim-blur` (unified modal backdrop, in `tokens/effects.css`). With these, no hardcoded colors (`#fff`, `rgba(20,16,16,.6)`) remain in the components: everything goes through a token, including `--on-accent`. *Current status:* after the migration to daisyUI tokens, the `*-strong` variants **alias to their accent's base color**; they're kept as an extension point in case a theme defines a distinct pressed tone.
