@@ -1,0 +1,29 @@
+<!-- @dsCard group="Colors" viewport="700x200" name="Categorical" subtitle="8-slot chart ramp — identity, never meaning" -->
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>
+body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:20px}
+.ramp{display:flex;gap:8px}
+.slot{flex:1}
+.chip{height:64px;border-radius:var(--r-md)}
+.n{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;color:var(--mute);margin-top:8px;text-align:center;text-transform:uppercase}
+.note{font-size:12px;color:var(--mute);margin-top:14px;line-height:1.6}
+</style>
+</head><body>
+<div class="ramp">
+  <div class="slot"><div class="chip" style="background:var(--color-cat-1)"></div><div class="n">1 · Forest</div></div>
+  <div class="slot"><div class="chip" style="background:var(--color-cat-2)"></div><div class="n">2 · Indigo</div></div>
+  <div class="slot"><div class="chip" style="background:var(--color-cat-3)"></div><div class="n">3 · Green</div></div>
+  <div class="slot"><div class="chip" style="background:var(--color-cat-4)"></div><div class="n">4 · Violet</div></div>
+  <div class="slot"><div class="chip" style="background:var(--color-cat-5)"></div><div class="n">5 · Cyan</div></div>
+  <div class="slot"><div class="chip" style="background:var(--color-cat-6)"></div><div class="n">6 · Purple</div></div>
+  <div class="slot"><div class="chip" style="background:var(--color-cat-7)"></div><div class="n">7 · Teal</div></div>
+  <div class="slot"><div class="chip" style="background:var(--color-cat-8)"></div><div class="n">8 · Orchid</div></div>
+</div>
+<div class="note">
+  Fixed order — slot N is always slot N, assigned in order, never cycled. A ninth series folds to "Other",
+  small multiples, or direct labels; it is never a generated hue. These carry <strong>identity only</strong>:
+  when a series <em>is</em> a state, use the chart's <code>tone</code> instead. Both themes clear every gate
+  (CVD 13.3 dark / 16.4 light, all slots above 3:1 on the card surface) — re-check with
+  <code>node scripts/check-ramp.mjs</code>.
+</div>
+</body></html>
