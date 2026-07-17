@@ -538,8 +538,8 @@ Arena's pure design language — `tokens/`, `guidelines/`, `assets/`, `scripts/`
 framework-bound lives under `frameworks/`, so a new framework is added without
 touching the language:
 
-- `frameworks/react/` — the React primitives (`components/`), the example app
-  (`ui_kits/console/`), and the `useContainerWidth` hook.
+- `frameworks/react/` — the React primitives, the example Console app, and the
+  `useContainerWidth` hook.
 - `frameworks/angular/` — Angular support (see the Angular spec; placeholder today).
 - `frameworks/tailwind/` — a **shared**, token-derived Tailwind v4 layer (a
   `@theme` preset + per-component class/variant manifests). It is authored once,
