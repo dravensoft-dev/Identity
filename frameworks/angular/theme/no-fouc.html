@@ -1,0 +1,16 @@
+<!-- frameworks/angular/theme/no-fouc.html
+     Paste this <script> into index.html's <head>, BEFORE the app's stylesheet,
+     so the stored theme is applied before first paint (no flash). It shares the
+     `arena-theme` storage key with theme-service.ts. Dark is the default:
+     .arena-light is added only when light is chosen or preferred. -->
+<script>
+  (function () {
+    try {
+      var stored = localStorage.getItem('arena-theme');
+      var light =
+        stored === 'light' ||
+        (!stored && window.matchMedia('(prefers-color-scheme: light)').matches);
+      if (light) document.documentElement.classList.add('arena-light');
+    } catch (e) {}
+  })();
+</script>
