@@ -7,7 +7,11 @@
   "plugins": [
     {
       "name": "arena",
-      "source": ".",
+      "source": {
+        "source": "github",
+        "repo": "dravensoft-dev/Identity",
+        "ref": "v2.2.0"
+      },
       "description": "Arena — Dravensoft's design system as an Agent Skill: design tokens, React components, guidelines, and a UI kit for generating well-branded interfaces.",
       "version": "2.2.0",
       "author": {
