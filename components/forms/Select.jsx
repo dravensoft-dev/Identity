@@ -7,7 +7,7 @@ export function Select({ label, options = [], value, onChange, disabled = false,
       <div style={{ position: 'relative' }}>
         <select value={value} onChange={onChange} disabled={disabled}
           onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
-          style={{ appearance: 'none', width: '100%', height: 42, padding: '0 36px 0 12px',
+          style={{ appearance: 'none', width: '100%', height: 'var(--dz-ctl-h)', padding: '0 36px 0 12px',
             background: 'var(--surface-input)', color: 'var(--bone)',
             border: '1px solid ' + (focus ? 'var(--gold)' : 'var(--color-base-300)'), borderRadius: 'var(--r-sm)',
             fontFamily: 'var(--font-body)', fontSize: 14, cursor: 'pointer',

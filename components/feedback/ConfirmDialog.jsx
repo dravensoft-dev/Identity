@@ -23,16 +23,16 @@ export function ConfirmDialog({ open, onCancel, onConfirm, title, eyebrow = 'Con
             <div style={{ marginTop: 14 }}>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)', marginBottom: 6 }}>Type "{requireText}" to confirm</div>
               <input value={typed} onChange={(e) => setTyped(e.target.value)} autoFocus
-                style={{ width: '100%', height: 42, padding: '0 12px', background: 'var(--surface-input)',
+                style={{ width: '100%', height: 'var(--dz-ctl-h)', boxSizing: 'border-box', padding: '0 12px', background: 'var(--surface-input)',
                   border: '1px solid ' + (locked && typed ? 'var(--danger)' : 'var(--color-base-300)'), borderRadius: 'var(--r-sm)',
                   color: 'var(--bone)', fontFamily: 'var(--font-mono)', fontSize: 14, outline: 'none' }} />
             </div>
           )}
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '0 24px 22px' }}>
-          <button onClick={onCancel} style={{ height: 40, padding: '0 18px', background: 'transparent', color: 'var(--bone-dim)', border: 'none', borderRadius: 'var(--r-sm)', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>{cancelLabel}</button>
+          <button onClick={onCancel} style={{ height: 'var(--dz-ctl-h)', padding: '0 18px', background: 'transparent', color: 'var(--bone-dim)', border: 'none', borderRadius: 'var(--r-sm)', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>{cancelLabel}</button>
           <button onClick={onConfirm} disabled={locked}
-            style={{ height: 40, padding: '0 18px', background: confirmBg, color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--r-sm)',
+            style={{ height: 'var(--dz-ctl-h)', padding: '0 18px', background: confirmBg, color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--r-sm)',
               fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, cursor: locked ? 'not-allowed' : 'pointer', opacity: locked ? 0.45 : 1 }}>{confirmLabel}</button>
         </div>
       </div>

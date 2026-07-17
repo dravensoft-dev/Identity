@@ -9,7 +9,7 @@ export function ErrorState({ icon, title = 'Something went wrong', message, code
       {message && <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--bone-dim)', maxWidth: '46ch', lineHeight: 1.6 }}>{message}</div>}
       {code && <code style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--mute)', background: 'color-mix(in oklab, var(--color-base-100) 30%, transparent)', padding: '4px 10px', borderRadius: 'var(--r-xs)' }}>{code}</code>}
       <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
-        {onRetry && <button onClick={onRetry} style={{ height: 40, padding: '0 18px', background: 'var(--crimson)', color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--r-sm)', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>{retryLabel}</button>}
+        {onRetry && <button onClick={onRetry} style={{ height: 'var(--dz-ctl-h)', padding: '0 18px', background: 'var(--crimson)', color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--r-sm)', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>{retryLabel}</button>}
         {secondaryAction}
       </div>
     </div>
