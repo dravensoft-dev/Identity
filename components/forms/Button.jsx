@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 
+/* Heights come from the density tokens, so inside `.arena-compact` the button
+ * re-densifies with the rows around it instead of towering over them. */
 const SIZES = {
-  sm: { padding: '0 12px', height: 32, fontSize: 13 },
-  md: { padding: '0 18px', height: 40, fontSize: 14 },
-  lg: { padding: '0 26px', height: 48, fontSize: 15 },
+  sm: { padding: '0 12px', height: 'var(--dz-ctl-h-sm)', fontSize: 13 },
+  md: { padding: '0 18px', height: 'var(--dz-ctl-h)', fontSize: 14 },
+  lg: { padding: '0 26px', height: 'var(--dz-ctl-h-lg)', fontSize: 15 },
 };
 
 export function Button({

@@ -17,7 +17,11 @@
   --shadow-3:0 30px 60px -20px rgba(0,0,0,.7);
   --glow-accent:0 10px 30px -12px var(--crimson-strong);
 
-  /* Overlay scrim — backdrop for modal surfaces (Dialog, ConfirmDialog, CommandPalette) */
+  /* Overlay scrim — backdrop for anything that covers the app (Dialog,
+     ConfirmDialog, CommandPalette, Onboarding). The blur is what separates a
+     modal from a coachmark: Dialog/ConfirmDialog/CommandPalette pair the scrim
+     with --scrim-blur, Onboarding uses the scrim alone, because a tour that
+     blurs the product it is touring defeats itself. */
   --scrim:rgba(20,16,16,.6);
   --scrim-blur:6px;
 

@@ -20,7 +20,7 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
   const foot = { fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.06em' };
   return (
     <>
-      <div onClick={onSkip} style={{ position: 'fixed', inset: 0, zIndex: 1190, background: 'rgba(20,16,16,.5)' }} />
+      <div onClick={onSkip} style={{ position: 'fixed', inset: 0, zIndex: 1190, background: 'var(--scrim)' }} />
       <div role="dialog" aria-modal="true" aria-label={step.title}
         style={{ ...pos, width: W, maxWidth: '92vw', background: 'var(--surface-card)', border: '1px solid var(--line-strong)',
           borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', padding: 20 }}>

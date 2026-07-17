@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-const SZ = { sm: 32, md: 40, lg: 48 };
+/* Same density tokens as Button — the two sit side by side in toolbars and must
+ * re-densify together. */
+const SZ = { sm: 'var(--dz-ctl-h-sm)', md: 'var(--dz-ctl-h)', lg: 'var(--dz-ctl-h-lg)' };
 /** Icon-only button. `label` is required (accessible name in ALL states, not just hover).
  * `showLabel` (H6): shows the text next to the icon where there's room — don't rely only on the tooltip
  * on touch or keyboard surfaces. */
