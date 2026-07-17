@@ -531,16 +531,17 @@ Expected: `MISSING`
 - [ ] **Step 2: Create the file**
 
 ```ts
-/* frameworks/angular/icons/icon-manifest.ts
-   Canonical role > Phosphor glyph map. Seed a consumer's icon registry from this
-   instead of guessing. Bold is the default weight; Fill = active/selected;
-   Duotone = onboarding only. Glyph names are Phosphor webfont classes (ph-*). */
 export interface ArenaIcon {
   role: string;
   phosphor: string;
   weight: 'bold' | 'fill' | 'duotone';
 }
 
+/**
+ * Canonical role > Phosphor glyph map. Seed a consumer's icon registry from this
+ * instead of guessing. Bold is the default weight; Fill = active/selected;
+ * Duotone = onboarding only. Glyph names are Phosphor webfont classes (`ph-*`).
+ */
 export const ARENA_ICONS: ArenaIcon[] = [
   { role: 'nav-home',      phosphor: 'ph-house',           weight: 'bold' },
   { role: 'nav-active',    phosphor: 'ph-house',           weight: 'fill' },
@@ -607,11 +608,6 @@ Expected: `MISSING`
 - [ ] **Step 2: Create `theme-service.ts`**
 
 ```ts
-/* frameworks/angular/theme/theme-service.ts
-   Dark-first theme service. Default is dark (:root); light toggles the
-   `.arena-light` class on <html>. Persists to localStorage under `arena-theme`;
-   falls back to prefers-color-scheme. Pair with no-fouc.html to apply the stored
-   theme before first paint (same storage key). */
 import { Injectable, signal, effect, inject, DOCUMENT } from '@angular/core';
 
 export type ArenaTheme = 'dark' | 'light';
@@ -619,7 +615,12 @@ export type ArenaTheme = 'dark' | 'light';
 const STORAGE_KEY = 'arena-theme';
 const LIGHT_CLASS = 'arena-light';
 
-/** Reads/writes Arena's dark-first theme and reflects it onto <html>. */
+/**
+ * Arena's dark-first theme service. Default is dark (`:root`); light toggles the
+ * `.arena-light` class on `<html>`. Persists to `localStorage` (key `arena-theme`)
+ * and falls back to `prefers-color-scheme`. Pair with `no-fouc.html` (same key) to
+ * apply the stored theme before first paint.
+ */
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
   private readonly doc = inject(DOCUMENT);

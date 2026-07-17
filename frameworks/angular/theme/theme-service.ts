@@ -1,8 +1,3 @@
-/* frameworks/angular/theme/theme-service.ts
-   Dark-first theme service. Default is dark (:root); light toggles the
-   `.arena-light` class on <html>. Persists to localStorage under `arena-theme`;
-   falls back to prefers-color-scheme. Pair with no-fouc.html to apply the stored
-   theme before first paint (same storage key). */
 import { Injectable, signal, effect, inject, DOCUMENT } from '@angular/core';
 
 export type ArenaTheme = 'dark' | 'light';
@@ -10,7 +5,12 @@ export type ArenaTheme = 'dark' | 'light';
 const STORAGE_KEY = 'arena-theme';
 const LIGHT_CLASS = 'arena-light';
 
-/** Reads/writes Arena's dark-first theme and reflects it onto <html>. */
+/**
+ * Arena's dark-first theme service. Default is dark (`:root`); light toggles the
+ * `.arena-light` class on `<html>`. Persists to `localStorage` (key `arena-theme`)
+ * and falls back to `prefers-color-scheme`. Pair with `no-fouc.html` (same key) to
+ * apply the stored theme before first paint.
+ */
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
   private readonly doc = inject(DOCUMENT);
