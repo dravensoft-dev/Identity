@@ -27,6 +27,20 @@
   --color-success:#38a169;    --color-success-content:#ffffff;
   --color-warning:#ecc94b;    --color-warning-content:#141010;
   --color-error:#e53e3e;      --color-error-content:#ffffff;
+
+  /* Categorical chart ramp — identity only, never meaning (see README → Theming).
+     Fixed order: slot N is always slot N. A 9th series folds to "Other", small
+     multiples, or direct labels — it is NEVER a generated hue.
+     Chroma is capped at OKLCH C <= 0.15 so the ramp sits in Arena's register
+     (crimson .177, gold .100) instead of reading as neon. */
+  --color-cat-1:#3c7b0a;  /* forest  136° */
+  --color-cat-2:#3b63be;  /* indigo  264° */
+  --color-cat-3:#0a924b;  /* green   152° */
+  --color-cat-4:#6a59bc;  /* violet  288° */
+  --color-cat-5:#00a3c0;  /* cyan    216° */
+  --color-cat-6:#884da9;  /* purple  312° */
+  --color-cat-7:#00a99a;  /* teal    184° */
+  --color-cat-8:#984697;  /* orchid  328° */
 }
 
 /* --- Light theme — warm inverse of the dark base --- */
@@ -44,4 +58,15 @@
   --color-success:#38a169;    --color-success-content:#ffffff;
   --color-warning:#ecc94b;    --color-warning-content:#141010;
   --color-error:#e53e3e;      --color-error-content:#ffffff;
+
+  /* Categorical chart ramp — light theme. Same hues, re-tuned for the
+     bone surface; slot order is identical to dark and must stay identical. */
+  --color-cat-1:#397804;  /* forest  136° */
+  --color-cat-2:#264ba4;  /* indigo  264° */
+  --color-cat-3:#0a924b;  /* green   152° */
+  --color-cat-4:#523e9f;  /* violet  288° */
+  --color-cat-5:#008fa9;  /* cyan    216° */
+  --color-cat-6:#6e328d;  /* purple  312° */
+  --color-cat-7:#009487;  /* teal    184° */
+  --color-cat-8:#7c2b7b;  /* orchid  328° */
 }
