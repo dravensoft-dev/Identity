@@ -152,10 +152,10 @@ Every reference to the old font layout is corrected:
 - `README.md`: Dependencies (Fonts/Icons), ICONOGRAPHY loading line, the
   `frameworks/angular/` description (drop the `fonts/` self-hosted `@font-face`
   item), and the `assets/` inventory line (add `fonts/`).
-- `CLAUDE.md`: both places that name the Angular `fonts/` directory — the
-  "Architecture" bullet describing the Angular layer and the "Framework layers
-  live under `frameworks/`" paragraph — drop `fonts/` as an Angular artifact and
-  note that fonts are inherited from the root token layer (`assets/fonts/`).
+- `CLAUDE.md`: the "Framework layers live under `frameworks/`" paragraph is the
+  only place that names the Angular `fonts/` directory — drop `fonts/` as an
+  Angular artifact. Fonts are inherited from the root token layer (`assets/fonts/`),
+  which that paragraph already lists among the root's contents.
 - `frameworks/angular/README.md`: remove the `fonts/` bullet from the bridge
   artifact list.
 - `frameworks/angular/ADOPTION.md`: rewrite step 4 (fonts) — fonts now arrive via
