@@ -18,6 +18,15 @@
   --container-max:1240px;
   --gutter:88px;
 
+  /* Breakpoints — SHARED VALUES READ BY JS, not media queries.
+     Components style themselves with inline style objects, which cannot hold a
+     media query, so responsive branches are JS (see use-container-width.js).
+     These live here anyway so the thresholds stay a token, not a magic number
+     retyped in four components. 768px is what DAMA hardcodes. */
+  --bp-sm:480px;
+  --bp-md:768px;
+  --bp-lg:1024px;
+
   /* Density (H7 rev.3) — comfortable by default. Data-dense surfaces read these
      instead of hard-coded px so a single scope switch re-densifies rows and controls. */
   --dz-ctl-h:40px;    /* control height (buttons, inputs, switches row) */
