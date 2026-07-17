@@ -1,4 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
+/* The loading spin is keyframes, which an inline style object cannot express, so
+ * it ships as a <style> injected once into the head — the pattern ProgressBar
+ * establishes and Spinner follows. It used to render inline inside every
+ * <button>, which duplicated the tag once per instance and leaked the CSS into
+ * the button's textContent. Reduced motion slows the spin rather than stopping
+ * it, as Spinner does: a frozen spinner reads as a hung process. */
+let injected = false;
+function useSpinKeyframes() {
+  useEffect(() => {
+    if (injected || typeof document === 'undefined') return;
+    injected = true;
+    const s = document.createElement('style');
+    s.setAttribute('data-arena-button', '');
+    s.textContent =
+      '@keyframes arena-btn-spin{to{transform:rotate(360deg)}}' +
+      '.arena-btn-spin{animation:arena-btn-spin .7s linear infinite}' +
+      '@media (prefers-reduced-motion:reduce){.arena-btn-spin{animation-duration:2.4s}}';
+    document.head.appendChild(s);
+  }, []);
+}
 
 /* Heights come from the density tokens, so inside `.arena-compact` the button
  * re-densifies with the rows around it instead of towering over them. */
@@ -12,6 +33,7 @@ export function Button({
   children, variant = 'primary', size = 'md', icon, iconRight,
   disabled = false, loading = false, full = false, style, ...rest
 }) {
+  useSpinKeyframes();
   const [hover, setHover] = useState(false);
   const [active, setActive] = useState(false);
   const s = SIZES[size] || SIZES.md;
@@ -60,10 +82,9 @@ export function Button({
       }}
       {...rest}
     >
-      {loading ? <span style={{ width: 14, height: 14, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'arena-spin .7s linear infinite' }} /> : icon}
+      {loading ? <span className="arena-btn-spin" aria-hidden="true" style={{ width: 14, height: 14, boxSizing: 'border-box', border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block' }} /> : icon}
       {children}
       {iconRight}
-      <style>{'@keyframes arena-spin{to{transform:rotate(360deg)}}'}</style>
     </button>
   );
 }
