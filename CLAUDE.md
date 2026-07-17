@@ -51,8 +51,8 @@ framework-agnostic language (`tokens/`, `guidelines/`, `assets/`, `scripts/`,
 and brand (`*.dc.html`). React lives in `frameworks/react/`;
 `frameworks/angular/` holds the Angular layer: a Tailwind preset entry
 (`theme/arena-tailwind.css`) and an Angular Material MDC token bridge
-(`theme/arena-material.css`), self-hosted fonts (`fonts/`), a
-Phosphor icon manifest (`icons/`), a dark-first signal `ThemeService`
+(`theme/arena-material.css`), a Phosphor icon manifest (`icons/`), a
+dark-first signal `ThemeService`
 (`theme/theme-service.ts` + `theme/no-fouc.html`), and standalone `OnPush`
 primitives under `primitives/` (`tag` is the reference), each styled by the
 shared `frameworks/tailwind/` recipes through the configured `tv`

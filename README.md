@@ -55,8 +55,8 @@ To use the tokens and components directly in an app:
 Components render with **inline `style` objects that read the CSS custom properties** (e.g. `background: 'var(--crimson)'`). They do **not** expose utility classes — there is no `class="btn"`. `styles.css` provides only the token variables and fonts; all component logic lives in the `.jsx`. This keeps each component self-contained and fully themeable: change a token and every component follows.
 
 ### Dependencies
-- **Fonts — Google Fonts (CDN).** `tokens/fonts.css` `@import`s Archivo, Familjen Grotesk and Spline Sans Mono. To self-host, replace that `@import` with `@font-face` rules and local files.
-- **Icons — [Phosphor Icons](https://phosphoricons.com) (MIT).** Not bundled. Load the webfont from CDN for prototypes (`@phosphor-icons/web`), or install `@phosphor-icons/react` for production. See the [ICONOGRAPHY](#iconography) section.
+- **Fonts — self-hosted (bundled).** Arena ships the Archivo / Familjen Grotesk / Spline Sans Mono `.woff2` binaries in `assets/fonts/`; `tokens/fonts.css` declares them with `@font-face`. No CDN request — copy `assets/` (which now includes `fonts/`) with the kit and fonts load from your own origin.
+- **Icons — [Phosphor Icons](https://phosphoricons.com) (MIT).** Not bundled. **Install the official package by default** — `@phosphor-icons/web` (webfont) or `@phosphor-icons/react` — for full weight/tree-shaking flexibility. The CDN is a prototype-only convenience, not the default. See the [ICONOGRAPHY](#iconography) section.
 - **React** — the primitives in `frameworks/react/components/` are React (JSX). Tokens, guidelines and assets are framework-agnostic and can be used without React.
 
 ## Audience and scope
@@ -126,7 +126,7 @@ To tell **destructive / risk actions and indicators** apart from the primary act
   - **Bold** (`.ph-bold`) — default weight across the UI. Presence and legibility at high contrast.
   - **Fill** (`.ph-fill`) — active/selected state (e.g. the active navigation item, a toggle that's on).
   - **Duotone** (`.ph-duotone`) — only to highlight features/onboarding, with the crimson accent on the primary layer. Premium two-tone effect; use sparingly.
-- **Loading (CDN):** link the stylesheet for each weight used, e.g. `https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css`, and apply the weight class plus the icon class: `<i class="ph-bold ph-rocket-launch"></i>`. Production: install `@phosphor-icons/react` (`<Rocket weight="bold"/>`).
+- **Loading (default — install the package):** install `@phosphor-icons/web` and import its weight stylesheets, or `@phosphor-icons/react` (`<Rocket weight="bold"/>`), then apply the weight class plus the icon class: `<i class="ph-bold ph-rocket-launch"></i>`. **Prototype-only:** the CDN, e.g. `https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css`.
 - Sizes: 16 / 20 / 24 px (via `font-size`). Color: inherits `currentColor`; accent only when interactive/active.
 - **Do not** override `font-family/weight/style` on `.ph-*` classes (breaks the glyphs).
 - **No emoji.** No arbitrary unicode as an icon. The **Rotor** (`assets/rotor-*.svg`) is brand, not a UI icon: don't use it as a functional glyph.
@@ -203,7 +203,7 @@ It reads the ramp straight out of `palette.css`, measures both themes against th
 - `tokens/` — `fonts.css`, `palette.css` (the skin — see [Theming](#theming)), `colors.css` (structure: aliases and derivations), `typography.css`, `spacing.css`, `effects.css`.
 - `frameworks/react/use-container-width.js` — shared `useContainerWidth` hook and `readBreakpoint`; responsive components import it. `theme.js` — theme toggle helper. `jsx-loader.js` — in-browser JSX loading for the demo pages.
 - `scripts/` — `validate-palette.mjs` (the data-viz palette validator, vendored), `check-ramp.mjs` (asserts the shipped ramp clears every gate in both themes), `check-text-contrast.mjs` (measures every text level against the real surfaces in both themes) and `check-release.mjs` (asserts the version, the marketplace `ref` and the tag agree, and that the pinned tag actually hands out the version being advertised).
-- `assets/` — `rotor-crimson/bone/ink.svg`, `app-icon.svg`.
+- `assets/` — `rotor-crimson/bone/ink.svg`, `app-icon.svg`, and `fonts/` (the bundled self-hosted `.woff2` binaries).
 - `guidelines/` — specimen cards (`@dsCard`): typography (`type-display`, `type-body`, `type-mono`), color (`colors-neutrals`, `colors-accents`, `colors-status`, `colors-categorical`), spacing (`spacing-scale`, `spacing-density`), effects (`effects-radius`, `effects-shadow`), iconography (`icons`), brand (`brand-logo`, `brand-rotor`) and the **danger convention** (`components-danger`).
 - `frameworks/react/components/` — React primitives: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch, ThemeToggle), `display/` (Card, Badge, Tag, Avatar, Table, Skeleton, StatCard, Calendar), `navigation/` (Tabs, SegmentedControl, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar, PageHead), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding, Spinner), `charts/` (ChartCard, BarChart, LineChart, DoughnutChart — dependency-free SVG), `brand/` (Rotor).
 - `frameworks/react/ui_kits/console/` — recreation of the Delivery Console (an example internal product).
@@ -225,7 +225,7 @@ touching the language:
   20+/Tailwind-v4/Material app. Two kinds of artifact: a bridge that makes the
   host app wear Arena — `theme/arena-tailwind.css` (the shared `@theme` preset
   in scope), `theme/arena-material.css` (Arena tokens mapped onto Material's
-  `--mdc-*`/`--mat-*` vars), `fonts/` (self-hosted, CSP-clean `@font-face`),
+  `--mdc-*`/`--mat-*` vars),
   `icons/icon-manifest.ts` (the Phosphor role→glyph map) and
   `theme/theme-service.ts` + `theme/no-fouc.html` (the dark-first signal theme
   service and its pre-paint snippet) — and token-styled primitives Material

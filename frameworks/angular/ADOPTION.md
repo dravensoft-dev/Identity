@@ -35,13 +35,18 @@ light is the `.arena-light` class (not `html.dark`).
 
 ## 4. Fonts
 
-Run `node frameworks/angular/fonts/fetch-fonts.mjs`, ship the resulting `woff2`
-into the app's `public/fonts`, and import `fonts/fonts.css`. No CDN request.
+Nothing extra to run. The token import from step 1
+(`arena-tailwind.css` → `styles.css` → `tokens/fonts.css`) already declares the
+self-hosted `@font-face`; the `.woff2` binaries ship in Arena's `assets/fonts/`.
+Ensure your build serves `assets/fonts/` so the `url('../assets/fonts/…')`
+references resolve. No CDN request. (Regenerate binaries with
+`node scripts/fetch-fonts.mjs` if ever needed.)
 
 ## 5. Icons
 
-Run the FontAwesome→Phosphor swap seeded by `icons/icon-manifest.ts`: install
-`@phosphor-icons/web` (or the webfont via `<i class="ph-bold ph-x">`), keep the
+Run the FontAwesome→Phosphor swap seeded by `icons/icon-manifest.ts`.
+**Install the official package by default** — `@phosphor-icons/web` — for
+development flexibility; the CDN webfont is a prototype-only shortcut. Keep the
 `<app-icon>` wrapper so call sites don't churn. Bold default, Fill = active,
 Duotone = onboarding only.
 
