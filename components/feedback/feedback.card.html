@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="700x400" name="Feedback" subtitle="Dialog · Toast · Tooltip · ProgressBar" -->
+<!-- @dsCard group="Components" viewport="700x480" name="Feedback" subtitle="Dialog · Toast · Tooltip · ProgressBar · Spinner" -->
 <!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
 <style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:24px}.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:16px}.sub{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:-2px}</style>
 <script type="importmap">
@@ -13,6 +13,7 @@ const { Dialog } = await arenaImport('../../components/feedback/Dialog.jsx');
 const { Toast } = await arenaImport('../../components/feedback/Toast.jsx');
 const { Tooltip } = await arenaImport('../../components/feedback/Tooltip.jsx');
 const { ProgressBar } = await arenaImport('../../components/feedback/ProgressBar.jsx');
+const { Spinner } = await arenaImport('../../components/feedback/Spinner.jsx');
 const { Button } = await arenaImport('../../components/forms/Button.jsx');
 function Demo(){const[o,setO]=React.useState(false);return(<div>
   <div className="sub">Toast</div>
@@ -30,6 +31,16 @@ function Demo(){const[o,setO]=React.useState(false);return(<div>
     <ProgressBar label="Deploying build #4821" value={64}/>
     <ProgressBar tone="success" label="Published" value={100}/>
     <ProgressBar indeterminate label="Connecting…"/>
+  </div>
+  <div className="sub">Spinner — sizes and tones</div>
+  <div className="row">
+    <Spinner size="sm" label="Loading" />
+    <Spinner size="md" label="Loading projects" />
+    <Spinner size="lg" tone="gold" label="Connecting" />
+    <Spinner tone="neutral" label="Loading" />
+    <span style={{display:'inline-flex',alignItems:'center',gap:8,background:'var(--crimson)',color:'var(--on-accent)',borderRadius:'var(--r-sm)',padding:'0 14px',height:40,fontFamily:'var(--font-body)',fontWeight:600,fontSize:14}}>
+      <Spinner size="sm" tone="on-accent" label="Deploying" />Deploying
+    </span>
   </div>
   <Dialog open={o} onClose={()=>setO(false)} eyebrow="Confirm" title="Deploy to production"
     footer={<><Button variant="ghost" onClick={()=>setO(false)}>Cancel</Button><Button onClick={()=>setO(false)}>Deploy</Button></>}>
