@@ -1,0 +1,47 @@
+/* ============================================================
+   Arena — Dravensoft skin (palette).
+   THIS IS THE FILE YOU SWAP to re-skin Arena.
+   It holds only skin values: the daisyUI --color-* set per theme
+   and the categorical chart ramp. Everything else — the Arena
+   aliases, the muted-text derivations — lives in colors.css and
+   follows automatically.
+   Default theme = dark (:root). Light theme = .arena-light.
+   After changing anything here, re-run:  node scripts/check-ramp.mjs
+   ============================================================ */
+
+/* --- Dark theme (default) --- */
+:root{
+  /* Base (warm neutrals) */
+  --color-base-100:#141010;   /* main background */
+  --color-base-200:#1d1715;   /* elevated surface / card */
+  --color-base-300:#241c19;   /* panel / border */
+  --color-base-content:#f3ede5;/* text on base */
+
+  /* Brand */
+  --color-primary:#b52a20;    --color-primary-content:#ffffff;   /* crimson */
+  --color-secondary:#c5a059;  --color-secondary-content:#141010; /* gold */
+  --color-neutral:#2c221e;    --color-neutral-content:#d8cfc4;   /* neutral surface */
+
+  /* Status */
+  --color-info:#3182ce;       --color-info-content:#ffffff;
+  --color-success:#38a169;    --color-success-content:#ffffff;
+  --color-warning:#ecc94b;    --color-warning-content:#141010;
+  --color-error:#e53e3e;      --color-error-content:#ffffff;
+}
+
+/* --- Light theme — warm inverse of the dark base --- */
+.arena-light{
+  --color-base-100:#ffffff;   /* main background — white */
+  --color-base-200:#f7f4ef;   /* card / elevated surface — very faint warm bone */
+  --color-base-300:#ece6dc;   /* panel / border — warm bone */
+  --color-base-content:#1a1a1a;/* text — near-black gray */
+
+  --color-primary:#b52a20;    --color-primary-content:#ffffff;
+  --color-secondary:#c5a059;  --color-secondary-content:#141010;
+  --color-neutral:#cabcad;    --color-neutral-content:#3a2e29;
+
+  --color-info:#3182ce;       --color-info-content:#ffffff;
+  --color-success:#38a169;    --color-success-content:#ffffff;
+  --color-warning:#ecc94b;    --color-warning-content:#141010;
+  --color-error:#e53e3e;      --color-error-content:#ffffff;
+}
