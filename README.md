@@ -1,6 +1,6 @@
 # Arena — Dravensoft Design System
 
-**Version 2.1.0** · MIT License · Dark-first React + CSS-token design system. See [`CHANGELOG.md`](./CHANGELOG.md).
+**Version 2.2.0** · MIT License · Dark-first React + CSS-token design system. See [`CHANGELOG.md`](./CHANGELOG.md).
 
 **Arena** is the single interface language under which every Dravensoft software product is built. It takes its name from the venue where a performance is put on display and applauded: every Arena interface should feel *worthy of being exalted* — the same promise the brand makes.
 
@@ -89,6 +89,7 @@ Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default
 - **Focus:** gold ring `2px` with `2px` offset — always visible, never `outline:none` without a replacement.
 - **Transparency/blur:** blur only on dialog overlays (`backdrop-filter: blur(6px)` over `rgba(20,16,16,.6)`).
 - **Uppercase microcopy (H2/H6/H8):** reserve `text-transform:uppercase` + mono for **short microlabels** (≤2 words: eyebrows, field labels, status badges, table headers). **Messages, titles and any reading text go in normal case** — never uppercase sentences. Rule of thumb: if it doesn't fit in a "pill," it goes in normal case.
+- **Navigate vs. filter (`Tabs` vs. `SegmentedControl`):** the two are told apart by **shape and accent, not by size**. `Tabs` changes the view: bare text on a hairline rule, stretched across the content, active marked by the **crimson underline**. `SegmentedControl` filters *within* the current view: an enclosed track that shrinks to its content, on the `--surface-input` surface that Input and Select wear, selection marked by a **neutral raised thumb** (`--line-strong` + `--shadow-1`) and **no crimson at all** — a filter does not spend the view's single primary accent, and the solid fill stays reserved for the primary action. They stack on purpose: tabs on top, the control beneath, filtering what the tab opened. A segmented control is **never** `role="tablist"` — it is a real radio group, since its options are mutually exclusive values, not destinations.
 - **Single dismiss pattern (H4):** the icon dismiss always uses Phosphor `ph-x` (Tag, Toast). **Modals** (Dialog/ConfirmDialog) are closed with their **explicit button** (Cancel) or a click-outside where appropriate, not the icon; the two affordances are never mixed in the same component.
 - **Component documentation (H10):** every `*.prompt.md` includes examples and, where it adds value, a **Do / Don't** section with the most common usage mistakes.
 
@@ -180,7 +181,7 @@ It reads the ramp straight out of `palette.css`, measures both themes against th
 - `scripts/` — `validate-palette.mjs` (the data-viz palette validator, vendored) and `check-ramp.mjs` (asserts the shipped ramp clears every gate in both themes).
 - `assets/` — `rotor-crimson/bone/ink.svg`, `app-icon.svg`.
 - `guidelines/` — specimen cards (`@dsCard`): typography (`type-display`, `type-body`, `type-mono`), color (`colors-neutrals`, `colors-accents`, `colors-status`, `colors-categorical`), spacing (`spacing-scale`), effects (`effects-radius`, `effects-shadow`), iconography (`icons`), brand (`brand-logo`, `brand-rotor`) and the **danger convention** (`components-danger`).
-- `components/` — React primitives: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch, ThemeToggle), `display/` (Card, Badge, Tag, Avatar, Table, Skeleton, StatCard, Calendar), `navigation/` (Tabs, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar, PageHead), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding, Spinner), `charts/` (ChartCard, BarChart, LineChart, DoughnutChart — dependency-free SVG), `brand/` (Rotor).
+- `components/` — React primitives: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch, ThemeToggle), `display/` (Card, Badge, Tag, Avatar, Table, Skeleton, StatCard, Calendar), `navigation/` (Tabs, SegmentedControl, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar, PageHead), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding, Spinner), `charts/` (ChartCard, BarChart, LineChart, DoughnutChart — dependency-free SVG), `brand/` (Rotor).
 - `ui_kits/console/` — recreation of the Delivery Console (an example internal product).
 - `reference/` — brand source material: the approved identity manual (`Dravensoft Identity.dc.html`) and the example Overview app (`Arena - Overview.dc.html`).
 - `SKILL.md` — plugin-root Agent Skill (also usable standalone).

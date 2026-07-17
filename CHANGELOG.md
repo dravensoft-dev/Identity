@@ -4,6 +4,15 @@ All notable changes to Arena — Dravensoft Design System are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] — 2026-07-17
+
+Adds `SegmentedControl`, the last open item from the retired DAMA component catalog. Additive: no breaking changes to any existing API.
+
+### Added
+- **`SegmentedControl`** (`navigation/`) — a compact inline filter over mutually exclusive options: an enclosed track that shrinks to its content, with a neutral raised thumb on the selected one. Covers the two `mat-button-toggle` usages the DAMA migration had nowhere to land: `Tabs` navigates between views and `RadioGroup` is a form control, and neither is a compact in-view filter.
+  - **It carries no crimson**, and that is the design, not an omission. `Tabs` marks the active view with the crimson underline; a filter that also reached for the accent would compete with it and with the primary action, against the "one primary accent per view" rule and the reservation of the solid fill for the primary action. Selection is drawn with the sanctioned depth kit instead — the surface scale (`--surface-input` track, `--line-strong` thumb), the hairline border and `--shadow-1`. The distinction from `Tabs` is now written down in README → VISUAL FOUNDATIONS rather than left to whoever reaches for the component next.
+  - **It is a real radio group, never `role="tablist"`** — its options are mutually exclusive values, not destinations, and claiming tab semantics would promise a `tabpanel` that a filter does not have. Each segment is a hidden native `<input type="radio">` inside a `role="radiogroup"` track, the same pattern `RadioGroup` already uses, so the browser owns the keyboard: one tab stop, arrows move and select. Focus and selection therefore always coincide, which is what lets the gold focus ring sit on the track exactly the way `Input` and `Select` wear it. `ariaLabel` is required — an unnamed radio group is announced as an unlabelled group.
+
 ## [2.1.0] — 2026-07-17
 
 Adds `Calendar`, the last component the DAMA migration was missing, and retires the catalog that tracked it. Additive: no breaking changes to any existing API.

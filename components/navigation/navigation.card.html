@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="700x460" name="Navigation" subtitle="Tabs · PageHead · Breadcrumbs · BulkActionBar" -->
+<!-- @dsCard group="Components" viewport="700x460" name="Navigation" subtitle="Tabs · SegmentedControl · PageHead · Breadcrumbs · BulkActionBar" -->
 <!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
 <style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:24px}.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:16px}.sub{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:-2px}</style>
 <script type="importmap">
@@ -10,13 +10,18 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 const { Tabs } = await arenaImport('../../components/navigation/Tabs.jsx');
+const { SegmentedControl } = await arenaImport('../../components/navigation/SegmentedControl.jsx');
 const { PageHead } = await arenaImport('../../components/navigation/PageHead.jsx');
 const { Breadcrumbs } = await arenaImport('../../components/navigation/Breadcrumbs.jsx');
 const { BulkActionBar } = await arenaImport('../../components/navigation/BulkActionBar.jsx');
 const { Button } = await arenaImport('../../components/forms/Button.jsx');
-function Demo(){const[v,setV]=React.useState('Overview');const[sel,setSel]=React.useState(3);return(<div>
+function Demo(){const[v,setV]=React.useState('Overview');const[range,setRange]=React.useState('7d');const[sel,setSel]=React.useState(3);return(<div>
   <Tabs tabs={['Overview','Deployments','Activity','Settings']} value={v} onChange={setV}/>
-  <div style={{padding:'18px 4px',color:'var(--mute)',fontFamily:'var(--font-mono)',fontSize:13}}>Active view: <span style={{color:'var(--gold)'}}>{v}</span></div>
+  <div className="row" style={{marginTop:14}}>
+    <div className="sub">SegmentedControl — filters inside the tab, never navigates</div>
+    <SegmentedControl ariaLabel="Time range" options={['24h','7d','30d']} value={range} onChange={setRange}/>
+    <span style={{color:'var(--mute)',fontFamily:'var(--font-mono)',fontSize:12}}>Active view: <span style={{color:'var(--gold)'}}>{v}</span> · Range: <span style={{color:'var(--gold)'}}>{range}</span></span>
+  </div>
   <div className="sub">Breadcrumbs — the last item is the current location</div>
   <div className="row">
     <Breadcrumbs items={[{label:'Projects',href:'#'},{label:'Client Portal',href:'#'},{label:'Deployments'}]} />
