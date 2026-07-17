@@ -4,6 +4,27 @@ All notable changes to Arena — Dravensoft Design System are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] — 2026-07-17
+
+Closes two WCAG failures in the light theme, both from one root cause: Arena is dark-first, and a value tuned against the dark background reached the light theme unmeasured.
+
+### Removed
+- **BREAKING — `--mute-2` and `--text-faint`**, the faint text level. Use **`--text-muted`**. It was removed rather than repaired: at 52% it measured 3.46:1 on the light card, failing WCAG AA for text, and clearing AA in light needs 61% of `--color-base-content` while `--mute` already sits at 62% — no distinguishable level fits below `--text-muted`. No component in the kit consumed it.
+
+  **Migrating:** replace `var(--text-faint)` and `var(--mute-2)` with `var(--text-muted)`. For `Avatar`-style presence dots, use `--status-offline` instead. Note that an unresolved `var()` does not error — it inherits or falls back to transparent — so grep your product for both names rather than relying on the page to look broken. Staying on 1.1.0 is a valid choice; the tokens are intact there.
+
+### Added
+- **`--status-offline`** (52% of `--color-base-content`) — presence "offline" only, for `Avatar`'s status dot. 4.93:1 dark / 3.46:1 light on the card, clearing WCAG 1.4.11's 3:1 for graphical objects.
+- **`scripts/check-text-contrast.mjs`** — reads the surfaces from `tokens/palette.css` and the derivations from `tokens/colors.css`, resolves every text level over `--color-base-100` and `--color-base-200` in both themes, and exits non-zero on failure. It also asserts the removed tokens stay removed. Reuses `contrast()` from `validate-palette.mjs`; hardcodes nothing. Sibling of `check-ramp.mjs`, and there for the same reason.
+
+### Fixed
+- **`--text-faint` / `--mute-2` as body text on the card failed WCAG 1.4.3** in the light theme — 3.46:1 against a 4.5:1 bar (dark passed at 4.93:1). Fixed by the removal above.
+- **`Avatar`'s offline dot failed WCAG 1.4.11** in the light theme — 2.47:1 against a 3:1 bar. It was painted with `--mute-2-disabled`, a token serving two masters that want opposite things; raising it would have made `Pagination`'s disabled controls read as enabled. It now uses `--status-offline`. The dot already carried `aria-label` and `title`, so the state was never color-alone; only its contrast was failing.
+- **`README.md` claimed `--mute-2` was recalibrated to WCAG AA.** That was true of the dark theme only; the light theme was never re-measured and had sat at 3.46:1 since review 3. The claim is corrected, and `check-text-contrast.mjs` now makes it machine-checkable — an unverifiable claim being the actual root cause here, not the two numbers.
+
+### Unchanged, deliberately
+- **`--mute-2-disabled` stays at 40%** (2.47:1 light). WCAG 1.4.3 and 1.4.11 both exempt inactive user-interface components. On `Pagination`'s disabled controls, low contrast is not a defect — it is the affordance.
+
 ## [1.1.0] — 2026-07-16
 
 Closes the component gap found by DAMA's migration. Additive: no breaking changes to any existing API.

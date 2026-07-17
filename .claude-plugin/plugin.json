@@ -1,7 +1,7 @@
 {
   "name": "arena",
   "displayName": "Arena — Dravensoft Design System",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Generate well-branded interfaces and assets in Dravensoft's \"Arena\" design language: design tokens, React components, guidelines, and a UI kit.",
   "author": {
     "name": "Dravensoft"

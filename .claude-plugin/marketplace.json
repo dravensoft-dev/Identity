@@ -9,7 +9,7 @@
       "name": "arena",
       "source": ".",
       "description": "Arena — Dravensoft's design system as an Agent Skill: design tokens, React components, guidelines, and a UI kit for generating well-branded interfaces.",
-      "version": "1.1.0",
+      "version": "2.0.0",
       "author": {
         "name": "Dravensoft"
       },
