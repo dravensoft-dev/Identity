@@ -204,8 +204,10 @@ find frameworks/react/components -name '*.card.html' -print0 | xargs -0 sed -i \
 Run:
 ```bash
 grep -rn "arenaImport('\.\./\.\./components/" frameworks/react/components --include='*.card.html' | wc -l   # expect: 51
-grep -rn '\.\./\.\./\(styles\.css\|jsx-loader\.js\)' frameworks/react/components --include='*.card.html' | wc -l  # expect: 0 (all now ../../../)
-grep -rn '\.\./\.\./\.\./\(styles\.css\|jsx-loader\.js\)' frameworks/react/components --include='*.card.html' | wc -l  # expect: 32 (16 each)
+# anchor the "still 2-level?" check on the opening quote — otherwise `../../styles.css`
+# matches as a SUBSTRING of the correct `../../../styles.css` and can never reach 0.
+grep -rnE '["'"'"']\.\./\.\./(styles\.css|jsx-loader\.js)' frameworks/react/components --include='*.card.html' | wc -l  # expect: 0 (no true 2-level infra ref remains)
+grep -rnoE '\.\./\.\./\.\./(styles\.css|jsx-loader\.js)' frameworks/react/components --include='*.card.html' | wc -l  # expect: 32 (16 each)
 ```
 Expected: `51`, `0`, `32`.
 
