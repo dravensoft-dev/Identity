@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="700x140" name="Navigation" subtitle="Tabs" -->
+<!-- @dsCard group="Components" viewport="700x260" name="Navigation" subtitle="Tabs, PageHead" -->
 <!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
 <style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:24px}.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:16px}.sub{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:-2px}</style>
 <script type="importmap">
@@ -10,9 +10,14 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 const { Tabs } = await arenaImport('../../components/navigation/Tabs.jsx');
+const { PageHead } = await arenaImport('../../components/navigation/PageHead.jsx');
+const { Button } = await arenaImport('../../components/forms/Button.jsx');
 function Demo(){const[v,setV]=React.useState('Overview');return(<div>
   <Tabs tabs={['Overview','Deployments','Activity','Settings']} value={v} onChange={setV}/>
   <div style={{padding:'18px 4px',color:'var(--mute)',fontFamily:'var(--font-mono)',fontSize:13}}>Active view: <span style={{color:'var(--gold)'}}>{v}</span></div>
+  <div className="sub">PageHead</div>
+  <PageHead title="Client Portal" subtitle="Last published 2 h ago · build #4821"
+    actions={<><Button variant="secondary" size="sm">View logs</Button><Button variant="primary" size="sm">Deploy</Button></>} />
 </div>);}
 createRoot(document.getElementById('root')).render(<Demo/>);
 </script></body></html>

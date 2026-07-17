@@ -2,6 +2,7 @@ import React from 'react';
 import { Rotor } from '../../components/brand/Rotor.jsx';
 import { IconButton } from '../../components/forms/IconButton.jsx';
 import { Icon } from './Icon.jsx';
+import { PageHead } from '../../components/navigation/PageHead.jsx';
 
 const NAV = [
   { id: 'dashboard', icon: 'grid', label: 'Projects' },
@@ -35,13 +36,13 @@ export function Shell({ active = 'dashboard', onNav, title, actions, children })
         </div>
       </aside>
       <main style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 32px', borderBottom: '1px solid var(--color-base-300)' }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 22, color: 'var(--bone)', letterSpacing: '-.01em' }}>{title}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {actions}
-            <IconButton label="Search"><Icon name="search" /></IconButton>
-            <IconButton label="Notifications"><Icon name="bell" /></IconButton>
-          </div>
+        <header style={{ padding: '20px 32px', borderBottom: '1px solid var(--color-base-300)' }}>
+          <PageHead title={title} style={{ marginBottom: 0, alignItems: 'center' }}
+            actions={<>
+              {actions}
+              <IconButton label="Search"><Icon name="search" /></IconButton>
+              <IconButton label="Notifications"><Icon name="bell" /></IconButton>
+            </>} />
         </header>
         <div style={{ padding: 32, flex: 1, overflow: 'auto' }}>{children}</div>
       </main>
