@@ -4,6 +4,19 @@ All notable changes to Arena — Dravensoft Design System are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **Self-hosted resource policy.** Text fonts are now bundled and self-hosted by
+  default: the Archivo / Familjen Grotesk / Spline Sans Mono `.woff2` binaries
+  ship in `assets/fonts/` and `tokens/fonts.css` declares them with `@font-face`,
+  replacing the Google Fonts CDN `@import`. Every framework layer and HTML page
+  inherits fonts from this single origin; the Angular layer's own `fonts/`
+  directory is removed and `fetch-fonts.mjs` moves to `scripts/`. Iconography now
+  documents installing the official `@phosphor-icons/*` package as the default
+  (the CDN is prototype-only). No font CDN request remains in the repo.
+
 ## [3.1.0] — 2026-07-17
 
 ### Added
