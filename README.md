@@ -13,9 +13,24 @@ Inside Claude Code, add the marketplace and install the plugin:
 ```
 /plugin marketplace add dravensoft-dev/Identity
 /plugin install arena@dravensoft
+/reload-plugins
 ```
 
-This registers the `design` skill under the `arena` plugin. Invoke it explicitly with `/arena:design`, or just ask Claude for Dravensoft-branded UI and it loads automatically. Pull updates with `/plugin marketplace update dravensoft`.
+This registers the `design` skill under the `arena` plugin. Invoke it explicitly with `/arena:design`, or just ask Claude for Dravensoft-branded UI and it loads automatically.
+
+**Updating takes two commands, not one**, and skipping the second fails silently — you see the new version listed and keep running the old one:
+
+```
+/plugin marketplace update dravensoft   # refresh the catalog: learns a new version exists
+/plugin update arena@dravensoft         # update the plugin you actually have
+/reload-plugins                         # apply it to the running session
+```
+
+`/plugin marketplace update` only refreshes the listing. `/plugin update` is what replaces the installed copy (`claude plugin update arena@dravensoft` from a shell, with `--scope` if you installed to `project` or `local`).
+
+**Nothing arrives on its own.** Claude Code enables plugin auto-update for Anthropic's own marketplaces and leaves it **off** for third-party ones like this. To let releases land in the background, turn it on once: `/plugin` → **Marketplaces** → `dravensoft` → **Enable auto-update**. For a whole organization, set `"autoUpdate": true` on the marketplace's `extraKnownMarketplaces` entry in managed settings.
+
+**A version means one commit.** Each release is served from its git tag — the marketplace entry pins `source.ref` to `vX.Y.Z` — so a version resolves to the same tree today and in a year, never to whatever `main` happens to hold. The catalog itself is still read from `main`, which is how a new release announces itself.
 
 ### Use in a project (copy-in kit)
 To use the tokens and components directly in an app:

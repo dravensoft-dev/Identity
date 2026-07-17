@@ -68,8 +68,17 @@ check('marketplace version', entry.version === version, `${entry.version ?? '(un
 const readme = read('README.md').match(/^\*\*Version\s+(\S+)\*\*/m);
 check('README header', readme?.[1] === version, readme ? `${readme[1]}` : 'no "**Version X.Y.Z**" header found');
 
-const changelog = read('CHANGELOG.md').match(/^## \[([^\]]+)\]/m);
-check('CHANGELOG top entry', changelog?.[1] === version, changelog ? `[${changelog[1]}]` : 'no "## [X.Y.Z]" entry found');
+// Keep a Changelog's [Unreleased] collects what has landed on main since the
+// tag, so it is expected to sit on top between releases and is skipped here:
+// the first *versioned* entry is the one that has to name this release. At
+// release time it is [Unreleased] that gets renamed, which is why this reads the
+// first version rather than the first heading.
+const headings = [...read('CHANGELOG.md').matchAll(/^## \[([^\]]+)\]/gm)].map((m) => m[1]);
+const released = headings.find((h) => h.toLowerCase() !== 'unreleased');
+check('CHANGELOG top entry', released === version,
+  released
+    ? `[${released}]${headings[0] !== released ? ` — [${headings[0]}] sits above it, which is fine` : ''}`
+    : 'no "## [X.Y.Z]" entry found');
 
 // --- the pin -----------------------------------------------------------------
 const source = entry.source;
