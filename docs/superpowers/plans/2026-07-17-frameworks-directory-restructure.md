@@ -602,13 +602,12 @@ Add to the "Architecture" section:
 **Framework layers live under `frameworks/`.** The root holds only the
 framework-agnostic language (`tokens/`, `guidelines/`, `assets/`, `scripts/`,
 `styles.css`) plus the demo runtime (`theme.js`, `jsx-loader.js`, `support.js`)
-and brand (`*.dc.html`). React lives in `frameworks/react/` (`components/`,
-`ui_kits/`, `use-container-width.js`); `frameworks/angular/` holds Angular
-support; `frameworks/tailwind/` is a **single shared** Tailwind v4 layer
-(`@theme` preset + per-component manifests), authored once because the
-token→utility mapping is pure CSS. **The Tailwind layer derives every utility
-from an existing token and introduces no new hex and no new value** — add the
-token first, then reference it.
+and brand (`*.dc.html`). React lives in `frameworks/react/`;
+`frameworks/angular/` holds Angular support; `frameworks/tailwind/` is a
+**single shared** Tailwind v4 layer (`@theme` preset + per-component manifests),
+authored once because the token→utility mapping is pure CSS. **The Tailwind
+layer derives every utility from an existing token and introduces no new hex
+and no new value** — add the token first, then reference it.
 ```
 
 - [ ] **Step 4: Note the specs/plans location in `CLAUDE.md`**
