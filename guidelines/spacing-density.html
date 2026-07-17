@@ -1,0 +1,43 @@
+<!-- @dsCard group="Spacing" viewport="700x360" name="Density" subtitle="--dz-* · one scope switch re-densifies the rows" -->
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>
+body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:20px}
+.grid{display:flex;gap:16px;align-items:flex-start}
+.pane{flex:1;background:var(--surface-card);border:1px solid var(--color-base-300);border-radius:var(--r-lg);overflow:hidden}
+.eyebrow{font-family:var(--font-mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);padding:12px 16px 0}
+table{width:100%;border-collapse:collapse}
+th,td{padding:var(--dz-row-py) var(--dz-row-px);font-size:var(--dz-cell);text-align:left;border-bottom:1px solid var(--color-base-300)}
+th{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:400}
+td{color:var(--text-body)}
+tr:last-child td{border-bottom:none}
+.num{font-family:var(--font-mono);color:var(--text-strong)}
+.legend{margin-top:14px;font-family:var(--font-mono);font-size:11px;color:var(--mute);line-height:1.7}
+.legend b{color:var(--text-body);font-weight:400}
+</style>
+</head><body>
+<div class="grid">
+  <div class="pane">
+    <div class="eyebrow">Comfortable — default</div>
+    <table>
+      <tr><th>Deployment</th><th>Duration</th></tr>
+      <tr><td>build #4821</td><td class="num">14 ms</td></tr>
+      <tr><td>build #4820</td><td class="num">18 ms</td></tr>
+      <tr><td>build #4819</td><td class="num">12 ms</td></tr>
+    </table>
+  </div>
+  <div class="pane arena-compact">
+    <div class="eyebrow">Compact — .arena-compact</div>
+    <table>
+      <tr><th>Deployment</th><th>Duration</th></tr>
+      <tr><td>build #4821</td><td class="num">14 ms</td></tr>
+      <tr><td>build #4820</td><td class="num">18 ms</td></tr>
+      <tr><td>build #4819</td><td class="num">12 ms</td></tr>
+    </table>
+  </div>
+</div>
+<div class="legend">
+  Same markup, same components — only the scope changes.<br>
+  <b>--dz-row-py</b> 12px &rarr; 7px · <b>--dz-row-px</b> 16px &rarr; 12px · <b>--dz-stack</b> 12px &rarr; 8px · <b>--dz-cell</b> 14px &rarr; 13px<br>
+  Apply on a container: <b>&lt;div class="arena-compact"&gt;</b> — it composes with <b>.arena-light</b>. <b>Table</b> reads these tokens.
+</div>
+</body></html>
