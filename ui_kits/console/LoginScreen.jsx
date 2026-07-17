@@ -7,7 +7,7 @@ export function LoginScreen({ onLogin }) {
   const [email, setEmail] = useState('ana@dravensoft.dev');
   return (
     <div style={{ minHeight: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'radial-gradient(120% 120% at 78% 12%, #2a201c 0%, #141010 60%)', padding: 24 }}>
+      background: 'var(--bg)', padding: 24 }}>
       <div style={{ width: 380, background: 'var(--surface-card)', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-lg)', padding: 36, boxShadow: 'var(--shadow-3)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
           <Rotor size={40} />
