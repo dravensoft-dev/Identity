@@ -710,7 +710,7 @@ git add .claude-plugin/plugin.json .claude-plugin/marketplace.json README.md CHA
 git commit -m "Release v3.0.0: frameworks/ split — react, angular, shared tailwind
 
 Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
-git tag v3.0.0
+git tag -a v3.0.0 -m "Arena v3.0.0"   # annotated — v1.0.0 set the convention; check-release notes it
 ```
 
 - [ ] **Step 6: Verify the release with all three validators**
