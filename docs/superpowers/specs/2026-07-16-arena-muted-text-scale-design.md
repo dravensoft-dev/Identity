@@ -10,8 +10,8 @@ Found while measuring type tokens during Arena v1.1 planning. It is **not** part
 
 | # | Failure | Dark | Light | Bar |
 |---|---|---|---|---|
-| 1 | `--text-faint` / `--mute-2` as body text, on the card surface | 4.93:1 ✓ | **3.46:1 ✗** | 4.5:1 (WCAG 1.4.3, normal text) |
-| 2 | `Avatar`'s `offline` status dot (`--mute-2-disabled`), on the card surface | 3.47:1 ✓ | **2.47:1 ✗** | 3:1 (WCAG 1.4.11, graphical object) |
+| 1 | `--text-faint` / `--mute-2` as body text, on the card surface | 4.93:1 PASS | **3.46:1 FAIL** | 4.5:1 (WCAG 1.4.3, normal text) |
+| 2 | `Avatar`'s `offline` status dot (`--mute-2-disabled`), on the card surface | 3.47:1 PASS | **2.47:1 FAIL** | 3:1 (WCAG 1.4.11, graphical object) |
 
 Measured against the real surfaces (`--color-base-200`: `#1d1715` dark, `#f7f4ef` light) with the same `contrast()` implementation Arena vendors for its palette validator. Values are the `color-mix` derivations composited over the surface.
 
