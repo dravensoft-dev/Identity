@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="700x420" name="Forms" subtitle="Button · IconButton · Input · Select · Checkbox · Switch · date/time" -->
+<!-- @dsCard group="Components" viewport="700x420" name="Forms" subtitle="Button · IconButton · Input · Select · Checkbox · Switch · date/time · ThemeToggle" -->
 <!doctype html>
 <html>
 <head>
@@ -28,6 +28,7 @@ const { Input } = await arenaImport('../../components/forms/Input.jsx');
 const { Select } = await arenaImport('../../components/forms/Select.jsx');
 const { Checkbox } = await arenaImport('../../components/forms/Checkbox.jsx');
 const { Switch } = await arenaImport('../../components/forms/Switch.jsx');
+const { ThemeToggle } = await arenaImport('../../components/forms/ThemeToggle.jsx');
 const plus = <i className="ph-bold ph-plus" style={{fontSize:16,lineHeight:1}} />;
 function Demo(){
   const [chk,setChk]=React.useState(true);
@@ -69,6 +70,8 @@ function Demo(){
         <Checkbox checked={chk} onChange={e=>setChk(e.target.checked)} label="Notify on approval" />
         <Switch checked={sw} onChange={e=>setSw(e.target.checked)} label="Automatic deployment" />
       </div>
+      <div className="sub">ThemeToggle</div>
+      <div className="row"><ThemeToggle /><span style={{fontSize:13,color:'var(--mute)'}}>Flips the whole page — every component re-themes from tokens alone.</span></div>
     </div>
   );
 }
