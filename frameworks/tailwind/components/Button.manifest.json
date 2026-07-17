@@ -1,7 +1,7 @@
 {
   "component": "Button",
   "slots": {
-    "root": "inline-flex items-center justify-center gap-2 rounded-sm font-semibold transition"
+    "root": "inline-flex items-center justify-center gap-2 rounded-sm font-[var(--fw-semibold)] transition-[background,transform,box-shadow] duration-[var(--dur-fast)] ease-[var(--ease-out)]"
   },
   "variants": {
     "variant": {

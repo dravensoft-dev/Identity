@@ -54,4 +54,11 @@
   --spacing-5: var(--sp-5);
   --spacing-6: var(--sp-6);
   --spacing-8: var(--sp-8);
+
+  /* type weight → tokens/typography.css (so `font-semibold` reads the token) */
+  --font-weight-semibold: var(--fw-semibold);
+
+  /* motion → tokens/effects.css (the bare `transition` utility reads these) */
+  --default-transition-duration: var(--dur-fast);
+  --default-transition-timing-function: var(--ease-out);
 }
