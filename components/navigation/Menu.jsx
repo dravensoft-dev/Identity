@@ -1,8 +1,30 @@
 import React, { useState, useRef, useEffect } from 'react';
+
+/* Keyframes cannot be expressed in an inline style object, so they ship as a
+ * <style> injected once into the head — the pattern ProgressBar establishes.
+ * Only the keyframes are injected; the `animation` shorthand stays inline,
+ * because the reduced-motion variant redefines the keyframes rather than
+ * needing a selector. Under reduce the menu still fades in, it just stops
+ * dropping. */
+let injected = false;
+function useMenuKeyframes() {
+  useEffect(() => {
+    if (injected || typeof document === 'undefined') return;
+    injected = true;
+    const s = document.createElement('style');
+    s.setAttribute('data-arena-menu', '');
+    s.textContent =
+      '@keyframes arena-menu{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}' +
+      '@media (prefers-reduced-motion:reduce){@keyframes arena-menu{from{opacity:0}to{opacity:1}}}';
+    document.head.appendChild(s);
+  }, []);
+}
+
 /** Dropdown menu (actions / overflow). `trigger` is the element that opens it
  * (e.g. an IconButton with ph-dots-three). `items`: [{label, icon, onClick, shortcut,
  * destructive, disabled} | {divider:true} | {header:'Text'}]. Closes with Esc or an outside click. */
 export function Menu({ trigger, items = [], align = 'start', style }) {
+  useMenuKeyframes();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useEffect(() => {
@@ -28,7 +50,6 @@ export function Menu({ trigger, items = [], align = 'start', style }) {
               <MenuItem key={i} item={it} onRun={() => run(it)} />
             );
           })}
-          <style>{'@keyframes arena-menu{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}'}</style>
         </div>
       )}
     </div>

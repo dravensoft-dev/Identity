@@ -1,5 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+
+/* Keyframes cannot be expressed in an inline style object, so they ship as a
+ * <style> injected once into the head — the pattern ProgressBar establishes.
+ * Only the keyframes are injected; the `animation` shorthand stays inline,
+ * because the reduced-motion variant redefines the keyframes rather than
+ * needing a selector. Under reduce the dialog still fades, it just stops
+ * travelling: the movement is the vestibular trigger, the fade is the meaning. */
+let injected = false;
+function usePopKeyframes() {
+  useEffect(() => {
+    if (injected || typeof document === 'undefined') return;
+    injected = true;
+    const s = document.createElement('style');
+    s.setAttribute('data-arena-dialog', '');
+    s.textContent =
+      '@keyframes arena-pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}' +
+      '@media (prefers-reduced-motion:reduce){@keyframes arena-pop{from{opacity:0}to{opacity:1}}}';
+    document.head.appendChild(s);
+  }, []);
+}
+
 export function Dialog({ open, onClose, title, eyebrow, children, footer, width = 480 }) {
+  usePopKeyframes();
   if (!open) return null;
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -14,7 +36,6 @@ export function Dialog({ open, onClose, title, eyebrow, children, footer, width 
         </div>
         <div style={{ padding: '16px 24px', color: 'var(--bone-dim)', fontFamily: 'var(--font-body)', fontSize: 15, lineHeight: 1.6 }}>{children}</div>
         {footer && <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '0 24px 22px' }}>{footer}</div>}
-        <style>{'@keyframes arena-pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}'}</style>
       </div>
     </div>
   );
