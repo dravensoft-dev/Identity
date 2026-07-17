@@ -221,7 +221,18 @@ touching the language:
 
 - `frameworks/react/` — the React primitives, the example Console app, and the
   `useContainerWidth` hook.
-- `frameworks/angular/` — Angular support (see the Angular spec; placeholder today).
+- `frameworks/angular/` — the Angular layer, for an existing Angular
+  20+/Tailwind-v4/Material app. Two kinds of artifact: a bridge that makes the
+  host app wear Arena — `theme/arena-tailwind.css` (the shared `@theme` preset
+  in scope), `theme/arena-material.css` (Arena tokens mapped onto Material's
+  `--mdc-*`/`--mat-*` vars), `fonts/` (self-hosted, CSP-clean `@font-face`),
+  `icons/icon-manifest.ts` (the Phosphor role→glyph map) and
+  `theme/theme-service.ts` + `theme/no-fouc.html` (the dark-first signal theme
+  service and its pre-paint snippet) — and token-styled primitives Material
+  doesn't provide, each a quartet (`<name>.ts`, `<name>.variants.ts`,
+  `<name>.prompt.md`, a barrel) under `primitives/`, with `tag` as the
+  reference shape. See `frameworks/angular/README.md` for the layer and
+  `frameworks/angular/ADOPTION.md` for the step-by-step adoption playbook.
 - `frameworks/tailwind/` — a **shared**, token-derived Tailwind v4 layer (a
   `@theme` preset + per-component class/variant manifests). It is authored once,
   not per framework, because the token→utility mapping is pure CSS and a

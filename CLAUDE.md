@@ -39,6 +39,8 @@ Inject **as little as the job needs**. Prefer keyframes alone and leave the `ani
 
 **Every component is a quartet.** `X.jsx` (implementation), `X.d.ts` (types, with a `@startingPoint` doc comment), `X.prompt.md` (usage, examples, Do/Don't per README's H10 rule), and an entry in the group's `*.card.html` demo. Adding a component means adding all four.
 
+The Angular layer's quartet is the analogue: `<name>.ts` (standalone `OnPush` component, `arena-` selector, signal I/O, no component `styles`), `<name>.variants.ts` (a `tailwind-variants` recipe built with `frameworks/tailwind/tv.ts`), `<name>.prompt.md`, and a barrel export. Dark-first (`.arena-light`), danger stays outline, Phosphor icons.
+
 **Specimen/demo pages** start with an HTML comment `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card rendering — keep it as the first line. Component demos load React from esm.sh via an importmap, pull in Babel standalone, and use `jsx-loader.js`'s `window.arenaImport('../path/X.jsx')` to import JSX in the browser with no build step (it transpiles and rewrites relative imports to blob URLs recursively).
 
 `support.js` is a generated bundle (`dc-runtime`, whose source is not in this repo) used only by the root `*.dc.html` pages. Do not edit it.
@@ -47,9 +49,17 @@ Inject **as little as the job needs**. Prefer keyframes alone and leave the `ani
 framework-agnostic language (`tokens/`, `guidelines/`, `assets/`, `scripts/`,
 `styles.css`) plus the demo runtime (`theme.js`, `jsx-loader.js`, `support.js`)
 and brand (`*.dc.html`). React lives in `frameworks/react/`;
-`frameworks/angular/` holds Angular support; `frameworks/tailwind/` is a
-**single shared** Tailwind v4 layer (`@theme` preset + per-component manifests),
-authored once because the token→utility mapping is pure CSS. **The Tailwind
+`frameworks/angular/` holds the Angular layer: a Tailwind preset entry
+(`theme/arena-tailwind.css`) and an Angular Material MDC token bridge
+(`theme/arena-material.css`), self-hosted fonts (`fonts/`), a
+Phosphor icon manifest (`icons/`), a dark-first signal `ThemeService`
+(`theme/theme-service.ts` + `no-fouc.html`), and standalone `OnPush`
+primitives under `primitives/` (`tag` is the reference), each styled by the
+shared `frameworks/tailwind/` recipes through the configured `tv`
+(`frameworks/tailwind/tv.ts`) — see `frameworks/angular/ADOPTION.md`.
+`frameworks/tailwind/` is a **single shared** Tailwind v4 layer (`@theme`
+preset + per-component manifests), authored once because the token→utility
+mapping is pure CSS. **The Tailwind
 layer derives every utility from an existing token and introduces no new hex
 and no new value** — add the token first, then reference it.
 
