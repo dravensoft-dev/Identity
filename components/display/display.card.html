@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="700x300" name="Display" subtitle="Card · Badge · Tag" -->
+<!-- @dsCard group="Components" viewport="700x460" name="Display" subtitle="Card · Badge · Tag · StatCard" -->
 <!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
 <style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:24px}.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:16px}.sub{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:-2px}</style>
 <script type="importmap">
@@ -12,6 +12,7 @@ import { createRoot } from 'react-dom/client';
 const { Card } = await arenaImport('../../components/display/Card.jsx');
 const { Badge } = await arenaImport('../../components/display/Badge.jsx');
 const { Tag } = await arenaImport('../../components/display/Tag.jsx');
+const { StatCard } = await arenaImport('../../components/display/StatCard.jsx');
 function Demo(){return (<div>
   <div className="sub">Badge — tones</div>
   <div className="row">
@@ -33,6 +34,13 @@ function Demo(){return (<div>
     <Card accent floating title="Latency alert" style={{width:280}}>
       <div style={{color:'var(--mute)',fontSize:14,lineHeight:1.6}}>p95 rose to 340 ms on checkout.</div>
     </Card>
+  </div>
+  <div className="sub">StatCard — delta tone is sentiment, not direction</div>
+  <div className="row" style={{alignItems:'stretch'}}>
+    <StatCard label="Deploys" value="128" delta={{value:'+12%',direction:'up',tone:'positive'}} sub="vs last week" style={{flex:1}} />
+    <StatCard label="p95 latency" value="340 ms" delta={{value:'-18%',direction:'down',tone:'positive'}} sub="vs last week" style={{flex:1}} />
+    <StatCard label="Open incidents" value="3" delta={{value:'+2',direction:'up',tone:'negative'}} sub="2 acknowledged" style={{flex:1}} />
+    <StatCard label="Build time" value="4m 12s" delta={{value:'+3s',direction:'up'}} style={{flex:1}} />
   </div>
 </div>);}
 createRoot(document.getElementById('root')).render(<Demo/>);
