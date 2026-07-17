@@ -673,10 +673,10 @@ Change the `**Version 2.4.0**` header to `**Version 3.0.0**`.
 
 - [ ] **Step 4: Add the CHANGELOG entry** (new top **versioned** entry — do not edit historical entries)
 
-Insert at the top of the entries in `CHANGELOG.md`:
+Insert directly **above** the current top entry `## [2.4.0] — 2026-07-17` in `CHANGELOG.md` (there is no `## [Unreleased]` section to rename; this becomes the first versioned entry that `check-release.mjs` reads). Use an em-dash `—` in the date to match every existing entry:
 
 ```markdown
-## [3.0.0] - 2026-07-17
+## [3.0.0] — 2026-07-17
 
 ### Changed (breaking)
 
