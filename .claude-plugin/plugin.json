@@ -1,8 +1,8 @@
 {
   "name": "arena",
   "displayName": "Arena — Dravensoft Design System",
-  "version": "2.4.0",
-  "description": "Generate well-branded interfaces and assets in Dravensoft's \"Arena\" design language: design tokens, React components, guidelines, and a UI kit.",
+  "version": "3.0.0",
+  "description": "Generate well-branded interfaces and assets in Dravensoft's \"Arena\" design language: design tokens, framework primitives (React, Angular), a shared Tailwind layer, guidelines, and a UI kit.",
   "author": {
     "name": "Dravensoft"
   },
@@ -16,6 +16,8 @@
     "arena",
     "dravensoft",
     "design-tokens",
-    "react"
+    "react",
+    "angular",
+    "tailwind"
   ]
 }

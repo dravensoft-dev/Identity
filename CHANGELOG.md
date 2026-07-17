@@ -4,6 +4,32 @@ All notable changes to Arena — Dravensoft Design System are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] — 2026-07-17
+
+### Changed (breaking)
+
+- **Introduced `frameworks/`.** Every framework-bound file moved under it: the
+  React primitives, example app, and hook now live in `frameworks/react/`
+  (`components/`, `ui_kits/console/`, `use-container-width.js`). The repo root
+  keeps only the framework-agnostic language, the demo runtime, and the brand
+  `*.dc.html`.
+
+### Added
+
+- **`frameworks/tailwind/`** — a shared, token-derived Tailwind v4 layer:
+  `theme.css` (the `@theme` preset) and `components/*.manifest.json`
+  (framework-neutral class/variant recipes, starting with `Button`). It derives
+  every utility from an existing token and introduces no new value.
+- **`frameworks/angular/`** — placeholder for Angular support (filled by the
+  Angular spec).
+
+### Migration
+
+- Update React import paths: `./components/<group>/X.jsx` →
+  `./frameworks/react/components/<group>/X.jsx`; `./use-container-width.js` →
+  `./frameworks/react/use-container-width.js`. Tokens, guidelines, assets, and
+  `styles.css` are unchanged at the repo root.
+
 ## [2.4.0] — 2026-07-17
 
 Danger was one red doing two jobs, and it was failing both. This splits it, and extends `check-text-contrast.mjs` to the checks that would have caught it.

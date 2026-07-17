@@ -32,8 +32,5 @@ Thumbs.db
 .thumbnail
 coverage/
 
-# Process docs — specs and plans are not part of the language and stay out of
-# the tree (the ones that were here were removed in 62599f8). Arena documents
-# decisions in README.md and CHANGELOG.md, not in the workflow that produced them.
+# SDD scratch (ledger, task briefs, review packages) is machine-local, not product.
 .superpowers/
-docs/superpowers/
