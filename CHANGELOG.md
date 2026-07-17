@@ -4,6 +4,20 @@ All notable changes to Arena — Dravensoft Design System are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] — 2026-07-17
+
+### Added
+
+- **`frameworks/angular/`** — the Angular layer. Bridge artifacts: a Tailwind
+  preset entry (`theme/arena-tailwind.css`), an Angular Material MDC token bridge
+  (`theme/arena-material.css`), self-hosted CSP-clean fonts (`fonts/`), a Phosphor
+  icon manifest (`icons/icon-manifest.ts`), and a dark-first signal `ThemeService`
+  (`theme/theme-service.ts` + `no-fouc.html`). Plus the `tag` reference primitive
+  (standalone, `OnPush`, `arena-` selector) and the DAMA adoption playbook
+  (`ADOPTION.md`).
+- **`frameworks/tailwind/tv.ts`** — a configured `tailwind-variants` factory the
+  Angular recipes consume so utilities dedupe against Arena's token scale.
+
 ## [3.0.0] — 2026-07-17
 
 ### Changed (breaking)
