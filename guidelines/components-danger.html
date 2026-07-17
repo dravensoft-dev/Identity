@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="700x260" name="Danger convention" subtitle="Outline --error, not filled" -->
+<!-- @dsCard group="Components" viewport="700x350" name="Danger convention" subtitle="Outline --error, not filled" -->
 <!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="../styles.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
@@ -15,6 +15,9 @@ body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--fo
 .btn.danger{background:transparent;color:var(--danger);border-color:var(--danger)}
 .btn.final{background:var(--danger);color:var(--color-error-content);border-color:var(--danger)}
 .iconbtn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r-sm);cursor:pointer;background:transparent;color:var(--danger);border:1px solid var(--danger)}
+.note{border:1px solid var(--border);border-radius:var(--r-md);padding:14px 16px;font-size:13px;color:var(--bone-dim);line-height:1.55;max-width:64ch}
+.note strong{display:block;color:var(--text-strong);font-size:14px;margin-bottom:4px}
+.note code{font-family:var(--font-mono);font-size:12px;color:var(--danger)}
 </style>
 </head><body>
 <div class="wrap">
@@ -24,6 +27,15 @@ body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--fo
 <div class="cell"><button class="btn danger"><i class="ph-bold ph-trash"></i>Destructive</button><span class="cap">danger · outline --error</span></div>
 <div class="cell"><button class="iconbtn" aria-label="Delete"><i class="ph-bold ph-trash"></i></button><span class="cap">iconbtn danger</span></div>
 <div class="cell"><button class="btn final">Final confirmation</button><span class="cap">exception · filled</span></div>
+</div>
+<div class="note">
+  <strong>Data pills are outline too — both signs.</strong>
+  <code>StatCard</code>'s delta pill is transparent with a 1px border whether the change is
+  positive or negative. Filled red stays exclusive to <code>ConfirmDialog</code>'s final
+  irreversible confirmation, and that exclusivity is exactly what gives it weight: destructive
+  affordances are rare and must not compete for attention. A data pill has no business spending
+  that signal. The rule applies to <code>positive</code> as well, so the pair reads as one family
+  rather than a green button beside a red warning.
 </div>
 </div>
 </body></html>

@@ -27,9 +27,11 @@ python3 -m http.server 8000   # then browse to the paths below
 
 ## Architecture
 
-**Tokens are the only styling layer.** `styles.css` does nothing but `@import` the five files in `tokens/`. `tokens/colors.css` has two halves: daisyUI-structured `--color-*` / `--color-*-content` pairs (the source of truth, defined per theme — dark on `:root`, light on `.arena-light`) and, below, a **compatibility layer** mapping Arena's legacy aliases (`--bg`, `--surface-card`, `--crimson`, `--gold`, `--danger`, `--mute`…) onto them. Muted text levels are derived with `color-mix` from `--color-base-content`, not hardcoded. When adding a color, define the daisyUI token first and alias to it — never introduce a raw hex in a component.
+**Tokens are the only styling layer.** `styles.css` does nothing but `@import` the six files in `tokens/`. The split matters: **`tokens/palette.css` is the skin** — the daisyUI-structured `--color-*` / `--color-*-content` pairs per theme (dark on `:root`, light on `.arena-light`) plus the 8-slot categorical chart ramp (`--color-cat-1..8`) — and it is the one file a consumer swaps to re-skin Arena. **`tokens/colors.css` is the structure** — the compatibility layer mapping Arena's legacy aliases (`--bg`, `--surface-card`, `--crimson`, `--gold`, `--danger`, `--mute`…) onto those tokens, plus the `color-mix` derivations of the muted text levels from `--color-base-content`. `colors.css` never defines a skin value; `palette.css` is imported before it. When adding a color, define the daisyUI token in `palette.css` first and alias to it in `colors.css` — never introduce a raw hex in a component. After touching `palette.css`, run `node scripts/check-ramp.mjs`.
 
 **Components carry no CSS classes.** Each `components/**/*.jsx` renders with inline `style` objects reading the custom properties (`background: 'var(--crimson)'`), and handles hover/active/focus with local `useState`. There is no `.btn` class to target; theming happens entirely through token values. Keep new components self-contained the same way — `Button.jsx` is the reference shape.
+
+**The one exception: a `<style>` tag injected once**, for what an inline style genuinely cannot express — `@keyframes` (`ProgressBar`, `Spinner`) and vendor pseudo-elements (`Input`'s `::-webkit-calendar-picker-indicator`, which is invisible on the dark surface otherwise). The pattern is always the same: a module-level `let injected = false` guard, a `useEffect`, `document.head.appendChild`. It targets keyframes or a vendor pseudo-element — **never a class of ours**, and never as a shortcut around an inline style that would have worked.
 
 **Every component is a quartet.** `X.jsx` (implementation), `X.d.ts` (types, with a `@startingPoint` doc comment), `X.prompt.md` (usage, examples, Do/Don't per README's H10 rule), and an entry in the group's `*.card.html` demo. Adding a component means adding all four.
 
@@ -43,4 +45,7 @@ python3 -m http.server 8000   # then browse to the paths below
 - **No gradients** on any surface (the sole exception is `Skeleton`'s neutral shimmer). Depth comes from the `base-100`→`base-200`→`base-300` surface scale, the hairline border, and the warm shadow.
 - **No emoji**, in product or docs.
 - **Danger is outline, never filled** — transparent background, border and content in `--error`/`--danger`. The only filled danger surface in the whole system is the final irreversible confirmation inside `ConfirmDialog`. See `guidelines/components-danger.html`.
-- Version lives in three places that must move together: `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, and the README header; log the change in `CHANGELOG.md`.
+- Version lives in three files that must move together: `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, and the README header; log the change in `CHANGELOG.md`. Verify with:
+  `grep -rn '"version"' .claude-plugin/ && grep -n '^\*\*Version' README.md && head -8 CHANGELOG.md`
+- **Charts** carry identity (the `--color-cat-*` ramp, in order, never cycled) or meaning (`tone`, the status colors) — never both in one chart. Status colors are never series colors. One axis, always.
+- Responsive branches are JS, not media queries (inline styles cannot hold one), and measure the **container** via `useContainerWidth` — not the viewport.

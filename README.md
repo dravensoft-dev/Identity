@@ -1,6 +1,6 @@
 # Arena — Dravensoft Design System
 
-**Version 1.0.0** · MIT License · Dark-first React + CSS-token design system. See [`CHANGELOG.md`](./CHANGELOG.md).
+**Version 1.1.0** · MIT License · Dark-first React + CSS-token design system. See [`CHANGELOG.md`](./CHANGELOG.md).
 
 **Arena** is the single interface language under which every Dravensoft software product is built. It takes its name from the venue where a performance is put on display and applauded: every Arena interface should feel *worthy of being exalted* — the same promise the brand makes.
 
@@ -20,7 +20,7 @@ This registers the `design` skill under the `arena` plugin. Invoke it explicitly
 ### Use in a project (copy-in kit)
 To use the tokens and components directly in an app:
 
-1. **Copy** `tokens/`, `assets/` and `styles.css` into your app (e.g. under `/arena`).
+1. **Copy** `tokens/`, `assets/`, `styles.css` and `use-container-width.js` into your app (e.g. under `/arena`). `use-container-width.js` is the shared hook `Table` (and any responsive component) imports; copy it whenever you copy one of those.
 2. **Link the entry point.** `styles.css` only `@import`s the token files, exposing every design token as a CSS custom property (`--color-*`, `--font-*`, `--r-*`, `--shadow-*`, …) and loading the fonts:
    ```html
    <link rel="stylesheet" href="/arena/styles.css" />
@@ -72,16 +72,16 @@ Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default
 ## VISUAL FOUNDATIONS
 - **Color — token architecture (daisyUI structure):** the source of truth is a set of `--color-*` tokens paired with their `-content` counterpart (the legible color on top), defined in `tokens/colors.css`. On top of them, a **compatibility layer** maps Arena's legacy aliases (`--bg`, `--surface-card`, `--crimson`, `--gold`, `--danger`, `--mute`…) to the daisyUI tokens, so existing components don't break. Muted text levels (`--bone-dim`, `--mute`, `--mute-2`) are derived from `--color-base-content` with `color-mix`, not fixed hex values.
 - **Themes:** the language is **dark-first** but supports two switchable themes — **dark** (`:root`, default) and **light** (`.arena-light`, warm inverse). The same tokens change value per theme; components are never rewritten. (The Overview includes the toggle in its header.)
-- **Key values:** warm black background `#141010` (base-100); elevated surfaces `#1d1715` (base-200) / `#241c19` (base-300); bone text `#f3ede5` (base-content). A single primary accent (crimson `#b52a20`) per view; gold `#c5a059` reserved for focus, distinction and highlighted data. At most one dominant accent per screen.
+- **Key values:** a warm black background (`--color-base-100`) under elevated surfaces (`--color-base-200` for cards, `--color-base-300` for panels and borders) and bone text (`--color-base-content`). A single primary accent (crimson, `--color-primary`) per view; gold (`--color-secondary`) reserved for focus, distinction and highlighted data. At most one dominant accent per screen. The literal values live in `tokens/palette.css` — see [Theming](#theming): the scale is the language, the hexes are the skin.
 - **Typography:** Archivo (display/headlines, 800–900), Familjen Grotesk (body, 400–600), Spline Sans Mono (data, labels, code). Negative tracking on display (`-0.02em`), wide tracking on mono labels (`0.22em`).
 - **Spacing:** 4px base grid; generous rhythm in marketing (88px gutter), dense but breathable in product.
 - **Backgrounds:** **always flat.** Arena **does not use color gradients** on any surface — not heroes, not splash screens, not cards, not accents. Depth is built with the surface scale (`base-100`→`base-200`→`base-300`), the hairline border and the warm shadow, never with color transitions. (The only permitted use of `linear-gradient`: the `Skeleton`'s neutral *shimmer* animation, which is loading motion, not chromatic decoration.) No generic stock photos; real product imagery or striped placeholders.
-- **Borders:** hairline `1px` `#241c19` (token `--color-base-300`); emphasized border `#2c221e` (token `--line-strong`). The border, not the shadow, is used to separate content on flat surfaces.
+- **Borders:** hairline `1px` in `--color-base-300` (alias `--border`); emphasized border in `--line-strong`. The border, not the shadow, is used to separate content on flat surfaces.
 - **Shadows:** warm and deep, negative spread (`0 12px 28px -12px rgba(0,0,0,.6)`). Crimson glow only for the app icon / floating CTAs.
 - **Radii:** contained — buttons/inputs 6px, cards 14px, app tile 22%. Nothing fully round except avatars and switches. **Floating overlays:** modals (Dialog, ConfirmDialog, CommandPalette, Onboarding) use `--r-lg` (14px); minor non-modal floating surfaces (Toast, Menu, BulkActionBar) use `--r-md` (10px). The rule: if it captures the whole screen with a scrim, `--r-lg`; if it's a bounded panel over the UI, `--r-md`.
-- **Cards:** surface `#1d1715`, hairline border, 14px radius, no shadow in lists (border only) and `--shadow-2` when floating (menus, dialogs).
+- **Cards:** surface `--surface-card`, hairline border, 14px radius, no shadow in lists (border only) and `--shadow-2` when floating (menus, dialogs).
 - **Animation:** `--ease-out` for entrances, `--ease-emphatic` for the "rotor" gesture (spin on load). Durations 120/220/420ms. No excessive bounce.
-- **Hover:** lighten the surface one step (`#241c19`→`#2c221e`) or raise opacity; on accent buttons, hover adds the crimson glow (`--glow-accent`). *Note:* after the move to daisyUI tokens, the `--crimson-strong`/`--gold-strong`/`--danger-strong` variants **alias to the base color** (there's no separate darker "strong" tone); press emphasis is achieved with scale, not a second tone.
+- **Hover:** lighten the surface one step (`--color-base-300`→`--line-strong`) or raise opacity; on accent buttons, hover adds the crimson glow (`--glow-accent`). *Note:* after the move to daisyUI tokens, the `--crimson-strong`/`--gold-strong`/`--danger-strong` variants **alias to the base color** (there's no separate darker "strong" tone); press emphasis is achieved with scale, not a second tone.
 - **Press:** `scale(.98)` on small controls.
 - **Focus:** gold ring `2px` with `2px` offset — always visible, never `outline:none` without a replacement.
 - **Transparency/blur:** blur only on dialog overlays (`backdrop-filter: blur(6px)` over `rgba(20,16,16,.6)`).
@@ -110,12 +110,70 @@ To tell **destructive / risk actions and indicators** apart from the primary act
 
 ---
 
+## Theming
+
+Arena's identity lives in **shape**, not in its hexes. Crimson and gold are Dravensoft's skin; a different product can wear a different one and still be unmistakably Arena. This was always true of the architecture — it was never declared. It is now.
+
+**The public swap surface is `tokens/palette.css`: the `--color-*` set plus `--color-cat-*`.** Everything else derives. Swap that one file and the whole system follows: the aliases in `tokens/colors.css` (`--bg`, `--crimson`, `--danger`, `--mute`…) re-point, the muted text levels re-derive through `color-mix`, and every component re-colors, because components read tokens and never hold a value of their own.
+
+| Invariant — this *is* Arena | Skin — yours to change |
+|---|---|
+| Danger is outline, never filled (one exception: `ConfirmDialog`'s final confirmation) | Crimson (`--color-primary`) |
+| No gradients on any surface (one exception: `Skeleton`'s shimmer) | Gold (`--color-secondary`) |
+| The `base-100`→`base-200`→`base-300` surface scale | The warm-black base values |
+| The hairline border, and the warm shadow scale | The status hues |
+| The type scale, the three families, the uppercase-microlabel rule | The 8 categorical slots |
+| Identity vs meaning in charts; one axis; the ramp is never cycled | |
+
+### The categorical ramp
+
+Eight slots for chart series, authored per theme, **fixed order, never cycled**. A ninth series folds to "Other", small multiples, or direct labels — never a generated hue. They carry **identity only**; when a series *is* a state, a chart's `tone` prop uses the status colors instead.
+
+| Slot | Name | Hue | Dark | Light |
+|---|---|---|---|---|
+| 1 | forest | 136° | `#3c7b0a` | `#397804` |
+| 2 | indigo | 264° | `#3b63be` | `#264ba4` |
+| 3 | green | 152° | `#0a924b` | `#0a924b` |
+| 4 | violet | 288° | `#6a59bc` | `#523e9f` |
+| 5 | cyan | 216° | `#00a3c0` | `#008fa9` |
+| 6 | purple | 312° | `#884da9` | `#6e328d` |
+| 7 | teal | 184° | `#00a99a` | `#009487` |
+| 8 | orchid | 328° | `#984697` | `#7c2b7b` |
+
+It was derived by enumeration against the validator, not chosen by eye: candidate hues were filtered to those clearing the chroma floor *and* 3:1 against the real chart surface (`--color-base-200`) in both themes, the whole crimson→gold warm arc was banned, and the order was enumerated against the gates. Chroma is capped at OKLCH C ≤ 0.15 so the ramp sits in Arena's register (crimson 0.177, gold 0.100) rather than reading as neon.
+
+**Measured — both themes clear every hard gate, with no relief rule:**
+
+| Gate | Dark | Light | Bar |
+|---|---|---|---|
+| CVD separation (adjacent, OKLab ΔE×100) | 13.3 | 16.4 | target ≥ 8 |
+| Normal-vision floor | 20.5 | 22.1 | hard floor ≥ 15 |
+| Contrast vs surface | all 8 ≥ 3:1 | all 8 ≥ 3:1 | ≥ 3:1 |
+| Lightness band | all inside | all inside | per-mode band |
+| Chroma floor | all ≥ 0.1 | all ≥ 0.1 | ≥ 0.10 |
+
+**Brand clearance** (ΔE to the ramp's closest slot): crimson 17.0, gold 18.0, error 19.6, warning 26.3 — all above the 15 bar. That was the goal: the ramp cannot be mistaken for the brand or for an error.
+
+**Accepted collision:** success 6.0, info 7.8. This is structural. Eight slots need ~126° of arc; banning the red family leaves green/cyan/blue/violet — exactly where success (156°) and info (250°) live — and guarding those as hard as the brand leaves only ~76°. **A ramp can be clear of the brand or clear of status, not both.** Clear of the brand is the right choice: brand colors carry identity everywhere, while status colors always ship with an icon and a label (`Alert`, `Toast`, `Badge`) and never appear as a bare fill.
+
+### Re-check after you swap
+
+The promise above is only worth the validator that backs it. After changing anything in `palette.css`:
+
+```bash
+node scripts/check-ramp.mjs
+```
+
+It reads the ramp straight out of `palette.css`, measures both themes against their real surfaces, and exits non-zero on any failure — **including** the warnings the upstream validator tolerates, because Arena's shipped ramp needs no relief rule and neither should yours. Do not trust your eye here; nobody's eye simulates deuteranopia.
+
 ## Index / manifest
 - `styles.css` — global entry point (only @imports). Consumers link this file.
-- `tokens/` — `fonts.css`, `colors.css`, `typography.css`, `spacing.css`, `effects.css`.
+- `tokens/` — `fonts.css`, `palette.css` (the skin — see [Theming](#theming)), `colors.css` (structure: aliases and derivations), `typography.css`, `spacing.css`, `effects.css`.
+- `use-container-width.js` — shared `useContainerWidth` hook and `readBreakpoint`; responsive components import it. `theme.js` — theme toggle helper. `jsx-loader.js` — in-browser JSX loading for the demo pages.
+- `scripts/` — `validate-palette.mjs` (the data-viz palette validator, vendored) and `check-ramp.mjs` (asserts the shipped ramp clears every gate in both themes).
 - `assets/` — `rotor-crimson/bone/ink.svg`, `app-icon.svg`.
-- `guidelines/` — specimen cards (`@dsCard`): typography (`type-display`, `type-body`, `type-mono`), color (`colors-neutrals`, `colors-accents`, `colors-status`), spacing (`spacing-scale`), effects (`effects-radius`, `effects-shadow`), iconography (`icons`), brand (`brand-logo`, `brand-rotor`) and the **danger convention** (`components-danger`).
-- `components/` — React primitives: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch), `display/` (Card, Badge, Tag, Avatar, Table, Skeleton), `navigation/` (Tabs, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding), `brand/` (Rotor).
+- `guidelines/` — specimen cards (`@dsCard`): typography (`type-display`, `type-body`, `type-mono`), color (`colors-neutrals`, `colors-accents`, `colors-status`, `colors-categorical`), spacing (`spacing-scale`), effects (`effects-radius`, `effects-shadow`), iconography (`icons`), brand (`brand-logo`, `brand-rotor`) and the **danger convention** (`components-danger`).
+- `components/` — React primitives: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch, ThemeToggle), `display/` (Card, Badge, Tag, Avatar, Table, Skeleton, StatCard), `navigation/` (Tabs, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar, PageHead), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding, Spinner), `charts/` (ChartCard, BarChart, LineChart, DoughnutChart — dependency-free SVG), `brand/` (Rotor).
 - `ui_kits/console/` — recreation of the Delivery Console (an example internal product).
 - `reference/` — brand source material: the approved identity manual (`Dravensoft Identity.dc.html`) and the example Overview app (`Arena - Overview.dc.html`).
 - `SKILL.md` — plugin-root Agent Skill (also usable standalone).
