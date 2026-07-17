@@ -63,20 +63,25 @@ const composite = (fg, bg, percent) => {
   return rgb2hex(f.map((c, i) => c * a + b[i] * (1 - a)));
 };
 
-// Gates. The deprecated aliases are held to the same bar as the level they alias:
-// that is the assertion that the deprecation actually happened. Re-point
-// --text-faint at a fainter mix and this fails again.
 const LEVELS = [
   { token: 'text-strong', gate: 4.5, note: 'body text' },
   { token: 'text-body', gate: 4.5, note: 'body text' },
   { token: 'text-muted', gate: 4.5, note: 'body text — tightest survivor in light' },
-  { token: 'mute-2', gate: 4.5, note: 'DEPRECATED alias of --mute (removed in 2.0)' },
-  { token: 'text-faint', gate: 4.5, note: 'DEPRECATED alias of --text-muted (removed in 2.0)' },
   { token: 'status-offline', gate: 3, note: 'graphical object (WCAG 1.4.11) — presence only' },
   // Reported, never gated. WCAG 1.4.3 and 1.4.11 both exempt inactive user
   // interface components, and Pagination's disabled controls MUST look
   // inactive: low contrast here is not a defect, it is the affordance.
   { token: 'mute-2-disabled', gate: null, note: 'EXEMPT — disabled controls (WCAG 1.4.3/1.4.11 inactive-component exemption)' },
+];
+
+// The faint text level, removed in 2.0.0. It failed WCAG AA in the light theme
+// at 52% and could not be fixed in place: clearing AA there needs 61%, and
+// --mute already sits at 62%, so nothing distinguishable fits below
+// --text-muted. Re-introducing either token is what this asserts against —
+// a level that does not fit is debt, not API.
+const REMOVED = [
+  { token: 'mute-2', use: '--mute (--text-muted)' },
+  { token: 'text-faint', use: '--text-muted' },
 ];
 
 const THEMES = [
@@ -85,6 +90,12 @@ const THEMES = [
 ];
 
 let ok = true;
+
+for (const { token, use } of REMOVED) {
+  if (resolvePercent(token) === null) continue;
+  ok = false;
+  console.log(`\n[FAIL] --${token} is declared in tokens/colors.css. It was removed in 2.0.0 — use ${use}.`);
+}
 for (const t of THEMES) {
   const body = block(palette, t.selector, 'palette.css');
   const content = readHex(body, 'color-base-content');

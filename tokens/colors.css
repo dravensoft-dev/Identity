@@ -28,8 +28,14 @@
   --bone:var(--color-base-content);
   --bone-dim:color-mix(in oklab,var(--color-base-content) 82%,transparent);
   --mute:color-mix(in oklab,var(--color-base-content) 62%,transparent);
-  --mute-2:color-mix(in oklab,var(--color-base-content) 52%,transparent);
+  /* Disabled text only. Low by design and NOT a failure: WCAG 1.4.3/1.4.11
+     exempt inactive components, and Pagination's disabled controls must read
+     as inactive. Do not raise this to fix a contrast report. */
   --mute-2-disabled:color-mix(in oklab,var(--color-base-content) 40%,transparent);
+  /* Presence "offline" only (Avatar's status dot) — never disabled state.
+     52% clears WCAG 1.4.11's 3:1 for graphical objects in both themes
+     (4.93:1 dark / 3.46:1 light on the card). */
+  --status-offline:color-mix(in oklab,var(--color-base-content) 52%,transparent);
 
   /* brand accents */
   --crimson:var(--color-primary);
@@ -58,7 +64,6 @@
   --text-strong:var(--color-base-content);
   --text-body:var(--bone-dim);
   --text-muted:var(--mute);
-  --text-faint:var(--mute-2);
   --border:var(--color-base-300);
   --border-strong:var(--color-neutral);
   --accent:var(--color-primary);
