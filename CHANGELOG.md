@@ -4,9 +4,9 @@ All notable changes to Arena — Dravensoft Design System are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.3.1] — 2026-07-17
 
-Work that has landed on `main` since the last tag. It lives here until a release claims it, which is the point: the plugin is served from the tag, so filing it under a version heading would describe a tree nobody has.
+Documentation only. No token, component, convention or API moves; there is nothing to migrate. It is a patch and not a minor because the section below holds nothing but fixes — this project adheres to Semantic Versioning, and a release that adds no capability does not get a minor.
 
 ### Fixed
 - **The README told developers to update with one command, and it left them on the old version.** "Pull updates with `/plugin marketplace update dravensoft`" only refreshes the *catalog*; `/plugin update arena@dravensoft` is what replaces the installed copy. Following the README you would see the new version listed, keep running the old one, and get no error — the same shape of silent failure `check-release.mjs` exists to catch, this time in the documentation rather than in the manifest. The section now carries the whole sequence, including the `/reload-plugins` that install has always needed too, and the fact that Claude Code leaves auto-update **off** for third-party marketplaces like this one, so nothing arrives on its own until each developer turns it on.
