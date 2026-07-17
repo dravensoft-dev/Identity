@@ -53,7 +53,7 @@ and brand (`*.dc.html`). React lives in `frameworks/react/`;
 (`theme/arena-tailwind.css`) and an Angular Material MDC token bridge
 (`theme/arena-material.css`), self-hosted fonts (`fonts/`), a
 Phosphor icon manifest (`icons/`), a dark-first signal `ThemeService`
-(`theme/theme-service.ts` + `no-fouc.html`), and standalone `OnPush`
+(`theme/theme-service.ts` + `theme/no-fouc.html`), and standalone `OnPush`
 primitives under `primitives/` (`tag` is the reference), each styled by the
 shared `frameworks/tailwind/` recipes through the configured `tv`
 (`frameworks/tailwind/tv.ts`) — see `frameworks/angular/ADOPTION.md`.
