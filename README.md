@@ -1,6 +1,6 @@
 # Arena — Dravensoft Design System
 
-**Version 2.3.1** · MIT License · Dark-first React + CSS-token design system. See [`CHANGELOG.md`](./CHANGELOG.md).
+**Version 2.4.0** · MIT License · Dark-first React + CSS-token design system. See [`CHANGELOG.md`](./CHANGELOG.md).
 
 **Arena** is the single interface language under which every Dravensoft software product is built. It takes its name from the venue where a performance is put on display and applauded: every Arena interface should feel *worthy of being exalted* — the same promise the brand makes.
 
@@ -61,7 +61,7 @@ Components render with **inline `style` objects that read the CSS custom propert
 
 ## Audience and scope
 - **Audience of the language: general public.** Arena is meant to give identity to **every kind of Dravensoft software**, regardless of who the end user is — from consumer apps to internal tools. Its foundations (color, typography, spacing, accessibility, voice) are general-purpose and don't assume a technical profile.
-- **The Overview (`reference/Arena - Overview.dc.html`) is an example application**, not the language itself. It illustrates Arena applied to the **Delivery Console, a product aimed at developers/technical teams**. That's why it includes data density, domain terminology (build, deploy, p95) and keyboard accelerators specific to that audience.
+- **The Overview (`Arena - Overview.dc.html`) is an example application**, not the language itself. It illustrates Arena applied to the **Delivery Console, a product aimed at developers/technical teams**. That's why it includes data density, domain terminology (build, deploy, p95) and keyboard accelerators specific to that audience.
 - **Implication for audits and evaluations:** findings observed on the example should be split into (a) those that apply to the **language** (tokens, components, patterns — universal) and (b) those specific to the **example's technical context** (jargon, density, shortcuts). The latter are not defects of the language: in a product for a general audience they would be replaced with plain copy, comfortable density and fewer shortcuts. When evaluating Arena for another kind of software, calibrate against that general audience, not against the Console.
 
 ## Why a language of our own (and not Material/Fluent as-is)
@@ -70,7 +70,7 @@ Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default
 - **Rewrites the aesthetic decisions** for the identity: dark-first, contained radii, deep warm shadows, crimson as the voice and gold as distinction, and the **Rotor** as the signature mark.
 
 ## Sources
-- Approved identity manual: `reference/Dravensoft Identity.dc.html`.
+- Approved identity manual: `Dravensoft Identity.dc.html`.
 - Brand: Dravensoft — custom software development / B2B consulting.
 - Concept: pride, spectacle, mastery. Motto: *"Software worthy of being exalted."*
 
@@ -87,7 +87,8 @@ Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default
 - **Microcopy:** concrete action verbs ("Deploy", "Approve delivery", "Roll back"). Errors are helpful and blame-free ("We couldn't connect to the server. Retry.").
 
 ## VISUAL FOUNDATIONS
-- **Color — token architecture (daisyUI structure):** the source of truth is a set of `--color-*` tokens paired with their `-content` counterpart (the legible color on top), defined in `tokens/colors.css`. On top of them, a **compatibility layer** maps Arena's legacy aliases (`--bg`, `--surface-card`, `--crimson`, `--gold`, `--danger`, `--mute`…) to the daisyUI tokens, so existing components don't break. Muted text levels (`--bone-dim`, `--mute`) and `--status-offline` are derived from `--color-base-content` with `color-mix`, not fixed hex values.
+- **Color — token architecture (daisyUI structure):** the source of truth is a set of `--color-*` tokens paired with their `-content` counterpart (the legible color on top), defined per theme in `tokens/palette.css`. On top of them, a **compatibility layer** in `tokens/colors.css` maps Arena's legacy aliases (`--bg`, `--surface-card`, `--crimson`, `--gold`, `--danger`, `--mute`…) to the daisyUI tokens, so existing components don't break. Muted text levels (`--bone-dim`, `--mute`) and `--status-offline` are derived from `--color-base-content` with `color-mix`, not fixed hex values.
+  - **One token breaks the pairing, on purpose: `--color-error-fill`** (alias `--danger-fill`). It has no `-content` of its own — it *is* a second fill for `--color-error`'s content, because danger is worn two ways and one hex cannot do both. See [Danger convention](#danger-convention-destructive-actions-and-risk-indicators). Pinning it is **optional**: `--danger-fill` falls back to `color-mix(in oklab, var(--color-error) 85%, black)`, so a palette copied without it still gets a filled danger dark enough for white text. Pin it to override the derived tone (the Dravensoft skin pins `#ce3838`); `check-text-contrast.mjs` gates both the pin and the fallback.
 - **The muted text scale**, every level AA on both surfaces in both themes — `--text-strong` (100%, 15.23:1 dark / 15.86:1 light on the card), `--text-body` (82%, 10.46 / 9.28), `--text-muted` (62%, 6.52 / 4.71). `--text-muted` in light is the tightest survivor: it clears AA, and it is the reason nothing fits below it. **Removed in 2.0.0:** `--mute-2` / `--text-faint` — the faint level failed AA in light (3.46:1) and could not be repaired, since clearing it there needs 61% while `--mute` already sits at 62%. Use `--text-muted`.
 - **`--status-offline`** (52%, 4.93:1 dark / 3.46:1 light on the card) is **presence only** — `Avatar`'s offline dot. It clears WCAG 1.4.11's 3:1 for graphical objects. It is *not* `--mute-2-disabled` (40%), which dresses disabled controls: that one is low **by design** and exempt under 1.4.3/1.4.11's inactive-component carve-out. Do not raise it, and do not reach for it to render presence.
 - **Verifying it:** `node scripts/check-text-contrast.mjs` measures every level against the real surfaces in both themes and exits non-zero on failure. Run it after touching `tokens/colors.css` or `tokens/palette.css`. The claim above is machine-checkable — which is the point: the previous one was not, and was false for a whole theme for three releases.
@@ -115,7 +116,8 @@ Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default
 To tell **destructive / risk actions and indicators** apart from the primary action, Arena distinguishes them by **shape, not weight**: **transparent background** with the **border and all its content** (text and icons) in the semantic token **`--error`** (alias `--danger`). This way danger reads through color and never visually competes with the filled crimson primary button.
 - **Applies to** every risk trigger or indicator: buttons (`.btn.danger`), icon buttons (`.iconbtn.danger`), menu items (`.mitem.danger`) and equivalents in lists, cards and toolbars. Hover: lightens with `--danger-soft`. Focus: `--error` ring.
 - **Rule:** a **filled** danger button never appears as a trigger in the UI (lists, cards, toolbars). The solid fill is reserved by visual weight for the primary action (crimson).
-- **Only exception — final irreversible confirmation:** inside a `ConfirmDialog`, the button for the final "point of no return" **is** filled in `--error` over `--color-error-content`. It's the only surface where danger is filled, precisely because it must not be confused with an ordinary action.
+- **Only exception — final irreversible confirmation:** inside a `ConfirmDialog`, the button for the final "point of no return" **is** filled — in `--danger-fill` (`--color-error-fill`) over `--color-error-content`, **not** in `--danger`. It's the only surface where danger is filled, precisely because it must not be confused with an ordinary action.
+- **Danger is two reds, and they cannot be one.** `--danger` is read *as text* on the base surfaces, so it is tuned against them (lighter in dark, darker in light). That leaves it too light to carry white text, which is exactly what the filled confirmation needs — so the fill is its own token, tuned in the opposite direction. Collapsing them puts one of the two roles under WCAG AA; `node scripts/check-text-contrast.mjs` gates both.
 - **Specimen:** `guidelines/components-danger.html` (all three states side by side: filled primary · outline danger · filled final confirmation).
 
 ## ICONOGRAPHY
@@ -137,6 +139,10 @@ To tell **destructive / risk actions and indicators** apart from the primary act
 Arena's identity lives in **shape**, not in its hexes. Crimson and gold are Dravensoft's skin; a different product can wear a different one and still be unmistakably Arena. This was always true of the architecture — it was never declared. It is now.
 
 **The public swap surface is `tokens/palette.css`: the `--color-*` set plus `--color-cat-*`.** Everything else derives. Swap that one file and the whole system follows: the aliases in `tokens/colors.css` (`--bg`, `--crimson`, `--danger`, `--mute`…) re-point, the muted text levels re-derive through `color-mix`, and every component re-colors, because components read tokens and never hold a value of their own.
+
+**A swap is not done until it is measured**, and two scripts measure it. `node scripts/check-ramp.mjs` holds the categorical ramp; `node scripts/check-text-contrast.mjs` holds the text: the levels derived from `--color-base-content`, every `--color-*` / `--color-*-content` pair (all seven, at 4.5:1 — the pair is the contract a skin defines, so an illegible one fails before a component can inherit it), and the accents painted straight onto the base surfaces (`--color-error` as the danger outline). Both read the values out of `palette.css` and hardcode nothing, so a new skin is one edit and two commands away from a real answer.
+
+Two of these numbers the scripts **report without gating**: crimson as text sits at 2.80:1 on the dark card, gold as text at 2.24:1 on the light one. Both are below AA and both are deliberate today — they are the brand, and a gate there would not tighten a token but repaint Dravensoft. Use them as fills or on the theme that carries them, and reach for `--text-strong` when the job is reading text.
 
 | Invariant — this *is* Arena | Skin — yours to change |
 |---|---|
@@ -201,7 +207,7 @@ It reads the ramp straight out of `palette.css`, measures both themes against th
 - `guidelines/` — specimen cards (`@dsCard`): typography (`type-display`, `type-body`, `type-mono`), color (`colors-neutrals`, `colors-accents`, `colors-status`, `colors-categorical`), spacing (`spacing-scale`, `spacing-density`), effects (`effects-radius`, `effects-shadow`), iconography (`icons`), brand (`brand-logo`, `brand-rotor`) and the **danger convention** (`components-danger`).
 - `components/` — React primitives: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch, ThemeToggle), `display/` (Card, Badge, Tag, Avatar, Table, Skeleton, StatCard, Calendar), `navigation/` (Tabs, SegmentedControl, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar, PageHead), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding, Spinner), `charts/` (ChartCard, BarChart, LineChart, DoughnutChart — dependency-free SVG), `brand/` (Rotor).
 - `ui_kits/console/` — recreation of the Delivery Console (an example internal product).
-- `reference/` — brand source material: the approved identity manual (`Dravensoft Identity.dc.html`) and the example Overview app (`Arena - Overview.dc.html`).
+- `*.dc.html` (repo root) — brand source material: the approved identity manual (`Dravensoft Identity.dc.html`) and the example Overview app (`Arena - Overview.dc.html`). They sit at the root because they load `support.js`, `styles.css`, `theme.js` and `assets/` by relative path.
 - `SKILL.md` — plugin-root Agent Skill (also usable standalone).
 - `.claude-plugin/` — Claude Code plugin manifest (`plugin.json`) and marketplace catalog (`marketplace.json`).
 - `CHANGELOG.md` — version history.

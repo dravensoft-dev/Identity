@@ -23,7 +23,7 @@ python3 -m http.server 8000   # then browse to the paths below
 - `guidelines/*.html` — token specimen cards (type, color, spacing, effects, icons, brand, danger convention).
 - `components/<group>/*.card.html` — live component demos, one card per group.
 - `ui_kits/console/index.html` — the Delivery Console example app (login → dashboard → project).
-- `reference/*.dc.html` — brand manual and the example Overview app.
+- `*.dc.html` (repo root) — brand manual and the example Overview app. **They live at the root because they must:** they load `support.js`, `styles.css`, `theme.js` and `assets/` by relative path, and those live at the root. From a subdirectory every one of them 404s, no token resolves, and the page renders unstyled. Do not move them.
 
 ## Architecture
 
@@ -41,7 +41,7 @@ Inject **as little as the job needs**. Prefer keyframes alone and leave the `ani
 
 **Specimen/demo pages** start with an HTML comment `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card rendering — keep it as the first line. Component demos load React from esm.sh via an importmap, pull in Babel standalone, and use `jsx-loader.js`'s `window.arenaImport('../path/X.jsx')` to import JSX in the browser with no build step (it transpiles and rewrites relative imports to blob URLs recursively).
 
-`support.js` is a generated bundle (`dc-runtime`, whose source is not in this repo) used only by the `reference/*.dc.html` pages. Do not edit it.
+`support.js` is a generated bundle (`dc-runtime`, whose source is not in this repo) used only by the root `*.dc.html` pages. Do not edit it.
 
 ## Conventions
 

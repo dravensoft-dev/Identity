@@ -35,10 +35,12 @@ export function ConfirmDialog({ open, onCancel, onConfirm, title, eyebrow = 'Con
             * has no filled-danger variant by design — danger is outline everywhere
             * else, and a variant would put this fill one prop away from any caller.
             * So it stays a local override on the primary button, here and nowhere
-            * else. --color-error-content, not --on-accent: the fill is --error, and
-            * a swapped skin can pair them differently. */}
+            * else. --danger-fill, not --danger: --danger is tuned to be read as
+            * text on the base surfaces, which leaves it too light to carry white.
+            * --color-error-content, not --on-accent: the fill is danger's, and a
+            * swapped skin can pair them differently. */}
           <Button variant="primary" onClick={onConfirm} disabled={locked}
-            style={destructive ? { background: 'var(--danger)', color: 'var(--color-error-content)' } : undefined}>
+            style={destructive ? { background: 'var(--danger-fill)', color: 'var(--color-error-content)' } : undefined}>
             {confirmLabel}
           </Button>
         </div>

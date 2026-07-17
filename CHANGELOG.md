@@ -4,6 +4,25 @@ All notable changes to Arena — Dravensoft Design System are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] — 2026-07-17
+
+Danger was one red doing two jobs, and it was failing both. This splits it, and extends `check-text-contrast.mjs` to the checks that would have caught it.
+
+**Not breaking for existing skins.** `--color-error-fill` is a new token, but it is an *optional* pin: `--danger-fill` falls back to `color-mix(in oklab, var(--color-error) 85%, black)` when a skin omits it, so a `tokens/palette.css` copied before this release keeps a filled danger dark enough to carry `--color-error-content` — nothing goes backgroundless. Pin it only to override the derived tone (the Dravensoft skin does, for `#ce3838`). `check-text-contrast.mjs` gates both the pin and the fallback.
+
+### Fixed
+- **The filled confirmation button was under WCAG AA, and so was every outline danger control.** `--color-error` `#e53e3e` carried white text at **4.13:1** in `ConfirmDialog`'s point-of-no-return button, and was read *as text itself* at **4.29:1** (dark) and **3.76:1** (light) by `.btn.danger`, `.iconbtn.danger` and `.mitem.danger`. One token cannot clear both gates: the outline needs a red light enough to read on the base surfaces, the fill needs one dark enough to carry white, and they pull in opposite directions. The outline keeps `--color-error`, now tuned per theme (`#e85151` dark, `#c33535` light — 4.83:1 and 4.93:1 on the card); the fill moves to the new `--color-error-fill` (`#ce3838`, 4.94:1 against white in both themes). This is why the README now says danger is two reds.
+- **`--color-info-content` and `--color-success-content` were white on their fills, under AA.** White on `#3182ce` is 4.03:1 and on `#38a169` is 3.25:1 — both short of 4.5:1. The fills are unchanged (the status hues are identity); the content flips to `#141010`, which clears at 4.69:1 and 5.82:1 and matches the near-black `secondary-content`/`warning-content` already used on the light fills. No component paints these today, so the only visible change is the swatch grid in the brand manual — but the pair is now legible if anything ever does.
+
+### Added
+- **`--color-error-fill` / `--danger-fill`** — the filled-danger surface, and the only one in Arena. Never a border or a text color; `--danger` is that. It is an **optional** pin over an oklab fallback derived from `--color-error`: a skin that only swaps the palette gets a passing filled danger for free, and one that wants an exact tone pins it. `check-text-contrast.mjs` gates whichever path is live, and gates the fallback on every run so a broken derivation cannot ship behind a present pin. It is the one `--color-*` token with no `-content` of its own — it is a second fill for `--color-error`'s content — and the README's token architecture says so.
+- **The brand manual shows both reds.** `Arena - Overview.dc.html` gains an `error-fill` swatch, and its `error` swatch is now drawn as an **outline** rather than a filled chip: `--color-error` is an outline token, and painting white on it was both illegible (3.67:1 in dark) and a demonstration of the exact pairing this release forbids.
+- **`ConfirmDialog.prompt.md` gains a Do/Don't** (README H10) naming `--danger-fill` and the reason not to rebuild the filled button by hand with `--danger`.
+- **`check-text-contrast.mjs` now checks the fill/content pairs, the on-surface accents, and the `--danger-fill` fallback**, not just the levels derived from `--color-base-content`. **Every daisyUI fill/content pair is gated at 4.5:1** — not only the two the product paints today (`--color-primary` under `--on-accent`, `--danger-fill` under the final confirmation), but all seven, because the pair is the contract a skin defines and an illegible one should fail before a component inherits it. `--color-error` as the outline is gated on the surfaces; `--color-primary`/`--color-secondary` as text stay reported-not-gated (brand values, see Known). It carries a small oklab conversion, verified byte-exact against the browser's own `color-mix`, so it resolves the `--danger-fill` fallback exactly as CSS does. Nothing is hardcoded: the values come out of `palette.css`, so this checks a swapped skin too.
+
+### Known — reported, not gated
+- **Crimson is 2.80:1 as text on the dark card; gold is 2.24:1 on the light one.** Both below AA, both surfaced by the new checks, both left alone: these are the brand, not a mistuned token, and moving them is a design decision rather than a fix. `ConfirmDialog`'s eyebrow is the one place crimson is text on dark today. The numbers are in the script's output instead of nowhere.
+
 ## [2.3.1] — 2026-07-17
 
 Documentation only. No token, component, convention or API moves; there is nothing to migrate. It is a patch and not a minor because the section below holds nothing but fixes — this project adheres to Semantic Versioning, and a release that adds no capability does not get a minor.
