@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Arena — Token language</title>
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="toggle.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css">
 <style>
@@ -15,10 +16,6 @@ body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--fo
 .brandname{font-family:var(--font-display);font-weight:var(--fw-black);font-size:var(--fs-h1);letter-spacing:var(--ls-tight);text-transform:uppercase;color:var(--text-strong);line-height:var(--lh-tight)}
 .kicker{font-family:var(--font-mono);font-size:var(--fs-xs);letter-spacing:var(--ls-wide);text-transform:uppercase;color:var(--gold);margin-top:var(--sp-2)}
 .lede{font-size:var(--fs-lg);color:var(--text-muted);max-width:58ch;line-height:var(--lh-body);margin-top:var(--sp-5)}
-.controls{position:absolute;top:var(--sp-6);right:var(--sp-12);display:flex;gap:var(--sp-2)}
-.ctl{display:inline-flex;align-items:center;gap:var(--sp-2);height:var(--dz-ctl-h);padding:0 var(--sp-4);background:var(--panel);color:var(--text-body);border:var(--bw) solid var(--border-strong);border-radius:var(--r-pill);cursor:pointer;font-family:var(--font-mono);font-size:var(--fs-xs);letter-spacing:var(--ls-label);text-transform:uppercase;transition:background var(--dur-fast) var(--ease-out)}
-.ctl:hover{background:var(--bg-raised)}
-.ctl:focus-visible{outline:var(--focus-width) solid var(--focus-ring);outline-offset:var(--focus-offset)}
 .sec{padding:var(--sp-10) var(--sp-12);border-bottom:var(--bw) solid var(--border)}
 .eyebrow{font-family:var(--font-mono);font-size:var(--fs-xs);letter-spacing:var(--ls-wide);text-transform:uppercase;color:var(--crimson)}
 .h2{font-family:var(--font-display);font-weight:var(--fw-black);font-size:var(--fs-h2);letter-spacing:var(--ls-tight);margin:var(--sp-2) 0 var(--sp-6);color:var(--text-strong)}
@@ -45,9 +42,9 @@ body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--fo
 <body>
 <div class="page">
   <section class="hero">
-    <div class="controls">
-      <button class="ctl themebtn" type="button"><span class="tlabel">Dark</span></button>
-      <button class="ctl" type="button" id="density">Comfortable</button>
+    <div class="dtoggle-dock">
+      <button class="dtoggle themebtn" type="button" data-light="0" aria-label="Switch theme"><span class="tlabel">Dark</span><span class="knob"></span></button>
+      <button class="dtoggle" type="button" id="density" data-compact="0" aria-label="Switch density"><span class="tlabel">Comfortable</span><span class="knob"></span></button>
     </div>
     <div class="brandrow">
       <img src="assets/rotor-crimson.svg" width="56" height="56" alt="Rotor">

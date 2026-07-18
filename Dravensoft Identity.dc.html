@@ -9,14 +9,10 @@
 <x-dc>
 <helmet>
 <link rel="stylesheet" href="./styles.css">
+<link rel="stylesheet" href="./toggle.css">
 <style>
 *{box-sizing:border-box}
 .wrap{--ink2:var(--panel);background:var(--ink);color:var(--bone);font-family:'Familjen Grotesk',sans-serif;width:100%;overflow-x:hidden;transition:background .3s ease,color .3s ease}
-/* theme toggle */
-.themebtn{position:fixed;top:24px;right:28px;z-index:60;display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--color-base-300);color:var(--bone);border-radius:999px;padding:9px 9px 9px 18px;font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer}
-.themebtn .knob{width:36px;height:20px;border-radius:999px;background:var(--color-base-300);position:relative;transition:background .2s}
-.themebtn .knob:before{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--crimson);transition:transform .2s,background .2s}
-.themebtn[data-light="1"] .knob:before{transform:translateX(16px);background:var(--gold)}
 .disp{font-family:'Archivo',sans-serif}
 .mono{font-family:'Spline Sans Mono',monospace}
 .pad{padding:96px 88px}
@@ -92,7 +88,7 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
 /* business card */
 .bc-stack{display:flex;gap:22px;flex-wrap:wrap}
 .card3d{width:340px;height:200px;border-radius:var(--r-lg);padding:26px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow-3)}
-/* The appcard behind this sits at base-200, so the card steps up to base-300 to
+/* The appcard behind this sits at base-200, so the card drops to base-100 to
    read as an object on it — the surface scale is what carries depth here, since
    the language forbids the gradient this used to use. */
 .card-front{background:var(--color-base-100);border:var(--bw) solid var(--line-strong)}
@@ -124,7 +120,7 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
 <script src="./theme.js"></script>
 </helmet>
 <div class="wrap">
-<button class="themebtn" data-light="0" aria-label="Switch theme"><span class="tlabel">Dark</span><span class="knob"></span></button>
+<div class="dtoggle-dock"><button class="dtoggle themebtn" type="button" data-light="0" aria-label="Switch theme"><span class="tlabel">Dark</span><span class="knob"></span></button></div>
 
 <section class="hero">
 <div class="hero-grid">

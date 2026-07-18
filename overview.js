@@ -319,10 +319,14 @@ async function main() {
   paint();
 
   document.querySelector('.themebtn').addEventListener('click', paint);
+  /* Mirrors what theme.js does for .themebtn: flip the scope class, move the
+   * attribute the shared toggle.css reads, and relabel. The label is set on the
+   * .tlabel span rather than the button, which would take the knob with it. */
   const density = document.getElementById('density');
   density.addEventListener('click', () => {
     const compact = root.classList.toggle('arena-compact');
-    density.textContent = compact ? 'Compact' : 'Comfortable';
+    density.setAttribute('data-compact', compact ? '1' : '0');
+    density.querySelector('.tlabel').textContent = compact ? 'Compact' : 'Comfortable';
     paint();
   });
 }

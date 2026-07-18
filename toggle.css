@@ -1,0 +1,79 @@
+/* The demo pages' pill toggle, shared by the Identity manual and the Overview.
+ *
+ * It lives here rather than inline in either page because both need it and a
+ * second copy is how the two drift apart — the same reason the Overview stopped
+ * hand-rolling components. styles.css is not the place for it: that file does
+ * nothing but @import the token files, and this is a control, not a token.
+ *
+ * State is an attribute, so theme.js can drive it without knowing this file:
+ * data-light="1" (theme) and data-compact="1" (density) both slide the thumb
+ * across and turn it gold. The knob geometry is bespoke — there is no 36px or
+ * 20px in the spacing scale — but every colour, radius, border and transition
+ * below is a token.
+ */
+
+.dtoggle-dock {
+  position: fixed;
+  top: 24px;
+  right: 28px;
+  z-index: 60;
+  display: flex;
+  gap: var(--sp-3);
+}
+
+.dtoggle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  background: var(--panel);
+  border: var(--bw) solid var(--color-base-300);
+  color: var(--bone);
+  border-radius: var(--r-pill);
+  padding: 9px 9px 9px 18px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.dtoggle:hover { background: var(--bg-raised); }
+
+/* README: focus is always visible, never removed without a replacement. */
+.dtoggle:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.dtoggle .knob {
+  width: 36px;
+  height: 20px;
+  border-radius: var(--r-pill);
+  background: var(--color-base-300);
+  position: relative;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.dtoggle .knob::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--crimson);
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+
+.dtoggle[data-light="1"] .knob::before,
+.dtoggle[data-compact="1"] .knob::before {
+  transform: translateX(16px);
+  background: var(--gold);
+}
+
+/* The thumb travel is the state, and it survives; only the slide is dropped. */
+@media (prefers-reduced-motion: reduce) {
+  .dtoggle, .dtoggle .knob, .dtoggle .knob::before { transition: none; }
+}
