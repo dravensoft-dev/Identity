@@ -27,6 +27,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `node:path` and `node:url`, verified to produce identical output and exit codes under
   both runtimes. The one exception is the new `bun run demos` dev server
   (`scripts/serve.mjs`), which uses `Bun.serve` and is not a gate.
+- **The Overview is now the token language, and generates itself.**
+  `Arena - Overview.dc.html` became `Arena - Overview.html`: plain HTML driven by one ES
+  module, no longer a `dc-runtime` page. It reads token names and descriptions from
+  `tokens/src/*.json` and the aliases from `tokens/colors.css`, and reads every **value**
+  from `getComputedStyle` on the live document, so it exercises the built CSS instead of
+  echoing the source. All 138 token names render — 98 from the DTCG source, 40 from the
+  composition layer — and adding a token to `tokens/src/` now makes it appear with no edit
+  to the page. `Dravensoft Identity.dc.html` is unchanged and remains the only
+  `dc-runtime` page. New: `bun run demos` serves the repo root for both.
 
 ### Removed
 
@@ -35,6 +44,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`--shadow-2`) on hover instead of the crimson glow, in the React `Button`, the
   Tailwind `Button` manifest and the Overview demo; the `glow` swatch is gone from
   `guidelines/effects-shadow.html`. This is the sole visual change in the migration.
+- **The Overview's parallel component implementation.** It defined roughly 130 private CSS
+  classes (`.btn`, `.badge`, `.card`, `.alert`, `.menu`, `.toast`, `.spinner`, `.tabs`,
+  `.dialog`, `.skel`…) that hand-reimplemented most of the library, contradicting the rule
+  that components carry no CSS classes and drifting from the real components — retiring
+  `--glow-accent` had to be applied to it by hand. Components now live only in the
+  framework layers, and the Overview points at them.
 
 ## [3.2.0] — 2026-07-17
 

@@ -21,13 +21,14 @@ the same tree:
 Everything is static, but the demos `fetch()` their JSX, so `file://` will not work — serve the repo root over HTTP:
 
 ```bash
-python3 -m http.server 8000   # then browse to the paths below
+bun run demos   # serves the repo root on :8000 and prints the entry points
 ```
 
 - `guidelines/*.html` — token specimen cards (type, color, spacing, effects, icons, brand, danger convention).
 - `frameworks/react/components/<group>/*.card.html` — live component demos, one card per group.
 - `frameworks/react/ui_kits/console/index.html` — the Delivery Console example app (login → dashboard → project).
-- `*.dc.html` (repo root) — brand manual and the example Overview app. **They live at the root because they must:** they load `support.js`, `styles.css`, `theme.js` and `assets/` by relative path, and those live at the root. From a subdirectory every one of them 404s, no token resolves, and the page renders unstyled. Do not move them.
+- `Arena - Overview.html` (repo root) — the token language: every token Arena defines, generated at runtime from `tokens/src/*.json` and `tokens/colors.css`. **It shows no components on purpose** — those belong to the framework layers, and a root-level copy of them was a second implementation that drifted. It lives at the root because it loads `styles.css`, `theme.js`, `assets/`, `scripts/lib/` and `tokens/src/` by relative path, and it must be served over HTTP because it fetches its own source.
+- `Dravensoft Identity.dc.html` (repo root) — the approved brand manual, and the only remaining `dc-runtime` page. It loads `support.js`, `styles.css` and `assets/` by relative path. From a subdirectory it 404s, no token resolves, and the page renders unstyled. Do not move it.
 
 ## Architecture
 
@@ -57,6 +58,16 @@ live in each platform's own idiom: the runtime colour derivations (`color-mix`, 
 `tokens/colors.css`) and `@font-face` bundling (`tokens/fonts.css`). A new framework
 target rebuilds that thin layer in its idiom on top of the same standard values — it
 never re-defines a value.
+
+**The Overview generates itself, and that is the point.** `Arena - Overview.html` reads
+names and `$description`s from `tokens/src/*.json` and the alias names from
+`tokens/colors.css` (with `scripts/lib/css-decls.mjs`, the same parser the drift gate
+uses), but it reads **values** from `getComputedStyle` on the live document. So it
+exercises the whole chain — JSON, build, CSS, browser — instead of restating the JSON, and
+a token that resolves empty is flagged as stale rather than shown as if it were in effect.
+Add a token to `tokens/src/` and it appears there with no edit to the page. The
+group-to-preview mapping lives in `scripts/lib/token-preview.mjs` and **never** in the
+token source, which stays platform-neutral.
 
 When adding a colour, define the daisyUI token in `tokens/src/palette.dark.json` and
 `palette.light.json` first, rebuild, then alias to it in `colors.css` — never introduce a
