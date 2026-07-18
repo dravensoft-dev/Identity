@@ -2,7 +2,7 @@
    Downloads the latin-subset woff2 binaries for Arena's three families into
    assets/fonts/ and (re)generates tokens/fonts.css with local url()s only —
    no CDN request, CSP-clean. assets/fonts/ is the single source of truth,
-   shared by every framework layer. Run: node scripts/fetch-fonts.mjs */
+   shared by every framework layer. Run: bun scripts/fetch-fonts.mjs */
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

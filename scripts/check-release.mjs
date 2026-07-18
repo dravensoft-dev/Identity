@@ -18,7 +18,7 @@
  * authority (Claude Code resolves plugin.json > marketplace entry > commit SHA),
  * and everything else is compared against it.
  *
- *   node scripts/check-release.mjs   -> exit 0 if the release is coherent, 1 otherwise
+ *   bun scripts/check-release.mjs   -> exit 0 if the release is coherent, 1 otherwise
  */
 import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';

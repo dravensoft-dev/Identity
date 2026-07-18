@@ -9,7 +9,7 @@
  * derivation percentages from tokens/colors.css, so re-skinning Arena and
  * re-running this is the whole point (see README -> Theming).
  *
- *   node scripts/check-text-contrast.mjs   -> exit 0 if all gates pass, 1 otherwise
+ *   bun scripts/check-text-contrast.mjs   -> exit 0 if all gates pass, 1 otherwise
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

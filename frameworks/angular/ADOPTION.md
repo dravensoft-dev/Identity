@@ -40,7 +40,7 @@ Nothing extra to run. The token import from step 1
 self-hosted `@font-face`; the `.woff2` binaries ship in Arena's `assets/fonts/`.
 Ensure your build serves `assets/fonts/` so the `url('../assets/fonts/…')`
 references resolve. No CDN request. (Regenerate binaries with
-`node scripts/fetch-fonts.mjs` if ever needed.)
+`bun scripts/fetch-fonts.mjs` if ever needed.)
 
 ## 5. Icons
 

@@ -5,7 +5,7 @@
  * The ramp is read from tokens/palette.css, never hardcoded here: swapping the
  * skin and re-running this is the whole point (see README → Theming).
  *
- *   node scripts/check-ramp.mjs      → exit 0 if both themes pass, 1 otherwise
+ *   bun scripts/check-ramp.mjs      → exit 0 if both themes pass, 1 otherwise
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

@@ -25,9 +25,9 @@
  * structural rules the skill enforces, not measurable from hexes alone.
  *
  * Usage (node):
- *   node validate_palette.js "#2a78d6,#008300,#e87ba4,#eda100,#1baf7a,#eb6834,#4a3aa7,#e34948" --mode light
- *   node validate_palette.js "#256abf,#199e70,..." --mode dark --surface "#1a1a19"
- *   node validate_palette.js "#86b6ef,#5598e7,#256abf,#104281" --ordinal
+ *   bun validate-palette.mjs "#2a78d6,#008300,#e87ba4,#eda100,#1baf7a,#eb6834,#4a3aa7,#e34948" --mode light
+ *   bun validate-palette.mjs "#256abf,#199e70,..." --mode dark --surface "#1a1a19"
+ *   bun validate-palette.mjs "#86b6ef,#5598e7,#256abf,#104281" --ordinal
  *
  * Usage (browser — as a module script):
  *   <body data-palette="#2a78d6,#008300,..." data-mode="light">
@@ -279,7 +279,7 @@ if (typeof process !== "undefined" && process.argv && process.argv[1] && process
     }
   }
   const palette = splitColors(positional);
-  if (!palette.length) { console.error("usage: node validate-palette.mjs \"#hex,#hex,...\" [--mode light|dark] [--surface #hex] [--pairs adjacent|all] [--ordinal]"); process.exit(2); }
+  if (!palette.length) { console.error("usage: bun validate-palette.mjs \"#hex,#hex,...\" [--mode light|dark] [--surface #hex] [--pairs adjacent|all] [--ordinal]"); process.exit(2); }
   const mode = opts.mode || "light";
   // An empty/whitespace-only surface counts as absent (falls back to the
   // default), preserving the pre-boundary falsy behavior.
