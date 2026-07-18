@@ -6,7 +6,14 @@
 
 **Architecture:** Style Dictionary v4 is used **only as a loader, reference resolver and name transformer** — never as a value transformer or file writer. `scripts/build-tokens.mjs` calls `sd.getPlatformTokens()` per source file to obtain resolved, kebab-named tokens, then a hand-written serializer (`scripts/lib/serialize-token.mjs`) renders each DTCG value back to Arena's exact CSS string, and blocks are composed into the four output files. This split is load-bearing: **SD v4's built-in CSS transforms do not understand DTCG 2025.10 structured values** (`{value,unit}` dimensions, structured `color` objects) — full 2025.10 support is slated for SD v5 — so applying `transformGroup: 'css'` would corrupt every value. Two gates protect the result: `check-dtcg.mjs` (source conforms to 2025.10) and `check-tokens-generated.mjs` (committed CSS == freshly generated CSS).
 
-**Tech Stack:** Node 24 (ESM), `style-dictionary@^4` (only new dependency), `node:test` (built in, no test framework dependency added).
+**Tech Stack:** Bun 1.3 (ESM), `style-dictionary@^4` (only new dependency), `node:test` (built in, no test framework dependency added — `bun test` runs `node:test` suites natively, failures and all).
+
+**Runtime note.** The build and check scripts run on Bun, and the five pre-existing
+`scripts/*.mjs` gates move to Bun with them so the toolchain stays uniform (Task 9).
+Nothing in the scripts is Bun-specific: they are plain ESM importing only `node:fs`,
+`node:path` and `node:url`, and were verified to produce byte-identical output under both
+runtimes. Bun blocks `style-dictionary`'s `postinstall` (`patch-package`), which is inert
+— the published tarball ships no `patches/` directory.
 
 ## Global Constraints
 
@@ -95,18 +102,18 @@ No snapshot file is created. The four CSS files are already committed at `HEAD`,
     "style-dictionary": "^4"
   },
   "scripts": {
-    "build:tokens": "node scripts/build-tokens.mjs",
-    "check:tokens": "node scripts/check-tokens-generated.mjs",
-    "check:dtcg": "node scripts/check-dtcg.mjs",
-    "test": "node --test scripts/"
+    "build:tokens": "bun scripts/build-tokens.mjs",
+    "check:tokens": "bun scripts/check-tokens-generated.mjs",
+    "check:dtcg": "bun scripts/check-dtcg.mjs",
+    "test": "bun test scripts/"
   }
 }
 ```
 
 - [ ] **Step 2: Install the dependency**
 
-Run: `npm install`
-Expected: `node_modules/` created, `package-lock.json` written, `style-dictionary` at 4.x. Confirm with `node -p "require('./node_modules/style-dictionary/package.json').version"` → prints `4.x.y`.
+Run: `bun install`
+Expected: `node_modules/` created, `bun.lock` written, `style-dictionary` at 4.x. Confirm with `bun -e "console.log(require('style-dictionary/package.json').version)"` → prints `4.x.y`.
 
 - [ ] **Step 3: Confirm `node_modules/` is already git-ignored**
 
@@ -155,7 +162,7 @@ test('ignores non-custom-property declarations', () => {
 
 - [ ] **Step 5: Run the test to verify it fails**
 
-Run: `node --test scripts/css-decls.test.mjs`
+Run: `bun test scripts/css-decls.test.mjs`
 Expected: FAIL — `Cannot find module '.../scripts/lib/css-decls.mjs'`.
 
 - [ ] **Step 6: Implement the parser**
@@ -190,13 +197,13 @@ export function parseDecls(cssText) {
 
 - [ ] **Step 7: Run the test to verify it passes**
 
-Run: `node --test scripts/css-decls.test.mjs`
+Run: `bun test scripts/css-decls.test.mjs`
 Expected: PASS, 5/5.
 
 - [ ] **Step 8: Commit**
 
 ```bash
-git add package.json package-lock.json scripts/lib/css-decls.mjs scripts/css-decls.test.mjs
+git add package.json bun.lock scripts/lib/css-decls.mjs scripts/css-decls.test.mjs
 git commit -m "build: add dev-only package.json and a token CSS declaration parser"
 ```
 
@@ -305,7 +312,7 @@ test('an unknown type is a hard error, never a silent passthrough', () => {
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `node --test scripts/serialize-token.test.mjs`
+Run: `bun test scripts/serialize-token.test.mjs`
 Expected: FAIL — `Cannot find module '.../scripts/lib/serialize-token.mjs'`.
 
 - [ ] **Step 3: Implement the serializer**
@@ -376,7 +383,7 @@ export function serialize(token) {
 
 - [ ] **Step 4: Run the test to verify it passes**
 
-Run: `node --test scripts/serialize-token.test.mjs`
+Run: `bun test scripts/serialize-token.test.mjs`
 Expected: PASS, 11/11.
 
 - [ ] **Step 5: Commit**
@@ -478,7 +485,7 @@ test('rejects a token name containing a dot', () => {
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `node --test scripts/check-dtcg.test.mjs`
+Run: `bun test scripts/check-dtcg.test.mjs`
 Expected: FAIL — `Cannot find module '.../scripts/check-dtcg.mjs'`.
 
 - [ ] **Step 3: Implement the validator**
@@ -493,7 +500,7 @@ Create `scripts/check-dtcg.mjs`:
  * directly rather than pulling a validator dependency. It is the machine proof
  * that Arena's token layer is DTCG in full, not merely DTCG-shaped.
  *
- *   node scripts/check-dtcg.mjs      -> exit 0 if every token validates, 1 otherwise
+ *   bun scripts/check-dtcg.mjs      -> exit 0 if every token validates, 1 otherwise
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -616,7 +623,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) main();
 
 - [ ] **Step 4: Run the test to verify it passes**
 
-Run: `node --test scripts/check-dtcg.test.mjs`
+Run: `bun test scripts/check-dtcg.test.mjs`
 Expected: PASS, 10/10.
 
 - [ ] **Step 5: Commit**
@@ -645,7 +652,7 @@ Every explanatory comment in today's CSS moves into a `$description`. Task 5 emi
 {
   "color": {
     "$type": "color",
-    "$description": "Arena — Dravensoft skin (palette), dark theme.\nThis is the source you swap to re-skin Arena. It holds only skin values:\nthe daisyUI --color-* set per theme and the categorical chart ramp.\nEverything else — the Arena aliases, the muted-text derivations — lives in\ntokens/colors.css and follows automatically.\nAfter changing anything here, rebuild and re-run: node scripts/check-ramp.mjs",
+    "$description": "Arena — Dravensoft skin (palette), dark theme.\nThis is the source you swap to re-skin Arena. It holds only skin values:\nthe daisyUI --color-* set per theme and the categorical chart ramp.\nEverything else — the Arena aliases, the muted-text derivations — lives in\ntokens/colors.css and follows automatically.\nAfter changing anything here, rebuild and re-run: bun scripts/check-ramp.mjs",
     "base-100": { "$value": { "colorSpace": "srgb", "components": [0.0784, 0.0627, 0.0627], "hex": "#141010" }, "$description": "main background" },
     "base-200": { "$value": { "colorSpace": "srgb", "components": [0.1137, 0.0902, 0.0824], "hex": "#1d1715" }, "$description": "elevated surface / card" },
     "base-300": { "$value": { "colorSpace": "srgb", "components": [0.1412, 0.1098, 0.098], "hex": "#241c19" }, "$description": "panel / border" },
@@ -884,7 +891,7 @@ Note the absence of `glow-accent`: it is retired in Task 7, and cannot exist her
 
 - [ ] **Step 7: Run the conformance gate**
 
-Run: `node scripts/check-dtcg.mjs`
+Run: `bun scripts/check-dtcg.mjs`
 Expected: exit 0, prints `check-dtcg: 6 file(s) valid DTCG 2025.10 — density.compact.json, effects.json, palette.dark.json, palette.light.json, spacing.json, typography.json`.
 
 If it reports a hex round-trip failure, the components are wrong for that hex — recompute as `round(byte)/255` to 4 decimals, do **not** change the hex.
@@ -970,7 +977,7 @@ Create `scripts/build-tokens.mjs`:
  * dimensions, so the only transform applied is name/kebab and every value is
  * rendered by scripts/lib/serialize-token.mjs.
  *
- *   node scripts/build-tokens.mjs      -> writes the four files
+ *   bun scripts/build-tokens.mjs      -> writes the four files
  */
 import StyleDictionary from 'style-dictionary';
 import { writeFileSync } from 'node:fs';
@@ -1049,7 +1056,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
 
 - [ ] **Step 2: Run the build**
 
-Run: `npm run build:tokens`
+Run: `bun run build:tokens`
 Expected: four `build-tokens: wrote tokens/…` lines, exit 0.
 
 - [ ] **Step 3: Verify the declaration sets are unchanged, except the retired token**
@@ -1057,7 +1064,7 @@ Expected: four `build-tokens: wrote tokens/…` lines, exit 0.
 Run:
 
 ```bash
-node -e '
+bun -e '
 import("./scripts/lib/css-decls.mjs").then(async ({ parseDecls }) => {
   const { execSync } = await import("node:child_process");
   const { readFileSync } = await import("node:fs");
@@ -1090,7 +1097,7 @@ Any other line is a serializer bug — fix `scripts/lib/serialize-token.mjs`, ad
 
 - [ ] **Step 4: Run the existing colour gates against the generated palette**
 
-Run: `node scripts/check-ramp.mjs && node scripts/check-text-contrast.mjs`
+Run: `bun scripts/check-ramp.mjs && bun scripts/check-text-contrast.mjs`
 Expected: both exit 0, every gate PASS, no WARN.
 
 - [ ] **Step 5: Commit**
@@ -1126,7 +1133,7 @@ Create `scripts/check-tokens-generated.mjs`:
  * script is the guard: it builds in memory and compares declaration sets.
  * Comments are not asserted, only `--name: value;` pairs and their selectors.
  *
- *   node scripts/check-tokens-generated.mjs   -> exit 0 if in sync, 1 on drift
+ *   bun scripts/check-tokens-generated.mjs   -> exit 0 if in sync, 1 on drift
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -1145,7 +1152,7 @@ for (const [name, css] of built) {
   try {
     actual = parseDecls(readFileSync(join(root, 'tokens', name), 'utf8'));
   } catch {
-    drift.push(`tokens/${name}: missing — run npm run build:tokens`);
+    drift.push(`tokens/${name}: missing — run bun run build:tokens`);
     continue;
   }
   for (const [selector, decls] of expected) {
@@ -1166,7 +1173,7 @@ for (const [name, css] of built) {
 if (drift.length) {
   console.error(`check-tokens-generated: ${drift.length} drift(s) between tokens/src/ and the committed CSS\n`);
   for (const d of drift) console.error(`  ${d}`);
-  console.error('\nRun: npm run build:tokens');
+  console.error('\nRun: bun run build:tokens');
   process.exit(1);
 }
 console.log(`check-tokens-generated: ${built.size} file(s) in sync with tokens/src/`);
@@ -1174,7 +1181,7 @@ console.log(`check-tokens-generated: ${built.size} file(s) in sync with tokens/s
 
 - [ ] **Step 2: Verify it passes on the current tree**
 
-Run: `npm run check:tokens`
+Run: `bun run check:tokens`
 Expected: exit 0, `check-tokens-generated: 4 file(s) in sync with tokens/src/`.
 
 - [ ] **Step 3: Verify it actually catches drift**
@@ -1182,8 +1189,8 @@ Expected: exit 0, `check-tokens-generated: 4 file(s) in sync with tokens/src/`.
 Run:
 
 ```bash
-node -e 'import("node:fs").then(fs=>fs.writeFileSync("tokens/spacing.css", fs.readFileSync("tokens/spacing.css","utf8").replace("--sp-1:4px","--sp-1:5px")))'
-npm run check:tokens; echo "exit=$?"
+bun -e 'import("node:fs").then(fs=>fs.writeFileSync("tokens/spacing.css", fs.readFileSync("tokens/spacing.css","utf8").replace("--sp-1:4px","--sp-1:5px")))'
+bun run check:tokens; echo "exit=$?"
 git checkout tokens/spacing.css
 ```
 
@@ -1191,7 +1198,7 @@ Expected: exits 1 with `tokens/spacing.css :root: --sp-1 is "5px", generated "4p
 
 - [ ] **Step 4: Run the whole gate set together**
 
-Run: `npm test && npm run check:dtcg && npm run check:tokens && node scripts/check-ramp.mjs && node scripts/check-text-contrast.mjs`
+Run: `bun test && bun run check:dtcg && bun run check:tokens && bun scripts/check-ramp.mjs && bun scripts/check-text-contrast.mjs`
 Expected: all pass, exit 0.
 
 - [ ] **Step 5: Commit**
@@ -1309,7 +1316,7 @@ Replace the phrase stating the repo has **no build, no tests, and no package.jso
 Arena — Dravensoft's design system. It is **not a published npm package**, but it does
 have a **dev-only, private `package.json`** at the root: the token layer is built from
 DTCG JSON by Style Dictionary, and the build and check scripts are tested with
-`node --test`. Nothing here is published to npm. It ships as three things at once from
+`bun test`. Nothing here is published to npm. It ships as three things at once from
 the same tree:
 ```
 
@@ -1324,7 +1331,7 @@ Replace that whole paragraph with:
 nothing but `@import` the six files in `tokens/`. Four of those six —
 `tokens/palette.css`, `typography.css`, `spacing.css`, `effects.css` — are **generated
 build output**: their values are authored in strictly-conformant DTCG 2025.10 JSON under
-`tokens/src/` and emitted by `node scripts/build-tokens.mjs` (`npm run build:tokens`).
+`tokens/src/` and emitted by `bun scripts/build-tokens.mjs` (`bun run build:tokens`).
 **Never edit those four CSS files** — edit the JSON and rebuild.
 `tokens/src/TYPE-MAP.md` is the normative table of which DTCG `$type` every token group
 uses, and it is the first thing a new platform target should read.
@@ -1350,9 +1357,9 @@ never re-defines a value.
 When adding a colour, define the daisyUI token in `tokens/src/palette.dark.json` and
 `palette.light.json` first, rebuild, then alias to it in `colors.css` — never introduce a
 raw hex in a component. After any `tokens/src/` edit: rebuild, then run
-`node scripts/check-dtcg.mjs` (source is valid DTCG 2025.10),
-`node scripts/check-tokens-generated.mjs` (committed CSS matches the source), and
-`node scripts/check-ramp.mjs` (the ramp still clears every gate). In `tokens/src/`,
+`bun scripts/check-dtcg.mjs` (source is valid DTCG 2025.10),
+`bun scripts/check-tokens-generated.mjs` (committed CSS matches the source), and
+`bun scripts/check-ramp.mjs` (the ramp still clears every gate). In `tokens/src/`,
 colours are structured sRGB objects, dimensions and durations are `{value,unit}` objects,
 and letter spacing is a `number` carrying an `em` render hint in `$extensions`.
 ```
@@ -1366,10 +1373,10 @@ Change "defined per theme in `tokens/palette.css`" to "defined per theme in `tok
 Everywhere `palette.css` is named as the hand-authored source of truth or the file to swap or edit, rename the source to the DTCG JSON. Specifically, replace the sentence at ~line 141:
 
 ```markdown
-**The public swap surface is `tokens/src/palette.dark.json` and `tokens/src/palette.light.json`: the `--color-*` set plus `--color-cat-*`.** Everything else derives. Swap those two files, run `npm run build:tokens`, and the whole system follows: the generated `tokens/palette.css` re-emits, the aliases in `tokens/colors.css` (`--bg`, `--crimson`, `--danger`, `--mute`…) re-point, the muted text levels re-derive through `color-mix`, and every component re-colors, because components read tokens and never hold a value of their own.
+**The public swap surface is `tokens/src/palette.dark.json` and `tokens/src/palette.light.json`: the `--color-*` set plus `--color-cat-*`.** Everything else derives. Swap those two files, run `bun run build:tokens`, and the whole system follows: the generated `tokens/palette.css` re-emits, the aliases in `tokens/colors.css` (`--bg`, `--crimson`, `--danger`, `--mute`…) re-point, the muted text levels re-derive through `color-mix`, and every component re-colors, because components read tokens and never hold a value of their own.
 ```
 
-and at ~line 193, change "After changing anything in `palette.css`:" to "After changing anything in `tokens/src/`, rebuild (`npm run build:tokens`) and then:". At ~line 199, "It reads the ramp straight out of `palette.css`" stays true (the script reads the generated file) — leave it, but append ", which the build regenerates from the DTCG source."
+and at ~line 193, change "After changing anything in `palette.css`:" to "After changing anything in `tokens/src/`, rebuild (`bun run build:tokens`) and then:". At ~line 199, "It reads the ramp straight out of `palette.css`" stays true (the script reads the generated file) — leave it, but append ", which the build regenerates from the DTCG source."
 
 - [ ] **Step 5: `README.md` — the Hover sentence (~line 106)**
 
@@ -1411,7 +1418,7 @@ attributes, durations, easings, shadows — is authored once in `tokens/src/**/*
 strictly-conformant DTCG 2025.10, the platform-neutral contract. A new framework target
 consumes that JSON directly, or through a Style Dictionary platform emitting CSS, JS,
 iOS, Android or SCSS. Nothing in it is Arena-specific, and
-`node scripts/check-dtcg.mjs` proves it conforms.
+`bun scripts/check-dtcg.mjs` proves it conforms.
 
 **Per-platform (the composition layer).** Two things DTCG deliberately does not model,
 and that therefore live in each platform's own idiom:
@@ -1443,7 +1450,7 @@ Insert directly below the intro paragraph and above `## [3.2.0] — 2026-07-17`:
   source of every token value, authored as strictly-conformant DTCG 2025.10 (the first
   stable W3C Format Module), and `tokens/palette.css`, `typography.css`, `spacing.css`
   and `effects.css` are generated from it by Style Dictionary v4
-  (`npm run build:tokens`) — they are still committed, but must no longer be edited by
+  (`bun run build:tokens`) — they are still committed, but must no longer be edited by
   hand. `tokens/colors.css` (aliases and `color-mix` derivations) and `tokens/fonts.css`
   (`@font-face`) stay hand-authored and generated-by-`fetch-fonts.mjs` respectively, as
   the documented per-platform composition layer. Two new gates enforce the boundary:
@@ -1474,12 +1481,12 @@ Expected: no output.
 Run:
 
 ```bash
-npm test && \
-npm run check:dtcg && \
-npm run check:tokens && \
-node scripts/check-ramp.mjs && \
-node scripts/check-text-contrast.mjs && \
-node scripts/check-release.mjs
+bun test && \
+bun run check:dtcg && \
+bun run check:tokens && \
+bun scripts/check-ramp.mjs && \
+bun scripts/check-text-contrast.mjs && \
+bun scripts/check-release.mjs
 ```
 
 Expected: all exit 0. `check-release.mjs` reads the first *versioned* CHANGELOG entry, so `[Unreleased]` on top is expected and must not fail it — if it does, that is a real bug in the entry's formatting, not in the script.
@@ -1493,13 +1500,63 @@ git commit -m "docs: DTCG token source, the layer contract, and the --glow-accen
 
 ---
 
+### Task 9: Move the pre-existing gates onto Bun
+
+**Files:**
+- Modify: `scripts/check-ramp.mjs`, `scripts/check-release.mjs`, `scripts/check-text-contrast.mjs`, `scripts/fetch-fonts.mjs`, `scripts/validate-palette.mjs` (usage strings only)
+- Modify: `README.md`, `CLAUDE.md` (every `node scripts/…` invocation)
+
+**Interfaces:**
+- Consumes: nothing.
+- Produces: one toolchain. No script logic changes — these five files only ever named
+  `node` inside a comment or a usage string.
+
+The five gates predate this migration and were documented as `node scripts/x.mjs`. Left
+alone they would split the toolchain: the token build on Bun, the colour gates on Node.
+All five were verified to produce byte-identical output and identical exit codes under
+both runtimes before this task was written, so the change is to the *documented
+invocation*, never to behaviour.
+
+- [ ] **Step 1: Update the usage strings inside the five scripts**
+
+Rewrite the `node scripts/…` occurrences in each header comment to `bun scripts/…`:
+`check-ramp.mjs:8`, `check-release.mjs:21`, `check-text-contrast.mjs:12`,
+`fetch-fonts.mjs:5`, and `validate-palette.mjs:28-30` plus its runtime usage string at
+line 282. Change nothing else in these files.
+
+- [ ] **Step 2: Update every invocation in `README.md` and `CLAUDE.md`**
+
+`README.md` lines ~94, ~120, ~143, ~196 and `CLAUDE.md` lines ~30, ~75. Note Task 8 Step 2
+already rewrote the `CLAUDE.md:30` paragraph wholesale — verify it says `bun`, do not
+rewrite it twice.
+
+- [ ] **Step 3: Verify no invocation was missed**
+
+Run: `grep -rn "node scripts/\|node --test\|npm run \|npm test" --exclude-dir=node_modules --exclude-dir=.git . | grep -v "^./docs/"`
+Expected: no output. `docs/` is excluded because the spec records the migration itself.
+
+- [ ] **Step 4: Verify the gates still pass on Bun**
+
+Run: `bun scripts/check-ramp.mjs && bun scripts/check-text-contrast.mjs && bun scripts/check-release.mjs`
+Expected: all exit 0.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add scripts/check-ramp.mjs scripts/check-release.mjs scripts/check-text-contrast.mjs \
+        scripts/fetch-fonts.mjs scripts/validate-palette.mjs README.md CLAUDE.md
+git commit -m "build: run the pre-existing gates on Bun so the toolchain is uniform"
+```
+
+---
+
 ## Final verification
 
 Run the whole gate set, then serve and look:
 
 ```bash
-npm test && npm run check:dtcg && npm run check:tokens && \
-  node scripts/check-ramp.mjs && node scripts/check-text-contrast.mjs
+bun test && bun run check:dtcg && bun run check:tokens && \
+  bun scripts/check-ramp.mjs && bun scripts/check-text-contrast.mjs
 git diff --stat HEAD~8 -- tokens/
 python3 -m http.server 8000
 ```
@@ -1512,4 +1569,4 @@ python3 -m http.server 8000
 
 ## Release
 
-Out of scope, and user-triggered: bump `plugin.json` / `marketplace.json` / the README header, rename the `[Unreleased]` heading, pin `source.ref` to the new tag, tag the release commit, and run `node scripts/check-release.mjs`. The `--glow-accent` removal is a breaking change to the public token surface, so this warrants a **major** bump.
+Out of scope, and user-triggered: bump `plugin.json` / `marketplace.json` / the README header, rename the `[Unreleased]` heading, pin `source.ref` to the new tag, tag the release commit, and run `bun scripts/check-release.mjs`. The `--glow-accent` removal is a breaking change to the public token surface, so this warrants a **major** bump.
