@@ -23,9 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The build and check scripts run on Bun.** `bun install`, `bun run build:tokens`,
   `bun test`; the five pre-existing gates (`check-ramp`, `check-text-contrast`,
   `check-release`, `fetch-fonts`, `validate-palette`) move with them, so the toolchain
-  does not split. Nothing in the scripts is Bun-specific — they are plain ESM importing
-  only `node:fs`, `node:path` and `node:url`, and were verified to produce identical
-  output and exit codes under both runtimes.
+  does not split. Every gate stays runtime-portable — plain ESM importing only `node:fs`,
+  `node:path` and `node:url`, verified to produce identical output and exit codes under
+  both runtimes. The one exception is the new `bun run demos` dev server
+  (`scripts/serve.mjs`), which uses `Bun.serve` and is not a gate.
 
 ### Removed
 

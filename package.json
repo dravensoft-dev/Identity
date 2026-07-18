@@ -6,6 +6,7 @@
     "style-dictionary": "^4"
   },
   "scripts": {
+    "demos": "bun scripts/serve.mjs",
     "build:tokens": "bun scripts/build-tokens.mjs",
     "check:tokens": "bun scripts/check-tokens-generated.mjs",
     "check:dtcg": "bun scripts/check-dtcg.mjs",
