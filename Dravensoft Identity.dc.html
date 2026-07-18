@@ -57,6 +57,11 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
 /* construction */
 .constr{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:center;margin-top:44px}
 .constr-stage{background:var(--ink2);border:1px solid var(--color-base-300);border-radius:16px;padding:56px;display:flex;align-items:center;justify-content:center;position:relative;min-height:340px}
+/* A hard-stop line grid, not a colour blend: each stop meets its neighbour at
+   1px with no transition, so this is texture rather than the gradient the
+   language forbids. Kept as a gradient function deliberately — the SVG data-URI
+   alternative cannot read var(--token), which would trade this rule for the
+   no-raw-hex one and stop the grid following the theme. Same for .avatarpat. */
 .grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--color-base-300) 1px,transparent 1px),linear-gradient(90deg,var(--color-base-300) 1px,transparent 1px);background-size:32px 32px;opacity:.35;border-radius:16px}
 .blist{list-style:none;padding:0;margin:24px 0 0}
 .blist li{display:flex;gap:16px;padding:16px 0;border-top:1px solid var(--color-base-300);align-items:flex-start}
@@ -110,7 +115,8 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
   .splash .load i{animation-duration:15s}
 }
 /* A hard-stop dot pattern, not a colour blend: the stops meet at 2px with no
-   transition, so this is texture rather than the gradient the language forbids. */
+   transition, so this is texture rather than the gradient the language forbids.
+   Kept as a gradient function for the reason given on .grid-bg. */
 .avatarpat{position:absolute;inset:0;opacity:.12;background:radial-gradient(circle at 30% 30%,var(--on-accent) 0 2px,transparent 2px);background-size:20px 20px}
 /* footer */
 .foot{padding:56px 88px;display:flex;justify-content:space-between;align-items:center;color:var(--mute);font-family:'Spline Sans Mono';font-size:12px;letter-spacing:.1em}
