@@ -42,7 +42,7 @@ export function Button({
     primary: {
       bg: hover ? 'var(--crimson-strong)' : 'var(--crimson)',
       color: 'var(--on-accent)', border: 'transparent',
-      shadow: hover ? 'var(--glow-accent)' : 'none',
+      shadow: hover ? 'var(--shadow-2)' : 'none',
     },
     secondary: {
       bg: hover ? 'var(--color-base-300)' : 'var(--panel)',

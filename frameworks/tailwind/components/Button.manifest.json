@@ -5,7 +5,7 @@
   },
   "variants": {
     "variant": {
-      "primary": { "root": "bg-primary text-primary-content border border-primary hover:shadow-[var(--glow-accent)]" },
+      "primary": { "root": "bg-primary text-primary-content border border-primary hover:shadow-[var(--shadow-2)]" },
       "danger":  { "root": "bg-transparent border border-error text-error hover:bg-[var(--danger-soft)]" }
     },
     "size": {
