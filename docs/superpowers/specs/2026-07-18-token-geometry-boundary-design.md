@@ -375,6 +375,63 @@ be a second way to say the same thing, and the two would drift.
 `Skeleton`, `Rotor`). `dur` stops at 420ms because it models UI transitions; an
 animation *cycle* is a different quantity. Six sites, left as derivations.
 
+## The classification rules
+
+Roughly 290 sites have to be assigned to a family. The spec cannot name the family
+for each one, but it fixes the rules that do — otherwise the plan exercises
+judgement 290 times, which is the 34-ad-hoc-decisions problem relocated rather than
+solved. **A plan executes decisions; it does not make them.**
+
+### Rule 1 — prose or chrome decides between `fs` and `dz`
+
+Is the text a sentence the user reads, or a label on a control?
+
+- **Prose** — a heading, a paragraph, a message with a subject and a verb → `fs`.
+- **Chrome** — a button label, a field label, a column header, a hint, a validation
+  error, a badge, a legend → `dz`.
+
+The test that settles most cases: *would this text still mean something read aloud
+with no interface around it?* "We couldn't connect to the server. Retry." would.
+"Deploy" would not.
+
+The known ambiguous sites are named here so the plan does not rediscover them:
+`EmptyState.message`, `ErrorState.message`, `Onboarding.step.body`, and `Menu`'s
+item text. All four are prose *inside* a chrome container.
+
+### Rule 2 — a glyph rendered as a font is `icon`, not type
+
+Even though it is written `fontSize`. Phosphor renders as a webfont, which is an
+implementation detail of the icon set and not a statement that the icon belongs to
+the type scale. An icon at 15px beside a label at 15px is not the same design
+decision as an icon at 16px.
+
+### Rule 3 — a step exists when two independent components need it
+
+**A value that only one component needs is a derivation, not a token.**
+
+This is the generalisation of the `--fs-base` mistake: one component used 14px, and
+the value was about to become a scale step. Under this rule `dz.text` earns its place
+(21 sites, across buttons, inputs, selects, menus and cells) and `Button`'s 14×14
+spinner does not (one site, so `calc(var(--sp-1) * 3.5)`).
+
+It is the rule that holds the line against the failure this spec exists to prevent:
+`tokens/src/` becoming a component API, every re-skin acquiring fifty knobs, and
+`Arena - Overview.html` — which generates itself from the token source — becoming
+unreadable.
+
+**What "not a token" means depends on the family**, and follows the same numeric /
+semantic split as the derivation rule:
+
+- **Numeric family** (`sp`) — the lone value **derives**. `calc(var(--sp-1) * 3.5)`.
+- **Semantic family** (`fs`, `dz`, `ls`, `lh`, `icon`, `z`) — there is nothing to
+  derive from, because a derived role is not a role. The lone value **snaps to the
+  nearest step**.
+
+This matters immediately for `ls`, where three values are each used by a single
+component — `.01em` (`Button`), `.02em` (`Avatar`), `.16em` (`Menu`). None of the
+three becomes a step; each snaps. Without this clause the plan reaches them with no
+instruction and invents one.
+
 ## What this reverses
 
 **`tokens/src/` is Arena's design source of truth. React, Tailwind
@@ -445,21 +502,50 @@ means the counts in this document are superseded the moment it exists.
 means every rendered value resolves from `tokens/src/`, which is exactly the claim
 that changing a value there moves every layer.
 
-## What this spec does not decide
+## What is still open, and the five checkpoints that close it
 
-**The per-site family assignment.** The boundary is settled; which family each of
-the ~290 sites belongs to is not. Classification was done by reading greps, not
-exhaustively, and there are real judgement calls — `EmptyState` and `ErrorState`
-render their `message` at 14px, but that is prose inside a component, so it is
-editorial (→ 15) and not density. The implementation plan carries a classification
-pass, and that pass will reassign some sites.
+With the rules above fixed, most of the work applies them mechanically and needs no
+input. What genuinely remains is enumerated here **as named checkpoints**, so the
+author knows before the plan starts what will be asked — and so the plan cannot
+introduce a sixth decision without it being visibly absent from this list.
 
-**The visual review of the snapped sites.** Family 1 moves rendered pixels. Those
-changes are design changes and need to be looked at, not just compiled.
+Roughly a dozen decisions, grouped. Not 290 loose ones.
 
-**The names and values of the two new families.** `z` and `icon` are settled as
-families; their step names and exact values come from the per-site pass, which is
-the only thing that can say whether the icon scale needs three steps or four.
+### Checkpoint 1 — the snap direction for type *(the heaviest)*
+
+Does 12 go to 11 or 13? 16 to 15 or 17? 18 to 17 or 19? These are design decisions
+and they are **per cluster, not per site** — six to eight clusters, not 64
+questions. Falls at the start of the type task, because every later step depends on
+the answer.
+
+### Checkpoint 2 — the layering order
+
+Does a tooltip sit above or below a modal? Above a command palette? This is a
+product decision, not derivable from code — the current values encode no intent
+(`Menu` and `Tooltip` are both 900). Six or so slots, ordered once.
+
+### Checkpoint 3 — the icon step count
+
+Three steps or four. The measured cluster (14 / 16 / 18) suggests three; the
+per-site pass may show a fourth genuinely in use, and Rule 3 decides it.
+
+### Checkpoint 4 — the sites where Rule 1 does not close cleanly
+
+The four named in Rule 1, plus whatever the exhaustive pass adds. Each is prose
+inside a chrome container, and each gets a one-line reason recorded with its
+assignment.
+
+### Checkpoint 5 — the visual review
+
+**No document can close this one.** Family 1 moves rendered pixels; those are design
+changes and need to be looked at, not compiled. Recorded as a checkpoint rather than
+disguised as a task.
+
+Method: the group card demos already exist — `bun run demos`, then
+`frameworks/react/components/<group>/*.card.html`, reviewed **per group** rather
+than per site. Acceptance: a snapped site that reads wrong is evidence the snap
+*direction* was wrong (Checkpoint 1), not that the rule was wrong. It sends the
+cluster back to Checkpoint 1; it does not reopen the boundary.
 
 ## Non-goals
 
