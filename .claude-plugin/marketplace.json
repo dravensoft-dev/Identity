@@ -10,10 +10,10 @@
       "source": {
         "source": "github",
         "repo": "dravensoft-dev/Identity",
-        "ref": "v3.1.0"
+        "ref": "v3.2.0"
       },
       "description": "Arena — Dravensoft's design system as an Agent Skill: design tokens, React + Angular primitives, a shared Tailwind layer, guidelines, and a UI kit for generating well-branded interfaces.",
-      "version": "3.1.0",
+      "version": "3.2.0",
       "author": {
         "name": "Dravensoft"
       },
