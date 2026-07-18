@@ -10,6 +10,7 @@
  * Run: bun run demos
  */
 import { flattenTokens, previewFor } from './scripts/lib/token-preview.mjs';
+import { parseDecls } from './scripts/lib/css-decls.mjs';
 
 const root = document.documentElement;
 const host = document.getElementById('sections');
@@ -290,6 +291,29 @@ async function main() {
     note: 'Depth is the surface scale, the hairline border and the warm shadow — never a gradient, and never '
       + 'a tinted glow. Easing curves are drawn from the value the browser resolved.',
     tokens: effects,
+  }));
+
+  /* The 40 aliases have no JSON source — they are hand-authored CSS. Their names
+   * are read with the same parser the drift gate uses, so there is one
+   * implementation rather than a list duplicated here. */
+  const colorsCss = await (await fetch('tokens/colors.css')).text();
+  const aliasNames = new Set();
+  for (const [, decls] of parseDecls(colorsCss)) for (const name of decls.keys()) aliasNames.add(name);
+  const aliases = [...aliasNames].map((name) => ({
+    name,
+    group: 'alias',
+    path: [name],
+    $type: /picker-invert/.test(name) ? 'number' : 'color',
+    $description: undefined,
+  }));
+
+  sections.push(() => renderSection({
+    eyebrow: 'Composition layer',
+    title: 'Aliases and derivations',
+    note: 'Hand-authored in tokens/colors.css, not generated: DTCG owns values, this layer owns how values '
+      + 'are combined at runtime. It defines no skin value of its own — only references and color-mix '
+      + 'compositions, which is why every one of these re-derives when the palette is swapped.',
+    tokens: aliases,
   }));
 
   paint();

@@ -62,6 +62,43 @@ body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--fo
     under <code>frameworks/</code>.</p>
   </section>
   <main id="sections"></main>
+  <section class="sec">
+    <div class="eyebrow">Foundations</div>
+    <div class="h2">Iconography · Phosphor</div>
+    <p class="note"><b>Bold</b> weight as the default, to match the bold tone. <b>Fill</b> in crimson for the
+    active state. MIT licensed, installed as a package by default rather than pulled from a CDN.</p>
+    <div style="display:flex;gap:var(--sp-4);flex-wrap:wrap;font-size:var(--fs-h3);color:var(--text-body)">
+      <i class="ph-bold ph-squares-four"></i><i class="ph-bold ph-rocket-launch"></i>
+      <i class="ph-bold ph-git-branch"></i><i class="ph-bold ph-gauge"></i>
+      <i class="ph-bold ph-shield-check"></i><i class="ph-bold ph-terminal-window"></i>
+      <i class="ph-fill ph-squares-four" style="color:var(--crimson)"></i>
+      <i class="ph-fill ph-shield-check" style="color:var(--crimson)"></i>
+    </div>
+  </section>
+  <section class="sec">
+    <div class="eyebrow">Brand</div>
+    <div class="h2">The Rotor</div>
+    <p class="note">The signature mark, in the three finishes that ship in <code>assets/</code>. The full
+    identity manual is <a href="Dravensoft%20Identity.dc.html" style="color:var(--gold)">Dravensoft Identity</a>.</p>
+    <div style="display:flex;gap:var(--sp-6);align-items:center">
+      <img src="assets/rotor-crimson.svg" width="64" height="64" alt="Rotor, crimson">
+      <img src="assets/rotor-bone.svg" width="64" height="64" alt="Rotor, bone">
+      <img src="assets/app-icon.svg" width="64" height="64" alt="App icon">
+    </div>
+  </section>
+  <section class="sec">
+    <div class="eyebrow">Components</div>
+    <div class="h2">Where the components live</div>
+    <p class="note">Components are not part of this page. Each framework layer implements them in its own
+    idiom on top of these same tokens, so showing one framework's here would make the root a second,
+    drifting implementation — which is exactly what this page replaced.</p>
+    <ul class="note">
+      <li><code>frameworks/react/components/**/*.card.html</code> — live React demos, one card per group.</li>
+      <li><code>frameworks/react/ui_kits/console/index.html</code> — the Delivery Console example application.</li>
+      <li><code>frameworks/angular/</code> — the Angular layer and its adoption guide.</li>
+      <li><code>guidelines/*.html</code> — specimen cards for embedding.</li>
+    </ul>
+  </section>
 </div>
 <script src="theme.js"></script>
 <script type="module" src="overview.js"></script>
