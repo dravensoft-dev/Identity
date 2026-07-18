@@ -35,7 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   echoing the source. All 138 token names render — 98 from the DTCG source, 40 from the
   composition layer — and adding a token to `tokens/src/` now makes it appear with no edit
   to the page. `Dravensoft Identity.dc.html` is unchanged and remains the only
-  `dc-runtime` page. New: `bun run demos` serves the repo root for both.
+  `dc-runtime` page. New: `bun run demos` serves the repo root for both, and
+  `scripts/browser-modules.test.mjs` parses the browser-side modules, which no other test
+  imports — a syntax error in one of them is otherwise silent, since the module never runs
+  and the page's own error handler never fires.
 
 ### Removed
 
