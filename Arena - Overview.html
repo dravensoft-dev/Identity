@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arena — Token language</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css">
+<style>
+body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body)}
+.page{max-width:var(--container-max);margin:0 auto}
+.hero{position:relative;padding:var(--sp-12) var(--sp-12) var(--sp-10);border-bottom:var(--bw) solid var(--border)}
+.brandrow{display:flex;align-items:center;gap:var(--sp-4)}
+.brandname{font-family:var(--font-display);font-weight:var(--fw-black);font-size:var(--fs-h1);letter-spacing:var(--ls-tight);text-transform:uppercase;color:var(--text-strong);line-height:var(--lh-tight)}
+.kicker{font-family:var(--font-mono);font-size:var(--fs-xs);letter-spacing:var(--ls-wide);text-transform:uppercase;color:var(--gold);margin-top:var(--sp-2)}
+.lede{font-size:var(--fs-lg);color:var(--text-muted);max-width:58ch;line-height:var(--lh-body);margin-top:var(--sp-5)}
+.controls{position:absolute;top:var(--sp-6);right:var(--sp-12);display:flex;gap:var(--sp-2)}
+.ctl{display:inline-flex;align-items:center;gap:var(--sp-2);height:var(--dz-ctl-h);padding:0 var(--sp-4);background:var(--panel);color:var(--text-body);border:var(--bw) solid var(--border-strong);border-radius:var(--r-pill);cursor:pointer;font-family:var(--font-mono);font-size:var(--fs-xs);letter-spacing:var(--ls-label);text-transform:uppercase;transition:background var(--dur-fast) var(--ease-out)}
+.ctl:hover{background:var(--bg-raised)}
+.ctl:focus-visible{outline:var(--focus-width) solid var(--focus-ring);outline-offset:var(--focus-offset)}
+.sec{padding:var(--sp-10) var(--sp-12);border-bottom:var(--bw) solid var(--border)}
+.eyebrow{font-family:var(--font-mono);font-size:var(--fs-xs);letter-spacing:var(--ls-wide);text-transform:uppercase;color:var(--crimson)}
+.h2{font-family:var(--font-display);font-weight:var(--fw-black);font-size:var(--fs-h2);letter-spacing:var(--ls-tight);margin:var(--sp-2) 0 var(--sp-6);color:var(--text-strong)}
+.note{font-size:var(--fs-md);color:var(--text-muted);max-width:60ch;line-height:var(--lh-body);margin-bottom:var(--sp-6)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:var(--sp-4)}
+.item{border:var(--bw) solid var(--border);border-radius:var(--r-md);padding:var(--sp-4);background:var(--surface-card);min-width:0}
+.item-name{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--text-body);word-break:break-all}
+.item-val{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--text-muted);margin-top:var(--sp-1);word-break:break-all}
+.item-desc{font-size:var(--fs-sm);color:var(--text-muted);line-height:var(--lh-body);margin-top:var(--sp-2)}
+.item-missing{color:var(--danger);border-color:var(--danger)}
+.tally{font-family:var(--font-mono);font-size:var(--fs-xs);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-muted);margin-top:var(--sp-5)}
+.tally-bad{color:var(--danger)}
+.swatch{height:64px;border-radius:var(--r-sm);border:var(--bw) solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:var(--fs-xs);margin-bottom:var(--sp-3)}
+.ramp{display:flex;gap:var(--sp-1);margin-bottom:var(--sp-6)}
+.ramp-slot{flex:1;height:56px;border-radius:var(--r-xs)}
+</style>
+</head>
+<body>
+<div class="page">
+  <section class="hero">
+    <div class="controls">
+      <button class="ctl themebtn" type="button"><span class="tlabel">Dark</span></button>
+      <button class="ctl" type="button" id="density">Comfortable</button>
+    </div>
+    <div class="brandrow">
+      <img src="assets/rotor-crimson.svg" width="56" height="56" alt="Rotor">
+      <div>
+        <div class="brandname">Arena</div>
+        <div class="kicker">Token language · Dravensoft</div>
+      </div>
+    </div>
+    <p class="lede">Every token Arena defines, generated from the DTCG source and measured
+    in the live browser. Values are read from the stylesheet actually loaded, not echoed
+    back from the JSON. Components are not shown here: they belong to each framework layer
+    under <code>frameworks/</code>.</p>
+  </section>
+  <main id="sections"></main>
+</div>
+<script src="theme.js"></script>
+<script type="module" src="overview.js"></script>
+</body>
+</html>
