@@ -160,8 +160,13 @@ makes an Angular primitive reviewable by eye.
 
 **Gate 2 — the layer compiles.** `bun scripts/check-angular.mjs` builds the layer with
 `ng-packagr` under `strictTemplates`, and fails on any primitive that does not compile
-or whose template references something that does not exist. `ng-packagr` is already a
-dev dependency the packaging plan installs, so this gate costs no new tooling.
+or whose template references something that does not exist.
+
+**This spec installs `ng-packagr` itself.** An earlier draft said the packaging plan
+already installs it — true, but packaging runs *after* this work, so at gate-2 time it
+would not be there. It and the Angular compiler peers (`@angular/{core,common,compiler,compiler-cli}`,
+`typescript`) become dev dependencies here, and the packaging plan then finds them
+present rather than adding them.
 
 **Gate 3 — every class resolves to a token.** The coverage spec's preset-compile gate,
 extended to compile every manifest and assert each utility resolves to an Arena token

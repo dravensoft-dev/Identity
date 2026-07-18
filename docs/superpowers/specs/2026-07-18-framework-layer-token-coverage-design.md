@@ -1,8 +1,11 @@
 # Framework layer token coverage — Design
 
-**Status:** approved for planning
-**Date:** 2026-07-18
-**Relates to:** `2026-07-18-four-package-build-publish-design.md` (updated alongside this)
+**Status:** approved for planning — **first in the queue**, both other specs wait on it
+**Date:** 2026-07-18 · **revised 2026-07-18** — the spacing model was an open question and
+is now settled against a real Tailwind v4.3.3 compile (§1b); the gates gained the JIT and
+bracket-syntax findings; a section records what the parity work needs from this one.
+**Relates to:** `2026-07-18-four-package-build-publish-design.md`,
+`2026-07-18-framework-layer-parity-design.md`
 
 ## What this is not
 
@@ -46,7 +49,7 @@ edge cases:
 |---|---|
 | The entire type scale — 9 `--fs-*`, 3 `--lh-*`, 4 `--ls-*`, 3 families, 5 of 6 weights | No `text-h1`, no `font-display`, no `tracking-label` |
 | The entire density system — 7 `--dz-*` | `.arena-compact` has no utility surface at all |
-| 6 of 13 `--sp-*` (`sp-0, 10, 12, 16, 20, 24`) | The spacing scale has holes in the middle |
+| 6 of 13 `--sp-*` (`sp-0, 10, 12, 16, 20, 24`) | Not holes — these silently resolve to Tailwind's own `0.25rem` default instead of Arena's token. See §1b. |
 | 4 of 7 `-content` pairs (`info`, `success`, `warning`, `error`) | The pair is the contract a skin defines; two thirds of it is unreachable |
 | `--r-xs`, `--r-pill` | No `rounded-pill`, which pills and avatars need |
 | `--color-error-fill` | The system's only filled danger surface has no utility |
@@ -85,7 +88,8 @@ Expose every token a consumer writes styles with. The additions, by group:
   `--tracking-*` from `--ls-*`.
 - **Density**: `--spacing-ctl-h`, `--spacing-row-py`… from `--dz-*`, so `.arena-compact`
   re-densifies utilities the same way it re-densifies components.
-- **Spacing**: the six missing `--sp-*` steps.
+- **Spacing**: the six missing `--sp-*` steps, plus the `--spacing` base unit itself — see
+  §1b, which settles the model and is the more important half of this bullet.
 - **Radius**: `--radius-xs` from `--r-xs`, `--radius-pill` from `--r-pill`.
 - **Colour**: the four missing `-content` pairs, `--color-neutral` and its content, and
   `--color-error-fill`.
@@ -102,11 +106,60 @@ than an oversight:
   rejects.
 - **`--picker-invert`**, an internal for a vendor pseudo-element.
 
-**The Tailwind v4 spacing model needs verifying during implementation, not assuming.** v4
-derives its dynamic spacing scale from a single `--spacing` base unit, and Arena's scale is
-not a uniform multiple. Whether the missing steps are best expressed as individual
-`--spacing-N` keys or a different mapping is an open question the plan must answer against
-a real compile, not from memory.
+### 1b. The spacing model — settled against a real compile
+
+This was left open ("the plan must answer against a real compile, not from memory"). It has
+been answered, by compiling three candidate presets with **Tailwind v4.3.3** and reading the
+emitted CSS. Two of the premises it rested on were wrong, and the second one hides a bug.
+
+**Arena's scale *is* a uniform multiple.** `--sp-N` = N × 4px for every step: 1→4, 2→8,
+3→12, 4→16, 5→20, 6→24, 8→32, 10→40, 12→48, 16→64, 20→80, 24→96. The scale is *sparse* —
+it does not name 7, 9, 11 — but it never deviates from the 4px grid.
+
+**The gap is not holes. It is a silent fallback to Tailwind's own default**, which is worse.
+v4 emits a named step as `var(--spacing-N)` and every other step as
+`calc(var(--spacing) * N)`. Today's preset defines `--spacing-1..8` and **never sets
+`--spacing`**, so the base unit stays at Tailwind's default `0.25rem`. Measured output of
+the current preset:
+
+```
+p-4    padding: var(--spacing-4)            <- Arena's token
+p-6    padding: var(--spacing-6)            <- Arena's token
+p-7    padding: calc(var(--spacing) * 7)    <- Tailwind's 0.25rem default
+p-10   padding: calc(var(--spacing) * 10)   <- Tailwind's 0.25rem default
+p-12   padding: calc(var(--spacing) * 12)   <- Tailwind's 0.25rem default
+p-16   padding: calc(var(--spacing) * 16)   <- Tailwind's 0.25rem default
+h-11   height:  calc(var(--spacing) * 11)   <- Tailwind's 0.25rem default
+```
+
+So the spacing surface is half Arena and half Tailwind, with nothing marking the boundary.
+A hole would fail loudly; this resolves to a plausible value that *coincides* with Arena's
+only because `0.25rem` is 4px at a 16px root. Change the root font size and the two halves
+diverge. Re-skin Arena and the Tailwind half does not follow. This is precisely the class of
+failure the repository machine-checks everywhere else.
+
+**The fix is one line, and it deletes nothing that matters:**
+
+```css
+@theme {
+  --spacing: var(--sp-1);   /* the 4px grid itself — every numeric utility derives from it */
+  ...
+}
+```
+
+With the base unit set, `p-4` is `calc(var(--sp-1) * 4)` = 16px = `--sp-4`, and the steps
+Arena does not name land on the grid too (`p-7` = 28px) rather than on a rem default.
+
+**Keep the explicit `--spacing-N` keys as well, for all 13 named steps.** Measured: a named
+key wins over the base unit for that N, and both produce identical values while every token
+is N×4. The redundancy is deliberate insurance — if a spacing token ever stops being a clean
+multiple, the named step keeps tracking the token instead of silently drifting onto the grid.
+
+`--sp-0` needs no key: v4 compiles `p-0` to a literal `0px` regardless.
+
+**The gate this implies:** no spacing utility may resolve through Tailwind's default
+`--spacing`. That is assertable directly on the compiled output — the string `0.25rem` must
+not appear in it.
 
 ### 2. Make the shared recipes real
 
@@ -127,8 +180,26 @@ Three checks, following the repository's existing `check-*.mjs` convention:
   v4 and assert the emitted utilities resolve to Arena's values, the way this audit did by
   hand. This requires Tailwind as a dev dependency — accepted, because the alternative is
   an unverifiable layer.
+
+  **The gate must feed the manifests to the compiler as content.** Tailwind v4 is JIT: it
+  emits only the utilities it finds *used* while scanning content, so compiling the preset
+  alone proves almost nothing. The content source is the component manifests — that is what
+  makes this gate test the classes Arena actually ships rather than a list restated inside
+  the gate. Write it that way from the start: `2026-07-18-framework-layer-parity-design.md`
+  grows the layer to 35 manifests, and a gate built to compile only the preset would have to
+  be rewritten once they exist.
+
+  Two assertions on the compiled output, beyond "it compiled": every utility resolves to an
+  Arena token, and the string `0.25rem` never appears (§1b — Tailwind's default `--spacing`
+  must never be reachable).
+
 - **No arbitrary values.** Fail on `[13px]`-style literals anywhere under `frameworks/`,
   which is the machine form of the rule `CLAUDE.md` already states in prose.
+
+  **Key the gate on Tailwind's bracket syntax**, not on literal `px` anywhere. React's 155
+  literal `px` are one-off geometry that the language permits and this audit cleared; a gate
+  scoped to "any px under frameworks/" would fail the healthy layer. `[13px]` is a Tailwind
+  arbitrary value; `padding: '13px'` in a React inline style is not.
 - **Coverage is declared.** Assert every Arena token is either exposed by the preset or
   named in an explicit exclusion list, so a token added to `tokens/src/` cannot silently
   fail to reach the Tailwind layer.
@@ -150,6 +221,31 @@ next reader does not correct it into a real bug.
   token; it exposes tokens that already exist.
 - **The React layer**, which the audit found healthy and which remains the reference
   implementation.
+
+## What the parity work needs from this one
+
+`2026-07-18-framework-layer-parity-design.md` (Angular 1 → 19 primitives, Tailwind 1 → 35
+manifests) was written after this spec and depends on it. Three things it needs, recorded
+here because this spec's plan is written in a separate session that will not see that
+reasoning:
+
+- **`Tag.manifest.json` is a template, not a one-off fix.** Decision 2 converts `tag` to
+  consume a shared manifest. In the parity spec that is slice 1 of 15 identical slices, so
+  whatever conventions it sets — slot names, variant shapes, where `defaultVariants` live,
+  how `tv` consumes the JSON — get copied 34 times. Author it as the reference shape.
+
+- **Gate 3 becomes load-bearing in a second direction.** This spec justifies "coverage is
+  declared" as: a token added to `tokens/src/` cannot silently fail to reach Tailwind.
+  Parity needs the converse as well — a class *inside a manifest* that stops resolving must
+  fail the build. Twenty of the eventual 35 manifests will have no consumer anywhere in the
+  repo, and nothing else will exercise them.
+
+- **The `--picker-invert` exclusion has a second, better reason.** It is excluded here as
+  "an internal for a vendor pseudo-element". When `Input` gets a manifest, the
+  `::-webkit-calendar-picker-indicator` rule cannot live there either, and stays where React
+  keeps it — in injected CSS. The real category is **not expressible as a utility**, which
+  is the same category that keeps the 4 charts and `Calendar` out of the Tailwind layer
+  entirely. Naming the category stops the next reader from trying to fix it.
 
 ## Consequence for the four-package plan
 
