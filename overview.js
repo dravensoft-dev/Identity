@@ -43,6 +43,87 @@ const PREVIEW = {
     }
     return node;
   },
+  family(token) {
+    const node = el('div', null, 'Software worthy of being exalted');
+    node.style.fontFamily = `var(--${token.name})`;
+    node.style.fontSize = 'var(--fs-h4)';
+    node.style.marginBottom = 'var(--sp-3)';
+    return node;
+  },
+  weight(token) {
+    const node = el('div', null, 'Arena');
+    node.style.fontWeight = `var(--${token.name})`;
+    node.style.fontFamily = 'var(--font-display)';
+    node.style.fontSize = 'var(--fs-h3)';
+    node.style.marginBottom = 'var(--sp-3)';
+    return node;
+  },
+  size(token) {
+    const node = el('div', null, 'Arena');
+    node.style.fontSize = `var(--${token.name})`;
+    node.style.fontFamily = 'var(--font-display)';
+    node.style.lineHeight = 'var(--lh-tight)';
+    node.style.marginBottom = 'var(--sp-3)';
+    node.style.overflow = 'hidden';
+    return node;
+  },
+  leading(token) {
+    const node = el('p', null, 'Depth comes from the surface scale, the hairline border and the warm shadow, never from a gradient.');
+    node.style.lineHeight = `var(--${token.name})`;
+    node.style.fontSize = 'var(--fs-sm)';
+    node.style.margin = '0 0 var(--sp-3)';
+    return node;
+  },
+  tracking(token) {
+    const node = el('div', null, 'ARENA TRACKING');
+    node.style.letterSpacing = `var(--${token.name})`;
+    node.style.fontFamily = 'var(--font-mono)';
+    node.style.fontSize = 'var(--fs-sm)';
+    node.style.marginBottom = 'var(--sp-3)';
+    return node;
+  },
+  bar(token) {
+    const rail = el('div');
+    rail.style.marginBottom = 'var(--sp-3)';
+    const fill = el('div');
+    fill.style.height = 'var(--sp-3)';
+    fill.style.width = `min(100%, var(--${token.name}))`;
+    fill.style.background = 'var(--crimson)';
+    fill.style.borderRadius = 'var(--r-xs)';
+    rail.append(fill);
+    return rail;
+  },
+  control(token) {
+    const node = el('div', null, 'Control');
+    node.style.height = `var(--${token.name})`;
+    node.style.display = 'flex';
+    node.style.alignItems = 'center';
+    node.style.padding = '0 var(--sp-3)';
+    node.style.background = 'var(--bg-raised)';
+    node.style.border = 'var(--bw) solid var(--border-strong)';
+    node.style.borderRadius = 'var(--r-sm)';
+    node.style.fontFamily = 'var(--font-mono)';
+    node.style.fontSize = 'var(--fs-xs)';
+    node.style.marginBottom = 'var(--sp-3)';
+    return node;
+  },
+  breakpoint(token) {
+    const rail = el('div');
+    rail.style.position = 'relative';
+    rail.style.height = 'var(--sp-2)';
+    rail.style.background = 'var(--bg-raised)';
+    rail.style.borderRadius = 'var(--r-xs)';
+    rail.style.marginBottom = 'var(--sp-3)';
+    const mark = el('div');
+    mark.style.position = 'absolute';
+    mark.style.insetBlock = '0';
+    mark.style.left = '0';
+    mark.style.width = `min(100%, calc(var(--${token.name}) / 1024 * 100%))`;
+    mark.style.background = 'var(--gold)';
+    mark.style.borderRadius = 'var(--r-xs)';
+    rail.append(mark);
+    return rail;
+  },
   value: () => null,
 };
 
@@ -110,6 +191,37 @@ async function main() {
     sec.insertBefore(strip, sec.querySelector('.grid'));
     return sec;
   });
+
+  const type = await loadTokens('typography.json');
+  sections.push(() => renderSection({
+    eyebrow: 'Typography',
+    title: 'Families, weights and scale',
+    note: 'Archivo carries display, Familjen Grotesk carries body, Spline Sans Mono carries data and labels. '
+      + 'Tracking is a unitless number with an em render hint, because em is not a DTCG dimension unit.',
+    tokens: type,
+  }));
+
+  const spacing = await loadTokens('spacing.json');
+  sections.push(() => renderSection({
+    eyebrow: 'Spacing',
+    title: 'Grid, layout and breakpoints',
+    note: 'A 4px base grid. Breakpoints are shared values read by JS, never media queries: components style '
+      + 'themselves with inline style objects, which cannot hold one.',
+    tokens: spacing.filter((t) => t.group !== 'dz'),
+  }));
+
+  const compactTokens = await loadTokens('density.compact.json');
+  const base = spacing.filter((t) => t.group === 'dz').map((t) => t.name).sort().join();
+  if (compactTokens.map((t) => t.name).sort().join() !== base)
+    console.warn('overview: density.compact.json and spacing.json disagree on the dz names');
+
+  sections.push(() => renderSection({
+    eyebrow: 'Density',
+    title: 'Comfortable and compact',
+    note: 'Comfortable by default. The compact scope re-densifies rows and controls through one class, '
+      + '.arena-compact — use the control above to switch, and these values change in place.',
+    tokens: spacing.filter((t) => t.group === 'dz'),
+  }));
 
   paint();
 
