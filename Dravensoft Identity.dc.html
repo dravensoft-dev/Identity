@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="./styles.css">
 <style>
 *{box-sizing:border-box}
-.wrap{--ink2:var(--panel);--crimson-d:var(--crimson);background:var(--ink);color:var(--bone);font-family:'Familjen Grotesk',sans-serif;width:100%;overflow-x:hidden;transition:background .3s ease,color .3s ease}
+.wrap{--ink2:var(--panel);background:var(--ink);color:var(--bone);font-family:'Familjen Grotesk',sans-serif;width:100%;overflow-x:hidden;transition:background .3s ease,color .3s ease}
 /* theme toggle */
 .themebtn{position:fixed;top:24px;right:28px;z-index:60;display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--color-base-300);color:var(--bone);border-radius:999px;padding:9px 9px 9px 18px;font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer}
 .themebtn .knob{width:36px;height:20px;border-radius:999px;background:var(--color-base-300);position:relative;transition:background .2s}
@@ -44,12 +44,10 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
 .stat .k{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--mute)}
 .stat .v{font-family:'Archivo',sans-serif;font-weight:800;font-size:19px;margin-top:6px}
 /* logo variations */
-.vargrid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-top:44px}
+.vargrid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:44px}
 .varcard{border:1px solid var(--color-base-300);border-radius:14px;padding:40px;display:flex;flex-direction:column;justify-content:space-between;min-height:230px}
-.varcard.light{background:var(--bone)}
 .varcard.mono-b{background:var(--ink2)}
 .vlabel{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-top:26px}
-.varcard.light .vlabel{color:#8a7d72}
 /* construction */
 .constr{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:center;margin-top:44px}
 .constr-stage{background:var(--ink2);border:1px solid var(--color-base-300);border-radius:16px;padding:56px;display:flex;align-items:center;justify-content:center;position:relative;min-height:340px}
@@ -82,22 +80,27 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
 .appcard .tt{font-family:'Spline Sans Mono';font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-bottom:24px}
 /* business card */
 .bc-stack{display:flex;gap:22px;flex-wrap:wrap}
-.card3d{width:340px;height:200px;border-radius:14px;padding:26px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 24px 50px -20px #000}
-.card-front{background:linear-gradient(145deg,#221a17,#120e0d);border:1px solid var(--color-base-300)}
+.card3d{width:340px;height:200px;border-radius:var(--r-lg);padding:26px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow-3)}
+/* The appcard behind this sits at base-200, so the card steps up to base-300 to
+   read as an object on it — the surface scale is what carries depth here, since
+   the language forbids the gradient this used to use. */
+.card-front{background:var(--color-base-300);border:var(--bw) solid var(--line-strong)}
 .card-back{background:var(--crimson);position:relative;overflow:hidden}
 .card-name{font-family:'Archivo';font-weight:800;font-size:18px}
 .card-role{font-family:'Spline Sans Mono';font-size:11px;color:var(--mute);letter-spacing:.14em;margin-top:4px}
 .card-c{font-family:'Spline Sans Mono';font-size:11px;color:var(--mute);line-height:1.7}
 /* favicon */
 .fav-row{display:flex;align-items:flex-end;gap:26px}
-.fav-tile{border-radius:22%;background:linear-gradient(150deg,var(--crimson),var(--crimson-d));display:flex;align-items:center;justify-content:center;box-shadow:0 16px 34px -14px var(--crimson-d)}
+.fav-tile{border-radius:22%;background:var(--crimson);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-2)}
 .fav-cap{font-family:'Spline Sans Mono';font-size:11px;color:var(--mute);margin-top:10px;text-align:center}
 /* splash */
-.splash{width:270px;height:520px;border-radius:34px;border:1px solid var(--color-base-300);background:radial-gradient(120% 90% at 50% 30%,#241a17,#0d0a09);margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;box-shadow:0 30px 60px -20px #000}
-.splash .notch{position:absolute;top:16px;left:50%;transform:translateX(-50%);width:90px;height:22px;border-radius:12px;background:#0d0a09}
+.splash{width:270px;height:520px;border-radius:34px;border:var(--bw) solid var(--line-strong);background:var(--bg);margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;box-shadow:var(--shadow-3)}
+.splash .notch{position:absolute;top:16px;left:50%;transform:translateX(-50%);width:90px;height:22px;border-radius:12px;background:var(--panel)}
 .splash .load{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);width:120px;height:4px;border-radius:2px;background:var(--color-base-300);overflow:hidden}
 .splash .load i{display:block;height:100%;width:46%;background:var(--crimson);border-radius:2px}
-.avatarpat{position:absolute;inset:0;opacity:.12;background:radial-gradient(circle at 30% 30%,#fff 0 2px,transparent 2px);background-size:20px 20px}
+/* A hard-stop dot pattern, not a colour blend: the stops meet at 2px with no
+   transition, so this is texture rather than the gradient the language forbids. */
+.avatarpat{position:absolute;inset:0;opacity:.12;background:radial-gradient(circle at 30% 30%,var(--on-accent) 0 2px,transparent 2px);background-size:20px 20px}
 /* footer */
 .foot{padding:56px 88px;display:flex;justify-content:space-between;align-items:center;color:var(--mute);font-family:'Spline Sans Mono';font-size:12px;letter-spacing:.1em}
 </style>
@@ -168,10 +171,6 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
 <div class="lock" style="flex-direction:column;gap:16px"><span class="rotor" style="width:64px;height:64px"><span class="blade" style="width:37px;height:37px;background:var(--crimson);transform:rotate(0deg)"></span><span class="blade" style="width:37px;height:37px;background:var(--crimson);transform:rotate(120deg)"></span><span class="blade" style="width:37px;height:37px;background:var(--crimson);transform:rotate(240deg)"></span></span><div class="wm" style="font-size:30px">DRAVEN<span class="soft">SOFT</span></div></div>
 <div class="vlabel">Vertical · stacked</div>
 </div>
-<div class="varcard light">
-<div class="lock"><span class="rotor" style="width:54px;height:54px"><span class="blade" style="width:31px;height:31px;background:#141010;transform:rotate(0deg)"></span><span class="blade" style="width:31px;height:31px;background:#141010;transform:rotate(120deg)"></span><span class="blade" style="width:31px;height:31px;background:#141010;transform:rotate(240deg)"></span></span><div class="wm" style="font-size:34px;color:#141010">DRAVEN<span style="color:#8a7d72">SOFT</span></div></div>
-<div class="vlabel">On light background</div>
-</div>
 <div class="varcard mono-b">
 <div class="lock"><span class="rotor" style="width:54px;height:54px"><span class="blade" style="width:31px;height:31px;background:var(--bone);transform:rotate(0deg)"></span><span class="blade" style="width:31px;height:31px;background:var(--bone);transform:rotate(120deg)"></span><span class="blade" style="width:31px;height:31px;background:var(--bone);transform:rotate(240deg)"></span></span><div class="wm" style="font-size:34px;color:var(--bone)">DRAVENSOFT</div></div>
 <div class="vlabel">Monochrome · single ink</div>
@@ -227,17 +226,17 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
 </div>
 <div class="card3d card-back">
 <div class="avatarpat"></div>
-<div class="wm" style="font-size:26px;color:#fff;position:relative">DRAVEN<span style="color:#ffd9d4">SOFT</span></div>
-<div class="card-c" style="color:#ffe4e0;position:relative">hello@dravensoft.dev<br>+00 000 000 000<br>dravensoft.dev</div>
+<div class="wm" style="font-size:26px;color:var(--on-accent);position:relative">DRAVEN<span style="color:color-mix(in oklab,var(--on-accent) 78%,transparent)">SOFT</span></div>
+<div class="card-c" style="color:color-mix(in oklab,var(--on-accent) 86%,transparent);position:relative">hello@dravensoft.dev<br>+00 000 000 000<br>dravensoft.dev</div>
 </div>
 </div>
 </div>
 <div class="appcard">
 <div class="tt">Favicon · app icon</div>
 <div class="fav-row">
-<div><div class="fav-tile" style="width:96px;height:96px"><span class="rotor" style="width:58px;height:58px"><span class="blade" style="width:33px;height:33px;background:#fff;transform:rotate(0deg)"></span><span class="blade" style="width:33px;height:33px;background:#fff;transform:rotate(120deg)"></span><span class="blade" style="width:33px;height:33px;background:#fff;transform:rotate(240deg)"></span></span></div><div class="fav-cap">96 px</div></div>
-<div><div class="fav-tile" style="width:56px;height:56px"><span class="rotor" style="width:34px;height:34px"><span class="blade" style="width:19px;height:19px;background:#fff;transform:rotate(0deg)"></span><span class="blade" style="width:19px;height:19px;background:#fff;transform:rotate(120deg)"></span><span class="blade" style="width:19px;height:19px;background:#fff;transform:rotate(240deg)"></span></span></div><div class="fav-cap">32 px</div></div>
-<div><div class="fav-tile" style="width:32px;height:32px"><span class="rotor" style="width:20px;height:20px"><span class="blade" style="width:11px;height:11px;background:#fff;transform:rotate(0deg)"></span><span class="blade" style="width:11px;height:11px;background:#fff;transform:rotate(120deg)"></span><span class="blade" style="width:11px;height:11px;background:#fff;transform:rotate(240deg)"></span></span></div><div class="fav-cap">16 px</div></div>
+<div><div class="fav-tile" style="width:96px;height:96px"><span class="rotor" style="width:58px;height:58px"><span class="blade" style="width:33px;height:33px;background:var(--on-accent);transform:rotate(0deg)"></span><span class="blade" style="width:33px;height:33px;background:var(--on-accent);transform:rotate(120deg)"></span><span class="blade" style="width:33px;height:33px;background:var(--on-accent);transform:rotate(240deg)"></span></span></div><div class="fav-cap">96 px</div></div>
+<div><div class="fav-tile" style="width:56px;height:56px"><span class="rotor" style="width:34px;height:34px"><span class="blade" style="width:19px;height:19px;background:var(--on-accent);transform:rotate(0deg)"></span><span class="blade" style="width:19px;height:19px;background:var(--on-accent);transform:rotate(120deg)"></span><span class="blade" style="width:19px;height:19px;background:var(--on-accent);transform:rotate(240deg)"></span></span></div><div class="fav-cap">32 px</div></div>
+<div><div class="fav-tile" style="width:32px;height:32px"><span class="rotor" style="width:20px;height:20px"><span class="blade" style="width:11px;height:11px;background:var(--on-accent);transform:rotate(0deg)"></span><span class="blade" style="width:11px;height:11px;background:var(--on-accent);transform:rotate(120deg)"></span><span class="blade" style="width:11px;height:11px;background:var(--on-accent);transform:rotate(240deg)"></span></span></div><div class="fav-cap">16 px</div></div>
 </div>
 </div>
 <div class="appcard">
@@ -252,7 +251,7 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
 <div class="appcard">
 <div class="tt">Social avatar</div>
 <div style="display:flex;align-items:center;gap:24px">
-<div style="width:120px;height:120px;border-radius:50%;background:linear-gradient(150deg,var(--crimson),var(--crimson-d));display:flex;align-items:center;justify-content:center;box-shadow:0 16px 34px -14px var(--crimson-d)"><span class="rotor" style="width:66px;height:66px"><span class="blade" style="width:38px;height:38px;background:#fff;transform:rotate(0deg)"></span><span class="blade" style="width:38px;height:38px;background:#fff;transform:rotate(120deg)"></span><span class="blade" style="width:38px;height:38px;background:#fff;transform:rotate(240deg)"></span></span></div>
+<div style="width:120px;height:120px;border-radius:50%;background:var(--crimson);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-2)"><span class="rotor" style="width:66px;height:66px"><span class="blade" style="width:38px;height:38px;background:var(--on-accent);transform:rotate(0deg)"></span><span class="blade" style="width:38px;height:38px;background:var(--on-accent);transform:rotate(120deg)"></span><span class="blade" style="width:38px;height:38px;background:var(--on-accent);transform:rotate(240deg)"></span></span></div>
 <div style="width:120px;height:120px;border-radius:50%;background:var(--ink2);border:1px solid var(--color-base-300);display:flex;align-items:center;justify-content:center"><span class="rotor" style="width:66px;height:66px"><span class="blade" style="width:38px;height:38px;background:var(--crimson);transform:rotate(0deg)"></span><span class="blade" style="width:38px;height:38px;background:var(--crimson);transform:rotate(120deg)"></span><span class="blade" style="width:38px;height:38px;background:var(--crimson);transform:rotate(240deg)"></span></span></div>
 </div>
 </div>
