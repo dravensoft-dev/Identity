@@ -4,6 +4,37 @@ All notable changes to Arena — Dravensoft Design System are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **Token values are now DTCG 2025.10 JSON.** `tokens/src/**/*.json` is the single
+  source of every token value, authored as strictly-conformant DTCG 2025.10 (the first
+  stable W3C Format Module), and `tokens/palette.css`, `typography.css`, `spacing.css`
+  and `effects.css` are generated from it by Style Dictionary v4
+  (`bun run build:tokens`) — they are still committed, but must no longer be edited by
+  hand. `tokens/colors.css` (aliases and `color-mix` derivations) and `tokens/fonts.css`
+  (`@font-face`) stay hand-authored and generated-by-`fetch-fonts.mjs` respectively, as
+  the documented per-platform composition layer. Two new gates enforce the boundary:
+  `scripts/check-dtcg.mjs` (the source validates against 2025.10) and
+  `scripts/check-tokens-generated.mjs` (the committed CSS matches the source). No token
+  value changed. The repo gains its first `package.json` — private, dev-only, never
+  published.
+- **The build and check scripts run on Bun.** `bun install`, `bun run build:tokens`,
+  `bun test`; the five pre-existing gates (`check-ramp`, `check-text-contrast`,
+  `check-release`, `fetch-fonts`, `validate-palette`) move with them, so the toolchain
+  does not split. Nothing in the scripts is Bun-specific — they are plain ESM importing
+  only `node:fs`, `node:path` and `node:url`, and were verified to produce identical
+  output and exit codes under both runtimes.
+
+### Removed
+
+- **`--glow-accent`.** A `var()`-tinted shadow has no conformant DTCG type, and the token
+  had exactly one consumer. Accent buttons now raise the general elevation
+  (`--shadow-2`) on hover instead of the crimson glow, in the React `Button`, the
+  Tailwind `Button` manifest and the Overview demo; the `glow` swatch is gone from
+  `guidelines/effects-shadow.html`. This is the sole visual change in the migration.
+
 ## [3.2.0] — 2026-07-17
 
 ### Changed

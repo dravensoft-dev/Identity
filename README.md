@@ -87,23 +87,23 @@ Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default
 - **Microcopy:** concrete action verbs ("Deploy", "Approve delivery", "Roll back"). Errors are helpful and blame-free ("We couldn't connect to the server. Retry.").
 
 ## VISUAL FOUNDATIONS
-- **Color — token architecture (daisyUI structure):** the source of truth is a set of `--color-*` tokens paired with their `-content` counterpart (the legible color on top), defined per theme in `tokens/palette.css`. On top of them, a **compatibility layer** in `tokens/colors.css` maps Arena's legacy aliases (`--bg`, `--surface-card`, `--crimson`, `--gold`, `--danger`, `--mute`…) to the daisyUI tokens, so existing components don't break. Muted text levels (`--bone-dim`, `--mute`) and `--status-offline` are derived from `--color-base-content` with `color-mix`, not fixed hex values.
+- **Color — token architecture (daisyUI structure):** the source of truth is a set of `--color-*` tokens paired with their `-content` counterpart (the legible color on top), defined per theme in `tokens/src/palette.dark.json` and `tokens/src/palette.light.json`, from which `tokens/palette.css` is generated. On top of them, a **compatibility layer** in `tokens/colors.css` maps Arena's legacy aliases (`--bg`, `--surface-card`, `--crimson`, `--gold`, `--danger`, `--mute`…) to the daisyUI tokens, so existing components don't break. Muted text levels (`--bone-dim`, `--mute`) and `--status-offline` are derived from `--color-base-content` with `color-mix`, not fixed hex values.
   - **One token breaks the pairing, on purpose: `--color-error-fill`** (alias `--danger-fill`). It has no `-content` of its own — it *is* a second fill for `--color-error`'s content, because danger is worn two ways and one hex cannot do both. See [Danger convention](#danger-convention-destructive-actions-and-risk-indicators). Pinning it is **optional**: `--danger-fill` falls back to `color-mix(in oklab, var(--color-error) 85%, black)`, so a palette copied without it still gets a filled danger dark enough for white text. Pin it to override the derived tone (the Dravensoft skin pins `#ce3838`); `check-text-contrast.mjs` gates both the pin and the fallback.
 - **The muted text scale**, every level AA on both surfaces in both themes — `--text-strong` (100%, 15.23:1 dark / 15.86:1 light on the card), `--text-body` (82%, 10.46 / 9.28), `--text-muted` (62%, 6.52 / 4.71). `--text-muted` in light is the tightest survivor: it clears AA, and it is the reason nothing fits below it. **Removed in 2.0.0:** `--mute-2` / `--text-faint` — the faint level failed AA in light (3.46:1) and could not be repaired, since clearing it there needs 61% while `--mute` already sits at 62%. Use `--text-muted`.
 - **`--status-offline`** (52%, 4.93:1 dark / 3.46:1 light on the card) is **presence only** — `Avatar`'s offline dot. It clears WCAG 1.4.11's 3:1 for graphical objects. It is *not* `--mute-2-disabled` (40%), which dresses disabled controls: that one is low **by design** and exempt under 1.4.3/1.4.11's inactive-component carve-out. Do not raise it, and do not reach for it to render presence.
-- **Verifying it:** `node scripts/check-text-contrast.mjs` measures every level against the real surfaces in both themes and exits non-zero on failure. Run it after touching `tokens/colors.css` or `tokens/palette.css`. The claim above is machine-checkable — which is the point: the previous one was not, and was false for a whole theme for three releases.
+- **Verifying it:** `node scripts/check-text-contrast.mjs` measures every level against the real surfaces in both themes and exits non-zero on failure. Run it after touching `tokens/colors.css`, or after rebuilding a change to `tokens/src/palette.dark.json` / `palette.light.json`. The claim above is machine-checkable — which is the point: the previous one was not, and was false for a whole theme for three releases.
 - **Themes:** the language is **dark-first** but supports two switchable themes — **dark** (`:root`, default) and **light** (`.arena-light`, warm inverse). The same tokens change value per theme; components are never rewritten. (The Overview includes the toggle in its header.)
-- **Key values:** a warm black background (`--color-base-100`) under elevated surfaces (`--color-base-200` for cards, `--color-base-300` for panels and borders) and bone text (`--color-base-content`). A single primary accent (crimson, `--color-primary`) per view; gold (`--color-secondary`) reserved for focus, distinction and highlighted data. At most one dominant accent per screen. The literal values live in `tokens/palette.css` — see [Theming](#theming): the scale is the language, the hexes are the skin.
+- **Key values:** a warm black background (`--color-base-100`) under elevated surfaces (`--color-base-200` for cards, `--color-base-300` for panels and borders) and bone text (`--color-base-content`). A single primary accent (crimson, `--color-primary`) per view; gold (`--color-secondary`) reserved for focus, distinction and highlighted data. At most one dominant accent per screen. The literal values live in `tokens/src/palette.dark.json` and `tokens/src/palette.light.json`, from which `tokens/palette.css` is generated — see [Theming](#theming): the scale is the language, the hexes are the skin.
 - **Typography:** Archivo (display/headlines, 800–900), Familjen Grotesk (body, 400–600), Spline Sans Mono (data, labels, code). Negative tracking on display (`-0.02em`), wide tracking on mono labels (`0.22em`).
 - **Spacing:** 4px base grid; generous rhythm in marketing (88px gutter), dense but breathable in product.
 - **Backgrounds:** **always flat.** Arena **does not use color gradients** on any surface — not heroes, not splash screens, not cards, not accents. Depth is built with the surface scale (`base-100`→`base-200`→`base-300`), the hairline border and the warm shadow, never with color transitions. (The only permitted use of `linear-gradient`: the `Skeleton`'s neutral *shimmer* animation, which is loading motion, not chromatic decoration.) No generic stock photos; real product imagery or striped placeholders.
 - **Borders:** hairline `1px` in `--color-base-300` (alias `--border`); emphasized border in `--line-strong`. The border, not the shadow, is used to separate content on flat surfaces.
-- **Shadows:** warm and deep, negative spread (`0 12px 28px -12px rgba(0,0,0,.6)`). Crimson glow only for the app icon / floating CTAs.
+- **Shadows:** warm and deep, negative spread (`0 12px 28px -12px rgba(0,0,0,.6)`). There is no tinted glow: elevation is always the neutral warm shadow.
 - **Radii:** contained — buttons/inputs 6px, cards 14px, app tile 22%. Nothing fully round except avatars and switches. **Floating overlays:** modals (Dialog, ConfirmDialog, CommandPalette, Onboarding) use `--r-lg` (14px); minor non-modal floating surfaces (Toast, Menu, BulkActionBar) use `--r-md` (10px). The rule: if it captures the whole screen with a scrim, `--r-lg`; if it's a bounded panel over the UI, `--r-md`.
 - **Cards:** surface `--surface-card`, hairline border, 14px radius, no shadow in lists (border only) and `--shadow-2` when floating (menus, dialogs).
 - **Animation:** `--ease-out` for entrances, `--ease-emphatic` for the "rotor" gesture (spin on load). Durations 120/220/420ms. No excessive bounce.
 - **`prefers-reduced-motion`:** every animation in the system answers it, and what it answers depends on what the motion *means*. Motion that reports work in progress **slows** (`Spinner`, `ProgressBar`, `Button`'s loading ring, `Rotor`) — never freeze it, a stopped spinner reads as a hung process, which is the opposite of the truth. Purely decorative motion **stops** (`Skeleton`'s shimmer falls back to a flat surface). An entrance **keeps its fade and drops its travel** (`Dialog`, `Menu`): the movement is the vestibular trigger, the fade is the meaning. Opacity-only animations (`Tooltip`) need no clause — there is nothing to reduce.
-- **Hover:** lighten the surface one step (`--color-base-300`→`--line-strong`) or raise opacity; on accent buttons, hover adds the crimson glow (`--glow-accent`). *Note:* after the move to daisyUI tokens, the `--crimson-strong`/`--gold-strong`/`--danger-strong` variants **alias to the base color** (there's no separate darker "strong" tone); press emphasis is achieved with scale, not a second tone.
+- **Hover:** lighten the surface one step (`--color-base-300`→`--line-strong`) or raise opacity; on accent buttons, hover raises the general elevation (`--shadow-2`). *Note:* after the move to daisyUI tokens, the `--crimson-strong`/`--gold-strong`/`--danger-strong` variants **alias to the base color** (there's no separate darker "strong" tone); press emphasis is achieved with scale, not a second tone.
 - **Press:** `scale(.98)` on small controls.
 - **Focus:** gold ring `2px` with `2px` offset — always visible, never `outline:none` without a replacement.
 - **Transparency/blur:** blur only on dialog overlays (`backdrop-filter: blur(6px)` over `rgba(20,16,16,.6)`).
@@ -138,7 +138,32 @@ To tell **destructive / risk actions and indicators** apart from the primary act
 
 Arena's identity lives in **shape**, not in its hexes. Crimson and gold are Dravensoft's skin; a different product can wear a different one and still be unmistakably Arena. This was always true of the architecture — it was never declared. It is now.
 
-**The public swap surface is `tokens/palette.css`: the `--color-*` set plus `--color-cat-*`.** Everything else derives. Swap that one file and the whole system follows: the aliases in `tokens/colors.css` (`--bg`, `--crimson`, `--danger`, `--mute`…) re-point, the muted text levels re-derive through `color-mix`, and every component re-colors, because components read tokens and never hold a value of their own.
+**The public swap surface is `tokens/src/palette.dark.json` and `tokens/src/palette.light.json`: the `--color-*` set plus `--color-cat-*`.** Everything else derives. Swap those two files, run `bun run build:tokens`, and the whole system follows: the generated `tokens/palette.css` re-emits, the aliases in `tokens/colors.css` (`--bg`, `--crimson`, `--danger`, `--mute`…) re-point, the muted text levels re-derive through `color-mix`, and every component re-colors, because components read tokens and never hold a value of their own.
+
+### The layer contract
+
+**Standardized (the DTCG layer).** Every token *value* — colors, dimensions, font
+attributes, durations, easings, shadows — is authored once in `tokens/src/**/*.json` as
+strictly-conformant DTCG 2025.10, the platform-neutral contract. A new framework target
+consumes that JSON directly, or through a Style Dictionary platform emitting CSS, JS,
+iOS, Android or SCSS. Nothing in it is Arena-specific, and
+`bun scripts/check-dtcg.mjs` proves it conforms.
+
+**Per-platform (the composition layer).** Two things DTCG deliberately does not model,
+and that therefore live in each platform's own idiom:
+
+1. **Runtime color derivations** — the muted-text levels and `*-soft` accents, expressed
+   in CSS as `color-mix(in oklab, var(--…) N%, transparent)` so they re-derive when the
+   skin swaps. In CSS they live in the hand-authored `tokens/colors.css`. A new framework
+   rebuilds this thin layer in its idiom (Tailwind `color-mix` utilities, a JS token
+   helper) **on top of the same standard values** — it never re-defines a value.
+2. **`@font-face` bundling** — generated by `scripts/fetch-fonts.mjs` into
+   `tokens/fonts.css`, pointing at the self-hosted `assets/fonts/` binaries.
+
+The dividing line: **DTCG owns values; the composition layer owns how values are combined
+at runtime.** `tokens/colors.css` therefore holds no skin value — only references
+(`var(--color-primary)`) and `color-mix` compositions. The full `$type` table is
+`tokens/src/TYPE-MAP.md`.
 
 **A swap is not done until it is measured**, and two scripts measure it. `node scripts/check-ramp.mjs` holds the categorical ramp; `node scripts/check-text-contrast.mjs` holds the text: the levels derived from `--color-base-content`, every `--color-*` / `--color-*-content` pair (all seven, at 4.5:1 — the pair is the contract a skin defines, so an illegible one fails before a component can inherit it), and the accents painted straight onto the base surfaces (`--color-error` as the danger outline). Both read the values out of `palette.css` and hardcode nothing, so a new skin is one edit and two commands away from a real answer.
 
@@ -190,17 +215,17 @@ It was derived by enumeration against the validator, not chosen by eye: candidat
 
 ### Re-check after you swap
 
-The promise above is only worth the validator that backs it. After changing anything in `palette.css`:
+The promise above is only worth the validator that backs it. After changing anything in `tokens/src/`, rebuild (`bun run build:tokens`) and then:
 
 ```bash
-node scripts/check-ramp.mjs
+bun scripts/check-ramp.mjs
 ```
 
-It reads the ramp straight out of `palette.css`, measures both themes against their real surfaces, and exits non-zero on any failure — **including** the warnings the upstream validator tolerates, because Arena's shipped ramp needs no relief rule and neither should yours. Do not trust your eye here; nobody's eye simulates deuteranopia.
+It reads the ramp straight out of `palette.css`, which the build regenerates from the DTCG source, measures both themes against their real surfaces, and exits non-zero on any failure — **including** the warnings the upstream validator tolerates, because Arena's shipped ramp needs no relief rule and neither should yours. Do not trust your eye here; nobody's eye simulates deuteranopia.
 
 ## Index / manifest
 - `styles.css` — global entry point (only @imports). Consumers link this file.
-- `tokens/` — `fonts.css`, `palette.css` (the skin — see [Theming](#theming)), `colors.css` (structure: aliases and derivations), `typography.css`, `spacing.css`, `effects.css`.
+- `tokens/` — `src/` (the DTCG 2025.10 source of every token value, plus `TYPE-MAP.md`), then the CSS: `fonts.css` (generated by `fetch-fonts.mjs`), `palette.css`, `typography.css`, `spacing.css`, `effects.css` (all four generated by `build-tokens.mjs` — do not edit), and `colors.css` (hand-authored: aliases and `color-mix` derivations).
 - `frameworks/react/use-container-width.js` — shared `useContainerWidth` hook and `readBreakpoint`; responsive components import it. `theme.js` — theme toggle helper. `jsx-loader.js` — in-browser JSX loading for the demo pages.
 - `scripts/` — `validate-palette.mjs` (the data-viz palette validator, vendored), `check-ramp.mjs` (asserts the shipped ramp clears every gate in both themes), `check-text-contrast.mjs` (measures every text level against the real surfaces in both themes) and `check-release.mjs` (asserts the version, the marketplace `ref` and the tag agree, and that the pinned tag actually hands out the version being advertised).
 - `assets/` — `rotor-crimson/bone/ink.svg`, `app-icon.svg`, and `fonts/` (the bundled self-hosted `.woff2` binaries).
