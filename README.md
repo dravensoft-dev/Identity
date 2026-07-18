@@ -1,6 +1,6 @@
 # Arena — Dravensoft Design System
 
-**Version 3.2.0** · MIT License · Dark-first, token-driven design system for React, Angular and Tailwind. See [`CHANGELOG.md`](./CHANGELOG.md).
+**Version 4.0.0** · MIT License · Dark-first, token-driven design system for React, Angular and Tailwind. See [`CHANGELOG.md`](./CHANGELOG.md).
 
 **Arena** is the single interface language under which every Dravensoft software product is built. It takes its name from the venue where a performance is put on display and applauded: every Arena interface should feel *worthy of being exalted* — the same promise the brand makes.
 
