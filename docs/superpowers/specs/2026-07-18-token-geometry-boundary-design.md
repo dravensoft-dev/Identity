@@ -98,10 +98,26 @@ chart's axis offset.
 
 The reason to place the boundary at all:
 
-> **The token fundamentals live in `tokens/` and `tokens/src/`. Arena is
-> implemented so that a developer who wants their own variant of Arena — in any
-> framework — only has to change the values in that directory, and every layer
-> adopts them automatically.**
+> **The token fundamentals live in `tokens/src/`. Arena is implemented so that a
+> developer who wants their own variant of Arena — in any framework — only has to
+> change the values in that directory, and every layer adopts them automatically.**
+
+`tokens/` is not named in the promise. Four of its six files are build output from
+`tokens/src/`, so naming it would be redundant; `tokens/fonts.css` is generated too,
+by `scripts/fetch-fonts.mjs`. Editing any of them is editing a build artefact.
+
+The sixth is the exception, and the promise is worded to survive it.
+**`tokens/colors.css` is hand-authored** — the legacy aliases (`--bg`, `--crimson`,
+`--danger`, `--mute`…) and the `color-mix` derivations of the muted text levels. A
+variant author who changes a palette *value* in `tokens/src/` gets those aliases
+re-pointed for free, because they are `var()` references. One who wants a *different
+derivation* — `--mute` at 55% instead of 62% — or an alias that does not exist edits
+`colors.css`.
+
+That is not a gap in the promise; it is the layer contract `CLAUDE.md` already
+states. **DTCG owns values; the composition layer owns how values are combined.**
+The promise is about values, which is what a variant changes. Changing the
+derivations is designing a different system, not re-skinning this one.
 
 This is not a restriction on what a consumer may touch. It is a claim of
 **sufficiency**, and it has two properties that a restriction would not.
@@ -361,7 +377,7 @@ animation *cycle* is a different quantity. Six sites, left as derivations.
 
 ## What this reverses
 
-**`tokens/` and `tokens/src/` are Arena's design source of truth. React, Tailwind
+**`tokens/src/` is Arena's design source of truth. React, Tailwind
 and Angular are faithful reflections of it, not authorities over it.** Where a layer
 and the token layer disagree, the layer is wrong.
 
