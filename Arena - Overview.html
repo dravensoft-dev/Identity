@@ -34,6 +34,12 @@ body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--fo
 .swatch{height:64px;border-radius:var(--r-sm);border:var(--bw) solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:var(--fs-xs);margin-bottom:var(--sp-3)}
 .ramp{display:flex;gap:var(--sp-1);margin-bottom:var(--sp-6)}
 .ramp-slot{flex:1;height:56px;border-radius:var(--r-xs)}
+@keyframes arena-sweep{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (prefers-reduced-motion: reduce){
+  /* The sweep reports a duration, so it slows rather than stopping — a frozen
+     progress indicator reads as a hung process. */
+  @keyframes arena-sweep{from{transform:scaleX(.35)}to{transform:scaleX(1)}}
+}
 </style>
 </head>
 <body>

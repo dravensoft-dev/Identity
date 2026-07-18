@@ -124,6 +124,66 @@ const PREVIEW = {
     rail.append(mark);
     return rail;
   },
+  radius(token) {
+    const node = el('div');
+    node.style.height = '64px';
+    node.style.background = 'var(--bg-raised)';
+    node.style.border = 'var(--bw) solid var(--border-strong)';
+    node.style.borderRadius = `var(--${token.name})`;
+    node.style.marginBottom = 'var(--sp-3)';
+    return node;
+  },
+  rule(token) {
+    const node = el('div');
+    node.style.height = `var(--${token.name})`;
+    node.style.background = 'var(--border-strong)';
+    node.style.margin = 'var(--sp-5) 0';
+    return node;
+  },
+  elevation(token) {
+    const node = el('div');
+    node.style.height = '64px';
+    node.style.background = 'var(--surface-card)';
+    node.style.borderRadius = 'var(--r-md)';
+    node.style.boxShadow = `var(--${token.name})`;
+    node.style.margin = '0 var(--sp-2) var(--sp-5)';
+    return node;
+  },
+  duration(token) {
+    const track = el('div');
+    track.style.height = 'var(--sp-3)';
+    track.style.background = 'var(--bg-raised)';
+    track.style.borderRadius = 'var(--r-xs)';
+    track.style.overflow = 'hidden';
+    track.style.marginBottom = 'var(--sp-3)';
+    const fill = el('div');
+    fill.style.height = '100%';
+    fill.style.width = '100%';
+    fill.style.background = 'var(--crimson)';
+    fill.style.transformOrigin = 'left';
+    fill.style.animation = `arena-sweep var(--${token.name}) var(--ease-out) infinite`;
+    track.append(fill);
+    return track;
+  },
+  easing(token) {
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '64');
+    svg.style.marginBottom = 'var(--sp-3)';
+    const nums = value(token.name).match(/-?[\d.]+/g);
+    const path = document.createElementNS(NS, 'path');
+    if (nums && nums.length === 4) {
+      const [x1, y1, x2, y2] = nums.map(Number);
+      path.setAttribute('d', `M0,100 C${x1 * 100},${100 - y1 * 100} ${x2 * 100},${100 - y2 * 100} 100,0`);
+    }
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', 'var(--gold)');
+    path.setAttribute('stroke-width', '3');
+    svg.append(path);
+    return svg;
+  },
   value: () => null,
 };
 
@@ -221,6 +281,15 @@ async function main() {
     note: 'Comfortable by default. The compact scope re-densifies rows and controls through one class, '
       + '.arena-compact — use the control above to switch, and these values change in place.',
     tokens: spacing.filter((t) => t.group === 'dz'),
+  }));
+
+  const effects = await loadTokens('effects.json');
+  sections.push(() => renderSection({
+    eyebrow: 'Effects',
+    title: 'Radius, elevation, focus and motion',
+    note: 'Depth is the surface scale, the hairline border and the warm shadow — never a gradient, and never '
+      + 'a tinted glow. Easing curves are drawn from the value the browser resolved.',
+    tokens: effects,
   }));
 
   paint();
