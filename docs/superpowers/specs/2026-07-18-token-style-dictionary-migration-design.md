@@ -1,9 +1,20 @@
 # Token migration to Style Dictionary (DTCG) — design
 
 **Date:** 2026-07-18
-**Status:** Approved, ready for implementation
+**Status:** Approved (amended 2026-07-18 for strict DTCG 2025.10 conformance), ready for implementation
 **Scope:** Sub-project 1 of 2. Sub-project 2 (the four npm packages: build + publish
 pipeline) is a separate spec that depends on this one.
+
+**Amendment (2026-07-18) — strict conformance.** The source is authored as *valid*
+DTCG **2025.10** (the first stable Format Module, W3C, Oct 2025), not merely "JSON
+Style Dictionary accepts", and a validator (`scripts/check-dtcg.mjs`) proves it. Two
+consequences of strictness are folded into the design below: (1) colors are
+structured `color` objects and dimensions are `{value,unit}` objects — the generated
+CSS is unchanged; (2) the two values DTCG cannot type were *resolved rather than
+excepted*, because under 2025.10 a token with no conformant `$type` is **invalid**,
+not merely opaque: letter spacing becomes a `number` with an `em` render hint, and
+`--glow-accent` is **retired** (the primary button's hover elevation becomes
+`var(--shadow-2)`). There are therefore **no exception tokens** in `tokens/src/`.
 
 ## Problem
 
@@ -22,7 +33,8 @@ without re-interpreting hand-written CSS.
 This sub-project makes a **DTCG (Design Tokens Community Group, W3C) JSON the
 single source of token values**, generated to CSS by **Style Dictionary v4** (the
 DTCG reference implementation), while changing nothing about how any existing
-consumer — the demos, the plugin, the copy-in kit, the check scripts — behaves.
+consumer — the demos, the plugin, the copy-in kit, the check scripts — behaves,
+save the one unavoidable retirement of `--glow-accent` (§C).
 
 The design was verified against the current Style Dictionary v4 / DTCG
 documentation: every Arena token category maps to a first-class DTCG `$type`
@@ -34,16 +46,23 @@ build-level theming is current best practice).
 
 ## Goals
 
-1. **JSON is the single source of token values.** `tokens/src/**/*.json`
-   (DTCG format) is the only file a contributor edits to change a token value.
+1. **JSON is the single source of token values, in strictly-conformant DTCG
+   2025.10.** `tokens/src/**/*.json` (valid DTCG 2025.10) is the only file a
+   contributor edits to change a token value, and `scripts/check-dtcg.mjs` proves
+   every token validates against the 2025.10 type rules — no token relies on a
+   non-standard value or an untyped placeholder.
 2. **Style Dictionary generates four of the six token CSS files** —
    `tokens/palette.css`, `tokens/typography.css`, `tokens/spacing.css`,
    `tokens/effects.css` — which become **committed build output**, not
    hand-authored.
-3. **Zero behavioral change.** The generated CSS declares the same custom
-   properties, with the same values, under the same selectors, in the same
-   cascade order. Demos, plugin, copy-in kit, and both check scripts keep working
-   unchanged. A golden test proves declaration-set equality against today's files.
+3. **Zero behavioral change, with one deliberate exception.** The generated CSS
+   declares the same custom properties, with the same values, under the same
+   selectors, in the same cascade order — *except* that `--glow-accent` is retired
+   (see Non-goals and §C): the primary button's hover elevation moves from the
+   crimson glow to `var(--shadow-2)`. Every other declaration is byte-identical.
+   Demos, plugin, copy-in kit, and both check scripts keep working unchanged. A
+   golden test proves declaration-set equality against today's files for everything
+   but that single retired token.
 4. **The standard is made explicit and complete** via two reinforcements that
    ship as normative docs, so a future framework author has a doubt-free base:
    - **A documented DTCG type-map** (§B): which `$type` every token group uses.
@@ -57,13 +76,20 @@ build-level theming is current best practice).
 
 ## Non-goals
 
-- **No value changes.** Not one token's computed value moves. This is a
-  representation change (CSS → JSON+generated-CSS), not a redesign.
+- **No value changes, save one deliberate retirement.** No token's computed value
+  moves — *except* `--glow-accent`, which is removed, changing the primary button's
+  hover elevation from the crimson glow to `var(--shadow-2)`. This is the sole
+  intentional visual change, and it is unavoidable: a `var()`-tinted shadow has no
+  conformant DTCG `$type`, and the token has exactly one consumer. Otherwise this is
+  a representation change (CSS → JSON+generated-CSS), not a redesign.
 - **No npm packaging.** The four packages, `tsup`/`ng-packagr`, publish, CI,
   versioning, and the `@dravensoft/*` scope are all sub-project 2.
-- **No changes to `frameworks/*`**, the demos (`*.dc.html`, `*.card.html`,
+- **No changes to `frameworks/*`, the demos (`*.dc.html`, `*.card.html`,
   `guidelines/`), the plugin manifests, `support.js`, `theme.js`, `jsx-loader.js`,
-  or `assets/`.
+  or `assets/` — with the sole exception of the `--glow-accent` retirement** (§C):
+  the primary `Button` quartet, `Arena - Overview.dc.html`, and
+  `guidelines/effects-shadow.html` change only to drop that one token. Nothing else
+  in those trees moves.
 - **No change to `tokens/colors.css` semantics** — it keeps its exact aliases and
   derivations; it merely keeps referencing the (now generated) `--color-*` vars.
 - **No re-authoring of `tokens/fonts.css`** or its `fetch-fonts.mjs` generator.
@@ -93,21 +119,29 @@ applies it), so a group declares `$type` once. Example (`typography.json`):
 {
   "fs": {
     "$type": "dimension",
-    "display": { "$value": "64px" },
-    "h1":      { "$value": "44px" },
-    "md":      { "$value": "15px" }
+    "display": { "$value": { "value": 64, "unit": "px" } },
+    "h1":      { "$value": { "value": 44, "unit": "px" } },
+    "md":      { "$value": { "value": 15, "unit": "px" } }
   },
   "lh": {
     "$type": "number",
     "tight": { "$value": 0.98 },
     "body":  { "$value": 1.6 }
+  },
+  "ls": {
+    "$type": "number",
+    "tight":  { "$value": -0.02, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } } },
+    "normal": { "$value": 0,     "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } } }
   }
 }
 ```
 
-The `--` prefix and the exact custom-property names (`--fs-display`, `--lh-body`,
-`--color-cat-1`, …) are produced by the CSS format's name transform (§D), so the
-generated names match today's byte-for-byte.
+Values are authored in strict 2025.10 form: `dimension` as `{value,unit}` objects
+(never `"64px"` strings), `color` as structured sRGB objects (§B), letter spacing as
+a `number` carrying an `em` render hint (§B, §D). The `--` prefix and the exact
+custom-property names (`--fs-display`, `--lh-body`, `--color-cat-1`, …) are produced
+by the CSS format's name transform (§D), so the generated names — and the serialized
+values — match today's byte-for-byte.
 
 ### B. Reinforcement 1 — the documented DTCG type-map
 
@@ -121,7 +155,7 @@ token group. It is the contract a new platform target reads first. Summary:
 | Font weights (`fw-*`) | `typography` | `fontWeight` | numeric 400–900 |
 | Font sizes (`fs-*`) | `typography` | `dimension` | px |
 | Line heights (`lh-*`) | `typography` | `number` | unitless |
-| Letter spacing (`ls-*`) | `typography` | `dimension` | em |
+| Letter spacing (`ls-*`) | `typography` | `number` | `em` is not a DTCG dimension unit, so tracking is authored as a unitless `number` (a font-size multiplier) with an `$extensions.com.dravensoft.arena.cssUnit: "em"` render hint (§D) |
 | Spacing scale (`sp-0..24`) | `spacing` | `dimension` | px; `sp-0` = `0` |
 | `container-max`, `gutter` | `spacing` | `dimension` | px |
 | Breakpoints (`bp-sm/md/lg`) | `spacing` | `dimension` | px; read by JS via `getComputedStyle` |
@@ -129,7 +163,6 @@ token group. It is the contract a new platform target reads first. Summary:
 | Radius (`r-xs..pill`) | `effects` | `dimension` | px; `r-pill` = `999px` |
 | Border widths (`bw`, `bw-strong`) | `effects` | `dimension` | px |
 | Shadows (`shadow-1..3`) | `effects` | `shadow` | composite (incl. negative spread, rgba) |
-| `glow-accent` | `effects` | `shadow` | references `--crimson-strong` (structural) — see §C |
 | `scrim` | `effects` | `color` | rgba |
 | `scrim-blur`, `focus-width`, `focus-offset` | `effects` | `dimension` | px |
 | Durations (`dur-fast/mid/slow`) | `effects` | `duration` | ms |
@@ -137,7 +170,15 @@ token group. It is the contract a new platform target reads first. Summary:
 
 Tokens that are **not** in this map are, by definition, part of the structural
 composition layer (§C) — they live in `colors.css` or `fonts.css`, never in
-`tokens/src/`.
+`tokens/src/`. (`--glow-accent` used to appear here; it is retired — see §C.)
+
+**Value formats are strict DTCG 2025.10.** Every `color` — including the `color`
+sub-value of each `shadow` and the `scrim` — is a structured object
+(`{ "colorSpace": "srgb", "components": [...], "alpha"?: N, "hex"?: "#…" }`), never a
+bare hex or `rgba()` string. Every `dimension` is `{ "value": N, "unit": "px" }` (the
+unit is required even when `N` is 0). `number` values are bare numbers. `check-dtcg.mjs`
+(§H) rejects any token that violates this; the custom format (§D) serialises these
+back to today's exact CSS strings, so the generated files are unchanged.
 
 ### C. Reinforcement 2 — the written layer contract
 
@@ -165,11 +206,15 @@ Stated normatively in `README.md` and `CLAUDE.md`:
 > combined at runtime.** `tokens/colors.css` therefore continues to hold *no skin
 > value* — only references (`var(--color-primary)`) and `color-mix` compositions.
 
-`glow-accent` is the one `effects` token whose value embeds a reference into the
-composition layer (`var(--crimson-strong)`). It is documented as such: stored in
-`effects.json` with its color slot as a literal `var(--crimson-strong)` string,
-rendered verbatim by the format. It is the single, named exception to "effects
-values are self-contained."
+There is **no exception token.** `--glow-accent` — the one former `effects` value
+whose color slot was a `var()` into the composition layer (`var(--crimson-strong)`) —
+is **retired**, not excepted. Under DTCG 2025.10 a token with no conformant `$type`
+is *invalid*, not merely opaque, so a shadow tinted by a `var()` reference cannot
+exist in `tokens/src/`. It had exactly one consumer (the primary `Button`'s hover),
+so that hover now uses the existing, self-contained `var(--shadow-2)`. The
+crimson-tinted hover glow is dropped — the single deliberate visual change (Goal 3,
+Non-goals). Every value in `tokens/src/` is now a first-class, self-contained DTCG
+value.
 
 ### D. Build: `scripts/build-tokens.mjs` + custom CSS format
 
@@ -177,10 +222,20 @@ A programmatic Style Dictionary build (Node module, not just a `config.json`,
 because it registers a format and loops themes):
 
 - **One custom CSS format** wraps a file's tokens in the correct selector block
-  and reproduces Arena's exact output — property names (`--<group>-<name>`),
-  value serialization (px kept as px, `cubicBezier` → `cubic-bezier(...)`,
-  `shadow` object → `<x> <y> <blur> <spread> <color>`, `fontFamily` array →
-  comma stack), and `outputReferences` for any intra-JSON alias.
+  and reproduces Arena's exact output — property names (`--<group>-<name>`) and
+  value serialization from the strict DTCG objects back to today's CSS strings:
+  - `dimension` `{value,unit}` → `<value><unit>` (e.g. `64px`); the zero dimension
+    `{value:0,unit:"px"}` → `0` (bare, matching today's `--sp-0:0`).
+  - `number` with an `$extensions…cssUnit:"em"` hint → `<value>em`, except `0` → `0`
+    bare (matching `--ls-normal:0`); a plain `number` → the bare number.
+  - `color` object → its original CSS form: tokens carrying a `hex` field emit that
+    hex verbatim (`#b52a20`); the `rgba` colors (shadow slots, `scrim`) reconstruct
+    `rgba(r,g,b,a)` from `components`+`alpha`, reproducing today's exact
+    leading-zero-stripped alpha (`.5`, `.6`, `.7`).
+  - `cubicBezier` → `cubic-bezier(...)`; `shadow` object → `<x> <y> <blur> <spread>
+    <color>`; `fontFamily` array → comma stack; `outputReferences` for any intra-JSON
+    alias.
+  - `effects.css` no longer emits `--glow-accent` (retired, §C).
 - **Theme/mode wiring** produces the multi-selector files by composing blocks:
   - `palette.css` = `palette.dark.json` under `:root` + `palette.light.json`
     under `.arena-light` (two blocks, one file — matches today).
@@ -191,9 +246,10 @@ because it registers a format and loops themes):
   `/* GENERATED by Style Dictionary — edit tokens/src/, not this file. */`
   (mirrors the existing `tokens/fonts.css` generated-file convention).
 
-Exact transform/format wiring (dimension serialization, DTCG `dimension`
-object-vs-string handling, shadow rendering) is fixed in the plan and verified
-against the Style Dictionary v4 docs; the golden test (§H) is the arbiter.
+Exact transform/format wiring (`dimension` object→string serialization, structured
+`color` object→hex/`rgba` rendering, `number`+`cssUnit` rendering, shadow rendering)
+is fixed in the plan and verified against the Style Dictionary v4 / DTCG 2025.10 docs;
+the golden test (§H) and `check-dtcg.mjs` are the arbiters.
 
 ### E. Generated CSS is committed
 
@@ -224,7 +280,8 @@ the "no package.json" identity:
   "devDependencies": { "style-dictionary": "^4" },
   "scripts": {
     "build:tokens": "node scripts/build-tokens.mjs",
-    "check:tokens": "node scripts/check-tokens-generated.mjs"
+    "check:tokens": "node scripts/check-tokens-generated.mjs",
+    "check:dtcg":   "node scripts/check-dtcg.mjs"
   }
 }
 ```
@@ -251,13 +308,24 @@ the "no package.json" identity:
   to `tokens/src/` (the same "silent failure" concern that motivates
   `check-release.mjs`). Comments are not asserted (they migrate to `$description`
   best-effort); only declarations and their selectors are.
+- **New `scripts/check-dtcg.mjs`** — the conformance gate. Validates every token in
+  `tokens/src/**/*.json` against the DTCG **2025.10** type rules: each token resolves
+  to a known `$type` (own, inherited, or via reference — a token with none is
+  *invalid*); `color` values are structured sRGB objects; `dimension` values are
+  `{value,unit}` with `unit` present even at 0; `number`/`fontWeight`/`duration`/
+  `cubicBezier` match their grammars; `$extensions` keys are reverse-DNS. Exits 1 on
+  any violation. Following the repo's `check-*.mjs` convention it encodes the 2025.10
+  rules directly — **no dependency beyond `style-dictionary`**. It is the machine
+  proof that the token layer is DTCG in full, not merely DTCG-shaped.
 
 ### I. Golden-file baseline
 
 Before wiring Style Dictionary, snapshot the current four files' declaration sets.
 After wiring, `check-tokens-generated.mjs` must report zero drift against that
-baseline. This is the proof of Goal 3 (zero behavioral change): identical
-`--prop: value;` under identical selectors, comments aside.
+baseline **except the one intended change**: `effects.css` no longer declares
+`--glow-accent`. That single removal is the only permitted difference; every other
+`--prop: value;` under every selector is identical (comments aside). This is the
+proof of Goal 3 (zero behavioral change but for the retired token).
 
 ### J. Documentation to update (normative, same commit)
 
@@ -276,10 +344,23 @@ baseline. This is the proof of Goal 3 (zero behavioral change): identical
     `tokens/src/` and rebuilding (`check-ramp` validates the generated
     `palette.css`); also run `check:tokens`.
   - Add the §C layer contract and a pointer to `tokens/src/TYPE-MAP.md`.
+  - State that `tokens/src/` is strict DTCG 2025.10 (colors are structured objects,
+    dimensions are `{value,unit}`, letter spacing is a `number` + `cssUnit` hint),
+    proven by `node scripts/check-tokens-generated.mjs` **and** `node
+    scripts/check-dtcg.mjs` — both run after any `tokens/src/` edit + rebuild.
 - **`README.md`:** wherever it names `palette.css` as the swap-to-reskin source of
   truth → the DTCG JSON is the source; re-skinning edits `tokens/src/` and
   rebuilds. Add the layer contract (§C) and type-map (§B) as normative sections —
   they are part of the design spec the README owns.
+- **`README.md` (Hover, ~line 106):** the sentence "on accent buttons, hover adds
+  the crimson glow (`--glow-accent`)" is rewritten — accent buttons raise the general
+  elevation `var(--shadow-2)` on hover; the `--glow-accent` token is gone.
+- **Component + demo + specimen (`--glow-accent` retirement):**
+  `frameworks/react/components/forms/Button.jsx` (hover `shadow` →
+  `var(--shadow-2)`); `Button.prompt.md` / `Button.d.ts` if they mention the glow;
+  `Arena - Overview.dc.html` (`.btn.primary:hover` box-shadow → `var(--shadow-2)`);
+  `guidelines/effects-shadow.html` (drop the `glow` swatch). Per the repo's
+  no-deprecation rule, `--glow-accent` is deleted outright, not aliased.
 - **`CHANGELOG.md`:** one entry under `## [Unreleased]` (kept on top;
   `check-release.mjs` reads the first *versioned* entry).
 
@@ -294,15 +375,22 @@ change's implementation.
 
 - `npm run build:tokens` regenerates `tokens/{palette,typography,spacing,effects}.css`.
 - `node scripts/check-tokens-generated.mjs` → exit 0 (generated == committed,
-  declaration-set equality; the golden baseline holds).
+  declaration-set equality; the golden baseline holds, save the one retired
+  `--glow-accent` declaration).
+- `node scripts/check-dtcg.mjs` → exit 0 (every token in `tokens/src/` validates
+  against DTCG 2025.10; no non-conformant value, no untyped token).
 - `node scripts/check-ramp.mjs` → exit 0 (both themes still clear every gate,
   reading the generated `palette.css`).
 - `node scripts/check-text-contrast.mjs` → exit 0 (unchanged).
 - Serve over HTTP (`python3 -m http.server 8000`) and load a `guidelines/*.html`
   page, `Arena - Overview.dc.html`, and a component `*.card.html`: rendering is
-  visually identical; DevTools shows the same computed custom-property values.
+  visually identical (bar the primary button's hover), and DevTools shows the same
+  computed custom-property values.
+- The primary `Button` on hover shows the neutral `var(--shadow-2)` elevation (no
+  crimson glow); `guidelines/effects-shadow.html` no longer renders a `glow` swatch.
 - `git diff --stat` on the four generated CSS files shows only header-comment and
-  comment churn — no `--prop: value;` pair changes.
+  comment churn plus the single removed `--glow-accent` line in `effects.css` — no
+  other `--prop: value;` pair changes.
 - `grep`-level: no remaining prose in `CLAUDE.md`/`README.md` calls `palette.css`
   the hand-authored source of truth.
 
@@ -312,18 +400,24 @@ change's implementation.
 `tokens/src/typography.json`, `tokens/src/spacing.json`,
 `tokens/src/density.compact.json`, `tokens/src/effects.json`,
 `tokens/src/TYPE-MAP.md`, `scripts/build-tokens.mjs`,
-`scripts/check-tokens-generated.mjs`, `package.json`.
+`scripts/check-tokens-generated.mjs`, `scripts/check-dtcg.mjs`, `package.json`.
 
 **Now generated (content regenerated, still committed):** `tokens/palette.css`,
 `tokens/typography.css`, `tokens/spacing.css`, `tokens/effects.css`.
 
 **Edited:** `.gitignore` (add `node_modules/`), `CLAUDE.md`, `README.md`,
-`CHANGELOG.md`.
+`CHANGELOG.md`, and — for the `--glow-accent` retirement —
+`frameworks/react/components/forms/Button.jsx`,
+`frameworks/react/components/forms/Button.prompt.md` and `Button.d.ts` (if they
+mention the glow), `Arena - Overview.dc.html`, `guidelines/effects-shadow.html`.
 
 **Unchanged (explicitly):** `tokens/colors.css`, `tokens/fonts.css`, `styles.css`,
 `scripts/fetch-fonts.mjs`, `scripts/check-ramp.mjs`,
 `scripts/check-text-contrast.mjs`, `scripts/validate-palette.mjs`,
-`scripts/check-release.mjs`, all of `frameworks/`, all demos, plugin manifests.
+`scripts/check-release.mjs`, all of `frameworks/` **except the primary `Button`
+quartet**, all demos **except `Arena - Overview.dc.html` and
+`guidelines/effects-shadow.html`**, plugin manifests. (The exceptions change only to
+retire `--glow-accent` — §C.)
 
 ## Out of scope → sub-project 2
 
