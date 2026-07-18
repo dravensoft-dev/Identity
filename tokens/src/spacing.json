@@ -1,0 +1,39 @@
+{
+  "sp": {
+    "$type": "dimension",
+    "$description": "4px base grid",
+    "0": { "$value": { "value": 0, "unit": "px" } },
+    "1": { "$value": { "value": 4, "unit": "px" } },
+    "2": { "$value": { "value": 8, "unit": "px" } },
+    "3": { "$value": { "value": 12, "unit": "px" } },
+    "4": { "$value": { "value": 16, "unit": "px" } },
+    "5": { "$value": { "value": 20, "unit": "px" } },
+    "6": { "$value": { "value": 24, "unit": "px" } },
+    "8": { "$value": { "value": 32, "unit": "px" } },
+    "10": { "$value": { "value": 40, "unit": "px" } },
+    "12": { "$value": { "value": 48, "unit": "px" } },
+    "16": { "$value": { "value": 64, "unit": "px" } },
+    "20": { "$value": { "value": 80, "unit": "px" } },
+    "24": { "$value": { "value": 96, "unit": "px" } }
+  },
+  "container-max": { "$type": "dimension", "$value": { "value": 1240, "unit": "px" }, "$description": "Container / layout" },
+  "gutter": { "$type": "dimension", "$value": { "value": 88, "unit": "px" } },
+  "bp": {
+    "$type": "dimension",
+    "$description": "Breakpoints — SHARED VALUES READ BY JS, not media queries.\nComponents style themselves with inline style objects, which cannot hold a\nmedia query, so responsive branches are JS (see use-container-width.js).\nThese live here anyway so the thresholds stay a token, not a magic number\nretyped in four components. 768px is what DAMA hardcodes.",
+    "sm": { "$value": { "value": 480, "unit": "px" } },
+    "md": { "$value": { "value": 768, "unit": "px" } },
+    "lg": { "$value": { "value": 1024, "unit": "px" } }
+  },
+  "dz": {
+    "$type": "dimension",
+    "$description": "Density (H7 rev.3) — comfortable by default. Data-dense surfaces read these\ninstead of hard-coded px so a single scope switch re-densifies rows and controls.",
+    "ctl-h": { "$value": { "value": 40, "unit": "px" }, "$description": "control height (buttons, inputs, switches row)" },
+    "ctl-h-sm": { "$value": { "value": 32, "unit": "px" } },
+    "ctl-h-lg": { "$value": { "value": 48, "unit": "px" } },
+    "row-py": { "$value": { "value": 12, "unit": "px" }, "$description": "table/list row vertical padding" },
+    "row-px": { "$value": { "value": 16, "unit": "px" }, "$description": "row horizontal padding" },
+    "stack": { "$value": { "value": 12, "unit": "px" }, "$description": "gap between stacked items" },
+    "cell": { "$value": { "value": 14, "unit": "px" }, "$description": "cell font-size" }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "r": {
+    "$type": "dimension",
+    "$description": "Radius — moderate, disciplined. Sharp enough to read bold, soft enough to be usable.",
+    "xs": { "$value": { "value": 4, "unit": "px" } },
+    "sm": { "$value": { "value": 6, "unit": "px" }, "$description": "buttons, inputs, chips" },
+    "md": { "$value": { "value": 10, "unit": "px" }, "$description": "nested cards, menus" },
+    "lg": { "$value": { "value": 14, "unit": "px" }, "$description": "cards, panels" },
+    "xl": { "$value": { "value": 22, "unit": "px" }, "$description": "app icon tile" },
+    "pill": { "$value": { "value": 999, "unit": "px" } }
+  },
+  "bw": { "$type": "dimension", "$value": { "value": 1, "unit": "px" }, "$description": "Borders" },
+  "bw-strong": { "$type": "dimension", "$value": { "value": 2, "unit": "px" } },
+  "shadow": {
+    "$type": "shadow",
+    "$description": "Elevation — deep, warm-black shadows",
+    "1": { "$value": { "offsetX": { "value": 0, "unit": "px" }, "offsetY": { "value": 2, "unit": "px" }, "blur": { "value": 6, "unit": "px" }, "spread": { "value": -2, "unit": "px" }, "color": { "colorSpace": "srgb", "components": [0, 0, 0], "alpha": 0.5 } } },
+    "2": { "$value": { "offsetX": { "value": 0, "unit": "px" }, "offsetY": { "value": 12, "unit": "px" }, "blur": { "value": 28, "unit": "px" }, "spread": { "value": -12, "unit": "px" }, "color": { "colorSpace": "srgb", "components": [0, 0, 0], "alpha": 0.6 } } },
+    "3": { "$value": { "offsetX": { "value": 0, "unit": "px" }, "offsetY": { "value": 30, "unit": "px" }, "blur": { "value": 60, "unit": "px" }, "spread": { "value": -20, "unit": "px" }, "color": { "colorSpace": "srgb", "components": [0, 0, 0], "alpha": 0.7 } } }
+  },
+  "scrim": {
+    "$type": "color",
+    "$value": { "colorSpace": "srgb", "components": [0.0784, 0.0627, 0.0627], "alpha": 0.6 },
+    "$description": "Overlay scrim — backdrop for anything that covers the app (Dialog,\nConfirmDialog, CommandPalette, Onboarding). The blur is what separates a\nmodal from a coachmark: Dialog/ConfirmDialog/CommandPalette pair the scrim\nwith --scrim-blur, Onboarding uses the scrim alone, because a tour that\nblurs the product it is touring defeats itself."
+  },
+  "scrim-blur": { "$type": "dimension", "$value": { "value": 6, "unit": "px" } },
+  "focus": {
+    "$type": "dimension",
+    "$description": "Focus",
+    "width": { "$value": { "value": 2, "unit": "px" } },
+    "offset": { "$value": { "value": 2, "unit": "px" } }
+  },
+  "dur": {
+    "$type": "duration",
+    "$description": "Motion",
+    "fast": { "$value": { "value": 120, "unit": "ms" } },
+    "mid": { "$value": { "value": 220, "unit": "ms" } },
+    "slow": { "$value": { "value": 420, "unit": "ms" } }
+  },
+  "ease": {
+    "$type": "cubicBezier",
+    "out": { "$value": [0.2, 0.7, 0.3, 1] },
+    "in-out": { "$value": [0.4, 0, 0.2, 1] },
+    "emphatic": { "$value": [0.2, 0.9, 0.1, 1], "$description": "the \"rotor\" flourish" }
+  }
+}

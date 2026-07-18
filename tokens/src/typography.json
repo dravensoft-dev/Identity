@@ -1,0 +1,47 @@
+{
+  "font": {
+    "$type": "fontFamily",
+    "$description": "Families",
+    "display": { "$value": ["Archivo", "system-ui", "sans-serif"], "$description": "impact — headlines, wordmark" },
+    "body": { "$value": ["Familjen Grotesk", "system-ui", "sans-serif"], "$description": "legible body copy" },
+    "mono": { "$value": ["Spline Sans Mono", "ui-monospace", "monospace"], "$description": "data, technical labels" }
+  },
+  "fw": {
+    "$type": "fontWeight",
+    "$description": "Weights",
+    "regular": { "$value": 400 },
+    "medium": { "$value": 500 },
+    "semibold": { "$value": 600 },
+    "bold": { "$value": 700 },
+    "extrabold": { "$value": 800 },
+    "black": { "$value": 900 }
+  },
+  "fs": {
+    "$type": "dimension",
+    "$description": "Type scale (px)",
+    "display": { "$value": { "value": 64, "unit": "px" }, "$description": "hero" },
+    "h1": { "$value": { "value": 44, "unit": "px" } },
+    "h2": { "$value": { "value": 32, "unit": "px" } },
+    "h3": { "$value": { "value": 24, "unit": "px" } },
+    "h4": { "$value": { "value": 19, "unit": "px" } },
+    "lg": { "$value": { "value": 17, "unit": "px" } },
+    "md": { "$value": { "value": 15, "unit": "px" }, "$description": "base body" },
+    "sm": { "$value": { "value": 13, "unit": "px" } },
+    "xs": { "$value": { "value": 11, "unit": "px" }, "$description": "mono labels / captions" }
+  },
+  "lh": {
+    "$type": "number",
+    "$description": "Line heights",
+    "tight": { "$value": 0.98 },
+    "snug": { "$value": 1.15 },
+    "body": { "$value": 1.6 }
+  },
+  "ls": {
+    "$type": "number",
+    "$description": "Tracking. em is not a DTCG dimension unit, so tracking is a unitless number\n(a font-size multiplier) carrying an em render hint in $extensions.",
+    "tight": { "$value": -0.02, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } }, "$description": "display" },
+    "normal": { "$value": 0, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } } },
+    "label": { "$value": 0.22, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } }, "$description": "mono uppercase labels" },
+    "wide": { "$value": 0.34, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } }, "$description": "eyebrows" }
+  }
+}
