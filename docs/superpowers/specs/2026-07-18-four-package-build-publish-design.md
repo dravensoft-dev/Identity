@@ -1,10 +1,21 @@
 # Four atomic npm packages — build + publish — design
 
-**Date:** 2026-07-18
-**Status:** Approved, ready for implementation
-**Scope:** Sub-project 2 of 2. **Depends on sub-project 1**
-(`2026-07-18-token-style-dictionary-migration-design.md`) for the DTCG token
-source the `arena-tokens` package ships.
+**Date:** 2026-07-18 · **revised 2026-07-18** after v4.0.0 shipped and the framework
+layers were audited.
+**Status:** Approved in design; **blocked on framework-layer coverage** before the
+release workflow is switched on — see "Component coverage" near the end.
+**Scope:** Sub-project 2 of 2. Sub-project 1
+(`2026-07-18-token-style-dictionary-migration-design.md`) **shipped in v4.0.0**;
+the DTCG token source the `arena-tokens` package ships now exists.
+
+**What the revision changed.** Three things were stale, all of them things that
+would have produced a wrong build rather than an obvious error:
+
+1. Every invocation said `npm run` / `node scripts/` — **the repo is Bun-first**.
+2. It described sub-project 1 as unlanded. It shipped.
+3. It described the Angular and Tailwind layers as if they held a component
+   library. They hold **one component each**, and the shared-recipe wiring the
+   package graph assumes is not built yet.
 
 ## Problem
 
@@ -33,7 +44,7 @@ git-ignored `dist/`, never a physical monorepo restructure.
 
 ## Goals
 
-1. `npm run build:packages` assembles four publishable packages into `dist/<pkg>/`
+1. `bun run build:packages` assembles four publishable packages into `dist/<pkg>/`
    from the in-place sources — zero authored files relocated.
 2. Each package is **registry-standard and Bun-installable**: a correct `exports`
    map, `types`, `sideEffects`, exact-pinned `peerDependencies`, no install
@@ -138,7 +149,9 @@ arena-tokens/
   `@angular/common` (wide, `>=17`); `@dravensoft/arena-tokens`,
   `@dravensoft/arena-tailwind` (the `tv` recipes the components consume), and
   `tailwind-variants` (exact/pinned as per §H). Phosphor icon package per the
-  icon policy.
+  icon policy. **The peer on `arena-tailwind` is currently aspirational:** `tag`
+  defines its recipe inline rather than consuming a shared manifest, so today the
+  Angular package needs only `tv.ts`. The coverage spec makes the peer real.
 - Ships the Tailwind preset entry and Material bridge CSS (`theme/*.css`) as
   package assets, exported via `exports` subpaths.
 
@@ -147,6 +160,15 @@ arena-tokens/
 - **`tsup`** compiles `tv.ts` → ESM + CJS + `.d.ts`. `theme.css` (the Tailwind v4
   `@theme` preset) and the component `*.manifest.json` files are copied verbatim;
   the shared `*.variants.*` recipes are compiled/copied.
+- **Note on `theme.css`:** its `--color-*` and `--shadow-*` entries are
+  self-referential (`--color-base-100: var(--color-base-100)`). This is correct and
+  must be shipped as-is — Tailwind emits `@theme` inside `@layer theme`, Arena's
+  tokens are unlayered, and unlayered wins, so Arena's value resolves. Verified by
+  compiling with Tailwind v4.3.3 and measuring in a browser. Do not "fix" it while
+  packaging.
+- The preset currently exposes **37 of Arena's 138 tokens**; completing that surface
+  is `2026-07-18-framework-layer-token-coverage-design.md`, not this spec. The
+  package ships whatever the preset covers at build time.
 - `exports`: `"."` → compiled `tv`; `"./theme.css"`; `"./manifests/*"`;
   `"./variants/*"`.
 - `peerDependencies` (§H): `tailwindcss` (`>=4`), `tailwind-variants`,
@@ -203,10 +225,10 @@ Bun-specific code:
 on: { push: { tags: ['v*'] } }
 ```
 
-Steps: checkout (at the tag) → install dev deps → `node scripts/check-release.mjs`
-(tag ↔ version coherence, already the gate) → `npm run build:tokens` +
-`node scripts/check-tokens-generated.mjs` (sub-project 1 sync gate) →
-`npm run build:packages` → `node scripts/check-packages.mjs` → per-package
+Steps: checkout (at the tag) → install dev deps → `bun scripts/check-release.mjs`
+(tag ↔ version coherence, already the gate) → `bun run build:tokens` +
+`bun scripts/check-tokens-generated.mjs` (sub-project 1 sync gate) →
+`bun run build:packages` → `bun scripts/check-packages.mjs` → per-package
 `npm publish` with `--provenance --access public` using the `NPM_TOKEN` repo
 secret. All four publish or the job fails; a partial publish is surfaced, never
 hidden (the "fails silently" concern that already shapes `check-release`).
@@ -238,8 +260,8 @@ adds to it (still `private: true`, still never published):
 
 ## Verification
 
-- `npm run build:packages` populates `dist/` with four packages.
-- `node scripts/check-packages.mjs` → exit 0 (versions, peer ranges, exports,
+- `bun run build:packages` populates `dist/` with four packages.
+- `bun scripts/check-packages.mjs` → exit 0 (versions, peer ranges, exports,
   no arena `dependencies`).
 - For each package: `npm publish --dry-run` and `npm pack` succeed; the tarball
   file list contains exactly the intended files (no source `.jsx`/`.ts` leakage
@@ -272,8 +294,50 @@ manifests, `support.js`, `theme.js`, `jsx-loader.js`. No authored file moves.
 
 ## Depends on / sequencing
 
-- Requires sub-project 1 merged: `arena-tokens` ships `tokens/src/**` (DTCG) and
-  the Style Dictionary `js/`+`json/` platform outputs, which do not exist until
-  the migration lands.
+- **Sub-project 1 is done.** The DTCG migration shipped in **v4.0.0** (2026-07-18):
+  `tokens/src/**` is the source of every token value, Style Dictionary generates
+  the four CSS files, and `check-dtcg` + `check-tokens-generated` gate them.
+  `arena-tokens` can be assembled today. What it still needs is the Style
+  Dictionary `js/` + `json/` platform outputs, which the migration did not add —
+  it emits CSS only.
+- **The repo is Bun-first.** `bun install`, `bun run`, `bun test`; `bun.lock`, no
+  `package-lock.json`. Every gate stays runtime-portable ESM; `scripts/serve.mjs`
+  is the one deliberate `Bun.serve` exception. This spec was written before that
+  switch and has been updated for it.
+- **Blocked on the framework-layer coverage work**
+  (`2026-07-18-framework-layer-token-coverage-design.md`) — see the component
+  coverage note below. Publishing before it lands means shipping two packages that
+  advertise a design system and contain one component each.
 - Version authority and the release-coherence checks (`check-release`) are reused,
   not replaced; `check-packages` is additive.
+
+## Component coverage — what these packages would actually contain
+
+Measured on the tree at v4.0.0:
+
+| Package | Components present |
+|---|---|
+| `@dravensoft/arena-react` | **40** — the complete, reference implementation |
+| `@dravensoft/arena-angular` | **1** (`tag`) |
+| `@dravensoft/arena-tailwind` | **1 manifest** (`Button`) |
+
+The Angular and Tailwind layers are scaffolds with a single reference each, and the
+two do not even cover the same component. `CLAUDE.md` describes Angular primitives
+as "styled by the shared `frameworks/tailwind/` recipes"; in the tree `tag` defines
+its recipe inline and `Button.manifest.json` has no Angular consumer.
+
+**This is a publication decision, not a build problem.** The build described here
+would work; it would just publish very little under two names that imply much more.
+Three ways forward, to be settled before the release workflow is switched on:
+
+1. **Publish `arena-tokens` and `arena-react` first**, and hold the other two until
+   their layers have a defensible surface. The lockstep version rule still holds —
+   a package simply joins the set at the version where it becomes real.
+2. **Publish all four from the start**, with each package's README stating its
+   coverage plainly, and grow the layers across subsequent minors.
+3. **Grow the layers first**, then publish all four together. The most honest, and
+   the slowest.
+
+Option 1 is the recommendation: it keeps the lockstep guarantee, ships the two
+packages that are genuinely ready, and does not put a one-component package on the
+public registry under the Arena name.
