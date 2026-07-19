@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { tv } from '../frameworks/tailwind/tv.ts';
+import { parseDecls } from './lib/css-decls.mjs';
 
 /* No gate exercises tailwind-variants' `tv()` merge until this file: every other
  * Tailwind gate (check-tailwind.mjs, check-tailwind-coverage.mjs) compiles the
@@ -135,6 +137,137 @@ test('every registered Arena tracking name dedupes against a sibling, in both di
     assert.equal(merge(`${a} ${b}`), b, `${a} ${b} should collapse to ${b}`);
     assert.equal(merge(`${b} ${a}`), a, `${b} ${a} should collapse to ${a}`);
   }
+});
+
+/* Fix pass 1 — this is the third time MISSING SELF-DEDUPE has been found one
+ * namespace at a time (radius/z-index, then tracking, then this pass found
+ * leading/blur/size/ease/max-w all at once). Hand-written cases like the
+ * `tracking` block just above only prove the names someone thought to probe;
+ * they say nothing about a namespace nobody probed. This block instead reads
+ * frameworks/tailwind/theme.css itself — the same file tv.ts's registrations
+ * are meant to track — extracts every Arena-defined namespace and its keys
+ * mechanically, and asserts each namespace dedupes its own keys pairwise. A
+ * new Arena key added to any of these namespaces without a matching tv.ts
+ * registration now fails THIS test on the day it is added, rather than
+ * shipping green until some future recipe happens to compose two of them.
+ * (Precedent: scripts/token-preview.test.mjs derives its cases from
+ * build-tokens.mjs's own FILES export rather than restating them by hand —
+ * same move, applied here to tv.ts's registrations instead.) */
+
+const themeCssPath = new URL('../frameworks/tailwind/theme.css', import.meta.url);
+const [themeDecls] = [...parseDecls(readFileSync(themeCssPath, 'utf8')).values()];
+
+/** Every Arena namespace in theme.css is opened with `--<ns>-*: initial;`
+ *  before its keys are declared — that reset is what makes the namespace a
+ *  closed, Arena-authored vocabulary rather than an open extension of
+ *  Tailwind's own scale, so it doubles as the marker this derives the
+ *  namespace list from, instead of hand-maintaining one. */
+function deriveNamespaces(decls) {
+  const namespaces = new Map();
+  let current = null;
+  for (const [name, value] of decls) {
+    const reset = /^([a-z][a-z0-9-]*)-\*$/.exec(name);
+    if (reset && value.trim() === 'initial') {
+      current = reset[1];
+      namespaces.set(current, []);
+      continue;
+    }
+    if (current && name.startsWith(`${current}-`)) {
+      namespaces.get(current).push(name.slice(current.length + 1));
+    }
+  }
+  return namespaces;
+}
+
+/* A namespace name is not always the utility-class prefix consumers write
+ * (tv.ts's own header comment already found this once: `radius`'s classes
+ * are `rounded-*`, `z-index`'s are `z-*`). `container`'s is `max-w-*` for
+ * the same reason — confirmed against tailwind-merge's default-config
+ * source, not guessed. Every other namespace here uses its own name as the
+ * prefix. `font-weight` shares the bare `font-` prefix with `font` (family)
+ * — that's fine, each namespace's keys are only ever paired against their
+ * OWN siblings below, never against the other namespace on the same prefix. */
+const PREFIX = {
+  font: 'font',
+  text: 'text',
+  'font-weight': 'font',
+  leading: 'leading',
+  tracking: 'tracking',
+  size: 'size',
+  radius: 'rounded',
+  shadow: 'shadow',
+  ease: 'ease',
+  blur: 'blur',
+  'z-index': 'z',
+  container: 'max-w',
+};
+
+/* `color` is the one namespace deliberately excluded, and not for
+ * coexistence — every namespace here is a single-value CSS property scale
+ * where two keys are always meant to conflict, `color` included. It's
+ * excluded because the failure this test hunts for is structurally
+ * impossible for it: tailwind-merge's theme matcher for `color` is `isAny`,
+ * the broadest validator that exists, so no color suffix can ever go
+ * unrecognised. It also has no single canonical utility prefix to test
+ * with — the same values feed `bg-`, `text-`, `border-`, `ring-` and more,
+ * each a different tailwind-merge class group. */
+const SKIP = new Set(['color']);
+
+const namespaces = deriveNamespaces(themeDecls);
+
+test('every Arena namespace in theme.css is either mapped to a prefix or explicitly skipped', () => {
+  for (const ns of namespaces.keys()) {
+    assert.ok(PREFIX[ns] || SKIP.has(ns),
+      `theme.css defines --${ns}-* but this test has no PREFIX entry and no SKIP reason for it — add one`);
+  }
+});
+
+test('every Arena-defined namespace with 2+ keys dedupes its own keys pairwise, derived from theme.css', () => {
+  let exercised = 0;
+  for (const [ns, keys] of namespaces) {
+    if (SKIP.has(ns) || keys.length < 2) continue;
+    const prefix = PREFIX[ns];
+    exercised++;
+    for (let i = 0; i < keys.length - 1; i++) {
+      const a = `${prefix}-${keys[i]}`, b = `${prefix}-${keys[i + 1]}`;
+      assert.equal(merge(`${a} ${b}`), b, `${a} ${b} should collapse to ${b} (namespace --${ns}-*)`);
+      assert.equal(merge(`${b} ${a}`), a, `${b} ${a} should collapse to ${a} (namespace --${ns}-*)`);
+    }
+  }
+  // Vacuous-pass guard: if theme.css's shape changed enough that nothing
+  // qualified, the loop above would pass having asserted nothing.
+  assert.ok(exercised >= 10, `expected to exercise most theme.css namespaces, only exercised ${exercised}`);
+});
+
+/* Namespaces with fewer than 2 Arena-defined keys have nothing of their own
+ * to pair against, so the pairwise test above skips them — but that is not
+ * the same as "safe": `blur-scrim` and `max-w-page` were each the ONLY
+ * Arena key in their namespace, and each still failed to dedupe against a
+ * plain Tailwind stock value in the same group pre-fix (verified: `blur-
+ * scrim blur-sm` -> both; `max-w-page max-w-lg` -> both). This assertion
+ * locks the single-key set so that if either namespace ever gains a second
+ * Arena key, the hand-written cases below are the reminder to update. */
+test('the single-Arena-key namespaces are exactly the ones with hand-written stock-pairing cases below', () => {
+  const singleKey = [...namespaces].filter(([ns, keys]) => !SKIP.has(ns) && keys.length === 1).map(([ns]) => ns).sort();
+  assert.deepEqual(singleKey, ['blur', 'container'].sort());
+});
+
+test('blur-scrim (the only Arena blur key) dedupes against a stock Tailwind blur size, in both directions', () => {
+  assert.equal(merge('blur-scrim blur-sm'), 'blur-sm');
+  assert.equal(merge('blur-sm blur-scrim'), 'blur-scrim');
+});
+
+test('max-w-page (Arena\'s --container-page) dedupes against a stock Tailwind max-w size, in both directions', () => {
+  assert.equal(merge('max-w-page max-w-lg'), 'max-w-lg');
+  assert.equal(merge('max-w-lg max-w-page'), 'max-w-page');
+});
+
+test('the enumerated dedupe test still coexists with a color class (no cross-group regression from the new registrations)', () => {
+  const root = classes(merge('rounded-pill leading-body tracking-field-label bg-primary'));
+  assert.ok(root.includes('rounded-pill'));
+  assert.ok(root.includes('leading-body'));
+  assert.ok(root.includes('tracking-field-label'));
+  assert.ok(root.includes('bg-primary'));
 });
 
 test('tracking-field-label still coexists with a text color class (registration did not reopen the cross-group failure)', () => {
