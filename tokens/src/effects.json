@@ -7,6 +7,7 @@
     "md": { "$value": { "value": 10, "unit": "px" }, "$description": "nested cards, menus" },
     "lg": { "$value": { "value": 14, "unit": "px" }, "$description": "cards, panels" },
     "xl": { "$value": { "value": 22, "unit": "px" }, "$description": "app icon tile" },
+    "2xl": { "$value": { "value": 34, "unit": "px" }, "$description": "splash tile — distinct from xl's app icon tile" },
     "pill": { "$value": { "value": 999, "unit": "px" } }
   },
   "bw": { "$type": "dimension", "$value": { "value": 1, "unit": "px" }, "$description": "Borders" },

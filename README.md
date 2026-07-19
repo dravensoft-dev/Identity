@@ -95,11 +95,30 @@ Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default
 - **Themes:** the language is **dark-first** but supports two switchable themes — **dark** (`:root`, default) and **light** (`.arena-light`, warm inverse). The same tokens change value per theme; components are never rewritten. (The Overview includes the toggle in its header.)
 - **Key values:** a warm black background (`--color-base-100`) under elevated surfaces (`--color-base-200` for cards, `--color-base-300` for panels and borders) and bone text (`--color-base-content`). A single primary accent (crimson, `--color-primary`) per view; gold (`--color-secondary`) reserved for focus, distinction and highlighted data. At most one dominant accent per screen. The literal values live in `tokens/src/palette.dark.json` and `tokens/src/palette.light.json`, from which `tokens/palette.css` is generated — see [Theming](#theming): the scale is the language, the hexes are the skin.
 - **Typography:** Archivo (display/headlines, 800–900), Familjen Grotesk (body, 400–600), Spline Sans Mono (data, labels, code). Negative tracking on display (`-0.02em`), wide tracking on mono labels (`0.22em`).
+
+### Type scale (`fs`)
+Editorial type — prose and headings, never chrome (see the `dz` table above for the density scale that governs buttons, inputs and labels instead). Closed and semantic: each name is a role, the scale gains no in-between steps, and an off-scale editorial size snaps to its nearest neighbor rather than adding one. The ratio between steps accelerates through the reading range and into display:
+
+| Token | Value | Ratio from previous | Role |
+|---|---|---|---|
+| `--fs-xs` | 11px | — | mono labels / captions |
+| `--fs-sm` | 13px | 1.18 | |
+| `--fs-md` | 15px | 1.15 | body copy |
+| `--fs-lg` | 17px | 1.13 | |
+| `--fs-h4` | 19px | 1.12 | |
+| `--fs-h3` | 24px | 1.263 | |
+| `--fs-h2` | 32px | 1.333 | |
+| `--fs-h1` | 44px | 1.375 | |
+| `--fs-display` | 64px | 1.455 | large display heading |
+| `--fs-hero` | 96px | 1.5 | extrapolated step continuing the scale's accelerating ratio past `display`; **no consumer today, by design** — it closes the jump to `mega` so the progression stays coherent, and is not dead API to prune |
+| `--fs-mega` | 150px | 1.5625 | the approved brand manual's `.big-glyph` specimen |
+
+Exposed in the Tailwind layer as `.text-xs`/`.text-sm`/`.text-md`/`.text-lg`/`.text-h4`/`.text-h3`/`.text-h2`/`.text-h1`/`.text-display`/`.text-hero`/`.text-mega` (`frameworks/tailwind/theme.css`, `--text-*`).
 - **Spacing:** 4px base grid; generous rhythm in marketing (88px gutter), dense but breathable in product.
 - **Backgrounds:** **always flat.** Arena **does not use color gradients** on any surface — not heroes, not splash screens, not cards, not accents. Depth is built with the surface scale (`base-100`→`base-200`→`base-300`), the hairline border and the warm shadow, never with color transitions. (The only permitted use of `linear-gradient`: the `Skeleton`'s neutral *shimmer* animation, which is loading motion, not chromatic decoration.) No generic stock photos; real product imagery or striped placeholders.
 - **Borders:** hairline `1px` in `--color-base-300` (alias `--border`); emphasized border in `--line-strong`. The border, not the shadow, is used to separate content on flat surfaces.
 - **Shadows:** warm and deep, negative spread (`0 12px 28px -12px rgba(0,0,0,.6)`). There is no tinted glow: elevation is always the neutral warm shadow.
-- **Radii:** contained — buttons/inputs 6px, cards 14px, app tile 22%. Nothing fully round except avatars and switches. **Floating overlays:** modals (Dialog, ConfirmDialog, CommandPalette, Onboarding) use `--r-lg` (14px); minor non-modal floating surfaces (Toast, Menu, BulkActionBar) use `--r-md` (10px). The rule: if it captures the whole screen with a scrim, `--r-lg`; if it's a bounded panel over the UI, `--r-md`.
+- **Radii:** contained — buttons/inputs 6px, cards 14px, app tile 22%. `--r-2xl` (34px) is one step further, following the scale's own ratio (22→34 is ×1.55, in line with the tightest existing step) — the brand manual's splash-screen tile, a distinct role from `--r-xl`'s app icon tile. Nothing fully round except avatars and switches. **Floating overlays:** modals (Dialog, ConfirmDialog, CommandPalette, Onboarding) use `--r-lg` (14px); minor non-modal floating surfaces (Toast, Menu, BulkActionBar) use `--r-md` (10px). The rule: if it captures the whole screen with a scrim, `--r-lg`; if it's a bounded panel over the UI, `--r-md`.
 - **Cards:** surface `--surface-card`, hairline border, 14px radius, no shadow in lists (border only) and `--shadow-2` when floating (menus, dialogs).
 - **Animation:** `--ease-out` for entrances, `--ease-emphatic` for the "rotor" gesture (spin on load). Durations 120/220/420ms. No excessive bounce.
 - **`prefers-reduced-motion`:** every animation in the system answers it, and what it answers depends on what the motion *means*. Motion that reports work in progress **slows** (`Spinner`, `ProgressBar`, `Button`'s loading ring, `Rotor`) — never freeze it, a stopped spinner reads as a hung process, which is the opposite of the truth. Purely decorative motion **stops** (`Skeleton`'s shimmer falls back to a flat surface). An entrance **keeps its fade and drops its travel** (`Dialog`, `Menu`): the movement is the vestibular trigger, the fade is the meaning. Opacity-only animations (`Tooltip`) need no clause — there is nothing to reduce.
@@ -120,6 +139,75 @@ To tell **destructive / risk actions and indicators** apart from the primary act
 - **Danger is two reds, and they cannot be one.** `--danger` is read *as text* on the base surfaces, so it is tuned against them (lighter in dark, darker in light). That leaves it too light to carry white text, which is exactly what the filled confirmation needs — so the fill is its own token, tuned in the opposite direction. Collapsing them puts one of the two roles under WCAG AA; `bun scripts/check-text-contrast.mjs` gates both.
 - **Specimen:** `guidelines/components-danger.html` (all three states side by side: filled primary · outline danger · filled final confirmation).
 
+### Layering (stacking order)
+What covers what is a system-wide invariant, not a per-component choice, so it is a token family — `z` (`tokens/src/layering.json`, generated into `tokens/effects.css`) — rather than a literal chosen anew in each overlay component. **The family declares the order; the values only have to preserve it.** From least to most interruptible:
+
+| Token | Value | Carried by |
+|---|---|---|
+| `--z-dropdown` | 900 | `Menu`, `Select`'s popover layer |
+| `--z-tooltip` | 950 | `Tooltip` — above dropdown, so a tooltip on a menu item wins over the menu itself |
+| `--z-modal` | 1000 | `Dialog` |
+| `--z-modal-nested` | 1050 | `ConfirmDialog` — it opens *from* a `Dialog`, so it must sit above one |
+| `--z-palette` | 1100 | `CommandPalette` |
+| `--z-onboarding` | 1200 | `Onboarding`'s coachmark card |
+| `--z-toast` | 1300 | `Toast` — floats above everything, including onboarding, because a transient notice raised by an action taken inside a dialog must stay visible |
+
+`Onboarding`'s scrim is not a second token: it is one slot with two uses, so the relationship is expressed as a derivation at the point of use — `zIndex: 'calc(var(--z-onboarding) - 10)'` — rather than minted as its own step. That keeps "the scrim sits just under the coachmark" legible from the call site instead of requiring a reader to go find a second magic number nearby.
+
+Before this family existed, layering was five magic numbers in five files, encoding no intent: `Menu` and `Tooltip` both sat at `900`, so a tooltip rendered on a menu item resolved by DOM order, not by design; `Dialog` and `ConfirmDialog` both sat at `1000`, and `ConfirmDialog` opens *from* a `Dialog`, so it worked only by accident of mount order; `Toast` — the one thing that must float above everything — declared no `z-index` at all.
+
+Exposed in the Tailwind layer as `.z-dropdown` / `.z-tooltip` / `.z-modal` / `.z-modal-nested` / `.z-palette` / `.z-onboarding` / `.z-toast` (`frameworks/tailwind/theme.css`, `--z-index-*`). **A consumer embedding Arena inside an app that has its own stacking context should read this table rather than guess at a number**: Arena's overlay components render in place (none of the seven uses a React portal), so the global order above governs any of them mounted as siblings — but if the host app's own chrome (a nav bar, a modal from a different library) needs to interleave with Arena's, the host's own `z-index` values need to be chosen against this scale, not against whatever the host already had lying around. `display/Calendar.jsx`'s `zIndex: 1` is not part of this family — it is local stacking inside a positioned container, scoped entirely inside one component, and stays a hand-written literal.
+
+### Control density type scale (`dz`)
+Chrome text — a button label, an input's value, a hint, a validation error, a badge, a table cell — is governed by how dense the surrounding controls are, not by the prose scale (`fs`). `dz` already declared control heights, row padding and stack gap; it now carries its own five-step text scale, generated into `tokens/spacing.css` from `tokens/src/spacing.json` (base) and `tokens/src/density.compact.json` (the `.arena-compact` override):
+
+| Token | Value | Compact (`.arena-compact`) | Role |
+|---|---|---|---|
+| `--dz-text` | 14px | 13px | control text — buttons, inputs, selects, menu items, table cells |
+| `--dz-text-md` | 13px | 12px | secondary control text — tag chips, pagination, secondary buttons |
+| `--dz-text-sm` | 12px | 11px | secondary control text — hints, validation errors, badges, legends |
+| `--dz-text-xs` | 11px | 10px | micro control text — field labels, shortcuts, eyebrow labels |
+| `--dz-text-2xs` | 10px | 10px | column headers, row micro-labels |
+
+`--dz-text-2xs` does not shrink further in the compact scope: −1px would land it at 9px, the exact value the per-site census snapped away from elsewhere in the system as illegible drift, and reintroducing it as a systemic compact value would undo that call one layer down. Every other step follows the existing `−1px` precedent (`--dz-text` itself, 14→13).
+
+`dz.cell` — a narrow name for the same "control text" role — is retired; every consumer reads `--dz-text` now. It carried the identical value in both density scopes, so nothing rendered moved.
+
+Exposed in the Tailwind layer under a `ctl` infix — `--text-ctl` / `--text-ctl-md` / `--text-ctl-sm` / `--text-ctl-xs` / `--text-ctl-2xs` — because the natural `--text-*` keys already belong to `fs`, and two collide on value as well as name (`fs.sm` / `dz.text-md` are both 13px; `fs.xs` / `dz.text-xs` are both 11px). `--text-base`, the one `--text-*` key that pointed at `dz` under an `fs`-shaped name, is retired along with it.
+
+### Tracking scale (`ls`)
+Letter-spacing across the system was four declared tokens covering a handful of sites while 34 real uses read a scatter of undeclared literals. Sorted by value, those sites already formed a role hierarchy nobody had named — **tracking decreases as the text gets longer**, from the shortest mono micro-labels down through prose-adjacent chrome to the tightest display headings. The family below is that hierarchy, generated into `tokens/typography.css` from `tokens/src/typography.json`:
+
+| Token | Value | Role |
+|---|---|---|
+| `--ls-tight` | `-0.02em` | display — tight headings |
+| `--ls-normal` | `0` | no tracking — button labels, glyph pairs |
+| `--ls-mono-nav` | `0.04em` | mono navigation — breadcrumbs, bulk-action counts |
+| `--ls-uppercase-status` | `0.06em` | uppercase status text — alerts, toasts, calendar hour labels |
+| `--ls-badge` | `0.1em` | badge and pill text |
+| `--ls-column-header` | `0.12em` | column header / micro-label |
+| `--ls-field-label` | `0.14em` | form field label |
+| `--ls-label` | `0.22em` | mono uppercase labels — section eyebrows |
+| `--ls-wide` | `0.34em` | eyebrows (`Arena - Overview.html`'s `.kicker`/`.eyebrow`) |
+
+`ls` is a **semantic** family: a value used by only one component does not earn a step of its own, since there is nothing to derive a role from. Three singletons snap to the nearest existing step instead — `Button`'s `.01em` and `Avatar`'s `.02em` both land on `--ls-normal` (0), and `Menu`'s section-header `.16em` lands on `--ls-field-label` (.14). Avatar's `.02em` is an exact tie between `--ls-normal` and `--ls-mono-nav` (.02 from each); it resolves to `--ls-normal`, consistent with the hierarchy bottoming out at zero — a low-stakes call on a single pair of uppercase initials. Two accidental splits were corrected the same pass: `ChartCard` and `StatCard` rendered their eyebrow at `.2em` instead of the `.22em` every other eyebrow (`Card`, `Dialog`, `ConfirmDialog`, `Onboarding`) uses — one role, two values, 0.02 apart and invisible by eye — and three display titles (`Dialog`, `ConfirmDialog`, `Onboarding`) sat at `-.01em`, 0.01 off `--ls-tight`, serving the identical tight-heading role. Both corrections move rendered tracking to the token rather than adding a step for the drift.
+
+Exposed in the Tailwind layer as `.tracking-tight` / `.tracking-normal` / `.tracking-mono-nav` / `.tracking-uppercase-status` / `.tracking-badge` / `.tracking-column-header` / `.tracking-field-label` / `.tracking-label` / `.tracking-wide` (`frameworks/tailwind/theme.css`, `--tracking-*`).
+
+### Line-height scale (`lh` / `dz.lh`)
+Line height splits editorial from control exactly the way `fs`/`dz` split font size. Prose that wraps needs breathing room between its own lines — that's `lh`, in `tokens/src/typography.json`. A box built around a single glyph — an icon inside a button, a standalone status icon, an icon-only close or remove control — needs the opposite: a line box that is *exactly* its glyph, so the extra space above and below a normal line height never throws the surrounding control out of alignment. That reset is a density/control concern, not an editorial one, so it lives in `dz` (`tokens/src/spacing.json`) alongside the rest of the control scale, carrying its own token-level `$type: "number"` override — a line height is unitless, unlike every other `dz` member.
+
+| Token | Value | Role |
+|---|---|---|
+| `--lh-tight` | `0.98` | sub-1em — the tightest display headings |
+| `--lh-snug` | `1.15` | snug prose — short labels and values that still wrap on occasion (`StatCard`'s value, `Radio`'s label, `Shell`'s person block) |
+| `--lh-body` | `1.6` | prose — paragraphs, dialog and alert body copy, messages |
+| `--dz-lh` | `1` | glyph-tight — the control reset; the box is exactly its glyph |
+
+No new prose steps were needed to cover the census: every site that reads prose already matched `--lh-body` or `--lh-snug` exactly, or was within drift-correcting distance of one (`Alert`'s and `Textarea`'s `1.55`, 0.05 off `--lh-body`, corrected rather than kept as their own step).
+
+Exposed in the Tailwind layer as `.leading-tight` / `.leading-snug` / `.leading-body` (`frameworks/tailwind/theme.css`, `--leading-*`). `--dz-lh` is exposed as `.leading-ctl`, not `.leading-none` — after this token, the `--leading-*` namespace holds three editorial steps (`tight`, `snug`, `body`) plus this one control token, and a name indistinguishable from its editorial neighbours is the exact `--text-base` mistake the `fs`/`dz` split retired: a `dz` token wearing an `lh`-shaped name. The `ctl` infix keeps it visibly a density role, consistent with `--text-ctl`.
+
 ## ICONOGRAPHY
 - **Official set: [Phosphor Icons](https://phosphoricons.com)** (MIT license, free commercial use, no attribution). Chosen for aligning with Dravensoft's bold identity: it's the open-source family with the widest style range (1,500+ icons in 6 weights) and its **Bold** weight has the presence and high contrast the brand calls for — the icon equivalent of Archivo Black.
 - **Weights and use:**
@@ -127,7 +215,16 @@ To tell **destructive / risk actions and indicators** apart from the primary act
   - **Fill** (`.ph-fill`) — active/selected state (e.g. the active navigation item, a toggle that's on).
   - **Duotone** (`.ph-duotone`) — only to highlight features/onboarding, with the crimson accent on the primary layer. Premium two-tone effect; use sparingly.
 - **Loading (default — install the package):** install `@phosphor-icons/web` and import its weight stylesheets, or `@phosphor-icons/react` (`<Rocket weight="bold"/>`), then apply the weight class plus the icon class: `<i class="ph-bold ph-rocket-launch"></i>`. **Prototype-only:** the CDN, e.g. `https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css`.
-- Sizes: 16 / 20 / 24 px (via `font-size`). Color: inherits `currentColor`; accent only when interactive/active.
+- **Sizes** — a token family, `icon` (`tokens/src/icon.json`, generated into `tokens/spacing.css`), applied via `fontSize` since Phosphor renders as a webfont:
+
+  | Token | Value | Role |
+  |---|---|---|
+  | `--icon-sm` | 14px | compact inline glyph — a remove/status icon beside dense chrome |
+  | `--icon-md` | 16px | default inline control icon — close buttons, chevrons, list-item icons |
+  | `--icon-lg` | 18px | prominent standalone icon — a tone icon, a search glyph |
+  | `--icon-xl` | 34px | illustration-scale icon — `EmptyState`, `ErrorState` |
+
+  A glyph rendered as a webfont is still an icon, not type — an icon at 15px beside a label at 15px is not the same design decision as an icon at 16px — so these stay out of the `fs` scale. Exposed in the Tailwind layer under `--size-*`, not `--text-*`: `.size-icon-md` sets both width and height, since an icon is a size, not a font size. Color: inherits `currentColor`; accent only when interactive/active.
 - **Do not** override `font-family/weight/style` on `.ph-*` classes (breaks the glyphs).
 - **No emoji.** No arbitrary unicode as an icon. The **Rotor** (`assets/rotor-*.svg`) is brand, not a UI icon: don't use it as a functional glyph.
 - *Migration note:* the `console/Icon.jsx` UI kit uses its own stroke-style SVGs as a bridge; the official reference for new product work is Phosphor.

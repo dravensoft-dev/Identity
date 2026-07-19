@@ -7,41 +7,56 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
   if (!open || !steps.length) return null;
   const step = steps[index] || {};
   const last = index === steps.length - 1;
+  // The popover's own width also bounds the right-edge clamp below, which
+  // needs a real JS number (it is compared against window.innerWidth) --
+  // W stays a plain constant for that reason. The rendered `width:` further
+  // down uses the CSS-string derivation of the same value, calc(var(--sp-1)
+  // * 80); the two must be changed together if the popover's width ever is.
   const W = 320;
+  // Mirrors var(--sp-4) (16px) -- the popover's minimum gutter from either
+  // viewport edge. Both edges of the clamp below read this one constant so
+  // they cannot drift apart from each other; it stays a plain number, not a
+  // token reference, for the same reason W does: Math.min/Math.max need
+  // real JS numbers, and nothing in this layer reads a CSS custom
+  // property's value back into JS.
+  const EDGE = 16;
 
-  let pos = { position: 'fixed', right: 24, bottom: 24, zIndex: 1200 };
+  let pos = { position: 'fixed', right: 'calc(var(--sp-1) * 6)', bottom: 'calc(var(--sp-1) * 6)', zIndex: 'var(--z-onboarding)' };
   if (anchorRect) {
     const top = Math.min(anchorRect.bottom + 12, (typeof window !== 'undefined' ? window.innerHeight : 900) - 220);
     let left = anchorRect.left;
-    if (typeof window !== 'undefined') left = Math.min(left, window.innerWidth - W - 16);
-    pos = { position: 'fixed', top, left: Math.max(16, left), zIndex: 1200 };
+    if (typeof window !== 'undefined') left = Math.min(left, window.innerWidth - W - EDGE);
+    pos = { position: 'fixed', top, left: Math.max(EDGE, left), zIndex: 'var(--z-onboarding)' };
   }
 
-  const foot = { fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.06em' };
+  const foot = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-uppercase-status)' };
   return (
     <>
-      <div onClick={onSkip} style={{ position: 'fixed', inset: 0, zIndex: 1190, background: 'var(--scrim)' }} />
+      {/* The scrim sits just under the coachmark -- one slot, two uses, so the
+        * relationship is expressed as a derivation at the point of use rather
+        * than a second token. */}
+      <div onClick={onSkip} style={{ position: 'fixed', inset: 0, zIndex: 'calc(var(--z-onboarding) - 10)', background: 'var(--scrim)' }} />
       <div role="dialog" aria-modal="true" aria-label={step.title}
-        style={{ ...pos, width: W, maxWidth: '92vw', background: 'var(--surface-card)', border: '1px solid var(--line-strong)',
-          borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', padding: 20 }}>
-        {step.eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 8 }}>{step.eyebrow}</div>}
-        {step.title && <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'var(--bone)', letterSpacing: '-.01em' }}>{step.title}</div>}
-        {step.body && <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 1.6, color: 'var(--bone-dim)', marginTop: 8 }}>{step.body}</div>}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 18 }}>
-          <div style={{ display: 'flex', gap: 6, flex: 1 }} aria-label={'Step ' + (index + 1) + ' of ' + steps.length}>
+        style={{ ...pos, width: 'calc(var(--sp-1) * 80)', maxWidth: '92vw', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)',
+          borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', padding: 'calc(var(--sp-1) * 5)' }}>
+        {step.eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 'calc(var(--sp-1) * 2)' }}>{step.eyebrow}</div>}
+        {step.title && <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 'var(--fs-h4)', color: 'var(--bone)', letterSpacing: 'var(--ls-tight)' }}>{step.title}</div>}
+        {step.body && <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--fs-md)', lineHeight: 'var(--lh-body)', color: 'var(--bone-dim)', marginTop: 'calc(var(--sp-1) * 2)' }}>{step.body}</div>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 1.5)', marginTop: 'calc(var(--sp-1) * 4.5)' }}>
+          <div style={{ display: 'flex', gap: 'calc(var(--sp-1) * 1.5)', flex: 1 }} aria-label={'Step ' + (index + 1) + ' of ' + steps.length}>
             {steps.map((_, i) => (
-              <span key={i} style={{ width: i === index ? 18 : 7, height: 7, borderRadius: 'var(--r-pill)', background: i === index ? 'var(--crimson)' : 'var(--line-strong)', transition: 'width var(--dur-mid) var(--ease-out)' }} />
+              <span key={i} style={{ width: i === index ? 'calc(var(--sp-1) * 4.5)' : 'var(--sp-2)', height: 'calc(var(--sp-1) * 2)', borderRadius: 'var(--r-pill)', background: i === index ? 'var(--crimson)' : 'var(--line-strong)', transition: 'width var(--dur-mid) var(--ease-out)' }} />
             ))}
           </div>
           {index > 0 && (
-            <button onClick={onBack} style={{ ...foot, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontWeight: 700, textTransform: 'uppercase' }}>Back</button>
+            <button onClick={onBack} style={{ ...foot, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontWeight: 'var(--fw-bold)', textTransform: 'uppercase' }}>Back</button>
           )}
           {!last && (
-            <button onClick={onSkip} style={{ ...foot, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontWeight: 700, textTransform: 'uppercase' }}>Skip</button>
+            <button onClick={onSkip} style={{ ...foot, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontWeight: 'var(--fw-bold)', textTransform: 'uppercase' }}>Skip</button>
           )}
           <button onClick={last ? onDone : onNext}
-            style={{ height: 34, padding: '0 16px', background: 'var(--crimson)', color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--r-sm)',
-              fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+            style={{ height: 'calc(var(--sp-1) * 8.5)', padding: '0 calc(var(--sp-1) * 4)', background: 'var(--crimson)', color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--r-sm)',
+              fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--dz-text-md)', cursor: 'pointer' }}>
             {last ? 'Got it' : 'Next'}
           </button>
         </div>

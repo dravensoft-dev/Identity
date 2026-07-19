@@ -59,6 +59,31 @@ live in each platform's own idiom: the runtime colour derivations (`color-mix`, 
 target rebuilds that thin layer in its idiom on top of the same standard values — it
 never re-defines a value.
 
+**A dimension in a framework layer is a token or a derivation of tokens. A bare
+literal is a bug.** This is machine-checked: `bun run check:dimensions` scans
+`frameworks/` for literals in the properties the token layer governs and fails on
+each. A value passes when it is `var(--token)`, a `calc()` over one, zero, or a unit
+the token layer does not model (`%`, `ch`, `fr`, and the viewport and angle units). A
+literal reached through an intermediate local variable is still caught — a dataflow
+rule traces a bare identifier at a governed property back to its `const`/`let`
+declaration in the same file — but only when that identifier is used bare (no member
+access, no call, no arithmetic) at the governed site; a value buried behind either is
+outside what the rule can trace. A handful of sites are exempt by name with a reason
+each, the way the coverage gate's token exclusions are — read `EXEMPT` for the current
+set rather than a count written here, which would drift: `Calendar`'s local `zIndex`
+(stacking scoped inside one positioned container, not part of the global `z` order), `Avatar`'s
+`fontSize` ratio (scales the initials with the avatar's own diameter — a multiplier,
+not a dimension), and `Rotor`'s brand-mark `width` plus its two call sites in `Shell`
+and `LoginScreen` (Dravensoft's identity is explicitly not themeable). A stale
+exemption — one that no longer matches a real violation — fails the gate itself. The
+gate scans `.jsx`, `.ts` and `.tsx` under `frameworks/` — it does not scan `.html`;
+the root-level and `guidelines/` pages stay clean only because they were tokenized by
+hand, and nothing holds that. **No gate compares a Tailwind manifest against the
+component it mirrors, and the mapping is not obvious**: `Button.manifest.json`
+mirrors React's `Button.jsx`, while `Tag.manifest.json` mirrors the **Angular**
+primitive `arena-tag` — a different component from React's `Tag.jsx`. Check both by
+hand when a manifest and its mirrored component might have drifted.
+
 **The Overview generates itself, and that is the point.** `Arena - Overview.html` reads
 names and `$description`s from `tokens/src/*.json` and the alias names from
 `tokens/colors.css` (with `scripts/lib/css-decls.mjs`, the same parser the drift gate

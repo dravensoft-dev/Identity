@@ -7,20 +7,20 @@ export function LoginScreen({ onLogin }) {
   const [email, setEmail] = useState('ana@dravensoft.dev');
   return (
     <div style={{ minHeight: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'var(--bg)', padding: 24 }}>
-      <div style={{ width: 380, background: 'var(--surface-card)', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-lg)', padding: 36, boxShadow: 'var(--shadow-3)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
+      background: 'var(--bg)', padding: 'calc(var(--sp-1) * 6)' }}>
+      <div style={{ width: 'calc(var(--sp-1) * 95)', background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)', padding: 'calc(var(--sp-1) * 9)', boxShadow: 'var(--shadow-3)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)', marginBottom: 'calc(var(--sp-1) * 7)' }}>
           <Rotor size={40} />
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 22, letterSpacing: '-.02em', textTransform: 'uppercase', color: 'var(--bone)' }}>Draven<span style={{ color: 'var(--mute)' }}>soft</span></div>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-black)', fontSize: 'var(--fs-h3)', letterSpacing: 'var(--ls-tight)', textTransform: 'uppercase', color: 'var(--bone)' }}>Draven<span style={{ color: 'var(--mute)' }}>soft</span></div>
         </div>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 6 }}>Delivery console</div>
-        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 26, color: 'var(--bone)', marginBottom: 24 }}>Welcome back</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 'calc(var(--sp-1) * 1.5)' }}>Delivery console</div>
+        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 'var(--fs-h3)', color: 'var(--bone)', marginBottom: 'calc(var(--sp-1) * 6)' }}>Welcome back</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 4)' }}>
           <Input label="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
           <Input label="Password" type="password" defaultValue="dravensoft" />
           <Button variant="primary" full onClick={onLogin}>Sign in</Button>
         </div>
-        <div style={{ marginTop: 20, textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--mute)' }}>Forgot your password?</div>
+        <div style={{ marginTop: 'calc(var(--sp-1) * 5)', textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-md)', color: 'var(--mute)' }}>Forgot your password?</div>
       </div>
     </div>
   );

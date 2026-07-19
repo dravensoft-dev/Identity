@@ -28,9 +28,9 @@ body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--fo
 .item-missing{color:var(--danger);border-color:var(--danger)}
 .tally{font-family:var(--font-mono);font-size:var(--fs-xs);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-muted);margin-top:var(--sp-5)}
 .tally-bad{color:var(--danger)}
-.swatch{height:64px;border-radius:var(--r-sm);border:var(--bw) solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:var(--fs-xs);margin-bottom:var(--sp-3)}
+.swatch{height:var(--sp-16);border-radius:var(--r-sm);border:var(--bw) solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:var(--fs-xs);margin-bottom:var(--sp-3)}
 .ramp{display:flex;gap:var(--sp-1);margin-bottom:var(--sp-6)}
-.ramp-slot{flex:1;height:56px;border-radius:var(--r-xs)}
+.ramp-slot{flex:1;height:calc(var(--sp-1) * 14);border-radius:var(--r-xs)}
 @keyframes arena-sweep{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media (prefers-reduced-motion: reduce){
   /* The sweep reports a duration, so it slows rather than stopping — a frozen

@@ -24,28 +24,28 @@ const PROJECTS = [
 export function DashboardScreen({ onNav, onOpenProject }) {
   return (
     <Shell active="dashboard" onNav={onNav} title="Projects"
-      actions={<Button variant="primary" size="sm" icon={<Icon name="plus" size={16} />}>New project</Button>}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 28 }}>
+      actions={<Button variant="primary" size="sm" icon={<Icon name="plus" size="var(--icon-md)" />}>New project</Button>}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'calc(var(--sp-1) * 4)', marginBottom: 'calc(var(--sp-1) * 7)' }}>
         {METRICS.map((m) => (
-          <div key={m.k} style={{ background: 'var(--surface-card)', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-lg)', padding: '18px 20px' }}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)' }}>{m.k}</div>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 34, color: m.tone, marginTop: 8 }}>{m.v}</div>
+          <div key={m.k} style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)', padding: 'calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 5)' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{m.k}</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-black)', fontSize: 'var(--fs-h2)', color: m.tone, marginTop: 'calc(var(--sp-1) * 2)' }}>{m.v}</div>
           </div>
         ))}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 'calc(var(--sp-1) * 4)' }}>
         {PROJECTS.map((p) => (
           <div key={p.name} onClick={() => onOpenProject && onOpenProject(p)} style={{ cursor: 'pointer' }}>
             <Card accent={p.status[0] === 'danger'} style={{ height: '100%' }}
               eyebrow={p.client}
               title={p.name}
               action={<Badge tone={p.status[0]} dot>{p.status[1]}</Badge>}>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '4px 0 16px' }}>
+              <div style={{ display: 'flex', gap: 'calc(var(--sp-1) * 2)', flexWrap: 'wrap', margin: 'calc(var(--sp-1) * 1) 0 calc(var(--sp-1) * 4)' }}>
                 {p.tags.map((t) => <Tag key={t}>{t}</Tag>)}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--color-base-300)', paddingTop: 14 }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--gold)' }}>build {p.build}</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--mute)' }}>{p.when}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: 'var(--bw) solid var(--color-base-300)', paddingTop: 'calc(var(--sp-1) * 3.5)' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--gold)' }}>build {p.build}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{p.when}</span>
               </div>
             </Card>
           </div>

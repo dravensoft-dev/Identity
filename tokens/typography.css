@@ -14,7 +14,9 @@
   --fw-black:900;
 
   /* Type scale (px) */
-  --fs-display:64px; /* hero */
+  --fs-mega:150px; /* largest display step — the brand manual's .big-glyph specimen */
+  --fs-hero:96px; /* extrapolated step between display (64) and mega (150) that keeps the scale's accelerating ratio coherent through its top; added with no consumer today by design — do not delete as dead API */
+  --fs-display:64px; /* large display heading */
   --fs-h1:44px;
   --fs-h2:32px;
   --fs-h3:24px;
@@ -31,10 +33,18 @@
 
   /*
      Tracking. em is not a DTCG dimension unit, so tracking is a unitless number
-     (a font-size multiplier) carrying an em render hint in $extensions.
+     (a font-size multiplier) carrying an em render hint in $extensions. Sorted by
+     value the roles form a hierarchy: tracking decreases as the text gets longer,
+     from the shortest mono labels down through prose to the tightest display
+     headings.
    */
-  --ls-tight:-0.02em; /* display */
+  --ls-tight:-0.02em; /* display — tight headings */
   --ls-normal:0;
-  --ls-label:0.22em; /* mono uppercase labels */
+  --ls-mono-nav:0.04em; /* mono navigation — breadcrumbs, bulk-action counts */
+  --ls-uppercase-status:0.06em; /* uppercase status text — alerts, toasts, calendar hour labels */
+  --ls-badge:0.1em; /* badge and pill text */
+  --ls-column-header:0.12em; /* column header / micro-label */
+  --ls-field-label:0.14em; /* form field label */
+  --ls-label:0.22em; /* mono uppercase labels — section eyebrows */
   --ls-wide:0.34em; /* eyebrows */
 }

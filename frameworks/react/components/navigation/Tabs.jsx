@@ -4,13 +4,13 @@ export function Tabs({ tabs = [], value, defaultValue, onChange, style }) {
   const active = value ?? internal;
   const select = (v) => { setInternal(v); onChange && onChange(v); };
   return (
-    <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--color-base-300)', ...style }}>
+    <div style={{ display: 'flex', gap: 'calc(var(--sp-1) * 1)', borderBottom: 'var(--bw) solid var(--color-base-300)', ...style }}>
       {tabs.map((t) => {
         const v = t.value ?? t; const label = t.label ?? t; const on = v === active;
         return (
           <button key={v} onClick={() => select(v)}
-            style={{ position: 'relative', padding: '10px 16px', background: 'none', border: 'none', cursor: 'pointer',
-              fontFamily: 'var(--font-body)', fontWeight: on ? 600 : 500, fontSize: 14,
+            style={{ position: 'relative', padding: 'calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 4)', background: 'none', border: 'none', cursor: 'pointer',
+              fontFamily: 'var(--font-body)', fontWeight: on ? 'var(--fw-semibold)' : 'var(--fw-medium)', fontSize: 'var(--dz-text)',
               color: on ? 'var(--bone)' : 'var(--mute)',
               boxShadow: on ? 'inset 0 -2px 0 var(--crimson)' : 'none',
               transition: 'color var(--dur-fast) var(--ease-out)' }}>

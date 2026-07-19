@@ -38,8 +38,23 @@
   --dz-row-py:12px; /* table/list row vertical padding */
   --dz-row-px:16px; /* row horizontal padding */
   --dz-stack:12px; /* gap between stacked items */
-  --dz-cell:14px; /* cell font-size */
-  --dz-text:14px; /* control text — buttons, inputs */
+  --dz-text:14px; /* control text — buttons, inputs, selects, menu items, table cells */
+  --dz-text-md:13px; /* secondary control text — tag chips, pagination, secondary buttons */
+  --dz-text-sm:12px; /* secondary control text — hints, validation errors, badges, legends */
+  --dz-text-xs:11px; /* micro control text — field labels, shortcuts, eyebrow labels */
+  --dz-text-2xs:10px; /* column headers, row micro-labels */
+  --dz-lh:1; /* glyph-tight line height — the control reset. Unlike every other dz member this is unitless, so it carries its own $type override: a line height is a number, not a dimension, the same distinction that puts lh in typography.json to begin with. Used wherever a box must be exactly its glyph — an icon inside a button, a standalone icon, an icon-only close/remove control — so the line box never throws the surrounding control out of alignment. */
+}
+:root{
+  /*
+     Icon size. A glyph rendered as a webfont is still an icon, not type: an icon
+     at 15px beside a label at 15px is not the same design decision as an icon at
+     16px. Kept out of fs for that reason.
+   */
+  --icon-sm:14px;
+  --icon-md:16px;
+  --icon-lg:18px;
+  --icon-xl:34px; /* Illustration-scale icon (EmptyState, ErrorState) — a distinct role from the 14/16/18 inline-control cluster. */
 }
 .arena-compact{
   /*
@@ -52,6 +67,9 @@
   --dz-row-py:7px;
   --dz-row-px:12px;
   --dz-stack:8px;
-  --dz-cell:13px;
   --dz-text:13px;
+  --dz-text-md:12px;
+  --dz-text-sm:11px;
+  --dz-text-xs:10px;
+  --dz-text-2xs:10px;
 }

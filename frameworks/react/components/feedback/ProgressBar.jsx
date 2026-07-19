@@ -22,14 +22,14 @@ const TONES = { accent: 'var(--crimson)', gold: 'var(--gold)', success: 'var(--s
 export function ProgressBar({ value = 0, indeterminate = false, tone = 'accent', label, showValue = true, size = 'md', style }) {
   useIndeterminate();
   const color = TONES[tone] || TONES.accent;
-  const h = size === 'sm' ? 4 : size === 'lg' ? 10 : 6;
+  const h = size === 'sm' ? 'var(--sp-1)' : size === 'lg' ? 'calc(var(--sp-1) * 2.5)' : 'calc(var(--sp-1) * 1.5)';
   const pct = Math.max(0, Math.min(100, Math.round(value)));
   return (
     <div style={{ width: '100%', ...style }}>
       {(label || (showValue && !indeterminate)) && (
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8, gap: 12 }}>
-          {label && <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--bone-dim)' }}>{label}</span>}
-          {showValue && !indeterminate && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--mute)' }}>{pct}%</span>}
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 'calc(var(--sp-1) * 2)', gap: 'calc(var(--sp-1) * 3)' }}>
+          {label && <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-md)', color: 'var(--bone-dim)' }}>{label}</span>}
+          {showValue && !indeterminate && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{pct}%</span>}
         </div>
       )}
       <div role="progressbar" aria-valuenow={indeterminate ? undefined : pct} aria-valuemin={0} aria-valuemax={100} aria-label={typeof label === 'string' ? label : 'Progress'}

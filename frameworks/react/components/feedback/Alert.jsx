@@ -13,23 +13,23 @@ export function Alert({ tone = 'info', title, children, icon, action, onClose, s
   const t = TONES[tone] || TONES.info;
   return (
     <div role={tone === 'danger' ? 'alert' : 'status'}
-      style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '14px 16px',
-        background: t.soft, border: '1px solid ' + t.color, borderRadius: 'var(--r-md)', ...style }}>
-      <i className={icon || t.icon} style={{ color: t.color, fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 1 }} />
+      style={{ display: 'flex', gap: 'calc(var(--sp-1) * 3)', alignItems: 'flex-start', padding: 'calc(var(--sp-1) * 3.5) calc(var(--sp-1) * 4)',
+        background: t.soft, border: 'var(--bw) solid ' + t.color, borderRadius: 'var(--r-md)', ...style }}>
+      <i className={icon || t.icon} style={{ color: t.color, fontSize: 'var(--icon-lg)', lineHeight: 'var(--dz-lh)', flexShrink: 0, marginTop: 0 }} />
       <div style={{ flex: 1 }}>
-        {title && <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, color: 'var(--bone)' }}>{title}</div>}
-        {children && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--bone-dim)', lineHeight: 1.55, marginTop: title ? 3 : 0 }}>{children}</div>}
+        {title && <div style={{ fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--dz-text)', color: 'var(--bone)' }}>{title}</div>}
+        {children && <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--fs-sm)', color: 'var(--bone-dim)', lineHeight: 'var(--lh-body)', marginTop: title ? 'var(--sp-1)' : 0 }}>{children}</div>}
         {action && (
           <button onClick={action.onClick}
-            style={{ marginTop: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-              fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: t.color }}>
+            style={{ marginTop: 'calc(var(--sp-1) * 2.5)', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+              fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--ls-uppercase-status)', textTransform: 'uppercase', color: t.color }}>
             {action.label}
           </button>
         )}
       </div>
       {onClose && (
         <button onClick={onClose} aria-label="Dismiss"
-          style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 'none', color: 'var(--mute)', cursor: 'pointer', fontSize: 16, lineHeight: 1 }}>
+          style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 'none', color: 'var(--mute)', cursor: 'pointer', fontSize: 'var(--icon-md)', lineHeight: 'var(--dz-lh)' }}>
           <i className="ph-bold ph-x" />
         </button>
       )}

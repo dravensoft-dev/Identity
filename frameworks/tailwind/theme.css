@@ -81,6 +81,8 @@
   --font-mono: var(--font-mono);
 
   --text-*: initial;
+  --text-mega: var(--fs-mega);
+  --text-hero: var(--fs-hero);
   --text-display: var(--fs-display);
   --text-h1: var(--fs-h1);
   --text-h2: var(--fs-h2);
@@ -88,9 +90,18 @@
   --text-h4: var(--fs-h4);
   --text-lg: var(--fs-lg);
   --text-md: var(--fs-md);
-  --text-base: var(--dz-text);
   --text-sm: var(--fs-sm);
   --text-xs: var(--fs-xs);
+
+  /* dz's control-text scale — `ctl` infix because the natural --text-* keys
+     are taken by fs, and two collide on value as well as name (fs.sm/dz.text-md
+     both 13px, fs.xs/dz.text-xs both 11px). Chrome text is a density role, not
+     an editorial one, so it gets its own namespace rather than borrowing fs's. */
+  --text-ctl: var(--dz-text);
+  --text-ctl-md: var(--dz-text-md);
+  --text-ctl-sm: var(--dz-text-sm);
+  --text-ctl-xs: var(--dz-text-xs);
+  --text-ctl-2xs: var(--dz-text-2xs);
 
   --font-weight-*: initial;
   --font-weight-regular: var(--fw-regular);
@@ -105,9 +116,21 @@
   --leading-snug: var(--lh-snug);
   --leading-body: var(--lh-body);
 
+  /* `ctl` infix for the same reason dz's font-size scale takes one above:
+     the natural --leading-none key is a Tailwind stock name, and dz's
+     glyph-tight reset is a density/control concern, not editorial — giving
+     it a name indistinguishable from tight/snug/body would repeat the
+     --text-base mistake retired in the fs/dz split. */
+  --leading-ctl: var(--dz-lh);
+
   --tracking-*: initial;
   --tracking-tight: var(--ls-tight);
   --tracking-normal: var(--ls-normal);
+  --tracking-mono-nav: var(--ls-mono-nav);
+  --tracking-uppercase-status: var(--ls-uppercase-status);
+  --tracking-badge: var(--ls-badge);
+  --tracking-column-header: var(--ls-column-header);
+  --tracking-field-label: var(--ls-field-label);
   --tracking-label: var(--ls-label);
   --tracking-wide: var(--ls-wide);
 
@@ -143,7 +166,6 @@
   --spacing-row-py: var(--dz-row-py);
   --spacing-row-px: var(--dz-row-px);
   --spacing-stack: var(--dz-stack);
-  --spacing-cell: var(--dz-cell);
 
   --spacing-gutter: var(--gutter);
 
@@ -152,6 +174,16 @@
   --container-*: initial;
   --container-page: var(--container-max);
 
+  /* icon size → tokens/spacing.css. A glyph rendered as a webfont is an icon,
+     not type, so it does not live in the --text-* namespace — that argument
+     is Rule 2's, made one level up at the classification stage. `--size-*`
+     is what an icon *is*: `.size-icon-md` sets both width and height. */
+  --size-*: initial;
+  --size-icon-sm: var(--icon-sm);
+  --size-icon-md: var(--icon-md);
+  --size-icon-lg: var(--icon-lg);
+  --size-icon-xl: var(--icon-xl);
+
   /* ---- effects → tokens/effects.css ------------------------------------ */
   --radius-*: initial;
   --radius-xs: var(--r-xs);
@@ -159,6 +191,7 @@
   --radius-md: var(--r-md);
   --radius-lg: var(--r-lg);
   --radius-xl: var(--r-xl);
+  --radius-2xl: var(--r-2xl);
   --radius-pill: var(--r-pill);
 
   --shadow-*: initial;
@@ -173,6 +206,18 @@
 
   --blur-*: initial;
   --blur-scrim: var(--scrim-blur);
+
+  /* layering → tokens/effects.css. The family declares the order; a consumer
+     embedding Arena in an app with its own stacking context reads these
+     rather than guessing at a magic number. */
+  --z-index-*: initial;
+  --z-index-dropdown: var(--z-dropdown);
+  --z-index-tooltip: var(--z-tooltip);
+  --z-index-modal: var(--z-modal);
+  --z-index-modal-nested: var(--z-modal-nested);
+  --z-index-palette: var(--z-palette);
+  --z-index-onboarding: var(--z-onboarding);
+  --z-index-toast: var(--z-toast);
 
   /* ---- defaults the preflight and the bare utilities read --------------- */
   /* --default-mono-font-family is derived from --font-mono automatically;

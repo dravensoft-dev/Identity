@@ -10,8 +10,8 @@ are the record. Do not re-run this plan.
 |---|---|---|
 | 1 | `2026-07-18-1-token-style-dictionary-migration.md` | **Executed** (v4.0.0) |
 | 2 | `2026-07-18-2-overview-token-page.md` | **Executed** (v4.0.0) |
-| 3 | `2026-07-18-3-framework-layer-token-coverage.md` | Pending |
-| 4 | token/geometry boundary — **plan not yet written**, spec at `specs/2026-07-18-token-geometry-boundary-design.md` | Pending |
+| 3 | `2026-07-18-3-framework-layer-token-coverage.md` | **Executed** (unreleased) |
+| 4 | `2026-07-18-4-token-geometry-boundary.md` | **Executed** (unreleased) |
 | 5 | framework-layer parity — **plan not yet written**, spec at `specs/2026-07-18-framework-layer-parity-design.md` | Pending |
 | 6 | `2026-07-18-6-four-package-build-publish.md` | Pending |
 

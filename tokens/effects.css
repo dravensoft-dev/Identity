@@ -6,6 +6,7 @@
   --r-md:10px; /* nested cards, menus */
   --r-lg:14px; /* cards, panels */
   --r-xl:22px; /* app icon tile */
+  --r-2xl:34px; /* splash tile — distinct from xl's app icon tile */
   --r-pill:999px;
   --bw:1px; /* Borders */
   --bw-strong:2px;
@@ -35,4 +36,24 @@
   --ease-out:cubic-bezier(.2,.7,.3,1);
   --ease-in-out:cubic-bezier(.4,0,.2,1);
   --ease-emphatic:cubic-bezier(.2,.9,.1,1); /* the "rotor" flourish */
+}
+:root{
+  /*
+     Layering — a system-wide invariant (what covers what), not geometry. The
+     family declares the order; the values only have to preserve it. Before this
+     it was five magic numbers in five files: Menu and Tooltip both sat at 900,
+     so a tooltip on a menu item resolved by DOM order rather than by design;
+     Dialog and ConfirmDialog both sat at 1000, and ConfirmDialog opens from a
+     Dialog, so it worked only by accident of mount order; Toast, the one thing
+     that must float above everything, declared nothing at all. The order, least
+     to most interruptible: dropdown < tooltip < modal < modal-nested < palette <
+     onboarding < toast.
+   */
+  --z-dropdown:900; /* Menu, Select's popover layer */
+  --z-tooltip:950; /* above dropdown, so a tooltip on a menu item wins */
+  --z-modal:1000; /* Dialog */
+  --z-modal-nested:1050; /* ConfirmDialog, which opens from a Dialog */
+  --z-palette:1100; /* CommandPalette */
+  --z-onboarding:1200; /* the coachmark; the scrim beneath it derives at the point of use as calc(var(--z-onboarding) - 10) — one slot, two uses */
+  --z-toast:1300; /* floats above everything, including onboarding — a transient notice raised by an action taken inside a dialog must stay visible */
 }

@@ -34,7 +34,11 @@
     "row-py": { "$value": { "value": 12, "unit": "px" }, "$description": "table/list row vertical padding" },
     "row-px": { "$value": { "value": 16, "unit": "px" }, "$description": "row horizontal padding" },
     "stack": { "$value": { "value": 12, "unit": "px" }, "$description": "gap between stacked items" },
-    "cell": { "$value": { "value": 14, "unit": "px" }, "$description": "cell font-size" },
-    "text": { "$value": { "value": 14, "unit": "px" }, "$description": "control text — buttons, inputs" }
+    "text": { "$value": { "value": 14, "unit": "px" }, "$description": "control text — buttons, inputs, selects, menu items, table cells" },
+    "text-md": { "$value": { "value": 13, "unit": "px" }, "$description": "secondary control text — tag chips, pagination, secondary buttons" },
+    "text-sm": { "$value": { "value": 12, "unit": "px" }, "$description": "secondary control text — hints, validation errors, badges, legends" },
+    "text-xs": { "$value": { "value": 11, "unit": "px" }, "$description": "micro control text — field labels, shortcuts, eyebrow labels" },
+    "text-2xs": { "$value": { "value": 10, "unit": "px" }, "$description": "column headers, row micro-labels" },
+    "lh": { "$type": "number", "$value": 1, "$description": "glyph-tight line height — the control reset. Unlike every other dz member this is unitless, so it carries its own $type override: a line height is a number, not a dimension, the same distinction that puts lh in typography.json to begin with. Used wherever a box must be exactly its glyph — an icon inside a button, a standalone icon, an icon-only close/remove control — so the line box never throws the surrounding control out of alignment." }
   }
 }

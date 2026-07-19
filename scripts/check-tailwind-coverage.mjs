@@ -27,9 +27,9 @@ export const EXCLUDED = new Map([
   ['bp-lg', 'read by JS through getComputedStyle, never a media query'],
   ['dur-fast', 'v4 has no duration namespace; wired as --default-transition-duration'],
   ['dur-mid', 'v4 has no duration namespace; reached as duration-[var(--dur-mid)]'],
-  ['dur-slow', 'v4 has no duration namespace; reached as duration-[var(--dur-slow)]'],
+  ['dur-slow', 'v4 has no duration namespace; no consumer today, available as duration-[var(--dur-slow)]'],
   ['bw', 'v4 has no border-width namespace; reached as border-[length:var(--bw)]'],
-  ['bw-strong', 'v4 has no border-width namespace; reached as border-[length:var(--bw-strong)]'],
+  ['bw-strong', 'v4 has no border-width namespace; no consumer today, available as border-[length:var(--bw-strong)]'],
   ['focus-width', 'no namespace — the focus ring is composed, not a single utility'],
   ['focus-offset', 'no namespace — the focus ring is composed, not a single utility'],
 ]);

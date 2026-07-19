@@ -30,7 +30,7 @@ export function DoughnutChart({ labels = [], values = [], slots, valueFormatter,
   });
 
   return (
-    <div ref={ref} style={{ position: 'relative', width: '100%', height, display: 'flex', gap: 16, ...style }} {...rest}>
+    <div ref={ref} style={{ position: 'relative', width: '100%', height, display: 'flex', gap: 'calc(var(--sp-1) * 4)', ...style }} {...rest}>
       <svg width={plotW} height={height} role="img" aria-label="Doughnut chart"
         onMouseLeave={() => setHover(null)} style={{ display: 'block', flexShrink: 0 }}>
         {segments.map(({ i, a0, a1 }) => a1 > a0 && (
@@ -51,14 +51,14 @@ export function DoughnutChart({ labels = [], values = [], slots, valueFormatter,
 
       {/* A legend, always — the slices are the series, and identity is never
           color-alone. */}
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6, overflow: 'auto' }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 'calc(var(--sp-1) * 1.5)', overflow: 'auto' }}>
         {labels.map((l, i) => (
           <div key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, opacity: hover === null || hover === i ? 1 : 0.55 }}>
-            <span aria-hidden="true" style={{ width: 10, height: 10, borderRadius: 2, background: colors[i], flexShrink: 0 }} />
-            <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--text-body)',
+            style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', opacity: hover === null || hover === i ? 1 : 0.55 }}>
+            <span aria-hidden="true" style={{ width: 'calc(var(--sp-1) * 2.5)', height: 'calc(var(--sp-1) * 2.5)', borderRadius: 'var(--r-xs)', background: colors[i], flexShrink: 0 }} />
+            <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-sm)', color: 'var(--text-body)',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l}</span>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--mute)' }}>{fmt(values[i])}</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{fmt(values[i])}</span>
           </div>
         ))}
       </div>

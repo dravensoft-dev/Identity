@@ -16,10 +16,10 @@ export function Table({
   // null width → the wide layout. First paint is never the narrow branch.
   const narrow = responsive && width !== null && width < readBreakpoint('md');
 
-  const cellBase = { padding: 'var(--dz-row-py) var(--dz-row-px)', fontSize: 'var(--dz-cell)', textAlign: 'left', verticalAlign: 'middle' };
+  const cellBase = { padding: 'var(--dz-row-py) var(--dz-row-px)', fontSize: 'var(--dz-text)', textAlign: 'left', verticalAlign: 'middle' };
   const headerLabel = {
-    fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.12em',
-    textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 700,
+    fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-column-header)',
+    textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 'var(--fw-bold)',
   };
   const valueStyle = (c) => ({
     fontFamily: c.mono ? 'var(--font-mono)' : 'var(--font-body)',
@@ -31,16 +31,16 @@ export function Table({
   return (
     <div ref={ref} style={{ width: '100%', ...style }}>
       {narrow ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 4)' }}>
           {rows.length === 0 && (
-            <div style={{ background: 'var(--surface-card)', border: '1px solid var(--color-base-300)',
-              borderRadius: 'var(--r-lg)', padding: '32px 16px', textAlign: 'center',
-              color: 'var(--mute)', fontSize: 'var(--dz-cell)' }}>{empty}</div>
+            <div style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
+              borderRadius: 'var(--r-lg)', padding: 'calc(var(--sp-1) * 8) calc(var(--sp-1) * 4)', textAlign: 'center',
+              color: 'var(--mute)', fontSize: 'var(--dz-text)' }}>{empty}</div>
           )}
           {rows.map((row, ri) => (
             <div key={keyOf(row, ri)}
               onClick={onRowClick ? () => onRowClick(row, ri) : undefined}
-              style={{ background: 'var(--surface-card)', border: '1px solid var(--color-base-300)',
+              style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
                 borderRadius: 'var(--r-lg)', padding: 'var(--dz-row-px)',
                 display: 'flex', flexDirection: 'column', gap: 'var(--dz-stack)',
                 cursor: onRowClick ? 'pointer' : 'default' }}>
@@ -48,13 +48,13 @@ export function Table({
                 /* Full width, no label — for the actions column, whose buttons
                    name themselves and would look absurd beside an "ACTIONS" tag. */
                 <div key={c.key} style={{ width: '100%', display: 'flex', justifyContent: 'flex-end',
-                  gap: 8, borderTop: '1px solid var(--color-base-300)', paddingTop: 8 }}>
+                  gap: 'calc(var(--sp-1) * 2)', borderTop: 'var(--bw) solid var(--color-base-300)', paddingTop: 'calc(var(--sp-1) * 2)' }}>
                   {cellValue(c, row)}
                 </div>
               ) : (
-                <div key={c.key} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
+                <div key={c.key} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 'calc(var(--sp-1) * 3)' }}>
                   <span style={headerLabel}>{c.header}</span>
-                  <span style={{ ...valueStyle(c), minWidth: 0, textAlign: 'right', fontSize: 'var(--dz-cell)' }}>
+                  <span style={{ ...valueStyle(c), minWidth: 0, textAlign: 'right', fontSize: 'var(--dz-text)' }}>
                     {cellValue(c, row)}
                   </span>
                 </div>
@@ -63,25 +63,25 @@ export function Table({
           ))}
         </div>
       ) : (
-        <div style={{ border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-lg)',
+        <div style={{ border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)',
           overflow: 'hidden', background: 'var(--surface-card)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-body)' }}>
             <thead>
               <tr style={{ background: 'var(--panel)' }}>
                 {columns.map((c) => (
                   <th key={c.key} style={{ ...cellBase, ...headerLabel, textAlign: c.align || 'left',
-                    width: c.width, borderBottom: '1px solid var(--color-base-300)' }}>{c.header}</th>
+                    width: c.width, borderBottom: 'var(--bw) solid var(--color-base-300)' }}>{c.header}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 && (
-                <tr><td colSpan={columns.length} style={{ ...cellBase, textAlign: 'center', color: 'var(--mute)', padding: '32px 16px' }}>{empty}</td></tr>
+                <tr><td colSpan={columns.length} style={{ ...cellBase, textAlign: 'center', color: 'var(--mute)', padding: 'calc(var(--sp-1) * 8) calc(var(--sp-1) * 4)' }}>{empty}</td></tr>
               )}
               {rows.map((row, ri) => (
                 <tr key={keyOf(row, ri)}
                   onClick={onRowClick ? () => onRowClick(row, ri) : undefined}
-                  style={{ borderTop: ri === 0 ? 'none' : '1px solid var(--color-base-300)',
+                  style={{ borderTop: ri === 0 ? 'none' : 'var(--bw) solid var(--color-base-300)',
                     cursor: onRowClick ? 'pointer' : 'default',
                     transition: 'background var(--dur-fast) var(--ease-out)' }}
                   onMouseEnter={onRowClick ? (e) => (e.currentTarget.style.background = 'var(--panel)') : undefined}

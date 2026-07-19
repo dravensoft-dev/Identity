@@ -1,0 +1,13 @@
+{
+  "z": {
+    "$type": "number",
+    "$description": "Layering — a system-wide invariant (what covers what), not geometry. The\nfamily declares the order; the values only have to preserve it. Before this\nit was five magic numbers in five files: Menu and Tooltip both sat at 900,\nso a tooltip on a menu item resolved by DOM order rather than by design;\nDialog and ConfirmDialog both sat at 1000, and ConfirmDialog opens from a\nDialog, so it worked only by accident of mount order; Toast, the one thing\nthat must float above everything, declared nothing at all. The order, least\nto most interruptible: dropdown < tooltip < modal < modal-nested < palette <\nonboarding < toast.",
+    "dropdown": { "$value": 900, "$description": "Menu, Select's popover layer" },
+    "tooltip": { "$value": 950, "$description": "above dropdown, so a tooltip on a menu item wins" },
+    "modal": { "$value": 1000, "$description": "Dialog" },
+    "modal-nested": { "$value": 1050, "$description": "ConfirmDialog, which opens from a Dialog" },
+    "palette": { "$value": 1100, "$description": "CommandPalette" },
+    "onboarding": { "$value": 1200, "$description": "the coachmark; the scrim beneath it derives at the point of use as calc(var(--z-onboarding) - 10) — one slot, two uses" },
+    "toast": { "$value": 1300, "$description": "floats above everything, including onboarding — a transient notice raised by an action taken inside a dialog must stay visible" }
+  }
+}

@@ -11,10 +11,10 @@ const TONES = {
 export function Badge({ children, tone = 'neutral', dot = false, style, ...rest }) {
   const [bg, fg] = TONES[tone] || TONES.neutral;
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px',
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 1.5)', padding: 'calc(var(--sp-1) * 1) calc(var(--sp-1) * 2.5)',
       background: bg, color: fg, borderRadius: 'var(--r-pill)',
-      fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', ...style }} {...rest}>
-      {dot && <span style={{ width: 6, height: 6, borderRadius: '50%', background: fg }} />}
+      fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--ls-badge)', textTransform: 'uppercase', ...style }} {...rest}>
+      {dot && <span style={{ width: 'calc(var(--sp-1) * 1.5)', height: 'calc(var(--sp-1) * 1.5)', borderRadius: '50%', background: fg }} />}
       {children}
     </span>
   );

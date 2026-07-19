@@ -8,7 +8,10 @@
     "row-py": { "$value": { "value": 7, "unit": "px" } },
     "row-px": { "$value": { "value": 12, "unit": "px" } },
     "stack": { "$value": { "value": 8, "unit": "px" } },
-    "cell": { "$value": { "value": 13, "unit": "px" } },
-    "text": { "$value": { "value": 13, "unit": "px" } }
+    "text": { "$value": { "value": 13, "unit": "px" } },
+    "text-md": { "$value": { "value": 12, "unit": "px" } },
+    "text-sm": { "$value": { "value": 11, "unit": "px" } },
+    "text-xs": { "$value": { "value": 10, "unit": "px" } },
+    "text-2xs": { "$value": { "value": 10, "unit": "px" } }
   }
 }
