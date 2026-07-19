@@ -14,6 +14,10 @@
     "build:tokens": "bun scripts/build-tokens.mjs",
     "check:tokens": "bun scripts/check-tokens-generated.mjs",
     "check:dtcg": "bun scripts/check-dtcg.mjs",
+    "check:tailwind": "bun scripts/check-tailwind.mjs",
+    "check:coverage": "bun scripts/check-tailwind-coverage.mjs",
+    "check:arbitrary": "bun scripts/check-arbitrary-values.mjs",
+    "check": "bun run check:dtcg && bun run check:tokens && bun scripts/check-ramp.mjs && bun run check:tailwind && bun run check:coverage && bun run check:arbitrary",
     "test": "bun test scripts/"
   }
 }

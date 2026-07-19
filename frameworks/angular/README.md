@@ -18,6 +18,19 @@ quartet: `<name>.ts` (standalone, `OnPush`, signal I/O, `arena-` selector),
 `<name>.prompt.md` (usage + Do/Don't), and a barrel. `primitives/tag/` is the
 reference shape. This milestone ships `tag`; further primitives follow it.
 
+A primitive defines no styling of its own. Its recipe lives in
+`frameworks/tailwind/components/<Component>.manifest.json` and reaches the
+component through the shared `tv`:
+
+```ts
+import { tv } from '../../../tailwind/tv';
+import manifest from '../../../tailwind/components/Tag.manifest.json' with { type: 'json' };
+
+export const tagStyles = tv(manifest);
+```
+
+`tag` is the reference shape.
+
 ## Conventions
 
 Standalone (no `NgModule`), `OnPush`, `input()`/`output()`/`model()`, `inject()`

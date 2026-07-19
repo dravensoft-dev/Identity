@@ -4,6 +4,60 @@ All notable changes to Arena — Dravensoft Design System are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **The Tailwind layer exposes Arena's whole token surface.** `frameworks/tailwind/theme.css`
+  grows from 37 theme keys to 89: the nine-step type scale, the three families, all six
+  weights, line height and tracking, the seven density tokens, the six missing spacing
+  steps, `--radius-xs` and `--radius-pill`, the four missing `-content` pairs,
+  `--color-neutral` and its content, `--color-error-fill`, and the scrim. `.arena-compact`
+  now has a utility surface; `rounded-pill` and `text-h1` exist.
+- **`--dz-text`, the 14px control text size.** Arena's editorial scale ran 13px to 15px
+  with nothing between, while React's `Button` has used 14px for its `md` size all along;
+  naming it is what lets the Tailwind layer express `Button` without an arbitrary value. It
+  lands in the control-density family `dz` rather than the editorial scale `fs`, because a
+  button label is chrome, not prose, and `fs` is semantic and closed. Like every other `dz`
+  member it carries a 13px `.arena-compact` override, so control text now densifies with the
+  controls around it — which the literal `text-[14px]` it replaces never did.
+- **Three gates.** `scripts/check-tailwind.mjs` compiles the preset with every component
+  manifest as content and asserts each class emits a rule and each theme key resolves to a
+  real Arena token; `scripts/check-tailwind-coverage.mjs` asserts every token either reaches
+  a utility or is excluded with a reason, so a token added to `tokens/src/` cannot silently
+  fail to reach the layer; `scripts/check-arbitrary-values.mjs` fails on any bracket
+  carrying a raw literal. `bun run check` runs the six gates together.
+- **`frameworks/tailwind/components/Tag.manifest.json`.** The shared-recipe architecture
+  `CLAUDE.md` describes now exists: `tag.variants.ts` consumes the manifest through the
+  shared `tv` instead of defining its recipe inline. This is the reference shape.
+
+### Fixed
+
+- **Spacing utilities no longer resolve to Tailwind's own default.** The preset defined
+  `--spacing-1..8` but never `--spacing`, so v4 emitted every unnamed step as
+  `calc(var(--spacing) * N)` against its `0.25rem` default — half the spacing surface was
+  Arena's and half was Tailwind's, with nothing marking the boundary and the two coinciding
+  only at a 16px root font size. `--spacing` is now `var(--sp-1)`, and the named steps are
+  kept as insurance.
+- **Tailwind's default palette and scales no longer resolve underneath Arena's.** Each
+  populated namespace is cleared with `--<ns>-*: initial`, so `bg-red-500`, `text-2xl` and
+  `rounded-2xl` emit nothing at all rather than a value Arena never defined and a re-skin
+  never touches.
+- **The six arbitrary values are gone.** Five in `Button.manifest.json` and one in
+  `tag.variants.ts` existed only because the token they needed was not exposed. Each is now
+  a real utility.
+
+### Notes
+
+- `tailwindcss` and `@tailwindcss/cli` are pinned to exactly `4.3.3` as dev dependencies.
+  Every measurement behind these changes was taken against that version.
+- The self-referential `--color-base-100: var(--color-base-100)` pattern in the preset is
+  correct and is now documented in place. Tailwind emits `@theme` inside `@layer theme`,
+  Arena's tokens are unlayered, and an unlayered declaration wins — so Arena's value applies
+  and the self-reference never resolves against itself. It reads like a cycle and is not.
+- The React layer is unchanged. An audit found 571 `var(--token)` references across 40
+  components, zero references to a token that does not exist, and zero raw hex.
+
 ## [4.0.0] — 2026-07-18
 
 ### Changed
