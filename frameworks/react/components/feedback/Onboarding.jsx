@@ -9,18 +9,21 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
   const last = index === steps.length - 1;
   const W = 320;
 
-  let pos = { position: 'fixed', right: 24, bottom: 24, zIndex: 1200 };
+  let pos = { position: 'fixed', right: 24, bottom: 24, zIndex: 'var(--z-onboarding)' };
   if (anchorRect) {
     const top = Math.min(anchorRect.bottom + 12, (typeof window !== 'undefined' ? window.innerHeight : 900) - 220);
     let left = anchorRect.left;
     if (typeof window !== 'undefined') left = Math.min(left, window.innerWidth - W - 16);
-    pos = { position: 'fixed', top, left: Math.max(16, left), zIndex: 1200 };
+    pos = { position: 'fixed', top, left: Math.max(16, left), zIndex: 'var(--z-onboarding)' };
   }
 
   const foot = { fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.06em' };
   return (
     <>
-      <div onClick={onSkip} style={{ position: 'fixed', inset: 0, zIndex: 1190, background: 'var(--scrim)' }} />
+      {/* The scrim sits just under the coachmark -- one slot, two uses, so the
+        * relationship is expressed as a derivation at the point of use rather
+        * than a second token. */}
+      <div onClick={onSkip} style={{ position: 'fixed', inset: 0, zIndex: 'calc(var(--z-onboarding) - 10)', background: 'var(--scrim)' }} />
       <div role="dialog" aria-modal="true" aria-label={step.title}
         style={{ ...pos, width: W, maxWidth: '92vw', background: 'var(--surface-card)', border: '1px solid var(--line-strong)',
           borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', padding: 20 }}>

@@ -33,6 +33,7 @@ const FILES = [
   ] },
   { out: 'effects.css', blocks: [
     { selector: ':root', source: 'effects.json' },
+    { selector: ':root', source: 'layering.json' },
   ] },
 ];
 

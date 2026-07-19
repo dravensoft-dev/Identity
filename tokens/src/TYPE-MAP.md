@@ -23,6 +23,7 @@ these values, do not re-derive them.
 | `scrim-blur`, `focus-width`, `focus-offset` | `effects.json` | `dimension` | px |
 | Durations (`dur-fast/mid/slow`) | `effects.json` | `duration` | ms |
 | Easings (`ease-*`) | `effects.json` | `cubicBezier` | `[x1,y1,x2,y2]` |
+| Layering (`z-*`) | `layering.json` | `number` | unitless integers; the family declares the order, the values only preserve it |
 
 ## Value formats are strict 2025.10
 

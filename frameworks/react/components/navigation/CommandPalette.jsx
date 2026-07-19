@@ -16,7 +16,7 @@ export function CommandPalette({ open, onClose, commands = [], placeholder = 'Se
     else if (e.key === 'Escape') { e.preventDefault(); onClose && onClose(); }
   };
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 'var(--z-palette)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
       paddingTop: '12vh', background: 'var(--scrim)', backdropFilter: 'blur(var(--scrim-blur))', WebkitBackdropFilter: 'blur(var(--scrim-blur))' }}>
       <div onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true"
         style={{ width: 560, maxWidth: '92vw', background: 'var(--surface-card)', border: '1px solid var(--line-strong)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', overflow: 'hidden' }}>

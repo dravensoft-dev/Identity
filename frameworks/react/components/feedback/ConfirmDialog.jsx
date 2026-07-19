@@ -8,7 +8,7 @@ export function ConfirmDialog({ open, onCancel, onConfirm, title, eyebrow = 'Con
   if (!open) return null;
   const locked = requireText ? typed.trim() !== requireText : false;
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    <div style={{ position: 'fixed', inset: 0, zIndex: 'var(--z-modal-nested)', display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: 'var(--scrim)', backdropFilter: 'blur(var(--scrim-blur))', WebkitBackdropFilter: 'blur(var(--scrim-blur))' }}>
       <div role="alertdialog" aria-modal="true"
         style={{ width, maxWidth: '92vw', background: 'var(--surface-card)', border: '1px solid var(--line-strong)',

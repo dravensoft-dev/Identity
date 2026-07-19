@@ -40,7 +40,7 @@ export function Menu({ trigger, items = [], align = 'start', style }) {
     <div ref={ref} style={{ position: 'relative', display: 'inline-flex', ...style }}>
       <span onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open}>{trigger}</span>
       {open && (
-        <div role="menu" style={{ position: 'absolute', top: 'calc(100% + 6px)', [align === 'end' ? 'right' : 'left']: 0, zIndex: 900,
+        <div role="menu" style={{ position: 'absolute', top: 'calc(100% + 6px)', [align === 'end' ? 'right' : 'left']: 0, zIndex: 'var(--z-dropdown)',
           minWidth: 200, padding: 6, background: 'var(--surface-card)', border: '1px solid var(--line-strong)',
           borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-2)', animation: 'arena-menu var(--dur-fast) var(--ease-out)' }}>
           {items.map((it, i) => {

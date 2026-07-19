@@ -174,6 +174,18 @@
   --blur-*: initial;
   --blur-scrim: var(--scrim-blur);
 
+  /* layering → tokens/effects.css. The family declares the order; a consumer
+     embedding Arena in an app with its own stacking context reads these
+     rather than guessing at a magic number. */
+  --z-index-*: initial;
+  --z-index-dropdown: var(--z-dropdown);
+  --z-index-tooltip: var(--z-tooltip);
+  --z-index-modal: var(--z-modal);
+  --z-index-modal-nested: var(--z-modal-nested);
+  --z-index-palette: var(--z-palette);
+  --z-index-onboarding: var(--z-onboarding);
+  --z-index-toast: var(--z-toast);
+
   /* ---- defaults the preflight and the bare utilities read --------------- */
   /* --default-mono-font-family is derived from --font-mono automatically;
      --default-font-family derives from --font-sans, which we cleared, so it

@@ -6,7 +6,7 @@ const TOAST_TONES = { neutral: 'var(--line-strong)', success: 'var(--success)', 
 export function Toast({ title, message, tone = 'neutral', action, onClose, persist = false, style }) {
   return (
     <div role={tone === 'danger' ? 'alert' : 'status'} aria-live={tone === 'danger' ? 'assertive' : 'polite'} data-persist={persist ? '' : undefined}
-      style={{ display: 'flex', gap: 12, alignItems: 'flex-start', width: 340, padding: '14px 16px',
+      style={{ display: 'flex', gap: 12, alignItems: 'flex-start', width: 340, padding: '14px 16px', zIndex: 'var(--z-toast)',
       background: 'var(--surface-card)', border: '1px solid var(--color-base-300)',
       borderLeft: '3px solid ' + (TOAST_TONES[tone] || TOAST_TONES.neutral), borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-2)', ...style }}>
       <div style={{ flex: 1 }}>

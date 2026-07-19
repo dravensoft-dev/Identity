@@ -66,11 +66,17 @@ test('derived names match the custom properties the build actually emits', () =>
     ['tokens/src/typography.json', 'tokens/typography.css', ':root'],
     ['tokens/src/spacing.json', 'tokens/spacing.css', ':root'],
     ['tokens/src/density.compact.json', 'tokens/spacing.css', '.arena-compact'],
-    ['tokens/src/effects.json', 'tokens/effects.css', ':root'],
+    // effects.css :root is fed by two source files — effects.json (radius,
+    // borders, elevation, scrim, focus, motion) and layering.json (z-*) — the
+    // same pattern as spacing.css, except both blocks share one selector.
+    [['tokens/src/effects.json', 'tokens/src/layering.json'], 'tokens/effects.css', ':root'],
   ];
   for (const [src, css, selector] of cases) {
-    const derived = flattenTokens(JSON.parse(readFileSync(src, 'utf8'))).map((t) => t.name).sort();
+    const sources = Array.isArray(src) ? src : [src];
+    const derived = sources
+      .flatMap((s) => flattenTokens(JSON.parse(readFileSync(s, 'utf8'))).map((t) => t.name))
+      .sort();
     const emitted = [...parseDecls(readFileSync(css, 'utf8')).get(selector).keys()].sort();
-    assert.deepEqual(derived, emitted, `${src} -> ${css} ${selector}`);
+    assert.deepEqual(derived, emitted, `${sources.join(', ')} -> ${css} ${selector}`);
   }
 });

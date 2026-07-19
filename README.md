@@ -120,6 +120,25 @@ To tell **destructive / risk actions and indicators** apart from the primary act
 - **Danger is two reds, and they cannot be one.** `--danger` is read *as text* on the base surfaces, so it is tuned against them (lighter in dark, darker in light). That leaves it too light to carry white text, which is exactly what the filled confirmation needs — so the fill is its own token, tuned in the opposite direction. Collapsing them puts one of the two roles under WCAG AA; `bun scripts/check-text-contrast.mjs` gates both.
 - **Specimen:** `guidelines/components-danger.html` (all three states side by side: filled primary · outline danger · filled final confirmation).
 
+### Layering (stacking order)
+What covers what is a system-wide invariant, not a per-component choice, so it is a token family — `z` (`tokens/src/layering.json`, generated into `tokens/effects.css`) — rather than a literal chosen anew in each overlay component. **The family declares the order; the values only have to preserve it.** From least to most interruptible:
+
+| Token | Value | Carried by |
+|---|---|---|
+| `--z-dropdown` | 900 | `Menu`, `Select`'s popover layer |
+| `--z-tooltip` | 950 | `Tooltip` — above dropdown, so a tooltip on a menu item wins over the menu itself |
+| `--z-modal` | 1000 | `Dialog` |
+| `--z-modal-nested` | 1050 | `ConfirmDialog` — it opens *from* a `Dialog`, so it must sit above one |
+| `--z-palette` | 1100 | `CommandPalette` |
+| `--z-onboarding` | 1200 | `Onboarding`'s coachmark card |
+| `--z-toast` | 1300 | `Toast` — floats above everything, including onboarding, because a transient notice raised by an action taken inside a dialog must stay visible |
+
+`Onboarding`'s scrim is not a second token: it is one slot with two uses, so the relationship is expressed as a derivation at the point of use — `zIndex: 'calc(var(--z-onboarding) - 10)'` — rather than minted as its own step. That keeps "the scrim sits just under the coachmark" legible from the call site instead of requiring a reader to go find a second magic number nearby.
+
+Before this family existed, layering was five magic numbers in five files, encoding no intent: `Menu` and `Tooltip` both sat at `900`, so a tooltip rendered on a menu item resolved by DOM order, not by design; `Dialog` and `ConfirmDialog` both sat at `1000`, and `ConfirmDialog` opens *from* a `Dialog`, so it worked only by accident of mount order; `Toast` — the one thing that must float above everything — declared no `z-index` at all.
+
+Exposed in the Tailwind layer as `.z-dropdown` / `.z-tooltip` / `.z-modal` / `.z-modal-nested` / `.z-palette` / `.z-onboarding` / `.z-toast` (`frameworks/tailwind/theme.css`, `--z-index-*`). **A consumer embedding Arena inside an app that has its own stacking context should read this table rather than guess at a number**: Arena's overlay components render in place (none of the seven uses a React portal), so the global order above governs any of them mounted as siblings — but if the host app's own chrome (a nav bar, a modal from a different library) needs to interleave with Arena's, the host's own `z-index` values need to be chosen against this scale, not against whatever the host already had lying around. `display/Calendar.jsx`'s `zIndex: 1` is not part of this family — it is local stacking inside a positioned container, scoped entirely inside one component, and stays a hand-written literal.
+
 ## ICONOGRAPHY
 - **Official set: [Phosphor Icons](https://phosphoricons.com)** (MIT license, free commercial use, no attribution). Chosen for aligning with Dravensoft's bold identity: it's the open-source family with the widest style range (1,500+ icons in 6 weights) and its **Bold** weight has the presence and high contrast the brand calls for — the icon equivalent of Archivo Black.
 - **Weights and use:**
