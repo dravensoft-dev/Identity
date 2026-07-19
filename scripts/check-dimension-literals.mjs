@@ -11,8 +11,9 @@
  * Tailwind's bracket syntax, this one on literals in inline style objects.
  * Together they close both idioms.
  *
- *   bun scripts/check-dimension-literals.mjs            -> exit 0 if none, 1 otherwise
- *   bun scripts/check-dimension-literals.mjs --report   -> the census, grouped
+ *   bun scripts/check-dimension-literals.mjs                 -> exit 0 if none, 1 otherwise
+ *   bun scripts/check-dimension-literals.mjs --report        -> the census, grouped
+ *   bun scripts/check-dimension-literals.mjs --report=sites  -> one line per site: file:line  prop: raw
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -42,18 +43,21 @@ export const EXEMPT = new Map([
    'local stacking inside a positioned container; does not join the global z order'],
 ]);
 
-/** A length literal: a number carrying a unit the token layer owns. `em` is
- *  in this set, not FREE_UNIT: Arena models letter-spacing as an `ls` token
- *  (a DTCG `number` carrying an `em` render hint), so a bare `em` asserts a
- *  dimension the language declares elsewhere — exactly what this gate
- *  exists to catch. */
-const RAW_LENGTH = /\d*\.?\d+\s*(px|rem|em)\b/;
-/** Units the layer legitimately uses and the token layer does not model. */
-const FREE_UNIT = /^\s*'?-?\d*\.?\d+(%|ch|fr|vh|vw|vmin|vmax|deg|s|ms)'?\s*$/;
+/** Units the token layer genuinely does not model, and that are legal
+ *  wherever they appear — a closed allowlist, not an open denylist. A unit
+ *  missing from this list fails closed: `em` was absent from every list
+ *  here until a review caught it, and by then 34 tracking literals had
+ *  gone unflagged. A unit nobody has thought of yet — `pt`, `cm`, a typo —
+ *  gets the same treatment as `px`, not a silent pass. */
+const FREE_UNITS = ['%', 'ch', 'fr', 'vh', 'vw', 'vmin', 'vmax', 'deg', 's', 'ms'];
+const FREE_UNIT = new RegExp(`^\\s*'?-?\\d*\\.?\\d+(${FREE_UNITS.join('|')})'?\\s*$`);
+/** A number immediately carrying a unit — a candidate dimension literal,
+ *  judged against FREE_UNITS above rather than against a fixed "bad" list. */
+const UNIT_LITERAL = /\d*\.?\d+\s*(%|[a-z]+)\b/g;
 /** The whole value is a bare number (quoted or not). */
 const BARE_NUMBER = /^\s*'?-?\d*\.?\d+'?\s*$/;
 /** Zero, in the forms the layer writes it. */
-const ZERO = /^\s*'?-?0(px|rem|%)?'?\s*$/;
+const ZERO = /^\s*'?-?0(px|rem|em|%)?'?\s*$/;
 
 /** @param {string} prop @param {string} raw
  *  @returns {{reason: string} | null} null when the value is legal */
@@ -63,10 +67,14 @@ export function scanValue(prop, raw) {
   if (FREE_UNIT.test(raw)) return null;
 
   // A var() is a token. Remove every one, then judge what is left: a
-  // multiplier inside calc() is not a literal, a px is.
+  // multiplier inside calc() is not a literal, a unit is.
   const withoutTokens = raw.replace(/var\(\s*--[a-z0-9-]+\s*\)/g, '');
-  if (RAW_LENGTH.test(withoutTokens))
-    return { reason: 'a raw length, not a token' };
+
+  // A number carrying any unit is a dimension literal unless that unit is
+  // on the free list above.
+  for (const m of withoutTokens.matchAll(UNIT_LITERAL))
+    if (!FREE_UNITS.includes(m[1]))
+      return { reason: `a raw ${m[1]}, not a token` };
 
   // A bare number standing as the entire value asserts a dimension the
   // language never declared — fontSize: 13, zIndex: 1000, lineHeight: 1.
@@ -85,13 +93,19 @@ export function scanValue(prop, raw) {
 // the one character in FREE_UNIT's list that fell outside that class.
 const DECL = /(?<![\w.])([a-zA-Z]+)\s*:\s*('[^']*'|"[^"]*"|`[^`]*`|[-\w.%]+)/g;
 
-/** @param {string} text @returns {{prop: string, raw: string, reason: string}[]} */
+/** @param {string} text
+ *  @returns {{prop: string, raw: string, reason: string, line: number}[]}
+ *  `line` is 1-based, counted by newlines up to the match — it is what
+ *  --report=sites and Task 3's classification pass locate a site by. */
 export function scanText(text) {
   const out = [];
   for (const m of text.matchAll(DECL)) {
     const [, prop, raw] = m;
     const hit = scanValue(prop, raw);
-    if (hit) out.push({ prop, raw, reason: hit.reason });
+    if (hit) {
+      const line = text.slice(0, m.index).split('\n').length;
+      out.push({ prop, raw, reason: hit.reason, line });
+    }
   }
   return out;
 }
@@ -99,8 +113,13 @@ export function scanText(text) {
 function* walk(dir) {
   for (const entry of readdirSync(dir).sort()) {
     const p = join(dir, entry);
-    if (statSync(p).isDirectory()) yield* walk(p);
-    else if (EXTENSIONS.some((e) => entry.endsWith(e))) yield p;
+    if (statSync(p).isDirectory()) { yield* walk(p); continue; }
+    // A .d.ts renders nothing at runtime -- there is no value here to be a
+    // token or a literal. It would pass today by coincidence (TypeScript's
+    // `prop?: type` breaks DECL on the `?`), which is the wrong reason for
+    // a scanner whose job is to fail closed. Skipped explicitly instead.
+    if (entry.endsWith('.d.ts')) continue;
+    if (EXTENSIONS.some((e) => entry.endsWith(e))) yield p;
   }
 }
 
@@ -136,8 +155,19 @@ function report(found) {
   console.log(`\ntotal: ${found.length} site(s)`);
 }
 
+/** One line per violation: file:line  prop: raw. The grouped report answers
+ *  what to fix; this answers where — Task 3 assigns each of these to a
+ *  family, and the eleven editing tasks after it need to find the exact
+ *  line rather than re-deriving it through scanText by hand. Exactly one
+ *  line per site, nothing else, so a plain line count is the site count. */
+function reportSites(found) {
+  const sorted = [...found].sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line);
+  for (const f of sorted) console.log(`${f.file}:${f.line}  ${f.prop}: ${f.raw}`);
+}
+
 function main() {
   const found = collect();
+  if (process.argv.includes('--report=sites')) { reportSites(found); return; }
   if (process.argv.includes('--report')) { report(found); return; }
   if (found.length) {
     console.error(`check-dimension-literals: ${found.length} bare literal(s) under frameworks/\n`);

@@ -32,15 +32,27 @@ test('a calc() over tokens is legal, and its multipliers are not literals', () =
   assert.equal(scanValue('gap', "'calc(var(--sp-1) * 2.5)'"), null);
 });
 
-test('zero is legal, with or without quotes', () => {
+test('zero is legal, with or without quotes, including zero em', () => {
   assert.equal(scanValue('padding', '0'), null);
   assert.equal(scanValue('margin', "'0'"), null);
+  assert.equal(scanValue('letterSpacing', "'0em'"), null);
 });
 
 test('a non-dimension unit the layer legitimately uses is legal', () => {
   assert.equal(scanValue('borderRadius', "'50%'"), null);
   assert.equal(scanValue('width', "'100%'"), null);
   assert.equal(scanValue('minWidth', "'0ch'"), null);
+});
+
+test('every unit on the free list stays legal', () => {
+  for (const raw of ["'8%'", "'2ch'", "'1fr'", "'50vh'", "'50vw'", "'10vmin'", "'10vmax'", "'90deg'", "'1s'", "'200ms'"])
+    assert.equal(scanValue('width', raw), null, raw);
+});
+
+test('a unit outside the free list fails closed, not just the ones already known', () => {
+  assert.ok(scanValue('fontSize', "'12pt'"));
+  assert.ok(scanValue('width', "'2cm'"));
+  assert.ok(scanValue('width', "'3xyz'"));
 });
 
 test('lineHeight 1 is a violation, because it is a role and not a number', () => {
@@ -54,6 +66,20 @@ test('scanText finds the property and the raw value together', () => {
 
 test('a property Arena does not govern is ignored', () => {
   assert.deepEqual(scanText("{ flexGrow: 1, opacity: 0.6, zoom: 2 }"), []);
+});
+
+test('a .d.ts-shaped declaration yields nothing', () => {
+  // TypeScript's `prop?: type` breaks DECL on the `?` -- there is no
+  // whitespace-only gap between the name and the colon, so the property
+  // never matches. A .d.ts file is skipped by walk() before scanText ever
+  // sees it, but this is the coincidence that made scanning one harmless
+  // in the meantime, exercised directly.
+  assert.deepEqual(scanText('export interface ButtonProps { fontSize?: number; padding?: string; }'), []);
+});
+
+test('scanText reports the 1-based line of each site', () => {
+  const found = scanText("const a = 1;\nconst s = { fontSize: 13 };\nconst b = { padding: '0 18px' };\n");
+  assert.deepEqual(found.map((f) => f.line), [2, 3]);
 });
 
 test('a percent in unquoted CSS text is captured whole, not truncated to a bare number', () => {
