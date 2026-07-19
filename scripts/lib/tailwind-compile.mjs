@@ -29,9 +29,15 @@ export function manifestClasses(manifest) {
 }
 
 /** A class as it appears in Tailwind's compiled selector, minus the leading dot.
- *  Tailwind escapes every character that is not [A-Za-z0-9_-]. */
+ *  Tailwind escapes every character that is not [A-Za-z0-9_-] with a backslash,
+ *  except a *leading* digit: CSS identifiers cannot start with one, so it is
+ *  hex-escaped instead — a backslash, the code point in lowercase hex, and a
+ *  single trailing space (e.g. `2xl:hidden` -> `\32 xl\:hidden`). */
 export function escapeClass(cls) {
-  return cls.replace(/[^A-Za-z0-9_-]/g, (ch) => `\\${ch}`);
+  const backslash = (s) => s.replace(/[^A-Za-z0-9_-]/g, (ch) => `\\${ch}`);
+  if (/^[0-9]/.test(cls))
+    return `\\${cls.codePointAt(0).toString(16)} ${backslash(cls.slice(1))}`;
+  return backslash(cls);
 }
 
 /** Compile the preset together with every component manifest as content.
@@ -52,8 +58,10 @@ export function compileLayer(opts = {}) {
   const out = join(dir, 'out.css');
   try {
     const r = spawnSync(process.execPath, [bin, '-i', '-', '-o', out], { input: entry, encoding: 'utf8' });
-    if (r.status !== 0)
+    if (r.status !== 0) {
+      if (r.error) throw new Error(`tailwindcss failed to spawn: ${r.error.message || r.error}`);
       throw new Error(`tailwindcss exited ${r.status}\n${r.stderr || r.stdout}`);
+    }
     return { css: readFileSync(out, 'utf8'), manifests };
   } finally {
     rmSync(dir, { recursive: true, force: true });
