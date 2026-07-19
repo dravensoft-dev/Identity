@@ -1,18 +1,19 @@
 {
   "component": "Button",
   "slots": {
-    "root": "inline-flex items-center justify-center gap-2 rounded-sm font-[var(--fw-semibold)] transition-[background,transform,box-shadow] duration-[var(--dur-fast)] ease-[var(--ease-out)]"
+    "root": "inline-flex items-center justify-center gap-2 rounded-sm font-semibold transition-[background,transform,box-shadow] duration-[var(--dur-fast)] ease-[var(--ease-out)]"
   },
   "variants": {
     "variant": {
-      "primary": { "root": "bg-primary text-primary-content border border-primary hover:shadow-[var(--shadow-2)]" },
+      "primary": { "root": "bg-primary text-primary-content border border-primary hover:shadow-2" },
       "danger":  { "root": "bg-transparent border border-error text-error hover:bg-[var(--danger-soft)]" }
     },
     "size": {
-      "sm": { "root": "h-[var(--dz-ctl-h-sm)] px-3 text-[13px]" },
-      "md": { "root": "h-[var(--dz-ctl-h)] px-[18px] text-[14px]" },
-      "lg": { "root": "h-[var(--dz-ctl-h-lg)] px-[26px] text-[15px]" }
+      "sm": { "root": "h-ctl-h-sm px-3 text-sm" },
+      "md": { "root": "h-ctl-h px-4.5 text-base" },
+      "lg": { "root": "h-ctl-h-lg px-6.5 text-md" }
     }
   },
   "defaultVariants": { "variant": "primary", "size": "md" }
 }
+
