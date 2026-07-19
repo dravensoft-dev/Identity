@@ -15,7 +15,7 @@ export function PageHead({ title, subtitle, actions, style, ...rest }) {
       flexDirection: narrow ? 'column' : 'row',
       alignItems: narrow ? 'stretch' : 'flex-start',
       justifyContent: 'space-between',
-      gap: 16, marginBottom: 20, ...style,
+      gap: 'calc(var(--sp-1) * 4)', marginBottom: 'calc(var(--sp-1) * 5)', ...style,
     }} {...rest}>
       <div style={{ minWidth: 0 }}>
         <h1 style={{
@@ -24,12 +24,12 @@ export function PageHead({ title, subtitle, actions, style, ...rest }) {
         }}>{title}</h1>
         {subtitle && <p style={{
           fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--mute)',
-          margin: '2px 0 0', lineHeight: 'var(--lh-body)',
+          margin: 'calc(var(--sp-1) * 0.5) 0 0', lineHeight: 'var(--lh-body)',
         }}>{subtitle}</p>}
       </div>
       {actions && (
         <div style={{
-          display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8,
+          display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 'calc(var(--sp-1) * 2)',
           flexShrink: 0, width: narrow ? '100%' : 'auto',
         }}>{actions}</div>
       )}

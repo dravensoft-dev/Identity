@@ -1,8 +1,8 @@
 import React from 'react';
 export function Checkbox({ checked = false, onChange, label, disabled = false, style, ...rest }) {
   return (
-    <label style={{ display: 'inline-flex', alignItems: 'center', gap: 10, cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.5 : 1, ...style }}>
-      <span style={{ width: 20, height: 20, borderRadius: 'var(--r-xs)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+    <label style={{ display: 'inline-flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2.5)', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.5 : 1, ...style }}>
+      <span style={{ width: 'calc(var(--sp-1) * 5)', height: 'calc(var(--sp-1) * 5)', borderRadius: 'var(--r-xs)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         background: checked ? 'var(--crimson)' : 'var(--surface-input)',
         border: 'var(--bw) solid ' + (checked ? 'var(--crimson)' : 'var(--line-strong)'),
         transition: 'background var(--dur-fast) var(--ease-out)' }}>

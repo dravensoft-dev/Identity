@@ -32,6 +32,17 @@ test('a calc() over tokens is legal, and its multipliers are not literals', () =
   assert.equal(scanValue('gap', "'calc(var(--sp-1) * 2.5)'"), null);
 });
 
+test('regression: a bare zero beside a calc() in the same shorthand is legal', () => {
+  // '0 calc(var(--sp-1) * 3)' is two values, a zero side and a derived
+  // side — not one value with a space in the middle. The space between "0"
+  // and "calc" must not be read as a unit boundary: UNIT_LITERAL used to
+  // allow whitespace before the unit letters, so "0 calc" matched with
+  // "calc" standing in as a bogus unit.
+  assert.equal(scanValue('padding', "'0 calc(var(--sp-1) * 3)'"), null);
+  assert.equal(scanValue('padding', "'0 calc(var(--sp-1) * 6) calc(var(--sp-1) * 5.5)'"), null);
+  assert.equal(scanValue('margin', "'0 0 0 calc(var(--sp-1) * 1)'"), null);
+});
+
 test('zero is legal, with or without quotes, including zero em', () => {
   assert.equal(scanValue('padding', '0'), null);
   assert.equal(scanValue('margin', "'0'"), null);

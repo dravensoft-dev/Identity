@@ -1,7 +1,7 @@
 import React from 'react';
 export function Tag({ children, onRemove, style, ...rest }) {
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px',
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 1.5)', padding: 'calc(var(--sp-1) * 1) calc(var(--sp-1) * 2.5)',
       background: 'var(--panel)', color: 'var(--bone-dim)', border: 'var(--bw) solid var(--color-base-300)',
       borderRadius: 'var(--r-sm)', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-md)', ...style }} {...rest}>
       {children}

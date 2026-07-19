@@ -27,7 +27,7 @@ export function ProgressBar({ value = 0, indeterminate = false, tone = 'accent',
   return (
     <div style={{ width: '100%', ...style }}>
       {(label || (showValue && !indeterminate)) && (
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8, gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 'calc(var(--sp-1) * 2)', gap: 'calc(var(--sp-1) * 3)' }}>
           {label && <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-md)', color: 'var(--bone-dim)' }}>{label}</span>}
           {showValue && !indeterminate && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{pct}%</span>}
         </div>

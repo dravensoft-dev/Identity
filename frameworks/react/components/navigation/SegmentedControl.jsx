@@ -16,8 +16,8 @@ import React, { useState } from 'react';
  */
 
 const SIZES = {
-  sm: { height: 28, padding: '0 10px', fontSize: 'var(--dz-text-sm)' },
-  md: { height: 34, padding: '0 14px', fontSize: 'var(--dz-text-md)' },
+  sm: { height: 'calc(var(--sp-1) * 7)', padding: '0 calc(var(--sp-1) * 2.5)', fontSize: 'var(--dz-text-sm)' },
+  md: { height: 'calc(var(--sp-1) * 8.5)', padding: '0 calc(var(--sp-1) * 3.5)', fontSize: 'var(--dz-text-md)' },
 };
 
 export function SegmentedControl({
@@ -39,7 +39,7 @@ export function SegmentedControl({
       role="radiogroup"
       aria-label={ariaLabel}
       style={{
-        display: 'inline-flex', alignItems: 'center', gap: 2, padding: 3,
+        display: 'inline-flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 0.5)', padding: 'calc(var(--sp-1) * 1)',
         background: 'var(--surface-input)',
         border: 'var(--bw) solid ' + (focus ? 'var(--gold)' : 'var(--color-base-300)'),
         borderRadius: 'var(--r-sm)',

@@ -12,22 +12,22 @@ export function Textarea({
   const len = typeof value === 'string' ? value.length : 0;
   const grow = (e) => { if (autoResize) { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; } };
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, ...style }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 1.5)', ...style }}>
       {label && (
         <label htmlFor={taId} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>
-          {label}{required && <span style={{ color: 'var(--crimson)', marginLeft: 4 }}>*</span>}
+          {label}{required && <span style={{ color: 'var(--crimson)', marginLeft: 'calc(var(--sp-1) * 1)' }}>*</span>}
         </label>
       )}
       <textarea id={taId} rows={rows} maxLength={maxLength} disabled={disabled} required={required}
         aria-invalid={!!error} value={value}
         onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
         onChange={(e) => { grow(e); onChange && onChange(e); }}
-        style={{ width: '100%', padding: '10px 12px', background: 'var(--surface-input)',
+        style={{ width: '100%', padding: 'calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 3)', background: 'var(--surface-input)',
           border: 'var(--bw) solid ' + borderColor, borderRadius: 'var(--r-sm)', boxShadow: ring,
           color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', lineHeight: 'var(--lh-body)',
           resize: autoResize ? 'none' : 'vertical', outline: 'none', opacity: disabled ? 0.5 : 1,
           transition: 'border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)' }} {...rest} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'calc(var(--sp-1) * 3)' }}>
         {error ? <span style={{ fontSize: 'var(--dz-text-sm)', color: 'var(--danger)', fontFamily: 'var(--font-body)' }}>{error}</span>
           : hint ? <span style={{ fontSize: 'var(--dz-text-sm)', color: 'var(--mute)', fontFamily: 'var(--font-body)' }}>{hint}</span> : <span />}
         {counter && maxLength && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', color: len > maxLength * 0.9 ? 'var(--warning)' : 'var(--mute)' }}>{len}/{maxLength}</span>}

@@ -4,7 +4,7 @@ import React from 'react';
  * `items`: [{ label, href?, onClick? }]. The last one is the current location (not navigable). */
 export function Breadcrumbs({ items = [], separator = '/', style }) {
   return (
-    <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, ...style }}>
+    <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 'calc(var(--sp-1) * 2)', ...style }}>
       {items.map((it, i) => {
         const last = i === items.length - 1;
         const common = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', letterSpacing: 'var(--ls-mono-nav)' };

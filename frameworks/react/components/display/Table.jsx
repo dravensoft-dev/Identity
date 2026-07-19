@@ -31,10 +31,10 @@ export function Table({
   return (
     <div ref={ref} style={{ width: '100%', ...style }}>
       {narrow ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 4)' }}>
           {rows.length === 0 && (
             <div style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
-              borderRadius: 'var(--r-lg)', padding: '32px 16px', textAlign: 'center',
+              borderRadius: 'var(--r-lg)', padding: 'calc(var(--sp-1) * 8) calc(var(--sp-1) * 4)', textAlign: 'center',
               color: 'var(--mute)', fontSize: 'var(--dz-text)' }}>{empty}</div>
           )}
           {rows.map((row, ri) => (
@@ -48,11 +48,11 @@ export function Table({
                 /* Full width, no label — for the actions column, whose buttons
                    name themselves and would look absurd beside an "ACTIONS" tag. */
                 <div key={c.key} style={{ width: '100%', display: 'flex', justifyContent: 'flex-end',
-                  gap: 8, borderTop: 'var(--bw) solid var(--color-base-300)', paddingTop: 8 }}>
+                  gap: 'calc(var(--sp-1) * 2)', borderTop: 'var(--bw) solid var(--color-base-300)', paddingTop: 'calc(var(--sp-1) * 2)' }}>
                   {cellValue(c, row)}
                 </div>
               ) : (
-                <div key={c.key} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
+                <div key={c.key} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 'calc(var(--sp-1) * 3)' }}>
                   <span style={headerLabel}>{c.header}</span>
                   <span style={{ ...valueStyle(c), minWidth: 0, textAlign: 'right', fontSize: 'var(--dz-text)' }}>
                     {cellValue(c, row)}
@@ -76,7 +76,7 @@ export function Table({
             </thead>
             <tbody>
               {rows.length === 0 && (
-                <tr><td colSpan={columns.length} style={{ ...cellBase, textAlign: 'center', color: 'var(--mute)', padding: '32px 16px' }}>{empty}</td></tr>
+                <tr><td colSpan={columns.length} style={{ ...cellBase, textAlign: 'center', color: 'var(--mute)', padding: 'calc(var(--sp-1) * 8) calc(var(--sp-1) * 4)' }}>{empty}</td></tr>
               )}
               {rows.map((row, ri) => (
                 <tr key={keyOf(row, ri)}

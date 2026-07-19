@@ -33,20 +33,20 @@ export function ProjectScreen({ onNav, project, onToast }) {
   return (
     <Shell active="dashboard" onNav={onNav} title={p.name}
       actions={<Button variant="primary" size="sm" icon={<Icon name="rocket" size={16} />} onClick={() => setOpen(true)}>Deploy</Button>}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)', marginBottom: 'calc(var(--sp-1) * 5)' }}>
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{p.client}</span>
         <Badge tone="success" dot>Deployed</Badge>
         {(p.tags || []).map((t) => <Tag key={t}>{t}</Tag>)}
       </div>
-      <Tabs tabs={['Overview', 'Deployments', 'Activity', 'Settings']} value={tab} onChange={setTab} style={{ marginBottom: 22 }} />
+      <Tabs tabs={['Overview', 'Deployments', 'Activity', 'Settings']} value={tab} onChange={setTab} style={{ marginBottom: 'calc(var(--sp-1) * 5.5)' }} />
 
       {tab === 'Deployments' && (
         <div style={{ border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)', overflow: 'hidden' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr auto', gap: 12, padding: '12px 20px', background: 'var(--panel)', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-column-header)', textTransform: 'uppercase', color: 'var(--mute)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr auto', gap: 'calc(var(--sp-1) * 3)', padding: 'calc(var(--sp-1) * 3) calc(var(--sp-1) * 5)', background: 'var(--panel)', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-column-header)', textTransform: 'uppercase', color: 'var(--mute)' }}>
             <span>Build</span><span>Environment</span><span>Status</span><span>Author</span><span>Duration</span><span></span>
           </div>
           {DEPLOYS.map((d, i) => (
-            <div key={d.build} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr auto', gap: 12, padding: '16px 20px', alignItems: 'center', background: 'var(--surface-card)', borderTop: i ? '1px solid var(--color-base-300)' : 'none' }}>
+            <div key={d.build} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr auto', gap: 'calc(var(--sp-1) * 3)', padding: 'calc(var(--sp-1) * 4) calc(var(--sp-1) * 5)', alignItems: 'center', background: 'var(--surface-card)', borderTop: i ? '1px solid var(--color-base-300)' : 'none' }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--gold)' }}>{d.build}</span>
               <span style={{ fontSize: 'var(--dz-text)', color: 'var(--bone-dim)' }}>{d.env}</span>
               <span><Badge tone={d.status[0]} dot>{d.status[1]}</Badge></span>
@@ -62,8 +62,8 @@ export function ProjectScreen({ onNav, project, onToast }) {
         <Card>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {ACTIVITY.map((a, i) => (
-              <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '14px 0', borderTop: i ? '1px solid var(--color-base-300)' : 'none' }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--crimson)' }} />
+              <div key={i} style={{ display: 'flex', gap: 'calc(var(--sp-1) * 3)', alignItems: 'center', padding: 'calc(var(--sp-1) * 3.5) 0', borderTop: i ? '1px solid var(--color-base-300)' : 'none' }}>
+                <span style={{ width: 'calc(var(--sp-1) * 2)', height: 'calc(var(--sp-1) * 2)', borderRadius: '50%', background: 'var(--crimson)' }} />
                 <span style={{ fontSize: 'var(--dz-text)', color: 'var(--bone-dim)' }}><b style={{ color: 'var(--bone)' }}>{a[0]}</b> {a[1]} <span style={{ color: 'var(--gold)', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)' }}>{a[2]}</span></span>
                 <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{a[3]}</span>
               </div>
@@ -73,24 +73,24 @@ export function ProjectScreen({ onNav, project, onToast }) {
       )}
 
       {tab === 'Overview' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'calc(var(--sp-1) * 4)' }}>
           <Card eyebrow="Status" title="Service health">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 'calc(var(--sp-1) * 4)' }}>
               {[['Uptime', '99.98%', 'var(--success)'], ['p95', '186 ms', 'var(--bone)'], ['Errors', '0.02%', 'var(--gold)']].map(([k, v, c]) => (
-                <div key={k}><div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{k}</div><div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-black)', fontSize: 28, color: c, marginTop: 6 }}>{v}</div></div>
+                <div key={k}><div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{k}</div><div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-black)', fontSize: 28, color: c, marginTop: 'calc(var(--sp-1) * 1.5)' }}>{v}</div></div>
               ))}
             </div>
           </Card>
           <Card eyebrow="Delivery" title="Next milestone">
             <div style={{ fontSize: 'var(--dz-text)', color: 'var(--bone-dim)', lineHeight: 'var(--lh-body)' }}>Release 2.5 — SEPA gateway.</div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--gold)', marginTop: 10 }}>in 6 days</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--gold)', marginTop: 'calc(var(--sp-1) * 2.5)' }}>in 6 days</div>
           </Card>
         </div>
       )}
 
       {tab === 'Settings' && (
-        <Card title="Automation" style={{ maxWidth: 520 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <Card title="Automation" style={{ maxWidth: 'calc(var(--sp-1) * 130)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 4.5)' }}>
             <Switch checked={auto} onChange={(e) => setAuto(e.target.checked)} label="Auto-deploy on approval" />
             <Switch checked={false} onChange={() => {}} label="Notify Slack on every release" />
             <Switch checked label="Require 2 approvals for production" />

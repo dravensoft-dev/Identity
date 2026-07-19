@@ -24,9 +24,9 @@ function useSpinKeyframes() {
 /* Heights come from the density tokens, so inside `.arena-compact` the button
  * re-densifies with the rows around it instead of towering over them. */
 const SIZES = {
-  sm: { padding: '0 12px', height: 'var(--dz-ctl-h-sm)', fontSize: 'var(--dz-text-md)' },
-  md: { padding: '0 18px', height: 'var(--dz-ctl-h)', fontSize: 'var(--dz-text)' },
-  lg: { padding: '0 26px', height: 'var(--dz-ctl-h-lg)', fontSize: 'var(--dz-text)' },
+  sm: { padding: '0 calc(var(--sp-1) * 3)', height: 'var(--dz-ctl-h-sm)', fontSize: 'var(--dz-text-md)' },
+  md: { padding: '0 calc(var(--sp-1) * 4.5)', height: 'var(--dz-ctl-h)', fontSize: 'var(--dz-text)' },
+  lg: { padding: '0 calc(var(--sp-1) * 6.5)', height: 'var(--dz-ctl-h-lg)', fontSize: 'var(--dz-text)' },
 };
 
 export function Button({
@@ -67,7 +67,7 @@ export function Button({
       onMouseDown={() => setActive(true)}
       onMouseUp={() => setActive(false)}
       style={{
-        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 'calc(var(--sp-1) * 2)',
         width: full ? '100%' : 'auto',
         height: s.height, padding: s.padding, fontSize: s.fontSize,
         fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)',
@@ -82,7 +82,7 @@ export function Button({
       }}
       {...rest}
     >
-      {loading ? <span className="arena-btn-spin" aria-hidden="true" style={{ width: 14, height: 14, boxSizing: 'border-box', border: 'var(--bw-strong) solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block' }} /> : icon}
+      {loading ? <span className="arena-btn-spin" aria-hidden="true" style={{ width: 'calc(var(--sp-1) * 3.5)', height: 'calc(var(--sp-1) * 3.5)', boxSizing: 'border-box', border: 'var(--bw-strong) solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block' }} /> : icon}
       {children}
       {iconRight}
     </button>

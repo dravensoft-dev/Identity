@@ -6,15 +6,15 @@ export function Card({ children, title, eyebrow, action, floating = false, accen
       borderRadius: 'var(--r-lg)', boxShadow: floating ? 'var(--shadow-2)' : 'none',
       overflow: 'hidden', ...style }} {...rest}>
       {(title || eyebrow || action) && (
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '18px 20px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: 'calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 5) 0' }}>
           <div>
-            {eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 6 }}>{eyebrow}</div>}
+            {eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 'calc(var(--sp-1) * 1.5)' }}>{eyebrow}</div>}
             {title && <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 18, color: 'var(--bone)' }}>{title}</div>}
           </div>
           {action}
         </div>
       )}
-      <div style={{ padding: 20 }}>{children}</div>
+      <div style={{ padding: 'calc(var(--sp-1) * 5)' }}>{children}</div>
     </div>
   );
 }

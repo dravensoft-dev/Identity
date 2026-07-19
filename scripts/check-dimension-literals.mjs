@@ -52,8 +52,13 @@ export const EXEMPT = new Map([
 const FREE_UNITS = ['%', 'ch', 'fr', 'vh', 'vw', 'vmin', 'vmax', 'deg', 's', 'ms'];
 const FREE_UNIT = new RegExp(`^\\s*'?-?\\d*\\.?\\d+(${FREE_UNITS.join('|')})'?\\s*$`);
 /** A number immediately carrying a unit — a candidate dimension literal,
- *  judged against FREE_UNITS above rather than against a fixed "bad" list. */
-const UNIT_LITERAL = /\d*\.?\d+\s*(%|[a-z]+)\b/g;
+ *  judged against FREE_UNITS above rather than against a fixed "bad" list.
+ *  No whitespace between the digits and the letters: CSS units never have
+ *  one, so admitting one made a shorthand like `'0 calc(var(--sp-1) * 3)'`
+ *  misread as `0 calc`, with "calc" itself standing in as a bogus unit —
+ *  the zero and the derivation are two different values in the same
+ *  shorthand, not one value with a gap in it. */
+const UNIT_LITERAL = /\d*\.?\d+(%|[a-z]+)\b/g;
 /** The whole value is a bare number (quoted or not). */
 const BARE_NUMBER = /^\s*'?-?\d*\.?\d+'?\s*$/;
 /** Zero, in the forms the layer writes it. */

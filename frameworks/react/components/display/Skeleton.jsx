@@ -29,9 +29,9 @@ export function Skeleton({ variant = 'block', width, height, lines = 3, radius, 
   if (variant === 'text' || variant === 'line') {
     if (variant === 'text' && lines > 1) {
       return (
-        <div role="status" aria-label="Loading" style={{ display: 'flex', flexDirection: 'column', gap: 10, width: width || '100%', ...style }}>
+        <div role="status" aria-label="Loading" style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 2.5)', width: width || '100%', ...style }}>
           {Array.from({ length: lines }).map((_, i) => (
-            <div key={i} className="arena-skeleton" style={{ height: 12, borderRadius: 'var(--r-xs)', width: i === lines - 1 ? '62%' : '100%' }} />
+            <div key={i} className="arena-skeleton" style={{ height: 'calc(var(--sp-1) * 3)', borderRadius: 'var(--r-xs)', width: i === lines - 1 ? '62%' : '100%' }} />
           ))}
         </div>
       );

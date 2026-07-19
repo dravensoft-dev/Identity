@@ -8,16 +8,16 @@ export function ChartCard({ title, actions, children, style, ...rest }) {
   return (
     <div style={{
       background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
-      borderRadius: 'var(--r-lg)', padding: 20,
-      display: 'flex', flexDirection: 'column', gap: 12, ...style,
+      borderRadius: 'var(--r-lg)', padding: 'calc(var(--sp-1) * 5)',
+      display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 3)', ...style,
     }} {...rest}>
       {(title || actions) && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'calc(var(--sp-1) * 3)' }}>
           {title && <span style={{
             fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-label)',
             textTransform: 'uppercase', color: 'var(--mute)',
           }}>{title}</span>}
-          {actions && <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{actions}</div>}
+          {actions && <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)' }}>{actions}</div>}
         </div>
       )}
       {children}

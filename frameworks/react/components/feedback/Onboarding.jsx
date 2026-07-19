@@ -9,7 +9,7 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
   const last = index === steps.length - 1;
   const W = 320;
 
-  let pos = { position: 'fixed', right: 24, bottom: 24, zIndex: 'var(--z-onboarding)' };
+  let pos = { position: 'fixed', right: 'calc(var(--sp-1) * 6)', bottom: 'calc(var(--sp-1) * 6)', zIndex: 'var(--z-onboarding)' };
   if (anchorRect) {
     const top = Math.min(anchorRect.bottom + 12, (typeof window !== 'undefined' ? window.innerHeight : 900) - 220);
     let left = anchorRect.left;
@@ -26,14 +26,14 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
       <div onClick={onSkip} style={{ position: 'fixed', inset: 0, zIndex: 'calc(var(--z-onboarding) - 10)', background: 'var(--scrim)' }} />
       <div role="dialog" aria-modal="true" aria-label={step.title}
         style={{ ...pos, width: W, maxWidth: '92vw', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)',
-          borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', padding: 20 }}>
-        {step.eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 8 }}>{step.eyebrow}</div>}
+          borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', padding: 'calc(var(--sp-1) * 5)' }}>
+        {step.eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 'calc(var(--sp-1) * 2)' }}>{step.eyebrow}</div>}
         {step.title && <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 18, color: 'var(--bone)', letterSpacing: 'var(--ls-tight)' }}>{step.title}</div>}
-        {step.body && <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 'var(--lh-body)', color: 'var(--bone-dim)', marginTop: 8 }}>{step.body}</div>}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 18 }}>
-          <div style={{ display: 'flex', gap: 6, flex: 1 }} aria-label={'Step ' + (index + 1) + ' of ' + steps.length}>
+        {step.body && <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 'var(--lh-body)', color: 'var(--bone-dim)', marginTop: 'calc(var(--sp-1) * 2)' }}>{step.body}</div>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 1.5)', marginTop: 'calc(var(--sp-1) * 4.5)' }}>
+          <div style={{ display: 'flex', gap: 'calc(var(--sp-1) * 1.5)', flex: 1 }} aria-label={'Step ' + (index + 1) + ' of ' + steps.length}>
             {steps.map((_, i) => (
-              <span key={i} style={{ width: i === index ? 18 : 7, height: 7, borderRadius: 'var(--r-pill)', background: i === index ? 'var(--crimson)' : 'var(--line-strong)', transition: 'width var(--dur-mid) var(--ease-out)' }} />
+              <span key={i} style={{ width: i === index ? 18 : 7, height: 'calc(var(--sp-1) * 2)', borderRadius: 'var(--r-pill)', background: i === index ? 'var(--crimson)' : 'var(--line-strong)', transition: 'width var(--dur-mid) var(--ease-out)' }} />
             ))}
           </div>
           {index > 0 && (
@@ -43,7 +43,7 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
             <button onClick={onSkip} style={{ ...foot, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontWeight: 'var(--fw-bold)', textTransform: 'uppercase' }}>Skip</button>
           )}
           <button onClick={last ? onDone : onNext}
-            style={{ height: 34, padding: '0 16px', background: 'var(--crimson)', color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--r-sm)',
+            style={{ height: 'calc(var(--sp-1) * 8.5)', padding: '0 calc(var(--sp-1) * 4)', background: 'var(--crimson)', color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--r-sm)',
               fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--dz-text-md)', cursor: 'pointer' }}>
             {last ? 'Got it' : 'Next'}
           </button>

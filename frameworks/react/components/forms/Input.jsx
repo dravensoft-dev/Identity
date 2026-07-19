@@ -49,13 +49,13 @@ export function Input({
   const ring = shownError ? '0 0 0 2px var(--danger-soft)' : focus ? '0 0 0 2px var(--gold-soft)' : isValid ? '0 0 0 2px var(--success-soft)' : 'none';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, ...style }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 1.5)', ...style }}>
       {label && (
         <label htmlFor={inputId} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>
-          {label}{required && <span style={{ color: 'var(--crimson)', marginLeft: 4 }}>*</span>}
+          {label}{required && <span style={{ color: 'var(--crimson)', marginLeft: 'calc(var(--sp-1) * 1)' }}>*</span>}
         </label>
       )}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 'var(--dz-ctl-h)', boxSizing: 'border-box', padding: '0 12px',
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', height: 'var(--dz-ctl-h)', boxSizing: 'border-box', padding: '0 calc(var(--sp-1) * 3)',
         background: 'var(--surface-input)', border: 'var(--bw) solid ' + borderColor,
         borderRadius: 'var(--r-sm)', boxShadow: ring, opacity: disabled ? 0.5 : 1,
         transition: 'border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)' }}>
