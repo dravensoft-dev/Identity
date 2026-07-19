@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { flattenTokens, previewFor } from './lib/token-preview.mjs';
 import { parseDecls } from './lib/css-decls.mjs';
+import { FILES } from './build-tokens.mjs';
 
 test('flattens a nested group into dash-joined custom-property names', () => {
   const out = flattenTokens({
@@ -57,24 +58,32 @@ test('an unknown type still yields a renderable shape rather than undefined', ()
   assert.equal(previewFor('brandnew', 'gradient'), 'value');
 });
 
+/** Regroups build-tokens.mjs's own FILES (one entry per output file, each
+ *  carrying an ordered list of {selector, source} blocks — some output files
+ *  have two blocks sharing one selector, e.g. effects.css's :root fed by both
+ *  effects.json and layering.json) into (sources[], css, selector) triples.
+ *  Deriving this from FILES, rather than re-declaring the mapping by hand
+ *  below, is the point: a new source file wired into the build is picked up
+ *  here automatically, with no matching edit needed in this test. */
+function deriveCases(files) {
+  const cases = [];
+  for (const file of files) {
+    const bySelector = new Map();
+    for (const { selector, source } of file.blocks) {
+      if (!bySelector.has(selector)) bySelector.set(selector, []);
+      bySelector.get(selector).push(`tokens/src/${source}`);
+    }
+    for (const [selector, sources] of bySelector) cases.push([sources, `tokens/${file.out}`, selector]);
+  }
+  return cases;
+}
+
 /* The page looks tokens up as --<name> via getComputedStyle. If this module derived
  * names differently from the build, every lookup would silently return "". */
 test('derived names match the custom properties the build actually emits', () => {
-  const cases = [
-    ['tokens/src/palette.dark.json', 'tokens/palette.css', ':root'],
-    ['tokens/src/palette.light.json', 'tokens/palette.css', '.arena-light'],
-    ['tokens/src/typography.json', 'tokens/typography.css', ':root'],
-    // spacing.css :root is fed by two source files — spacing.json and
-    // icon.json — the same pattern as effects.css below.
-    [['tokens/src/spacing.json', 'tokens/src/icon.json'], 'tokens/spacing.css', ':root'],
-    ['tokens/src/density.compact.json', 'tokens/spacing.css', '.arena-compact'],
-    // effects.css :root is fed by two source files — effects.json (radius,
-    // borders, elevation, scrim, focus, motion) and layering.json (z-*) — the
-    // same pattern as spacing.css, except both blocks share one selector.
-    [['tokens/src/effects.json', 'tokens/src/layering.json'], 'tokens/effects.css', ':root'],
-  ];
-  for (const [src, css, selector] of cases) {
-    const sources = Array.isArray(src) ? src : [src];
+  const cases = deriveCases(FILES);
+  assert.ok(cases.length >= 4, 'expected at least one case per output file');
+  for (const [sources, css, selector] of cases) {
     const derived = sources
       .flatMap((s) => flattenTokens(JSON.parse(readFileSync(s, 'utf8'))).map((t) => t.name))
       .sort();

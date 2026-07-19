@@ -146,7 +146,16 @@ Exposed in the Tailwind layer as `.z-dropdown` / `.z-tooltip` / `.z-modal` / `.z
   - **Fill** (`.ph-fill`) — active/selected state (e.g. the active navigation item, a toggle that's on).
   - **Duotone** (`.ph-duotone`) — only to highlight features/onboarding, with the crimson accent on the primary layer. Premium two-tone effect; use sparingly.
 - **Loading (default — install the package):** install `@phosphor-icons/web` and import its weight stylesheets, or `@phosphor-icons/react` (`<Rocket weight="bold"/>`), then apply the weight class plus the icon class: `<i class="ph-bold ph-rocket-launch"></i>`. **Prototype-only:** the CDN, e.g. `https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css`.
-- **Sizes — a token scale, not a magic number.** A glyph rendered as a webfont is still an icon, not type: an icon at 15px beside a label at 15px is not the same design decision as an icon at 16px, so icon sizes stay out of the `fs` scale and live in their own family, `icon.json` (`--icon-sm/md/lg/xl`, applied via `fontSize`, since Phosphor renders as a font): `icon.sm` (14px) for a compact inline glyph (e.g. a remove/status icon beside dense chrome), `icon.md` (16px) for the default inline control icon (close buttons, chevrons, list-item icons), `icon.lg` (18px) for a more prominent standalone icon (a tone icon, a search glyph), and `icon.xl` (34px) for an illustration-scale icon (`EmptyState`, `ErrorState`). In the Tailwind layer these are exposed under `--size-*`, not `--text-*` — `.size-icon-md` sets both width and height, since an icon is a size, not a font size. Color: inherits `currentColor`; accent only when interactive/active.
+- **Sizes** — a token family, `icon` (`tokens/src/icon.json`, generated into `tokens/spacing.css`), applied via `fontSize` since Phosphor renders as a webfont:
+
+  | Token | Value | Role |
+  |---|---|---|
+  | `--icon-sm` | 14px | compact inline glyph — a remove/status icon beside dense chrome |
+  | `--icon-md` | 16px | default inline control icon — close buttons, chevrons, list-item icons |
+  | `--icon-lg` | 18px | prominent standalone icon — a tone icon, a search glyph |
+  | `--icon-xl` | 34px | illustration-scale icon — `EmptyState`, `ErrorState` |
+
+  A glyph rendered as a webfont is still an icon, not type — an icon at 15px beside a label at 15px is not the same design decision as an icon at 16px — so these stay out of the `fs` scale. Exposed in the Tailwind layer under `--size-*`, not `--text-*`: `.size-icon-md` sets both width and height, since an icon is a size, not a font size. Color: inherits `currentColor`; accent only when interactive/active.
 - **Do not** override `font-family/weight/style` on `.ph-*` classes (breaks the glyphs).
 - **No emoji.** No arbitrary unicode as an icon. The **Rotor** (`assets/rotor-*.svg`) is brand, not a UI icon: don't use it as a functional glyph.
 - *Migration note:* the `console/Icon.jsx` UI kit uses its own stroke-style SVGs as a bridge; the official reference for new product work is Phosphor.
