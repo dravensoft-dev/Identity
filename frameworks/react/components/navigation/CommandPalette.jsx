@@ -33,7 +33,7 @@ export function CommandPalette({ open, onClose, commands = [], placeholder = 'Se
               style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)', width: '100%', textAlign: 'left', padding: 'calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 3)', borderRadius: 'var(--r-sm)', border: 'none', cursor: 'pointer',
                 background: idx === i ? 'var(--crimson-soft)' : 'transparent', color: idx === i ? 'var(--crimson)' : 'var(--bone-dim)' }}>
               {c.icon && <span style={{ fontSize: 'var(--icon-lg)', display: 'inline-flex' }}>{c.icon}</span>}
-              <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', fontWeight: idx === i ? 600 : 500 }}>{c.label}</span>
+              <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', fontWeight: idx === i ? 'var(--fw-semibold)' : 'var(--fw-medium)' }}>{c.label}</span>
               {c.shortcut && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{c.shortcut}</span>}
             </button>
           ))}

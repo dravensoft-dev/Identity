@@ -895,6 +895,103 @@ exhaustive pass's `CommandPalette` addition is also 14px) each carry a
 
 ---
 
+## Task 10b addendum — sites the original DECL-only gate could not see
+
+`scripts/check-dimension-literals.mjs`'s `DECL` pattern required a plain
+`prop: value` pair. A per-site read of the whole surface (Task 3, above) is only
+as exhaustive as the tool that measured it, and DECL could not see a literal
+sitting in a ternary branch, a destructured default parameter, or a JSX call-site
+prop passed straight through to a governed CSS property — three syntactic forms
+the original 514-site census never counted because the gate never rendered them
+visible. Task 10b taught the gate these forms (plus a narrowly-scoped inline
+arithmetic form, `ident * number`, reserved for exactly the shape `Avatar.jsx:14`
+already carries) and re-ran the census: 24 new site-instances across 20 code
+locations (a ternary with two literal branches reports as two site-instances at
+the same file:line, matching every other `--report=sites` row in this document).
+All 24 are classified below by the same three rules already stated once each
+above; none required inventing a new rule. Three sites the re-census also
+surfaced are explicitly out of scope and are recorded, not classified: `Rotor`'s
+`size` prop (Dravensoft's brand mark, not themeable — the same ruling that
+already exempts its fixed hex) and `Avatar.jsx:14`'s `fontSize: d * 0.4` (a
+ratio scaling the initials with the avatar's own diameter, not a dimension).
+
+### fw (6 site-instances, adoption only)
+
+| File:line | Property | Now | Target | Note |
+|---|---|---|---|---|
+| `frameworks/react/components/navigation/Tabs.jsx:13` | `fontWeight` | `600` | fw.semibold | ternary branch, active tab label |
+| `frameworks/react/components/navigation/Tabs.jsx:13` | `fontWeight` | `500` | fw.medium | ternary branch, inactive tab label |
+| `frameworks/react/components/navigation/CommandPalette.jsx:36` | `fontWeight` | `600` | fw.semibold | ternary branch, highlighted command row |
+| `frameworks/react/components/navigation/CommandPalette.jsx:36` | `fontWeight` | `500` | fw.medium | ternary branch, unhighlighted command row |
+| `frameworks/react/ui_kits/console/Shell.jsx:28` | `fontWeight` | `600` | fw.semibold | ternary branch, active nav item |
+| `frameworks/react/ui_kits/console/Shell.jsx:28` | `fontWeight` | `500` | fw.medium | ternary branch, inactive nav item |
+
+### borders (6 site-instances, adoption only)
+
+| File:line | Property | Now | Target | Note |
+|---|---|---|---|---|
+| `frameworks/react/components/display/Calendar.jsx:150` | `borderLeft` | `'1px solid var(--color-base-300)'` | var(--bw) | ternary branch, day-column divider |
+| `frameworks/react/components/display/Table.jsx:84` | `borderTop` | `'1px solid var(--color-base-300)'` | var(--bw) | ternary branch, row divider (first row gets `'none'`) |
+| `frameworks/react/components/forms/IconButton.jsx:20` | `border` | `'1px solid var(--color-base-300)'` | var(--bw) | ternary branch, `variant !== 'solid'` |
+| `frameworks/react/ui_kits/console/ProjectScreen.jsx:49` | `borderTop` | `'1px solid var(--color-base-300)'` | var(--bw) | ternary branch, deploy row divider |
+| `frameworks/react/ui_kits/console/ProjectScreen.jsx:65` | `borderTop` | `'1px solid var(--color-base-300)'` | var(--bw) | ternary branch, activity row divider |
+| `frameworks/react/components/feedback/Spinner.jsx:42` | `border` | `(d >= 32 ? 3 : 2) + 'px solid currentColor'` | var(--bw-strong) on both branches — the larger spinner's 3px snaps to the nearer of `{1,2}` per the precedent already set for `Calendar`'s and `Toast`'s 3px accent bars; both branches land on the same token, so the ternary collapses to a plain string | pixel move, 3→2, for the `size="lg"` ring only |
+
+### sp (7 site-instances, Rule 3, numeric)
+
+| File:line | Property | Now | Target | Note |
+|---|---|---|---|---|
+| `frameworks/react/components/feedback/Alert.jsx:21` | `marginTop` | ternary branch `3` | var(--sp-1) | `4n±1`, does not derive cleanly, snaps to nearest multiple of 4 (pixel move 3→4), same rule as the 17 sites Task 10 already snapped |
+| `frameworks/react/components/forms/IconButton.jsx:18` | `padding` | ternary branch `'0 14px 0 12px'` | `'0 calc(var(--sp-1) * 3.5) 0 var(--sp-3)'` | 14 is `4n+2`, half-step derivation; 12 is on-grid, direct step |
+| `frameworks/react/components/forms/IconButton.jsx:19` | `gap` | ternary branch `8` | var(--sp-2) | on-grid, direct step |
+| `frameworks/react/components/feedback/Onboarding.jsx:36` | `width` | ternary branch `18` | `calc(var(--sp-1) * 4.5)` | `4n+2`, half-step derivation; step-indicator dot, active state |
+| `frameworks/react/components/feedback/Onboarding.jsx:36` | `width` | ternary branch `7` | var(--sp-2) | `4n-1`, does not derive cleanly, snaps to nearest multiple of 4 (pixel move 7→8) — matches the dot's own `height` (`calc(var(--sp-1) * 2)` = 8px) exactly, confirming the direction |
+| `frameworks/react/components/feedback/ConfirmDialog.jsx:6` | `width` (default parameter) | `460` | `calc(var(--sp-1) * 115)` | on-grid, no named `sp` step this large — same large-derivation pattern already used for `Toast`'s and `CommandPalette`'s widths |
+| `frameworks/react/components/feedback/Dialog.jsx:23` | `width` (default parameter) | `480` | `calc(var(--sp-1) * 120)` | on-grid, same pattern |
+
+### icon (5 site-instances, Rule 2 — passthrough form B/C)
+
+Icon's own `size` prop is not itself a governed CSS property name; `Icon.jsx`
+assigns it straight into `fontSize` one line below its declaration. `PASSTHROUGH`
+in the gate is what makes both the component's own default and every call site
+that overrides it visible — the same "does it actually reach a governed CSS
+property" read every other row in this document required, just applied to two
+new syntactic shapes rather than a new rule.
+
+| File:line | Property | Now | Target | Note |
+|---|---|---|---|---|
+| `frameworks/react/ui_kits/console/Icon.jsx:10` | `size` (default parameter, → `fontSize`) | `18` | var(--icon-lg) | Icon's own default |
+| `frameworks/react/ui_kits/console/Shell.jsx:29` | `size` (JSX call site, → `fontSize`) | `18` | var(--icon-lg) | nav item icon |
+| `frameworks/react/ui_kits/console/DashboardScreen.jsx:27` | `size` (JSX call site, → `fontSize`) | `16` | var(--icon-md) | "New project" button icon |
+| `frameworks/react/ui_kits/console/ProjectScreen.jsx:35` | `size` (JSX call site, → `fontSize`) | `16` | var(--icon-md) | "Deploy" button icon |
+| `frameworks/react/ui_kits/console/ProjectScreen.jsx:102` | `size` (JSX call site, → `fontSize`) | `16` | var(--icon-md) | confirm-deploy dialog button icon |
+
+### Out of scope — recorded, not classified
+
+| File:line | Property | Now | Why it is left alone |
+|---|---|---|---|
+| `frameworks/react/components/display/Avatar.jsx:14` | `fontSize` | `d * 0.4` | A ratio scaling the initials with the avatar's own diameter, not a dimension — the rule governs dimensions, not the multiplier that derives one instance from another. Exempted by name in `EXEMPT`, the same discipline `Calendar`'s `zIndex` exemption already establishes. |
+| `frameworks/react/components/brand/Rotor.jsx:27` | `size` (default parameter, → `width`/`height`) | `48` | Dravensoft's brand mark; the source spec is explicit that brand assets are not themeable, and the same logic covers its size — fixing it to a token would quietly make the mark resizable by a re-skin. |
+| `frameworks/react/ui_kits/console/Shell.jsx:19` | `size` (JSX call site, → `width`/`height`) | `30` | `Rotor` call site — same brand-mark exemption. |
+| `frameworks/react/ui_kits/console/LoginScreen.jsx:13` | `size` (JSX call site, → `width`/`height`) | `40` | `Rotor` call site — same brand-mark exemption. |
+
+### Updated family totals (Task 10b delta)
+
+| Family | Sites before 10b | +10b | Sites after 10b |
+|---|---:|---:|---:|
+| `fw` | 33 | 6 | 39 |
+| borders | 56 | 6 | 62 |
+| `sp` | 229 | 7 | 236 |
+| `icon` | 17 | 5 | 22 |
+| `fs` | 23 | 0 | 23 (unchanged — Task 11's scope, not this task's) |
+| **Total** | **514** | **24** | **538** |
+
+`bun scripts/check-dimension-literals.mjs` reports exactly the 23 `fs` sites
+after Task 10b's fixes — every other family's delta above is resolved, not
+pending.
+
+---
+
 ## Family totals
 
 | Family | Sites | Notes |

@@ -3,7 +3,7 @@ import { Button } from '../forms/Button.jsx';
 /** Confirmation of high-consequence actions. Does NOT close on click-outside (avoids losses).
  * `requireText` forces typing a word to enable the destructive action. */
 export function ConfirmDialog({ open, onCancel, onConfirm, title, eyebrow = 'Confirm', children,
-  confirmLabel = 'Confirm', cancelLabel = 'Cancel', destructive = false, requireText, width = 460 }) {
+  confirmLabel = 'Confirm', cancelLabel = 'Cancel', destructive = false, requireText, width = 'calc(var(--sp-1) * 115)' }) {
   const [typed, setTyped] = useState('');
   if (!open) return null;
   const locked = requireText ? typed.trim() !== requireText : false;

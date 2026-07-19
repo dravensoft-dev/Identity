@@ -18,7 +18,7 @@ export function Alert({ tone = 'info', title, children, icon, action, onClose, s
       <i className={icon || t.icon} style={{ color: t.color, fontSize: 'var(--icon-lg)', lineHeight: 'var(--dz-lh)', flexShrink: 0, marginTop: 0 }} />
       <div style={{ flex: 1 }}>
         {title && <div style={{ fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--dz-text)', color: 'var(--bone)' }}>{title}</div>}
-        {children && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--bone-dim)', lineHeight: 'var(--lh-body)', marginTop: title ? 3 : 0 }}>{children}</div>}
+        {children && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--bone-dim)', lineHeight: 'var(--lh-body)', marginTop: title ? 'var(--sp-1)' : 0 }}>{children}</div>}
         {action && (
           <button onClick={action.onClick}
             style={{ marginTop: 'calc(var(--sp-1) * 2.5)', background: 'none', border: 'none', padding: 0, cursor: 'pointer',

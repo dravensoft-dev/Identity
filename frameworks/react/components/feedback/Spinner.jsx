@@ -39,7 +39,7 @@ export function Spinner({ size = 'md', tone = 'accent', label = 'Loading', style
     <span role="status" aria-label={label} style={{ display: 'inline-flex', color, ...style }} {...rest}>
       <span className="arena-spinner" aria-hidden="true" style={{
         width: d, height: d, boxSizing: 'border-box',
-        border: (d >= 32 ? 3 : 2) + 'px solid currentColor', borderTopColor: 'transparent',
+        border: 'var(--bw-strong) solid currentColor', borderTopColor: 'transparent',
         borderRadius: '50%', display: 'inline-block',
       }} />
     </span>

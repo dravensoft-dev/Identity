@@ -24,7 +24,7 @@ const PROJECTS = [
 export function DashboardScreen({ onNav, onOpenProject }) {
   return (
     <Shell active="dashboard" onNav={onNav} title="Projects"
-      actions={<Button variant="primary" size="sm" icon={<Icon name="plus" size={16} />}>New project</Button>}>
+      actions={<Button variant="primary" size="sm" icon={<Icon name="plus" size="var(--icon-md)" />}>New project</Button>}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'calc(var(--sp-1) * 4)', marginBottom: 'calc(var(--sp-1) * 7)' }}>
         {METRICS.map((m) => (
           <div key={m.k} style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)', padding: 'calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 5)' }}>

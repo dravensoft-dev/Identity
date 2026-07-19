@@ -147,7 +147,7 @@ export function Calendar({
             {days.map((d, di) => (
               <div key={d} onClick={onDateClick ? () => onDateClick(d) : undefined}
                 style={{ flex: 1, minWidth: 0, position: 'relative',
-                  borderLeft: di === 0 ? 'none' : '1px solid var(--color-base-300)',
+                  borderLeft: di === 0 ? 'none' : 'var(--bw) solid var(--color-base-300)',
                   cursor: onDateClick ? 'pointer' : 'default' }}>
                 {byDay[di].map((p) => {
                   const color = catColor(p.ev.slot ?? 1);

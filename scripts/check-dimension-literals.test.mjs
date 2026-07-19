@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scanValue, scanText } from './check-dimension-literals.mjs';
+import { scanValue, scanText, scanDefaultsAndCallSites, EXEMPT } from './check-dimension-literals.mjs';
 
 test('a bare number is a violation for a dimension-valued property', () => {
   assert.ok(scanValue('fontSize', '13'));
@@ -109,4 +109,146 @@ test('regression: ProgressBar.jsx keyframe text no longer reads as three violati
     '.arena-prog-ind::after{content:"";position:absolute;top:0;bottom:0;width:40%;border-radius:inherit;background:currentColor;animation:arena-prog 1.15s var(--ease-in-out) infinite}' +
     '@media (prefers-reduced-motion:reduce){.arena-prog-ind::after{animation-duration:2.4s}}';
   assert.deepEqual(scanText(keyframes), []);
+});
+
+test("regression: '4 px' (a space before the unit) is a violation, not a legal length", () => {
+  // A previous fix required the digits and the unit letters to be adjacent,
+  // to stop '0 calc(...)' misreading "calc" as a bogus unit (see the
+  // regression test above this one). That fix over-corrected: CSS has no
+  // such thing as a spaced-out length, so '4 px' is not a legal alternate
+  // spelling of '4px' -- it is the same bare literal with a typo, and must
+  // still fail. The (?!\() guard is what lets both stay true at once.
+  assert.ok(scanValue('padding', "'4 px'"));
+  assert.ok(scanValue('width', "'12 pt'"));
+  assert.deepEqual(scanText("const s = { padding: '4 px' };").map((f) => f.prop), ['padding']);
+});
+
+test('regression: a bare zero beside calc() stays legal, and a mixed calc()+px shorthand still flags, with the (?!\\() guard in place', () => {
+  assert.equal(scanValue('padding', "'0 calc(var(--sp-1) * 3)'"), null);
+  assert.ok(scanValue('width', "'calc(var(--sp-1) * 2) 4px'"));
+});
+
+// --- Form A: ternary branches -----------------------------------------
+// `prop: cond ? branchA : branchB` -- DECL alone stops at the condition,
+// which is never itself a literal, so whichever branch IS one used to be
+// invisible.
+
+test('a ternary branch that is a bare literal is a violation', () => {
+  const found = scanText("const s = { fontWeight: on ? 600 : 400 };");
+  assert.deepEqual(found.map((f) => ({ prop: f.prop, raw: f.raw })), [
+    { prop: 'fontWeight', raw: '600' },
+    { prop: 'fontWeight', raw: '400' },
+  ]);
+});
+
+test('a ternary whose branches are already tokens is legal on both sides', () => {
+  assert.deepEqual(scanText("const s = { width: full ? '100%' : 'auto' };"), []);
+  assert.deepEqual(
+    scanText("const s = { fontWeight: on ? 'var(--fw-semibold)' : 'var(--fw-medium)' };"),
+    []
+  );
+});
+
+test('a ternary nested inside a string concatenation still resolves its branches', () => {
+  // `'var(--bw) solid ' + (cond ? 'a' : 'b')` -- the outer value is a
+  // concatenation, not a pure ternary, but both branches are still judged;
+  // a token on both sides stays legal.
+  const found = scanText(
+    "const s = { border: 'var(--bw) solid ' + (locked ? 'var(--danger)' : 'var(--color-base-300)') };"
+  );
+  assert.deepEqual(found, []);
+});
+
+// --- Form B: default parameters -----------------------------------------
+// `function Icon({ size = 18 })` -- a destructured default uses `=`, not
+// `:`, so DECL never sees it at all.
+
+test('a default parameter whose name is itself a governed CSS property is a violation', () => {
+  const src = "function Dialog({ open, title, width = 480 }) {\n  return null;\n}";
+  const found = scanDefaultsAndCallSites(src);
+  assert.deepEqual(found.map((f) => ({ prop: f.prop, raw: f.raw })), [
+    { prop: 'width', raw: '480' },
+  ]);
+});
+
+test('a default parameter on a named passthrough component resolves through the alias', () => {
+  // Icon's own prop is called `size`, not `fontSize` -- PASSTHROUGH is what
+  // tells the gate the two are the same value one line away.
+  const src = "function Icon({ name, size = 18, weight = 'bold' }) {\n  return null;\n}";
+  const found = scanDefaultsAndCallSites(src);
+  assert.deepEqual(found.map((f) => ({ prop: f.prop, raw: f.raw })), [
+    { prop: 'fontSize', raw: '18' },
+  ]);
+});
+
+test('a default parameter whose name is neither a governed prop nor a registered passthrough is ignored', () => {
+  const src = "function Toast({ title, tone = 'neutral', persist = false }) {\n  return null;\n}";
+  assert.deepEqual(scanDefaultsAndCallSites(src), []);
+});
+
+test('a default parameter assigning an already-resolved token is legal', () => {
+  const src = "function Icon({ size = 'var(--icon-lg)' }) {\n  return null;\n}";
+  assert.deepEqual(scanDefaultsAndCallSites(src), []);
+});
+
+test('a plain variable assignment outside a parameter list is never in scope', () => {
+  // `const top = Math.min(...)` reads exactly like `top = <expr>`, but it
+  // sits outside any `({ ... })` parameter list and must not be mistaken
+  // for a component default.
+  const src = "function f() {\n  const top = Math.min(anchorRect.bottom + 12, 900 - 220);\n  return top;\n}";
+  assert.deepEqual(scanDefaultsAndCallSites(src), []);
+});
+
+// --- Form C: component props at the call site ---------------------------
+// `<Icon size={16} />` renders a dimension at the call site; PASSTHROUGH is
+// the same named, hand-curated registry form B reads, applied to JSX
+// attributes instead of a default value.
+
+test('a JSX call site overriding a registered passthrough prop with a bare number is a violation', () => {
+  const found = scanDefaultsAndCallSites('<Icon name="plus" size={16} />');
+  assert.deepEqual(found.map((f) => ({ prop: f.prop, raw: f.raw })), [
+    { prop: 'fontSize', raw: '16' },
+  ]);
+});
+
+test('a JSX call site passing a token through a registered passthrough prop is legal', () => {
+  assert.deepEqual(scanDefaultsAndCallSites('<Icon name="plus" size={\'var(--icon-md)\'} />'), []);
+});
+
+test('a JSX prop on a component NOT in the passthrough registry is never scanned, by design', () => {
+  // The gate does not attempt to infer whether an arbitrary prop reaches a
+  // governed CSS property -- `<Textarea rows={3} />` and `<input
+  // maxLength={20} />` are ordinary numeric props Arena has no opinion
+  // about, and only a named, hand-curated entry (like Icon's own) puts a
+  // component in scope for this scan at all.
+  assert.deepEqual(scanDefaultsAndCallSites('<Textarea rows={3} />'), []);
+  assert.deepEqual(scanDefaultsAndCallSites('<input maxLength={20} />'), []);
+});
+
+// --- Form D: inline arithmetic (narrow) ----------------------------------
+// `prop: ident * 0.4` -- the whole value is an expression, so neither
+// scanValue's bare-number path nor a var()/calc() derivation ever sees the
+// literal inside it. Deliberately narrow: it stops at the first operator
+// and does not reach into a wrapping function call.
+
+test('an inline arithmetic expression standing as the whole value is a violation', () => {
+  const found = scanText('const s = { fontSize: d * 0.4 };');
+  assert.deepEqual(found.map((f) => ({ prop: f.prop, raw: f.raw })), [
+    { prop: 'fontSize', raw: 'd * 0.4' },
+  ]);
+});
+
+test('an arithmetic literal wrapped in a function call is out of this narrow form\'s scope', () => {
+  // Documents the boundary rather than hiding it: `Math.max(8, d * 0.28)`
+  // is a different shape (the operator does not follow the identifier
+  // immediately -- a `(` does), and catching it is left to a follow-up
+  // pass rather than folded into this task's named forms.
+  assert.deepEqual(scanText('const s = { width: Math.max(8, d * 0.28) };'), []);
+});
+
+test('EXEMPT records the three out-of-scope literals this task leaves untouched, by name', () => {
+  assert.ok(EXEMPT.has('frameworks/react/components/display/Avatar.jsx:fontSize:d * 0.4'));
+  assert.ok(EXEMPT.has('frameworks/react/components/brand/Rotor.jsx:width:48'));
+  assert.ok(EXEMPT.has('frameworks/react/ui_kits/console/Shell.jsx:width:30'));
+  assert.ok(EXEMPT.has('frameworks/react/ui_kits/console/LoginScreen.jsx:width:40'));
 });

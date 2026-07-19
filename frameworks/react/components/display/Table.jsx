@@ -81,7 +81,7 @@ export function Table({
               {rows.map((row, ri) => (
                 <tr key={keyOf(row, ri)}
                   onClick={onRowClick ? () => onRowClick(row, ri) : undefined}
-                  style={{ borderTop: ri === 0 ? 'none' : '1px solid var(--color-base-300)',
+                  style={{ borderTop: ri === 0 ? 'none' : 'var(--bw) solid var(--color-base-300)',
                     cursor: onRowClick ? 'pointer' : 'default',
                     transition: 'background var(--dur-fast) var(--ease-out)' }}
                   onMouseEnter={onRowClick ? (e) => (e.currentTarget.style.background = 'var(--panel)') : undefined}

@@ -25,8 +25,8 @@ export function Shell({ active = 'dashboard', onNav, title, actions, children })
             <button key={n.id} onClick={() => onNav && onNav(n.id)}
               style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)', padding: 'calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 3)', borderRadius: 'var(--r-sm)',
                 background: on ? 'var(--crimson-soft)' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left',
-                color: on ? 'var(--crimson)' : 'var(--mute)', fontFamily: 'var(--font-body)', fontWeight: on ? 600 : 500, fontSize: 'var(--dz-text)' }}>
-              <Icon name={n.icon} size={18} />{n.label}
+                color: on ? 'var(--crimson)' : 'var(--mute)', fontFamily: 'var(--font-body)', fontWeight: on ? 'var(--fw-semibold)' : 'var(--fw-medium)', fontSize: 'var(--dz-text)' }}>
+              <Icon name={n.icon} size="var(--icon-lg)" />{n.label}
             </button>
           );
         })}

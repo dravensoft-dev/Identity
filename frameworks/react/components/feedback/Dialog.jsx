@@ -20,7 +20,7 @@ function usePopKeyframes() {
   }, []);
 }
 
-export function Dialog({ open, onClose, title, eyebrow, children, footer, width = 480 }) {
+export function Dialog({ open, onClose, title, eyebrow, children, footer, width = 'calc(var(--sp-1) * 120)' }) {
   usePopKeyframes();
   if (!open) return null;
   return (

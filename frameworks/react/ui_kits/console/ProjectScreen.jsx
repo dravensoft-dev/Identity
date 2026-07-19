@@ -32,7 +32,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
 
   return (
     <Shell active="dashboard" onNav={onNav} title={p.name}
-      actions={<Button variant="primary" size="sm" icon={<Icon name="rocket" size={16} />} onClick={() => setOpen(true)}>Deploy</Button>}>
+      actions={<Button variant="primary" size="sm" icon={<Icon name="rocket" size="var(--icon-md)" />} onClick={() => setOpen(true)}>Deploy</Button>}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)', marginBottom: 'calc(var(--sp-1) * 5)' }}>
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{p.client}</span>
         <Badge tone="success" dot>Deployed</Badge>
@@ -46,7 +46,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
             <span>Build</span><span>Environment</span><span>Status</span><span>Author</span><span>Duration</span><span></span>
           </div>
           {DEPLOYS.map((d, i) => (
-            <div key={d.build} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr auto', gap: 'calc(var(--sp-1) * 3)', padding: 'calc(var(--sp-1) * 4) calc(var(--sp-1) * 5)', alignItems: 'center', background: 'var(--surface-card)', borderTop: i ? '1px solid var(--color-base-300)' : 'none' }}>
+            <div key={d.build} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr auto', gap: 'calc(var(--sp-1) * 3)', padding: 'calc(var(--sp-1) * 4) calc(var(--sp-1) * 5)', alignItems: 'center', background: 'var(--surface-card)', borderTop: i ? 'var(--bw) solid var(--color-base-300)' : 'none' }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--gold)' }}>{d.build}</span>
               <span style={{ fontSize: 'var(--dz-text)', color: 'var(--bone-dim)' }}>{d.env}</span>
               <span><Badge tone={d.status[0]} dot>{d.status[1]}</Badge></span>
@@ -62,7 +62,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
         <Card>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {ACTIVITY.map((a, i) => (
-              <div key={i} style={{ display: 'flex', gap: 'calc(var(--sp-1) * 3)', alignItems: 'center', padding: 'calc(var(--sp-1) * 3.5) 0', borderTop: i ? '1px solid var(--color-base-300)' : 'none' }}>
+              <div key={i} style={{ display: 'flex', gap: 'calc(var(--sp-1) * 3)', alignItems: 'center', padding: 'calc(var(--sp-1) * 3.5) 0', borderTop: i ? 'var(--bw) solid var(--color-base-300)' : 'none' }}>
                 <span style={{ width: 'calc(var(--sp-1) * 2)', height: 'calc(var(--sp-1) * 2)', borderRadius: '50%', background: 'var(--crimson)' }} />
                 <span style={{ fontSize: 'var(--dz-text)', color: 'var(--bone-dim)' }}><b style={{ color: 'var(--bone)' }}>{a[0]}</b> {a[1]} <span style={{ color: 'var(--gold)', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)' }}>{a[2]}</span></span>
                 <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{a[3]}</span>
@@ -99,7 +99,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
       )}
 
       <Dialog open={open} onClose={() => setOpen(false)} eyebrow="Confirm" title="Deploy to production"
-        footer={<><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button variant="primary" icon={<Icon name="rocket" size={16} />} onClick={deploy}>Deploy #4822</Button></>}>
+        footer={<><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button variant="primary" icon={<Icon name="rocket" size="var(--icon-md)" />} onClick={deploy}>Deploy #4822</Button></>}>
         You'll publish build <b style={{ color: 'var(--gold)', fontFamily: 'var(--font-mono)' }}>#4822</b> of <b style={{ color: 'var(--bone)' }}>{p.name}</b> to all {p.client} users. You can roll back at any time.
       </Dialog>
     </Shell>

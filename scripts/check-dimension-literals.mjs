@@ -41,6 +41,14 @@ const PROPS = new Set([
 export const EXEMPT = new Map([
   ['frameworks/react/components/display/Calendar.jsx:zIndex:1',
    'local stacking inside a positioned container; does not join the global z order'],
+  ['frameworks/react/components/display/Avatar.jsx:fontSize:d * 0.4',
+   'a ratio scaling the initials with the avatar\'s own diameter, not a dimension — the rule governs dimensions, not the multiplier that derives one instance from another'],
+  ['frameworks/react/components/brand/Rotor.jsx:width:48',
+   'Dravensoft\'s brand mark; the source spec is explicit that brand assets are not themeable, and the same logic covers its size — fixing it to a token would quietly make the mark resizable by a re-skin'],
+  ['frameworks/react/ui_kits/console/Shell.jsx:width:30',
+   'Rotor call site — brand mark, not themeable, see Rotor.jsx\'s own exemption'],
+  ['frameworks/react/ui_kits/console/LoginScreen.jsx:width:40',
+   'Rotor call site — brand mark, not themeable, see Rotor.jsx\'s own exemption'],
 ]);
 
 /** Units the token layer genuinely does not model, and that are legal
@@ -53,12 +61,18 @@ const FREE_UNITS = ['%', 'ch', 'fr', 'vh', 'vw', 'vmin', 'vmax', 'deg', 's', 'ms
 const FREE_UNIT = new RegExp(`^\\s*'?-?\\d*\\.?\\d+(${FREE_UNITS.join('|')})'?\\s*$`);
 /** A number immediately carrying a unit — a candidate dimension literal,
  *  judged against FREE_UNITS above rather than against a fixed "bad" list.
- *  No whitespace between the digits and the letters: CSS units never have
- *  one, so admitting one made a shorthand like `'0 calc(var(--sp-1) * 3)'`
- *  misread as `0 calc`, with "calc" itself standing in as a bogus unit —
- *  the zero and the derivation are two different values in the same
- *  shorthand, not one value with a gap in it. */
-const UNIT_LITERAL = /\d*\.?\d+(%|[a-z]+)\b/g;
+ *  Whitespace between the digits and the letters is allowed here — CSS
+ *  itself never has one, so `'4 px'` is not a legal length, it is a typo
+ *  for `'4px'` that still asserts a bare dimension and must still fail.
+ *  What whitespace must not do is let a *function name* stand in as a
+ *  bogus unit: a naive `\d+\s*[a-z]+` reads `'0 calc(var(--sp-1) * 3)'` as
+ *  `0` + unit `calc`, when "0" and the calc() are two different values in
+ *  the same shorthand, not one value with a gap in it. The `(?!\()` guard
+ *  is what tells the two apart — a real unit is never followed by `(`,
+ *  only a function call is, so excluding that one shape keeps `calc(`,
+ *  `min(`, `max(`, `rgba(` and friends from ever being misread as a unit
+ *  while still catching a spaced-out `px`, `pt`, `em`. */
+const UNIT_LITERAL = /\d*\.?\d+\s*(%|[a-z]+)\b(?!\()/g;
 /** The whole value is a bare number (quoted or not). */
 const BARE_NUMBER = /^\s*'?-?\d*\.?\d+'?\s*$/;
 /** Zero, in the forms the layer writes it. */
@@ -98,6 +112,37 @@ export function scanValue(prop, raw) {
 // the one character in FREE_UNIT's list that fell outside that class.
 const DECL = /(?<![\w.])([a-zA-Z]+)\s*:\s*('[^']*'|"[^"]*"|`[^`]*`|[-\w.%]+)/g;
 
+/** `prop: cond ? branchA : branchB` — DECL alone stops at the condition
+ *  (`on`, `showLabel`, `i`), which is never itself a literal, so a ternary
+ *  hides whichever branch IS one. Both branches are judged independently:
+ *  `fontWeight: on ? 600 : 400` is two violations in the same shorthand,
+ *  `width: full ? '100%' : 'auto'` is legal on both sides. The condition
+ *  itself is deliberately unconstrained (`[^,{}?:]+?`) — it is anything
+ *  from a bare identifier (`on`) to a comparison (`idx === i`) — because
+ *  the gate does not need to understand the condition, only find where it
+ *  ends. A condition folded inside a string concatenation
+ *  (`'var(--bw) solid ' + (cond ? 'a' : 'b')`) also matches this loosely,
+ *  which is harmless: both branches there are always token references and
+ *  scanValue passes them, so the extra match costs nothing. */
+const TERNARY = /(?<![\w.])([a-zA-Z]+)\s*:\s*[^,{}?:]+?\?\s*('[^']*'|"[^"]*"|`[^`]*`|[^:,}]+?)\s*:\s*('[^']*'|"[^"]*"|`[^`]*`|[^,}]+?)\s*(?=[,}])/g;
+
+/** `prop: ident * 0.4` — the entire value is an arithmetic expression, not
+ *  a `var()`/`calc()` derivation and not a plain literal, so neither DECL
+ *  nor scanValue's own bare-number path ever sees the number inside it.
+ *  Scoped narrowly to "identifier (optionally a.b member chain), one
+ *  operator, one number" — the exact shape of a scaling ratio — so it does
+ *  not reach into a wrapping function call like `Math.max(8, d * 0.28)`;
+ *  the operator must follow the identifier immediately, and `Math.max(`
+ *  puts a `(` there instead. That narrower shape is deliberate: it is
+ *  reserved for a follow-up pass, not this task's named forms. */
+const ARITH = /(?<![\w.])([a-zA-Z]+)\s*:\s*([a-zA-Z_$][\w.$]*\s*[*+/-]\s*-?\d*\.?\d+)\s*(?=[,}])/g;
+
+/** @param {string} text @param {number} index
+ *  @returns {number} 1-based line, counted by newlines up to `index`. */
+function lineOf(text, index) {
+  return text.slice(0, index).split('\n').length;
+}
+
 /** @param {string} text
  *  @returns {{prop: string, raw: string, reason: string, line: number}[]}
  *  `line` is 1-based, counted by newlines up to the match — it is what
@@ -107,9 +152,74 @@ export function scanText(text) {
   for (const m of text.matchAll(DECL)) {
     const [, prop, raw] = m;
     const hit = scanValue(prop, raw);
-    if (hit) {
-      const line = text.slice(0, m.index).split('\n').length;
-      out.push({ prop, raw, reason: hit.reason, line });
+    if (hit) out.push({ prop, raw, reason: hit.reason, line: lineOf(text, m.index) });
+  }
+  for (const m of text.matchAll(TERNARY)) {
+    const [, prop, branchA, branchB] = m;
+    if (!PROPS.has(prop)) continue;
+    const line = lineOf(text, m.index);
+    for (const raw of [branchA, branchB]) {
+      const hit = scanValue(prop, raw);
+      if (hit) out.push({ prop, raw, reason: hit.reason, line });
+    }
+  }
+  for (const m of text.matchAll(ARITH)) {
+    const [, prop, raw] = m;
+    if (!PROPS.has(prop)) continue;
+    const line = lineOf(text, m.index);
+    out.push({ prop, raw, reason: 'an inline literal in an arithmetic expression, not a token', line });
+  }
+  return out;
+}
+
+/** A prop name that is not itself a governed CSS property, but that a named
+ *  component assigns unmodified into one, one line away, in the same file
+ *  — verified by reading the component, not inferred. This is deliberately
+ *  a short, hand-curated list rather than a scan of every JSX attribute on
+ *  every element: a generic scan cannot tell `<Icon size={16} />` (a
+ *  rendered dimension) from `<Textarea rows={3} />` or `<input
+ *  maxLength={20} />` (ordinary numeric props Arena's token layer has no
+ *  opinion about) without the same "does this actually reach a governed
+ *  CSS property" read this map already encodes by name. Growing this list
+ *  costs the same review Calendar's zIndex EXEMPT entry costs — it is not
+ *  free, and that is the point. */
+const PASSTHROUGH = new Map([
+  ['Icon', { prop: 'size', governs: 'fontSize' }],
+  ['Rotor', { prop: 'size', governs: 'width' }],
+]);
+
+/** A component's own default value for a passthrough prop or for a prop
+ *  that is itself a governed CSS property name — `function Icon({ size =
+ *  18 })` and `function Dialog({ width = 480 })` are the same blind spot:
+ *  DECL requires `:`, and a destructured default uses `=`. Scoped to the
+ *  text between a function's `({` and the matching `}) {` so a plain
+ *  variable assignment elsewhere in the file (`const top = Math.min(...)`)
+ *  is never in scope — only the parameter list itself is. */
+const COMPONENT_PARAMS = /function\s+([A-Za-z_]\w*)\s*\(\{([\s\S]*?)\}\)\s*\{/g;
+const PARAM_DEFAULT = /(?<![\w.])([a-zA-Z]+)\s*=\s*('[^']*'|"[^"]*"|`[^`]*`|[-\w.%]+)(?=[,\s]|$)/g;
+
+/** @param {string} text
+ *  @returns {{prop: string, raw: string, reason: string, line: number}[]} */
+export function scanDefaultsAndCallSites(text) {
+  const out = [];
+  for (const fn of text.matchAll(COMPONENT_PARAMS)) {
+    const [, name, params] = fn;
+    const paramsStart = fn.index + fn[0].indexOf('{');
+    const via = PASSTHROUGH.get(name);
+    for (const m of params.matchAll(PARAM_DEFAULT)) {
+      const [, prop, raw] = m;
+      const governs = PROPS.has(prop) ? prop : (via && via.prop === prop ? via.governs : null);
+      if (!governs) continue;
+      const hit = scanValue(governs, raw);
+      if (hit) out.push({ prop: governs, raw, reason: hit.reason, line: lineOf(text, paramsStart + m.index) });
+    }
+  }
+  for (const [name, via] of PASSTHROUGH) {
+    const re = new RegExp(`<${name}\\b[^>]*?\\b${via.prop}\\s*=\\s*\\{([^}]+)\\}`, 'g');
+    for (const m of text.matchAll(re)) {
+      const raw = m[1].trim();
+      const hit = scanValue(via.governs, raw);
+      if (hit) out.push({ prop: via.governs, raw, reason: hit.reason, line: lineOf(text, m.index) });
     }
   }
   return out;
@@ -132,7 +242,8 @@ function collect() {
   const found = [];
   for (const file of walk(join(repoRoot, 'frameworks'))) {
     const rel = relative(repoRoot, file);
-    for (const hit of scanText(readFileSync(file, 'utf8'))) {
+    const text = readFileSync(file, 'utf8');
+    for (const hit of [...scanText(text), ...scanDefaultsAndCallSites(text)]) {
       if (EXEMPT.has(`${rel}:${hit.prop}:${hit.raw}`)) continue;
       found.push({ file: rel, ...hit });
     }
