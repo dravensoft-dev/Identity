@@ -7,7 +7,7 @@ import {
 } from './calendar-internals.js';
 
 const HOUR_H = 44;
-const GUTTER = 56;
+const GUTTER = 'calc(var(--sp-1) * 14)';
 
 /** Week/day schedule on a time grid. `events`: [{id, title, start, end, slot, meta}]
  * with `start`/`end` as ISO datetimes; `timeZone` is an IANA name and is required —

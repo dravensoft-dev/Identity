@@ -23,7 +23,7 @@ export function Skeleton({ variant = 'block', width, height, lines = 3, radius, 
   useShimmer();
   const base = { borderRadius: radius || 'var(--r-sm)' };
   if (variant === 'circle') {
-    const d = height || width || 40;
+    const d = height || width || 'var(--sp-10)';
     return <div className="arena-skeleton" aria-hidden="true" style={{ width: d, height: d, borderRadius: '50%', ...style }} />;
   }
   if (variant === 'text' || variant === 'line') {
@@ -36,7 +36,7 @@ export function Skeleton({ variant = 'block', width, height, lines = 3, radius, 
         </div>
       );
     }
-    return <div className="arena-skeleton" role="status" aria-label="Loading" style={{ height: height || 12, width: width || '100%', borderRadius: 'var(--r-xs)', ...style }} />;
+    return <div className="arena-skeleton" role="status" aria-label="Loading" style={{ height: height || 'var(--sp-3)', width: width || '100%', borderRadius: 'var(--r-xs)', ...style }} />;
   }
-  return <div className="arena-skeleton" role="status" aria-label="Loading" style={{ width: width || '100%', height: height || 96, ...base, ...style }} />;
+  return <div className="arena-skeleton" role="status" aria-label="Loading" style={{ width: width || '100%', height: height || 'var(--sp-24)', ...base, ...style }} />;
 }

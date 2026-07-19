@@ -7,18 +7,26 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
   if (!open || !steps.length) return null;
   const step = steps[index] || {};
   const last = index === steps.length - 1;
+  // The popover's own width also bounds the right-edge clamp below, which
+  // needs a real JS number (it is compared against window.innerWidth) --
+  // W stays a plain constant for that reason. The rendered `width:` further
+  // down uses the CSS-string derivation of the same value, calc(var(--sp-1)
+  // * 80); the two must be changed together if the popover's width ever is.
   const W = 320;
+  // Mirrors var(--sp-4) (16px) -- the popover's minimum gutter from either
+  // viewport edge. Both edges of the clamp below read this one constant so
+  // they cannot drift apart from each other; it stays a plain number, not a
+  // token reference, for the same reason W does: Math.min/Math.max need
+  // real JS numbers, and nothing in this layer reads a CSS custom
+  // property's value back into JS.
+  const EDGE = 16;
 
   let pos = { position: 'fixed', right: 'calc(var(--sp-1) * 6)', bottom: 'calc(var(--sp-1) * 6)', zIndex: 'var(--z-onboarding)' };
   if (anchorRect) {
     const top = Math.min(anchorRect.bottom + 12, (typeof window !== 'undefined' ? window.innerHeight : 900) - 220);
-    // Both edges of this clamp are the same gutter, expressed once so they
-    // cannot drift apart: CSS clamp() reads var(--sp-4) at both ends, where
-    // two separate Math.min/Math.max calls used to each carry their own
-    // copy of the literal 16. 100vw also drops the window.innerWidth guard
-    // this needed only for the right-edge bound -- CSS already knows the
-    // viewport width without asking `window`.
-    pos = { position: 'fixed', top, left: `clamp(var(--sp-4), ${anchorRect.left}px, calc(100vw - ${W}px - var(--sp-4)))`, zIndex: 'var(--z-onboarding)' };
+    let left = anchorRect.left;
+    if (typeof window !== 'undefined') left = Math.min(left, window.innerWidth - W - EDGE);
+    pos = { position: 'fixed', top, left: Math.max(EDGE, left), zIndex: 'var(--z-onboarding)' };
   }
 
   const foot = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-uppercase-status)' };
@@ -29,7 +37,7 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
         * than a second token. */}
       <div onClick={onSkip} style={{ position: 'fixed', inset: 0, zIndex: 'calc(var(--z-onboarding) - 10)', background: 'var(--scrim)' }} />
       <div role="dialog" aria-modal="true" aria-label={step.title}
-        style={{ ...pos, width: W, maxWidth: '92vw', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)',
+        style={{ ...pos, width: 'calc(var(--sp-1) * 80)', maxWidth: '92vw', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)',
           borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', padding: 'calc(var(--sp-1) * 5)' }}>
         {step.eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 'calc(var(--sp-1) * 2)' }}>{step.eyebrow}</div>}
         {step.title && <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 18, color: 'var(--bone)', letterSpacing: 'var(--ls-tight)' }}>{step.title}</div>}

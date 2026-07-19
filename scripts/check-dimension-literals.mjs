@@ -11,6 +11,17 @@
  * Tailwind's bracket syntax, this one on literals in inline style objects.
  * Together they close both idioms.
  *
+ * ARCHITECTURE. Earlier passes added one regex per syntactic shape (a
+ * ternary branch, an arithmetic expression, a call argument) and each new
+ * shape kept finding a shape the others could not see. This version instead
+ * separates "where is a value" from "what is in it": readValue/expressionLeaves
+ * find every terminal sub-expression a governed property's value (or a local
+ * declaration's initializer) can bottom out at -- a ternary branch, an `||`/`??`
+ * fallback, a plain leaf -- using balanced-text scanning rather than a single
+ * regex, so nesting (`a ? (b ? 12 : 14) : 16`) is read correctly instead of
+ * garbled. scanLeaf then judges each leaf once, the same way regardless of
+ * which shape produced it.
+ *
  *   bun scripts/check-dimension-literals.mjs                 -> exit 0 if none, 1 otherwise
  *   bun scripts/check-dimension-literals.mjs --report        -> the census, grouped
  *   bun scripts/check-dimension-literals.mjs --report=sites  -> one line per site: file:line  prop: raw
@@ -37,7 +48,8 @@ const PROPS = new Set([
 
 /* Two correct sites look exactly like defects, so they are named rather than
  * inferred — the same discipline check-tailwind-coverage.mjs applies to its
- * token exclusions. Keyed "<path>:<prop>:<raw>". */
+ * token exclusions. Keyed "<path>:<prop>:<raw>". staleExemptions() below is
+ * what keeps this map honest as the code around it changes. */
 export const EXEMPT = new Map([
   ['frameworks/react/components/display/Calendar.jsx:zIndex:1',
    'local stacking inside a positioned container; does not join the global z order'],
@@ -103,58 +115,176 @@ export function scanValue(prop, raw) {
   return null;
 }
 
-// The bareword alternative carries `%` alongside `-\w.`: without it a value
-// like `left:-40%` inside CSS text (ProgressBar.jsx's injected keyframes
-// string) is captured as `-40`, silently losing the unit that FREE_UNIT
-// needs to recognise it as legal — a truncated capture, not a real bare
-// number. Every other unit this gate treats as free (ch, fr, vh, vw, vmin,
-// vmax, deg, s, ms) is already alphabetic and so already inside \w; `%` was
-// the one character in FREE_UNIT's list that fell outside that class.
-const DECL = /(?<![\w.])([a-zA-Z]+)\s*:\s*('[^']*'|"[^"]*"|`[^`]*`|[-\w.%]+)/g;
+// --- Balanced-text reading -------------------------------------------
+// Every function below scans character-by-character rather than with a
+// single regex, because the thing they are bounding — a value, a ternary,
+// an `||` chain — can nest arbitrarily, and a regex that assumes one level
+// of nesting is exactly the bug findings 1 and 3 of fix pass 2 were: a
+// value like `Math.max(8, d * 0.28)` or a chained ternary
+// `a ? 4 : b ? 10 : 6` both defeated a purely regex-shaped scanner.
 
-/** `prop: cond ? branchA : branchB` — DECL alone stops at the condition
- *  (`on`, `showLabel`, `i`), which is never itself a literal, so a ternary
- *  hides whichever branch IS one. Both branches are judged independently:
- *  `fontWeight: on ? 600 : 400` is two violations in the same shorthand,
- *  `width: full ? '100%' : 'auto'` is legal on both sides. The condition
- *  itself is deliberately unconstrained (`[^,{}?:]+?`) — it is anything
- *  from a bare identifier (`on`) to a comparison (`idx === i`) — because
- *  the gate does not need to understand the condition, only find where it
- *  ends. A condition folded inside a string concatenation
- *  (`'var(--bw) solid ' + (cond ? 'a' : 'b')`) also matches this loosely,
- *  which is harmless: both branches there are always token references and
- *  scanValue passes them, so the extra match costs nothing. */
-const TERNARY = /(?<![\w.])([a-zA-Z]+)\s*:\s*[^,{}?:]+?\?\s*('[^']*'|"[^"]*"|`[^`]*`|[^:,}]+?)\s*:\s*('[^']*'|"[^"]*"|`[^`]*`|[^,}]+?)\s*(?=[,}])/g;
+/** Advances past a string literal starting at `text[i]` (the opening
+ *  `quote`), honoring backslash escapes. @returns the index of the closing
+ *  quote (or the last index, if the string is unterminated). */
+function skipString(text, i, quote) {
+  for (let j = i + 1; j < text.length; j++) {
+    if (text[j] === '\\') { j++; continue; }
+    if (text[j] === quote) return j;
+  }
+  return text.length - 1;
+}
 
-/** `prop: ident * 0.4` — the entire value is an arithmetic expression, not
- *  a `var()`/`calc()` derivation and not a plain literal, so neither DECL
- *  nor scanValue's own bare-number path ever sees the number inside it.
- *  The leading term is an identifier (optionally a.b member chain) with an
- *  *optional* single-level call suffix — `y(m) - 5` and `yOf(values[hover])
- *  - 8` are the same shape as `d * 0.4`, just with a call standing in for
- *  the plain identifier, so the same regex covers both by making that
- *  suffix optional rather than adding a second pattern for it. Nested
- *  parens inside the call are deliberately unsupported (`[^()]*`, one
- *  level only) — every real site is a single flat call, and a second
- *  parenthesised layer would need genuine parsing, not a wider class. */
-const ARITH = /(?<![\w.])([a-zA-Z]+)\s*:\s*([a-zA-Z_$][\w.$]*(?:\([^()]*\))?\s*[*+/-]\s*-?\d*\.?\d+)\s*(?=[,}])/g;
+/** Replaces every `//` and `/* *\/` comment in `text` with spaces (newlines
+ *  stay newlines), so every scanner below sees only real code — string
+ *  literals are respected the same way readValue respects them, so a `//`
+ *  or `/*` inside a string is never mistaken for a comment start. This
+ *  runs first, before any other scan, because this codebase's own house
+ *  style backtick-quotes code references in prose comments (`` `width:` ``,
+ *  `` `--sp-1` ``): a governed prop name followed by a colon and a stray
+ *  backtick, sitting in a comment, is indistinguishable from a real
+ *  `prop:` site to a scanner that does not know comments exist — it sends
+ *  the balanced-text reader hunting for a closing backtick anywhere later
+ *  in the file, and everything in between reads as one garbled value.
+ *  Length and line numbers are preserved exactly (every replaced character
+ *  becomes exactly one space, `\n` stays `\n`), so lineOf() stays correct
+ *  on the blanked text. */
+function blankComments(text) {
+  let out = '';
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === "'" || c === '"' || c === '`') {
+      const end = skipString(text, i, c);
+      out += text.slice(i, end + 1);
+      i = end;
+      continue;
+    }
+    if (c === '/' && text[i + 1] === '/') {
+      let j = i;
+      while (j < text.length && text[j] !== '\n') { out += ' '; j++; }
+      i = j - 1;
+      continue;
+    }
+    if (c === '/' && text[i + 1] === '*') {
+      let j = i + 2;
+      while (j < text.length && !(text[j] === '*' && text[j + 1] === '/')) j++;
+      const end = Math.min(j + 1, text.length - 1);
+      for (let k = i; k <= end; k++) out += (text[k] === '\n' ? '\n' : ' ');
+      i = end;
+      continue;
+    }
+    out += c;
+  }
+  return out;
+}
 
-/** `prop: Math.max(8, d * 0.28)` — the entire value is a call, and DECL's
- *  bareword capture stops at the callee name (`Math.max`), never reaching
- *  the arguments. Unlike ARITH above, a call is not unconditionally a
- *  violation — `height: y(endMin)` is a legal derived value with no
- *  literal in it — so each top-level argument is judged on its own via
- *  scanValue: `8` is a bare number and fails, `d * 0.28` contains an
- *  identifier and is left alone the same way `d * 0.4` would be if it
- *  stood alone. Bounded to one call, no trailing arithmetic after the
- *  closing paren (that shape is ARITH's, above) and no nested parens in
- *  the argument list, for the same reason ARITH stays single-level. */
-const CALL = /(?<![\w.])([a-zA-Z]+)\s*:\s*([a-zA-Z_$][\w.$]*)\(([^()]*)\)\s*(?=[,}])/g;
+/** Reads a value starting at `text[start]` up to the first top-level
+ *  character in `stopChars` — "top-level" meaning outside any
+ *  `()`/`[]`/`{}` nesting and outside any string literal. This is what
+ *  lets a value like `Math.max(8, d * 0.28)` (an inner comma) or a
+ *  template string containing `{`/`}` be read whole, where a fixed-shape
+ *  regex either stops too early or too late.
+ *  @returns {{text: string, end: number}} */
+function readValue(text, start, stopChars) {
+  let i = start, depth = 0;
+  for (; i < text.length; i++) {
+    const c = text[i];
+    if (c === "'" || c === '"' || c === '`') { i = skipString(text, i, c); continue; }
+    if (c === '(' || c === '[' || c === '{') { depth++; continue; }
+    if (c === ')' || c === ']') { depth--; continue; }
+    if (c === '}') { if (depth === 0 && stopChars.has('}')) break; depth--; continue; }
+    if (depth === 0 && stopChars.has(c)) break;
+  }
+  return { text: text.slice(start, i), end: i };
+}
+
+/** `text` wrapped in one redundant pair of parens, stripped — `(b ? 12 :
+ *  14)` becomes `b ? 12 : 14` so the ternary inside is reachable. Declines
+ *  if the leading `(` does not close at the very end (`(a) + (b)` is not a
+ *  single wrapped expression). */
+function stripOuterParens(text) {
+  const t = text.trim();
+  if (t[0] !== '(' || t[t.length - 1] !== ')') return t;
+  let depth = 0;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (c === "'" || c === '"' || c === '`') { i = skipString(t, i, c); continue; }
+    if (c === '(') depth++;
+    else if (c === ')') { depth--; if (depth === 0) return i === t.length - 1 ? t.slice(1, -1).trim() : t; }
+  }
+  return t;
+}
+
+/** Splits `text` on its first top-level `?`/`:` ternary pair, tracking
+ *  ternary depth the same way parens are tracked (each top-level `?`
+ *  increments, each top-level `:` decrements; the outer pair is the one
+ *  that brings the count back to zero) — so a nested ternary's own `:`
+ *  is never mistaken for the outer one's, the exact bug in
+ *  `a ? (b ? 12 : 14) : 16` and in `size==='sm'?4:size==='lg'?10:6`
+ *  (right-chained, no parens — the same shape, one fewer character).
+ *  `?.` and `??` are excluded from starting a ternary. Object literals
+ *  and type annotations never appear in a value position here, so every
+ *  top-level `:` at this depth belongs to a ternary, not a key.
+ *  @returns {{cond: string, a: string, b: string} | null} */
+function splitTernary(text) {
+  let depth = 0, qDepth = 0, qStart = -1;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === "'" || c === '"' || c === '`') { i = skipString(text, i, c); continue; }
+    if (c === '(' || c === '[' || c === '{') { depth++; continue; }
+    if (c === ')' || c === ']' || c === '}') { depth--; continue; }
+    if (depth !== 0) continue;
+    if (c === '?') {
+      if (text[i + 1] === '.' || text[i + 1] === '?') { i++; continue; }
+      if (qStart === -1) qStart = i;
+      qDepth++;
+    } else if (c === ':') {
+      qDepth--;
+      if (qDepth === 0) return { cond: text.slice(0, qStart), a: text.slice(qStart + 1, i), b: text.slice(i + 1) };
+    }
+  }
+  return null;
+}
+
+/** Splits `text` on every top-level occurrence of `||` or `??` — the one
+ *  other place this layer's literals hide behind an operator:
+ *  `height || 12` and `height || width || 40`. Same depth/string
+ *  discipline as splitTernary. */
+function splitFallback(text) {
+  const parts = [];
+  let depth = 0, start = 0;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === "'" || c === '"' || c === '`') { i = skipString(text, i, c); continue; }
+    if (c === '(' || c === '[' || c === '{') { depth++; continue; }
+    if (c === ')' || c === ']' || c === '}') { depth--; continue; }
+    if (depth === 0 && (text.startsWith('||', i) || text.startsWith('??', i))) {
+      parts.push(text.slice(start, i));
+      start = i + 2;
+      i += 1;
+    }
+  }
+  parts.push(text.slice(start));
+  return parts;
+}
+
+/** Flattens a value expression into every terminal leaf it can bottom out
+ *  at, recursing through nested ternaries and `||`/`??` chains. A leaf is
+ *  whatever is left once no more top-level `?:`/`||`/`??` can be found —
+ *  a literal, a token, an identifier, a call, an arithmetic expression.
+ *  @returns {string[]} */
+export function expressionLeaves(text) {
+  const stripped = stripOuterParens(text);
+  const ternary = splitTernary(stripped);
+  if (ternary) return [...expressionLeaves(ternary.a), ...expressionLeaves(ternary.b)];
+  const fallbackParts = splitFallback(stripped);
+  if (fallbackParts.length > 1) return fallbackParts.flatMap(expressionLeaves);
+  return [stripped.trim()];
+}
 
 /** Splits a call's argument list on top-level commas, tracking `[`/`]`
- *  depth so a bracketed index like `values[hover]` (no comma inside it in
- *  practice, but defensive regardless) never causes a false split. Parens
- *  are already excluded from the input by CALL's own `[^()]*`. */
+ *  depth so a bracketed index like `values[hover]` never causes a false
+ *  split. Parens are excluded from the input by construction (see
+ *  scanLeaf's single-level call match). */
 function splitArgs(text) {
   const args = [];
   let depth = 0, start = 0;
@@ -168,46 +298,161 @@ function splitArgs(text) {
   return args.map((a) => a.trim()).filter((a) => a.length > 0);
 }
 
+const CALL_SHAPE = /^([a-zA-Z_$][\w.$]*)\(([^()]*)\)$/;
+const ARITH_SHAPE = /^[a-zA-Z_$][\w.$]*(?:\([^()]*\))?\s*[*+/-]\s*-?\d*\.?\d+$/;
+
+/** Scans one leaf's text for every bare-literal sub-value it carries.
+ *  Three shapes, tried in order: the leaf itself is a literal (direct,
+ *  via scanValue — handles a plain value, quoted or not, and a raw unit
+ *  anywhere in a shorthand string); the leaf is a single flat call, whose
+ *  arguments are judged one at a time (`Math.max(8, d * 0.28)` flags `8`,
+ *  leaves `d * 0.28` alone the same way a lone ratio would be); the leaf
+ *  is an identifier (optionally with a single-level call prefix) combined
+ *  arithmetically with a trailing number (`d * 0.4`, `y(m) - 5`) — always
+ *  a violation, since that whole shape only exists to carry a literal.
+ *  A nested-parens call (`Math.max(8, Math.min(d, 40))`) is deliberately
+ *  out of scope for the same reason ARITH stays single-level: no real
+ *  site has that shape, and a wider class needs real parsing, not a
+ *  wider regex. Anything else — a plain identifier, a var() token, a
+ *  legal free-unit value — returns no hits.
+ *  @returns {{raw: string, reason: string}[]} */
+function scanLeaf(prop, leaf) {
+  const trimmed = leaf.trim();
+  if (!trimmed) return [];
+
+  const direct = scanValue(prop, trimmed);
+  if (direct) return [{ raw: trimmed, reason: direct.reason }];
+
+  const callMatch = CALL_SHAPE.exec(trimmed);
+  if (callMatch) {
+    const hits = [];
+    for (const arg of splitArgs(callMatch[2])) {
+      const hit = scanValue(prop, arg);
+      if (hit) hits.push({ raw: arg, reason: hit.reason });
+    }
+    return hits;
+  }
+
+  if (ARITH_SHAPE.test(trimmed))
+    return [{ raw: trimmed, reason: 'an inline literal in an arithmetic expression, not a token' }];
+
+  return [];
+}
+
 /** @param {string} text @param {number} index
  *  @returns {number} 1-based line, counted by newlines up to `index`. */
 function lineOf(text, index) {
   return text.slice(0, index).split('\n').length;
 }
 
+const COLON_STOP = new Set([',', '}']);
+/** Finds every `<governed-prop>:` in `text` (object-literal position, not
+ *  preceded by a word character or `.`) and returns its name and the
+ *  index right after the colon, so the caller can read the value from
+ *  there. Intentionally unfiltered by PROPS at the regex level, same as
+ *  every scanner before this one — the filter happens once, by name,
+ *  against PROPS, rather than duplicating that set into the regex. */
+const PROP_COLON = /(?<![\w.])([a-zA-Z]+)\s*:\s*/g;
+
+/** The colon-level scan alone, over already-blanked `text`: every
+ *  `<governed-prop>:` value, flattened into leaves, each leaf judged by
+ *  scanLeaf. Shared by scanText (the public entry point) and scanDataflow
+ *  below, which needs the same pass to find which identifiers are used
+ *  bare at a governed colon before it can trace them back to a
+ *  declaration. */
+function scanColonValues(text) {
+  const out = [];
+  for (const m of text.matchAll(PROP_COLON)) {
+    const prop = m[1];
+    if (!PROPS.has(prop)) continue;
+    const valueStart = m.index + m[0].length;
+    const { text: rawValue } = readValue(text, valueStart, COLON_STOP);
+    const line = lineOf(text, m.index);
+    for (const leaf of expressionLeaves(rawValue))
+      for (const hit of scanLeaf(prop, leaf))
+        out.push({ prop, raw: hit.raw, reason: hit.reason, line });
+  }
+  return out;
+}
+
 /** @param {string} text
  *  @returns {{prop: string, raw: string, reason: string, line: number}[]}
  *  `line` is 1-based, counted by newlines up to the match — it is what
- *  --report=sites and Task 3's classification pass locate a site by. */
-export function scanText(text) {
+ *  --report=sites and Task 3's classification pass locate a site by.
+ *  Combines the direct colon-level scan with the dataflow rule below (a
+ *  literal reached through an intermediate variable) — both need the same
+ *  view of the file, so a caller gets the complete answer from one call
+ *  rather than needing to know to call scanDataflow separately too. */
+export function scanText(rawText) {
+  const text = blankComments(rawText);
+  return [...scanColonValues(text), ...scanDataflow(text)];
+}
+
+// --- Dataflow: a literal reached through a local variable ----------------
+// `const h = size === 'sm' ? 4 : size === 'lg' ? 10 : 6;` then `height: h`
+// elsewhere in the file breaks every scanner above, which all require the
+// literal to sit at (or be reachable from) a governed prop's own colon.
+// Deliberately narrow, per the same review that asked for it: an
+// identifier only qualifies if (a) it is declared with `const`/`let` and
+// its initializer carries at least one genuine literal per the same
+// leaf-scanning rules used at a colon, AND (b) that exact identifier later
+// appears as a *bare* leaf — the whole value, or a whole ternary/fallback
+// branch, with no member access, no call, no arithmetic — at a governed
+// prop's colon in the same file. Both conditions are required: this layer
+// carries roughly forty local `const x = ...<number>...` declarations, and
+// most are indices, lengths and counts (`const n = values.length`, `const
+// pct = Math.max(0, Math.min(100, ...))`) whose name never reaches a
+// governed colon bare — condition (b) is what leaves them alone, not a
+// guess about what a number "means".
+const LOCAL_DECL = /(?<![\w.])(?:const|let)\s+([a-zA-Z_$][\w$]*)\s*=\s*/g;
+const STATEMENT_STOP = new Set([',', ';', '}']);
+const BARE_IDENTIFIER = /^[a-zA-Z_$][\w$]*$/;
+
+/** @param {string} text
+ *  @returns {Map<string, {rhs: string, line: number}[]>} every local
+ *  `const`/`let` declaration in the file, by name. A name can have more
+ *  than one declaration (block-scoped shadowing, or a second variable of
+ *  the same name in a different function) — every one is scanned. */
+function localDeclarations(text) {
+  const decls = new Map();
+  for (const m of text.matchAll(LOCAL_DECL)) {
+    const name = m[1];
+    const start = m.index + m[0].length;
+    const { text: rhs } = readValue(text, start, STATEMENT_STOP);
+    if (!decls.has(name)) decls.set(name, []);
+    decls.get(name).push({ rhs, line: lineOf(text, m.index) });
+  }
+  return decls;
+}
+
+/** @param {string} text
+ *  @returns {{prop: string, raw: string, reason: string, line: number}[]}
+ *  One entry per literal found in a qualifying declaration's initializer —
+ *  reported at the declaration's own line (where the fix actually lands),
+ *  not at the colon that revealed it reaches a governed property. */
+function scanDataflow(text) {
+  const bareUsages = new Map(); // identifier name -> governing prop (first one wins; see note below)
+  for (const m of text.matchAll(PROP_COLON)) {
+    const prop = m[1];
+    if (!PROPS.has(prop)) continue;
+    const valueStart = m.index + m[0].length;
+    const { text: rawValue } = readValue(text, valueStart, COLON_STOP);
+    for (const leaf of expressionLeaves(rawValue)) {
+      const trimmed = leaf.trim();
+      if (BARE_IDENTIFIER.test(trimmed) && !bareUsages.has(trimmed)) bareUsages.set(trimmed, prop);
+    }
+  }
+  if (bareUsages.size === 0) return [];
+
+  const decls = localDeclarations(text);
   const out = [];
-  for (const m of text.matchAll(DECL)) {
-    const [, prop, raw] = m;
-    const hit = scanValue(prop, raw);
-    if (hit) out.push({ prop, raw, reason: hit.reason, line: lineOf(text, m.index) });
-  }
-  for (const m of text.matchAll(TERNARY)) {
-    const [, prop, branchA, branchB] = m;
-    if (!PROPS.has(prop)) continue;
-    const line = lineOf(text, m.index);
-    for (const raw of [branchA, branchB]) {
-      const hit = scanValue(prop, raw);
-      if (hit) out.push({ prop, raw, reason: hit.reason, line });
-    }
-  }
-  for (const m of text.matchAll(ARITH)) {
-    const [, prop, raw] = m;
-    if (!PROPS.has(prop)) continue;
-    const line = lineOf(text, m.index);
-    out.push({ prop, raw, reason: 'an inline literal in an arithmetic expression, not a token', line });
-  }
-  for (const m of text.matchAll(CALL)) {
-    const [, prop, , argsText] = m;
-    if (!PROPS.has(prop)) continue;
-    const line = lineOf(text, m.index);
-    for (const arg of splitArgs(argsText)) {
-      const hit = scanValue(prop, arg);
-      if (hit) out.push({ prop, raw: arg, reason: hit.reason, line });
-    }
+  for (const [name, prop] of bareUsages) {
+    const entries = decls.get(name);
+    if (!entries) continue;
+    for (const { rhs, line } of entries)
+      for (const leaf of expressionLeaves(rhs))
+        for (const hit of scanLeaf(prop, leaf))
+          out.push({ prop, raw: hit.raw, reason: hit.reason, line });
   }
   return out;
 }
@@ -222,7 +467,9 @@ export function scanText(text) {
  *  opinion about) without the same "does this actually reach a governed
  *  CSS property" read this map already encodes by name. Growing this list
  *  costs the same review Calendar's zIndex EXEMPT entry costs — it is not
- *  free, and that is the point. */
+ *  free, and that is the point. `stalePassthrough()` is EXEMPT's own
+ *  discipline applied here: a renamed component or prop must fail loudly,
+ *  not match nothing in silence. */
 const PASSTHROUGH = new Map([
   ['Icon', { prop: 'size', governs: 'fontSize' }],
   ['Rotor', { prop: 'size', governs: 'width' }],
@@ -240,7 +487,8 @@ const PARAM_DEFAULT = /(?<![\w.])([a-zA-Z]+)\s*=\s*('[^']*'|"[^"]*"|`[^`]*`|[-\w
 
 /** @param {string} text
  *  @returns {{prop: string, raw: string, reason: string, line: number}[]} */
-export function scanDefaultsAndCallSites(text) {
+export function scanDefaultsAndCallSites(rawText) {
+  const text = blankComments(rawText);
   const out = [];
   for (const fn of text.matchAll(COMPONENT_PARAMS)) {
     const [, name, params] = fn;
@@ -263,6 +511,31 @@ export function scanDefaultsAndCallSites(text) {
     }
   }
   return out;
+}
+
+/** @param {string} text
+ *  @returns {{name: boolean, prop: boolean}} whether this file defines the
+ *  component (`function <Name>`) and whether it defines or calls it with
+ *  the registered prop — the two signals `stalePassthrough()` needs to
+ *  tell "this component/prop still exists somewhere in the tree" from
+ *  "this entry now matches nothing". */
+function passthroughSightings(rawText) {
+  const text = blankComments(rawText);
+  const seen = new Set();
+  for (const fn of text.matchAll(COMPONENT_PARAMS)) if (PASSTHROUGH.has(fn[1])) seen.add(fn[1]);
+  for (const name of PASSTHROUGH.keys())
+    if (new RegExp(`<${name}\\b`).test(text)) seen.add(name);
+  return seen;
+}
+
+/** @param {Set<string>} seenComponents — every `PASSTHROUGH` key seen
+ *  anywhere in the tree this run, as either a `function <Name>` or a
+ *  `<Name` JSX tag.
+ *  @returns {string[]} `PASSTHROUGH` keys that matched neither — the
+ *  component (or its registered prop) was renamed or removed and the
+ *  entry is now silently inert. */
+export function stalePassthrough(seenComponents) {
+  return [...PASSTHROUGH.keys()].filter((k) => !seenComponents.has(k));
 }
 
 function* walk(dir) {
@@ -294,17 +567,20 @@ export function staleExemptions(matchedKeys) {
 function collect() {
   const found = [];
   const matchedKeys = new Set();
+  const seenComponents = new Set();
   for (const file of walk(join(repoRoot, 'frameworks'))) {
     const rel = relative(repoRoot, file);
     const text = readFileSync(file, 'utf8');
-    for (const hit of [...scanText(text), ...scanDefaultsAndCallSites(text)]) {
+    for (const name of passthroughSightings(text)) seenComponents.add(name);
+    const hits = [...scanText(text), ...scanDefaultsAndCallSites(text)];
+    for (const hit of hits) {
       const key = `${rel}:${hit.prop}:${hit.raw}`;
       matchedKeys.add(key);
       if (EXEMPT.has(key)) continue;
       found.push({ file: rel, ...hit });
     }
   }
-  return { found, stale: staleExemptions(matchedKeys) };
+  return { found, stale: staleExemptions(matchedKeys), stalePassthrough: stalePassthrough(seenComponents) };
 }
 
 /** The census: every violation grouped by property, then by value, with the
@@ -338,7 +614,7 @@ function reportSites(found) {
 }
 
 function main() {
-  const { found, stale } = collect();
+  const { found, stale, stalePassthrough: stalePT } = collect();
   if (process.argv.includes('--report=sites')) { reportSites(found); return; }
   if (process.argv.includes('--report')) { report(found); return; }
   let failed = false;
@@ -349,9 +625,17 @@ function main() {
     console.error('\nThe site was fixed, deleted, or its raw text changed shape. Remove the');
     console.error('entry, or re-key it to match the current text exactly.');
   }
-  if (found.length) {
+  if (stalePT.length) {
     failed = true;
     if (stale.length) console.error('');
+    console.error(`check-dimension-literals: ${stalePT.length} stale PASSTHROUGH entr${stalePT.length === 1 ? 'y' : 'ies'} — matched nothing in the tree\n`);
+    for (const name of stalePT) console.error(`  ${name} — no "function ${name}" and no "<${name}" tag found anywhere under frameworks/`);
+    console.error('\nThe component or its registered prop was renamed or removed. Update or');
+    console.error('remove the PASSTHROUGH entry.');
+  }
+  if (found.length) {
+    failed = true;
+    if (stale.length || stalePT.length) console.error('');
     console.error(`check-dimension-literals: ${found.length} bare literal(s) under frameworks/\n`);
     for (const f of found) console.error(`  ${f.file}: ${f.prop}: ${f.raw} — ${f.reason}`);
     console.error('\nA dimension is a token or a derivation of tokens. Use var(--token), or');

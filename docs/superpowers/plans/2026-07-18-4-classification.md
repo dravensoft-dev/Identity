@@ -1035,19 +1035,101 @@ the real `zIndex:1` site reappeared as a violation, since it was no longer
 covered by any exemption — then both were confirmed to clear again once the
 key was restored.
 
-### Updated family totals (Task 10b + fix pass 1 delta)
+---
 
-| Family | Sites before 10b | +10b | +fix pass 1 | Sites after |
-|---|---:|---:|---:|---:|
-| `fw` | 33 | 6 | 0 | 39 |
-| borders | 56 | 6 | 0 | 62 |
-| `sp` | 229 | 7 | 9 | 245 |
-| `icon` | 17 | 5 | 0 | 22 |
-| `fs` | 23 | 0 | 0 | 23 (unchanged — Task 11's scope, not this task's) |
-| **Total** | **514** | **24** | **9** | **547** |
+## Fix pass 2 addendum — a literal reached through a local variable
+
+Review found that every scanner through fix pass 1 required the literal to
+sit at (or be reachable from) a governed prop's own colon — `const h = size
+=== 'sm' ? 4 : size === 'lg' ? 10 : 6;` then `height: h` elsewhere defeats
+all of them, because the colon reads a variable name, not a literal.
+`scanDataflow` closes this narrowly: an identifier qualifies only if (a) its
+`const`/`let` declaration's initializer carries a genuine literal per the
+same leaf rules used at a colon, AND (b) that exact identifier later appears
+*bare* — no member access, no call, no arithmetic — at a governed prop's
+colon in the same file. Both conditions were checked against an exhaustive
+grep of every `<governed-prop>: <bare-identifier>` site in the tree (19
+lines) cross-referenced against every declaration of that identifier, not
+sampled. Two sites were named by the review; the exhaustive cross-reference
+found two more of the identical shape, plus two further sites in the same
+file (`Skeleton.jsx`) that need no intermediate variable at all — an `||`
+fallback written directly at the colon is the same missing leaf-shape
+(`height || 12`), found by the same widening that let `scanDataflow` read
+`Skeleton.jsx:26`'s `height || width || 40`. All six are `sp`-family.
+
+| File:line | Property | Now | Target | Note |
+|---|---|---|---|---|
+| `frameworks/react/components/feedback/ProgressBar.jsx:25` | `height` (via local `h`) | `size === 'sm' ? 4 : size === 'lg' ? 10 : 6` | `size === 'sm' ? 'var(--sp-1)' : size === 'lg' ? 'calc(var(--sp-1) * 2.5)' : 'calc(var(--sp-1) * 1.5)'` | 4 on-grid, exact; 10 and 6 both `4n+2`, half-step derivations. Named by the review; also the exact shape finding 3 (nested `TERNARY`) needed fixed to reach at all |
+| `frameworks/react/components/display/Skeleton.jsx:26` | `width`/`height` (via local `d`) | `height \|\| width \|\| 40` fallback | `height \|\| width \|\| 'var(--sp-10)'` | on-grid, 40 = sp-1 * 10, named step. Named by the review |
+| `frameworks/react/components/display/Skeleton.jsx:39` | `height` | `height \|\| 12` | `height \|\| 'var(--sp-3)'` | on-grid, 12 = sp-1 * 3, named step. Surfaced by the widening (direct `\|\|` at the colon, no variable needed) |
+| `frameworks/react/components/display/Skeleton.jsx:41` | `height` | `height \|\| 96` | `height \|\| 'var(--sp-24)'` | on-grid, 96 = sp-1 * 24, named step. Surfaced by the widening |
+| `frameworks/react/components/feedback/Onboarding.jsx:10` | `width` (via local `W`) | `320`, rendered via `width: W` | rendered `width:` becomes `'calc(var(--sp-1) * 80)'` directly; `W` stays the plain JS number `320`, used only by the position-clamp arithmetic below (see note) | on-grid, no named step this large (matches the precedent already used for `Toast`'s/`CommandPalette`'s/`Dialog`'s large widths). Surfaced by the widening, not named by the review |
+| `frameworks/react/components/display/Calendar.jsx:10` | `paddingLeft` / `width` (via module-level `GUTTER`) | `56` | `'calc(var(--sp-1) * 14)'` | on-grid, no named step at 14. Two consuming sites (`paddingLeft` at line 110, `width` at line 133); the gate reports one violation per declaration, not per consumer, since the fix is the same either way. Surfaced by the widening, not named by the review |
+
+**`Onboarding.jsx`'s `W` is a genuine, deliberately incomplete fix, stated
+plainly rather than hidden.** `W` is both the popover's rendered CSS width
+and an input to the JS clamp that keeps the popover from overflowing the
+right edge of the viewport (`window.innerWidth - W - EDGE`) — the second use
+needs a real JS number, so `W` cannot become a token-reference string
+without breaking the arithmetic. The rendered `width:` now reads the correct
+CSS derivation directly (`calc(var(--sp-1) * 80)`); `W` stays `320`, a plain
+number carrying a comment that the two must be changed together. This is the
+same unavoidable JS/CSS boundary `EDGE` (below) already has: nothing in this
+layer reads a CSS custom property's value back into JS, and no such
+mechanism exists to add within this task's scope.
+
+**Fix pass 1's `Onboarding.jsx` clamp rewrite is reverted.** It had replaced
+two independent `Math.min`/`Math.max` calls — each carrying its own copy of
+the literal `16` — with a single CSS `clamp()`, but that swapped
+`window.innerWidth` for `100vw` (the two differ by the scrollbar gutter) and
+dropped the `typeof window !== 'undefined'` guard: a positioning-algorithm
+change riding in under a token task, and `100vw` is a viewport unit besides
+— CLAUDE.md's own stated convention is to measure the container, not the
+viewport. The original `Math.min`/`Math.max`/`window.innerWidth`/`typeof`
+structure is restored exactly; the two `16`s are now one shared local
+constant, `EDGE`, so they cannot drift from each other the way two
+independent literals could. `EDGE` remains a plain JS number for the same
+reason `W` does — it feeds `Math.max`/`Math.min` arithmetic — and is not
+itself traceable to a token by this gate: it is used as a *call argument*
+(`Math.max(EDGE, left)`), not bare at a colon, so `scanDataflow`'s narrow
+rule (condition (b)) does not reach it. Stated as the honest limit, not
+hidden: `EDGE`'s value (16px) not moving with `--sp-4` if that token's value
+ever changed is a real, acknowledged gap, and there is no clean way to close
+it without either a runtime `getComputedStyle` read (no precedent anywhere
+in this layer, and rejected for the weight and SSR risk it would add) or a
+build-time JS/token bridge that does not exist in this repo.
+
+**Finding 2, reworded rather than retracted.** Fix pass 1's report stated
+that the "not dimension" sites (`ProgressBar`'s percent clamp, `Calendar`'s
+minute clamp, `LineChart`'s chart-math guards, `CommandPalette`'s index
+arithmetic) "structurally cannot reach" a governed colon. That overclaimed:
+a flat `width: Math.min(100, val)` written directly at a colon **is**
+caught, by fix pass 1's own `CALL` scanner, and the dataflow rule added here
+would trace an even wider set — any single-level call behind a variable —
+were the identifier ever used bare at a colon. What is actually true, and
+narrower: none of today's four "not dimension" sites needed an `EXEMPT`
+entry, because none of them today (a) sit at a governed colon directly, nor
+(b) are declared with an identifier that is later used bare at one, nor,
+for the one exception with a matching shape (`ProgressBar`'s own `pct`, a
+*nested* call two levels deep), is the nested-call shape itself reachable by
+`scanLeaf`'s deliberately single-level `CALL_SHAPE`. A future edit that
+flattens any of these — collapses the variable, or removes a level of
+call-nesting — would very plausibly start failing the gate, correctly; nothing
+about these four sites is structurally exempt, only currently unreached.
+
+### Updated family totals (Task 10b + fix pass 1 + fix pass 2 delta)
+
+| Family | Sites before 10b | +10b | +fix pass 1 | +fix pass 2 | Sites after |
+|---|---:|---:|---:|---:|---:|
+| `fw` | 33 | 6 | 0 | 0 | 39 |
+| borders | 56 | 6 | 0 | 0 | 62 |
+| `sp` | 229 | 7 | 9 | 6 | 251 |
+| `icon` | 17 | 5 | 0 | 0 | 22 |
+| `fs` | 23 | 0 | 0 | 0 | 23 (unchanged — Task 11's scope, not this task's) |
+| **Total** | **514** | **24** | **9** | **6** | **553** |
 
 `bun scripts/check-dimension-literals.mjs` reports exactly the 23 `fs` sites
-after fix pass 1 — every other family's delta above is resolved, not
+after fix pass 2 — every other family's delta above is resolved, not
 pending.
 
 ---

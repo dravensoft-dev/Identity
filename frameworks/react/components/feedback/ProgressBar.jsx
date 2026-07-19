@@ -22,7 +22,7 @@ const TONES = { accent: 'var(--crimson)', gold: 'var(--gold)', success: 'var(--s
 export function ProgressBar({ value = 0, indeterminate = false, tone = 'accent', label, showValue = true, size = 'md', style }) {
   useIndeterminate();
   const color = TONES[tone] || TONES.accent;
-  const h = size === 'sm' ? 4 : size === 'lg' ? 10 : 6;
+  const h = size === 'sm' ? 'var(--sp-1)' : size === 'lg' ? 'calc(var(--sp-1) * 2.5)' : 'calc(var(--sp-1) * 1.5)';
   const pct = Math.max(0, Math.min(100, Math.round(value)));
   return (
     <div style={{ width: '100%', ...style }}>

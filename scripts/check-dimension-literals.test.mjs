@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scanValue, scanText, scanDefaultsAndCallSites, staleExemptions, EXEMPT } from './check-dimension-literals.mjs';
+import { scanValue, scanText, scanDefaultsAndCallSites, staleExemptions, stalePassthrough, expressionLeaves, EXEMPT } from './check-dimension-literals.mjs';
 
 test('a bare number is a violation for a dimension-valued property', () => {
   assert.ok(scanValue('fontSize', '13'));
@@ -333,4 +333,216 @@ test('an EXEMPT key absent from the matched set is reported as stale', () => {
 
 test('an empty matched set reports every EXEMPT entry as stale', () => {
   assert.deepEqual(staleExemptions(new Set()), [...EXEMPT.keys()]);
+});
+
+// --- Fix pass 2, finding 3: TERNARY mis-captured a nested ternary --------
+// `fontSize: a ? (b ? 12 : 14) : 16` used to garble into fragments and let
+// all three literals escape. expressionLeaves is the balanced-text reader
+// that replaced the single regex; both the parenthesised and the
+// right-chained (no parens) nested shapes must resolve to every leaf.
+
+test('a parenthesised nested ternary resolves every leaf', () => {
+  assert.deepEqual(expressionLeaves("a ? (b ? 12 : 14) : 16"), ['12', '14', '16']);
+});
+
+test('a right-chained nested ternary (no parens) resolves every leaf', () => {
+  assert.deepEqual(expressionLeaves("size === 'sm' ? 4 : size === 'lg' ? 10 : 6"), ['4', '10', '6']);
+});
+
+test('all three literals of a nested ternary at a governed colon are flagged', () => {
+  const found = scanText('const s = { fontSize: a ? (b ? 12 : 14) : 16 };');
+  assert.deepEqual(found.map((f) => f.raw), ['12', '14', '16']);
+});
+
+test('a nested ternary whose leaves are all tokens stays legal', () => {
+  assert.deepEqual(
+    scanText("const s = { fontWeight: a ? (b ? 'var(--fw-bold)' : 'var(--fw-medium)') : 'var(--fw-regular)' };"),
+    []
+  );
+});
+
+// --- Fix pass 2, finding 1: a literal reached through a variable ---------
+// `const h = size === 'sm' ? 4 : size === 'lg' ? 10 : 6;` then `height: h`
+// elsewhere defeated every scanner, which all required the literal to sit
+// at (or be reachable from) a governed prop's own colon. The dataflow rule
+// is deliberately narrow: BOTH the declaration must carry a literal AND
+// the identifier must appear bare at a governed colon in the same file.
+
+test('a literal reached through an intermediate variable is a violation, attributed to the declaration line', () => {
+  const src = [
+    "function ProgressBar({ size }) {",
+    "  const h = size === 'sm' ? 4 : size === 'lg' ? 10 : 6;",
+    "  return React.createElement('div', { style: { height: h } });",
+    "}",
+  ].join('\n');
+  const found = scanText(src);
+  assert.deepEqual(found.map((f) => ({ raw: f.raw, prop: f.prop, line: f.line })), [
+    { raw: '4', prop: 'height', line: 2 },
+    { raw: '10', prop: 'height', line: 2 },
+    { raw: '6', prop: 'height', line: 2 },
+  ]);
+});
+
+test('an OR-fallback reached through an intermediate variable is a violation', () => {
+  const src = [
+    "function Skeleton({ height, width }) {",
+    "  const d = height || width || 40;",
+    "  return React.createElement('div', { style: { width: d, height: d } });",
+    "}",
+  ].join('\n');
+  const found = scanText(src);
+  assert.deepEqual(found.map((f) => f.raw), ['40']);
+});
+
+test('a declaration whose identifier never reaches a governed colon is left alone', () => {
+  // Most local `const x = ...<number>...` declarations in this layer are
+  // indices, lengths and counts -- condition (b) of the dataflow rule
+  // (the identifier must appear bare at a governed colon) is what leaves
+  // them alone, not a guess about what the number means.
+  const src = [
+    "function Chart({ values }) {",
+    "  const pct = Math.max(0, Math.min(100, Math.round(values[0])));",
+    "  return React.createElement('span', null, pct + '%');",
+    "}",
+  ].join('\n');
+  assert.deepEqual(scanText(src), []);
+});
+
+test('a declaration whose value has no literal at all is left alone even when its identifier is used bare', () => {
+  const src = [
+    "function Avatar({ size }) {",
+    "  const SIZES = { sm: 32, md: 40 };",
+    "  const d = SIZES[size] || SIZES.md;",
+    "  return React.createElement('span', { style: { width: d, height: d } });",
+    "}",
+  ].join('\n');
+  assert.deepEqual(scanText(src), []);
+});
+
+test('a value already resolved to a token through the variable is legal, not re-flagged', () => {
+  // Guards against a false positive once the site is actually fixed: `h`
+  // holding a var()/calc() string, then used bare at `height: h`, must not
+  // read as though the string itself were a bare literal.
+  const src = [
+    "function ProgressBar({ size }) {",
+    "  const h = size === 'sm' ? 'var(--sp-1)' : 'calc(var(--sp-1) * 2.5)';",
+    "  return React.createElement('div', { style: { height: h } });",
+    "}",
+  ].join('\n');
+  assert.deepEqual(scanText(src), []);
+});
+
+// --- Fix pass 2, finding 2: reworded, not overclaimed ---------------------
+// A flat `width: Math.min(100, val)` written directly at a governed colon
+// IS caught (fix pass 1's CALL scanner) -- the earlier claim that
+// non-dimension sites "structurally cannot reach" a colon overclaimed.
+// What is actually true: no EXEMPT entry is needed today because today's
+// non-dimension sites all assign through a variable first.
+
+test('a flat call written directly at a governed colon with a non-dimension shape IS caught, unlike the same call behind a variable', () => {
+  // The exact shape finding 2 named: Math.min(100, val) clamping a
+  // percentage. Written flat, it is indistinguishable from a genuine
+  // dimension -- the gate has no semantic understanding of "percentage"
+  // vs "pixels", only of where a bare number sits.
+  const found = scanText("const s = { width: Math.min(100, val) };");
+  assert.deepEqual(found.map((f) => f.raw), ['100']);
+});
+
+test('the same shallow non-dimension call is still traced through a variable, since the dataflow rule reuses scanLeaf on the declaration', () => {
+  // `const pct = Math.min(100, val); ... width: pct` -- the dataflow rule
+  // judges the declaration's own leaves with the same scanLeaf a colon
+  // value gets, and `Math.min(100, val)` is a single-level CALL shape, so
+  // its bare-number argument is still visible. A variable is not, by
+  // itself, a hiding place -- see the next test for the shape that
+  // actually is one.
+  const src = [
+    "function Thing({ val }) {",
+    "  const pct = Math.min(100, val);",
+    "  return React.createElement('div', { style: { width: pct } });",
+    "}",
+  ].join('\n');
+  const found = scanText(src);
+  assert.deepEqual(found.map((f) => f.raw), ['100']);
+});
+
+test('the real boundary: a nested call behind a variable is not caught, the exact shape ProgressBar\'s own percent clamp has', () => {
+  // `Math.max(0, Math.min(100, Math.round(value)))` has parens nested two
+  // deep. scanLeaf's CALL_SHAPE is deliberately single-level (matching
+  // ARITH's own boundary, tested elsewhere) -- a real site with this exact
+  // shape (ProgressBar.jsx's own `pct`) is confirmed NOT a dimension by
+  // the author, and this is the one case where "not caught" and "not
+  // reachable by this narrow rule" happen to coincide. It is not caught
+  // even when the identifier IS used bare at a governed colon (unlike the
+  // real ProgressBar, where it never is) -- stated here as the honest
+  // limit, not inferred as safe from the shape alone.
+  const src = [
+    "function Thing({ value }) {",
+    "  const pct = Math.max(0, Math.min(100, Math.round(value)));",
+    "  return React.createElement('div', { style: { width: pct } });",
+    "}",
+  ].join('\n');
+  assert.deepEqual(scanText(src), []);
+});
+
+// --- Fix pass 2, finding 4: PASSTHROUGH staleness -------------------------
+
+test('a PASSTHROUGH entry with a match is not stale', () => {
+  assert.deepEqual(stalePassthrough(new Set(['Icon', 'Rotor'])), []);
+});
+
+test('a renamed PASSTHROUGH component fails as stale', () => {
+  assert.deepEqual(stalePassthrough(new Set(['Rotor'])), ['Icon']);
+});
+
+test('every PASSTHROUGH entry is stale when nothing in the tree matches', () => {
+  assert.deepEqual(stalePassthrough(new Set()), ['Icon', 'Rotor']);
+});
+
+// --- Regression: comments must never corrupt the balanced-text scan ------
+// The balanced-text reader has no concept of `//`/`/* */` comments, and
+// this codebase's own house style backtick-quotes code references in
+// prose (`` `width:` ``, `` `--sp-1` ``). A governed prop name followed by
+// a colon and a stray backtick, sitting in a comment, used to send the
+// reader hunting for a closing backtick anywhere later in the file,
+// garbling everything in between into one fake violation.
+
+test('a line comment shaped like a colon-value is never read as one', () => {
+  const src = [
+    "function Thing() {",
+    "  // The rendered `width:` further down must equal the token below.",
+    "  return React.createElement('div', { style: { width: 'var(--sp-4)' } });",
+    "}",
+  ].join('\n');
+  assert.deepEqual(scanText(src), []);
+});
+
+test('a line comment containing an unmatched backtick does not swallow the rest of the file', () => {
+  const src = [
+    "// a stray ` backtick with no partner on this line",
+    "const s = { fontSize: 13 };",
+  ].join('\n');
+  const found = scanText(src);
+  assert.deepEqual(found.map((f) => ({ raw: f.raw, line: f.line })), [{ raw: '13', line: 2 }]);
+});
+
+test('a block comment containing a colon-shaped fragment is never read as a value', () => {
+  const src = [
+    "/* padding: 999 -- an old note, not live code */",
+    "const s = { padding: 'var(--sp-2)' };",
+  ].join('\n');
+  assert.deepEqual(scanText(src), []);
+});
+
+test('a `//` or `/*` inside a real string is not mistaken for a comment', () => {
+  assert.deepEqual(scanText("const s = { content: '// not a comment', width: 'var(--sp-4)' };"), []);
+});
+
+test('blanking comments preserves line numbers exactly', () => {
+  const src = [
+    "// line 1 comment, `fontSize:` mentioned here",
+    "// line 2 comment",
+    "const s = { fontSize: 13 };",
+  ].join('\n');
+  const found = scanText(src);
+  assert.deepEqual(found[0].line, 3);
 });
