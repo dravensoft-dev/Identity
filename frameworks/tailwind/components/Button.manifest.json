@@ -9,9 +9,9 @@
       "danger":  { "root": "bg-transparent border border-error text-error hover:bg-[var(--danger-soft)]" }
     },
     "size": {
-      "sm": { "root": "h-ctl-h-sm px-3 text-sm" },
+      "sm": { "root": "h-ctl-h-sm px-3 text-ctl-md" },
       "md": { "root": "h-ctl-h px-4.5 text-ctl" },
-      "lg": { "root": "h-ctl-h-lg px-6.5 text-md" }
+      "lg": { "root": "h-ctl-h-lg px-6.5 text-ctl" }
     }
   },
   "defaultVariants": { "variant": "primary", "size": "md" }
