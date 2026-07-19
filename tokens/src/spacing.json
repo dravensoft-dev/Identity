@@ -34,6 +34,7 @@
     "row-py": { "$value": { "value": 12, "unit": "px" }, "$description": "table/list row vertical padding" },
     "row-px": { "$value": { "value": 16, "unit": "px" }, "$description": "row horizontal padding" },
     "stack": { "$value": { "value": 12, "unit": "px" }, "$description": "gap between stacked items" },
-    "cell": { "$value": { "value": 14, "unit": "px" }, "$description": "cell font-size" }
+    "cell": { "$value": { "value": 14, "unit": "px" }, "$description": "cell font-size" },
+    "text": { "$value": { "value": 14, "unit": "px" }, "$description": "control text — buttons, inputs" }
   }
 }
