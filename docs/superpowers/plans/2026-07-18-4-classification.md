@@ -198,10 +198,11 @@ token, regardless of how many components share it.
 
 Counts below are re-derived from the `borders` table itself, not hand-edited —
 a fix-pass-1 review caught this prose contradicting its own table once already.
-**49 sites at `1px` → `var(--bw)`** (47 direct `border*` properties, plus the 2
-sites reclassified from `sp` — the `BulkActionBar`/`Menu` dividers, see the
-findings section above). **3 sites at `2px` → `var(--bw-strong)`.** **2 sites at
-`3px`** (an event-color accent bar on `Calendar`, and `Toast`'s tone-colored left
+**51 sites → `var(--bw)`** (49 direct `border*` properties carrying `1px`, plus
+the 2 sites reclassified from `sp` — the `BulkActionBar`/`Menu` dividers, whose
+raw value is a bare `1` because they render as a sized element rather than a
+border; see the findings section above). **3 sites at `2px` → `var(--bw-strong)`.**
+**2 sites at `3px`** (an event-color accent bar on `Calendar`, and `Toast`'s tone-colored left
 bar — the same role in two components) have no existing 3px border step; adoption
 only means no new step is minted, so both snap to the nearer of `{1,2}`, which is
 also `var(--bw-strong)`. 49 + 3 + 2 + 2 = 56, the section's full total. One
@@ -585,7 +586,7 @@ left outstanding (the nine `50%` circles are exempt as a free unit, not a defect
 
 | File:line | Property | Now | Target | Note |
 |---|---|---|---|---|
-| `frameworks/react/components/charts/DoughnutChart.jsx:58` | `borderRadius` | `2` | var(--r-xs) (4px) | nearest existing radius step; 2px swatch corner grows to 4px |
+| `frameworks/react/components/charts/DoughnutChart.jsx:58` | `borderRadius` | `2` | `var(--r-xs)` | nearest existing radius step; `--r-xs` is 4px, so the 2px swatch corner grows to 4px — a pixel move |
 
 ## sp — derivations (Rule 3, numeric)
 
@@ -905,7 +906,7 @@ exhaustive pass's `CommandPalette` addition is also 14px) each carry a
 | `ls` | 34 | includes 1 tie (Avatar, flagged) — unaffected by Checkpoint 4 |
 | `lh` | 13 | unaffected by Checkpoint 4 |
 | `fw` | 33 | |
-| borders | 56 | 49 sites at 1px (47 direct + 2 reclassified from `sp`) + 3 at 2px + 2 snapped from 3px |
+| borders | 56 | 51 to `var(--bw)` (49 direct at 1px + 2 reclassified from `sp`) + 5 to `var(--bw-strong)` (3 at 2px + 2 snapped from 3px) |
 | radius | 1 | |
 | `sp` | 229 | includes 17 pixel-moving snaps, listed in-table |
 | **Total** | **514** | matches the census exactly |
