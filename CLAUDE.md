@@ -68,9 +68,10 @@ literal reached through an intermediate local variable is still caught — a dat
 rule traces a bare identifier at a governed property back to its `const`/`let`
 declaration in the same file — but only when that identifier is used bare (no member
 access, no call, no arithmetic) at the governed site; a value buried behind either is
-outside what the rule can trace. Five sites are exempt by name with a reason each, the
-way the coverage gate's token exclusions are: `Calendar`'s local `zIndex` (stacking
-scoped inside one positioned container, not part of the global `z` order), `Avatar`'s
+outside what the rule can trace. A handful of sites are exempt by name with a reason
+each, the way the coverage gate's token exclusions are — read `EXEMPT` for the current
+set rather than a count written here, which would drift: `Calendar`'s local `zIndex`
+(stacking scoped inside one positioned container, not part of the global `z` order), `Avatar`'s
 `fontSize` ratio (scales the initials with the avatar's own diameter — a multiplier,
 not a dimension), and `Rotor`'s brand-mark `width` plus its two call sites in `Shell`
 and `LoginScreen` (Dravensoft's identity is explicitly not themeable). A stale
