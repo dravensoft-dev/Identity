@@ -216,16 +216,30 @@ existing radius step, since `r` has none smaller.
 ## fs — editorial type (Rule 1: prose)
 
 Includes the 7 Checkpoint 4 Cluster B sites resolved to `fs` (marked in their
-Note column): 5 of them (all at 14px) carry a `PENDING CHECKPOINT 1` target,
+Note column): 5 of them (all at 14px) carried a `PENDING CHECKPOINT 1` target,
 tied between `fs.sm`/`fs.md`; the other 2 (at 13px) land concretely on `fs.sm`.
-8 sites in this table total carry a `PENDING CHECKPOINT 1` marker — those 5,
+8 sites in this table total carried a `PENDING CHECKPOINT 1` marker — those 5,
 plus the 3 from the original pass (`Card.jsx:12`, `Onboarding.jsx:28`,
-`ProjectScreen.jsx:80`). That direction belongs to Task 11.
+`ProjectScreen.jsx:80`). Task 11 answered all eight, in three clusters:
+
+- **Cluster 1 — 14px, 5 sites -> fs.md (15), UP.** `EmptyState.jsx:9`,
+  `ErrorState.jsx:10`, `Onboarding.jsx:29`, `CommandPalette.jsx:30`,
+  `Menu.jsx:68`. `fs.md`'s own `$description` is "body copy", and these five
+  are the system's prose — empty-state and error messages, the onboarding
+  body. It is the step that exists for them.
+- **Cluster 2 — 18px, 2 sites -> fs.h4 (19), UP.** `Card.jsx:12`,
+  `Onboarding.jsx:28`. Both are titles, h4 is the heading step, and
+  `EmptyState.title` and `ErrorState.title` already sit there. This groups
+  every block title on one token.
+- **Cluster 3 — 28px, 1 site -> fs.h3 (24), DOWN.** `ProjectScreen.jsx:80`.
+  Joins the three sites already snapping to h3 from 22 and 26, and leaves
+  `fs.h2` (32) to `StatCard`, preserving a hierarchy between a card metric
+  and a header metric.
 
 | File:line | Property | Now | Target | Note |
 |---|---|---|---|---|
 | `frameworks/react/components/display/Calendar.jsx:104` | `fontSize` | `15` | fs.md (15) — exact match | h2 range title, e.g. "March 2026"; a real heading element |
-| `frameworks/react/components/display/Card.jsx:12` | `fontSize` | `18` | fs — snap direction PENDING CHECKPOINT 1 (candidates fs.lg=17 or fs.h4=19) | Card title, off-scale at 18 |
+| `frameworks/react/components/display/Card.jsx:12` | `fontSize` | `18` | fs.h4 (19) — snap, pixel move 18->19; Task 11 Cluster 2, UP | Card title, off-scale at 18 |
 | `frameworks/react/components/display/StatCard.jsx:27` | `fontSize` | `32` | fs.h2 (32) — exact match | big stat value |
 | `frameworks/react/components/feedback/Alert.jsx:21` | `fontSize` | `13` | fs.sm (13) — exact match | Alert body/children — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test; already on-scale, no pixel move |
 | `frameworks/react/components/feedback/ConfirmDialog.jsx:18` | `fontSize` | `22` | fs.h3 (24) — snap, pixel move 22->24 | title; spec gives this direction unambiguously (unlike the 18-cluster) |
@@ -233,19 +247,19 @@ plus the 3 from the original pass (`Card.jsx:12`, `Onboarding.jsx:28`,
 | `frameworks/react/components/feedback/Dialog.jsx:35` | `fontSize` | `22` | fs.h3 (24) — snap, pixel move 22->24 |  |
 | `frameworks/react/components/feedback/Dialog.jsx:37` | `fontSize` | `15` | fs.md (15) — exact match |  |
 | `frameworks/react/components/feedback/EmptyState.jsx:8` | `fontSize` | `19` | fs.h4 (19) — exact match | EmptyState title |
-| `frameworks/react/components/feedback/EmptyState.jsx:9` | `fontSize` | `14` | fs — snap direction PENDING CHECKPOINT 1 (candidates fs.sm=13 or fs.md=15, exactly tied) | EmptyState.message — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. 14 is exactly equidistant between fs.sm and fs.md, so the exact target is a snap-direction question for Task 11, not this task |
+| `frameworks/react/components/feedback/EmptyState.jsx:9` | `fontSize` | `14` | fs.md (15) — snap, pixel move 14->15; Task 11 Cluster 1, UP | EmptyState.message — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. fs.md's own $description is "body copy" |
 | `frameworks/react/components/feedback/ErrorState.jsx:9` | `fontSize` | `19` | fs.h4 (19) — exact match | ErrorState title |
-| `frameworks/react/components/feedback/ErrorState.jsx:10` | `fontSize` | `14` | fs — snap direction PENDING CHECKPOINT 1 (candidates fs.sm=13 or fs.md=15, exactly tied) | ErrorState.message — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. 14 is exactly equidistant between fs.sm and fs.md |
-| `frameworks/react/components/feedback/Onboarding.jsx:28` | `fontSize` | `18` | fs — snap direction PENDING CHECKPOINT 1 (candidates fs.lg=17 or fs.h4=19) | step.title, off-scale at 18, same cluster as Card.title |
-| `frameworks/react/components/feedback/Onboarding.jsx:29` | `fontSize` | `14` | fs — snap direction PENDING CHECKPOINT 1 (candidates fs.sm=13 or fs.md=15, exactly tied) | Onboarding.step.body — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. 14 is exactly equidistant between fs.sm and fs.md |
+| `frameworks/react/components/feedback/ErrorState.jsx:10` | `fontSize` | `14` | fs.md (15) — snap, pixel move 14->15; Task 11 Cluster 1, UP | ErrorState.message — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. fs.md's own $description is "body copy" |
+| `frameworks/react/components/feedback/Onboarding.jsx:28` | `fontSize` | `18` | fs.h4 (19) — snap, pixel move 18->19; Task 11 Cluster 2, UP | step.title, off-scale at 18, same cluster as Card.title (line is 43 in the current tree; the table's 28/29 predates earlier tasks' edits above it) |
+| `frameworks/react/components/feedback/Onboarding.jsx:29` | `fontSize` | `14` | fs.md (15) — snap, pixel move 14->15; Task 11 Cluster 1, UP | Onboarding.step.body — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. fs.md's own $description is "body copy" (line is 44 in the current tree) |
 | `frameworks/react/components/feedback/Toast.jsx:14` | `fontSize` | `13` | fs.sm (13) — exact match | Toast.message — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test; already on-scale, no pixel move |
-| `frameworks/react/components/navigation/CommandPalette.jsx:30` | `fontSize` | `14` | fs — snap direction PENDING CHECKPOINT 1 (candidates fs.sm=13 or fs.md=15, exactly tied) | "No results for …" — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. 14 is exactly equidistant between fs.sm and fs.md |
-| `frameworks/react/components/navigation/Menu.jsx:68` | `fontSize` | `14` | fs — snap direction PENDING CHECKPOINT 1 (candidates fs.sm=13 or fs.md=15, exactly tied) | Menu item text — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. 14 is exactly equidistant between fs.sm and fs.md |
+| `frameworks/react/components/navigation/CommandPalette.jsx:30` | `fontSize` | `14` | fs.md (15) — snap, pixel move 14->15; Task 11 Cluster 1, UP | "No results for …" — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. fs.md's own $description is "body copy" |
+| `frameworks/react/components/navigation/Menu.jsx:68` | `fontSize` | `14` | fs.md (15) — snap, pixel move 14->15; Task 11 Cluster 1, UP | Menu item text — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. fs.md's own $description is "body copy" |
 | `frameworks/react/components/navigation/PageHead.jsx:26` | `fontSize` | `13` | fs.sm (13) — exact match | PageHead subtitle, genuine prose under an h1 |
 | `frameworks/react/ui_kits/console/DashboardScreen.jsx:32` | `fontSize` | `34` | fs.h2 (32) — snap, pixel move 34->32 | unambiguous, diff 2 vs diff 10 |
 | `frameworks/react/ui_kits/console/LoginScreen.jsx:14` | `fontSize` | `22` | fs.h3 (24) — snap, pixel move 22->24 | wordmark, unambiguous per spec |
 | `frameworks/react/ui_kits/console/LoginScreen.jsx:17` | `fontSize` | `26` | fs.h3 (24) — snap, pixel move 26->24 | "Welcome back" heading, unambiguous |
-| `frameworks/react/ui_kits/console/ProjectScreen.jsx:80` | `fontSize` | `28` | fs — snap direction PENDING CHECKPOINT 1 (candidates fs.h3=24 or fs.h2=32, exactly tied) | overview metric value, off-scale at 28 |
+| `frameworks/react/ui_kits/console/ProjectScreen.jsx:80` | `fontSize` | `28` | fs.h3 (24) — snap, pixel move 28->24; Task 11 Cluster 3, DOWN | overview metric value, off-scale at 28. Joins the three sites already snapping to h3 from 22/26, and leaves fs.h2 (32) to StatCard, preserving a hierarchy between a card metric and a header metric |
 | `frameworks/react/ui_kits/console/Shell.jsx:20` | `fontSize` | `17` | fs.lg (17) — exact match | Shell wordmark |
 
 ## dz — control density (Rule 1: chrome)
@@ -867,11 +881,11 @@ whose other text is unambiguously chrome).
 
 | File:line | Property | Text it renders | Now | Resolved to |
 |---|---|---|---|---|
-| `frameworks/react/components/feedback/EmptyState.jsx:9` | `fontSize` | `message` prop — e.g. "There's nothing here yet." | 14px, lh 1.6 | `fs` — PENDING CHECKPOINT 1 (fs.sm=13 or fs.md=15, exactly tied) |
-| `frameworks/react/components/feedback/ErrorState.jsx:10` | `fontSize` | `message` prop — e.g. "We couldn't reach the server. Try again." | 14px, lh 1.6 | `fs` — PENDING CHECKPOINT 1 (fs.sm=13 or fs.md=15, exactly tied) |
-| `frameworks/react/components/feedback/Onboarding.jsx:29` | `fontSize` | `step.body` — the coachmark's explanatory paragraph | 14px, lh 1.6 | `fs` — PENDING CHECKPOINT 1 (fs.sm=13 or fs.md=15, exactly tied) |
-| `frameworks/react/components/navigation/Menu.jsx:68` | `fontSize` | `item.label` — the menu item's own text (e.g. "Rename", but the slot is generic and can hold longer copy) | 14px | `fs` — PENDING CHECKPOINT 1 (fs.sm=13 or fs.md=15, exactly tied) |
-| `frameworks/react/components/navigation/CommandPalette.jsx:30` | `fontSize` | literal text `No results for "{q}".` | 14px | `fs` — PENDING CHECKPOINT 1 (fs.sm=13 or fs.md=15, exactly tied) |
+| `frameworks/react/components/feedback/EmptyState.jsx:9` | `fontSize` | `message` prop — e.g. "There's nothing here yet." | 14px, lh 1.6 | `fs.md` (15) — Task 11 Cluster 1, UP |
+| `frameworks/react/components/feedback/ErrorState.jsx:10` | `fontSize` | `message` prop — e.g. "We couldn't reach the server. Try again." | 14px, lh 1.6 | `fs.md` (15) — Task 11 Cluster 1, UP |
+| `frameworks/react/components/feedback/Onboarding.jsx:29` | `fontSize` | `step.body` — the coachmark's explanatory paragraph | 14px, lh 1.6 | `fs.md` (15) — Task 11 Cluster 1, UP |
+| `frameworks/react/components/navigation/Menu.jsx:68` | `fontSize` | `item.label` — the menu item's own text (e.g. "Rename", but the slot is generic and can hold longer copy) | 14px | `fs.md` (15) — Task 11 Cluster 1, UP |
+| `frameworks/react/components/navigation/CommandPalette.jsx:30` | `fontSize` | literal text `No results for "{q}".` | 14px | `fs.md` (15) — Task 11 Cluster 1, UP |
 | `frameworks/react/components/feedback/Alert.jsx:21` | `fontSize` | `children` — the alert's body copy | 13px, lh 1.55→1.6 | `fs.sm` (13) — exact match |
 | `frameworks/react/components/feedback/Toast.jsx:14` | `fontSize` | `message` prop | 13px | `fs.sm` (13) — exact match |
 

@@ -29,7 +29,7 @@ export function DashboardScreen({ onNav, onOpenProject }) {
         {METRICS.map((m) => (
           <div key={m.k} style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)', padding: 'calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 5)' }}>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{m.k}</div>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-black)', fontSize: 34, color: m.tone, marginTop: 'calc(var(--sp-1) * 2)' }}>{m.v}</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-black)', fontSize: 'var(--fs-h2)', color: m.tone, marginTop: 'calc(var(--sp-1) * 2)' }}>{m.v}</div>
           </div>
         ))}
       </div>

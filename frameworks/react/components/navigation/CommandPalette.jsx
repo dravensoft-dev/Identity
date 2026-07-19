@@ -27,7 +27,7 @@ export function CommandPalette({ open, onClose, commands = [], placeholder = 'Se
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-xs)', padding: 'calc(var(--sp-1) * 0.5) calc(var(--sp-1) * 1.5)' }}>ESC</span>
         </div>
         <div style={{ maxHeight: 'calc(var(--sp-1) * 80)', overflow: 'auto', padding: 'calc(var(--sp-1) * 1.5)' }}>
-          {filtered.length === 0 && <div style={{ padding: 'calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 3)', fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--mute)' }}>No results for "{q}".</div>}
+          {filtered.length === 0 && <div style={{ padding: 'calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 3)', fontFamily: 'var(--font-body)', fontSize: 'var(--fs-md)', color: 'var(--mute)' }}>No results for "{q}".</div>}
           {filtered.map((c, idx) => (
             <button key={c.id || c.label} onMouseEnter={() => setI(idx)} onClick={() => run(c)}
               style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)', width: '100%', textAlign: 'left', padding: 'calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 3)', borderRadius: 'var(--r-sm)', border: 'none', cursor: 'pointer',

@@ -23,7 +23,7 @@ export function PageHead({ title, subtitle, actions, style, ...rest }) {
           lineHeight: 'var(--lh-snug)', letterSpacing: 'var(--ls-tight)', color: 'var(--bone)', margin: 0,
         }}>{title}</h1>
         {subtitle && <p style={{
-          fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--mute)',
+          fontFamily: 'var(--font-body)', fontSize: 'var(--fs-sm)', color: 'var(--mute)',
           margin: 'calc(var(--sp-1) * 0.5) 0 0', lineHeight: 'var(--lh-body)',
         }}>{subtitle}</p>}
       </div>

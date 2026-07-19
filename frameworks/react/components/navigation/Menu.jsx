@@ -65,7 +65,7 @@ function MenuItem({ item, onRun }) {
       style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2.5)', width: '100%', textAlign: 'left', padding: 'calc(var(--sp-1) * 2) calc(var(--sp-1) * 2.5)',
         border: 'none', borderRadius: 'var(--r-sm)', cursor: item.disabled ? 'not-allowed' : 'pointer',
         background: bg, color: item.disabled ? 'var(--mute)' : (hover && !item.destructive ? 'var(--crimson)' : color),
-        opacity: item.disabled ? 0.6 : 1, fontFamily: 'var(--font-body)', fontSize: 14 }}>
+        opacity: item.disabled ? 0.6 : 1, fontFamily: 'var(--font-body)', fontSize: 'var(--fs-md)' }}>
       {item.icon && <span style={{ fontSize: 'var(--icon-md)', display: 'inline-flex' }}>{item.icon}</span>}
       <span style={{ flex: 1 }}>{item.label}</span>
       {item.shortcut && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{item.shortcut}</span>}

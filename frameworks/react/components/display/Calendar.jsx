@@ -101,7 +101,7 @@ export function Calendar({
             borderRadius: 'var(--r-sm)', color: 'var(--bone-dim)', cursor: 'pointer',
             fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-md)', fontWeight: 'var(--fw-semibold)' }}>Today</button>
         {navBtn(1)}
-        <h2 style={{ margin: '0 0 0 calc(var(--sp-1) * 1)', fontSize: 15, fontWeight: 'var(--fw-semibold)', color: 'var(--text-strong)' }}>
+        <h2 style={{ margin: '0 0 0 calc(var(--sp-1) * 1)', fontSize: 'var(--fs-md)', fontWeight: 'var(--fw-semibold)', color: 'var(--text-strong)' }}>
           {rangeTitle(days)}
         </h2>
         {actions && <div style={{ marginLeft: 'auto', display: 'flex', gap: 'calc(var(--sp-1) * 2)', flexWrap: 'wrap' }}>{actions}</div>}

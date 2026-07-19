@@ -11,7 +11,7 @@ export function Toast({ title, message, tone = 'neutral', action, onClose, persi
       borderLeft: 'var(--bw-strong) solid ' + (TOAST_TONES[tone] || TOAST_TONES.neutral), borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-2)', ...style }}>
       <div style={{ flex: 1 }}>
         {title && <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--dz-text)', color: 'var(--bone)' }}>{title}{persist && <span title="Does not auto-dismiss" style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-column-header)', color: 'var(--mute)', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-xs)', padding: '0 calc(var(--sp-1) * 1)', textTransform: 'uppercase' }}>Pinned</span>}</div>}
-        {message && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--mute)', marginTop: 'calc(var(--sp-1) * 0.5)' }}>{message}</div>}
+        {message && <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--fs-sm)', color: 'var(--mute)', marginTop: 'calc(var(--sp-1) * 0.5)' }}>{message}</div>}
         {action && (
           <button onClick={action.onClick}
             style={{ marginTop: 'calc(var(--sp-1) * 2.5)', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
