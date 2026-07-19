@@ -14,7 +14,7 @@ export function Textarea({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, ...style }}>
       {label && (
-        <label htmlFor={taId} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)' }}>
+        <label htmlFor={taId} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>
           {label}{required && <span style={{ color: 'var(--crimson)', marginLeft: 4 }}>*</span>}
         </label>
       )}

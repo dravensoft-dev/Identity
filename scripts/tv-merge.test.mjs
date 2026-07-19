@@ -118,3 +118,27 @@ test('an Arena z-index name and a numeric Tailwind z-index value now correctly c
   assert.equal(merge('z-dropdown z-10'), 'z-10');
   assert.equal(merge('z-10 z-dropdown'), 'z-dropdown');
 });
+
+/* Task 7 — `ls` re-derived from 4 tokens to 9, the same MISSING SELF-DEDUPE
+ * failure as `pill`/z-index above, but only for the non-stock names.
+ * `tracking-tight`/`tracking-normal`/`tracking-wide` are Tailwind's OWN
+ * letter-spacing scale names, so tailwind-merge's bundled `tracking` group
+ * already recognises and dedupes them with no help. `label` and the five
+ * roles this task adds (`field-label`, `column-header`, `badge`,
+ * `uppercase-status`, `mono-nav`) are not stock names, so pre-fix they were
+ * classified into NO group and any two of them survived side by side in one
+ * merged string. Verified pre-fix: `tracking-tight tracking-label` -> both. */
+test('every registered Arena tracking name dedupes against a sibling, in both directions', () => {
+  const names = ['tight', 'normal', 'mono-nav', 'uppercase-status', 'badge', 'column-header', 'field-label', 'label', 'wide'];
+  for (let i = 0; i < names.length - 1; i++) {
+    const a = `tracking-${names[i]}`, b = `tracking-${names[i + 1]}`;
+    assert.equal(merge(`${a} ${b}`), b, `${a} ${b} should collapse to ${b}`);
+    assert.equal(merge(`${b} ${a}`), a, `${b} ${a} should collapse to ${a}`);
+  }
+});
+
+test('tracking-field-label still coexists with a text color class (registration did not reopen the cross-group failure)', () => {
+  const root = classes(merge('tracking-field-label text-primary'));
+  assert.ok(root.includes('tracking-field-label'));
+  assert.ok(root.includes('text-primary'));
+});

@@ -156,6 +156,25 @@ Chrome text — a button label, an input's value, a hint, a validation error, a 
 
 Exposed in the Tailwind layer under a `ctl` infix — `--text-ctl` / `--text-ctl-md` / `--text-ctl-sm` / `--text-ctl-xs` / `--text-ctl-2xs` — because the natural `--text-*` keys already belong to `fs`, and two collide on value as well as name (`fs.sm` / `dz.text-md` are both 13px; `fs.xs` / `dz.text-xs` are both 11px). `--text-base`, the one `--text-*` key that pointed at `dz` under an `fs`-shaped name, is retired along with it.
 
+### Tracking scale (`ls`)
+Letter-spacing across the system was four declared tokens covering a handful of sites while 34 real uses read a scatter of undeclared literals. Sorted by value, those sites already formed a role hierarchy nobody had named — **tracking decreases as the text gets longer**, from the shortest mono micro-labels down through prose-adjacent chrome to the tightest display headings. The family below is that hierarchy, generated into `tokens/typography.css` from `tokens/src/typography.json`:
+
+| Token | Value | Role |
+|---|---|---|
+| `--ls-tight` | `-0.02em` | display — tight headings |
+| `--ls-normal` | `0` | no tracking — button labels, glyph pairs |
+| `--ls-mono-nav` | `0.04em` | mono navigation — breadcrumbs, bulk-action counts |
+| `--ls-uppercase-status` | `0.06em` | uppercase status text — alerts, toasts, calendar hour labels |
+| `--ls-badge` | `0.1em` | badge and pill text |
+| `--ls-column-header` | `0.12em` | column header / micro-label |
+| `--ls-field-label` | `0.14em` | form field label |
+| `--ls-label` | `0.22em` | mono uppercase labels — section eyebrows |
+| `--ls-wide` | `0.34em` | eyebrows (`Arena - Overview.html`'s `.kicker`/`.eyebrow`) |
+
+`ls` is a **semantic** family: a value used by only one component does not earn a step of its own, since there is nothing to derive a role from. Three singletons snap to the nearest existing step instead — `Button`'s `.01em` and `Avatar`'s `.02em` both land on `--ls-normal` (0), and `Menu`'s section-header `.16em` lands on `--ls-field-label` (.14). Avatar's `.02em` is an exact tie between `--ls-normal` and `--ls-mono-nav` (.02 from each); it resolves to `--ls-normal`, consistent with the hierarchy bottoming out at zero — a low-stakes call on a single pair of uppercase initials. Two accidental splits were corrected the same pass: `ChartCard` and `StatCard` rendered their eyebrow at `.2em` instead of the `.22em` every other eyebrow (`Card`, `Dialog`, `ConfirmDialog`, `Onboarding`) uses — one role, two values, 0.02 apart and invisible by eye — and three display titles (`Dialog`, `ConfirmDialog`, `Onboarding`) sat at `-.01em`, 0.01 off `--ls-tight`, serving the identical tight-heading role. Both corrections move rendered tracking to the token rather than adding a step for the drift.
+
+Exposed in the Tailwind layer as `.tracking-tight` / `.tracking-normal` / `.tracking-mono-nav` / `.tracking-uppercase-status` / `.tracking-badge` / `.tracking-column-header` / `.tracking-field-label` / `.tracking-label` / `.tracking-wide` (`frameworks/tailwind/theme.css`, `--tracking-*`).
+
 ## ICONOGRAPHY
 - **Official set: [Phosphor Icons](https://phosphoricons.com)** (MIT license, free commercial use, no attribution). Chosen for aligning with Dravensoft's bold identity: it's the open-source family with the widest style range (1,500+ icons in 6 weights) and its **Bold** weight has the presence and high contrast the brand calls for — the icon equivalent of Archivo Black.
 - **Weights and use:**

@@ -7,7 +7,7 @@ export function Breadcrumbs({ items = [], separator = '/', style }) {
     <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, ...style }}>
       {items.map((it, i) => {
         const last = i === items.length - 1;
-        const common = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', letterSpacing: '.04em' };
+        const common = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', letterSpacing: 'var(--ls-mono-nav)' };
         return (
           <React.Fragment key={i}>
             {last ? (

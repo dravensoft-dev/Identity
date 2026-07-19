@@ -17,7 +17,7 @@ export function Shell({ active = 'dashboard', onNav, title, actions, children })
       <aside style={{ borderRight: '1px solid var(--color-base-300)', padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: 4 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 8px 22px' }}>
           <Rotor size={30} />
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 17, letterSpacing: '-.02em', textTransform: 'uppercase', color: 'var(--bone)' }}>Dravensoft</div>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 17, letterSpacing: 'var(--ls-tight)', textTransform: 'uppercase', color: 'var(--bone)' }}>Dravensoft</div>
         </div>
         {NAV.map((n) => {
           const on = n.id === active;

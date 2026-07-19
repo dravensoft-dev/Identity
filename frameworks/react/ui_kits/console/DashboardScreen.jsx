@@ -28,7 +28,7 @@ export function DashboardScreen({ onNav, onOpenProject }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 28 }}>
         {METRICS.map((m) => (
           <div key={m.k} style={{ background: 'var(--surface-card)', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-lg)', padding: '18px 20px' }}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)' }}>{m.k}</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{m.k}</div>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 34, color: m.tone, marginTop: 8 }}>{m.v}</div>
           </div>
         ))}

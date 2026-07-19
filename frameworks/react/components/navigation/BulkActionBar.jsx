@@ -9,7 +9,7 @@ export function BulkActionBar({ count = 0, noun = 'items', actions = [], onClear
       style={{ display: 'flex', alignItems: 'center', gap: 14, minHeight: 52, padding: '0 12px 0 16px',
         background: 'var(--surface-card)', border: '1px solid var(--line-strong)', borderRadius: 'var(--r-md)',
         boxShadow: 'var(--shadow-2)', ...style }}>
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', letterSpacing: '.04em', color: 'var(--bone)' }}>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', letterSpacing: 'var(--ls-mono-nav)', color: 'var(--bone)' }}>
         <b style={{ color: 'var(--gold)' }}>{count}</b> {noun} selected
       </span>
       <span style={{ width: 1, height: 22, background: 'var(--color-base-300)' }} />
@@ -30,7 +30,7 @@ export function BulkActionBar({ count = 0, noun = 'items', actions = [], onClear
       {onClear && (
         <button onClick={onClear} aria-label="Clear selection"
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)',
-            fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: '.1em', textTransform: 'uppercase' }}>
+            fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-badge)', textTransform: 'uppercase' }}>
           Clear
         </button>
       )}

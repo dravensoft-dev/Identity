@@ -38,10 +38,15 @@
   },
   "ls": {
     "$type": "number",
-    "$description": "Tracking. em is not a DTCG dimension unit, so tracking is a unitless number\n(a font-size multiplier) carrying an em render hint in $extensions.",
-    "tight": { "$value": -0.02, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } }, "$description": "display" },
+    "$description": "Tracking. em is not a DTCG dimension unit, so tracking is a unitless number\n(a font-size multiplier) carrying an em render hint in $extensions. Sorted by\nvalue the roles form a hierarchy: tracking decreases as the text gets longer,\nfrom the shortest mono labels down through prose to the tightest display\nheadings.",
+    "tight": { "$value": -0.02, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } }, "$description": "display — tight headings" },
     "normal": { "$value": 0, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } } },
-    "label": { "$value": 0.22, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } }, "$description": "mono uppercase labels" },
+    "mono-nav": { "$value": 0.04, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } }, "$description": "mono navigation — breadcrumbs, bulk-action counts" },
+    "uppercase-status": { "$value": 0.06, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } }, "$description": "uppercase status text — alerts, toasts, calendar hour labels" },
+    "badge": { "$value": 0.1, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } }, "$description": "badge and pill text" },
+    "column-header": { "$value": 0.12, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } }, "$description": "column header / micro-label" },
+    "field-label": { "$value": 0.14, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } }, "$description": "form field label" },
+    "label": { "$value": 0.22, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } }, "$description": "mono uppercase labels — section eyebrows" },
     "wide": { "$value": 0.34, "$extensions": { "com.dravensoft.arena": { "cssUnit": "em" } }, "$description": "eyebrows" }
   }
 }

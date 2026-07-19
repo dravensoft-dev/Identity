@@ -37,13 +37,23 @@
       not by looking up our CSS, so those already dedupe against each other
       and against `pill` once `pill` itself is registered.
 
-   `--tracking-*`, `--leading-*`, `--blur-*` and `--size-icon-*` were probed
-   the same two ways (a color class, and a same-family sibling) and hit
-   NEITHER failure — none of their prefixes carry a second Tailwind meaning,
-   and their siblings (`tracking-tight`/`tracking-wide`, `leading-tight`/
-   `leading-snug`, `blur-md`/`blur-lg`) already dedupe correctly without
-   registration. They stay unregistered on that evidence, not by omission;
-   see scripts/tv-merge.test.mjs for the cases proving it.
+   `--leading-*`, `--blur-*` and `--size-icon-*` were probed the same two
+   ways (a color class, and a same-family sibling) and hit NEITHER failure —
+   none of their prefixes carry a second Tailwind meaning, and their siblings
+   (`leading-tight`/`leading-snug`, `blur-md`/`blur-lg`) already dedupe
+   correctly without registration. They stay unregistered on that evidence,
+   not by omission; see scripts/tv-merge.test.mjs for the cases proving it.
+
+   `--tracking-*` is a MISSING SELF-DEDUPE case, same failure mode as `pill`
+   and the `z-index` names above, but only for the suffixes that are not one
+   of Tailwind's own stock letter-spacing names. `tight`, `normal` and `wide`
+   ARE stock names (`tracking-tight`/`tracking-normal`/`tracking-wide` are
+   Tailwind's own scale), so tailwind-merge's bundled `tracking` group
+   recognises them and they dedupe against each other with no help. `label`
+   is not a stock name, and neither are the five roles this task adds
+   (`field-label`, `column-header`, `badge`, `uppercase-status`, `mono-nav`):
+   verified pre-fix, `tracking-tight tracking-label` -> both survive. All six
+   custom names are registered below under the `tracking` group.
 
    Every entry below extends an existing Tailwind class group ID (`font-size`,
    `shadow`, `rounded`, `z` — confirmed against tailwind-merge's own
@@ -62,6 +72,7 @@ export const tv = createTV({
       'font-size': [{ text: ['display', 'h1', 'h2', 'h3', 'h4', 'ctl', 'ctl-md', 'ctl-sm', 'ctl-xs', 'ctl-2xs'] }],
       rounded: [{ rounded: ['pill'] }],
       z: [{ z: ['dropdown', 'tooltip', 'modal', 'modal-nested', 'palette', 'onboarding', 'toast'] }],
+      tracking: [{ tracking: ['label', 'field-label', 'column-header', 'badge', 'uppercase-status', 'mono-nav'] }],
     },
   },
 });

@@ -20,7 +20,7 @@ export function StatCard({ label, value, delta, sub, icon, style, ...rest }) {
       display: 'flex', flexDirection: 'column', gap: 8, ...style,
     }} {...rest}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--mute)' }}>{label}</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{label}</span>
         {icon && <span aria-hidden="true" style={{ display: 'inline-flex', fontSize: 'var(--icon-sm)', color: 'var(--mute)', opacity: 0.6 }}>{icon}</span>}
       </div>
       <div style={{

@@ -8,7 +8,7 @@ export function Card({ children, title, eyebrow, action, floating = false, accen
       {(title || eyebrow || action) && (
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '18px 20px 0' }}>
           <div>
-            {eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 6 }}>{eyebrow}</div>}
+            {eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 6 }}>{eyebrow}</div>}
             {title && <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'var(--bone)' }}>{title}</div>}
           </div>
           {action}

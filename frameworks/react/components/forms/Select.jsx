@@ -3,7 +3,7 @@ export function Select({ label, options = [], value, onChange, disabled = false,
   const [focus, setFocus] = useState(false);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, ...style }}>
-      {label && <label style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)' }}>{label}</label>}
+      {label && <label style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{label}</label>}
       <div style={{ position: 'relative' }}>
         <select value={value} onChange={onChange} disabled={disabled}
           onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}

@@ -22,7 +22,7 @@ export function Alert({ tone = 'info', title, children, icon, action, onClose, s
         {action && (
           <button onClick={action.onClick}
             style={{ marginTop: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-              fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: t.color }}>
+              fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', fontWeight: 700, letterSpacing: 'var(--ls-uppercase-status)', textTransform: 'uppercase', color: t.color }}>
             {action.label}
           </button>
         )}

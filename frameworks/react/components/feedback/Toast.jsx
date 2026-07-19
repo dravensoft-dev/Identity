@@ -10,12 +10,12 @@ export function Toast({ title, message, tone = 'neutral', action, onClose, persi
       background: 'var(--surface-card)', border: '1px solid var(--color-base-300)',
       borderLeft: '3px solid ' + (TOAST_TONES[tone] || TOAST_TONES.neutral), borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-2)', ...style }}>
       <div style={{ flex: 1 }}>
-        {title && <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 'var(--dz-text)', color: 'var(--bone)' }}>{title}{persist && <span title="Does not auto-dismiss" style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: '.12em', color: 'var(--mute)', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-xs)', padding: '1px 5px', textTransform: 'uppercase' }}>Pinned</span>}</div>}
+        {title && <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 'var(--dz-text)', color: 'var(--bone)' }}>{title}{persist && <span title="Does not auto-dismiss" style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-column-header)', color: 'var(--mute)', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-xs)', padding: '1px 5px', textTransform: 'uppercase' }}>Pinned</span>}</div>}
         {message && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--mute)', marginTop: 2 }}>{message}</div>}
         {action && (
           <button onClick={action.onClick}
             style={{ marginTop: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-              fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase',
+              fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', fontWeight: 700, letterSpacing: 'var(--ls-uppercase-status)', textTransform: 'uppercase',
               color: tone === 'danger' ? 'var(--gold)' : 'var(--crimson)' }}>
             {action.label}
           </button>

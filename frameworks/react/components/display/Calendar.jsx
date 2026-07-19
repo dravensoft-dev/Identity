@@ -79,7 +79,7 @@ export function Calendar({
   const step = activeView === 'day' ? 1 : 7;
   const goto = (iso) => { setAnchor(iso); onRangeChange && onRangeChange(iso); };
 
-  const label = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 700 };
+  const label = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-column-header)', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 700 };
   const navBtn = (dir) => (
     <button type="button" aria-label={dir < 0 ? 'Previous' : 'Next'}
       onClick={() => goto(addDays(anchor, dir * step))}
@@ -132,7 +132,7 @@ export function Calendar({
 
           <div style={{ width: GUTTER, flexShrink: 0, position: 'relative' }}>
             {hours.map((m) => (
-              <div key={m} style={{ ...label, position: 'absolute', top: y(m) - 5, right: 8, letterSpacing: '.06em' }}>
+              <div key={m} style={{ ...label, position: 'absolute', top: y(m) - 5, right: 8, letterSpacing: 'var(--ls-uppercase-status)' }}>
                 {formatHM(m)}
               </div>
             ))}

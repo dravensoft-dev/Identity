@@ -18,7 +18,7 @@ export function Table({
 
   const cellBase = { padding: 'var(--dz-row-py) var(--dz-row-px)', fontSize: 'var(--dz-text)', textAlign: 'left', verticalAlign: 'middle' };
   const headerLabel = {
-    fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: '.12em',
+    fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-column-header)',
     textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 700,
   };
   const valueStyle = (c) => ({

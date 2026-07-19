@@ -71,7 +71,7 @@ export function Button({
         width: full ? '100%' : 'auto',
         height: s.height, padding: s.padding, fontSize: s.fontSize,
         fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)',
-        letterSpacing: '.01em',
+        letterSpacing: 'var(--ls-normal)',
         color: p.color, background: p.bg,
         border: '1px solid ' + p.border, borderRadius: 'var(--r-sm)',
         boxShadow: p.shadow, cursor: disabled ? 'not-allowed' : 'pointer',
