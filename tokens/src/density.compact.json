@@ -8,6 +8,7 @@
     "row-py": { "$value": { "value": 7, "unit": "px" } },
     "row-px": { "$value": { "value": 12, "unit": "px" } },
     "stack": { "$value": { "value": 8, "unit": "px" } },
-    "cell": { "$value": { "value": 13, "unit": "px" } }
+    "cell": { "$value": { "value": 13, "unit": "px" } },
+    "text": { "$value": { "value": 13, "unit": "px" } }
   }
 }

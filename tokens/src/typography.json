@@ -25,7 +25,7 @@
     "h3": { "$value": { "value": 24, "unit": "px" } },
     "h4": { "$value": { "value": 19, "unit": "px" } },
     "lg": { "$value": { "value": 17, "unit": "px" } },
-    "md": { "$value": { "value": 15, "unit": "px" }, "$description": "base body" },
+    "md": { "$value": { "value": 15, "unit": "px" }, "$description": "body copy" },
     "sm": { "$value": { "value": 13, "unit": "px" } },
     "xs": { "$value": { "value": 11, "unit": "px" }, "$description": "mono labels / captions" }
   },

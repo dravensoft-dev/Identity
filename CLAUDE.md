@@ -110,7 +110,15 @@ shared `frameworks/tailwind/` recipes through the configured `tv`
 preset + per-component manifests), authored once because the token→utility
 mapping is pure CSS. **The Tailwind
 layer derives every utility from an existing token and introduces no new hex
-and no new value** — add the token first, then reference it.
+and no new value** — add the token first, then reference it. This is
+machine-checked, not hoped for: `bun run check:tailwind` compiles the preset
+with the manifests as content and asserts every class emits a rule and every
+theme key resolves to a real token; `bun run check:coverage` asserts every
+token either reaches a utility or is named in `EXCLUDED` with a reason;
+`bun run check:arbitrary` fails on a bracket carrying a raw literal.
+`bun run check` runs all six plus the test suite, without stopping at the
+first failure. An Angular primitive's recipe is its
+manifest — `frameworks/angular/primitives/tag/` is the reference shape.
 
 ## Conventions
 

@@ -1,7 +1,14 @@
 # Token migration to Style Dictionary (DTCG) — design
 
 **Date:** 2026-07-18
-**Status:** Approved (amended 2026-07-18 for strict DTCG 2025.10 conformance), ready for implementation
+**Status:** **SHIPPED in v4.0.0** (2026-07-18). Approved, amended for strict DTCG
+2025.10 conformance, implemented and released.
+
+> **Historical note.** The body below says `npm run` and `node scripts/…` throughout.
+> During implementation the toolchain moved to **Bun**, so the shipped commands are
+> `bun run …` and `bun scripts/…`. The text is left as approved rather than
+> rewritten: it records what was decided, not what the tree looks like now. For the
+> current commands see `CLAUDE.md`.
 **Scope:** Sub-project 1 of 2. Sub-project 2 (the four npm packages: build + publish
 pipeline) is a separate spec that depends on this one.
 

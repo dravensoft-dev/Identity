@@ -39,6 +39,7 @@
   --dz-row-px:16px; /* row horizontal padding */
   --dz-stack:12px; /* gap between stacked items */
   --dz-cell:14px; /* cell font-size */
+  --dz-text:14px; /* control text — buttons, inputs */
 }
 .arena-compact{
   /*
@@ -52,4 +53,5 @@
   --dz-row-px:12px;
   --dz-stack:8px;
   --dz-cell:13px;
+  --dz-text:13px;
 }
