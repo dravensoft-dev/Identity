@@ -78,3 +78,43 @@ test("Button.manifest.json through tv(): text-ctl* and the variant's text color 
     }
   }
 });
+
+/* Fix pass 4 — a second, different failure mode than the one above. `pill` (radius)
+ * and every `--z-index-*` name are not misclassified into a WRONG group (nothing
+ * else shares their prefix's second meaning the way text- does) — they are not
+ * classified into ANY group, so they never conflict with their OWN siblings either.
+ * A `tv()` compound variant (a base slot's radius/z class overridden by a
+ * size/variant one) produces exactly two same-family classes in one merged string,
+ * and without registration BOTH survive when only the later one should — plan 5's
+ * 34 recipes are expected to hit this shape. Verified pre-fix: `rounded-pill
+ * rounded-lg` -> both; `z-dropdown z-modal` -> both. */
+test('rounded-pill dedupes against Tailwind\'s own radius scale, in both directions', () => {
+  assert.equal(merge('rounded-pill rounded-lg'), 'rounded-lg');
+  assert.equal(merge('rounded-lg rounded-pill'), 'rounded-pill');
+});
+
+test('rounded-pill still coexists with a color class (registering it did not reopen the cross-group failure)', () => {
+  const root = classes(merge('rounded-pill bg-primary border-primary'));
+  assert.ok(root.includes('rounded-pill'));
+  assert.ok(root.includes('bg-primary'));
+  assert.ok(root.includes('border-primary'));
+});
+
+test('every registered Arena z-index name dedupes against a sibling, in both directions', () => {
+  const names = ['dropdown', 'tooltip', 'modal', 'modal-nested', 'palette', 'onboarding', 'toast'];
+  for (let i = 0; i < names.length - 1; i++) {
+    const a = `z-${names[i]}`, b = `z-${names[i + 1]}`;
+    assert.equal(merge(`${a} ${b}`), b, `${a} ${b} should collapse to ${b}`);
+    assert.equal(merge(`${b} ${a}`), a, `${b} ${a} should collapse to ${a}`);
+  }
+});
+
+test("Tailwind's own numeric z-index scale still dedupes after extending the z group (regression guard)", () => {
+  assert.equal(merge('z-10 z-20'), 'z-20');
+  assert.equal(merge('z-20 z-10'), 'z-10');
+});
+
+test('an Arena z-index name and a numeric Tailwind z-index value now correctly conflict too (same group, same meaning)', () => {
+  assert.equal(merge('z-dropdown z-10'), 'z-10');
+  assert.equal(merge('z-10 z-dropdown'), 'z-dropdown');
+});
