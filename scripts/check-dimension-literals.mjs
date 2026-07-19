@@ -42,8 +42,12 @@ export const EXEMPT = new Map([
    'local stacking inside a positioned container; does not join the global z order'],
 ]);
 
-/** A length literal: a number carrying a unit the token layer owns. */
-const RAW_LENGTH = /\d*\.?\d+\s*(px|rem)\b/;
+/** A length literal: a number carrying a unit the token layer owns. `em` is
+ *  in this set, not FREE_UNIT: Arena models letter-spacing as an `ls` token
+ *  (a DTCG `number` carrying an `em` render hint), so a bare `em` asserts a
+ *  dimension the language declares elsewhere — exactly what this gate
+ *  exists to catch. */
+const RAW_LENGTH = /\d*\.?\d+\s*(px|rem|em)\b/;
 /** Units the layer legitimately uses and the token layer does not model. */
 const FREE_UNIT = /^\s*'?-?\d*\.?\d+(%|ch|fr|vh|vw|vmin|vmax|deg|s|ms)'?\s*$/;
 /** The whole value is a bare number (quoted or not). */
@@ -72,7 +76,14 @@ export function scanValue(prop, raw) {
   return null;
 }
 
-const DECL = /(?<![\w.])([a-zA-Z]+)\s*:\s*('[^']*'|"[^"]*"|`[^`]*`|[-\w.]+)/g;
+// The bareword alternative carries `%` alongside `-\w.`: without it a value
+// like `left:-40%` inside CSS text (ProgressBar.jsx's injected keyframes
+// string) is captured as `-40`, silently losing the unit that FREE_UNIT
+// needs to recognise it as legal — a truncated capture, not a real bare
+// number. Every other unit this gate treats as free (ch, fr, vh, vw, vmin,
+// vmax, deg, s, ms) is already alphabetic and so already inside \w; `%` was
+// the one character in FREE_UNIT's list that fell outside that class.
+const DECL = /(?<![\w.])([a-zA-Z]+)\s*:\s*('[^']*'|"[^"]*"|`[^`]*`|[-\w.%]+)/g;
 
 /** @param {string} text @returns {{prop: string, raw: string, reason: string}[]} */
 export function scanText(text) {

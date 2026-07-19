@@ -15,7 +15,14 @@ test('a raw px length is a violation wherever it appears in the value', () => {
   assert.ok(scanValue('width', "'14px'"));
 });
 
+test('a raw em is a violation for letterSpacing, because em is where tracking is expressed', () => {
+  assert.ok(scanValue('letterSpacing', "'.1em'"));
+  assert.ok(scanValue('letterSpacing', "'-.02em'"));
+  assert.ok(scanValue('letterSpacing', "'0.22em'"));
+});
+
 test('a var() into a token is legal', () => {
+  assert.equal(scanValue('letterSpacing', "'var(--ls-label)'"), null);
   assert.equal(scanValue('fontSize', 'var(--dz-text)'), null);
   assert.equal(scanValue('padding', "'var(--dz-row-py) var(--dz-row-px)'"), null);
 });
@@ -47,4 +54,22 @@ test('scanText finds the property and the raw value together', () => {
 
 test('a property Arena does not govern is ignored', () => {
   assert.deepEqual(scanText("{ flexGrow: 1, opacity: 0.6, zoom: 2 }"), []);
+});
+
+test('a percent in unquoted CSS text is captured whole, not truncated to a bare number', () => {
+  assert.deepEqual(scanText('left:-40%'), []);
+  assert.deepEqual(scanText('width:40%'), []);
+});
+
+test('regression: ProgressBar.jsx keyframe text no longer reads as three violations', () => {
+  // The exact shape of ProgressBar.jsx's injected <style> textContent: CSS
+  // text inside a JS string, not an object literal. `left` and `width` are
+  // governed properties, but -40%/100%/40% are legal free-unit percentages,
+  // not bare numbers -- the DECL bareword class truncating `%` used to lose
+  // the unit and misread each one as a violation.
+  const keyframes =
+    '@keyframes arena-prog{0%{left:-40%}100%{left:100%}}' +
+    '.arena-prog-ind::after{content:"";position:absolute;top:0;bottom:0;width:40%;border-radius:inherit;background:currentColor;animation:arena-prog 1.15s var(--ease-in-out) infinite}' +
+    '@media (prefers-reduced-motion:reduce){.arena-prog-ind::after{animation-duration:2.4s}}';
+  assert.deepEqual(scanText(keyframes), []);
 });
