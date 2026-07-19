@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **The Tailwind layer exposes Arena's whole token surface.** `frameworks/tailwind/theme.css`
-  grows from 37 theme keys to 89: the nine-step type scale, the three families, all six
+  grows from 35 theme keys to 89: the nine-step type scale, the three families, all six
   weights, line height and tracking, the seven density tokens, the six missing spacing
   steps, `--radius-xs` and `--radius-pill`, the four missing `-content` pairs,
   `--color-neutral` and its content, `--color-error-fill`, and the scrim. `.arena-compact`

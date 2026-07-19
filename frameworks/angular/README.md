@@ -29,8 +29,6 @@ import manifest from '../../../tailwind/components/Tag.manifest.json' with { typ
 export const tagStyles = tv(manifest);
 ```
 
-`tag` is the reference shape.
-
 ## Conventions
 
 Standalone (no `NgModule`), `OnPush`, `input()`/`output()`/`model()`, `inject()`
