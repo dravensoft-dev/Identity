@@ -1,6 +1,7 @@
 import React from 'react';
 import { Rotor } from '../../components/brand/Rotor.jsx';
 import { IconButton } from '../../components/forms/IconButton.jsx';
+import { ThemeToggle } from '../../components/forms/ThemeToggle.jsx';
 import { Icon } from './Icon.jsx';
 import { PageHead } from '../../components/navigation/PageHead.jsx';
 
@@ -30,7 +31,9 @@ export function Shell({ active = 'dashboard', onNav, title, actions, children })
             </button>
           );
         })}
-        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2.5)', padding: 'calc(var(--sp-1) * 3) calc(var(--sp-1) * 2)', borderTop: 'var(--bw) solid var(--color-base-300)' }}>
+        {/* No bottom padding: the aside already ends in its own, and doubling
+            them left the avatar sitting on a band of empty space. */}
+        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2.5)', padding: 'calc(var(--sp-1) * 3) calc(var(--sp-1) * 2) 0', borderTop: 'var(--bw) solid var(--color-base-300)' }}>
           <div style={{ width: 'calc(var(--sp-1) * 7.5)', height: 'calc(var(--sp-1) * 7.5)', borderRadius: '50%', background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink)', fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 'var(--dz-text-md)' }}>A</div>
           <div style={{ lineHeight: 'var(--lh-snug)' }}><div style={{ fontSize: 'var(--dz-text-md)', color: 'var(--bone-dim)', fontFamily: 'var(--font-body)' }}>Ana Torres</div><div style={{ fontSize: 'var(--dz-text-xs)', color: 'var(--mute)', fontFamily: 'var(--font-mono)' }}>Delivery Lead</div></div>
         </div>
@@ -42,6 +45,7 @@ export function Shell({ active = 'dashboard', onNav, title, actions, children })
               {actions}
               <IconButton label="Search"><Icon name="search" /></IconButton>
               <IconButton label="Notifications"><Icon name="bell" /></IconButton>
+              <ThemeToggle />
             </>} />
         </header>
         <div style={{ padding: 'calc(var(--sp-1) * 8)', flex: 1, overflow: 'auto' }}>{children}</div>
