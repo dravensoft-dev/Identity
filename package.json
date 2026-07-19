@@ -5,6 +5,8 @@
   "devDependencies": {
     "@tailwindcss/cli": "4.3.3",
     "style-dictionary": "^4",
+    "tailwind-merge": "^3.6.0",
+    "tailwind-variants": "^3.2.2",
     "tailwindcss": "4.3.3"
   },
   "scripts": {
