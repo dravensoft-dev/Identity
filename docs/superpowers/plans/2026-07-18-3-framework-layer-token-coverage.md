@@ -2,6 +2,49 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+**Execution order: 3 of 6.** **Status: NOT EXECUTED** as of 2026-07-18 — none of
+`scripts/check-tailwind*.mjs` exists and `frameworks/tailwind/components/` holds
+only `Button.manifest.json`.
+
+| # | Plan | Status |
+|---|---|---|
+| 1 | `2026-07-18-1-token-style-dictionary-migration.md` | **Executed** (v4.0.0) |
+| 2 | `2026-07-18-2-overview-token-page.md` | **Executed** (v4.0.0) |
+| 3 | `2026-07-18-3-framework-layer-token-coverage.md` | **This plan** — pending |
+| 4 | token/geometry boundary — **plan not yet written**, spec at `specs/2026-07-18-token-geometry-boundary-design.md` | Pending |
+| 5 | framework-layer parity — **plan not yet written**, spec at `specs/2026-07-18-framework-layer-parity-design.md` | Pending |
+| 6 | `2026-07-18-6-four-package-build-publish.md` | Pending |
+
+> ### Read before executing: Task 3 changes family
+>
+> **Task 3 still runs, and still adds a 14px control-text token — but it authors it
+> as `dz.text`, not as `fs.base`.** Everything else about the task is unchanged.
+>
+> Task 3's rationale as written — *"React is the design authority, so the Tailwind
+> Button must render 14px"* — no longer holds. **`tokens/src/` is the design
+> authority; React, Tailwind and Angular are reflections of it** (see plan 4's spec,
+> `specs/2026-07-18-token-geometry-boundary-design.md`). Under that rule, adding
+> 14px to `fs` would ratify drift: `fs` is the *editorial* scale, semantic and
+> closed, and a button label is not prose. The value is right and its family is
+> wrong. Chrome text belongs to the control-density family `dz`, which already
+> declares control heights, row padding and `cell: 14px` as a font size.
+>
+> **Do not simply skip the task.** Skipping it breaks this plan's own gates: with no
+> token for 14px, `Button.manifest.json` must fall back to `text-[14px]`, which is
+> exactly what Task 8's `check-arbitrary-values.mjs` is built to reject. The
+> one-word change of family keeps every gate green and lands the token where plan 4
+> needs it, so plan 4 populates `dz` further instead of undoing this.
+>
+> Concretely: author `dz.text` (14px) in `tokens/src/spacing.json` beside the other
+> `dz` tokens rather than `fs.base` in `typography.json`; name the theme key for the
+> `dz` family; and keep `Button.manifest.json` free of arbitrary values as the task
+> already requires. Plan 4 later absorbs `dz.cell` into `dz.text` and adds
+> `dz.text-sm`.
+>
+> The same reversal applies to the two other places this plan asserts React's
+> authority — Task 3's own preamble and the *"Touch the React layer"* bullet under
+> *What this plan deliberately does not do*. Both are corrected in place.
+
 **Goal:** Expose every Arena token the Tailwind layer should expose, delete the six arbitrary values the gap forced, make the shared-recipe architecture real for `tag`, and machine-check all three so the surface cannot fall behind again.
 
 **Architecture:** `frameworks/tailwind/theme.css` grows from 37 theme keys to 89, each one a `var()` into an existing Arena token, with every Tailwind default namespace cleared first so only Arena's language compiles. Three new gates under `scripts/`, following the repository's existing `check-*.mjs` shape (a pure exported function plus an `import.meta`-guarded `main()`, unit-tested with `node:test`): one compiles the preset together with the component manifests and asserts the whole chain resolves, one asserts every token is either exposed or explicitly excluded, one forbids Tailwind arbitrary values that are raw literals rather than token references.
@@ -504,7 +547,9 @@ a token, and Tailwind's 0.25rem default becoming reachable again."
 
 ## Task 3: The one new token — `--fs-base`
 
-Arena's type scale runs 13px (`--fs-sm`) then 15px (`--fs-md`), and React's `Button` uses 14px for its `md` size (`frameworks/react/components/forms/Button.jsx:28`). React is the design authority, so the Tailwind Button must render 14px — and 14px has no token. This task adds it. It is the single token-layer change in this plan and it was signed off explicitly.
+Arena's editorial type scale runs 13px (`--fs-sm`) then 15px (`--fs-md`), and React's `Button` uses 14px for its `md` size (`frameworks/react/components/forms/Button.jsx:28`). 14px has no token, so the Tailwind Button cannot be expressed without one. This task adds it. It is the single token-layer change in this plan and it was signed off explicitly.
+
+**Corrected by plan 4 — author it as `dz.text`, not `fs.base`.** A button label is chrome, not prose, and chrome text belongs to the control-density family `dz` (which already declares `cell: 14px` as a font size) rather than to `fs`, which is semantic and closed. The original rationale here read *"React is the design authority, so the Tailwind Button must render 14px"*; that is reversed — **`tokens/src/` is the design authority and React is a reflection of it** — and under the new rule adding 14px to `fs` would ratify drift rather than repair it. See the banner at the top of this plan and `specs/2026-07-18-token-geometry-boundary-design.md`.
 
 `--fs-md` currently carries the `$description` "base body". With a token literally named `base` alongside it, that description becomes actively misleading, so it is reworded in the same edit.
 
@@ -1041,7 +1086,7 @@ named in EXCLUDED with a reason."
 **Interfaces:**
 - Produces: `scanText(text: string): {cls: string, content: string}[]` — the illegal arbitrary values found in one file's text.
 
-The rule is keyed on **Tailwind's bracket syntax**, not on `px` anywhere. React's 155 literal `px` are one-off geometry the language permits — `padding: '13px'` in a JSX inline style is not an arbitrary value; `text-[13px]` in a class string is. A bracket's content is legal when it is a `var()` reference to a token (optionally behind a `length:` / `color:` type hint), or when it carries no literal value at all — `transition-[background,transform,box-shadow]` names properties, not values.
+The rule is keyed on **Tailwind's bracket syntax**, not on `px` anywhere — `padding: '13px'` in a JSX inline style is not an arbitrary value; `text-[13px]` in a class string is. (React's 155 literal `px` were originally held to be one-off geometry the language permits. Plan 4 reverses that: a bare literal is a bug in every layer, and it adds `scripts/check-dimension-literals.mjs` for the inline-style idiom. **This gate's scoping is unchanged** — the two are complements.) A bracket's content is legal when it is a `var()` reference to a token (optionally behind a `length:` / `color:` type hint), or when it carries no literal value at all — `transition-[background,transform,box-shadow]` names properties, not values.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1098,9 +1143,10 @@ Create `scripts/check-arbitrary-values.mjs`:
  * prose: the Tailwind layer derives every utility from an existing token and
  * introduces no new hex and no new value.
  *
- * Keyed on bracket syntax, never on `px` anywhere. React's components are
- * inline-style and full of one-off geometry the language permits; a gate
- * scoped to "any px under frameworks/" would fail the healthy layer.
+ * Keyed on bracket syntax, never on `px` anywhere: a JSX inline style is a
+ * different idiom and needs a different gate. check-dimension-literals.mjs
+ * covers it, and the two are complements — one gate spanning both would be
+ * keyed on nothing coherent.
  *
  * Legal inside the brackets:
  *   - a var() into a token, optionally behind a type hint —
@@ -1569,8 +1615,8 @@ machine-checked rather than written down and hoped for."
 
 - **Grow Angular past one primitive or Tailwind past two manifests.** That is `2026-07-18-framework-layer-parity-design.md`, and it starts from `Tag.manifest.json` as its slice 1.
 - **Install `ng-packagr` or add `scripts/check-angular.mjs`.** The parity spec installs those; at this point in the sequence there is nothing to compile.
-- **Publish anything.** `2026-07-18-four-package-build-publish-design.md` waits on parity, which waits on this.
-- **Touch the React layer.** The audit found it healthy; it stays the design authority.
+- **Publish anything.** `2026-07-18-four-package-build-publish-design.md` (plan 6) waits on parity (plan 5), which waits on the token/geometry boundary (plan 4, `specs/2026-07-18-token-geometry-boundary-design.md`), which waits on this.
+- **Touch the React layer.** The audit found it healthy *against the rule it tested* — no raw hex, no references to a token that does not exist. It did not test whether a dimension resolves from the token layer at all, and mostly it does not: `var(--fs-*)` appears once across the 40 components and `var(--sp-*)` not at all. Repairing that is plan 4, not this plan. React stays the **reference implementation**; `tokens/src/` is the design authority.
 - **Change any token value.** The one new token (`--fs-base`) names a size the system already used; no existing value moves.
 
 ## What the parity work inherits from this
@@ -1613,3 +1659,11 @@ Recorded here because the parity plan is written in a later session that will no
   it deserves its own spec rather than an appendix here. **Sequence it after this plan**, not
   before: with gate 3 installed, a token born from that work cannot silently fail to reach
   the Tailwind layer. Without it, it can.
+
+  **That spec is now written: `specs/2026-07-18-token-geometry-boundary-design.md`,
+  plan 4 in the sequence.** It settles the boundary as *tokens name roles, layers
+  instantiate them* — a dimension is a token or a derivation of tokens, and a bare
+  literal is a bug — with derivation available where a scale is numeric (`sp`, so the
+  spinner is `calc(var(--sp-1) * 3.5)` and needs no knob) and unavailable where it is
+  semantic. It also adds two families this plan's gate 3 will then police, `icon` and
+  `z`, and it is the reason Task 3 here authors `dz.text` rather than `fs.base`.

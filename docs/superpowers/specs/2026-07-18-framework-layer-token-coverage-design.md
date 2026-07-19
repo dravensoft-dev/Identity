@@ -15,7 +15,7 @@ what is wrong.**
 
 | Layer | Finding |
 |---|---|
-| React | Clean. 571 `var(--token)` references across 40 components, zero references to a token that does not exist, zero raw hex. The 155 literal `px` are one-off geometry, which the language permits — what it forbids in a component is a raw hex. |
+| React | Clean **against the rule tested here**: 571 `var(--token)` references across 40 components, zero references to a token that does not exist, zero raw hex. **Superseded on the literals:** the 155 literal `px` were called one-off geometry the language permits; `2026-07-18-token-geometry-boundary-design.md` (plan 4) reverses that — a dimension is a token or a derivation of tokens, and a bare literal is a bug. This audit never tested whether a dimension resolves from the token layer at all, and mostly it does not (`var(--fs-*)` appears once across the 40 components, `var(--sp-*)` never). |
 | Angular Material bridge | Clean. Every `--mdc-*` maps to an Arena token; the namespaces do not collide. |
 | Tailwind preset | Works. Verified by compiling it with Tailwind v4.3.3 and loading the output in a browser. |
 
@@ -196,10 +196,16 @@ Three checks, following the repository's existing `check-*.mjs` convention:
 - **No arbitrary values.** Fail on `[13px]`-style literals anywhere under `frameworks/`,
   which is the machine form of the rule `CLAUDE.md` already states in prose.
 
-  **Key the gate on Tailwind's bracket syntax**, not on literal `px` anywhere. React's 155
-  literal `px` are one-off geometry that the language permits and this audit cleared; a gate
-  scoped to "any px under frameworks/" would fail the healthy layer. `[13px]` is a Tailwind
-  arbitrary value; `padding: '13px'` in a React inline style is not.
+  **Key the gate on Tailwind's bracket syntax**, not on literal `px` anywhere. `[13px]` is a
+  Tailwind arbitrary value; `padding: '13px'` in a React inline style is a different idiom
+  and needs a different gate.
+
+  **The scoping stands; its original justification does not.** It was scoped this way
+  because React's 155 literal `px` were held to be one-off geometry the language permits.
+  Plan 4 (`2026-07-18-token-geometry-boundary-design.md`) reverses that: a bare literal is a
+  bug in every layer. The gate stays keyed on bracket syntax anyway, because plan 4 adds
+  `scripts/check-dimension-literals.mjs` for the inline-style idiom — the two are
+  complements, and one gate spanning both would be keyed on nothing coherent.
 - **Coverage is declared.** Assert every Arena token is either exposed by the preset or
   named in an explicit exclusion list, so a token added to `tokens/src/` cannot silently
   fail to reach the Tailwind layer.

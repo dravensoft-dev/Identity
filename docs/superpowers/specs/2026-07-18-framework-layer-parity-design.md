@@ -2,8 +2,16 @@
 
 **Status:** approved in design
 **Date:** 2026-07-18
-**Depends on:** `2026-07-18-framework-layer-token-coverage-design.md` — hard prerequisite
-**Blocks:** `2026-07-18-four-package-build-publish-design.md` — publication waits on this
+**Execution order:** plan 5 of 6
+**Depends on:** `2026-07-18-framework-layer-token-coverage-design.md` (plan 3) — hard prerequisite — and `2026-07-18-token-geometry-boundary-design.md` (plan 4), added later to the chain
+**Blocks:** `2026-07-18-four-package-build-publish-design.md` (plan 6) — publication waits on this
+
+> **Plan 4 governs what the 34 manifests written here may contain.** It settles that
+> a dimension is a token or a derivation of tokens and that a bare literal is a bug,
+> and it resolves the 37 off-scale sizes **once**, by sorting them into families,
+> rather than at each manifest that happens to need one. Writing the manifests before
+> it means taking that decision 34 times with 34 rationales. It also adds two token
+> families the manifests will reference, `icon` and `z`.
 
 ## Problem
 
@@ -221,11 +229,19 @@ Phases 1 and 2 unblock `@dravensoft/arena-angular`. All three unblock
 - **The 21 Material-covered components as `arena-*` primitives.** Stated at length
   above. Material provides them; `arena-material.css` dresses them.
 - **Manifests for the 4 charts and `Calendar`.** Not expressible as class strings.
-- **Any change to the React layer.** The audit in the coverage spec found it healthy;
-  it remains the reference implementation and the design authority. Where an Angular
-  primitive and a React component disagree, the React one is right.
+- **Any change to the React layer.** It remains the **reference implementation** —
+  where an Angular primitive and a React component disagree on *shape or behaviour*,
+  the React one is right.
+
+  **It is not the design authority.** `tokens/src/` is
+  (`2026-07-18-token-geometry-boundary-design.md`, plan 4). Where a React component
+  and the token layer disagree on a *value*, the React component is wrong — and plan 4
+  repairs it before this spec runs, so nothing here needs to. The coverage spec's
+  audit found React healthy against the rule it tested (no raw hex, no missing
+  tokens); it did not test whether a dimension resolves from the token layer at all,
+  and mostly it does not.
 - **Any change to `tokens/`, to the token build, or to a token value.** This spec
-  consumes tokens; the coverage spec exposes them.
+  consumes tokens; plan 3 exposes them and plan 4 completes them.
 - **A compiled Angular demo application.** It would be the most faithful verification
   and it would put build output, or a build step, in a tree whose demos are static by
   doctrine. Gates 1 and 2 buy most of the confidence at none of that cost.
@@ -244,7 +260,7 @@ Phases 1 and 2 unblock `@dravensoft/arena-angular`. All three unblock
   review.
 - `frameworks/react/` is byte-unchanged: `git diff --stat main -- frameworks/react/`
   is empty.
-- Spot-check against the design authority: each new specimen is compared against its
+- Spot-check against the reference implementation: each new specimen is compared against its
   React `*.card.html` counterpart, and any visual difference is either a React bug
   filed separately or a defect in the new primitive.
 

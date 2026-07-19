@@ -2,6 +2,19 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+**Execution order: 2 of 6.** **Status: EXECUTED** — shipped in `v4.0.0`
+(`b070df6` and following). The checkboxes below were never ticked; the artefacts
+are the record. Do not re-run this plan.
+
+| # | Plan | Status |
+|---|---|---|
+| 1 | `2026-07-18-1-token-style-dictionary-migration.md` | **Executed** (v4.0.0) |
+| 2 | `2026-07-18-2-overview-token-page.md` | **Executed** (v4.0.0) |
+| 3 | `2026-07-18-3-framework-layer-token-coverage.md` | Pending |
+| 4 | token/geometry boundary — **plan not yet written**, spec at `specs/2026-07-18-token-geometry-boundary-design.md` | Pending |
+| 5 | framework-layer parity — **plan not yet written**, spec at `specs/2026-07-18-framework-layer-parity-design.md` | Pending |
+| 6 | `2026-07-18-6-four-package-build-publish.md` | Pending |
+
 **Goal:** Replace `Arena - Overview.dc.html`'s hand-rolled parallel component library with a plain-HTML page that generates itself from `tokens/src/*.json` and `tokens/colors.css`, presenting all 138 token names and nothing else, plus a `bun run demos` server for the two root demo pages.
 
 **Architecture:** The page leaves `dc-runtime` and becomes plain HTML driven by one ES module, `overview.js`. That module fetches the DTCG JSON for **names and descriptions**, reads **values** from `getComputedStyle(document.documentElement)` so the page exercises the real built CSS, and picks a preview shape per token **group** (falling back to `$type`) using a pure, tested helper in `scripts/lib/token-preview.mjs`. The alias layer is read out of `tokens/colors.css` with the existing `scripts/lib/css-decls.mjs`, unchanged.

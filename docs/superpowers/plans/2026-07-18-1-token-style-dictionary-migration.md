@@ -2,6 +2,19 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+**Execution order: 1 of 6.** **Status: EXECUTED** — shipped in `v4.0.0`
+(`a30ee9d`). The checkboxes below were never ticked; the artefacts are the
+record. Do not re-run this plan.
+
+| # | Plan | Status |
+|---|---|---|
+| 1 | `2026-07-18-1-token-style-dictionary-migration.md` | **Executed** (v4.0.0) |
+| 2 | `2026-07-18-2-overview-token-page.md` | **Executed** (v4.0.0) |
+| 3 | `2026-07-18-3-framework-layer-token-coverage.md` | Pending |
+| 4 | token/geometry boundary — **plan not yet written**, spec at `specs/2026-07-18-token-geometry-boundary-design.md` | Pending |
+| 5 | framework-layer parity — **plan not yet written**, spec at `specs/2026-07-18-framework-layer-parity-design.md` | Pending |
+| 6 | `2026-07-18-6-four-package-build-publish.md` | Pending |
+
 **Goal:** Make strictly-conformant DTCG 2025.10 JSON in `tokens/src/` the single source of Arena's token values, generating `tokens/{palette,typography,spacing,effects}.css` from it with Style Dictionary v4, with zero behavioral change save the retirement of `--glow-accent`.
 
 **Architecture:** Style Dictionary v4 is used **only as a loader, reference resolver and name transformer** — never as a value transformer or file writer. `scripts/build-tokens.mjs` calls `sd.getPlatformTokens()` per source file to obtain resolved, kebab-named tokens, then a hand-written serializer (`scripts/lib/serialize-token.mjs`) renders each DTCG value back to Arena's exact CSS string, and blocks are composed into the four output files. This split is load-bearing: **SD v4's built-in CSS transforms do not understand DTCG 2025.10 structured values** (`{value,unit}` dimensions, structured `color` objects) — full 2025.10 support is slated for SD v5 — so applying `transformGroup: 'css'` would corrupt every value. Two gates protect the result: `check-dtcg.mjs` (source conforms to 2025.10) and `check-tokens-generated.mjs` (committed CSS == freshly generated CSS).

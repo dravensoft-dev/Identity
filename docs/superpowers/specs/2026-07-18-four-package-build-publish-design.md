@@ -3,9 +3,16 @@
 **Date:** 2026-07-18 · **revised 2026-07-18** after v4.0.0 shipped and the framework
 layers were audited · **decisions settled 2026-07-18**, see "Component coverage".
 **Status:** Approved in design; **plan written**
-(`docs/superpowers/plans/2026-07-18-four-package-build-publish.md`). Executable now,
-but **publishing stays switched off** until framework-layer coverage *and* Angular /
-Tailwind parity land — see "Component coverage" near the end.
+(`docs/superpowers/plans/2026-07-18-6-four-package-build-publish.md`, **plan 6 of 6 —
+last**). Executable now, but **publishing stays switched off** until framework-layer
+coverage (plan 3), the token/geometry boundary (plan 4,
+`2026-07-18-token-geometry-boundary-design.md`) *and* Angular / Tailwind parity
+(plan 5) land — see "Component coverage" near the end.
+
+Plan 4 is a later addition to this chain and matters here for a reason coverage and
+parity do not: it changes token **values** and adds two token families (`icon` and
+`z`), all of which ship inside `@dravensoft/arena-tokens`. Publishing before it means
+shipping a token surface that is about to change shape.
 **Scope:** Sub-project 2 of 2. Sub-project 1
 (`2026-07-18-token-style-dictionary-migration-design.md`) **shipped in v4.0.0**;
 the DTCG token source the `arena-tokens` package ships now exists.

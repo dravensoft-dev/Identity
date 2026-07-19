@@ -2,6 +2,32 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+**Execution order: 6 of 6 — last.** **Status: NOT EXECUTED** as of 2026-07-18 —
+no `packaging/` directory and no `.github/workflows/`.
+
+| # | Plan | Status |
+|---|---|---|
+| 1 | `2026-07-18-1-token-style-dictionary-migration.md` | **Executed** (v4.0.0) |
+| 2 | `2026-07-18-2-overview-token-page.md` | **Executed** (v4.0.0) |
+| 3 | `2026-07-18-3-framework-layer-token-coverage.md` | Pending |
+| 4 | token/geometry boundary — **plan not yet written**, spec at `specs/2026-07-18-token-geometry-boundary-design.md` | Pending |
+| 5 | framework-layer parity — **plan not yet written**, spec at `specs/2026-07-18-framework-layer-parity-design.md` | Pending |
+| 6 | `2026-07-18-6-four-package-build-publish.md` | **This plan** — pending |
+
+> ### Why this one goes last
+>
+> **The assembly logic here is executable today and correct today** — every file map
+> is a glob, so plans 3, 4 and 5 need no edit under `packaging/`. What is gated is
+> **publishing**, not building.
+>
+> Publishing now would put `@dravensoft/arena-angular` and `@dravensoft/arena-tailwind`
+> on the public registry with one component each, and **a published version is
+> permanent in a way a package name is not.**
+>
+> Plan 4 additionally changes token *values* and adds two token families (`icon` and
+> `z`). Those land in `@dravensoft/arena-tokens`, so publishing before it means
+> shipping a token surface that is about to change shape.
+
 **Goal:** Assemble four lockstep-versioned, registry-standard npm packages
 (`@dravensoft/arena-{tokens,react,angular,tailwind}`) from the untouched Arena tree
 into a git-ignored `dist/`, verified under both Bun and npm, with a tag-triggered

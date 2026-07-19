@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-18
 **Status:** design settled, implementation not started
-**Sequenced after:** `2026-07-18-framework-layer-token-coverage.md` (with one task removed — see *What this reverses*)
+**Execution order:** plan 4 of 6 — after `plans/2026-07-18-3-framework-layer-token-coverage.md` (whose Task 3 this spec corrects; see *What this reverses*), before framework-layer parity (5) and publishing (6)
 **Governs:** the React layer, and the 34 manifests that `2026-07-18-framework-layer-parity-design.md` will write
 
 ---
@@ -443,14 +443,22 @@ Three written statements contradict this and change in the same commit:
 - `specs/2026-07-18-framework-layer-parity-design.md:225` — *"it remains the
   reference implementation and the design authority"*. It stays the **reference
   implementation**; it stops being the design authority.
-- `plans/2026-07-18-framework-layer-token-coverage.md:1573` — *"it stays the design
-  authority"*.
-- `plans/2026-07-18-framework-layer-token-coverage.md:507` — Task 3's whole
+- `plans/2026-07-18-3-framework-layer-token-coverage.md` (~line 1614) — *"it stays
+  the design authority"*.
+- `plans/2026-07-18-3-framework-layer-token-coverage.md` (~line 548) — Task 3's whole
   rationale: *"React is the design authority, so the Tailwind Button must render
   14px — and 14px has no token. This task adds it."* Under the settled rule this
   inverts: `Button` rendering a size the scale does not name **is the defect**, and
-  adding `--fs-base` to `fs` would ratify it. **Task 3 is removed from that plan**;
-  the value re-appears here as `dz.text`.
+  adding 14px to `fs` — the editorial scale, semantic and closed — would ratify it.
+
+  **Task 3 is corrected rather than removed: it still runs, and still adds a 14px
+  control-text token, but authors it as `dz.text` instead of `fs.base`.** Skipping
+  the task outright would break plan 3's own gates — with no token for 14px,
+  `Button.manifest.json` falls back to `text-[14px]`, which is exactly what that
+  plan's `check-arbitrary-values.mjs` exists to reject. The one-word change of
+  family keeps every gate green and lands the token where this spec needs it, so
+  this work populates `dz` further instead of undoing plan 3. Plan 3 carries a
+  banner saying so.
 
 The "one-off geometry" permission is stated in four places, all of them in the
 coverage documents — **not** in `CLAUDE.md`, which is silent on literal dimensions
