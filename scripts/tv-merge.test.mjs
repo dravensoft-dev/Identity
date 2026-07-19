@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { tv } from '../frameworks/tailwind/tv.ts';
+import { getDefaultConfig } from 'tailwind-merge';
+import { tv, ARENA_SPACING_SUFFIXES, spacingConsumingGroups } from '../frameworks/tailwind/tv.ts';
 import { parseDecls } from './lib/css-decls.mjs';
 
 /* No gate exercises tailwind-variants' `tv()` merge until this file: every other
@@ -142,39 +143,70 @@ test('every registered Arena tracking name dedupes against a sibling, in both di
 /* Fix pass 1 — this is the third time MISSING SELF-DEDUPE has been found one
  * namespace at a time (radius/z-index, then tracking, then this pass found
  * leading/blur/size/ease/max-w all at once). Hand-written cases like the
- * `tracking` block just above only prove the names someone thought to probe;
- * they say nothing about a namespace nobody probed. This block instead reads
+ * `tracking` block above only prove the names someone thought to probe; they
+ * say nothing about a namespace nobody probed. This block instead reads
  * frameworks/tailwind/theme.css itself — the same file tv.ts's registrations
- * are meant to track — extracts every Arena-defined namespace and its keys
+ * are meant to track — extracts Arena's namespaces and their keys
  * mechanically, and asserts each namespace dedupes its own keys pairwise. A
- * new Arena key added to any of these namespaces without a matching tv.ts
- * registration now fails THIS test on the day it is added, rather than
- * shipping green until some future recipe happens to compose two of them.
+ * new Arena key added to a namespace THIS DERIVATION FINDS, without a
+ * matching tv.ts registration, now fails this test the day it is added.
  * (Precedent: scripts/token-preview.test.mjs derives its cases from
  * build-tokens.mjs's own FILES export rather than restating them by hand —
- * same move, applied here to tv.ts's registrations instead.) */
+ * same move, applied here to tv.ts's registrations instead.)
+ *
+ * That claim had a real gap on first landing — fix pass 1's derivation found
+ * a namespace only via its `--<ns>-*: initial;` reset line, so it silently
+ * missed the one namespace theme.css leaves open on purpose (`--spacing-*`).
+ * Fix pass 2, immediately below, closes that: namespace membership is now
+ * decided from the key name itself. Nothing here claims to be exhaustive
+ * over "every conceivable namespace" — only over the ones a key can actually
+ * resolve to, which is `resetNamespaces` (Arena's own, `size`/`z-index`)
+ * unioned with `NATIVE_THEME_NAMESPACES` (Tailwind's fixed, documented set,
+ * `spacing` included). A wholly new, non-native, unreset namespace is the
+ * one shape this still could not find — see the residual-gap test below. */
 
 const themeCssPath = new URL('../frameworks/tailwind/theme.css', import.meta.url);
 const [themeDecls] = [...parseDecls(readFileSync(themeCssPath, 'utf8')).values()];
 
-/** Every Arena namespace in theme.css is opened with `--<ns>-*: initial;`
- *  before its keys are declared — that reset is what makes the namespace a
- *  closed, Arena-authored vocabulary rather than an open extension of
- *  Tailwind's own scale, so it doubles as the marker this derives the
- *  namespace list from, instead of hand-maintaining one. */
+/* Fix pass 2 — the first version of this derivation keyed namespace
+ * discovery off `--<ns>-*: initial;` reset lines, which is a PROXY for "this
+ * is an Arena namespace," not the thing itself, and the proxy broke exactly
+ * once: `--spacing-*` is deliberately left open (theme.css's own comment —
+ * Tailwind's numeric scale has to keep working alongside Arena's named
+ * steps), so it has no reset line and was entirely invisible to the old
+ * scan. Real cost: `Button.manifest.json`'s `h-ctl-h`/`h-ctl-h-sm`/
+ * `h-ctl-h-lg` never deduped, and nothing caught it.
+ *
+ * Namespaces are now derived from the key name itself. `NATIVE_THEME_NAMESPACES`
+ * is Tailwind's own fixed set of `@theme` namespaces — sourced from
+ * tailwind-merge's `getDefaultConfig().theme` keys, not listed from memory —
+ * and a key belongs to one of those namespaces whether or not OUR theme.css
+ * happens to reset it, `spacing` included. Reset lines are still read
+ * (`resetNamespaces`), because two Arena namespaces (`size`, `z-index`) are
+ * NOT native Tailwind theme namespaces — they're Arena's own, riding on
+ * tailwind-merge's generic per-classGroup mechanism instead of a `fromTheme`
+ * getter — so a reset is the only signal that exists for them. A key is
+ * assigned to the LONGEST candidate namespace (from either source) that
+ * prefixes it, so `--font-weight-regular` resolves to `font-weight`, not
+ * `font` + key `weight-regular`. */
+const NATIVE_THEME_NAMESPACES = new Set(Object.keys(getDefaultConfig().theme));
+
 function deriveNamespaces(decls) {
-  const namespaces = new Map();
-  let current = null;
+  const resetNamespaces = new Set();
   for (const [name, value] of decls) {
     const reset = /^([a-z][a-z0-9-]*)-\*$/.exec(name);
-    if (reset && value.trim() === 'initial') {
-      current = reset[1];
-      namespaces.set(current, []);
-      continue;
-    }
-    if (current && name.startsWith(`${current}-`)) {
-      namespaces.get(current).push(name.slice(current.length + 1));
-    }
+    if (reset && value.trim() === 'initial') resetNamespaces.add(reset[1]);
+  }
+  const knownNamespaces = [...new Set([...resetNamespaces, ...NATIVE_THEME_NAMESPACES])]
+    .sort((a, b) => b.length - a.length); // longest first: font-weight before font
+
+  const namespaces = new Map();
+  for (const [name] of decls) {
+    if (/-\*$/.test(name)) continue; // a reset declaration itself, not a key
+    const ns = knownNamespaces.find((candidate) => name.startsWith(`${candidate}-`));
+    if (!ns) continue;
+    if (!namespaces.has(ns)) namespaces.set(ns, []);
+    namespaces.get(ns).push(name.slice(ns.length + 1));
   }
   return namespaces;
 }
@@ -202,16 +234,22 @@ const PREFIX = {
   container: 'max-w',
 };
 
-/* `color` is the one namespace deliberately excluded, and not for
- * coexistence — every namespace here is a single-value CSS property scale
- * where two keys are always meant to conflict, `color` included. It's
- * excluded because the failure this test hunts for is structurally
- * impossible for it: tailwind-merge's theme matcher for `color` is `isAny`,
- * the broadest validator that exists, so no color suffix can ever go
- * unrecognised. It also has no single canonical utility prefix to test
- * with — the same values feed `bg-`, `text-`, `border-`, `ring-` and more,
- * each a different tailwind-merge class group. */
-const SKIP = new Set(['color']);
+/* `color` and `spacing` are the two namespaces deliberately excluded from
+ * the single-prefix pairwise loop below, and neither is for coexistence —
+ * every namespace here is a single-value CSS property scale where two keys
+ * are always meant to conflict, both of these included. `color` is excluded
+ * because the failure this test hunts for is structurally impossible for
+ * it: tailwind-merge's theme matcher for `color` is `isAny`, the broadest
+ * validator that exists, so no color suffix can ever go unrecognised.
+ * `spacing` is excluded because, unlike every other namespace here, it has
+ * no single canonical utility prefix — dozens of groups read it (`p*`,
+ * `m*`, `h`, `w`, `gap*`, `inset*`...), so one representative prefix
+ * couldn't stand in for the namespace the way `rounded-` can for `radius`.
+ * Both still get real coverage: `color` because its matcher makes the
+ * failure impossible, `spacing` via the dedicated generated-registration
+ * tests below, which exercise every consuming group tv.ts found, not just
+ * one prefix. */
+const SKIP = new Set(['color', 'spacing']);
 
 const namespaces = deriveNamespaces(themeDecls);
 
@@ -274,4 +312,83 @@ test('tracking-field-label still coexists with a text color class (registration 
   const root = classes(merge('tracking-field-label text-primary'));
   assert.ok(root.includes('tracking-field-label'));
   assert.ok(root.includes('text-primary'));
+});
+
+/* Fix pass 2 — `--spacing-*` itself. `spacing` is excluded from the
+ * single-prefix loop above (see SKIP's comment: no one canonical prefix),
+ * so its coverage lives here instead, exercising `spacingConsumingGroups()`
+ * — the same function tv.ts uses to generate its own registrations — against
+ * the real `tv()` merge. This is the live case the coordinator's review
+ * found: Button.manifest.json composes `h-ctl-h`, `h-ctl-h-sm` and
+ * `h-ctl-h-lg` across its three sizes, so a base slot overridden by a size
+ * variant produces exactly the two-classes-in-one-string shape this file
+ * guards against — verified pre-fix, both survived. */
+test('Arena spacing suffixes dedupe against each other under every tailwind-merge group that reads the spacing scale', () => {
+  const groups = spacingConsumingGroups();
+  let exercised = 0;
+  for (const [groupId, classParts] of Object.entries(groups)) {
+    for (const classPart of classParts) {
+      exercised++;
+      const a = `${classPart}-${ARENA_SPACING_SUFFIXES[0]}`, b = `${classPart}-${ARENA_SPACING_SUFFIXES[1]}`;
+      assert.equal(merge(`${a} ${b}`), b, `${a} ${b} should collapse to ${b} (group ${groupId})`);
+      assert.equal(merge(`${b} ${a}`), a, `${b} ${a} should collapse to ${a} (group ${groupId})`);
+    }
+  }
+  // Vacuous-pass guard, same shape as the namespace loop above: tailwind-merge
+  // reads spacing from dozens of groups today (p*, m*, gap*, inset*, h/w...);
+  // if a future tailwind-merge major stopped exposing most of them the loop
+  // would pass having asserted almost nothing.
+  assert.ok(exercised >= 40, `expected spacingConsumingGroups() to find most of tailwind-merge's spacing-reading groups, only exercised ${exercised}`);
+});
+
+test('the exact cases the coordinator\'s review found broken now behave correctly, h-ctl-h/w-ctl-h stays two classes', () => {
+  assert.equal(merge('h-ctl-h-sm h-ctl-h-lg'), 'h-ctl-h-lg');
+  assert.equal(merge('py-row-py py-4'), 'py-4');
+  assert.equal(merge('gap-stack gap-2'), 'gap-2');
+  assert.equal(merge('p-4 p-6'), 'p-6'); // unaffected regression guard: plain numeric spacing still dedupes
+  const root = classes(merge('h-ctl-h w-ctl-h')); // different CSS properties -- must NOT collapse
+  assert.ok(root.includes('h-ctl-h'), `h-ctl-h w-ctl-h -> "${root.join(' ')}" (height was wrongly eaten)`);
+  assert.ok(root.includes('w-ctl-h'), `h-ctl-h w-ctl-h -> "${root.join(' ')}" (width was wrongly eaten)`);
+});
+
+test('Button.manifest.json\'s three ctl-h heights now dedupe against each other through tv()', async () => {
+  const { default: manifest } = await import('../frameworks/tailwind/components/Button.manifest.json', { with: { type: 'json' } });
+  const buttonStyles = tv(manifest);
+  const heights = { sm: 'h-ctl-h-sm', md: 'h-ctl-h', lg: 'h-ctl-h-lg' };
+  for (const size of ['sm', 'md', 'lg']) {
+    const root = classes(buttonStyles({ variant: 'primary', size }).root());
+    const heightClasses = root.filter((c) => c.startsWith('h-ctl-h'));
+    assert.deepEqual(heightClasses, [heights[size]], `size ${size}: expected exactly one height class, got "${heightClasses.join(', ')}"`);
+  }
+});
+
+/* The residual gap this pass leaves, named rather than rounded up to "full
+ * stop": a namespace that is BOTH unreset (no `--<ns>-*: initial;`) AND not
+ * one of tailwind-merge's own native `@theme` namespaces would still be
+ * invisible to `deriveNamespaces` -- there is no third signal left to find
+ * it by. That shape does not exist in theme.css today (`spacing` was the
+ * only unreset namespace, and it IS native), so this is not a live bug, but
+ * it is why "every Arena-defined key" is no longer this file's claim.
+ *
+ * This test proves the fix for the shape that WAS live: a fake key added to
+ * `spacing` -- unreset, exactly like the real thing -- is still found and
+ * assigned, with no reset line anywhere in the fixture. */
+test('a fake key added to an unreset-but-native namespace (spacing\'s own shape) is still found by namespace derivation', () => {
+  const fakeThemeCss = `
+    @theme {
+      --color-*: initial;
+      --color-primary: red;
+      --color-secondary: blue;
+      --spacing: var(--sp-1);
+      --spacing-1: var(--sp-1);
+      --spacing-ctl-h: var(--dz-ctl-h);
+      --spacing-fake-test-key: var(--sp-1);
+    }
+  `;
+  const [fakeDecls] = [...parseDecls(fakeThemeCss).values()];
+  const fakeNamespaces = deriveNamespaces(fakeDecls);
+  assert.ok(fakeNamespaces.has('spacing'),
+    'spacing has no --spacing-*: initial reset in this fixture either, matching theme.css\'s real shape -- it must still be found');
+  assert.ok(fakeNamespaces.get('spacing').includes('fake-test-key'),
+    'a fake key on the open spacing namespace was not picked up -- this is the exact escape fix pass 2 closes');
 });
