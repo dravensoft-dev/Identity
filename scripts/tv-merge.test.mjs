@@ -392,3 +392,108 @@ test('a fake key added to an unreset-but-native namespace (spacing\'s own shape)
   assert.ok(fakeNamespaces.get('spacing').includes('fake-test-key'),
     'a fake key on the open spacing namespace was not picked up -- this is the exact escape fix pass 2 closes');
 });
+
+/* Fix pass 3 — the gap fix pass 2 named honestly ("a namespace both unreset
+ * and non-native would still go undetected") turned out to be worse than
+ * untested: it is INVISIBLE. A namespace shaped like `--widget-shape-round`/
+ * `--widget-shape-square` never enters `namespaces` at all (deriveNamespaces
+ * has no candidate to match it against), so the "every namespace is mapped
+ * or skipped" assertion above has nothing to fail — a whole new Arena
+ * namespace of that shape could ship with zero protection and a fully green
+ * suite. Five times now this defect class has been found and "closed," and
+ * four of those closures were accurate about their own coverage and silent
+ * about what sat just outside it. This is the one way to actually close it:
+ * stop trusting namespace attribution and independently check that nothing
+ * was left out of it.
+ *
+ * Precedent: scripts/check-tailwind-coverage.mjs already does this shape for
+ * tokens vs. the Tailwind preset — an EXCLUDED map of token -> reason, and a
+ * stale entry (naming a token that no longer exists) fails exactly like a
+ * missing one. UNATTRIBUTED below is that same map for this file. */
+
+/** Every Arena-defined property in theme.css that LOOKS like a namespaced
+ *  key — `--<namespace>-<suffix>`, i.e. a non-reset declaration with at
+ *  least one hyphen after its first word — is a candidate that must end up
+ *  either attributed to a namespace by deriveNamespaces, or named in
+ *  UNATTRIBUTED with a reason. A bare property with no suffix at all
+ *  (`--spacing`, the base multiplier) has no namespace-shaped suffix to
+ *  attribute in the first place, so it is not a candidate — there is
+ *  nothing for it to fail against, the same way a component with no props
+ *  is not a candidate for a missing-prop lint. */
+function namespacedPropertyCandidates(decls) {
+  const candidates = [];
+  for (const [name] of decls) {
+    if (/-\*$/.test(name)) continue; // a reset declaration itself, not a key
+    if (/^[a-z][a-z0-9]*-[a-z0-9.-]+$/.test(name)) candidates.push(name);
+  }
+  return candidates;
+}
+
+/** Properties that legitimately attribute to no namespace, and why. Both
+ *  reasons here are the same shape: `--default-*` wires a Tailwind default
+ *  directly (theme.css's own comment: "derives from --font-sans, which we
+ *  cleared, so it is set here") rather than exposing an Arena scale with
+ *  siblings to self-dedupe against — there is no second `--default-font-
+ *  family` to conflict with. This is NOT where `blur`'s or `container`'s
+ *  single key belongs: `blur-scrim` and `max-w-page` (via `container-page`)
+ *  ARE attributed to their namespace by deriveNamespaces (namespaces.get
+ *  returns a one-element array for each) — they just have no SIBLING to
+ *  pair against in the pairwise-dedupe loop above, which is a different,
+ *  already-handled gap (see the single-Arena-key test and its hand-written
+ *  stock-pairing cases). Only a property that never enters `namespaces` at
+ *  all belongs here. */
+const UNATTRIBUTED = new Map([
+  ['default-font-family', 'wires a Tailwind default directly (theme.css: "derives from --font-sans, which we cleared"); not an Arena scale with a sibling to self-dedupe against'],
+  ['default-transition-duration', 'wires a Tailwind default directly; not an Arena scale with a sibling to self-dedupe against'],
+  ['default-transition-timing-function', 'wires a Tailwind default directly; not an Arena scale with a sibling to self-dedupe against'],
+]);
+
+test('every namespaced-looking property in theme.css is attributed to a namespace or listed in UNATTRIBUTED with a reason', () => {
+  const candidates = namespacedPropertyCandidates(themeDecls);
+  const attributedNames = new Set();
+  for (const [ns, keys] of namespaces) for (const key of keys) attributedNames.add(`${ns}-${key}`);
+
+  const errs = [];
+  for (const name of candidates) {
+    const isAttributed = attributedNames.has(name);
+    const isListed = UNATTRIBUTED.has(name);
+    if (isAttributed && isListed) errs.push(`--${name} is both attributed to a namespace AND in UNATTRIBUTED — drop the entry`);
+    else if (!isAttributed && !isListed) errs.push(`--${name} is not attributed to any namespace and not in UNATTRIBUTED with a reason — this is the exact escape fix pass 3 closes, add one or the other`);
+  }
+  // Mirrors check-tailwind-coverage.mjs's own stale-entry check: an
+  // UNATTRIBUTED reason naming a property that no longer exists (renamed,
+  // deleted, or since attributed by a namespace change) must fail too, or
+  // the list only ever grows and stops meaning anything.
+  const candidateSet = new Set(candidates);
+  for (const name of UNATTRIBUTED.keys())
+    if (!candidateSet.has(name)) errs.push(`UNATTRIBUTED lists --${name} but no such property exists in theme.css — drop the entry`);
+
+  assert.deepEqual(errs, [], errs.join('\n'));
+});
+
+/* Proves the completeness check actually catches the escaped shape, not a
+ * variant of it: a fake key under a namespace that is BOTH unreset (no
+ * `--<ns>-*: initial;`) AND not native to Tailwind (`widget-shape` is not
+ * one of tailwind-merge's own `@theme` namespaces) is exactly what
+ * `--widget-shape-round`/`--widget-shape-square` would be — deriveNamespaces
+ * has no way to find it (see the residual-gap comment in tv.ts), so it must
+ * surface here, in the completeness check, instead. */
+test('a fake key in an unreset, non-native namespace is caught by the completeness check, not silently invisible', () => {
+  const fakeThemeCss = `
+    @theme {
+      --color-*: initial;
+      --color-primary: red;
+      --widget-shape-round: 999px;
+    }
+  `;
+  const [fakeDecls] = [...parseDecls(fakeThemeCss).values()];
+  const fakeNamespaces = deriveNamespaces(fakeDecls);
+  assert.ok(!fakeNamespaces.has('widget-shape'), 'widget-shape is neither reset nor native -- deriveNamespaces should still miss it (that is the gap this test exists to catch downstream)');
+
+  const candidates = namespacedPropertyCandidates(fakeDecls);
+  const attributedNames = new Set();
+  for (const [ns, keys] of fakeNamespaces) for (const key of keys) attributedNames.add(`${ns}-${key}`);
+  const unattributed = candidates.filter((name) => !attributedNames.has(name) && !UNATTRIBUTED.has(name));
+  assert.deepEqual(unattributed, ['widget-shape-round'],
+    'the completeness check must name widget-shape-round as unattributed and unlisted -- if this is empty, the fake key slipped through invisibly again');
+});

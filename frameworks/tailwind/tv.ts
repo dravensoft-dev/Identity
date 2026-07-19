@@ -111,12 +111,23 @@
    names (not from `--<ns>-*: initial` markers alone — that was fix pass 1's
    claim, and `--spacing-*`, deliberately unreset, is exactly what it
    missed) and asserts each dedupes pairwise, so a new key in one of THOSE
-   namespaces fails the day it is added. Named plainly, not rounded up to
-   "full stop": a namespace that is both unreset and not one of
-   tailwind-merge's own native `@theme` namespaces would still go
-   undetected — there is no third signal left to find it by. No namespace
-   in theme.css is currently that shape (`spacing` was the only unreset one,
-   and it IS native), so this is a documented residual, not a live gap. */
+   namespaces fails the day it is added.
+
+   Fix pass 2 named the next gap honestly — a namespace both unreset and not
+   one of tailwind-merge's native `@theme` namespaces would go undetected —
+   but honest was not the same as caught: that shape (`--widget-shape-round`
+   is the constructed example) never enters `namespaces` at all, so nothing
+   was left to fail. A whole new Arena namespace like that could have
+   shipped with zero protection and a fully green suite. Fix pass 3 closes
+   it structurally instead of documenting it: a SEPARATE completeness check
+   in scripts/tv-merge.test.mjs independently lists every property in
+   theme.css that looks namespaced (`--<namespace>-<suffix>`) and asserts
+   each one was either attributed by `deriveNamespaces` or is named in an
+   `UNATTRIBUTED` map with a reason (the same shape as check-tailwind-
+   coverage.mjs's own `EXCLUDED`, stale entries included) — so an
+   unattributed key is a hard failure regardless of whether it was ever
+   discoverable by namespace, closing this defect class for real rather
+   than for the shapes found so far. */
 import { createTV } from 'tailwind-variants';
 import { getDefaultConfig } from 'tailwind-merge';
 
