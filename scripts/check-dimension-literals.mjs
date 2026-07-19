@@ -46,10 +46,14 @@ const PROPS = new Set([
   'top', 'right', 'bottom', 'left', 'inset', 'zIndex',
 ]);
 
-/* Two correct sites look exactly like defects, so they are named rather than
+/* Some correct sites look exactly like defects, so they are named rather than
  * inferred — the same discipline check-tailwind-coverage.mjs applies to its
  * token exclusions. Keyed "<path>:<prop>:<raw>". staleExemptions() below is
- * what keeps this map honest as the code around it changes. */
+ * what keeps this map honest as the code around it changes.
+ *
+ * Deliberately not stating a count here: this comment said "two" while the map
+ * held five, which is the exact prose-drift this gate exists to prevent. Read
+ * the entries. */
 export const EXEMPT = new Map([
   ['frameworks/react/components/display/Calendar.jsx:zIndex:1',
    'local stacking inside a positioned container; does not join the global z order'],
