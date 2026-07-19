@@ -10,7 +10,7 @@ forward here).
 **Checkpoint 4 is answered.** Both clusters are resolved below and folded into the
 `fs`/`dz` tables; this document carries the final assignment for all 514 sites.
 
-## Three findings for Tasks 5 and 6 to read here, not in their own (superseded) briefs
+## Four findings for Tasks 5, 6 and 9 to read here, not in their own (superseded) briefs
 
 1. **`dz` needs 4 new steps plus a reset, not the 2 Task 6's brief anticipated.**
    That brief assumed `dz.text` (14) and `dz.text-sm` (12) would cover the
@@ -44,6 +44,17 @@ forward here).
    the sibling property on the same JSX line (the divider's length or margin)
    correctly stays `sp`.
 
+4. **Task 9's own brief will be wrong about the `3px` border sites — this document
+   corrects it.** Task 9's Step 3 says "the census reports one" 3px site and tells
+   the implementer to inspect it. The per-site pass found **two**:
+   `Calendar.jsx:169` (an event-color accent bar) and `Toast.jsx:11` (a
+   tone-colored left bar) — the same accent-bar role in two independent
+   components. Both are reasoned in the **borders** table above: adoption only
+   means no new 3px step is minted, so both snap to the nearer of the two
+   existing steps, `var(--bw-strong)`. Task 9 should read this document's
+   `borders` table for the count and the reasoning rather than trusting its own
+   brief's "one."
+
 ## How this was produced, and what "exhaustive" means here
 
 Every one of the 514 sites was assigned individually — all 42 files under
@@ -74,6 +85,28 @@ row below. Per-site *reading* (not just per-value classification) was done for t
 `fontSize`/`letterSpacing`/`lineHeight`/`fontWeight`/`zIndex` sites. The 286
 `sp`/border/radius sites were classified by value with a targeted spot-check, not by
 individually re-reading each file a second time for that property.
+
+## A refinement of Rule 1: authored copy versus system-composed template
+
+**This refines Rule 1, it does not contradict it — the read-aloud test still
+decides; this states what the test is actually detecting.** Rule 1's own
+wording ("a message with a subject and a verb") reads like a grammar test, but
+a well-formed system-generated data row also has a subject and a verb and
+would pass it — "ana@ approved the release" is a complete sentence. Applying
+the read-aloud test to *that* text and stopping there gives the wrong answer.
+
+The actual distinction the test is reaching for is **authored copy versus a
+system-composed template**: text a person wrote once, versus text the system
+assembles at render time from parts (actor + verb + object + timestamp, a
+build number, a price). "We couldn't connect to the server. Retry." was
+written by a person and shipped as a string — `fs`. "ana@ approved the
+release" is `${actor} ${verb} ${object}` filled in from data — `dz`, the same
+as a table cell or a log line, regardless of how sentence-shaped the
+assembled result reads.
+
+This is recorded here because plan 5 will need it across 34 manifests, and
+"does it have a verb" would send a template-composed data row to `fs` every
+time — the failure this refinement exists to head off.
 
 ## Methodology notes — where judgement was needed beyond a direct rule lookup
 
@@ -163,11 +196,16 @@ token, regardless of how many components share it.
 
 ## The borders rule, stated once
 
-42 sites at `1px` → `var(--bw)`. 4 sites at `2px` → `var(--bw-strong)`. The 2 sites
-at `3px` (an event-color accent bar on `Calendar`, and `Toast`'s tone-colored left
+Counts below are re-derived from the `borders` table itself, not hand-edited —
+a fix-pass-1 review caught this prose contradicting its own table once already.
+**49 sites at `1px` → `var(--bw)`** (47 direct `border*` properties, plus the 2
+sites reclassified from `sp` — the `BulkActionBar`/`Menu` dividers, see the
+findings section above). **3 sites at `2px` → `var(--bw-strong)`.** **2 sites at
+`3px`** (an event-color accent bar on `Calendar`, and `Toast`'s tone-colored left
 bar — the same role in two components) have no existing 3px border step; adoption
 only means no new step is minted, so both snap to the nearer of `{1,2}`, which is
-`var(--bw-strong)`. One `borderRadius` literal survives outside the circle
+also `var(--bw-strong)`. 49 + 3 + 2 + 2 = 56, the section's full total. One
+`borderRadius` literal survives outside the circle
 exemption (a 10×10 legend swatch at `DoughnutChart`, `borderRadius: 2`) and is
 listed separately under **radius**, snapping to `var(--r-xs)` (4px) — the nearest
 existing radius step, since `r` has none smaller.
@@ -215,7 +253,8 @@ Includes the 7 Checkpoint 4 Cluster A sites resolved to `dz` (marked in their
 Note column). Existing step: `dz.text` (14px). New steps this census supports
 under Rule 3: `dz.text-md` (13px), `dz.text-xs` (11px), `dz.text-2xs` (10px), and
 a `lineHeight: 1` reset. `dz.text-sm` (12px) is Task 6's own already-planned step.
-See finding 1, above.
+See finding 1, above. `Select.jsx:20`'s `▾` caret, originally placed here, moved
+to `icon` in fix pass 1 (author's ruling — see the `icon` table below).
 
 | File:line | Property | Now | Target | Note |
 |---|---|---|---|---|
@@ -275,7 +314,6 @@ See finding 1, above.
 | `frameworks/react/components/forms/Radio.jsx:27` | `fontSize` | `12` | dz.text-sm (12) | Radio hint |
 | `frameworks/react/components/forms/Select.jsx:6` | `fontSize` | `11` | dz.text-xs (11) | Select field label |
 | `frameworks/react/components/forms/Select.jsx:13` | `fontSize` | `14` | dz.text (14) — exact match | select value |
-| `frameworks/react/components/forms/Select.jsx:20` | `fontSize` | `12` | dz.text-sm (12) | caret glyph "▾" — a hardcoded unicode character, not a Phosphor icon; Rule 2 does not apply, treated as chrome decoration |
 | `frameworks/react/components/forms/Switch.jsx:19` | `fontSize` | `14` | dz.text (14) — exact match | Switch label |
 | `frameworks/react/components/forms/Textarea.jsx:17` | `fontSize` | `11` | dz.text-xs (11) | Textarea field label |
 | `frameworks/react/components/forms/Textarea.jsx:27` | `fontSize` | `14` | dz.text (14) — exact match | textarea value |
@@ -310,7 +348,7 @@ See finding 1, above.
 | `frameworks/react/ui_kits/console/ProjectScreen.jsx:51` | `fontSize` | `14` | dz.text (14) — exact match | env value |
 | `frameworks/react/ui_kits/console/ProjectScreen.jsx:53` | `fontSize` | `13` | dz.text-md (13) | author (mono) |
 | `frameworks/react/ui_kits/console/ProjectScreen.jsx:54` | `fontSize` | `13` | dz.text-md (13) | duration (mono) |
-| `frameworks/react/ui_kits/console/ProjectScreen.jsx:67` | `fontSize` | `14` | dz.text (14) — exact match | activity row text, e.g. "ana@ approved the release"; judgment call (structured data row, not authored prose), not escalated |
+| `frameworks/react/ui_kits/console/ProjectScreen.jsx:67` | `fontSize` | `14` | dz.text (14) — exact match | author's ruling: stays dz. "ana@ approved the release" is system-composed (actor + verb + object filled in from data), not authored copy -- it has a subject and a verb and would pass a literal grammar reading of Rule 1, but that is not what the read-aloud test is detecting. See "A refinement of Rule 1" above |
 | `frameworks/react/ui_kits/console/ProjectScreen.jsx:67` | `fontSize` | `13` | dz.text-md (13) | inline build ref |
 | `frameworks/react/ui_kits/console/ProjectScreen.jsx:68` | `fontSize` | `12` | dz.text-sm (12) | timestamp |
 | `frameworks/react/ui_kits/console/ProjectScreen.jsx:80` | `fontSize` | `11` | dz.text-xs (11) | metric label, e.g. "Uptime" |
@@ -324,7 +362,12 @@ See finding 1, above.
 ## icon (Rule 2)
 
 Steps: `icon.sm` (14), `icon.md` (16), `icon.lg` (18), and `icon.xl` (34, new — see
-finding 2, above).
+finding 2, above). `Select.jsx:20`'s `▾` caret joined this family in fix pass 1:
+Rule 2 ("a glyph rendered as a font is `icon`, not type") carves out no
+exception for which font ships the glyph, and the same affordance is already
+`icon` at `Calendar.jsx:89` and `Pagination.jsx:21` — splitting one affordance
+across two families by implementation accident is exactly the drift the rules
+exist to stop.
 
 | File:line | Property | Now | Target | Note |
 |---|---|---|---|---|
@@ -338,6 +381,7 @@ finding 2, above).
 | `frameworks/react/components/feedback/Toast.jsx:24` | `fontSize` | `16` | icon.md (16) | Toast close (x) |
 | `frameworks/react/components/forms/Input.jsx:69` | `fontSize` | `16` | icon.md (16) | error status icon |
 | `frameworks/react/components/forms/Input.jsx:70` | `fontSize` | `16` | icon.md (16) | valid status icon |
+| `frameworks/react/components/forms/Select.jsx:20` | `fontSize` | `12` | icon.sm (14) — snaps, pixel move 12->14 | caret glyph "▾" — author's ruling: Rule 2 ("a glyph rendered as a font is icon, not type") carves out no exception for which font ships the glyph. The same affordance is already icon at Calendar.jsx:89 and Pagination.jsx:21; splitting one affordance across two families by implementation accident is the drift the rules exist to stop. Singleton at 12px among icon sizes, snaps to nearest (icon.sm=14, diff 2, vs the next icon step up being far larger) |
 | `frameworks/react/components/forms/Switch.jsx:19` | `fontSize` | `14` | icon.sm (14) | "requires confirmation" shield glyph, same line as the label |
 | `frameworks/react/components/navigation/BulkActionBar.jsx:26` | `fontSize` | `16` | icon.md (16) | bulk action icon |
 | `frameworks/react/components/navigation/CommandPalette.jsx:24` | `fontSize` | `18` | icon.lg (18) | magnifier |
@@ -703,7 +747,7 @@ left outstanding (the nine `50%` circles are exempt as a free unit, not a defect
 | `frameworks/react/components/navigation/CommandPalette.jsx:30` | `padding` | `'18px 12px'` | calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 3) | half-step, 18px; on-grid, 12px = sp-1 * 3 |
 | `frameworks/react/components/navigation/CommandPalette.jsx:33` | `gap` | `12` | calc(var(--sp-1) * 3) | on-grid, 12px = sp-1 * 3 |
 | `frameworks/react/components/navigation/CommandPalette.jsx:33` | `padding` | `'10px 12px'` | calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 3) | half-step, 10px; on-grid, 12px = sp-1 * 3 |
-| `frameworks/react/components/navigation/Menu.jsx:43` | `top` | `'calc(100% + 6px)'` | calc(100% + 6px) |  |
+| `frameworks/react/components/navigation/Menu.jsx:43` | `top` | `'calc(100% + 6px)'` | calc(100% + calc(var(--sp-1) * 1.5)) | the mechanical pass left this as a byte-identical no-op (a raw 6px survived inside the calc(), unreplaced); 6px is a half-step, composed the same way as the two Calendar rows above |
 | `frameworks/react/components/navigation/Menu.jsx:44` | `minWidth` | `200` | calc(var(--sp-1) * 50) | on-grid, 200px = sp-1 * 50 |
 | `frameworks/react/components/navigation/Menu.jsx:44` | `padding` | `6` | calc(var(--sp-1) * 1.5) | half-step, 6px |
 | `frameworks/react/components/navigation/Menu.jsx:47` | `margin` | `'5px 0'` | calc(var(--sp-1) * 1) 0 | off-pattern, 5px snaps to 4px (nearest grid multiple) |
@@ -855,18 +899,18 @@ exhaustive pass's `CommandPalette` addition is also 14px) each carry a
 | Family | Sites | Notes |
 |---|---:|---|
 | `fs` | 23 | includes the 7 resolved from Checkpoint 4 Cluster B; 8 total sites carry a `PENDING CHECKPOINT 1` marker (3 from the original pass + 5 from Cluster B) |
-| `dz` | 101 | includes the 7 resolved from Checkpoint 4 Cluster A, and the 8 `lineHeight: 1` resets |
-| `icon` | 16 | includes 1 tie (Menu, flagged) |
+| `dz` | 100 | includes the 7 resolved from Checkpoint 4 Cluster A, and the 8 `lineHeight: 1` resets; `Select.jsx:20`'s caret moved to `icon` in fix pass 1 |
+| `icon` | 17 | includes 1 tie (Menu, flagged); gained `Select.jsx:20`'s `▾` caret in fix pass 1 (author's ruling: Rule 2 applies regardless of which font ships the glyph) |
 | `z` | 8 | order pending Checkpoint 2 |
 | `ls` | 34 | includes 1 tie (Avatar, flagged) — unaffected by Checkpoint 4 |
 | `lh` | 13 | unaffected by Checkpoint 4 |
 | `fw` | 33 | |
-| borders | 56 | includes 2 sites reclassified from `sp` (dividers) |
+| borders | 56 | 49 sites at 1px (47 direct + 2 reclassified from `sp`) + 3 at 2px + 2 snapped from 3px |
 | radius | 1 | |
 | `sp` | 229 | includes 17 pixel-moving snaps, listed in-table |
 | **Total** | **514** | matches the census exactly |
 
-23 + 101 + 16 + 8 + 34 + 13 + 33 + 56 + 1 + 229 = **514**. No site reached no
+23 + 100 + 17 + 8 + 34 + 13 + 33 + 56 + 1 + 229 = **514**. No site reached no
 family — every one of the 514 has a row in exactly one table above. Checkpoint 4
 is fully resolved; nothing is pending assignment. 8 `fs`-family sites carry a
 `PENDING CHECKPOINT 1` marker (a snap-*direction* question for Task 11), which is
