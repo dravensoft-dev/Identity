@@ -12,9 +12,13 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
   let pos = { position: 'fixed', right: 'calc(var(--sp-1) * 6)', bottom: 'calc(var(--sp-1) * 6)', zIndex: 'var(--z-onboarding)' };
   if (anchorRect) {
     const top = Math.min(anchorRect.bottom + 12, (typeof window !== 'undefined' ? window.innerHeight : 900) - 220);
-    let left = anchorRect.left;
-    if (typeof window !== 'undefined') left = Math.min(left, window.innerWidth - W - 16);
-    pos = { position: 'fixed', top, left: Math.max(16, left), zIndex: 'var(--z-onboarding)' };
+    // Both edges of this clamp are the same gutter, expressed once so they
+    // cannot drift apart: CSS clamp() reads var(--sp-4) at both ends, where
+    // two separate Math.min/Math.max calls used to each carry their own
+    // copy of the literal 16. 100vw also drops the window.innerWidth guard
+    // this needed only for the right-edge bound -- CSS already knows the
+    // viewport width without asking `window`.
+    pos = { position: 'fixed', top, left: `clamp(var(--sp-4), ${anchorRect.left}px, calc(100vw - ${W}px - var(--sp-4)))`, zIndex: 'var(--z-onboarding)' };
   }
 
   const foot = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-uppercase-status)' };

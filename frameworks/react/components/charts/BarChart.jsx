@@ -66,7 +66,7 @@ export function BarChart({
 
       {hover !== null && values[hover] !== undefined && (
         <div style={{
-          position: 'absolute', left: PAD.l + hover * step + step / 2, top: yOf(values[hover]) - 8,
+          position: 'absolute', left: PAD.l + hover * step + step / 2, top: `calc(${yOf(values[hover])}px - var(--sp-2))`,
           transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',
           background: 'var(--bg-raised)', border: 'var(--bw) solid var(--border-strong)',
           borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)',

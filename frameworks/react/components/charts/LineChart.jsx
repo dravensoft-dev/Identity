@@ -84,7 +84,7 @@ export function LineChart({
 
       {hover !== null && values[hover] !== undefined && (
         <div style={{
-          position: 'absolute', left: xOf(hover), top: yOf(values[hover]) - 10,
+          position: 'absolute', left: xOf(hover), top: `calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`,
           transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',
           background: 'var(--bg-raised)', border: 'var(--bw) solid var(--border-strong)',
           borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)',

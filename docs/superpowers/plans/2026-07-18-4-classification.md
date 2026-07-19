@@ -975,19 +975,79 @@ new syntactic shapes rather than a new rule.
 | `frameworks/react/ui_kits/console/Shell.jsx:19` | `size` (JSX call site, → `width`/`height`) | `30` | `Rotor` call site — same brand-mark exemption. |
 | `frameworks/react/ui_kits/console/LoginScreen.jsx:13` | `size` (JSX call site, → `width`/`height`) | `40` | `Rotor` call site — same brand-mark exemption. |
 
-### Updated family totals (Task 10b delta)
+---
 
-| Family | Sites before 10b | +10b | Sites after 10b |
-|---|---:|---:|---:|
-| `fw` | 33 | 6 | 39 |
-| borders | 56 | 6 | 62 |
-| `sp` | 229 | 7 | 236 |
-| `icon` | 17 | 5 | 22 |
-| `fs` | 23 | 0 | 23 (unchanged — Task 11's scope, not this task's) |
-| **Total** | **514** | **24** | **538** |
+## Fix pass 1 addendum — literals inside a wrapping call
+
+The gate above still could not see a bare literal sitting inside a wrapping
+function call — `Math.max(8, d * 0.28)`, `y(m) - 5` — because DECL's bareword
+capture stops at the callee name and the original ARITH form required the
+operator to follow a plain identifier immediately, not a call's closing paren.
+A full read of every `<governed-prop>: <call>(...)` site in `frameworks/`
+(exhaustive, not sampled — the same grep the gate's own widening was built
+against) found 8 lines with this shape. Three have no literal in them at all
+(`height: y(endMin)`, `top: y(m)`, `top: y(nowMin)` — the call result alone,
+already legal) and are not listed below. The other 5 lines carry 6 genuine
+site-instances (`Avatar.jsx:19` has two, `width` and `height`, on the same
+line), all `sp`-family, all resolved by the settled derive-or-snap rule —
+no new rule was invented for any of them.
+
+| File:line | Property | Now | Target | Note |
+|---|---|---|---|---|
+| `frameworks/react/components/display/Avatar.jsx:19` | `width` | `Math.max(8, d * 0.28)` | `` `max(calc(var(--sp-1) * 2), ${d * 0.28}px)` `` | on-grid, 8 = sp-1 * 2; CSS `max()` replaces JS `Math.max` since the floor must move with the token and the ratio argument stays JS-computed |
+| `frameworks/react/components/display/Avatar.jsx:19` | `height` | `Math.max(8, d * 0.28)` | `` `max(calc(var(--sp-1) * 2), ${d * 0.28}px)` `` | same call, same line, second property |
+| `frameworks/react/components/feedback/Onboarding.jsx:16-17` | `left` | JS `Math.min`/`Math.max` clamp, both edges carrying their own copy of the literal `16` | CSS `` `clamp(var(--sp-4), ${anchorRect.left}px, calc(100vw - ${W}px - var(--sp-4)))` `` | on-grid, 16 = sp-4; collapsed two JS clamp calls (and the `window.innerWidth` guard) into one CSS `clamp()` so both edges read the same token and cannot drift apart, per the author's own note that this was "the same margin used twice" |
+| `frameworks/react/components/display/Calendar.jsx:156` | `height` (via local `h`) | `Math.max(18, y(p.endMin) - top)` | `` `max(calc(var(--sp-1) * 4.5), ${rawH}px)` `` | half-step, 18 = sp-1 * 4.5; `h` also gated a `rawH >= 32` label-fit check downstream, so the pre-floor height was split into its own `rawH` variable — the floor never changes that comparison's result (it only raises heights already under 32), so `rawH` can stay a plain JS number while `h` becomes a CSS derivation |
+
+Widening the gate's reach (not its named forms — `Math.max`/`Math.min` calls,
+not a new rule) also surfaced 3 more genuine sites the author's manual pass had
+not named, in the same "call combined arithmetically with a trailing literal"
+shape as `y(m) - 5`:
+
+| File:line | Property | Now | Target | Note |
+|---|---|---|---|---|
+| `frameworks/react/components/display/Calendar.jsx:135` | `top` | `y(m) - 5` | `` `calc(${y(m)}px - var(--sp-1))` `` | `4n-1`, does not derive cleanly, snaps to nearest multiple of 4 (pixel move 5→4) — hour-label vertical centering nudge |
+| `frameworks/react/components/charts/BarChart.jsx:69` | `top` | `yOf(values[hover]) - 8` | `` `calc(${yOf(values[hover])}px - var(--sp-2))` `` | on-grid, 8 = sp-1 * 2 — tooltip vertical lift above the hovered bar |
+| `frameworks/react/components/charts/LineChart.jsx:87` | `top` | `yOf(values[hover]) - 10` | `` `calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))` `` | half-step, 10 = sp-1 * 2.5 — tooltip vertical lift above the hovered point |
+
+**Not dimensions — confirmed to stay invisible, not exempted.** `ProgressBar.jsx:26`
+(`Math.max(0, Math.min(100, Math.round(value)))`, clamping a percentage),
+`Calendar.jsx:69` (`Math.max(0, Math.min(rawStart, endMin - 60))`, minutes),
+`LineChart.jsx:20-24` (numeric guards on chart math — `max`, `iw`, `ih`), and
+`CommandPalette.jsx:13-14` (`Math.min(v + 1, filtered.length - 1)`, index
+arithmetic) all sit in a plain `const`/`let` assignment or a callback argument,
+never directly at a `<governed-prop>:` colon — the same shape that already kept
+`Calendar.jsx:69` itself invisible before this pass. None of the widened
+patterns (`ARITH`'s optional call suffix, the new `CALL` argument scan) reach
+that shape, by construction, so **none of these needed an `EXEMPT` entry** —
+they were never mechanically reachable in the first place, verified by grepping
+every `<governed-prop>: <call>(` site in the tree (the same 8-line list the
+genuine sites above were drawn from) rather than assumed.
+
+**A stale `EXEMPT` entry now fails the gate.** `staleExemptions()` compares
+every key in `EXEMPT` against the set of `<path>:<prop>:<raw>` keys the scan
+actually produced this run; any `EXEMPT` key absent from that set — because the
+site was fixed, deleted, or its raw text changed shape — fails the gate with
+the dangling entry named, the same way a real violation does. Verified by
+temporarily re-keying `Calendar.jsx`'s `zIndex` exemption to a raw value
+(`999`) nothing produces: the gate reported the stale entry by name **and**
+the real `zIndex:1` site reappeared as a violation, since it was no longer
+covered by any exemption — then both were confirmed to clear again once the
+key was restored.
+
+### Updated family totals (Task 10b + fix pass 1 delta)
+
+| Family | Sites before 10b | +10b | +fix pass 1 | Sites after |
+|---|---:|---:|---:|---:|
+| `fw` | 33 | 6 | 0 | 39 |
+| borders | 56 | 6 | 0 | 62 |
+| `sp` | 229 | 7 | 9 | 245 |
+| `icon` | 17 | 5 | 0 | 22 |
+| `fs` | 23 | 0 | 0 | 23 (unchanged — Task 11's scope, not this task's) |
+| **Total** | **514** | **24** | **9** | **547** |
 
 `bun scripts/check-dimension-literals.mjs` reports exactly the 23 `fs` sites
-after Task 10b's fixes — every other family's delta above is resolved, not
+after fix pass 1 — every other family's delta above is resolved, not
 pending.
 
 ---

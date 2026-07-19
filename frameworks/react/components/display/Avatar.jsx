@@ -16,7 +16,7 @@ export function Avatar({ src, name = '', size = 'md', shape = 'circle', status, 
       </span>
       {status && (
         <span aria-label={status} title={status}
-          style={{ position: 'absolute', right: 0, bottom: 0, width: Math.max(8, d * 0.28), height: Math.max(8, d * 0.28),
+          style={{ position: 'absolute', right: 0, bottom: 0, width: `max(calc(var(--sp-1) * 2), ${d * 0.28}px)`, height: `max(calc(var(--sp-1) * 2), ${d * 0.28}px)`,
             borderRadius: '50%', background: STATUS[status] || STATUS.offline, border: 'var(--bw-strong) solid var(--surface-card)' }} />
       )}
     </span>

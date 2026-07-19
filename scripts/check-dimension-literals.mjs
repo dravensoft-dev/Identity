@@ -129,13 +129,44 @@ const TERNARY = /(?<![\w.])([a-zA-Z]+)\s*:\s*[^,{}?:]+?\?\s*('[^']*'|"[^"]*"|`[^
 /** `prop: ident * 0.4` — the entire value is an arithmetic expression, not
  *  a `var()`/`calc()` derivation and not a plain literal, so neither DECL
  *  nor scanValue's own bare-number path ever sees the number inside it.
- *  Scoped narrowly to "identifier (optionally a.b member chain), one
- *  operator, one number" — the exact shape of a scaling ratio — so it does
- *  not reach into a wrapping function call like `Math.max(8, d * 0.28)`;
- *  the operator must follow the identifier immediately, and `Math.max(`
- *  puts a `(` there instead. That narrower shape is deliberate: it is
- *  reserved for a follow-up pass, not this task's named forms. */
-const ARITH = /(?<![\w.])([a-zA-Z]+)\s*:\s*([a-zA-Z_$][\w.$]*\s*[*+/-]\s*-?\d*\.?\d+)\s*(?=[,}])/g;
+ *  The leading term is an identifier (optionally a.b member chain) with an
+ *  *optional* single-level call suffix — `y(m) - 5` and `yOf(values[hover])
+ *  - 8` are the same shape as `d * 0.4`, just with a call standing in for
+ *  the plain identifier, so the same regex covers both by making that
+ *  suffix optional rather than adding a second pattern for it. Nested
+ *  parens inside the call are deliberately unsupported (`[^()]*`, one
+ *  level only) — every real site is a single flat call, and a second
+ *  parenthesised layer would need genuine parsing, not a wider class. */
+const ARITH = /(?<![\w.])([a-zA-Z]+)\s*:\s*([a-zA-Z_$][\w.$]*(?:\([^()]*\))?\s*[*+/-]\s*-?\d*\.?\d+)\s*(?=[,}])/g;
+
+/** `prop: Math.max(8, d * 0.28)` — the entire value is a call, and DECL's
+ *  bareword capture stops at the callee name (`Math.max`), never reaching
+ *  the arguments. Unlike ARITH above, a call is not unconditionally a
+ *  violation — `height: y(endMin)` is a legal derived value with no
+ *  literal in it — so each top-level argument is judged on its own via
+ *  scanValue: `8` is a bare number and fails, `d * 0.28` contains an
+ *  identifier and is left alone the same way `d * 0.4` would be if it
+ *  stood alone. Bounded to one call, no trailing arithmetic after the
+ *  closing paren (that shape is ARITH's, above) and no nested parens in
+ *  the argument list, for the same reason ARITH stays single-level. */
+const CALL = /(?<![\w.])([a-zA-Z]+)\s*:\s*([a-zA-Z_$][\w.$]*)\(([^()]*)\)\s*(?=[,}])/g;
+
+/** Splits a call's argument list on top-level commas, tracking `[`/`]`
+ *  depth so a bracketed index like `values[hover]` (no comma inside it in
+ *  practice, but defensive regardless) never causes a false split. Parens
+ *  are already excluded from the input by CALL's own `[^()]*`. */
+function splitArgs(text) {
+  const args = [];
+  let depth = 0, start = 0;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '[') depth++;
+    else if (c === ']') depth--;
+    else if (c === ',' && depth === 0) { args.push(text.slice(start, i)); start = i + 1; }
+  }
+  args.push(text.slice(start));
+  return args.map((a) => a.trim()).filter((a) => a.length > 0);
+}
 
 /** @param {string} text @param {number} index
  *  @returns {number} 1-based line, counted by newlines up to `index`. */
@@ -168,6 +199,15 @@ export function scanText(text) {
     if (!PROPS.has(prop)) continue;
     const line = lineOf(text, m.index);
     out.push({ prop, raw, reason: 'an inline literal in an arithmetic expression, not a token', line });
+  }
+  for (const m of text.matchAll(CALL)) {
+    const [, prop, , argsText] = m;
+    if (!PROPS.has(prop)) continue;
+    const line = lineOf(text, m.index);
+    for (const arg of splitArgs(argsText)) {
+      const hit = scanValue(prop, arg);
+      if (hit) out.push({ prop, raw: arg, reason: hit.reason, line });
+    }
   }
   return out;
 }
@@ -238,17 +278,33 @@ function* walk(dir) {
   }
 }
 
+/** @param {Set<string>} matchedKeys — every `<path>:<prop>:<raw>` a scan
+ *  actually produced this run, before EXEMPT filtering.
+ *  @returns {string[]} EXEMPT keys that matched nothing — a named
+ *  exemption for a site that no longer produces a violation, because it
+ *  was fixed, deleted, or its raw text changed shape. Named exemptions
+ *  are only honest if a stale one is loud: `EXEMPT` is how `Calendar`'s
+ *  local `zIndex`, `Avatar`'s ratio, and `Rotor`'s brand-mark size stay
+ *  legal on purpose, and the same map going quietly out of date would let
+ *  a real regression hide behind an entry nobody is reading anymore. */
+export function staleExemptions(matchedKeys) {
+  return [...EXEMPT.keys()].filter((k) => !matchedKeys.has(k));
+}
+
 function collect() {
   const found = [];
+  const matchedKeys = new Set();
   for (const file of walk(join(repoRoot, 'frameworks'))) {
     const rel = relative(repoRoot, file);
     const text = readFileSync(file, 'utf8');
     for (const hit of [...scanText(text), ...scanDefaultsAndCallSites(text)]) {
-      if (EXEMPT.has(`${rel}:${hit.prop}:${hit.raw}`)) continue;
+      const key = `${rel}:${hit.prop}:${hit.raw}`;
+      matchedKeys.add(key);
+      if (EXEMPT.has(key)) continue;
       found.push({ file: rel, ...hit });
     }
   }
-  return found;
+  return { found, stale: staleExemptions(matchedKeys) };
 }
 
 /** The census: every violation grouped by property, then by value, with the
@@ -282,18 +338,28 @@ function reportSites(found) {
 }
 
 function main() {
-  const found = collect();
+  const { found, stale } = collect();
   if (process.argv.includes('--report=sites')) { reportSites(found); return; }
   if (process.argv.includes('--report')) { report(found); return; }
+  let failed = false;
+  if (stale.length) {
+    failed = true;
+    console.error(`check-dimension-literals: ${stale.length} stale EXEMPT entr${stale.length === 1 ? 'y' : 'ies'} — named a site that no longer produces a violation\n`);
+    for (const key of stale) console.error(`  ${key} — ${EXEMPT.get(key)}`);
+    console.error('\nThe site was fixed, deleted, or its raw text changed shape. Remove the');
+    console.error('entry, or re-key it to match the current text exactly.');
+  }
   if (found.length) {
+    failed = true;
+    if (stale.length) console.error('');
     console.error(`check-dimension-literals: ${found.length} bare literal(s) under frameworks/\n`);
     for (const f of found) console.error(`  ${f.file}: ${f.prop}: ${f.raw} — ${f.reason}`);
     console.error('\nA dimension is a token or a derivation of tokens. Use var(--token), or');
     console.error('calc() over one where the scale is numeric. If neither fits, the token is');
     console.error('what is missing — add it to tokens/src/ first.');
-    process.exit(1);
   }
-  console.log('check-dimension-literals: no bare literals under frameworks/');
+  if (failed) process.exit(1);
+  console.log('check-dimension-literals: no bare literals under frameworks/, no stale exemptions');
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scanValue, scanText, scanDefaultsAndCallSites, EXEMPT } from './check-dimension-literals.mjs';
+import { scanValue, scanText, scanDefaultsAndCallSites, staleExemptions, EXEMPT } from './check-dimension-literals.mjs';
 
 test('a bare number is a violation for a dimension-valued property', () => {
   assert.ok(scanValue('fontSize', '13'));
@@ -238,12 +238,66 @@ test('an inline arithmetic expression standing as the whole value is a violation
   ]);
 });
 
-test('an arithmetic literal wrapped in a function call is out of this narrow form\'s scope', () => {
-  // Documents the boundary rather than hiding it: `Math.max(8, d * 0.28)`
-  // is a different shape (the operator does not follow the identifier
-  // immediately -- a `(` does), and catching it is left to a follow-up
-  // pass rather than folded into this task's named forms.
-  assert.deepEqual(scanText('const s = { width: Math.max(8, d * 0.28) };'), []);
+// --- Fix pass 1: a bare literal inside a wrapping call ------------------
+// `width: Math.max(8, d * 0.28)` -- fix pass 0 left this out of scope
+// (the operator does not follow the identifier immediately, a `(` does).
+// Fix pass 1 closes it: CALL judges each top-level argument on its own,
+// and ARITH's leading term now accepts an optional call suffix so a
+// literal combined arithmetically with a call result (`y(m) - 5`) is
+// caught the same way `d * 0.4` already was.
+
+test('a bare-number argument inside a wrapping call is a violation', () => {
+  const found = scanText('const s = { width: Math.max(8, d * 0.28) };');
+  assert.deepEqual(found.map((f) => ({ prop: f.prop, raw: f.raw })), [
+    { prop: 'width', raw: '8' },
+  ]);
+});
+
+test('a call with no bare-number argument is legal -- the call result alone is a derived value', () => {
+  assert.deepEqual(scanText('const s = { height: y(endMin) };'), []);
+  assert.deepEqual(scanText('const s = { top: y(m) };'), []);
+});
+
+test('an identifier argument inside a wrapping call is left alone, same as a lone ratio', () => {
+  // `d * 0.28` is not itself a bare number (it carries an identifier), so
+  // it is not flagged standing as a call argument any more than `d * 0.4`
+  // is flagged standing alone -- both need EXEMPT only if they are a real
+  // site, not because the scanner over-reaches into them.
+  assert.deepEqual(scanText('const s = { width: Math.max(8, d * 0.28) };').map((f) => f.raw), ['8']);
+});
+
+test('two governed props on the same line each report their own call argument', () => {
+  const found = scanText(
+    "const s = { width: Math.max(8, d * 0.28), height: Math.max(8, d * 0.28) };"
+  );
+  assert.deepEqual(found.map((f) => ({ prop: f.prop, raw: f.raw })), [
+    { prop: 'width', raw: '8' },
+    { prop: 'height', raw: '8' },
+  ]);
+});
+
+test('a bare number combined arithmetically with a call result is a violation', () => {
+  // `y(m) - 5` is the same shape as `d * 0.4`, with a call standing in for
+  // the plain identifier -- ARITH's leading term now accepts an optional
+  // single-level call suffix rather than gaining a second pattern.
+  const found = scanText('const s = { top: y(m) - 5 };');
+  assert.deepEqual(found.map((f) => ({ prop: f.prop, raw: f.raw })), [
+    { prop: 'top', raw: 'y(m) - 5' },
+  ]);
+});
+
+test('a call result combined arithmetically with a number, with brackets in the call, still resolves', () => {
+  const found = scanText('const s = { top: yOf(values[hover]) - 8 };');
+  assert.deepEqual(found.map((f) => ({ prop: f.prop, raw: f.raw })), [
+    { prop: 'top', raw: 'yOf(values[hover]) - 8' },
+  ]);
+});
+
+test('a nested-parens call is deliberately out of scope, not misread', () => {
+  // Both CALL and ARITH's call suffix are single-level (`[^()]*`); a
+  // second parenthesised layer needs real parsing, not a wider class, and
+  // no real site in the codebase has this shape.
+  assert.deepEqual(scanText('const s = { width: Math.max(8, Math.min(d, 40)) };'), []);
 });
 
 test('EXEMPT records the three out-of-scope literals this task leaves untouched, by name', () => {
@@ -251,4 +305,32 @@ test('EXEMPT records the three out-of-scope literals this task leaves untouched,
   assert.ok(EXEMPT.has('frameworks/react/components/brand/Rotor.jsx:width:48'));
   assert.ok(EXEMPT.has('frameworks/react/ui_kits/console/Shell.jsx:width:30'));
   assert.ok(EXEMPT.has('frameworks/react/ui_kits/console/LoginScreen.jsx:width:40'));
+});
+
+// --- Fix pass 1: a stale exemption must fail, not pass silently ---------
+// EXEMPT is only honest if an entry naming a site that stopped producing a
+// violation is loud about it -- otherwise a real regression can hide
+// behind an exemption nobody is reading anymore.
+
+test('every current EXEMPT key is matched by this run -- none are stale', () => {
+  // The positive case, exercised against the real EXEMPT map: every key
+  // it carries right now corresponds to a site the scan actually visits
+  // (Calendar's zIndex, Avatar's ratio, Rotor's default and its two call
+  // sites) is proven by the full collect() pass in the CLI-level checks
+  // (`bun scripts/check-dimension-literals.mjs`); staleExemptions is unit
+  // tested directly against a synthetic matched set below, since it takes
+  // no filesystem dependency.
+  const allKeys = new Set(EXEMPT.keys());
+  assert.deepEqual(staleExemptions(allKeys), []);
+});
+
+test('an EXEMPT key absent from the matched set is reported as stale', () => {
+  const oneMissing = new Set(EXEMPT.keys());
+  const [firstKey] = EXEMPT.keys();
+  oneMissing.delete(firstKey);
+  assert.deepEqual(staleExemptions(oneMissing), [firstKey]);
+});
+
+test('an empty matched set reports every EXEMPT entry as stale', () => {
+  assert.deepEqual(staleExemptions(new Set()), [...EXEMPT.keys()]);
 });

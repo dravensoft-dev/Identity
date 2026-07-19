@@ -132,7 +132,7 @@ export function Calendar({
 
           <div style={{ width: GUTTER, flexShrink: 0, position: 'relative' }}>
             {hours.map((m) => (
-              <div key={m} style={{ ...label, position: 'absolute', top: y(m) - 5, right: 'calc(var(--sp-1) * 2)', letterSpacing: 'var(--ls-uppercase-status)' }}>
+              <div key={m} style={{ ...label, position: 'absolute', top: `calc(${y(m)}px - var(--sp-1))`, right: 'calc(var(--sp-1) * 2)', letterSpacing: 'var(--ls-uppercase-status)' }}>
                 {formatHM(m)}
               </div>
             ))}
@@ -152,8 +152,15 @@ export function Calendar({
                 {byDay[di].map((p) => {
                   const color = catColor(p.ev.slot ?? 1);
                   const top = y(p.startMin);
-                  // 18px floor: a 5-minute event still has to be clickable.
-                  const h = Math.max(18, y(p.endMin) - top);
+                  const rawH = y(p.endMin) - top;
+                  // 18px floor (sp-1 * 4.5) so a 5-minute event still has to
+                  // be clickable -- expressed as a CSS max() rather than a
+                  // JS Math.max so the floor moves with the token. The
+                  // label-fit check below reads rawH, not h: the floor only
+                  // ever raises a height already under 32, so the two are
+                  // equivalent for that comparison and rawH can stay a
+                  // plain number.
+                  const h = `max(calc(var(--sp-1) * 4.5), ${rawH}px)`;
                   const time = `${formatHM(p.startMin)} – ${formatHM(p.endMin)}`;
                   const Tag = onEventClick ? 'button' : 'div';
                   return (
@@ -173,7 +180,7 @@ export function Calendar({
                         <>
                           <span style={{ fontSize: 'var(--dz-text-sm)', fontWeight: 'var(--fw-semibold)', color: 'var(--text-strong)',
                             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.ev.title}</span>
-                          {h >= 32 && (
+                          {rawH >= 32 && (
                             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', color: 'var(--mute)' }}>{time}</span>
                           )}
                         </>
