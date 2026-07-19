@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   real Arena token; `scripts/check-tailwind-coverage.mjs` asserts every token either reaches
   a utility or is excluded with a reason, so a token added to `tokens/src/` cannot silently
   fail to reach the layer; `scripts/check-arbitrary-values.mjs` fails on any bracket
-  carrying a raw literal. `bun run check` runs the six gates together.
+  carrying a raw literal. `bun run check` runs all six together, plus the test suite.
 - **`frameworks/tailwind/components/Tag.manifest.json`.** The shared-recipe architecture
   `CLAUDE.md` describes now exists: `tag.variants.ts` consumes the manifest through the
   shared `tv` instead of defining its recipe inline. This is the reference shape.

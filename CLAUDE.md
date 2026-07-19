@@ -116,7 +116,8 @@ with the manifests as content and asserts every class emits a rule and every
 theme key resolves to a real token; `bun run check:coverage` asserts every
 token either reaches a utility or is named in `EXCLUDED` with a reason;
 `bun run check:arbitrary` fails on a bracket carrying a raw literal.
-`bun run check` runs all six gates. An Angular primitive's recipe is its
+`bun run check` runs all six plus the test suite, without stopping at the
+first failure. An Angular primitive's recipe is its
 manifest — `frameworks/angular/primitives/tag/` is the reference shape.
 
 ## Conventions
