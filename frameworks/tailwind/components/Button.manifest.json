@@ -10,7 +10,7 @@
     },
     "size": {
       "sm": { "root": "h-ctl-h-sm px-3 text-sm" },
-      "md": { "root": "h-ctl-h px-4.5 text-base" },
+      "md": { "root": "h-ctl-h px-4.5 text-ctl" },
       "lg": { "root": "h-ctl-h-lg px-6.5 text-md" }
     }
   },

@@ -38,8 +38,11 @@
   --dz-row-py:12px; /* table/list row vertical padding */
   --dz-row-px:16px; /* row horizontal padding */
   --dz-stack:12px; /* gap between stacked items */
-  --dz-cell:14px; /* cell font-size */
-  --dz-text:14px; /* control text — buttons, inputs */
+  --dz-text:14px; /* control text — buttons, inputs, selects, menu items, table cells */
+  --dz-text-md:13px; /* secondary control text — tag chips, pagination, secondary buttons */
+  --dz-text-sm:12px; /* secondary control text — hints, validation errors, badges, legends */
+  --dz-text-xs:11px; /* micro control text — field labels, shortcuts, eyebrow labels */
+  --dz-text-2xs:10px; /* column headers, row micro-labels */
 }
 :root{
   /*
@@ -63,6 +66,9 @@
   --dz-row-py:7px;
   --dz-row-px:12px;
   --dz-stack:8px;
-  --dz-cell:13px;
   --dz-text:13px;
+  --dz-text-md:12px;
+  --dz-text-sm:11px;
+  --dz-text-xs:10px;
+  --dz-text-2xs:10px;
 }

@@ -17,12 +17,12 @@ export function Alert({ tone = 'info', title, children, icon, action, onClose, s
         background: t.soft, border: '1px solid ' + t.color, borderRadius: 'var(--r-md)', ...style }}>
       <i className={icon || t.icon} style={{ color: t.color, fontSize: 'var(--icon-lg)', lineHeight: 1, flexShrink: 0, marginTop: 1 }} />
       <div style={{ flex: 1 }}>
-        {title && <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, color: 'var(--bone)' }}>{title}</div>}
+        {title && <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 'var(--dz-text)', color: 'var(--bone)' }}>{title}</div>}
         {children && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--bone-dim)', lineHeight: 1.55, marginTop: title ? 3 : 0 }}>{children}</div>}
         {action && (
           <button onClick={action.onClick}
             style={{ marginTop: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-              fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: t.color }}>
+              fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: t.color }}>
             {action.label}
           </button>
         )}

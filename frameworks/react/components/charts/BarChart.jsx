@@ -71,8 +71,8 @@ export function BarChart({
           background: 'var(--bg-raised)', border: '1px solid var(--border-strong)',
           borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', padding: '6px 10px',
         }}>
-          <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--mute)' }}>{labels[hover]}</div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--bone)' }}>{fmt(values[hover])}</div>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{labels[hover]}</div>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)' }}>{fmt(values[hover])}</div>
         </div>
       )}
 

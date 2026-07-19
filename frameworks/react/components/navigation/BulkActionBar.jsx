@@ -9,7 +9,7 @@ export function BulkActionBar({ count = 0, noun = 'items', actions = [], onClear
       style={{ display: 'flex', alignItems: 'center', gap: 14, minHeight: 52, padding: '0 12px 0 16px',
         background: 'var(--surface-card)', border: '1px solid var(--line-strong)', borderRadius: 'var(--r-md)',
         boxShadow: 'var(--shadow-2)', ...style }}>
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '.04em', color: 'var(--bone)' }}>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', letterSpacing: '.04em', color: 'var(--bone)' }}>
         <b style={{ color: 'var(--gold)' }}>{count}</b> {noun} selected
       </span>
       <span style={{ width: 1, height: 22, background: 'var(--color-base-300)' }} />
@@ -18,7 +18,7 @@ export function BulkActionBar({ count = 0, noun = 'items', actions = [], onClear
           <button key={i} onClick={a.onClick}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 7, height: 34, padding: '0 12px',
               background: 'transparent', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-sm)', cursor: 'pointer',
-              fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13,
+              fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 'var(--dz-text-md)',
               color: a.destructive ? 'var(--danger)' : 'var(--bone-dim)',
               transition: 'background var(--dur-fast) var(--ease-out)' }}
             onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--panel)')}
@@ -30,7 +30,7 @@ export function BulkActionBar({ count = 0, noun = 'items', actions = [], onClear
       {onClear && (
         <button onClick={onClear} aria-label="Clear selection"
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)',
-            fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase' }}>
+            fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: '.1em', textTransform: 'uppercase' }}>
           Clear
         </button>
       )}

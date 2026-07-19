@@ -88,9 +88,18 @@
   --text-h4: var(--fs-h4);
   --text-lg: var(--fs-lg);
   --text-md: var(--fs-md);
-  --text-base: var(--dz-text);
   --text-sm: var(--fs-sm);
   --text-xs: var(--fs-xs);
+
+  /* dz's control-text scale — `ctl` infix because the natural --text-* keys
+     are taken by fs, and two collide on value as well as name (fs.sm/dz.text-md
+     both 13px, fs.xs/dz.text-xs both 11px). Chrome text is a density role, not
+     an editorial one, so it gets its own namespace rather than borrowing fs's. */
+  --text-ctl: var(--dz-text);
+  --text-ctl-md: var(--dz-text-md);
+  --text-ctl-sm: var(--dz-text-sm);
+  --text-ctl-xs: var(--dz-text-xs);
+  --text-ctl-2xs: var(--dz-text-2xs);
 
   --font-weight-*: initial;
   --font-weight-regular: var(--fw-regular);
@@ -143,7 +152,6 @@
   --spacing-row-py: var(--dz-row-py);
   --spacing-row-px: var(--dz-row-px);
   --spacing-stack: var(--dz-stack);
-  --spacing-cell: var(--dz-cell);
 
   --spacing-gutter: var(--gutter);
 

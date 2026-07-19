@@ -8,7 +8,7 @@ export function Checkbox({ checked = false, onChange, label, disabled = false, s
         transition: 'background var(--dur-fast) var(--ease-out)' }}>
         {checked && <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="var(--on-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
       </span>
-      {label && <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--bone-dim)' }}>{label}</span>}
+      {label && <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', color: 'var(--bone-dim)' }}>{label}</span>}
       <input type="checkbox" checked={checked} onChange={onChange} disabled={disabled} style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }} {...rest} />
     </label>
   );

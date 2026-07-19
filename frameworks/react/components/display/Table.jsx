@@ -16,9 +16,9 @@ export function Table({
   // null width → the wide layout. First paint is never the narrow branch.
   const narrow = responsive && width !== null && width < readBreakpoint('md');
 
-  const cellBase = { padding: 'var(--dz-row-py) var(--dz-row-px)', fontSize: 'var(--dz-cell)', textAlign: 'left', verticalAlign: 'middle' };
+  const cellBase = { padding: 'var(--dz-row-py) var(--dz-row-px)', fontSize: 'var(--dz-text)', textAlign: 'left', verticalAlign: 'middle' };
   const headerLabel = {
-    fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.12em',
+    fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: '.12em',
     textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 700,
   };
   const valueStyle = (c) => ({
@@ -35,7 +35,7 @@ export function Table({
           {rows.length === 0 && (
             <div style={{ background: 'var(--surface-card)', border: '1px solid var(--color-base-300)',
               borderRadius: 'var(--r-lg)', padding: '32px 16px', textAlign: 'center',
-              color: 'var(--mute)', fontSize: 'var(--dz-cell)' }}>{empty}</div>
+              color: 'var(--mute)', fontSize: 'var(--dz-text)' }}>{empty}</div>
           )}
           {rows.map((row, ri) => (
             <div key={keyOf(row, ri)}
@@ -54,7 +54,7 @@ export function Table({
               ) : (
                 <div key={c.key} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
                   <span style={headerLabel}>{c.header}</span>
-                  <span style={{ ...valueStyle(c), minWidth: 0, textAlign: 'right', fontSize: 'var(--dz-cell)' }}>
+                  <span style={{ ...valueStyle(c), minWidth: 0, textAlign: 'right', fontSize: 'var(--dz-text)' }}>
                     {cellValue(c, row)}
                   </span>
                 </div>

@@ -28,8 +28,8 @@ export function ProgressBar({ value = 0, indeterminate = false, tone = 'accent',
     <div style={{ width: '100%', ...style }}>
       {(label || (showValue && !indeterminate)) && (
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8, gap: 12 }}>
-          {label && <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--bone-dim)' }}>{label}</span>}
-          {showValue && !indeterminate && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--mute)' }}>{pct}%</span>}
+          {label && <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-md)', color: 'var(--bone-dim)' }}>{label}</span>}
+          {showValue && !indeterminate && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{pct}%</span>}
         </div>
       )}
       <div role="progressbar" aria-valuenow={indeterminate ? undefined : pct} aria-valuemin={0} aria-valuemax={100} aria-label={typeof label === 'string' ? label : 'Progress'}

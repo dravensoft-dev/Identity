@@ -34,7 +34,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
     <Shell active="dashboard" onNav={onNav} title={p.name}
       actions={<Button variant="primary" size="sm" icon={<Icon name="rocket" size={16} />} onClick={() => setOpen(true)}>Deploy</Button>}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)' }}>{p.client}</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)' }}>{p.client}</span>
         <Badge tone="success" dot>Deployed</Badge>
         {(p.tags || []).map((t) => <Tag key={t}>{t}</Tag>)}
       </div>
@@ -42,16 +42,16 @@ export function ProjectScreen({ onNav, project, onToast }) {
 
       {tab === 'Deployments' && (
         <div style={{ border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-lg)', overflow: 'hidden' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr auto', gap: 12, padding: '12px 20px', background: 'var(--panel)', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--mute)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr auto', gap: 12, padding: '12px 20px', background: 'var(--panel)', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--mute)' }}>
             <span>Build</span><span>Environment</span><span>Status</span><span>Author</span><span>Duration</span><span></span>
           </div>
           {DEPLOYS.map((d, i) => (
             <div key={d.build} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr auto', gap: 12, padding: '16px 20px', alignItems: 'center', background: 'var(--surface-card)', borderTop: i ? '1px solid var(--color-base-300)' : 'none' }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--gold)' }}>{d.build}</span>
-              <span style={{ fontSize: 14, color: 'var(--bone-dim)' }}>{d.env}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--gold)' }}>{d.build}</span>
+              <span style={{ fontSize: 'var(--dz-text)', color: 'var(--bone-dim)' }}>{d.env}</span>
               <span><Badge tone={d.status[0]} dot>{d.status[1]}</Badge></span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--mute)' }}>{d.author}</span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--mute)' }}>{d.dur}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--mute)' }}>{d.author}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--mute)' }}>{d.dur}</span>
               <Button variant="ghost" size="sm">Details</Button>
             </div>
           ))}
@@ -64,8 +64,8 @@ export function ProjectScreen({ onNav, project, onToast }) {
             {ACTIVITY.map((a, i) => (
               <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '14px 0', borderTop: i ? '1px solid var(--color-base-300)' : 'none' }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--crimson)' }} />
-                <span style={{ fontSize: 14, color: 'var(--bone-dim)' }}><b style={{ color: 'var(--bone)' }}>{a[0]}</b> {a[1]} <span style={{ color: 'var(--gold)', fontFamily: 'var(--font-mono)', fontSize: 13 }}>{a[2]}</span></span>
-                <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--mute)' }}>{a[3]}</span>
+                <span style={{ fontSize: 'var(--dz-text)', color: 'var(--bone-dim)' }}><b style={{ color: 'var(--bone)' }}>{a[0]}</b> {a[1]} <span style={{ color: 'var(--gold)', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)' }}>{a[2]}</span></span>
+                <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{a[3]}</span>
               </div>
             ))}
           </div>
@@ -77,13 +77,13 @@ export function ProjectScreen({ onNav, project, onToast }) {
           <Card eyebrow="Status" title="Service health">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
               {[['Uptime', '99.98%', 'var(--success)'], ['p95', '186 ms', 'var(--bone)'], ['Errors', '0.02%', 'var(--gold)']].map(([k, v, c]) => (
-                <div key={k}><div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)' }}>{k}</div><div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 28, color: c, marginTop: 6 }}>{v}</div></div>
+                <div key={k}><div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)' }}>{k}</div><div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 28, color: c, marginTop: 6 }}>{v}</div></div>
               ))}
             </div>
           </Card>
           <Card eyebrow="Delivery" title="Next milestone">
-            <div style={{ fontSize: 14, color: 'var(--bone-dim)', lineHeight: 1.6 }}>Release 2.5 — SEPA gateway.</div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--gold)', marginTop: 10 }}>in 6 days</div>
+            <div style={{ fontSize: 'var(--dz-text)', color: 'var(--bone-dim)', lineHeight: 1.6 }}>Release 2.5 — SEPA gateway.</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--gold)', marginTop: 10 }}>in 6 days</div>
           </Card>
         </div>
       )}

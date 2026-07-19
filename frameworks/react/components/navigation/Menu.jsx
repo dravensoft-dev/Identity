@@ -45,7 +45,7 @@ export function Menu({ trigger, items = [], align = 'start', style }) {
           borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-2)', animation: 'arena-menu var(--dur-fast) var(--ease-out)' }}>
           {items.map((it, i) => {
             if (it.divider) return <div key={i} style={{ height: 1, background: 'var(--color-base-300)', margin: '5px 0' }} />;
-            if (it.header) return <div key={i} style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--mute)', padding: '8px 10px 4px' }}>{it.header}</div>;
+            if (it.header) return <div key={i} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--mute)', padding: '8px 10px 4px' }}>{it.header}</div>;
             return (
               <MenuItem key={i} item={it} onRun={() => run(it)} />
             );
@@ -68,7 +68,7 @@ function MenuItem({ item, onRun }) {
         opacity: item.disabled ? 0.6 : 1, fontFamily: 'var(--font-body)', fontSize: 14 }}>
       {item.icon && <span style={{ fontSize: 'var(--icon-md)', display: 'inline-flex' }}>{item.icon}</span>}
       <span style={{ flex: 1 }}>{item.label}</span>
-      {item.shortcut && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--mute)' }}>{item.shortcut}</span>}
+      {item.shortcut && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{item.shortcut}</span>}
     </button>
   );
 }

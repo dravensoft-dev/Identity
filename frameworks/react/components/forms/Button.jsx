@@ -24,9 +24,9 @@ function useSpinKeyframes() {
 /* Heights come from the density tokens, so inside `.arena-compact` the button
  * re-densifies with the rows around it instead of towering over them. */
 const SIZES = {
-  sm: { padding: '0 12px', height: 'var(--dz-ctl-h-sm)', fontSize: 13 },
-  md: { padding: '0 18px', height: 'var(--dz-ctl-h)', fontSize: 14 },
-  lg: { padding: '0 26px', height: 'var(--dz-ctl-h-lg)', fontSize: 15 },
+  sm: { padding: '0 12px', height: 'var(--dz-ctl-h-sm)', fontSize: 'var(--dz-text-md)' },
+  md: { padding: '0 18px', height: 'var(--dz-ctl-h)', fontSize: 'var(--dz-text)' },
+  lg: { padding: '0 26px', height: 'var(--dz-ctl-h-lg)', fontSize: 'var(--dz-text)' },
 };
 
 export function Button({

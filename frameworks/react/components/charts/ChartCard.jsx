@@ -14,7 +14,7 @@ export function ChartCard({ title, actions, children, style, ...rest }) {
       {(title || actions) && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           {title && <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.2em',
+            fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: '.2em',
             textTransform: 'uppercase', color: 'var(--mute)',
           }}>{title}</span>}
           {actions && <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{actions}</div>}

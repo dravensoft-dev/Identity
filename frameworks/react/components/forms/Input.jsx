@@ -51,7 +51,7 @@ export function Input({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, ...style }}>
       {label && (
-        <label htmlFor={inputId} style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)' }}>
+        <label htmlFor={inputId} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)' }}>
           {label}{required && <span style={{ color: 'var(--crimson)', marginLeft: 4 }}>*</span>}
         </label>
       )}
@@ -60,17 +60,17 @@ export function Input({
         borderRadius: 'var(--r-sm)', boxShadow: ring, opacity: disabled ? 0.5 : 1,
         transition: 'border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)' }}>
         {icon && <span style={{ color: 'var(--mute)', display: 'inline-flex' }}>{icon}</span>}
-        {prefix && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--mute)' }}>{prefix}</span>}
+        {prefix && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--mute)' }}>{prefix}</span>}
         <input id={inputId} disabled={disabled} required={required} aria-invalid={!!shownError}
           className={['arena-input', className].filter(Boolean).join(' ')}
           onFocus={() => setFocus(true)} onBlur={handleBlur} onChange={handleChange}
           style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none',
-            color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 14 }} {...rest} />
+            color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)' }} {...rest} />
         {shownError && <i className="ph-fill ph-warning-circle" style={{ color: 'var(--danger)', fontSize: 'var(--icon-md)' }} />}
         {isValid && <i className="ph-fill ph-check-circle" style={{ color: 'var(--success)', fontSize: 'var(--icon-md)' }} />}
       </div>
-      {shownError ? <span style={{ fontSize: 12, color: 'var(--danger)', fontFamily: 'var(--font-body)' }}>{shownError}</span>
-        : hint && <span style={{ fontSize: 12, color: 'var(--mute)', fontFamily: 'var(--font-body)' }}>{hint}</span>}
+      {shownError ? <span style={{ fontSize: 'var(--dz-text-sm)', color: 'var(--danger)', fontFamily: 'var(--font-body)' }}>{shownError}</span>
+        : hint && <span style={{ fontSize: 'var(--dz-text-sm)', color: 'var(--mute)', fontFamily: 'var(--font-body)' }}>{hint}</span>}
     </div>
   );
 }

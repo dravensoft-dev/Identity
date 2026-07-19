@@ -17,7 +17,7 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
     pos = { position: 'fixed', top, left: Math.max(16, left), zIndex: 'var(--z-onboarding)' };
   }
 
-  const foot = { fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.06em' };
+  const foot = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: '.06em' };
   return (
     <>
       {/* The scrim sits just under the coachmark -- one slot, two uses, so the
@@ -27,7 +27,7 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
       <div role="dialog" aria-modal="true" aria-label={step.title}
         style={{ ...pos, width: W, maxWidth: '92vw', background: 'var(--surface-card)', border: '1px solid var(--line-strong)',
           borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', padding: 20 }}>
-        {step.eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 8 }}>{step.eyebrow}</div>}
+        {step.eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 8 }}>{step.eyebrow}</div>}
         {step.title && <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'var(--bone)', letterSpacing: '-.01em' }}>{step.title}</div>}
         {step.body && <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 1.6, color: 'var(--bone-dim)', marginTop: 8 }}>{step.body}</div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 18 }}>
@@ -44,7 +44,7 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
           )}
           <button onClick={last ? onDone : onNext}
             style={{ height: 34, padding: '0 16px', background: 'var(--crimson)', color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--r-sm)',
-              fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+              fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 'var(--dz-text-md)', cursor: 'pointer' }}>
             {last ? 'Got it' : 'Next'}
           </button>
         </div>

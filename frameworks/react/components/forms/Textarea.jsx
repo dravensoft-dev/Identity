@@ -14,7 +14,7 @@ export function Textarea({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, ...style }}>
       {label && (
-        <label htmlFor={taId} style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)' }}>
+        <label htmlFor={taId} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--mute)' }}>
           {label}{required && <span style={{ color: 'var(--crimson)', marginLeft: 4 }}>*</span>}
         </label>
       )}
@@ -24,13 +24,13 @@ export function Textarea({
         onChange={(e) => { grow(e); onChange && onChange(e); }}
         style={{ width: '100%', padding: '10px 12px', background: 'var(--surface-input)',
           border: '1px solid ' + borderColor, borderRadius: 'var(--r-sm)', boxShadow: ring,
-          color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 1.55,
+          color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', lineHeight: 1.55,
           resize: autoResize ? 'none' : 'vertical', outline: 'none', opacity: disabled ? 0.5 : 1,
           transition: 'border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)' }} {...rest} />
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-        {error ? <span style={{ fontSize: 12, color: 'var(--danger)', fontFamily: 'var(--font-body)' }}>{error}</span>
-          : hint ? <span style={{ fontSize: 12, color: 'var(--mute)', fontFamily: 'var(--font-body)' }}>{hint}</span> : <span />}
-        {counter && maxLength && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: len > maxLength * 0.9 ? 'var(--warning)' : 'var(--mute)' }}>{len}/{maxLength}</span>}
+        {error ? <span style={{ fontSize: 'var(--dz-text-sm)', color: 'var(--danger)', fontFamily: 'var(--font-body)' }}>{error}</span>
+          : hint ? <span style={{ fontSize: 'var(--dz-text-sm)', color: 'var(--mute)', fontFamily: 'var(--font-body)' }}>{hint}</span> : <span />}
+        {counter && maxLength && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', color: len > maxLength * 0.9 ? 'var(--warning)' : 'var(--mute)' }}>{len}/{maxLength}</span>}
       </div>
     </div>
   );

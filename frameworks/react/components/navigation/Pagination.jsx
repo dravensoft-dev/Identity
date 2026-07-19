@@ -26,11 +26,11 @@ export function Pagination({ page = 1, pageCount = 1, onChange, style }) {
       {nav(-1, page <= 1)}
       {pages(page, pageCount).map((p, i) =>
         p === '…'
-          ? <span key={'e' + i} style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--mute)', padding: '0 4px' }}>…</span>
+          ? <span key={'e' + i} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--mute)', padding: '0 4px' }}>…</span>
           : (
             <button key={p} onClick={() => go(p)} aria-current={p === page ? 'page' : undefined}
               style={{ height: 34, minWidth: 34, padding: '0 8px', borderRadius: 'var(--r-sm)', cursor: 'pointer',
-                fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 700,
+                fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', fontWeight: 700,
                 background: p === page ? 'var(--crimson)' : 'transparent',
                 border: '1px solid ' + (p === page ? 'var(--crimson)' : 'var(--color-base-300)'),
                 color: p === page ? 'var(--on-accent)' : 'var(--bone-dim)' }}>{p}</button>

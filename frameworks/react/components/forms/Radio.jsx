@@ -23,8 +23,8 @@ export function Radio({ value, label, hint, name, checked = false, onSelect, dis
         {checked && <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--crimson)' }} />}
       </span>
       <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {label && <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--bone-dim)', lineHeight: 1.3 }}>{label}</span>}
-        {hint && <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--mute)', lineHeight: 1.4 }}>{hint}</span>}
+        {label && <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', color: 'var(--bone-dim)', lineHeight: 1.3 }}>{label}</span>}
+        {hint && <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)', lineHeight: 1.4 }}>{hint}</span>}
       </span>
       <input type="radio" name={name} value={value} checked={checked} disabled={disabled}
         onChange={() => onSelect && onSelect(value)} style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }} {...rest} />

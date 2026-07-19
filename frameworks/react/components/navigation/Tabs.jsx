@@ -10,7 +10,7 @@ export function Tabs({ tabs = [], value, defaultValue, onChange, style }) {
         return (
           <button key={v} onClick={() => select(v)}
             style={{ position: 'relative', padding: '10px 16px', background: 'none', border: 'none', cursor: 'pointer',
-              fontFamily: 'var(--font-body)', fontWeight: on ? 600 : 500, fontSize: 14,
+              fontFamily: 'var(--font-body)', fontWeight: on ? 600 : 500, fontSize: 'var(--dz-text)',
               color: on ? 'var(--bone)' : 'var(--mute)',
               boxShadow: on ? 'inset 0 -2px 0 var(--crimson)' : 'none',
               transition: 'color var(--dur-fast) var(--ease-out)' }}>

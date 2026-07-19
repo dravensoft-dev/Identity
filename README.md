@@ -139,6 +139,23 @@ Before this family existed, layering was five magic numbers in five files, encod
 
 Exposed in the Tailwind layer as `.z-dropdown` / `.z-tooltip` / `.z-modal` / `.z-modal-nested` / `.z-palette` / `.z-onboarding` / `.z-toast` (`frameworks/tailwind/theme.css`, `--z-index-*`). **A consumer embedding Arena inside an app that has its own stacking context should read this table rather than guess at a number**: Arena's overlay components render in place (none of the seven uses a React portal), so the global order above governs any of them mounted as siblings — but if the host app's own chrome (a nav bar, a modal from a different library) needs to interleave with Arena's, the host's own `z-index` values need to be chosen against this scale, not against whatever the host already had lying around. `display/Calendar.jsx`'s `zIndex: 1` is not part of this family — it is local stacking inside a positioned container, scoped entirely inside one component, and stays a hand-written literal.
 
+### Control density type scale (`dz`)
+Chrome text — a button label, an input's value, a hint, a validation error, a badge, a table cell — is governed by how dense the surrounding controls are, not by the prose scale (`fs`). `dz` already declared control heights, row padding and stack gap; it now carries its own five-step text scale, generated into `tokens/spacing.css` from `tokens/src/spacing.json` (base) and `tokens/src/density.compact.json` (the `.arena-compact` override):
+
+| Token | Value | Compact (`.arena-compact`) | Role |
+|---|---|---|---|
+| `--dz-text` | 14px | 13px | control text — buttons, inputs, selects, menu items, table cells |
+| `--dz-text-md` | 13px | 12px | secondary control text — tag chips, pagination, secondary buttons |
+| `--dz-text-sm` | 12px | 11px | secondary control text — hints, validation errors, badges, legends |
+| `--dz-text-xs` | 11px | 10px | micro control text — field labels, shortcuts, eyebrow labels |
+| `--dz-text-2xs` | 10px | 10px | column headers, row micro-labels |
+
+`--dz-text-2xs` does not shrink further in the compact scope: −1px would land it at 9px, the exact value the per-site census snapped away from elsewhere in the system as illegible drift, and reintroducing it as a systemic compact value would undo that call one layer down. Every other step follows the existing `−1px` precedent (`--dz-text` itself, 14→13).
+
+`dz.cell` — a narrow name for the same "control text" role — is retired; every consumer reads `--dz-text` now. It carried the identical value in both density scopes, so nothing rendered moved.
+
+Exposed in the Tailwind layer under a `ctl` infix — `--text-ctl` / `--text-ctl-md` / `--text-ctl-sm` / `--text-ctl-xs` / `--text-ctl-2xs` — because the natural `--text-*` keys already belong to `fs`, and two collide on value as well as name (`fs.sm` / `dz.text-md` are both 13px; `fs.xs` / `dz.text-xs` are both 11px). `--text-base`, the one `--text-*` key that pointed at `dz` under an `fs`-shaped name, is retired along with it.
+
 ## ICONOGRAPHY
 - **Official set: [Phosphor Icons](https://phosphoricons.com)** (MIT license, free commercial use, no attribution). Chosen for aligning with Dravensoft's bold identity: it's the open-source family with the widest style range (1,500+ icons in 6 weights) and its **Bold** weight has the presence and high contrast the brand calls for — the icon equivalent of Archivo Black.
 - **Weights and use:**

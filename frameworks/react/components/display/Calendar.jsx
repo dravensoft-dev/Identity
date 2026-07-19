@@ -79,7 +79,7 @@ export function Calendar({
   const step = activeView === 'day' ? 1 : 7;
   const goto = (iso) => { setAnchor(iso); onRangeChange && onRangeChange(iso); };
 
-  const label = { fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 700 };
+  const label = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 700 };
   const navBtn = (dir) => (
     <button type="button" aria-label={dir < 0 ? 'Previous' : 'Next'}
       onClick={() => goto(addDays(anchor, dir * step))}
@@ -99,7 +99,7 @@ export function Calendar({
         <button type="button" onClick={() => goto(today)}
           style={{ height: 34, padding: '0 12px', background: 'transparent', border: '1px solid var(--color-base-300)',
             borderRadius: 'var(--r-sm)', color: 'var(--bone-dim)', cursor: 'pointer',
-            fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600 }}>Today</button>
+            fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-md)', fontWeight: 600 }}>Today</button>
         {navBtn(1)}
         <h2 style={{ margin: '0 0 0 4px', fontSize: 15, fontWeight: 600, color: 'var(--text-strong)' }}>
           {rangeTitle(days)}
@@ -115,7 +115,7 @@ export function Calendar({
               style={{ flex: 1, minWidth: 0, padding: '6px 8px 8px', textAlign: 'center',
                 cursor: onDateClick ? 'pointer' : 'default' }}>
               <div style={label}>{formatDate(d, { weekday: 'short' })}</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 16, fontWeight: 700, marginTop: 2,
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text)', fontWeight: 700, marginTop: 2,
                 color: isToday ? 'var(--crimson)' : 'var(--bone-dim)' }}>
                 {formatDate(d, { day: 'numeric' })}
               </div>
@@ -171,10 +171,10 @@ export function Calendar({
                         font: 'inherit' }}>
                       {renderEvent ? renderEvent(p.ev) : (
                         <>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-strong)',
+                          <span style={{ fontSize: 'var(--dz-text-sm)', fontWeight: 600, color: 'var(--text-strong)',
                             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.ev.title}</span>
                           {h >= 32 && (
-                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--mute)' }}>{time}</span>
+                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', color: 'var(--mute)' }}>{time}</span>
                           )}
                         </>
                       )}

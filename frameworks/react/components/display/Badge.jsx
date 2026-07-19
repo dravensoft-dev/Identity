@@ -13,7 +13,7 @@ export function Badge({ children, tone = 'neutral', dot = false, style, ...rest 
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px',
       background: bg, color: fg, borderRadius: 'var(--r-pill)',
-      fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', ...style }} {...rest}>
+      fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', ...style }} {...rest}>
       {dot && <span style={{ width: 6, height: 6, borderRadius: '50%', background: fg }} />}
       {children}
     </span>

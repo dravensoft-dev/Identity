@@ -16,8 +16,8 @@ import React, { useState } from 'react';
  */
 
 const SIZES = {
-  sm: { height: 28, padding: '0 10px', fontSize: 12 },
-  md: { height: 34, padding: '0 14px', fontSize: 13 },
+  sm: { height: 28, padding: '0 10px', fontSize: 'var(--dz-text-sm)' },
+  md: { height: 34, padding: '0 14px', fontSize: 'var(--dz-text-md)' },
 };
 
 export function SegmentedControl({

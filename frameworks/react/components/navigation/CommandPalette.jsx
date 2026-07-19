@@ -23,8 +23,8 @@ export function CommandPalette({ open, onClose, commands = [], placeholder = 'Se
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1px solid var(--color-base-300)' }}>
           <i className="ph-bold ph-magnifying-glass" style={{ color: 'var(--mute)', fontSize: 'var(--icon-lg)' }} />
           <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} placeholder={placeholder}
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 15 }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--mute)', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-xs)', padding: '2px 6px' }}>ESC</span>
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)' }} />
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-xs)', padding: '2px 6px' }}>ESC</span>
         </div>
         <div style={{ maxHeight: 320, overflow: 'auto', padding: 6 }}>
           {filtered.length === 0 && <div style={{ padding: '18px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--mute)' }}>No results for "{q}".</div>}
@@ -33,8 +33,8 @@ export function CommandPalette({ open, onClose, commands = [], placeholder = 'Se
               style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 'var(--r-sm)', border: 'none', cursor: 'pointer',
                 background: idx === i ? 'var(--crimson-soft)' : 'transparent', color: idx === i ? 'var(--crimson)' : 'var(--bone-dim)' }}>
               {c.icon && <span style={{ fontSize: 'var(--icon-lg)', display: 'inline-flex' }}>{c.icon}</span>}
-              <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: idx === i ? 600 : 500 }}>{c.label}</span>
-              {c.shortcut && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--mute)' }}>{c.shortcut}</span>}
+              <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', fontWeight: idx === i ? 600 : 500 }}>{c.label}</span>
+              {c.shortcut && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{c.shortcut}</span>}
             </button>
           ))}
         </div>
