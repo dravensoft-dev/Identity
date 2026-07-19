@@ -41,6 +41,18 @@ names properties rather than values (`transition-[background,transform]`).
 If a manifest needs a value with no token behind it, the token is what is
 missing — add it to `tokens/src/` first.
 
+<!-- check-arbitrary-values allow: text-[13px] bg-[#b52a20] -->
+
+The gate scans `.md` too, because a `.prompt.md`'s Don't block is exactly
+where a bad example belongs, and an unflagged one is a bad example someone
+copies into a manifest. The marker above is the one legal escape: an HTML
+comment, invisible in rendered markdown, naming exactly the classes it
+exempts — `text-[13px]` and `bg-[#b52a20]`, the two counterexamples this
+section uses. A class this file carries that no marker names still fails;
+a marker naming a class the file no longer carries fails too, as a stale
+allowance. The marker is honoured in `.md` only — found in any other
+extension, it is itself a failure.
+
 ## Consumption order
 
 1. Bring Arena's tokens into scope — `@import "../../styles.css";` (or the

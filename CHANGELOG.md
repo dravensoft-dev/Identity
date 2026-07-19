@@ -30,6 +30,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`frameworks/tailwind/components/Tag.manifest.json`.** The shared-recipe architecture
   `CLAUDE.md` describes now exists: `tag.variants.ts` consumes the manifest through the
   shared `tv` instead of defining its recipe inline. This is the reference shape.
+- **`check-arbitrary-values.mjs` now scans `.md`, with a nominal opt-out.** Every Arena
+  component ships an `X.prompt.md`, and a bad-example class in a Don't block that nobody
+  flags is a bad example someone later copies into a manifest. A `.md` file may still show
+  one, but only behind an HTML comment naming the exact classes it exempts —
+  `<!-- check-arbitrary-values allow: text-[13px] -->` — so a new counterexample requires
+  consciously listing it; a class the marker doesn't name still fails, and a marker naming
+  a class the file no longer carries fails too, as a stale allowance. The marker is legal
+  in `.md` only.
+- **`scripts/check-all.mjs`, and `bun run check` no longer stops at the first failing
+  gate.** The six gates were chained with `&&`, so a contributor who broke two things fixed
+  them one round-trip at a time. The new runner runs all six plus `bun test scripts/`
+  unconditionally, streams each step's output, and prints a pass/fail summary at the end;
+  it exits 1 if anything failed. Under `node` it runs `node --test` over the discovered
+  `scripts/*.test.mjs` instead, since `bun test` has no equivalent invocation of its own.
+  The individual `check:*` scripts are unchanged and still run alone.
 
 ### Fixed
 
