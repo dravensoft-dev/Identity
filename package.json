@@ -17,6 +17,8 @@
     "check:tailwind": "bun scripts/check-tailwind.mjs",
     "check:coverage": "bun scripts/check-tailwind-coverage.mjs",
     "check:arbitrary": "bun scripts/check-arbitrary-values.mjs",
+    "check:dimensions": "bun scripts/check-dimension-literals.mjs",
+    "check:fonts": "bun scripts/check-fonts-generated.mjs",
     "check": "bun scripts/check-all.mjs",
     "test": "bun test scripts/"
   }

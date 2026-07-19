@@ -4,6 +4,8 @@
  * inherited, not buffered), and a pass/fail summary prints once every step
  * has finished. Exit 1 if any step failed, 0 if all passed.
  *
+ * Nine steps total: the eight gates in GATES below, plus the test suite.
+ *
  * Every gate is spawned as `process.execPath <script>.mjs`, exactly how
  * scripts/lib/tailwind-compile.mjs spawns the Tailwind CLI, so the runner
  * behaves identically whether invoked as `bun scripts/check-all.mjs` or
@@ -26,8 +28,8 @@ import { dirname, join } from 'node:path';
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..');
 
-/** The six check gates, each spawned as `process.execPath <file>`, in the
- *  same order `bun run check` used to chain them.
+/** The check gates, each spawned as `process.execPath <file>`, in the same
+ *  order `bun run check` used to chain them.
  *  @type {{name: string, file: string}[]} */
 export const GATES = [
   { name: 'check:dtcg', file: 'check-dtcg.mjs' },
@@ -36,6 +38,8 @@ export const GATES = [
   { name: 'check:tailwind', file: 'check-tailwind.mjs' },
   { name: 'check:coverage', file: 'check-tailwind-coverage.mjs' },
   { name: 'check:arbitrary', file: 'check-arbitrary-values.mjs' },
+  { name: 'check:dimensions', file: 'check-dimension-literals.mjs' },
+  { name: 'check:fonts', file: 'check-fonts-generated.mjs' },
 ];
 
 /** The test-suite step for the runtime this process is executing under.

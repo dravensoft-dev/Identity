@@ -8,6 +8,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`scripts/check-dimension-literals.mjs`, and the promise it is proof of.** Arena's
+  claim is that changing a value in `tokens/src/` moves every layer; for the React
+  layer this was false — it wrote dimensions as bare literals, holding one
+  `var(--fs-*)` reference across 40 components and zero `var(--sp-*)`. This gate scans
+  `frameworks/` for a literal in any property the token layer governs and fails on
+  each; it is not a tidiness check. Twelve tasks drove the census it reports from
+  **514 to 0**. The demonstration is uneven by design: `--fs-md` moved only 1
+  component before this work and 8 now — the weakest token to point at, because most
+  editorial sizes were already close to right. `--sp-1` and `--bw` are the real
+  argument — 41 of 45 component/screen files now read `--sp-1` directly and 33 read
+  `--bw` directly, neither reading it at all before. `--dz-text` (17 sites),
+  `--icon-md` (9), `--lh-body` (10) and `--ls-label` (7) follow the same pattern at
+  smaller scale. Now the seventh step of `bun run check` (`check:dimensions`).
+- **`scripts/check-fonts-generated.mjs`**, closing a silent failure the family-list
+  change below opened: `tokens/fonts.css` is generated but is not one of the four
+  files `check-tokens-generated.mjs` guards, so nothing noticed if it drifted from
+  `tokens/src/typography.json`. An author who edited `font.display` and never
+  re-ran the generator resolved to a family with no `@font-face` and fell through to
+  `system-ui` with no error anywhere. This gate asserts every declared family has a
+  matching face; generic fallbacks (`system-ui`, `sans-serif`…) are never required to
+  have one. Now the eighth step of `bun run check` (`check:fonts`); `fetch-fonts.mjs`
+  itself now derives its family list from `tokens/src/typography.json` rather than
+  declaring it a second time.
+- **`icon`, a size scale for Phosphor glyphs** (`tokens/src/icon.json` — 14/16/18/34px).
+  A glyph rendered as a webfont is still an icon, not type, so it stays out of `fs`
+  even where the pixel value coincides.
+- **`z`, a layering family declaring stacking order** (`tokens/src/layering.json`), seven
+  slots from `--z-dropdown` through `--z-toast`. Naming the order fixed three real
+  defects it replaced: `Menu` and `Tooltip` both sat at `900`, so a tooltip on a menu
+  item resolved by DOM order rather than design; `Dialog` and `ConfirmDialog` both sat
+  at `1000`, and `ConfirmDialog` opens *from* a `Dialog`, so the correct stacking was an
+  accident of mount order; `Toast` — the one thing that must float above everything —
+  declared no `z-index` at all.
+- **`dz` gains its own four-step text scale** (`--dz-text`/`-md`/`-sm`/`-xs`/`-2xs`) plus
+  `--dz-lh`, a glyph-tight line-height reset for icon-only controls. `dz.cell` — a
+  narrower name for the same "control text" role — is retired; its four consumers now
+  read `--dz-text` directly.
+- **`ls` re-derived into nine roles** from a tracking hierarchy already in service
+  across the system (tracking decreases as text gets longer, from mono micro-labels
+  down to display headings). **`ls.wide` was kept**: the spec that proposed this
+  re-derivation called it dead API with zero uses, and that premise was false.
+- **`fs.hero` (96px) and `fs.mega` (150px)**, extending the type scale's own
+  accelerating ratio past `fs.display`. `fs.mega` is the approved brand manual's
+  `.big-glyph` specimen; `fs.hero` ships with **no consumer today, by design** — it
+  closes the jump between `display` and `mega` so the progression stays coherent, and
+  must not be deleted later as unused.
+- **`r.2xl` (34px)**, the brand manual's splash-screen tile. It lands where the scale's
+  own ratio (22→34 is ×1.55) says a step belongs, in a spot `16px`/`12px`/`2px` did not
+  and had snapped away from instead.
 - **The Tailwind layer exposes Arena's whole token surface.** `frameworks/tailwind/theme.css`
   grows from 35 theme keys to 89: the nine-step type scale, the three families, all six
   weights, line height and tracking, the seven density tokens, the six missing spacing
@@ -46,8 +95,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `scripts/*.test.mjs` instead, since `bun test` has no equivalent invocation of its own.
   The individual `check:*` scripts are unchanged and still run alone.
 
+### Changed
+
+- **The editorial type scale (`fs`) snapped.** No step was added inside its existing
+  range — `fs.hero`/`fs.mega` above only extend it past `display` — but every off-scale
+  editorial size found by the census moved to its nearest existing step. **This is a
+  design change and it moves rendered pixels**, not a mechanical substitution: each
+  cluster's snap direction (round up or down) was decided once, by the coordinator, and
+  applied consistently everywhere that cluster appears, rather than re-decided per site.
+
 ### Fixed
 
+- **`tailwind-merge` silently swallowed every Arena-specific `--text-*` key that met a
+  colour class in the same slot.** It recognizes Tailwind's own default font-size
+  suffixes under the `text-` prefix but classified any Arena-custom one (`text-ctl*`,
+  `text-h1..h4`, `text-display`) as a text-**colour** candidate instead — so whichever
+  class landed later in a merged string silently won and the other was dropped
+  entirely. Concretely: Angular's `Tag` rendered with no font-size at all, and `Button`
+  lost its label colour. Pre-existing, surfaced by this work rather than introduced by
+  it; fixed by extending `tv.ts`'s `twMergeConfig` font-size class group with Arena's
+  suffixes rather than inventing a new group, per `tailwind-merge`'s own documented
+  extension path.
+- **Arena-specific suffixes in several Tailwind namespaces failed to self-dedupe** —
+  two classes from the same family, both legitimately Arena's, did not resolve as
+  conflicting against each other. Each namespace's own suffixes now dedupe pairwise
+  against their siblings, both directions.
+- **`Button.manifest.json` diverged from React's `Button.jsx` by a pixel.** Its `md`
+  slot had been repointed at the new `dz` control-density scale; `sm` and `lg` still
+  read `fs` tokens, so the compiled `lg` size resolved to 15px against React's 14px.
+  No gate compared a manifest against the component it mirrors, so this passed every
+  existing check while rendering wrong. Fixed by re-pointing all three slots at `dz`;
+  `Tag.manifest.json` had the same class of drift against `Tag.jsx` and was corrected
+  the same pass.
+- **A bare `border` in the Tailwind manifests emitted Tailwind's own literal `1px`**,
+  not `var(--bw)` — it matched the token's value by coincidence, not by reference, so
+  a re-skinned `--bw` would not have moved it. `Button.manifest.json` and
+  `Tag.manifest.json` now write `border-[length:var(--bw)]`, the form
+  `check-arbitrary-values.mjs` documents as a legal `var()` behind a type hint.
+- **Sixteen component-demo card pages reached one directory short of the repo root**,
+  unrenderable since the v3.0.0 restructure — found during the visual review this plan
+  closed with. Their `<style>` blocks separately carried negative margins that pulled
+  table rows over their own labels.
+- **The dev server never redirected a directory URL to its trailing slash**, so the
+  Delivery Console rendered only its background at the exact URL a person types. The
+  console also gained a theme toggle and now loads `theme.js`, so a chosen theme
+  survives a reload.
+- **The 17 HTML pages outside `frameworks/`** (`Dravensoft Identity.dc.html`,
+  `Arena - Overview.html` and `guidelines/*.html`) were tokenized by hand. Nine
+  literals remain, deliberately unresolved rather than force-fit: five tracking values
+  in `Dravensoft Identity.dc.html` matching no `ls` step, two `font-size: 16px` sites
+  there tied exactly between `fs.md` and `fs.lg`, and `26px`/`30px` icon sizes in
+  `guidelines/icons.html` falling in the `icon` family's 18→34 gap. These are open
+  decisions, recorded in `.superpowers/sdd/html-tokenize-report.md`, not oversights —
+  and outside what `check-dimension-literals.mjs` can enforce in the first place, since
+  that gate scans `.jsx`/`.ts`/`.tsx` only, never `.html`.
 - **Spacing utilities no longer resolve to Tailwind's own default.** The preset defined
   `--spacing-1..8` but never `--spacing`, so v4 emitted every unnamed step as
   `calc(var(--spacing) * N)` against its `0.25rem` default — half the spacing surface was
@@ -70,8 +171,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   correct and is now documented in place. Tailwind emits `@theme` inside `@layer theme`,
   Arena's tokens are unlayered, and an unlayered declaration wins — so Arena's value applies
   and the self-reference never resolves against itself. It reads like a cycle and is not.
-- The React layer is unchanged. An audit found 571 `var(--token)` references across 40
-  components, zero references to a token that does not exist, and zero raw hex.
+- The React layer was unchanged as of this audit: 571 `var(--token)` references across 40
+  components, zero references to a token that does not exist, and zero raw hex. **No
+  longer true after the dimension-literals work above** — that audit tested only whether
+  an existing `var()` pointed at a real token, never whether a dimension resolved from
+  the token layer at all, and mostly it did not (`var(--fs-*)` appeared once across the
+  40 components, `var(--sp-*)` never). See `check-dimension-literals.mjs` above for the
+  corrected picture.
 
 ## [4.0.0] — 2026-07-18
 

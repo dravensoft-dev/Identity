@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { testStep, summarize, GATES } from './check-all.mjs';
 
-test('GATES lists the six check gates', () => {
-  assert.equal(GATES.length, 6);
+test('GATES lists the eight check gates', () => {
+  assert.equal(GATES.length, 8);
   assert.deepEqual(
     GATES.map((g) => g.name),
-    ['check:dtcg', 'check:tokens', 'check:ramp', 'check:tailwind', 'check:coverage', 'check:arbitrary'],
+    ['check:dtcg', 'check:tokens', 'check:ramp', 'check:tailwind', 'check:coverage', 'check:arbitrary', 'check:dimensions', 'check:fonts'],
   );
 });
 
