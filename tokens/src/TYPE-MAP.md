@@ -15,7 +15,7 @@ these values, do not re-derive them.
 | Spacing scale (`sp-0..24`) | `spacing.json` | `dimension` | px; `sp-0` renders as bare `0` |
 | `container-max`, `gutter` | `spacing.json` | `dimension` | px |
 | Breakpoints (`bp-sm/md/lg`) | `spacing.json` | `dimension` | px; read by JS via `getComputedStyle`, never a media query |
-| Density (`dz-*`) | `spacing.json` / `density.compact.json` | `dimension` | px; base on `:root` + `.arena-compact` override |
+| Density (`dz-*`) | `spacing.json` / `density.compact.json` | `dimension`, except `dz-lh` | px; base on `:root` + `.arena-compact` override. `dz.lh` carries a token-level `$type: "number"` override — a line height is unitless, so the group's `dimension` default does not fit that one member; DTCG 2025.10 allows a leaf's own `$type` to win over its ancestor's, and `scripts/check-dtcg.mjs` accepts it. `dz.lh` is the control counterpart to `lh` below: `1`, the glyph-tight reset that keeps an icon's line box from throwing its control out of alignment |
 | Icon size (`icon-sm/md/lg/xl`) | `icon.json` | `dimension` | px; a glyph rendered as a webfont is an icon, not type, so these stay out of `fs` |
 | Radius (`r-xs..pill`) | `effects.json` | `dimension` | px; `r-pill` = `999px` |
 | Border widths (`bw`, `bw-strong`) | `effects.json` | `dimension` | px |

@@ -114,6 +114,13 @@
   --leading-snug: var(--lh-snug);
   --leading-body: var(--lh-body);
 
+  /* `ctl` infix for the same reason dz's font-size scale takes one above:
+     the natural --leading-none key is a Tailwind stock name, and dz's
+     glyph-tight reset is a density/control concern, not editorial — giving
+     it a name indistinguishable from tight/snug/body would repeat the
+     --text-base mistake retired in the fs/dz split. */
+  --leading-ctl: var(--dz-lh);
+
   --tracking-*: initial;
   --tracking-tight: var(--ls-tight);
   --tracking-normal: var(--ls-normal);

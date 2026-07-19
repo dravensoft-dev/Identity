@@ -175,6 +175,20 @@ Letter-spacing across the system was four declared tokens covering a handful of 
 
 Exposed in the Tailwind layer as `.tracking-tight` / `.tracking-normal` / `.tracking-mono-nav` / `.tracking-uppercase-status` / `.tracking-badge` / `.tracking-column-header` / `.tracking-field-label` / `.tracking-label` / `.tracking-wide` (`frameworks/tailwind/theme.css`, `--tracking-*`).
 
+### Line-height scale (`lh` / `dz.lh`)
+Line height splits editorial from control exactly the way `fs`/`dz` split font size. Prose that wraps needs breathing room between its own lines — that's `lh`, in `tokens/src/typography.json`. A box built around a single glyph — an icon inside a button, a standalone status icon, an icon-only close or remove control — needs the opposite: a line box that is *exactly* its glyph, so the extra space above and below a normal line height never throws the surrounding control out of alignment. That reset is a density/control concern, not an editorial one, so it lives in `dz` (`tokens/src/spacing.json`) alongside the rest of the control scale, carrying its own token-level `$type: "number"` override — a line height is unitless, unlike every other `dz` member.
+
+| Token | Value | Role |
+|---|---|---|
+| `--lh-tight` | `0.98` | sub-1em — the tightest display headings |
+| `--lh-snug` | `1.15` | snug prose — short labels and values that still wrap on occasion (`StatCard`'s value, `Radio`'s label, `Shell`'s person block) |
+| `--lh-body` | `1.6` | prose — paragraphs, dialog and alert body copy, messages |
+| `--dz-lh` | `1` | glyph-tight — the control reset; the box is exactly its glyph |
+
+No new prose steps were needed to cover the census: every site that reads prose already matched `--lh-body` or `--lh-snug` exactly, or was within drift-correcting distance of one (`Alert`'s and `Textarea`'s `1.55`, 0.05 off `--lh-body`, corrected rather than kept as their own step).
+
+Exposed in the Tailwind layer as `.leading-tight` / `.leading-snug` / `.leading-body` (`frameworks/tailwind/theme.css`, `--leading-*`). `--dz-lh` is exposed as `.leading-ctl`, not `.leading-none` — after this token, the `--leading-*` namespace holds three editorial steps (`tight`, `snug`, `body`) plus this one control token, and a name indistinguishable from its editorial neighbours is the exact `--text-base` mistake the `fs`/`dz` split retired: a `dz` token wearing an `lh`-shaped name. The `ctl` infix keeps it visibly a density role, consistent with `--text-ctl`.
+
 ## ICONOGRAPHY
 - **Official set: [Phosphor Icons](https://phosphoricons.com)** (MIT license, free commercial use, no attribution). Chosen for aligning with Dravensoft's bold identity: it's the open-source family with the widest style range (1,500+ icons in 6 weights) and its **Bold** weight has the presence and high contrast the brand calls for — the icon equivalent of Archivo Black.
 - **Weights and use:**

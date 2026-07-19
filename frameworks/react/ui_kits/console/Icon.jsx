@@ -9,5 +9,5 @@ const MAP = {
 const CLS = { bold: 'ph-bold', regular: 'ph', fill: 'ph-fill', duotone: 'ph-duotone' };
 export function Icon({ name, size = 18, weight = 'bold', style }) {
   const ph = MAP[name] || name;
-  return <i className={(CLS[weight] || CLS.bold) + ' ph-' + ph} style={{ fontSize: size, lineHeight: 1, display: 'inline-flex', ...style }} />;
+  return <i className={(CLS[weight] || CLS.bold) + ' ph-' + ph} style={{ fontSize: size, lineHeight: 'var(--dz-lh)', display: 'inline-flex', ...style }} />;
 }

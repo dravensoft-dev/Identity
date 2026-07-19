@@ -185,7 +185,7 @@ const handWritten = {
   rounded: [{ rounded: ['pill'] }],
   z: [{ z: ['dropdown', 'tooltip', 'modal', 'modal-nested', 'palette', 'onboarding', 'toast'] }],
   tracking: [{ tracking: ['label', 'field-label', 'column-header', 'badge', 'uppercase-status', 'mono-nav'] }],
-  leading: [{ leading: ['body'] }],
+  leading: [{ leading: ['body', 'ctl'] }],
   blur: [{ blur: ['scrim'] }],
   size: [{ size: ['icon-sm', 'icon-md', 'icon-lg', 'icon-xl'] }],
   ease: [{ ease: ['emphatic'] }],

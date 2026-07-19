@@ -82,7 +82,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
             </div>
           </Card>
           <Card eyebrow="Delivery" title="Next milestone">
-            <div style={{ fontSize: 'var(--dz-text)', color: 'var(--bone-dim)', lineHeight: 1.6 }}>Release 2.5 — SEPA gateway.</div>
+            <div style={{ fontSize: 'var(--dz-text)', color: 'var(--bone-dim)', lineHeight: 'var(--lh-body)' }}>Release 2.5 — SEPA gateway.</div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--gold)', marginTop: 10 }}>in 6 days</div>
           </Card>
         </div>

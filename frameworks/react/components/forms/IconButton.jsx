@@ -21,7 +21,7 @@ export function IconButton({ children, size = 'md', variant = 'ghost', label, sh
         borderRadius: 'var(--r-sm)', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.45 : 1,
         transition: 'background var(--dur-fast) var(--ease-out)', ...style }} {...rest}>
       {children}
-      {showLabel && <span style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 'var(--dz-text)', lineHeight: 1 }}>{label}</span>}
+      {showLabel && <span style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 'var(--dz-text)', lineHeight: 'var(--dz-lh)' }}>{label}</span>}
     </button>
   );
 }

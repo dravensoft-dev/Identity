@@ -24,7 +24,7 @@ export function StatCard({ label, value, delta, sub, icon, style, ...rest }) {
         {icon && <span aria-hidden="true" style={{ display: 'inline-flex', fontSize: 'var(--icon-sm)', color: 'var(--mute)', opacity: 0.6 }}>{icon}</span>}
       </div>
       <div style={{
-        fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 32, lineHeight: 1.1,
+        fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 32, lineHeight: 'var(--lh-snug)',
         color: 'var(--bone)', fontVariantNumeric: 'tabular-nums', margin: 0,
       }}>{value}</div>
       {delta && (

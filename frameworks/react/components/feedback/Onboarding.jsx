@@ -29,7 +29,7 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
           borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', padding: 20 }}>
         {step.eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 8 }}>{step.eyebrow}</div>}
         {step.title && <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'var(--bone)', letterSpacing: 'var(--ls-tight)' }}>{step.title}</div>}
-        {step.body && <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 1.6, color: 'var(--bone-dim)', marginTop: 8 }}>{step.body}</div>}
+        {step.body && <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 'var(--lh-body)', color: 'var(--bone-dim)', marginTop: 8 }}>{step.body}</div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 18 }}>
           <div style={{ display: 'flex', gap: 6, flex: 1 }} aria-label={'Step ' + (index + 1) + ' of ' + steps.length}>
             {steps.map((_, i) => (

@@ -24,7 +24,7 @@ export function PageHead({ title, subtitle, actions, style, ...rest }) {
         }}>{title}</h1>
         {subtitle && <p style={{
           fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--mute)',
-          margin: '2px 0 0', lineHeight: 1.5,
+          margin: '2px 0 0', lineHeight: 'var(--lh-body)',
         }}>{subtitle}</p>}
       </div>
       {actions && (
