@@ -41,10 +41,10 @@ export function Menu({ trigger, items = [], align = 'start', style }) {
       <span onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open}>{trigger}</span>
       {open && (
         <div role="menu" style={{ position: 'absolute', top: 'calc(100% + 6px)', [align === 'end' ? 'right' : 'left']: 0, zIndex: 'var(--z-dropdown)',
-          minWidth: 200, padding: 6, background: 'var(--surface-card)', border: '1px solid var(--line-strong)',
+          minWidth: 200, padding: 6, background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)',
           borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-2)', animation: 'arena-menu var(--dur-fast) var(--ease-out)' }}>
           {items.map((it, i) => {
-            if (it.divider) return <div key={i} style={{ height: 1, background: 'var(--color-base-300)', margin: '5px 0' }} />;
+            if (it.divider) return <div key={i} style={{ height: 'var(--bw)', background: 'var(--color-base-300)', margin: '5px 0' }} />;
             if (it.header) return <div key={i} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)', padding: '8px 10px 4px' }}>{it.header}</div>;
             return (
               <MenuItem key={i} item={it} onRun={() => run(it)} />

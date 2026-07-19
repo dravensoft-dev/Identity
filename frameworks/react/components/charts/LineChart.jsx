@@ -86,7 +86,7 @@ export function LineChart({
         <div style={{
           position: 'absolute', left: xOf(hover), top: yOf(values[hover]) - 10,
           transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',
-          background: 'var(--bg-raised)', border: '1px solid var(--border-strong)',
+          background: 'var(--bg-raised)', border: 'var(--bw) solid var(--border-strong)',
           borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', padding: '6px 10px',
         }}>
           <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{labels[hover]}</div>

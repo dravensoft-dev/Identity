@@ -7,18 +7,18 @@ export function BulkActionBar({ count = 0, noun = 'items', actions = [], onClear
   return (
     <div role="region" aria-label="Actions on the selection"
       style={{ display: 'flex', alignItems: 'center', gap: 14, minHeight: 52, padding: '0 12px 0 16px',
-        background: 'var(--surface-card)', border: '1px solid var(--line-strong)', borderRadius: 'var(--r-md)',
+        background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)', borderRadius: 'var(--r-md)',
         boxShadow: 'var(--shadow-2)', ...style }}>
       <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', letterSpacing: 'var(--ls-mono-nav)', color: 'var(--bone)' }}>
         <b style={{ color: 'var(--gold)' }}>{count}</b> {noun} selected
       </span>
-      <span style={{ width: 1, height: 22, background: 'var(--color-base-300)' }} />
+      <span style={{ width: 'var(--bw)', height: 22, background: 'var(--color-base-300)' }} />
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, flexWrap: 'wrap' }}>
         {actions.map((a, i) => (
           <button key={i} onClick={a.onClick}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 7, height: 34, padding: '0 12px',
-              background: 'transparent', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-sm)', cursor: 'pointer',
-              fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 'var(--dz-text-md)',
+              background: 'transparent', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-sm)', cursor: 'pointer',
+              fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--dz-text-md)',
               color: a.destructive ? 'var(--danger)' : 'var(--bone-dim)',
               transition: 'background var(--dur-fast) var(--ease-out)' }}
             onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--panel)')}

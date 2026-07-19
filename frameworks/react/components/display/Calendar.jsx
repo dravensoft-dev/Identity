@@ -79,12 +79,12 @@ export function Calendar({
   const step = activeView === 'day' ? 1 : 7;
   const goto = (iso) => { setAnchor(iso); onRangeChange && onRangeChange(iso); };
 
-  const label = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-column-header)', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 700 };
+  const label = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-column-header)', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 'var(--fw-bold)' };
   const navBtn = (dir) => (
     <button type="button" aria-label={dir < 0 ? 'Previous' : 'Next'}
       onClick={() => goto(addDays(anchor, dir * step))}
       style={{ height: 34, minWidth: 34, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        background: 'transparent', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-sm)',
+        background: 'transparent', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-sm)',
         color: 'var(--bone-dim)', cursor: 'pointer', fontSize: 'var(--icon-md)' }}>
       <i className={dir < 0 ? 'ph-bold ph-caret-left' : 'ph-bold ph-caret-right'} />
     </button>
@@ -97,17 +97,17 @@ export function Calendar({
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
         {navBtn(-1)}
         <button type="button" onClick={() => goto(today)}
-          style={{ height: 34, padding: '0 12px', background: 'transparent', border: '1px solid var(--color-base-300)',
+          style={{ height: 34, padding: '0 12px', background: 'transparent', border: 'var(--bw) solid var(--color-base-300)',
             borderRadius: 'var(--r-sm)', color: 'var(--bone-dim)', cursor: 'pointer',
-            fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-md)', fontWeight: 600 }}>Today</button>
+            fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-md)', fontWeight: 'var(--fw-semibold)' }}>Today</button>
         {navBtn(1)}
-        <h2 style={{ margin: '0 0 0 4px', fontSize: 15, fontWeight: 600, color: 'var(--text-strong)' }}>
+        <h2 style={{ margin: '0 0 0 4px', fontSize: 15, fontWeight: 'var(--fw-semibold)', color: 'var(--text-strong)' }}>
           {rangeTitle(days)}
         </h2>
         {actions && <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, flexWrap: 'wrap' }}>{actions}</div>}
       </div>
 
-      <div style={{ display: 'flex', paddingLeft: GUTTER, borderBottom: '1px solid var(--color-base-300)' }}>
+      <div style={{ display: 'flex', paddingLeft: GUTTER, borderBottom: 'var(--bw) solid var(--color-base-300)' }}>
         {days.map((d) => {
           const isToday = d === today;
           return (
@@ -115,7 +115,7 @@ export function Calendar({
               style={{ flex: 1, minWidth: 0, padding: '6px 8px 8px', textAlign: 'center',
                 cursor: onDateClick ? 'pointer' : 'default' }}>
               <div style={label}>{formatDate(d, { weekday: 'short' })}</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text)', fontWeight: 700, marginTop: 2,
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text)', fontWeight: 'var(--fw-bold)', marginTop: 2,
                 color: isToday ? 'var(--crimson)' : 'var(--bone-dim)' }}>
                 {formatDate(d, { day: 'numeric' })}
               </div>
@@ -141,7 +141,7 @@ export function Calendar({
           <div style={{ flex: 1, minWidth: 0, display: 'flex', position: 'relative' }}>
             {hours.map((m) => (
               <div key={m} aria-hidden="true" style={{ position: 'absolute', top: y(m), left: 0, right: 0,
-                borderTop: '1px solid var(--color-base-300)', pointerEvents: 'none' }} />
+                borderTop: 'var(--bw) solid var(--color-base-300)', pointerEvents: 'none' }} />
             ))}
 
             {days.map((d, di) => (
@@ -166,12 +166,12 @@ export function Calendar({
                         display: 'flex', flexDirection: 'column', gap: 1, overflow: 'hidden',
                         textAlign: 'left', padding: '3px 6px',
                         background: `color-mix(in oklab, ${color} 16%, var(--surface-card))`,
-                        borderLeft: `3px solid ${color}`, borderTop: 'none', borderRight: 'none', borderBottom: 'none',
+                        borderLeft: `var(--bw-strong) solid ${color}`, borderTop: 'none', borderRight: 'none', borderBottom: 'none',
                         borderRadius: 'var(--r-sm)', cursor: onEventClick ? 'pointer' : 'default',
                         font: 'inherit' }}>
                       {renderEvent ? renderEvent(p.ev) : (
                         <>
-                          <span style={{ fontSize: 'var(--dz-text-sm)', fontWeight: 600, color: 'var(--text-strong)',
+                          <span style={{ fontSize: 'var(--dz-text-sm)', fontWeight: 'var(--fw-semibold)', color: 'var(--text-strong)',
                             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.ev.title}</span>
                           {h >= 32 && (
                             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', color: 'var(--mute)' }}>{time}</span>
@@ -186,7 +186,7 @@ export function Calendar({
 
             {showNow && (
               <div aria-hidden="true" style={{ position: 'absolute', top: y(nowMin), left: 0, right: 0,
-                borderTop: '2px solid var(--crimson)', pointerEvents: 'none', zIndex: 1 }}>
+                borderTop: 'var(--bw-strong) solid var(--crimson)', pointerEvents: 'none', zIndex: 1 }}>
                 <span style={{ position: 'absolute', top: -4, left: -3, width: 6, height: 6,
                   borderRadius: '50%', background: 'var(--crimson)' }} />
               </div>

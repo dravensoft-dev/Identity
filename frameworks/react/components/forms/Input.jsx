@@ -56,7 +56,7 @@ export function Input({
         </label>
       )}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 'var(--dz-ctl-h)', boxSizing: 'border-box', padding: '0 12px',
-        background: 'var(--surface-input)', border: '1px solid ' + borderColor,
+        background: 'var(--surface-input)', border: 'var(--bw) solid ' + borderColor,
         borderRadius: 'var(--r-sm)', boxShadow: ring, opacity: disabled ? 0.5 : 1,
         transition: 'border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)' }}>
         {icon && <span style={{ color: 'var(--mute)', display: 'inline-flex' }}>{icon}</span>}

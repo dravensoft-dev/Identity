@@ -23,7 +23,7 @@ export function Textarea({
         onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
         onChange={(e) => { grow(e); onChange && onChange(e); }}
         style={{ width: '100%', padding: '10px 12px', background: 'var(--surface-input)',
-          border: '1px solid ' + borderColor, borderRadius: 'var(--r-sm)', boxShadow: ring,
+          border: 'var(--bw) solid ' + borderColor, borderRadius: 'var(--r-sm)', boxShadow: ring,
           color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', lineHeight: 'var(--lh-body)',
           resize: autoResize ? 'none' : 'vertical', outline: 'none', opacity: disabled ? 0.5 : 1,
           transition: 'border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)' }} {...rest} />

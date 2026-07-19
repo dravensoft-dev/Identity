@@ -15,7 +15,7 @@ export function StatCard({ label, value, delta, sub, icon, style, ...rest }) {
   const t = delta ? (DELTA_TONES[delta.tone] || DELTA_TONES.neutral) : null;
   return (
     <div style={{
-      background: 'var(--surface-card)', border: '1px solid var(--color-base-300)',
+      background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
       borderRadius: 'var(--r-lg)', padding: 20, minHeight: 120,
       display: 'flex', flexDirection: 'column', gap: 8, ...style,
     }} {...rest}>
@@ -24,15 +24,15 @@ export function StatCard({ label, value, delta, sub, icon, style, ...rest }) {
         {icon && <span aria-hidden="true" style={{ display: 'inline-flex', fontSize: 'var(--icon-sm)', color: 'var(--mute)', opacity: 0.6 }}>{icon}</span>}
       </div>
       <div style={{
-        fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 32, lineHeight: 'var(--lh-snug)',
+        fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 32, lineHeight: 'var(--lh-snug)',
         color: 'var(--bone)', fontVariantNumeric: 'tabular-nums', margin: 0,
       }}>{value}</div>
       {delta && (
         <span style={{
           alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 4,
           borderRadius: 'var(--r-pill)', padding: '2px 8px',
-          fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-sm)', fontWeight: 600,
-          background: 'transparent', border: '1px solid ' + t.border, color: t.color,
+          fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-sm)', fontWeight: 'var(--fw-semibold)',
+          background: 'transparent', border: 'var(--bw) solid ' + t.border, color: t.color,
         }}>
           <i className={delta.direction === 'down' ? 'ph-bold ph-arrow-down' : 'ph-bold ph-arrow-up'} aria-hidden="true" />
           {delta.value}

@@ -41,7 +41,7 @@ export function SegmentedControl({
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 2, padding: 3,
         background: 'var(--surface-input)',
-        border: '1px solid ' + (focus ? 'var(--gold)' : 'var(--color-base-300)'),
+        border: 'var(--bw) solid ' + (focus ? 'var(--gold)' : 'var(--color-base-300)'),
         borderRadius: 'var(--r-sm)',
         boxShadow: focus ? '0 0 0 2px var(--gold-soft)' : 'none',
         transition: 'border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)',

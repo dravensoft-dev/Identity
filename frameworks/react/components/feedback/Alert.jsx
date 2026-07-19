@@ -14,15 +14,15 @@ export function Alert({ tone = 'info', title, children, icon, action, onClose, s
   return (
     <div role={tone === 'danger' ? 'alert' : 'status'}
       style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '14px 16px',
-        background: t.soft, border: '1px solid ' + t.color, borderRadius: 'var(--r-md)', ...style }}>
+        background: t.soft, border: 'var(--bw) solid ' + t.color, borderRadius: 'var(--r-md)', ...style }}>
       <i className={icon || t.icon} style={{ color: t.color, fontSize: 'var(--icon-lg)', lineHeight: 'var(--dz-lh)', flexShrink: 0, marginTop: 1 }} />
       <div style={{ flex: 1 }}>
-        {title && <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 'var(--dz-text)', color: 'var(--bone)' }}>{title}</div>}
+        {title && <div style={{ fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--dz-text)', color: 'var(--bone)' }}>{title}</div>}
         {children && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--bone-dim)', lineHeight: 'var(--lh-body)', marginTop: title ? 3 : 0 }}>{children}</div>}
         {action && (
           <button onClick={action.onClick}
             style={{ marginTop: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-              fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', fontWeight: 700, letterSpacing: 'var(--ls-uppercase-status)', textTransform: 'uppercase', color: t.color }}>
+              fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--ls-uppercase-status)', textTransform: 'uppercase', color: t.color }}>
             {action.label}
           </button>
         )}

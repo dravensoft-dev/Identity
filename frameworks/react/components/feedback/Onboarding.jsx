@@ -25,10 +25,10 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
         * than a second token. */}
       <div onClick={onSkip} style={{ position: 'fixed', inset: 0, zIndex: 'calc(var(--z-onboarding) - 10)', background: 'var(--scrim)' }} />
       <div role="dialog" aria-modal="true" aria-label={step.title}
-        style={{ ...pos, width: W, maxWidth: '92vw', background: 'var(--surface-card)', border: '1px solid var(--line-strong)',
+        style={{ ...pos, width: W, maxWidth: '92vw', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)',
           borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', padding: 20 }}>
         {step.eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 8 }}>{step.eyebrow}</div>}
-        {step.title && <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'var(--bone)', letterSpacing: 'var(--ls-tight)' }}>{step.title}</div>}
+        {step.title && <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 18, color: 'var(--bone)', letterSpacing: 'var(--ls-tight)' }}>{step.title}</div>}
         {step.body && <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 'var(--lh-body)', color: 'var(--bone-dim)', marginTop: 8 }}>{step.body}</div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 18 }}>
           <div style={{ display: 'flex', gap: 6, flex: 1 }} aria-label={'Step ' + (index + 1) + ' of ' + steps.length}>
@@ -37,14 +37,14 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
             ))}
           </div>
           {index > 0 && (
-            <button onClick={onBack} style={{ ...foot, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontWeight: 700, textTransform: 'uppercase' }}>Back</button>
+            <button onClick={onBack} style={{ ...foot, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontWeight: 'var(--fw-bold)', textTransform: 'uppercase' }}>Back</button>
           )}
           {!last && (
-            <button onClick={onSkip} style={{ ...foot, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontWeight: 700, textTransform: 'uppercase' }}>Skip</button>
+            <button onClick={onSkip} style={{ ...foot, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontWeight: 'var(--fw-bold)', textTransform: 'uppercase' }}>Skip</button>
           )}
           <button onClick={last ? onDone : onNext}
             style={{ height: 34, padding: '0 16px', background: 'var(--crimson)', color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--r-sm)',
-              fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 'var(--dz-text-md)', cursor: 'pointer' }}>
+              fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--dz-text-md)', cursor: 'pointer' }}>
             {last ? 'Got it' : 'Next'}
           </button>
         </div>

@@ -41,7 +41,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
       <Tabs tabs={['Overview', 'Deployments', 'Activity', 'Settings']} value={tab} onChange={setTab} style={{ marginBottom: 22 }} />
 
       {tab === 'Deployments' && (
-        <div style={{ border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-lg)', overflow: 'hidden' }}>
+        <div style={{ border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)', overflow: 'hidden' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr auto', gap: 12, padding: '12px 20px', background: 'var(--panel)', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-column-header)', textTransform: 'uppercase', color: 'var(--mute)' }}>
             <span>Build</span><span>Environment</span><span>Status</span><span>Author</span><span>Duration</span><span></span>
           </div>
@@ -77,7 +77,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
           <Card eyebrow="Status" title="Service health">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
               {[['Uptime', '99.98%', 'var(--success)'], ['p95', '186 ms', 'var(--bone)'], ['Errors', '0.02%', 'var(--gold)']].map(([k, v, c]) => (
-                <div key={k}><div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{k}</div><div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 28, color: c, marginTop: 6 }}>{v}</div></div>
+                <div key={k}><div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{k}</div><div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-black)', fontSize: 28, color: c, marginTop: 6 }}>{v}</div></div>
               ))}
             </div>
           </Card>

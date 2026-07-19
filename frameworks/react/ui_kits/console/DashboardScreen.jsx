@@ -27,9 +27,9 @@ export function DashboardScreen({ onNav, onOpenProject }) {
       actions={<Button variant="primary" size="sm" icon={<Icon name="plus" size={16} />}>New project</Button>}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 28 }}>
         {METRICS.map((m) => (
-          <div key={m.k} style={{ background: 'var(--surface-card)', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-lg)', padding: '18px 20px' }}>
+          <div key={m.k} style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)', padding: '18px 20px' }}>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{m.k}</div>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 34, color: m.tone, marginTop: 8 }}>{m.v}</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-black)', fontSize: 34, color: m.tone, marginTop: 8 }}>{m.v}</div>
           </div>
         ))}
       </div>
@@ -43,7 +43,7 @@ export function DashboardScreen({ onNav, onOpenProject }) {
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '4px 0 16px' }}>
                 {p.tags.map((t) => <Tag key={t}>{t}</Tag>)}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--color-base-300)', paddingTop: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: 'var(--bw) solid var(--color-base-300)', paddingTop: 14 }}>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--gold)' }}>build {p.build}</span>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{p.when}</span>
               </div>

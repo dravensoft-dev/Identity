@@ -55,7 +55,7 @@ export function DoughnutChart({ labels = [], values = [], slots, valueFormatter,
         {labels.map((l, i) => (
           <div key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
             style={{ display: 'flex', alignItems: 'center', gap: 8, opacity: hover === null || hover === i ? 1 : 0.55 }}>
-            <span aria-hidden="true" style={{ width: 10, height: 10, borderRadius: 2, background: colors[i], flexShrink: 0 }} />
+            <span aria-hidden="true" style={{ width: 10, height: 10, borderRadius: 'var(--r-xs)', background: colors[i], flexShrink: 0 }} />
             <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-sm)', color: 'var(--text-body)',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l}</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{fmt(values[i])}</span>

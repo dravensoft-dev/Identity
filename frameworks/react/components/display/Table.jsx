@@ -19,7 +19,7 @@ export function Table({
   const cellBase = { padding: 'var(--dz-row-py) var(--dz-row-px)', fontSize: 'var(--dz-text)', textAlign: 'left', verticalAlign: 'middle' };
   const headerLabel = {
     fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-column-header)',
-    textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 700,
+    textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 'var(--fw-bold)',
   };
   const valueStyle = (c) => ({
     fontFamily: c.mono ? 'var(--font-mono)' : 'var(--font-body)',
@@ -33,14 +33,14 @@ export function Table({
       {narrow ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {rows.length === 0 && (
-            <div style={{ background: 'var(--surface-card)', border: '1px solid var(--color-base-300)',
+            <div style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
               borderRadius: 'var(--r-lg)', padding: '32px 16px', textAlign: 'center',
               color: 'var(--mute)', fontSize: 'var(--dz-text)' }}>{empty}</div>
           )}
           {rows.map((row, ri) => (
             <div key={keyOf(row, ri)}
               onClick={onRowClick ? () => onRowClick(row, ri) : undefined}
-              style={{ background: 'var(--surface-card)', border: '1px solid var(--color-base-300)',
+              style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
                 borderRadius: 'var(--r-lg)', padding: 'var(--dz-row-px)',
                 display: 'flex', flexDirection: 'column', gap: 'var(--dz-stack)',
                 cursor: onRowClick ? 'pointer' : 'default' }}>
@@ -48,7 +48,7 @@ export function Table({
                 /* Full width, no label — for the actions column, whose buttons
                    name themselves and would look absurd beside an "ACTIONS" tag. */
                 <div key={c.key} style={{ width: '100%', display: 'flex', justifyContent: 'flex-end',
-                  gap: 8, borderTop: '1px solid var(--color-base-300)', paddingTop: 8 }}>
+                  gap: 8, borderTop: 'var(--bw) solid var(--color-base-300)', paddingTop: 8 }}>
                   {cellValue(c, row)}
                 </div>
               ) : (
@@ -63,14 +63,14 @@ export function Table({
           ))}
         </div>
       ) : (
-        <div style={{ border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-lg)',
+        <div style={{ border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)',
           overflow: 'hidden', background: 'var(--surface-card)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-body)' }}>
             <thead>
               <tr style={{ background: 'var(--panel)' }}>
                 {columns.map((c) => (
                   <th key={c.key} style={{ ...cellBase, ...headerLabel, textAlign: c.align || 'left',
-                    width: c.width, borderBottom: '1px solid var(--color-base-300)' }}>{c.header}</th>
+                    width: c.width, borderBottom: 'var(--bw) solid var(--color-base-300)' }}>{c.header}</th>
                 ))}
               </tr>
             </thead>

@@ -73,7 +73,7 @@ export function Button({
         fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)',
         letterSpacing: 'var(--ls-normal)',
         color: p.color, background: p.bg,
-        border: '1px solid ' + p.border, borderRadius: 'var(--r-sm)',
+        border: 'var(--bw) solid ' + p.border, borderRadius: 'var(--r-sm)',
         boxShadow: p.shadow, cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.45 : 1,
         transform: active ? 'scale(0.98)' : 'none',
@@ -82,7 +82,7 @@ export function Button({
       }}
       {...rest}
     >
-      {loading ? <span className="arena-btn-spin" aria-hidden="true" style={{ width: 14, height: 14, boxSizing: 'border-box', border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block' }} /> : icon}
+      {loading ? <span className="arena-btn-spin" aria-hidden="true" style={{ width: 14, height: 14, boxSizing: 'border-box', border: 'var(--bw-strong) solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block' }} /> : icon}
       {children}
       {iconRight}
     </button>

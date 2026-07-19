@@ -7,7 +7,7 @@ import React from 'react';
 export function ChartCard({ title, actions, children, style, ...rest }) {
   return (
     <div style={{
-      background: 'var(--surface-card)', border: '1px solid var(--color-base-300)',
+      background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
       borderRadius: 'var(--r-lg)', padding: 20,
       display: 'flex', flexDirection: 'column', gap: 12, ...style,
     }} {...rest}>

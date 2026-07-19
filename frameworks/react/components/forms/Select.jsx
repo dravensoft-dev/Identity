@@ -9,7 +9,7 @@ export function Select({ label, options = [], value, onChange, disabled = false,
           onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
           style={{ appearance: 'none', width: '100%', height: 'var(--dz-ctl-h)', padding: '0 36px 0 12px',
             background: 'var(--surface-input)', color: 'var(--bone)',
-            border: '1px solid ' + (focus ? 'var(--gold)' : 'var(--color-base-300)'), borderRadius: 'var(--r-sm)',
+            border: 'var(--bw) solid ' + (focus ? 'var(--gold)' : 'var(--color-base-300)'), borderRadius: 'var(--r-sm)',
             fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', cursor: 'pointer',
             boxShadow: focus ? '0 0 0 2px var(--gold-soft)' : 'none', opacity: disabled ? 0.5 : 1,
             transition: 'border-color var(--dur-fast) var(--ease-out)' }} {...rest}>

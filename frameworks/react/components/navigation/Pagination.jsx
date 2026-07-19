@@ -16,7 +16,7 @@ export function Pagination({ page = 1, pageCount = 1, onChange, style }) {
   const nav = (dir, dis) => (
     <button onClick={() => go(page + dir)} disabled={dis} aria-label={dir < 0 ? 'Previous' : 'Next'}
       style={{ height: 34, minWidth: 34, padding: '0 8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        background: 'transparent', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-sm)',
+        background: 'transparent', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-sm)',
         color: dis ? 'var(--mute-2-disabled)' : 'var(--bone-dim)', cursor: dis ? 'not-allowed' : 'pointer', fontSize: 'var(--icon-md)' }}>
       <i className={dir < 0 ? 'ph-bold ph-caret-left' : 'ph-bold ph-caret-right'} />
     </button>
@@ -30,9 +30,9 @@ export function Pagination({ page = 1, pageCount = 1, onChange, style }) {
           : (
             <button key={p} onClick={() => go(p)} aria-current={p === page ? 'page' : undefined}
               style={{ height: 34, minWidth: 34, padding: '0 8px', borderRadius: 'var(--r-sm)', cursor: 'pointer',
-                fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', fontWeight: 700,
+                fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', fontWeight: 'var(--fw-bold)',
                 background: p === page ? 'var(--crimson)' : 'transparent',
-                border: '1px solid ' + (p === page ? 'var(--crimson)' : 'var(--color-base-300)'),
+                border: 'var(--bw) solid ' + (p === page ? 'var(--crimson)' : 'var(--color-base-300)'),
                 color: p === page ? 'var(--on-accent)' : 'var(--bone-dim)' }}>{p}</button>
           ))}
       {nav(1, page >= pageCount)}

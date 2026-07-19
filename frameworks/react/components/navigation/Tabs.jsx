@@ -4,7 +4,7 @@ export function Tabs({ tabs = [], value, defaultValue, onChange, style }) {
   const active = value ?? internal;
   const select = (v) => { setInternal(v); onChange && onChange(v); };
   return (
-    <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--color-base-300)', ...style }}>
+    <div style={{ display: 'flex', gap: 4, borderBottom: 'var(--bw) solid var(--color-base-300)', ...style }}>
       {tabs.map((t) => {
         const v = t.value ?? t; const label = t.label ?? t; const on = v === active;
         return (

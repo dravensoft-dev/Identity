@@ -11,7 +11,7 @@ export function Breadcrumbs({ items = [], separator = '/', style }) {
         return (
           <React.Fragment key={i}>
             {last ? (
-              <span aria-current="page" style={{ ...common, color: 'var(--bone)', fontWeight: 700 }}>{it.label}</span>
+              <span aria-current="page" style={{ ...common, color: 'var(--bone)', fontWeight: 'var(--fw-bold)' }}>{it.label}</span>
             ) : (
               <a href={it.href || '#'} onClick={it.onClick}
                 style={{ ...common, color: 'var(--mute)', textDecoration: 'none', cursor: 'pointer', transition: 'color var(--dur-fast) var(--ease-out)' }}
