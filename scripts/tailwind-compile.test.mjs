@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { manifestClasses, escapeClass, compileLayer } from './lib/tailwind-compile.mjs';
+import { manifestClasses, escapeClass, compileLayer, entryStylesheet } from './lib/tailwind-compile.mjs';
 
 test('collects classes from slots and from every variant value', () => {
   const m = {
@@ -35,6 +35,15 @@ test('hex-escapes a leading digit instead of backslash-escaping it', () => {
   // CSS identifier, so it is hex-escaped (backslash + lowercase code point +
   // one trailing space) while the rest of the class keeps the normal rule.
   assert.equal(escapeClass('2xl:hidden'), '\\32 xl\\:hidden');
+});
+
+test('entryStylesheet disables automatic content detection on the preset import and keeps the explicit manifest source', () => {
+  const stylesheet = entryStylesheet('/repo/frameworks/tailwind/theme.css', '/repo/frameworks/tailwind/components');
+  assert.equal(
+    stylesheet,
+    "@import '/repo/frameworks/tailwind/theme.css' source(none);\n" +
+      "@source '/repo/frameworks/tailwind/components/*.manifest.json';\n",
+  );
 });
 
 test('compileLayer includes the underlying spawn error (e.g. ENOENT) rather than "exited null"', () => {

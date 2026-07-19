@@ -5,7 +5,14 @@
  * The CLI is spawned as `process.execPath <bin>.mjs` rather than through a
  * shell or a package runner, so the gate behaves identically under bun and
  * node. The entry stylesheet is fed on stdin with absolute paths, so nothing
- * temporary is written into the repository. */
+ * temporary is written into the repository.
+ *
+ * The preset import carries `source(none)`, which disables Tailwind v4's
+ * automatic content detection — without it the CLI also scans the whole repo
+ * for class-shaped strings, so a gate result would depend on unrelated text
+ * (a prop value, a comment, anything matching a utility's shape) anywhere in
+ * the tree rather than on the Tailwind layer itself. The explicit `@source`
+ * line is what still puts the manifests in scope. */
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -40,6 +47,19 @@ export function escapeClass(cls) {
   return backslash(cls);
 }
 
+/** The stdin entry stylesheet: the preset with automatic content detection
+ *  disabled (`source(none)`), plus the component manifests registered as the
+ *  only explicit source. Without `source(none)` the CLI additionally scans
+ *  the whole repository for class-shaped strings, so the compiled CSS — and
+ *  every gate reading it — would depend on unrelated text anywhere in the
+ *  tree instead of on the preset and the manifests alone.
+ *  @param {string} preset absolute path to the preset CSS
+ *  @param {string} components absolute path to the manifests directory
+ *  @returns {string} */
+export function entryStylesheet(preset, components) {
+  return `@import '${preset}' source(none);\n@source '${components}/*.manifest.json';\n`;
+}
+
 /** Compile the preset together with every component manifest as content.
  *  @param {{root?: string}} [opts]
  *  @returns {{css: string, manifests: Map<string, object>}} */
@@ -53,7 +73,7 @@ export function compileLayer(opts = {}) {
   for (const f of readdirSync(components).filter((f) => f.endsWith('.manifest.json')).sort())
     manifests.set(f, JSON.parse(readFileSync(join(components, f), 'utf8')));
 
-  const entry = `@import '${preset}';\n@source '${components}/*.manifest.json';\n`;
+  const entry = entryStylesheet(preset, components);
   const dir = mkdtempSync(join(tmpdir(), 'arena-tw-'));
   const out = join(dir, 'out.css');
   try {
