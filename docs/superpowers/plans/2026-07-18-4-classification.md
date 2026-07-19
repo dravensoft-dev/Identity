@@ -1,5 +1,13 @@
 # Token/geometry boundary — the per-site classification
 
+> **On line numbers.** Every `File:line` was captured from the Task 1 census, before any
+> editing task ran. Files have been edited repeatedly since, so many citations now point at
+> a different line of the same file. **A row is identified by file + property + original
+> value, not by its line.** The line was a locating aid for the editing tasks, which are
+> complete; what this document carries forward is the decision and its reasoning. Two rows
+> were renumbered during Task 11 because their drift was noticed; the rest were not, and
+> renumbering all 514 would add no information.
+
 Produced by Task 3 of `2026-07-18-4-token-geometry-boundary.md`, from the output of
 `bun scripts/check-dimension-literals.mjs --report` and
 `bun scripts/check-dimension-literals.mjs --report=sites` (census taken at commit
@@ -250,8 +258,8 @@ plus the 3 from the original pass (`Card.jsx:12`, `Onboarding.jsx:28`,
 | `frameworks/react/components/feedback/EmptyState.jsx:9` | `fontSize` | `14` | fs.md (15) — snap, pixel move 14->15; Task 11 Cluster 1, UP | EmptyState.message — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. fs.md's own $description is "body copy" |
 | `frameworks/react/components/feedback/ErrorState.jsx:9` | `fontSize` | `19` | fs.h4 (19) — exact match | ErrorState title |
 | `frameworks/react/components/feedback/ErrorState.jsx:10` | `fontSize` | `14` | fs.md (15) — snap, pixel move 14->15; Task 11 Cluster 1, UP | ErrorState.message — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. fs.md's own $description is "body copy" |
-| `frameworks/react/components/feedback/Onboarding.jsx:28` | `fontSize` | `18` | fs.h4 (19) — snap, pixel move 18->19; Task 11 Cluster 2, UP | step.title, off-scale at 18, same cluster as Card.title (line is 43 in the current tree; the table's 28/29 predates earlier tasks' edits above it) |
-| `frameworks/react/components/feedback/Onboarding.jsx:29` | `fontSize` | `14` | fs.md (15) — snap, pixel move 14->15; Task 11 Cluster 1, UP | Onboarding.step.body — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. fs.md's own $description is "body copy" (line is 44 in the current tree) |
+| `frameworks/react/components/feedback/Onboarding.jsx:43` | `fontSize` | `18` | fs.h4 (19) — snap, pixel move 18->19; Task 11 Cluster 2, UP | step.title, off-scale at 18, same cluster as Card.title (was cited as :28 before Task 11 corrected it) |
+| `frameworks/react/components/feedback/Onboarding.jsx:44` | `fontSize` | `14` | fs.md (15) — snap, pixel move 14->15; Task 11 Cluster 1, UP | Onboarding.step.body — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. fs.md's own $description is "body copy" (was cited as :29 before Task 11 corrected it) |
 | `frameworks/react/components/feedback/Toast.jsx:14` | `fontSize` | `13` | fs.sm (13) — exact match | Toast.message — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test; already on-scale, no pixel move |
 | `frameworks/react/components/navigation/CommandPalette.jsx:30` | `fontSize` | `14` | fs.md (15) — snap, pixel move 14->15; Task 11 Cluster 1, UP | "No results for …" — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. fs.md's own $description is "body copy" |
 | `frameworks/react/components/navigation/Menu.jsx:68` | `fontSize` | `14` | fs.md (15) — snap, pixel move 14->15; Task 11 Cluster 1, UP | Menu item text — CHECKPOINT 4 Cluster B resolved: fs, passes Rule 1's read-aloud test. fs.md's own $description is "body copy" |
@@ -1152,7 +1160,7 @@ pending.
 
 | Family | Sites | Notes |
 |---|---:|---|
-| `fs` | 23 | includes the 7 resolved from Checkpoint 4 Cluster B; 8 total sites carry a `PENDING CHECKPOINT 1` marker (3 from the original pass + 5 from Cluster B) |
+| `fs` | 23 | includes the 7 resolved from Checkpoint 4 Cluster B; all 8 snap-direction questions (3 from the original pass + 5 from Cluster B) were ANSWERED by Checkpoint 1 and applied in Task 11; no marker remains |
 | `dz` | 100 | includes the 7 resolved from Checkpoint 4 Cluster A, and the 8 `lineHeight: 1` resets; `Select.jsx:20`'s caret moved to `icon` in fix pass 1 |
 | `icon` | 17 | includes 1 tie (Menu, flagged); gained `Select.jsx:20`'s `▾` caret in fix pass 1 (author's ruling: Rule 2 applies regardless of which font ships the glyph) |
 | `z` | 8 | order pending Checkpoint 2 |
