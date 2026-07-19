@@ -16,6 +16,7 @@ these values, do not re-derive them.
 | `container-max`, `gutter` | `spacing.json` | `dimension` | px |
 | Breakpoints (`bp-sm/md/lg`) | `spacing.json` | `dimension` | px; read by JS via `getComputedStyle`, never a media query |
 | Density (`dz-*`) | `spacing.json` / `density.compact.json` | `dimension` | px; base on `:root` + `.arena-compact` override |
+| Icon size (`icon-sm/md/lg/xl`) | `icon.json` | `dimension` | px; a glyph rendered as a webfont is an icon, not type, so these stay out of `fs` |
 | Radius (`r-xs..pill`) | `effects.json` | `dimension` | px; `r-pill` = `999px` |
 | Border widths (`bw`, `bw-strong`) | `effects.json` | `dimension` | px |
 | Shadows (`shadow-1..3`) | `effects.json` | `shadow` | composite, incl. negative spread and rgba color |

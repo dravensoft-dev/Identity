@@ -5,7 +5,7 @@ export function ErrorState({ icon, title = 'Something went wrong', message, code
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 12,
       padding: '56px 32px', border: '1px solid var(--danger)', borderRadius: 'var(--r-lg)', background: 'var(--danger-soft)', ...style }}>
-      {icon && <div style={{ fontSize: 34, color: 'var(--danger)', lineHeight: 1 }}>{icon}</div>}
+      {icon && <div style={{ fontSize: 'var(--icon-xl)', color: 'var(--danger)', lineHeight: 1 }}>{icon}</div>}
       <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 19, color: 'var(--bone)' }}>{title}</div>
       {message && <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--bone-dim)', maxWidth: '46ch', lineHeight: 1.6 }}>{message}</div>}
       {code && <code style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--mute)', background: 'color-mix(in oklab, var(--color-base-100) 30%, transparent)', padding: '4px 10px', borderRadius: 'var(--r-xs)' }}>{code}</code>}

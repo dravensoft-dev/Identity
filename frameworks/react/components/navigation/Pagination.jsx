@@ -17,7 +17,7 @@ export function Pagination({ page = 1, pageCount = 1, onChange, style }) {
     <button onClick={() => go(page + dir)} disabled={dis} aria-label={dir < 0 ? 'Previous' : 'Next'}
       style={{ height: 34, minWidth: 34, padding: '0 8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         background: 'transparent', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-sm)',
-        color: dis ? 'var(--mute-2-disabled)' : 'var(--bone-dim)', cursor: dis ? 'not-allowed' : 'pointer', fontSize: 16 }}>
+        color: dis ? 'var(--mute-2-disabled)' : 'var(--bone-dim)', cursor: dis ? 'not-allowed' : 'pointer', fontSize: 'var(--icon-md)' }}>
       <i className={dir < 0 ? 'ph-bold ph-caret-left' : 'ph-bold ph-caret-right'} />
     </button>
   );

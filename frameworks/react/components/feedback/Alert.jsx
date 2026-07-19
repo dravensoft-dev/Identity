@@ -15,7 +15,7 @@ export function Alert({ tone = 'info', title, children, icon, action, onClose, s
     <div role={tone === 'danger' ? 'alert' : 'status'}
       style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '14px 16px',
         background: t.soft, border: '1px solid ' + t.color, borderRadius: 'var(--r-md)', ...style }}>
-      <i className={icon || t.icon} style={{ color: t.color, fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 1 }} />
+      <i className={icon || t.icon} style={{ color: t.color, fontSize: 'var(--icon-lg)', lineHeight: 1, flexShrink: 0, marginTop: 1 }} />
       <div style={{ flex: 1 }}>
         {title && <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, color: 'var(--bone)' }}>{title}</div>}
         {children && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--bone-dim)', lineHeight: 1.55, marginTop: title ? 3 : 0 }}>{children}</div>}
@@ -29,7 +29,7 @@ export function Alert({ tone = 'info', title, children, icon, action, onClose, s
       </div>
       {onClose && (
         <button onClick={onClose} aria-label="Dismiss"
-          style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 'none', color: 'var(--mute)', cursor: 'pointer', fontSize: 16, lineHeight: 1 }}>
+          style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 'none', color: 'var(--mute)', cursor: 'pointer', fontSize: 'var(--icon-md)', lineHeight: 1 }}>
           <i className="ph-bold ph-x" />
         </button>
       )}

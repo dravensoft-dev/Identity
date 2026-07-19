@@ -85,7 +85,7 @@ export function Calendar({
       onClick={() => goto(addDays(anchor, dir * step))}
       style={{ height: 34, minWidth: 34, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         background: 'transparent', border: '1px solid var(--color-base-300)', borderRadius: 'var(--r-sm)',
-        color: 'var(--bone-dim)', cursor: 'pointer', fontSize: 16 }}>
+        color: 'var(--bone-dim)', cursor: 'pointer', fontSize: 'var(--icon-md)' }}>
       <i className={dir < 0 ? 'ph-bold ph-caret-left' : 'ph-bold ph-caret-right'} />
     </button>
   );

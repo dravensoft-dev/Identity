@@ -64,7 +64,9 @@ test('derived names match the custom properties the build actually emits', () =>
     ['tokens/src/palette.dark.json', 'tokens/palette.css', ':root'],
     ['tokens/src/palette.light.json', 'tokens/palette.css', '.arena-light'],
     ['tokens/src/typography.json', 'tokens/typography.css', ':root'],
-    ['tokens/src/spacing.json', 'tokens/spacing.css', ':root'],
+    // spacing.css :root is fed by two source files — spacing.json and
+    // icon.json — the same pattern as effects.css below.
+    [['tokens/src/spacing.json', 'tokens/src/icon.json'], 'tokens/spacing.css', ':root'],
     ['tokens/src/density.compact.json', 'tokens/spacing.css', '.arena-compact'],
     // effects.css :root is fed by two source files — effects.json (radius,
     // borders, elevation, scrim, focus, motion) and layering.json (z-*) — the

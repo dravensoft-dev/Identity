@@ -17,7 +17,7 @@ export function Select({ label, options = [], value, onChange, disabled = false,
             ? <option key={o} value={o}>{o}</option>
             : <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
-        <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--mute)', fontSize: 12 }}>▾</span>
+        <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--mute)', fontSize: 'var(--icon-sm)' }}>▾</span>
       </div>
     </div>
   );

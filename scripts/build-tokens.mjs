@@ -29,6 +29,7 @@ const FILES = [
   ] },
   { out: 'spacing.css', blocks: [
     { selector: ':root', source: 'spacing.json' },
+    { selector: ':root', source: 'icon.json' },
     { selector: '.arena-compact', source: 'density.compact.json' },
   ] },
   { out: 'effects.css', blocks: [

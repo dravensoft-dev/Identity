@@ -66,7 +66,7 @@ function MenuItem({ item, onRun }) {
         border: 'none', borderRadius: 'var(--r-sm)', cursor: item.disabled ? 'not-allowed' : 'pointer',
         background: bg, color: item.disabled ? 'var(--mute)' : (hover && !item.destructive ? 'var(--crimson)' : color),
         opacity: item.disabled ? 0.6 : 1, fontFamily: 'var(--font-body)', fontSize: 14 }}>
-      {item.icon && <span style={{ fontSize: 17, display: 'inline-flex' }}>{item.icon}</span>}
+      {item.icon && <span style={{ fontSize: 'var(--icon-md)', display: 'inline-flex' }}>{item.icon}</span>}
       <span style={{ flex: 1 }}>{item.label}</span>
       {item.shortcut && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--mute)' }}>{item.shortcut}</span>}
     </button>

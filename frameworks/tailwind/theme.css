@@ -152,6 +152,16 @@
   --container-*: initial;
   --container-page: var(--container-max);
 
+  /* icon size → tokens/spacing.css. A glyph rendered as a webfont is an icon,
+     not type, so it does not live in the --text-* namespace — that argument
+     is Rule 2's, made one level up at the classification stage. `--size-*`
+     is what an icon *is*: `.size-icon-md` sets both width and height. */
+  --size-*: initial;
+  --size-icon-sm: var(--icon-sm);
+  --size-icon-md: var(--icon-md);
+  --size-icon-lg: var(--icon-lg);
+  --size-icon-xl: var(--icon-xl);
+
   /* ---- effects → tokens/effects.css ------------------------------------ */
   --radius-*: initial;
   --radius-xs: var(--r-xs);

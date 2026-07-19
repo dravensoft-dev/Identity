@@ -23,7 +23,7 @@ export function BulkActionBar({ count = 0, noun = 'items', actions = [], onClear
               transition: 'background var(--dur-fast) var(--ease-out)' }}
             onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--panel)')}
             onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}>
-            {a.icon && <span style={{ fontSize: 16, display: 'inline-flex' }}>{a.icon}</span>}{a.label}
+            {a.icon && <span style={{ fontSize: 'var(--icon-md)', display: 'inline-flex' }}>{a.icon}</span>}{a.label}
           </button>
         ))}
       </div>

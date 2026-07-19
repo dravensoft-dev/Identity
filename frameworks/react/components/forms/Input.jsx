@@ -66,8 +66,8 @@ export function Input({
           onFocus={() => setFocus(true)} onBlur={handleBlur} onChange={handleChange}
           style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none',
             color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 14 }} {...rest} />
-        {shownError && <i className="ph-fill ph-warning-circle" style={{ color: 'var(--danger)', fontSize: 16 }} />}
-        {isValid && <i className="ph-fill ph-check-circle" style={{ color: 'var(--success)', fontSize: 16 }} />}
+        {shownError && <i className="ph-fill ph-warning-circle" style={{ color: 'var(--danger)', fontSize: 'var(--icon-md)' }} />}
+        {isValid && <i className="ph-fill ph-check-circle" style={{ color: 'var(--success)', fontSize: 'var(--icon-md)' }} />}
       </div>
       {shownError ? <span style={{ fontSize: 12, color: 'var(--danger)', fontFamily: 'var(--font-body)' }}>{shownError}</span>
         : hint && <span style={{ fontSize: 12, color: 'var(--mute)', fontFamily: 'var(--font-body)' }}>{hint}</span>}

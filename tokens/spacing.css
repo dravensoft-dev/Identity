@@ -41,6 +41,17 @@
   --dz-cell:14px; /* cell font-size */
   --dz-text:14px; /* control text — buttons, inputs */
 }
+:root{
+  /*
+     Icon size. A glyph rendered as a webfont is still an icon, not type: an icon
+     at 15px beside a label at 15px is not the same design decision as an icon at
+     16px. Kept out of fs for that reason.
+   */
+  --icon-sm:14px;
+  --icon-md:16px;
+  --icon-lg:18px;
+  --icon-xl:34px; /* Illustration-scale icon (EmptyState, ErrorState) — a distinct role from the 14/16/18 inline-control cluster. */
+}
 .arena-compact{
   /*
      Compact density — for expert/high-volume views. Apply on a container:

@@ -21,7 +21,7 @@ export function Toast({ title, message, tone = 'neutral', action, onClose, persi
           </button>
         )}
       </div>
-      {onClose && <button onClick={onClose} aria-label="Close" style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 'none', color: 'var(--mute)', cursor: 'pointer', fontSize: 16, lineHeight: 1 }}><i className="ph-bold ph-x" /></button>}
+      {onClose && <button onClick={onClose} aria-label="Close" style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 'none', color: 'var(--mute)', cursor: 'pointer', fontSize: 'var(--icon-md)', lineHeight: 1 }}><i className="ph-bold ph-x" /></button>}
     </div>
   );
 }
