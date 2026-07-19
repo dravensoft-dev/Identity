@@ -15,14 +15,14 @@
 .wrap{--ink2:var(--panel);background:var(--ink);color:var(--bone);font-family:'Familjen Grotesk',sans-serif;width:100%;overflow-x:hidden;transition:background .3s ease,color .3s ease}
 .disp{font-family:'Archivo',sans-serif}
 .mono{font-family:'Spline Sans Mono',monospace}
-.pad{padding:96px 88px}
-.eyebrow{font-family:'Spline Sans Mono',monospace;font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--crimson);font-weight:700}
+.pad{padding:var(--sp-24) var(--gutter)}
+.eyebrow{font-family:'Spline Sans Mono',monospace;font-size:var(--dz-text-sm);letter-spacing:var(--ls-wide);text-transform:uppercase;color:var(--crimson);font-weight:var(--fw-bold)}
 .eyebrow.g{color:var(--gold)}
-.sec-line{height:1px;background:var(--color-base-300);width:100%}
-.rule{width:56px;height:4px;background:var(--crimson);border-radius:2px}
-.divider{border-top:1px solid var(--color-base-300)}
-h2.hd{font-family:'Archivo',sans-serif;font-weight:900;font-size:44px;line-height:.98;letter-spacing:-.01em;margin:16px 0 0}
-p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20px 0 0}
+.sec-line{height:var(--bw);background:var(--color-base-300);width:100%}
+.rule{width:calc(var(--sp-1) * 14);height:var(--sp-1);background:var(--crimson);border-radius:var(--r-xs)}
+.divider{border-top:var(--bw) solid var(--color-base-300)}
+h2.hd{font-family:'Archivo',sans-serif;font-weight:var(--fw-black);font-size:var(--fs-h1);line-height:var(--lh-tight);letter-spacing:-.01em;margin:var(--sp-4) 0 0}
+p.lede{color:var(--mute);font-size:var(--fs-lg);line-height:var(--lh-body);max-width:58ch;margin:var(--sp-5) 0 0}
 /* rotor mark */
 .rotor{position:relative;display:inline-block}
 .blade{position:absolute;top:50%;left:50%;transform-origin:0 0;clip-path:polygon(0% 0%,100% 34%,60% 60%,34% 100%)}
@@ -35,76 +35,76 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
   .spin{animation-duration:32s}
 }
 /* hero */
-.hero{background:var(--ink);position:relative;padding:120px 88px 108px}
-.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:64px;align-items:center}
-.lock{display:flex;align-items:center;gap:30px}
-.wm{font-family:'Archivo',sans-serif;font-weight:900;letter-spacing:-.02em;text-transform:uppercase;line-height:.9}
+.hero{background:var(--ink);position:relative;padding:calc(var(--sp-1) * 30) var(--gutter) calc(var(--sp-1) * 27)}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:var(--sp-16);align-items:center}
+.lock{display:flex;align-items:center;gap:calc(var(--sp-1) * 7.5)}
+.wm{font-family:'Archivo',sans-serif;font-weight:var(--fw-black);letter-spacing:var(--ls-tight);text-transform:uppercase;line-height:.9}
 .wm .soft{color:var(--mute)}
-.tag{font-family:'Spline Sans Mono',monospace;font-size:13px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-top:22px}
-.hero-r{border-left:1px solid var(--color-base-300);padding-left:48px}
-.stat{margin-bottom:28px}
-.stat .k{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--mute)}
-.stat .v{font-family:'Archivo',sans-serif;font-weight:800;font-size:19px;margin-top:6px}
+.tag{font-family:'Spline Sans Mono',monospace;font-size:var(--fs-sm);letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-top:calc(var(--sp-1) * 5.5)}
+.hero-r{border-left:var(--bw) solid var(--color-base-300);padding-left:var(--sp-12)}
+.stat{margin-bottom:calc(var(--sp-1) * 7)}
+.stat .k{font-family:'Spline Sans Mono',monospace;font-size:var(--fs-xs);letter-spacing:.24em;text-transform:uppercase;color:var(--mute)}
+.stat .v{font-family:'Archivo',sans-serif;font-weight:var(--fw-extrabold);font-size:var(--fs-h4);margin-top:calc(var(--sp-1) * 1.5)}
 /* logo variations */
-.vargrid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:44px}
-.varcard{border:1px solid var(--color-base-300);border-radius:14px;padding:40px;display:flex;flex-direction:column;justify-content:space-between;min-height:230px}
+.vargrid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-6);margin-top:calc(var(--sp-1) * 11)}
+.varcard{border:var(--bw) solid var(--color-base-300);border-radius:var(--r-lg);padding:var(--sp-10);display:flex;flex-direction:column;justify-content:space-between;min-height:calc(var(--sp-1) * 57.5)}
 .varcard.mono-b{background:var(--ink2)}
-.vlabel{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-top:26px}
+.vlabel{font-family:'Spline Sans Mono',monospace;font-size:var(--fs-xs);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--mute);margin-top:calc(var(--sp-1) * 6.5)}
 /* construction */
-.constr{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:center;margin-top:44px}
-.constr-stage{background:var(--ink2);border:1px solid var(--color-base-300);border-radius:16px;padding:56px;display:flex;align-items:center;justify-content:center;position:relative;min-height:340px}
+.constr{display:grid;grid-template-columns:.9fr 1.1fr;gap:calc(var(--sp-1) * 14);align-items:center;margin-top:calc(var(--sp-1) * 11)}
+.constr-stage{background:var(--ink2);border:var(--bw) solid var(--color-base-300);border-radius:var(--r-lg);padding:calc(var(--sp-1) * 14);display:flex;align-items:center;justify-content:center;position:relative;min-height:calc(var(--sp-1) * 85)}
 /* A hard-stop line grid, not a colour blend: each stop meets its neighbour at
    1px with no transition, so this is texture rather than the gradient the
    language forbids. Kept as a gradient function deliberately — the SVG data-URI
    alternative cannot read var(--token), which would trade this rule for the
    no-raw-hex one and stop the grid following the theme. Same for .avatarpat. */
-.grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--color-base-300) 1px,transparent 1px),linear-gradient(90deg,var(--color-base-300) 1px,transparent 1px);background-size:32px 32px;opacity:.35;border-radius:16px}
-.blist{list-style:none;padding:0;margin:24px 0 0}
-.blist li{display:flex;gap:16px;padding:16px 0;border-top:1px solid var(--color-base-300);align-items:flex-start}
-.blist .n{font-family:'Spline Sans Mono',monospace;color:var(--crimson);font-size:13px;font-weight:700;padding-top:2px}
-.blist .t strong{font-family:'Archivo';font-weight:700;font-size:16px;display:block}
-.blist .t span{color:var(--mute);font-size:14px;line-height:1.5}
+.grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--color-base-300) var(--bw),transparent var(--bw)),linear-gradient(90deg,var(--color-base-300) var(--bw),transparent var(--bw));background-size:var(--sp-8) var(--sp-8);opacity:.35;border-radius:var(--r-lg)}
+.blist{list-style:none;padding:0;margin:var(--sp-6) 0 0}
+.blist li{display:flex;gap:var(--sp-4);padding:var(--sp-4) 0;border-top:var(--bw) solid var(--color-base-300);align-items:flex-start}
+.blist .n{font-family:'Spline Sans Mono',monospace;color:var(--crimson);font-size:var(--fs-sm);font-weight:var(--fw-bold);padding-top:calc(var(--sp-1) * 0.5)}
+.blist .t strong{font-family:'Archivo';font-weight:var(--fw-bold);font-size:16px;display:block}
+.blist .t span{color:var(--mute);font-size:var(--dz-text);line-height:1.5}
 /* colors */
-.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:44px}
-.sw{border-radius:14px;overflow:hidden;border:1px solid var(--color-base-300)}
-.sw .chip{height:150px}
-.sw .meta{padding:18px 18px 22px;background:var(--ink2)}
-.sw .nm{font-family:'Archivo';font-weight:800;font-size:16px}
-.sw .row{display:flex;justify-content:space-between;font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--mute);margin-top:8px}
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-5);margin-top:calc(var(--sp-1) * 11)}
+.sw{border-radius:var(--r-lg);overflow:hidden;border:var(--bw) solid var(--color-base-300)}
+.sw .chip{height:calc(var(--sp-1) * 37.5)}
+.sw .meta{padding:calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 5.5);background:var(--ink2)}
+.sw .nm{font-family:'Archivo';font-weight:var(--fw-extrabold);font-size:16px}
+.sw .row{display:flex;justify-content:space-between;font-family:'Spline Sans Mono',monospace;font-size:var(--dz-text-sm);color:var(--mute);margin-top:var(--sp-2)}
 /* type */
-.typ{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:44px}
-.typcard{border:1px solid var(--color-base-300);border-radius:16px;padding:40px;background:var(--ink2)}
-.big-glyph{font-family:'Archivo';font-weight:900;font-size:150px;line-height:.82;letter-spacing:-.03em}
-.big-glyph.body{font-family:'Familjen Grotesk';font-weight:500}
-.aa{color:var(--mute);font-family:'Spline Sans Mono';font-size:12px;letter-spacing:.18em;margin-top:26px}
-.wt{display:flex;gap:24px;flex-wrap:wrap;margin-top:18px}
-.wt span{color:var(--mute);font-size:14px}
-.specimen{font-family:'Familjen Grotesk';font-size:15px;line-height:1.6;color:var(--mute);margin-top:22px;max-width:52ch}
+.typ{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6);margin-top:calc(var(--sp-1) * 11)}
+.typcard{border:var(--bw) solid var(--color-base-300);border-radius:var(--r-lg);padding:var(--sp-10);background:var(--ink2)}
+.big-glyph{font-family:'Archivo';font-weight:var(--fw-black);font-size:var(--fs-mega);line-height:.82;letter-spacing:-.03em}
+.big-glyph.body{font-family:'Familjen Grotesk';font-weight:var(--fw-medium)}
+.aa{color:var(--mute);font-family:'Spline Sans Mono';font-size:var(--dz-text-sm);letter-spacing:.18em;margin-top:calc(var(--sp-1) * 6.5)}
+.wt{display:flex;gap:var(--sp-6);flex-wrap:wrap;margin-top:calc(var(--sp-1) * 4.5)}
+.wt span{color:var(--mute);font-size:var(--dz-text)}
+.specimen{font-family:'Familjen Grotesk';font-size:var(--fs-md);line-height:var(--lh-body);color:var(--mute);margin-top:calc(var(--sp-1) * 5.5);max-width:52ch}
 /* applications */
-.apps{display:grid;grid-template-columns:1.25fr 1fr;gap:24px;margin-top:44px}
+.apps{display:grid;grid-template-columns:1.25fr 1fr;gap:var(--sp-6);margin-top:calc(var(--sp-1) * 11)}
 .appwide{grid-column:1/-1}
-.appcard{border:1px solid var(--color-base-300);border-radius:16px;padding:36px;background:var(--ink2);position:relative;overflow:hidden}
-.appcard .tt{font-family:'Spline Sans Mono';font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-bottom:24px}
+.appcard{border:var(--bw) solid var(--color-base-300);border-radius:var(--r-lg);padding:calc(var(--sp-1) * 9);background:var(--ink2);position:relative;overflow:hidden}
+.appcard .tt{font-family:'Spline Sans Mono';font-size:var(--fs-xs);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--mute);margin-bottom:var(--sp-6)}
 /* business card */
-.bc-stack{display:flex;gap:22px;flex-wrap:wrap}
-.card3d{width:340px;height:200px;border-radius:var(--r-lg);padding:26px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow-3)}
+.bc-stack{display:flex;gap:calc(var(--sp-1) * 5.5);flex-wrap:wrap}
+.card3d{width:calc(var(--sp-1) * 85);height:calc(var(--sp-1) * 50);border-radius:var(--r-lg);padding:calc(var(--sp-1) * 6.5);display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow-3)}
 /* The appcard behind this sits at base-200, so the card drops to base-100 to
    read as an object on it — the surface scale is what carries depth here, since
    the language forbids the gradient this used to use. */
 .card-front{background:var(--color-base-100);border:var(--bw) solid var(--line-strong)}
 .card-back{background:var(--crimson);position:relative;overflow:hidden}
-.card-name{font-family:'Archivo';font-weight:800;font-size:18px}
-.card-role{font-family:'Spline Sans Mono';font-size:11px;color:var(--mute);letter-spacing:.14em;margin-top:4px}
-.card-c{font-family:'Spline Sans Mono';font-size:11px;color:var(--mute);line-height:1.7}
+.card-name{font-family:'Archivo';font-weight:var(--fw-extrabold);font-size:var(--fs-h4)}
+.card-role{font-family:'Spline Sans Mono';font-size:var(--fs-xs);color:var(--mute);letter-spacing:var(--ls-field-label);margin-top:var(--sp-1)}
+.card-c{font-family:'Spline Sans Mono';font-size:var(--fs-xs);color:var(--mute);line-height:1.7}
 /* favicon */
-.fav-row{display:flex;align-items:flex-end;gap:26px}
+.fav-row{display:flex;align-items:flex-end;gap:calc(var(--sp-1) * 6.5)}
 .fav-tile{border-radius:22%;background:var(--crimson);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-2)}
-.fav-cap{font-family:'Spline Sans Mono';font-size:11px;color:var(--mute);margin-top:10px;text-align:center}
+.fav-cap{font-family:'Spline Sans Mono';font-size:var(--fs-xs);color:var(--mute);margin-top:calc(var(--sp-1) * 2.5);text-align:center}
 /* splash */
-.splash{width:270px;height:520px;border-radius:34px;border:var(--bw) solid var(--line-strong);background:var(--bg);margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;box-shadow:var(--shadow-3)}
-.splash .notch{position:absolute;top:16px;left:50%;transform:translateX(-50%);width:90px;height:22px;border-radius:12px;background:var(--panel)}
-.splash .load{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);width:120px;height:4px;border-radius:2px;background:var(--color-base-300);overflow:hidden}
-.splash .load i{display:block;height:100%;width:46%;background:var(--crimson);border-radius:2px;animation:arena-load 5s var(--ease-in-out) infinite}
+.splash{width:calc(var(--sp-1) * 67.5);height:calc(var(--sp-1) * 130);border-radius:var(--r-2xl);border:var(--bw) solid var(--line-strong);background:var(--bg);margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;box-shadow:var(--shadow-3)}
+.splash .notch{position:absolute;top:var(--sp-4);left:50%;transform:translateX(-50%);width:calc(var(--sp-1) * 22.5);height:calc(var(--sp-1) * 5.5);border-radius:var(--r-lg);background:var(--panel)}
+.splash .load{position:absolute;bottom:calc(var(--sp-1) * 14);left:50%;transform:translateX(-50%);width:calc(var(--sp-1) * 30);height:var(--sp-1);border-radius:var(--r-xs);background:var(--color-base-300);overflow:hidden}
+.splash .load i{display:block;height:100%;width:46%;background:var(--crimson);border-radius:var(--r-xs);animation:arena-load 5s var(--ease-in-out) infinite}
 @keyframes arena-load{0%{width:0}80%{width:100%}100%{width:100%}}
 /* Reports progress, so it slows instead of freezing. */
 @media (prefers-reduced-motion: reduce){
@@ -113,9 +113,9 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
 /* A hard-stop dot pattern, not a colour blend: the stops meet at 2px with no
    transition, so this is texture rather than the gradient the language forbids.
    Kept as a gradient function for the reason given on .grid-bg. */
-.avatarpat{position:absolute;inset:0;opacity:.12;background:radial-gradient(circle at 30% 30%,var(--on-accent) 0 2px,transparent 2px);background-size:20px 20px}
+.avatarpat{position:absolute;inset:0;opacity:.12;background:radial-gradient(circle at 30% 30%,var(--on-accent) 0 var(--bw-strong),transparent var(--bw-strong));background-size:var(--sp-5) var(--sp-5)}
 /* footer */
-.foot{padding:56px 88px;display:flex;justify-content:space-between;align-items:center;color:var(--mute);font-family:'Spline Sans Mono';font-size:12px;letter-spacing:.1em}
+.foot{padding:calc(var(--sp-1) * 14) var(--gutter);display:flex;justify-content:space-between;align-items:center;color:var(--mute);font-family:'Spline Sans Mono';font-size:var(--dz-text-sm);letter-spacing:var(--ls-badge)}
 </style>
 <script src="./theme.js"></script>
 </helmet>
@@ -126,11 +126,11 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
 <div class="hero-grid">
 <div>
 <div class="eyebrow">Identity manual · v1.0</div>
-<div class="lock" style="margin-top:34px">
-<span class="rotor spin" style="width:112px;height:112px">
-<span class="blade" style="width:64px;height:64px;background:var(--crimson);transform:rotate(0deg)"></span>
-<span class="blade" style="width:64px;height:64px;background:var(--crimson);transform:rotate(120deg)"></span>
-<span class="blade" style="width:64px;height:64px;background:var(--crimson);transform:rotate(240deg)"></span>
+<div class="lock" style="margin-top:calc(var(--sp-1) * 8.5)">
+<span class="rotor spin" style="width:calc(var(--sp-1) * 28);height:calc(var(--sp-1) * 28)">
+<span class="blade" style="width:var(--sp-16);height:var(--sp-16);background:var(--crimson);transform:rotate(0deg)"></span>
+<span class="blade" style="width:var(--sp-16);height:var(--sp-16);background:var(--crimson);transform:rotate(120deg)"></span>
+<span class="blade" style="width:var(--sp-16);height:var(--sp-16);background:var(--crimson);transform:rotate(240deg)"></span>
 </span>
 <div class="wm" style="font-size:78px">DRAVEN<span class="soft">SOFT</span></div>
 </div>
@@ -153,10 +153,10 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
 <p class="lede">Three identical blades spinning around a shared axis. An original abstraction of the spinning-axe gesture: speed, precision and control. No literal weapon — pure geometry in perpetual motion.</p>
 <div class="constr">
 <div class="constr-stage"><div class="grid-bg"></div>
-<span class="rotor" style="width:180px;height:180px">
-<span class="blade" style="width:104px;height:104px;background:var(--bone);transform:rotate(0deg)"></span>
-<span class="blade" style="width:104px;height:104px;background:var(--bone);transform:rotate(120deg)"></span>
-<span class="blade" style="width:104px;height:104px;background:var(--bone);transform:rotate(240deg)"></span>
+<span class="rotor" style="width:calc(var(--sp-1) * 45);height:calc(var(--sp-1) * 45)">
+<span class="blade" style="width:calc(var(--sp-1) * 26);height:calc(var(--sp-1) * 26);background:var(--bone);transform:rotate(0deg)"></span>
+<span class="blade" style="width:calc(var(--sp-1) * 26);height:calc(var(--sp-1) * 26);background:var(--bone);transform:rotate(120deg)"></span>
+<span class="blade" style="width:calc(var(--sp-1) * 26);height:calc(var(--sp-1) * 26);background:var(--bone);transform:rotate(240deg)"></span>
 </span>
 </div>
 <div>
@@ -177,15 +177,15 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
 <p class="lede">The type block uses Archivo Black in uppercase with tight tracking. "SOFT" is dimmed to give hierarchy to the brand's root without splitting the word.</p>
 <div class="vargrid">
 <div class="varcard">
-<div class="lock"><span class="rotor" style="width:54px;height:54px"><span class="blade" style="width:31px;height:31px;background:var(--crimson);transform:rotate(0deg)"></span><span class="blade" style="width:31px;height:31px;background:var(--crimson);transform:rotate(120deg)"></span><span class="blade" style="width:31px;height:31px;background:var(--crimson);transform:rotate(240deg)"></span></span><div class="wm" style="font-size:34px">DRAVEN<span class="soft">SOFT</span></div></div>
+<div class="lock"><span class="rotor" style="width:calc(var(--sp-1) * 13.5);height:calc(var(--sp-1) * 13.5)"><span class="blade" style="width:31px;height:31px;background:var(--crimson);transform:rotate(0deg)"></span><span class="blade" style="width:31px;height:31px;background:var(--crimson);transform:rotate(120deg)"></span><span class="blade" style="width:31px;height:31px;background:var(--crimson);transform:rotate(240deg)"></span></span><div class="wm" style="font-size:34px">DRAVEN<span class="soft">SOFT</span></div></div>
 <div class="vlabel">Primary · horizontal</div>
 </div>
 <div class="varcard" style="align-items:center;text-align:center">
-<div class="lock" style="flex-direction:column;gap:16px"><span class="rotor" style="width:64px;height:64px"><span class="blade" style="width:37px;height:37px;background:var(--crimson);transform:rotate(0deg)"></span><span class="blade" style="width:37px;height:37px;background:var(--crimson);transform:rotate(120deg)"></span><span class="blade" style="width:37px;height:37px;background:var(--crimson);transform:rotate(240deg)"></span></span><div class="wm" style="font-size:30px">DRAVEN<span class="soft">SOFT</span></div></div>
+<div class="lock" style="flex-direction:column;gap:var(--sp-4)"><span class="rotor" style="width:var(--sp-16);height:var(--sp-16)"><span class="blade" style="width:37px;height:37px;background:var(--crimson);transform:rotate(0deg)"></span><span class="blade" style="width:37px;height:37px;background:var(--crimson);transform:rotate(120deg)"></span><span class="blade" style="width:37px;height:37px;background:var(--crimson);transform:rotate(240deg)"></span></span><div class="wm" style="font-size:30px">DRAVEN<span class="soft">SOFT</span></div></div>
 <div class="vlabel">Vertical · stacked</div>
 </div>
 <div class="varcard mono-b">
-<div class="lock"><span class="rotor" style="width:54px;height:54px"><span class="blade" style="width:31px;height:31px;background:var(--bone);transform:rotate(0deg)"></span><span class="blade" style="width:31px;height:31px;background:var(--bone);transform:rotate(120deg)"></span><span class="blade" style="width:31px;height:31px;background:var(--bone);transform:rotate(240deg)"></span></span><div class="wm" style="font-size:34px;color:var(--bone)">DRAVENSOFT</div></div>
+<div class="lock"><span class="rotor" style="width:calc(var(--sp-1) * 13.5);height:calc(var(--sp-1) * 13.5)"><span class="blade" style="width:31px;height:31px;background:var(--bone);transform:rotate(0deg)"></span><span class="blade" style="width:31px;height:31px;background:var(--bone);transform:rotate(120deg)"></span><span class="blade" style="width:31px;height:31px;background:var(--bone);transform:rotate(240deg)"></span></span><div class="wm" style="font-size:34px;color:var(--bone)">DRAVENSOFT</div></div>
 <div class="vlabel">Monochrome · single ink</div>
 </div>
 </div>
@@ -213,8 +213,8 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
 <div class="typcard">
 <div class="big-glyph">Aa</div>
 <div class="aa">ARCHIVO · DISPLAY</div>
-<div class="wt"><span>500 Medium</span><span>700 Bold</span><span style="color:var(--bone);font-weight:700">900 Black</span></div>
-<div class="specimen" style="font-family:'Archivo';font-weight:800;color:var(--bone);font-size:22px;line-height:1.15">Exalt every line of code.</div>
+<div class="wt"><span>500 Medium</span><span>700 Bold</span><span style="color:var(--bone);font-weight:var(--fw-bold)">900 Black</span></div>
+<div class="specimen" style="font-family:'Archivo';font-weight:var(--fw-extrabold);color:var(--bone);font-size:22px;line-height:var(--lh-snug)">Exalt every line of code.</div>
 </div>
 <div class="typcard">
 <div class="big-glyph body">Aa</div>
@@ -234,7 +234,7 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
 <div class="tt">Business card</div>
 <div class="bc-stack">
 <div class="card3d card-front">
-<span class="rotor" style="width:44px;height:44px"><span class="blade" style="width:25px;height:25px;background:var(--crimson);transform:rotate(0deg)"></span><span class="blade" style="width:25px;height:25px;background:var(--crimson);transform:rotate(120deg)"></span><span class="blade" style="width:25px;height:25px;background:var(--crimson);transform:rotate(240deg)"></span></span>
+<span class="rotor" style="width:calc(var(--sp-1) * 11);height:calc(var(--sp-1) * 11)"><span class="blade" style="width:25px;height:25px;background:var(--crimson);transform:rotate(0deg)"></span><span class="blade" style="width:25px;height:25px;background:var(--crimson);transform:rotate(120deg)"></span><span class="blade" style="width:25px;height:25px;background:var(--crimson);transform:rotate(240deg)"></span></span>
 <div><div class="card-name">First Last</div><div class="card-role">LEAD SOFTWARE ENGINEER</div></div>
 </div>
 <div class="card3d card-back">
@@ -247,25 +247,25 @@ p.lede{color:var(--mute);font-size:17px;line-height:1.6;max-width:58ch;margin:20
 <div class="appcard">
 <div class="tt">Favicon · app icon</div>
 <div class="fav-row">
-<div><div class="fav-tile" style="width:96px;height:96px"><span class="rotor" style="width:58px;height:58px"><span class="blade" style="width:33px;height:33px;background:var(--on-accent);transform:rotate(0deg)"></span><span class="blade" style="width:33px;height:33px;background:var(--on-accent);transform:rotate(120deg)"></span><span class="blade" style="width:33px;height:33px;background:var(--on-accent);transform:rotate(240deg)"></span></span></div><div class="fav-cap">96 px</div></div>
-<div><div class="fav-tile" style="width:56px;height:56px"><span class="rotor" style="width:34px;height:34px"><span class="blade" style="width:19px;height:19px;background:var(--on-accent);transform:rotate(0deg)"></span><span class="blade" style="width:19px;height:19px;background:var(--on-accent);transform:rotate(120deg)"></span><span class="blade" style="width:19px;height:19px;background:var(--on-accent);transform:rotate(240deg)"></span></span></div><div class="fav-cap">32 px</div></div>
-<div><div class="fav-tile" style="width:32px;height:32px"><span class="rotor" style="width:20px;height:20px"><span class="blade" style="width:11px;height:11px;background:var(--on-accent);transform:rotate(0deg)"></span><span class="blade" style="width:11px;height:11px;background:var(--on-accent);transform:rotate(120deg)"></span><span class="blade" style="width:11px;height:11px;background:var(--on-accent);transform:rotate(240deg)"></span></span></div><div class="fav-cap">16 px</div></div>
+<div><div class="fav-tile" style="width:var(--sp-24);height:var(--sp-24)"><span class="rotor" style="width:calc(var(--sp-1) * 14.5);height:calc(var(--sp-1) * 14.5)"><span class="blade" style="width:33px;height:33px;background:var(--on-accent);transform:rotate(0deg)"></span><span class="blade" style="width:33px;height:33px;background:var(--on-accent);transform:rotate(120deg)"></span><span class="blade" style="width:33px;height:33px;background:var(--on-accent);transform:rotate(240deg)"></span></span></div><div class="fav-cap">96 px</div></div>
+<div><div class="fav-tile" style="width:calc(var(--sp-1) * 14);height:calc(var(--sp-1) * 14)"><span class="rotor" style="width:calc(var(--sp-1) * 8.5);height:calc(var(--sp-1) * 8.5)"><span class="blade" style="width:19px;height:19px;background:var(--on-accent);transform:rotate(0deg)"></span><span class="blade" style="width:19px;height:19px;background:var(--on-accent);transform:rotate(120deg)"></span><span class="blade" style="width:19px;height:19px;background:var(--on-accent);transform:rotate(240deg)"></span></span></div><div class="fav-cap">32 px</div></div>
+<div><div class="fav-tile" style="width:var(--sp-8);height:var(--sp-8)"><span class="rotor" style="width:var(--sp-5);height:var(--sp-5)"><span class="blade" style="width:11px;height:11px;background:var(--on-accent);transform:rotate(0deg)"></span><span class="blade" style="width:11px;height:11px;background:var(--on-accent);transform:rotate(120deg)"></span><span class="blade" style="width:11px;height:11px;background:var(--on-accent);transform:rotate(240deg)"></span></span></div><div class="fav-cap">16 px</div></div>
 </div>
 </div>
 <div class="appcard">
 <div class="tt">Product splash</div>
 <div class="splash">
 <div class="notch"></div>
-<span class="rotor spin" style="width:88px;height:88px"><span class="blade" style="width:50px;height:50px;background:var(--crimson);transform:rotate(0deg)"></span><span class="blade" style="width:50px;height:50px;background:var(--crimson);transform:rotate(120deg)"></span><span class="blade" style="width:50px;height:50px;background:var(--crimson);transform:rotate(240deg)"></span></span>
-<div class="wm" style="font-size:24px;margin-top:26px">DRAVEN<span class="soft">SOFT</span></div>
+<span class="rotor spin" style="width:calc(var(--sp-1) * 22);height:calc(var(--sp-1) * 22)"><span class="blade" style="width:calc(var(--sp-1) * 12.5);height:calc(var(--sp-1) * 12.5);background:var(--crimson);transform:rotate(0deg)"></span><span class="blade" style="width:calc(var(--sp-1) * 12.5);height:calc(var(--sp-1) * 12.5);background:var(--crimson);transform:rotate(120deg)"></span><span class="blade" style="width:calc(var(--sp-1) * 12.5);height:calc(var(--sp-1) * 12.5);background:var(--crimson);transform:rotate(240deg)"></span></span>
+<div class="wm" style="font-size:var(--fs-h3);margin-top:calc(var(--sp-1) * 6.5)">DRAVEN<span class="soft">SOFT</span></div>
 <div class="load"><i></i></div>
 </div>
 </div>
 <div class="appcard">
 <div class="tt">Social avatar</div>
-<div style="display:flex;align-items:center;gap:24px">
-<div style="width:120px;height:120px;border-radius:50%;background:var(--crimson);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-2)"><span class="rotor" style="width:66px;height:66px"><span class="blade" style="width:38px;height:38px;background:var(--on-accent);transform:rotate(0deg)"></span><span class="blade" style="width:38px;height:38px;background:var(--on-accent);transform:rotate(120deg)"></span><span class="blade" style="width:38px;height:38px;background:var(--on-accent);transform:rotate(240deg)"></span></span></div>
-<div style="width:120px;height:120px;border-radius:50%;background:var(--ink2);border:1px solid var(--color-base-300);display:flex;align-items:center;justify-content:center"><span class="rotor" style="width:66px;height:66px"><span class="blade" style="width:38px;height:38px;background:var(--crimson);transform:rotate(0deg)"></span><span class="blade" style="width:38px;height:38px;background:var(--crimson);transform:rotate(120deg)"></span><span class="blade" style="width:38px;height:38px;background:var(--crimson);transform:rotate(240deg)"></span></span></div>
+<div style="display:flex;align-items:center;gap:var(--sp-6)">
+<div style="width:calc(var(--sp-1) * 30);height:calc(var(--sp-1) * 30);border-radius:50%;background:var(--crimson);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-2)"><span class="rotor" style="width:calc(var(--sp-1) * 16.5);height:calc(var(--sp-1) * 16.5)"><span class="blade" style="width:calc(var(--sp-1) * 9.5);height:calc(var(--sp-1) * 9.5);background:var(--on-accent);transform:rotate(0deg)"></span><span class="blade" style="width:calc(var(--sp-1) * 9.5);height:calc(var(--sp-1) * 9.5);background:var(--on-accent);transform:rotate(120deg)"></span><span class="blade" style="width:calc(var(--sp-1) * 9.5);height:calc(var(--sp-1) * 9.5);background:var(--on-accent);transform:rotate(240deg)"></span></span></div>
+<div style="width:calc(var(--sp-1) * 30);height:calc(var(--sp-1) * 30);border-radius:50%;background:var(--ink2);border:var(--bw) solid var(--color-base-300);display:flex;align-items:center;justify-content:center"><span class="rotor" style="width:calc(var(--sp-1) * 16.5);height:calc(var(--sp-1) * 16.5)"><span class="blade" style="width:calc(var(--sp-1) * 9.5);height:calc(var(--sp-1) * 9.5);background:var(--crimson);transform:rotate(0deg)"></span><span class="blade" style="width:calc(var(--sp-1) * 9.5);height:calc(var(--sp-1) * 9.5);background:var(--crimson);transform:rotate(120deg)"></span><span class="blade" style="width:calc(var(--sp-1) * 9.5);height:calc(var(--sp-1) * 9.5);background:var(--crimson);transform:rotate(240deg)"></span></span></div>
 </div>
 </div>
 </div>

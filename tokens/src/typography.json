@@ -19,7 +19,9 @@
   "fs": {
     "$type": "dimension",
     "$description": "Type scale (px)",
-    "display": { "$value": { "value": 64, "unit": "px" }, "$description": "hero" },
+    "mega": { "$value": { "value": 150, "unit": "px" }, "$description": "largest display step — the brand manual's .big-glyph specimen" },
+    "hero": { "$value": { "value": 96, "unit": "px" }, "$description": "extrapolated step between display (64) and mega (150) that keeps the scale's accelerating ratio coherent through its top; added with no consumer today by design — do not delete as dead API" },
+    "display": { "$value": { "value": 64, "unit": "px" }, "$description": "large display heading" },
     "h1": { "$value": { "value": 44, "unit": "px" } },
     "h2": { "$value": { "value": 32, "unit": "px" } },
     "h3": { "$value": { "value": 24, "unit": "px" } },

@@ -6,6 +6,7 @@
   --r-md:10px; /* nested cards, menus */
   --r-lg:14px; /* cards, panels */
   --r-xl:22px; /* app icon tile */
+  --r-2xl:34px; /* splash tile — distinct from xl's app icon tile */
   --r-pill:999px;
   --bw:1px; /* Borders */
   --bw-strong:2px;

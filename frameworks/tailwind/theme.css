@@ -81,6 +81,8 @@
   --font-mono: var(--font-mono);
 
   --text-*: initial;
+  --text-mega: var(--fs-mega);
+  --text-hero: var(--fs-hero);
   --text-display: var(--fs-display);
   --text-h1: var(--fs-h1);
   --text-h2: var(--fs-h2);
@@ -189,6 +191,7 @@
   --radius-md: var(--r-md);
   --radius-lg: var(--r-lg);
   --radius-xl: var(--r-xl);
+  --radius-2xl: var(--r-2xl);
   --radius-pill: var(--r-pill);
 
   --shadow-*: initial;

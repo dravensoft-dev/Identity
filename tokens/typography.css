@@ -14,7 +14,9 @@
   --fw-black:900;
 
   /* Type scale (px) */
-  --fs-display:64px; /* hero */
+  --fs-mega:150px; /* largest display step — the brand manual's .big-glyph specimen */
+  --fs-hero:96px; /* extrapolated step between display (64) and mega (150) that keeps the scale's accelerating ratio coherent through its top; added with no consumer today by design — do not delete as dead API */
+  --fs-display:64px; /* large display heading */
   --fs-h1:44px;
   --fs-h2:32px;
   --fs-h3:24px;

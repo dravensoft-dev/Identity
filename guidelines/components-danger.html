@@ -3,21 +3,21 @@
 <link rel="stylesheet" href="../styles.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
 <style>
-body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:24px}
-.wrap{display:flex;flex-direction:column;gap:16px}
-.lede{font-size:14px;color:var(--bone-dim);line-height:1.55;max-width:64ch}
-.tok{font-family:var(--font-mono);font-size:12px;color:var(--danger)}
-.row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end}
-.cell{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
-.cap{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
-.btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 18px;font-family:var(--font-body);font-weight:600;font-size:14px;border-radius:var(--r-sm);border:1px solid transparent;cursor:pointer}
+body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:var(--sp-6)}
+.wrap{display:flex;flex-direction:column;gap:var(--sp-4)}
+.lede{font-size:var(--dz-text);color:var(--bone-dim);line-height:1.55;max-width:64ch}
+.tok{font-family:var(--font-mono);font-size:var(--dz-text-sm);color:var(--danger)}
+.row{display:flex;gap:var(--sp-6);flex-wrap:wrap;align-items:flex-end}
+.cell{display:flex;flex-direction:column;gap:var(--sp-2);align-items:flex-start}
+.cap{font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-badge);text-transform:uppercase;color:var(--mute)}
+.btn{display:inline-flex;align-items:center;gap:var(--sp-2);height:var(--dz-ctl-h);padding:0 calc(var(--sp-1) * 4.5);font-family:var(--font-body);font-weight:var(--fw-semibold);font-size:var(--dz-text);border-radius:var(--r-sm);border:var(--bw) solid transparent;cursor:pointer}
 .btn.primary{background:var(--crimson);color:#fff}
 .btn.danger{background:transparent;color:var(--danger);border-color:var(--danger)}
 .btn.final{background:var(--danger-fill);color:var(--color-error-content);border-color:var(--danger-fill)}
-.iconbtn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r-sm);cursor:pointer;background:transparent;color:var(--danger);border:1px solid var(--danger)}
-.note{border:1px solid var(--border);border-radius:var(--r-md);padding:14px 16px;font-size:13px;color:var(--bone-dim);line-height:1.55;max-width:64ch}
-.note strong{display:block;color:var(--text-strong);font-size:14px;margin-bottom:4px}
-.note code{font-family:var(--font-mono);font-size:12px;color:var(--danger)}
+.iconbtn{width:var(--dz-ctl-h);height:var(--dz-ctl-h);display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r-sm);cursor:pointer;background:transparent;color:var(--danger);border:var(--bw) solid var(--danger)}
+.note{border:var(--bw) solid var(--border);border-radius:var(--r-md);padding:calc(var(--sp-1) * 3.5) var(--sp-4);font-size:var(--fs-sm);color:var(--bone-dim);line-height:1.55;max-width:64ch}
+.note strong{display:block;color:var(--text-strong);font-size:var(--dz-text);margin-bottom:var(--sp-1)}
+.note code{font-family:var(--font-mono);font-size:var(--dz-text-sm);color:var(--danger)}
 </style>
 </head><body>
 <div class="wrap">

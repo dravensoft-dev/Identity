@@ -95,11 +95,30 @@ Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default
 - **Themes:** the language is **dark-first** but supports two switchable themes — **dark** (`:root`, default) and **light** (`.arena-light`, warm inverse). The same tokens change value per theme; components are never rewritten. (The Overview includes the toggle in its header.)
 - **Key values:** a warm black background (`--color-base-100`) under elevated surfaces (`--color-base-200` for cards, `--color-base-300` for panels and borders) and bone text (`--color-base-content`). A single primary accent (crimson, `--color-primary`) per view; gold (`--color-secondary`) reserved for focus, distinction and highlighted data. At most one dominant accent per screen. The literal values live in `tokens/src/palette.dark.json` and `tokens/src/palette.light.json`, from which `tokens/palette.css` is generated — see [Theming](#theming): the scale is the language, the hexes are the skin.
 - **Typography:** Archivo (display/headlines, 800–900), Familjen Grotesk (body, 400–600), Spline Sans Mono (data, labels, code). Negative tracking on display (`-0.02em`), wide tracking on mono labels (`0.22em`).
+
+### Type scale (`fs`)
+Editorial type — prose and headings, never chrome (see the `dz` table above for the density scale that governs buttons, inputs and labels instead). Closed and semantic: each name is a role, the scale gains no in-between steps, and an off-scale editorial size snaps to its nearest neighbor rather than adding one. The ratio between steps accelerates through the reading range and into display:
+
+| Token | Value | Ratio from previous | Role |
+|---|---|---|---|
+| `--fs-xs` | 11px | — | mono labels / captions |
+| `--fs-sm` | 13px | 1.18 | |
+| `--fs-md` | 15px | 1.15 | body copy |
+| `--fs-lg` | 17px | 1.13 | |
+| `--fs-h4` | 19px | 1.12 | |
+| `--fs-h3` | 24px | 1.263 | |
+| `--fs-h2` | 32px | 1.333 | |
+| `--fs-h1` | 44px | 1.375 | |
+| `--fs-display` | 64px | 1.455 | large display heading |
+| `--fs-hero` | 96px | 1.5 | extrapolated step continuing the scale's accelerating ratio past `display`; **no consumer today, by design** — it closes the jump to `mega` so the progression stays coherent, and is not dead API to prune |
+| `--fs-mega` | 150px | 1.5625 | the approved brand manual's `.big-glyph` specimen |
+
+Exposed in the Tailwind layer as `.text-xs`/`.text-sm`/`.text-md`/`.text-lg`/`.text-h4`/`.text-h3`/`.text-h2`/`.text-h1`/`.text-display`/`.text-hero`/`.text-mega` (`frameworks/tailwind/theme.css`, `--text-*`).
 - **Spacing:** 4px base grid; generous rhythm in marketing (88px gutter), dense but breathable in product.
 - **Backgrounds:** **always flat.** Arena **does not use color gradients** on any surface — not heroes, not splash screens, not cards, not accents. Depth is built with the surface scale (`base-100`→`base-200`→`base-300`), the hairline border and the warm shadow, never with color transitions. (The only permitted use of `linear-gradient`: the `Skeleton`'s neutral *shimmer* animation, which is loading motion, not chromatic decoration.) No generic stock photos; real product imagery or striped placeholders.
 - **Borders:** hairline `1px` in `--color-base-300` (alias `--border`); emphasized border in `--line-strong`. The border, not the shadow, is used to separate content on flat surfaces.
 - **Shadows:** warm and deep, negative spread (`0 12px 28px -12px rgba(0,0,0,.6)`). There is no tinted glow: elevation is always the neutral warm shadow.
-- **Radii:** contained — buttons/inputs 6px, cards 14px, app tile 22%. Nothing fully round except avatars and switches. **Floating overlays:** modals (Dialog, ConfirmDialog, CommandPalette, Onboarding) use `--r-lg` (14px); minor non-modal floating surfaces (Toast, Menu, BulkActionBar) use `--r-md` (10px). The rule: if it captures the whole screen with a scrim, `--r-lg`; if it's a bounded panel over the UI, `--r-md`.
+- **Radii:** contained — buttons/inputs 6px, cards 14px, app tile 22%. `--r-2xl` (34px) is one step further, following the scale's own ratio (22→34 is ×1.55, in line with the tightest existing step) — the brand manual's splash-screen tile, a distinct role from `--r-xl`'s app icon tile. Nothing fully round except avatars and switches. **Floating overlays:** modals (Dialog, ConfirmDialog, CommandPalette, Onboarding) use `--r-lg` (14px); minor non-modal floating surfaces (Toast, Menu, BulkActionBar) use `--r-md` (10px). The rule: if it captures the whole screen with a scrim, `--r-lg`; if it's a bounded panel over the UI, `--r-md`.
 - **Cards:** surface `--surface-card`, hairline border, 14px radius, no shadow in lists (border only) and `--shadow-2` when floating (menus, dialogs).
 - **Animation:** `--ease-out` for entrances, `--ease-emphatic` for the "rotor" gesture (spin on load). Durations 120/220/420ms. No excessive bounce.
 - **`prefers-reduced-motion`:** every animation in the system answers it, and what it answers depends on what the motion *means*. Motion that reports work in progress **slows** (`Spinner`, `ProgressBar`, `Button`'s loading ring, `Rotor`) — never freeze it, a stopped spinner reads as a hung process, which is the opposite of the truth. Purely decorative motion **stops** (`Skeleton`'s shimmer falls back to a flat surface). An entrance **keeps its fade and drops its travel** (`Dialog`, `Menu`): the movement is the vestibular trigger, the fade is the meaning. Opacity-only animations (`Tooltip`) need no clause — there is nothing to reduce.
