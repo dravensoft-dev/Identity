@@ -97,12 +97,6 @@ export const EXEMPT = new Map([
    'y(m) projects a clock minute onto the visible hour range, itself driven by the dayStart/dayEnd props — a time-to-pixel projection, not a design dimension; there is no token for an arbitrary minute of the day'],
   ['frameworks/react/components/display/Calendar.jsx:height:`max(calc(var(--sp-1) * 4.5), ${rawH}px)`',
    'the max()\'s floor, calc(var(--sp-1) * 4.5), already reads a token, and stays governed — only the computed arm is exempt: rawH is an event\'s duration in minutes projected to pixels, the same data-to-pixel category as the two chart entries above, never a fixed dimension'],
-  ['frameworks/react/components/brand/Rotor.jsx:width:48',
-   'Dravensoft\'s brand mark; the source spec is explicit that brand assets are not themeable, and the same logic covers its size — fixing it to a token would quietly make the mark resizable by a re-skin'],
-  ['frameworks/react/ui_kits/console/Shell.jsx:width:30',
-   'Rotor call site — brand mark, not themeable, see Rotor.jsx\'s own exemption'],
-  ['frameworks/react/ui_kits/console/LoginScreen.jsx:width:40',
-   'Rotor call site — brand mark, not themeable, see Rotor.jsx\'s own exemption'],
 ]);
 
 /** Units the token layer genuinely does not model, and that no token could
@@ -678,6 +672,7 @@ export function scanAttributes(rawText) {
 const PASSTHROUGH = new Map([
   ['Icon', { prop: 'size', governs: 'fontSize' }],
   ['Rotor', { prop: 'size', governs: 'width' }],
+  ['AppLogo', { prop: 'size', governs: 'width' }],
 ]);
 
 /** A component's own default value for a passthrough prop or for a prop

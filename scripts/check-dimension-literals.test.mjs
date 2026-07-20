@@ -300,12 +300,6 @@ test('a nested-parens call is deliberately out of scope, not misread', () => {
   assert.deepEqual(scanText('const s = { width: Math.max(8, Math.min(d, 40)) };'), []);
 });
 
-test('EXEMPT records the three out-of-scope literals this task leaves untouched, by name', () => {
-  assert.ok(EXEMPT.has('frameworks/react/components/brand/Rotor.jsx:width:48'));
-  assert.ok(EXEMPT.has('frameworks/react/ui_kits/console/Shell.jsx:width:30'));
-  assert.ok(EXEMPT.has('frameworks/react/ui_kits/console/LoginScreen.jsx:width:40'));
-});
-
 // --- Task 5: data-to-pixel projections, revealed by the interpolation fix --
 // Closing the interpolation hole also caught four sites that were never a
 // dimension literal to begin with: a chart's hover position and a calendar's
@@ -505,15 +499,15 @@ test('the real boundary: a nested call behind a variable is not caught, the exac
 // --- Fix pass 2, finding 4: PASSTHROUGH staleness -------------------------
 
 test('a PASSTHROUGH entry with a match is not stale', () => {
-  assert.deepEqual(stalePassthrough(new Set(['Icon', 'Rotor'])), []);
+  assert.deepEqual(stalePassthrough(new Set(['Icon', 'Rotor', 'AppLogo'])), []);
 });
 
 test('a renamed PASSTHROUGH component fails as stale', () => {
-  assert.deepEqual(stalePassthrough(new Set(['Rotor'])), ['Icon']);
+  assert.deepEqual(stalePassthrough(new Set(['Rotor', 'AppLogo'])), ['Icon']);
 });
 
 test('every PASSTHROUGH entry is stale when nothing in the tree matches', () => {
-  assert.deepEqual(stalePassthrough(new Set()), ['Icon', 'Rotor']);
+  assert.deepEqual(stalePassthrough(new Set()), ['Icon', 'Rotor', 'AppLogo']);
 });
 
 // --- Regression: comments must never corrupt the balanced-text scan ------

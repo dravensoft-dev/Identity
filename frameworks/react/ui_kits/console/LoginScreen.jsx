@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '../../components/forms/Button.jsx';
 import { Input } from '../../components/forms/Input.jsx';
-import { Rotor } from '../../components/brand/Rotor.jsx';
+import { AppLogo } from '../../components/brand/AppLogo.jsx';
 
 export function LoginScreen({ onLogin }) {
   const [email, setEmail] = useState('ana@dravensoft.dev');
@@ -9,9 +9,8 @@ export function LoginScreen({ onLogin }) {
     <div style={{ minHeight: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: 'var(--bg)', padding: 'calc(var(--sp-1) * 6)' }}>
       <div style={{ width: 'calc(var(--sp-1) * 95)', background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)', padding: 'calc(var(--sp-1) * 9)', boxShadow: 'var(--shadow-3)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)', marginBottom: 'calc(var(--sp-1) * 7)' }}>
-          <Rotor size={40} />
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-black)', fontSize: 'var(--fs-h3)', letterSpacing: 'var(--ls-tight)', textTransform: 'uppercase', color: 'var(--bone)' }}>Draven<span style={{ color: 'var(--mute)' }}>soft</span></div>
+        <div style={{ marginBottom: 'calc(var(--sp-1) * 7)' }}>
+          <AppLogo size="md" mark={<img src="../../../../assets/rotor-crimson.svg" alt="" />} name="Draven" dim="soft" />
         </div>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 'calc(var(--sp-1) * 1.5)' }}>Delivery console</div>
         <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 'var(--fs-h3)', color: 'var(--bone)', marginBottom: 'calc(var(--sp-1) * 6)' }}>Welcome back</div>
