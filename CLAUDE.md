@@ -63,10 +63,14 @@ never re-defines a value.
 literal is a bug.** This is machine-checked: `bun run check:dimensions` scans
 `frameworks/` for literals in the properties the token layer governs and fails on
 each. A value passes when it is `var(--token)`, a `calc()`/`min()`/`max()`/`clamp()` over
-one, zero, or a unit the token layer does not model (`%`, `ch`, `fr`, and the viewport
+one, zero, or a unit the token layer does not model (`%`, `ch`, `fr`, the viewport
 and angle units — DTCG admits only `px` and `rem` in a dimension, so none of those is
-expressible as a token). **The same three shapes are what a Tailwind bracket may hold**;
-the two gates read one list. The scan reaches four kinds of site: a JS declaration, a
+expressible as a token — plus `s`/`ms`, which this gate alone tolerates). **The same
+three shapes are what a Tailwind bracket may hold, and the two gates share the same
+unmodelled-unit list** — but they are not one list: this inline gate additionally
+tolerates `s`/`ms`, while the bracket gate does not, because `--dur-*` and `--loop-*`
+model duration, so a bracket carrying `duration-[200ms]` must keep failing. The scan
+reaches four kinds of site: a JS declaration, a
 template literal's interpolation, CSS injected as a string (every `@keyframes` in the
 layer lives in one), and an SVG presentation attribute in `prop="value"` form. An
 expression binding — `r={hover ? 5 : 4}` — is outside all of them. A

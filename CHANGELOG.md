@@ -111,8 +111,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and `clamp()` over tokens, zeros and multipliers — and so is a single value in a unit
   the token layer does not model (`ch`, `%`, `vw`, `vh`, `deg`, `fr`). `px`, `rem`, `ms`
   and `s` still fail. The two gates now share one list of unmodelled units.
-- **`--focus-width` has consumers.** Input, Textarea, Select and SegmentedControl wrote
-  `0 0 0 2px` by hand while the token that describes the focus ring had none.
+- **`--focus-width` has consumers in the framework layers.** Input, Textarea, Select and
+  SegmentedControl wrote `0 0 0 2px` by hand while the framework layers gave the token
+  no consumer of their own — root-level `toggle.css` already read both `--focus-width`
+  and `--focus-offset` for the shared pill toggle.
 - Avatar's initials and presence dot derive from `--avatar-*` in CSS rather than from a
   JS ratio, which removes the exemption they held in `check-dimension-literals.mjs`.
 - The charts read `--bw`, `--bw-strong`, `--dz-text-2xs`, `--fs-xs` and `--dz-text-lg`
