@@ -99,3 +99,15 @@ test('a bare number outside a math function is still a violation', () => {
 test('a hex is a violation however it is wrapped', () => {
   assert.deepEqual(scanText('bg-[#b52a20] bg-[color-mix(in_oklab,#b52a20_14%,transparent)]').length, 2);
 });
+
+// --- Final review finding 2: MATH is scoped to the whole bracket, not to
+// where the leftover number sits, so a bare number outside any math
+// function's parens is wrongly admitted as long as the bracket contains a
+// calc()/min()/max()/clamp() ANYWHERE — even one that has nothing to do
+// with the leftover number.
+
+test('a bare number outside the math function is still a violation, even when the bracket also contains one', () => {
+  assert.deepEqual(scanText('z-[calc(var(--z-modal))_900]').map((h) => h.cls), ['z-[calc(var(--z-modal))_900]']);
+  assert.deepEqual(scanText('z-[calc(var(--sp-1)*2)_900]').map((h) => h.cls), ['z-[calc(var(--sp-1)*2)_900]']);
+  assert.deepEqual(scanText('shadow-[shadow_calc(var(--bw))_5]').map((h) => h.cls), ['shadow-[shadow_calc(var(--bw))_5]']);
+});

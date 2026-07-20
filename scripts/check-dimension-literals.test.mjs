@@ -620,6 +620,21 @@ test('a kebab-case CSS property is judged under its camelCase name', () => {
   assert.deepEqual(hits.map((h) => h.prop).sort(), ['borderWidth', 'boxShadow']);
 });
 
+// --- Final review finding 1: CSS split across `+`-concatenated literals --
+// Every injected style in this layer is actually built by `+`-concatenating
+// several string literals (Skeleton.jsx's shimmer is the real example:
+// '.arena-skeleton{background-image:...;' + 'background-size:...;animation:...}').
+// The shape test used to run per string literal, so a fragment with no `{`
+// of its own vanished entirely, even though the concatenated whole is
+// unmistakably one CSS rule.
+
+test('CSS split across `+`-concatenated string literals is read as one rule', () => {
+  assert.equal(scanInjectedCss("s.textContent = '.a{margin-top:8px}';").length, 1);
+  const hits = scanInjectedCss("s.textContent = '.a{' + 'margin-top:8px}';");
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].prop, 'marginTop');
+});
+
 // --- Task 5: a template interpolation must not hide the unit after it ----
 // `` `max(calc(var(--sp-1) * 2), ${d * 0.28}px)` `` passes today: UNIT_LITERAL
 // needs a digit immediately adjacent to a unit, and the interpolation's `}`

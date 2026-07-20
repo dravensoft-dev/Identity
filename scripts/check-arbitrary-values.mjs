@@ -56,8 +56,37 @@ const UNMODELLED = new RegExp(`^-?\\d*\\.?\\d+(?:${UNMODELLED_UNITS.join('|')})$
 const UNIT_LITERAL = /\d*\.?\d+\s*([a-z%]+)\b(?!\()/g;
 /** Zero, in the forms a bracket writes it. */
 const ZERO_RUN = /(?<![\w.])-?0(?:px|rem|em|%)?(?![\w.])/g;
-/** The math functions inside which a bare number is a multiplier, not a value. */
-const MATH = /\b(?:calc|min|max|clamp)\(/;
+/** A bare number left over once every token and zero has been stripped —
+ *  judged one match at a time against insideMathParens below, never against
+ *  the bracket as a whole. */
+const BARE_NUMBER = /(?<![\w.])-?\d*\.?\d+(?![\w.%])/g;
+/** True when the text immediately before a `(` is one of the math
+ *  functions — used to tell a math call's own parens from an unrelated
+ *  pair (there are none in a legal bracket today, but the check is by
+ *  identifier, not by "any paren", so it stays correct if one ever appears). */
+const MATH_OPEN = /\b(?:calc|min|max|clamp)$/;
+
+/** Is the character at `rest[index]` nested inside a calc()/min()/max()/
+ *  clamp() call's parentheses — the only place a bare number is a
+ *  multiplier rather than a value?
+ *
+ *  A first version of this rule tested `MATH.test(value)` once for the
+ *  whole bracket, so `z-[calc(var(--z-modal))_900]` passed: the bracket
+ *  contains a `calc(`, so the leftover `900` — which sits *after* that
+ *  calc's own closing paren, no longer inside it — was waved through as if
+ *  it were one of the multipliers calc() actually carries. This walks the
+ *  text up to `index`, tracking paren depth and, per frame, whether the
+ *  paren that opened it was itself a math function's, so a number is only
+ *  legal when the innermost enclosing frame at its own position is math.
+ *  @param {string} rest @param {number} index @returns {boolean} */
+function insideMathParens(rest, index) {
+  const stack = []; // one entry per currently-open paren; true if math's
+  for (let i = 0; i < index; i++) {
+    if (rest[i] === '(') stack.push(MATH_OPEN.test(rest.slice(0, i)));
+    else if (rest[i] === ')') stack.pop();
+  }
+  return stack.length > 0 && stack[stack.length - 1];
+}
 
 /** Is this bracket's content legal?
  *
@@ -90,8 +119,11 @@ export function isLegalBracket(content) {
   const rest = value.replace(TOKEN, ' ').replace(ZERO_RUN, ' ');
   for (const m of rest.matchAll(UNIT_LITERAL))
     if (!UNMODELLED_UNITS.includes(m[1])) return false;
-  // A bare number left over is a multiplier only inside calc()/min()/max()/clamp().
-  if (/(?<![\w.])-?\d*\.?\d+(?![\w.%])/.test(rest) && !MATH.test(value)) return false;
+  // A bare number left over is a multiplier only when IT ITSELF sits inside
+  // calc()/min()/max()/clamp()'s own parens — checked position by position,
+  // not once for the bracket as a whole (see insideMathParens above).
+  for (const m of rest.matchAll(BARE_NUMBER))
+    if (!insideMathParens(rest, m.index)) return false;
   return true;
 }
 

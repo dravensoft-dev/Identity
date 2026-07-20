@@ -545,7 +545,48 @@ function camel(prop) {
   return prop.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 }
 
-/** Declarations inside a string literal that is really CSS.
+/** Every maximal run of string literals joined end-to-end by `+`, read as one
+ *  body. Every injected `<style>` in this layer is actually built this way —
+ *  Skeleton's shimmer is the real example, four literals deep
+ *  (`'.arena-skeleton{background-image:...;' + 'background-size:...;animation:...}' + ...`)
+ *  — so a rule's opening `{` and the declaration that follows it routinely
+ *  sit in different literals. Judging one literal at a time is what let a
+ *  brace-less fragment vanish from the shape test in scanInjectedCss below
+ *  even though the concatenated whole is unmistakably CSS; this reassembles
+ *  the run first so the shape test sees what the browser will.
+ *  @param {string} text
+ *  @returns {{body: string, index: number}[]} `index` is the run's first
+ *  opening quote, which is what a reported hit's line number is measured
+ *  from. */
+function stringLiteralRuns(text) {
+  const runs = [];
+  let i = 0;
+  while (i < text.length) {
+    const c = text[i];
+    if (c !== "'" && c !== '"' && c !== '`') { i++; continue; }
+    const index = i;
+    let body = '';
+    let j = i;
+    for (;;) {
+      const end = skipString(text, j, text[j]);
+      body += text.slice(j + 1, end);
+      j = end + 1;
+      let k = j;
+      while (k < text.length && /\s/.test(text[k])) k++;
+      if (text[k] !== '+') break;
+      let m = k + 1;
+      while (m < text.length && /\s/.test(text[m])) m++;
+      if (text[m] !== "'" && text[m] !== '"' && text[m] !== '`') break;
+      j = m;
+    }
+    runs.push({ body, index });
+    i = j;
+  }
+  return runs;
+}
+
+/** Declarations inside a string literal (or a `+`-joined run of them) that is
+ *  really CSS.
  *
  *  Keyframes are the one thing an inline style object cannot express, so every
  *  animation in the layer ships as a <style> injected once — which put its
@@ -553,18 +594,26 @@ function camel(prop) {
  *  than at a `prop: value` site. A travel of `translateY(8px)` is the same
  *  literal whether it is written in JS or in CSS, and the gate now says so.
  *
- *  A string counts as CSS when it contains a `{`, a `:` and a `;` or `}` — the
- *  shape of a rule. That is deliberately loose: a false positive costs a
- *  declaration being judged that did not need to be, and every judged
- *  declaration is judged by the same scanValue as the rest of the file.
+ *  A run counts as CSS when its reassembled body contains a `{`, a `:` and a
+ *  `;` or `}` — the shape of a rule. That is deliberately loose: a false
+ *  positive costs a declaration being judged that did not need to be, and
+ *  every judged declaration is judged by the same scanValue as the rest of
+ *  the file. It is deliberately reassembled first, rather than just dropping
+ *  `{` from the test: dropping it would let any string containing a bare
+ *  `prop: value`-shaped fragment (a sentence with a colon in it, say) pass as
+ *  CSS with no rule-shape evidence at all, which trades one miss for a wider
+ *  one. Reassembling costs nothing a real site needs — a stray `+` between
+ *  two unrelated strings never resolves to a `{`/`:`/`;`/`}` shape by
+ *  accident — and keeps the shape test exactly as strict, just applied to
+ *  the string the runtime actually builds instead of to an arbitrary slice
+ *  of it.
  *  @param {string} rawText @returns {{prop: string, raw: string, reason: string, line: number}[]} */
 export function scanInjectedCss(rawText) {
   const text = blankComments(rawText);
   const out = [];
-  for (const m of text.matchAll(/(['"`])((?:\\.|(?!\1)[\s\S])*)\1/g)) {
-    const body = m[2];
+  for (const { body, index } of stringLiteralRuns(text)) {
     if (!(body.includes('{') && body.includes(':') && /[;}]/.test(body))) continue;
-    const line = lineOf(text, m.index);
+    const line = lineOf(text, index);
     for (const decl of body.matchAll(/(?:^|[{;])\s*([a-z-]+)\s*:\s*([^;}]+)/g)) {
       const prop = camel(decl[1]);
       if (!PROPS.has(prop)) continue;
