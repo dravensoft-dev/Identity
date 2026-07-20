@@ -33,7 +33,7 @@ runtimes. Bun blocks `style-dictionary`'s `postinstall` (`patch-package`), which
 
 - **English only** — all code, comments, docs, and UI copy.
 - **No emoji** anywhere, in product or docs.
-- Spec of record: `docs/superpowers/specs/2026-07-18-token-style-dictionary-migration-design.md`.
+- Spec of record: `docs/superpowers/specs/2026-07-18-1-token-style-dictionary-migration-design.md`.
 - **Style Dictionary is never given a `transformGroup`.** The only transform applied is `name/kebab`. Any built-in value transform corrupts 2025.10 structured values.
 - **DTCG source is strict 2025.10**: `dimension`/`duration` are `{value,unit}` objects (unit required even at 0), `color` is a structured object (`colorSpace`, `components`, optional `alpha`/`hex`), `number` is a bare number. No bare hex strings, no `"64px"` strings.
 - **The four generated CSS files are committed to git**, not ignored — the plugin is served from the release tag and the copy-in kit reads them directly.

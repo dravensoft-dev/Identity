@@ -21,9 +21,9 @@
 
 **Tech Stack:** Bun (runtime, test runner), Tailwind CSS 4.3.3, `tailwind-variants` 3.2.2, Angular 22 (standalone, `OnPush`, signals), `@angular/compiler-cli` (`ngc`) for the template typecheck, TypeScript 6.0, `node:test` + `node:assert/strict`.
 
-**Source spec:** `docs/superpowers/specs/2026-07-18-framework-layer-parity-design.md`
+**Source spec:** `docs/superpowers/specs/2026-07-18-5-framework-layer-parity-design.md`
 **Split from:** that spec's phases 1 and 2. Phase 3 (the 20 orphan manifests) is `2026-07-18-5b-tailwind-manifest-parity.md` and consumes Tasks 1–3 of this plan.
-**Downstream, do not implement here:** `specs/2026-07-18-four-package-build-publish-design.md` (plan 6).
+**Downstream, do not implement here:** `specs/2026-07-18-6-four-package-build-publish-design.md` (plan 6).
 
 ---
 

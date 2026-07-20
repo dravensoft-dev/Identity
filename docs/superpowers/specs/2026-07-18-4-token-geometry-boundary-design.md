@@ -3,7 +3,7 @@
 **Date:** 2026-07-18
 **Status:** design settled, implementation not started
 **Execution order:** plan 4 of 6 — after `plans/2026-07-18-3-framework-layer-token-coverage.md` (whose Task 3 this spec corrects; see *What this reverses*), before framework-layer parity (5) and publishing (6)
-**Governs:** the React layer, and the 34 manifests that `2026-07-18-framework-layer-parity-design.md` will write
+**Governs:** the React layer, and the 34 manifests that `2026-07-18-5-framework-layer-parity-design.md` will write
 
 ---
 
@@ -440,7 +440,7 @@ and the token layer disagree, the layer is wrong.
 
 Three written statements contradict this and change in the same commit:
 
-- `specs/2026-07-18-framework-layer-parity-design.md:225` — *"it remains the
+- `specs/2026-07-18-5-framework-layer-parity-design.md:225` — *"it remains the
   reference implementation and the design authority"*. It stays the **reference
   implementation**; it stops being the design authority.
 - `plans/2026-07-18-3-framework-layer-token-coverage.md` (~line 1614) — *"it stays
@@ -563,7 +563,7 @@ cluster back to Checkpoint 1; it does not reopen the boundary.
   the fixed hex in `assets/*.svg` is deliberate and stays.
 - **Growing the Angular or Tailwind layers.** That is the parity spec; this one
   governs what those manifests may write, and precedes them.
-- **Publishing.** `2026-07-18-four-package-build-publish-design.md` still waits on
+- **Publishing.** `2026-07-18-6-four-package-build-publish-design.md` still waits on
   parity, which now waits on this.
 - **Reopening the 4px grid.** It stays 4px. That is the point of family 4.
 - **Adding an opacity family or an animation-cycle family.** Both were considered

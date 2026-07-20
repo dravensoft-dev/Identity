@@ -1,6 +1,6 @@
 # Framework layer parity — Angular and Tailwind — Design
 
-**Status:** approved in design; **amended 2026-07-19** — see `2026-07-19-token-debt-and-gate-blind-spots-design.md`.
+**Status:** approved in design; **amended 2026-07-19** — see `2026-07-19-4.5-token-debt-and-gate-blind-spots-design.md`.
 Two counts below have moved: `ChartCard` gets a manifest (the exclusion's argument —
 path data, not class strings — describes the three SVG charts, not a bordered tile), so
 the layer ships **36** manifests rather than 35 and the charts' exception covers
@@ -8,8 +8,8 @@ BarChart, LineChart and DoughnutChart. And the plan splits in two: `5a` (Angular
 primitives + the gates) and `5b` (the orphan manifests).
 **Date:** 2026-07-18
 **Execution order:** plan 5 of 6
-**Depends on:** `2026-07-18-framework-layer-token-coverage-design.md` (plan 3) — hard prerequisite — and `2026-07-18-token-geometry-boundary-design.md` (plan 4), added later to the chain
-**Blocks:** `2026-07-18-four-package-build-publish-design.md` (plan 6) — publication waits on this
+**Depends on:** `2026-07-18-3-framework-layer-token-coverage-design.md` (plan 3) — hard prerequisite — and `2026-07-18-4-token-geometry-boundary-design.md` (plan 4), added later to the chain
+**Blocks:** `2026-07-18-6-four-package-build-publish-design.md` (plan 6) — publication waits on this
 
 > **Plan 4 governs what the 34 manifests written here may contain.** It settles that
 > a dimension is a token or a derivation of tokens and that a bare literal is a bug,
@@ -239,7 +239,7 @@ Phases 1 and 2 unblock `@dravensoft/arena-angular`. All three unblock
   the React one is right.
 
   **It is not the design authority.** `tokens/src/` is
-  (`2026-07-18-token-geometry-boundary-design.md`, plan 4). Where a React component
+  (`2026-07-18-4-token-geometry-boundary-design.md`, plan 4). Where a React component
   and the token layer disagree on a *value*, the React component is wrong — and plan 4
   repairs it before this spec runs, so nothing here needs to. The coverage spec's
   audit found React healthy against the rule it tested (no raw hex, no missing

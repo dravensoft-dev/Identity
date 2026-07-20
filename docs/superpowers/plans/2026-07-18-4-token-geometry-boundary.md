@@ -20,8 +20,8 @@
 
 **Tech Stack:** Bun (runtime, test runner), Style Dictionary v4, DTCG 2025.10, Tailwind CSS 4.3.3, `node:test` + `node:assert/strict`.
 
-**Source spec:** `docs/superpowers/specs/2026-07-18-token-geometry-boundary-design.md`
-**Downstream, do not implement here:** `specs/2026-07-18-framework-layer-parity-design.md` (plan 5), `specs/2026-07-18-four-package-build-publish-design.md` (plan 6)
+**Source spec:** `docs/superpowers/specs/2026-07-18-4-token-geometry-boundary-design.md`
+**Downstream, do not implement here:** `specs/2026-07-18-5-framework-layer-parity-design.md` (plan 5), `specs/2026-07-18-6-four-package-build-publish-design.md` (plan 6)
 
 ---
 

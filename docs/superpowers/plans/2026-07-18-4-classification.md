@@ -124,7 +124,7 @@ time — the failure this refinement exists to head off.
    column header, Radio's hint, Input's validation error, Badge's text, and a chart
    legend all match one of those examples directly, so they are `dz`, not `fs` —
    this is Rule 1 applied literally, not the older narrative in
-   `specs/2026-07-18-token-geometry-boundary-design.md` ("fs.xs is the token for the
+   `specs/2026-07-18-4-token-geometry-boundary-design.md` ("fs.xs is the token for the
    mono uppercase micro-label... the 10px and 9px micro-labels... snap to 11"), which
    is a superseded illustrative count, not one of the three rules this task was told
    to apply. Where the two disagree, Rule 1's literal text governs, per the outer

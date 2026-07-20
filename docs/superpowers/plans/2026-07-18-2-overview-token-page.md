@@ -26,7 +26,7 @@ are the record. Do not re-run this plan.
 
 - **English only** — all code, comments, docs, and UI copy.
 - **No emoji** anywhere, in product or docs.
-- Spec of record: `docs/superpowers/specs/2026-07-18-overview-token-page-design.md`.
+- Spec of record: `docs/superpowers/specs/2026-07-18-2-overview-token-page-design.md`.
 - **No gradients** on any surface. Depth comes from the `base-100`/`base-200`/`base-300` surface scale, the hairline border and the warm shadow.
 - **No raw hex anywhere in the page.** Every colour, size, radius, shadow and duration in `overview.js` and the page's own CSS must be a `var(--token)`. This page's whole claim is that it is built from the tokens; one hardcoded value falsifies it.
 - **The DTCG source is not modified.** No `$extensions` preview hints, no new tokens. The group-to-preview mapping lives in `scripts/lib/token-preview.mjs`, because `tokens/src/` is documented as platform-neutral.

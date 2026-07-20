@@ -18,7 +18,7 @@
 
 **Tech Stack:** Bun, Tailwind CSS 4.3.3, the manifest/specimen harness from plan 5a, `node:test` + `node:assert/strict`.
 
-**Source spec:** `docs/superpowers/specs/2026-07-18-framework-layer-parity-design.md`, phase 3.
+**Source spec:** `docs/superpowers/specs/2026-07-18-5-framework-layer-parity-design.md`, phase 3.
 
 ---
 

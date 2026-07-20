@@ -88,7 +88,7 @@ The four-package spec is **blocked on framework-layer coverage**, and the user h
 chosen **option 3: full 40-component parity in Angular and Tailwind before anything
 is published**. That is two workstreams that are *not* in this plan:
 
-- `docs/superpowers/specs/2026-07-18-framework-layer-token-coverage-design.md` —
+- `docs/superpowers/specs/2026-07-18-3-framework-layer-token-coverage-design.md` —
   needs its own plan.
 - Growing Angular and Tailwind from 1 component each to 40 — needs a spec and a plan.
 

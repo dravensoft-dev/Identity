@@ -6,7 +6,7 @@ layers were audited · **decisions settled 2026-07-18**, see "Component coverage
 (`docs/superpowers/plans/2026-07-18-6-four-package-build-publish.md`, **plan 6 of 6 —
 last**). Executable now, but **publishing stays switched off** until framework-layer
 coverage (plan 3), the token/geometry boundary (plan 4,
-`2026-07-18-token-geometry-boundary-design.md`) *and* Angular / Tailwind parity
+`2026-07-18-4-token-geometry-boundary-design.md`) *and* Angular / Tailwind parity
 (plan 5) land — see "Component coverage" near the end.
 
 Plan 4 is a later addition to this chain and matters here for a reason coverage and
@@ -14,7 +14,7 @@ parity do not: it changes token **values** and adds two token families (`icon` a
 `z`), all of which ship inside `@dravensoft/arena-tokens`. Publishing before it means
 shipping a token surface that is about to change shape.
 **Scope:** Sub-project 2 of 2. Sub-project 1
-(`2026-07-18-token-style-dictionary-migration-design.md`) **shipped in v4.0.0**;
+(`2026-07-18-1-token-style-dictionary-migration-design.md`) **shipped in v4.0.0**;
 the DTCG token source the `arena-tokens` package ships now exists.
 
 **What the revision changed.** Three things were stale, all of them things that
@@ -187,7 +187,7 @@ arena-tokens/
   compiling with Tailwind v4.3.3 and measuring in a browser. Do not "fix" it while
   packaging.
 - The preset currently exposes **37 of Arena's 138 tokens**; completing that surface
-  is `2026-07-18-framework-layer-token-coverage-design.md`, not this spec. The
+  is `2026-07-18-3-framework-layer-token-coverage-design.md`, not this spec. The
   package ships whatever the preset covers at build time.
 - `exports`: `"."` → compiled `tv`; `"./theme.css"`; `"./manifests/*"`;
   `"./variants/*"`.
@@ -347,11 +347,11 @@ manifests, `support.js`, `theme.js`, `jsx-loader.js`. No authored file moves.
   is the one deliberate `Bun.serve` exception. This spec was written before that
   switch and has been updated for it.
 - **Blocked on two workstreams, in this order**, per the decision recorded below:
-  1. `2026-07-18-framework-layer-token-coverage-design.md` — the Tailwind preset
+  1. `2026-07-18-3-framework-layer-token-coverage-design.md` — the Tailwind preset
      exposes 37 of 138 tokens. It is a prerequisite of the parity work, not merely of
      this one: every recipe authored against an incomplete preset is born needing
      arbitrary values, and parity would multiply today's six into hundreds.
-  2. `2026-07-18-framework-layer-parity-design.md` — Angular 1 → 19 primitives,
+  2. `2026-07-18-5-framework-layer-parity-design.md` — Angular 1 → 19 primitives,
      Tailwind 1 → 35 manifests.
 
   Then this spec's plan, then creating the npm organization and the first publish.
@@ -391,7 +391,7 @@ Three ways forward were considered:
 ### Settled: option 3 — grow first, publish all four together
 
 **Decided 2026-07-18.** Nothing is published until Angular and Tailwind have a real
-surface, specified in `2026-07-18-framework-layer-parity-design.md`.
+surface, specified in `2026-07-18-5-framework-layer-parity-design.md`.
 
 Two things about that spec change what "parity" costs here, and both make option 3
 cheaper than it looked when this section was written:
