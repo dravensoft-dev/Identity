@@ -188,34 +188,54 @@ decisions, and both are already expressible without one: the mark's ink is which
 wordmark's is whether `dim` is present. A `variant` prop would be a third way to say the
 same two things, and the three could then disagree.
 
-**`size` scales the lock-up, not the mark alone.** The consumer's `mark` node carries no
-dimensions; `AppLogo` sizes the slot it sits in and the mark fills it. Otherwise a mark
-with its own `width` and a `size` prop would fight, and the ratio between mark and
-wordmark — which is the entire meaning of a lock-up — would depend on which one won.
+**`size` picks both halves of the lock-up, not the mark alone.** The consumer's `mark`
+node carries no dimensions; `AppLogo` sizes the slot it sits in and the mark fills it.
+Otherwise a mark with its own `width` and a `size` prop would fight, and which one won
+would decide how the mark sat against the wordmark — the one relationship a lock-up
+exists to hold.
 
-The ratio is the manual's Primary · horizontal, mark 54 to wordmark 34, or `0.63`:
+**The sizes are tokens, and a fixed repertoire rather than a ratio.** Both halves of that
+sentence are decisions.
 
-| `size` | mark | wordmark | anchor |
+*Tokens*, because once `mark` and `name` are the consumer's, these numbers stop being
+Dravensoft's identity and become the system's answer to "how big is a small logo". The
+reasoning that exempts `Rotor`'s size — a brand asset is not themeable — does not reach
+them: they are a scale, and Arena's scales are tokens. So `AppLogo` needs **no `EXEMPT`
+entry at all**; it reads `var(--logo-*)` like any other component reads any other
+dimension.
+
+*A fixed repertoire*, because a single mark-to-wordmark ratio cannot be right at every
+step. A small lock-up needs proportionally larger text to stay legible, and forcing one
+constant across the scale would either shrink the small wordmark below reading size or
+inflate the large one. The eight numbers are declared, and the proportions that fall out
+(0.57, 0.60, 0.63, 0.63) are a consequence rather than a rule.
+
+| `size` | `--logo-mark-*` | `--logo-text-*` | anchor |
 |---|---|---|---|
-| `sm` | 30 | 19 | what `Shell` renders today |
-| `md` | 40 | 25 | what `LoginScreen` renders today |
-| `lg` | 54 | 34 | the manual's Primary · horizontal, exactly |
+| `sm` | 30 | 17 | exactly what `Shell` renders today |
+| `md` | 40 | 24 | exactly what `LoginScreen` renders today |
+| `lg` | 54 | 34 | the manual's Primary · horizontal |
 | `xl` | 124 | 78 | the manual's large specimen — the hero case, where the lock-up is the only thing on the screen |
 
-`sm` and `md` match the two console sites, so neither changes size.
+`sm` and `md` reproduce both console sites in both dimensions, so **nothing visible moves
+when the two screens migrate**. `lg` and `xl` come from the approved manual, so no number
+here was invented.
+
+The family goes in `tokens/src/spacing.json` beside `dz`, which is the precedent: `dz`
+holds control text sizes and lives there rather than in `typography.json`.
 
 `orientation` is `'horizontal' | 'vertical'`, the manual's first two variants.
 
-**Gate consequence, which fails the build if missed.** `EXEMPT` holds three brand
-entries today: `Rotor.jsx:width:48` and the two call sites, `Shell.jsx:width:30` and
-`LoginScreen.jsx:width:40`. Once both screens render `<AppLogo>` instead of
-`<Rotor size={N}>`, those two entries match nothing — and a stale exemption fails
-`check:dimensions` by design. So this change must delete both and add one for `AppLogo`'s
-size map. Eight entries become seven.
+**Gate consequence, which fails the build if missed.** `EXEMPT` holds three brand entries
+today: `Rotor.jsx:width:48` and the two call sites, `Shell.jsx:width:30` and
+`LoginScreen.jsx:width:40`. The call-site entries exist because `<Rotor size={30} />`
+passes a raw number through the `PASSTHROUGH` rule. `<AppLogo size="sm" />` passes a named
+step, which carries no dimension and needs no forgiveness — so both entries match nothing
+the moment the screens migrate, and a stale exemption fails `check:dimensions` by design.
 
-Its reason is a better one than the entries it replaces: a logo's proportions belong to
-the brand it renders, not to the theme rendering it, and that holds for every consumer's
-brand rather than only for Dravensoft's.
+Deleting them is not cleanup after the fact; it is the improvement itself, and it must
+happen in the same commit as the migration. **Eight entries become six**, and `AppLogo`
+adds none.
 
 ### 6. What the console becomes
 
@@ -266,9 +286,15 @@ manifests. Plan 6 inherits both counts.
   its signature, which is the whole point of it being a card.
 - **No change to `Shell.jsx`'s frame.** The header, the content area and the sidebar
   chrome stay as they are; only the nav list is extracted.
-- **No new tokens.** All three are built from what the token layer already holds. If one
-  turns out to need a value with no token behind it, the token is what is missing — add
-  it first, per `CLAUDE.md`.
+- **No new tokens except `logo`.** `SideNav`, `ActivityFeed` and `UnauthCard` are built
+  entirely from what the token layer already holds, and if one turns out to need a value
+  with no token behind it, the token is what is missing — add it first, per `CLAUDE.md`.
+  The eight `--logo-*` steps in §5 are the single exception, and they exist because
+  `AppLogo` renders a scale rather than a brand.
+- **No change to `Rotor`.** It keeps its `size`, its `color` and its `EXEMPT` entry. The
+  two components now justify their geometry differently — `Rotor` draws Dravensoft's mark
+  and is not themeable, `AppLogo` sizes whatever mark it is given and is — and that
+  asymmetry is real rather than an oversight. See *Open questions*.
 
 ## Open questions
 
@@ -279,8 +305,12 @@ manifests. Plan 6 inherits both counts.
 2. **What happens to `Rotor` once `AppLogo` exists.** `Rotor` stays — it is the animated
    mark for splash and loading states, which `AppLogo` does not do. But the console's two
    lock-ups were its only static call sites, and after this they pass an SVG from
-   `assets/` instead. Whether `Rotor` should keep its `size`/`color` props once nothing
-   composes it into a lock-up is worth revisiting, and is not this spec's call.
+   `assets/` instead. Two loose ends follow, both deliberately left: whether `Rotor`
+   should keep its `size`/`color` props once nothing composes it into a lock-up, and
+   whether its `EXEMPT` entry still reads correctly now that a sibling brand component
+   sizes itself from tokens on the opposite reasoning. The two arguments are each sound
+   for their own component, but a reader meeting both at once deserves a better answer
+   than this spec gives.
 3. **Does `ActivityFeed` need pagination or a "load more" affordance?** The console shows
    four rows and a real feed does not. Deferred until a consumer has the problem.
 
@@ -300,9 +330,21 @@ manifests. Plan 6 inherits both counts.
   centred panel and a dense narrow list. Any single `viewport` would suit one and
   misrepresent the other, and a specimen that misrepresents its component is worse than
   no specimen.
-- **`EXEMPT` goes from eight entries to seven**, and `bun run check:dimensions` must
-  report "no stale exemptions". This is the one mechanical trap in the plan: deleting the
-  two `Rotor` call-site entries is not optional cleanup, it is what keeps the build green.
+- **`EXEMPT` goes from eight entries to six**, and `bun run check:dimensions` must report
+  "no stale exemptions". This is the one mechanical trap in the plan: deleting the two
+  `Rotor` call-site entries is not optional cleanup, it is what keeps the build green, and
+  it has to land in the same commit as the migration.
+- **The `logo` family clears the full token chain**, in the task that adds it:
+  `bun run build:tokens`, then `check-dtcg.mjs`, `check-tokens-generated.mjs` and
+  `check-ramp.mjs` all exit 0. Never hand-edit `tokens/spacing.css`.
+- **Every `--logo-*` step reaches the Tailwind layer**, in the same task — a utility in
+  `frameworks/tailwind/theme.css` or an entry in `check-tailwind-coverage.mjs`'s
+  `EXCLUDED` with a reason. `check:coverage` fails otherwise, and a stale exclusion fails
+  too.
+- **`sm` and `md` render identically to today.** Read the computed `width` of the mark and
+  `font-size` of the wordmark in both `Shell` and `LoginScreen` before and after; they
+  must be 30/17 and 40/24. The wordmark's *colour* changes in `Shell` — that is the mixed
+  variant being fixed — but no dimension moves.
 - **`AppLogo` renders nothing without `mark` and `name`.** A test asserts this rather than
   a comment claiming it — the MIT argument in §5 is only true if the absence of a default
   is enforced.
@@ -325,18 +367,23 @@ manifests. Plan 6 inherits both counts.
 `display/ActivityFeed.{jsx,d.ts,prompt.md}` + its own `*.card.html`,
 `display/UnauthCard.{jsx,d.ts,prompt.md}` + its own `*.card.html`.
 
-**Modified:** `navigation/navigation.card.html`, `brand/brand.card.html`;
+**Modified:** `tokens/src/spacing.json` (the `logo` family) and the generated
+`tokens/spacing.css`; `tokens/src/TYPE-MAP.md`; `frameworks/tailwind/theme.css` and
+`frameworks/tailwind/tv.ts`, or `scripts/check-tailwind-coverage.mjs`'s `EXCLUDED`;
+`navigation/navigation.card.html`, `brand/brand.card.html`;
 `ui_kits/console/{Shell,ProjectScreen,LoginScreen}.jsx`;
-`scripts/check-dimension-literals.mjs` (`EXEMPT`, eight entries to seven);
+`scripts/check-dimension-literals.mjs` (`EXEMPT`, eight entries to six);
 `README.md`; `CHANGELOG.md`.
 
 **Modified downstream:** `docs/superpowers/plans/2026-07-18-5a-angular-primitive-parity.md`
 (three primitives, one Material bridge entry, count 18 → 21),
 `docs/superpowers/plans/2026-07-18-5b-tailwind-manifest-parity.md` (four manifests).
 
-**Unchanged, explicitly:** every file under `tokens/`, `styles.css`, `assets/` — the three
-`rotor-*.svg` files are consumed as they are, not edited — and every gate in `scripts/`
-apart from the `EXEMPT` entries named above. This spec adds no token and changes no rule.
+**Unchanged, explicitly:** every colour token, `tokens/colors.css`, `tokens/palette*.json`,
+`styles.css`, and `assets/` — the three `rotor-*.svg` files are consumed as they are, not
+edited. Every gate in `scripts/` keeps its rules; the only edits there are the two
+`EXEMPT` deletions and whatever `EXCLUDED` entries the `logo` family needs. This spec
+changes no existing token's value and no gate's logic.
 
 ## Sequencing
 
