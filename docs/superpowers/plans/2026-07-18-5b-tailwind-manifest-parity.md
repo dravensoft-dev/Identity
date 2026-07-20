@@ -2,27 +2,30 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Execution order: 5b of 6.** **Status: NOT EXECUTED** as of 2026-07-19. **Blocked on 4.5 and 5a**, which build the tokens and the infrastructure this plan consumes.
+**Execution order: 5b of 6.** **Status: NOT EXECUTED** as of 2026-07-19. **4.5 has since executed; still blocked on 5a**, which builds the infrastructure this plan consumes (Tasks 1–3).
 
 | # | Plan | Status |
 |---|---|---|
 | 1–4 | token migration, Overview, coverage, geometry boundary | **Executed** |
-| 4.5 | `2026-07-19-4.5-token-debt-and-gate-blind-spots.md` | Pending — **hard prerequisite** |
+| 4.5 | `2026-07-19-4.5-token-debt-and-gate-blind-spots.md` | **Executed** |
+| 4.75 | `2026-07-19-4.75-applogo-sidenav-activityfeed-unauthcard-design.md` | Design approved, plan not yet written — fixed the manifest roster this plan counts against (20 → 21 orphan manifests; see "Also depends on" below) |
 | 5a | `2026-07-18-5a-angular-primitive-parity.md` | Pending — **hard prerequisite**, Tasks 1–3 |
 | 5b | `2026-07-18-5b-tailwind-manifest-parity.md` | **This plan** — pending |
+| 5.5 | `2026-07-19-5.5-chart-geometry-token-target-design.md` | DRAFT — not approved, seven open questions |
 | 6 | `2026-07-18-6-four-package-build-publish.md` | Pending |
 
-**Goal:** Ship the twenty manifests a framework-neutral Tailwind consumer needs — the controls and containers Angular Material would otherwise provide — so `@dravensoft/arena-tailwind` can dress a whole application rather than the gap components alone.
+**Goal:** Ship the twenty-one manifests a framework-neutral Tailwind consumer needs — the controls and containers Angular Material would otherwise provide — so `@dravensoft/arena-tailwind` can dress a whole application rather than the gap components alone. Twenty are this plan's own tasks; spec 4.75 added the twenty-first (`SideNav`, bridged in Angular through `mat-nav-list` rather than a primitive) to the roster after this plan was written, and its task is not yet authored here (see "What this plan does not do").
 
 **Architecture:** No Angular. Each task is a manifest plus the specimen page that exercises it, built on the harness 5a already installed: `bun run check:tailwind` proves every class emits a rule, `check:coverage` proves every token still reaches a utility, `check:arbitrary` proves no bracket carries a literal, and the specimen proves the classes compose into the component Arena's README specifies. Two shared files land first so twenty pages are not twenty copies of the same boilerplate.
 
 **Tech Stack:** Bun, Tailwind CSS 4.3.3, the manifest/specimen harness from plan 5a, `node:test` + `node:assert/strict`.
 
 **Source spec:** `docs/superpowers/specs/2026-07-18-5-framework-layer-parity-design.md`, phase 3.
+**Also depends on:** `docs/superpowers/specs/2026-07-19-4.75-applogo-sidenav-activityfeed-unauthcard-design.md` — approved in design, no plan written yet. It added `SideNav` to this plan's roster: a manifest with no Angular consumer, exactly this plan's shape, because Material's `mat-nav-list` covers the Angular side instead of an `arena-*` primitive. `AppLogo`, `ActivityFeed` and `UnauthCard` also need manifests, but each has an Angular consumer (5a's roster, not this one).
 
 ---
 
-## Why these twenty exist at all
+## Why these twenty-one exist at all
 
 They have **no Angular consumer**, and that is not an oversight. `frameworks/tailwind/README.md`
 courts a third-party consumer building with raw `className` or `cva`, on neither React
@@ -36,6 +39,11 @@ still cannot rot silently — a class that stops resolving fails the build. That
 the reason this plan is safe to write and `Button.manifest.json`'s history is the reason
 it was needed: it was authored with no consumer, never exercised, and accumulated five
 arbitrary values that violated the layer's own rule.
+
+Twenty of the twenty-one are Tasks 3–22 below. The twenty-first, `SideNav`, joined
+this list when spec 4.75 landed — its task is not written here (see "What this plan
+does not do"), so every count elsewhere in this document that says "twenty" is
+counting only the tasks that exist.
 
 ## Prerequisites — verify before Task 1
 
@@ -2256,6 +2264,14 @@ git commit -m "feat(tailwind): add the Spinner manifest"
 
 - [ ] **Step 1: Correct the inventory**
 
+**Roster note, added when spec 4.75 landed:** the system-wide target is 40 manifests
+(the 44 components spec 4.75 leaves React with, minus the four that get none — the
+three SVG charts and Calendar), not the 36 below. `SideNav`'s manifest is this plan's
+missing 21st task; `AppLogo`, `ActivityFeed` and `UnauthCard` are 5a's three new
+primitives and each needs one too. None of the four exist yet. The block below still
+counts only what Tasks 1–22 here and 5a's original 18 primitives ship together —
+write it as given, and correct it again once all four land.
+
 In `frameworks/tailwind/README.md`, replace the "What ships here" section 5a added with:
 
 ```markdown
@@ -2284,6 +2300,10 @@ terms.
 
 - [ ] **Step 2: Correct `CLAUDE.md`**
 
+Same roster note as Step 1: once `SideNav`, `AppLogo`, `ActivityFeed` and `UnauthCard`
+have tasks, the "16 of 36" and "other 20" figures below become "19 of 40" and "other
+21." Not yet — this step still describes only Tasks 1–22 plus 5a's original 18.
+
 The sentence about manifest-to-component mapping that 5a rewrote needs one more pass now
 that twenty manifests have no Angular consumer at all. Replace it with:
 
@@ -2298,6 +2318,10 @@ matches the component it was derived from, so check by hand when either has move
 ```
 
 - [ ] **Step 3: Write the changelog entry**
+
+Same roster note again: this entry and its "36 manifests" line describe Tasks 1–22
+plus 5a's original 18 only. `SideNav`, `AppLogo`, `ActivityFeed` and `UnauthCard` need
+their own changelog line once their tasks exist.
 
 Under `## [Unreleased]`, in the `### Added` block 5a started:
 
@@ -2361,3 +2385,8 @@ git commit -m "docs: the Tailwind layer ships 36 manifests, and says so"
   `arena-*` is the parity spec's first stated non-goal.
 - **No manifest for the three SVG charts or Calendar.** Stated above, and in both
   READMEs. `ChartCard` has one; plan 5a wrote it.
+- **`SideNav`'s manifest**, spec 4.75's addition to this plan's own roster (20 → 21).
+  It is this plan's shape exactly — no Angular consumer, same five steps as Tasks
+  3–22 — but its task is not written here, per this pass's own instructions. `AppLogo`,
+  `ActivityFeed` and `UnauthCard` need manifests too, but each has an Angular
+  consumer and so are 5a's roster (18 → 21), not this plan's.

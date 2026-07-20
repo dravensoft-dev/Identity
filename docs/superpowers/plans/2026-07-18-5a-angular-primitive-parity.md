@@ -10,26 +10,29 @@
 | 2 | `2026-07-18-2-overview-token-page.md` | **Executed** (v4.0.0) |
 | 3 | `2026-07-18-3-framework-layer-token-coverage.md` | **Executed** (unreleased) |
 | 4 | `2026-07-18-4-token-geometry-boundary.md` | **Executed** (unreleased) |
-| 4.5 | `2026-07-19-4.5-token-debt-and-gate-blind-spots.md` | Pending — **hard prerequisite** |
+| 4.5 | `2026-07-19-4.5-token-debt-and-gate-blind-spots.md` | **Executed** |
+| 4.75 | `2026-07-19-4.75-applogo-sidenav-activityfeed-unauthcard-design.md` | Design approved, plan not yet written — fixed the roster this plan counts against (18 → 21 primitives) before this plan's own tasks run |
 | 5a | `2026-07-18-5a-angular-primitive-parity.md` | **This plan** — pending |
 | 5b | `2026-07-18-5b-tailwind-manifest-parity.md` | Pending — depends on 5a's infrastructure (Tasks 1–3) |
+| 5.5 | `2026-07-19-5.5-chart-geometry-token-target-design.md` | DRAFT — not approved, seven open questions |
 | 6 | `2026-07-18-6-four-package-build-publish.md` | Pending |
 
-**Goal:** Give the Angular layer the 18 primitives Material does not provide, each one styled by a Tailwind manifest it does not own, and each one visible and machine-checked — so `@dravensoft/arena-angular` can be published as a layer rather than as one component.
+**Goal:** Give the Angular layer the 21 primitives Material does not provide, each one styled by a Tailwind manifest it does not own, and each one visible and machine-checked — so `@dravensoft/arena-angular` can be published as a layer rather than as one component. Eighteen of the 21 are this plan's own tasks; spec 4.75 added the other three (`app-logo`, `activity-feed`, `unauth-card`) to the roster after this plan was written, and their tasks are not yet authored here (see "What this plan does not do").
 
 **Architecture:** Three gates come first and nothing else lands until they exist: a committed compiled utility stylesheet (so a static page can render a manifest), a manifest-driven specimen harness, and an Angular template typecheck. Then the work is vertical slices — one component at a time, manifest + recipe + primitive + prompt + specimen + barrel, gated and committed together. The three SVG charts come last because they are the only slice with genuinely new engineering (a `ResizeObserver` behind a signal) and the only one with no manifest.
 
 **Tech Stack:** Bun (runtime, test runner), Tailwind CSS 4.3.3, `tailwind-variants` 3.2.2, Angular 22 (standalone, `OnPush`, signals), `@angular/compiler-cli` (`ngc`) for the template typecheck, TypeScript 6.0, `node:test` + `node:assert/strict`.
 
 **Source spec:** `docs/superpowers/specs/2026-07-18-5-framework-layer-parity-design.md`
-**Split from:** that spec's phases 1 and 2. Phase 3 (the 20 orphan manifests) is `2026-07-18-5b-tailwind-manifest-parity.md` and consumes Tasks 1–3 of this plan.
+**Also depends on:** `docs/superpowers/specs/2026-07-19-4.75-applogo-sidenav-activityfeed-unauthcard-design.md` — approved in design, no plan written yet. It fixed the roster this plan counts against before this plan's own tasks run: 18 primitives becomes 21 (`app-logo`, `activity-feed`, `unauth-card` join the roster; `SideNav` does not — its Angular story is a `mat-nav-list` bridge in `theme/arena-material.css`, not a primitive).
+**Split from:** that spec's phases 1 and 2. Phase 3 (the 21 orphan manifests) is `2026-07-18-5b-tailwind-manifest-parity.md` and consumes Tasks 1–3 of this plan.
 **Downstream, do not implement here:** `specs/2026-07-18-6-four-package-build-publish-design.md` (plan 6).
 
 ---
 
 ## State of the tree this plan was written against
 
-Verified on 2026-07-19, at merge commit `44a72ae` on `main`, with `bun run check` green (9 steps, 171 tests):
+Verified on 2026-07-19, at merge commit `44a72ae` on `main`, with `bun run check` green (9 steps, 171 tests). **Since superseded:** plan 4.5 has executed on top of this tree, and `bun run check` now reports 9 steps and 193 tests — the step count is unchanged (4.5 widened existing gates rather than adding new ones), the test count grew with them.
 
 - **Plan 3 is executed.** `scripts/check-tailwind.mjs`, `check-tailwind-coverage.mjs` and `check-arbitrary-values.mjs` exist. `frameworks/tailwind/components/` holds `Button.manifest.json` and `Tag.manifest.json`. `frameworks/angular/primitives/tag/tag.variants.ts` is already `tv(manifest)` — the reference shape this plan copies exists and is real.
 - **Plan 4 is executed.** `tokens/src/icon.json` (`--icon-sm|md|lg|xl`) and `tokens/src/layering.json` (`--z-dropdown` … `--z-toast`) exist and both reach utilities in `frameworks/tailwind/theme.css` (`--size-icon-*`, `--z-index-*`). `check-dimension-literals.mjs` reports no bare literals under `frameworks/`.
@@ -40,6 +43,12 @@ Verified on 2026-07-19, at merge commit `44a72ae` on `main`, with `bun run check
   duration; `--focus-width` has consumers. The dimension gate reads four kinds of site
   (declaration, template interpolation, injected CSS, SVG attribute), so a literal
   smuggled into a `<style>` string or an SVG attribute now fails here too.
+- **Spec 4.75 is approved, and this plan's roster comes from it.** No plan has been
+  written from it yet and no code has landed, but its design is settled: `AppLogo`,
+  `ActivityFeed` and `UnauthCard` each get an `arena-*` primitive here, `SideNav` gets a
+  `mat-nav-list` bridge in `arena-material.css` instead — so the primitive count this
+  plan targets is 21, not the 18 its own Tasks 4–23 write, and the three new primitives'
+  tasks are not part of this document (see "What this plan does not do").
 - **The Angular layer holds exactly one primitive.** `frameworks/angular/primitives/` is `index.ts` + `tag/`. Nothing in the repo has ever compiled it: there is no Angular toolchain in `package.json` at all.
 - **The Tailwind layer is never compiled to a file.** `scripts/lib/tailwind-compile.mjs` compiles it into a temp dir for the gates and deletes it. No stylesheet a browser can load exists yet — Task 1 is what changes that.
 
@@ -402,8 +411,8 @@ git commit -m "feat(tailwind): compile the layer to a stylesheet a specimen can 
 
 Gate 1 from the spec. An Angular primitive carries no styling of its own and its
 recipe is data, so a static page that applies the manifest to the real markup shows
-the true visual result with no Angular executed. That is what makes 18 primitives
-reviewable by eye in a tree whose demos are static by doctrine.
+the true visual result with no Angular executed. That is what makes the layer's
+primitives reviewable by eye in a tree whose demos are static by doctrine.
 
 Two files: a resolver (manifest + chosen variants → class strings) and a page
 harness so a specimen is twenty lines of markup rather than a hundred of boilerplate.
@@ -5087,6 +5096,14 @@ they were written and is now the most misleading text in the tree.
 
 - [ ] **Step 1: Rewrite the Angular README's primitive section**
 
+**Roster note, added when spec 4.75 landed:** the Angular layer's target roster is 21
+primitives (22 with `tag`), not the 18 (19 with `tag`) this step's text and Tasks 4–23
+below build. Spec 4.75 added `app-logo`, `activity-feed` and `unauth-card` to the
+roster after this plan was written; their tasks are not authored here (see "What this
+plan does not do"). The markdown block below still describes only what Tasks 4–23
+actually ship — write it as given, and correct it again once the three new primitives'
+tasks land.
+
 In `frameworks/angular/README.md`, replace the sentence
 "This milestone ships `tag`; further primitives follow it." with:
 
@@ -5110,6 +5127,10 @@ Two shared files sit beside the primitives and are not components:
 ```
 
 Then add, after the "Conventions" section:
+
+**Same caveat as Step 1's block above:** spec 4.75 adds a 22nd bridged entry —
+`mat-nav-list` for `SideNav` — once its own task lands. The block below still states
+the 21 this plan's tasks account for.
 
 ```markdown
 ## What Material provides, and what Arena does
@@ -5145,6 +5166,10 @@ with the real recipe and no Angular executed.
 
 - [ ] **Step 2: Update the Tailwind README's inventory**
 
+Same caveat as Step 1: spec 4.75 will add `AppLogo`, `SideNav`, `ActivityFeed` and
+`UnauthCard` manifests (four, split across this plan and 5b — see "Also depends on"
+above), once their tasks exist. The block below counts only what Tasks 1–22 ship.
+
 In `frameworks/tailwind/README.md`, after the "Consumption order" section, add:
 
 ```markdown
@@ -5170,6 +5195,10 @@ a manifest without a build step; do not edit it.
 ```
 
 - [ ] **Step 3: Update `CLAUDE.md`**
+
+Same caveat again: the roster target is 21 primitives (22 with `tag`) per spec 4.75,
+and the "19" below is what Tasks 4–23 actually deliver. Correct this line again once
+`app-logo`, `activity-feed` and `unauth-card` have tasks and land.
 
 In `CLAUDE.md`, in the "Framework layers live under `frameworks/`" paragraph, replace
 "and standalone `OnPush` primitives under `primitives/` (`tag` is the reference)" with:
@@ -5217,6 +5246,11 @@ Read the surrounding prose before editing; if the count in the tree differs from
 eleven, the tree is right and this line is what needs correcting.
 
 - [ ] **Step 4: Write the changelog entry**
+
+Same caveat once more: this entry, and its "21 components Angular Material provides"
+line, describe the tree after Tasks 1–23 only. Spec 4.75's three primitives and
+`SideNav`'s Material bridge are not part of this commit and need their own
+changelog line when their tasks land.
 
 In `CHANGELOG.md`, under `## [Unreleased]` (create the heading if the top entry is a
 version — anything landing after a tag goes under `[Unreleased]`, and filing it under
@@ -5322,7 +5356,15 @@ Stated so the next reader does not go looking:
   finding for plan 4's successor, not a literal.
 - **No change to React**, to the plugin manifests, to `support.js`, `theme.js` or
   `jsx-loader.js`.
-- **The 20 orphan manifests** — Button, IconButton, Input, Textarea, Select, Checkbox,
+- **The 21 orphan manifests** — Button, IconButton, Input, Textarea, Select, Checkbox,
   Radio, Switch, SegmentedControl, Card, Badge, Table, Tabs, Dialog, Menu, Tooltip,
-  Toast, Pagination, ProgressBar, Spinner. They are plan 5b, and they consume Tasks 1–3
-  of this plan unchanged.
+  Toast, Pagination, ProgressBar, Spinner, and — since spec 4.75 — SideNav, whose
+  Angular story is a `mat-nav-list` bridge rather than a primitive. They are plan 5b,
+  and they consume Tasks 1–3 of this plan unchanged.
+- **The three primitives spec 4.75 added to this plan's own roster.** `app-logo`,
+  `activity-feed` and `unauth-card` each need an `arena-*` primitive per that spec's
+  §7, raising this plan's target from 18 primitives to 21 (19 to 22 with `tag`). Their
+  tasks are not written here — this pass only updates the counts and prerequisites
+  the rest of this document states, per its own instructions. Whoever picks this plan
+  up next writes Tasks 24–26 in this shape before Task 23 (closeout) can honestly
+  claim 21.
