@@ -3,14 +3,20 @@ import { Shell } from './Shell.jsx';
 import { Card } from '../../components/display/Card.jsx';
 import { Badge } from '../../components/display/Badge.jsx';
 import { Tag } from '../../components/display/Tag.jsx';
+import { StatCard } from '../../components/display/StatCard.jsx';
 import { Button } from '../../components/forms/Button.jsx';
 import { Icon } from './Icon.jsx';
 
+/* Two of the four carry a tone and two do not, which is the ratio the prop is
+ * for: a project count is neither good nor bad, and the color only reads as a
+ * signal while most of the row stays uncoloured. Incidents is `danger`, not
+ * `accent` — it was --crimson here before StatCard could express state, and
+ * crimson is the brand, not a warning. */
 const METRICS = [
-  { k: 'Active projects', v: '12', tone: 'var(--bone)' },
-  { k: 'Deployments (7d)', v: '48', tone: 'var(--bone)' },
-  { k: 'Average uptime', v: '99.98%', tone: 'var(--success)' },
-  { k: 'Incidents', v: '2', tone: 'var(--crimson)' },
+  { k: 'Active projects', v: '12' },
+  { k: 'Deployments (7d)', v: '48' },
+  { k: 'Average uptime', v: '99.98%', tone: 'success' },
+  { k: 'Incidents', v: '2', tone: 'danger' },
 ];
 const PROJECTS = [
   { name: 'Customer portal', client: 'Aurora Bank', status: ['success', 'Deployed'], build: '#4821', when: '2h ago', tags: ['React', 'Node', 'AWS'] },
@@ -26,12 +32,7 @@ export function DashboardScreen({ onNav, onOpenProject }) {
     <Shell active="dashboard" onNav={onNav} title="Projects"
       actions={<Button variant="primary" size="sm" icon={<Icon name="plus" size="var(--icon-md)" />}>New project</Button>}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'calc(var(--sp-1) * 4)', marginBottom: 'calc(var(--sp-1) * 7)' }}>
-        {METRICS.map((m) => (
-          <div key={m.k} style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)', padding: 'calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 5)' }}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{m.k}</div>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-black)', fontSize: 'var(--fs-h2)', color: m.tone, marginTop: 'calc(var(--sp-1) * 2)' }}>{m.v}</div>
-          </div>
-        ))}
+        {METRICS.map((m) => <StatCard key={m.k} label={m.k} value={m.v} tone={m.tone} />)}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 'calc(var(--sp-1) * 4)' }}>
         {PROJECTS.map((p) => (
