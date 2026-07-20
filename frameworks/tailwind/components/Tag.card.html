@@ -1,0 +1,23 @@
+<!-- @dsCard group="Angular" viewport="640x102" name="Tag" subtitle="The five tones, rendered from Tag.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:var(--sp-6)}.row{display:flex;flex-wrap:wrap;gap:calc(var(--sp-1) * 3.5);align-items:center;margin-bottom:var(--sp-4)}.sub{font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-label);line-height:var(--lh-snug);color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:var(--sp-1)}</style>
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Tag.manifest.json')).json();
+
+function tag(tone, label) {
+  const c = classesFor(manifest, { tone });
+  return el('span', { class: c.root }, el('span', { class: c.dot }), label);
+}
+
+mountSpecimen({ sections: [
+  section('Tones', [
+    tag('neutral', 'Draft'), tag('primary', 'Active'), tag('success', 'Live'),
+    tag('warning', 'Degraded'), tag('danger', 'Blocked'),
+  ]),
+]});
+</script></body></html>
