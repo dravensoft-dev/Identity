@@ -43,6 +43,15 @@ export function findChromium(env = process.env, exists = existsSync) {
  *  @param {string} exePath @returns {Promise<{wsUrl: string, kill: () => void}>} */
 export async function launchChromium(exePath) {
   const profile = mkdtempSync(join(tmpdir(), 'arena-chromium-'));
+  /* detached: true makes the child the leader of its own process group
+     (setpgid to its own pid) instead of joining ours. Headless Chromium
+     forks a zygote and a NetworkService utility process that share this
+     --user-data-dir but are children of the child, never of us — signalling
+     the child alone leaves them running as orphans, free to keep writing
+     into the profile dir for a couple hundred ms after rmSync below has
+     already run, so the directory quietly reappears. A negative pid to
+     process.kill() signals the whole group at once, which is only a group
+     kill() can reach. */
   const child = spawn(exePath, [
     '--headless',
     '--disable-gpu',
@@ -51,10 +60,12 @@ export async function launchChromium(exePath) {
     '--remote-debugging-port=0',
     `--user-data-dir=${profile}`,
     'about:blank',
-  ], { stdio: ['ignore', 'ignore', 'pipe'] });
+  ], { stdio: ['ignore', 'ignore', 'pipe'], detached: true });
 
   const kill = () => {
-    try { child.kill('SIGKILL'); } catch { /* already gone */ }
+    if (typeof child.pid === 'number') {
+      try { process.kill(-child.pid, 'SIGKILL'); } catch { /* group already gone */ }
+    }
     try { rmSync(profile, { recursive: true, force: true }); } catch { /* best effort */ }
   };
 
