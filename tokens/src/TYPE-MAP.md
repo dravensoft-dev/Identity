@@ -23,6 +23,7 @@ these values, do not re-derive them.
 | `scrim` | `effects.json` | `color` | structured srgb with `alpha`, rendered as `rgba()` |
 | `scrim-blur`, `focus-width`, `focus-offset` | `effects.json` | `dimension` | px |
 | Durations (`dur-fast/mid/slow`) | `effects.json` | `duration` | ms |
+| Loop durations (`loop-spin/sweep/shimmer/brand/reduced/brand-reduced`) | `effects.json` | `duration` | ms; cyclical motion, deliberately separate from `dur`'s transition range |
 | Easings (`ease-*`) | `effects.json` | `cubicBezier` | `[x1,y1,x2,y2]` |
 | Layering (`z-*`) | `layering.json` | `number` | unitless integers; the family declares the order, the values only preserve it |
 

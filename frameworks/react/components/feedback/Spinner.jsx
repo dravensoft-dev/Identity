@@ -13,8 +13,8 @@ function useSpinKeyframes() {
     s.setAttribute('data-arena-spinner', '');
     s.textContent =
       '@keyframes arena-spinner{to{transform:rotate(360deg)}}' +
-      '.arena-spinner{animation:arena-spinner .7s linear infinite}' +
-      '@media (prefers-reduced-motion:reduce){.arena-spinner{animation-duration:2.4s}}';
+      '.arena-spinner{animation:arena-spinner var(--loop-spin) linear infinite}' +
+      '@media (prefers-reduced-motion:reduce){.arena-spinner{animation-duration:var(--loop-reduced)}}';
     document.head.appendChild(s);
   }, []);
 }

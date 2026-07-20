@@ -38,6 +38,16 @@
     "mid": { "$value": { "value": 220, "unit": "ms" } },
     "slow": { "$value": { "value": 420, "unit": "ms" } }
   },
+  "loop": {
+    "$type": "duration",
+    "$description": "Cyclical motion. Deliberately not part of dur: a transition is a\nresponse to an action and is measured in the hundred-millisecond range; a loop\nreports that work is ongoing and is measured in seconds. Merging them would\nrepeat the fs/dz mistake the type scale already retired. `reduced` is the one\nvalue prefers-reduced-motion slows every working loop to — it was copied into\nthree files before it was a token.",
+    "spin": { "$value": { "value": 700, "unit": "ms" }, "$description": "Spinner, and Button's loading ring" },
+    "sweep": { "$value": { "value": 1150, "unit": "ms" }, "$description": "ProgressBar's indeterminate sweep" },
+    "shimmer": { "$value": { "value": 1400, "unit": "ms" }, "$description": "Skeleton" },
+    "brand": { "$value": { "value": 8000, "unit": "ms" }, "$description": "Rotor — slow enough to read as presence rather than progress" },
+    "reduced": { "$value": { "value": 2400, "unit": "ms" }, "$description": "What a working loop slows to under prefers-reduced-motion. Motion that reports work slows rather than stopping: a frozen spinner reads as a hung process." },
+    "brand-reduced": { "$value": { "value": 24000, "unit": "ms" }, "$description": "Rotor's reduced step — the brand mark is three times slower again, because it is decoration that happens to also mean 'alive'" }
+  },
   "ease": {
     "$type": "cubicBezier",
     "out": { "$value": [0.2, 0.7, 0.3, 1] },

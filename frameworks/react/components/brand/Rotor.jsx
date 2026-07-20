@@ -17,8 +17,8 @@ function useRotorKeyframes() {
     s.setAttribute('data-arena-rotor', '');
     s.textContent =
       '@keyframes arena-rotor{to{transform:rotate(360deg)}}' +
-      '.arena-rotor-spin{animation:arena-rotor 8s linear infinite;transform-origin:50% 50%}' +
-      '@media (prefers-reduced-motion:reduce){.arena-rotor-spin{animation-duration:24s}}';
+      '.arena-rotor-spin{animation:arena-rotor var(--loop-brand) linear infinite;transform-origin:50% 50%}' +
+      '@media (prefers-reduced-motion:reduce){.arena-rotor-spin{animation-duration:var(--loop-brand-reduced)}}';
     document.head.appendChild(s);
   }, []);
 }

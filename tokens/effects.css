@@ -33,6 +33,21 @@
   --dur-fast:120ms;
   --dur-mid:220ms;
   --dur-slow:420ms;
+
+  /*
+     Cyclical motion. Deliberately not part of dur: a transition is a
+     response to an action and is measured in the hundred-millisecond range; a loop
+     reports that work is ongoing and is measured in seconds. Merging them would
+     repeat the fs/dz mistake the type scale already retired. `reduced` is the one
+     value prefers-reduced-motion slows every working loop to — it was copied into
+     three files before it was a token.
+   */
+  --loop-spin:700ms; /* Spinner, and Button's loading ring */
+  --loop-sweep:1150ms; /* ProgressBar's indeterminate sweep */
+  --loop-shimmer:1400ms; /* Skeleton */
+  --loop-brand:8000ms; /* Rotor — slow enough to read as presence rather than progress */
+  --loop-reduced:2400ms; /* What a working loop slows to under prefers-reduced-motion. Motion that reports work slows rather than stopping: a frozen spinner reads as a hung process. */
+  --loop-brand-reduced:24000ms; /* Rotor's reduced step — the brand mark is three times slower again, because it is decoration that happens to also mean 'alive' */
   --ease-out:cubic-bezier(.2,.7,.3,1);
   --ease-in-out:cubic-bezier(.4,0,.2,1);
   --ease-emphatic:cubic-bezier(.2,.9,.1,1); /* the "rotor" flourish */
