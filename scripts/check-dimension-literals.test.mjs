@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scanValue, scanText, scanDefaultsAndCallSites, staleExemptions, stalePassthrough, expressionLeaves, EXEMPT } from './check-dimension-literals.mjs';
+import { scanValue, scanText, scanInjectedCss, scanDefaultsAndCallSites, staleExemptions, stalePassthrough, expressionLeaves, EXEMPT } from './check-dimension-literals.mjs';
 
 test('a bare number is a violation for a dimension-valued property', () => {
   assert.ok(scanValue('fontSize', '13'));
@@ -561,4 +561,45 @@ test('a transform carrying a dimension is judged; a ratio or a share is not', ()
   assert.equal(scanValue('transform', "'scale(0.98)'"), null);
   assert.equal(scanValue('transform', "'rotate(120deg)'"), null);
   assert.equal(scanValue('transform', "'none'"), null);
+});
+
+// --- Task 4: injected CSS (a <style> string, not a JS object literal) ----
+// Every @keyframes in this layer ships inside `s.textContent = '...'`
+// because an inline style object cannot express a keyframe. scanText's
+// PROP_COLON/readValue pair is shaped for a JS object literal (stops at
+// `,`/`}`, only matches unbroken-letter property names) and only ever
+// caught anything inside these strings by coincidence -- `transform` has
+// no hyphen in either grammar. scanInjectedCss reads the string as CSS on
+// its own terms: `;`/`}`-terminated declarations, kebab-case properties
+// mapped to the camelCase name PROPS uses.
+
+test('a dimension inside injected CSS is judged like any other', () => {
+  const source = [
+    "const s = document.createElement('style');",
+    "s.textContent = '@keyframes arena-pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}';",
+  ].join('\n');
+  const hits = scanInjectedCss(source);
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].prop, 'transform');
+  assert.match(hits[0].reason, /raw px/);
+  assert.equal(hits[0].line, 2);
+});
+
+test('injected CSS built from tokens is clean', () => {
+  const source = "s.textContent = '.a{animation:x var(--loop-spin) linear infinite;transform:translateY(var(--sp-2))}';";
+  assert.deepEqual(scanInjectedCss(source), []);
+});
+
+test('a percentage inside injected CSS is not a dimension', () => {
+  const source = "s.textContent = '@keyframes a{0%{left:-140%}100%{left:140%}}';";
+  assert.deepEqual(scanInjectedCss(source), []);
+});
+
+test('a string that is not CSS is left alone', () => {
+  assert.deepEqual(scanInjectedCss("const label = 'Step 1 of 4: 12px away';"), []);
+});
+
+test('a kebab-case CSS property is judged under its camelCase name', () => {
+  const hits = scanInjectedCss("s.textContent = '.a{border-width:2px;box-shadow:0 0 0 2px var(--gold-soft)}';");
+  assert.deepEqual(hits.map((h) => h.prop).sort(), ['borderWidth', 'boxShadow']);
 });

@@ -473,6 +473,54 @@ function scanDataflow(text) {
   return out;
 }
 
+// --- Injected CSS: a <style> string, not a JS object literal --------------
+// Every @keyframes in this layer ships inside `s.textContent = '...'`,
+// because an inline style object cannot express a keyframe. The scanners
+// above are shaped for a JS object literal -- PROP_COLON only matches an
+// unbroken run of letters (so CSS `box-shadow:` reads as a property named
+// `shadow`, invisible, and `border-width:`/`margin-top:` misattribute to
+// `width`/`top`), and readValue stops at `,` or `}` (right for a JS value,
+// wrong for a `;`-terminated CSS declaration). `transform:translateY(8px)`
+// in Dialog/Menu was caught before this task only by coincidence: `transform`
+// has no hyphen in either grammar, and it happened to be the last
+// declaration before a `}`.
+
+/** CSS property names, kebab-case, mapped to the camelCase key PROPS uses.
+ *  Only the governed ones are worth converting — anything else is skipped. */
+function camel(prop) {
+  return prop.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+}
+
+/** Declarations inside a string literal that is really CSS.
+ *
+ *  Keyframes are the one thing an inline style object cannot express, so every
+ *  animation in the layer ships as a <style> injected once — which put its
+ *  dimensions outside every scanner here, because they sit in a string rather
+ *  than at a `prop: value` site. A travel of `translateY(8px)` is the same
+ *  literal whether it is written in JS or in CSS, and the gate now says so.
+ *
+ *  A string counts as CSS when it contains a `{`, a `:` and a `;` or `}` — the
+ *  shape of a rule. That is deliberately loose: a false positive costs a
+ *  declaration being judged that did not need to be, and every judged
+ *  declaration is judged by the same scanValue as the rest of the file.
+ *  @param {string} rawText @returns {{prop: string, raw: string, reason: string, line: number}[]} */
+export function scanInjectedCss(rawText) {
+  const text = blankComments(rawText);
+  const out = [];
+  for (const m of text.matchAll(/(['"`])((?:\\.|(?!\1)[\s\S])*)\1/g)) {
+    const body = m[2];
+    if (!(body.includes('{') && body.includes(':') && /[;}]/.test(body))) continue;
+    const line = lineOf(text, m.index);
+    for (const decl of body.matchAll(/(?:^|[{;])\s*([a-z-]+)\s*:\s*([^;}]+)/g)) {
+      const prop = camel(decl[1]);
+      if (!PROPS.has(prop)) continue;
+      const found = scanValue(prop, decl[2].trim());
+      if (found) out.push({ prop, raw: decl[2].trim(), reason: found.reason, line });
+    }
+  }
+  return out;
+}
+
 /** A prop name that is not itself a governed CSS property, but that a named
  *  component assigns unmodified into one, one line away, in the same file
  *  — verified by reading the component, not inferred. This is deliberately
@@ -588,7 +636,7 @@ function collect() {
     const rel = relative(repoRoot, file);
     const text = readFileSync(file, 'utf8');
     for (const name of passthroughSightings(text)) seenComponents.add(name);
-    const hits = [...scanText(text), ...scanDefaultsAndCallSites(text)];
+    const hits = [...scanText(text), ...scanDefaultsAndCallSites(text), ...scanInjectedCss(text)];
     for (const hit of hits) {
       const key = `${rel}:${hit.prop}:${hit.raw}`;
       matchedKeys.add(key);
