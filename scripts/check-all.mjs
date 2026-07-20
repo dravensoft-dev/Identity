@@ -4,7 +4,7 @@
  * inherited, not buffered), and a pass/fail summary prints once every step
  * has finished. Exit 1 if any step failed, 0 if all passed.
  *
- * Ten steps total: the nine gates in GATES below, plus the test suite.
+ * Eleven steps total: the ten gates in GATES below, plus the test suite.
  *
  * One gate can report a third status. check:cards needs a headless browser,
  * which is the one thing here that is not portable; where there is none it
@@ -41,6 +41,7 @@ export const GATES = [
   { name: 'check:tokens', file: 'check-tokens-generated.mjs' },
   { name: 'check:ramp', file: 'check-ramp.mjs' },
   { name: 'check:tailwind', file: 'check-tailwind.mjs' },
+  { name: 'check:tailwind-generated', file: 'check-tailwind-generated.mjs' },
   { name: 'check:coverage', file: 'check-tailwind-coverage.mjs' },
   { name: 'check:arbitrary', file: 'check-arbitrary-values.mjs' },
   { name: 'check:dimensions', file: 'check-dimension-literals.mjs' },

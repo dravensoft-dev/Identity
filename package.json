@@ -14,9 +14,11 @@
   "scripts": {
     "demos": "bun scripts/serve.mjs",
     "build:tokens": "bun scripts/build-tokens.mjs",
+    "build:tailwind": "bun scripts/build-tailwind.mjs",
     "check:tokens": "bun scripts/check-tokens-generated.mjs",
     "check:dtcg": "bun scripts/check-dtcg.mjs",
     "check:tailwind": "bun scripts/check-tailwind.mjs",
+    "check:tailwind-generated": "bun scripts/check-tailwind-generated.mjs",
     "check:coverage": "bun scripts/check-tailwind-coverage.mjs",
     "check:arbitrary": "bun scripts/check-arbitrary-values.mjs",
     "check:dimensions": "bun scripts/check-dimension-literals.mjs",
