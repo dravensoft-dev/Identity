@@ -1,4 +1,4 @@
 import { tv } from '../../../tailwind/tv';
-import manifest from '../../../tailwind/components/Tag.manifest.json' with { type: 'json' };
+import manifest from '../../../tailwind/components/Tag.manifest';
 
 export const tagStyles = tv(manifest);

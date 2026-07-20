@@ -133,6 +133,8 @@ import { getDefaultConfig } from 'tailwind-merge';
 
 export const ARENA_SPACING_SUFFIXES = ['ctl-h', 'ctl-h-sm', 'ctl-h-lg', 'row-py', 'row-px', 'stack', 'gutter', 'sidebar'];
 
+type ThemeGetterLike = ((theme: Record<string, unknown>) => unknown) & { isThemeGetter?: boolean };
+
 /** True only for the `fromTheme('spacing')` getter. `fromTheme(key)` returns
  *  `(theme) => theme[key] || fallback` and tags it `.isThemeGetter` — so
  *  calling a theme getter with a probe object whose ONLY key is `spacing`
@@ -140,10 +142,10 @@ export const ARENA_SPACING_SUFFIXES = ['ctl-h', 'ctl-h-sm', 'ctl-h-lg', 'row-py'
  *  any other getter (font, text, ease...) finds nothing at `theme[key]` and
  *  returns the fallback instead. This reads tailwind-merge's own public
  *  getter shape rather than a private list. */
-function readsSpacingTheme(validator) {
-  if (typeof validator !== 'function' || !validator.isThemeGetter) return false;
+function readsSpacingTheme(validator: unknown): boolean {
+  if (typeof validator !== 'function' || !(validator as ThemeGetterLike).isThemeGetter) return false;
   const probe = Symbol('spacing-probe');
-  return validator({ spacing: probe }) === probe;
+  return (validator as ThemeGetterLike)({ spacing: probe }) === probe;
 }
 
 /** Every class group in tailwind-merge's default config whose validators
@@ -151,12 +153,13 @@ function readsSpacingTheme(validator) {
  *  tailwind-merge parses the suffix under (normally the groupId itself,
  *  but `start`/`end` each register two spellings — `inset-s`/`start`,
  *  `inset-e`/`end` — for the same group, so both get covered). */
-export function spacingConsumingGroups() {
-  const found = {};
-  for (const [groupId, entries] of Object.entries(getDefaultConfig().classGroups)) {
+export function spacingConsumingGroups(): Record<string, Set<string>> {
+  const found: Record<string, Set<string>> = {};
+  const classGroups = getDefaultConfig().classGroups as Record<string, readonly unknown[]>;
+  for (const [groupId, entries] of Object.entries(classGroups)) {
     for (const entry of entries) {
       if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue;
-      for (const [classPart, validators] of Object.entries(entry)) {
+      for (const [classPart, validators] of Object.entries(entry as Record<string, unknown>)) {
         if (Array.isArray(validators) && validators.some(readsSpacingTheme)) {
           (found[groupId] ??= new Set()).add(classPart);
         }
@@ -166,11 +169,13 @@ export function spacingConsumingGroups() {
   return found;
 }
 
+type ClassGroupEntries = Record<string, string[]>;
+
 /** Unions a generated `{ classPart: suffixes }` registration into a
  *  possibly already hand-written entry for the same groupId, rather than
  *  letting a plain object-spread silently drop one side. */
-function mergeClassGroup(existingEntries, generatedEntries) {
-  const merged = {};
+function mergeClassGroup(existingEntries: ClassGroupEntries[] | undefined, generatedEntries: ClassGroupEntries[]): ClassGroupEntries[] {
+  const merged: ClassGroupEntries = {};
   for (const entry of [...(existingEntries ?? []), ...generatedEntries]) {
     for (const [classPart, suffixes] of Object.entries(entry)) {
       merged[classPart] = [...new Set([...(merged[classPart] ?? []), ...suffixes])];
@@ -179,7 +184,7 @@ function mergeClassGroup(existingEntries, generatedEntries) {
   return [merged];
 }
 
-const handWritten = {
+const handWritten: Record<string, ClassGroupEntries[]> = {
   shadow: [{ shadow: ['1', '2', '3'] }],
   'font-size': [{ text: ['mega', 'hero', 'display', 'h1', 'h2', 'h3', 'h4', 'ctl-lg', 'ctl', 'ctl-md', 'ctl-sm', 'ctl-xs', 'ctl-2xs', 'logo-sm', 'logo-md', 'logo-lg', 'logo-xl'] }],
   rounded: [{ rounded: ['pill'] }],
@@ -193,7 +198,7 @@ const handWritten = {
   'font-weight': [{ font: ['regular'] }],
 };
 
-const classGroups = { ...handWritten };
+const classGroups: Record<string, ClassGroupEntries[]> = { ...handWritten };
 for (const [groupId, classParts] of Object.entries(spacingConsumingGroups())) {
   const generated = [Object.fromEntries([...classParts].map((part) => [part, ARENA_SPACING_SUFFIXES]))];
   classGroups[groupId] = mergeClassGroup(handWritten[groupId], generated);

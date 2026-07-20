@@ -1,0 +1,54 @@
+/* Typechecks the Angular layer, templates included.
+ *
+ * React's specimens work because jsx-loader.js transpiles JSX in the browser
+ * with Babel standalone. Angular cannot do that — decorators and templates need
+ * real compilation — so the layer's only proof that it is valid is this gate.
+ * It is what stops an Angular primitive shipping in the state `tag` shipped in:
+ * written, plausible, never once compiled.
+ *
+ * `ngc` rather than an ng-packagr build: the question here is "does every
+ * template reference something that exists, under strictTemplates", which is
+ * the template typechecker's, and packaging brings config and output that
+ * answer a different question (plan 6's). Emission goes to a temp dir and is
+ * deleted — nothing is written into the repository.
+ *
+ * Spawned as `process.execPath <bin>` for the same reason the Tailwind gate is:
+ * identical behaviour under bun and node, no shell, no package runner.
+ *
+ *   bun scripts/check-angular.mjs      -> exit 0 if the layer typechecks, 1 otherwise
+ */
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+import { repoRoot } from './lib/tailwind-compile.mjs';
+
+/** Compile frameworks/angular with ngc under strictTemplates.
+ *  @param {{root?: string}} [opts]
+ *  @returns {{status: number, output: string}} */
+export function typecheck(opts = {}) {
+  const root = opts.root ?? repoRoot;
+  const bin = join(root, 'node_modules/@angular/compiler-cli/bundles/src/bin/ngc.js');
+  const project = join(root, 'frameworks/angular/tsconfig.check.json');
+  const out = mkdtempSync(join(tmpdir(), 'arena-ngc-'));
+  try {
+    const r = spawnSync(process.execPath, [bin, '-p', project, '--outDir', out], { encoding: 'utf8' });
+    if (r.error) throw new Error(`ngc failed to spawn: ${r.error.message || r.error}`);
+    return { status: r.status ?? 1, output: `${r.stdout || ''}${r.stderr || ''}` };
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+  }
+}
+
+function main() {
+  const { status, output } = typecheck();
+  if (status !== 0) {
+    console.error('check-angular: the Angular layer does not typecheck\n');
+    console.error(output.trim());
+    process.exit(1);
+  }
+  console.log('check-angular: the layer typechecks under strictTemplates');
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) main();

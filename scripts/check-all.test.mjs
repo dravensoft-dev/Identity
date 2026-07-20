@@ -2,16 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { testStep, summarize, stepStatus, GATES } from './check-all.mjs';
 
-test('GATES lists the ten check gates', () => {
-  assert.equal(GATES.length, 10);
+test('GATES lists the eleven check gates', () => {
+  assert.equal(GATES.length, 11);
   assert.deepEqual(
     GATES.map((g) => g.name),
-    ['check:dtcg', 'check:tokens', 'check:ramp', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:arbitrary', 'check:dimensions', 'check:fonts', 'check:cards'],
+    ['check:dtcg', 'check:tokens', 'check:ramp', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:arbitrary', 'check:dimensions', 'check:fonts', 'check:cards', 'check:angular'],
   );
 });
 
-test('check:cards runs last, because it is the one that costs minutes', () => {
-  assert.equal(GATES.at(-1).name, 'check:cards');
+test('check:angular runs last, after check:cards', () => {
+  assert.equal(GATES.at(-1).name, 'check:angular');
 });
 
 test('testStep runs every suite under bun', () => {

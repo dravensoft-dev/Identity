@@ -11,7 +11,19 @@
  * compileLayer() — so a class that no manifest declares does not exist here,
  * and a specimen page cannot invent styling the manifest does not carry.
  *
+ * Each manifest also gets a `.manifest.ts` sibling — `export default {…} as
+ * const;`. A plain `import … from '*.manifest.json'` resolves under
+ * `resolveJsonModule`, but TypeScript widens every JSON property to its base
+ * type (`string`, not the literal union a recipe's `defaultVariants` needs —
+ * verified against the real compiler in frameworks/angular/tsconfig.check.json,
+ * where `tv(manifest)` only typechecks against the `as const` module). The
+ * JSON stays the source of truth and the authored artifact; the `.ts` is build
+ * output like utilities.css, and an Angular recipe imports it instead of the
+ * JSON directly.
+ *
  *   bun scripts/build-tailwind.mjs      -> writes frameworks/tailwind/utilities.css
+ *                                          and a frameworks/tailwind/components/*.manifest.ts
+ *                                          beside every *.manifest.json
  */
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -32,11 +44,36 @@ export function buildTailwind(opts = {}) {
   return BANNER + css;
 }
 
+/** Render a manifest as a `.manifest.ts` module carrying the same data
+ *  `as const`, so a TypeScript consumer gets the manifest's literal string
+ *  unions instead of the widened `string` a JSON import gives every property.
+ *  @param {object} manifest @returns {string} */
+export function manifestModule(manifest) {
+  return `${BANNER}export default ${JSON.stringify(manifest, null, 2)} as const;\n`;
+}
+
+/** Every `.manifest.ts` sibling the current manifests compile to.
+ *  @param {{root?: string}} [opts]
+ *  @returns {Map<string, string>} absolute `.manifest.ts` path -> file contents */
+export function buildManifestModules(opts = {}) {
+  const { manifests } = compileLayer(opts);
+  const components = join(opts.root ?? repoRoot, 'frameworks', 'tailwind', 'components');
+  const out = new Map();
+  for (const [file, manifest] of manifests)
+    out.set(join(components, file.replace(/\.json$/, '.ts')), manifestModule(manifest));
+  return out;
+}
+
 function main() {
   const text = buildTailwind();
   const path = generatedPath();
   writeFileSync(path, text);
   console.log(`build-tailwind: wrote ${path} (${text.length} bytes)`);
+
+  for (const [tsPath, content] of buildManifestModules()) {
+    writeFileSync(tsPath, content);
+    console.log(`build-tailwind: wrote ${tsPath}`);
+  }
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

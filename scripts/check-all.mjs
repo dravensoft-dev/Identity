@@ -4,7 +4,7 @@
  * inherited, not buffered), and a pass/fail summary prints once every step
  * has finished. Exit 1 if any step failed, 0 if all passed.
  *
- * Eleven steps total: the ten gates in GATES below, plus the test suite.
+ * Twelve steps total: the eleven gates in GATES below, plus the test suite.
  *
  * One gate can report a third status. check:cards needs a headless browser,
  * which is the one thing here that is not portable; where there is none it
@@ -47,6 +47,7 @@ export const GATES = [
   { name: 'check:dimensions', file: 'check-dimension-literals.mjs' },
   { name: 'check:fonts', file: 'check-fonts-generated.mjs' },
   { name: 'check:cards', file: 'check-card-viewports.mjs' },
+  { name: 'check:angular', file: 'check-angular.mjs' },
 ];
 
 /** The test-suite step for the runtime this process is executing under.
