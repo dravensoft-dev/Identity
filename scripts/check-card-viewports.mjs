@@ -295,10 +295,42 @@ export function summarizeCards(results) {
     for (const r of unders) lines.push(`  ${r.message}`);
   }
   if (!clips.length && !unrendered.length) {
-    lines.push(`check-card-viewports: ${results.length} page(s) measured, every one fits its declared viewport`);
+    // A warning is not a failure, but the tail still has to agree with
+    // whatever the warnings block above just printed — "every one fits"
+    // right under a list of under-runs reads as the two halves of this
+    // function disagreeing with each other.
+    lines.push(unders.length
+      ? `check-card-viewports: ${results.length} page(s) measured, none render past its declared box — ${unders.length} warning(s) above`
+      : `check-card-viewports: ${results.length} page(s) measured, every one fits its declared viewport`);
   }
 
   return { text: lines.join('\n'), failed: clips.length, warned: unders.length, unrendered: unrendered.length };
+}
+
+/** Measure and classify one page, catching whatever measurePage rejects
+ *  with — a navigate/evaluate timeout, a dropped CDN connection, a page-side
+ *  exception surfaced through exceptionDetails, all realistic per the
+ *  comments above measurePage — so a single flaky page cannot take the
+ *  whole sweep down with it. Routed to 'unrendered': the file already
+ *  treats "the browser ran but this page could not be measured" as a
+ *  skip-class condition, never a pass, and the message names both the page
+ *  and the underlying error rather than a bare "could not measure".
+ *  @param {{send: Function}} cdp @param {string} file @param {string} pageRoot
+ *  @param {number} port
+ *  @returns {Promise<{file: string, status: string, message: string}>} */
+export async function measureCardPage(cdp, file, pageRoot, port) {
+  const declared = parseDsCard(readFileSync(join(pageRoot, file), 'utf8'));
+  const url = `http://127.0.0.1:${port}/${file.split('/').map(encodeURIComponent).join('/')}`;
+  try {
+    const measured = await measurePage(cdp, url, { width: declared.width, height: declared.height });
+    return classify({ file, declared, measured });
+  } catch (err) {
+    return {
+      file,
+      status: 'unrendered',
+      message: `${file} could not be measured — ${err.message}`,
+    };
+  }
 }
 
 /** The exit code for "this gate cannot run here". 2 is the loud skip
@@ -335,9 +367,7 @@ async function main() {
   const results = [];
   try {
     for (const file of pages) {
-      const declared = parseDsCard(readFileSync(join(root, file), 'utf8'));
-      const measured = await measurePage(cdp, `http://127.0.0.1:${server.port}/${file.split('/').map(encodeURIComponent).join('/')}`, { width: declared.width, height: declared.height });
-      results.push(classify({ file, declared, measured }));
+      results.push(await measureCardPage(cdp, file, root, server.port));
     }
   } finally {
     cdp.close();
@@ -346,6 +376,10 @@ async function main() {
   }
 
   const summary = summarizeCards(results);
+  // A run can carry both a clip and an unrendered page at once. This branch
+  // checks failed first, so that combination exits 1, not 2 — a known
+  // over-run is more actionable than a page nothing could measure, and
+  // both are printed either way, so the choice only affects the exit code.
   if (summary.failed) {
     console.error(summary.text);
     process.exit(1);

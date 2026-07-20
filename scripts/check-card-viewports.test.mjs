@@ -9,7 +9,7 @@ import { findChromium, launchChromium } from './lib/chromium.mjs';
 import { connect } from './lib/cdp.mjs';
 import {
   parseDsCard, classify, summarizeCards, skipExitCode, findCardPages, UNDER_RUN_SLACK,
-  measurePage,
+  measurePage, measureCardPage,
 } from './check-card-viewports.mjs';
 
 /* The only test here that needs a browser. It skips — loudly, in the
@@ -177,6 +177,59 @@ test('a slow-but-honest page times out inside the script instead of past the out
   }
 });
 
+/* Fakes the CDP transport, not the browser — measureCardPage's job is to
+ * catch whatever measurePage rejects with, and measurePage rejects purely
+ * off what cdp.send does, so no real Chromium is needed to prove it. This
+ * runs even where the browser-backed tests above skip. */
+function fakeCdp(failingUrls) {
+  return {
+    send: async (method, params) => {
+      switch (method) {
+        case 'Target.createTarget': return { targetId: 't' };
+        case 'Target.attachToTarget': return { sessionId: 's' };
+        case 'Emulation.setDeviceMetricsOverride': return {};
+        case 'Page.navigate':
+          if (failingUrls.has(params.url)) throw new Error('stalled connection');
+          return {};
+        case 'Runtime.evaluate':
+          return {
+            result: {
+              value: {
+                scrollWidth: 100, scrollHeight: 100, clientWidth: 100, clientHeight: 100,
+                contentHeight: 100, rendered: true, timedOut: false,
+              },
+            },
+          };
+        case 'Target.closeTarget': return {};
+        default: throw new Error(`fakeCdp: unexpected method ${method}`);
+      }
+    },
+  };
+}
+
+test('measureCardPage records a rejecting page as unrendered, and the sweep still measures the pages after it', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'arena-cards-'));
+  const card = (name) => `<!-- @dsCard group="G" viewport="100x100" name="${name}" -->\n<!doctype html>`;
+  writeFileSync(join(root, 'a.html'), card('a'));
+  writeFileSync(join(root, 'b.html'), card('b'));
+  writeFileSync(join(root, 'c.html'), card('c'));
+
+  const port = 9999;
+  const cdp = fakeCdp(new Set([`http://127.0.0.1:${port}/b.html`]));
+
+  const results = [];
+  for (const file of ['a.html', 'b.html', 'c.html']) {
+    results.push(await measureCardPage(cdp, file, root, port));
+  }
+
+  assert.equal(results.length, 3, 'the failing page does not stop the loop before the pages after it');
+  assert.equal(results[0].status, 'ok');
+  assert.equal(results[1].status, 'unrendered', 'a rejection is recorded as a result, not thrown past the loop');
+  assert.match(results[1].message, /b\.html/, 'the message names the page');
+  assert.match(results[1].message, /stalled connection/, 'the message names the underlying error, not just "could not measure"');
+  assert.equal(results[2].status, 'ok', 'the page after the failing one is still measured');
+});
+
 test('parseDsCard reads the group, name and viewport off the first line', () => {
   const html = '<!-- @dsCard group="Components" viewport="700x460" name="Display" subtitle="Card · Badge" -->\n<!doctype html>';
   assert.deepEqual(parseDsCard(html), { group: 'Components', name: 'Display', width: 700, height: 460 });
@@ -194,6 +247,14 @@ test('parseDsCard returns null for a page that declares nothing', () => {
 
 test('parseDsCard only reads the first line — a @dsCard further down is not a declaration', () => {
   assert.equal(parseDsCard('<!doctype html>\n<!-- @dsCard group="X" viewport="10x10" name="n" -->'), null);
+});
+
+test('parseDsCard returns null when viewport is missing', () => {
+  assert.equal(parseDsCard('<!-- @dsCard group="X" name="n" -->'), null);
+});
+
+test('parseDsCard returns null when viewport is not WxH', () => {
+  assert.equal(parseDsCard('<!-- @dsCard group="X" viewport="large" name="n" -->'), null);
 });
 
 test('content that fits exactly is ok', () => {
@@ -262,6 +323,23 @@ test('summarizeCards on a clean sweep says so and fails nothing', () => {
   const s = summarizeCards([{ file: 'a.html', status: 'ok', message: '' }]);
   assert.equal(s.failed, 0);
   assert.match(s.text, /1 page/);
+});
+
+/* menu-pagination.card.html under-runs by 131px and is deliberately not
+ * being corrected yet, so this is the exact combination the first clean run
+ * after it lands in check-all will print: no clip, no unrendered page, but
+ * a warning. The old tail claimed "every one fits" directly under a list of
+ * under-runs — a contradiction of the block it sits right below. */
+test('summarizeCards does not claim a clean sweep when it just printed under-run warnings', () => {
+  const s = summarizeCards([
+    { file: 'a.html', status: 'ok', message: '' },
+    { file: 'menu-pagination.card.html', status: 'under', message: 'menu-pagination.card.html renders 131px short' },
+  ]);
+  assert.equal(s.failed, 0, 'a warning never fails the build');
+  assert.equal(s.warned, 1);
+  assert.doesNotMatch(s.text, /every one fits/, 'the tail must not contradict the warning block above it');
+  assert.match(s.text, /2 page/);
+  assert.match(s.text, /1 warning/);
 });
 
 test('a page that never rendered is a skip-class condition, not a pass', () => {
