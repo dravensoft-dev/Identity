@@ -62,8 +62,14 @@ never re-defines a value.
 **A dimension in a framework layer is a token or a derivation of tokens. A bare
 literal is a bug.** This is machine-checked: `bun run check:dimensions` scans
 `frameworks/` for literals in the properties the token layer governs and fails on
-each. A value passes when it is `var(--token)`, a `calc()` over one, zero, or a unit
-the token layer does not model (`%`, `ch`, `fr`, and the viewport and angle units). A
+each. A value passes when it is `var(--token)`, a `calc()`/`min()`/`max()`/`clamp()` over
+one, zero, or a unit the token layer does not model (`%`, `ch`, `fr`, and the viewport
+and angle units — DTCG admits only `px` and `rem` in a dimension, so none of those is
+expressible as a token). **The same three shapes are what a Tailwind bracket may hold**;
+the two gates read one list. The scan reaches four kinds of site: a JS declaration, a
+template literal's interpolation, CSS injected as a string (every `@keyframes` in the
+layer lives in one), and an SVG presentation attribute in `prop="value"` form. An
+expression binding — `r={hover ? 5 : 4}` — is outside all of them. A
 literal reached through an intermediate local variable is still caught — a dataflow
 rule traces a bare identifier at a governed property back to its `const`/`let`
 declaration in the same file — but only when that identifier is used bare (no member
@@ -71,9 +77,12 @@ access, no call, no arithmetic) at the governed site; a value buried behind eith
 outside what the rule can trace. A handful of sites are exempt by name with a reason
 each, the way the coverage gate's token exclusions are — read `EXEMPT` for the current
 set rather than a count written here, which would drift: `Calendar`'s local `zIndex`
-(stacking scoped inside one positioned container, not part of the global `z` order), `Avatar`'s
-`fontSize` ratio (scales the initials with the avatar's own diameter — a multiplier,
-not a dimension), and `Rotor`'s brand-mark `width` plus its two call sites in `Shell`
+(stacking scoped inside one positioned container, not part of the global `z` order); a
+runtime projection of data onto a screen position — a chart tooltip's offset derived
+from a hovered value, an hour label's offset derived from a clock minute, an event
+block's height derived from its duration — where the literal is the true value at
+that site because nothing in `tokens/src/` could stand in for a number computed from
+data at runtime; and `Rotor`'s brand-mark `width` plus its two call sites in `Shell`
 and `LoginScreen` (Dravensoft's identity is explicitly not themeable). A stale
 exemption — one that no longer matches a real violation — fails the gate itself. The
 gate scans `.jsx`, `.ts` and `.tsx` under `frameworks/` — it does not scan `.html`;
