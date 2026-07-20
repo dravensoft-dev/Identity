@@ -8,20 +8,20 @@
 |---|---|---|
 | 1–4 | token migration, Overview, coverage, geometry boundary | **Executed** |
 | 4.5 | `2026-07-19-4.5-token-debt-and-gate-blind-spots.md` | **Executed** |
-| 4.75 | `2026-07-19-4.75-applogo-sidenav-activityfeed-unauthcard-design.md` | Design approved, plan not yet written — fixed the manifest roster this plan counts against (20 → 21 orphan manifests; see "Also depends on" below) |
+| 4.75 | `2026-07-19-4.75-applogo-sidenav-activityfeed-unauthcard-design.md` | **Executed** (unreleased) — fixed the manifest roster this plan counts against (20 → 21 orphan manifests), and its plan's Task 7 wrote Task 23 below |
 | 5a | `2026-07-18-5a-angular-primitive-parity.md` | Pending — **hard prerequisite**, Tasks 1–3 |
 | 5b | `2026-07-18-5b-tailwind-manifest-parity.md` | **This plan** — pending |
 | 5.5 | `2026-07-19-5.5-chart-geometry-token-target-design.md` | DRAFT — not approved, seven open questions |
 | 6 | `2026-07-18-6-four-package-build-publish.md` | Pending |
 
-**Goal:** Ship the twenty-one manifests a framework-neutral Tailwind consumer needs — the controls and containers Angular Material would otherwise provide — so `@dravensoft/arena-tailwind` can dress a whole application rather than the gap components alone. Twenty are this plan's own tasks; spec 4.75 added the twenty-first (`SideNav`, bridged in Angular through `mat-nav-list` rather than a primitive) to the roster after this plan was written, and its task is not yet authored here (see "What this plan does not do").
+**Goal:** Ship the twenty-one manifests a framework-neutral Tailwind consumer needs — the controls and containers Angular Material would otherwise provide — so `@dravensoft/arena-tailwind` can dress a whole application rather than the gap components alone. Twenty are Tasks 3–22; spec 4.75 added the twenty-first (`SideNav`, bridged in Angular through `mat-nav-list` rather than a primitive) to the roster after this plan was written, and it is Task 23.
 
 **Architecture:** No Angular. Each task is a manifest plus the specimen page that exercises it, built on the harness 5a already installed: `bun run check:tailwind` proves every class emits a rule, `check:coverage` proves every token still reaches a utility, `check:arbitrary` proves no bracket carries a literal, and the specimen proves the classes compose into the component Arena's README specifies. Two shared files land first so twenty pages are not twenty copies of the same boilerplate.
 
 **Tech Stack:** Bun, Tailwind CSS 4.3.3, the manifest/specimen harness from plan 5a, `node:test` + `node:assert/strict`.
 
 **Source spec:** `docs/superpowers/specs/2026-07-18-5-framework-layer-parity-design.md`, phase 3.
-**Also depends on:** `docs/superpowers/specs/2026-07-19-4.75-applogo-sidenav-activityfeed-unauthcard-design.md` — approved in design, no plan written yet. It added `SideNav` to this plan's roster: a manifest with no Angular consumer, exactly this plan's shape, because Material's `mat-nav-list` covers the Angular side instead of an `arena-*` primitive. `AppLogo`, `ActivityFeed` and `UnauthCard` also need manifests, but each has an Angular consumer (5a's roster, not this one).
+**Also depends on:** `docs/superpowers/specs/2026-07-19-4.75-applogo-sidenav-activityfeed-unauthcard-design.md` — executed; the four React components exist. It added `SideNav` to this plan's roster: a manifest with no Angular consumer, exactly this plan's shape, because Material's `mat-nav-list` covers the Angular side instead of an `arena-*` primitive. `AppLogo`, `ActivityFeed` and `UnauthCard` also need manifests, but each has an Angular consumer (5a's roster, not this one).
 
 ---
 
@@ -41,9 +41,8 @@ it was needed: it was authored with no consumer, never exercised, and accumulate
 arbitrary values that violated the layer's own rule.
 
 Twenty of the twenty-one are Tasks 3–22 below. The twenty-first, `SideNav`, joined
-this list when spec 4.75 landed — its task is not written here (see "What this plan
-does not do"), so every count elsewhere in this document that says "twenty" is
-counting only the tasks that exist.
+this list when spec 4.75 landed and is Task 23 — so a count of "twenty" elsewhere in
+this document is counting the original roster, before that spec.
 
 ## Prerequisites — verify before Task 1
 
@@ -96,7 +95,7 @@ rather than restating durations.
 
 ## The shape of a task
 
-Twenty tasks, one component each, all the same five steps:
+Twenty-one tasks, one component each, all the same five steps:
 
 1. **Read the React source** named in the task. It is the reference for shape and
    behaviour; the token layer is the authority on values.
@@ -2255,7 +2254,115 @@ git commit -m "feat(tailwind): add the Spinner manifest"
 
 ---
 
-## Task 23: Close out the layer
+## Task 23: SideNav
+
+**Reference:** `frameworks/react/components/navigation/SideNav.jsx`, demoed in
+`frameworks/react/components/navigation/navigation.card.html`.
+
+Spec 4.75's addition to this plan's roster, and the twenty-first manifest. It is this
+plan's shape exactly — a manifest with **no Angular primitive consuming it** — but for a
+reason none of the other twenty share: Angular Material covers the item list with
+`mat-nav-list` + `<a mat-list-item [activated]>`, so 5a bridges it in
+`theme/arena-material.css` (5a's Task 27) rather than writing an `arena-side-nav`. **So
+this manifest mirrors what that bridge renders, and no gate compares the two** —
+`Tag.manifest.json`/`arena-tag` is the same hazard from the other direction. When either
+moves, check the other by hand.
+
+React renders **an anchor when the item has `href` and a button otherwise**, and the two
+must be visually indistinguishable — that is one style object in React and one `item`
+slot here, applied to both elements. The variant is the active state, and it is the
+component's whole vocabulary: crimson on crimson-soft, semibold, against muted medium on
+transparent.
+
+- [ ] **Step 1: Write the manifest**
+
+Create `frameworks/tailwind/components/SideNav.manifest.json`:
+
+```json
+{
+  "component": "SideNav",
+  "slots": {
+    "root": "flex flex-col gap-1",
+    "item": "flex items-center gap-3 px-3 py-2.5 rounded-sm border-none cursor-pointer text-left no-underline font-body text-ctl"
+  },
+  "variants": {
+    "active": {
+      "true": { "item": "bg-primary/14 text-primary font-semibold" },
+      "false": { "item": "bg-transparent text-base-content/62 font-medium" }
+    }
+  },
+  "defaultVariants": { "active": "false" }
+}
+```
+
+`px-3 py-2.5` is React's `calc(var(--sp-1) * 3)` / `calc(var(--sp-1) * 2.5)` through the
+ledger's spacing row, and `bg-primary/14` is `--crimson-soft` — the alias *is* that
+`color-mix`, so the modifier and the alias resolve identically. **No hover variant**: the
+React component ships none, and adding one here would be styling with no component behind
+it. If a hover state is later agreed for `SideNav`, it arrives as a `hover:` modifier on
+the `item` slot in both places at once.
+
+- [ ] **Step 2: Write the specimen**
+
+Create `frameworks/tailwind/components/SideNav.card.html`:
+
+```html
+<!-- @dsCard group="Tailwind" viewport="420x320" name="SideNav" subtitle="The sidebar's navigation list, rendered from SideNav.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./SideNav.manifest.json')).json();
+
+function nav(entries, current) {
+  const root = el('nav', { class: classesFor(manifest).root, 'aria-label': 'Primary' });
+  for (const { label, href } of entries) {
+    const on = label === current;
+    const c = classesFor(manifest, { active: String(on) });
+    root.append(href
+      ? el('a', { class: c.item, href, 'aria-current': on ? 'page' : undefined, text: label })
+      : el('button', { class: c.item, type: 'button', 'aria-current': on ? 'page' : undefined, text: label }));
+  }
+  return root;
+}
+
+mountSpecimen({ sections: [
+  section('Links, one current', [nav([
+    { label: 'Overview', href: '#overview' },
+    { label: 'Projects', href: '#projects' },
+    { label: 'Activity', href: '#activity' },
+    { label: 'Settings', href: '#settings' },
+  ], 'Projects')], { stack: true }),
+  section('Buttons — no href, same figure', [nav([
+    { label: 'Overview' }, { label: 'Projects' },
+  ], 'Overview')], { stack: true }),
+]});
+</script></body></html>
+```
+
+The second section is the point of the specimen: an anchor and a button carrying the same
+`item` class must be pixel-identical. If the button sits differently, the manifest is
+missing a reset the browser's default button styling is supplying.
+
+- [ ] **Step 3: Rebuild, gate, look, commit** (against `navigation/navigation.card.html`)
+
+Compare the active item against the console's sidebar in
+`frameworks/react/ui_kits/console/index.html` too — it is the only place the component is
+used in anger.
+
+```bash
+git add frameworks/tailwind/components/SideNav.manifest.json \
+        frameworks/tailwind/components/SideNav.card.html frameworks/tailwind/utilities.css
+git commit -m "feat(tailwind): add the SideNav manifest"
+```
+
+---
+
+## Task 24: Close out the layer
 
 **Files:**
 - Modify: `frameworks/tailwind/README.md`
@@ -2264,24 +2371,24 @@ git commit -m "feat(tailwind): add the Spinner manifest"
 
 - [ ] **Step 1: Correct the inventory**
 
-**Roster note, added when spec 4.75 landed:** the system-wide target is 40 manifests
-(the 44 components spec 4.75 leaves React with, minus the four that get none — the
-three SVG charts and Calendar), not the 36 below. `SideNav`'s manifest is this plan's
-missing 21st task; `AppLogo`, `ActivityFeed` and `UnauthCard` are 5a's three new
-primitives and each needs one too. None of the four exist yet. The block below still
-counts only what Tasks 1–22 here and 5a's original 18 primitives ship together —
-write it as given, and correct it again once all four land.
+**Roster note, settled:** the system-wide target is 40 manifests — the 44 components
+spec 4.75 leaves React with, minus the four that get none (the three SVG charts and
+Calendar). All 40 now have a task. Twenty of them are Tasks 3–22 here, `SideNav` is
+Task 23 here, and the other nineteen ship with 5a's primitives (its Tasks 4–22 and
+24–26). The block below counts the finished roster, not a milestone.
 
 In `frameworks/tailwind/README.md`, replace the "What ships here" section 5a added with:
 
 ```markdown
 ## What ships here
 
-`components/` holds **36 manifests**, one per component, each with a specimen page
-beside it that renders the real markup from the real recipe with no build step. Sixteen
-have an Angular primitive consuming them; twenty do not, and what holds those up is
+`components/` holds **40 manifests**, one per component, each with a specimen page
+beside it that renders the real markup from the real recipe with no build step. Nineteen
+have an Angular primitive consuming them; twenty-one do not, and what holds those up is
 `bun run check:tailwind` — every class a manifest declares must produce a rule, so a
-manifest with no consumer cannot rot silently.
+manifest with no consumer cannot rot silently. `SideNav` is the odd one in that second
+group: Angular consumes it through Material's `mat-nav-list`, dressed by
+`arena-material.css`, rather than through an `arena-*` primitive.
 
 **The three SVG charts and Calendar have no manifest, on purpose.** `BarChart`,
 `LineChart` and `DoughnutChart` are SVG geometry driven by measured container width:
@@ -2300,18 +2407,15 @@ terms.
 
 - [ ] **Step 2: Correct `CLAUDE.md`**
 
-Same roster note as Step 1: once `SideNav`, `AppLogo`, `ActivityFeed` and `UnauthCard`
-have tasks, the "16 of 36" and "other 20" figures below become "19 of 40" and "other
-21." Not yet — this step still describes only Tasks 1–22 plus 5a's original 18.
-
 The sentence about manifest-to-component mapping that 5a rewrote needs one more pass now
-that twenty manifests have no Angular consumer at all. Replace it with:
+that twenty-one manifests have no Angular primitive consuming them. Replace it with:
 
 ```markdown
 **No gate compares a Tailwind manifest against the component it mirrors, and the
-mapping is not one-to-one**: 16 of the 36 manifests mirror both a React component and an
-`arena-*` primitive; the other 20 mirror a React component alone, because Angular
-Material provides that control and `arena-material.css` dresses it. `Tag.manifest.json`
+mapping is not one-to-one**: 19 of the 40 manifests mirror both a React component and an
+`arena-*` primitive; the other 21 mirror a React component alone, because Angular
+Material provides that control and `arena-material.css` dresses it — `SideNav` among
+them, bridged through `mat-nav-list`. `Tag.manifest.json`
 is the one that mirrors an **Angular** primitive whose React namesake is a different
 component. `check:tailwind` proves every class resolves; nothing proves a manifest still
 matches the component it was derived from, so check by hand when either has moved.
@@ -2319,21 +2423,17 @@ matches the component it was derived from, so check by hand when either has move
 
 - [ ] **Step 3: Write the changelog entry**
 
-Same roster note again: this entry and its "36 manifests" line describe Tasks 1–22
-plus 5a's original 18 only. `SideNav`, `AppLogo`, `ActivityFeed` and `UnauthCard` need
-their own changelog line once their tasks exist.
-
 Under `## [Unreleased]`, in the `### Added` block 5a started:
 
 ```markdown
-- **20 more component manifests** — Button (completed: `secondary` and `ghost` were
+- **21 more component manifests** — Button (completed: `secondary` and `ghost` were
   missing), IconButton, Input, Textarea, Select, Checkbox, Radio, Switch,
   SegmentedControl, Card, Badge, Table, Tabs, Dialog, Menu, Tooltip, Toast, Pagination,
-  ProgressBar, Spinner — each with a specimen page. These are what a framework-neutral
-  consumer hand-rolls; Angular consumers use Material for the same 20, dressed by
-  `arena-material.css`. The Tailwind layer now ships 36 manifests: the parity spec's 35,
-  plus `ChartCard`, which the spec grouped with the SVG charts and which a manifest holds
-  comfortably.
+  ProgressBar, Spinner, SideNav — each with a specimen page. These are what a
+  framework-neutral consumer hand-rolls; Angular consumers use Material for the same 21,
+  dressed by `arena-material.css` — `SideNav` through `mat-nav-list`. The Tailwind layer
+  now ships 40 manifests: one for every React component except the three SVG charts and
+  Calendar, which have none on purpose.
 - **`frameworks/tailwind/specimen.css`** — one stylesheet for every specimen page.
 ```
 
@@ -2342,14 +2442,14 @@ Under `## [Unreleased]`, in the `### Added` block 5a started:
 ```bash
 bun run build:tailwind && bun run check
 ```
-Expected: `check-all: all 11 step(s) passed`, and `check-tailwind` reporting **36
+Expected: `check-all: all 11 step(s) passed`, and `check-tailwind` reporting **40
 manifests**.
 
 ```bash
 ls frameworks/tailwind/components/*.manifest.json | wc -l
 ls frameworks/tailwind/components/*.card.html | wc -l
 ```
-Expected: `36` and `36`.
+Expected: `40` and `40`.
 
 ```bash
 git diff --stat main -- frameworks/react/
@@ -2359,10 +2459,10 @@ Expected: **no output**.
 ```bash
 bun run check:arbitrary
 ```
-Expected: `check-arbitrary-values: … none`. Every bracket in all 36 manifests holds a
+Expected: `check-arbitrary-values: … none`. Every bracket in all 40 manifests holds a
 `var()`, a derivation of one, or a unit the token layer does not model.
 
-Then, with `bun run demos` running, open all 36 specimens in **dark**, in **light**, and
+Then, with `bun run demos` running, open all 40 specimens in **dark**, in **light**, and
 in **`.arena-compact`**, each against the React card page its task names. A specimen that
 renders unstyled means `utilities.css` is stale — rebuild before concluding anything.
 
@@ -2370,7 +2470,7 @@ renders unstyled means `utilities.css` is stale — rebuild before concluding an
 
 ```bash
 git add frameworks/tailwind/README.md CLAUDE.md CHANGELOG.md
-git commit -m "docs: the Tailwind layer ships 36 manifests, and says so"
+git commit -m "docs: the Tailwind layer ships 40 manifests, and says so"
 ```
 
 ---
@@ -2385,8 +2485,8 @@ git commit -m "docs: the Tailwind layer ships 36 manifests, and says so"
   `arena-*` is the parity spec's first stated non-goal.
 - **No manifest for the three SVG charts or Calendar.** Stated above, and in both
   READMEs. `ChartCard` has one; plan 5a wrote it.
-- **`SideNav`'s manifest**, spec 4.75's addition to this plan's own roster (20 → 21).
-  It is this plan's shape exactly — no Angular consumer, same five steps as Tasks
-  3–22 — but its task is not written here, per this pass's own instructions. `AppLogo`,
-  `ActivityFeed` and `UnauthCard` need manifests too, but each has an Angular
-  consumer and so are 5a's roster (18 → 21), not this plan's.
+- **`AppLogo`, `ActivityFeed` and `UnauthCard`'s manifests.** They need manifests like
+  everything else, but each has an Angular primitive consuming it, so each ships inside
+  its own slice in 5a (Tasks 24–26) rather than here. `SideNav` *is* here — Task 23 —
+  because Material's `mat-nav-list` covers its Angular side and it therefore has this
+  plan's shape: a manifest with no `arena-*` primitive behind it.

@@ -387,8 +387,32 @@ layer on top.
 ## Intentional additions
 - **Consistency tokens (shipped in v1.0.0):** `--danger-strong` (symmetric to `--crimson-strong`/`--gold-strong`) and `--scrim`/`--scrim-blur` (unified modal backdrop, in `tokens/effects.css`). With these, no hardcoded colors (`#fff`, `rgba(20,16,16,.6)`) remain in the components: everything goes through a token, including `--on-accent`. *Current status:* after the migration to daisyUI tokens, the `*-strong` variants **alias to their accent's base color**; they're kept as an extension point in case a theme defines a distinct pressed tone.
 - **Rotor** (brand component) — wrapper around the symbol for splash/loading states; it doesn't exist as a "component" in the identity but is needed for product.
+- **`AppLogo`** (brand) — the lock-up: a mark paired with a product name, at four steps
+  of the `--logo-*` scale. It exists because two screens assembled the same figure by
+  hand and one of them got it wrong — a crimson mark beside an undivided `DRAVENSOFT`,
+  which is half of the manual's Primary variant and half of its Monochrome one. Nothing
+  defaults: Arena ships MIT, so a component that rendered Dravensoft's mark when passed
+  nothing would ship someone else's trademark by omission.
+- **`SideNav`** (navigation) — the sidebar's navigation list, and only the list. Every
+  product with a session has one, and the second product to need one would otherwise
+  write a different one: the two would disagree about the active state's colour, the
+  icon's size, and whether an item is a link or a button. An item with `href` renders an
+  anchor; without one, a button.
+- **`ActivityFeed`** (display) — the event feed. It holds the grammar (someone did
+  something to something, then) and the typography each part takes, with `renderItem`
+  as the escape hatch for the event that does not fit — the same shape `Table` gives
+  through `columns[].render`.
+- **`UnauthCard`** (display) — the panel a signed-out screen needs. A frame, not a form:
+  it knows nothing about credentials, which is what lets one component serve sign-in,
+  "check your inbox", "this link expired" and two-factor entry. It renders `Card`
+  internally and does not centre itself — the product owns the page.
 - **Phosphor Icons iconography** — set adopted in the absence of one in the identity; Bold weight as the default (see the ICONOGRAPHY section).
 - **Remediation components** (following the Nielsen heuristic audit):
   - *Review 2 (severity 3):* `ConfirmDialog` (destructive action confirmation, H3/H5), `EmptyState` and `ErrorState` (recovery, H9), `CommandPalette` (⌘K accelerator, H7), `Toast.action` and `Input` with validation (H5, H9).
   - *Review 3 (severity 2):* `Skeleton` (async loading) and `Toast persist` (H1), `Breadcrumbs` (H3), `Switch confirm`/`onRequestChange` (H5), `IconButton showLabel` (H6), `BulkActionBar` and **density tokens** (`--dz-*` + `.arena-compact` scope) (H7), `--mute-2` recalibrated for AA **in the dark theme only** — the light theme was never re-measured and sat at 3.46:1, below the 4.5:1 bar; the level was removed in 2.0.0 (H8) — and guided `Onboarding` (H10).
   - *Review 4 (severity 1):* determinate `ProgressBar` (H1); **unified dismiss** with Phosphor `ph-x` on Tag/Toast (H4); **Badge tone taxonomy** clarified — status vs. emphasis — (H4/H8); **uppercase microcopy** guidance (H2/H6/H8) and the **Do/Don't** convention in every component's docs (H10). With this, no findings of severity ≥1 remain; the current maximum severity is 0.
+- **No `AppShell`, decided rather than deferred.** The application frame is the largest
+  component a library of this kind can hold and its boundary is the blurriest: every
+  product wants one more slot, and it accretes props until it is a configuration
+  language. The frame stays the product's to compose from small pieces —
+  `AppLogo`, `SideNav`, `PageHead` — and everything Arena ships stays a piece, not a page.
