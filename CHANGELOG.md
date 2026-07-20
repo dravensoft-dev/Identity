@@ -117,6 +117,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and `--focus-offset` for the shared pill toggle.
 - Avatar's initials and presence dot derive from `--avatar-*` in CSS rather than from a
   JS ratio, which removes the exemption they held in `check-dimension-literals.mjs`.
+- **`Spinner`'s diameters are tokens** — `--icon-sm`, `--sp-5` and `--sp-8` in place of
+  `{ sm: 14, md: 20, lg: 32 }`. The map survived every earlier pass because one reached
+  through member access is invisible to the gate: the dataflow rule traces a bare
+  identifier, not `SIZES[size]`. Not `--avatar-sm`, which is also 32 — that family is
+  named for a component, and its own description asks a second consumer to trigger a
+  rename rather than a borrowing.
 - The charts read `--bw`, `--bw-strong`, `--dz-text-2xs`, `--fs-xs` and `--dz-text-lg`
   through `style` instead of writing the numbers as SVG attributes.
 - **`Tabs`'s active-tab underline reads `calc(var(--bw-strong) * -1)`**, not
