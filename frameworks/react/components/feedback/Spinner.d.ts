@@ -2,7 +2,7 @@ import * as React from 'react';
 
 /** Indeterminate wait indicator. For a measurable process use ProgressBar instead. */
 export interface SpinnerProps {
-  /** 14px / 20px / 32px. */
+  /** `--icon-sm` (14px) / `--sp-5` (20px) / `--sp-8` (32px). */
   size?: 'sm' | 'md' | 'lg';
   /**
    * @startingPoint 'accent' on a page surface, 'on-accent' inside a filled button.
