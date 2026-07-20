@@ -15,7 +15,7 @@
  */
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { extname, join, normalize, resolve } from 'node:path';
+import { extname, resolve } from 'node:path';
 
 /** Extension -> Content-Type, covering exactly what the demo pages load.
  *  .jsx is served as JavaScript: the pages fetch() it as text and hand it to
@@ -50,8 +50,12 @@ export function resolveInRoot(root, pathname) {
   }
   // Strip leading slash to make it relative to root, not filesystem-absolute
   const relPath = rel.replace(/^\/+/, '');
-  const path = resolve(root, relPath);
-  return path.startsWith(root + '/') || path === root ? path : null;
+  /* A trailing slash on root would make the boundary check below test against
+     `//` and reject everything. Cheaper to tolerate here than to require every
+     caller to remember. */
+  const base = root.replace(/\/+$/, '');
+  const path = resolve(base, relPath);
+  return path.startsWith(base + '/') || path === base ? path : null;
 }
 
 /** Start the server on an ephemeral port.
@@ -72,10 +76,13 @@ export function startStaticServer(root) {
     }
   });
 
-  return new Promise((resolve, reject) => {
+  /* Named `listening` rather than `resolve`: this file imports node:path's
+     `resolve`, and shadowing it here is how the next edit to this function
+     silently gets the wrong one. */
+  return new Promise((listening, reject) => {
     server.on('error', reject);
     server.listen(0, '127.0.0.1', () => {
-      resolve({
+      listening({
         port: server.address().port,
         close: () => new Promise((done) => server.close(() => done())),
       });
