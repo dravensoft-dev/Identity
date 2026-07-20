@@ -1,4 +1,4 @@
-# SideNav, ActivityFeed and UnauthCard — Design
+# AppLogo, SideNav, ActivityFeed and UnauthCard — Design
 
 **Status:** approved in design
 **Date:** 2026-07-19
@@ -18,16 +18,26 @@ The first kind was duplication, and it is already fixed: the Deployments table w
 hand-rolled CSS grid where `Table` existed, and the dashboard's metric tiles were
 hand-rolled where `StatCard` existed. Both now read the component.
 
-The second kind is this spec. Three things in the console are built by hand **because
+The second kind is this spec. Four things in the console are built by hand **because
 the library has nothing to build them from**:
 
 | Site | What it is |
 |---|---|
+| `Shell.jsx:20-23` / `LoginScreen.jsx:13-14` | the brand lock-up — mark beside the product's name |
 | `Shell.jsx:24` (`NAV.map`) | the sidebar's navigation list — icon, label, active state |
 | `ProjectScreen.jsx:73` (`ACTIVITY.map`) | the Activity tab's event feed |
 | `LoginScreen.jsx:11` (the panel `<div>`) | the centred panel every signed-out screen needs |
 
 Line numbers are from `6f23011` and drift; match on the named landmark.
+
+The first row already caused a defect, which is the clearest evidence the rest are not
+hypothetical. The approved brand manual (`Dravensoft Identity.dc.html`) defines three
+lock-up variants: *Primary · horizontal* and *Vertical · stacked* pair a crimson mark
+with `DRAVEN` + `SOFT`, the second half in `--mute`; *Monochrome · single ink* pairs a
+`--bone` mark with an undivided `DRAVENSOFT`. `LoginScreen` renders Primary correctly.
+`Shell` renders **half of each** — a crimson mark beside a single-ink wordmark, which is
+no variant at all. Two screens assembled the same figure by hand and one of them got it
+wrong, because nothing in the code holds the rule the manual states.
 
 None is a console quirk. Every product with a session has a side navigation, every
 product with history has an activity feed, and every product with an account has at
@@ -50,11 +60,11 @@ whole frame into an `AppShell` and delete `Shell.jsx`.
 
 **Rejected, deliberately.** An `AppShell` is the largest component in the library by a
 wide margin and its boundary is the blurriest — every product wants one more slot, and
-the component accretes props until it is a configuration language. The three components
+the component accretes props until it is a configuration language. The four components
 here are each small enough to describe in a sentence, test alone, and change without
 consulting their consumers.
 
-The same principle decided the third component's shape. An `UnauthScreen` that owned the
+The same principle decided `UnauthCard`'s shape. An `UnauthScreen` that owned the
 viewport would be **terminal**: adding "sign in with Google" means adding a prop, and so
 does the "or" divider, the legal footnote, and the resend timer. A `Card` is composed
 *into*: each of those is a component placed inside it, and `UnauthCard`'s signature never
@@ -124,7 +134,7 @@ back to hand-rolled markup, which is where this conversation started.
 
 ```jsx
 <UnauthCard
-  brand={<Rotor size={40} />}
+  brand={<AppLogo size="md" mark={<img src=".../rotor-crimson.svg" alt="" />} name="Draven" dim="soft" />}
   eyebrow="Delivery console"
   title="Welcome back"
   footer={<a href="/reset">Forgot your password?</a>}>
@@ -151,18 +161,76 @@ alone in the viewport could not sit in a split layout beside an illustration, or
 modal. The `.prompt.md` documents the three-line centring wrapper; the component does not
 impose it.
 
-### 5. What the console becomes
+### 5. `AppLogo` — `frameworks/react/components/brand/`
 
-- `Shell.jsx` keeps composing brand, nav and user — the nav list becomes `<SideNav>`.
+```jsx
+<AppLogo
+  size="sm"
+  mark={<img src="../../../assets/rotor-crimson.svg" alt="" />}
+  name="Draven"
+  dim="soft" />
+```
+
+**Nothing defaults.** `mark` and `name` are required, and that is a licensing decision
+rather than a style one: Arena ships MIT, so a consumer copies this tree into their own
+product. A component that renders Dravensoft's mark when you pass it nothing would ship
+someone else's trademark by omission — the developer who never reads the props gets a
+brand they have no right to. Requiring both means the first render is either their brand
+or a type error, and never ours by accident.
+
+For the same reason, the mark is passed as an asset rather than drawn: each call site
+names `assets/rotor-*.svg` explicitly, so what brand is being rendered is visible at the
+point of use instead of buried in the component's default.
+
+**`variant` is not a prop.** The manual's Primary/Monochrome distinction is two
+decisions, and both are already expressible without one: the mark's ink is whichever of
+`rotor-crimson.svg` / `rotor-bone.svg` / `rotor-ink.svg` the consumer passes, and the
+wordmark's is whether `dim` is present. A `variant` prop would be a third way to say the
+same two things, and the three could then disagree.
+
+**`size` scales the lock-up, not the mark alone.** The consumer's `mark` node carries no
+dimensions; `AppLogo` sizes the slot it sits in and the mark fills it. Otherwise a mark
+with its own `width` and a `size` prop would fight, and the ratio between mark and
+wordmark — which is the entire meaning of a lock-up — would depend on which one won.
+
+The ratio is the manual's Primary · horizontal, mark 54 to wordmark 34, or `0.63`:
+
+| `size` | mark | wordmark | anchor |
+|---|---|---|---|
+| `sm` | 30 | 19 | what `Shell` renders today |
+| `md` | 40 | 25 | what `LoginScreen` renders today |
+| `lg` | 54 | 34 | the manual's Primary · horizontal, exactly |
+| `xl` | 124 | 78 | the manual's large specimen — the hero case, where the lock-up is the only thing on the screen |
+
+`sm` and `md` match the two console sites, so neither changes size.
+
+`orientation` is `'horizontal' | 'vertical'`, the manual's first two variants.
+
+**Gate consequence, which fails the build if missed.** `EXEMPT` holds three brand
+entries today: `Rotor.jsx:width:48` and the two call sites, `Shell.jsx:width:30` and
+`LoginScreen.jsx:width:40`. Once both screens render `<AppLogo>` instead of
+`<Rotor size={N}>`, those two entries match nothing — and a stale exemption fails
+`check:dimensions` by design. So this change must delete both and add one for `AppLogo`'s
+size map. Eight entries become seven.
+
+Its reason is a better one than the entries it replaces: a logo's proportions belong to
+the brand it renders, not to the theme rendering it, and that holds for every consumer's
+brand rather than only for Dravensoft's.
+
+### 6. What the console becomes
+
+- `Shell.jsx` keeps composing brand, nav and user — the lock-up becomes `<AppLogo size="sm">`
+  (which also fixes its mixed variant), and the nav list becomes `<SideNav>`.
+- `LoginScreen.jsx`'s lock-up becomes `<AppLogo size="md">`.
 - `ProjectScreen.jsx`'s Activity tab becomes `<ActivityFeed>`; the positional tuples in
   `ACTIVITY` become named objects, which is a readability gain on its own.
 - `LoginScreen.jsx` keeps its centring wrapper and its fields, and the panel becomes
   `<UnauthCard>`.
 
-Each of the three is example code demonstrating a component, which is what the console is
+Each of the four is example code demonstrating a component, which is what the console is
 for.
 
-### 6. Parity, and why one of the three is asymmetric
+### 7. Parity, and why one of the four is asymmetric
 
 Verified against Angular Material's documentation rather than assumed: Material covers
 side navigation with **two** APIs — `mat-sidenav`/`mat-drawer` is the collapsible
@@ -176,11 +244,12 @@ exists for exactly this case.
 
 | | 5a (Angular) | 5b (Tailwind) |
 |---|---|---|
+| `AppLogo` | `arena-app-logo` | manifest |
 | `SideNav` | **no primitive** — `mat-nav-list` bridged in `arena-material.css` | manifest |
 | `ActivityFeed` | `arena-activity-feed` | manifest |
 | `UnauthCard` | `arena-unauth-card` | manifest |
 
-5a goes from 18 primitives to **20**, plus one Material bridge entry. 5b gains **three**
+5a goes from 18 primitives to **21**, plus one Material bridge entry. 5b gains **four**
 manifests. Plan 6 inherits both counts.
 
 ## Non-goals
@@ -204,28 +273,34 @@ manifests. Plan 6 inherits both counts.
    the console wraps Phosphor's webfont locally, and the Angular layer has an icon
    manifest React has no counterpart to. `SideNav` taking a `ReactNode` sidesteps the
    coupling but does not close the gap. Worth its own decision, not this spec's.
-2. **The wordmark is written twice and differently** — `Shell.jsx:22` renders
-   "Dravensoft" in a single colour, `LoginScreen.jsx:14` splits "Draven" + "soft" across
-   `--bone` and `--mute`. The approved brand manual (`Dravensoft Identity.dc.html`)
-   renders the wordmark as `DRAVEN` + `SOFT` with the second half in the `.soft` class
-   throughout, which makes `LoginScreen` the closer of the two and `Shell` the one to
-   reconcile. Unresolved, and deliberately outside this spec: it is a brand decision,
-   and the manual is the authority rather than either console screen.
+2. **What happens to `Rotor` once `AppLogo` exists.** `Rotor` stays — it is the animated
+   mark for splash and loading states, which `AppLogo` does not do. But the console's two
+   lock-ups were its only static call sites, and after this they pass an SVG from
+   `assets/` instead. Whether `Rotor` should keep its `size`/`color` props once nothing
+   composes it into a lock-up is worth revisiting, and is not this spec's call.
 3. **Does `ActivityFeed` need pagination or a "load more" affordance?** The console shows
    four rows and a real feed does not. Deferred until a consumer has the problem.
 
 ## Verification
 
-- `bun run check` passes — the three new components are scanned by
+- `bun run check` passes — the four new components are scanned by
   `check:dimensions` like every other file under `frameworks/`, so a bare literal in any
   of them fails the build.
 - **Each component is a quartet**: `X.jsx`, `X.d.ts` with a `@startingPoint` comment,
   `X.prompt.md` with Do/Don't per README's H10 rule, and an entry in the group's
-  `*.card.html`. `SideNav` joins `navigation.card.html`. `ActivityFeed` and `UnauthCard`
-  get **their own card page** rather than joining `display.card.html`: that page is
-  already declared `700x460` and carries Card, Badge, Tag and StatCard, and a signed-out
-  panel shown at a third of its width would misrepresent it. One new page, both
-  components, sized to fit them honestly.
+  `*.card.html`. `SideNav` joins `navigation.card.html`. `AppLogo` joins
+  `brand.card.html` beside `Rotor`, at every size — `xl` is the one that most needs
+  seeing, since it is the case no existing specimen covers. `ActivityFeed` and
+  `UnauthCard` get **their own card page** rather than joining `display.card.html`: that
+  page is already declared `700x460` and carries Card, Badge, Tag and StatCard, and a
+  signed-out panel shown at a third of its width would misrepresent it. One new page,
+  both components, sized to fit them honestly.
+- **`EXEMPT` goes from eight entries to seven**, and `bun run check:dimensions` must
+  report "no stale exemptions". This is the one mechanical trap in the plan: deleting the
+  two `Rotor` call-site entries is not optional cleanup, it is what keeps the build green.
+- **`AppLogo` renders nothing without `mark` and `name`.** A test asserts this rather than
+  a comment claiming it — the MIT argument in §5 is only true if the absence of a default
+  is enforced.
 - **`README.md` gains an entry per component under *Intentional additions***, stating what
   each is for. That section is the repo's record of why the roster is what it is, and an
   addition that skips it is an addition nobody argued.
@@ -239,20 +314,25 @@ manifests. Plan 6 inherits both counts.
 
 ## Affected files
 
-**New** — nine files, three quartets minus the demo entries:
+**New** — twelve files, four quartets minus the demo entries, plus one card page:
+`brand/AppLogo.{jsx,d.ts,prompt.md}`,
 `navigation/SideNav.{jsx,d.ts,prompt.md}`,
 `display/ActivityFeed.{jsx,d.ts,prompt.md}`,
-`display/UnauthCard.{jsx,d.ts,prompt.md}`.
+`display/UnauthCard.{jsx,d.ts,prompt.md}`,
+and one new `*.card.html` for the last two.
 
-**Modified:** `navigation/navigation.card.html`, `display/display.card.html`;
-`ui_kits/console/{Shell,ProjectScreen,LoginScreen}.jsx`; `README.md`; `CHANGELOG.md`.
+**Modified:** `navigation/navigation.card.html`, `brand/brand.card.html`;
+`ui_kits/console/{Shell,ProjectScreen,LoginScreen}.jsx`;
+`scripts/check-dimension-literals.mjs` (`EXEMPT`, eight entries to seven);
+`README.md`; `CHANGELOG.md`.
 
 **Modified downstream:** `docs/superpowers/plans/2026-07-18-5a-angular-primitive-parity.md`
-(two primitives, one Material bridge entry, count 18 → 20),
-`docs/superpowers/plans/2026-07-18-5b-tailwind-manifest-parity.md` (three manifests).
+(three primitives, one Material bridge entry, count 18 → 21),
+`docs/superpowers/plans/2026-07-18-5b-tailwind-manifest-parity.md` (four manifests).
 
-**Unchanged, explicitly:** every file under `tokens/`, `styles.css`, and every gate in
-`scripts/`. This spec adds no token and changes no rule.
+**Unchanged, explicitly:** every file under `tokens/`, `styles.css`, `assets/` — the three
+`rotor-*.svg` files are consumed as they are, not edited — and every gate in `scripts/`
+apart from the `EXEMPT` entries named above. This spec adds no token and changes no rule.
 
 ## Sequencing
 
