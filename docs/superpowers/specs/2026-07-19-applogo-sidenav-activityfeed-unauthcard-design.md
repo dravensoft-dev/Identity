@@ -198,11 +198,26 @@ exists to hold.
 sentence are decisions.
 
 *Tokens*, because once `mark` and `name` are the consumer's, these numbers stop being
-Dravensoft's identity and become the system's answer to "how big is a small logo". The
-reasoning that exempts `Rotor`'s size — a brand asset is not themeable — does not reach
-them: they are a scale, and Arena's scales are tokens. So `AppLogo` needs **no `EXEMPT`
-entry at all**; it reads `var(--logo-*)` like any other component reads any other
-dimension.
+Dravensoft's identity and become the system's answer to "how big is a small logo". A
+scale is a scale, and Arena's scales are tokens. So `AppLogo` needs **no `EXEMPT` entry at
+all**; it reads `var(--logo-*)` like any other component reads any other dimension.
+
+**`Rotor` adopts the same scale, and loses its exemption too.** Its geometry was exempt on
+the argument that a brand asset is not themeable, and that argument does not survive
+contact with this one: the size at which a mark is drawn is a scale whoever owns the mark.
+Two brand components resting on opposite reasonings would leave whichever was read second
+looking arbitrary. So `Rotor`'s `size` becomes the same named steps reading the same
+`--logo-mark-*` tokens, and `EXEMPT` loses `Rotor.jsx:width:48` along with the two call
+sites — **eight entries become five**.
+
+Its `PASSTHROUGH` entry stays. `stalePassthrough()` asks whether the component and prop
+still exist, not whether they still produce hits, so the entry survives the change and
+goes on catching whoever writes `<Rotor size={64} />` next year. `AppLogo` joins it for
+the same reason.
+
+The visible cost is `brand.card.html`, whose three specimens are drawn at 72, 48 and 32 —
+none of them a step. They become steps. For the page that documents the brand scale,
+showing the scale is what it was for.
 
 *A fixed repertoire*, because a single mark-to-wordmark ratio cannot be right at every
 step. A small lock-up needs proportionally larger text to stay legible, and forcing one
@@ -226,16 +241,17 @@ holds control text sizes and lives there rather than in `typography.json`.
 
 `orientation` is `'horizontal' | 'vertical'`, the manual's first two variants.
 
-**Gate consequence, which fails the build if missed.** `EXEMPT` holds three brand entries
-today: `Rotor.jsx:width:48` and the two call sites, `Shell.jsx:width:30` and
-`LoginScreen.jsx:width:40`. The call-site entries exist because `<Rotor size={30} />`
-passes a raw number through the `PASSTHROUGH` rule. `<AppLogo size="sm" />` passes a named
-step, which carries no dimension and needs no forgiveness — so both entries match nothing
-the moment the screens migrate, and a stale exemption fails `check:dimensions` by design.
+**Gate consequence, which fails the build if missed.** All three brand entries in `EXEMPT`
+go, and none is replaced. The two call sites — `Shell.jsx:width:30` and
+`LoginScreen.jsx:width:40` — exist because `<Rotor size={30} />` passes a raw number
+through the `PASSTHROUGH` rule; `<AppLogo size="sm" />` passes a named step, which carries
+no dimension and needs no forgiveness. `Rotor.jsx:width:48` goes because its default
+becomes a named step too.
 
-Deleting them is not cleanup after the fact; it is the improvement itself, and it must
-happen in the same commit as the migration. **Eight entries become six**, and `AppLogo`
-adds none.
+A stale exemption fails `check:dimensions` by design, so deleting all three is not cleanup
+after the fact — it is what keeps the build green, and it must land in the same commit as
+the migration that makes them stale. **Eight entries become five**, and neither brand
+component adds one back.
 
 ### 6. What the console becomes
 
@@ -291,10 +307,8 @@ manifests. Plan 6 inherits both counts.
   with no token behind it, the token is what is missing — add it first, per `CLAUDE.md`.
   The eight `--logo-*` steps in §5 are the single exception, and they exist because
   `AppLogo` renders a scale rather than a brand.
-- **No change to `Rotor`.** It keeps its `size`, its `color` and its `EXEMPT` entry. The
-  two components now justify their geometry differently — `Rotor` draws Dravensoft's mark
-  and is not themeable, `AppLogo` sizes whatever mark it is given and is — and that
-  asymmetry is real rather than an oversight. See *Open questions*.
+- **No change to `Rotor` beyond its size.** It keeps its `color`, its `spin` and its
+  animation. Only the geometry moves onto the shared scale, for the reason in §5.
 
 ## Open questions
 
@@ -302,15 +316,11 @@ manifests. Plan 6 inherits both counts.
    the console wraps Phosphor's webfont locally, and the Angular layer has an icon
    manifest React has no counterpart to. `SideNav` taking a `ReactNode` sidesteps the
    coupling but does not close the gap. Worth its own decision, not this spec's.
-2. **What happens to `Rotor` once `AppLogo` exists.** `Rotor` stays — it is the animated
-   mark for splash and loading states, which `AppLogo` does not do. But the console's two
-   lock-ups were its only static call sites, and after this they pass an SVG from
-   `assets/` instead. Two loose ends follow, both deliberately left: whether `Rotor`
-   should keep its `size`/`color` props once nothing composes it into a lock-up, and
-   whether its `EXEMPT` entry still reads correctly now that a sibling brand component
-   sizes itself from tokens on the opposite reasoning. The two arguments are each sound
-   for their own component, but a reader meeting both at once deserves a better answer
-   than this spec gives.
+2. **Whether `Rotor` still earns its own component.** It stays here — it is the animated
+   mark for splash and loading states, which `AppLogo` does not do — but after this change
+   its every remaining call site is a specimen on `brand.card.html`. Nothing in the
+   product composes it. That is not an argument for deleting it, and it is worth someone
+   noticing before the roster is published.
 3. **Does `ActivityFeed` need pagination or a "load more" affordance?** The console shows
    four rows and a real feed does not. Deferred until a consumer has the problem.
 
@@ -330,10 +340,13 @@ manifests. Plan 6 inherits both counts.
   centred panel and a dense narrow list. Any single `viewport` would suit one and
   misrepresent the other, and a specimen that misrepresents its component is worse than
   no specimen.
-- **`EXEMPT` goes from eight entries to six**, and `bun run check:dimensions` must report
-  "no stale exemptions". This is the one mechanical trap in the plan: deleting the two
-  `Rotor` call-site entries is not optional cleanup, it is what keeps the build green, and
-  it has to land in the same commit as the migration.
+- **`EXEMPT` goes from eight entries to five**, and `bun run check:dimensions` must report
+  "no stale exemptions". This is the one mechanical trap in the plan: deleting the three
+  brand entries is not optional cleanup, it is what keeps the build green, and all three
+  have to land in the same commit as the migration that makes them stale.
+- **`PASSTHROUGH` keeps its `Rotor` entry and gains an `AppLogo` one**, and
+  `stalePassthrough()` must stay quiet — both components still take a `size` prop, so
+  neither entry is stale, and both go on catching a raw number passed to one.
 - **The `logo` family clears the full token chain**, in the task that adds it:
   `bun run build:tokens`, then `check-dtcg.mjs`, `check-tokens-generated.mjs` and
   `check-ramp.mjs` all exit 0. Never hand-edit `tokens/spacing.css`.
@@ -372,7 +385,8 @@ manifests. Plan 6 inherits both counts.
 `frameworks/tailwind/tv.ts`, or `scripts/check-tailwind-coverage.mjs`'s `EXCLUDED`;
 `navigation/navigation.card.html`, `brand/brand.card.html`;
 `ui_kits/console/{Shell,ProjectScreen,LoginScreen}.jsx`;
-`scripts/check-dimension-literals.mjs` (`EXEMPT`, eight entries to six);
+`brand/Rotor.{jsx,d.ts,prompt.md}` (named size steps);
+`scripts/check-dimension-literals.mjs` (`EXEMPT` eight entries to five, `PASSTHROUGH` gains `AppLogo`);
 `README.md`; `CHANGELOG.md`.
 
 **Modified downstream:** `docs/superpowers/plans/2026-07-18-5a-angular-primitive-parity.md`
