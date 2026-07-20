@@ -38,6 +38,12 @@ test('it renders Card rather than a second panel definition', () => {
   // followed by a nested div carrying that padding, itself wrapping UnauthCard's own
   // calc(var(--sp-1) * 4) padding div. A hand-rolled panel has no reason to reproduce
   // that unconditional double-padding nesting; only composing the real Card does.
+  //
+  // This couples the assertion to Card's own padding value and to react-dom's exact
+  // style-serialisation order — an acceptable trade for a renderToStaticMarkup-only
+  // harness, and strictly better than the token-substring check it replaced. If a
+  // legitimate change to Card's own padding ever fails this test, the fix is to
+  // update this assertion, not to weaken it.
   assert.match(
     html,
     /overflow:hidden"><div style="padding:calc\(var\(--sp-1\) \* 5\)"><div style="padding:calc\(var\(--sp-1\) \* 4\)"/
