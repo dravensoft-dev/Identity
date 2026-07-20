@@ -10,18 +10,19 @@
 | 2 | `2026-07-18-2-overview-token-page.md` | **Executed** (v4.0.0) |
 | 3 | `2026-07-18-3-framework-layer-token-coverage.md` | **Executed** (unreleased) |
 | 4 | `2026-07-18-4-token-geometry-boundary.md` | **Executed** (unreleased) |
+| 4.5 | `2026-07-19-4.5-token-debt-and-gate-blind-spots.md` | Pending — **hard prerequisite** |
 | 5a | `2026-07-18-5a-angular-primitive-parity.md` | **This plan** — pending |
-| 5b | `2026-07-18-5b-tailwind-manifest-parity.md` | Pending — depends on 5a's infrastructure (Tasks 1–4) |
+| 5b | `2026-07-18-5b-tailwind-manifest-parity.md` | Pending — depends on 5a's infrastructure (Tasks 1–3) |
 | 6 | `2026-07-18-6-four-package-build-publish.md` | Pending |
 
 **Goal:** Give the Angular layer the 18 primitives Material does not provide, each one styled by a Tailwind manifest it does not own, and each one visible and machine-checked — so `@dravensoft/arena-angular` can be published as a layer rather than as one component.
 
-**Architecture:** Three gates come first and nothing else lands until they exist: a committed compiled utility stylesheet (so a static page can render a manifest), a manifest-driven specimen harness, and an Angular template typecheck. Then the work is vertical slices — one component at a time, manifest + recipe + primitive + prompt + specimen + barrel, gated and committed together. The four charts come last because they are the only slice with genuinely new engineering (a `ResizeObserver` behind a signal) and the only one with no manifest.
+**Architecture:** Three gates come first and nothing else lands until they exist: a committed compiled utility stylesheet (so a static page can render a manifest), a manifest-driven specimen harness, and an Angular template typecheck. Then the work is vertical slices — one component at a time, manifest + recipe + primitive + prompt + specimen + barrel, gated and committed together. The three SVG charts come last because they are the only slice with genuinely new engineering (a `ResizeObserver` behind a signal) and the only one with no manifest.
 
 **Tech Stack:** Bun (runtime, test runner), Tailwind CSS 4.3.3, `tailwind-variants` 3.2.2, Angular 22 (standalone, `OnPush`, signals), `@angular/compiler-cli` (`ngc`) for the template typecheck, TypeScript 6.0, `node:test` + `node:assert/strict`.
 
 **Source spec:** `docs/superpowers/specs/2026-07-18-framework-layer-parity-design.md`
-**Split from:** that spec's phases 1 and 2. Phase 3 (the 20 orphan manifests) is `2026-07-18-5b-tailwind-manifest-parity.md` and consumes Tasks 1–4 of this plan.
+**Split from:** that spec's phases 1 and 2. Phase 3 (the 20 orphan manifests) is `2026-07-18-5b-tailwind-manifest-parity.md` and consumes Tasks 1–3 of this plan.
 **Downstream, do not implement here:** `specs/2026-07-18-four-package-build-publish-design.md` (plan 6).
 
 ---
@@ -32,6 +33,13 @@ Verified on 2026-07-19, at merge commit `44a72ae` on `main`, with `bun run check
 
 - **Plan 3 is executed.** `scripts/check-tailwind.mjs`, `check-tailwind-coverage.mjs` and `check-arbitrary-values.mjs` exist. `frameworks/tailwind/components/` holds `Button.manifest.json` and `Tag.manifest.json`. `frameworks/angular/primitives/tag/tag.variants.ts` is already `tv(manifest)` — the reference shape this plan copies exists and is real.
 - **Plan 4 is executed.** `tokens/src/icon.json` (`--icon-sm|md|lg|xl`) and `tokens/src/layering.json` (`--z-dropdown` … `--z-toast`) exist and both reach utilities in `frameworks/tailwind/theme.css` (`--size-icon-*`, `--z-index-*`). `check-dimension-literals.mjs` reports no bare literals under `frameworks/`.
+- **Plan 4.5 is executed, and this plan depends on all of it.** A Tailwind bracket may
+  hold a derivation (`calc()`/`min()`/`max()`/`clamp()` over tokens) and a value in an
+  unmodelled unit; `--avatar-xs|sm|md|lg` exist and reach `size-avatar-*`;
+  `--dz-text-lg` reaches `text-ctl-lg`; the `--loop-*` family carries every cyclical
+  duration; `--focus-width` has consumers. The dimension gate reads four kinds of site
+  (declaration, template interpolation, injected CSS, SVG attribute), so a literal
+  smuggled into a `<style>` string or an SVG attribute now fails here too.
 - **The Angular layer holds exactly one primitive.** `frameworks/angular/primitives/` is `index.ts` + `tag/`. Nothing in the repo has ever compiled it: there is no Angular toolchain in `package.json` at all.
 - **The Tailwind layer is never compiled to a file.** `scripts/lib/tailwind-compile.mjs` compiles it into a temp dir for the gates and deletes it. No stylesheet a browser can load exists yet — Task 1 is what changes that.
 
@@ -99,6 +107,9 @@ identical by construction, since `colors.css` is nothing but that mapping.
 | `var(--fw-regular|medium|semibold|bold|extrabold|black)` | `font-regular|medium|semibold|bold|extrabold|black` | |
 | `var(--font-display|body|mono)` | `font-display|body|mono` | |
 | `var(--icon-sm|md|lg|xl)` **as a font size** | `text-[length:var(--icon-sm|md|lg|xl)]` | a Phosphor glyph is a webfont: it needs `font-size`, and `--size-*` only yields `size-*` |
+| `var(--avatar-xs|sm|md|lg)` | `size-avatar-xs|sm|md|lg` | the diameter, width and height together (plan 4.5) |
+| `var(--dz-text-lg)` | `text-ctl-lg` | 16px, the chart readout step (plan 4.5) |
+| `var(--loop-spin|sweep|shimmer|brand)` | `duration-[var(--loop-spin)]` | cyclical motion; `--dur-*` is the transition scale (plan 4.5) |
 | `var(--icon-*)` **as a box** | `size-icon-sm|md|lg|xl` | sets width and height together |
 | `var(--z-*)` | `z-dropdown|tooltip|modal|modal-nested|palette|onboarding|toast` | |
 | `var(--dur-fast|mid|slow)` | `duration-[var(--dur-fast)]` | v4 has no duration namespace; the bracket holds a `var()` |
@@ -106,15 +117,17 @@ identical by construction, since `colors.css` is nothing but that mapping.
 | `var(--container-max)` | `max-w-page` | a key named `max` would shadow `max-w-max` |
 | `var(--gutter)` | `p-gutter` / `px-gutter` | |
 
-**Units the token layer does not model** — `%`, `ch`, `fr`, `vh`/`vw`/`vmin`/`vmax`,
-`deg` — stay literal (`max-w-[42ch]`, `max-w-[92vw]`, `pt-[12vh]`, `w-[62%]`).
-`check-arbitrary-values.mjs` rejects those today; **Task 2 is what makes them legal**,
-by teaching that gate the same allowlist `check-dimension-literals.mjs` already
-applies. Nothing else in a bracket may carry a digit.
+**A derivation is a token.** Plan 4.5 taught the bracket gate what the inline gate
+already knew: `calc()`, `min()`, `max()` and `clamp()` over tokens, zeros and
+multipliers are legal — `text-[length:calc(var(--avatar-md)*0.4)]`,
+`shadow-[inset_0_calc(var(--bw-strong)*-1)_0_var(--crimson)]`. So is a single value in
+a unit the token layer does not model (`%`, `ch`, `fr`, `vh`/`vw`/`vmin`/`vmax`,
+`deg`), because DTCG admits only `px` and `rem` in a dimension and there is no token to
+reference. `px`, `rem`, `ms` and `s` still fail: tokens model those.
 
 ## File structure
 
-**New infrastructure (Tasks 1–4), consumed by 5b as well:**
+**New infrastructure (Tasks 1–3), consumed by 5b as well:**
 
 ```
 scripts/build-tailwind.mjs             emits the compiled utility stylesheet
@@ -128,7 +141,7 @@ frameworks/tailwind/specimen.js        the shared specimen page harness
 frameworks/angular/tsconfig.check.json the typecheck project
 ```
 
-**Per primitive (Tasks 5–18), fourteen times:**
+**Per primitive (Tasks 4–17), fourteen times:**
 
 ```
 frameworks/tailwind/components/<Component>.manifest.json   the styling, as data
@@ -140,8 +153,8 @@ frameworks/angular/primitives/<name>/index.ts              barrel
 ```
 plus one line in `frameworks/angular/primitives/index.ts`.
 
-**The charts (Tasks 19–23):** no manifest, no specimen, no `.variants.ts` — that
-exception is the spec's, and Task 23 writes it down in the README so a missing chart
+**The charts (Tasks 18–22):** no manifest, no specimen, no `.variants.ts` — that
+exception is the spec's, and Task 22 writes it down in the README so a missing chart
 manifest reads as a decision rather than an omission.
 
 ```
@@ -161,11 +174,11 @@ Two, both narrowing, neither changing what ships.
    config, no `ng-package.json`, and no build output. Whether the layer *packages*
    is plan 6's question and plan 6's gate. **`ng-packagr` is still installed here**,
    as the spec requires, so plan 6 finds it present rather than adding it.
-2. **`ChartCard` keeps the charts' no-manifest exception even though it is expressible.**
-   It is a bordered card with a microlabel — a manifest would hold it comfortably. The
-   spec's inventory counts it among "the 4 charts" and fixes the manifest count at 35,
-   so this plan follows the spec rather than quietly making it 36. Flagged here so the
-   next person reads it as a known trade rather than an oversight.
+2. **`ChartCard` gets a manifest, so the layer ships 36 rather than 35.** The spec
+   counts it among "the 4 charts", but the exclusion's own argument — a chart's identity
+   is path data, which a class string cannot hold — describes the three SVG charts and
+   not a bordered card with a microlabel. Task 19 states the reasoning at the point it
+   applies. The charts' exception narrows to BarChart, LineChart and DoughnutChart.
 
 ---
 
@@ -385,161 +398,7 @@ git commit -m "feat(tailwind): compile the layer to a stylesheet a specimen can 
 
 ---
 
-## Task 2: Teach the arbitrary-value gate the units the token layer does not model
-
-`check-dimension-literals.mjs` already states which units Arena deliberately does not
-model — `%`, `ch`, `fr`, the viewport units, `deg` — and lets them through, because a
-token for "42 characters of prose" is not a thing the token layer has or should have.
-`check-arbitrary-values.mjs` rejects any bracket containing a digit, so the same value
-is legal in a React inline style and impossible in a manifest. That gap blocks
-`EmptyState` (`max-w-[42ch]`), `ErrorState` (`max-w-[46ch]`), every modal
-(`max-w-[92vw]`), `CommandPalette` (`pt-[12vh]`) and `Skeleton` (`w-[62%]`) — five of
-this plan's fourteen slices — so it is closed here, once, rather than argued at each.
-
-The two gates stay complements: one is keyed on bracket syntax, the other on inline
-styles. What they now share is a single answer to "which units does Arena not model".
-
-**Files:**
-- Modify: `scripts/check-dimension-literals.mjs` (export the list; no behaviour change)
-- Modify: `scripts/check-arbitrary-values.mjs` (consume it in `scanText`)
-- Modify: `scripts/check-arbitrary-values.test.mjs` (new cases)
-- Modify: `frameworks/tailwind/README.md` (the rule now has a stated exception)
-
-**Interfaces:**
-- Produces: `UNMODELLED_UNITS` exported from `scripts/check-dimension-literals.mjs` —
-  `readonly string[]`, the units a bracket may carry a number in.
-
-- [ ] **Step 1: Read what is there now**
-
-Run: `grep -n "FREE_UNITS" scripts/check-dimension-literals.mjs`
-Expected: the `const FREE_UNITS = ['%', 'ch', 'fr', 'vh', 'vw', 'vmin', 'vmax', 'deg', 's', 'ms'];`
-declaration and the `FREE_UNIT` regex built from it.
-
-- [ ] **Step 2: Write the failing tests**
-
-Append to `scripts/check-arbitrary-values.test.mjs`:
-
-```js
-test('a bracket carrying a unit the token layer does not model is legal', () => {
-  assert.deepEqual(scanText('max-w-[42ch] max-w-[92vw] pt-[12vh] w-[62%] rotate-[120deg]'), []);
-});
-
-test('a bracket carrying a modelled unit is still a violation', () => {
-  const hits = scanText('text-[13px] duration-[200ms] p-[1rem] delay-[2s]');
-  assert.deepEqual(hits.map((h) => h.cls).sort(), ['delay-[2s]', 'duration-[200ms]', 'p-[1rem]', 'text-[13px]']);
-});
-
-test('a hex is a violation regardless of unit handling', () => {
-  assert.deepEqual(scanText('bg-[#b52a20]').map((h) => h.cls), ['bg-[#b52a20]']);
-});
-
-test('a bare number in a bracket is still a violation', () => {
-  assert.deepEqual(scanText('z-[900]').map((h) => h.cls), ['z-[900]']);
-});
-```
-
-Note what the second and fourth cases pin down: `s`/`ms` are in
-`check-dimension-literals`'s list but must **not** be legal in a bracket —
-`--dur-fast|mid|slow` model duration, so `duration-[200ms]` is exactly the drift
-this gate exists to stop. `z-[900]` likewise: `--z-*` models layering.
-
-- [ ] **Step 3: Run them and confirm they fail**
-
-Run: `bun test scripts/check-arbitrary-values.test.mjs`
-Expected: FAIL on the first case — `max-w-[42ch]` is reported as a violation.
-
-- [ ] **Step 4: Export the list from the dimension gate**
-
-In `scripts/check-dimension-literals.mjs`, replace the `const FREE_UNITS = …` line with:
-
-```js
-/** Units the token layer genuinely does not model, and that no token could
- *  usefully carry — a prose measure in `ch`, a share of a container in `%`,
- *  a grid track in `fr`, a viewport fraction, an angle. Exported because
- *  check-arbitrary-values.mjs answers the same question about a Tailwind
- *  bracket, and two lists would drift. `s`/`ms` stay local to FREE_UNITS
- *  below: this gate tolerates them, but --dur-fast|mid|slow DO model
- *  duration, so a bracket carrying one is drift and must keep failing. */
-export const UNMODELLED_UNITS = ['%', 'ch', 'fr', 'vh', 'vw', 'vmin', 'vmax', 'deg'];
-const FREE_UNITS = [...UNMODELLED_UNITS, 's', 'ms'];
-```
-
-Everything downstream of `FREE_UNITS` is unchanged — this task must not alter what
-`check-dimension-literals.mjs` accepts. Step 6 proves it.
-
-- [ ] **Step 5: Consume it in the arbitrary-value gate**
-
-In `scripts/check-arbitrary-values.mjs`, add the import beside the existing ones:
-
-```js
-import { UNMODELLED_UNITS } from './check-dimension-literals.mjs';
-```
-
-Add the pattern beside `TOKEN_REF`:
-
-```js
-/** A bracket holding one number in a unit Arena does not model — max-w-[42ch],
- *  max-w-[92vw], w-[62%], rotate-[120deg]. Legal for the same reason
- *  check-dimension-literals.mjs lets the same value through in an inline
- *  style: there is no token to reference, and inventing one would be worse
- *  than the literal. A modelled unit (px, rem, ms, s) and a bare number are
- *  both still violations. */
-const UNMODELLED = new RegExp(`^-?\\d*\\.?\\d+(?:${UNMODELLED_UNITS.map((u) => u.replace('%', '%')).join('|')})$`);
-```
-
-and one line in `scanText`, immediately after the `TOKEN_REF` guard:
-
-```js
-    if (UNMODELLED.test(content)) continue;
-```
-
-Update this file's header comment — the "Legal inside the brackets" list gains a
-third bullet:
-
-```
- *   - a single value in a unit the token layer does not model —
- *     max-w-[42ch], max-w-[92vw], w-[62%], rotate-[120deg]. `px`, `rem`,
- *     `ms` and `s` are NOT in that set: tokens model those, so a bracket
- *     carrying one is the drift this gate exists to stop.
-```
-
-- [ ] **Step 6: Run both gates' tests and both gates**
-
-Run: `bun test scripts/check-arbitrary-values.test.mjs scripts/check-dimension-literals.test.mjs`
-Expected: all pass — including every pre-existing case in both files, unchanged.
-
-Run: `bun run check:arbitrary && bun run check:dimensions`
-Expected: `check-arbitrary-values: 159 file(s) scanned, none` and
-`check-dimension-literals: no bare literals under frameworks/, no stale exemptions`.
-
-- [ ] **Step 7: Document the exception**
-
-In `frameworks/tailwind/README.md`, under "Arbitrary values are a build failure",
-after the paragraph ending "…add it to `tokens/src/` first.", add:
-
-```markdown
-One exception, and it is the same one `check-dimension-literals.mjs` already
-makes: a bracket may carry a single value in a unit Arena does not model —
-`max-w-[42ch]`, `max-w-[92vw]`, `w-[62%]`, `rotate-[120deg]`. There is no token
-for "42 characters of prose" and there should not be one. `px`, `rem`, `ms` and
-`s` are not in that set: tokens model those, so `text-[13px]` and
-`duration-[200ms]` still fail.
-```
-
-- [ ] **Step 8: Run the whole suite and commit**
-
-Run: `bun run check`
-Expected: `check-all: all 10 step(s) passed`
-
-```bash
-git add scripts/check-arbitrary-values.mjs scripts/check-arbitrary-values.test.mjs \
-        scripts/check-dimension-literals.mjs frameworks/tailwind/README.md
-git commit -m "fix(scripts): let a bracket carry a unit the token layer does not model"
-```
-
----
-
-## Task 3: The specimen harness — a manifest, rendered
+## Task 2: The specimen harness — a manifest, rendered
 
 Gate 1 from the spec. An Angular primitive carries no styling of its own and its
 recipe is data, so a static page that applies the manifest to the real markup shows
@@ -657,6 +516,11 @@ const VOCABULARY = {
   icon: ['size-icon-sm', 'size-icon-md', 'size-icon-lg', 'size-icon-xl',
     'text-[length:var(--icon-sm)]', 'text-[length:var(--icon-md)]',
     'text-[length:var(--icon-lg)]', 'text-[length:var(--icon-xl)]'],
+  avatar: ['size-avatar-xs', 'size-avatar-sm', 'size-avatar-md', 'size-avatar-lg',
+    'text-[length:calc(var(--avatar-md)*0.4)]',
+    'size-[max(calc(var(--sp-1)*2),calc(var(--avatar-md)*0.28))]'],
+  derived: ['text-ctl-lg', 'duration-[var(--loop-spin)]',
+    'shadow-[inset_0_calc(var(--bw-strong)*-1)_0_var(--crimson)]'],
   unmodelled: ['max-w-[42ch]', 'max-w-[92vw]', 'pt-[12vh]', 'w-[62%]'],
   bracketed: ['border-[length:var(--bw)]', 'border-[length:var(--bw-strong)]',
     'border-b-[length:var(--bw)]', 'duration-[var(--dur-fast)]', 'duration-[var(--dur-mid)]'],
@@ -882,7 +746,7 @@ git commit -m "feat(tailwind): render a manifest, so a primitive is reviewable b
 
 ---
 
-## Task 4: The Angular typecheck gate
+## Task 3: The Angular typecheck gate
 
 Gate 2 from the spec. `tag` has sat unexercised since it was written because nothing
 in the repo can compile Angular. Eighteen more primitives on those terms would repeat
@@ -1128,12 +992,12 @@ This gate does not use it — ngc answers the template question directly."
 
 ---
 
-## The shape of a slice (Tasks 5–18)
+## The shape of a slice (Tasks 4–17)
 
 Fourteen tasks follow the same six steps against a different component. The shape is
 stated once here; each task then gives the actual content, in full, for its own
 component. `frameworks/angular/primitives/tag/` is the shape in the tree, and
-`Tag.manifest.json` is the manifest in the tree — read both before Task 5.
+`Tag.manifest.json` is the manifest in the tree — read both before Task 4.
 
 1. **The manifest** — `frameworks/tailwind/components/<Component>.manifest.json`.
    A translation of the React component's inline styles through the ledger above.
@@ -1166,14 +1030,15 @@ in light (toggle `class="arena-light"` on `<html>` in devtools), and in `.arena-
 (add the class to `<body>`), compared against the React card page named in the task.
 
 **Where React and the token layer disagree, the token layer wins** — plan 4 settled
-that, and this plan does not relitigate it per component. Two consequences recur: a
-ratio (Avatar's initials scale with the diameter) becomes discrete steps of the type
-scale, and a `max(a, b)` clamp becomes the nearer grid step. Both are noted in the
-task that hits them.
+that, and this plan does not relitigate it per component. After plan 4.5 a manifest can
+also carry a *derivation*, so the case that used to force a compromise no longer does:
+a ratio like Avatar's initials stays exact as
+`text-[length:calc(var(--avatar-md)*0.4)]` instead of snapping to the nearest step of
+the type scale.
 
 ---
 
-## Task 5: Avatar
+## Task 4: Avatar
 
 **Reference:** `frameworks/react/components/display/Avatar.jsx`, demoed in
 `frameworks/react/components/display/table-avatar.card.html`.
@@ -1189,12 +1054,12 @@ task that hits them.
   `size: 'xs'|'sm'|'md'|'lg'`, `shape: 'circle'|'rounded'`, `status?: 'online'|'busy'|'away'|'offline'`;
   `avatarStyles` from `avatar.variants.ts`.
 
-**Two deliberate departures from React, both required by the ledger:**
-React sizes the initials at `diameter * 0.4` — a ratio, and the reason
-`Avatar.jsx:fontSize:d * 0.4` sits in `check-dimension-literals.mjs`'s `EXEMPT`. A
-manifest holds classes, not arithmetic, so the ratio becomes four steps of the type
-scale (10 / 13 / 15 / 24px against React's 9.6 / 12.8 / 16 / 22.4). Likewise the status
-dot's `max(8px, d * 0.28)` becomes four grid steps (8 / 10 / 12 / 16px).
+**The ratios are exact, and they are exact in CSS.** React scales the initials at
+`diameter * 0.4` and the presence dot at `max(8px, diameter * 0.28)`. Plan 4.5 put those
+diameters in tokens (`--avatar-xs|sm|md|lg`) and made a derivation legal inside a
+bracket, so the manifest carries the same arithmetic the browser will do — no snapping
+to the nearest step of the type scale, no ratio in the component, and no exemption. The
+Angular primitive and `Avatar.jsx` now compute the same two values the same way.
 
 - [ ] **Step 1: Write the manifest**
 
@@ -1211,10 +1076,10 @@ Create `frameworks/tailwind/components/Avatar.manifest.json`:
   },
   "variants": {
     "size": {
-      "xs": { "root": "size-6", "box": "size-6 text-ctl-2xs", "status": "size-2" },
-      "sm": { "root": "size-8", "box": "size-8 text-ctl-md", "status": "size-2.5" },
-      "md": { "root": "size-10", "box": "size-10 text-md", "status": "size-3" },
-      "lg": { "root": "size-14", "box": "size-14 text-h3", "status": "size-4" }
+      "xs": { "root": "size-avatar-xs", "box": "size-avatar-xs text-[length:calc(var(--avatar-xs)*0.4)]", "status": "size-[max(calc(var(--sp-1)*2),calc(var(--avatar-xs)*0.28))]" },
+      "sm": { "root": "size-avatar-sm", "box": "size-avatar-sm text-[length:calc(var(--avatar-sm)*0.4)]", "status": "size-[max(calc(var(--sp-1)*2),calc(var(--avatar-sm)*0.28))]" },
+      "md": { "root": "size-avatar-md", "box": "size-avatar-md text-[length:calc(var(--avatar-md)*0.4)]", "status": "size-[max(calc(var(--sp-1)*2),calc(var(--avatar-md)*0.28))]" },
+      "lg": { "root": "size-avatar-lg", "box": "size-avatar-lg text-[length:calc(var(--avatar-lg)*0.4)]", "status": "size-[max(calc(var(--sp-1)*2),calc(var(--avatar-lg)*0.28))]" }
     },
     "shape": {
       "circle": { "box": "rounded-full" },
@@ -1243,8 +1108,8 @@ import manifest from '../../../tailwind/components/Avatar.manifest.json' with { 
 export const avatarStyles = tv(manifest);
 ```
 
-(If Task 4 Step 6 landed on branch 1 or 2, use the shape it settled on — every
-`.variants.ts` in this plan follows `tag.variants.ts` as it stands after Task 4.)
+(If Task 3 Step 6 landed on branch 1 or 2, use the shape it settled on — every
+`.variants.ts` in this plan follows `tag.variants.ts` as it stands after Task 3.)
 
 - [ ] **Step 3: Write the primitive**
 
@@ -1373,9 +1238,11 @@ Expected: `check-all: all 11 step(s) passed`. `check-tailwind` now reports 3 man
 
 Run `bun run demos`, open
 `http://localhost:8000/frameworks/tailwind/components/Avatar.card.html`, and check
-against `frameworks/react/components/display/table-avatar.card.html`: four diameters
-on the 4px grid, initials centred, the presence dot ringed in the card surface. Then
-in light (`arena-light` on `<html>`) and in `.arena-compact` on `<body>`.
+against `frameworks/react/components/display/table-avatar.card.html`. Both sides derive
+the initials and the dot from the same tokens with the same multipliers, so this is a
+**pixel-identical** comparison at all four sizes, not an approximate one — a visible
+difference means a `calc()` in the manifest disagrees with `Avatar.jsx`. Then in light
+(`arena-light` on `<html>`) and in `.arena-compact` on `<body>`.
 
 - [ ] **Step 8: Commit**
 
@@ -1389,7 +1256,7 @@ git commit -m "feat(angular): add the avatar primitive, styled by its manifest"
 
 ---
 
-## Task 6: Skeleton, and the two animations a utility cannot express
+## Task 5: Skeleton, and the two animations a utility cannot express
 
 **Reference:** `frameworks/react/components/display/Skeleton.jsx`, demoed in
 `frameworks/react/components/display/skeleton.card.html`.
@@ -1398,7 +1265,7 @@ React ships the shimmer as a `<style>` injected once into the head, because keyf
 are the one thing an inline style object cannot hold. The Tailwind layer has the same
 boundary one level over: **a manifest holds class names, so keyframes live in the
 layer's own CSS**, compiled into `utilities.css` with everything else. This task adds
-that file and its first two utilities; Task 18 (Rotor) is its only other consumer in
+that file and its first two utilities; Task 17 (Rotor) is its only other consumer in
 this plan.
 
 The reduced-motion answers are React's, and they are not the same answer twice:
@@ -1432,10 +1299,9 @@ Create `frameworks/tailwind/animations.css`:
    inline style object cannot express @keyframes, so React injects a <style>
    once per component; a manifest cannot express them either, so they are
    authored here rather than smuggled into a bracket. Every value below is a
-   var() into a token, exactly as theme.css's are — the durations are the one
-   exception the token layer does not model at this length (a shimmer sweep and
-   an eight-second brand rotation are not --dur-fast/mid/slow, which govern UI
-   transitions), and they are the same durations React uses.
+   var() into a token, the durations included: plan 4.5 named them in the
+   --loop-* family precisely because a loop is not a transition, so nothing here
+   restates a number React also states.
 
    Reduced motion is answered per animation, and the answers differ on purpose:
    the shimmer is decorative, so it stops outright; the rotor reports work in
@@ -1453,7 +1319,7 @@ Create `frameworks/tailwind/animations.css`:
 @utility arena-shimmer {
   background-image: linear-gradient(100deg, var(--color-base-200) 30%, var(--color-base-300) 50%, var(--color-base-200) 70%);
   background-size: 220% 100%;
-  animation: arena-shimmer 1.4s var(--ease-in-out) infinite;
+  animation: arena-shimmer var(--loop-shimmer) var(--ease-in-out) infinite;
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;
@@ -1463,11 +1329,11 @@ Create `frameworks/tailwind/animations.css`:
 }
 
 @utility arena-rotor-spin {
-  animation: arena-rotor 8s linear infinite;
+  animation: arena-rotor var(--loop-brand) linear infinite;
   transform-origin: 50% 50%;
 
   @media (prefers-reduced-motion: reduce) {
-    animation-duration: 24s;
+    animation-duration: var(--loop-brand-reduced);
   }
 }
 ```
@@ -1687,7 +1553,7 @@ git commit -m "feat(angular): add the skeleton primitive, and a home for keyfram
 
 ---
 
-## Task 7: StatCard
+## Task 6: StatCard
 
 **Reference:** `frameworks/react/components/display/StatCard.jsx`, demoed in
 `frameworks/react/components/display/display.card.html`.
@@ -1892,7 +1758,7 @@ git commit -m "feat(angular): add the stat-card primitive"
 
 ---
 
-## Task 8: Alert
+## Task 7: Alert
 
 **Reference:** `frameworks/react/components/feedback/Alert.jsx`, demoed in
 `frameworks/react/components/feedback/alert.card.html`.
@@ -2107,7 +1973,7 @@ git commit -m "feat(angular): add the alert primitive"
 
 ---
 
-## Task 9: ConfirmDialog
+## Task 8: ConfirmDialog
 
 **Reference:** `frameworks/react/components/feedback/ConfirmDialog.jsx`, demoed in
 `frameworks/react/components/feedback/confirm-dialog.card.html`.
@@ -2168,7 +2034,7 @@ Create `frameworks/tailwind/components/ConfirmDialog.manifest.json`:
 ```
 
 `w-115` is `calc(var(--sp-1) * 115)` = 460px, React's default width. `max-w-[92vw]`
-is legal because Task 2 made the unmodelled units legal.
+is legal because plan 4.5 made the unmodelled units legal in a bracket.
 
 - [ ] **Step 2: Write the recipe and the primitive**
 
@@ -2350,7 +2216,7 @@ git commit -m "feat(angular): add the confirm-dialog primitive"
 
 ---
 
-## Task 10: EmptyState
+## Task 9: EmptyState
 
 **Reference:** `frameworks/react/components/feedback/EmptyState.jsx`, demoed in
 `frameworks/react/components/feedback/empty-error-state.card.html`.
@@ -2525,10 +2391,10 @@ git commit -m "feat(angular): add the empty-state primitive"
 
 ---
 
-## Task 11: ErrorState
+## Task 10: ErrorState
 
 **Reference:** `frameworks/react/components/feedback/ErrorState.jsx`, same demo page as
-Task 10.
+Task 9.
 
 React's `ErrorState` imports `Button` for its retry. The Angular layer does not — the
 retry is projected, like the empty state's action, because buttons are Material's half
@@ -2706,19 +2572,18 @@ git commit -m "feat(angular): add the error-state primitive"
 
 ---
 
-## Task 12: Onboarding
+## Task 11: Onboarding
 
 **Reference:** `frameworks/react/components/feedback/Onboarding.jsx`, demoed in
 `frameworks/react/components/feedback/onboarding.card.html`.
 
-**One deliberate departure from React:** React's `anchorRect` prop positions the
-coachmark next to an element, clamping against the viewport with plain JS numbers.
-The Angular primitive does not take it. Anchored positioning is overlay positioning,
-and overlay positioning is Material's half of the split (`cdkOverlay` /
-`OverlayPositionBuilder`) — reimplementing a clamp here would duplicate hardened code
-badly and put two viewport constants into a layer whose whole rule is that dimensions
-come from tokens. The coachmark floats bottom-right; a consumer who needs it anchored
-wraps it in a CDK overlay. This is written into the prompt so it reads as a decision.
+**`anchorRect` is ported, constants and all.** React clamps the coachmark against the
+viewport with two plain numbers — `W = 320` (the popover's own width) and `EDGE = 16`
+(its minimum gutter) — because `Math.min`/`Math.max` need real numbers and **nothing in
+this layer reads a custom property back into JS**. The Angular port keeps both, with the
+same values and the same reasoning, and adds two `EXEMPT` entries mirroring React's own.
+Do not try to token-ify them: a `var()` inside `Math.min` is a string, and the clamp
+would silently stop clamping.
 
 **Files:**
 - Create: `frameworks/tailwind/components/Onboarding.manifest.json`
@@ -2729,8 +2594,8 @@ wraps it in a CDK overlay. This is written into the prompt so it reads as a deci
 **Interfaces:**
 - Produces: `ArenaOnboardingStep { eyebrow?: string; title?: string; body?: string }`;
   `Onboarding` (selector `arena-onboarding`), inputs `open: boolean`,
-  `steps: ArenaOnboardingStep[]`, `index: number`; outputs `next`, `back`, `skip`,
-  `done`; `onboardingStyles`.
+  `steps: ArenaOnboardingStep[]`, `index: number`, `anchorRect?: DOMRect`; outputs
+  `next`, `back`, `skip`, `done`; `onboardingStyles`.
 
 - [ ] **Step 1: Write the manifest**
 
@@ -2741,7 +2606,7 @@ Create `frameworks/tailwind/components/Onboarding.manifest.json`:
   "component": "Onboarding",
   "slots": {
     "scrim": "fixed inset-0 bg-scrim",
-    "panel": "fixed right-6 bottom-6 z-onboarding w-80 max-w-[92vw] bg-base-200 border-[length:var(--bw)] border-neutral rounded-lg shadow-3 p-5",
+    "panel": "fixed z-onboarding w-80 max-w-[92vw] bg-base-200 border-[length:var(--bw)] border-neutral rounded-lg shadow-3 p-5",
     "eyebrow": "font-mono text-ctl-xs tracking-label uppercase text-primary mb-2",
     "title": "font-display font-extrabold text-h4 text-base-content tracking-tight",
     "body": "font-body text-md leading-body text-base-content/82 mt-2",
@@ -2752,9 +2617,20 @@ Create `frameworks/tailwind/components/Onboarding.manifest.json`:
     "dotOff": "w-2 bg-neutral",
     "text": "font-mono text-ctl-xs tracking-uppercase-status uppercase font-bold bg-transparent border-none cursor-pointer text-base-content/62",
     "next": "h-8.5 px-4 bg-primary text-primary-content border-none rounded-sm font-body font-semibold text-ctl-md cursor-pointer"
-  }
+  },
+  "variants": {
+    "placement": {
+      "floating": { "panel": "right-6 bottom-6" },
+      "anchored": { "panel": "" }
+    }
+  },
+  "defaultVariants": { "placement": "floating" }
 }
 ```
+
+`anchored` contributes no classes on purpose: the panel's `top`/`left` come from the
+clamp as inline styles, and a corner class would fight them. The variant exists so the
+floating corner is *removed* rather than overridden.
 
 The scrim carries **no blur** — a tour that blurs the product it is touring defeats
 itself, which is why `--scrim-blur` appears on Dialog, ConfirmDialog and
@@ -2777,7 +2653,7 @@ export const onboardingStyles = tv(manifest);
 Create `frameworks/angular/primitives/onboarding/onboarding.ts`:
 
 ```ts
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DOCUMENT, inject, input, output } from '@angular/core';
 import { onboardingStyles } from './onboarding.variants';
 
 export interface ArenaOnboardingStep {
@@ -2794,7 +2670,8 @@ export interface ArenaOnboardingStep {
   template: `
     @if (visible()) {
       <div [class]="styles().scrim()" (click)="skip.emit()"></div>
-      <div [class]="styles().panel()" role="dialog" aria-modal="true" [attr.aria-label]="step().title">
+      <div [class]="styles().panel()" role="dialog" aria-modal="true" [attr.aria-label]="step().title"
+           [style.top.px]="position()?.top" [style.left.px]="position()?.left">
         @if (step().eyebrow; as eyebrow) {
           <div [class]="styles().eyebrow()">{{ eyebrow }}</div>
         }
@@ -2828,15 +2705,33 @@ export class Onboarding {
   readonly open = input(false);
   readonly steps = input<ArenaOnboardingStep[]>([]);
   readonly index = input(0);
+  readonly anchorRect = input<DOMRect>();
   readonly next = output<void>();
   readonly back = output<void>();
   readonly skip = output<void>();
   readonly done = output<void>();
 
-  protected readonly styles = computed(() => onboardingStyles());
+  private readonly doc = inject(DOCUMENT);
+
+  protected readonly styles = computed(() =>
+    onboardingStyles({ placement: this.anchorRect() ? 'anchored' : 'floating' }));
   protected readonly visible = computed(() => this.open() && this.steps().length > 0);
   protected readonly step = computed<ArenaOnboardingStep>(() => this.steps()[this.index()] ?? {});
   protected readonly last = computed(() => this.index() === this.steps().length - 1);
+
+  /** Clamped against the viewport, or null when the coachmark floats. `W` and `EDGE`
+   *  stay plain numbers for the reason Onboarding.jsx states: Math.min/max need real
+   *  numbers, and nothing in this layer reads a custom property back into JS. */
+  protected readonly position = computed(() => {
+    const rect = this.anchorRect();
+    if (!rect) return null;
+    const view = this.doc.defaultView;
+    const W = 320;
+    const EDGE = 16;
+    const top = Math.min(rect.bottom + 12, (view?.innerHeight ?? 900) - 220);
+    const left = view ? Math.min(rect.left, view.innerWidth - W - EDGE) : rect.left;
+    return { top, left: Math.max(EDGE, left) };
+  });
 }
 ```
 
@@ -2851,6 +2746,7 @@ It is controlled: the host owns `index` and answers `next`, `back`, `skip` and `
 
 ```html
 <arena-onboarding [open]="touring()" [steps]="steps" [index]="step()"
+                  [anchorRect]="target()?.getBoundingClientRect()"
                   (next)="step.set(step() + 1)" (back)="step.set(step() - 1)"
                   (skip)="touring.set(false)" (done)="finish()" />
 ```
@@ -2858,9 +2754,9 @@ It is controlled: the host owns `index` and answers `next`, `back`, `skip` and `
 **Do / Don't**
 - Keep a tour to three or four steps. The dots are a promise about how long this will
   take, and a tour that breaks that promise gets skipped.
-- Anchor it with a CDK overlay when a step must point at a specific control. This
-  primitive does not position itself against an element on purpose: overlay
-  positioning is Material's, and Arena does not reimplement it.
+- Pass `anchorRect` (a `DOMRect`, usually from `getBoundingClientRect()`) when a step
+  must point at a specific control; the coachmark clamps itself inside the viewport.
+  Without it, it floats bottom-right.
 - Don't put anything in a tour that the interface should have made obvious. A
   coachmark explaining a confusing control is a bug report with a nicer border.
 ```
@@ -2875,7 +2771,25 @@ export * from './onboarding.variants';
 Add `export * from './onboarding';` to `frameworks/angular/primitives/index.ts`,
 alphabetically (after `./error-state`).
 
-- [ ] **Step 4: Write the specimen**
+- [ ] **Step 4: Register the two clamp constants**
+
+Run: `bun run check:dimensions`
+
+If it reports `onboarding.ts` with `320` or `16`, add both to `EXEMPT` in
+`scripts/check-dimension-literals.mjs`, using the keys the gate prints and the reason
+React's own comments give:
+
+```js
+  ['frameworks/angular/primitives/onboarding/onboarding.ts:width:320',
+   'the popover\'s own width, compared against window.innerWidth in a clamp — Math.min needs a real number, and nothing in this layer reads a custom property back into JS; Onboarding.jsx carries the same constant for the same reason'],
+  ['frameworks/angular/primitives/onboarding/onboarding.ts:left:16',
+   'the popover\'s minimum gutter from either viewport edge, both edges reading one constant so they cannot drift apart — same clamp, same reason as the width above'],
+```
+
+If it reports nothing, add nothing: a stale exemption fails the gate, which is the
+discipline working.
+
+- [ ] **Step 5: Write the specimen**
 
 Create `frameworks/tailwind/components/Onboarding.card.html`:
 
@@ -2915,7 +2829,7 @@ mountSpecimen({ sections: [
 </script></body></html>
 ```
 
-- [ ] **Step 5: Rebuild, gate, look, commit**
+- [ ] **Step 6: Rebuild, gate, look, commit**
 
 Run: `bun run build:tailwind && bun run check`
 Expected: `check-all: all 11 step(s) passed`.
@@ -2933,7 +2847,7 @@ git commit -m "feat(angular): add the onboarding primitive"
 
 ---
 
-## Task 13: Breadcrumbs
+## Task 12: Breadcrumbs
 
 **Reference:** `frameworks/react/components/navigation/Breadcrumbs.jsx`, demoed in
 `frameworks/react/components/navigation/navigation.card.html`.
@@ -3105,7 +3019,7 @@ git commit -m "feat(angular): add the breadcrumbs primitive"
 
 ---
 
-## Task 14: BulkActionBar
+## Task 13: BulkActionBar
 
 **Reference:** `frameworks/react/components/navigation/BulkActionBar.jsx`, demoed in
 `frameworks/react/components/navigation/navigation.card.html`.
@@ -3316,7 +3230,7 @@ git commit -m "feat(angular): add the bulk-action-bar primitive"
 
 ---
 
-## Task 15: CommandPalette
+## Task 14: CommandPalette
 
 **Reference:** `frameworks/react/components/navigation/CommandPalette.jsx`, demoed in
 `frameworks/react/components/navigation/command-palette.card.html`.
@@ -3581,7 +3495,7 @@ git commit -m "feat(angular): add the command-palette primitive"
 
 ---
 
-## Task 16: `container-size.ts`, and PageHead
+## Task 15: `container-size.ts`, and PageHead
 
 **Reference:** `frameworks/react/components/navigation/PageHead.jsx` and
 `frameworks/react/use-container-width.js`, demoed in
@@ -3831,7 +3745,7 @@ git commit -m "feat(angular): measure the container, and add the page-head primi
 
 ---
 
-## Task 17: ThemeToggle
+## Task 16: ThemeToggle
 
 **Reference:** `frameworks/react/components/forms/ThemeToggle.jsx`, demoed in
 `frameworks/react/components/forms/forms.card.html`.
@@ -4004,7 +3918,7 @@ git commit -m "feat(angular): add the theme-toggle primitive, reading ThemeServi
 
 ---
 
-## Task 18: Rotor
+## Task 17: Rotor
 
 **Reference:** `frameworks/react/components/brand/Rotor.jsx`, demoed in
 `frameworks/react/components/brand/brand.card.html`.
@@ -4014,7 +3928,7 @@ themeable** — `check-dimension-literals.mjs`'s `EXEMPT` says so for React, and
 reason carries: fixing the mark's size to a token would quietly make Dravensoft's
 identity resizable by a re-skin. So `size` is a plain input in pixels, not a class.
 
-The spin utility already exists from Task 6.
+The spin utility already exists from Task 5.
 
 **Files:**
 - Create: `frameworks/tailwind/components/Rotor.manifest.json`
@@ -4208,10 +4122,11 @@ git commit -m "feat(angular): add the rotor primitive"
 
 ---
 
-## Phase 2 — the four charts, and why they break every rule above
+## Phase 2 — the three SVG charts, and why they break every rule above
 
-The charts have **no manifest, no `.variants.ts` and no specimen**, and that is the
-spec's declared exception rather than an omission:
+`BarChart`, `LineChart` and `DoughnutChart` have **no manifest, no `.variants.ts` and no
+specimen**, and that is the spec's declared exception rather than an omission
+(`ChartCard`, which the spec grouped with them, does get one — see Task 19):
 
 - **A chart's visual identity is path data and attribute bindings**, not class strings.
   `[attr.fill]="'var(--color-cat-1)'"` is how React does it too, and a manifest that
@@ -4231,7 +4146,7 @@ an alternative.
 
 ---
 
-## Task 19: `chart-internals.ts`
+## Task 18: `chart-internals.ts`
 
 **Reference:** `frameworks/react/components/charts/chart-internals.js` — port it, do not
 redesign it. Four components share this maths and the colour contract; writing it once
@@ -4370,7 +4285,7 @@ git commit -m "feat(angular): port the chart internals and the colour contract"
 
 ---
 
-## Task 20: ChartCard
+## Task 19: ChartCard
 
 **Reference:** `frameworks/react/components/charts/ChartCard.jsx`.
 
@@ -4378,20 +4293,56 @@ git commit -m "feat(angular): port the chart internals and the colour contract"
 a grid of tiles, and emitting an `h2` per tile fabricates a document outline nobody
 asked for. The chart's own `role="img"` carries the accessible name.
 
+**ChartCard is not one of the SVG charts, and it stops being treated as one here.** The
+parity spec counts it among "the 4 charts" and excludes it from the manifest inventory,
+but the exclusion's own argument — *a chart's identity is path data and attribute
+bindings, which a class string cannot hold* — does not describe a bordered card with a
+microlabel. It is expressible, so it gets a manifest like everything else expressible,
+and the charts' exception narrows to the three that earn it: BarChart, LineChart,
+DoughnutChart. That makes the layer's manifest count **36**, not 35.
+
 **Files:**
-- Create: `frameworks/angular/primitives/chart-card/{chart-card.ts,chart-card.prompt.md,index.ts}`
+- Create: `frameworks/tailwind/components/ChartCard.manifest.json`
+- Create: `frameworks/tailwind/components/ChartCard.card.html`
+- Create: `frameworks/angular/primitives/chart-card/{chart-card.ts,chart-card.variants.ts,chart-card.prompt.md,index.ts}`
 - Modify: `frameworks/angular/primitives/index.ts`
 
 **Interfaces:**
 - Produces: `ChartCard` (selector `arena-chart-card`), input `title?: string`,
-  projects `[arena-actions]` and default content.
+  projects `[arena-actions]` and default content; `chartCardStyles`.
 
-- [ ] **Step 1: Write the primitive**
+- [ ] **Step 1: Write the manifest**
+
+Create `frameworks/tailwind/components/ChartCard.manifest.json`:
+
+```json
+{
+  "component": "ChartCard",
+  "slots": {
+    "root": "flex flex-col gap-3 bg-base-200 border-[length:var(--bw)] border-base-300 rounded-lg p-5",
+    "head": "flex items-center justify-between gap-3",
+    "title": "font-mono text-ctl-2xs tracking-label uppercase text-base-content/62",
+    "actions": "flex items-center gap-2"
+  }
+}
+```
+
+- [ ] **Step 2: Write the recipe and the primitive**
+
+Create `frameworks/angular/primitives/chart-card/chart-card.variants.ts`:
+
+```ts
+import { tv } from '../../../tailwind/tv';
+import manifest from '../../../tailwind/components/ChartCard.manifest.json' with { type: 'json' };
+
+export const chartCardStyles = tv(manifest);
+```
 
 Create `frameworks/angular/primitives/chart-card/chart-card.ts`:
 
 ```ts
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { chartCardStyles } from './chart-card.variants';
 
 /** The card a chart sits on. `title` is a microlabel, deliberately not a heading. */
 @Component({
@@ -4399,12 +4350,12 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div style="background:var(--surface-card);border:var(--bw) solid var(--color-base-300);border-radius:var(--r-lg);padding:calc(var(--sp-1) * 5);display:flex;flex-direction:column;gap:calc(var(--sp-1) * 3)">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:calc(var(--sp-1) * 3)">
+    <div [class]="styles().root()">
+      <div [class]="styles().head()">
         @if (title(); as label) {
-          <span style="font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--mute)">{{ label }}</span>
+          <span [class]="styles().title()">{{ label }}</span>
         }
-        <div style="display:flex;align-items:center;gap:calc(var(--sp-1) * 2)"><ng-content select="[arena-actions]" /></div>
+        <div [class]="styles().actions()"><ng-content select="[arena-actions]" /></div>
       </div>
       <ng-content />
     </div>
@@ -4412,16 +4363,18 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 })
 export class ChartCard {
   readonly title = input<string>();
+
+  protected readonly styles = computed(() => chartCardStyles());
 }
 ```
 
-**This is the one component shape in the layer with styling of its own**, and it is the
-charts' exception applied consistently: they have no manifest, so their styling is
-token-valued style attributes exactly as React writes them. Every value above is a
-`var()` into a token — `check-dimension-literals.mjs` scans `.ts` under `frameworks/`
-and will say so if one is not.
+**So the three SVG charts are now the only components in the layer with styling of their
+own**, and that is the exception applied where its argument actually holds: they have no
+manifest, so their styling is token-valued style attributes exactly as React writes
+them. `check-dimension-literals.mjs` scans `.ts` under `frameworks/` and will say so if
+a value there is not a token.
 
-- [ ] **Step 2: Write the prompt and the barrels**
+- [ ] **Step 3: Write the prompt and the barrels**
 
 Create `frameworks/angular/primitives/chart-card/chart-card.prompt.md`:
 
@@ -4448,26 +4401,72 @@ Create `frameworks/angular/primitives/chart-card/index.ts`:
 
 ```ts
 export * from './chart-card';
+export * from './chart-card.variants';
 ```
 
 Add `export * from './chart-card';` to `frameworks/angular/primitives/index.ts`,
 alphabetically (after `./chart-internals`).
 
-- [ ] **Step 3: Gate and commit**
+- [ ] **Step 4: Write the specimen**
 
-Run: `bun run check`
-Expected: `check-all: all 11 step(s) passed` — `check:dimensions` is the one that
-matters here, since this template is the first styling in the layer not held by a
-manifest.
+Create `frameworks/tailwind/components/ChartCard.card.html`:
+
+```html
+<!-- @dsCard group="Angular" viewport="700x300" name="ChartCard" subtitle="The tile a chart sits on, rendered from ChartCard.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:var(--sp-6)}.row{display:flex;flex-wrap:wrap;gap:calc(var(--sp-1) * 3.5);align-items:flex-start;margin-bottom:var(--sp-4)}.sub{font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-label);line-height:var(--lh-snug);color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:var(--sp-1)}</style>
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./ChartCard.manifest.json')).json();
+const c = classesFor(manifest);
+
+/* The chart itself is not rendered here — it has no manifest, by design. The
+   placeholder stands where one goes, so the tile's padding and gap are what the
+   page is actually showing. */
+function tile({ title, withAction }) {
+  const head = el('div', { class: c.head });
+  if (title) head.append(el('span', { class: c.title, text: title }));
+  const actions = el('div', { class: c.actions });
+  if (withAction) actions.append(el('span', { class: 'font-body text-ctl-md text-base-content/62', text: '[ Export ]' }));
+  head.append(actions);
+  const slot = el('div', { class: 'w-full bg-base-300 rounded-sm' });
+  slot.style.height = '140px';
+  const root = el('div', { class: c.root }, head, slot);
+  root.style.width = '300px';
+  return root;
+}
+
+mountSpecimen({ sections: [
+  section('With a title and an action', [tile({ title: 'Deployments per week', withAction: true })]),
+  section('Title only, and bare', [tile({ title: 'Error rate' }), tile({})]),
+]});
+</script></body></html>
+```
+
+- [ ] **Step 5: Gate, look, commit**
+
+Run: `bun run build:tailwind && bun run check`
+Expected: `check-all: all 11 step(s) passed`, and `check-tailwind` now reporting **17
+manifests**.
+
+Compare against React's `charts/charts.card.html`: the tile's border, radius, padding
+and the microlabel above the plot must match.
 
 ```bash
-git add frameworks/angular/primitives/chart-card frameworks/angular/primitives/index.ts
-git commit -m "feat(angular): add the chart-card primitive"
+git add frameworks/tailwind/components/ChartCard.manifest.json \
+        frameworks/tailwind/components/ChartCard.card.html \
+        frameworks/tailwind/utilities.css \
+        frameworks/angular/primitives/chart-card frameworks/angular/primitives/index.ts
+git commit -m "feat(angular): add the chart-card primitive, manifest and all"
 ```
 
 ---
 
-## Task 21: BarChart
+## Task 20: BarChart
 
 **Reference:** `frameworks/react/components/charts/BarChart.jsx`, demoed in
 `frameworks/react/components/charts/charts.card.html`.
@@ -4671,7 +4670,7 @@ git commit -m "feat(angular): add the bar-chart primitive"
 
 ---
 
-## Task 22: LineChart
+## Task 21: LineChart
 
 **Reference:** `frameworks/react/components/charts/LineChart.jsx`.
 
@@ -4899,7 +4898,7 @@ git commit -m "feat(angular): add the line-chart primitive"
 
 ---
 
-## Task 23: DoughnutChart
+## Task 22: DoughnutChart
 
 **Reference:** `frameworks/react/components/charts/DoughnutChart.jsx`.
 
@@ -5074,7 +5073,7 @@ git commit -m "feat(angular): add the doughnut-chart primitive"
 
 ---
 
-## Task 24: Close the layer out — documentation, changelog, and the full sweep
+## Task 23: Close the layer out — documentation, changelog, and the full sweep
 
 Eighteen primitives exist and no document in the repo says so. Three READMEs and
 `CLAUDE.md` describe an Angular layer with one reference primitive, which was true when
@@ -5098,11 +5097,12 @@ The layer ships **18 primitives**: `alert`, `avatar`, `bar-chart`, `breadcrumbs`
 `page-head`, `rotor`, `skeleton`, `stat-card`, `theme-toggle` — plus `tag`, the
 reference shape, for 19 in all.
 
-**The four charts are the declared exception**, and a missing chart manifest is a
+**The three SVG charts are the declared exception**, and a missing chart manifest is a
 decision rather than an omission: a chart's visual identity is path data and attribute
-bindings, not class strings, so `bar-chart`, `line-chart`, `doughnut-chart` and
-`chart-card` have no `*.variants.ts` and style themselves with token-valued style
-attributes, exactly as their React counterparts do.
+bindings, not class strings, so `bar-chart`, `line-chart` and `doughnut-chart` have no
+`*.variants.ts` and style themselves with token-valued style attributes, exactly as
+their React counterparts do. `chart-card` is not one of them: it is a bordered tile with
+a microlabel, so it has a manifest like every other expressible component.
 
 Two shared files sit beside the primitives and are not components:
 `container-size.ts` (the host element's width as a signal, plus `readBreakpoint`) and
@@ -5150,17 +5150,18 @@ In `frameworks/tailwind/README.md`, after the "Consumption order" section, add:
 ```markdown
 ## What ships here
 
-`components/` holds one manifest per component plus its specimen page. Sixteen ship
-today — Button, Tag, Alert, Avatar, Breadcrumbs, BulkActionBar, CommandPalette,
-ConfirmDialog, EmptyState, ErrorState, Onboarding, PageHead, Rotor, Skeleton,
-StatCard, ThemeToggle — and plan 5b adds the twenty a framework-neutral consumer
-hand-rolls because Material would otherwise provide them.
+`components/` holds one manifest per component plus its specimen page. Seventeen ship
+today — Button, Tag, Alert, Avatar, Breadcrumbs, BulkActionBar, ChartCard,
+CommandPalette, ConfirmDialog, EmptyState, ErrorState, Onboarding, PageHead, Rotor,
+Skeleton, StatCard, ThemeToggle — and plan 5b adds the nineteen more a
+framework-neutral consumer hand-rolls because Material would otherwise provide them.
 
-**The four charts and Calendar have no manifest, on purpose.** The charts are SVG
-geometry driven by measured container width: their identity is path data and attribute
-bindings, and a manifest that tried to hold it would be a lie about where the styling
-lives. Calendar is date arithmetic and JS responsive branches; what a manifest could
-capture is a fraction of it, and that fraction would drift from the rest.
+**The three SVG charts and Calendar have no manifest, on purpose.** `BarChart`,
+`LineChart` and `DoughnutChart` are SVG geometry driven by measured container width:
+their identity is path data and attribute bindings, and a manifest that tried to hold it
+would be a lie about where the styling lives. Calendar is date arithmetic and JS
+responsive branches; what a manifest could capture is a fraction of it, and that fraction
+would drift from the rest.
 
 `utilities.css` is **generated** — `bun run build:tailwind` compiles the preset with
 the manifests as content, and `bun run check:tailwind-generated` fails when the
@@ -5175,9 +5176,9 @@ In `CLAUDE.md`, in the "Framework layers live under `frameworks/`" paragraph, re
 
 ```markdown
 and 19 standalone `OnPush` primitives under `primitives/` (`tag` is the reference
-shape; the four charts are the declared exception — no manifest, no `.variants.ts`,
-token-valued style attributes like React's, and reviewed against React's
-`charts.card.html` rather than a specimen of their own)
+shape; the three SVG charts are the declared exception — no manifest, no
+`.variants.ts`, token-valued style attributes like React's, and reviewed against
+React's `charts.card.html` rather than a specimen of their own)
 ```
 
 In the same file, in the paragraph beginning "**A dimension in a framework layer is a
@@ -5230,7 +5231,7 @@ the last version describes a tree nobody has):
   and each styled by a Tailwind manifest it does not own. Parity is of outcome, not of
   inventory: the 21 components Angular Material provides stay Material's, dressed by
   `arena-material.css`.
-- **14 new component manifests** under `frameworks/tailwind/components/`, each with a
+- **15 new component manifests** under `frameworks/tailwind/components/`, each with a
   static specimen page that renders the real markup from the real recipe.
 - **`frameworks/tailwind/utilities.css`** — the compiled utility layer, generated by
   `bun run build:tailwind` and gated by `bun run check:tailwind-generated`, so a static
@@ -5259,7 +5260,7 @@ executed.
 ```bash
 bun run build:tailwind && bun run check
 ```
-Expected: `check-all: all 11 step(s) passed`, and `check-tailwind` reporting **16
+Expected: `check-all: all 11 step(s) passed`, and `check-tailwind` reporting **17
 manifests**.
 
 ```bash
@@ -5290,13 +5291,13 @@ for d in frameworks/angular/primitives/*/; do
   done
 done
 ```
-Expected: no output. (`*.variants.ts` is deliberately absent for the four charts, which
-is why it is not in the loop — check those four by eye against the exception the README
-now states.)
+Expected: no output. (`*.variants.ts` is deliberately absent for the three SVG charts,
+which is why it is not in the loop — check those three by eye against the exception the
+README now states.)
 
-Then, with `bun run demos` running, open all **15** specimen pages — Tag, written in
-Task 3, plus the 14 written by the slices — in **dark**, in **light**, and in
-**`.arena-compact`**, and the React `charts.card.html` beside the four charts. A specimen that renders unstyled means
+Then, with `bun run demos` running, open all **16** specimen pages — Tag, written in
+Task 2, plus the 14 slices and ChartCard — in **dark**, in **light**, and in
+**`.arena-compact`**, and the React `charts.card.html` beside the three SVG charts. A specimen that renders unstyled means
 `utilities.css` is stale — rebuild before concluding anything else.
 
 - [ ] **Step 6: Commit**
@@ -5323,5 +5324,5 @@ Stated so the next reader does not go looking:
   `jsx-loader.js`.
 - **The 20 orphan manifests** — Button, IconButton, Input, Textarea, Select, Checkbox,
   Radio, Switch, SegmentedControl, Card, Badge, Table, Tabs, Dialog, Menu, Tooltip,
-  Toast, Pagination, ProgressBar, Spinner. They are plan 5b, and they consume Tasks 1–4
+  Toast, Pagination, ProgressBar, Spinner. They are plan 5b, and they consume Tasks 1–3
   of this plan unchanged.

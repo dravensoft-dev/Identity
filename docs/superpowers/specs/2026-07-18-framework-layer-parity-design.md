@@ -1,6 +1,11 @@
 # Framework layer parity — Angular and Tailwind — Design
 
-**Status:** approved in design
+**Status:** approved in design; **amended 2026-07-19** — see `2026-07-19-token-debt-and-gate-blind-spots-design.md`.
+Two counts below have moved: `ChartCard` gets a manifest (the exclusion's argument —
+path data, not class strings — describes the three SVG charts, not a bordered tile), so
+the layer ships **36** manifests rather than 35 and the charts' exception covers
+BarChart, LineChart and DoughnutChart. And the plan splits in two: `5a` (Angular
+primitives + the gates) and `5b` (the orphan manifests).
 **Date:** 2026-07-18
 **Execution order:** plan 5 of 6
 **Depends on:** `2026-07-18-framework-layer-token-coverage-design.md` (plan 3) — hard prerequisite — and `2026-07-18-token-geometry-boundary-design.md` (plan 4), added later to the chain

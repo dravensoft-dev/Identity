@@ -2,12 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Execution order: 5b of 6.** **Status: NOT EXECUTED** as of 2026-07-19. **Blocked on 5a**, which builds the infrastructure this plan consumes.
+**Execution order: 5b of 6.** **Status: NOT EXECUTED** as of 2026-07-19. **Blocked on 4.5 and 5a**, which build the tokens and the infrastructure this plan consumes.
 
 | # | Plan | Status |
 |---|---|---|
 | 1–4 | token migration, Overview, coverage, geometry boundary | **Executed** |
-| 5a | `2026-07-18-5a-angular-primitive-parity.md` | Pending — **hard prerequisite**, Tasks 1–4 |
+| 4.5 | `2026-07-19-4.5-token-debt-and-gate-blind-spots.md` | Pending — **hard prerequisite** |
+| 5a | `2026-07-18-5a-angular-primitive-parity.md` | Pending — **hard prerequisite**, Tasks 1–3 |
 | 5b | `2026-07-18-5b-tailwind-manifest-parity.md` | **This plan** — pending |
 | 6 | `2026-07-18-6-four-package-build-publish.md` | Pending |
 
@@ -51,9 +52,17 @@ Expected: four `present` lines and `check-all: all 11 step(s) passed`.
 
 ```bash
 grep -c 'max-w-\[42ch\]' frameworks/tailwind/components/EmptyState.manifest.json
+bun -e "import{isLegalBracket}from'./scripts/check-arbitrary-values.mjs';console.log(isLegalBracket('length:calc(var(--avatar-md)*0.4)'),isLegalBracket('42ch'),isLegalBracket('13px'))"
 ```
-Expected: `1` — proof that 5a's Task 2 made unmodelled units legal in a bracket. Without
-it, several manifests below cannot be written as specified.
+Expected: `1`, then `true true false` — proof that plan 4.5 made a derivation and an
+unmodelled unit legal in a bracket while a raw dimension still fails. Without it,
+several manifests below cannot be written as specified.
+
+```bash
+grep -c 'loop-spin' tokens/effects.css
+```
+Expected: `1` — the `--loop-*` family exists, so Task 2's animations reference tokens
+rather than restating durations.
 
 ## Global Constraints
 
@@ -99,13 +108,13 @@ are given in full.
 
 ## Task 1: One stylesheet for every specimen
 
-Fifteen pages from 5a carry the same 5-line `<style>` block, and twenty more are about
+Sixteen pages from 5a carry the same 5-line `<style>` block, and twenty more are about
 to. Extract it once, and adopt it everywhere in the same task — a shared file that half
 the pages ignore is worse than no shared file.
 
 **Files:**
 - Create: `frameworks/tailwind/specimen.css`
-- Modify: the 15 existing `frameworks/tailwind/components/*.card.html` (Tag plus 5a's 14)
+- Modify: the 16 existing `frameworks/tailwind/components/*.card.html` (Tag, 5a's 14 slices, and ChartCard)
 
 - [ ] **Step 1: Write the stylesheet**
 
@@ -178,7 +187,7 @@ and inside `mountSpecimen`'s loop:
     const row = el('div', { class: stack ? 'row stack' : 'row' });
 ```
 
-- [ ] **Step 3: Adopt it in the 15 existing specimens**
+- [ ] **Step 3: Adopt it in the 16 existing specimens**
 
 In every `frameworks/tailwind/components/*.card.html`, replace the inline `<style>…</style>`
 block with:
@@ -198,7 +207,7 @@ a cosmetic one.
 Run: `bun run check`
 Expected: `check-all: all 11 step(s) passed`.
 
-With `bun run demos` running, open all 15 pages and confirm none of them regressed to a
+With `bun run demos` running, open all 16 pages and confirm none of them regressed to a
 flowed row that should stack.
 
 ```bash
@@ -299,11 +308,11 @@ Add to `frameworks/tailwind/animations.css`, after the two 5a wrote:
     width: 40%;
     border-radius: inherit;
     background: currentColor;
-    animation: arena-prog 1.15s var(--ease-in-out) infinite;
+    animation: arena-prog var(--loop-sweep) var(--ease-in-out) infinite;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    &::after { animation-duration: 2.4s; }
+    &::after { animation-duration: var(--loop-reduced); }
   }
 }
 ```
@@ -387,10 +396,10 @@ Three notes on what changed and why:
 
 /* Reports work in progress, so it slows rather than stopping. */
 @utility arena-btn-spin {
-  animation: arena-btn-spin 0.7s linear infinite;
+  animation: arena-btn-spin var(--loop-spin) linear infinite;
 
   @media (prefers-reduced-motion: reduce) {
-    animation-duration: 2.4s;
+    animation-duration: var(--loop-reduced);
   }
 }
 ```
@@ -554,12 +563,12 @@ plus a message) and valid (green border plus a check) — and the focus one is a
 **modifier, not a variant**: it belongs to the DOM's state, and a manifest that made it a
 variant would need the specimen to fake a focus that the browser owns.
 
-**This is the first manifest to reach `--focus-width`**, a token the coverage gate lists
-in `EXCLUDED` as unreachable ("v4 has no namespace for them"). It stays unreachable as a
-*theme key* — `ring-[length:var(--focus-width)]` is a bracket holding a `var()`, which is
-legal and is not a theme key — so the exclusion remains accurate. If
-`bun run check:coverage` disagrees, read its message before changing anything: it is the
-authority on its own rule, and the fix is whichever of the two is actually wrong.
+**`--focus-width` reaches the Tailwind layer here**, having reached React in plan 4.5,
+which found it with zero consumers while four components wrote `0 0 0 2px` by hand. It
+stays in the coverage gate's `EXCLUDED` as unreachable *as a theme key* — v4 has no
+namespace for a ring width — while `ring-[length:var(--focus-width)]` reaches it as a
+bracket, which is legal and is not a theme key. If `bun run check:coverage` disagrees,
+read its message before changing anything: it is the authority on its own rule.
 
 - [ ] **Step 1: Write the manifest**
 
@@ -1514,7 +1523,7 @@ Create `frameworks/tailwind/components/Tabs.manifest.json`:
   },
   "variants": {
     "selected": {
-      "true": { "tab": "font-semibold text-base-content shadow-[inset_0_-2px_0_var(--crimson)]" },
+      "true": { "tab": "font-semibold text-base-content shadow-[inset_0_calc(var(--bw-strong)*-1)_0_var(--crimson)]" },
       "false": { "tab": "font-medium text-base-content/62 shadow-none hover:text-base-content/82" }
     }
   },
@@ -1522,15 +1531,11 @@ Create `frameworks/tailwind/components/Tabs.manifest.json`:
 }
 ```
 
-**Check the underline class in Step 3 before assuming it is fine.**
-`shadow-[inset_0_-2px_0_var(--crimson)]` carries `2px`, and `check:arbitrary` rejects a
-bracket holding a modelled unit — correctly, since `--bw-strong` **is** 2px. Write it as
-`shadow-[inset_0_calc(var(--bw-strong)*-1)_0_var(--crimson)]` if the gate objects, which
-also makes the underline track the token. If neither compiles to a rule, fall back to
-`border-b-[length:var(--bw-strong)] border-primary` on the selected tab **and**
-`border-b-[length:var(--bw-strong)] border-transparent` on the unselected one, so both
-reserve the space and nothing shifts. Take the first of the three that passes both
-`check:arbitrary` and `check:tailwind`, and delete the other two from the manifest.
+The underline is a **derivation**, and it has to be: React writes `inset 0 -2px 0`, and
+`-2px` is a raw dimension that `check:arbitrary` rejects — correctly, since
+`--bw-strong` *is* 2px. `calc(var(--bw-strong)*-1)` is what plan 4.5 made legal, and it
+is the better spelling anyway: the underline now tracks the token instead of restating
+it. Negating a width in a shorthand is a `calc()` because CSS has no `-var()`.
 
 - [ ] **Step 2: Write the specimen**
 
@@ -2125,8 +2130,8 @@ mountSpecimen({ sections: [
 
 - [ ] **Step 3: Rebuild, gate, look, commit** (against `feedback/feedback.card.html`)
 
-Turn on reduced motion and confirm the indeterminate sweep **slows to 2.4s rather than
-stopping** — a frozen progress bar reads as a hung process.
+Turn on reduced motion and confirm the indeterminate sweep **slows to `--loop-reduced`
+rather than stopping** — a frozen progress bar reads as a hung process.
 
 ```bash
 git add frameworks/tailwind/components/ProgressBar.manifest.json \
@@ -2184,17 +2189,19 @@ scale, which is exactly the argument that put `--icon-*` in its own family.
 
 /* Reports work in progress, so it slows rather than stopping. */
 @utility arena-spinner {
-  animation: arena-spinner 0.7s linear infinite;
+  animation: arena-spinner var(--loop-spin) linear infinite;
 
   @media (prefers-reduced-motion: reduce) {
-    animation-duration: 2.4s;
+    animation-duration: var(--loop-reduced);
   }
 }
 ```
 
-If Task 3's `arena-btn-spin` is byte-identical to this, **do not** merge them: Button's
-spinner and Spinner are two components, and one utility shared between them makes a
-change to either a change to both. React keeps them separate for the same reason.
+Task 3's `arena-btn-spin` is byte-identical to this, and they still **do not** merge:
+Button's spinner and Spinner are two components, and one utility shared between them
+makes a change to either a change to both. React keeps them separate for the same
+reason. What they do share is `--loop-spin` — which is the level at which "these two
+spin at the same speed" is supposed to be stated.
 
 - [ ] **Step 2: Write the specimen**
 
@@ -2254,17 +2261,19 @@ In `frameworks/tailwind/README.md`, replace the "What ships here" section 5a add
 ```markdown
 ## What ships here
 
-`components/` holds **35 manifests**, one per component, each with a specimen page
-beside it that renders the real markup from the real recipe with no build step. Fifteen
+`components/` holds **36 manifests**, one per component, each with a specimen page
+beside it that renders the real markup from the real recipe with no build step. Sixteen
 have an Angular primitive consuming them; twenty do not, and what holds those up is
 `bun run check:tailwind` — every class a manifest declares must produce a rule, so a
 manifest with no consumer cannot rot silently.
 
-**The four charts and Calendar have no manifest, on purpose.** The charts are SVG
-geometry driven by measured container width: their identity is path data and attribute
-bindings, and a manifest that tried to hold it would be a lie about where the styling
-lives. Calendar is date arithmetic and JS responsive branches; what a manifest could
-capture is a fraction of it, and that fraction would drift from the rest.
+**The three SVG charts and Calendar have no manifest, on purpose.** `BarChart`,
+`LineChart` and `DoughnutChart` are SVG geometry driven by measured container width:
+their identity is path data and attribute bindings, and a manifest that tried to hold it
+would be a lie about where the styling lives. `ChartCard` is not one of them and does
+have a manifest — it is a bordered tile. Calendar is date arithmetic and JS responsive
+branches; what a manifest could capture is a fraction of it, and that fraction would
+drift from the rest.
 
 `utilities.css` is **generated** — `bun run build:tailwind` compiles the preset with the
 manifests as content, and `bun run check:tailwind-generated` fails when the committed
@@ -2280,7 +2289,7 @@ that twenty manifests have no Angular consumer at all. Replace it with:
 
 ```markdown
 **No gate compares a Tailwind manifest against the component it mirrors, and the
-mapping is not one-to-one**: 15 of the 35 manifests mirror both a React component and an
+mapping is not one-to-one**: 16 of the 36 manifests mirror both a React component and an
 `arena-*` primitive; the other 20 mirror a React component alone, because Angular
 Material provides that control and `arena-material.css` dresses it. `Tag.manifest.json`
 is the one that mirrors an **Angular** primitive whose React namesake is a different
@@ -2298,8 +2307,9 @@ Under `## [Unreleased]`, in the `### Added` block 5a started:
   SegmentedControl, Card, Badge, Table, Tabs, Dialog, Menu, Tooltip, Toast, Pagination,
   ProgressBar, Spinner — each with a specimen page. These are what a framework-neutral
   consumer hand-rolls; Angular consumers use Material for the same 20, dressed by
-  `arena-material.css`. The Tailwind layer now ships all 35 manifests the parity spec
-  calls for.
+  `arena-material.css`. The Tailwind layer now ships 36 manifests: the parity spec's 35,
+  plus `ChartCard`, which the spec grouped with the SVG charts and which a manifest holds
+  comfortably.
 - **`frameworks/tailwind/specimen.css`** — one stylesheet for every specimen page.
 ```
 
@@ -2308,14 +2318,14 @@ Under `## [Unreleased]`, in the `### Added` block 5a started:
 ```bash
 bun run build:tailwind && bun run check
 ```
-Expected: `check-all: all 11 step(s) passed`, and `check-tailwind` reporting **35
+Expected: `check-all: all 11 step(s) passed`, and `check-tailwind` reporting **36
 manifests**.
 
 ```bash
 ls frameworks/tailwind/components/*.manifest.json | wc -l
 ls frameworks/tailwind/components/*.card.html | wc -l
 ```
-Expected: `35` and `35`.
+Expected: `36` and `36`.
 
 ```bash
 git diff --stat main -- frameworks/react/
@@ -2325,10 +2335,10 @@ Expected: **no output**.
 ```bash
 bun run check:arbitrary
 ```
-Expected: `check-arbitrary-values: … none`. Every bracket in all 35 manifests holds a
-`var()` or a unit the token layer does not model.
+Expected: `check-arbitrary-values: … none`. Every bracket in all 36 manifests holds a
+`var()`, a derivation of one, or a unit the token layer does not model.
 
-Then, with `bun run demos` running, open all 35 specimens in **dark**, in **light**, and
+Then, with `bun run demos` running, open all 36 specimens in **dark**, in **light**, and
 in **`.arena-compact`**, each against the React card page its task names. A specimen that
 renders unstyled means `utilities.css` is stale — rebuild before concluding anything.
 
@@ -2336,7 +2346,7 @@ renders unstyled means `utilities.css` is stale — rebuild before concluding an
 
 ```bash
 git add frameworks/tailwind/README.md CLAUDE.md CHANGELOG.md
-git commit -m "docs: the Tailwind layer ships 35 manifests, and says so"
+git commit -m "docs: the Tailwind layer ships 36 manifests, and says so"
 ```
 
 ---
@@ -2349,4 +2359,5 @@ git commit -m "docs: the Tailwind layer ships 35 manifests, and says so"
   that is a finding to raise, not a literal to write.
 - **No Angular.** Every component here is one Material provides; implementing them as
   `arena-*` is the parity spec's first stated non-goal.
-- **No manifest for the four charts or Calendar.** Stated above, and in both READMEs.
+- **No manifest for the three SVG charts or Calendar.** Stated above, and in both
+  READMEs. `ChartCard` has one; plan 5a wrote it.
