@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`bun run check:cards`** — the ninth gate. Every page carrying a `@dsCard` comment is
+  loaded at its declared width in headless Chromium and measured; content that over-runs
+  the declared box fails the build, since the rendered card is cropped to it. Nine of the
+  34 pages were over-running, `charts.card.html` by 585px, and all nine are corrected in
+  the same change. It is the first gate needing a browser: with none present it skips with
+  exit 2 and `check-all` reports the run `INCOMPLETE`, never green.
+- **`window.arenaReady()`** in `jsx-loader.js` — resolves once no `arenaImport` is in
+  flight and the browser has painted twice, so the viewport gate waits on a signal instead
+  of a fixed guess.
 - **`AppLogo`** (brand) — the lock-up, a mark paired with a product name, at four steps.
   `mark` and `name` are required and nothing defaults, so a consumer never ships
   Dravensoft's trademark by omission. The manual's three variants are expressible
@@ -126,6 +135,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Nine `@dsCard` declarations corrected to what their pages actually render.** No page's
+  content changed. `frameworks/react/ui_kits/console/index.html` no longer declares a
+  `@dsCard` at all — it is an example app with its own scroll area, not a specimen card.
 - **`Rotor`'s `size` takes the same four named steps as `AppLogo`**, reading
   `--logo-mark-*`. A number is no longer accepted: a mark's drawn size is a scale, and
   two brand components resting on opposite reasonings would leave one looking arbitrary.

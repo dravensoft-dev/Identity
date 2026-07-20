@@ -60,13 +60,17 @@ test('shadow-1..3 still dedupe against each other (pre-existing registration, re
   assert.equal(merge('shadow-1 shadow-2'), 'shadow-2');
 });
 
-test('tagStyles: text-ctl-xs survives alongside every tone color', async () => {
-  const { tagStyles } = await import('../frameworks/angular/primitives/tag/tag.variants.ts');
-  for (const tone of ['neutral', 'primary', 'success', 'warning', 'danger']) {
-    const root = classes(tagStyles({ tone }).root());
-    assert.ok(root.includes('text-ctl-xs'), `tone ${tone}: text-ctl-xs missing from "${root.join(' ')}"`);
-  }
-});
+/* The same assertion against a real recipe — Tag's — lives in
+ * frameworks/angular/test/tag-variants.test.ts, not here. It has to: this
+ * file is in scripts/, which is the one suite check-all.mjs also runs under
+ * plain node, and reaching into the Angular layer from here dragged node into
+ * resolving `tag.variants.ts`'s own extensionless `from '../../../tailwind/tv'`
+ * — the idiom every file in that layer uses, and the one Angular's tsc
+ * expects. Bun resolves it, node does not, so this one import made
+ * `node scripts/check-all.mjs` fail on a defect that existed in neither layer.
+ * The boundary CLAUDE.md draws (scripts/ stays runtime-portable, framework
+ * suites are bun-only because they import .ts and .jsx directly) is the fix;
+ * the coverage is unchanged, because `bun run check` runs both suites. */
 
 test("Button.manifest.json through tv(): text-ctl* and the variant's text color both survive", async () => {
   const { default: manifest } = await import('../frameworks/tailwind/components/Button.manifest.json', { with: { type: 'json' } });

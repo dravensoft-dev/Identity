@@ -9,7 +9,13 @@ have a **dev-only, private `package.json`** at the root: the token layer is buil
 DTCG JSON by Style Dictionary, and the build and check scripts are tested with
 `bun test`, as is each framework layer from its own `test/` directory
 (`bun run test:scripts` / `test:react` / `test:angular`, or `bun run test` for all
-three). Nothing here is published to npm. It ships as three things at once from
+three). **A test under `scripts/` may not import a framework layer's `.ts` or `.jsx`**,
+because `scripts/` is the one suite `check-all.mjs` also runs under plain node, and those
+files use the extensionless imports their own toolchains expect and node does not resolve.
+A property worth asserting against a real recipe or component is asserted from that
+layer's own `test/` directory; `scripts/tv-merge.test.mjs` and
+`frameworks/angular/test/tag-variants.test.ts` are the pair that established this.
+Nothing here is published to npm. It ships as three things at once from
 the same tree:
 
 - a **Claude Code plugin** (`.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`, registering the `design` skill defined by the root `SKILL.md`);
@@ -132,7 +138,7 @@ Inject **as little as the job needs**. Prefer keyframes alone and leave the `ani
 
 The Angular layer's quartet is the analogue: `<name>.ts` (standalone `OnPush` component, `arena-` selector, signal I/O, no component `styles`), `<name>.variants.ts` (a `tailwind-variants` recipe built with `frameworks/tailwind/tv.ts`), `<name>.prompt.md`, and a barrel export. Dark-first (`.arena-light`), danger stays outline, Phosphor icons.
 
-**Specimen/demo pages** start with an HTML comment `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card rendering — keep it as the first line. Component demos load React from esm.sh via an importmap, pull in Babel standalone, and use `jsx-loader.js`'s `window.arenaImport('../path/X.jsx')` to import JSX in the browser with no build step (it transpiles and rewrites relative imports to blob URLs recursively).
+**Specimen/demo pages** start with an HTML comment `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card rendering — keep it as the first line, which is the only line `check:cards` reads. **That viewport is machine-checked**: `bun run check:cards` loads every declaring page at its declared width in headless Chromium and fails when the rendered content over-runs the box in either axis, because the card is cropped to it and the overflow is lost silently. Declaring it by arithmetic does not work — it was tried, and the page clipped in both axes anyway. Measure by running the gate. A page that declares far *more* height than it renders only warns. `frameworks/react/ui_kits/console/index.html` carries no `@dsCard` on purpose: it is an app with its own scroll area, not a card. Component demos load React from esm.sh via an importmap, pull in Babel standalone, and use `jsx-loader.js`'s `window.arenaImport('../path/X.jsx')` to import JSX in the browser with no build step (it transpiles and rewrites relative imports to blob URLs recursively).
 
 `support.js` is a generated bundle (`dc-runtime`, whose source is not in this repo) used only by the root `*.dc.html` pages. Do not edit it.
 
@@ -158,8 +164,8 @@ with the manifests as content and asserts every class emits a rule and every
 theme key resolves to a real token; `bun run check:coverage` asserts every
 token either reaches a utility or is named in `EXCLUDED` with a reason;
 `bun run check:arbitrary` fails on a bracket carrying a raw literal.
-`bun run check` runs all six plus the test suite, without stopping at the
-first failure. An Angular primitive's recipe is its
+`bun run check` runs all nine plus the test suite, without stopping at the first failure. **`check:cards` is the one gate that is not runtime-portable** — it needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths). Where there is none it exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
+skips quietly — makes that a hard failure instead. An Angular primitive's recipe is its
 manifest — `frameworks/angular/primitives/tag/` is the reference shape.
 
 **When `bun run check` is expected: once, when a plan's implementation is

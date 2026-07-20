@@ -25,3 +25,21 @@ test('every tone keeps the shared base classes', () => {
     assert.match(tagStyles({ tone }).root(), /rounded-pill/);
   }
 });
+
+/* Moved here from scripts/tv-merge.test.mjs, which proves the same property
+ * against synthetic class strings but cannot import this recipe: scripts/ is
+ * the suite that must also run under plain node, and node cannot resolve the
+ * extensionless `from '../../../tailwind/tv'` that this layer's files use.
+ *
+ * What it guards: `text-ctl-xs` is an Arena font-size suffix, and
+ * tailwind-merge classifies a bare `text-*` suffix it does not recognise as a
+ * text COLOR. Unregistered, `text-ctl-xs` and the tone's own `text-*` color
+ * land in one conflict group and whichever is concatenated later deletes the
+ * other outright — silently, in the rendered class string. This is the
+ * assertion against a real manifest-driven recipe rather than a bench. */
+test('every tone keeps text-ctl-xs, which an unregistered font-size suffix would lose to the tone color', () => {
+  for (const tone of ['neutral', 'primary', 'success', 'warning', 'danger'] as const) {
+    const root = tagStyles({ tone }).root().split(/\s+/);
+    assert.ok(root.includes('text-ctl-xs'), `tone ${tone}: text-ctl-xs missing from "${root.join(' ')}"`);
+  }
+});

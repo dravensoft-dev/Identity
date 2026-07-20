@@ -4,7 +4,12 @@
  * inherited, not buffered), and a pass/fail summary prints once every step
  * has finished. Exit 1 if any step failed, 0 if all passed.
  *
- * Nine steps total: the eight gates in GATES below, plus the test suite.
+ * Ten steps total: the nine gates in GATES below, plus the test suite.
+ *
+ * One gate can report a third status. check:cards needs a headless browser,
+ * which is the one thing here that is not portable; where there is none it
+ * exits 2 and this runner marks it SKIP and calls the whole run INCOMPLETE,
+ * so a missing browser can never be mistaken for a clean tree.
  *
  * Every gate is spawned as `process.execPath <script>.mjs`, exactly how
  * scripts/lib/tailwind-compile.mjs spawns the Tailwind CLI, so the runner
@@ -40,6 +45,7 @@ export const GATES = [
   { name: 'check:arbitrary', file: 'check-arbitrary-values.mjs' },
   { name: 'check:dimensions', file: 'check-dimension-literals.mjs' },
   { name: 'check:fonts', file: 'check-fonts-generated.mjs' },
+  { name: 'check:cards', file: 'check-card-viewports.mjs' },
 ];
 
 /** The test-suite step for the runtime this process is executing under.
@@ -60,14 +66,31 @@ export function testStep({ isBun, testFiles }) {
   return { name: 'test (node --test scripts/*.test.mjs)', args: ['--test', ...testFiles] };
 }
 
-/** Format the pass/fail summary printed once every step has run.
- *  @param {{name: string, passed: boolean}[]} results @returns {string} */
+/** A step's exit code as a status. Exit 2 is the loud skip
+ *  check-card-viewports.mjs uses when there is no browser here; every other
+ *  non-zero code, and a failure to spawn at all, is a failure.
+ *  @param {number|null} code @returns {'pass'|'fail'|'skip'} */
+export function stepStatus(code) {
+  if (code === 0) return 'pass';
+  if (code === 2) return 'skip';
+  return 'fail';
+}
+
+/** Format the pass/fail/skip summary printed once every step has run.
+ *  A skipped step never yields "all N passed": a gate that did not run is
+ *  not a gate that agreed, and a run with one is INCOMPLETE.
+ *  @param {{name: string, status: 'pass'|'fail'|'skip'}[]} results @returns {string} */
 export function summarize(results) {
-  const lines = results.map((r) => `  ${r.passed ? 'PASS' : 'FAIL'}  ${r.name}`);
-  const failed = results.filter((r) => !r.passed);
-  const tail = failed.length
-    ? `check-all: ${failed.length}/${results.length} step(s) failed`
-    : `check-all: all ${results.length} step(s) passed`;
+  const label = { pass: 'PASS', fail: 'FAIL', skip: 'SKIP' };
+  const lines = results.map((r) => `  ${label[r.status]}  ${r.name}`);
+  const failed = results.filter((r) => r.status === 'fail');
+  const skipped = results.filter((r) => r.status === 'skip');
+
+  let tail;
+  if (failed.length) tail = `check-all: ${failed.length}/${results.length} step(s) failed`;
+  else if (skipped.length) tail = `check-all: INCOMPLETE — ${results.length - skipped.length}/${results.length} step(s) passed, ${skipped.length} could not run here (see above)`;
+  else tail = `check-all: all ${results.length} step(s) passed`;
+
   return [...lines, '', tail].join('\n');
 }
 
@@ -75,7 +98,7 @@ function runStep(name, args) {
   console.log(`\n> ${name}\n`);
   const r = spawnSync(process.execPath, args, { stdio: 'inherit', cwd: repoRoot });
   if (r.error) console.error(`  failed to spawn: ${r.error.message || r.error}`);
-  return { name, passed: r.status === 0 && !r.error };
+  return { name, status: r.error ? 'fail' : stepStatus(r.status) };
 }
 
 function main() {
@@ -92,7 +115,7 @@ function main() {
   console.log(`\n${'-'.repeat(60)}`);
   console.log(summarize(results));
 
-  process.exit(results.some((r) => !r.passed) ? 1 : 0);
+  process.exit(results.some((r) => r.status === 'fail') ? 1 : 0);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();
