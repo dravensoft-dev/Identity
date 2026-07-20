@@ -18,6 +18,12 @@
   --gutter:88px;
 
   /*
+     Application frame. The width of the console shell's navigation column
+     — example code, and therefore the width a consumer copies.
+   */
+  --layout-sidebar:232px;
+
+  /*
      Breakpoints — SHARED VALUES READ BY JS, not media queries.
      Components style themselves with inline style objects, which cannot hold a
      media query, so responsive branches are JS (see use-container-width.js).

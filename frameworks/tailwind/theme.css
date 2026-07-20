@@ -169,6 +169,7 @@
   --spacing-stack: var(--dz-stack);
 
   --spacing-gutter: var(--gutter);
+  --spacing-sidebar: var(--layout-sidebar);
 
   /* layout width. Named `page`, not `max`: a --container-max key collides
      with Tailwind's built-in static max-w-max and shadows it. */

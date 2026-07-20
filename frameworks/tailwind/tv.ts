@@ -131,7 +131,7 @@
 import { createTV } from 'tailwind-variants';
 import { getDefaultConfig } from 'tailwind-merge';
 
-export const ARENA_SPACING_SUFFIXES = ['ctl-h', 'ctl-h-sm', 'ctl-h-lg', 'row-py', 'row-px', 'stack', 'gutter'];
+export const ARENA_SPACING_SUFFIXES = ['ctl-h', 'ctl-h-sm', 'ctl-h-lg', 'row-py', 'row-px', 'stack', 'gutter', 'sidebar'];
 
 /** True only for the `fromTheme('spacing')` getter. `fromTheme(key)` returns
  *  `(theme) => theme[key] || fallback` and tags it `.isThemeGetter` — so

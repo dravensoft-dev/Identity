@@ -18,6 +18,11 @@
   },
   "container-max": { "$type": "dimension", "$value": { "value": 1240, "unit": "px" }, "$description": "Container / layout" },
   "gutter": { "$type": "dimension", "$value": { "value": 88, "unit": "px" } },
+  "layout": {
+    "$type": "dimension",
+    "$description": "Application frame. The width of the console shell's navigation column\n— example code, and therefore the width a consumer copies.",
+    "sidebar": { "$value": { "value": 232, "unit": "px" } }
+  },
   "bp": {
     "$type": "dimension",
     "$description": "Breakpoints — SHARED VALUES READ BY JS, not media queries.\nComponents style themselves with inline style objects, which cannot hold a\nmedia query, so responsive branches are JS (see use-container-width.js).\nThese live here anyway so the thresholds stay a token, not a magic number\nretyped in four components. 768px is what DAMA hardcodes.",
