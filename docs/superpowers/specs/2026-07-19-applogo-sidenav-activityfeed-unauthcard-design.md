@@ -254,8 +254,11 @@ manifests. Plan 6 inherits both counts.
 
 ## Non-goals
 
-- **No `AppShell`.** Argued in §1. If a `layout/` group is ever justified it should be
-  born with more than one member.
+- **No `AppShell`.** Argued in §1, and settled rather than deferred: the decision is that
+  the frame stays the product's to compose, not that the library has not got to it yet.
+  A future proposal should have to beat §1's argument, not merely find this line.
+  The question of a `layout/` group went with it — `UnauthCard` is a card and lives in
+  `display/`, so nothing here is a page and no group is needed for one.
 - **No auth logic anywhere.** `UnauthCard` is a frame. Sessions, tokens, providers and
   validation are the product's.
 - **No companion components yet** — no `ProviderButtons`, no `OrDivider`, no resend
@@ -291,10 +294,12 @@ manifests. Plan 6 inherits both counts.
   `*.card.html`. `SideNav` joins `navigation.card.html`. `AppLogo` joins
   `brand.card.html` beside `Rotor`, at every size — `xl` is the one that most needs
   seeing, since it is the case no existing specimen covers. `ActivityFeed` and
-  `UnauthCard` get **their own card page** rather than joining `display.card.html`: that
-  page is already declared `700x460` and carries Card, Badge, Tag and StatCard, and a
-  signed-out panel shown at a third of its width would misrepresent it. One new page,
-  both components, sized to fit them honestly.
+  `UnauthCard` get **one new card page each**. Neither joins `display.card.html`, which
+  is declared `700x460` and already carries Card, Badge, Tag and StatCard; and they do
+  not share a page with each other either, because they are opposite shapes — a wide
+  centred panel and a dense narrow list. Any single `viewport` would suit one and
+  misrepresent the other, and a specimen that misrepresents its component is worse than
+  no specimen.
 - **`EXEMPT` goes from eight entries to seven**, and `bun run check:dimensions` must
   report "no stale exemptions". This is the one mechanical trap in the plan: deleting the
   two `Rotor` call-site entries is not optional cleanup, it is what keeps the build green.
@@ -314,12 +319,11 @@ manifests. Plan 6 inherits both counts.
 
 ## Affected files
 
-**New** — twelve files, four quartets minus the demo entries, plus one card page:
+**New** — fourteen files: four quartets, two of whose demo entries are new pages.
 `brand/AppLogo.{jsx,d.ts,prompt.md}`,
 `navigation/SideNav.{jsx,d.ts,prompt.md}`,
-`display/ActivityFeed.{jsx,d.ts,prompt.md}`,
-`display/UnauthCard.{jsx,d.ts,prompt.md}`,
-and one new `*.card.html` for the last two.
+`display/ActivityFeed.{jsx,d.ts,prompt.md}` + its own `*.card.html`,
+`display/UnauthCard.{jsx,d.ts,prompt.md}` + its own `*.card.html`.
 
 **Modified:** `navigation/navigation.card.html`, `brand/brand.card.html`;
 `ui_kits/console/{Shell,ProjectScreen,LoginScreen}.jsx`;
