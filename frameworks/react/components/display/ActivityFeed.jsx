@@ -10,7 +10,8 @@ const TONES = {
 };
 
 /** An event feed: someone did something to something, then. `renderItem`
- *  replaces a row entirely, the shape Table establishes with columns[].render. */
+ *  replaces a row's contents — the `<li>` keeps its padding, gap and top border —
+ *  the shape Table establishes with columns[].render. */
 export function ActivityFeed({ items = [], renderItem, style, ...rest }) {
   return (
     <ul style={{ display: 'flex', flexDirection: 'column', listStyle: 'none', margin: 0, padding: 0, ...style }} {...rest}>

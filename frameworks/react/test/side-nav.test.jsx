@@ -32,6 +32,34 @@ test('active and inactive items differ in weight and colour', () => {
   assert.match(html, /var\(--fw-medium\)/);
 });
 
+/* renderToStaticMarkup cannot dispatch a click, so the handler is reached the one
+ * other way a function component allows: call the component and read the onClick
+ * off the element it returned. That is the contract itself — the second argument. */
+test('onNav receives the click event, so a single-page app can preventDefault', () => {
+  const seen = [];
+  const tree = SideNav({ items: ITEMS, onNav: (id, event) => seen.push([id, event]) });
+  const [anchor, button] = tree.props.children;
+  const event = { preventDefault() { this.defaultPrevented = true; }, defaultPrevented: false };
+
+  anchor.props.onClick(event);
+  assert.deepEqual(seen[0][0], 'dashboard');
+  assert.equal(seen[0][1], event);
+
+  button.props.onClick(event);
+  assert.equal(seen[1][0], 'settings');
+  assert.equal(seen[1][1], event);
+});
+
+test('an onNav that ignores the event still works, and clicking without one does not throw', () => {
+  const seen = [];
+  const tree = SideNav({ items: ITEMS, onNav: (id) => seen.push(id) });
+  tree.props.children[0].props.onClick({});
+  assert.deepEqual(seen, ['dashboard']);
+
+  const bare = SideNav({ items: ITEMS });
+  assert.doesNotThrow(() => bare.props.children[0].props.onClick({}));
+});
+
 test('the item text re-densifies with the control scale', () => {
   const html = renderToStaticMarkup(<SideNav items={ITEMS} />);
   assert.match(html, /var\(--dz-text\)/);

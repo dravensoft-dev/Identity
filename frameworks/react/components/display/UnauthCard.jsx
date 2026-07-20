@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from './Card.jsx';
 
-/** The centred panel every signed-out screen needs — sign in, check your
+/** The panel every signed-out screen needs — sign in, check your
  *  inbox, this link expired, enter your code. It knows nothing about
  *  credentials: fields are composed from Input and Button.
  *

@@ -16,7 +16,11 @@ export interface SideNavProps extends React.HTMLAttributes<HTMLElement> {
   items: SideNavItem[];
   /** The `id` of the current destination. Marks it `aria-current="page"`. */
   active?: string;
-  onNav?: (id: string) => void;
+  /** Fired on every item. The event is the second argument because an item with
+   *  `href` is a real anchor: left unhandled, the browser navigates and the page
+   *  reloads. A single-page app calls `event.preventDefault()` and routes itself;
+   *  a real navigation does nothing and lets the browser proceed. */
+  onNav?: (id: string, event: React.MouseEvent) => void;
   /** Names the landmark. Required in practice — a page with two navs whose
    *  labels are both "Primary" has two indistinguishable landmarks. */
   ariaLabel?: string;

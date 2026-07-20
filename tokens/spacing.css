@@ -88,10 +88,10 @@
   --logo-mark-md:40px; /* a signed-out panel's lock-up */
   --logo-mark-lg:54px; /* the manual's Primary · horizontal */
   --logo-mark-xl:124px; /* the hero case — the lock-up is the only thing on the screen */
-  --logo-text-sm:17px;
-  --logo-text-md:24px;
-  --logo-text-lg:34px;
-  --logo-text-xl:78px;
+  --logo-text-sm:17px; /* the wordmark beside mark-sm — the smallest that still reads as a name rather than a label */
+  --logo-text-md:24px; /* the wordmark beside mark-md, in a signed-out panel */
+  --logo-text-lg:34px; /* the wordmark beside mark-lg, in the manual's Primary · horizontal */
+  --logo-text-xl:78px; /* the wordmark beside mark-xl, at hero size */
 }
 :root{
   /*

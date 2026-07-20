@@ -20,7 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`UnauthCard`** (display) — the signed-out panel. A frame, not a form; renders `Card`
   internally and does not centre itself. `Card`'s own consumers are unaffected, but
   because `Card` exposes no padding prop, `UnauthCard` reaches the signed-out panel's
-  36px padding with a 16px wrapper inside `Card`'s 20px.
+  36px padding with a 16px wrapper inside `Card`'s 20px. It keeps the panel's rendered
+  width of 454px through a derivation
+  (`calc(var(--sp-1) * 95 + var(--sp-1) * 18 + var(--bw) * 2)`) rather than a single
+  step, because the panel it replaced carried its width, padding and border on one
+  content-box element.
 - **`logo` token family** — `--logo-mark-sm|md|lg|xl` (30/40/54/124) and
   `--logo-text-sm|md|lg|xl` (17/24/34/78). A fixed repertoire rather than one
   mark-to-wordmark ratio, because no single ratio is legible at every step.
@@ -132,11 +136,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   three brand exemptions are gone and none replaced them; `PASSTHROUGH` gains `AppLogo`
   beside `Rotor`, so a raw number passed to either still fails.
 - The console reads all four components instead of building them by hand, and its nav
-  items are anchors rather than buttons. Its login panel keeps its rendered width of
-  454px through a derivation
-  (`calc(var(--sp-1) * 95 + var(--sp-1) * 18 + var(--bw) * 2)`) rather than a single
-  step, because the panel it replaced carried its width, padding and border on one
-  content-box element.
+  items are anchors rather than buttons, whose default navigation the shell suppresses
+  through `onNav`'s event argument.
 - **The dimension gate reaches four kinds of site, not one.** It now judges `boxShadow`
   and `transform`, template-literal interpolations, CSS injected as a string, and SVG
   presentation attributes. Each hole was found by audit while the gate reported the tree

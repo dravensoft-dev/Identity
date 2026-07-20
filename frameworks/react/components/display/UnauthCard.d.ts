@@ -1,5 +1,5 @@
 import * as React from 'react';
-/** The centred panel a signed-out screen needs — sign in, check your inbox,
+/** The panel a signed-out screen needs — sign in, check your inbox,
  *  this link expired, enter your two-factor code.
  *
  *  It knows nothing about credentials on purpose: the moment it knew about a

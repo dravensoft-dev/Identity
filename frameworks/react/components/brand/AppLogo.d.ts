@@ -4,7 +4,7 @@ import * as React from 'react';
  *  `mark` and `name` are required on purpose: Arena ships MIT and a consumer
  *  copies this tree, so a default would ship Dravensoft's trademark to whoever
  *  never read the props. Without both, the component renders nothing.
- * @startingPoint section="Brand" subtitle="Lock-up — mark and product name" viewport="700x560" */
+ * @startingPoint section="Brand" subtitle="Lock-up — mark and product name" viewport="780x560" */
 export interface AppLogoProps extends React.HTMLAttributes<HTMLSpanElement> {
   /** Both halves of the lock-up at once — the mark's slot and the wordmark's
    *  size. A fixed repertoire, not a ratio: `sm` an application frame, `md` a

@@ -12,7 +12,9 @@ export function SideNav({ items = [], active, onNav, ariaLabel = 'Primary', styl
          * indistinguishable here, and two copies of this would drift. */
         const shared = {
           'aria-current': on ? 'page' : undefined,
-          onClick: () => onNav && onNav(item.id),
+          /* The event goes through: an anchor's default is a real navigation, and
+           * only the consumer knows whether to suppress it and route in place. */
+          onClick: (event) => onNav && onNav(item.id, event),
           style: {
             display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)',
             padding: 'calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 3)', borderRadius: 'var(--r-sm)',

@@ -33,7 +33,7 @@ test('an unknown tone falls back to accent rather than rendering nothing', () =>
   assert.match(html, /var\(--crimson\)/);
 });
 
-test('renderItem replaces the row entirely', () => {
+test("renderItem replaces the row's contents", () => {
   const html = renderToStaticMarkup(
     <ActivityFeed items={ITEMS} renderItem={(i) => <span>custom {i.id}</span>} />);
   assert.match(html, /custom 1/);

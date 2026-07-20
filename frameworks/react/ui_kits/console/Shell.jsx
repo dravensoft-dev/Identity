@@ -21,7 +21,11 @@ export function Shell({ active = 'dashboard', onNav, title, actions, children })
         <div style={{ display: 'flex', padding: '0 calc(var(--sp-1) * 2) calc(var(--sp-1) * 5.5)' }}>
           <AppLogo size="sm" mark={<img src="../../../../assets/rotor-crimson.svg" alt="" />} name="Draven" dim="soft" />
         </div>
-        <SideNav ariaLabel="Primary" items={NAV} active={active} onNav={onNav} />
+        {/* The console is one page, so the anchors' default navigation is
+            suppressed here and the screen switch happens in place. The items keep
+            their href: openable in a new tab, announced as links. */}
+        <SideNav ariaLabel="Primary" items={NAV} active={active}
+          onNav={(id, event) => { event.preventDefault(); if (onNav) onNav(id); }} />
         {/* No bottom padding: the aside already ends in its own, and doubling
             them left the avatar sitting on a band of empty space. */}
         <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2.5)', padding: 'calc(var(--sp-1) * 3) calc(var(--sp-1) * 2) 0', borderTop: 'var(--bw) solid var(--color-base-300)' }}>

@@ -2374,7 +2374,7 @@ git commit -m "feat(tailwind): add the SideNav manifest"
 **Roster note, settled:** the system-wide target is 40 manifests — the 44 components
 spec 4.75 leaves React with, minus the four that get none (the three SVG charts and
 Calendar). All 40 now have a task. Twenty of them are Tasks 3–22 here, `SideNav` is
-Task 23 here, and the other nineteen ship with 5a's primitives (its Tasks 4–22 and
+Task 23 here, and the other nineteen ship with 5a's primitives (its Task 2's `Tag`, Tasks 4–22 and
 24–26). The block below counts the finished roster, not a milestone.
 
 In `frameworks/tailwind/README.md`, replace the "What ships here" section 5a added with:

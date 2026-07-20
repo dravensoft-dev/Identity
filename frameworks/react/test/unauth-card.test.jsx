@@ -24,7 +24,14 @@ test('every slot is optional — a bare panel of children still renders', () => 
 
 test('it constrains its own width and does not centre itself', () => {
   const html = renderToStaticMarkup(<UnauthCard><span>x</span></UnauthCard>);
-  assert.match(html, /max-width/);
+  // The exact derivation, not just the property. The 454px panel is the branch's one
+  // Critical regression, and it came back as a narrower number that still carried a
+  // max-width — so a /max-width/ check would have passed through the bug. The three
+  // terms are the content width, Card's own horizontal padding, and its two borders.
+  assert.match(
+    html,
+    /max-width:calc\(var\(--sp-1\) \* 95 \+ var\(--sp-1\) \* 18 \+ var\(--bw\) \* 2\)/
+  );
   assert.doesNotMatch(html, /justify-content/);
   assert.doesNotMatch(html, /min-height/);
 });
