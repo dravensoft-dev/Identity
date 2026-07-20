@@ -18,11 +18,16 @@
  *   bun scripts/check-angular.mjs      -> exit 0 if the layer typechecks, 1 otherwise
  */
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { repoRoot } from './lib/tailwind-compile.mjs';
+
+// A compile that emits more diagnostics than spawnSync's default 1 MB buffer
+// sets r.error (ENOBUFS) instead of returning them, which reads as "ngc
+// failed to spawn" — a misleading message for "too many errors to print".
+const MAX_BUFFER = 32 * 1024 * 1024;
 
 /** Compile frameworks/angular with ngc under strictTemplates.
  *  @param {{root?: string}} [opts]
@@ -30,10 +35,12 @@ import { repoRoot } from './lib/tailwind-compile.mjs';
 export function typecheck(opts = {}) {
   const root = opts.root ?? repoRoot;
   const bin = join(root, 'node_modules/@angular/compiler-cli/bundles/src/bin/ngc.js');
+  if (!existsSync(bin))
+    throw new Error(`@angular/compiler-cli is not installed at ${bin} — run \`bun install\` before check:angular`);
   const project = join(root, 'frameworks/angular/tsconfig.check.json');
   const out = mkdtempSync(join(tmpdir(), 'arena-ngc-'));
   try {
-    const r = spawnSync(process.execPath, [bin, '-p', project, '--outDir', out], { encoding: 'utf8' });
+    const r = spawnSync(process.execPath, [bin, '-p', project, '--outDir', out], { encoding: 'utf8', maxBuffer: MAX_BUFFER });
     if (r.error) throw new Error(`ngc failed to spawn: ${r.error.message || r.error}`);
     return { status: r.status ?? 1, output: `${r.stdout || ''}${r.stderr || ''}` };
   } finally {
@@ -42,7 +49,14 @@ export function typecheck(opts = {}) {
 }
 
 function main() {
-  const { status, output } = typecheck();
+  let result;
+  try {
+    result = typecheck();
+  } catch (err) {
+    console.error(`check-angular: ${err.message}`);
+    process.exit(1);
+  }
+  const { status, output } = result;
   if (status !== 0) {
     console.error('check-angular: the Angular layer does not typecheck\n');
     console.error(output.trim());

@@ -10,7 +10,7 @@ test('GATES lists the eleven check gates', () => {
   );
 });
 
-test('check:angular runs last, after check:cards', () => {
+test('check:angular runs last, after check:cards, which is still the one that costs minutes', () => {
   assert.equal(GATES.at(-1).name, 'check:angular');
 });
 

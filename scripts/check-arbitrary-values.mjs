@@ -194,6 +194,11 @@ function* walk(dir) {
   for (const entry of readdirSync(dir).sort()) {
     const p = join(dir, entry);
     if (statSync(p).isDirectory()) yield* walk(p);
+    // A *.manifest.ts is build-tailwind.mjs's own generated rendering of its
+    // *.manifest.json sibling — scanning both would double-report the same
+    // class string, and point half the reports at a file whose real fix is
+    // the .json.
+    else if (entry.endsWith('.manifest.ts')) continue;
     else if (EXTENSIONS.some((e) => entry.endsWith(e))) yield p;
   }
 }
