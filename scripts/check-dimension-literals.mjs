@@ -47,15 +47,24 @@ const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
  * stroke width is a border width in every sense the token layer cares about.
  * The rest of SVG_ATTRS deliberately does NOT join this set — `r`, `x`, `y`,
  * `cx`, `cy`, `x1`, `x2`, `y1`, `y2` are one- and two-letter names that
- * collide with ordinary object keys having nothing to do with CSS
- * (`chart-internals.js`'s own `PAD = { t: 8, r: 8, b: 28, l: 44 }` would
- * misfire the moment `r` became governed at a colon — scanValue's PROPS gate
- * is shared by every scanner in this file, colon and attribute alike, so
- * there is no way to govern `r` in attribute position only). Those SVG_ATTRS
- * members stay listed for documentation and for the day a real quoted-literal
- * site needs one of them, but scanValue's gate means none of them is judged
- * anywhere today — every current chart/Checkbox site this task closes is
- * fontSize, strokeWidth, width, or height, all already governed. */
+ * collide with ordinary object keys having nothing to do with CSS, and
+ * governing them today would buy nothing: PROP_COLON only fires at a
+ * colon in a scanned `.jsx`/`.ts`/`.tsx` file (EXTENSIONS, above), and a
+ * grep of frameworks/ turns up no `r:`/`x:`/`cx:` object key anywhere in
+ * that set. The one PAD-shaped object that would collide —
+ * `chart-internals.js`'s own `PAD = { t: 8, r: 8, b: 28, l: 44 }` — is
+ * invisible to this gate for an unrelated reason: it is a `.js` file, and
+ * EXTENSIONS never includes `.js`. That is not a safety net this decision
+ * can lean on — a `.jsx` file with the same PAD shape would collide the
+ * moment `r` joined PROPS, since scanValue's gate is shared by every
+ * scanner here, colon and attribute alike, with no way to govern `r` in
+ * attribute position only. Adding these nine later is a judgment call
+ * that needs the tree re-checked at that time, not a decision this
+ * comment can make permanent. Those SVG_ATTRS members stay listed for
+ * documentation and for the day a real quoted-literal site needs one of
+ * them, but scanValue's gate means none of them is judged anywhere today
+ * — every current chart/Checkbox site this task closes is fontSize,
+ * strokeWidth, width, or height, all already governed. */
 const PROPS = new Set([
   'fontSize', 'lineHeight', 'letterSpacing', 'fontWeight',
   'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
@@ -582,14 +591,20 @@ export function scanInjectedCss(rawText) {
  *
  *  strokeDasharray is deliberately absent. Its value is a rhythm of on/off
  *  runs, not a dimension, and there is no token family for a rhythm — adding
- *  one for the single `3 3` in LineChart would be worse than the literal. */
+ *  one for the single `3 3` in LineChart would be worse than the literal.
+ *
+ *  Listing a name here does not put it in scope: scanAttributes routes
+ *  through scanValue below, which gates on PROPS, so only the members that
+ *  are ALSO in PROPS (fontSize, strokeWidth, width, height) can ever flag.
+ *  The other nine are listed but currently inert — see the PROPS comment
+ *  above for why they stay out and what would have to be true to add them. */
 const SVG_ATTRS = new Set(['fontSize', 'strokeWidth', 'width', 'height', 'r', 'x', 'y', 'cx', 'cy', 'x1', 'x2', 'y1', 'y2']);
 
 /** @param {string} rawText @returns {{prop: string, raw: string, reason: string, line: number}[]} */
 export function scanAttributes(rawText) {
   const text = blankComments(rawText);
   const out = [];
-  for (const m of text.matchAll(/(?<![\w.])([a-zA-Z]+)\s*=\s*"([^"]*)"/g)) {
+  for (const m of text.matchAll(/(?<![\w.-])([a-zA-Z]+)\s*=\s*"([^"]*)"/g)) {
     const [, prop, value] = m;
     if (!SVG_ATTRS.has(prop)) continue;
     const found = scanValue(prop, `'${value}'`);

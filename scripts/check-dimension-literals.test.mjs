@@ -658,3 +658,11 @@ test('an attribute reading a token is clean', () => {
 test('an attribute bound to an expression is out of scope', () => {
   assert.deepEqual(scanAttributes('<circle r={hover ? 5 : 4} cx={x} />'), []);
 });
+
+test('a hyphen-prefixed attribute whose tail matches a governed name is not misread as that name', () => {
+  // The lookbehind (?<![\w.]) excludes a preceding word character or `.`,
+  // but not a hyphen -- so `data-width="20"` used to match at "width" the
+  // same as a real `width="20"` would, a false positive for any kebab-case
+  // attribute (data-*, aria-*) whose tail happens to spell a governed name.
+  assert.deepEqual(scanAttributes('<div data-width="20" data-height="10" />'), []);
+});
