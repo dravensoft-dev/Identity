@@ -24,7 +24,7 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator';
 GlobalRegistrator.register();
 
 import '@angular/compiler';
-import test from 'node:test';
+import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -82,4 +82,8 @@ test('arena-tag: a consumer-supplied class on the host survives the [class] bind
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-tag') as HTMLElement;
   assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+});
+
+after(() => {
+  GlobalRegistrator.unregister();
 });
