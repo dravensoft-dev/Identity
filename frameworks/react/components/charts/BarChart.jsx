@@ -33,13 +33,13 @@ export function BarChart({
         {ticks(max).map((t, i) => (
           <g key={i}>
             <line x1={PAD.l} x2={width - PAD.r} y1={yOf(t)} y2={yOf(t)}
-              stroke="var(--border)" strokeWidth="1" />
+              stroke="var(--border)" style={{ strokeWidth: 'var(--bw)' }} />
             <text x={PAD.l - 8} y={yOf(t)} textAnchor="end" dominantBaseline="middle"
-              fill="var(--text-muted)" fontFamily="var(--font-mono)" fontSize="10">{fmt(t)}</text>
+              fill="var(--text-muted)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-2xs)' }}>{fmt(t)}</text>
           </g>
         ))}
         <line x1={PAD.l} x2={width - PAD.r} y1={baseline} y2={baseline}
-          stroke="var(--line-strong)" strokeWidth="1" />
+          stroke="var(--line-strong)" style={{ strokeWidth: 'var(--bw)' }} />
 
         {values.map((v, i) => {
           const x = PAD.l + i * step + (step - bw) / 2;
@@ -60,7 +60,7 @@ export function BarChart({
         {/* category axis */}
         {labels.map((l, i) => (
           <text key={i} x={PAD.l + i * step + step / 2} y={height - 8} textAnchor="middle"
-            fill="var(--text-muted)" fontFamily="var(--font-body)" fontSize="11">{l}</text>
+            fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{l}</text>
         ))}
       </svg>
 

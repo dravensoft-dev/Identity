@@ -46,12 +46,12 @@ export function LineChart({
       <svg width="100%" height={height} role="img" aria-label={name} style={{ display: 'block', overflow: 'visible' }}>
         {ticks(max).map((t, i) => (
           <g key={i}>
-            <line x1={PAD.l} x2={width - PAD.r} y1={yOf(t)} y2={yOf(t)} stroke="var(--border)" strokeWidth="1" />
+            <line x1={PAD.l} x2={width - PAD.r} y1={yOf(t)} y2={yOf(t)} stroke="var(--border)" style={{ strokeWidth: 'var(--bw)' }} />
             <text x={PAD.l - 8} y={yOf(t)} textAnchor="end" dominantBaseline="middle"
-              fill="var(--text-muted)" fontFamily="var(--font-mono)" fontSize="10">{fmt(t)}</text>
+              fill="var(--text-muted)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-2xs)' }}>{fmt(t)}</text>
           </g>
         ))}
-        <line x1={PAD.l} x2={width - PAD.r} y1={baseline} y2={baseline} stroke="var(--line-strong)" strokeWidth="1" />
+        <line x1={PAD.l} x2={width - PAD.r} y1={baseline} y2={baseline} stroke="var(--line-strong)" style={{ strokeWidth: 'var(--bw)' }} />
 
         {/* The area is the series color at 18% — a tint of the line, never a gradient. */}
         {area && n > 0 && (
@@ -60,20 +60,20 @@ export function LineChart({
 
         {hover !== null && (
           <line x1={xOf(hover)} x2={xOf(hover)} y1={PAD.t} y2={baseline}
-            stroke="var(--border-strong)" strokeWidth="1" strokeDasharray="3 3" />
+            stroke="var(--border-strong)" style={{ strokeWidth: 'var(--bw)' }} strokeDasharray="3 3" />
         )}
 
-        {n > 1 && <polyline points={points} fill="none" stroke={color} strokeWidth="2"
+        {n > 1 && <polyline points={points} fill="none" stroke={color} style={{ strokeWidth: 'var(--bw-strong)' }}
           strokeLinejoin="round" strokeLinecap="round" />}
 
         {values.map((v, i) => (
           <circle key={i} cx={xOf(i)} cy={yOf(v)} r={hover === i ? 5 : 4}
-            fill={color} stroke="var(--surface-card)" strokeWidth="2" />
+            fill={color} stroke="var(--surface-card)" style={{ strokeWidth: 'var(--bw-strong)' }} />
         ))}
 
         {labels.map((l, i) => (
           <text key={i} x={xOf(i)} y={height - 8} textAnchor="middle"
-            fill="var(--text-muted)" fontFamily="var(--font-body)" fontSize="11">{l}</text>
+            fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{l}</text>
         ))}
 
         {/* One overlay owns the pointer: per-point hit targets would leave dead

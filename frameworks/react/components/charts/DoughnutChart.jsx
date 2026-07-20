@@ -36,14 +36,14 @@ export function DoughnutChart({ labels = [], values = [], slots, valueFormatter,
         {segments.map(({ i, a0, a1 }) => a1 > a0 && (
           <path key={i} d={arcPath(cx, cy, rOuter, rInner, a0, a1)} fill={colors[i]}
             /* The 2px gap between slices is the card surface showing through. */
-            stroke="var(--surface-card)" strokeWidth="2"
+            stroke="var(--surface-card)"
             opacity={hover === null || hover === i ? 1 : 0.55}
             onMouseEnter={() => setHover(i)}
-            style={{ transition: 'opacity var(--dur-fast) var(--ease-out)' }} />
+            style={{ transition: 'opacity var(--dur-fast) var(--ease-out)', strokeWidth: 'var(--bw-strong)' }} />
         ))}
         {hover !== null && segments[hover] && (
           <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle"
-            fill="var(--bone)" fontFamily="var(--font-mono)" fontSize="16">
+            fill="var(--bone)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-lg)' }}>
             {Math.round(segments[hover].share * 100)}%
           </text>
         )}

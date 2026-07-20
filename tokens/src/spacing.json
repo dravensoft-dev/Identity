@@ -34,6 +34,7 @@
     "row-py": { "$value": { "value": 12, "unit": "px" }, "$description": "table/list row vertical padding" },
     "row-px": { "$value": { "value": 16, "unit": "px" }, "$description": "row horizontal padding" },
     "stack": { "$value": { "value": 12, "unit": "px" }, "$description": "gap between stacked items" },
+    "text-lg": { "$value": { "value": 16, "unit": "px" }, "$description": "the largest control text — a data readout inside a chart, where the number is the content rather than a label" },
     "text": { "$value": { "value": 14, "unit": "px" }, "$description": "control text — buttons, inputs, selects, menu items, table cells" },
     "text-md": { "$value": { "value": 13, "unit": "px" }, "$description": "secondary control text — tag chips, pagination, secondary buttons" },
     "text-sm": { "$value": { "value": 12, "unit": "px" }, "$description": "secondary control text — hints, validation errors, badges, legends" },

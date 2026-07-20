@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scanValue, scanText, scanInjectedCss, scanDefaultsAndCallSites, staleExemptions, stalePassthrough, expressionLeaves, EXEMPT } from './check-dimension-literals.mjs';
+import { scanValue, scanText, scanInjectedCss, scanAttributes, scanDefaultsAndCallSites, staleExemptions, stalePassthrough, expressionLeaves, EXEMPT } from './check-dimension-literals.mjs';
 
 test('a bare number is a violation for a dimension-valued property', () => {
   assert.ok(scanValue('fontSize', '13'));
@@ -636,4 +636,25 @@ test('an interpolation in a unit nothing models is still fine', () => {
 
 test('an interpolated derivation of tokens is fine', () => {
   assert.equal(scanValue('fontSize', '`calc(${d} * 0.4)`'), null);
+});
+
+// --- Task 6: the ATTRIBUTE form — prop="value", not prop: value ----------
+// scanValue('fontSize', "'16'") already flags; fontSize="10" in a chart's
+// JSX does not, because DECL/PROP_COLON require a colon and a JSX attribute
+// uses `=`. The value is catchable, the position is not — scanAttributes
+// closes it, reusing scanValue so the judgment stays identical to every
+// other scanner in this file.
+
+test('an SVG presentation attribute is a governed site', () => {
+  const hits = scanAttributes('<text fontSize="10" strokeWidth="2">x</text>');
+  assert.deepEqual(hits.map((h) => h.prop).sort(), ['fontSize', 'strokeWidth']);
+});
+
+test('an attribute reading a token is clean', () => {
+  assert.deepEqual(scanAttributes('<line style={{ strokeWidth: \'var(--bw)\' }} />'), []);
+  assert.deepEqual(scanAttributes('<svg width="100%" viewBox="0 0 100 100" />'), []);
+});
+
+test('an attribute bound to an expression is out of scope', () => {
+  assert.deepEqual(scanAttributes('<circle r={hover ? 5 : 4} cx={x} />'), []);
 });

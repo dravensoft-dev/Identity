@@ -41,7 +41,21 @@ const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
  * were ungoverned, which is how seven hand-written `2px` rings and a
  * translateX(18px) survived a gate that reports the tree clean. Neither
  * property needed a rule change to work: a percentage, a ratio inside scale()
- * and an angle already pass. */
+ * and an angle already pass.
+ *
+ * strokeWidth joins for the attribute-form task below (Task 6): an SVG line's
+ * stroke width is a border width in every sense the token layer cares about.
+ * The rest of SVG_ATTRS deliberately does NOT join this set — `r`, `x`, `y`,
+ * `cx`, `cy`, `x1`, `x2`, `y1`, `y2` are one- and two-letter names that
+ * collide with ordinary object keys having nothing to do with CSS
+ * (`chart-internals.js`'s own `PAD = { t: 8, r: 8, b: 28, l: 44 }` would
+ * misfire the moment `r` became governed at a colon — scanValue's PROPS gate
+ * is shared by every scanner in this file, colon and attribute alike, so
+ * there is no way to govern `r` in attribute position only). Those SVG_ATTRS
+ * members stay listed for documentation and for the day a real quoted-literal
+ * site needs one of them, but scanValue's gate means none of them is judged
+ * anywhere today — every current chart/Checkbox site this task closes is
+ * fontSize, strokeWidth, width, or height, all already governed. */
 const PROPS = new Set([
   'fontSize', 'lineHeight', 'letterSpacing', 'fontWeight',
   'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
@@ -52,7 +66,7 @@ const PROPS = new Set([
   'borderWidth', 'borderRadius',
   'width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight',
   'top', 'right', 'bottom', 'left', 'inset', 'zIndex',
-  'boxShadow', 'transform',
+  'boxShadow', 'transform', 'strokeWidth',
 ]);
 
 /* Some correct sites look exactly like defects, so they are named rather than
@@ -552,6 +566,38 @@ export function scanInjectedCss(rawText) {
   return out;
 }
 
+// --- SVG presentation attributes: prop="value", not prop: value ----------
+// An SVG glyph is styled by attributes as often as by CSS -- `fontSize="10"`
+// is the same literal as `fontSize: '10'`, which scanValue already flags,
+// but DECL/PROP_COLON both require a colon, and a JSX attribute uses `=`.
+// The value was always catchable; the position was not.
+
+/** SVG presentation attributes that carry a dimension, read in `prop="value"`
+ *  position as well as `prop: value`. An SVG glyph is styled by attributes as
+ *  often as by CSS, and `fontSize="10"` is the same literal as
+ *  `fontSize: '10'` — which scanValue already flags. Only the quoted-literal
+ *  form is in scope: `r={hover ? 5 : 4}` is an expression binding, judged the
+ *  same way every other expression in this file is, which is to say not at all
+ *  unless it reaches a governed declaration.
+ *
+ *  strokeDasharray is deliberately absent. Its value is a rhythm of on/off
+ *  runs, not a dimension, and there is no token family for a rhythm — adding
+ *  one for the single `3 3` in LineChart would be worse than the literal. */
+const SVG_ATTRS = new Set(['fontSize', 'strokeWidth', 'width', 'height', 'r', 'x', 'y', 'cx', 'cy', 'x1', 'x2', 'y1', 'y2']);
+
+/** @param {string} rawText @returns {{prop: string, raw: string, reason: string, line: number}[]} */
+export function scanAttributes(rawText) {
+  const text = blankComments(rawText);
+  const out = [];
+  for (const m of text.matchAll(/(?<![\w.])([a-zA-Z]+)\s*=\s*"([^"]*)"/g)) {
+    const [, prop, value] = m;
+    if (!SVG_ATTRS.has(prop)) continue;
+    const found = scanValue(prop, `'${value}'`);
+    if (found) out.push({ prop, raw: value, reason: found.reason, line: lineOf(text, m.index) });
+  }
+  return out;
+}
+
 /** A prop name that is not itself a governed CSS property, but that a named
  *  component assigns unmodified into one, one line away, in the same file
  *  — verified by reading the component, not inferred. This is deliberately
@@ -668,7 +714,7 @@ function collect() {
     const rel = relative(repoRoot, file);
     const text = readFileSync(file, 'utf8');
     for (const name of passthroughSightings(text)) seenComponents.add(name);
-    const hits = [...scanText(text), ...scanDefaultsAndCallSites(text), ...scanInjectedCss(text)];
+    const hits = [...scanText(text), ...scanDefaultsAndCallSites(text), ...scanInjectedCss(text), ...scanAttributes(text)];
     for (const hit of hits) {
       const key = `${rel}:${hit.prop}:${hit.raw}`;
       matchedKeys.add(key);

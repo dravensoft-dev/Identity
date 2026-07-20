@@ -38,6 +38,7 @@
   --dz-row-py:12px; /* table/list row vertical padding */
   --dz-row-px:16px; /* row horizontal padding */
   --dz-stack:12px; /* gap between stacked items */
+  --dz-text-lg:16px; /* the largest control text — a data readout inside a chart, where the number is the content rather than a label */
   --dz-text:14px; /* control text — buttons, inputs, selects, menu items, table cells */
   --dz-text-md:13px; /* secondary control text — tag chips, pagination, secondary buttons */
   --dz-text-sm:12px; /* secondary control text — hints, validation errors, badges, legends */

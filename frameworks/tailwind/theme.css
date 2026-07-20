@@ -97,6 +97,7 @@
      are taken by fs, and two collide on value as well as name (fs.sm/dz.text-md
      both 13px, fs.xs/dz.text-xs both 11px). Chrome text is a density role, not
      an editorial one, so it gets its own namespace rather than borrowing fs's. */
+  --text-ctl-lg: var(--dz-text-lg);
   --text-ctl: var(--dz-text);
   --text-ctl-md: var(--dz-text-md);
   --text-ctl-sm: var(--dz-text-sm);
