@@ -47,8 +47,22 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
  * element contributes nothing to its ancestor's height, so the wrapper (and
  * whatever direct child of body contains it) reports short. Scanning
  * getElementsByTagName('*') catches that at any depth and for anything out
- * of normal flow, and is still one flat pass with no recursion, so it stays
- * cheap enough to run every 250ms in the stability loop below. */
+ * of normal flow, and is still one flat pass with no recursion — measured by
+ * hand at under 1ms against alert.card.html's real 26 elements and about
+ * 100ms against a synthetic 20,000-element page, so it stays well inside the
+ * 250ms cadence of the stability loop below for anything these pages render.
+ *
+ * The 20s deadline is computed *before* either await, not after — it is the
+ * budget for the whole script, readiness included, not just the stability
+ * loop that follows it. document.fonts.ready and arenaReady() are each as
+ * unbounded as the CDP call this script runs inside of (arenaReady wraps a
+ * live fetch from esm.sh, unpkg or jsdelivr, same as the page itself), so a
+ * deadline that started only after them would make the script's real worst
+ * case "however long readiness takes, plus 20s" — which can clear the outer
+ * timeout measurePage wraps this call in, turning what should be an honest
+ * { timedOut: true } into a bare rejection instead. Racing readiness against
+ * the same deadline the stability loop uses is what keeps the two in one
+ * bound: whatever readiness does, the script itself never runs past 20s. */
 export const MEASURE_SCRIPT = `(async () => {
   const read = () => {
     const de = document.documentElement;
@@ -66,12 +80,16 @@ export const MEASURE_SCRIPT = `(async () => {
     };
   };
 
-  if (document.fonts && document.fonts.ready) await document.fonts.ready;
-  if (window.arenaReady) await window.arenaReady();
+  const deadline = Date.now() + 20000;
+  const readiness = (async () => {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    if (window.arenaReady) await window.arenaReady();
+  })();
+  readiness.catch(() => {}); // seen as handled even if it loses the race below
+  await Promise.race([readiness, new Promise((r) => setTimeout(r, Math.max(0, deadline - Date.now())))]);
 
   let previous = null;
   let stable = 0;
-  const deadline = Date.now() + 20000;
   while (Date.now() < deadline) {
     const now = read();
     const key = JSON.stringify(now);
@@ -97,10 +115,11 @@ export const MEASURE_SCRIPT = `(async () => {
  * Bounding these two awaits ourselves is what turns that into an ordinary
  * rejection that the caller's normal chrome.kill() cleans up like any other. */
 const NAVIGATE_TIMEOUT_MS = 10_000;
-/* MEASURE_SCRIPT carries its own 20s stability deadline and always resolves
- * by then, one way or another (timedOut: true if it never stabilizes). This
- * bound exists only for a request that never reaches the script at all — the
- * navigation stalled, the target died — so it has to clear 20s with real
+/* MEASURE_SCRIPT's own 20s deadline covers the whole script — readiness and
+ * the stability loop both — and it always resolves by then, one way or
+ * another (timedOut: true if it never stabilizes). This bound exists only
+ * for a request that never reaches the script at all — the navigation
+ * stalled, the target died — so it has to clear the script's 20s with real
  * margin, or a legitimately slow-but-working page would be cut off here
  * first instead of returning its own honest timedOut: true. */
 const EVALUATE_TIMEOUT_MS = 30_000;
@@ -115,6 +134,23 @@ function withTimeout(promise, ms, message) {
   return Promise.race([promise, bound]).finally(() => clearTimeout(timer));
 }
 
+/* Target.createTarget, Target.attachToTarget and Emulation.setDeviceMetricsOverride
+ * touch no network and no page script — they are local bookkeeping the browser
+ * process itself answers, so a hang here would mean a wedged or crashed
+ * Chromium rather than a flaky CDN, a narrower failure than Page.navigate's.
+ * Still the same shape of risk (an unsettled CDP send leaves the caller's
+ * finally never reached), so they get the same NAVIGATE_TIMEOUT_MS bound for
+ * a uniform reason: nothing measurePage awaits should be able to hang this
+ * gate forever. Named generically (the method, not the page) since none of
+ * these three carries a URL to name. */
+function boundedSend(cdp, method, params, sessionId) {
+  return withTimeout(
+    cdp.send(method, params, sessionId),
+    NAVIGATE_TIMEOUT_MS,
+    `${method} did not settle within ${NAVIGATE_TIMEOUT_MS}ms`,
+  );
+}
+
 /** Load one page at a declared width and measure what it renders.
  *  Each page gets its own target, so no state leaks between pages.
  *  @param {{send: Function}} cdp
@@ -124,10 +160,10 @@ function withTimeout(promise, ms, message) {
  *                     clientHeight: number, contentHeight: number, rendered: boolean,
  *                     timedOut: boolean}>} */
 export async function measurePage(cdp, url, viewport) {
-  const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
+  const { targetId } = await boundedSend(cdp, 'Target.createTarget', { url: 'about:blank' });
   try {
-    const { sessionId } = await cdp.send('Target.attachToTarget', { targetId, flatten: true });
-    await cdp.send('Emulation.setDeviceMetricsOverride', {
+    const { sessionId } = await boundedSend(cdp, 'Target.attachToTarget', { targetId, flatten: true });
+    await boundedSend(cdp, 'Emulation.setDeviceMetricsOverride', {
       width: viewport.width,
       height: viewport.height,
       deviceScaleFactor: 1,
@@ -150,6 +186,13 @@ export async function measurePage(cdp, url, viewport) {
     if (exceptionDetails) throw new Error(`${url}: ${exceptionDetails.text} ${exceptionDetails.exception?.description ?? ''}`);
     return result.value;
   } finally {
-    await cdp.send('Target.closeTarget', { targetId });
+    // Bounded like the rest, but a timeout here is swallowed rather than
+    // thrown: a throw from finally replaces whatever the try block was
+    // returning or throwing, which would be strictly worse than a target
+    // left open for chrome.kill() to reclaim along with the whole browser a
+    // moment later in the caller — closeTarget failing is never the news.
+    try {
+      await boundedSend(cdp, 'Target.closeTarget', { targetId });
+    } catch { /* best effort */ }
   }
 }
