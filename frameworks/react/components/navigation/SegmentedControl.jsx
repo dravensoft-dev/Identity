@@ -43,7 +43,7 @@ export function SegmentedControl({
         background: 'var(--surface-input)',
         border: 'var(--bw) solid ' + (focus ? 'var(--gold)' : 'var(--color-base-300)'),
         borderRadius: 'var(--r-sm)',
-        boxShadow: focus ? '0 0 0 2px var(--gold-soft)' : 'none',
+        boxShadow: focus ? '0 0 0 var(--focus-width) var(--gold-soft)' : 'none',
         transition: 'border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)',
         ...style,
       }}

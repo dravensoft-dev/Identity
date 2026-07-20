@@ -14,7 +14,7 @@ export function Switch({ checked = false, onChange, onRequestChange, confirm = f
       <span style={{ width: 'calc(var(--sp-1) * 10)', height: 'calc(var(--sp-1) * 5.5)', borderRadius: 'var(--r-pill)', padding: 'calc(var(--sp-1) * 0.5)', display: 'inline-flex', alignItems: 'center',
         background: checked ? 'var(--crimson)' : 'var(--line-strong)', transition: 'background var(--dur-mid) var(--ease-out)' }}>
         <span style={{ width: 'calc(var(--sp-1) * 4.5)', height: 'calc(var(--sp-1) * 4.5)', borderRadius: '50%', background: 'var(--on-accent)',
-          transform: checked ? 'translateX(18px)' : 'translateX(0)', transition: 'transform var(--dur-mid) var(--ease-out)' }} />
+          transform: checked ? 'translateX(calc(var(--sp-1) * 4.5))' : 'translateX(0)', transition: 'transform var(--dur-mid) var(--ease-out)' }} />
       </span>
       {label && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 1.5)', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', color: 'var(--bone-dim)' }}>{label}{confirm && <i className="ph-bold ph-shield-check" title="Requires confirmation" style={{ fontSize: 'var(--icon-sm)', color: 'var(--mute)' }} />}</span>}
       <input type="checkbox" role="switch" checked={checked} aria-checked={checked} onChange={guarded ? undefined : onChange} disabled={disabled}

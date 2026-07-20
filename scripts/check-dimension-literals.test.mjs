@@ -546,3 +546,19 @@ test('blanking comments preserves line numbers exactly', () => {
   const found = scanText(src);
   assert.deepEqual(found[0].line, 3);
 });
+
+test('a focus ring written by hand is a dimension literal', () => {
+  assert.ok(scanValue('boxShadow', "'0 0 0 2px var(--gold-soft)'"));
+  assert.equal(scanValue('boxShadow', "'0 0 0 var(--focus-width) var(--gold-soft)'"), null);
+  assert.equal(scanValue('boxShadow', "'var(--shadow-2)'"), null);
+  assert.equal(scanValue('boxShadow', "'none'"), null);
+});
+
+test('a transform carrying a dimension is judged; a ratio or a share is not', () => {
+  assert.ok(scanValue('transform', "'translateX(18px)'"));
+  assert.equal(scanValue('transform', "'translateX(calc(var(--sp-1) * 4.5))'"), null);
+  assert.equal(scanValue('transform', "'translate(-50%,-100%)'"), null);
+  assert.equal(scanValue('transform', "'scale(0.98)'"), null);
+  assert.equal(scanValue('transform', "'rotate(120deg)'"), null);
+  assert.equal(scanValue('transform', "'none'"), null);
+});

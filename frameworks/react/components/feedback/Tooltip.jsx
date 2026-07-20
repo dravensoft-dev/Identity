@@ -25,7 +25,7 @@ export function Tooltip({ children, content, style }) {
       onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
       {children}
       {show && (
-        <span role="tooltip" style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%) translateY(-8px)',
+        <span role="tooltip" style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%) translateY(calc(var(--sp-2) * -1))',
           whiteSpace: 'nowrap', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)', background: 'var(--bone)', color: 'var(--ink)',
           fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', zIndex: 'var(--z-tooltip)',
           animation: 'arena-fade var(--dur-fast) var(--ease-out)' }}>

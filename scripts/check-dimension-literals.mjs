@@ -33,7 +33,15 @@ import { repoRoot } from './lib/tailwind-compile.mjs';
 
 const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
 
-/** Properties whose value Arena's token layer governs. */
+/** Properties whose value Arena's token layer governs.
+ *
+ * boxShadow and transform join late and for one reason each: a focus ring is a
+ * spread radius (--focus-width) written inside a shorthand, and a travel is a
+ * distance written inside a function. Both were invisible while the properties
+ * were ungoverned, which is how seven hand-written `2px` rings and a
+ * translateX(18px) survived a gate that reports the tree clean. Neither
+ * property needed a rule change to work: a percentage, a ratio inside scale()
+ * and an angle already pass. */
 const PROPS = new Set([
   'fontSize', 'lineHeight', 'letterSpacing', 'fontWeight',
   'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
@@ -44,6 +52,7 @@ const PROPS = new Set([
   'borderWidth', 'borderRadius',
   'width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight',
   'top', 'right', 'bottom', 'left', 'inset', 'zIndex',
+  'boxShadow', 'transform',
 ]);
 
 /* Some correct sites look exactly like defects, so they are named rather than
