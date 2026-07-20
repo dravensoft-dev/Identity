@@ -13,6 +13,7 @@
  *  @returns {{next: (method: string, params?: object, sessionId?: string) =>
  *              {frame: object, result: Promise<any>},
  *             settle: (message: object) => boolean,
+ *             drain: (err: Error) => void,
  *             pending: Map<number, {resolve: Function, reject: Function}>}} */
 export function createDispatcher() {
   let id = 0;
@@ -36,6 +37,16 @@ export function createDispatcher() {
       else waiter.resolve(message.result);
       return true;
     },
+    /** Reject every still-outstanding request with `err` and forget it.
+     *  There is no reply left to wait for once the socket that would have
+     *  carried it is gone — a browser crash, a dropped connection, or
+     *  close() called with a send() still awaited all end up here, so that
+     *  promise rejects instead of hanging forever. A no-op when nothing is
+     *  pending. */
+    drain(err) {
+      for (const waiter of pending.values()) waiter.reject(err);
+      pending.clear();
+    },
   };
 }
 
@@ -49,13 +60,31 @@ export function connect(wsUrl) {
     const socket = new WebSocket(wsUrl);
     const dispatcher = createDispatcher();
     const listeners = [];
+    let open = false;
 
     socket.addEventListener('message', (ev) => {
       const message = JSON.parse(typeof ev.data === 'string' ? ev.data : String(ev.data));
       if (!dispatcher.settle(message)) for (const h of listeners) h(message);
     });
-    socket.addEventListener('error', () => reject(new Error(`CDP: could not connect to ${wsUrl}`)));
+    /* Before open, an error means connect() itself failed — reject the
+       promise this function returns, same as before. After open, the
+       promise this function returned has already resolved with a `send`
+       whose caller may be awaiting a reply that will now never arrive —
+       drain rejects it instead of leaving it hanging forever. */
+    socket.addEventListener('error', () => {
+      if (open) dispatcher.drain(new Error(`CDP: connection to ${wsUrl} errored`));
+      else reject(new Error(`CDP: could not connect to ${wsUrl}`));
+    });
+    /* A closed socket is exactly the same situation as a post-open error:
+       nothing will ever answer a pending send(), whether the browser
+       crashed, the connection dropped, or the caller itself called
+       close() while a send() was still awaited. Draining here is what
+       makes that promise settle instead of hanging. */
+    socket.addEventListener('close', () => {
+      dispatcher.drain(new Error(`CDP: connection to ${wsUrl} closed`));
+    });
     socket.addEventListener('open', () => {
+      open = true;
       resolve({
         send(method, params, sessionId) {
           const { frame, result } = dispatcher.next(method, params, sessionId);

@@ -1,7 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CANDIDATES, findChromium } from './chromium.mjs';
+import { readdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { CANDIDATES, findChromium, launchChromium } from './chromium.mjs';
 import { createDispatcher } from './cdp.mjs';
+
+/** The set of arena-chromium-* temp profile dirs mkdtempSync has left behind. */
+function chromiumTempDirs() {
+  return new Set(readdirSync(tmpdir()).filter((n) => n.startsWith('arena-chromium-')));
+}
 
 test('CHROME_PATH wins over the candidate list when it exists', () => {
   const found = findChromium({ CHROME_PATH: '/opt/my-chrome' }, (p) => p === '/opt/my-chrome');
@@ -56,4 +63,37 @@ test('an event (no id) is not a reply and settles nothing', () => {
   d.next('Page.enable', {});
   assert.equal(d.settle({ method: 'Page.loadEventFired', params: {} }), false);
   assert.equal(d.pending.size, 1);
+});
+
+test('drain rejects every pending request and clears the map', async () => {
+  const d = createDispatcher();
+  const a = d.next('Page.enable');
+  const b = d.next('Runtime.enable');
+  d.drain(new Error('CDP: connection closed'));
+  await assert.rejects(a.result, /connection closed/);
+  await assert.rejects(b.result, /connection closed/);
+  assert.equal(d.pending.size, 0);
+});
+
+test('drain on an empty dispatcher is a no-op', () => {
+  const d = createDispatcher();
+  assert.doesNotThrow(() => d.drain(new Error('unused')));
+  assert.equal(d.pending.size, 0);
+});
+
+test('a request made after drain still gets its own promise, unaffected by the earlier rejection', async () => {
+  const d = createDispatcher();
+  const a = d.next('Page.enable');
+  d.drain(new Error('closed'));
+  await assert.rejects(a.result);
+  const b = d.next('Runtime.enable');
+  assert.equal(d.settle({ id: b.frame.id, result: { ok: true } }), true);
+  assert.deepEqual(await b.result, { ok: true });
+});
+
+test('launchChromium rejects instead of crashing when spawn cannot start the binary, and leaves no temp profile behind', async () => {
+  const before = chromiumTempDirs();
+  await assert.rejects(() => launchChromium('/this/path/does/not/exist'));
+  const after = chromiumTempDirs();
+  assert.deepEqual(after, before, 'a temp profile dir was left behind by the rejected launch');
 });

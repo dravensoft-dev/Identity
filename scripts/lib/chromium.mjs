@@ -70,6 +70,16 @@ export async function launchChromium(exePath) {
       if (m) { clearTimeout(timer); resolve(m[1]); }
     });
     child.on('exit', (code) => { clearTimeout(timer); reject(new Error(`Chromium exited with code ${code} before listening`)); });
+    /* spawn() is async: a stale CHROME_PATH (ENOENT), a permission problem
+       (EACCES), or the binary vanishing between findChromium's existsSync
+       check and this spawn all surface as an 'error' event on the child,
+       not as a thrown exception. An EventEmitter with no 'error' listener
+       treats that event as fatal and rethrows it past any try/catch around
+       launchChromium() — node crashes outright; Bun instead never fires
+       'exit' either, so nothing here would ever settle and the promise
+       would hang for the full 20s timer. Reject here instead, so a failed
+       spawn becomes a rejection like every other failure mode above. */
+    child.on('error', (err) => { clearTimeout(timer); reject(err); });
   }).catch((err) => { kill(); throw err; });
 
   return { wsUrl, kill };
