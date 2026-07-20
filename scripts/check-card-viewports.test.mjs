@@ -7,7 +7,10 @@ import { join } from 'node:path';
 import { startStaticServer } from './lib/static-server.mjs';
 import { findChromium, launchChromium } from './lib/chromium.mjs';
 import { connect } from './lib/cdp.mjs';
-import { measurePage } from './check-card-viewports.mjs';
+import {
+  parseDsCard, classify, summarizeCards, skipExitCode, findCardPages, UNDER_RUN_SLACK,
+  measurePage,
+} from './check-card-viewports.mjs';
 
 /* The only test here that needs a browser. It skips — loudly, in the
  * runner's output — where there is none, for the same reason the gate does. */
@@ -172,4 +175,117 @@ test('a slow-but-honest page times out inside the script instead of past the out
     chrome.kill();
     await server.close();
   }
+});
+
+test('parseDsCard reads the group, name and viewport off the first line', () => {
+  const html = '<!-- @dsCard group="Components" viewport="700x460" name="Display" subtitle="Card · Badge" -->\n<!doctype html>';
+  assert.deepEqual(parseDsCard(html), { group: 'Components', name: 'Display', width: 700, height: 460 });
+});
+
+test('parseDsCard reads attributes in any order', () => {
+  const html = '<!-- @dsCard group="Console" viewport="1280x820" subtitle="s" name="Delivery Console" -->';
+  assert.equal(parseDsCard(html).name, 'Delivery Console');
+  assert.equal(parseDsCard(html).width, 1280);
+});
+
+test('parseDsCard returns null for a page that declares nothing', () => {
+  assert.equal(parseDsCard('<!doctype html><html></html>'), null);
+});
+
+test('parseDsCard only reads the first line — a @dsCard further down is not a declaration', () => {
+  assert.equal(parseDsCard('<!doctype html>\n<!-- @dsCard group="X" viewport="10x10" name="n" -->'), null);
+});
+
+test('content that fits exactly is ok', () => {
+  const r = classify({
+    file: 'guidelines/icons.html',
+    declared: { width: 700, height: 200 },
+    measured: { scrollWidth: 700, scrollHeight: 200, clientWidth: 700, clientHeight: 200, contentHeight: 200, rendered: true, timedOut: false },
+  });
+  assert.equal(r.status, 'ok');
+});
+
+test('content taller than the declared box clips, and the message names both numbers and the fix', () => {
+  const r = classify({
+    file: 'frameworks/react/components/charts/charts.card.html',
+    declared: { width: 900, height: 760 },
+    measured: { scrollWidth: 900, scrollHeight: 1345, clientWidth: 900, clientHeight: 760, contentHeight: 1345, rendered: true, timedOut: false },
+  });
+  assert.equal(r.status, 'clip');
+  assert.match(r.message, /900x760/);
+  assert.match(r.message, /900x1345/);
+  assert.match(r.message, /585/);
+});
+
+test('content wider than the declared box clips too', () => {
+  const r = classify({
+    file: 'frameworks/react/components/brand/brand.card.html',
+    declared: { width: 700, height: 660 },
+    measured: { scrollWidth: 732, scrollHeight: 660, clientWidth: 700, clientHeight: 660, contentHeight: 660, rendered: true, timedOut: false },
+  });
+  assert.equal(r.status, 'clip');
+  assert.match(r.message, /732x660/);
+});
+
+test(`content shorter than the declared box by more than ${UNDER_RUN_SLACK}px warns, and never fails`, () => {
+  const r = classify({
+    file: 'guidelines/colors-status.html',
+    declared: { width: 700, height: 600 },
+    measured: { scrollWidth: 700, scrollHeight: 600, clientWidth: 700, clientHeight: 600, contentHeight: 150, rendered: true, timedOut: false },
+  });
+  assert.equal(r.status, 'under');
+  assert.match(r.message, /450/);
+});
+
+test('a small under-run is not worth a word', () => {
+  const r = classify({
+    file: 'guidelines/colors-status.html',
+    declared: { width: 700, height: 200 },
+    measured: { scrollWidth: 700, scrollHeight: 200, clientWidth: 700, clientHeight: 200, contentHeight: 140, rendered: true, timedOut: false },
+  });
+  assert.equal(r.status, 'ok');
+});
+
+test('summarizeCards fails on clips only, and counts the warnings separately', () => {
+  const s = summarizeCards([
+    { file: 'a.html', status: 'ok', message: '' },
+    { file: 'b.html', status: 'clip', message: 'b over-runs' },
+    { file: 'c.html', status: 'under', message: 'c is mostly empty' },
+  ]);
+  assert.equal(s.failed, 1);
+  assert.equal(s.warned, 1);
+  assert.match(s.text, /b over-runs/);
+  assert.match(s.text, /c is mostly empty/);
+});
+
+test('summarizeCards on a clean sweep says so and fails nothing', () => {
+  const s = summarizeCards([{ file: 'a.html', status: 'ok', message: '' }]);
+  assert.equal(s.failed, 0);
+  assert.match(s.text, /1 page/);
+});
+
+test('a page that never rendered is a skip-class condition, not a pass', () => {
+  const r = classify({
+    file: 'a.html',
+    declared: { width: 700, height: 200 },
+    measured: { scrollWidth: 700, scrollHeight: 200, clientWidth: 700, clientHeight: 200, contentHeight: 0, rendered: false, timedOut: true },
+  });
+  assert.equal(r.status, 'unrendered');
+  assert.match(r.message, /did not render/i);
+});
+
+test('skipExitCode is 2 normally and 1 under strict', () => {
+  assert.equal(skipExitCode({}), 2);
+  assert.equal(skipExitCode({ ARENA_CHECK_STRICT: '1' }), 1);
+  assert.equal(skipExitCode({ CI: 'true' }), 1);
+});
+
+test('findCardPages finds every page that declares, and nothing that does not', () => {
+  const pages = findCardPages(join(import.meta.dirname, '..'));
+  assert.ok(pages.includes('guidelines/icons.html'));
+  assert.ok(pages.includes('frameworks/react/components/charts/charts.card.html'));
+  assert.ok(!pages.includes('Arena - Overview.html'), 'the Overview is not a card');
+  assert.ok(!pages.includes('Dravensoft Identity.dc.html'), 'the brand manual is not a card');
+  assert.ok(pages.every((p) => !p.includes('node_modules')));
+  assert.deepEqual(pages, [...pages].sort(), 'pages come back sorted, so output is stable');
 });

@@ -196,3 +196,162 @@ export async function measurePage(cdp, url, viewport) {
     } catch { /* best effort */ }
   }
 }
+
+/** How far a page may under-run its declared height before it is worth a word.
+ *  A warning, never a failure: an over-tall card shows the whole specimen plus
+ *  empty space, where a clipped one loses content silently. */
+export const UNDER_RUN_SLACK = 120;
+
+const SKIP_DIRS = new Set(['node_modules', '.git', '.claude-plugin', 'assets']);
+
+/** @param {string} html @returns {{group: string, name: string, width: number, height: number} | null}
+ *  The declaration, or null when the first line is not one. Only the first
+ *  line counts: CLAUDE.md requires the comment to lead the file, and a stray
+ *  @dsCard further down is not a declaration. */
+export function parseDsCard(html) {
+  const first = html.split('\n', 1)[0];
+  if (!first.includes('@dsCard')) return null;
+  const attr = (name) => new RegExp(`${name}="([^"]*)"`).exec(first)?.[1];
+  const viewport = attr('viewport');
+  const size = viewport && /^(\d+)x(\d+)$/.exec(viewport.trim());
+  if (!size) return null;
+  return { group: attr('group') ?? '', name: attr('name') ?? '', width: Number(size[1]), height: Number(size[2]) };
+}
+
+/** @param {string} root @returns {string[]} repo-relative paths of every .html
+ *  file whose first line declares a @dsCard, sorted. */
+export function findCardPages(root) {
+  const found = [];
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name.startsWith('.') || SKIP_DIRS.has(entry.name)) continue;
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) walk(path);
+      else if (entry.name.endsWith('.html') && parseDsCard(readFileSync(path, 'utf8'))) {
+        found.push(relative(root, path).split(sep).join('/'));
+      }
+    }
+  };
+  walk(root);
+  return found.sort();
+}
+
+/** @param {{file: string, declared: {width: number, height: number}, measured: object}} input
+ *  @returns {{file: string, status: 'ok'|'clip'|'under'|'unrendered', message: string}} */
+export function classify({ file, declared, measured }) {
+  if (!measured.rendered) {
+    return {
+      file,
+      status: 'unrendered',
+      message: `${file} did not render — #root is empty after 20s. The demo pages load React, Babel and Phosphor from CDNs; check network access.`,
+    };
+  }
+
+  const width = Math.max(measured.scrollWidth, measured.clientWidth);
+  const height = Math.max(measured.scrollHeight, measured.clientHeight);
+  if (width > declared.width || height > declared.height) {
+    const over = [
+      width > declared.width ? `${width - declared.width}px wider` : null,
+      height > declared.height ? `${height - declared.height}px taller` : null,
+    ].filter(Boolean).join(' and ');
+    return {
+      file,
+      status: 'clip',
+      message: `${file} declares ${declared.width}x${declared.height} but renders ${width}x${height} — ${over}. The card is cropped to the declared box, so that content is lost. Declare ${width}x${height}.`,
+    };
+  }
+
+  const short = declared.height - measured.contentHeight;
+  if (short > UNDER_RUN_SLACK) {
+    return {
+      file,
+      status: 'under',
+      message: `${file} declares ${declared.width}x${declared.height} but its content ends ${short}px above the fold — the card renders mostly empty. Nothing is lost; consider ${declared.width}x${measured.contentHeight}.`,
+    };
+  }
+
+  return { file, status: 'ok', message: '' };
+}
+
+/** @param {{file: string, status: string, message: string}[]} results
+ *  @returns {{text: string, failed: number, warned: number, unrendered: number}} */
+export function summarizeCards(results) {
+  const of = (status) => results.filter((r) => r.status === status);
+  const clips = of('clip');
+  const unders = of('under');
+  const unrendered = of('unrendered');
+
+  const lines = [];
+  if (clips.length) {
+    lines.push(`check-card-viewports: ${clips.length} page(s) render past their declared box\n`);
+    for (const r of clips) lines.push(`  ${r.message}`);
+  }
+  if (unrendered.length) {
+    lines.push(`\ncheck-card-viewports: ${unrendered.length} page(s) could not be measured\n`);
+    for (const r of unrendered) lines.push(`  ${r.message}`);
+  }
+  if (unders.length) {
+    lines.push(`\ncheck-card-viewports: ${unders.length} warning(s) — over-tall declarations, nothing is lost\n`);
+    for (const r of unders) lines.push(`  ${r.message}`);
+  }
+  if (!clips.length && !unrendered.length) {
+    lines.push(`check-card-viewports: ${results.length} page(s) measured, every one fits its declared viewport`);
+  }
+
+  return { text: lines.join('\n'), failed: clips.length, warned: unders.length, unrendered: unrendered.length };
+}
+
+/** The exit code for "this gate cannot run here". 2 is the loud skip
+ *  check-all maps to SKIP; strict mode turns it into a hard failure.
+ *  @param {Record<string, string|undefined>} env @returns {1 | 2} */
+export function skipExitCode(env = process.env) {
+  return env.ARENA_CHECK_STRICT === '1' || env.CI === 'true' ? 1 : 2;
+}
+
+function skip(reason) {
+  const code = skipExitCode(process.env);
+  console.error(`check-card-viewports: ${code === 1 ? 'FAILED (strict)' : 'SKIPPED'} — ${reason}`);
+  if (code === 2) console.error('  check-all reports the run INCOMPLETE; set ARENA_CHECK_STRICT=1 to make this a failure.');
+  process.exit(code);
+}
+
+async function main() {
+  const browser = findChromium(process.env);
+  if (!browser.path) skip(browser.reason);
+
+  const pages = findCardPages(root);
+  const server = await startStaticServer(root);
+  let chrome;
+  let cdp;
+  try {
+    chrome = await launchChromium(browser.path);
+    cdp = await connect(chrome.wsUrl);
+  } catch (err) {
+    await server.close();
+    chrome?.kill();
+    skip(`${browser.path} could not be driven: ${err.message}`);
+  }
+
+  const results = [];
+  try {
+    for (const file of pages) {
+      const declared = parseDsCard(readFileSync(join(root, file), 'utf8'));
+      const measured = await measurePage(cdp, `http://127.0.0.1:${server.port}/${file.split('/').map(encodeURIComponent).join('/')}`, { width: declared.width, height: declared.height });
+      results.push(classify({ file, declared, measured }));
+    }
+  } finally {
+    cdp.close();
+    chrome.kill();
+    await server.close();
+  }
+
+  const summary = summarizeCards(results);
+  if (summary.failed) {
+    console.error(summary.text);
+    process.exit(1);
+  }
+  console.log(summary.text);
+  if (summary.unrendered) skip(`${summary.unrendered} page(s) never rendered — see above`);
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) main();
