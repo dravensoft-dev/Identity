@@ -11,10 +11,10 @@ import { Dialog } from '../../components/feedback/Dialog.jsx';
 import { Icon } from './Icon.jsx';
 
 const DEPLOYS = [
-  { build: '#4821', env: 'Production', status: ['success', 'Active'], when: '2h ago', author: 'CI · main', dur: '3m 41s' },
-  { build: '#4820', env: 'Staging', status: ['success', 'OK'], when: '5h ago', author: 'ana@', dur: '3m 12s' },
-  { build: '#4818', env: 'Production', status: ['neutral', 'Rolled back'], when: 'yesterday', author: 'CI · main', dur: '4m 02s' },
-  { build: '#4815', env: 'QA', status: ['danger', 'Failed'], when: 'yesterday', author: 'diego@', dur: '1m 08s' },
+  { build: '#4821', env: 'Production', status: ['success', 'Active'], author: 'CI · main', dur: '3m 41s' },
+  { build: '#4820', env: 'Staging', status: ['success', 'OK'], author: 'ana@', dur: '3m 12s' },
+  { build: '#4818', env: 'Production', status: ['neutral', 'Rolled back'], author: 'CI · main', dur: '4m 02s' },
+  { build: '#4815', env: 'QA', status: ['danger', 'Failed'], author: 'diego@', dur: '1m 08s' },
 ];
 /* Deployments reads Table rather than a hand-rolled grid. It used to be six
  * spans per row inside their own `display:grid`, one container per row — and
