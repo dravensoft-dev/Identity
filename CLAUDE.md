@@ -158,7 +158,8 @@ with the manifests as content and asserts every class emits a rule and every
 theme key resolves to a real token; `bun run check:coverage` asserts every
 token either reaches a utility or is named in `EXCLUDED` with a reason;
 `bun run check:arbitrary` fails on a bracket carrying a raw literal.
-`bun run check` runs all nine plus the test suite, without stopping at the first failure. **`check:cards` is the one gate that is not runtime-portable** — it needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths). Where there is none it exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` makes that a hard failure instead. An Angular primitive's recipe is its
+`bun run check` runs all nine plus the test suite, without stopping at the first failure. **`check:cards` is the one gate that is not runtime-portable** — it needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths). Where there is none it exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
+skips quietly — makes that a hard failure instead. An Angular primitive's recipe is its
 manifest — `frameworks/angular/primitives/tag/` is the reference shape.
 
 **When `bun run check` is expected: once, when a plan's implementation is
