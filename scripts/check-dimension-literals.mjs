@@ -67,13 +67,16 @@ export const EXEMPT = new Map([
    'Rotor call site — brand mark, not themeable, see Rotor.jsx\'s own exemption'],
 ]);
 
-/** Units the token layer genuinely does not model, and that are legal
- *  wherever they appear — a closed allowlist, not an open denylist. A unit
- *  missing from this list fails closed: `em` was absent from every list
- *  here until a review caught it, and by then 34 tracking literals had
- *  gone unflagged. A unit nobody has thought of yet — `pt`, `cm`, a typo —
- *  gets the same treatment as `px`, not a silent pass. */
-const FREE_UNITS = ['%', 'ch', 'fr', 'vh', 'vw', 'vmin', 'vmax', 'deg', 's', 'ms'];
+/** Units the token layer genuinely does not model, and that no token could
+ *  usefully carry — a prose measure in `ch`, a share of a container in `%`, a
+ *  grid track in `fr`, a viewport fraction, an angle. DTCG 2025.10 admits only
+ *  px and rem in a dimension, so these are not expressible as tokens at all.
+ *  Exported because check-arbitrary-values.mjs answers the same question about
+ *  a Tailwind bracket and two lists would drift. `s`/`ms` stay local to
+ *  FREE_UNITS below: this gate tolerates them, but --dur-* and --loop-* DO
+ *  model duration, so a bracket carrying one is drift and must keep failing. */
+export const UNMODELLED_UNITS = ['%', 'ch', 'fr', 'vh', 'vw', 'vmin', 'vmax', 'deg'];
+const FREE_UNITS = [...UNMODELLED_UNITS, 's', 'ms'];
 const FREE_UNIT = new RegExp(`^\\s*'?-?\\d*\\.?\\d+(${FREE_UNITS.join('|')})'?\\s*$`);
 /** A number immediately carrying a unit — a candidate dimension literal,
  *  judged against FREE_UNITS above rather than against a fixed "bad" list.

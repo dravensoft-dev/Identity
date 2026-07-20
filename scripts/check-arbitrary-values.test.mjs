@@ -74,3 +74,28 @@ test('a marker in a non-.md file is itself reported as an error', () => {
   assert.match(errs[0], /marker is only honoured in \.md files/);
   assert.match(errs[1], /`text-\[13px\]` — a raw value, not a token/);
 });
+
+test('a calc() over tokens is a derivation, not a literal', () => {
+  assert.deepEqual(scanText('text-[length:calc(var(--avatar-md)*0.4)]'), []);
+  assert.deepEqual(scanText('shadow-[inset_0_calc(var(--bw-strong)*-1)_0_var(--crimson)]'), []);
+  assert.deepEqual(scanText('w-[calc(var(--container-max)-var(--layout-sidebar))]'), []);
+  assert.deepEqual(scanText('h-[min(var(--dz-ctl-h),var(--icon-xl))]'), []);
+});
+
+test('a bracket carrying a unit the token layer does not model is legal', () => {
+  assert.deepEqual(scanText('max-w-[42ch] max-w-[92vw] pt-[12vh] w-[62%] rotate-[120deg]'), []);
+});
+
+test('a modelled unit is still a violation, inside calc() or not', () => {
+  const hits = scanText('text-[13px] duration-[200ms] p-[1rem] w-[calc(var(--sp-4)+8px)]');
+  assert.deepEqual(hits.map((h) => h.cls).sort(),
+    ['duration-[200ms]', 'p-[1rem]', 'text-[13px]', 'w-[calc(var(--sp-4)+8px)]']);
+});
+
+test('a bare number outside a math function is still a violation', () => {
+  assert.deepEqual(scanText('z-[900]').map((h) => h.cls), ['z-[900]']);
+});
+
+test('a hex is a violation however it is wrapped', () => {
+  assert.deepEqual(scanText('bg-[#b52a20] bg-[color-mix(in_oklab,#b52a20_14%,transparent)]').length, 2);
+});
