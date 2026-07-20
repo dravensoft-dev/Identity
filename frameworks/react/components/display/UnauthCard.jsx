@@ -15,7 +15,11 @@ import { Card } from './Card.jsx';
  *  20px + 16px = the 36px this figure has always had. */
 export function UnauthCard({ brand, eyebrow, title, footer, children, style, ...rest }) {
   return (
-    <div style={{ width: '100%', maxWidth: 'calc(var(--sp-1) * 95)', ...style }} {...rest}>
+    // The panel this replaced put its width, its padding and its border on one
+    // content-box element, so reproducing its rendered width means adding the three
+    // back together: 95 steps of content, 18 steps of padding (9 on each side) and
+    // both 1px borders. A single `* 95` here silently narrows the panel again.
+    <div style={{ width: '100%', maxWidth: 'calc(var(--sp-1) * 95 + var(--sp-1) * 18 + var(--bw) * 2)', ...style }} {...rest}>
       <Card style={{ boxShadow: 'var(--shadow-3)' }}>
         <div style={{ padding: 'calc(var(--sp-1) * 4)' }}>
           {brand && <div style={{ marginBottom: 'calc(var(--sp-1) * 7)' }}>{brand}</div>}
