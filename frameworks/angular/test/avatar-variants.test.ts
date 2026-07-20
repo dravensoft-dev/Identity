@@ -45,3 +45,13 @@ test('every presence tone maps to the status color taxonomy, not a series color'
   assert.match(avatarStyles({ status: 'away' }).status(), /bg-warning/);
   assert.match(avatarStyles({ status: 'offline' }).status(), /bg-base-content\/52/);
 });
+
+/* The `image` slot has no variants and the specimen renders only initials, so
+ * nothing else exercises it — a typo in Avatar.manifest.json's "image" string
+ * would otherwise ship silently. */
+test('the image slot fills the box and crops to it, matching Avatar.jsx', () => {
+  const image = avatarStyles().image();
+  assert.match(image, /\bw-full\b/);
+  assert.match(image, /\bh-full\b/);
+  assert.match(image, /\bobject-cover\b/);
+});
