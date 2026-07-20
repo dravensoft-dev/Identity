@@ -1,0 +1,267 @@
+# Chart geometry and the script-readable token target — Design
+
+**Status:** DRAFT — not approved. Written 2026-07-19 at the request of the repo owner
+during plan 4.5's execution. Open questions at the end are real and must be answered
+before a plan is written from this.
+**Execution order:** plan 5.5 of 6 — after 5b (Tailwind manifest parity), before 6
+(four-package build + publish).
+**Depends on:** 5a and 5b, for the reason in *Sequencing* below.
+**Blocks:** `2026-07-18-four-package-build-publish-design.md` (plan 6).
+
+## Problem
+
+`tokens/` is the single source of truth for every value in Arena, and the framework
+layers adopt it. That promise has one hole, and it is the chart family: its geometry is
+a set of JS constants in `frameworks/react/components/charts/chart-internals.js` that no
+token defines, no gate reaches, and no future framework layer can share.
+
+```js
+export const CHART_HEIGHT = 280;
+export const PAD = { t: 8, r: 8, b: 28, l: 44 };
+```
+
+Plus, scattered across the three chart components: the bar corner radius `4`
+(`barPath(x, y, bw, baseline - y, 4)`), the point radii `r={hover === i ? 5 : 4}`, the
+2px inter-bar gap (`bw = Math.max(1, step - 2)`), the doughnut's inner-radius ratio
+`0.62`, and its legend clamp `Math.min(180, Math.max(120, width * 0.34))`.
+
+Three things are wrong with this, in increasing order of cost:
+
+1. **Some of these values are orphans, not just untokenized.** The bar radius is `4`
+   and the nearest radius token, `--r-sm`, is `6`. Nothing in the token layer describes
+   a chart's corner. The value was chosen once, in a component, and no specimen page
+   shows it.
+2. **A second framework layer cannot share them.** `frameworks/angular/` is being
+   built. When it grows a chart, it either re-declares `280` and `44` in TypeScript —
+   two implementations of one design decision, the exact drift the Overview page was
+   built to end — or it imports from React's internals, which inverts the layering.
+3. **The prior spec declined this and named the reason**, so this is a reversal that
+   needs to be argued rather than assumed. `2026-07-19-token-debt-and-gate-blind-spots-design.md`
+   says: *"Tokenizing them would require a Style Dictionary target that emits JS — the
+   layer's rule is that nothing reads a custom property back into JS — and that is a
+   build-surface decision this spec declines."* That was the right call for a plan whose
+   whole warrant was "no value changes, no new build surface". It is not an argument
+   that the build surface should never exist.
+
+### What this does NOT solve, stated first so nobody reads it as a fix
+
+Plan 4.5 added four `EXEMPT` entries — `BarChart.jsx`, `LineChart.jsx` and two in
+`Calendar.jsx` — for interpolated values of the shape
+`` top: `calc(${yOf(values[hover])}px - var(--sp-2))` ``.
+
+**A JS token target does not remove a single one of them**, and the reasoning is worth
+stating because it is the strongest argument for keeping the scope of this spec narrow:
+
+```js
+const yOf = (v) => PAD.t + ih - (Math.max(0, v) / max) * ih;
+```
+
+`yOf(values[hover])` is a function of the series datum and of `max`, which is itself
+derived from the data. `ih` derives from `width`, which `useContainerWidth` **measures at
+runtime**. Calendar's `y(m)` projects minute-of-day and its `rawH` projects an event's
+duration. These are data-to-pixel projections. Tokenizing `PAD` and `CHART_HEIGHT`
+changes where the *inputs* come from and leaves the *outputs* exactly as interpolated as
+they are today. The four exemptions are permanent and correct, and this spec does not
+reopen them.
+
+## Design
+
+### 1. The split is forced, not chosen
+
+A CSS custom property and a JS constant are not interchangeable, and the difference
+decides everything below.
+
+A custom property resolves in the browser, at render time, per element. It responds to
+`:root` vs `.arena-light`, and to `.arena-compact` — which is how every `dz` token
+re-densifies with no component code. A JS constant is bound at import time, once,
+globally. **A value emitted to JS cannot participate in theming or density.**
+
+So the split is not a matter of taste:
+
+- A value is **script-readable** when JS arithmetic must consume it to produce a
+  position — `PAD.l` is subtracted, `CHART_HEIGHT` is divided, `step` is derived from
+  both. There is no CSS expression that computes an SVG `y` attribute from a data value.
+- A value is **CSS-only** when the browser can apply it directly. Everything the chart
+  paints rather than computes: strokes, fills, type sizes. Plan 4.5 already moved those
+  (`--bw`, `--bw-strong`, `--dz-text-2xs`, `--fs-xs`, `--dz-text-lg`).
+
+The consequence to accept up front: **chart geometry will not re-densify.** A chart in
+`.arena-compact` keeps its 280px height and its 44px left pad. That is a real
+limitation, and it is the honest price of letting JS read the value at all. It is also
+the status quo — nothing about chart geometry re-densifies today either.
+
+### 2. Dual emission, declared at the source
+
+The token stays one token. `tokens/src/` remains the only place a value is authored,
+and a script-readable token emits to **both** targets: the CSS custom property it
+already would have, and an entry in a generated JS module. Emitting only to JS would
+create a value that exists in the layer but not in the Overview, which is the drift this
+whole effort exists to prevent.
+
+Which tokens are script-readable is declared **in the DTCG source**, not in the build
+script, using `$extensions`:
+
+```json
+"chart": {
+  "$type": "dimension",
+  "height":  { "$value": { "value": 280, "unit": "px" },
+                "$extensions": { "com.dravensoft.arena": { "script": true } } },
+  "pad-top": { "$value": { "value": 8, "unit": "px" },
+                "$extensions": { "com.dravensoft.arena": { "script": true } } }
+}
+```
+
+The reason to put the flag in the source rather than a list in the build: a list in the
+build script is a second place to keep in sync, and this repo's whole gate philosophy is
+that a second list drifts. `tokens/src/TYPE-MAP.md` gains a column, and the flag is
+visible to anyone reading the token.
+
+`scripts/build-tokens.mjs` currently declares one platform
+(`platforms: { css: { transforms: ['name/kebab'] } }`). It gains a second, filtered to
+flagged tokens, emitting `tokens/geometry.js` — a plain ES module of named exports, no
+default, no nesting beyond what the token tree already has.
+
+### 3. The gate
+
+Three new assertions, in the repo's existing style — machine-checked rather than written
+down and hoped for:
+
+1. **Parity.** Every export in `tokens/geometry.js` has a CSS counterpart, and the two
+   carry the same value. This is what stops a dual-emitted token from becoming two
+   values with one name.
+2. **No orphan flags.** Every token flagged `script: true` is actually imported by
+   something under `frameworks/`. A flag nobody consumes is the JS-side equivalent of a
+   stale `EXEMPT` entry, and it should fail the same way.
+3. **No unflagged numeric geometry.** The harder one, and the one that gives this spec
+   its teeth: a gate that catches the *next* `CHART_HEIGHT` before it is written. Its
+   shape is an open question below — the existing `check-dimension-literals.mjs` cannot
+   judge a bare `const PAD = { t: 8 }`, because a number in a JS object is not a
+   dimension until something uses it as one.
+
+### 4. The inventory, and the part that is not a dimension
+
+Classified, because "chart geometry" is not one kind of thing:
+
+**Script-readable dimensions — the core of the proposal.**
+
+| Value | Today | Note |
+|---|---|---|
+| `CHART_HEIGHT` | 280 | A default chart height. A design value by any reading. |
+| `PAD.t`, `PAD.r` | 8, 8 | Both equal `--sp-2`. Candidates for an alias rather than a new token. |
+| `PAD.b` | 28 | Holds the category label. Derived from type metrics, not chosen. |
+| `PAD.l` | 44 | Holds the value labels. Same. |
+| bar corner radius | 4 | **Orphan** — `--r-sm` is 6. Needs a token or a deliberate snap. |
+| point radius, rest/hover | 4, 5 | Orphan pair. The 1px delta is the hover affordance. |
+| inter-bar gap | 2 | Equals `--bw-strong`, probably coincidentally. |
+| doughnut legend clamp | 180, 120 | Min and max legend width. |
+
+**Ratios, which are not dimensions and probably not tokens.** `0.62` (doughnut inner
+radius), `0.34` (legend width share), and the tick count `4`. Plan 4.5's position, which
+this spec inherits unless argued otherwise: *the rule governs dimensions, not the
+multiplier that derives one from another*. DTCG has a `number` type and could express
+them; whether it should is an open question.
+
+**`PAD.b` and `PAD.l` deserve a second look before being tokenized as-is.** They are not
+design decisions — they are "enough room for a label at `--dz-text-2xs`". Freezing 28
+and 44 as tokens records a *consequence* of the type scale as if it were a cause, and if
+the type scale ever moves they will silently stop being enough. Tokenizing them is still
+better than a JS literal nobody can see, but the `$description` must say what they are,
+and it may be that the right answer is one token (`chart-label-gutter`) with a comment
+rather than four independent pads.
+
+### 5. The cost to the copy-in kit, which is the real objection
+
+Today `frameworks/react/components/**` imports nothing from `tokens/`. The components
+are self-contained: a `.jsx` file, React, and custom properties resolved by the browser.
+That is what makes the copy-in kit work — a consumer copies `tokens/`, `styles.css` and
+the `.jsx` files they want, and nothing else needs to line up.
+
+A JS token module changes that. `chart-internals.js` would carry
+`import { chartHeight, chartPadLeft } from '../../../../tokens/geometry.js'` — a
+relative path crossing the `tokens/` ↔ `frameworks/` boundary, and the first one in the
+repo. Copy the charts without `tokens/geometry.js` and they do not render; copy them to
+a different depth and the path breaks.
+
+For the npm packages this is a non-issue and arguably an improvement — plan 6 already
+gives `@dravensoft/arena-react` a peer on `@dravensoft/arena-tokens`, and this becomes
+a real import rather than an implicit CSS dependency. **For the copy-in kit it is a
+genuine regression**, and it is the strongest argument against this proposal. Any plan
+written from this spec must say what the kit's instructions become.
+
+## Sequencing
+
+```
+4.5 token debt + gate blind spots   <- executed
+5a  Angular primitive parity
+5b  Tailwind manifest parity
+5.5 THIS SPEC
+6   four-package build + publish
+```
+
+**Why before 6, and this is the whole reason it is 5.5 rather than 7.** Plan 6's own
+rationale for going last: *"a published version is permanent in a way a package name is
+not"*, and it explicitly defers publication because plan 4 was *"about to change the
+shape"* of `@dravensoft/arena-tokens`. This spec changes that shape harder than plan 4
+did — it adds a second entry point to the tokens package. Adding a JS export condition
+to a package that has already shipped as CSS-only is the kind of change that is
+cheap before the first publish and awkward forever after.
+
+**Why after 5a and 5b.** Both are written and both consume the token layer as it stands.
+Landing a new build target underneath them mid-flight would invalidate work already
+specified. There is also a question this spec cannot answer alone and 5a will: whether
+Angular's chart story is hand-rolled SVG at all. If it is not, the cross-framework
+argument in *Problem* weakens considerably and this spec should be re-argued on the
+strength of points 1 and 3 alone.
+
+## Non-goals
+
+- **Reopening plan 4.5's four `EXEMPT` entries.** Argued above. They are data-to-pixel
+  projections and no token target touches them.
+- **A JS target for the whole token layer.** Only flagged tokens emit. A general
+  "tokens in JS" export would invite components to read colors and spacing from JS,
+  which is precisely the layering this repo forbids — the browser resolves those, and
+  reading them in JS breaks theming.
+- **Making chart geometry re-densify.** Named in §1 as the accepted price.
+- **Changing any rendered value.** Like 4.5, this should be a pure relocation: every
+  token carries the number its consumer already renders. The one place that cannot hold
+  is the bar radius `4`, if the decision is to snap it to a token rather than name it —
+  that would be a 2px design change and must be taken as one, deliberately, not smuggled
+  in under a refactor.
+
+## Open questions — must be answered before a plan is written
+
+1. **Does Angular's chart layer exist, and is it hand-rolled SVG?** The cross-framework
+   argument depends on it. 5a should settle this.
+2. **What does the copy-in kit's instruction become?** §5. Without a good answer this
+   spec should not proceed.
+3. **The bar radius: name 4, or snap to `--r-sm` (6)?** Naming it is honest and free.
+   Snapping is a design change and needs an eye on it.
+4. **`PAD.b`/`PAD.l`: four tokens, or one gutter token with a comment?** §4.
+5. **Are the ratios tokens?** `0.62`, `0.34`, and Avatar's surviving `0.4`/`0.28`.
+   DTCG `number` can express them. The repo's position so far is that a multiplier is
+   not a design value. Consistency matters more than the individual call.
+6. **What shape does gate #3 take?** Catching an unflagged numeric constant before it
+   becomes the next `CHART_HEIGHT` is the assertion that makes this durable, and it is
+   the one with no obvious implementation.
+7. **`tokens/geometry.js` or `.ts`?** The repo ships `.d.ts` beside every component;
+   a generated `.js` + `.d.ts` pair matches that shape, but the Angular layer is
+   TypeScript-first.
+
+## Affected files, provisionally
+
+**Build:** `scripts/build-tokens.mjs` (second platform), a new
+`scripts/check-geometry-parity.mjs` and its test, `scripts/check-all.mjs`, `package.json`.
+
+**Token source:** `tokens/src/spacing.json` or a new `tokens/src/chart.json`;
+`tokens/src/TYPE-MAP.md` (the `script` column). Generated: `tokens/geometry.js`
+(+ types), and whichever CSS file the dual emission lands in.
+
+**React:** `frameworks/react/components/charts/chart-internals.js`,
+`{Bar,Line,Doughnut}Chart.jsx`.
+
+**Docs:** `CLAUDE.md` (the layer contract gains a script-readable target — this is the
+paragraph that currently says the composition layer never re-defines a value),
+`README.md` if a chart geometry specimen is added, `CHANGELOG.md`.
+
+**Unchanged:** every color token, `tokens/colors.css`, `styles.css`, and the four
+`EXEMPT` entries from plan 4.5.
