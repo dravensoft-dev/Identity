@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import net from 'node:net';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -45,5 +46,76 @@ test('measurePage reports content that fits, and content that over-runs', { skip
     cdp.close();
     chrome.kill();
     await server.close();
+  }
+});
+
+/* Reproduces Arena's own dropdown pattern (Menu.jsx, Select's open state): a
+ * position:relative wrapper, itself a direct child of #root, holding a
+ * position:absolute overlay that extends past the wrapper's own bottom.
+ * contentHeight used to inspect only document.body.children — i.e. #root —
+ * whose rendered height follows the wrapper's in-flow height (20px) because
+ * an absolutely positioned descendant contributes nothing to an ancestor's
+ * height. The overlay's true bottom (320px) never entered the scan. */
+const nestedAbsolutePage = `<!doctype html><html><head><meta charset="utf-8">
+<style>html,body{margin:0;padding:0}</style></head>
+<body><div id="root"><div id="wrapper" style="position:relative;height:20px">
+<div id="overlay" style="position:absolute;top:0;left:0;width:100px;height:320px"></div>
+</div></div></body></html>`;
+
+test('contentHeight follows an absolutely positioned descendant at any depth', { skip: browser.path ? false : browser.reason }, async () => {
+  const root = mkdtempSync(join(tmpdir(), 'arena-cards-'));
+  writeFileSync(join(root, 'nested-absolute.html'), nestedAbsolutePage);
+
+  const server = await startStaticServer(root);
+  const chrome = await launchChromium(browser.path);
+  const cdp = await connect(chrome.wsUrl);
+
+  try {
+    const result = await measurePage(cdp, `http://127.0.0.1:${server.port}/nested-absolute.html`, { width: 400, height: 200 });
+    assert.equal(result.contentHeight, 320, 'the overlay is nested two levels deep and out of flow, but it is still the true content bottom');
+  } finally {
+    cdp.close();
+    chrome.kill();
+    await server.close();
+  }
+});
+
+/* A raw TCP listener that accepts the connection and then says nothing —
+ * no response, ever. Confirmed by hand against this exact fixture: Chromium's
+ * Page.navigate does not settle even at 8s against it. It reproduces the same
+ * failure shape the reviewer hit pointing at an address whose TCP connect
+ * times out (a dropped SYN), without needing the OS's own multi-minute
+ * connect timeout to prove the gate's bound, not Chromium's, is what fires. */
+test('measurePage rejects instead of hanging when a page never answers', { skip: browser.path ? false : browser.reason, timeout: 20_000 }, async () => {
+  // Tracked so the fixture's own teardown can force them shut: node's
+  // net.Server#close only invokes its callback once every connection has
+  // ended, and Chromium's socket into this listener stays open (nothing
+  // here ever told it to go away) until something destroys it — otherwise
+  // this test's own cleanup would hang, independent of measurePage.
+  const sockets = new Set();
+  const silent = net.createServer((socket) => {
+    sockets.add(socket);
+    socket.on('close', () => sockets.delete(socket));
+  });
+  await new Promise((resolve) => silent.listen(0, '127.0.0.1', resolve));
+  const url = `http://127.0.0.1:${silent.address().port}/never-answers.html`;
+
+  const chrome = await launchChromium(browser.path);
+  const cdp = await connect(chrome.wsUrl);
+
+  try {
+    await assert.rejects(
+      measurePage(cdp, url, { width: 400, height: 200 }),
+      (err) => {
+        assert.match(err.message, /did not settle/, 'the rejection names the timeout, not just "it failed"');
+        assert.ok(err.message.includes(url), 'the rejection names the page that would not load');
+        return true;
+      },
+    );
+  } finally {
+    cdp.close();
+    chrome.kill();
+    for (const socket of sockets) socket.destroy();
+    await new Promise((resolve) => silent.close(resolve));
   }
 });

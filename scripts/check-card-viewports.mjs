@@ -37,13 +37,23 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
  *
  * scrollHeight never drops below clientHeight, so it answers "does the
  * content over-run" and cannot answer "does it under-run". contentHeight is
- * the second question's metric: the bottom-most child of body, plus body's
- * own bottom padding, which no child's rect includes. */
+ * the second question's metric: the true content bottom, plus body's own
+ * bottom padding, which no descendant's rect includes.
+ *
+ * "true content bottom" has to mean every descendant, not just body's direct
+ * children: a position:relative wrapper holding a position:absolute overlay
+ * (Arena's own dropdown shape — Menu.jsx, Select's open state) renders the
+ * overlay well past the wrapper's own bottom, but an absolutely positioned
+ * element contributes nothing to its ancestor's height, so the wrapper (and
+ * whatever direct child of body contains it) reports short. Scanning
+ * getElementsByTagName('*') catches that at any depth and for anything out
+ * of normal flow, and is still one flat pass with no recursion, so it stays
+ * cheap enough to run every 250ms in the stability loop below. */
 export const MEASURE_SCRIPT = `(async () => {
   const read = () => {
     const de = document.documentElement;
     const style = getComputedStyle(document.body);
-    const bottoms = [...document.body.children].map((el) => el.getBoundingClientRect().bottom + window.scrollY);
+    const bottoms = [...document.body.getElementsByTagName('*')].map((el) => el.getBoundingClientRect().bottom + window.scrollY);
     const padding = parseFloat(style.paddingBottom) || 0;
     const root = document.querySelector('#root');
     return {
@@ -51,7 +61,7 @@ export const MEASURE_SCRIPT = `(async () => {
       scrollHeight: de.scrollHeight,
       clientWidth: de.clientWidth,
       clientHeight: de.clientHeight,
-      contentHeight: Math.ceil(Math.max(0, ...bottoms, 0) + padding),
+      contentHeight: Math.ceil(Math.max(0, ...bottoms) + padding),
       rendered: !root || root.childElementCount > 0,
     };
   };
@@ -73,6 +83,38 @@ export const MEASURE_SCRIPT = `(async () => {
   return { ...read(), timedOut: true };
 })()`;
 
+/* A page whose TCP connect never resolves (a stale IP, a dropped SYN, a CDN
+ * having a bad day — every one of these 34 pages fetches React from esm.sh,
+ * Babel from unpkg and Phosphor from jsdelivr, so this is a realistic
+ * trigger) leaves the CDP command carrying it unsettled forever: neither
+ * Page.navigate nor Runtime.evaluate reject on their own, confirmed by hand
+ * against a listener that accepts the connection and then says nothing.
+ * launchChromium spawns Chromium detached precisely so its zygote and
+ * NetworkService children can be group-killed — which also means a Ctrl-C or
+ * a CI timeout on *this* script never reaches that tree, since the signal
+ * lands on the node/bun process, not the detached group: the browser and its
+ * /tmp/arena-chromium-* profile are left for someone to clean up by hand.
+ * Bounding these two awaits ourselves is what turns that into an ordinary
+ * rejection that the caller's normal chrome.kill() cleans up like any other. */
+const NAVIGATE_TIMEOUT_MS = 10_000;
+/* MEASURE_SCRIPT carries its own 20s stability deadline and always resolves
+ * by then, one way or another (timedOut: true if it never stabilizes). This
+ * bound exists only for a request that never reaches the script at all — the
+ * navigation stalled, the target died — so it has to clear 20s with real
+ * margin, or a legitimately slow-but-working page would be cut off here
+ * first instead of returning its own honest timedOut: true. */
+const EVALUATE_TIMEOUT_MS = 30_000;
+
+/** Race a promise against a timeout that rejects with a message naming what
+ *  was waited on. Never leaves a dangling timer either way.
+ *  @param {Promise<any>} promise @param {number} ms @param {string} message
+ *  @returns {Promise<any>} */
+function withTimeout(promise, ms, message) {
+  let timer;
+  const bound = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(message)), ms); });
+  return Promise.race([promise, bound]).finally(() => clearTimeout(timer));
+}
+
 /** Load one page at a declared width and measure what it renders.
  *  Each page gets its own target, so no state leaks between pages.
  *  @param {{send: Function}} cdp
@@ -91,12 +133,20 @@ export async function measurePage(cdp, url, viewport) {
       deviceScaleFactor: 1,
       mobile: false,
     }, sessionId);
-    await cdp.send('Page.navigate', { url }, sessionId);
-    const { result, exceptionDetails } = await cdp.send('Runtime.evaluate', {
-      expression: MEASURE_SCRIPT,
-      awaitPromise: true,
-      returnByValue: true,
-    }, sessionId);
+    await withTimeout(
+      cdp.send('Page.navigate', { url }, sessionId),
+      NAVIGATE_TIMEOUT_MS,
+      `${url}: Page.navigate did not settle within ${NAVIGATE_TIMEOUT_MS}ms`,
+    );
+    const { result, exceptionDetails } = await withTimeout(
+      cdp.send('Runtime.evaluate', {
+        expression: MEASURE_SCRIPT,
+        awaitPromise: true,
+        returnByValue: true,
+      }, sessionId),
+      EVALUATE_TIMEOUT_MS,
+      `${url}: Runtime.evaluate did not settle within ${EVALUATE_TIMEOUT_MS}ms`,
+    );
     if (exceptionDetails) throw new Error(`${url}: ${exceptionDetails.text} ${exceptionDetails.exception?.description ?? ''}`);
     return result.value;
   } finally {
