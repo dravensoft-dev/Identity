@@ -10,7 +10,8 @@
 | 2 | `2026-07-18-2-overview-token-page.md` | **Executed** (v4.0.0) |
 | 3 | `2026-07-18-3-framework-layer-token-coverage.md` | **Executed** (unreleased) |
 | 4 | `2026-07-18-4-token-geometry-boundary.md` | **This plan** — **executed** (unreleased) |
-| 5 | framework-layer parity — **plan not yet written**, spec at `specs/2026-07-18-framework-layer-parity-design.md` | Pending |
+| 5a | `2026-07-18-5a-angular-primitive-parity.md` — the 18 Angular primitives + the verification gates | Pending |
+| 5b | `2026-07-18-5b-tailwind-manifest-parity.md` — the 20 orphan manifests; depends on 5a's Tasks 1–4 | Pending |
 | 6 | `2026-07-18-6-four-package-build-publish.md` | Pending |
 
 **Goal:** Make the promise true — that changing a value in `tokens/src/` moves every layer — by giving every rendered dimension in `frameworks/` a token or a derivation of tokens, and machine-checking that no bare literal survives.
@@ -19,8 +20,8 @@
 
 **Tech Stack:** Bun (runtime, test runner), Style Dictionary v4, DTCG 2025.10, Tailwind CSS 4.3.3, `node:test` + `node:assert/strict`.
 
-**Source spec:** `docs/superpowers/specs/2026-07-18-token-geometry-boundary-design.md`
-**Downstream, do not implement here:** `specs/2026-07-18-framework-layer-parity-design.md` (plan 5), `specs/2026-07-18-four-package-build-publish-design.md` (plan 6)
+**Source spec:** `docs/superpowers/specs/2026-07-18-4-token-geometry-boundary-design.md`
+**Downstream, do not implement here:** `specs/2026-07-18-5-framework-layer-parity-design.md` (plan 5), `specs/2026-07-18-6-four-package-build-publish-design.md` (plan 6)
 
 ---
 

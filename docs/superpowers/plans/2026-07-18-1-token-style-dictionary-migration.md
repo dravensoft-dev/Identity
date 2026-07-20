@@ -12,7 +12,8 @@ record. Do not re-run this plan.
 | 2 | `2026-07-18-2-overview-token-page.md` | **Executed** (v4.0.0) |
 | 3 | `2026-07-18-3-framework-layer-token-coverage.md` | **Executed** (unreleased) |
 | 4 | `2026-07-18-4-token-geometry-boundary.md` | **Executed** (unreleased) |
-| 5 | framework-layer parity — **plan not yet written**, spec at `specs/2026-07-18-framework-layer-parity-design.md` | Pending |
+| 5a | `2026-07-18-5a-angular-primitive-parity.md` — the 18 Angular primitives + the verification gates | Pending |
+| 5b | `2026-07-18-5b-tailwind-manifest-parity.md` — the 20 orphan manifests; depends on 5a's Tasks 1–4 | Pending |
 | 6 | `2026-07-18-6-four-package-build-publish.md` | Pending |
 
 **Goal:** Make strictly-conformant DTCG 2025.10 JSON in `tokens/src/` the single source of Arena's token values, generating `tokens/{palette,typography,spacing,effects}.css` from it with Style Dictionary v4, with zero behavioral change save the retirement of `--glow-accent`.
@@ -32,7 +33,7 @@ runtimes. Bun blocks `style-dictionary`'s `postinstall` (`patch-package`), which
 
 - **English only** — all code, comments, docs, and UI copy.
 - **No emoji** anywhere, in product or docs.
-- Spec of record: `docs/superpowers/specs/2026-07-18-token-style-dictionary-migration-design.md`.
+- Spec of record: `docs/superpowers/specs/2026-07-18-1-token-style-dictionary-migration-design.md`.
 - **Style Dictionary is never given a `transformGroup`.** The only transform applied is `name/kebab`. Any built-in value transform corrupts 2025.10 structured values.
 - **DTCG source is strict 2025.10**: `dimension`/`duration` are `{value,unit}` objects (unit required even at 0), `color` is a structured object (`colorSpace`, `components`, optional `alpha`/`hex`), `number` is a bare number. No bare hex strings, no `"64px"` strings.
 - **The four generated CSS files are committed to git**, not ignored — the plugin is served from the release tag and the copy-in kit reads them directly.

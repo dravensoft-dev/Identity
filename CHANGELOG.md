@@ -94,9 +94,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   it exits 1 if anything failed. Under `node` it runs `node --test` over the discovered
   `scripts/*.test.mjs` instead, since `bun test` has no equivalent invocation of its own.
   The individual `check:*` scripts are unchanged and still run alone.
+- **`loop` token family** — `spin`, `sweep`, `shimmer`, `brand` and the two
+  reduced-motion steps. `dur` stays the transition scale; a loop reports ongoing work
+  and is a different role. `2.4s` had been copied into three files.
+- **`avatar` family** (24/32/40/56) and **`dz.text-lg`** (16px), the two values the
+  layers derived from or rendered without a token.
+- **`--layout-sidebar`** (232px), used by the console shell.
 
 ### Changed
 
+- **The dimension gate reaches four kinds of site, not one.** It now judges `boxShadow`
+  and `transform`, template-literal interpolations, CSS injected as a string, and SVG
+  presentation attributes. Each hole was found by audit while the gate reported the tree
+  clean, and each is closed by a test that reproduces the miss.
+- **A derivation of tokens is legal in a Tailwind bracket** — `calc()`, `min()`, `max()`
+  and `clamp()` over tokens, zeros and multipliers — and so is a single value in a unit
+  the token layer does not model (`ch`, `%`, `vw`, `vh`, `deg`, `fr`). `px`, `rem`, `ms`
+  and `s` still fail. The two gates now share one list of unmodelled units.
+- **`--focus-width` has consumers in the framework layers.** Input, Textarea, Select and
+  SegmentedControl wrote `0 0 0 2px` by hand while the framework layers gave the token
+  no consumer of their own — root-level `toggle.css` already read both `--focus-width`
+  and `--focus-offset` for the shared pill toggle.
+- Avatar's initials and presence dot derive from `--avatar-*` in CSS rather than from a
+  JS ratio, which removes the exemption they held in `check-dimension-literals.mjs`.
+- **`Spinner`'s diameters are tokens** — `--icon-sm`, `--sp-5` and `--sp-8` in place of
+  `{ sm: 14, md: 20, lg: 32 }`. The map survived every earlier pass because one reached
+  through member access is invisible to the gate: the dataflow rule traces a bare
+  identifier, not `SIZES[size]`. Not `--avatar-sm`, which is also 32 — that family is
+  named for a component, and its own description asks a second consumer to trigger a
+  rename rather than a borrowing.
+- The charts read `--bw`, `--bw-strong`, `--dz-text-2xs`, `--fs-xs` and `--dz-text-lg`
+  through `style` instead of writing the numbers as SVG attributes.
+- **`Tabs`'s active-tab underline reads `calc(var(--bw-strong) * -1)`**, not
+  `inset 0 -2px 0` — a `boxShadow` literal the widened gate above judges for the first
+  time and caught on the first run.
+- **`Checkbox`'s check glyph reads `--sp-3` and `--bw-strong`**, not
+  `width="12" height="12"` and `strokeWidth="2"` — an SVG presentation-attribute site
+  the original 514-to-0 audit missed; this file only came under the gate once the SVG
+  attribute scan existed.
+- **The injected-CSS scanner reads kebab-case CSS property names.** It used to split a
+  declaration on an unbroken run of letters, so `box-shadow:` read as a property named
+  `shadow` and was invisible to every check, while `border-width:` and `margin-top:`
+  were misattributed to `width` and `top` and judged against the wrong governed
+  property. Every `<style>` block injected by a component is now scanned under its own
+  real property names.
+- **Four sites are exempt as a runtime projection of data onto a screen position,
+  never a design dimension** — a chart tooltip's offset from the hovered value
+  (`BarChart`, `LineChart`), an hour label's offset from a clock minute, and an event
+  block's height from its duration (`Calendar`, both). Nothing in `tokens/src/` could
+  stand in for a number computed from data at runtime, so each is named in `EXEMPT`
+  with that reasoning rather than forced into a token that does not fit.
 - **The editorial type scale (`fs`) snapped.** No step was added inside its existing
   range — `fs.hero`/`fs.mega` above only extend it past `display` — but every off-scale
   editorial size found by the census moved to its nearest existing step. **This is a

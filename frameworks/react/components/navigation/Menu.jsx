@@ -14,7 +14,7 @@ function useMenuKeyframes() {
     const s = document.createElement('style');
     s.setAttribute('data-arena-menu', '');
     s.textContent =
-      '@keyframes arena-menu{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}' +
+      '@keyframes arena-menu{from{opacity:0;transform:translateY(calc(var(--sp-1) * -1))}to{opacity:1;transform:none}}' +
       '@media (prefers-reduced-motion:reduce){@keyframes arena-menu{from{opacity:0}to{opacity:1}}}';
     document.head.appendChild(s);
   }, []);

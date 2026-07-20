@@ -11,7 +11,11 @@ no `packaging/` directory and no `.github/workflows/`.
 | 2 | `2026-07-18-2-overview-token-page.md` | **Executed** (v4.0.0) |
 | 3 | `2026-07-18-3-framework-layer-token-coverage.md` | **Executed** (unreleased) |
 | 4 | `2026-07-18-4-token-geometry-boundary.md` | **Executed** (unreleased) |
-| 5 | framework-layer parity — **plan not yet written**, spec at `specs/2026-07-18-framework-layer-parity-design.md` | Pending |
+| 4.5 | `2026-07-19-4.5-token-debt-and-gate-blind-spots.md` | **Executed** |
+| 4.75 | `2026-07-19-4.75-applogo-sidenav-activityfeed-unauthcard-design.md` | Design approved, plan not yet written — adds `AppLogo`, `SideNav`, `ActivityFeed`, `UnauthCard` to React (40 → 44 components) and raises 5a's and 5b's counts below |
+| 5a | `2026-07-18-5a-angular-primitive-parity.md` — the 21 Angular primitives + the verification gates | Pending |
+| 5b | `2026-07-18-5b-tailwind-manifest-parity.md` — the 21 orphan manifests; depends on 5a's Tasks 1–4 | Pending |
+| 5.5 | `2026-07-19-5.5-chart-geometry-token-target-design.md` | DRAFT — not approved, seven open questions |
 | 6 | `2026-07-18-6-four-package-build-publish.md` | **This plan** — pending |
 
 > ### Why this one goes last
@@ -84,12 +88,18 @@ registry practice that has since changed. Each is a deliberate deviation, not dr
 ## Sequencing — read this before starting
 
 The four-package spec is **blocked on framework-layer coverage**, and the user has
-chosen **option 3: full 40-component parity in Angular and Tailwind before anything
+chosen **option 3: full component parity in Angular and Tailwind before anything
 is published**. That is two workstreams that are *not* in this plan:
 
-- `docs/superpowers/specs/2026-07-18-framework-layer-token-coverage-design.md` —
+- `docs/superpowers/specs/2026-07-18-3-framework-layer-token-coverage-design.md` —
   needs its own plan.
-- Growing Angular and Tailwind from 1 component each to 40 — needs a spec and a plan.
+- Growing Angular and Tailwind from 1 component each to parity with React — needs a
+  spec and a plan. The target moved since this line was written: React was 40
+  components, then spec 4.75 (approved in design, executed after this plan's text)
+  added `AppLogo`, `SideNav`, `ActivityFeed` and `UnauthCard`, raising it to 44. Plans
+  5a and 5b's own counts (21 primitives, 21 orphan manifests) already reflect that;
+  this line is corrected so the two numbers in this plan agree with theirs rather than
+  restating a total that would drift from them again.
 
 **This plan is still executable start to finish today**, because the packaging
 machinery is component-count-agnostic: every file map is a glob, so a Tailwind
@@ -137,7 +147,7 @@ arena-tokens/   css/{fonts,palette,colors,typography,spacing,effects,styles}.css
                 assets/fonts/*.woff2      (so css/fonts.css `../assets/fonts/` resolves)
                 js/{index.mjs,index.cjs,index.d.ts}
                 json/tokens.json
-arena-react/    dist/*.{mjs,cjs}          (40 components + barrel + shared helpers)
+arena-react/    dist/*.{mjs,cjs}          (44 components + barrel + shared helpers)
                 types/**/*.d.ts           (hand-written, copied verbatim)
 arena-angular/  Angular Package Format output from ng-packagr
                 theme/{arena-tailwind,arena-material}.css
@@ -878,8 +888,8 @@ test('the declaration file names every component', async () => {
   }
 });
 
-test('there are 40 components — the reference implementation is complete', async () => {
-  expect((await componentFiles()).length).toBe(40);
+test('there are 44 components — the reference implementation is complete', async () => {
+  expect((await componentFiles()).length).toBe(44);
 });
 ```
 
@@ -897,7 +907,7 @@ Create `frameworks/react/index.js`:
  *
  * Deep imports keep working and stay the lighter choice — this exists so
  * `import { Button } from '@dravensoft/arena-react'` resolves, and so a copy-in
- * consumer who takes the whole folder gets an entry point rather than 40 paths.
+ * consumer who takes the whole folder gets an entry point rather than 44 paths.
  *
  * ui_kits/ is deliberately absent: the Delivery Console is an example
  * application, not API.
@@ -2287,7 +2297,7 @@ dependency is a peer pinned to that exact version, never a caret.
 | Package | What it gives you |
 |---|---|
 | `@dravensoft/arena-tokens` | The token layer: the CSS custom properties, a typed JS token map, and flattened DTCG JSON. Every other package needs it. |
-| `@dravensoft/arena-react` | The 40 React components — inline-style, token-driven, no CSS classes. |
+| `@dravensoft/arena-react` | The 44 React components — inline-style, token-driven, no CSS classes. |
 | `@dravensoft/arena-angular` | The standalone `OnPush` Angular primitives, the Material token bridge and the Tailwind preset entry. |
 | `@dravensoft/arena-tailwind` | The shared Tailwind v4 `@theme` preset, the configured `tv` factory and the component recipes. |
 

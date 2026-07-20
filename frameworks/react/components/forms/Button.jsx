@@ -15,8 +15,8 @@ function useSpinKeyframes() {
     s.setAttribute('data-arena-button', '');
     s.textContent =
       '@keyframes arena-btn-spin{to{transform:rotate(360deg)}}' +
-      '.arena-btn-spin{animation:arena-btn-spin .7s linear infinite}' +
-      '@media (prefers-reduced-motion:reduce){.arena-btn-spin{animation-duration:2.4s}}';
+      '.arena-btn-spin{animation:arena-btn-spin var(--loop-spin) linear infinite}' +
+      '@media (prefers-reduced-motion:reduce){.arena-btn-spin{animation-duration:var(--loop-reduced)}}';
     document.head.appendChild(s);
   }, []);
 }

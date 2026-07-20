@@ -23,6 +23,17 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
 
   let pos = { position: 'fixed', right: 'calc(var(--sp-1) * 6)', bottom: 'calc(var(--sp-1) * 6)', zIndex: 'var(--z-onboarding)' };
   if (anchorRect) {
+    // Three plain numbers, for the same reason W and EDGE are: all of these
+    // are arithmetic on a DOMRect and on window.innerHeight, and nothing in
+    // this layer reads a custom property's value back into JS.
+    //   12  -- the gap below the anchor. Mirrors var(--sp-3).
+    //   220 -- a floor estimate of the popover's own height, so a callout
+    //          anchored near the bottom of the viewport is not pushed below
+    //          the fold. It is deliberately an over-estimate: too high only
+    //          lifts the popover, too low would clip it.
+    //   900 -- the assumed viewport height before mount, where there is no
+    //          window to measure. Not a design value; the charts make the
+    //          same assumption about width.
     const top = Math.min(anchorRect.bottom + 12, (typeof window !== 'undefined' ? window.innerHeight : 900) - 220);
     let left = anchorRect.left;
     if (typeof window !== 'undefined') left = Math.min(left, window.innerWidth - W - EDGE);

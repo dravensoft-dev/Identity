@@ -4,8 +4,8 @@
 **Date:** 2026-07-18 · **revised 2026-07-18** — the spacing model was an open question and
 is now settled against a real Tailwind v4.3.3 compile (§1b); the gates gained the JIT and
 bracket-syntax findings; a section records what the parity work needs from this one.
-**Relates to:** `2026-07-18-four-package-build-publish-design.md`,
-`2026-07-18-framework-layer-parity-design.md`
+**Relates to:** `2026-07-18-6-four-package-build-publish-design.md`,
+`2026-07-18-5-framework-layer-parity-design.md`
 
 ## What this is not
 
@@ -15,7 +15,7 @@ what is wrong.**
 
 | Layer | Finding |
 |---|---|
-| React | Clean **against the rule tested here**: 571 `var(--token)` references across 40 components, zero references to a token that does not exist, zero raw hex. **Superseded on the literals:** the 155 literal `px` were called one-off geometry the language permits; `2026-07-18-token-geometry-boundary-design.md` (plan 4) reverses that — a dimension is a token or a derivation of tokens, and a bare literal is a bug. This audit never tested whether a dimension resolves from the token layer at all, and mostly it does not (`var(--fs-*)` appears once across the 40 components, `var(--sp-*)` never). |
+| React | Clean **against the rule tested here**: 571 `var(--token)` references across 40 components, zero references to a token that does not exist, zero raw hex. **Superseded on the literals:** the 155 literal `px` were called one-off geometry the language permits; `2026-07-18-4-token-geometry-boundary-design.md` (plan 4) reverses that — a dimension is a token or a derivation of tokens, and a bare literal is a bug. This audit never tested whether a dimension resolves from the token layer at all, and mostly it does not (`var(--fs-*)` appears once across the 40 components, `var(--sp-*)` never). |
 | Angular Material bridge | Clean. Every `--mdc-*` maps to an Arena token; the namespaces do not collide. |
 | Tailwind preset | Works. Verified by compiling it with Tailwind v4.3.3 and loading the output in a browser. |
 
@@ -185,7 +185,7 @@ Three checks, following the repository's existing `check-*.mjs` convention:
   emits only the utilities it finds *used* while scanning content, so compiling the preset
   alone proves almost nothing. The content source is the component manifests — that is what
   makes this gate test the classes Arena actually ships rather than a list restated inside
-  the gate. Write it that way from the start: `2026-07-18-framework-layer-parity-design.md`
+  the gate. Write it that way from the start: `2026-07-18-5-framework-layer-parity-design.md`
   grows the layer to 35 manifests, and a gate built to compile only the preset would have to
   be rewritten once they exist.
 
@@ -202,7 +202,7 @@ Three checks, following the repository's existing `check-*.mjs` convention:
 
   **The scoping stands; its original justification does not.** It was scoped this way
   because React's 155 literal `px` were held to be one-off geometry the language permits.
-  Plan 4 (`2026-07-18-token-geometry-boundary-design.md`) reverses that: a bare literal is a
+  Plan 4 (`2026-07-18-4-token-geometry-boundary-design.md`) reverses that: a bare literal is a
   bug in every layer. The gate stays keyed on bracket syntax anyway, because plan 4 adds
   `scripts/check-dimension-literals.mjs` for the inline-style idiom — the two are
   complements, and one gate spanning both would be keyed on nothing coherent.
@@ -230,7 +230,7 @@ next reader does not correct it into a real bug.
 
 ## What the parity work needs from this one
 
-`2026-07-18-framework-layer-parity-design.md` (Angular 1 → 19 primitives, Tailwind 1 → 35
+`2026-07-18-5-framework-layer-parity-design.md` (Angular 1 → 19 primitives, Tailwind 1 → 35
 manifests) was written after this spec and depends on it. Three things it needs, recorded
 here because this spec's plan is written in a separate session that will not see that
 reasoning:
@@ -255,7 +255,7 @@ reasoning:
 
 ## Consequence for the four-package plan
 
-`2026-07-18-four-package-build-publish-design.md` plans to publish `@dravensoft/arena-angular`
+`2026-07-18-6-four-package-build-publish-design.md` plans to publish `@dravensoft/arena-angular`
 and `@dravensoft/arena-tailwind`. As the tree stands those would ship **one component each**.
 That spec is updated to state the coverage plainly and to sequence this work before
 publication, so the packages are not published advertising a surface they do not have.

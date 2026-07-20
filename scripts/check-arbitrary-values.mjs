@@ -8,11 +8,15 @@
  * covers it, and the two are complements — one gate spanning both would be
  * keyed on nothing coherent.
  *
- * Legal inside the brackets:
- *   - a var() into a token, optionally behind a type hint —
- *     h-[var(--dz-ctl-h)], border-[length:var(--bw)]
- *   - content with no literal value in it at all —
- *     transition-[background,transform,box-shadow], bg-[currentColor]
+ * Legal inside the brackets — three shapes, and nothing else:
+ *   - a value in a unit the token layer does not model — max-w-[42ch],
+ *     max-w-[92vw], w-[62%], rotate-[120deg]. There is no token to
+ *     reference and DTCG cannot express one, so the literal is the truth.
+ *   - content with no value in it at all — transition-[background,transform],
+ *     bg-[currentColor], rounded-[inherit].
+ *   - one or more var(--token)s, alone or composed into a derivation:
+ *     border-[length:var(--bw)], text-[length:calc(var(--avatar-md)*0.4)],
+ *     shadow-[inset_0_calc(var(--bw-strong)*-1)_0_var(--crimson)].
  *
  * `.md` is scanned too, with one legal escape. A `.prompt.md`'s Don't block
  * or a doc's counterexample genuinely needs to show a bad class, and flagging
@@ -36,19 +40,99 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
 import { repoRoot } from './lib/tailwind-compile.mjs';
+import { UNMODELLED_UNITS } from './check-dimension-literals.mjs';
 
 const EXTENSIONS = ['.json', '.ts', '.tsx', '.jsx', '.html', '.md'];
 const CANDIDATE = /(?<![\w-])(-?[a-z][a-z0-9]*(?:-[a-z0-9]+)*-\[([^\]\s"']+)\])/g;
-const TOKEN_REF = /^(?:length:|color:|number:|percentage:)?var\(--[a-z0-9-]+\)$/;
 const MARKER = /<!--\s*check-arbitrary-values allow:\s*([^>]*?)\s*-->/g;
+
+/** An optional CSS type hint Tailwind allows in front of a bracket's value. */
+const HINT = /^(?:length|color|number|percentage|integer|angle|time|url|image|family-name):/;
+/** A var() into a token — the atom every legal bracket is built from. */
+const TOKEN = /var\(\s*--[a-z0-9-]+\s*\)/g;
+/** A single value in a unit the token layer does not model. */
+const UNMODELLED = new RegExp(`^-?\\d*\\.?\\d+(?:${UNMODELLED_UNITS.join('|')})$`);
+/** A number carrying a unit — judged against UNMODELLED_UNITS, not a denylist. */
+const UNIT_LITERAL = /\d*\.?\d+\s*([a-z%]+)\b(?!\()/g;
+/** Zero, in the forms a bracket writes it. */
+const ZERO_RUN = /(?<![\w.])-?0(?:px|rem|em|%)?(?![\w.])/g;
+/** A bare number left over once every token and zero has been stripped —
+ *  judged one match at a time against insideMathParens below, never against
+ *  the bracket as a whole. */
+const BARE_NUMBER = /(?<![\w.])-?\d*\.?\d+(?![\w.%])/g;
+/** True when the text immediately before a `(` is one of the math
+ *  functions — used to tell a math call's own parens from an unrelated
+ *  pair (there are none in a legal bracket today, but the check is by
+ *  identifier, not by "any paren", so it stays correct if one ever appears). */
+const MATH_OPEN = /\b(?:calc|min|max|clamp)$/;
+
+/** Is the character at `rest[index]` nested inside a calc()/min()/max()/
+ *  clamp() call's parentheses — the only place a bare number is a
+ *  multiplier rather than a value?
+ *
+ *  A first version of this rule tested `MATH.test(value)` once for the
+ *  whole bracket, so `z-[calc(var(--z-modal))_900]` passed: the bracket
+ *  contains a `calc(`, so the leftover `900` — which sits *after* that
+ *  calc's own closing paren, no longer inside it — was waved through as if
+ *  it were one of the multipliers calc() actually carries. This walks the
+ *  text up to `index`, tracking paren depth and, per frame, whether the
+ *  paren that opened it was itself a math function's, so a number is only
+ *  legal when the innermost enclosing frame at its own position is math.
+ *  @param {string} rest @param {number} index @returns {boolean} */
+function insideMathParens(rest, index) {
+  const stack = []; // one entry per currently-open paren; true if math's
+  for (let i = 0; i < index; i++) {
+    if (rest[i] === '(') stack.push(MATH_OPEN.test(rest.slice(0, i)));
+    else if (rest[i] === ')') stack.pop();
+  }
+  return stack.length > 0 && stack[stack.length - 1];
+}
+
+/** Is this bracket's content legal?
+ *
+ *  Three shapes are, and nothing else:
+ *    1. a value in a unit the token layer does not model — max-w-[42ch],
+ *       max-w-[92vw], w-[62%], rotate-[120deg]. There is no token to
+ *       reference and DTCG cannot express one, so the literal is the truth.
+ *    2. content with no value in it at all — transition-[background,transform],
+ *       bg-[currentColor], rounded-[inherit].
+ *    3. one or more var(--token)s, alone or composed into a derivation:
+ *       border-[length:var(--bw)], text-[length:calc(var(--avatar-md)*0.4)],
+ *       shadow-[inset_0_calc(var(--bw-strong)*-1)_0_var(--crimson)].
+ *       "Composed" means what CLAUDE.md's rule means: after removing every
+ *       token, what is left may be operators, zeros, and multipliers inside a
+ *       math function — never a dimension in a unit we model, never a hex, and
+ *       never a bare number standing on its own (z-[900] is not a derivation).
+ *
+ *  Tailwind writes spaces as underscores inside a bracket, so they are
+ *  normalised before any of this is judged.
+ *  @param {string} content the text between the brackets
+ *  @returns {boolean} */
+export function isLegalBracket(content) {
+  const value = content.replace(HINT, '').replaceAll('_', ' ');
+  if (UNMODELLED.test(value.trim())) return true;
+  if (!/[\d#]/.test(value)) return true;
+  if (value.includes('#')) return false;
+  if (!TOKEN.test(value)) return false;
+  TOKEN.lastIndex = 0;
+
+  const rest = value.replace(TOKEN, ' ').replace(ZERO_RUN, ' ');
+  for (const m of rest.matchAll(UNIT_LITERAL))
+    if (!UNMODELLED_UNITS.includes(m[1])) return false;
+  // A bare number left over is a multiplier only when IT ITSELF sits inside
+  // calc()/min()/max()/clamp()'s own parens — checked position by position,
+  // not once for the bracket as a whole (see insideMathParens above).
+  for (const m of rest.matchAll(BARE_NUMBER))
+    if (!insideMathParens(rest, m.index)) return false;
+  return true;
+}
 
 /** @param {string} text @returns {{cls: string, content: string}[]} */
 export function scanText(text) {
   const out = [];
   for (const m of text.matchAll(CANDIDATE)) {
     const [, cls, content] = m;
-    if (TOKEN_REF.test(content)) continue;
-    if (!/[\d#]/.test(content)) continue; // a keyword or a property list, not a value
+    if (isLegalBracket(content)) continue;
     out.push({ cls, content });
   }
   return out;

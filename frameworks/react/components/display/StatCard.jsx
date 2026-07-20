@@ -11,8 +11,29 @@ const DELTA_TONES = {
   negative: { border: 'var(--danger)', color: 'var(--danger)' },
 };
 
-export function StatCard({ label, value, delta, sub, icon, style, ...rest }) {
+/* The value's own tone, and it answers a different question from the delta's.
+ * `delta.tone` says whether the number MOVED in a good direction; this says
+ * what state the number IS in right now. A service at 99.98% uptime is
+ * healthy whether or not it improved this week, and two open incidents are
+ * two open incidents even when that is down from five. Same distinction the
+ * component already draws between direction and sentiment, one level up.
+ *
+ * The vocabulary is Badge's, deliberately — one set of tone names across the
+ * system beats a second set that is nearly the same. Here they are the solid
+ * colors rather than the -soft pairs: this tints a glyph, not a surface. */
+const VALUE_TONES = {
+  neutral: 'var(--bone)',
+  accent: 'var(--crimson)',
+  gold: 'var(--gold)',
+  success: 'var(--success)',
+  warning: 'var(--warning)',
+  danger: 'var(--danger)',
+  info: 'var(--info)',
+};
+
+export function StatCard({ label, value, tone = 'neutral', delta, sub, icon, style, ...rest }) {
   const t = delta ? (DELTA_TONES[delta.tone] || DELTA_TONES.neutral) : null;
+  const valueColor = VALUE_TONES[tone] || VALUE_TONES.neutral;
   return (
     <div style={{
       background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
@@ -25,7 +46,7 @@ export function StatCard({ label, value, delta, sub, icon, style, ...rest }) {
       </div>
       <div style={{
         fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 'var(--fs-h2)', lineHeight: 'var(--lh-snug)',
-        color: 'var(--bone)', fontVariantNumeric: 'tabular-nums', margin: 0,
+        color: valueColor, fontVariantNumeric: 'tabular-nums', margin: 0,
       }}>{value}</div>
       {delta && (
         <span style={{

@@ -16,6 +16,7 @@ these values, do not re-derive them.
 | `container-max`, `gutter` | `spacing.json` | `dimension` | px |
 | Breakpoints (`bp-sm/md/lg`) | `spacing.json` | `dimension` | px; read by JS via `getComputedStyle`, never a media query |
 | Density (`dz-*`) | `spacing.json` / `density.compact.json` | `dimension`, except `dz-lh` | px; base on `:root` + `.arena-compact` override. `dz.lh` carries a token-level `$type: "number"` override — a line height is unitless, so the group's `dimension` default does not fit that one member; DTCG 2025.10 allows a leaf's own `$type` to win over its ancestor's, and `scripts/check-dtcg.mjs` accepts it. `dz.lh` is the control counterpart to `lh` below: `1`, the glyph-tight reset that keeps an icon's line box from throwing its control out of alignment |
+| Avatar diameters (`avatar-xs/sm/md/lg`) | `spacing.json` | `dimension` | px; the first family named after a component rather than a role — Avatar derives the initials' `fontSize` (× 0.4) and the presence dot's diameter (× 0.28) from its own diameter, so the two ratios need a diameter to derive from |
 | Icon size (`icon-sm/md/lg/xl`) | `icon.json` | `dimension` | px; a glyph rendered as a webfont is an icon, not type, so these stay out of `fs` |
 | Radius (`r-xs..pill`) | `effects.json` | `dimension` | px; `r-xs/sm/md/lg/xl/2xl` = `4/6/10/14/22/34px`, `r-pill` = `999px` |
 | Border widths (`bw`, `bw-strong`) | `effects.json` | `dimension` | px |
@@ -23,6 +24,7 @@ these values, do not re-derive them.
 | `scrim` | `effects.json` | `color` | structured srgb with `alpha`, rendered as `rgba()` |
 | `scrim-blur`, `focus-width`, `focus-offset` | `effects.json` | `dimension` | px |
 | Durations (`dur-fast/mid/slow`) | `effects.json` | `duration` | ms |
+| Loop durations (`loop-spin/sweep/shimmer/brand/reduced/brand-reduced`) | `effects.json` | `duration` | ms; cyclical motion, deliberately separate from `dur`'s transition range |
 | Easings (`ease-*`) | `effects.json` | `cubicBezier` | `[x1,y1,x2,y2]` |
 | Layering (`z-*`) | `layering.json` | `number` | unitless integers; the family declares the order, the values only preserve it |
 

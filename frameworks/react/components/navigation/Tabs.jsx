@@ -12,7 +12,7 @@ export function Tabs({ tabs = [], value, defaultValue, onChange, style }) {
             style={{ position: 'relative', padding: 'calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 4)', background: 'none', border: 'none', cursor: 'pointer',
               fontFamily: 'var(--font-body)', fontWeight: on ? 'var(--fw-semibold)' : 'var(--fw-medium)', fontSize: 'var(--dz-text)',
               color: on ? 'var(--bone)' : 'var(--mute)',
-              boxShadow: on ? 'inset 0 -2px 0 var(--crimson)' : 'none',
+              boxShadow: on ? 'inset 0 calc(var(--bw-strong) * -1) 0 var(--crimson)' : 'none',
               transition: 'color var(--dur-fast) var(--ease-out)' }}>
             {label}
           </button>

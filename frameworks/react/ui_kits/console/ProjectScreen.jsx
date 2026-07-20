@@ -3,6 +3,7 @@ import { Shell } from './Shell.jsx';
 import { Card } from '../../components/display/Card.jsx';
 import { Badge } from '../../components/display/Badge.jsx';
 import { Tag } from '../../components/display/Tag.jsx';
+import { Table } from '../../components/display/Table.jsx';
 import { Tabs } from '../../components/navigation/Tabs.jsx';
 import { Button } from '../../components/forms/Button.jsx';
 import { Switch } from '../../components/forms/Switch.jsx';
@@ -10,10 +11,32 @@ import { Dialog } from '../../components/feedback/Dialog.jsx';
 import { Icon } from './Icon.jsx';
 
 const DEPLOYS = [
-  { build: '#4821', env: 'Production', status: ['success', 'Active'], when: '2h ago', author: 'CI · main', dur: '3m 41s' },
-  { build: '#4820', env: 'Staging', status: ['success', 'OK'], when: '5h ago', author: 'ana@', dur: '3m 12s' },
-  { build: '#4818', env: 'Production', status: ['neutral', 'Rolled back'], when: 'yesterday', author: 'CI · main', dur: '4m 02s' },
-  { build: '#4815', env: 'QA', status: ['danger', 'Failed'], when: 'yesterday', author: 'diego@', dur: '1m 08s' },
+  { build: '#4821', env: 'Production', status: ['success', 'Active'], author: 'CI · main', dur: '3m 41s' },
+  { build: '#4820', env: 'Staging', status: ['success', 'OK'], author: 'ana@', dur: '3m 12s' },
+  { build: '#4818', env: 'Production', status: ['neutral', 'Rolled back'], author: 'CI · main', dur: '4m 02s' },
+  { build: '#4815', env: 'QA', status: ['danger', 'Failed'], author: 'diego@', dur: '1m 08s' },
+];
+/* Deployments reads Table rather than a hand-rolled grid. It used to be six
+ * spans per row inside their own `display:grid`, one container per row — and
+ * grid sizes its columns per container, never across siblings. The header's
+ * trailing `auto` column held an empty span and each body row's held a
+ * button, so the header's five `1fr` columns split ~75px more free space than
+ * the body's did and every label drifted right of its data, cumulatively. A
+ * <table> shares column widths by definition, so the bug cannot come back.
+ *
+ * `mono` is the component's rule for identifiers and numeric data, and it
+ * carries --gold: the build number and the duration take it, the author does
+ * not — a name is neither a code nor a measurement. */
+const DEPLOY_COLUMNS = [
+  { key: 'build', header: 'Build', mono: true, width: 'calc(var(--sp-1) * 24)' },
+  { key: 'env', header: 'Environment' },
+  { key: 'status', header: 'Status', render: (s) => <Badge tone={s[0]} dot>{s[1]}</Badge> },
+  { key: 'author', header: 'Author' },
+  { key: 'dur', header: 'Duration', mono: true },
+  /* No header: the button names itself, and an "ACTIONS" label above it would
+     say less than the button does. mobileLayout:'block' drops the label row
+     entirely when the table collapses to cards. */
+  { key: 'actions', header: '', mobileLayout: 'block', render: () => <Button variant="ghost" size="sm">Details</Button> },
 ];
 const ACTIVITY = [
   ['ana@', 'approved the release', 'build #4821', '2h ago'],
@@ -41,21 +64,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
       <Tabs tabs={['Overview', 'Deployments', 'Activity', 'Settings']} value={tab} onChange={setTab} style={{ marginBottom: 'calc(var(--sp-1) * 5.5)' }} />
 
       {tab === 'Deployments' && (
-        <div style={{ border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)', overflow: 'hidden' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr auto', gap: 'calc(var(--sp-1) * 3)', padding: 'calc(var(--sp-1) * 3) calc(var(--sp-1) * 5)', background: 'var(--panel)', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-column-header)', textTransform: 'uppercase', color: 'var(--mute)' }}>
-            <span>Build</span><span>Environment</span><span>Status</span><span>Author</span><span>Duration</span><span></span>
-          </div>
-          {DEPLOYS.map((d, i) => (
-            <div key={d.build} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr auto', gap: 'calc(var(--sp-1) * 3)', padding: 'calc(var(--sp-1) * 4) calc(var(--sp-1) * 5)', alignItems: 'center', background: 'var(--surface-card)', borderTop: i ? 'var(--bw) solid var(--color-base-300)' : 'none' }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--gold)' }}>{d.build}</span>
-              <span style={{ fontSize: 'var(--dz-text)', color: 'var(--bone-dim)' }}>{d.env}</span>
-              <span><Badge tone={d.status[0]} dot>{d.status[1]}</Badge></span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--mute)' }}>{d.author}</span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--mute)' }}>{d.dur}</span>
-              <Button variant="ghost" size="sm">Details</Button>
-            </div>
-          ))}
-        </div>
+        <Table columns={DEPLOY_COLUMNS} rows={DEPLOYS} getRowKey={(d) => d.build} />
       )}
 
       {tab === 'Activity' && (

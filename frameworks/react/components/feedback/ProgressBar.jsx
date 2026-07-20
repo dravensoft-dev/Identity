@@ -12,8 +12,8 @@ function useIndeterminate() {
     s.setAttribute('data-arena-progress', '');
     s.textContent =
       '@keyframes arena-prog{0%{left:-40%}100%{left:100%}}' +
-      '.arena-prog-ind::after{content:"";position:absolute;top:0;bottom:0;width:40%;border-radius:inherit;background:currentColor;animation:arena-prog 1.15s var(--ease-in-out) infinite}' +
-      '@media (prefers-reduced-motion:reduce){.arena-prog-ind::after{animation-duration:2.4s}}';
+      '.arena-prog-ind::after{content:"";position:absolute;top:0;bottom:0;width:40%;border-radius:inherit;background:currentColor;animation:arena-prog var(--loop-sweep) var(--ease-in-out) infinite}' +
+      '@media (prefers-reduced-motion:reduce){.arena-prog-ind::after{animation-duration:var(--loop-reduced)}}';
     document.head.appendChild(s);
   }, []);
 }

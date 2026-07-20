@@ -35,20 +35,32 @@ Tailwind's built-in `max-w-max`.
 ## Arbitrary values are a build failure
 
 `bun run check:arbitrary` fails on any bracket carrying a raw literal —
-`text-[13px]`, `bg-[#b52a20]`. A bracket is legal when it holds a `var()`
-into a token (`duration-[var(--dur-mid)]`, `border-[length:var(--bw)]`) or
-names properties rather than values (`transition-[background,transform]`).
+`text-[13px]`, `bg-[#b52a20]`.
+
+Three shapes are legal, and nothing else. A `var()` into a token
+(`border-[length:var(--bw)]`). A **derivation** of tokens — a `calc()`, `min()`,
+`max()` or `clamp()` whose operands are tokens, zeros and multipliers
+(`text-[length:calc(var(--avatar-md)*0.4)]`), which is the same rule
+`CLAUDE.md` states for an inline style: a dimension is a token *or a derivation
+of tokens*. And a single value in a unit the token layer does not model —
+`max-w-[42ch]`, `max-w-[92vw]`, `w-[62%]`, `rotate-[120deg]` — because DTCG
+admits only `px` and `rem` in a dimension, so there is no token to reference and
+inventing one would be worse than the literal.
+
+`px`, `rem`, `ms` and `s` are **not** in that set: tokens model those, so
+`text-[13px]`, `duration-[200ms]` and `w-[calc(var(--sp-4)+8px)]` all still fail.
 If a manifest needs a value with no token behind it, the token is what is
 missing — add it to `tokens/src/` first.
 
-<!-- check-arbitrary-values allow: text-[13px] bg-[#b52a20] -->
+<!-- check-arbitrary-values allow: text-[13px] bg-[#b52a20] duration-[200ms] w-[calc(var(--sp-4)+8px)] -->
 
 The gate scans `.md` too, because a `.prompt.md`'s Don't block is exactly
 where a bad example belongs, and an unflagged one is a bad example someone
 copies into a manifest. The marker above is the one legal escape: an HTML
 comment, invisible in rendered markdown, naming exactly the classes it
-exempts — `text-[13px]` and `bg-[#b52a20]`, the two counterexamples this
-section uses. A class this file carries that no marker names still fails;
+exempts — `text-[13px]`, `bg-[#b52a20]`, `duration-[200ms]` and
+`w-[calc(var(--sp-4)+8px)]`, the counterexamples this section uses. A class
+this file carries that no marker names still fails;
 a marker naming a class the file no longer carries fails too, as a stale
 allowance. The marker is honoured in `.md` only — found in any other
 extension, it is itself a failure.

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scanValue, scanText, scanDefaultsAndCallSites, staleExemptions, stalePassthrough, expressionLeaves, EXEMPT } from './check-dimension-literals.mjs';
+import { scanValue, scanText, scanInjectedCss, scanAttributes, scanDefaultsAndCallSites, staleExemptions, stalePassthrough, expressionLeaves, EXEMPT } from './check-dimension-literals.mjs';
 
 test('a bare number is a violation for a dimension-valued property', () => {
   assert.ok(scanValue('fontSize', '13'));
@@ -301,10 +301,26 @@ test('a nested-parens call is deliberately out of scope, not misread', () => {
 });
 
 test('EXEMPT records the three out-of-scope literals this task leaves untouched, by name', () => {
-  assert.ok(EXEMPT.has('frameworks/react/components/display/Avatar.jsx:fontSize:d * 0.4'));
   assert.ok(EXEMPT.has('frameworks/react/components/brand/Rotor.jsx:width:48'));
   assert.ok(EXEMPT.has('frameworks/react/ui_kits/console/Shell.jsx:width:30'));
   assert.ok(EXEMPT.has('frameworks/react/ui_kits/console/LoginScreen.jsx:width:40'));
+});
+
+// --- Task 5: data-to-pixel projections, revealed by the interpolation fix --
+// Closing the interpolation hole also caught four sites that were never a
+// dimension literal to begin with: a chart's hover position and a calendar's
+// time-of-day position/duration are runtime projections of data, not design
+// dimensions, and have no token to read. Avatar's own ratio (the fifth site
+// the same hole used to hide) is NOT here: this task turns Avatar's diameter
+// into a token, so its ratio is no longer exempt at all -- it is legal
+// outright, via calc() over a real token.
+
+test('EXEMPT records the four data-to-pixel projections this task newly exempts, by name', () => {
+  assert.ok(EXEMPT.has('frameworks/react/components/charts/BarChart.jsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`'));
+  assert.ok(EXEMPT.has('frameworks/react/components/charts/LineChart.jsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/Calendar.jsx:top:`calc(${y(m)}px - var(--sp-1))`'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/Calendar.jsx:height:`max(calc(var(--sp-1) * 4.5), ${rawH}px)`'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/Avatar.jsx:fontSize:d * 0.4'));
 });
 
 // --- Fix pass 1: a stale exemption must fail, not pass silently ---------
@@ -315,8 +331,10 @@ test('EXEMPT records the three out-of-scope literals this task leaves untouched,
 test('every current EXEMPT key is matched by this run -- none are stale', () => {
   // The positive case, exercised against the real EXEMPT map: every key
   // it carries right now corresponds to a site the scan actually visits
-  // (Calendar's zIndex, Avatar's ratio, Rotor's default and its two call
-  // sites) is proven by the full collect() pass in the CLI-level checks
+  // (Calendar's zIndex, the data-to-pixel projections onto a screen
+  // position -- a chart's hover offset, Calendar's clock-minute offset and
+  // event-duration height -- and Rotor's default plus its two call sites)
+  // is proven by the full collect() pass in the CLI-level checks
   // (`bun scripts/check-dimension-literals.mjs`); staleExemptions is unit
   // tested directly against a synthetic matched set below, since it takes
   // no filesystem dependency.
@@ -545,4 +563,123 @@ test('blanking comments preserves line numbers exactly', () => {
   ].join('\n');
   const found = scanText(src);
   assert.deepEqual(found[0].line, 3);
+});
+
+test('a focus ring written by hand is a dimension literal', () => {
+  assert.ok(scanValue('boxShadow', "'0 0 0 2px var(--gold-soft)'"));
+  assert.equal(scanValue('boxShadow', "'0 0 0 var(--focus-width) var(--gold-soft)'"), null);
+  assert.equal(scanValue('boxShadow', "'var(--shadow-2)'"), null);
+  assert.equal(scanValue('boxShadow', "'none'"), null);
+});
+
+test('a transform carrying a dimension is judged; a ratio or a share is not', () => {
+  assert.ok(scanValue('transform', "'translateX(18px)'"));
+  assert.equal(scanValue('transform', "'translateX(calc(var(--sp-1) * 4.5))'"), null);
+  assert.equal(scanValue('transform', "'translate(-50%,-100%)'"), null);
+  assert.equal(scanValue('transform', "'scale(0.98)'"), null);
+  assert.equal(scanValue('transform', "'rotate(120deg)'"), null);
+  assert.equal(scanValue('transform', "'none'"), null);
+});
+
+// --- Task 4: injected CSS (a <style> string, not a JS object literal) ----
+// Every @keyframes in this layer ships inside `s.textContent = '...'`
+// because an inline style object cannot express a keyframe. scanText's
+// PROP_COLON/readValue pair is shaped for a JS object literal (stops at
+// `,`/`}`, only matches unbroken-letter property names) and only ever
+// caught anything inside these strings by coincidence -- `transform` has
+// no hyphen in either grammar. scanInjectedCss reads the string as CSS on
+// its own terms: `;`/`}`-terminated declarations, kebab-case properties
+// mapped to the camelCase name PROPS uses.
+
+test('a dimension inside injected CSS is judged like any other', () => {
+  const source = [
+    "const s = document.createElement('style');",
+    "s.textContent = '@keyframes arena-pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}';",
+  ].join('\n');
+  const hits = scanInjectedCss(source);
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].prop, 'transform');
+  assert.match(hits[0].reason, /raw px/);
+  assert.equal(hits[0].line, 2);
+});
+
+test('injected CSS built from tokens is clean', () => {
+  const source = "s.textContent = '.a{animation:x var(--loop-spin) linear infinite;transform:translateY(var(--sp-2))}';";
+  assert.deepEqual(scanInjectedCss(source), []);
+});
+
+test('a percentage inside injected CSS is not a dimension', () => {
+  const source = "s.textContent = '@keyframes a{0%{left:-140%}100%{left:140%}}';";
+  assert.deepEqual(scanInjectedCss(source), []);
+});
+
+test('a string that is not CSS is left alone', () => {
+  assert.deepEqual(scanInjectedCss("const label = 'Step 1 of 4: 12px away';"), []);
+});
+
+test('a kebab-case CSS property is judged under its camelCase name', () => {
+  const hits = scanInjectedCss("s.textContent = '.a{border-width:2px;box-shadow:0 0 0 2px var(--gold-soft)}';");
+  assert.deepEqual(hits.map((h) => h.prop).sort(), ['borderWidth', 'boxShadow']);
+});
+
+// --- Final review finding 1: CSS split across `+`-concatenated literals --
+// Every injected style in this layer is actually built by `+`-concatenating
+// several string literals (Skeleton.jsx's shimmer is the real example:
+// '.arena-skeleton{background-image:...;' + 'background-size:...;animation:...}').
+// The shape test used to run per string literal, so a fragment with no `{`
+// of its own vanished entirely, even though the concatenated whole is
+// unmistakably one CSS rule.
+
+test('CSS split across `+`-concatenated string literals is read as one rule', () => {
+  assert.equal(scanInjectedCss("s.textContent = '.a{margin-top:8px}';").length, 1);
+  const hits = scanInjectedCss("s.textContent = '.a{' + 'margin-top:8px}';");
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].prop, 'marginTop');
+});
+
+// --- Task 5: a template interpolation must not hide the unit after it ----
+// `` `max(calc(var(--sp-1) * 2), ${d * 0.28}px)` `` passes today: UNIT_LITERAL
+// needs a digit immediately adjacent to a unit, and the interpolation's `}`
+// sits between the expression and `px`, breaking that adjacency.
+
+test('an interpolation does not hide the unit that follows it', () => {
+  assert.ok(scanValue('width', '`max(calc(var(--sp-1) * 2), ${d * 0.28}px)`'));
+  assert.ok(scanValue('height', '`${size}px`'));
+});
+
+test('an interpolation in a unit nothing models is still fine', () => {
+  assert.equal(scanValue('width', '`${share}%`'), null);
+});
+
+test('an interpolated derivation of tokens is fine', () => {
+  assert.equal(scanValue('fontSize', '`calc(${d} * 0.4)`'), null);
+});
+
+// --- Task 6: the ATTRIBUTE form — prop="value", not prop: value ----------
+// scanValue('fontSize', "'16'") already flags; fontSize="10" in a chart's
+// JSX does not, because DECL/PROP_COLON require a colon and a JSX attribute
+// uses `=`. The value is catchable, the position is not — scanAttributes
+// closes it, reusing scanValue so the judgment stays identical to every
+// other scanner in this file.
+
+test('an SVG presentation attribute is a governed site', () => {
+  const hits = scanAttributes('<text fontSize="10" strokeWidth="2">x</text>');
+  assert.deepEqual(hits.map((h) => h.prop).sort(), ['fontSize', 'strokeWidth']);
+});
+
+test('an attribute reading a token is clean', () => {
+  assert.deepEqual(scanAttributes('<line style={{ strokeWidth: \'var(--bw)\' }} />'), []);
+  assert.deepEqual(scanAttributes('<svg width="100%" viewBox="0 0 100 100" />'), []);
+});
+
+test('an attribute bound to an expression is out of scope', () => {
+  assert.deepEqual(scanAttributes('<circle r={hover ? 5 : 4} cx={x} />'), []);
+});
+
+test('a hyphen-prefixed attribute whose tail matches a governed name is not misread as that name', () => {
+  // The lookbehind (?<![\w.]) excludes a preceding word character or `.`,
+  // but not a hyphen -- so `data-width="20"` used to match at "width" the
+  // same as a real `width="20"` would, a false positive for any kebab-case
+  // attribute (data-*, aria-*) whose tail happens to spell a governed name.
+  assert.deepEqual(scanAttributes('<div data-width="20" data-height="10" />'), []);
 });

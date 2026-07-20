@@ -18,6 +18,11 @@
   },
   "container-max": { "$type": "dimension", "$value": { "value": 1240, "unit": "px" }, "$description": "Container / layout" },
   "gutter": { "$type": "dimension", "$value": { "value": 88, "unit": "px" } },
+  "layout": {
+    "$type": "dimension",
+    "$description": "Application frame. The width of the console shell's navigation column\n— example code, and therefore the width a consumer copies.",
+    "sidebar": { "$value": { "value": 232, "unit": "px" } }
+  },
   "bp": {
     "$type": "dimension",
     "$description": "Breakpoints — SHARED VALUES READ BY JS, not media queries.\nComponents style themselves with inline style objects, which cannot hold a\nmedia query, so responsive branches are JS (see use-container-width.js).\nThese live here anyway so the thresholds stay a token, not a magic number\nretyped in four components. 768px is what DAMA hardcodes.",
@@ -34,11 +39,20 @@
     "row-py": { "$value": { "value": 12, "unit": "px" }, "$description": "table/list row vertical padding" },
     "row-px": { "$value": { "value": 16, "unit": "px" }, "$description": "row horizontal padding" },
     "stack": { "$value": { "value": 12, "unit": "px" }, "$description": "gap between stacked items" },
+    "text-lg": { "$value": { "value": 16, "unit": "px" }, "$description": "the largest control text — a data readout inside a chart, where the number is the content rather than a label" },
     "text": { "$value": { "value": 14, "unit": "px" }, "$description": "control text — buttons, inputs, selects, menu items, table cells" },
     "text-md": { "$value": { "value": 13, "unit": "px" }, "$description": "secondary control text — tag chips, pagination, secondary buttons" },
     "text-sm": { "$value": { "value": 12, "unit": "px" }, "$description": "secondary control text — hints, validation errors, badges, legends" },
     "text-xs": { "$value": { "value": 11, "unit": "px" }, "$description": "micro control text — field labels, shortcuts, eyebrow labels" },
     "text-2xs": { "$value": { "value": 10, "unit": "px" }, "$description": "column headers, row micro-labels" },
     "lh": { "$type": "number", "$value": 1, "$description": "glyph-tight line height — the control reset. Unlike every other dz member this is unitless, so it carries its own $type override: a line height is a number, not a dimension, the same distinction that puts lh in typography.json to begin with. Used wherever a box must be exactly its glyph — an icon inside a button, a standalone icon, an icon-only close/remove control — so the line box never throws the surrounding control out of alignment." }
+  },
+  "avatar": {
+    "$type": "dimension",
+    "$description": "Avatar diameters. The first family named after a component rather\nthan a role, and worth stating rather than glossing: dz and icon are named for\nroles. It earns its place because Avatar derives two values from its own\ndiameter — the initials at 0.4 and the presence dot at 0.28 — and a derivation\nneeds something to derive from. If a second component ever wants the same\nladder, rename this for the role instead of duplicating it.",
+    "xs": { "$value": { "value": 24, "unit": "px" } },
+    "sm": { "$value": { "value": 32, "unit": "px" } },
+    "md": { "$value": { "value": 40, "unit": "px" } },
+    "lg": { "$value": { "value": 56, "unit": "px" } }
   }
 }

@@ -18,6 +18,12 @@
   --gutter:88px;
 
   /*
+     Application frame. The width of the console shell's navigation column
+     — example code, and therefore the width a consumer copies.
+   */
+  --layout-sidebar:232px;
+
+  /*
      Breakpoints — SHARED VALUES READ BY JS, not media queries.
      Components style themselves with inline style objects, which cannot hold a
      media query, so responsive branches are JS (see use-container-width.js).
@@ -38,12 +44,26 @@
   --dz-row-py:12px; /* table/list row vertical padding */
   --dz-row-px:16px; /* row horizontal padding */
   --dz-stack:12px; /* gap between stacked items */
+  --dz-text-lg:16px; /* the largest control text — a data readout inside a chart, where the number is the content rather than a label */
   --dz-text:14px; /* control text — buttons, inputs, selects, menu items, table cells */
   --dz-text-md:13px; /* secondary control text — tag chips, pagination, secondary buttons */
   --dz-text-sm:12px; /* secondary control text — hints, validation errors, badges, legends */
   --dz-text-xs:11px; /* micro control text — field labels, shortcuts, eyebrow labels */
   --dz-text-2xs:10px; /* column headers, row micro-labels */
   --dz-lh:1; /* glyph-tight line height — the control reset. Unlike every other dz member this is unitless, so it carries its own $type override: a line height is a number, not a dimension, the same distinction that puts lh in typography.json to begin with. Used wherever a box must be exactly its glyph — an icon inside a button, a standalone icon, an icon-only close/remove control — so the line box never throws the surrounding control out of alignment. */
+
+  /*
+     Avatar diameters. The first family named after a component rather
+     than a role, and worth stating rather than glossing: dz and icon are named for
+     roles. It earns its place because Avatar derives two values from its own
+     diameter — the initials at 0.4 and the presence dot at 0.28 — and a derivation
+     needs something to derive from. If a second component ever wants the same
+     ladder, rename this for the role instead of duplicating it.
+   */
+  --avatar-xs:24px;
+  --avatar-sm:32px;
+  --avatar-md:40px;
+  --avatar-lg:56px;
 }
 :root{
   /*

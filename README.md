@@ -120,7 +120,7 @@ Exposed in the Tailwind layer as `.text-xs`/`.text-sm`/`.text-md`/`.text-lg`/`.t
 - **Shadows:** warm and deep, negative spread (`0 12px 28px -12px rgba(0,0,0,.6)`). There is no tinted glow: elevation is always the neutral warm shadow.
 - **Radii:** contained — buttons/inputs 6px, cards 14px, app tile 22%. `--r-2xl` (34px) is one step further, following the scale's own ratio (22→34 is ×1.55, in line with the tightest existing step) — the brand manual's splash-screen tile, a distinct role from `--r-xl`'s app icon tile. Nothing fully round except avatars and switches. **Floating overlays:** modals (Dialog, ConfirmDialog, CommandPalette, Onboarding) use `--r-lg` (14px); minor non-modal floating surfaces (Toast, Menu, BulkActionBar) use `--r-md` (10px). The rule: if it captures the whole screen with a scrim, `--r-lg`; if it's a bounded panel over the UI, `--r-md`.
 - **Cards:** surface `--surface-card`, hairline border, 14px radius, no shadow in lists (border only) and `--shadow-2` when floating (menus, dialogs).
-- **Animation:** `--ease-out` for entrances, `--ease-emphatic` for the "rotor" gesture (spin on load). Durations 120/220/420ms. No excessive bounce.
+- **Animation:** `--ease-out` for entrances, `--ease-emphatic` for the "rotor" gesture (spin on load). Transitions run 120/220/420ms (`dur`); a looping animation — `Spinner`, `ProgressBar`, `Skeleton`, `Rotor` — runs on its own, slower scale measured in seconds (`loop`; see the motion scale table below), because it reports ongoing work rather than responding to an action. No excessive bounce.
 - **`prefers-reduced-motion`:** every animation in the system answers it, and what it answers depends on what the motion *means*. Motion that reports work in progress **slows** (`Spinner`, `ProgressBar`, `Button`'s loading ring, `Rotor`) — never freeze it, a stopped spinner reads as a hung process, which is the opposite of the truth. Purely decorative motion **stops** (`Skeleton`'s shimmer falls back to a flat surface). An entrance **keeps its fade and drops its travel** (`Dialog`, `Menu`): the movement is the vestibular trigger, the fade is the meaning. Opacity-only animations (`Tooltip`) need no clause — there is nothing to reduce.
 - **Hover:** lighten the surface one step (`--color-base-300`→`--line-strong`) or raise opacity; on accent buttons, hover raises the general elevation (`--shadow-2`). *Note:* after the move to daisyUI tokens, the `--crimson-strong`/`--gold-strong`/`--danger-strong` variants **alias to the base color** (there's no separate darker "strong" tone); press emphasis is achieved with scale, not a second tone.
 - **Press:** `scale(.98)` on small controls.
@@ -207,6 +207,25 @@ Line height splits editorial from control exactly the way `fs`/`dz` split font s
 No new prose steps were needed to cover the census: every site that reads prose already matched `--lh-body` or `--lh-snug` exactly, or was within drift-correcting distance of one (`Alert`'s and `Textarea`'s `1.55`, 0.05 off `--lh-body`, corrected rather than kept as their own step).
 
 Exposed in the Tailwind layer as `.leading-tight` / `.leading-snug` / `.leading-body` (`frameworks/tailwind/theme.css`, `--leading-*`). `--dz-lh` is exposed as `.leading-ctl`, not `.leading-none` — after this token, the `--leading-*` namespace holds three editorial steps (`tight`, `snug`, `body`) plus this one control token, and a name indistinguishable from its editorial neighbours is the exact `--text-base` mistake the `fs`/`dz` split retired: a `dz` token wearing an `lh`-shaped name. The `ctl` infix keeps it visibly a density role, consistent with `--text-ctl`.
+
+### Motion scale (`dur` / `loop`)
+Two families, one `$type: duration`, two roles that must not merge. `dur` is the transition scale: a response to an action, over in the low hundreds of milliseconds. `loop` is cyclical motion: it reports that work is *ongoing*, and is measured in seconds, not milliseconds — a spinner or an indeterminate progress sweep is not "responding" to anything, it is signaling that something is still running. Merging the two would repeat the `fs`/`dz` mistake the type scale already retired: one scale asked to carry two roles at once. Both live in `tokens/src/effects.json`, generated into `tokens/effects.css`.
+
+| Token | Value | Role |
+|---|---|---|
+| `--dur-fast` | 120ms | micro-interactions — hover, press |
+| `--dur-mid` | 220ms | most transitions — menus, tooltips, dialogs entering |
+| `--dur-slow` | 420ms | larger surface changes |
+| `--loop-spin` | 700ms | `Spinner`, and `Button`'s loading ring |
+| `--loop-sweep` | 1150ms | `ProgressBar`'s indeterminate sweep |
+| `--loop-shimmer` | 1400ms | `Skeleton` |
+| `--loop-brand` | 8000ms | `Rotor` — slow enough to read as presence rather than progress |
+| `--loop-reduced` | 2400ms | what every working loop above slows to under `prefers-reduced-motion` |
+| `--loop-brand-reduced` | 24000ms | `Rotor`'s reduced step — three times slower again, because the brand mark is decoration that also happens to mean "alive" |
+
+`prefers-reduced-motion` does not stop a working loop, it **slows** it: `--loop-reduced` (and `Rotor`'s own, three-times-slower `--loop-brand-reduced`) is that slowed step, never zero — a frozen spinner reads as a hung process, the opposite of what it exists to report. Purely decorative motion is the other case, and stops outright: `Skeleton`'s shimmer falls back to a flat surface, since there is nothing left to report once it stops.
+
+Exposed in the Tailwind layer as an arbitrary value against each token — `duration-[var(--loop-spin)]` and so on — rather than as a named utility: Tailwind v4 has no duration namespace of its own for either family to extend.
 
 ## ICONOGRAPHY
 - **Official set: [Phosphor Icons](https://phosphoricons.com)** (MIT license, free commercial use, no attribution). Chosen for aligning with Dravensoft's bold identity: it's the open-source family with the widest style range (1,500+ icons in 6 weights) and its **Bold** weight has the presence and high contrast the brand calls for — the icon equivalent of Archivo Black.

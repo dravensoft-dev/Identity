@@ -12,7 +12,8 @@ are the record. Do not re-run this plan.
 | 2 | `2026-07-18-2-overview-token-page.md` | **Executed** (v4.0.0) |
 | 3 | `2026-07-18-3-framework-layer-token-coverage.md` | **Executed** (unreleased) |
 | 4 | `2026-07-18-4-token-geometry-boundary.md` | **Executed** (unreleased) |
-| 5 | framework-layer parity — **plan not yet written**, spec at `specs/2026-07-18-framework-layer-parity-design.md` | Pending |
+| 5a | `2026-07-18-5a-angular-primitive-parity.md` — the 18 Angular primitives + the verification gates | Pending |
+| 5b | `2026-07-18-5b-tailwind-manifest-parity.md` — the 20 orphan manifests; depends on 5a's Tasks 1–4 | Pending |
 | 6 | `2026-07-18-6-four-package-build-publish.md` | Pending |
 
 **Goal:** Replace `Arena - Overview.dc.html`'s hand-rolled parallel component library with a plain-HTML page that generates itself from `tokens/src/*.json` and `tokens/colors.css`, presenting all 138 token names and nothing else, plus a `bun run demos` server for the two root demo pages.
@@ -25,7 +26,7 @@ are the record. Do not re-run this plan.
 
 - **English only** — all code, comments, docs, and UI copy.
 - **No emoji** anywhere, in product or docs.
-- Spec of record: `docs/superpowers/specs/2026-07-18-overview-token-page-design.md`.
+- Spec of record: `docs/superpowers/specs/2026-07-18-2-overview-token-page-design.md`.
 - **No gradients** on any surface. Depth comes from the `base-100`/`base-200`/`base-300` surface scale, the hairline border and the warm shadow.
 - **No raw hex anywhere in the page.** Every colour, size, radius, shadow and duration in `overview.js` and the page's own CSS must be a `var(--token)`. This page's whole claim is that it is built from the tokens; one hardcoded value falsifies it.
 - **The DTCG source is not modified.** No `$extensions` preview hints, no new tokens. The group-to-preview mapping lives in `scripts/lib/token-preview.mjs`, because `tokens/src/` is documented as platform-neutral.

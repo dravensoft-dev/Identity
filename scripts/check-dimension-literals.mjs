@@ -33,7 +33,38 @@ import { repoRoot } from './lib/tailwind-compile.mjs';
 
 const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
 
-/** Properties whose value Arena's token layer governs. */
+/** Properties whose value Arena's token layer governs.
+ *
+ * boxShadow and transform join late and for one reason each: a focus ring is a
+ * spread radius (--focus-width) written inside a shorthand, and a travel is a
+ * distance written inside a function. Both were invisible while the properties
+ * were ungoverned, which is how seven hand-written `2px` rings and a
+ * translateX(18px) survived a gate that reports the tree clean. Neither
+ * property needed a rule change to work: a percentage, a ratio inside scale()
+ * and an angle already pass.
+ *
+ * strokeWidth joins for the attribute-form task below (Task 6): an SVG line's
+ * stroke width is a border width in every sense the token layer cares about.
+ * The rest of SVG_ATTRS deliberately does NOT join this set — `r`, `x`, `y`,
+ * `cx`, `cy`, `x1`, `x2`, `y1`, `y2` are one- and two-letter names that
+ * collide with ordinary object keys having nothing to do with CSS, and
+ * governing them today would buy nothing: PROP_COLON only fires at a
+ * colon in a scanned `.jsx`/`.ts`/`.tsx` file (EXTENSIONS, above), and a
+ * grep of frameworks/ turns up no `r:`/`x:`/`cx:` object key anywhere in
+ * that set. The one PAD-shaped object that would collide —
+ * `chart-internals.js`'s own `PAD = { t: 8, r: 8, b: 28, l: 44 }` — is
+ * invisible to this gate for an unrelated reason: it is a `.js` file, and
+ * EXTENSIONS never includes `.js`. That is not a safety net this decision
+ * can lean on — a `.jsx` file with the same PAD shape would collide the
+ * moment `r` joined PROPS, since scanValue's gate is shared by every
+ * scanner here, colon and attribute alike, with no way to govern `r` in
+ * attribute position only. Adding these nine later is a judgment call
+ * that needs the tree re-checked at that time, not a decision this
+ * comment can make permanent. Those SVG_ATTRS members stay listed for
+ * documentation and for the day a real quoted-literal site needs one of
+ * them, but scanValue's gate means none of them is judged anywhere today
+ * — every current chart/Checkbox site this task closes is fontSize,
+ * strokeWidth, width, or height, all already governed. */
 const PROPS = new Set([
   'fontSize', 'lineHeight', 'letterSpacing', 'fontWeight',
   'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
@@ -44,6 +75,7 @@ const PROPS = new Set([
   'borderWidth', 'borderRadius',
   'width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight',
   'top', 'right', 'bottom', 'left', 'inset', 'zIndex',
+  'boxShadow', 'transform', 'strokeWidth',
 ]);
 
 /* Some correct sites look exactly like defects, so they are named rather than
@@ -57,8 +89,14 @@ const PROPS = new Set([
 export const EXEMPT = new Map([
   ['frameworks/react/components/display/Calendar.jsx:zIndex:1',
    'local stacking inside a positioned container; does not join the global z order'],
-  ['frameworks/react/components/display/Avatar.jsx:fontSize:d * 0.4',
-   'a ratio scaling the initials with the avatar\'s own diameter, not a dimension — the rule governs dimensions, not the multiplier that derives one instance from another'],
+  ['frameworks/react/components/charts/BarChart.jsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`',
+   'yOf(values[hover]) projects the hovered data point onto the chart\'s own measured inner height — a runtime data-to-pixel projection, not a design dimension. Unlike Avatar\'s ratio (this same task turns that operand into a token), there is no token to give this one: the series values, their max, and the container\'s measured width all change at runtime, so nothing in tokens/src/ could stand in for it'],
+  ['frameworks/react/components/charts/LineChart.jsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`',
+   'the same yOf(values[hover]) projection as BarChart\'s own exemption above — a data point\'s value mapped onto the chart\'s measured pixel height, not a token'],
+  ['frameworks/react/components/display/Calendar.jsx:top:`calc(${y(m)}px - var(--sp-1))`',
+   'y(m) projects a clock minute onto the visible hour range, itself driven by the dayStart/dayEnd props — a time-to-pixel projection, not a design dimension; there is no token for an arbitrary minute of the day'],
+  ['frameworks/react/components/display/Calendar.jsx:height:`max(calc(var(--sp-1) * 4.5), ${rawH}px)`',
+   'the max()\'s floor, calc(var(--sp-1) * 4.5), already reads a token, and stays governed — only the computed arm is exempt: rawH is an event\'s duration in minutes projected to pixels, the same data-to-pixel category as the two chart entries above, never a fixed dimension'],
   ['frameworks/react/components/brand/Rotor.jsx:width:48',
    'Dravensoft\'s brand mark; the source spec is explicit that brand assets are not themeable, and the same logic covers its size — fixing it to a token would quietly make the mark resizable by a re-skin'],
   ['frameworks/react/ui_kits/console/Shell.jsx:width:30',
@@ -67,13 +105,16 @@ export const EXEMPT = new Map([
    'Rotor call site — brand mark, not themeable, see Rotor.jsx\'s own exemption'],
 ]);
 
-/** Units the token layer genuinely does not model, and that are legal
- *  wherever they appear — a closed allowlist, not an open denylist. A unit
- *  missing from this list fails closed: `em` was absent from every list
- *  here until a review caught it, and by then 34 tracking literals had
- *  gone unflagged. A unit nobody has thought of yet — `pt`, `cm`, a typo —
- *  gets the same treatment as `px`, not a silent pass. */
-const FREE_UNITS = ['%', 'ch', 'fr', 'vh', 'vw', 'vmin', 'vmax', 'deg', 's', 'ms'];
+/** Units the token layer genuinely does not model, and that no token could
+ *  usefully carry — a prose measure in `ch`, a share of a container in `%`, a
+ *  grid track in `fr`, a viewport fraction, an angle. DTCG 2025.10 admits only
+ *  px and rem in a dimension, so these are not expressible as tokens at all.
+ *  Exported because check-arbitrary-values.mjs answers the same question about
+ *  a Tailwind bracket and two lists would drift. `s`/`ms` stay local to
+ *  FREE_UNITS below: this gate tolerates them, but --dur-* and --loop-* DO
+ *  model duration, so a bracket carrying one is drift and must keep failing. */
+export const UNMODELLED_UNITS = ['%', 'ch', 'fr', 'vh', 'vw', 'vmin', 'vmax', 'deg'];
+const FREE_UNITS = [...UNMODELLED_UNITS, 's', 'ms'];
 const FREE_UNIT = new RegExp(`^\\s*'?-?\\d*\\.?\\d+(${FREE_UNITS.join('|')})'?\\s*$`);
 /** A number immediately carrying a unit — a candidate dimension literal,
  *  judged against FREE_UNITS above rather than against a fixed "bad" list.
@@ -94,10 +135,35 @@ const BARE_NUMBER = /^\s*'?-?\d*\.?\d+'?\s*$/;
 /** Zero, in the forms the layer writes it. */
 const ZERO = /^\s*'?-?0(px|rem|em|%)?'?\s*$/;
 
-/** @param {string} prop @param {string} raw
+/** A template interpolation, read with balanced braces so a nested `{}` inside
+ *  the expression does not end it early. */
+function stripInterpolations(raw) {
+  let out = '';
+  for (let i = 0; i < raw.length; i++) {
+    if (raw[i] === '$' && raw[i + 1] === '{') {
+      let depth = 1;
+      let j = i + 2;
+      for (; j < raw.length && depth > 0; j++) {
+        if (raw[j] === '{') depth++;
+        else if (raw[j] === '}') depth--;
+      }
+      // `9`, not `0`: the marker stands where a rendered number will, and it
+      // must not read as the zero the ZERO rule forgives — `${d * 0.28}px`
+      // renders a dimension, and that is exactly what has to be caught.
+      out += '9';
+      i = j - 1;
+      continue;
+    }
+    out += raw[i];
+  }
+  return out;
+}
+
+/** @param {string} prop @param {string} rawValue
  *  @returns {{reason: string} | null} null when the value is legal */
-export function scanValue(prop, raw) {
+export function scanValue(prop, rawValue) {
   if (!PROPS.has(prop)) return null;
+  const raw = stripInterpolations(rawValue);
   if (ZERO.test(raw)) return null;
   if (FREE_UNIT.test(raw)) return null;
 
@@ -461,6 +527,141 @@ function scanDataflow(text) {
   return out;
 }
 
+// --- Injected CSS: a <style> string, not a JS object literal --------------
+// Every @keyframes in this layer ships inside `s.textContent = '...'`,
+// because an inline style object cannot express a keyframe. The scanners
+// above are shaped for a JS object literal -- PROP_COLON only matches an
+// unbroken run of letters (so CSS `box-shadow:` reads as a property named
+// `shadow`, invisible, and `border-width:`/`margin-top:` misattribute to
+// `width`/`top`), and readValue stops at `,` or `}` (right for a JS value,
+// wrong for a `;`-terminated CSS declaration). `transform:translateY(8px)`
+// in Dialog/Menu was caught before this task only by coincidence: `transform`
+// has no hyphen in either grammar, and it happened to be the last
+// declaration before a `}`.
+
+/** CSS property names, kebab-case, mapped to the camelCase key PROPS uses.
+ *  Only the governed ones are worth converting — anything else is skipped. */
+function camel(prop) {
+  return prop.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+}
+
+/** Every maximal run of string literals joined end-to-end by `+`, read as one
+ *  body. Every injected `<style>` in this layer is actually built this way —
+ *  Skeleton's shimmer is the real example, four literals deep
+ *  (`'.arena-skeleton{background-image:...;' + 'background-size:...;animation:...}' + ...`)
+ *  — so a rule's opening `{` and the declaration that follows it routinely
+ *  sit in different literals. Judging one literal at a time is what let a
+ *  brace-less fragment vanish from the shape test in scanInjectedCss below
+ *  even though the concatenated whole is unmistakably CSS; this reassembles
+ *  the run first so the shape test sees what the browser will.
+ *  @param {string} text
+ *  @returns {{body: string, index: number}[]} `index` is the run's first
+ *  opening quote, which is what a reported hit's line number is measured
+ *  from. */
+function stringLiteralRuns(text) {
+  const runs = [];
+  let i = 0;
+  while (i < text.length) {
+    const c = text[i];
+    if (c !== "'" && c !== '"' && c !== '`') { i++; continue; }
+    const index = i;
+    let body = '';
+    let j = i;
+    for (;;) {
+      const end = skipString(text, j, text[j]);
+      body += text.slice(j + 1, end);
+      j = end + 1;
+      let k = j;
+      while (k < text.length && /\s/.test(text[k])) k++;
+      if (text[k] !== '+') break;
+      let m = k + 1;
+      while (m < text.length && /\s/.test(text[m])) m++;
+      if (text[m] !== "'" && text[m] !== '"' && text[m] !== '`') break;
+      j = m;
+    }
+    runs.push({ body, index });
+    i = j;
+  }
+  return runs;
+}
+
+/** Declarations inside a string literal (or a `+`-joined run of them) that is
+ *  really CSS.
+ *
+ *  Keyframes are the one thing an inline style object cannot express, so every
+ *  animation in the layer ships as a <style> injected once — which put its
+ *  dimensions outside every scanner here, because they sit in a string rather
+ *  than at a `prop: value` site. A travel of `translateY(8px)` is the same
+ *  literal whether it is written in JS or in CSS, and the gate now says so.
+ *
+ *  A run counts as CSS when its reassembled body contains a `{`, a `:` and a
+ *  `;` or `}` — the shape of a rule. That is deliberately loose: a false
+ *  positive costs a declaration being judged that did not need to be, and
+ *  every judged declaration is judged by the same scanValue as the rest of
+ *  the file. It is deliberately reassembled first, rather than just dropping
+ *  `{` from the test: dropping it would let any string containing a bare
+ *  `prop: value`-shaped fragment (a sentence with a colon in it, say) pass as
+ *  CSS with no rule-shape evidence at all, which trades one miss for a wider
+ *  one. Reassembling costs nothing a real site needs — a stray `+` between
+ *  two unrelated strings never resolves to a `{`/`:`/`;`/`}` shape by
+ *  accident — and keeps the shape test exactly as strict, just applied to
+ *  the string the runtime actually builds instead of to an arbitrary slice
+ *  of it.
+ *  @param {string} rawText @returns {{prop: string, raw: string, reason: string, line: number}[]} */
+export function scanInjectedCss(rawText) {
+  const text = blankComments(rawText);
+  const out = [];
+  for (const { body, index } of stringLiteralRuns(text)) {
+    if (!(body.includes('{') && body.includes(':') && /[;}]/.test(body))) continue;
+    const line = lineOf(text, index);
+    for (const decl of body.matchAll(/(?:^|[{;])\s*([a-z-]+)\s*:\s*([^;}]+)/g)) {
+      const prop = camel(decl[1]);
+      if (!PROPS.has(prop)) continue;
+      const found = scanValue(prop, decl[2].trim());
+      if (found) out.push({ prop, raw: decl[2].trim(), reason: found.reason, line });
+    }
+  }
+  return out;
+}
+
+// --- SVG presentation attributes: prop="value", not prop: value ----------
+// An SVG glyph is styled by attributes as often as by CSS -- `fontSize="10"`
+// is the same literal as `fontSize: '10'`, which scanValue already flags,
+// but DECL/PROP_COLON both require a colon, and a JSX attribute uses `=`.
+// The value was always catchable; the position was not.
+
+/** SVG presentation attributes that carry a dimension, read in `prop="value"`
+ *  position as well as `prop: value`. An SVG glyph is styled by attributes as
+ *  often as by CSS, and `fontSize="10"` is the same literal as
+ *  `fontSize: '10'` — which scanValue already flags. Only the quoted-literal
+ *  form is in scope: `r={hover ? 5 : 4}` is an expression binding, judged the
+ *  same way every other expression in this file is, which is to say not at all
+ *  unless it reaches a governed declaration.
+ *
+ *  strokeDasharray is deliberately absent. Its value is a rhythm of on/off
+ *  runs, not a dimension, and there is no token family for a rhythm — adding
+ *  one for the single `3 3` in LineChart would be worse than the literal.
+ *
+ *  Listing a name here does not put it in scope: scanAttributes routes
+ *  through scanValue below, which gates on PROPS, so only the members that
+ *  are ALSO in PROPS (fontSize, strokeWidth, width, height) can ever flag.
+ *  The other nine are listed but currently inert — see the PROPS comment
+ *  above for why they stay out and what would have to be true to add them. */
+const SVG_ATTRS = new Set(['fontSize', 'strokeWidth', 'width', 'height', 'r', 'x', 'y', 'cx', 'cy', 'x1', 'x2', 'y1', 'y2']);
+
+/** @param {string} rawText @returns {{prop: string, raw: string, reason: string, line: number}[]} */
+export function scanAttributes(rawText) {
+  const text = blankComments(rawText);
+  const out = [];
+  for (const m of text.matchAll(/(?<![\w.-])([a-zA-Z]+)\s*=\s*"([^"]*)"/g)) {
+    const [, prop, value] = m;
+    if (!SVG_ATTRS.has(prop)) continue;
+    const found = scanValue(prop, `'${value}'`);
+    if (found) out.push({ prop, raw: value, reason: found.reason, line: lineOf(text, m.index) });
+  }
+  return out;
+}
+
 /** A prop name that is not itself a governed CSS property, but that a named
  *  component assigns unmodified into one, one line away, in the same file
  *  — verified by reading the component, not inferred. This is deliberately
@@ -561,9 +762,10 @@ function* walk(dir) {
  *  exemption for a site that no longer produces a violation, because it
  *  was fixed, deleted, or its raw text changed shape. Named exemptions
  *  are only honest if a stale one is loud: `EXEMPT` is how `Calendar`'s
- *  local `zIndex`, `Avatar`'s ratio, and `Rotor`'s brand-mark size stay
- *  legal on purpose, and the same map going quietly out of date would let
- *  a real regression hide behind an entry nobody is reading anymore. */
+ *  local `zIndex`, the chart/`Calendar` data-to-pixel projections, and
+ *  `Rotor`'s brand-mark size stay legal on purpose, and the same map going
+ *  quietly out of date would let a real regression hide behind an entry
+ *  nobody is reading anymore. */
 export function staleExemptions(matchedKeys) {
   return [...EXEMPT.keys()].filter((k) => !matchedKeys.has(k));
 }
@@ -576,7 +778,7 @@ function collect() {
     const rel = relative(repoRoot, file);
     const text = readFileSync(file, 'utf8');
     for (const name of passthroughSightings(text)) seenComponents.add(name);
-    const hits = [...scanText(text), ...scanDefaultsAndCallSites(text)];
+    const hits = [...scanText(text), ...scanDefaultsAndCallSites(text), ...scanInjectedCss(text), ...scanAttributes(text)];
     for (const hit of hits) {
       const key = `${rel}:${hit.prop}:${hit.raw}`;
       matchedKeys.add(key);

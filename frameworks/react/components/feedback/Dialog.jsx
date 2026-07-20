@@ -14,7 +14,7 @@ function usePopKeyframes() {
     const s = document.createElement('style');
     s.setAttribute('data-arena-dialog', '');
     s.textContent =
-      '@keyframes arena-pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}' +
+      '@keyframes arena-pop{from{opacity:0;transform:translateY(var(--sp-2)) scale(.98)}to{opacity:1;transform:none}}' +
       '@media (prefers-reduced-motion:reduce){@keyframes arena-pop{from{opacity:0}to{opacity:1}}}';
     document.head.appendChild(s);
   }, []);

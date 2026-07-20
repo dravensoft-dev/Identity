@@ -13,7 +13,7 @@ function useShimmer() {
     s.textContent =
       '@keyframes arena-shimmer{0%{background-position:-140% 0}100%{background-position:140% 0}}' +
       '.arena-skeleton{background-image:linear-gradient(100deg,var(--panel) 30%,var(--color-base-300) 50%,var(--panel) 70%);' +
-      'background-size:220% 100%;animation:arena-shimmer 1.4s var(--ease-in-out) infinite}' +
+      'background-size:220% 100%;animation:arena-shimmer var(--loop-shimmer) var(--ease-in-out) infinite}' +
       '@media (prefers-reduced-motion:reduce){.arena-skeleton{animation:none;background:var(--panel)}}';
     document.head.appendChild(s);
   }, []);

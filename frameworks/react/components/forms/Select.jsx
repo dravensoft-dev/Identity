@@ -11,7 +11,7 @@ export function Select({ label, options = [], value, onChange, disabled = false,
             background: 'var(--surface-input)', color: 'var(--bone)',
             border: 'var(--bw) solid ' + (focus ? 'var(--gold)' : 'var(--color-base-300)'), borderRadius: 'var(--r-sm)',
             fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', cursor: 'pointer',
-            boxShadow: focus ? '0 0 0 2px var(--gold-soft)' : 'none', opacity: disabled ? 0.5 : 1,
+            boxShadow: focus ? '0 0 0 var(--focus-width) var(--gold-soft)' : 'none', opacity: disabled ? 0.5 : 1,
             transition: 'border-color var(--dur-fast) var(--ease-out)' }} {...rest}>
           {options.map((o) => typeof o === 'string'
             ? <option key={o} value={o}>{o}</option>

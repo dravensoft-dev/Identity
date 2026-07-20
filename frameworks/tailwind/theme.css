@@ -97,6 +97,7 @@
      are taken by fs, and two collide on value as well as name (fs.sm/dz.text-md
      both 13px, fs.xs/dz.text-xs both 11px). Chrome text is a density role, not
      an editorial one, so it gets its own namespace rather than borrowing fs's. */
+  --text-ctl-lg: var(--dz-text-lg);
   --text-ctl: var(--dz-text);
   --text-ctl-md: var(--dz-text-md);
   --text-ctl-sm: var(--dz-text-sm);
@@ -168,6 +169,7 @@
   --spacing-stack: var(--dz-stack);
 
   --spacing-gutter: var(--gutter);
+  --spacing-sidebar: var(--layout-sidebar);
 
   /* layout width. Named `page`, not `max`: a --container-max key collides
      with Tailwind's built-in static max-w-max and shadows it. */
@@ -183,6 +185,14 @@
   --size-icon-md: var(--icon-md);
   --size-icon-lg: var(--icon-lg);
   --size-icon-xl: var(--icon-xl);
+
+  /* avatar diameter → tokens/spacing.css. Same namespace as the icon sizes and
+     for the same reason: `.size-avatar-md` sets both width and height, which is
+     what a diameter is. */
+  --size-avatar-xs: var(--avatar-xs);
+  --size-avatar-sm: var(--avatar-sm);
+  --size-avatar-md: var(--avatar-md);
+  --size-avatar-lg: var(--avatar-lg);
 
   /* ---- effects → tokens/effects.css ------------------------------------ */
   --radius-*: initial;

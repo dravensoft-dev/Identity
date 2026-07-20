@@ -18,6 +18,16 @@ export interface StatCardProps {
   label: string;
   /** Preformatted, e.g. "1,284" or "99.9%". */
   value: string;
+  /**
+   * @startingPoint Leave it off. Color the value only when the number's
+   * current STATE carries meaning a reader would otherwise miss.
+   *
+   * Distinct from `delta.tone`, which reports whether the number *moved*
+   * well. This reports what it *is*: 99.98% uptime is `success` whether or
+   * not it improved; two open incidents are `danger` even when that is down
+   * from five. Vocabulary is Badge's, so one set of tone names covers both.
+   */
+  tone?: 'neutral' | 'accent' | 'gold' | 'success' | 'warning' | 'danger' | 'info';
   delta?: StatDelta;
   /** Small muted line under the value — context, e.g. "vs last week". */
   sub?: string;

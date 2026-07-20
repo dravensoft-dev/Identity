@@ -131,7 +131,7 @@
 import { createTV } from 'tailwind-variants';
 import { getDefaultConfig } from 'tailwind-merge';
 
-export const ARENA_SPACING_SUFFIXES = ['ctl-h', 'ctl-h-sm', 'ctl-h-lg', 'row-py', 'row-px', 'stack', 'gutter'];
+export const ARENA_SPACING_SUFFIXES = ['ctl-h', 'ctl-h-sm', 'ctl-h-lg', 'row-py', 'row-px', 'stack', 'gutter', 'sidebar'];
 
 /** True only for the `fromTheme('spacing')` getter. `fromTheme(key)` returns
  *  `(theme) => theme[key] || fallback` and tags it `.isThemeGetter` — so
@@ -181,13 +181,13 @@ function mergeClassGroup(existingEntries, generatedEntries) {
 
 const handWritten = {
   shadow: [{ shadow: ['1', '2', '3'] }],
-  'font-size': [{ text: ['mega', 'hero', 'display', 'h1', 'h2', 'h3', 'h4', 'ctl', 'ctl-md', 'ctl-sm', 'ctl-xs', 'ctl-2xs'] }],
+  'font-size': [{ text: ['mega', 'hero', 'display', 'h1', 'h2', 'h3', 'h4', 'ctl-lg', 'ctl', 'ctl-md', 'ctl-sm', 'ctl-xs', 'ctl-2xs'] }],
   rounded: [{ rounded: ['pill'] }],
   z: [{ z: ['dropdown', 'tooltip', 'modal', 'modal-nested', 'palette', 'onboarding', 'toast'] }],
   tracking: [{ tracking: ['label', 'field-label', 'column-header', 'badge', 'uppercase-status', 'mono-nav'] }],
   leading: [{ leading: ['body', 'ctl'] }],
   blur: [{ blur: ['scrim'] }],
-  size: [{ size: ['icon-sm', 'icon-md', 'icon-lg', 'icon-xl'] }],
+  size: [{ size: ['icon-sm', 'icon-md', 'icon-lg', 'icon-xl', 'avatar-xs', 'avatar-sm', 'avatar-md', 'avatar-lg'] }],
   ease: [{ ease: ['emphatic'] }],
   'max-w': [{ 'max-w': ['page'] }],
   'font-weight': [{ font: ['regular'] }],
