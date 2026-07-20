@@ -7,7 +7,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Arena — Dravensoft's design system. It is **not a published npm package**, but it does
 have a **dev-only, private `package.json`** at the root: the token layer is built from
 DTCG JSON by Style Dictionary, and the build and check scripts are tested with
-`bun test`. Nothing here is published to npm. It ships as three things at once from
+`bun test`, as is each framework layer from its own `test/` directory
+(`bun run test:scripts` / `test:react` / `test:angular`, or `bun run test` for all
+three). Nothing here is published to npm. It ships as three things at once from
 the same tree:
 
 - a **Claude Code plugin** (`.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`, registering the `design` skill defined by the root `SKILL.md`);
