@@ -327,8 +327,7 @@ test('every current EXEMPT key is matched by this run -- none are stale', () => 
   // it carries right now corresponds to a site the scan actually visits
   // (Calendar's zIndex, the data-to-pixel projections onto a screen
   // position -- a chart's hover offset, Calendar's clock-minute offset and
-  // event-duration height -- and Rotor's default plus its two call sites)
-  // is proven by the full collect() pass in the CLI-level checks
+  // event-duration height) is proven by the full collect() pass in the CLI-level checks
   // (`bun scripts/check-dimension-literals.mjs`); staleExemptions is unit
   // tested directly against a synthetic matched set below, since it takes
   // no filesystem dependency.

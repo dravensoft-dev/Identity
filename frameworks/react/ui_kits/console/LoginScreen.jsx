@@ -9,7 +9,7 @@ export function LoginScreen({ onLogin }) {
     <div style={{ minHeight: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: 'var(--bg)', padding: 'calc(var(--sp-1) * 6)' }}>
       <div style={{ width: 'calc(var(--sp-1) * 95)', background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)', padding: 'calc(var(--sp-1) * 9)', boxShadow: 'var(--shadow-3)' }}>
-        <div style={{ marginBottom: 'calc(var(--sp-1) * 7)' }}>
+        <div style={{ display: 'flex', marginBottom: 'calc(var(--sp-1) * 7)' }}>
           <AppLogo size="md" mark={<img src="../../../../assets/rotor-crimson.svg" alt="" />} name="Draven" dim="soft" />
         </div>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 'calc(var(--sp-1) * 1.5)' }}>Delivery console</div>

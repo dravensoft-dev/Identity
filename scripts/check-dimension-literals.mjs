@@ -757,10 +757,9 @@ function* walk(dir) {
  *  exemption for a site that no longer produces a violation, because it
  *  was fixed, deleted, or its raw text changed shape. Named exemptions
  *  are only honest if a stale one is loud: `EXEMPT` is how `Calendar`'s
- *  local `zIndex`, the chart/`Calendar` data-to-pixel projections, and
- *  `Rotor`'s brand-mark size stay legal on purpose, and the same map going
- *  quietly out of date would let a real regression hide behind an entry
- *  nobody is reading anymore. */
+ *  local `zIndex` and the chart/`Calendar` data-to-pixel projections stay
+ *  legal on purpose, and the same map going quietly out of date would let
+ *  a real regression hide behind an entry nobody is reading anymore. */
 export function staleExemptions(matchedKeys) {
   return [...EXEMPT.keys()].filter((k) => !matchedKeys.has(k));
 }

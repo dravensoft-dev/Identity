@@ -88,10 +88,9 @@ runtime projection of data onto a screen position — a chart tooltip's offset d
 from a hovered value, an hour label's offset derived from a clock minute, an event
 block's height derived from its duration — where the literal is the true value at
 that site because nothing in `tokens/src/` could stand in for a number computed from
-data at runtime; and `Rotor`'s brand-mark `width` plus its two call sites in `Shell`
-and `LoginScreen` (Dravensoft's identity is explicitly not themeable). A stale
-exemption — one that no longer matches a real violation — fails the gate itself. The
-gate scans `.jsx`, `.ts` and `.tsx` under `frameworks/` — it does not scan `.html`;
+data at runtime. A stale exemption — one that no longer matches a real violation —
+fails the gate itself. The gate scans `.jsx`, `.ts` and `.tsx` under `frameworks/` —
+it does not scan `.html`;
 the root-level and `guidelines/` pages stay clean only because they were tokenized by
 hand, and nothing holds that. **No gate compares a Tailwind manifest against the
 component it mirrors, and the mapping is not obvious**: `Button.manifest.json`

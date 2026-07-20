@@ -17,7 +17,7 @@ export function Shell({ active = 'dashboard', onNav, title, actions, children })
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'var(--layout-sidebar) 1fr', minHeight: '100%', background: 'var(--bg)' }}>
       <aside style={{ borderRight: 'var(--bw) solid var(--color-base-300)', padding: 'calc(var(--sp-1) * 6) calc(var(--sp-1) * 4)', display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 1)' }}>
-        <div style={{ padding: '0 calc(var(--sp-1) * 2) calc(var(--sp-1) * 5.5)' }}>
+        <div style={{ display: 'flex', padding: '0 calc(var(--sp-1) * 2) calc(var(--sp-1) * 5.5)' }}>
           <AppLogo size="sm" mark={<img src="../../../../assets/rotor-crimson.svg" alt="" />} name="Draven" dim="soft" />
         </div>
         {NAV.map((n) => {
