@@ -162,6 +162,15 @@ token either reaches a utility or is named in `EXCLUDED` with a reason;
 first failure. An Angular primitive's recipe is its
 manifest — `frameworks/angular/primitives/tag/` is the reference shape.
 
+**When `bun run check` is expected: once, when a plan's implementation is
+finished — not before every commit.** The individual gates are cheap and stay
+available per commit (`check:dimensions` after touching a framework layer,
+`check:tokens` after a rebuild), and a task that widens a gate should still
+watch that gate fail and then pass. But the full sweep is a completion gate,
+not a per-commit toll. Stating this is what lets a gate be expensive enough to
+be worth having: the `@dsCard` viewport check needs a browser and a real
+render, and it could never have been afforded at one run per commit.
+
 ## Conventions
 
 - **English only.** The repo was fully translated from Spanish; all code, comments, docs, and UI copy stay in English.
