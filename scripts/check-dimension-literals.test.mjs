@@ -301,10 +301,26 @@ test('a nested-parens call is deliberately out of scope, not misread', () => {
 });
 
 test('EXEMPT records the three out-of-scope literals this task leaves untouched, by name', () => {
-  assert.ok(EXEMPT.has('frameworks/react/components/display/Avatar.jsx:fontSize:d * 0.4'));
   assert.ok(EXEMPT.has('frameworks/react/components/brand/Rotor.jsx:width:48'));
   assert.ok(EXEMPT.has('frameworks/react/ui_kits/console/Shell.jsx:width:30'));
   assert.ok(EXEMPT.has('frameworks/react/ui_kits/console/LoginScreen.jsx:width:40'));
+});
+
+// --- Task 5: data-to-pixel projections, revealed by the interpolation fix --
+// Closing the interpolation hole also caught four sites that were never a
+// dimension literal to begin with: a chart's hover position and a calendar's
+// time-of-day position/duration are runtime projections of data, not design
+// dimensions, and have no token to read. Avatar's own ratio (the fifth site
+// the same hole used to hide) is NOT here: this task turns Avatar's diameter
+// into a token, so its ratio is no longer exempt at all -- it is legal
+// outright, via calc() over a real token.
+
+test('EXEMPT records the four data-to-pixel projections this task newly exempts, by name', () => {
+  assert.ok(EXEMPT.has('frameworks/react/components/charts/BarChart.jsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`'));
+  assert.ok(EXEMPT.has('frameworks/react/components/charts/LineChart.jsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/Calendar.jsx:top:`calc(${y(m)}px - var(--sp-1))`'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/Calendar.jsx:height:`max(calc(var(--sp-1) * 4.5), ${rawH}px)`'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/Avatar.jsx:fontSize:d * 0.4'));
 });
 
 // --- Fix pass 1: a stale exemption must fail, not pass silently ---------
@@ -602,4 +618,22 @@ test('a string that is not CSS is left alone', () => {
 test('a kebab-case CSS property is judged under its camelCase name', () => {
   const hits = scanInjectedCss("s.textContent = '.a{border-width:2px;box-shadow:0 0 0 2px var(--gold-soft)}';");
   assert.deepEqual(hits.map((h) => h.prop).sort(), ['borderWidth', 'boxShadow']);
+});
+
+// --- Task 5: a template interpolation must not hide the unit after it ----
+// `` `max(calc(var(--sp-1) * 2), ${d * 0.28}px)` `` passes today: UNIT_LITERAL
+// needs a digit immediately adjacent to a unit, and the interpolation's `}`
+// sits between the expression and `px`, breaking that adjacency.
+
+test('an interpolation does not hide the unit that follows it', () => {
+  assert.ok(scanValue('width', '`max(calc(var(--sp-1) * 2), ${d * 0.28}px)`'));
+  assert.ok(scanValue('height', '`${size}px`'));
+});
+
+test('an interpolation in a unit nothing models is still fine', () => {
+  assert.equal(scanValue('width', '`${share}%`'), null);
+});
+
+test('an interpolated derivation of tokens is fine', () => {
+  assert.equal(scanValue('fontSize', '`calc(${d} * 0.4)`'), null);
 });

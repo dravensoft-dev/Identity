@@ -40,5 +40,13 @@
     "text-xs": { "$value": { "value": 11, "unit": "px" }, "$description": "micro control text — field labels, shortcuts, eyebrow labels" },
     "text-2xs": { "$value": { "value": 10, "unit": "px" }, "$description": "column headers, row micro-labels" },
     "lh": { "$type": "number", "$value": 1, "$description": "glyph-tight line height — the control reset. Unlike every other dz member this is unitless, so it carries its own $type override: a line height is a number, not a dimension, the same distinction that puts lh in typography.json to begin with. Used wherever a box must be exactly its glyph — an icon inside a button, a standalone icon, an icon-only close/remove control — so the line box never throws the surrounding control out of alignment." }
+  },
+  "avatar": {
+    "$type": "dimension",
+    "$description": "Avatar diameters. The first family named after a component rather\nthan a role, and worth stating rather than glossing: dz and icon are named for\nroles. It earns its place because Avatar derives two values from its own\ndiameter — the initials at 0.4 and the presence dot at 0.28 — and a derivation\nneeds something to derive from. If a second component ever wants the same\nladder, rename this for the role instead of duplicating it.",
+    "xs": { "$value": { "value": 24, "unit": "px" } },
+    "sm": { "$value": { "value": 32, "unit": "px" } },
+    "md": { "$value": { "value": 40, "unit": "px" } },
+    "lg": { "$value": { "value": 56, "unit": "px" } }
   }
 }

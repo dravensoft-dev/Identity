@@ -184,6 +184,14 @@
   --size-icon-lg: var(--icon-lg);
   --size-icon-xl: var(--icon-xl);
 
+  /* avatar diameter → tokens/spacing.css. Same namespace as the icon sizes and
+     for the same reason: `.size-avatar-md` sets both width and height, which is
+     what a diameter is. */
+  --size-avatar-xs: var(--avatar-xs);
+  --size-avatar-sm: var(--avatar-sm);
+  --size-avatar-md: var(--avatar-md);
+  --size-avatar-lg: var(--avatar-lg);
+
   /* ---- effects → tokens/effects.css ------------------------------------ */
   --radius-*: initial;
   --radius-xs: var(--r-xs);

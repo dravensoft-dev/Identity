@@ -66,8 +66,14 @@ const PROPS = new Set([
 export const EXEMPT = new Map([
   ['frameworks/react/components/display/Calendar.jsx:zIndex:1',
    'local stacking inside a positioned container; does not join the global z order'],
-  ['frameworks/react/components/display/Avatar.jsx:fontSize:d * 0.4',
-   'a ratio scaling the initials with the avatar\'s own diameter, not a dimension — the rule governs dimensions, not the multiplier that derives one instance from another'],
+  ['frameworks/react/components/charts/BarChart.jsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`',
+   'yOf(values[hover]) projects the hovered data point onto the chart\'s own measured inner height — a runtime data-to-pixel projection, not a design dimension. Unlike Avatar\'s ratio (this same task turns that operand into a token), there is no token to give this one: the series values, their max, and the container\'s measured width all change at runtime, so nothing in tokens/src/ could stand in for it'],
+  ['frameworks/react/components/charts/LineChart.jsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`',
+   'the same yOf(values[hover]) projection as BarChart\'s own exemption above — a data point\'s value mapped onto the chart\'s measured pixel height, not a token'],
+  ['frameworks/react/components/display/Calendar.jsx:top:`calc(${y(m)}px - var(--sp-1))`',
+   'y(m) projects a clock minute onto the visible hour range, itself driven by the dayStart/dayEnd props — a time-to-pixel projection, not a design dimension; there is no token for an arbitrary minute of the day'],
+  ['frameworks/react/components/display/Calendar.jsx:height:`max(calc(var(--sp-1) * 4.5), ${rawH}px)`',
+   'the max()\'s floor, calc(var(--sp-1) * 4.5), already reads a token, and stays governed — only the computed arm is exempt: rawH is an event\'s duration in minutes projected to pixels, the same data-to-pixel category as the two chart entries above, never a fixed dimension'],
   ['frameworks/react/components/brand/Rotor.jsx:width:48',
    'Dravensoft\'s brand mark; the source spec is explicit that brand assets are not themeable, and the same logic covers its size — fixing it to a token would quietly make the mark resizable by a re-skin'],
   ['frameworks/react/ui_kits/console/Shell.jsx:width:30',
@@ -106,10 +112,35 @@ const BARE_NUMBER = /^\s*'?-?\d*\.?\d+'?\s*$/;
 /** Zero, in the forms the layer writes it. */
 const ZERO = /^\s*'?-?0(px|rem|em|%)?'?\s*$/;
 
-/** @param {string} prop @param {string} raw
+/** A template interpolation, read with balanced braces so a nested `{}` inside
+ *  the expression does not end it early. */
+function stripInterpolations(raw) {
+  let out = '';
+  for (let i = 0; i < raw.length; i++) {
+    if (raw[i] === '$' && raw[i + 1] === '{') {
+      let depth = 1;
+      let j = i + 2;
+      for (; j < raw.length && depth > 0; j++) {
+        if (raw[j] === '{') depth++;
+        else if (raw[j] === '}') depth--;
+      }
+      // `9`, not `0`: the marker stands where a rendered number will, and it
+      // must not read as the zero the ZERO rule forgives — `${d * 0.28}px`
+      // renders a dimension, and that is exactly what has to be caught.
+      out += '9';
+      i = j - 1;
+      continue;
+    }
+    out += raw[i];
+  }
+  return out;
+}
+
+/** @param {string} prop @param {string} rawValue
  *  @returns {{reason: string} | null} null when the value is legal */
-export function scanValue(prop, raw) {
+export function scanValue(prop, rawValue) {
   if (!PROPS.has(prop)) return null;
+  const raw = stripInterpolations(rawValue);
   if (ZERO.test(raw)) return null;
   if (FREE_UNIT.test(raw)) return null;
 
@@ -621,9 +652,10 @@ function* walk(dir) {
  *  exemption for a site that no longer produces a violation, because it
  *  was fixed, deleted, or its raw text changed shape. Named exemptions
  *  are only honest if a stale one is loud: `EXEMPT` is how `Calendar`'s
- *  local `zIndex`, `Avatar`'s ratio, and `Rotor`'s brand-mark size stay
- *  legal on purpose, and the same map going quietly out of date would let
- *  a real regression hide behind an entry nobody is reading anymore. */
+ *  local `zIndex`, the chart/`Calendar` data-to-pixel projections, and
+ *  `Rotor`'s brand-mark size stay legal on purpose, and the same map going
+ *  quietly out of date would let a real regression hide behind an entry
+ *  nobody is reading anymore. */
 export function staleExemptions(matchedKeys) {
   return [...EXEMPT.keys()].filter((k) => !matchedKeys.has(k));
 }

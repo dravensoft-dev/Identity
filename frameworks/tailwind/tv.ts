@@ -187,7 +187,7 @@ const handWritten = {
   tracking: [{ tracking: ['label', 'field-label', 'column-header', 'badge', 'uppercase-status', 'mono-nav'] }],
   leading: [{ leading: ['body', 'ctl'] }],
   blur: [{ blur: ['scrim'] }],
-  size: [{ size: ['icon-sm', 'icon-md', 'icon-lg', 'icon-xl'] }],
+  size: [{ size: ['icon-sm', 'icon-md', 'icon-lg', 'icon-xl', 'avatar-xs', 'avatar-sm', 'avatar-md', 'avatar-lg'] }],
   ease: [{ ease: ['emphatic'] }],
   'max-w': [{ 'max-w': ['page'] }],
   'font-weight': [{ font: ['regular'] }],
