@@ -10,9 +10,9 @@ test('GATES lists the eight check gates', () => {
   );
 });
 
-test('testStep runs `bun test` under bun', () => {
+test('testStep runs every suite under bun', () => {
   const step = testStep({ isBun: true, testFiles: ['a.test.mjs', 'b.test.mjs'] });
-  assert.deepEqual(step.args, ['test', 'scripts']);
+  assert.deepEqual(step.args, ['test', 'scripts', 'frameworks/react/test', 'frameworks/angular/test']);
 });
 
 test('testStep runs `node --test` over the discovered files under node', () => {

@@ -8,6 +8,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`AppLogo`** (brand) — the lock-up, a mark paired with a product name, at four steps.
+  `mark` and `name` are required and nothing defaults, so a consumer never ships
+  Dravensoft's trademark by omission. The manual's three variants are expressible
+  without a `variant` prop.
+- **`SideNav`** (navigation) — the sidebar's navigation list. An item with `href`
+  renders an `<a>`, without one a `<button>`; the active item carries
+  `aria-current="page"`.
+- **`ActivityFeed`** (display) — the event feed, with Badge's tone vocabulary and a
+  `renderItem` escape hatch.
+- **`UnauthCard`** (display) — the signed-out panel. A frame, not a form; renders `Card`
+  internally and does not centre itself. `Card`'s own consumers are unaffected, but
+  because `Card` exposes no padding prop, `UnauthCard` reaches the signed-out panel's
+  36px padding with a 16px wrapper inside `Card`'s 20px. It keeps the panel's rendered
+  width of 454px through a derivation
+  (`calc(var(--sp-1) * 95 + var(--sp-1) * 18 + var(--bw) * 2)`) rather than a single
+  step, because the panel it replaced carried its width, padding and border on one
+  content-box element.
+- **`logo` token family** — `--logo-mark-sm|md|lg|xl` (30/40/54/124) and
+  `--logo-text-sm|md|lg|xl` (17/24/34/78). A fixed repertoire rather than one
+  mark-to-wordmark ratio, because no single ratio is legible at every step.
+- **A test suite per framework layer** — `frameworks/react/test/` and
+  `frameworks/angular/test/`, run by `bun run test:react` / `test:angular`, with
+  `bun run test` running all three suites and `bun run check` including them.
 - **`scripts/check-dimension-literals.mjs`, and the promise it is proof of.** Arena's
   claim is that changing a value in `tokens/src/` moves every layer; for the React
   layer this was false — it wrote dimensions as bare literals, holding one
@@ -103,6 +126,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **`Rotor`'s `size` takes the same four named steps as `AppLogo`**, reading
+  `--logo-mark-*`. A number is no longer accepted: a mark's drawn size is a scale, and
+  two brand components resting on opposite reasonings would leave one looking arbitrary.
+- **`Shell` renders the brand manual's Primary variant.** It rendered a crimson mark
+  beside an undivided `DRAVENSOFT` — no variant at all. This is the defect that argued
+  for `AppLogo` existing.
+- **`EXEMPT` in `check-dimension-literals.mjs` goes from eight entries to five.** All
+  three brand exemptions are gone and none replaced them; `PASSTHROUGH` gains `AppLogo`
+  beside `Rotor`, so a raw number passed to either still fails.
+- The console reads all four components instead of building them by hand, and its nav
+  items are anchors rather than buttons, whose default navigation the shell suppresses
+  through `onNav`'s event argument.
 - **The dimension gate reaches four kinds of site, not one.** It now judges `boxShadow`
   and `transform`, template-literal interpolations, CSS injected as a string, and SVG
   presentation attributes. Each hole was found by audit while the gate reported the tree

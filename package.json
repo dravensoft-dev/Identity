@@ -4,6 +4,8 @@
   "type": "module",
   "devDependencies": {
     "@tailwindcss/cli": "4.3.3",
+    "react": "18",
+    "react-dom": "18",
     "style-dictionary": "^4",
     "tailwind-merge": "^3.6.0",
     "tailwind-variants": "^3.2.2",
@@ -20,6 +22,9 @@
     "check:dimensions": "bun scripts/check-dimension-literals.mjs",
     "check:fonts": "bun scripts/check-fonts-generated.mjs",
     "check": "bun scripts/check-all.mjs",
-    "test": "bun test scripts/"
+    "test:scripts": "bun test scripts",
+    "test:react": "bun test frameworks/react/test",
+    "test:angular": "bun test frameworks/angular/test",
+    "test": "bun test scripts frameworks/react/test frameworks/angular/test"
   }
 }

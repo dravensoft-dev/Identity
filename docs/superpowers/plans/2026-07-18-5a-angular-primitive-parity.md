@@ -11,20 +11,20 @@
 | 3 | `2026-07-18-3-framework-layer-token-coverage.md` | **Executed** (unreleased) |
 | 4 | `2026-07-18-4-token-geometry-boundary.md` | **Executed** (unreleased) |
 | 4.5 | `2026-07-19-4.5-token-debt-and-gate-blind-spots.md` | **Executed** |
-| 4.75 | `2026-07-19-4.75-applogo-sidenav-activityfeed-unauthcard-design.md` | Design approved, plan not yet written — fixed the roster this plan counts against (18 → 21 primitives) before this plan's own tasks run |
+| 4.75 | `2026-07-19-4.75-applogo-sidenav-activityfeed-unauthcard-design.md` | **Executed** (unreleased) — raised this plan's roster from 18 to 21 primitives, and its plan's Task 7 wrote Tasks 24–27 below |
 | 5a | `2026-07-18-5a-angular-primitive-parity.md` | **This plan** — pending |
 | 5b | `2026-07-18-5b-tailwind-manifest-parity.md` | Pending — depends on 5a's infrastructure (Tasks 1–3) |
 | 5.5 | `2026-07-19-5.5-chart-geometry-token-target-design.md` | DRAFT — not approved, seven open questions |
 | 6 | `2026-07-18-6-four-package-build-publish.md` | Pending |
 
-**Goal:** Give the Angular layer the 21 primitives Material does not provide, each one styled by a Tailwind manifest it does not own, and each one visible and machine-checked — so `@dravensoft/arena-angular` can be published as a layer rather than as one component. Eighteen of the 21 are this plan's own tasks; spec 4.75 added the other three (`app-logo`, `activity-feed`, `unauth-card`) to the roster after this plan was written, and their tasks are not yet authored here (see "What this plan does not do").
+**Goal:** Give the Angular layer the 21 primitives Material does not provide, each one styled by a Tailwind manifest it does not own, and each one visible and machine-checked — so `@dravensoft/arena-angular` can be published as a layer rather than as one component. Eighteen of the 21 are Tasks 4–22; spec 4.75 added the other three (`app-logo`, `activity-feed`, `unauth-card`) to the roster after this plan was written, and they are Tasks 24–26. `SideNav`, that spec's fourth component, is Task 27 — a Material bridge rather than a primitive, because Material's `mat-nav-list` already provides the item list.
 
 **Architecture:** Three gates come first and nothing else lands until they exist: a committed compiled utility stylesheet (so a static page can render a manifest), a manifest-driven specimen harness, and an Angular template typecheck. Then the work is vertical slices — one component at a time, manifest + recipe + primitive + prompt + specimen + barrel, gated and committed together. The three SVG charts come last because they are the only slice with genuinely new engineering (a `ResizeObserver` behind a signal) and the only one with no manifest.
 
 **Tech Stack:** Bun (runtime, test runner), Tailwind CSS 4.3.3, `tailwind-variants` 3.2.2, Angular 22 (standalone, `OnPush`, signals), `@angular/compiler-cli` (`ngc`) for the template typecheck, TypeScript 6.0, `node:test` + `node:assert/strict`.
 
 **Source spec:** `docs/superpowers/specs/2026-07-18-5-framework-layer-parity-design.md`
-**Also depends on:** `docs/superpowers/specs/2026-07-19-4.75-applogo-sidenav-activityfeed-unauthcard-design.md` — approved in design, no plan written yet. It fixed the roster this plan counts against before this plan's own tasks run: 18 primitives becomes 21 (`app-logo`, `activity-feed`, `unauth-card` join the roster; `SideNav` does not — its Angular story is a `mat-nav-list` bridge in `theme/arena-material.css`, not a primitive).
+**Also depends on:** `docs/superpowers/specs/2026-07-19-4.75-applogo-sidenav-activityfeed-unauthcard-design.md` — executed; the four React components exist. It fixed the roster this plan counts against: 18 primitives becomes 21 (`app-logo`, `activity-feed`, `unauth-card` join the roster; `SideNav` does not — its Angular story is a `mat-nav-list` bridge in `theme/arena-material.css`, not a primitive).
 **Split from:** that spec's phases 1 and 2. Phase 3 (the 21 orphan manifests) is `2026-07-18-5b-tailwind-manifest-parity.md` and consumes Tasks 1–3 of this plan.
 **Downstream, do not implement here:** `specs/2026-07-18-6-four-package-build-publish-design.md` (plan 6).
 
@@ -43,12 +43,16 @@ Verified on 2026-07-19, at merge commit `44a72ae` on `main`, with `bun run check
   duration; `--focus-width` has consumers. The dimension gate reads four kinds of site
   (declaration, template interpolation, injected CSS, SVG attribute), so a literal
   smuggled into a `<style>` string or an SVG attribute now fails here too.
-- **Spec 4.75 is approved, and this plan's roster comes from it.** No plan has been
-  written from it yet and no code has landed, but its design is settled: `AppLogo`,
-  `ActivityFeed` and `UnauthCard` each get an `arena-*` primitive here, `SideNav` gets a
-  `mat-nav-list` bridge in `arena-material.css` instead — so the primitive count this
-  plan targets is 21, not the 18 its own Tasks 4–23 write, and the three new primitives'
-  tasks are not part of this document (see "What this plan does not do").
+- **Spec 4.75 has executed, and this plan's roster comes from it.** `AppLogo`,
+  `SideNav`, `ActivityFeed` and `UnauthCard` exist in React, the `logo` token family
+  backs the two brand components, and `frameworks/tailwind/theme.css` already exposes
+  `size-logo-mark-*` and `text-logo-*`. `AppLogo`, `ActivityFeed` and `UnauthCard` each
+  get an `arena-*` primitive here (Tasks 24–26); `SideNav` gets a `mat-nav-list` bridge
+  in `arena-material.css` instead (Task 27). The primitive count this plan targets is
+  therefore 21, not the 18 Tasks 4–22 write.
+- **Each framework layer now has a test suite.** `frameworks/angular/test/` holds
+  `tag-variants.test.ts`, run by `bun run test:angular` and included in `bun run check`.
+  Every slice below adds a file there beside it.
 - **The Angular layer holds exactly one primitive.** `frameworks/angular/primitives/` is `index.ts` + `tag/`. Nothing in the repo has ever compiled it: there is no Angular toolchain in `package.json` at all.
 - **The Tailwind layer is never compiled to a file.** `scripts/lib/tailwind-compile.mjs` compiles it into a temp dir for the gates and deletes it. No stylesheet a browser can load exists yet — Task 1 is what changes that.
 
@@ -5082,11 +5086,873 @@ git commit -m "feat(angular): add the doughnut-chart primitive"
 
 ---
 
+## Tasks 24–27 run before Task 23, and are numbered after it
+
+Task 23 was written when this plan ended at 22 slices. Spec 4.75 then shipped four React
+components and raised the roster to 21 primitives, and these four tasks are what that
+spec's own plan (4.75, Task 7) owed this document. They keep the numbers they were
+promised — 24, 25, 26 — and they sit **before** the closeout in this file because that is
+where they run: Task 23 cannot honestly claim 21 primitives until they have landed.
+Task 27 is not a primitive at all; it is `SideNav`'s Angular story, which is a Material
+bridge.
+
+They follow "The shape of a slice" above unchanged, with one addition the tree gained
+after that section was written: **each slice now also writes a test file in
+`frameworks/angular/test/`**, beside `tag-variants.test.ts`, asserting the recipe rather
+than the wrapper. `bun run test:angular` runs them and `bun run check` includes them.
+
+---
+
+## Task 24: AppLogo
+
+**Reference:** `frameworks/react/components/brand/AppLogo.jsx`, demoed in
+`frameworks/react/components/brand/brand.card.html`. Source spec:
+`docs/superpowers/specs/2026-07-19-4.75-applogo-sidenav-activityfeed-unauthcard-design.md`.
+
+**Nothing defaults, and that is the component's argument.** Arena ships MIT: a lock-up
+that rendered Dravensoft's mark when passed nothing would ship someone else's trademark
+by omission. `name` is `input.required`, and the mark is projected content the consumer
+must supply — an `arena-app-logo` with an empty projection is a bug in the call site, not
+a variant.
+
+**The mark's slot is sized; the mark is not.** React clones the mark node and stretches it
+to fill the slot, because a mark carrying its own width and a `size` input would fight,
+and which one won would decide how the mark sat against the wordmark — the one
+relationship a lock-up exists to hold. The manifest does the same with child variants
+(`*:block *:w-full *:h-full`) rather than by touching the projected node.
+
+**Files:**
+- Create: `frameworks/tailwind/components/AppLogo.manifest.json`
+- Create: `frameworks/tailwind/components/AppLogo.card.html`
+- Create: `frameworks/angular/primitives/app-logo/{app-logo.ts,app-logo.variants.ts,app-logo.prompt.md,index.ts}`
+- Create: `frameworks/angular/test/app-logo-variants.test.ts`
+- Modify: `frameworks/angular/primitives/index.ts`
+
+**Interfaces:**
+- Produces: `AppLogo` (selector `arena-app-logo`), inputs `name: string` (required),
+  `dim?: string`, `size: 'sm'|'md'|'lg'|'xl'`, `orientation: 'horizontal'|'vertical'`;
+  `appLogoStyles`.
+
+- [ ] **Step 1: Write the manifest**
+
+Create `frameworks/tailwind/components/AppLogo.manifest.json`:
+
+```json
+{
+  "component": "AppLogo",
+  "slots": {
+    "root": "inline-flex items-center",
+    "mark": "inline-flex flex-none *:block *:w-full *:h-full",
+    "name": "font-display font-black tracking-tight uppercase text-base-content",
+    "dim": "text-base-content/62"
+  },
+  "variants": {
+    "size": {
+      "sm": { "mark": "size-logo-mark-sm", "name": "text-logo-sm" },
+      "md": { "mark": "size-logo-mark-md", "name": "text-logo-md" },
+      "lg": { "mark": "size-logo-mark-lg", "name": "text-logo-lg" },
+      "xl": { "mark": "size-logo-mark-xl", "name": "text-logo-xl" }
+    },
+    "orientation": {
+      "horizontal": { "root": "flex-row gap-2.5" },
+      "vertical": { "root": "flex-col gap-3" }
+    }
+  },
+  "defaultVariants": { "size": "md", "orientation": "horizontal" }
+}
+```
+
+`size-logo-mark-*` and `text-logo-*` already exist in `frameworks/tailwind/theme.css` —
+plan 4.75 added the `logo` family and wired both namespaces. **One `size` input picks
+both the mark's box and the wordmark's size**: they are one decision, and the token
+family is a fixed repertoire of four pairs rather than one ratio, because no single
+mark-to-wordmark ratio is legible at every step.
+
+- [ ] **Step 2: Write the recipe and the primitive**
+
+Create `frameworks/angular/primitives/app-logo/app-logo.variants.ts`:
+
+```ts
+import { tv } from '../../../tailwind/tv';
+import manifest from '../../../tailwind/components/AppLogo.manifest.json' with { type: 'json' };
+
+export const appLogoStyles = tv(manifest);
+```
+
+Create `frameworks/angular/primitives/app-logo/app-logo.ts`:
+
+```ts
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { appLogoStyles } from './app-logo.variants';
+
+type Size = 'sm' | 'md' | 'lg' | 'xl';
+type Orientation = 'horizontal' | 'vertical';
+
+/** Brand lock-up: a projected mark beside or above a product name. Nothing defaults. */
+@Component({
+  selector: 'arena-app-logo',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <span [class]="styles().root()">
+      <span [class]="styles().mark()"><ng-content /></span>
+      <span [class]="styles().name()">
+        {{ name() }}@if (dim(); as tail) {<span [class]="styles().dim()">{{ tail }}</span>}
+      </span>
+    </span>
+  `,
+})
+export class AppLogo {
+  readonly name = input.required<string>();
+  readonly dim = input<string>();
+  readonly size = input<Size>('md');
+  readonly orientation = input<Orientation>('horizontal');
+
+  protected readonly styles = computed(() =>
+    appLogoStyles({ size: this.size(), orientation: this.orientation() }));
+}
+```
+
+The `@if` sits **immediately** after `{{ name() }}` with no whitespace between them: the
+two-ink wordmark is one word split into two inks (`DRAVEN` + `SOFT`), and a space there
+is a different lock-up.
+
+- [ ] **Step 3: Write the prompt and the barrels**
+
+Create `frameworks/angular/primitives/app-logo/app-logo.prompt.md`:
+
+```markdown
+Arena brand lock-up. Project the mark as the component's content and pass the product
+name; one `size` picks both the mark's box and the wordmark, from the `--logo-*` scale.
+Styling is the sibling `app-logo.variants.ts` recipe.
+
+```html
+<arena-app-logo name="Draven" dim="soft" size="md">
+  <img src="/assets/your-mark.svg" alt="" />
+</arena-app-logo>
+
+<arena-app-logo name="Delivery" size="lg" orientation="vertical">
+  <img src="/assets/your-client-mark.svg" alt="" />
+</arena-app-logo>
+```
+
+**Do / Don't**
+- Give the projected mark no width or height of its own. The slot sizes it; a mark that
+  brings its own dimensions breaks the ratio the lock-up exists to hold.
+- Use `dim` for the second ink of a two-part wordmark, and pass no space between the
+  parts — `name="Draven" dim="soft"` renders DRAVENSOFT in two inks, one word.
+- Don't ship it with a mark that is not yours. Nothing defaults here on purpose: Arena is
+  MIT and a default mark would be someone else's trademark travelling in your build.
+- Don't reach for a fifth size. Four steps are the repertoire; a size between them is a
+  token question, not a call-site one.
+```
+
+Create `frameworks/angular/primitives/app-logo/index.ts`:
+
+```ts
+export * from './app-logo';
+export * from './app-logo.variants';
+```
+
+Add `export * from './app-logo';` to `frameworks/angular/primitives/index.ts`,
+alphabetically (first — before `./alert`).
+
+- [ ] **Step 4: Write the test**
+
+Create `frameworks/angular/test/app-logo-variants.test.ts`:
+
+```ts
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { appLogoStyles } from '../primitives/app-logo/app-logo.variants';
+
+test('every size pairs a mark step with its wordmark step', () => {
+  for (const size of ['sm', 'md', 'lg', 'xl'] as const) {
+    const s = appLogoStyles({ size });
+    assert.match(s.mark(), new RegExp(`size-logo-mark-${size}\\b`));
+    assert.match(s.name(), new RegExp(`text-logo-${size}\\b`));
+  }
+});
+
+test('orientation changes the axis and the gap, nothing else', () => {
+  assert.match(appLogoStyles({ orientation: 'horizontal' }).root(), /flex-row/);
+  assert.match(appLogoStyles({ orientation: 'vertical' }).root(), /flex-col/);
+});
+
+test('the mark slot stretches its projected child rather than sizing it', () => {
+  assert.match(appLogoStyles().mark(), /\*:w-full/);
+});
+```
+
+- [ ] **Step 5: Write the specimen**
+
+Create `frameworks/tailwind/components/AppLogo.card.html`:
+
+```html
+<!-- @dsCard group="Angular" viewport="760x560" name="AppLogo" subtitle="Four steps of the lock-up, rendered from AppLogo.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:var(--sp-6)}.row{display:flex;flex-wrap:wrap;gap:calc(var(--sp-1) * 6);align-items:center;margin-bottom:var(--sp-4)}.sub{font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-label);line-height:var(--lh-snug);color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:var(--sp-1)}</style>
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./AppLogo.manifest.json')).json();
+
+function logo(size, orientation = 'horizontal') {
+  const c = classesFor(manifest, { size, orientation });
+  return el('span', { class: c.root },
+    el('span', { class: c.mark }, el('img', { src: '../../../assets/rotor-crimson.svg', alt: '' })),
+    el('span', { class: c.name }, 'Draven', el('span', { class: c.dim, text: 'soft' })));
+}
+
+mountSpecimen({ sections: [
+  section('Horizontal — sm, md, lg', [logo('sm'), logo('md'), logo('lg')]),
+  section('Horizontal — xl', [logo('xl')]),
+  section('Vertical', [logo('md', 'vertical'), logo('lg', 'vertical')]),
+]});
+</script></body></html>
+```
+
+`assets/rotor-crimson.svg` is the mark the console's own call sites use; check the path
+resolves from `frameworks/tailwind/components/` before concluding anything about the
+manifest — a broken image and an unstyled specimen look nothing alike, but neither is
+evidence.
+
+- [ ] **Step 6: Rebuild, gate, look, commit**
+
+Run: `bun run build:tailwind && bun run check`
+Expected: `check-all: all 11 step(s) passed`.
+
+Compare against React's `brand/brand.card.html` in dark, light and `.arena-compact`, at
+all four steps. Measure the mark and the wordmark in the Computed panel rather than
+eyeballing them: `sm` is 30px/17px, `md` 40px/24px, `lg` 54px/34px, `xl` 124px/78px.
+
+```bash
+git add frameworks/tailwind/components/AppLogo.manifest.json \
+        frameworks/tailwind/components/AppLogo.card.html \
+        frameworks/tailwind/utilities.css \
+        frameworks/angular/primitives/app-logo frameworks/angular/primitives/index.ts \
+        frameworks/angular/test/app-logo-variants.test.ts
+git commit -m "feat(angular): add the app-logo primitive"
+```
+
+---
+
+## Task 25: ActivityFeed
+
+**Reference:** `frameworks/react/components/display/ActivityFeed.jsx`, demoed in
+`frameworks/react/components/display/activity-feed.card.html`.
+
+The component holds a **grammar** — someone did something to something, then — and the
+typography each part takes. The tone vocabulary is Badge's, taken rather than restated: a
+fourth list that is nearly the same as the first is how they drift apart.
+
+**The dot takes `bg-current` and the tone sets its text colour**, which is `Tag`'s
+precedent and not an aesthetic preference: the ledger's rule is that danger never gets
+`bg-error`, and a tone map that wrote backgrounds directly would have to break it for one
+of its seven values. `bg-current` keeps every tone spelled the same way.
+
+**Files:**
+- Create: `frameworks/tailwind/components/ActivityFeed.manifest.json`
+- Create: `frameworks/tailwind/components/ActivityFeed.card.html`
+- Create: `frameworks/angular/primitives/activity-feed/{activity-feed.ts,activity-feed.variants.ts,activity-feed.prompt.md,index.ts}`
+- Create: `frameworks/angular/test/activity-feed-variants.test.ts`
+- Modify: `frameworks/angular/primitives/index.ts`
+
+**Interfaces:**
+- Produces: `ActivityFeed` (selector `arena-activity-feed`), input
+  `items: ActivityItem[]`, where
+  `ActivityItem = {id?: string|number, actor: string, action: string, target?: string, time?: string, tone?: Tone}`
+  and `Tone = 'neutral'|'accent'|'gold'|'success'|'warning'|'danger'|'info'`;
+  `activityFeedStyles`.
+
+- [ ] **Step 1: Write the manifest**
+
+Create `frameworks/tailwind/components/ActivityFeed.manifest.json`:
+
+```json
+{
+  "component": "ActivityFeed",
+  "slots": {
+    "root": "flex flex-col list-none m-0 p-0",
+    "item": "flex items-center gap-3 py-3.5",
+    "dot": "flex-none size-2 rounded-pill bg-current",
+    "text": "font-body text-ctl text-base-content/82",
+    "actor": "font-bold text-base-content",
+    "target": "font-mono text-ctl-md text-secondary",
+    "time": "ml-auto font-mono text-ctl-sm text-base-content/62"
+  },
+  "variants": {
+    "tone": {
+      "neutral": { "dot": "text-base-content/82" },
+      "accent": { "dot": "text-primary" },
+      "gold": { "dot": "text-secondary" },
+      "success": { "dot": "text-success" },
+      "warning": { "dot": "text-warning" },
+      "danger": { "dot": "text-error" },
+      "info": { "dot": "text-info" }
+    },
+    "divided": {
+      "true": { "item": "border-t-[length:var(--bw)] border-base-300" },
+      "false": { "item": "border-t-0" }
+    }
+  },
+  "defaultVariants": { "tone": "accent", "divided": "true" }
+}
+```
+
+`divided` is a variant rather than a `first:` modifier because the rule is "every row but
+the first", and `first:border-t-0` would put the exception in the manifest while the
+component still has to know which row is first. The template decides; the manifest holds
+both spellings. `size-2` is `calc(var(--sp-1) * 2)` — 8px, React's dot.
+
+- [ ] **Step 2: Write the recipe and the primitive**
+
+Create `frameworks/angular/primitives/activity-feed/activity-feed.variants.ts`:
+
+```ts
+import { tv } from '../../../tailwind/tv';
+import manifest from '../../../tailwind/components/ActivityFeed.manifest.json' with { type: 'json' };
+
+export const activityFeedStyles = tv(manifest);
+```
+
+Create `frameworks/angular/primitives/activity-feed/activity-feed.ts`:
+
+```ts
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { activityFeedStyles } from './activity-feed.variants';
+
+export type ActivityTone = 'neutral' | 'accent' | 'gold' | 'success' | 'warning' | 'danger' | 'info';
+
+export interface ActivityItem {
+  id?: string | number;
+  actor: string;
+  action: string;
+  target?: string;
+  time?: string;
+  tone?: ActivityTone;
+}
+
+/** An event feed: someone did something to something, then. */
+@Component({
+  selector: 'arena-activity-feed',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <ul [class]="base().root()">
+      @for (item of items(); track item.id ?? $index; let first = $first) {
+        <li [class]="row(item, first).item()">
+          <span [class]="row(item, first).dot()"></span>
+          <span [class]="base().text()">
+            <b [class]="base().actor()">{{ item.actor }}</b> {{ item.action }}
+            @if (item.target) {
+              <span [class]="base().target()">{{ item.target }}</span>
+            }
+          </span>
+          @if (item.time) {
+            <span [class]="base().time()">{{ item.time }}</span>
+          }
+        </li>
+      }
+    </ul>
+  `,
+})
+export class ActivityFeed {
+  readonly items = input<readonly ActivityItem[]>([]);
+
+  protected readonly base = () => activityFeedStyles();
+  protected row(item: ActivityItem, first: boolean) {
+    return activityFeedStyles({ tone: item.tone ?? 'accent', divided: first ? 'false' : 'true' });
+  }
+}
+```
+
+React's `renderItem` escape hatch has **no signal-input analogue** and does not cross:
+Angular's version of "replace the row entirely" is content projection or a structural
+directive, and either is a design decision this plan does not get to make alone. Record it
+as an open question in the closeout rather than inventing an API — the Angular primitive
+ships the grammar, and a consumer needing a different row composes the slots by hand from
+`activityFeedStyles`, which is exported for exactly that.
+
+- [ ] **Step 3: Write the prompt and the barrels**
+
+Create `frameworks/angular/primitives/activity-feed/activity-feed.prompt.md`:
+
+```markdown
+Arena event feed. Each item is an actor, an action, an optional target and an optional
+time; `tone` colours the leading dot from Badge's vocabulary. Styling is the sibling
+`activity-feed.variants.ts` recipe.
+
+```html
+<arena-activity-feed [items]="[
+  { id: 1, actor: 'Marta', action: 'deployed', target: 'billing@2.4.1', time: '2m', tone: 'success' },
+  { id: 2, actor: 'Ivan', action: 'opened an incident on', target: 'auth', time: '18m', tone: 'danger' },
+  { id: 3, actor: 'Rae', action: 'approved the rollback', time: '1h' }
+]" />
+```
+
+**Do / Don't**
+- Keep the grammar. The actor is bold, the action is prose, the target is mono — a feed
+  whose rows each read differently is a list, not a feed.
+- Use `tone` for what the event *means*, not for variety. Seven tones cycling by row is
+  decoration, and it makes the one row that matters invisible.
+- Don't put controls in a row. A feed reports; an action on an event belongs on the thing
+  itself.
+```
+
+Create `frameworks/angular/primitives/activity-feed/index.ts`:
+
+```ts
+export * from './activity-feed';
+export * from './activity-feed.variants';
+```
+
+Add `export * from './activity-feed';` to `frameworks/angular/primitives/index.ts`,
+alphabetically (after `./alert`).
+
+- [ ] **Step 4: Write the test**
+
+Create `frameworks/angular/test/activity-feed-variants.test.ts`:
+
+```ts
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { activityFeedStyles } from '../primitives/activity-feed/activity-feed.variants';
+
+test('the dot carries the tone as a colour, never as a fill', () => {
+  for (const tone of ['neutral', 'accent', 'gold', 'success', 'warning', 'danger', 'info'] as const) {
+    const dot = activityFeedStyles({ tone }).dot();
+    assert.match(dot, /bg-current/);
+    assert.doesNotMatch(dot, /\bbg-(error|success|warning|info|primary|secondary)/);
+  }
+});
+
+test('the first row carries no divider and every other one does', () => {
+  assert.match(activityFeedStyles({ divided: 'true' }).item(), /border-t-\[length:var\(--bw\)\]/);
+  assert.match(activityFeedStyles({ divided: 'false' }).item(), /border-t-0/);
+});
+```
+
+- [ ] **Step 5: Write the specimen**
+
+Create `frameworks/tailwind/components/ActivityFeed.card.html`:
+
+```html
+<!-- @dsCard group="Angular" viewport="760x360" name="ActivityFeed" subtitle="The grammar and the tone dots, rendered from ActivityFeed.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:var(--sp-6)}.row{display:flex;flex-direction:column;gap:var(--sp-4);margin-bottom:var(--sp-4)}.sub{font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-label);line-height:var(--lh-snug);color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:var(--sp-1)}</style>
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./ActivityFeed.manifest.json')).json();
+
+function feed(items) {
+  const root = el('ul', { class: classesFor(manifest).root });
+  items.forEach((item, i) => {
+    const c = classesFor(manifest, { tone: item.tone ?? 'accent', divided: String(i > 0) });
+    const text = el('span', { class: c.text }, el('b', { class: c.actor, text: item.actor }), ` ${item.action} `);
+    if (item.target) text.append(el('span', { class: c.target, text: item.target }));
+    const li = el('li', { class: c.item }, el('span', { class: c.dot }), text);
+    if (item.time) li.append(el('span', { class: c.time, text: item.time }));
+    root.append(li);
+  });
+  root.style.width = '520px';
+  return root;
+}
+
+mountSpecimen({ sections: [
+  section('A feed', [feed([
+    { actor: 'Marta', action: 'deployed', target: 'billing@2.4.1', time: '2m', tone: 'success' },
+    { actor: 'Ivan', action: 'opened an incident on', target: 'auth', time: '18m', tone: 'danger' },
+    { actor: 'Rae', action: 'approved the rollback', time: '1h' },
+    { actor: 'Noor', action: 'invited', target: 'j.okafor@client.io', time: '3h', tone: 'info' },
+  ])]),
+]});
+</script></body></html>
+```
+
+- [ ] **Step 6: Rebuild, gate, look, commit**
+
+Run: `bun run build:tailwind && bun run check`
+Expected: `check-all: all 11 step(s) passed`.
+
+Compare against React's `display/activity-feed.card.html` in dark, light and
+`.arena-compact`. The first row must have no rule above it, and the times must align on
+their right edge.
+
+```bash
+git add frameworks/tailwind/components/ActivityFeed.manifest.json \
+        frameworks/tailwind/components/ActivityFeed.card.html \
+        frameworks/tailwind/utilities.css \
+        frameworks/angular/primitives/activity-feed frameworks/angular/primitives/index.ts \
+        frameworks/angular/test/activity-feed-variants.test.ts
+git commit -m "feat(angular): add the activity-feed primitive"
+```
+
+---
+
+## Task 26: UnauthCard
+
+**Reference:** `frameworks/react/components/display/UnauthCard.jsx`, demoed in
+`frameworks/react/components/display/unauth-card.card.html`.
+
+A **frame, not a form**: it knows nothing about credentials, which is what lets one
+component serve sign-in, "check your inbox", "this link expired" and two-factor entry.
+Fields are composed inside it from Material's form controls, dressed by
+`arena-material.css`. It does **not** centre itself — the product owns the page.
+
+**Two numbers here are arithmetic, not taste, and both must be copied exactly:**
+
+1. **The width.** The panel this replaced put its width, its padding and its border on one
+   content-box element, so reproducing its rendered width means adding the three back
+   together: 95 steps of content, 18 of padding, and both hairlines —
+   `calc(var(--sp-1) * 95 + var(--sp-1) * 18 + var(--bw) * 2)` = 454px. A plain `* 95`
+   silently narrows the panel by 74px.
+2. **The padding.** React renders `Card` and pads *inside* it, because `Card` pads at
+   `calc(var(--sp-1) * 5)` and exposes no padding prop: 20px + 16px is the 36px this
+   figure has always had. Keep the inner wrapper; do not "simplify" it to `p-9`.
+
+**The `panel` slot duplicates `Card`'s surface, and nothing gates that.** `Card` is
+Material's in the Angular layer (`mat-card`) and its manifest is plan **5b**'s Task 12,
+which runs *after* this one — so this manifest carries the surface itself. When 5b's
+`Card.manifest.json` lands, the two must agree; no gate compares them, the same hazard
+`Tag.manifest.json`/`arena-tag` carries. Check by hand, and say so in the manifest task
+there.
+
+**Files:**
+- Create: `frameworks/tailwind/components/UnauthCard.manifest.json`
+- Create: `frameworks/tailwind/components/UnauthCard.card.html`
+- Create: `frameworks/angular/primitives/unauth-card/{unauth-card.ts,unauth-card.variants.ts,unauth-card.prompt.md,index.ts}`
+- Create: `frameworks/angular/test/unauth-card-variants.test.ts`
+- Modify: `frameworks/angular/primitives/index.ts`
+
+**Interfaces:**
+- Produces: `UnauthCard` (selector `arena-unauth-card`), inputs `eyebrow?: string`,
+  `title?: string`; projection slots `[brand]`, default content, and `[footer]`;
+  `unauthCardStyles`.
+
+- [ ] **Step 1: Write the manifest**
+
+Create `frameworks/tailwind/components/UnauthCard.manifest.json`:
+
+```json
+{
+  "component": "UnauthCard",
+  "slots": {
+    "root": "w-full max-w-[calc(var(--sp-1)*95+var(--sp-1)*18+var(--bw)*2)]",
+    "panel": "bg-base-200 border-[length:var(--bw)] border-base-300 rounded-lg overflow-hidden shadow-3",
+    "body": "p-4",
+    "brand": "flex mb-7",
+    "eyebrow": "font-mono text-ctl-xs tracking-label uppercase text-primary mb-1.5",
+    "title": "font-display font-extrabold text-h3 text-base-content mb-6",
+    "footer": "mt-5 text-center font-body text-ctl-md text-base-content/62"
+  }
+}
+```
+
+No variants: a frame with a slot per part has nothing enumerable about it. `max-w-[…]` is
+a **derivation over tokens**, which plan 4.5 made legal in a bracket — `check:arbitrary`
+accepts it and would reject the same number written as `454px`, which is the point.
+
+`brand` is `flex` rather than the default block for a reason worth keeping: the lock-up's
+root is `inline-flex`, and a block wrapper around an inline-flex child opens a line box
+whose strut adds descender space below it — space that varies with the inherited font
+rather than with anything the designer chose. That bug has appeared twice already.
+
+- [ ] **Step 2: Write the recipe and the primitive**
+
+Create `frameworks/angular/primitives/unauth-card/unauth-card.variants.ts`:
+
+```ts
+import { tv } from '../../../tailwind/tv';
+import manifest from '../../../tailwind/components/UnauthCard.manifest.json' with { type: 'json' };
+
+export const unauthCardStyles = tv(manifest);
+```
+
+Create `frameworks/angular/primitives/unauth-card/unauth-card.ts`:
+
+```ts
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { unauthCardStyles } from './unauth-card.variants';
+
+/** The panel a signed-out screen needs — a frame, never the form. */
+@Component({
+  selector: 'arena-unauth-card',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <div [class]="styles().root()">
+      <div [class]="styles().panel()">
+        <div [class]="styles().body()">
+          <div [class]="styles().brand()"><ng-content select="[brand]" /></div>
+          @if (eyebrow(); as label) {
+            <div [class]="styles().eyebrow()">{{ label }}</div>
+          }
+          @if (title(); as heading) {
+            <div [class]="styles().title()">{{ heading }}</div>
+          }
+          <ng-content />
+          <div [class]="styles().footer()"><ng-content select="[footer]" /></div>
+        </div>
+      </div>
+    </div>
+  `,
+})
+export class UnauthCard {
+  readonly eyebrow = input<string>();
+  readonly title = input<string>();
+
+  protected readonly styles = computed(() => unauthCardStyles());
+}
+```
+
+React omits the brand and footer wrappers entirely when they are empty; Angular cannot
+test a projection slot for emptiness without a `ContentChild`, so the wrappers always
+render. **That is a visible difference, not a wash**: an empty `[brand]` slot still
+carries `mb-7`. Add the two `contentChild` queries and `@if` on them, or accept the gap
+and say so in the prompt — decide in this task, do not leave it undecided in the tree.
+
+- [ ] **Step 3: Write the prompt and the barrels**
+
+Create `frameworks/angular/primitives/unauth-card/unauth-card.prompt.md`:
+
+```markdown
+Arena's signed-out panel. A frame: the lock-up, an eyebrow, a title, whatever the screen
+is actually for, and a footer. It knows nothing about credentials, so one component
+serves sign-in, "check your inbox", "this link expired" and two-factor entry. Styling is
+the sibling `unauth-card.variants.ts` recipe.
+
+```html
+<div class="flex min-h-screen items-center justify-center p-gutter">
+  <arena-unauth-card eyebrow="Delivery Console" title="Sign in">
+    <arena-app-logo brand name="Draven" dim="soft" size="md">
+      <img src="/assets/your-mark.svg" alt="" />
+    </arena-app-logo>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" />
+    </mat-form-field>
+
+    <span footer>Trouble signing in? Contact your administrator.</span>
+  </arena-unauth-card>
+</div>
+```
+
+**Do / Don't**
+- Centre it yourself. The three-line wrapper above is the whole job, and keeping it out
+  of the component is what lets the panel sit in a split layout or inside a dialog.
+- Don't put auth logic here. Submit handlers, validation and provider buttons belong to
+  the screen; this is the frame around them.
+- Don't override the width. 454px is the figure this panel has always rendered at, and it
+  is arithmetic — content, padding and both hairlines added back together.
+```
+
+Create `frameworks/angular/primitives/unauth-card/index.ts`:
+
+```ts
+export * from './unauth-card';
+export * from './unauth-card.variants';
+```
+
+Add `export * from './unauth-card';` to `frameworks/angular/primitives/index.ts`,
+alphabetically (after `./theme-toggle`).
+
+- [ ] **Step 4: Write the test**
+
+Create `frameworks/angular/test/unauth-card-variants.test.ts`:
+
+```ts
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { unauthCardStyles } from '../primitives/unauth-card/unauth-card.variants';
+
+test('the width is the derivation, never a literal', () => {
+  const root = unauthCardStyles().root();
+  assert.match(root, /max-w-\[calc\(var\(--sp-1\)\*95\+var\(--sp-1\)\*18\+var\(--bw\)\*2\)\]/);
+  assert.doesNotMatch(root, /454px/);
+});
+
+test('the panel is a surface with a shadow, and the body pads inside it', () => {
+  assert.match(unauthCardStyles().panel(), /bg-base-200/);
+  assert.match(unauthCardStyles().panel(), /shadow-3/);
+  assert.match(unauthCardStyles().body(), /\bp-4\b/);
+});
+```
+
+- [ ] **Step 5: Write the specimen**
+
+Create `frameworks/tailwind/components/UnauthCard.card.html`:
+
+```html
+<!-- @dsCard group="Angular" viewport="640x520" name="UnauthCard" subtitle="The signed-out frame, rendered from UnauthCard.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:var(--sp-6)}.row{display:flex;justify-content:center;margin-bottom:var(--sp-4)}.sub{font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-label);line-height:var(--lh-snug);color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:var(--sp-1)}</style>
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./UnauthCard.manifest.json')).json();
+const logo = await (await fetch('./AppLogo.manifest.json')).json();
+
+function panel({ eyebrow, title, body, footer }) {
+  const c = classesFor(manifest);
+  const l = classesFor(logo, { size: 'md' });
+  return el('div', { class: c.root },
+    el('div', { class: c.panel },
+      el('div', { class: c.body },
+        el('div', { class: c.brand },
+          el('span', { class: l.root },
+            el('span', { class: l.mark }, el('img', { src: '../../../assets/rotor-crimson.svg', alt: '' })),
+            el('span', { class: l.name }, 'Draven', el('span', { class: l.dim, text: 'soft' })))),
+        el('div', { class: c.eyebrow, text: eyebrow }),
+        el('div', { class: c.title, text: title }),
+        el('div', { class: 'font-body text-md text-base-content/82', text: body }),
+        el('div', { class: c.footer, text: footer }))));
+}
+
+mountSpecimen({ sections: [
+  section('Sign in', [panel({
+    eyebrow: 'Delivery Console', title: 'Sign in',
+    body: 'Form controls compose inside the frame; the component holds none of them.',
+    footer: 'Trouble signing in? Contact your administrator.',
+  })]),
+  section('Check your inbox — the same frame', [panel({
+    eyebrow: 'Delivery Console', title: 'Check your inbox',
+    body: 'We sent a sign-in link to your work address. It expires in 15 minutes.',
+    footer: 'Wrong address? Start again.',
+  })]),
+]});
+</script></body></html>
+```
+
+The specimen centres the panel with its **own** wrapper (`.row { justify-content: center }`),
+not with a class on the component — the component not centring itself is the design, and a
+specimen that centred it from inside would misreport that.
+
+- [ ] **Step 6: Rebuild, gate, look, commit**
+
+Run: `bun run build:tailwind && bun run check`
+Expected: `check-all: all 11 step(s) passed`.
+
+Compare against React's `display/unauth-card.card.html`. Measure the panel in the Computed
+panel: **width 454px**, and 36px between the panel's border and its content on every side.
+
+```bash
+git add frameworks/tailwind/components/UnauthCard.manifest.json \
+        frameworks/tailwind/components/UnauthCard.card.html \
+        frameworks/tailwind/utilities.css \
+        frameworks/angular/primitives/unauth-card frameworks/angular/primitives/index.ts \
+        frameworks/angular/test/unauth-card-variants.test.ts
+git commit -m "feat(angular): add the unauth-card primitive"
+```
+
+---
+
+## Task 27: SideNav is a Material bridge, not a primitive
+
+Spec 4.75's fourth component, and the one that does **not** become an `arena-*`
+primitive. This plan's stated scope is "the primitives Material does not provide", and
+Material provides this one: `mat-nav-list` with `<a mat-list-item [activated]>` is the
+item list, with the anchor-or-button distinction, the active state and the keyboard
+behaviour already handled. Reimplementing it would duplicate hardened accessibility
+badly and strip `arena-material.css` of another reason to exist.
+
+So `SideNav`'s Angular story is a token bridge, and its manifest — for consumers on
+neither React nor Material — is plan **5b**'s Task 23.
+
+**Files:**
+- Modify: `frameworks/angular/theme/arena-material.css`
+- Modify: `frameworks/angular/README.md` (the Material inventory gains one entry)
+
+**Interfaces:**
+- Produces: no TypeScript. `mat-nav-list` inside `.arena-side-nav` renders Arena's
+  sidebar list.
+
+- [ ] **Step 1: Write the bridge**
+
+In `frameworks/angular/theme/arena-material.css`, after the Tabs block, add:
+
+```css
+/* Nav list — Arena's SideNav. Material owns the list; these are its Arena values.
+   The active item is crimson on crimson-soft, semibold; the rest are muted medium.
+   Scoped to .arena-side-nav so a mat-nav-list elsewhere keeps Material's own look. */
+.arena-side-nav.mat-mdc-nav-list {
+  --mdc-list-list-item-container-shape: var(--r-sm);
+  --mdc-list-list-item-label-text-font: var(--font-body);
+  --mdc-list-list-item-label-text-size: var(--dz-text);
+  --mdc-list-list-item-label-text-weight: var(--fw-medium);
+  --mdc-list-list-item-label-text-color: var(--mute);
+  --mdc-list-list-item-hover-label-text-color: var(--mute);
+  --mdc-list-list-item-focus-label-text-color: var(--crimson);
+}
+.arena-side-nav .mdc-list-item--activated {
+  --mdc-list-list-item-container-color: var(--crimson-soft);
+  --mdc-list-list-item-label-text-color: var(--crimson);
+  --mdc-list-list-item-label-text-weight: var(--fw-semibold);
+}
+```
+
+**Verify every custom property name against Material's own list tokens before writing
+them** — an MDC token that does not exist is silently ignored, which is the failure mode
+`check-release.mjs` exists to prevent in another corner of this repo. Read the installed
+`@angular/material` list theme rather than trusting this block, and correct it here if a
+name has moved. Values may only be `var()` into an existing Arena token: no new hex, no
+new value, the same rule the rest of this file follows.
+
+- [ ] **Step 2: Document it where the inventory is**
+
+In `frameworks/angular/README.md`, in the Material inventory, add `SideNav`
+(`mat-nav-list` + `<a mat-list-item [activated]>`) and note that the active item's
+appearance comes from `.arena-side-nav` in `arena-material.css`. Then add the usage
+shape:
+
+```html
+<mat-nav-list class="arena-side-nav" aria-label="Primary">
+  <a mat-list-item href="/overview" [activated]="section === 'overview'"
+     [attr.aria-current]="section === 'overview' ? 'page' : null">Overview</a>
+  <a mat-list-item href="/projects" [activated]="section === 'projects'"
+     [attr.aria-current]="section === 'projects' ? 'page' : null">Projects</a>
+</mat-nav-list>
+```
+
+`[activated]` is Material's visual state and `aria-current="page"` is the announced one.
+**Both are required**: React's `SideNav` sets `aria-current` on the active item, and a
+bridge that only coloured it would be a regression in what a screen reader hears.
+
+- [ ] **Step 3: Look at it, then commit**
+
+There is no specimen — this is CSS over a Material component, and nothing static can
+render `mat-nav-list`. Compare against React's console sidebar
+(`frameworks/react/ui_kits/console/index.html`) in dark and light instead, and Tab
+through it: each destination announced as a **link**, the current one as **current
+page**, the list inside a labelled navigation landmark.
+
+Run: `bun run check`
+Expected: `check-all: all 11 step(s) passed`.
+
+```bash
+git add frameworks/angular/theme/arena-material.css frameworks/angular/README.md
+git commit -m "feat(angular): bridge SideNav through mat-nav-list"
+```
+
+---
+
 ## Task 23: Close the layer out — documentation, changelog, and the full sweep
 
-Eighteen primitives exist and no document in the repo says so. Three READMEs and
+Twenty-one primitives exist and no document in the repo says so. Three READMEs and
 `CLAUDE.md` describe an Angular layer with one reference primitive, which was true when
-they were written and is now the most misleading text in the tree.
+they were written and is now the most misleading text in the tree. **Run this after
+Tasks 24–27**, which are numbered later than this one and execute before it.
 
 **Files:**
 - Modify: `frameworks/angular/README.md`
@@ -5096,23 +5962,20 @@ they were written and is now the most misleading text in the tree.
 
 - [ ] **Step 1: Rewrite the Angular README's primitive section**
 
-**Roster note, added when spec 4.75 landed:** the Angular layer's target roster is 21
-primitives (22 with `tag`), not the 18 (19 with `tag`) this step's text and Tasks 4–23
-below build. Spec 4.75 added `app-logo`, `activity-feed` and `unauth-card` to the
-roster after this plan was written; their tasks are not authored here (see "What this
-plan does not do"). The markdown block below still describes only what Tasks 4–23
-actually ship — write it as given, and correct it again once the three new primitives'
-tasks land.
-
 In `frameworks/angular/README.md`, replace the sentence
 "This milestone ships `tag`; further primitives follow it." with:
 
 ```markdown
-The layer ships **18 primitives**: `alert`, `avatar`, `bar-chart`, `breadcrumbs`,
-`bulk-action-bar`, `chart-card`, `command-palette`, `confirm-dialog`,
-`doughnut-chart`, `empty-state`, `error-state`, `line-chart`, `onboarding`,
-`page-head`, `rotor`, `skeleton`, `stat-card`, `theme-toggle` — plus `tag`, the
-reference shape, for 19 in all.
+The layer ships **21 primitives**: `activity-feed`, `alert`, `app-logo`, `avatar`,
+`bar-chart`, `breadcrumbs`, `bulk-action-bar`, `chart-card`, `command-palette`,
+`confirm-dialog`, `doughnut-chart`, `empty-state`, `error-state`, `line-chart`,
+`onboarding`, `page-head`, `rotor`, `skeleton`, `stat-card`, `theme-toggle`,
+`unauth-card` — plus `tag`, the reference shape, for 22 in all.
+
+**`SideNav` is not among them, and that is the rule working.** Material's `mat-nav-list`
+covers the item list, so Arena dresses it in `arena-material.css` (`.arena-side-nav`)
+rather than reimplementing it. Its Tailwind manifest exists for consumers on neither
+React nor Material.
 
 **The three SVG charts are the declared exception**, and a missing chart manifest is a
 decision rather than an omission: a chart's visual identity is path data and attribute
@@ -5128,10 +5991,6 @@ Two shared files sit beside the primitives and are not components:
 
 Then add, after the "Conventions" section:
 
-**Same caveat as Step 1's block above:** spec 4.75 adds a 22nd bridged entry —
-`mat-nav-list` for `SideNav` — once its own task lands. The block below still states
-the 21 this plan's tasks account for.
-
 ```markdown
 ## What Material provides, and what Arena does
 
@@ -5140,15 +5999,16 @@ every interface an Arena React consumer can. Roughly half of it they build with
 Material wearing Arena (`theme/arena-material.css`), the rest with Arena's own
 primitives.
 
-**Material provides these 21; Arena dresses them and implements none of them:**
+**Material provides these 22; Arena dresses them and implements none of them:**
 Button and IconButton (`mat-button`, `mat-icon-button`), Input and Textarea
 (`mat-form-field` + `matInput`), Select (`mat-select`), Checkbox and Radio
 (`mat-checkbox`, `mat-radio-group`), Switch (`mat-slide-toggle`), SegmentedControl
 (`mat-button-toggle-group`), Card (`mat-card`), Badge (`matBadge`), Table
 (`mat-table`), Tabs (`mat-tab-group`), Dialog (`MatDialog`), Menu (`mat-menu`),
 Tooltip (`matTooltip`), Toast (`MatSnackBar`), Pagination (`mat-paginator`),
-ProgressBar (`mat-progress-bar`), Spinner (`mat-progress-spinner`) and Calendar
-(`mat-datepicker`).
+ProgressBar (`mat-progress-bar`), Spinner (`mat-progress-spinner`), Calendar
+(`mat-datepicker`) and SideNav (`mat-nav-list` + `<a mat-list-item [activated]>`, scoped
+by `.arena-side-nav`).
 
 Reimplementing them as `arena-*` would duplicate years of hardened keyboard
 accessibility, overlay positioning, i18n and focus management — badly — and would
@@ -5166,20 +6026,17 @@ with the real recipe and no Angular executed.
 
 - [ ] **Step 2: Update the Tailwind README's inventory**
 
-Same caveat as Step 1: spec 4.75 will add `AppLogo`, `SideNav`, `ActivityFeed` and
-`UnauthCard` manifests (four, split across this plan and 5b — see "Also depends on"
-above), once their tasks exist. The block below counts only what Tasks 1–22 ship.
-
 In `frameworks/tailwind/README.md`, after the "Consumption order" section, add:
 
 ```markdown
 ## What ships here
 
-`components/` holds one manifest per component plus its specimen page. Seventeen ship
-today — Button, Tag, Alert, Avatar, Breadcrumbs, BulkActionBar, ChartCard,
-CommandPalette, ConfirmDialog, EmptyState, ErrorState, Onboarding, PageHead, Rotor,
-Skeleton, StatCard, ThemeToggle — and plan 5b adds the nineteen more a
-framework-neutral consumer hand-rolls because Material would otherwise provide them.
+`components/` holds one manifest per component plus its specimen page. Twenty ship
+today — ActivityFeed, AppLogo, Button, Tag, Alert, Avatar, Breadcrumbs, BulkActionBar,
+ChartCard, CommandPalette, ConfirmDialog, EmptyState, ErrorState, Onboarding, PageHead,
+Rotor, Skeleton, StatCard, ThemeToggle, UnauthCard — and plan 5b adds the twenty more a
+framework-neutral consumer hand-rolls because Material would otherwise provide them,
+`SideNav` among them.
 
 **The three SVG charts and Calendar have no manifest, on purpose.** `BarChart`,
 `LineChart` and `DoughnutChart` are SVG geometry driven by measured container width:
@@ -5196,15 +6053,11 @@ a manifest without a build step; do not edit it.
 
 - [ ] **Step 3: Update `CLAUDE.md`**
 
-Same caveat again: the roster target is 21 primitives (22 with `tag`) per spec 4.75,
-and the "19" below is what Tasks 4–23 actually deliver. Correct this line again once
-`app-logo`, `activity-feed` and `unauth-card` have tasks and land.
-
 In `CLAUDE.md`, in the "Framework layers live under `frameworks/`" paragraph, replace
 "and standalone `OnPush` primitives under `primitives/` (`tag` is the reference)" with:
 
 ```markdown
-and 19 standalone `OnPush` primitives under `primitives/` (`tag` is the reference
+and 22 standalone `OnPush` primitives under `primitives/` (`tag` is the reference
 shape; the three SVG charts are the declared exception — no manifest, no
 `.variants.ts`, token-valued style attributes like React's, and reviewed against
 React's `charts.card.html` rather than a specimen of their own)
@@ -5247,25 +6100,21 @@ eleven, the tree is right and this line is what needs correcting.
 
 - [ ] **Step 4: Write the changelog entry**
 
-Same caveat once more: this entry, and its "21 components Angular Material provides"
-line, describe the tree after Tasks 1–23 only. Spec 4.75's three primitives and
-`SideNav`'s Material bridge are not part of this commit and need their own
-changelog line when their tasks land.
-
 In `CHANGELOG.md`, under `## [Unreleased]` (create the heading if the top entry is a
 version — anything landing after a tag goes under `[Unreleased]`, and filing it under
 the last version describes a tree nobody has):
 
 ```markdown
 ### Added
-- **Angular layer parity — 18 new primitives.** `alert`, `avatar`, `bar-chart`,
-  `breadcrumbs`, `bulk-action-bar`, `chart-card`, `command-palette`, `confirm-dialog`,
-  `doughnut-chart`, `empty-state`, `error-state`, `line-chart`, `onboarding`,
-  `page-head`, `rotor`, `skeleton`, `stat-card`, `theme-toggle`, each a full quartet
-  and each styled by a Tailwind manifest it does not own. Parity is of outcome, not of
-  inventory: the 21 components Angular Material provides stay Material's, dressed by
-  `arena-material.css`.
-- **15 new component manifests** under `frameworks/tailwind/components/`, each with a
+- **Angular layer parity — 21 new primitives.** `activity-feed`, `alert`, `app-logo`,
+  `avatar`, `bar-chart`, `breadcrumbs`, `bulk-action-bar`, `chart-card`,
+  `command-palette`, `confirm-dialog`, `doughnut-chart`, `empty-state`, `error-state`,
+  `line-chart`, `onboarding`, `page-head`, `rotor`, `skeleton`, `stat-card`,
+  `theme-toggle`, `unauth-card`, each a full quartet and each styled by a Tailwind
+  manifest it does not own. Parity is of outcome, not of inventory: the 22 components
+  Angular Material provides stay Material's, dressed by `arena-material.css` —
+  `SideNav` among them, bridged through `mat-nav-list` rather than reimplemented.
+- **18 new component manifests** under `frameworks/tailwind/components/`, each with a
   static specimen page that renders the real markup from the real recipe.
 - **`frameworks/tailwind/utilities.css`** — the compiled utility layer, generated by
   `bun run build:tailwind` and gated by `bun run check:tailwind-generated`, so a static
@@ -5294,7 +6143,7 @@ executed.
 ```bash
 bun run build:tailwind && bun run check
 ```
-Expected: `check-all: all 11 step(s) passed`, and `check-tailwind` reporting **17
+Expected: `check-all: all 11 step(s) passed`, and `check-tailwind` reporting **20
 manifests**.
 
 ```bash
@@ -5316,7 +6165,7 @@ Expected: clean — every task committed its own work.
 ```bash
 ls frameworks/angular/primitives/*/  -d | wc -l
 ```
-Expected: `19`.
+Expected: `22`.
 
 ```bash
 for d in frameworks/angular/primitives/*/; do
@@ -5329,8 +6178,9 @@ Expected: no output. (`*.variants.ts` is deliberately absent for the three SVG c
 which is why it is not in the loop — check those three by eye against the exception the
 README now states.)
 
-Then, with `bun run demos` running, open all **16** specimen pages — Tag, written in
-Task 2, plus the 14 slices and ChartCard — in **dark**, in **light**, and in
+Then, with `bun run demos` running, open all **19** specimen pages — Tag, written in
+Task 2, plus the 14 slices, ChartCard, and Tasks 24–26's three — in **dark**, in
+**light**, and in
 **`.arena-compact`**, and the React `charts.card.html` beside the three SVG charts. A specimen that renders unstyled means
 `utilities.css` is stale — rebuild before concluding anything else.
 
@@ -5338,7 +6188,7 @@ Task 2, plus the 14 slices and ChartCard — in **dark**, in **light**, and in
 
 ```bash
 git add frameworks/angular/README.md frameworks/tailwind/README.md CLAUDE.md CHANGELOG.md
-git commit -m "docs: the Angular layer is 19 primitives, and says so"
+git commit -m "docs: the Angular layer is 22 primitives, and says so"
 ```
 
 ---
@@ -5361,10 +6211,11 @@ Stated so the next reader does not go looking:
   Toast, Pagination, ProgressBar, Spinner, and — since spec 4.75 — SideNav, whose
   Angular story is a `mat-nav-list` bridge rather than a primitive. They are plan 5b,
   and they consume Tasks 1–3 of this plan unchanged.
-- **The three primitives spec 4.75 added to this plan's own roster.** `app-logo`,
-  `activity-feed` and `unauth-card` each need an `arena-*` primitive per that spec's
-  §7, raising this plan's target from 18 primitives to 21 (19 to 22 with `tag`). Their
-  tasks are not written here — this pass only updates the counts and prerequisites
-  the rest of this document states, per its own instructions. Whoever picks this plan
-  up next writes Tasks 24–26 in this shape before Task 23 (closeout) can honestly
-  claim 21.
+- **`SideNav` as an `arena-*` primitive.** Material's `mat-nav-list` provides the item
+  list, so Task 27 bridges it in `arena-material.css` instead. Its Tailwind manifest —
+  for a consumer on neither React nor Material — is plan 5b's Task 23.
+- **`ActivityFeed`'s `renderItem` escape hatch, in Angular.** React's row-replacement
+  prop has no signal-input analogue; the Angular equivalent is content projection or a
+  structural directive, and choosing between them is a design question this plan raises
+  in Task 25 rather than settles. A consumer needing a different row composes the slots
+  from the exported `activityFeedStyles`.

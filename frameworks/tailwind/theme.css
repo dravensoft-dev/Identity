@@ -104,6 +104,16 @@
   --text-ctl-xs: var(--dz-text-xs);
   --text-ctl-2xs: var(--dz-text-2xs);
 
+  /* brand wordmark → tokens/spacing.css. A wordmark is set type, so its half
+     of the logo scale belongs to the font-size namespace even though the
+     family is authored in spacing.json beside the mark it is paired with —
+     the pairing is the point, and splitting the family across two source
+     files to satisfy a namespace would break it. */
+  --text-logo-sm: var(--logo-text-sm);
+  --text-logo-md: var(--logo-text-md);
+  --text-logo-lg: var(--logo-text-lg);
+  --text-logo-xl: var(--logo-text-xl);
+
   --font-weight-*: initial;
   --font-weight-regular: var(--fw-regular);
   --font-weight-medium: var(--fw-medium);
@@ -193,6 +203,15 @@
   --size-avatar-sm: var(--avatar-sm);
   --size-avatar-md: var(--avatar-md);
   --size-avatar-lg: var(--avatar-lg);
+
+  /* brand lock-up mark slot → tokens/spacing.css. The --size-* namespace for
+     the same reason the icon and avatar sizes use it: `.size-logo-mark-md`
+     sets both width and height, which is what a square slot is. The wordmark's
+     half of the scale is a font size and lives in --text-* below. */
+  --size-logo-mark-sm: var(--logo-mark-sm);
+  --size-logo-mark-md: var(--logo-mark-md);
+  --size-logo-mark-lg: var(--logo-mark-lg);
+  --size-logo-mark-xl: var(--logo-mark-xl);
 
   /* ---- effects → tokens/effects.css ------------------------------------ */
   --radius-*: initial;

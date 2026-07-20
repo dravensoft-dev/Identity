@@ -4,6 +4,7 @@ import { Card } from '../../components/display/Card.jsx';
 import { Badge } from '../../components/display/Badge.jsx';
 import { Tag } from '../../components/display/Tag.jsx';
 import { Table } from '../../components/display/Table.jsx';
+import { ActivityFeed } from '../../components/display/ActivityFeed.jsx';
 import { Tabs } from '../../components/navigation/Tabs.jsx';
 import { Button } from '../../components/forms/Button.jsx';
 import { Switch } from '../../components/forms/Switch.jsx';
@@ -39,10 +40,10 @@ const DEPLOY_COLUMNS = [
   { key: 'actions', header: '', mobileLayout: 'block', render: () => <Button variant="ghost" size="sm">Details</Button> },
 ];
 const ACTIVITY = [
-  ['ana@', 'approved the release', 'build #4821', '2h ago'],
-  ['CI', 'deployed to production', 'build #4821', '2h ago'],
-  ['diego@', 'opened incident', 'checkout latency', '3h ago'],
-  ['nora@', 'merged', 'PR #338 · session cache', '5h ago'],
+  { id: 1, actor: 'ana@', action: 'approved the release', target: 'build #4821', time: '2h ago' },
+  { id: 2, actor: 'CI', action: 'deployed to production', target: 'build #4821', time: '2h ago' },
+  { id: 3, actor: 'diego@', action: 'opened incident', target: 'checkout latency', time: '3h ago' },
+  { id: 4, actor: 'nora@', action: 'merged', target: 'PR #338 · session cache', time: '5h ago' },
 ];
 
 export function ProjectScreen({ onNav, project, onToast }) {
@@ -68,17 +69,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
       )}
 
       {tab === 'Activity' && (
-        <Card>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {ACTIVITY.map((a, i) => (
-              <div key={i} style={{ display: 'flex', gap: 'calc(var(--sp-1) * 3)', alignItems: 'center', padding: 'calc(var(--sp-1) * 3.5) 0', borderTop: i ? 'var(--bw) solid var(--color-base-300)' : 'none' }}>
-                <span style={{ width: 'calc(var(--sp-1) * 2)', height: 'calc(var(--sp-1) * 2)', borderRadius: '50%', background: 'var(--crimson)' }} />
-                <span style={{ fontSize: 'var(--dz-text)', color: 'var(--bone-dim)' }}><b style={{ color: 'var(--bone)' }}>{a[0]}</b> {a[1]} <span style={{ color: 'var(--gold)', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)' }}>{a[2]}</span></span>
-                <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{a[3]}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
+        <Card><ActivityFeed items={ACTIVITY} /></Card>
       )}
 
       {tab === 'Overview' && (

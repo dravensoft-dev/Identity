@@ -44,11 +44,19 @@ export const GATES = [
 
 /** The test-suite step for the runtime this process is executing under.
  *  `bun test` has no `node:test` equivalent invocation, so the two runtimes
- *  need different args to run the same `scripts/*.test.mjs` files.
+ *  need different args.
+ *
+ *  Under bun, all three suite roots run: scripts/, plus each framework
+ *  layer's own test/ directory. Under node, only scripts/ does, and that
+ *  asymmetry is deliberate rather than an oversight -- the framework suites
+ *  import `.jsx` and `.ts` directly, which bun transpiles and plain node does
+ *  not. Keeping the node path alive for scripts/ is what keeps every GATE
+ *  runtime-portable; the framework suites simply are not, and pretending
+ *  otherwise would mean a build step for tests.
  *  @param {{isBun: boolean, testFiles: string[]}} env
  *  @returns {{name: string, args: string[]}} */
 export function testStep({ isBun, testFiles }) {
-  if (isBun) return { name: 'test (bun test scripts/)', args: ['test', 'scripts'] };
+  if (isBun) return { name: 'test (bun test scripts/ + framework suites)', args: ['test', 'scripts', 'frameworks/react/test', 'frameworks/angular/test'] };
   return { name: 'test (node --test scripts/*.test.mjs)', args: ['--test', ...testFiles] };
 }
 

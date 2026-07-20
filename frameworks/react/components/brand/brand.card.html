@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="700x160" name="Brand — Rotor" subtitle="Symbol (do not use as an icon)" -->
+<!-- @dsCard group="Components" viewport="780x660" name="Brand — AppLogo and Rotor" subtitle="Lock-up at every step · symbol (do not use as an icon)" -->
 <!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../../../styles.css">
 <style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:var(--sp-6)}.row{display:flex;flex-wrap:wrap;gap:calc(var(--sp-1) * 3.5);align-items:center;margin-bottom:var(--sp-4)}.sub{font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-label);line-height:var(--lh-snug);color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:var(--sp-1)}</style>
 <script type="importmap">
@@ -10,11 +10,25 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 const { Rotor } = await arenaImport('../../components/brand/Rotor.jsx');
-function Demo(){return(<div className="row" style={{gap:32,alignItems:'center'}}>
-  <Rotor size={72} spin/>
-  <Rotor size={48}/>
-  <Rotor size={32} color="var(--bone)"/>
-  <div style={{fontFamily:'var(--font-mono)',fontSize:11,color:'var(--mute)',lineHeight:1.7}}>spin · static · bone<br/>Brand, not a UI icon</div>
+const { AppLogo } = await arenaImport('../../components/brand/AppLogo.jsx');
+const CRIMSON = <img src="../../../../assets/rotor-crimson.svg" alt=""/>;
+const BONE = <img src="../../../../assets/rotor-bone.svg" alt=""/>;
+function Demo(){return(<div>
+  <div className="sub">AppLogo — the four steps of the scale</div>
+  <div className="row"><AppLogo size="xl" mark={CRIMSON} name="Draven" dim="soft"/></div>
+  <div className="row"><AppLogo size="lg" mark={CRIMSON} name="Draven" dim="soft"/></div>
+  <div className="row"><AppLogo size="md" mark={CRIMSON} name="Draven" dim="soft"/></div>
+  <div className="row"><AppLogo size="sm" mark={CRIMSON} name="Draven" dim="soft"/></div>
+  <div className="sub">Monochrome · single ink — a bone mark, no dim</div>
+  <div className="row"><AppLogo size="md" mark={BONE} name="Dravensoft"/></div>
+  <div className="sub">Vertical · stacked</div>
+  <div className="row"><AppLogo size="md" orientation="vertical" mark={CRIMSON} name="Draven" dim="soft"/></div>
+  <div className="sub">Rotor — the animated mark, same scale. Brand, not a UI icon</div>
+  <div className="row" style={{gap:'var(--sp-8)'}}>
+    <Rotor size="lg" spin/>
+    <Rotor size="md"/>
+    <Rotor size="sm" color="var(--bone)"/>
+  </div>
 </div>);}
 createRoot(document.getElementById('root')).render(<Demo/>);
 </script></body></html>

@@ -7,7 +7,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Arena — Dravensoft's design system. It is **not a published npm package**, but it does
 have a **dev-only, private `package.json`** at the root: the token layer is built from
 DTCG JSON by Style Dictionary, and the build and check scripts are tested with
-`bun test`. Nothing here is published to npm. It ships as three things at once from
+`bun test`, as is each framework layer from its own `test/` directory
+(`bun run test:scripts` / `test:react` / `test:angular`, or `bun run test` for all
+three). Nothing here is published to npm. It ships as three things at once from
 the same tree:
 
 - a **Claude Code plugin** (`.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`, registering the `design` skill defined by the root `SKILL.md`);
@@ -86,10 +88,12 @@ runtime projection of data onto a screen position — a chart tooltip's offset d
 from a hovered value, an hour label's offset derived from a clock minute, an event
 block's height derived from its duration — where the literal is the true value at
 that site because nothing in `tokens/src/` could stand in for a number computed from
-data at runtime; and `Rotor`'s brand-mark `width` plus its two call sites in `Shell`
-and `LoginScreen` (Dravensoft's identity is explicitly not themeable). A stale
-exemption — one that no longer matches a real violation — fails the gate itself. The
-gate scans `.jsx`, `.ts` and `.tsx` under `frameworks/` — it does not scan `.html`;
+data at runtime. A stale exemption — one that no longer matches a real violation —
+fails the gate itself. **A change to `EXEMPT` or `PASSTHROUGH` is a change to
+`scripts/check-dimension-literals.test.mjs` too** — that suite asserts on both maps by
+name, so an entry added or removed without touching it leaves the tests describing a
+gate that no longer exists. The gate scans `.jsx`, `.ts` and `.tsx` under `frameworks/` —
+it does not scan `.html`;
 the root-level and `guidelines/` pages stay clean only because they were tokenized by
 hand, and nothing holds that. **No gate compares a Tailwind manifest against the
 component it mirrors, and the mapping is not obvious**: `Button.manifest.json`
@@ -157,6 +161,15 @@ token either reaches a utility or is named in `EXCLUDED` with a reason;
 `bun run check` runs all six plus the test suite, without stopping at the
 first failure. An Angular primitive's recipe is its
 manifest — `frameworks/angular/primitives/tag/` is the reference shape.
+
+**When `bun run check` is expected: once, when a plan's implementation is
+finished — not before every commit.** The individual gates are cheap and stay
+available per commit (`check:dimensions` after touching a framework layer,
+`check:tokens` after a rebuild), and a task that widens a gate should still
+watch that gate fail and then pass. But the full sweep is a completion gate,
+not a per-commit toll. Stating this is what lets a gate be expensive enough to
+be worth having: the `@dsCard` viewport check needs a browser and a real
+render, and it could never have been afforded at one run per commit.
 
 ## Conventions
 

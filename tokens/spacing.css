@@ -64,6 +64,34 @@
   --avatar-sm:32px;
   --avatar-md:40px;
   --avatar-lg:56px;
+
+  /*
+     Brand lock-up scale — the mark's slot and the wordmark's size, in
+     four steps. These are tokens rather than an exemption for one reason: AppLogo
+     takes the mark and the name from its consumer, so once they are the consumer's
+     brand these numbers stop being Dravensoft's identity and become the system's
+     answer to 'how big is a small logo'. A scale is a scale, and Arena's scales are
+     tokens.
+     
+     A fixed repertoire rather than one mark-to-text ratio, because no single ratio
+     is right at every step: a small lock-up needs proportionally larger text to stay
+     legible, and one constant across the scale would either shrink the small
+     wordmark below reading size or inflate the large one. The eight numbers are
+     declared and the proportions that fall out (0.57, 0.60, 0.63, 0.63) are a
+     consequence rather than a rule.
+     
+     No number here was invented. sm and md are exactly what the console's Shell and
+     LoginScreen rendered before they migrated; lg and xl are the approved brand
+     manual's Primary · horizontal and its large specimen.
+   */
+  --logo-mark-sm:30px; /* beside a product name in an application frame */
+  --logo-mark-md:40px; /* a signed-out panel's lock-up */
+  --logo-mark-lg:54px; /* the manual's Primary · horizontal */
+  --logo-mark-xl:124px; /* the hero case — the lock-up is the only thing on the screen */
+  --logo-text-sm:17px; /* the wordmark beside mark-sm — the smallest that still reads as a name rather than a label */
+  --logo-text-md:24px; /* the wordmark beside mark-md, in a signed-out panel */
+  --logo-text-lg:34px; /* the wordmark beside mark-lg, in the manual's Primary · horizontal */
+  --logo-text-xl:78px; /* the wordmark beside mark-xl, at hero size */
 }
 :root{
   /*
