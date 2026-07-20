@@ -155,6 +155,30 @@ Classified, because "chart geometry" is not one kind of thing:
 | inter-bar gap | 2 | Equals `--bw-strong`, probably coincidentally. |
 | doughnut legend clamp | 180, 120 | Min and max legend width. |
 
+**The pattern is not chart-specific, which is the strongest argument that it is real.**
+Two sites outside the chart family are the same shape, and were found while auditing
+plan 4.5's leftovers:
+
+- **`Calendar.jsx:9` — `const HOUR_H = 44`**, the pixel height of one hour on the time
+  grid. It is a genuine design decision (how tall is an hour?), it is an **orphan** — no
+  token is 44px; `--sp-10` is 40 and `--sp-12` is 48 — and it must be a JS number because
+  `y = (min) => ((min - startMin) / 60) * HOUR_H` is arithmetic. The line directly below
+  it is `const GUTTER = 'calc(var(--sp-1) * 14)'`, a CSS string, because `GUTTER` is only
+  ever assigned to `width`/`paddingLeft` and never computed with. **Those two adjacent
+  lines are this whole spec in miniature**: same file, same kind of value, and the only
+  thing deciding their form is whether JS has to do arithmetic on them.
+- **`Onboarding.jsx` — `W = 320` and `EDGE = 16`**, already documented in place as
+  deliberate plain numbers because `Math.min`/`Math.max` compare them against
+  `window.innerWidth`. `W` is the sharper case: the component *also* renders
+  `width: 'calc(var(--sp-1) * 80)'`, the same 320px expressed the other way, with a
+  comment warning that the two must be changed together. **That is a value duplicated
+  across the two idioms today**, held in sync by a comment. A script-readable token would
+  collapse it to one.
+
+`HOUR_H` and `W` should be in the first plan's scope alongside the chart constants. They
+are better examples than most of the chart list, because nobody has to argue they are
+design values.
+
 **Ratios, which are not dimensions and probably not tokens.** `0.62` (doughnut inner
 radius), `0.34` (legend width share), and the tick count `4`. Plan 4.5's position, which
 this spec inherits unless argued otherwise: *the rule governs dimensions, not the
