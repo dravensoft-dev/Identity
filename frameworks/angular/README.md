@@ -104,10 +104,12 @@ subset:** Button and IconButton (`mat-button`, `mat-icon-button`), Input and Tex
 Tooltip (`matTooltip`), Toast (`MatSnackBar`), Pagination (`mat-paginator`),
 ProgressBar (`mat-progress-bar`), Spinner (`mat-progress-spinner`), Calendar
 (`mat-datepicker`) and SideNav (`mat-nav-list` + `<a mat-list-item [activated]>`, scoped
-by `.arena-side-nav`). `arena-material.css` dresses Button, Input, Card, Table, Tabs,
-Dialog, Toast, ProgressBar, Spinner and SideNav; IconButton, Select, Checkbox, Radio,
-Switch, SegmentedControl, Badge, Menu, Tooltip, Pagination and Calendar still render
-with Material's own defaults.
+by `.arena-side-nav`). `arena-material.css` dresses Button (filled and outlined
+variants only; a plain text button gets nothing outside `.arena-danger`), Input and
+Textarea (outlined appearance only — Material's default fill appearance renders
+unstyled), Card, Table, Tabs, Dialog, Toast, ProgressBar, Spinner and SideNav;
+IconButton, Select, Checkbox, Radio, Switch, SegmentedControl, Badge, Menu, Tooltip,
+Pagination and Calendar still render with Material's own defaults.
 
 Reimplementing them as `arena-*` would duplicate years of hardened keyboard
 accessibility, overlay positioning, i18n and focus management — badly — and would

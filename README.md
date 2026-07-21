@@ -368,7 +368,7 @@ touching the language:
   20+/Tailwind-v4/Material app. Two kinds of artifact: a bridge that makes the
   host app wear Arena — `theme/arena-tailwind.css` (the shared `@theme` preset
   in scope), `theme/arena-material.css` (Arena tokens mapped onto Material's
-  `--mdc-*`/`--mat-*` vars),
+  `--mat-*` vars),
   `icons/icon-manifest.ts` (the Phosphor role→glyph map) and
   `theme/theme-service.ts` + `theme/no-fouc.html` (the dark-first signal theme
   service and its pre-paint snippet) — and token-styled primitives Material

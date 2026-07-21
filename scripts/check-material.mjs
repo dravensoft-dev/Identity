@@ -3,7 +3,7 @@
  * a property name Material does not read applies nothing, and a var() naming
  * no Arena token resolves to nothing. Neither throws, neither logs, and
  * check-dimension-literals.mjs does not scan .css — so when Material renamed
- * its tokens, 24 of the bridge's 26 names went inert and nothing noticed for
+ * its tokens, 24 of the bridge's 34 names went inert and nothing noticed for
  * a whole major version.
  *
  * WHAT THIS GATE DOES NOT DO: it checks that a name EXISTS, not that it is
@@ -12,6 +12,29 @@
  * names exist, but mat-nav-list reads --mat-list-active-indicator-{shape,color}
  * and the container-* pair belongs to mat-selection-list. Catching that needs
  * to know which selector reads which property, which is a different problem.
+ *
+ * A second blind spot the gate does not disclose anywhere else: it reads
+ * property NAMES only and never looks at the SELECTORS they sit in —
+ * .mat-mdc-unelevated-button, .mat-form-field-appearance-outline,
+ * .mdc-list-item--activated and the other 12 of the bridge's 15 selectors.
+ * All 15 were hand-verified present in Material 22, so nothing is broken
+ * today — but a selector rename upstream would kill the bridge by the
+ * identical silent mechanism that renamed the properties, WITH THIS GATE
+ * STILL GREEN, because the gate never reads a selector at all.
+ *
+ * A third: the existence oracle (materialProperties, below) reads only
+ * node_modules/@angular/material/fesm2022/*.mjs. Roughly 102 real Material
+ * custom properties never appear there and are invisible to it — the
+ * --mat-sys-* M3 system-token family, --mat-app-*, and a handful of
+ * component-level names such as --mdc-icon-button-state-layer-size — because
+ * they live only in prebuilt-themes/*.css. The error direction this leaves is
+ * the safe one: the gate can over-reject a name that is actually live (a false
+ * failure), never silently pass a name that is dead (a false success). The
+ * hazard is the opposite move — someone "fixing" a red gate by deleting a
+ * legitimate property instead of widening the oracle. Widening the oracle to
+ * include the prebuilt-theme CSS is a pending decision for the repo owner,
+ * not done here.
+ *
  * A gate that implies more coverage than it has is how this file rotted.
  *
  *   bun scripts/check-material.mjs   -> exit 0 if every name on both sides resolves

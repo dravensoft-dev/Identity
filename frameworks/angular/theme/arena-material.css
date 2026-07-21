@@ -1,4 +1,4 @@
-/* frameworks/angular/theme/arena-material.css — Arena tokens → Angular Material MDC vars.
+/* frameworks/angular/theme/arena-material.css — Arena tokens → Angular Material --mat-* vars.
    Import AFTER Angular Material's theme so these win. Every value is a var() into
    an existing Arena token: no new hex, no new value. Dark-first comes free — the
    tokens are dark-first. Radius: --r-sm for controls, --r-lg for cards/dialogs.
