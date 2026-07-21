@@ -42,6 +42,7 @@
     --font-mono: var(--font-mono);
     --text-h2: var(--fs-h2);
     --text-h3: var(--fs-h3);
+    --text-h4: var(--fs-h4);
     --text-md: var(--fs-md);
     --text-sm: var(--fs-sm);
     --text-ctl: var(--dz-text);
@@ -66,6 +67,7 @@
     --spacing-4: var(--sp-4);
     --spacing-5: var(--sp-5);
     --spacing-6: var(--sp-6);
+    --spacing-8: var(--sp-8);
     --spacing-10: var(--sp-10);
     --spacing-24: var(--sp-24);
     --spacing-ctl-h: var(--dz-ctl-h);
@@ -263,6 +265,9 @@
   .mt-1 {
     margin-top: var(--spacing-1);
   }
+  .mt-1\.5 {
+    margin-top: calc(var(--spacing) * 1.5);
+  }
   .mt-2\.5 {
     margin-top: calc(var(--spacing) * 2.5);
   }
@@ -362,6 +367,9 @@
   .w-full {
     width: 100%;
   }
+  .max-w-\[42ch\] {
+    max-width: 42ch;
+  }
   .max-w-\[92vw\] {
     max-width: 92vw;
   }
@@ -448,6 +456,10 @@
   .border-\[length\:var\(--bw-strong\)\] {
     border-style: var(--tw-border-style);
     border-width: var(--bw-strong);
+  }
+  .border-dashed {
+    --tw-border-style: dashed;
+    border-style: dashed;
   }
   .border-none {
     --tw-border-style: none;
@@ -567,6 +579,9 @@
   .px-6\.5 {
     padding-inline: calc(var(--spacing) * 6.5);
   }
+  .px-8 {
+    padding-inline: var(--spacing-8);
+  }
   .py-0\.5 {
     padding-block: calc(var(--spacing) * 0.5);
   }
@@ -576,11 +591,17 @@
   .py-4 {
     padding-block: var(--spacing-4);
   }
+  .py-14 {
+    padding-block: calc(var(--spacing) * 14);
+  }
   .pt-5\.5 {
     padding-top: calc(var(--spacing) * 5.5);
   }
   .pb-5\.5 {
     padding-bottom: calc(var(--spacing) * 5.5);
+  }
+  .text-center {
+    text-align: center;
   }
   .font-body {
     font-family: var(--font-body);
@@ -612,6 +633,9 @@
   .text-\[length\:var\(--icon-sm\)\] {
     font-size: var(--icon-sm);
   }
+  .text-\[length\:var\(--icon-xl\)\] {
+    font-size: var(--icon-xl);
+  }
   .text-ctl {
     font-size: var(--text-ctl);
   }
@@ -632,6 +656,9 @@
   }
   .text-h3 {
     font-size: var(--text-h3);
+  }
+  .text-h4 {
+    font-size: var(--text-h4);
   }
   .text-md {
     font-size: var(--text-md);
