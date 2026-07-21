@@ -141,6 +141,12 @@ regardless of whether the component host-binds it), and `ActivityFeed.manifest.j
 `root` slot (`"flex flex-col list-none m-0 p-0"`) still carries `flex`, so the guard is not
 weakened by this carve-out — it was never conditioned on host-binding in the first place.
 
+**Also not ported:** React's `style` prop and `{...rest}` spread. Unlike `PageHead`/
+`AppLogo`/`DoughnutChart`, where a consumer's static attribute on the host reaches the
+styled root because the host *is* the root, that path does not exist here — see the
+consequence above. There is nothing more to route them to without reopening the
+no-host-bind decision itself.
+
 **Converges:** no. This is the correct shape for a primitive whose root must be a real list
 element, the same way `ThemeToggle`'s is for a primitive whose root must be a real button.
 

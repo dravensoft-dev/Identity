@@ -43,6 +43,8 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
+import { ActivityFeed } from '../primitives/activity-feed/activity-feed';
+import { activityFeedStyles } from '../primitives/activity-feed/activity-feed.variants';
 import { AppLogo } from '../primitives/app-logo/app-logo';
 import { appLogoStyles } from '../primitives/app-logo/app-logo.variants';
 import { Avatar } from '../primitives/avatar/avatar';
@@ -394,6 +396,103 @@ test('arena-app-logo: under this JIT-only harness, a static "name" attribute lan
   const host = fixture.nativeElement.querySelector('arena-app-logo') as HTMLElement;
   assert.equal(host.getAttribute('name'), 'Draven', 'the literal attribute should still land on the host element itself');
   assert.equal(host.getAttribute('class'), 'consumer-class', 'sanity: the static class attribute lands the same way');
+  fixture.destroy();
+});
+
+/* `arena-activity-feed` is the second primitive in this file (after
+ * `arena-theme-toggle`) whose styled root is NOT host-bound -- its root must
+ * be a real `<ul>` so its rows can be real `<li>`s, and `<arena-activity-feed>`
+ * cannot itself become one (components-divergences.md, "ActivityFeed is the
+ * second Angular primitive that does not host-bind its root"). `items` is a
+ * signal input this JIT-only harness cannot drive through a template binding
+ * (NG0303, the same limitation this file's header documents for Skeleton's
+ * `variant` and Breadcrumbs' `items`) or a literal attribute (a silent
+ * no-op), so this reuses `renderAppLogo`'s own technique above: overwrite the
+ * instance's `items` field with a plain function before the first
+ * `detectChanges()`, bypassing the input system while still running the REAL
+ * compiled template through REAL change detection against the REAL
+ * `ActivityFeed` class. That proves template and DOM shape only, never the
+ * input contract itself -- `bun run check:angular` is the authority that the
+ * component's real `input()` field and `@for`/`@if` typecheck. */
+function renderActivityFeed(items: unknown[]) {
+  const fixture = TestBed.createComponent(ActivityFeed);
+  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
+  instance['items'] = () => items;
+  return fixture;
+}
+
+test('arena-activity-feed: the host stays bare and unstyled -- the recipe classes land on the real <ul> inside it, not the host', () => {
+  const fixture = renderActivityFeed([]);
+  fixture.detectChanges();
+  const host = fixture.nativeElement as HTMLElement;
+  assert.equal(host.className, '', 'the host must carry no recipe classes of its own -- root is not host-bound here');
+  const ul = host.querySelector('ul') as HTMLElement;
+  assert.ok(ul, 'the root must be a real <ul>');
+  for (const cls of activityFeedStyles().root().split(/\s+/))
+    assert.ok(ul.classList.contains(cls), `the <ul> is missing root class "${cls}"`);
+  fixture.destroy();
+});
+
+/* Regression coverage for Resolution D of task 25's brief: the first row
+ * must render with no top divider and every later row must carry one, proved
+ * against the real rendered <li> elements rather than only against the pure
+ * `resolveActivityFeedRows` function `activity-feed-variants.test.ts`
+ * already covers -- this is the template's own `@for`/`track` wiring that
+ * pure function has no way to exercise. */
+test('arena-activity-feed: the first <li> carries no divider and every later one does, in a real render', () => {
+  const fixture = renderActivityFeed([
+    { id: 1, actor: 'Marta', action: 'deployed', tone: 'success' },
+    { id: 2, actor: 'Ivan', action: 'opened an incident', tone: 'danger' },
+    { id: 3, actor: 'Rae', action: 'approved the rollback' },
+  ]);
+  fixture.detectChanges();
+  const rows = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('li'));
+  assert.equal(rows.length, 3);
+  const dividerClass = 'border-t-[length:var(--bw)]';
+  assert.ok(!rows[0].className.includes(dividerClass), `the first <li> must not carry the divider: "${rows[0].className}"`);
+  for (const row of rows.slice(1))
+    assert.ok(row.className.includes(dividerClass), `every <li> after the first must carry the divider: "${row.className}"`);
+  fixture.destroy();
+});
+
+/* React's `ActivityFeed.jsx` writes `{item.target && ' '}` before its target
+ * span specifically to insert a space JSX would not otherwise add. Angular's
+ * whitespace handling is a different platform contract (this file's own
+ * `AppLogo` block above proves it collapses runs of source whitespace
+ * between inline nodes rather than inserting where the source has none) --
+ * not safe to assume carries the same result without a real render. This
+ * proves it does: a real actor/action/target composition reads with exactly
+ * one space between each part, not zero (a missing gap) and not two (a
+ * collapsed-but-not-removed source newline stacking on React's literal
+ * space, which does not apply here since there is no such literal in the
+ * Angular template -- but worth proving rather than assuming). */
+test('arena-activity-feed: actor, action and target compose with exactly one space between them, and time is absent when unset', () => {
+  const fixture = renderActivityFeed([
+    { id: 1, actor: 'Marta', action: 'deployed', target: 'billing@2.4.1' },
+  ]);
+  fixture.detectChanges();
+  const li = (fixture.nativeElement as HTMLElement).querySelector('li') as HTMLElement;
+  // Document order: [0] the dot span (empty), [1] the `text` slot span (wraps
+  // the actor <b> and, nested inside it, the target span) -- the target span
+  // is itself among these three, since querySelectorAll walks descendants.
+  const spans = li.querySelectorAll('span');
+  const text = spans[1] as HTMLElement;
+  assert.equal(
+    text.textContent?.replace(/\s+/g, ' ').trim(),
+    'Marta deployed billing@2.4.1',
+    `expected "Marta deployed billing@2.4.1" with single spaces, got ${JSON.stringify(text.textContent)}`,
+  );
+  assert.equal(spans.length, 3, 'dot, text and target spans only -- no time span when time is unset');
+  fixture.destroy();
+});
+
+test('arena-activity-feed: an item with neither target nor time renders only the dot and the actor/action text', () => {
+  const fixture = renderActivityFeed([{ id: 1, actor: 'Rae', action: 'approved the rollback' }]);
+  fixture.detectChanges();
+  const li = (fixture.nativeElement as HTMLElement).querySelector('li') as HTMLElement;
+  assert.equal(li.querySelectorAll('span').length, 2, 'dot and text spans only -- no target, no time');
+  const text = li.querySelectorAll('span')[1] as HTMLElement;
+  assert.equal(text.textContent?.replace(/\s+/g, ' ').trim(), 'Rae approved the rollback');
   fixture.destroy();
 });
 
