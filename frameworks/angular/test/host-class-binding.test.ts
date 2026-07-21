@@ -41,6 +41,8 @@ import { Avatar } from '../primitives/avatar/avatar';
 import { avatarStyles } from '../primitives/avatar/avatar.variants';
 import { Skeleton } from '../primitives/skeleton/skeleton';
 import { skeletonStyles } from '../primitives/skeleton/skeleton.variants';
+import { StatCard } from '../primitives/stat-card/stat-card';
+import { statCardStyles } from '../primitives/stat-card/stat-card.variants';
 import { Tag } from '../primitives/tag/tag';
 import { tagStyles } from '../primitives/tag/tag.variants';
 
@@ -88,6 +90,13 @@ class TagHost {}
   template: `<arena-skeleton class="consumer-class" />`,
 })
 class SkeletonHost {}
+
+@Component({
+  standalone: true,
+  imports: [StatCard],
+  template: `<arena-stat-card class="consumer-class" label="Revenue" value="$48.2k" />`,
+})
+class StatCardHost {}
 
 test('arena-avatar: the root recipe classes land on the host element itself', async () => {
   const fixture = TestBed.createComponent(AvatarHost);
@@ -148,6 +157,23 @@ test('arena-skeleton: the host itself carries the loading status, not a wrapper 
   assert.equal(host.getAttribute('role'), 'status');
   assert.equal(host.getAttribute('aria-label'), 'Loading');
   assert.equal(host.children.length, 0, 'the default (non-stacked) variant renders no children of its own');
+});
+
+test('arena-stat-card: the root recipe classes land on the host element itself', async () => {
+  const fixture = TestBed.createComponent(StatCardHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-stat-card') as HTMLElement;
+  for (const cls of statCardStyles().root().split(/\s+/))
+    assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
+});
+
+test('arena-stat-card: a consumer-supplied class on the host survives the [class] binding', async () => {
+  const fixture = TestBed.createComponent(StatCardHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-stat-card') as HTMLElement;
+  assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
 });
 
 /* Every primitive host-binds its recipe's visible slot directly onto its own
