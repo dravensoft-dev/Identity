@@ -43,6 +43,8 @@ import { avatarStyles } from '../primitives/avatar/avatar.variants';
 import { Breadcrumbs } from '../primitives/breadcrumbs/breadcrumbs';
 import type { ArenaCrumb, ArenaCrumbNavigateEvent } from '../primitives/breadcrumbs/breadcrumbs';
 import { breadcrumbsStyles } from '../primitives/breadcrumbs/breadcrumbs.variants';
+import { BulkActionBar } from '../primitives/bulk-action-bar/bulk-action-bar';
+import { bulkActionBarStyles } from '../primitives/bulk-action-bar/bulk-action-bar.variants';
 import { EmptyState } from '../primitives/empty-state/empty-state';
 import { emptyStateStyles } from '../primitives/empty-state/empty-state.variants';
 import { ErrorState } from '../primitives/error-state/error-state';
@@ -113,6 +115,14 @@ class BreadcrumbsHost {}
   template: `<arena-stat-card class="consumer-class" label="Revenue" value="$48.2k" />`,
 })
 class StatCardHost {}
+
+@Component({
+  standalone: true,
+  imports: [BulkActionBar],
+  host: { 'data-host': 'bulk-action-bar' },
+  template: `<arena-bulk-action-bar class="consumer-class" />`,
+})
+class BulkActionBarHost {}
 
 @Component({
   standalone: true,
@@ -286,6 +296,39 @@ test('arena-stat-card: a consumer-supplied class on the host survives the [class
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-stat-card') as HTMLElement;
   assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+});
+
+/* BulkActionBar's whole presence is driven by `count` alone (React's
+ * `BulkActionBar.jsx` returns `null` at zero) -- following ConfirmDialog's
+ * resolution for the same shape, the host stays permanently in the DOM and a
+ * `visible` variant toggles `hidden`, rather than wrapping the host itself in
+ * an `@if`. `count` defaults to 0, so `bulkActionBarStyles()`'s own default
+ * output already includes `hidden` -- this is real coverage, not a stand-in,
+ * of a real TestBed render landing that default state on the actual host. */
+test('arena-bulk-action-bar: the root recipe classes land on the host element itself, hidden by the default count of 0', async () => {
+  const fixture = TestBed.createComponent(BulkActionBarHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-bulk-action-bar') as HTMLElement;
+  for (const cls of bulkActionBarStyles().root().split(/\s+/))
+    assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
+  assert.ok(host.classList.contains('hidden'), 'a bar with no selection (the default count of 0) must render hidden');
+});
+
+test('arena-bulk-action-bar: a consumer-supplied class on the host survives the [class] binding', async () => {
+  const fixture = TestBed.createComponent(BulkActionBarHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-bulk-action-bar') as HTMLElement;
+  assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+});
+
+test('arena-bulk-action-bar: the host renders no children while count is 0 (the default) -- nothing focusable exists behind the hidden bar', async () => {
+  const fixture = TestBed.createComponent(BulkActionBarHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-bulk-action-bar') as HTMLElement;
+  assert.equal(host.children.length, 0, 'with no selection, the interactive content gated by @if (count() > 0) must not be in the DOM at all');
 });
 
 /* Regression coverage for a review finding on Task 9: the action wrapper

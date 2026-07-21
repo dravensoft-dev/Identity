@@ -60,6 +60,7 @@
     --tracking-normal: var(--ls-normal);
     --tracking-mono-nav: var(--ls-mono-nav);
     --tracking-uppercase-status: var(--ls-uppercase-status);
+    --tracking-badge: var(--ls-badge);
     --tracking-field-label: var(--ls-field-label);
     --tracking-label: var(--ls-label);
     --spacing-1: var(--sp-1);
@@ -357,6 +358,9 @@
   .h-3 {
     height: var(--spacing-3);
   }
+  .h-5\.5 {
+    height: calc(var(--spacing) * 5.5);
+  }
   .h-8\.5 {
     height: calc(var(--spacing) * 8.5);
   }
@@ -374,6 +378,9 @@
   }
   .h-full {
     height: 100%;
+  }
+  .min-h-13 {
+    min-height: calc(var(--spacing) * 13);
   }
   .min-h-30 {
     min-height: calc(var(--spacing) * 30);
@@ -398,6 +405,9 @@
   }
   .w-full {
     width: 100%;
+  }
+  .w-px {
+    width: 1px;
   }
   .max-w-\[42ch\] {
     max-width: 42ch;
@@ -462,6 +472,9 @@
   }
   .gap-3 {
     gap: var(--spacing-3);
+  }
+  .gap-3\.5 {
+    gap: calc(var(--spacing) * 3.5);
   }
   .self-start {
     align-self: flex-start;
@@ -650,8 +663,14 @@
   .pt-5\.5 {
     padding-top: calc(var(--spacing) * 5.5);
   }
+  .pr-3 {
+    padding-right: var(--spacing-3);
+  }
   .pb-5\.5 {
     padding-bottom: calc(var(--spacing) * 5.5);
+  }
+  .pl-4 {
+    padding-left: var(--spacing-4);
   }
   .text-center {
     text-align: center;
@@ -743,6 +762,10 @@
     --tw-font-weight: var(--font-weight-semibold);
     font-weight: var(--font-weight-semibold);
   }
+  .tracking-badge {
+    --tw-tracking: var(--tracking-badge);
+    letter-spacing: var(--tracking-badge);
+  }
   .tracking-field-label {
     --tw-tracking: var(--tracking-field-label);
     letter-spacing: var(--tracking-field-label);
@@ -828,6 +851,10 @@
   .opacity-60 {
     opacity: 60%;
   }
+  .shadow-2 {
+    --tw-shadow: var(--shadow-2);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
   .shadow-3 {
     --tw-shadow: var(--shadow-3);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
@@ -839,6 +866,11 @@
   }
   .transition-\[background\,transform\,box-shadow\] {
     transition-property: background,transform,box-shadow;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .transition-\[background\] {
+    transition-property: background;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
@@ -875,6 +907,17 @@
   @media (hover: hover) {
     .hover\:bg-\[var\(--danger-soft\)\]:hover {
       background-color: var(--danger-soft);
+    }
+    .hover\:bg-base-200:hover {
+      background-color: var(--color-base-200);
+    }
+    .hover\:bg-error\/14:hover {
+      background-color: var(--color-error);
+    }
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:bg-error\/14:hover {
+        background-color: color-mix(in oklab, var(--color-error) 14%, transparent);
+      }
     }
     .hover\:text-base-content\/82:hover {
       color: var(--color-base-content);

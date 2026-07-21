@@ -206,6 +206,52 @@ defaults to, so nothing renders differently until a consumer wants a different w
 
 ---
 
+### BulkActionBar — a destructive action is bordered and hovers in `--danger-soft`, React only recolors the text
+
+**React:** `BulkActionBar.jsx`'s destructive action changes only the text color
+(`var(--danger)` vs `var(--bone-dim)`); the border stays the neutral
+`var(--color-base-300)` for every action, destructive or not, and hover (driven by a
+`mouseenter`/`mouseleave` pair) always sets the same neutral `var(--panel)` background,
+never a danger tint.
+
+**Angular:** `arena-bulk-action-bar`'s destructive action borders in `--error`
+(`border-error`) alongside the text, and its hover is the soft danger tint
+(`hover:bg-error/14`, `var(--danger-soft)`) rather than the neutral raise the
+non-destructive actions get.
+
+**Why:** README's own danger convention is explicit and names this exact shape —
+"Applies to every risk trigger or indicator: buttons..., icon buttons..., menu items...
+and equivalents in lists, cards and toolbars. Hover: lightens with `--danger-soft`."
+`Menu.jsx`'s own destructive item already does this correctly (danger text plus a
+`--danger-soft` hover), so React's `BulkActionBar` is inconsistent with both the
+system's normative rule and its own `Menu` sibling — this reads as a bug in
+`BulkActionBar.jsx`, not a considered simplification, and mirroring it would have
+shipped the same gap into a second layer.
+
+**Converges:** yes — React's `BulkActionBar.jsx` should gain the border and the
+`--danger-soft` hover to match `Menu.jsx` and the README. **Open debt on the React
+layer.**
+
+### BulkActionBar — Clear is unconditional in Angular, optional in React
+
+**React:** `BulkActionBar.jsx` renders the Clear control only when an `onClear`
+callback is passed (`{onClear && (...)}`); a consumer that omits it gets a bar with no
+way to deselect.
+
+**Angular:** `arena-bulk-action-bar` always renders Clear, wired to the `cleared`
+output. There is no input that hides it.
+
+**Why:** the task brief's own `.prompt.md` states this as a deliberate Do ("Always
+offer Clear. A selection the user cannot see the edges of is a selection they will act
+on by accident"), and Angular's output model does not have a React-style "callback
+provided or not" signal to gate on — every `output()` exists on the component
+regardless of whether a consumer subscribes, so conditioning the button's presence on
+subscription is not idiomatic here the way an optional prop is in React. Treated as an
+intentional simplification rather than a narrowing to flag.
+
+**Converges:** no — Angular's shape is preferred; React should stop treating Clear as
+optional. **Open debt on the React layer**, low priority.
+
 ## How to add an entry
 
 When you find a behavioural difference between layers:
