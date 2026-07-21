@@ -10,9 +10,9 @@
      `draven-theme` key but only reads the live class, so without this the
      console would forget the choice on every reload. -->
 <script src="../../../../theme.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css">
+<link rel="stylesheet" href="../../../../node_modules/@phosphor-icons/web/src/bold/style.css">
+<link rel="stylesheet" href="../../../../node_modules/@phosphor-icons/web/src/fill/style.css">
+<link rel="stylesheet" href="../../../../node_modules/@phosphor-icons/web/src/duotone/style.css">
 <style>
 html,body{margin:0;height:100%}
 body{background:var(--bg);color:var(--text-strong);font-family:var(--font-body)}
@@ -20,9 +20,9 @@ body{background:var(--bg);color:var(--text-strong);font-family:var(--font-body)}
 .toast-wrap{position:fixed;right:24px;bottom:24px;z-index:1200;display:flex;flex-direction:column;gap:12px}
 </style>
 <script type="importmap">
-{"imports":{"react":"https://esm.sh/react@18","react/jsx-runtime":"https://esm.sh/react@18/jsx-runtime","react-dom/client":"https://esm.sh/react-dom@18/client"}}
+{"imports":{"react":"../../../../frameworks/react/vendor/react.js","react/jsx-runtime":"../../../../frameworks/react/vendor/react-jsx-runtime.js","react-dom/client":"../../../../frameworks/react/vendor/react-dom-client.js"}}
 </script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="../../../../node_modules/@babel/standalone/babel.min.js"></script>
 <script src="../../../../jsx-loader.js"></script>
 </head>
 <body>

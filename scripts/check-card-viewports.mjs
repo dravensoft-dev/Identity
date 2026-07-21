@@ -133,12 +133,11 @@ export const MEASURE_SCRIPT = `(async () => {
   return { ...read(), timedOut: true };
 })()`;
 
-/* A page whose TCP connect never resolves (a stale IP, a dropped SYN, a CDN
- * having a bad day — every one of these 34 pages fetches React from esm.sh,
- * Babel from unpkg and Phosphor from jsdelivr, so this is a realistic
- * trigger) leaves the CDP command carrying it unsettled forever: neither
- * Page.navigate nor Runtime.evaluate reject on their own, confirmed by hand
- * against a listener that accepts the connection and then says nothing.
+/* A page whose TCP connect never resolves (a stale IP, a dropped SYN, the
+ * local static server wedged) leaves the CDP command carrying it unsettled
+ * forever: neither Page.navigate nor Runtime.evaluate reject on their own,
+ * confirmed by hand against a listener that accepts the connection and then
+ * says nothing.
  * launchChromium spawns Chromium detached precisely so its zygote and
  * NetworkService children can be group-killed — which also means a Ctrl-C or
  * a CI timeout on *this* script never reaches that tree, since the signal
@@ -170,8 +169,9 @@ function withTimeout(promise, ms, message) {
  * and the Animation.enable/setPlaybackRate pair below touch no network and no
  * page script — they are local bookkeeping the browser process itself
  * answers, so a hang here would mean a wedged or crashed Chromium rather than
- * a flaky CDN, a narrower failure than Page.navigate's. Still the same shape
- * of risk (an unsettled CDP send leaves the caller's finally never reached),
+ * a wedged local server, a narrower failure than Page.navigate's. Still the
+ * same shape of risk (an unsettled CDP send leaves the caller's finally never
+ * reached),
  * so they get the same NAVIGATE_TIMEOUT_MS bound for a uniform reason:
  * nothing measurePage awaits should be able to hang this gate forever. Named
  * generically (the method, not the page) since none of these carries a URL
@@ -303,7 +303,7 @@ export function classify({ file, declared, measured }) {
     return {
       file,
       status: 'unrendered',
-      message: `${file} did not render — #root is empty after 20s. The demo pages load React, Babel and Phosphor from CDNs; check network access.`,
+      message: `${file} did not render — #root is empty after 20s. Check that frameworks/react/vendor/*.js is in sync (bun run check:vendor) and that node_modules is installed.`,
     };
   }
 
@@ -386,8 +386,8 @@ export function summarizeCards(results) {
 }
 
 /** Measure and classify one page, catching whatever measurePage rejects
- *  with — a navigate/evaluate timeout, a dropped CDN connection, a page-side
- *  exception surfaced through exceptionDetails, all realistic per the
+ *  with — a navigate/evaluate timeout, a dropped local-server connection, a
+ *  page-side exception surfaced through exceptionDetails, all realistic per the
  *  comments above measurePage — so a single flaky page cannot take the
  *  whole sweep down with it. Routed to 'unrendered': the file already
  *  treats "the browser ran but this page could not be measured" as a

@@ -4,12 +4,13 @@
  * inherited, not buffered), and a pass/fail summary prints once every step
  * has finished. Exit 1 if any step failed, 0 if all passed.
  *
- * Twelve steps total: the eleven gates in GATES below, plus the test suite.
+ * Thirteen steps total: the twelve gates in GATES below, plus the test suite.
  *
- * One gate can report a third status. check:cards needs a headless browser,
- * which is the one thing here that is not portable; where there is none it
- * exits 2 and this runner marks it SKIP and calls the whole run INCOMPLETE,
- * so a missing browser can never be mistaken for a clean tree.
+ * Two gates can report a third status. check:cards needs a headless browser,
+ * and check:vendor needs Bun.build, neither of which is portable to plain
+ * node; where either is missing it exits 2 and this runner marks it SKIP and
+ * calls the whole run INCOMPLETE, so a missing dependency can never be
+ * mistaken for a clean tree.
  *
  * Every gate is spawned as `process.execPath <script>.mjs`, exactly how
  * scripts/lib/tailwind-compile.mjs spawns the Tailwind CLI, so the runner
@@ -46,6 +47,7 @@ export const GATES = [
   { name: 'check:arbitrary', file: 'check-arbitrary-values.mjs' },
   { name: 'check:dimensions', file: 'check-dimension-literals.mjs' },
   { name: 'check:fonts', file: 'check-fonts-generated.mjs' },
+  { name: 'check:vendor', file: 'check-vendor-generated.mjs' },
   { name: 'check:cards', file: 'check-card-viewports.mjs' },
   { name: 'check:angular', file: 'check-angular.mjs' },
 ];
