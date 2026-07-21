@@ -244,7 +244,16 @@ class DoughnutChartHost {}
  * running the REAL compiled template through REAL change detection against
  * the REAL `AppLogo` class. It is not a stand-in component with a look-alike
  * template: it is this component, rendered for real, with its one otherwise
- * unreachable input satisfied by direct assignment instead of a binding. */
+ * unreachable input satisfied by direct assignment instead of a binding.
+ *
+ * The limitation this buys: because it never consults `ɵcmp.inputs`, a test
+ * built this way passes regardless of whether `name` (or `dim`) is declared
+ * correctly, aliased, transformed, or declared as an input at all -- it
+ * proves TEMPLATE and DOM shape only, and can never prove the input
+ * contract itself. That is acceptable here because `bun run check:angular`'s
+ * real `ngc --strictTemplates` is what proves the input contract; a later
+ * test copying this technique should not read it as establishing more than
+ * shape. */
 function renderAppLogo(name: string, dim?: string) {
   const fixture = TestBed.createComponent(AppLogo);
   const instance = fixture.componentInstance as unknown as Record<string, unknown>;
@@ -347,9 +356,14 @@ test('arena-app-logo: with no dim, the wordmark renders the name alone and no di
 });
 
 /* Resolution J of task 24's brief: known layer-wide issue, not fixed here. An
- * input named `name` collides with a real global HTML attribute, the same
- * class of problem `components-divergences.md` and the brief record for
- * `title`. Proven here: a static literal `name="Draven"` on `<arena-app-logo>`
+ * input named `name` collides with a real global HTML attribute -- the same
+ * class of problem as an input named `title`. This is NOT currently recorded
+ * in `components-divergences.md`: that file's `title` mentions are all about
+ * a dialog `title` input (ConfirmDialog/StepperDialog) and PageHead's `title`
+ * prop, which is a different thing (a prop name, not an attribute-collision
+ * class). The stray-attribute collision class is tracked only as a review
+ * item for the close-out, not yet as a divergences entry. Proven here: a
+ * static literal `name="Draven"` on `<arena-app-logo>`
  * lands on the host as a plain DOM attribute BEFORE Angular ever runs change
  * detection (Angular sets an element's static, non-bound attributes during
  * its template's creation pass, which for a nested component runs as part of
@@ -365,8 +379,17 @@ test('arena-app-logo: with no dim, the wordmark renders the name alone and no di
  * has no per-component isolation) -- confirmed by hand: without this
  * `destroy()`, the very next test in file order (`arena-avatar`'s) failed
  * with this same NG0950, thrown out of THIS fixture's still-pending required
- * input while detecting changes for an entirely unrelated component. */
-test('arena-app-logo: a static "name" attribute lands as a stray DOM attribute on the host, not as the component input -- known layer-wide issue, not fixed here (Resolution J)', () => {
+ * input while detecting changes for an entirely unrelated component.
+ *
+ * That "never reaches the input" outcome is a property of THIS harness, not
+ * of Angular in general: this suite runs `@angular/compiler`'s runtime JIT
+ * and never `ngtsc` (see this file's header comment), so `AppLogo`'s
+ * `ɵcmp.inputs` is never populated here and a static attribute has nothing
+ * to route to. Under a real AOT build a static attribute matching a
+ * declared input DOES route to it (and still remains in the DOM as an
+ * attribute) -- this test proves only what lands in THIS harness's DOM, not
+ * what a consumer's real build would do. */
+test('arena-app-logo: under this JIT-only harness, a static "name" attribute lands as a stray DOM attribute on the host and does not reach ɵcmp.inputs -- known layer-wide issue, not fixed here (Resolution J)', () => {
   const fixture = TestBed.createComponent(AppLogoStaticAttributeHost);
   const host = fixture.nativeElement.querySelector('arena-app-logo') as HTMLElement;
   assert.equal(host.getAttribute('name'), 'Draven', 'the literal attribute should still land on the host element itself');

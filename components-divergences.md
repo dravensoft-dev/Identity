@@ -684,6 +684,12 @@ can express is lost, only how they pass it.
 PageHead's entry above already gives — in Angular a consumer writes those directly on
 the host, which is the same element the recipe's `root` classes are bound to.
 
+**Also not ported:** React's `if (!mark || !name) return null` guard
+(`AppLogo.jsx:15`), which renders nothing when either is missing. Angular has no
+counterpart — `name` is `input.required`, so a missing `name` is a compile-time/runtime
+contract violation at the call site, not a variant to render around, and per a standing
+ruling AppLogo must never render mark-only. Dropping the guard is deliberate, not a gap.
+
 **Converges:** no. Each layer expresses the same constraint (the slot sizes the mark,
 never the reverse) through its own platform's mechanism for reaching projected/child
 content.
