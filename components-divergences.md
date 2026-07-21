@@ -155,7 +155,11 @@ click-to-skip behaviour, and the panel stops that click's propagation
 (`(click)="$event.stopPropagation()"`) so a click on the panel — including its own Back /
 Skip / Next buttons — never reaches the scrim's listener. The panel's `aria-label` falls
 back through `title` → `eyebrow` → a generic `"Step N of M"`, so the dialog always has a
-name, the same shape `ConfirmDialog`'s `labelId` computation already established.
+name. The fallback *logic* is the one `ConfirmDialog` established; the *mechanism* is not.
+`ConfirmDialog` wires a per-instance unique id through `aria-labelledby`, because its name
+comes from an element it renders. Onboarding sets `aria-label` to a computed string
+directly, so there is no id involved and no uniqueness concern to check when two instances
+are on one page.
 
 **Why:** the click-to-skip behaviour is real product behaviour worth keeping, but the
 sibling-div structure it was built on cannot survive the mandatory host-binding shape —
