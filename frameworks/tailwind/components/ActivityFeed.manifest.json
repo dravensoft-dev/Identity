@@ -1,0 +1,28 @@
+{
+  "component": "ActivityFeed",
+  "slots": {
+    "root": "flex flex-col list-none m-0 p-0",
+    "item": "flex items-center gap-3 py-3.5",
+    "dot": "flex-none size-2 rounded-pill bg-current",
+    "text": "font-body text-ctl text-base-content/82",
+    "actor": "font-bold text-base-content",
+    "target": "font-mono text-ctl-md text-secondary",
+    "time": "ml-auto font-mono text-ctl-sm text-base-content/62"
+  },
+  "variants": {
+    "tone": {
+      "neutral": { "dot": "text-base-content/82" },
+      "accent": { "dot": "text-primary" },
+      "gold": { "dot": "text-secondary" },
+      "success": { "dot": "text-success" },
+      "warning": { "dot": "text-warning" },
+      "danger": { "dot": "text-error" },
+      "info": { "dot": "text-info" }
+    },
+    "divided": {
+      "true": { "item": "border-t-[length:var(--bw)] border-base-300" },
+      "false": { "item": "border-t-0" }
+    }
+  },
+  "defaultVariants": { "tone": "accent", "divided": true }
+}

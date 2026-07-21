@@ -113,6 +113,37 @@ entry above for the same conclusion about `style`/`{...rest}`).
 **Converges:** no on the MutationObserver-vs-signal shape (Angular's is strictly better).
 The `label` customization gap is low-priority open debt, on the Angular layer this time.
 
+### ActivityFeed is the second Angular primitive that does not host-bind its root
+
+**Every other Angular primitive except `arena-theme-toggle`:** the recipe's `root` slot is
+bound onto the host — `host: { '[class]': 'styles().root()' }` — and no wrapper element is
+rendered.
+
+**`arena-activity-feed`:** keeps the host a bare, unstyled `<arena-activity-feed>` and
+renders a real `<ul [class]="base().root()">` inside it, with each row a real `<li>`.
+
+**Why:** this is the same rule `ThemeToggle`'s entry above establishes, hit a second time
+rather than reopened — "when the root must be a specific semantic element, keep it and do
+not host-bind." An `<li>` must be a child of a list element (`<ul>`, `<ol>` or `<menu>`);
+host-binding `root` here would make `<arena-activity-feed>` itself the list and promote its
+rows to children of an element that is not one, silently destroying the list semantics a
+screen reader announces (item count, position-in-set) with no ARIA role added to
+compensate — and none is needed, since the native `<ul>`/`<li>` pair already carries it.
+`ThemeToggle`'s case is a native interactive control that a custom element cannot become;
+this one is a native list structure a custom element cannot become either. Same rule, two
+instances.
+
+**Consequence to know:** as with `ThemeToggle`, a consumer attribute written directly on
+`<arena-activity-feed>` (a static `class=""`, an ARIA attribute) lands on the inert host,
+not on the styled `<ul>` inside it. `host-class-binding.test.ts`'s manifest-driven display-
+utility guard still covers this component (it reads every primitive's `slots.root` string
+regardless of whether the component host-binds it), and `ActivityFeed.manifest.json`'s
+`root` slot (`"flex flex-col list-none m-0 p-0"`) still carries `flex`, so the guard is not
+weakened by this carve-out — it was never conditioned on host-binding in the first place.
+
+**Converges:** no. This is the correct shape for a primitive whose root must be a real list
+element, the same way `ThemeToggle`'s is for a primitive whose root must be a real button.
+
 ### The Angular layer has no Button primitive
 
 **React:** `Button.jsx` is a component, and `ConfirmDialog.jsx` renders `<Button>` for its footer.
@@ -693,6 +724,42 @@ ruling AppLogo must never render mark-only. Dropping the guard is deliberate, no
 **Converges:** no. Each layer expresses the same constraint (the slot sizes the mark,
 never the reverse) through its own platform's mechanism for reaching projected/child
 content.
+
+### ActivityFeed — the tone dot is filled, matching Tag's own dot and Avatar's presence carve-out; not a divergence
+
+**React:** `ActivityFeed.jsx`'s dot is `background: TONES[item.tone] || TONES.accent` — a
+small (`calc(var(--sp-1) * 2)`, 8px) solid-filled circle, including for `tone="danger"`,
+where it fills with `var(--danger)`.
+
+**Angular:** `ActivityFeed.manifest.json`'s `dot` slot is `bg-current`, with each `tone`
+variant setting only the *text* colour (`text-error` for danger, etc.) that `currentColor`
+then fills the dot with. The rendered result is the same filled circle React's produces;
+only the mechanism differs — Angular routes every tone through one `bg-current` declaration
+instead of writing a `bg-<tone>` per value, which is `Tag.manifest.json`'s own dot slot
+exactly (`"dot": "h-1.5 w-1.5 rounded-pill bg-current"`, unconditionally rendered by
+`tag.ts`'s template alongside its projected content) — taken rather than re-derived, per
+this task's own brief.
+
+**Checked against "danger is outline" on purpose:** the ledger's rule (`docs/superpowers/
+plans/2026-07-18-5a-angular-primitive-parity.md`'s token→utility table) is explicit that
+`Avatar`'s presence dot is "the only place in the ledger a filled `bg-error` is correct,"
+which reads as if it names one component. It does not scope that narrowly — README's own
+danger section states the reasoning generally: "'Danger is outline' governs controls and
+surfaces, not presence... An outline dot at that size would not read at all." A tone dot
+identifying what KIND of event a feed row is (a status taxonomy, exactly like a chart's
+`tone` colours or Avatar's online/busy/away/offline) is the same semantic family as
+presence, not a risk trigger or a resting status surface — and `Tag`'s dot already shipped
+this exact shape with no divergence entry, meaning the carve-out was already being applied
+in practice one component before this one made it worth writing down. **README.md**'s danger
+section is updated in this change to name `Tag` and `ActivityFeed` alongside `Avatar` so the
+carve-out reads as the general rule it already is, rather than one component's exception.
+
+**Why this is not a divergence:** React does the identical thing (a filled dot, every
+tone, including danger) — both layers agree, and both are correct under the carve-out
+above. Recorded per this task's own instruction to check the tone dot against the danger
+convention before shipping, not because the layers disagree.
+
+**Converges:** n/a — both layers already agree.
 
 ## How to add an entry
 

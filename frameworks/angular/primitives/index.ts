@@ -1,3 +1,4 @@
+export * from './activity-feed';
 export * from './alert';
 export * from './app-logo';
 export * from './avatar';
