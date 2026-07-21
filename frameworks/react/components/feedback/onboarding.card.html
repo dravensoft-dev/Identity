@@ -5,34 +5,5 @@
 <script type="importmap">
 {"imports":{"react":"../../../../frameworks/react/vendor/react.js","react/jsx-runtime":"../../../../frameworks/react/vendor/react-jsx-runtime.js","react-dom/client":"../../../../frameworks/react/vendor/react-dom-client.js"}}
 </script>
-<script src="../../../../node_modules/@babel/standalone/babel.min.js"></script>
-<script src="../../../../jsx-loader.js"></script></head><body><div id="root"></div>
-<script type="text/babel" data-type="module" data-presets="react">
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-const { Onboarding } = await arenaImport('../../components/feedback/Onboarding.jsx');
-const { Button } = await arenaImport('../../components/forms/Button.jsx');
-const steps = [
-  {eyebrow:'Welcome',title:'Your first deployment',body:'From here you will deploy and roll back with one click.'},
-  {title:'Command palette',body:'Press Cmd/Ctrl+K to run any action without the mouse.'},
-  {title:'All set',body:'You can reopen this guide from Help anytime.'},
-];
-function Demo(){
-  const [open,setOpen]=React.useState(true);
-  const [step,setStep]=React.useState(0);
-  return(<div>
-    <div className="sub">Skip is offered on every step — a tour is never a trap</div>
-    <div className="row">
-      <Button variant="secondary" size="sm" onClick={()=>{setStep(0);setOpen(true);}}>Start tour</Button>
-      <span style={{color:'var(--mute)',fontFamily:'var(--font-mono)',fontSize:12}}>
-        Step <span style={{color:'var(--gold)'}}>{Math.min(step+1,steps.length)}</span> of {steps.length}
-        {!open && ' · dismissed'}
-      </span>
-    </div>
-    <Onboarding open={open} index={step} steps={steps}
-      onNext={()=>setStep(s=>s+1)} onBack={()=>setStep(s=>s-1)}
-      onSkip={()=>setOpen(false)} onDone={()=>setOpen(false)} />
-  </div>);
-}
-createRoot(document.getElementById('root')).render(<Demo/>);
-</script></body></html>
+</head><body><div id="root"></div>
+<script type="module" src="onboarding.card.entry.js"></script></body></html>

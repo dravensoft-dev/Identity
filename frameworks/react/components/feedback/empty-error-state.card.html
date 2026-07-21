@@ -7,26 +7,5 @@
 <script type="importmap">
 {"imports":{"react":"../../../../frameworks/react/vendor/react.js","react/jsx-runtime":"../../../../frameworks/react/vendor/react-jsx-runtime.js","react-dom/client":"../../../../frameworks/react/vendor/react-dom-client.js"}}
 </script>
-<script src="../../../../node_modules/@babel/standalone/babel.min.js"></script>
-<script src="../../../../jsx-loader.js"></script></head><body><div id="root"></div>
-<script type="text/babel" data-type="module" data-presets="react">
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-const { EmptyState } = await arenaImport('../../components/feedback/EmptyState.jsx');
-const { ErrorState } = await arenaImport('../../components/feedback/ErrorState.jsx');
-const { Button } = await arenaImport('../../components/forms/Button.jsx');
-function Demo(){return(<div>
-  <div className="sub">Neither state is a dead end — each one names the way out</div>
-  <div className="row">
-    <EmptyState style={{flex:'1 1 0',minWidth:0,boxSizing:'border-box'}} icon={<i className="ph-duotone ph-folder-open"/>}
-      title="No projects yet" message="Create your first project to start deploying."
-      action={<Button>New project</Button>} />
-    <ErrorState style={{flex:'1 1 0',minWidth:0,boxSizing:'border-box'}} icon={<i className="ph-fill ph-warning-octagon"/>}
-      title="Couldn't load the panel" message="No connection to the metrics service."
-      code="ERR_UPSTREAM_504" onRetry={()=>{}}
-      secondaryAction={<Button variant="secondary">View logs</Button>} />
-  </div>
-  <div className="sub">EmptyState invites the first action · ErrorState retries and exposes the code</div>
-</div>);}
-createRoot(document.getElementById('root')).render(<Demo/>);
-</script></body></html>
+</head><body><div id="root"></div>
+<script type="module" src="empty-error-state.card.entry.js"></script></body></html>

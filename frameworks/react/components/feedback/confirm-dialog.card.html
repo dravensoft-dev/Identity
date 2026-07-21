@@ -5,32 +5,5 @@
 <script type="importmap">
 {"imports":{"react":"../../../../frameworks/react/vendor/react.js","react/jsx-runtime":"../../../../frameworks/react/vendor/react-jsx-runtime.js","react-dom/client":"../../../../frameworks/react/vendor/react-dom-client.js"}}
 </script>
-<script src="../../../../node_modules/@babel/standalone/babel.min.js"></script>
-<script src="../../../../jsx-loader.js"></script></head><body><div id="root"></div>
-<script type="text/babel" data-type="module" data-presets="react">
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-const { ConfirmDialog } = await arenaImport('../../components/feedback/ConfirmDialog.jsx');
-const { Button } = await arenaImport('../../components/forms/Button.jsx');
-function Demo(){
-  const [hard,setHard]=React.useState(true);
-  const [soft,setSoft]=React.useState(false);
-  return(<div>
-    <div className="sub">The trigger stays outline · only the final confirmation is filled</div>
-    <div className="row">
-      <Button variant="danger" onClick={()=>setHard(true)}>Delete project…</Button>
-      <Button variant="secondary" onClick={()=>setSoft(true)}>Enable auto-deploy…</Button>
-    </div>
-    <div className="sub">requireText makes the irreversible one deliberate — no click-outside either</div>
-    <ConfirmDialog open={hard} destructive requireText="DELETE" title="Delete project"
-      confirmLabel="Delete permanently" onCancel={()=>setHard(false)} onConfirm={()=>setHard(false)}>
-      This action cannot be undone. 4 deployments and their history will be deleted.
-    </ConfirmDialog>
-    <ConfirmDialog open={soft} title="Enable automatic deployment" confirmLabel="Enable"
-      onCancel={()=>setSoft(false)} onConfirm={()=>setSoft(false)}>
-      Every approved commit will be deployed to production without manual review.
-    </ConfirmDialog>
-  </div>);
-}
-createRoot(document.getElementById('root')).render(<Demo/>);
-</script></body></html>
+</head><body><div id="root"></div>
+<script type="module" src="confirm-dialog.card.entry.js"></script></body></html>

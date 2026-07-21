@@ -1,0 +1,56 @@
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { Button } from '../../components/forms/Button.jsx';
+import { IconButton } from '../../components/forms/IconButton.jsx';
+import { Input } from '../../components/forms/Input.jsx';
+import { Select } from '../../components/forms/Select.jsx';
+import { Checkbox } from '../../components/forms/Checkbox.jsx';
+import { Switch } from '../../components/forms/Switch.jsx';
+import { ThemeToggle } from '../../components/forms/ThemeToggle.jsx';
+const plus = <i className="ph-bold ph-plus" style={{fontSize:16,lineHeight:1}} />;
+function Demo(){
+  const [chk,setChk]=React.useState(true);
+  const [sw,setSw]=React.useState(true);
+  return (
+    <div>
+      <div className="sub">Button — variants</div>
+      <div className="row">
+        <Button variant="primary" icon={plus}>Deploy</Button>
+        <Button variant="secondary">Roll back</Button>
+        <Button variant="ghost">Cancel</Button>
+        <Button variant="danger">Delete</Button>
+        <Button variant="primary" loading>Deploying</Button>
+        <Button variant="primary" disabled>Locked</Button>
+      </div>
+      <div className="sub">Sizes · IconButton</div>
+      <div className="row">
+        <Button size="sm" variant="secondary">sm</Button>
+        <Button size="md" variant="secondary">md</Button>
+        <Button size="lg" variant="secondary">lg</Button>
+        <IconButton label="New" variant="solid">{plus}</IconButton>
+        <IconButton label="New">{plus}</IconButton>
+      </div>
+      <div className="sub">Input · Select</div>
+      <div className="row" style={{alignItems:'flex-start'}}>
+        <Input label="Repository" prefix="git@" placeholder="org/project" style={{width:220}} />
+        <Input label="Email" error="Invalid format" defaultValue="hello@" style={{width:200}} />
+        <Select label="Environment" options={['Production','Staging','QA']} style={{width:180}} />
+      </div>
+      <div className="sub">Input — native date and time</div>
+      <div className="row" style={{alignItems:'flex-start'}}>
+        <Input label="Deploy date" type="date" required style={{width:200}} />
+        <Input label="Window start" type="time" hint="Local time" style={{width:200}} />
+        <Input label="Cutover" type="datetime-local" style={{width:240}} />
+        <Input label="Deadline" type="date" error="Pick a date in the future" style={{width:200}} />
+      </div>
+      <div className="sub">Checkbox · Switch</div>
+      <div className="row">
+        <Checkbox checked={chk} onChange={e=>setChk(e.target.checked)} label="Notify on approval" />
+        <Switch checked={sw} onChange={e=>setSw(e.target.checked)} label="Automatic deployment" />
+      </div>
+      <div className="sub">ThemeToggle</div>
+      <div className="row"><ThemeToggle /><span style={{fontSize:13,color:'var(--mute)'}}>Flips the whole page — every component re-themes from tokens alone.</span></div>
+    </div>
+  );
+}
+createRoot(document.getElementById('root')).render(<Demo/>);

@@ -4,11 +4,12 @@
  * inherited, not buffered), and a pass/fail summary prints once every step
  * has finished. Exit 1 if any step failed, 0 if all passed.
  *
- * Thirteen steps total: the twelve gates in GATES below, plus the test suite.
+ * Fourteen steps total: the thirteen gates in GATES below, plus the test suite.
  *
- * Two gates can report a third status. check:cards needs a headless browser,
- * and check:vendor needs Bun.build, neither of which is portable to plain
- * node; where either is missing it exits 2 and this runner marks it SKIP and
+ * Three gates can report a third status. check:cards needs a headless
+ * browser, and check:vendor and check:demos each need a Bun-only builder
+ * (Bun.build, Bun.Transpiler) that plain node has no equivalent for; where
+ * any of the three is missing it exits 2 and this runner marks it SKIP and
  * calls the whole run INCOMPLETE, so a missing dependency can never be
  * mistaken for a clean tree.
  *
@@ -48,6 +49,7 @@ export const GATES = [
   { name: 'check:dimensions', file: 'check-dimension-literals.mjs' },
   { name: 'check:fonts', file: 'check-fonts-generated.mjs' },
   { name: 'check:vendor', file: 'check-vendor-generated.mjs' },
+  { name: 'check:demos', file: 'check-demos-generated.mjs' },
   { name: 'check:cards', file: 'check-card-viewports.mjs' },
   { name: 'check:angular', file: 'check-angular.mjs' },
 ];

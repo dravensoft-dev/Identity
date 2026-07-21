@@ -14,39 +14,9 @@ body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--fo
 <script type="importmap">
 {"imports":{"react":"../../../../frameworks/react/vendor/react.js","react/jsx-runtime":"../../../../frameworks/react/vendor/react-jsx-runtime.js","react-dom/client":"../../../../frameworks/react/vendor/react-dom-client.js"}}
 </script>
-<script src="../../../../node_modules/@babel/standalone/babel.min.js"></script>
-<script src="../../../../jsx-loader.js"></script>
 </head>
 <body>
 <div id="root"></div>
-<script type="text/babel" data-type="module" data-presets="react">
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-const { RadioGroup, Radio } = await arenaImport('../../components/forms/Radio.jsx');
-const { Textarea } = await arenaImport('../../components/forms/Textarea.jsx');
-function Demo(){
-  const [env,setEnv]=React.useState('staging');
-  const [notes,setNotes]=React.useState('');
-  return (
-    <div className="row" style={{gap:40}}>
-      <div style={{width:280}}>
-        <div className="sub" style={{marginBottom:12}}>RadioGroup</div>
-        <RadioGroup value={env} onChange={setEnv}>
-          <Radio value="prod" label="Production" hint="Real users — requires approval" />
-          <Radio value="staging" label="Staging" />
-          <Radio value="qa" label="QA" />
-        </RadioGroup>
-      </div>
-      <div style={{width:320}}>
-        <Textarea label="Deployment notes" rows={5} maxLength={280} counter
-          value={notes} onChange={e=>setNotes(e.target.value)}
-          hint="Attached to the delivery log." />
-      </div>
-    </div>
-  );
-}
-
-createRoot(document.getElementById('root')).render(<Demo/>);
-</script>
+<script type="module" src="radio-textarea.card.entry.js"></script>
 </body>
 </html>

@@ -1,8 +1,10 @@
 /* Typechecks the Angular layer, templates included.
  *
- * React's specimens work because jsx-loader.js transpiles JSX in the browser
- * with Babel standalone. Angular cannot do that — decorators and templates need
- * real compilation — so the layer's only proof that it is valid is this gate.
+ * React's specimens work because their JSX is compiled ahead of time
+ * (build-demos.mjs, checked by check-demos-generated.mjs) into plain
+ * `<script type="module">` output. Angular cannot ship the analogue of that
+ * — decorators and templates need real compilation, not a JSX-shaped
+ * transpile — so the layer's only proof that it is valid is this gate.
  * It is what stops an Angular primitive shipping in the state `tag` shipped in:
  * written, plausible, never once compiled.
  *
