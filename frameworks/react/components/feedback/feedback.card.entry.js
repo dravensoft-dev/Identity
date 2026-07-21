@@ -41,7 +41,7 @@ function Demo() {
     className: "sub"
   }, "ProgressBar"), React.createElement("div", {
     className: "row",
-    style: { flexDirection: "column", alignItems: "stretch", gap: 14 }
+    style: { flexDirection: "column", alignItems: "stretch", gap: "calc(var(--sp-1) * 3.5)" }
   }, React.createElement(ProgressBar, {
     label: "Deploying build #4821",
     value: 64
@@ -70,7 +70,7 @@ function Demo() {
     tone: "neutral",
     label: "Loading"
   }), React.createElement("span", {
-    style: { display: "inline-flex", alignItems: "center", gap: 8, background: "var(--crimson)", color: "var(--on-accent)", borderRadius: "var(--r-sm)", padding: "0 14px", height: 40, fontFamily: "var(--font-body)", fontWeight: 600, fontSize: 14 }
+    style: { display: "inline-flex", alignItems: "center", gap: "var(--sp-2)", background: "var(--crimson)", color: "var(--on-accent)", borderRadius: "var(--r-sm)", padding: "0 calc(var(--sp-1) * 3.5)", height: "var(--dz-ctl-h)", fontFamily: "var(--font-body)", fontWeight: "var(--fw-semibold)", fontSize: "var(--dz-text)" }
   }, React.createElement(Spinner, {
     size: "sm",
     tone: "on-accent",

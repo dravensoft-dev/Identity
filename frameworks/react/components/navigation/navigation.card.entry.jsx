@@ -9,10 +9,10 @@ import { BulkActionBar } from '../../components/navigation/BulkActionBar.jsx';
 import { Button } from '../../components/forms/Button.jsx';
 function Demo(){const[v,setV]=React.useState('Overview');const[range,setRange]=React.useState('7d');const[sel,setSel]=React.useState(3);return(<div>
   <Tabs tabs={['Overview','Deployments','Activity','Settings']} value={v} onChange={setV}/>
-  <div className="row" style={{marginTop:14}}>
+  <div className="row" style={{marginTop:'calc(var(--sp-1) * 3.5)'}}>
     <div className="sub">SegmentedControl — filters inside the tab, never navigates</div>
     <SegmentedControl ariaLabel="Time range" options={['24h','7d','30d']} value={range} onChange={setRange}/>
-    <span style={{color:'var(--mute)',fontFamily:'var(--font-mono)',fontSize:12}}>Active view: <span style={{color:'var(--gold)'}}>{v}</span> · Range: <span style={{color:'var(--gold)'}}>{range}</span></span>
+    <span style={{color:'var(--mute)',fontFamily:'var(--font-mono)',fontSize:'var(--dz-text-sm)'}}>Active view: <span style={{color:'var(--gold)'}}>{v}</span> · Range: <span style={{color:'var(--gold)'}}>{range}</span></span>
   </div>
   <div className="sub">Breadcrumbs — the last item is the current location</div>
   <div className="row">
@@ -38,7 +38,7 @@ function Demo(){const[v,setV]=React.useState('Overview');const[range,setRange]=R
         {label:'Archive',icon:<i className="ph-bold ph-archive"/>,onClick:()=>{}},
         {label:'Delete',icon:<i className="ph-bold ph-trash"/>,onClick:()=>{},destructive:true},
       ]} />
-    {sel===0 && <button onClick={()=>setSel(3)} style={{background:'none',border:'1px solid var(--color-base-300)',borderRadius:'var(--r-sm)',color:'var(--mute)',cursor:'pointer',fontFamily:'var(--font-mono)',fontSize:11,letterSpacing:'.1em',textTransform:'uppercase',padding:'8px 12px'}}>Restore selection</button>}
+    {sel===0 && <button onClick={()=>setSel(3)} style={{background:'none',border:'var(--bw) solid var(--color-base-300)',borderRadius:'var(--r-sm)',color:'var(--mute)',cursor:'pointer',fontFamily:'var(--font-mono)',fontSize:'var(--dz-text-xs)',letterSpacing:'var(--ls-badge)',textTransform:'uppercase',padding:'var(--sp-2) var(--sp-3)'}}>Restore selection</button>}
   </div>
 </div>);}
 createRoot(document.getElementById('root')).render(<Demo/>);

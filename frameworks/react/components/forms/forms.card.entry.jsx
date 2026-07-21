@@ -7,7 +7,7 @@ import { Select } from '../../components/forms/Select.jsx';
 import { Checkbox } from '../../components/forms/Checkbox.jsx';
 import { Switch } from '../../components/forms/Switch.jsx';
 import { ThemeToggle } from '../../components/forms/ThemeToggle.jsx';
-const plus = <i className="ph-bold ph-plus" style={{fontSize:16,lineHeight:1}} />;
+const plus = <i className="ph-bold ph-plus" style={{fontSize:'var(--icon-md)',lineHeight:'var(--dz-lh)'}} />;
 function Demo(){
   const [chk,setChk]=React.useState(true);
   const [sw,setSw]=React.useState(true);
@@ -32,16 +32,16 @@ function Demo(){
       </div>
       <div className="sub">Input · Select</div>
       <div className="row" style={{alignItems:'flex-start'}}>
-        <Input label="Repository" prefix="git@" placeholder="org/project" style={{width:220}} />
-        <Input label="Email" error="Invalid format" defaultValue="hello@" style={{width:200}} />
-        <Select label="Environment" options={['Production','Staging','QA']} style={{width:180}} />
+        <Input label="Repository" prefix="git@" placeholder="org/project" style={{width:'calc(var(--sp-1) * 55)'}} />
+        <Input label="Email" error="Invalid format" defaultValue="hello@" style={{width:'calc(var(--sp-1) * 50)'}} />
+        <Select label="Environment" options={['Production','Staging','QA']} style={{width:'calc(var(--sp-1) * 45)'}} />
       </div>
       <div className="sub">Input — native date and time</div>
       <div className="row" style={{alignItems:'flex-start'}}>
-        <Input label="Deploy date" type="date" required style={{width:200}} />
-        <Input label="Window start" type="time" hint="Local time" style={{width:200}} />
-        <Input label="Cutover" type="datetime-local" style={{width:240}} />
-        <Input label="Deadline" type="date" error="Pick a date in the future" style={{width:200}} />
+        <Input label="Deploy date" type="date" required style={{width:'calc(var(--sp-1) * 50)'}} />
+        <Input label="Window start" type="time" hint="Local time" style={{width:'calc(var(--sp-1) * 50)'}} />
+        <Input label="Cutover" type="datetime-local" style={{width:'calc(var(--sp-1) * 60)'}} />
+        <Input label="Deadline" type="date" error="Pick a date in the future" style={{width:'calc(var(--sp-1) * 50)'}} />
       </div>
       <div className="sub">Checkbox · Switch</div>
       <div className="row">
@@ -49,7 +49,7 @@ function Demo(){
         <Switch checked={sw} onChange={e=>setSw(e.target.checked)} label="Automatic deployment" />
       </div>
       <div className="sub">ThemeToggle</div>
-      <div className="row"><ThemeToggle /><span style={{fontSize:13,color:'var(--mute)'}}>Flips the whole page — every component re-themes from tokens alone.</span></div>
+      <div className="row"><ThemeToggle /><span style={{fontSize:'var(--dz-text-md)',color:'var(--mute)'}}>Flips the whole page — every component re-themes from tokens alone.</span></div>
     </div>
   );
 }

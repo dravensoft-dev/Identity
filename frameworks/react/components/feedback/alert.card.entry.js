@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client";
 import { Alert } from "../../components/feedback/Alert.js";
 function Demo() {
   return React.createElement("div", {
-    style: { display: "flex", flexDirection: "column", gap: 14, maxWidth: 520 }
+    style: { display: "flex", flexDirection: "column", gap: "calc(var(--sp-1) * 3.5)", maxWidth: "calc(var(--sp-1) * 130)" }
   }, React.createElement(Alert, {
     tone: "info",
     title: "New version available"

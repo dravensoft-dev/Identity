@@ -10,12 +10,12 @@ function Demo() {
   const [notes, setNotes] = React.useState("");
   return React.createElement("div", {
     className: "row",
-    style: { gap: 40 }
+    style: { gap: "var(--sp-10)" }
   }, React.createElement("div", {
-    style: { width: 280 }
+    style: { width: "calc(var(--sp-1) * 70)" }
   }, React.createElement("div", {
     className: "sub",
-    style: { marginBottom: 12 }
+    style: { marginBottom: "var(--sp-3)" }
   }, "RadioGroup"), React.createElement(RadioGroup, {
     value: env,
     onChange: setEnv
@@ -30,7 +30,7 @@ function Demo() {
     value: "qa",
     label: "QA"
   }))), React.createElement("div", {
-    style: { width: 320 }
+    style: { width: "calc(var(--sp-1) * 80)" }
   }, React.createElement(Textarea, {
     label: "Deployment notes",
     rows: 5,

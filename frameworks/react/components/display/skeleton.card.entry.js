@@ -12,7 +12,7 @@ function Demo() {
     className: "row",
     style: { alignItems: "flex-start" }
   }, React.createElement("div", {
-    style: { width: 200 }
+    style: { width: "calc(var(--sp-1) * 50)" }
   }, React.createElement(Skeleton, {
     variant: "text",
     lines: 3
@@ -34,9 +34,9 @@ function Demo() {
   }, React.createElement(Card, {
     eyebrow: "Delivery",
     title: "Client Portal",
-    style: { width: 300 }
+    style: { width: "calc(var(--sp-1) * 75)" }
   }, React.createElement("div", {
-    style: { display: "flex", gap: 12, alignItems: "center" }
+    style: { display: "flex", gap: "var(--sp-3)", alignItems: "center" }
   }, React.createElement(Skeleton, {
     variant: "circle",
     width: 40
@@ -46,12 +46,12 @@ function Demo() {
     variant: "text",
     lines: 2
   })))), React.createElement(Card, {
-    style: { width: 280 }
+    style: { width: "calc(var(--sp-1) * 70)" }
   }, React.createElement(Skeleton, {
     variant: "line",
     width: "45%",
     height: 11,
-    style: { marginBottom: 12 }
+    style: { marginBottom: "var(--sp-3)" }
   }), React.createElement(Skeleton, {
     variant: "block",
     height: 90

@@ -11,7 +11,7 @@ function Demo() {
   const [p, setP] = React.useState(3);
   return React.createElement("div", null, React.createElement("div", {
     className: "sub",
-    style: { marginBottom: 12 }
+    style: { marginBottom: "var(--sp-3)" }
   }, "Menu — actions / overflow"), React.createElement("div", {
     className: "row",
     style: { alignItems: "center" }
@@ -52,7 +52,7 @@ function Demo() {
     ]
   })), React.createElement("div", {
     className: "sub",
-    style: { marginBottom: 12 }
+    style: { marginBottom: "var(--sp-3)" }
   }, "Pagination"), React.createElement(Pagination, {
     page: p,
     pageCount: 12,

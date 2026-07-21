@@ -19,11 +19,11 @@ function Demo(){return (<div>
   <div className="row"><Tag>TypeScript</Tag><Tag>PostgreSQL</Tag><Tag onRemove={()=>{}}>React</Tag></div>
   <div className="sub">Card</div>
   <div className="row" style={{alignItems:'stretch'}}>
-    <Card eyebrow="Delivery" title="Client Portal" action={<Badge tone="success" dot>Deployed</Badge>} style={{width:300}}>
-      <div style={{color:'var(--mute)',fontSize:14,lineHeight:1.6}}>Last published 2 h ago · build #4821</div>
+    <Card eyebrow="Delivery" title="Client Portal" action={<Badge tone="success" dot>Deployed</Badge>} style={{width:'calc(var(--sp-1) * 75)'}}>
+      <div style={{color:'var(--mute)',fontSize:'var(--dz-text)',lineHeight:'var(--lh-body)'}}>Last published 2 h ago · build #4821</div>
     </Card>
-    <Card accent floating title="Latency alert" style={{width:280}}>
-      <div style={{color:'var(--mute)',fontSize:14,lineHeight:1.6}}>p95 rose to 340 ms on checkout.</div>
+    <Card accent floating title="Latency alert" style={{width:'calc(var(--sp-1) * 70)'}}>
+      <div style={{color:'var(--mute)',fontSize:'var(--dz-text)',lineHeight:'var(--lh-body)'}}>p95 rose to 340 ms on checkout.</div>
     </Card>
   </div>
   <div className="sub">StatCard — the value says what IS, the pill says how it MOVED</div>

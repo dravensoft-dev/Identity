@@ -12,7 +12,7 @@ import { Switch } from "../../components/forms/Switch.js";
 import { ThemeToggle } from "../../components/forms/ThemeToggle.js";
 const plus = React.createElement("i", {
   className: "ph-bold ph-plus",
-  style: { fontSize: 16, lineHeight: 1 }
+  style: { fontSize: "var(--icon-md)", lineHeight: "var(--dz-lh)" }
 });
 function Demo() {
   const [chk, setChk] = React.useState(true);
@@ -63,16 +63,16 @@ function Demo() {
     label: "Repository",
     prefix: "git@",
     placeholder: "org/project",
-    style: { width: 220 }
+    style: { width: "calc(var(--sp-1) * 55)" }
   }), React.createElement(Input, {
     label: "Email",
     error: "Invalid format",
     defaultValue: "hello@",
-    style: { width: 200 }
+    style: { width: "calc(var(--sp-1) * 50)" }
   }), React.createElement(Select, {
     label: "Environment",
     options: ["Production", "Staging", "QA"],
-    style: { width: 180 }
+    style: { width: "calc(var(--sp-1) * 45)" }
   })), React.createElement("div", {
     className: "sub"
   }, "Input — native date and time"), React.createElement("div", {
@@ -82,21 +82,21 @@ function Demo() {
     label: "Deploy date",
     type: "date",
     required: true,
-    style: { width: 200 }
+    style: { width: "calc(var(--sp-1) * 50)" }
   }), React.createElement(Input, {
     label: "Window start",
     type: "time",
     hint: "Local time",
-    style: { width: 200 }
+    style: { width: "calc(var(--sp-1) * 50)" }
   }), React.createElement(Input, {
     label: "Cutover",
     type: "datetime-local",
-    style: { width: 240 }
+    style: { width: "calc(var(--sp-1) * 60)" }
   }), React.createElement(Input, {
     label: "Deadline",
     type: "date",
     error: "Pick a date in the future",
-    style: { width: 200 }
+    style: { width: "calc(var(--sp-1) * 50)" }
   })), React.createElement("div", {
     className: "sub"
   }, "Checkbox · Switch"), React.createElement("div", {
@@ -114,7 +114,7 @@ function Demo() {
   }, "ThemeToggle"), React.createElement("div", {
     className: "row"
   }, React.createElement(ThemeToggle, null), React.createElement("span", {
-    style: { fontSize: 13, color: "var(--mute)" }
+    style: { fontSize: "var(--dz-text-md)", color: "var(--mute)" }
   }, "Flips the whole page — every component re-themes from tokens alone.")));
 }
 createRoot(document.getElementById("root")).render(React.createElement(Demo, null));

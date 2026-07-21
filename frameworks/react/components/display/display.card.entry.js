@@ -44,16 +44,16 @@ function Demo() {
       tone: "success",
       dot: true
     }, "Deployed"),
-    style: { width: 300 }
+    style: { width: "calc(var(--sp-1) * 75)" }
   }, React.createElement("div", {
-    style: { color: "var(--mute)", fontSize: 14, lineHeight: 1.6 }
+    style: { color: "var(--mute)", fontSize: "var(--dz-text)", lineHeight: "var(--lh-body)" }
   }, "Last published 2 h ago · build #4821")), React.createElement(Card, {
     accent: true,
     floating: true,
     title: "Latency alert",
-    style: { width: 280 }
+    style: { width: "calc(var(--sp-1) * 70)" }
   }, React.createElement("div", {
-    style: { color: "var(--mute)", fontSize: 14, lineHeight: 1.6 }
+    style: { color: "var(--mute)", fontSize: "var(--dz-text)", lineHeight: "var(--lh-body)" }
   }, "p95 rose to 340 ms on checkout."))), React.createElement("div", {
     className: "sub"
   }, "StatCard — the value says what IS, the pill says how it MOVED"), React.createElement("div", {

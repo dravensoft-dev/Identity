@@ -747,18 +747,6 @@ function* walk(dir) {
     // `prop?: type` breaks DECL on the `?`), which is the wrong reason for
     // a scanner whose job is to fail closed. Skipped explicitly instead.
     if (entry.endsWith('.d.ts')) continue;
-    // A *.entry.jsx is a demo page's own composition script -- what used to
-    // be the inline <script type="text/babel"> block a *.card.html carried
-    // directly, before build-demos.mjs made it a real sibling file so it
-    // could be precompiled. This gate has never scanned .html, so that
-    // script's row gaps and demo-container widths were never governed the
-    // way a shipped component's are; moving the same bytes into a real file
-    // for the sake of compilation is not a decision to start governing them.
-    // A shipped component (frameworks/react/components/**/PascalCase.jsx)
-    // and a screen a real app assembles (ui_kits/console/*.jsx) still are --
-    // this skip matches only the page-composition naming convention build-
-    // demos.mjs itself establishes, nothing broader.
-    if (entry.endsWith('.entry.jsx')) continue;
     if (EXTENSIONS.some((e) => entry.endsWith(e))) yield p;
   }
 }

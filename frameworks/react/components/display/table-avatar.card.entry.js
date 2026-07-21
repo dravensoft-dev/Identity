@@ -13,7 +13,7 @@ function Demo() {
     { build: "#4819", project: "Internal Dashboard", status: "ok", p95: "96 ms" }
   ];
   const columns = [
-    { key: "build", header: "Build", mono: true, width: 90 },
+    { key: "build", header: "Build", mono: true, width: "calc(var(--sp-1) * 22.5)" },
     { key: "project", header: "Project" },
     { key: "status", header: "Status", render: (v) => React.createElement(Badge, {
       tone: v === "ok" ? "success" : "danger",
@@ -23,7 +23,7 @@ function Demo() {
   ];
   return React.createElement("div", null, React.createElement("div", {
     className: "sub",
-    style: { marginBottom: 12 }
+    style: { marginBottom: "var(--sp-3)" }
   }, "Avatar — person · entity · presence"), React.createElement("div", {
     className: "row",
     style: { alignItems: "center" }
@@ -43,7 +43,7 @@ function Demo() {
     status: "offline"
   })), React.createElement("div", {
     className: "sub",
-    style: { marginBottom: 12 }
+    style: { marginBottom: "var(--sp-3)" }
   }, "Table — with Badge in a cell"), React.createElement(Table, {
     columns,
     rows,
@@ -51,9 +51,9 @@ function Demo() {
     onRowClick: () => {}
   }), React.createElement("div", {
     className: "sub",
-    style: { marginTop: 20, marginBottom: 12 }
+    style: { marginTop: "var(--sp-5)", marginBottom: "var(--sp-3)" }
   }, "Card mode — the SAME table in a 340px container"), React.createElement("div", {
-    style: { width: 340, border: "1px dashed var(--border-strong)", borderRadius: "var(--r-lg)", padding: 12 }
+    style: { width: "calc(var(--sp-1) * 85)", border: "var(--bw) dashed var(--border-strong)", borderRadius: "var(--r-lg)", padding: "var(--sp-3)" }
   }, React.createElement(Table, {
     columns,
     rows

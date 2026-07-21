@@ -14,7 +14,7 @@ function Demo(){
     <div className="sub">Skip is offered on every step — a tour is never a trap</div>
     <div className="row">
       <Button variant="secondary" size="sm" onClick={()=>{setStep(0);setOpen(true);}}>Start tour</Button>
-      <span style={{color:'var(--mute)',fontFamily:'var(--font-mono)',fontSize:12}}>
+      <span style={{color:'var(--mute)',fontFamily:'var(--font-mono)',fontSize:'var(--dz-text-sm)'}}>
         Step <span style={{color:'var(--gold)'}}>{Math.min(step+1,steps.length)}</span> of {steps.length}
         {!open && ' · dismissed'}
       </span>

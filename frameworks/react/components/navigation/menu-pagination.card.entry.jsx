@@ -8,7 +8,7 @@ function Demo(){
   const [p,setP]=React.useState(3);
   return (
     <div>
-      <div className="sub" style={{marginBottom:12}}>Menu — actions / overflow</div>
+      <div className="sub" style={{marginBottom:'var(--sp-3)'}}>Menu — actions / overflow</div>
       <div className="row" style={{alignItems:'center'}}>
         <Menu trigger={<Button variant="secondary" iconRight={<i className="ph-bold ph-caret-down"/>}>Actions</Button>}
           items={[
@@ -24,7 +24,7 @@ function Demo(){
             {label:'Archive',icon:<i className="ph-bold ph-archive"/>,onClick:()=>{}},
           ]} />
       </div>
-      <div className="sub" style={{marginBottom:12}}>Pagination</div>
+      <div className="sub" style={{marginBottom:'var(--sp-3)'}}>Pagination</div>
       <Pagination page={p} pageCount={12} onChange={setP} />
     </div>
   );

@@ -18,7 +18,7 @@ function Demo(){const[o,setO]=React.useState(false);return(<div>
     <Button variant="primary" onClick={()=>setO(true)}>Open dialog</Button>
   </div>
   <div className="sub">ProgressBar</div>
-  <div className="row" style={{flexDirection:'column',alignItems:'stretch',gap:14}}>
+  <div className="row" style={{flexDirection:'column',alignItems:'stretch',gap:'calc(var(--sp-1) * 3.5)'}}>
     <ProgressBar label="Deploying build #4821" value={64}/>
     <ProgressBar tone="success" label="Published" value={100}/>
     <ProgressBar indeterminate label="Connecting…"/>
@@ -29,7 +29,7 @@ function Demo(){const[o,setO]=React.useState(false);return(<div>
     <Spinner size="md" label="Loading projects" />
     <Spinner size="lg" tone="gold" label="Connecting" />
     <Spinner tone="neutral" label="Loading" />
-    <span style={{display:'inline-flex',alignItems:'center',gap:8,background:'var(--crimson)',color:'var(--on-accent)',borderRadius:'var(--r-sm)',padding:'0 14px',height:40,fontFamily:'var(--font-body)',fontWeight:600,fontSize:14}}>
+    <span style={{display:'inline-flex',alignItems:'center',gap:'var(--sp-2)',background:'var(--crimson)',color:'var(--on-accent)',borderRadius:'var(--r-sm)',padding:'0 calc(var(--sp-1) * 3.5)',height:'var(--dz-ctl-h)',fontFamily:'var(--font-body)',fontWeight:'var(--fw-semibold)',fontSize:'var(--dz-text)'}}>
       <Spinner size="sm" tone="on-accent" label="Deploying" />Deploying
     </span>
   </div>

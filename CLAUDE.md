@@ -98,12 +98,10 @@ data at runtime. A stale exemption — one that no longer matches a real violati
 fails the gate itself. **A change to `EXEMPT` or `PASSTHROUGH` is a change to
 `scripts/check-dimension-literals.test.mjs` too** — that suite asserts on both maps by
 name, so an entry added or removed without touching it leaves the tests describing a
-gate that no longer exists. The gate scans `.jsx`, `.ts` and `.tsx` under `frameworks/` —
-it does not scan `.html`, and it does not scan a `*.entry.jsx` either: that suffix is a
-demo page's own composition script (see below), the same kind of value a `*.card.html`'s
-inline `<style>` block already carries ungoverned, just now a real file instead of markup.
-The root-level and `guidelines/` pages stay clean only because they were tokenized by
-hand, and nothing holds that. **No gate compares a Tailwind manifest against the
+gate that no longer exists. The gate scans `.jsx`, `.ts` and `.tsx` under `frameworks/`,
+including every `*.entry.jsx` demo-page composition script (see below) — it does not scan
+`.html`, so the root-level and `guidelines/` pages stay clean only because they were
+tokenized by hand, and nothing holds that. **No gate compares a Tailwind manifest against the
 component it mirrors, and the mapping is not obvious**: `Button.manifest.json`
 mirrors React's `Button.jsx`, while `Tag.manifest.json` mirrors the **Angular**
 primitive `arena-tag` — a different component from React's `Tag.jsx`. Check both by

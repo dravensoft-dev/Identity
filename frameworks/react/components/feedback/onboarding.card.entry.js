@@ -25,7 +25,7 @@ function Demo() {
       setOpen(true);
     }
   }, "Start tour"), React.createElement("span", {
-    style: { color: "var(--mute)", fontFamily: "var(--font-mono)", fontSize: 12 }
+    style: { color: "var(--mute)", fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-sm)" }
   }, "Step ", React.createElement("span", {
     style: { color: "var(--gold)" }
   }, Math.min(step + 1, steps.length)), " of ", steps.length, !open && " · dismissed")), React.createElement(Onboarding, {

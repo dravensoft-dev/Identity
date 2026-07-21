@@ -20,7 +20,7 @@ function Demo() {
     onChange: setV
   }), React.createElement("div", {
     className: "row",
-    style: { marginTop: 14 }
+    style: { marginTop: "calc(var(--sp-1) * 3.5)" }
   }, React.createElement("div", {
     className: "sub"
   }, "SegmentedControl — filters inside the tab, never navigates"), React.createElement(SegmentedControl, {
@@ -29,7 +29,7 @@ function Demo() {
     value: range,
     onChange: setRange
   }), React.createElement("span", {
-    style: { color: "var(--mute)", fontFamily: "var(--font-mono)", fontSize: 12 }
+    style: { color: "var(--mute)", fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-sm)" }
   }, "Active view: ", React.createElement("span", {
     style: { color: "var(--gold)" }
   }, v), " · Range: ", React.createElement("span", {
@@ -94,7 +94,7 @@ function Demo() {
     ]
   }), sel === 0 && React.createElement("button", {
     onClick: () => setSel(3),
-    style: { background: "none", border: "1px solid var(--color-base-300)", borderRadius: "var(--r-sm)", color: "var(--mute)", cursor: "pointer", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: ".1em", textTransform: "uppercase", padding: "8px 12px" }
+    style: { background: "none", border: "var(--bw) solid var(--color-base-300)", borderRadius: "var(--r-sm)", color: "var(--mute)", cursor: "pointer", fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-xs)", letterSpacing: "var(--ls-badge)", textTransform: "uppercase", padding: "var(--sp-2) var(--sp-3)" }
   }, "Restore selection")));
 }
 createRoot(document.getElementById("root")).render(React.createElement(Demo, null));
