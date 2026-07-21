@@ -57,6 +57,7 @@ import { EmptyState } from '../primitives/empty-state/empty-state';
 import { emptyStateStyles } from '../primitives/empty-state/empty-state.variants';
 import { ErrorState } from '../primitives/error-state/error-state';
 import { errorStateStyles } from '../primitives/error-state/error-state.variants';
+import { LineChart } from '../primitives/line-chart/line-chart';
 import { PageHead } from '../primitives/page-head/page-head';
 import { pageHeadStyles } from '../primitives/page-head/page-head.variants';
 import { Skeleton } from '../primitives/skeleton/skeleton';
@@ -180,6 +181,14 @@ class ThemeToggleHost {}
   template: `<arena-bar-chart />`,
 })
 class BarChartHost {}
+
+@Component({
+  standalone: true,
+  imports: [LineChart],
+  host: { 'data-host': 'line-chart' },
+  template: `<arena-line-chart />`,
+})
+class LineChartHost {}
 
 test('arena-avatar: the root recipe classes land on the host element itself', async () => {
   const fixture = TestBed.createComponent(AvatarHost);
@@ -776,7 +785,7 @@ function kebabToPascal(dirName: string): string {
  * own host metadata, which the render test below asserts against a real DOM.
  * An inline `style` attribute is not wrapped in `@layer`, so happy-dom's CSS
  * engine does evaluate it -- the limitation described above does not apply. */
-const NO_MANIFEST = new Set(['bar-chart']);
+const NO_MANIFEST = new Set(['bar-chart', 'line-chart']);
 
 test('every Angular primitive\'s root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
   const primitivesDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'primitives');
@@ -881,6 +890,78 @@ test('arena-bar-chart: the picture carries an accessible name and the numbers ca
   assert.equal(svg.getAttribute('aria-label'), 'Bar chart');
   const caption = fixture.nativeElement.querySelector('arena-bar-chart table caption') as HTMLElement;
   assert.equal(caption.textContent?.trim(), 'Bar chart');
+});
+
+/* The same four assertions, ported to the second hand-written chart. They render
+ * with DEFAULT inputs only, for the reason the bar-chart block above states: an
+ * empty `values` still draws the value axis (`ticks` always yields five) and still
+ * renders the numbers table, so all of this is reachable without ever driving a
+ * signal input. `line-chart-geometry.test.ts` carries the geometry that does need
+ * inputs, as plain functions. */
+
+test('arena-line-chart: the host is a block-level box, so the width it measures is a real content width', async () => {
+  const fixture = TestBed.createComponent(LineChartHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-line-chart') as HTMLElement;
+  // `containerWidth()` observes this element. An unknown element defaults to
+  // display:inline, and a non-replaced inline box has no meaningful content width
+  // for a ResizeObserver to report -- every point would be laid out against the
+  // wrong number, and the crosshair would snap against a plot that is not there.
+  assert.equal(host.style.display, 'block', `host declared display "${host.style.display}"`);
+  assert.equal(getComputedStyle(host).display, 'block');
+  // The tooltip is absolutely positioned against this host, so it must also be the
+  // containing block rather than inheriting one from an ancestor.
+  assert.equal(host.style.position, 'relative');
+});
+
+test('arena-line-chart: the numbers table is bound as a style object, not stringified into the attribute', async () => {
+  const fixture = TestBed.createComponent(LineChartHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const table = fixture.nativeElement.querySelector('arena-line-chart table') as HTMLElement;
+  assert.ok(table, 'the visually-hidden numbers table did not render');
+  // `[attr.style]="SR_ONLY"` -- which the task brief specified -- would set the
+  // literal string "[object Object]" and apply nothing, leaving the table visible
+  // under the chart. `[style]` takes the object, which is what chart-internals.ts
+  // documents.
+  assert.ok(!(table.getAttribute('style') ?? '').includes('[object Object]'),
+    `the style object was stringified: "${table.getAttribute('style')}"`);
+  assert.equal(table.style.position, 'absolute');
+  assert.equal(table.style.width, '1px');
+  assert.equal(table.style.height, '1px');
+  assert.equal(table.style.margin, '-1px');
+  // SR_ONLY's `clip` is deliberately not asserted here, for the reason the
+  // bar-chart counterpart above records: happy-dom does not expose the deprecated
+  // property, so it reads back as '' either way.
+});
+
+test('arena-line-chart: the SVG presentation styles reach the DOM as tokens, not as literals', async () => {
+  const fixture = TestBed.createComponent(LineChartHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  // The brief wrote these as raw SVG attributes (`stroke-width="1"`,
+  // `font-size="10"`), which check-dimension-literals.mjs cannot judge at all --
+  // its attribute lookbehind excludes `-`, and `font-size` reduces to the
+  // ungoverned `size`. So this is the assertion that the tokens are really here.
+  const line = fixture.nativeElement.querySelector('arena-line-chart line') as SVGElement;
+  assert.equal(line.style.strokeWidth, 'var(--bw)');
+  assert.equal(line.getAttribute('style'), 'stroke-width: var(--bw);');
+  const text = fixture.nativeElement.querySelector('arena-line-chart text') as SVGElement;
+  assert.equal(text.getAttribute('style'), 'font-size: var(--dz-text-2xs);');
+});
+
+test('arena-line-chart: the picture carries an accessible name and the numbers carry a caption', async () => {
+  const fixture = TestBed.createComponent(LineChartHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const svg = fixture.nativeElement.querySelector('arena-line-chart svg') as SVGElement;
+  assert.equal(svg.getAttribute('role'), 'img');
+  // No seriesLabel is set, so this is the fallback name -- a role="img" with no
+  // name announces as an unlabeled graphic.
+  assert.equal(svg.getAttribute('aria-label'), 'Line chart');
+  const caption = fixture.nativeElement.querySelector('arena-line-chart table caption') as HTMLElement;
+  assert.equal(caption.textContent?.trim(), 'Line chart');
 });
 
 after(() => {

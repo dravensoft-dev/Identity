@@ -545,6 +545,65 @@ already gives — in Angular a consumer writes those directly on the host.
 
 **Converges:** no on the idiom; each layer states the same token values in its own form.
 
+### LineChart — the crosshair measures against the SVG, not against the overlay rect
+
+**React:** `LineChart.jsx`'s `onMove` reads `e.currentTarget.getBoundingClientRect()`. `currentTarget`
+is the transparent overlay `<rect x={PAD.l} y={PAD.t} ...>`, whose own left edge is the SVG's left
+edge plus `PAD.l`. The pointer position it derives is therefore `PAD.l` (44px) short of the
+coordinate space `xOf(i)` returns, since `xOf` starts at `PAD.l`. The nearest-point search then
+compares two different origins and snaps the crosshair up to a whole left pad early.
+
+**Angular:** `arena-line-chart` measures against `ownerSVGElement.getBoundingClientRect()`, so the
+pointer position and `point.x` share the SVG's own origin.
+
+**Why:** it is a straight bug, not a design choice — the two numbers being compared have to be in
+one coordinate space, and only the SVG's box gives that. Mirroring it into a second layer was
+explicitly out of the question. The nearest-point search itself is extracted as
+`nearestPointIndex()` and pinned in `line-chart-geometry.test.ts`; the coordinate origin it is fed
+is the part that cannot be unit-tested here, because it needs a real layout box.
+
+**Converges:** yes — React should measure the SVG. **Open debt on the React layer**, and unlike the
+label-axis entry above this one is visible on every correct call, not only on mismatched input.
+
+### LineChart — the point axis is drawn per point, not per label
+
+**React:** `LineChart.jsx` draws the value axis, the line, the markers and the tooltip from
+`values`, but the point labels from `labels` — `{labels.map((l, i) => <text x={xOf(i)} ...>)}`.
+With more labels than values that renders a label under empty plot, positioned by an `xOf` whose
+spacing was computed from a different array's length.
+
+**Angular:** `arena-line-chart` draws the labels from the same `points()` collection the markers
+come from, taking each point's label as `labels()[index] ?? ''`.
+
+**Why:** identical to the BarChart entry above, and for the same reason — the two arrays are one
+dataset and the point is the thing being labelled. Identical output whenever the arrays are the
+same length, which is every correct call. `line-chart.prompt.md` states the rule under Don't.
+
+**Converges:** yes — React should iterate its points. **Open debt on the React layer**, low
+priority.
+
+### LineChart — `area` must be bound, where React's JSX shorthand works bare
+
+**React:** `<LineChart area />` works. JSX's boolean attribute shorthand passes the literal `true`,
+so `area && n > 0` is satisfied.
+
+**Angular:** `<arena-line-chart area />` compiles (confirmed against real `ngc --strictTemplates` —
+a static attribute matching an input is not rejected) but sets the input to the empty string, which
+is falsy, so the area silently never paints. The working form is `[area]="true"`, which is what
+`line-chart.prompt.md` documents.
+
+**Why:** `area` is declared `input(false)` with no `booleanAttribute` transform. That is not a
+LineChart decision — it is what every boolean input in this layer currently does (`Alert`'s
+`dismissible`, `ConfirmDialog`'s `open`/`destructive`, `Onboarding`'s `open`,
+`CommandPalette`'s `open`), so adding the transform to this one primitive alone would have made the
+layer inconsistent in a way a reader could not predict. **`alert.prompt.md` and
+`confirm-dialog.prompt.md` both document the bare-attribute form today, so both are advertising a
+usage that silently does nothing** — a layer-wide fix (add `transform: booleanAttribute` to every
+boolean input and correct those two prompts) belongs to the docs close-out, not to one chart slice.
+
+**Converges:** yes, once the layer takes `booleanAttribute` uniformly. Recorded here because this
+slice found it, not because LineChart is special.
+
 ## How to add an entry
 
 When you find a behavioural difference between layers:

@@ -10,6 +10,7 @@ export * from './confirm-dialog';
 export * from './container-size';
 export * from './empty-state';
 export * from './error-state';
+export * from './line-chart';
 export * from './onboarding';
 export * from './page-head';
 export * from './projection-markers';
