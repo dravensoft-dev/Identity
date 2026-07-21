@@ -369,6 +369,37 @@ handler that forgets to close the palette leaves it open after running.
 `Onboarding`. Low priority for React, since React's self-closing behaviour is also
 defensible on its own.
 
+### PageHead — behaviour matches React; only the `style`/`...rest` prop has no counterpart
+
+**React:** `PageHead.jsx` takes `title`, `subtitle`, `actions`, plus `style` and a
+`{...rest}` spread, and gates the actions wrapper on `{actions && ...}`.
+
+**Angular:** `arena-page-head` takes `title` and `subtitle` as signal inputs and projects
+`[arena-actions]`, gating that wrapper on `contentChild(ArenaActions)` — the same gate,
+reached the only way an `ng-content` slot can report whether anything was projected. The
+responsive branch is identical in substance: both measure the component's own box, both
+compare against `--bp-sm` read off the document root, and both render the wide layout
+while the width is still `null` so the narrow branch never flashes. React's `style` and
+`{...rest}` have no input to mirror them, and need none: in Angular a consumer writes
+`style="..."` or any attribute directly on `<arena-page-head>`, which is the host — the
+same element the recipe's `root` classes are bound to, and Angular composes a static
+attribute with a `[class]` binding rather than clobbering it.
+
+**Worth knowing:** the measurement helper is shared, not private to this component.
+`frameworks/angular/primitives/container-size.ts` exports `containerWidth()` and
+`readBreakpoint()`, mirroring React's `use-container-width.js` without the `use` prefix —
+a signal-returning function is not a React hook. It is exported from the primitives
+barrel deliberately, so a consumer writing their own responsive component reaches for
+Arena's measurement rather than a media query. One deliberate difference from React's
+version: `readBreakpoint()` injects `DOCUMENT` **before** consulting its cache, not
+after, so the "call from an injection context" contract holds on every call instead of
+only the first one for a given name. React's copy has no equivalent hazard — it reads
+the global `document` directly and has no injection contract to keep consistent.
+
+**Converges:** n/a — no behavioural divergence found. Recorded because this is the first
+primitive whose host classes depend on a runtime measurement, and the next five (the
+chart primitives) inherit the helper unchanged.
+
 ## How to add an entry
 
 When you find a behavioural difference between layers:

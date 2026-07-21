@@ -49,6 +49,8 @@ import { EmptyState } from '../primitives/empty-state/empty-state';
 import { emptyStateStyles } from '../primitives/empty-state/empty-state.variants';
 import { ErrorState } from '../primitives/error-state/error-state';
 import { errorStateStyles } from '../primitives/error-state/error-state.variants';
+import { PageHead } from '../primitives/page-head/page-head';
+import { pageHeadStyles } from '../primitives/page-head/page-head.variants';
 import { Skeleton } from '../primitives/skeleton/skeleton';
 import { skeletonStyles } from '../primitives/skeleton/skeleton.variants';
 import { StatCard } from '../primitives/stat-card/stat-card';
@@ -137,6 +139,14 @@ class EmptyStateWithoutActionHost {}
   template: `<arena-error-state class="consumer-class" title="Something went wrong" />`,
 })
 class ErrorStateWithoutActionHost {}
+
+@Component({
+  standalone: true,
+  imports: [PageHead],
+  host: { 'data-host': 'page-head' },
+  template: `<arena-page-head class="consumer-class" />`,
+})
+class PageHeadWithoutActionsHost {}
 
 test('arena-avatar: the root recipe classes land on the host element itself', async () => {
   const fixture = TestBed.createComponent(AvatarHost);
@@ -417,6 +427,100 @@ test('arena-error-state: the actions wrapper is absent from the DOM when no [are
     null,
     'the actions wrapper div must not render when the actions slot is empty',
   );
+});
+
+/* `arena-page-head` is the layer's first consumer of `container-size.ts`, and
+ * the first primitive whose host classes depend on a runtime measurement of
+ * that same host. Two things make this real coverage rather than a restatement
+ * of the recipe.
+ *
+ * First, happy-dom ships a `ResizeObserver` constructor that never fires (no
+ * layout engine -- probed by hand: `observe()` on a real element produced zero
+ * callbacks over 100ms). So `containerWidth()`'s signal genuinely stays at its
+ * pre-measure `null` here, which is exactly the state the "render WIDE on
+ * null, so the narrow branch never flashes" rule is about.
+ *
+ * Second, `--bp-sm` is set on the real document root below before the first
+ * `<arena-page-head>` is constructed, so `readBreakpoint('sm')` resolves to a
+ * live 480 rather than the `NaN` an unstyled happy-dom document would give.
+ * That makes the comparison a real one that could have gone the other way: had
+ * the helper started the width at 0 instead of `null`, `0 < 480` would select
+ * the narrow branch and these assertions would fail. (`page-head-variants.test.ts`
+ * deliberately touches only `--bp-md`/`--bp-lg` so its stubbed reads can never
+ * poison the module-level cache this file depends on, in either file order.) */
+const BP_SM = '480px';
+
+test('arena-page-head: the root recipe classes land on the host element itself', async () => {
+  document.documentElement.style.setProperty('--bp-sm', BP_SM);
+  const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
+  for (const cls of pageHeadStyles().root().split(/\s+/))
+    assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
+  assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+});
+
+test('arena-page-head: an unmeasured width renders the WIDE layout, so the narrow branch never flashes on first paint', async () => {
+  document.documentElement.style.setProperty('--bp-sm', BP_SM);
+  const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
+  assert.ok(host.classList.contains('flex-row'), `an unmeasured page head must render as a row: "${host.className}"`);
+  assert.ok(host.classList.contains('items-start'), `an unmeasured page head must render top-aligned: "${host.className}"`);
+  assert.ok(!host.classList.contains('flex-col'), 'the narrow branch must not render before anything has been measured');
+});
+
+/* Same fix, same toolchain limitation as arena-empty-state's action wrapper
+ * above (see that test's header comment for the full reasoning): the positive
+ * case cannot be TestBed-rendered here because `contentChild` needs ngtsc's
+ * initializer-API transform, which this JIT-only harness never runs, and with
+ * the `@if` gate in place `actions()` can never become truthy for it to
+ * mount. `bun run check:angular` is the real authority that the query and the
+ * gate typecheck. The negative case below is real coverage of the same
+ * reported bug's exact repro, ported to `arena-page-head`'s own actions slot:
+ * that slot sits in a `gap-4` flex parent and carries `shrink-0` plus its own
+ * `w-auto`/`w-full`, so an unprojected wrapper would ship a gap's worth of
+ * dead space to every page with no actions. It is gated on the shared
+ * `ArenaActions` marker (`../primitives/projection-markers`), the plural
+ * sibling of the `ArenaAction` that `arena-empty-state` uses. */
+test('arena-page-head: the actions wrapper is absent from the DOM when no [arena-actions] content is projected', async () => {
+  document.documentElement.style.setProperty('--bp-sm', BP_SM);
+  const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
+  assert.equal(host.querySelector('button'), null, 'no actions were projected, so no action markup should exist at all');
+  const actionsClass = pageHeadStyles().actions().split(/\s+/)[0];
+  assert.equal(
+    host.querySelector(`:scope > .${actionsClass}`),
+    null,
+    'the actions wrapper div must not render when the actions slot is empty',
+  );
+  assert.equal(host.children.length, 1, 'a page head with no actions renders the titles block and nothing else');
+});
+
+/* `containerWidth()` guards its observer with `typeof ResizeObserver ===
+ * 'undefined'`, for a platform that has none -- server-side rendering being
+ * the case that matters. Without the guard, `new ResizeObserver(...)` inside
+ * `afterNextRender` is a ReferenceError. Deleting the global for the duration
+ * of one render is the only way to reach that branch here, since happy-dom
+ * does provide the constructor. */
+test('arena-page-head: a platform with no ResizeObserver still renders, on the wide layout', async () => {
+  document.documentElement.style.setProperty('--bp-sm', BP_SM);
+  const globals = globalThis as { ResizeObserver?: typeof ResizeObserver };
+  const saved = globals.ResizeObserver;
+  delete globals.ResizeObserver;
+  try {
+    const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
+    assert.ok(host.classList.contains('flex-row'), `with no ResizeObserver the width stays null, which is the wide layout: "${host.className}"`);
+  } finally {
+    globals.ResizeObserver = saved;
+  }
 });
 
 /* Every primitive host-binds its recipe's visible slot directly onto its own
