@@ -22,18 +22,20 @@
  * identical silent mechanism that renamed the properties, WITH THIS GATE
  * STILL GREEN, because the gate never reads a selector at all.
  *
- * A third: the existence oracle (materialProperties, below) reads only
- * node_modules/@angular/material/fesm2022/*.mjs. Roughly 102 real Material
- * custom properties never appear there and are invisible to it — the
- * --mat-sys-* M3 system-token family, --mat-app-*, and a handful of
- * component-level names such as --mdc-icon-button-state-layer-size — because
- * they live only in prebuilt-themes/*.css. The error direction this leaves is
- * the safe one: the gate can over-reject a name that is actually live (a false
- * failure), never silently pass a name that is dead (a false success). The
- * hazard is the opposite move — someone "fixing" a red gate by deleting a
- * legitimate property instead of widening the oracle. Widening the oracle to
- * include the prebuilt-theme CSS is a pending decision for the repo owner,
- * not done here.
+ * The existence oracle (materialProperties, below) reads BOTH of the places a
+ * Material custom property can be named, because measured against the pinned
+ * 22.0.5 neither alone is the whole set: 102 names appear only in
+ * prebuilt-themes/*.css (71 --mat-sys-*, 27 --mat-app-*, three component-level
+ * names, and --mdc-icon-button-state-layer-size), while 17 appear only in
+ * fesm2022/*.mjs (the --mat-focus-indicator-* family,
+ * --mat-dialog-transition-duration, the animation multipliers). Reading only
+ * fesm2022 was the original shape. It was never wrong in practice — the bridge
+ * declares none of the 102 — and its error direction was the safe one: it could
+ * over-reject a name that is live (a false failure), never silently pass one
+ * that is dead. It was widened anyway, because --mat-sys-* is the natural next
+ * move for this bridge and the hazard was second-order: someone "fixing" a red
+ * gate by deleting a legitimate property rather than doubting the oracle, which
+ * is how the silent hole reopens.
  *
  * A gate that implies more coverage than it has is how this file rotted.
  *
@@ -47,7 +49,15 @@ import { repoRoot } from './lib/tailwind-compile.mjs';
 import { arenaTokens } from './check-tailwind.mjs';
 
 const BRIDGE = join('frameworks', 'angular', 'theme', 'arena-material.css');
-const MATERIAL = join('node_modules', '@angular', 'material', 'fesm2022');
+const MATERIAL = join('node_modules', '@angular', 'material');
+
+/** The two directories inside the package that name custom properties, and the
+ *  extension each uses. Neither alone is the whole set: 102 names live only in
+ *  the prebuilt themes. */
+const ORACLE_DIRS = [
+  ['fesm2022', '.mjs'],
+  ['prebuilt-themes', '.css'],
+];
 
 /** Every Material custom property the bridge DECLARES, without the `--`.
  *  @param {string} css @returns {Set<string>} */
@@ -71,14 +81,22 @@ export function referencedTokens(css) {
 }
 
 /** Every mat- or mdc- custom property name the installed Material package
- *  mentions anywhere in its shipped ES modules, without the `--`.
- *  @param {string} dir @returns {Set<string>} */
-export function materialProperties(dir) {
+ *  mentions, without the `--`, across both the ES modules and the prebuilt
+ *  themes. A directory that is absent contributes nothing rather than throwing:
+ *  a future Material may drop either, and the gate should then under-approximate
+ *  loudly (over-rejecting a live name) rather than crash.
+ *  @param {string} pkgDir the package root, not a subdirectory
+ *  @returns {Set<string>} */
+export function materialProperties(pkgDir) {
   const out = new Set();
-  for (const file of readdirSync(dir)) {
-    if (!file.endsWith('.mjs')) continue;
-    const src = readFileSync(join(dir, file), 'utf8');
-    for (const m of src.matchAll(/--((?:mat|mdc)-[a-z0-9-]+)/g)) out.add(m[1]);
+  for (const [sub, ext] of ORACLE_DIRS) {
+    const dir = join(pkgDir, sub);
+    if (!existsSync(dir)) continue;
+    for (const file of readdirSync(dir)) {
+      if (!file.endsWith(ext)) continue;
+      const src = readFileSync(join(dir, file), 'utf8');
+      for (const m of src.matchAll(/--((?:mat|mdc)-[a-z0-9-]+)/g)) out.add(m[1]);
+    }
   }
   return out;
 }
