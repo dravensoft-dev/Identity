@@ -7,7 +7,7 @@ Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
   the self-hosted fonts declared in `tokens/fonts.css`, binaries in `assets/fonts/`)
   + the shared `frameworks/tailwind/theme.css` `@theme` preset into scope.
 - `theme/arena-material.css` — maps Arena tokens onto Angular Material's
-  `--mdc-*` / `--mat-*` vars so every Material control renders in Arena. What it covers:
+  `--mat-*` custom properties so the components below render in Arena. What it covers:
   buttons (filled, outlined, and an outline-only `arena-danger`), the outlined form
   field, cards, dialogs, tables, tabs, the snackbar, spinner/progress-bar, and
   **SideNav** — `mat-nav-list` with `<a mat-list-item [activated]>`. **The bridge is
@@ -95,8 +95,8 @@ every interface an Arena React consumer can. Roughly half of it they build with
 Material wearing Arena (`theme/arena-material.css`), the rest with Arena's own
 primitives.
 
-**Material provides these 22; Arena dresses them and implements none of them:**
-Button and IconButton (`mat-button`, `mat-icon-button`), Input and Textarea
+**Material provides these 22; Arena implements none of them itself, and dresses only a
+subset:** Button and IconButton (`mat-button`, `mat-icon-button`), Input and Textarea
 (`mat-form-field` + `matInput`), Select (`mat-select`), Checkbox and Radio
 (`mat-checkbox`, `mat-radio-group`), Switch (`mat-slide-toggle`), SegmentedControl
 (`mat-button-toggle-group`), Card (`mat-card`), Badge (`matBadge`), Table
@@ -104,7 +104,10 @@ Button and IconButton (`mat-button`, `mat-icon-button`), Input and Textarea
 Tooltip (`matTooltip`), Toast (`MatSnackBar`), Pagination (`mat-paginator`),
 ProgressBar (`mat-progress-bar`), Spinner (`mat-progress-spinner`), Calendar
 (`mat-datepicker`) and SideNav (`mat-nav-list` + `<a mat-list-item [activated]>`, scoped
-by `.arena-side-nav`).
+by `.arena-side-nav`). `arena-material.css` dresses Button, Input, Card, Table, Tabs,
+Dialog, Toast, ProgressBar, Spinner and SideNav; IconButton, Select, Checkbox, Radio,
+Switch, SegmentedControl, Badge, Menu, Tooltip, Pagination and Calendar still render
+with Material's own defaults.
 
 Reimplementing them as `arena-*` would duplicate years of hardened keyboard
 accessibility, overlay positioning, i18n and focus management — badly — and would
@@ -113,16 +116,20 @@ strip `arena-material.css` of most of its reason to exist.
 ### Material bridge: supported and verified
 
 **The primitives stand alone.** No file under `frameworks/angular/primitives/` imports
-`@angular/material` — a consumer can use all 21 with no Material installed at all.
-`@angular/material` is an **optional** peer dependency of the published package; nothing
-here requires it.
+`@angular/material` — a consumer can use all 21 with no Material installed at all. When
+the Angular layer is published (plan 6), `@angular/material` will be an **optional** peer
+dependency; nothing here requires it today.
 
 **Material is the recommended bridge for the rest.** Arena does not reimplement the
-components Material already provides — Button, Input, Select, Dialog, Menu, Table, Toast
-and the others carry overlay positioning, focus management, keyboard navigation and
-i18n, and duplicating that badly would be worse than bridging it. `arena-material.css`
-is that bridge: it maps Arena tokens onto Angular Material's `--mdc-*` / `--mat-*` custom
-properties so the components listed above render in Arena instead of stock Material.
+components Material already provides — they carry overlay positioning, focus
+management, keyboard navigation and i18n, and duplicating that badly would be worse
+than bridging it. `arena-material.css` is that bridge for the ones it actually carries
+rules for: buttons (filled, outlined, and the outline-only danger variant), the
+outlined form field, cards, dialogs, tables (plus the header cell), tabs, the
+snackbar, the progress spinner and bar, and SideNav's nav list. It maps Arena tokens
+onto Angular Material's `--mat-*` custom properties so those render in Arena instead
+of stock Material; the rest of Material's components still render with Material's own
+defaults.
 
 **The bridge is verified, not rendered.** `bun run check:material` pulls every custom
 property `arena-material.css` sets out of the file with `scripts/lib/css-decls.mjs` and
