@@ -1,3 +1,7 @@
+/** Projection marker directives. Naming rule for a new one: prefix the attribute with
+ *  `arena-` (`[arena-action]`, `[arena-actions]`) by default, and depart from that only
+ *  when a brief's own projection interface fixes the bare attribute name, as
+ *  `ArenaBrand`/`ArenaFooter`'s `[brand]`/`[footer]` did. */
 import { Directive } from '@angular/core';
 
 /** Marks the element a consumer projects into a component's single action slot,

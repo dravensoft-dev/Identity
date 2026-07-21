@@ -1221,6 +1221,15 @@ git commit -m "feat(tailwind): add the SegmentedControl manifest"
 
 **Reference:** `frameworks/react/components/display/Card.jsx`.
 
+`UnauthCard` (plan 5a's Task 26) shipped first, before this manifest existed, and its
+`panel` slot in `frameworks/tailwind/components/UnauthCard.manifest.json` had nowhere
+else to put Card's look: it duplicates Card's surface classes (`bg-base-200`, the
+border, `rounded-lg`, `overflow-hidden`) and additionally carries `p-5` — **Card's body
+padding, borrowed**, because the Angular layer had no Card yet. So reconciling the two
+now is a **subtraction, not merely an agreement check**: once this manifest lands,
+`p-5` comes off `UnauthCard`'s `panel`, or the card double-pads. No gate compares one
+manifest against another, so check by hand.
+
 - [ ] **Step 1: Write the manifest**
 
 Create `frameworks/tailwind/components/Card.manifest.json`:
