@@ -459,6 +459,33 @@ the global `document` directly and has no injection contract to keep consistent.
 primitive whose host classes depend on a runtime measurement, and the next five (the
 chart primitives) inherit the helper unchanged.
 
+### chart-internals — the visually-hidden style carries its units in Angular
+
+**React:** `chart-internals.js` exports `srOnly`, a style object with bare numbers —
+`{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, ... }`. React's DOM
+layer appends `px` to a unitless number on a length property, so `width: 1` renders `1px`.
+
+**Angular:** `chart-internals.ts` exports the same object as `SR_ONLY`, with every length
+spelled out — `width: '1px'`, `height: '1px'`, `margin: '-1px'`. Angular's `[style]`
+binding appends nothing: it stringifies the value and hands it to `setProperty`, so a
+bare `1` is an invalid length and is dropped silently, leaving the table visible on the
+page. The rendered result is identical; only the idiom differs. The name is
+`SCREAMING_CASE` to match the file's other module constants (`CAT_SLOTS`, `CHART_HEIGHT`,
+`PAD`), and it stays an **object** rather than the CSS string the task brief proposed, so
+an Angular chart can bind it with `[style]="SR_ONLY"` and compose with other bindings
+rather than clobbering them.
+
+**Worth knowing:** the 1px box and the -1px that cancels it are the only dimension
+literals in the Angular layer that are not tokens, and they are named in
+`check-dimension-literals.mjs`'s `EXEMPT` with their reason: they are constraints of the
+accessibility idiom — the smallest rendered area that keeps the element in the
+accessibility tree while `clip: rect(0 0 0 0)` hides it — not values on Arena's scale.
+React's copy is exempt from nothing because the gate never scans `.js` files at all;
+the `.ts` port is scanned, so the exemption is explicit rather than accidental.
+
+**Converges:** no. Each layer uses its own framework's style-binding idiom, and neither
+is wrong. Recorded because the five chart primitives all consume `SR_ONLY` unchanged.
+
 ## How to add an entry
 
 When you find a behavioural difference between layers:

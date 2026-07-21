@@ -317,6 +317,38 @@ test('EXEMPT records the four data-to-pixel projections this task newly exempts,
   assert.ok(!EXEMPT.has('frameworks/react/components/display/Avatar.jsx:fontSize:d * 0.4'));
 });
 
+// --- The visually-hidden idiom: a literal that is not a design dimension ---
+// The Angular layer's chart internals carry SR_ONLY, the standard
+// visually-hidden style. Its 1px box and the -1px that cancels it are
+// constraints of the accessibility idiom -- the smallest area that keeps the
+// element in the accessibility tree -- not values on Arena's scale, so no
+// token could stand in for them. React's own copy of this object is invisible
+// to the gate for an unrelated reason (it lives in a `.js` file, and
+// EXTENSIONS never includes `.js`), which is exactly why the `.ts` port needs
+// these named rather than inheriting a blind spot.
+
+test('EXEMPT records the three SR_ONLY visually-hidden literals, by name', () => {
+  assert.ok(EXEMPT.has("frameworks/angular/primitives/chart-internals.ts:width:'1px'"));
+  assert.ok(EXEMPT.has("frameworks/angular/primitives/chart-internals.ts:height:'1px'"));
+  assert.ok(EXEMPT.has("frameworks/angular/primitives/chart-internals.ts:margin:'-1px'"));
+  // The rest of the idiom needs no exemption: `padding: '0'` and `border: '0'`
+  // are zero, which is legal outright, and the non-dimension keys are ungoverned.
+  assert.ok(!EXEMPT.has("frameworks/angular/primitives/chart-internals.ts:padding:'0'"));
+  assert.ok(!EXEMPT.has("frameworks/angular/primitives/chart-internals.ts:border:'0'"));
+});
+
+test('the SR_ONLY object shape produces exactly the raws those keys are cut from', () => {
+  // Pins the key format to the real scan output. If SR_ONLY is ever rewritten
+  // -- to a CSS string, say -- the raws change shape, these keys go stale, and
+  // the gate fails loudly instead of exempting nothing in silence.
+  const hits = scanText(
+    "export const SR_ONLY = { position: 'absolute', width: '1px', height: '1px',"
+    + " padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0 0 0 0)',"
+    + " whiteSpace: 'nowrap', border: '0' };",
+  );
+  assert.deepEqual(hits.map((h) => `${h.prop}:${h.raw}`), ["width:'1px'", "height:'1px'", "margin:'-1px'"]);
+});
+
 // --- Fix pass 1: a stale exemption must fail, not pass silently ---------
 // EXEMPT is only honest if an entry naming a site that stopped producing a
 // violation is loud about it -- otherwise a real regression can hide

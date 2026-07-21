@@ -97,6 +97,12 @@ export const EXEMPT = new Map([
    'y(m) projects a clock minute onto the visible hour range, itself driven by the dayStart/dayEnd props — a time-to-pixel projection, not a design dimension; there is no token for an arbitrary minute of the day'],
   ['frameworks/react/components/display/Calendar.jsx:height:`max(calc(var(--sp-1) * 4.5), ${rawH}px)`',
    'the max()\'s floor, calc(var(--sp-1) * 4.5), already reads a token, and stays governed — only the computed arm is exempt: rawH is an event\'s duration in minutes projected to pixels, the same data-to-pixel category as the two chart entries above, never a fixed dimension'],
+  ['frameworks/angular/primitives/chart-internals.ts:width:\'1px\'',
+   'SR_ONLY is the standard visually-hidden idiom, and its 1px box is not a design dimension — it is the smallest rendered area that keeps the element in the accessibility tree while clip:rect(0 0 0 0) hides it. 0 would drop it from the tree in some engines and defeat the whole point; any token value would make it visible. Nothing in tokens/src/ could stand in for it, because the number is a constraint of the a11y idiom, not of Arena\'s scale'],
+  ['frameworks/angular/primitives/chart-internals.ts:height:\'1px\'',
+   'the other axis of the same 1px visually-hidden box as the width entry above'],
+  ['frameworks/angular/primitives/chart-internals.ts:margin:\'-1px\'',
+   'the same idiom\'s negative pull, which must cancel exactly the 1px box above so the hidden table shifts no sibling — it is bound to that literal, not to Arena\'s spacing scale, and a token here would break the cancellation'],
 ]);
 
 /** Units the token layer genuinely does not model, and that no token could
