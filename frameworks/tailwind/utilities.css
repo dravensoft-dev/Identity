@@ -545,11 +545,17 @@
   .text-error {
     color: var(--color-error);
   }
+  .text-info {
+    color: var(--color-info);
+  }
   .text-primary {
     color: var(--color-primary);
   }
   .text-primary-content {
     color: var(--color-primary-content);
+  }
+  .text-secondary {
+    color: var(--color-secondary);
   }
   .text-success {
     color: var(--color-success);

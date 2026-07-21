@@ -1573,8 +1573,19 @@ git commit -m "feat(angular): add the skeleton primitive, and a home for keyfram
 `frameworks/react/components/display/display.card.html`.
 
 The delta pill's colour says whether the change is **good**, not which way it points —
-`tone` and `direction` are separate props because they are separate facts, and both
-signs are outline. Keep that split; it is the component's whole design.
+`deltaTone` and `deltaDirection` are separate props because they are separate facts,
+and both signs are outline. Keep that split; it is one half of the component's design.
+
+**StatCard has a second, independent tone dimension.** `tone` colours the value
+itself — what state the number IS in right now, not whether it moved well. A
+service at 99.98% uptime is healthy whether or not it improved this week, and two
+open incidents are two open incidents even when that is down from five. `tone` and
+`deltaTone` can disagree in the same tile (`tone="danger"` with a `deltaTone="positive"`
+delta — a bad state that is improving), and React's own `display.card.html` demoes
+exactly that combination. The vocabulary is Badge's tone names, deliberately, reused
+rather than inventing a near-duplicate second set — see `StatCard.jsx`'s `VALUE_TONES`
+comment block, directly below its `DELTA_TONES` block. Danger applies to `tone` the
+same way it applies to `deltaTone`: text only, never a filled background.
 
 **Files:**
 - Create: `frameworks/tailwind/components/StatCard.manifest.json`
@@ -1584,7 +1595,8 @@ signs are outline. Keep that split; it is the component's whole design.
 
 **Interfaces:**
 - Produces: `StatCard` (selector `arena-stat-card`), inputs `label: string`,
-  `value: string`, `sub?: string`, `deltaValue?: string`,
+  `value: string`, `tone: 'neutral'|'accent'|'gold'|'success'|'warning'|'danger'|'info'`,
+  `sub?: string`, `deltaValue?: string`,
   `deltaTone: 'neutral'|'positive'|'negative'`, `deltaDirection: 'up'|'down'`;
   `statCardStyles`.
 
@@ -1600,24 +1612,40 @@ Create `frameworks/tailwind/components/StatCard.manifest.json`:
     "head": "flex items-center justify-between gap-3",
     "label": "font-mono text-ctl-2xs tracking-label uppercase text-base-content/62",
     "icon": "inline-flex text-[length:var(--icon-sm)] text-base-content/62 opacity-60",
-    "value": "font-display font-extrabold text-h2 leading-snug text-base-content tabular-nums",
+    "value": "font-display font-extrabold text-h2 leading-snug tabular-nums",
     "delta": "self-start inline-flex items-center gap-1 rounded-pill px-2 py-0.5 bg-transparent border-[length:var(--bw)] font-body text-ctl-sm font-semibold",
     "sub": "font-body text-ctl-sm text-base-content/62"
   },
   "variants": {
+    "tone": {
+      "neutral": { "value": "text-base-content" },
+      "accent": { "value": "text-primary" },
+      "gold": { "value": "text-secondary" },
+      "success": { "value": "text-success" },
+      "warning": { "value": "text-warning" },
+      "danger": { "value": "text-error" },
+      "info": { "value": "text-info" }
+    },
     "deltaTone": {
       "neutral": { "delta": "border-neutral text-base-content/62" },
       "positive": { "delta": "border-success text-success" },
       "negative": { "delta": "border-error text-error" }
     }
   },
-  "defaultVariants": { "deltaTone": "neutral" }
+  "defaultVariants": { "tone": "neutral", "deltaTone": "neutral" }
 }
 ```
 
 `min-h-30` is `calc(var(--sp-1) * 30)` = 120px, React's `minHeight`. `tabular-nums`
 is Tailwind's own `font-variant-numeric` utility, not a token — it is a typographic
-mode, not a value.
+mode, not a value. `tone` colours the `value` slot only, mirroring React's
+`VALUE_TONES` map (`StatCard.jsx`) through the ledger: `--bone` -> `text-base-content`,
+`--crimson` -> `text-primary`, `--gold` -> `text-secondary`, `--success` ->
+`text-success`, `--warning` -> `text-warning`, `--danger` -> `text-error`, `--info`
+-> `text-info`. The `value` slot's base string carries no colour of its own — the
+`neutral` variant supplies it, the same shape Tag's `root` uses for its `tone`
+default, so a consumer that leaves `tone` unset still gets the same colour as before
+this dimension existed.
 
 - [ ] **Step 2: Write the recipe and the primitive**
 
@@ -1636,45 +1664,51 @@ Create `frameworks/angular/primitives/stat-card/stat-card.ts`:
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { statCardStyles } from './stat-card.variants';
 
+type Tone = 'neutral' | 'accent' | 'gold' | 'success' | 'warning' | 'danger' | 'info';
 type DeltaTone = 'neutral' | 'positive' | 'negative';
 type Direction = 'up' | 'down';
 
-/** One metric on a dashboard: a micro-label, the number, and an optional delta pill. */
+/** One metric on a dashboard: a micro-label, the number, and an optional delta pill.
+ *  `tone` says what state the number IS in right now; `deltaTone` says whether its
+ *  last change was good, and `deltaDirection` says which way it pointed — three
+ *  separate facts, and `tone` colours the value while `deltaTone` colours the pill.
+ *  Per this plan's established host-binding shape (see `slice-rules.md`), the host
+ *  itself is the recipe's `root`, not a wrapper `<div>` inside the template. */
 @Component({
   selector: 'arena-stat-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class]': 'styles().root()' },
   template: `
-    <div [class]="styles().root()">
-      <div [class]="styles().head()">
-        <span [class]="styles().label()">{{ label() }}</span>
-        @if (icon(); as glyph) {
-          <span [class]="styles().icon()" aria-hidden="true"><i [class]="glyph"></i></span>
-        }
-      </div>
-      <div [class]="styles().value()">{{ value() }}</div>
-      @if (deltaValue(); as delta) {
-        <span [class]="styles().delta()">
-          <i [class]="deltaDirection() === 'down' ? 'ph-bold ph-arrow-down' : 'ph-bold ph-arrow-up'" aria-hidden="true"></i>
-          {{ delta }}
-        </span>
-      }
-      @if (sub(); as caption) {
-        <span [class]="styles().sub()">{{ caption }}</span>
+    <div [class]="styles().head()">
+      <span [class]="styles().label()">{{ label() }}</span>
+      @if (icon(); as glyph) {
+        <span [class]="styles().icon()" aria-hidden="true"><i [class]="glyph"></i></span>
       }
     </div>
+    <div [class]="styles().value()">{{ value() }}</div>
+    @if (deltaValue(); as delta) {
+      <span [class]="styles().delta()">
+        <i [class]="deltaDirection() === 'down' ? 'ph-bold ph-arrow-down' : 'ph-bold ph-arrow-up'" aria-hidden="true"></i>
+        {{ delta }}
+      </span>
+    }
+    @if (sub(); as caption) {
+      <span [class]="styles().sub()">{{ caption }}</span>
+    }
   `,
 })
 export class StatCard {
   readonly label = input('');
   readonly value = input('');
+  readonly tone = input<Tone>('neutral');
   readonly sub = input<string>();
   readonly icon = input<string>();
   readonly deltaValue = input<string>();
   readonly deltaTone = input<DeltaTone>('neutral');
   readonly deltaDirection = input<Direction>('up');
 
-  protected readonly styles = computed(() => statCardStyles({ deltaTone: this.deltaTone() }));
+  protected readonly styles = computed(() => statCardStyles({ tone: this.tone(), deltaTone: this.deltaTone() }));
 }
 ```
 
@@ -1684,22 +1718,34 @@ Create `frameworks/angular/primitives/stat-card/stat-card.prompt.md`:
 
 ```markdown
 Arena metric tile. A mono micro-label, the number in display weight, and an optional
-delta pill. `deltaTone` says whether the change is **good**; `deltaDirection` says
-which way it points. They are separate inputs because they are separate facts —
-revenue down is bad, latency down is good, and the tile cannot know which metric it
-is showing. Styling is the sibling `stat-card.variants.ts` recipe.
+delta pill. Two tone dimensions answer two different questions about the same
+number, and neither implies the other:
+
+- `tone` says what state the number **IS in right now** — colors the value itself.
+  A service at 99.98% uptime is healthy whether or not it improved this week, and
+  two open incidents are two open incidents even when that is down from five.
+- `deltaTone` says whether the number's last change was **good**; `deltaDirection`
+  says which way it pointed — colors the delta pill. Revenue down is bad, latency
+  down is good, and the tile cannot know which metric it is showing.
+
+A tile can legitimately show `tone="danger"` with `deltaTone="positive"` in the
+same breath — a bad state that is improving is still a bad state. Styling is the
+sibling `stat-card.variants.ts` recipe.
 
 ```html
 <arena-stat-card label="Revenue" value="$48.2k" deltaValue="12%" deltaTone="positive" />
 <arena-stat-card label="p95 latency" value="184ms" deltaValue="9%" deltaDirection="down" deltaTone="positive" />
-<arena-stat-card label="Open incidents" value="3" deltaValue="2" deltaTone="negative" sub="since Friday" />
+<arena-stat-card label="Open incidents" value="3" tone="danger" deltaValue="2" deltaTone="positive" sub="2 acknowledged" />
 ```
 
 **Do / Don't**
 - Set `deltaTone` deliberately for every delta. The default is neutral, and a neutral
   delta on a metric where the direction matters is a missed signal, not a safe one.
-- Don't fill the negative delta. It is an outline pill in `--error`, like every other
-  danger surface in Arena except `ConfirmDialog`'s final confirmation.
+- Set `tone` for what the number currently IS, not for how it moved — reach for
+  `deltaTone`/`deltaDirection` for that instead.
+- Don't fill the negative delta or the danger value. Both are text/outline in
+  `--error` — like every other danger surface in Arena except `ConfirmDialog`'s
+  final confirmation.
 - Don't put a chart in a stat card — `arena-chart-card` is the tile that holds one.
 ```
 
@@ -1718,7 +1764,7 @@ alphabetically (after `./skeleton`).
 Create `frameworks/tailwind/components/StatCard.card.html`:
 
 ```html
-<!-- @dsCard group="Angular" viewport="760x320" name="StatCard" subtitle="Metric tiles and delta tones, rendered from StatCard.manifest.json" -->
+<!-- @dsCard group="Angular" viewport="760x1009" name="StatCard" subtitle="Metric tiles and delta tones, rendered from StatCard.manifest.json" -->
 <!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="../../../styles.css">
 <link rel="stylesheet" href="../utilities.css">
@@ -1729,8 +1775,8 @@ import { mountSpecimen, section, el, classesFor } from '../specimen.js';
 
 const manifest = await (await fetch('./StatCard.manifest.json')).json();
 
-function tile({ label, value, delta, deltaTone = 'neutral', direction = 'up', sub }) {
-  const c = classesFor(manifest, { deltaTone });
+function tile({ label, value, delta, tone = 'neutral', deltaTone = 'neutral', direction = 'up', sub }) {
+  const c = classesFor(manifest, { tone, deltaTone });
   const root = el('div', { class: c.root });
   root.style.width = '220px';
   root.append(el('div', { class: c.head }, el('span', { class: c.label, text: label })));
@@ -1751,6 +1797,18 @@ mountSpecimen({ sections: [
     tile({ label: 'Open incidents', value: '3', delta: '2', deltaTone: 'negative', sub: 'since Friday' }),
   ]),
   section('Without a delta', [tile({ label: 'Active projects', value: '17', sub: 'across 6 clients' })]),
+  section('Value tones -- what the number IS, independent of the delta', [
+    tile({ label: 'Neutral', value: '128', tone: 'neutral' }),
+    tile({ label: 'Accent', value: '$48.2k', tone: 'accent' }),
+    tile({ label: 'Gold tier', value: 'Tier 1', tone: 'gold' }),
+    tile({ label: 'Uptime', value: '99.98%', tone: 'success' }),
+    tile({ label: 'Disk used', value: '82%', tone: 'warning' }),
+    tile({ label: 'Errors', value: '3', tone: 'danger' }),
+    tile({ label: 'Queued', value: '12', tone: 'info' }),
+  ]),
+  section('tone and deltaTone disagree on purpose -- a bad state that is improving', [
+    tile({ label: 'Open incidents', value: '3', tone: 'danger', delta: '2', deltaTone: 'positive', direction: 'down', sub: '2 acknowledged' }),
+  ]),
 ]});
 </script></body></html>
 ```

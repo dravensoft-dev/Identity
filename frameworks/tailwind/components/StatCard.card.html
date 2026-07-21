@@ -1,4 +1,4 @@
-<!-- @dsCard group="Angular" viewport="760x399" name="StatCard" subtitle="Metric tiles and delta tones, rendered from StatCard.manifest.json" -->
+<!-- @dsCard group="Angular" viewport="760x1009" name="StatCard" subtitle="Metric tiles and delta tones, rendered from StatCard.manifest.json" -->
 <!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="../../../styles.css">
 <link rel="stylesheet" href="../utilities.css">
@@ -9,8 +9,8 @@ import { mountSpecimen, section, el, classesFor } from '../specimen.js';
 
 const manifest = await (await fetch('./StatCard.manifest.json')).json();
 
-function tile({ label, value, delta, deltaTone = 'neutral', direction = 'up', sub }) {
-  const c = classesFor(manifest, { deltaTone });
+function tile({ label, value, delta, tone = 'neutral', deltaTone = 'neutral', direction = 'up', sub }) {
+  const c = classesFor(manifest, { tone, deltaTone });
   const root = el('div', { class: c.root });
   root.style.width = '220px';
   root.append(el('div', { class: c.head }, el('span', { class: c.label, text: label })));
@@ -31,5 +31,17 @@ mountSpecimen({ sections: [
     tile({ label: 'Open incidents', value: '3', delta: '2', deltaTone: 'negative', sub: 'since Friday' }),
   ]),
   section('Without a delta', [tile({ label: 'Active projects', value: '17', sub: 'across 6 clients' })]),
+  section('Value tones -- what the number IS, independent of the delta', [
+    tile({ label: 'Neutral', value: '128', tone: 'neutral' }),
+    tile({ label: 'Accent', value: '$48.2k', tone: 'accent' }),
+    tile({ label: 'Gold tier', value: 'Tier 1', tone: 'gold' }),
+    tile({ label: 'Uptime', value: '99.98%', tone: 'success' }),
+    tile({ label: 'Disk used', value: '82%', tone: 'warning' }),
+    tile({ label: 'Errors', value: '3', tone: 'danger' }),
+    tile({ label: 'Queued', value: '12', tone: 'info' }),
+  ]),
+  section('tone and deltaTone disagree on purpose -- a bad state that is improving', [
+    tile({ label: 'Open incidents', value: '3', tone: 'danger', delta: '2', deltaTone: 'positive', direction: 'down', sub: '2 acknowledged' }),
+  ]),
 ]});
 </script></body></html>

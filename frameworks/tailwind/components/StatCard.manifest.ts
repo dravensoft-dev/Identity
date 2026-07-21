@@ -6,11 +6,34 @@ export default {
     "head": "flex items-center justify-between gap-3",
     "label": "font-mono text-ctl-2xs tracking-label uppercase text-base-content/62",
     "icon": "inline-flex text-[length:var(--icon-sm)] text-base-content/62 opacity-60",
-    "value": "font-display font-extrabold text-h2 leading-snug text-base-content tabular-nums",
+    "value": "font-display font-extrabold text-h2 leading-snug tabular-nums",
     "delta": "self-start inline-flex items-center gap-1 rounded-pill px-2 py-0.5 bg-transparent border-[length:var(--bw)] font-body text-ctl-sm font-semibold",
     "sub": "font-body text-ctl-sm text-base-content/62"
   },
   "variants": {
+    "tone": {
+      "neutral": {
+        "value": "text-base-content"
+      },
+      "accent": {
+        "value": "text-primary"
+      },
+      "gold": {
+        "value": "text-secondary"
+      },
+      "success": {
+        "value": "text-success"
+      },
+      "warning": {
+        "value": "text-warning"
+      },
+      "danger": {
+        "value": "text-error"
+      },
+      "info": {
+        "value": "text-info"
+      }
+    },
     "deltaTone": {
       "neutral": {
         "delta": "border-neutral text-base-content/62"
@@ -24,6 +47,7 @@ export default {
     }
   },
   "defaultVariants": {
+    "tone": "neutral",
     "deltaTone": "neutral"
   }
 } as const;
