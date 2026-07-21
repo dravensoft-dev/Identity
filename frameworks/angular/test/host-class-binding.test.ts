@@ -41,6 +41,8 @@ import { Avatar } from '../primitives/avatar/avatar';
 import { avatarStyles } from '../primitives/avatar/avatar.variants';
 import { EmptyState } from '../primitives/empty-state/empty-state';
 import { emptyStateStyles } from '../primitives/empty-state/empty-state.variants';
+import { ErrorState } from '../primitives/error-state/error-state';
+import { errorStateStyles } from '../primitives/error-state/error-state.variants';
 import { Skeleton } from '../primitives/skeleton/skeleton';
 import { skeletonStyles } from '../primitives/skeleton/skeleton.variants';
 import { StatCard } from '../primitives/stat-card/stat-card';
@@ -106,6 +108,13 @@ class StatCardHost {}
   template: `<arena-empty-state title="No projects yet" />`,
 })
 class EmptyStateWithoutActionHost {}
+
+@Component({
+  standalone: true,
+  imports: [ErrorState],
+  template: `<arena-error-state class="consumer-class" title="Something went wrong" />`,
+})
+class ErrorStateWithoutActionHost {}
 
 test('arena-avatar: the root recipe classes land on the host element itself', async () => {
   const fixture = TestBed.createComponent(AvatarHost);
@@ -236,6 +245,39 @@ test('arena-empty-state: the action wrapper is absent from the DOM when no [aren
     host.querySelector(`:scope > .${actionClass}`),
     null,
     'the action wrapper div must not render when the action slot is empty',
+  );
+});
+
+test('arena-error-state: the root recipe classes land on the host element itself', async () => {
+  const fixture = TestBed.createComponent(ErrorStateWithoutActionHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-error-state') as HTMLElement;
+  for (const cls of errorStateStyles().root().split(/\s+/))
+    assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
+  assert.equal(host.getAttribute('role'), 'alert');
+  assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+});
+
+/* Same fix, same toolchain limitation as arena-empty-state's action wrapper
+ * above (see that test's header comment for the full reasoning): the
+ * positive case cannot be TestBed-rendered here because `contentChild` needs
+ * ngtsc's initializer-API transform, which this JIT-only harness never runs.
+ * `bun run check:angular` is the real authority that the query and the `@if`
+ * gate typecheck. The negative case below is real coverage of the same
+ * reported bug's exact repro, ported to `arena-error-state`'s own actions
+ * slot and its own marker directive, `ArenaErrorAction`. */
+test('arena-error-state: the actions wrapper is absent from the DOM when no [arena-action] content is projected', async () => {
+  const fixture = TestBed.createComponent(ErrorStateWithoutActionHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-error-state') as HTMLElement;
+  assert.equal(host.querySelector('button'), null, 'no action was projected, so no action markup should exist at all');
+  const actionsClass = errorStateStyles().actions().split(/\s+/)[0];
+  assert.equal(
+    host.querySelector(`:scope > .${actionsClass}`),
+    null,
+    'the actions wrapper div must not render when the actions slot is empty',
   );
 });
 
