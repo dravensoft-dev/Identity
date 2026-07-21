@@ -604,6 +604,61 @@ boolean input and correct those two prompts) belongs to the docs close-out, not 
 **Converges:** yes, once the layer takes `booleanAttribute` uniformly. Recorded here because this
 slice found it, not because LineChart is special.
 
+### DoughnutChart — the legend is drawn per slice, not per label
+
+**React:** `DoughnutChart.jsx` computes its slices from `values` and draws the ring, the centre
+label and the numbers table from them — but the legend from `labels`, `{labels.map((l, i) => ...
+{fmt(values[i])})}`. With more labels than values that renders a legend row with a swatch coloured
+for a slice that does not exist and a value of the literal string `undefined`; with fewer, a real
+slice has no legend row at all, which on this chart is worse than on the other two because the
+legend is the only place a slice is ever named.
+
+**Angular:** `arena-doughnut-chart` draws the legend from the same `segments()` collection the arcs
+come from, taking each slice's label as `labels()[index] ?? ''`. A label with no slice is dropped;
+a slice with no label renders an empty string beside its swatch.
+
+**Why:** identical to the BarChart and LineChart entries above, and for the same reason — the two
+arrays are one dataset and the slice is the thing being named. Identical output whenever the arrays
+are the same length, which is every correct call. The task brief also iterated the slices here, so
+this is the third slice in a row where the brief silently corrected React without saying so; it is
+written down now. `doughnut-chart.prompt.md` states the rule under Don't.
+
+**Converges:** yes — React should iterate its slices. **Open debt on the React layer**, and on this
+component it is a touch worse than on its siblings, since `fmt(undefined)` prints a visible
+`undefined` in the legend rather than merely misplacing a label.
+
+### DoughnutChart — the host IS the flex row, where React wraps one inside
+
+**React:** `DoughnutChart.jsx` renders `<div ref={ref} style={{ position: 'relative', width: '100%',
+height, display: 'flex', gap: 'calc(var(--sp-1) * 4)' }}>` and hangs the ring, the legend and the
+numbers table inside it. The measured element and the laid-out element are the same `<div>`.
+
+**Angular:** `arena-doughnut-chart` puts those five declarations in its own `host` metadata and
+renders the SVG, the legend column and the table at the template's top level. There is no wrapper.
+
+**Why:** `containerWidth()` injects `ElementRef`, which is the **host** — so a wrapper would have
+measured the host while laying out the wrapper, and the two are not the same box. Worse,
+`<arena-doughnut-chart>` is an unknown element whose UA default is `display:inline`, and a
+non-replaced inline box has no content width for a `ResizeObserver` to report, so the ring would be
+sized against a wrong number in the direction that matters most: `plotWidth` feeds `doughnutRadii`
+directly. This is the same hazard every manifest's `root` slot carries a display utility for; a
+chart has no manifest, so it states the display itself — as `arena-bar-chart` and
+`arena-line-chart` already do, with the difference that this one's display is `flex` rather than
+`block`, because the row is the layout rather than a wrapper inside it. `position:relative` is kept
+for the absolutely-positioned numbers table. `host-class-binding.test.ts` names all three chart
+primitives in `NO_MANIFEST` and asserts the rendered host's `display`, `position`, `width` and
+`gap` against a real DOM.
+
+**Also worth knowing:** the flex `gap` and the `LEGEND_GAP = 16` that `doughnutPlotWidth` subtracts
+are the same distance expressed twice — once as the token derivation `calc(var(--sp-1) * 4)` that
+CSS lays out, and once as the number the SVG's own user-unit width has to account for. They move
+together, and both this component and React's carry the pair.
+
+**Not ported:** React's `style` prop and `{...rest}` spread, for the reason PageHead's entry above
+already gives — in Angular a consumer writes those directly on the host.
+
+**Converges:** no. Each layer expresses the same box in its own idiom, and neither is wrong.
+
 ## How to add an entry
 
 When you find a behavioural difference between layers:

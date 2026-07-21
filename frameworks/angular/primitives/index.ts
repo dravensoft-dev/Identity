@@ -8,6 +8,7 @@ export * from './chart-internals';
 export * from './command-palette';
 export * from './confirm-dialog';
 export * from './container-size';
+export * from './doughnut-chart';
 export * from './empty-state';
 export * from './error-state';
 export * from './line-chart';

@@ -53,6 +53,7 @@ import { BulkActionBar } from '../primitives/bulk-action-bar/bulk-action-bar';
 import { bulkActionBarStyles } from '../primitives/bulk-action-bar/bulk-action-bar.variants';
 import { ChartCard } from '../primitives/chart-card/chart-card';
 import { chartCardStyles } from '../primitives/chart-card/chart-card.variants';
+import { DoughnutChart } from '../primitives/doughnut-chart/doughnut-chart';
 import { EmptyState } from '../primitives/empty-state/empty-state';
 import { emptyStateStyles } from '../primitives/empty-state/empty-state.variants';
 import { ErrorState } from '../primitives/error-state/error-state';
@@ -189,6 +190,14 @@ class BarChartHost {}
   template: `<arena-line-chart />`,
 })
 class LineChartHost {}
+
+@Component({
+  standalone: true,
+  imports: [DoughnutChart],
+  host: { 'data-host': 'doughnut-chart' },
+  template: `<arena-doughnut-chart />`,
+})
+class DoughnutChartHost {}
 
 test('arena-avatar: the root recipe classes land on the host element itself', async () => {
   const fixture = TestBed.createComponent(AvatarHost);
@@ -785,7 +794,7 @@ function kebabToPascal(dirName: string): string {
  * own host metadata, which the render test below asserts against a real DOM.
  * An inline `style` attribute is not wrapped in `@layer`, so happy-dom's CSS
  * engine does evaluate it -- the limitation described above does not apply. */
-const NO_MANIFEST = new Set(['bar-chart', 'line-chart']);
+const NO_MANIFEST = new Set(['bar-chart', 'line-chart', 'doughnut-chart']);
 
 test('every Angular primitive\'s root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
   const primitivesDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'primitives');
@@ -962,6 +971,110 @@ test('arena-line-chart: the picture carries an accessible name and the numbers c
   assert.equal(svg.getAttribute('aria-label'), 'Line chart');
   const caption = fixture.nativeElement.querySelector('arena-line-chart table caption') as HTMLElement;
   assert.equal(caption.textContent?.trim(), 'Line chart');
+});
+
+/* The third and last hand-written chart. Same shape as the two blocks above, with one
+ * real difference in what is reachable: a bar chart and a line chart both draw a value
+ * axis from `ticks()` regardless of their data, so a `<line>` and a `<text>` render with
+ * default inputs and their token styles can be read off the real DOM. A doughnut has no
+ * axis -- with the default empty `values` there is no slice and no centre label, and this
+ * harness cannot drive `values` (see the header). So the `<path>`'s `strokeWidth:
+ * 'var(--bw-strong)'` and the centre label's `fontSize: 'var(--dz-text-lg)'` are NOT
+ * render-provable here, and nothing below pretends otherwise. What covers them instead:
+ * `check:dimensions` reads both as themselves BECAUSE they are camelCase object keys
+ * rather than the brief's `stroke-width="2"` / `font-size="16"` attributes, which that
+ * gate cannot see at all (its attribute lookbehind excludes `-`, and `font-size` reduces
+ * to the ungoverned `size`) -- confirmed by writing both raw literals into this component
+ * and watching the gate stay green, then writing the same two values as object keys and
+ * watching it fail. `check:angular` (`ngc --strictTemplates`) is the authority that the
+ * `[style]` bindings themselves typecheck. The two style objects that DO render with no
+ * data -- the SVG's own and the legend column's -- are asserted for real below, which is
+ * what proves the object-to-DOM path works at all on this component. */
+
+test('arena-doughnut-chart: the host is the flex row itself, so the box it measures is the box it lays out', async () => {
+  const fixture = TestBed.createComponent(DoughnutChartHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-doughnut-chart') as HTMLElement;
+  // `containerWidth()` observes this element. The task brief wrapped the whole chart in
+  // an inner flex `<div>`, which would have measured the host while laying out the
+  // wrapper -- and an unknown element defaults to display:inline, a non-replaced box
+  // with no content width for a ResizeObserver to report, so the ring would be sized
+  // against the wrong number. The host carries the row instead.
+  assert.equal(host.style.display, 'flex', `host declared display "${host.style.display}"`);
+  assert.equal(getComputedStyle(host).display, 'flex');
+  // The visually-hidden numbers table is absolutely positioned, so the host must be its
+  // containing block rather than leaving it to escape to an ancestor.
+  assert.equal(host.style.position, 'relative');
+  // The row's own two properties: it fills its parent, and the gap between the ring and
+  // the legend is the token derivation the plot width subtracts 16px for.
+  assert.equal(host.style.width, '100%');
+  assert.equal(host.style.gap, 'calc(var(--sp-1) * 4)');
+});
+
+test('arena-doughnut-chart: the numbers table is bound as a style object, not stringified into the attribute', async () => {
+  const fixture = TestBed.createComponent(DoughnutChartHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const table = fixture.nativeElement.querySelector('arena-doughnut-chart table') as HTMLElement;
+  assert.ok(table, 'the visually-hidden numbers table did not render');
+  // `[attr.style]="SR_ONLY"` -- which the task brief specified, as it did for both other
+  // charts -- would set the literal string "[object Object]" and apply nothing, leaving
+  // the table visible beside the legend. `[style]` takes the object, which is what
+  // chart-internals.ts documents.
+  assert.ok(!(table.getAttribute('style') ?? '').includes('[object Object]'),
+    `the style object was stringified: "${table.getAttribute('style')}"`);
+  assert.equal(table.style.position, 'absolute');
+  assert.equal(table.style.width, '1px');
+  assert.equal(table.style.height, '1px');
+  assert.equal(table.style.margin, '-1px');
+  // SR_ONLY's `clip` is deliberately not asserted here, for the reason the bar-chart
+  // counterpart above records: happy-dom does not expose the deprecated property, so it
+  // reads back as '' either way.
+});
+
+test('arena-doughnut-chart: the style objects that render without data reach the DOM as real declarations', async () => {
+  const fixture = TestBed.createComponent(DoughnutChartHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-doughnut-chart') as HTMLElement;
+  // The ring's box must not be squeezed by the legend below the width its geometry was
+  // computed against.
+  const svg = host.querySelector('svg') as SVGElement;
+  assert.equal(svg.style.display, 'block');
+  assert.equal(svg.style.flexShrink, '0');
+  // The legend column renders whether or not there is data in it, so its token gap is
+  // the one token-valued declaration on this component a real render can read back.
+  const legend = host.querySelector(':scope > div') as HTMLElement;
+  assert.ok(legend, 'the legend column did not render');
+  assert.equal(legend.style.gap, 'calc(var(--sp-1) * 1.5)');
+  assert.equal(legend.style.flexDirection, 'column');
+});
+
+test('arena-doughnut-chart: the picture carries an accessible name and the numbers carry a caption', async () => {
+  const fixture = TestBed.createComponent(DoughnutChartHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const svg = fixture.nativeElement.querySelector('arena-doughnut-chart svg') as SVGElement;
+  assert.equal(svg.getAttribute('role'), 'img');
+  // Unlike the other two charts this name is static: a doughnut has no `seriesLabel`,
+  // because its series ARE its slices and they are named by the legend. A role="img"
+  // with no name announces as an unlabeled graphic.
+  assert.equal(svg.getAttribute('aria-label'), 'Doughnut chart');
+  const caption = fixture.nativeElement.querySelector('arena-doughnut-chart table caption') as HTMLElement;
+  assert.equal(caption.textContent?.trim(), 'Doughnut chart');
+});
+
+test('arena-doughnut-chart: with no data it draws no slice at all, rather than an empty ring', async () => {
+  const fixture = TestBed.createComponent(DoughnutChartHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-doughnut-chart') as HTMLElement;
+  // `@if (segment.path)` is the gate: a zero-width slice yields '' and must not reach
+  // the DOM as a `d=""` path. This is the empty case rendering for real, not a stand-in.
+  assert.equal(host.querySelector('path'), null, 'an empty doughnut must paint no slice');
+  assert.equal(host.querySelector('text'), null, 'the centre label must not render with nothing hovered');
+  assert.equal(host.querySelectorAll('tbody tr').length, 0, 'the numbers table must have no rows');
 });
 
 after(() => {
