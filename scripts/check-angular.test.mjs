@@ -6,7 +6,15 @@ import { join } from 'node:path';
 import { repoRoot } from './lib/tailwind-compile.mjs';
 import { typecheck } from './check-angular.mjs';
 
-test('the Angular layer as committed typechecks', () => {
+/* The explicit timeout matters as much here as on the test below, which has
+ * carried one from the start. A full `ngc` run over the layer crossed
+ * node:test's 5s default as the primitive count grew -- it measured ~5.1s at
+ * 21 primitives -- and the failure that produces is deeply misleading: the
+ * runner kills the compile, `typecheck()` reports the killed process's exit
+ * status 1 with EMPTY output, and the assertion below prints "1 !== 0" with no
+ * diagnostic at all, which reads exactly like a real type error nobody can
+ * locate. The layer is still growing, so this is generous rather than snug. */
+test('the Angular layer as committed typechecks', { timeout: 120_000 }, () => {
   const { status, output } = typecheck();
   assert.equal(status, 0, output);
 });
