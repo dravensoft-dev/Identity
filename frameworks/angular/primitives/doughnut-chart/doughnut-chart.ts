@@ -65,7 +65,10 @@ const SEGMENT_STYLE = {
 const CENTRE_LABEL_STYLE = { fontSize: 'var(--dz-text-lg)' } as const satisfies Readonly<Record<string, string>>;
 
 /** The legend column. Not optional: slices are categories, and identity is never colour
- *  alone. `overflow: auto` so a long list scrolls rather than escaping the chart's height. */
+ *  alone. `overflow: auto` so a long list scrolls rather than escaping the chart's height —
+ *  which is why the element carries `tabindex="0"`/`role="group"`/`aria-label` in the
+ *  template: a scrollable region nothing else can focus is unreachable by a keyboard user
+ *  (WCAG 2.1.1), the same failure a `tabindex`-less `overflow: auto` box always is. */
 const LEGEND_STYLE = {
   flex: '1', minWidth: '0', display: 'flex', flexDirection: 'column',
   justifyContent: 'center', gap: 'calc(var(--sp-1) * 1.5)', overflow: 'auto',
@@ -194,7 +197,7 @@ export function doughnutRadii(plotWidth: number, height: number): { outer: numbe
       }
     </svg>
 
-    <div [style]="legendStyle">
+    <div [style]="legendStyle" tabindex="0" role="group" aria-label="Doughnut chart legend">
       @for (segment of segments(); track segment.index) {
         <div [style]="legendRowStyle"
              [style.opacity]="hover() === null || hover() === segment.index ? 1 : dimOpacity"
