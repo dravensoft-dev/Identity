@@ -9,7 +9,7 @@ import { findChromium, launchChromium } from './lib/chromium.mjs';
 import { connect } from './lib/cdp.mjs';
 import {
   parseDsCard, classify, summarizeCards, skipExitCode, findCardPages, UNDER_RUN_SLACK,
-  measurePage, measureCardPage,
+  measurePage, measureCardPage, mapWithConcurrency, interleaveForDispatch,
 } from './check-card-viewports.mjs';
 
 /* The only test here that needs a browser. It skips — loudly, in the
@@ -188,6 +188,8 @@ function fakeCdp(failingUrls) {
         case 'Target.createTarget': return { targetId: 't' };
         case 'Target.attachToTarget': return { sessionId: 's' };
         case 'Emulation.setDeviceMetricsOverride': return {};
+        case 'Animation.enable': return {};
+        case 'Animation.setPlaybackRate': return {};
         case 'Page.navigate':
           if (failingUrls.has(params.url)) throw new Error('stalled connection');
           return {};
@@ -352,6 +354,27 @@ test('a page that never rendered is a skip-class condition, not a pass', () => {
   assert.match(r.message, /did not render/i);
 });
 
+/* Distinct from the test above: here #root filled in (rendered: true) but
+ * the stability loop never saw two identical reads before its 20s deadline —
+ * the shape a page still carrying a live animation left after freezeAnimations
+ * would have. classify must not fall through to the ok/clip/under branches
+ * and score whatever `measured` happened to hold at that arbitrary instant;
+ * a timed-out measurement is untrustworthy regardless of what it says. */
+test('a page that timed out without ever stabilizing is a skip-class condition, not a pass', () => {
+  const r = classify({
+    file: 'frameworks/react/components/feedback/feedback.card.html',
+    declared: { width: 900, height: 460 },
+    // Numbers chosen so that, if this were wrongly treated as a normal
+    // reading, it would classify 'ok' (nothing over-runs, nothing under-runs
+    // by more than UNDER_RUN_SLACK) — proving the timedOut branch is what
+    // catches it, not an incidental clip or under-run.
+    measured: { scrollWidth: 900, scrollHeight: 460, clientWidth: 900, clientHeight: 460, contentHeight: 400, rendered: true, timedOut: true },
+  });
+  assert.equal(r.status, 'unrendered');
+  assert.match(r.message, /never stabilized/i, 'the message says plainly that the page never settled');
+  assert.match(r.message, /feedback\.card\.html/, 'the message names the page');
+});
+
 test('skipExitCode is 2 normally and 1 under strict', () => {
   assert.equal(skipExitCode({}), 2);
   assert.equal(skipExitCode({ ARENA_CHECK_STRICT: '1' }), 1);
@@ -366,4 +389,88 @@ test('findCardPages finds every page that declares, and nothing that does not', 
   assert.ok(!pages.includes('Dravensoft Identity.dc.html'), 'the brand manual is not a card');
   assert.ok(pages.every((p) => !p.includes('node_modules')));
   assert.deepEqual(pages, [...pages].sort(), 'pages come back sorted, so output is stable');
+});
+
+/* main() feeds mapWithConcurrency the sorted output of findCardPages, so
+ * this is the guarantee the whole sweep's output ordering rests on: results
+ * land in `items` order, never in the order calls happen to settle. Delays
+ * are deliberately not in file order, and at least 15ms apart pairwise, so
+ * timer jitter cannot flip their completion order by accident —
+ * `completions` is a real, not incidental, check that the calls really did
+ * finish out of order, proving the assertion on `results` is testing the
+ * ordering guarantee and not just restating the input. */
+test('mapWithConcurrency keeps results in filename order even when a later file answers first', async () => {
+  const files = ['a.html', 'b.html', 'c.html', 'd.html'];
+  const delayMs = { 'a.html': 120, 'b.html': 5, 'c.html': 80, 'd.html': 35 };
+  const completions = [];
+
+  const results = await mapWithConcurrency(files, 4, async (file) => {
+    await new Promise((r) => setTimeout(r, delayMs[file]));
+    completions.push(file);
+    return { file, status: 'ok' };
+  });
+
+  assert.deepEqual(completions, ['b.html', 'd.html', 'c.html', 'a.html'], 'sanity check: the calls really did settle out of filename order');
+  assert.deepEqual(results.map((r) => r.file), files, 'results stay in filename order regardless of which call settled first');
+});
+
+test('mapWithConcurrency never runs more than `limit` calls at once', async () => {
+  let inFlight = 0;
+  let peak = 0;
+  const items = Array.from({ length: 10 }, (_, i) => i);
+
+  await mapWithConcurrency(items, 3, async (i) => {
+    inFlight += 1;
+    peak = Math.max(peak, inFlight);
+    await new Promise((r) => setTimeout(r, 10));
+    inFlight -= 1;
+    return i;
+  });
+
+  assert.ok(peak <= 3, `peak concurrency was ${peak}, expected at most 3`);
+  assert.equal(peak, 3, 'sanity check: the bound is actually reached, not just never exceeded');
+});
+
+test('interleaveForDispatch reads a row-major grid back out column-major', () => {
+  const items = Array.from({ length: 12 }, (_, i) => i);
+  const out = interleaveForDispatch(items, 4);
+  // Row-major into 4 rows then read column-major: row0=[0,4,8], row1=[1,5,9],
+  // row2=[2,6,10], row3=[3,7,11] -> flat = [0,4,8,1,5,9,2,6,10,3,7,11].
+  assert.deepEqual(out, [0, 4, 8, 1, 5, 9, 2, 6, 10, 3, 7, 11]);
+});
+
+/* The property that actually matters, at the scale check-card-viewports.mjs
+ * runs at: with 45 pages and PAGE_CONCURRENCY 5, each row holds
+ * ceil(45/5) = 9 items, so two items that started fewer than 5 apart always
+ * land at least 9 dispatch positions apart — comfortably outside any single
+ * 5-wide wave mapWithConcurrency could draw from. (The guarantee is really
+ * "at least a row's length apart", which only clears `groups` once there are
+ * enough items per row; a tiny input with few items per group would not get
+ * this, but 45 pages at PAGE_CONCURRENCY 5 does, which is the only case this
+ * file ever runs.) This reproduces the exact regression found by hand: pages
+ * 0-3 in findCardPages' sorted order (brand, charts, activity-feed,
+ * calendar) are the four heaviest to paint, and under the old identity
+ * dispatch order they were always each other's first wave. */
+test('interleaveForDispatch spreads originally-adjacent items out of the first wave, at this file\'s real scale', () => {
+  const items = Array.from({ length: 45 }, (_, i) => i);
+  const groups = 5;
+  const out = interleaveForDispatch(items, groups);
+  const positionOf = new Map(out.map((item, pos) => [item, pos]));
+
+  for (const item of [0, 1, 2, 3]) assert.ok(positionOf.has(item));
+  const positions = [0, 1, 2, 3].map((item) => positionOf.get(item));
+  // No two of the four land within `groups` positions of each other, so no
+  // wave of `groups` concurrent workers can ever draw two of them together.
+  for (let a = 0; a < positions.length; a += 1) {
+    for (let b = a + 1; b < positions.length; b += 1) {
+      assert.ok(Math.abs(positions[a] - positions[b]) >= groups, `items ${a} and ${b} landed too close: positions ${positions[a]} and ${positions[b]}`);
+    }
+  }
+});
+
+test('interleaveForDispatch is a permutation — every item appears exactly once', () => {
+  const items = ['a.html', 'b.html', 'c.html', 'd.html', 'e.html'];
+  const out = interleaveForDispatch(items, 3);
+  assert.deepEqual([...out].sort(), [...items].sort());
+  assert.equal(out.length, items.length);
 });
