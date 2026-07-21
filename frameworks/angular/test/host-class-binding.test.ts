@@ -170,6 +170,14 @@ class BulkActionBarHost {}
 })
 class ChartCardHost {}
 
+/* The literal `title="No projects yet"` below is inert under this JIT-only harness --
+ * `title` is a signal input (`input<string>()`), and a static attribute never reaches a
+ * signal input here (see this file's header comment and the `arena-chart-card` block
+ * further down, which probes the same collision by hand). It renders as a stray DOM
+ * attribute on the host and leaves `title()` itself `undefined`. Left in place rather
+ * than removed because no test below reads it -- only the action wrapper's absence is
+ * asserted -- so it changes nothing either way; recorded here so a reader does not take
+ * it for a working title binding. */
 @Component({
   standalone: true,
   imports: [EmptyState],
@@ -177,6 +185,11 @@ class ChartCardHost {}
 })
 class EmptyStateWithoutActionHost {}
 
+/* Same inertness as `EmptyStateWithoutActionHost` above, with one extra wrinkle: this
+ * component's `title` input defaults to `'Something went wrong'` (`error-state.ts`), the
+ * exact string written here -- so even though the literal attribute never reaches the
+ * input, the rendered title happens to read the same either way. Nothing below asserts
+ * on the title text, only on classes, `role="alert"` and the actions wrapper's absence. */
 @Component({
   standalone: true,
   imports: [ErrorState],
