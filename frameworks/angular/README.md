@@ -177,11 +177,14 @@ feature simply never turns on. Always bind: `[dismissible]="true"`. This governs
 **An input named after a native attribute leaves the native attribute behind.** Angular
 writes a static attribute to the DOM during the creation pass whether or not it also
 matches an input, so `<arena-page-head title="Projects">` leaves a real `title` on the
-host and the browser draws a tooltip over the whole header. This affects `title` on
-`page-head`, `empty-state`, `error-state` and `chart-card`, and `name` on `app-logo`.
-Binding the input (`[title]="…"`) avoids it, and so would a host binding of
-`'[attr.title]': 'null'` — which, if taken, must be applied to all five at once rather
-than one primitive at a time, or the layer becomes unpredictable. Not yet done.
+host and the browser draws a tooltip over the whole header. Nine primitives are affected —
+`title` on `alert`, `chart-card`, `confirm-dialog`, `empty-state`, `error-state`,
+`page-head` and `unauth-card`, and `name` on `app-logo` and `avatar`. `confirm-dialog` is
+the worst case by a distance: its host is the fixed full-viewport scrim, so
+`<arena-confirm-dialog title="Delete?">` paints a tooltip over the *entire viewport* while
+the dialog is open. Binding the input (`[title]="…"`) avoids it, and so would a host
+binding of `'[attr.title]': 'null'` — which, if taken, must be applied to all nine at once
+rather than one primitive at a time, or the layer becomes unpredictable. Not yet done.
 
 ## Adopting it
 

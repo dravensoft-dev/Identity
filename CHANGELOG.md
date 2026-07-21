@@ -350,12 +350,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   family-wide change across both layers rather than a per-chart patch, and this change
   touches no React.
 - **An input named after a native attribute leaves the native attribute on the host** —
-  `title` on `page-head`, `empty-state`, `error-state` and `chart-card`, and `name` on
-  `app-logo`. Angular writes a static attribute during the creation pass whether or not
-  it also matches an input, so `<arena-page-head title="Projects">` draws a browser
-  tooltip over the whole header. Binding the input avoids it. A host binding of
-  `'[attr.title]': 'null'` would fix it for good, and must then be applied to all five
-  at once. Documented in `frameworks/angular/README.md`.
+  nine primitives: `title` on `alert`, `chart-card`, `confirm-dialog`, `empty-state`,
+  `error-state`, `page-head` and `unauth-card`, and `name` on `app-logo` and `avatar`.
+  Angular writes a static attribute during the creation pass whether or not it also
+  matches an input, so `<arena-page-head title="Projects">` draws a browser tooltip over
+  the whole header — and `<arena-confirm-dialog title="Delete?">`, whose host is the
+  fixed full-viewport scrim, draws one over the entire viewport. Binding the input
+  avoids it. A host binding of `'[attr.title]': 'null'` would fix it for good, and must
+  then be applied to all nine at once. Documented in `frameworks/angular/README.md`.
 - **`ActivityFeed`'s `renderItem` escape hatch has no Angular analogue.** React's
   row-replacement prop has no signal-input equivalent; the Angular answer is content
   projection or a structural directive, and choosing between them is a design question

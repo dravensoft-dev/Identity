@@ -49,11 +49,25 @@ neither is the source of this rule, and a new host-bound primitive owes no entry
 during the creation pass whether or not it also matches an input. So an input named after
 a native attribute leaves the native attribute behind — `<arena-page-head title="X">`
 puts a real `title` on the host and the browser draws a tooltip over the whole header.
-This affects `title` on `page-head`, `empty-state`, `error-state` and `chart-card`, and
-`name` on `app-logo`. Binding the input (`[title]="…"`) avoids it. React does not have
-the problem because it destructures the prop out before spreading `...rest`. A host
-binding of `'[attr.title]': 'null'` would close it, and must then be applied to all five
-at once rather than one primitive at a time. **Not yet done.**
+Binding the input (`[title]="…"`) avoids it. React does not have the problem because it
+destructures the prop out before spreading `...rest`.
+
+**Nine primitives are affected, not the five an earlier version of this entry listed** —
+every host-bound primitive taking a `title` or `name` input:
+
+- `title`: `alert`, `chart-card`, `confirm-dialog`, `empty-state`, `error-state`,
+  `page-head`, `unauth-card` — seven.
+- `name`: `app-logo`, `avatar` — two.
+
+`confirm-dialog` is the worst of them by a distance, and the reason the count is worth
+getting right: its host is the fixed full-viewport scrim, so
+`<arena-confirm-dialog title="Delete?">` paints a browser tooltip over the **entire
+viewport** for as long as the dialog is open, not over a header.
+
+A host binding of `'[attr.title]': 'null'` (and `'[attr.name]': 'null'`) would close it,
+and must then be applied to all nine at once rather than one primitive at a time — a fix
+that lands on five and is believed to have closed the problem leaves four primitives,
+including the viewport-wide one, still broken. **Not yet done.**
 
 **Converges:** no. This is the correct Angular idiom. The stray-attribute edge above is a
 defect within it and is expected to converge once fixed layer-wide.
