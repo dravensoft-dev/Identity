@@ -3,7 +3,6 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Rotor } from "../../components/brand/Rotor.js";
 import { AppLogo } from "../../components/brand/AppLogo.js";
 const CRIMSON = React.createElement("img", {
   src: "../../../../assets/rotor-crimson.svg",
@@ -62,19 +61,6 @@ function Demo() {
     mark: CRIMSON,
     name: "Draven",
     dim: "soft"
-  })), React.createElement("div", {
-    className: "sub"
-  }, "Rotor — the animated mark, same scale. Brand, not a UI icon"), React.createElement("div", {
-    className: "row",
-    style: { gap: "var(--sp-8)" }
-  }, React.createElement(Rotor, {
-    size: "lg",
-    spin: true
-  }), React.createElement(Rotor, {
-    size: "md"
-  }), React.createElement(Rotor, {
-    size: "sm",
-    color: "var(--bone)"
   })));
 }
 createRoot(document.getElementById("root")).render(React.createElement(Demo, null));

@@ -498,15 +498,15 @@ test('the real boundary: a nested call behind a variable is not caught, the exac
 // --- Fix pass 2, finding 4: PASSTHROUGH staleness -------------------------
 
 test('a PASSTHROUGH entry with a match is not stale', () => {
-  assert.deepEqual(stalePassthrough(new Set(['Icon', 'Rotor', 'AppLogo'])), []);
+  assert.deepEqual(stalePassthrough(new Set(['Icon', 'AppLogo'])), []);
 });
 
 test('a renamed PASSTHROUGH component fails as stale', () => {
-  assert.deepEqual(stalePassthrough(new Set(['Rotor', 'AppLogo'])), ['Icon']);
+  assert.deepEqual(stalePassthrough(new Set(['AppLogo'])), ['Icon']);
 });
 
 test('every PASSTHROUGH entry is stale when nothing in the tree matches', () => {
-  assert.deepEqual(stalePassthrough(new Set()), ['Icon', 'Rotor', 'AppLogo']);
+  assert.deepEqual(stalePassthrough(new Set()), ['Icon', 'AppLogo']);
 });
 
 // --- Regression: comments must never corrupt the balanced-text scan ------

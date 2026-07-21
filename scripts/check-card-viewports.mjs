@@ -14,7 +14,7 @@
  * measures a real render, which makes it the first gate needing a browser.
  *
  * A page carrying an infinitely-animating component (Spinner, ProgressBar,
- * Rotor — the only three in the repo using `infinite`) is measured at its
+ * Skeleton — anything in the repo using `infinite`) is measured at its
  * resting frame, not at whatever instant the stability loop happens to land
  * on: every animation is frozen (see freezeAnimations) before MEASURE_SCRIPT
  * runs. Without that, a rotating element's bounding box never repeats across
@@ -251,7 +251,7 @@ function boundedSend(cdp, method, params, sessionId) {
  * whatever is already running and whatever mounts later on this same
  * document. That second half is what these pages need: they transpile JSX in
  * the browser and only mount React (and therefore Spinner, ProgressBar or
- * Rotor) after an async import resolves, well after this call returns.
+ * Skeleton) after an async import resolves, well after this call returns.
  * Animation.enable has to run first — the domain's agent does not exist on a
  * session until it is enabled, the same requirement every other CDP domain
  * has. A CSS transform frozen at rate 0 still resolves to a real computed
@@ -518,7 +518,7 @@ export async function mapWithConcurrency(items, limit, fn) {
 }
 
 /* findCardPages sorts by path, and four of the heaviest pages in the repo to
- * actually paint — brand.card.html (an animated Rotor), charts.card.html,
+ * actually paint — brand.card.html, charts.card.html,
  * activity-feed.card.html and calendar.card.html — happen to sort first,
  * right next to each other. mapWithConcurrency's worker loop claims items in
  * plain array order, so under the identity order every wave of PAGE_CONCURRENCY

@@ -1,5 +1,5 @@
 /* frameworks/tailwind/animations.css
-   Keyframes and the two utilities that ride them. Imported by theme.css, so
+   Keyframes and the utility that rides them. Imported by theme.css, so
    `bun run build:tailwind` compiles them into utilities.css with everything
    else and a manifest reaches them by name.
 
@@ -11,17 +11,14 @@
    --loop-* family precisely because a loop is not a transition, so nothing here
    restates a number React also states.
 
-   Reduced motion is answered per animation, and the answers differ on purpose:
-   the shimmer is decorative, so it stops outright; the rotor reports work in
-   progress, so it slows — a frozen rotor reads as a hung process. */
+   Reduced motion is answered per animation, on the terms the motion sets: the
+   shimmer is decorative, so it stops outright. Motion that reports work in
+   progress would slow rather than stop — a frozen indicator reads as a hung
+   process — but the layer has no such animation today. */
 
 @keyframes arena-shimmer {
   0% { background-position: -140% 0; }
   100% { background-position: 140% 0; }
-}
-
-@keyframes arena-rotor {
-  to { transform: rotate(360deg); }
 }
 
 @utility arena-shimmer {
@@ -33,14 +30,5 @@
     animation: none;
     background-image: none;
     background-color: var(--color-base-200);
-  }
-}
-
-@utility arena-rotor-spin {
-  animation: arena-rotor var(--loop-brand) linear infinite;
-  transform-origin: 50% 50%;
-
-  @media (prefers-reduced-motion: reduce) {
-    animation-duration: var(--loop-brand-reduced);
   }
 }

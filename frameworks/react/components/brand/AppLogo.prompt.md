@@ -30,8 +30,9 @@ are two decisions and not three:
   and a mark announced separately reads the brand twice.
 - **Don't** put a `width` or `height` on the node you pass as `mark`. `AppLogo` sizes
   the slot and the mark fills it; a mark that sizes itself fights the lock-up.
-- **Don't** reach for `Rotor` here. `Rotor` is the *animated* mark, for splash and
-  loading surfaces. A static lock-up is this component.
+- **Don't** look for a component that renders the mark on its own. Arena ships none:
+  the mark is a brand asset (`assets/rotor-*.svg`), and the lock-up is this component,
+  which takes that asset as `mark` alongside a product `name`.
 - **Don't** mix the variants. A crimson mark beside an undivided `DRAVENSOFT` is half
   of Primary and half of Monochrome — no variant at all, and precisely the defect that
   existed in the console before this component held the rule.

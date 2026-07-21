@@ -1,6 +1,5 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Rotor } from '../../components/brand/Rotor.jsx';
 import { AppLogo } from '../../components/brand/AppLogo.jsx';
 const CRIMSON = <img src="../../../../assets/rotor-crimson.svg" alt=""/>;
 const BONE = <img src="../../../../assets/rotor-bone.svg" alt=""/>;
@@ -14,11 +13,5 @@ function Demo(){return(<div>
   <div className="row"><AppLogo size="md" mark={BONE} name="Dravensoft"/></div>
   <div className="sub">Vertical · stacked</div>
   <div className="row"><AppLogo size="md" orientation="vertical" mark={CRIMSON} name="Draven" dim="soft"/></div>
-  <div className="sub">Rotor — the animated mark, same scale. Brand, not a UI icon</div>
-  <div className="row" style={{gap:'var(--sp-8)'}}>
-    <Rotor size="lg" spin/>
-    <Rotor size="md"/>
-    <Rotor size="sm" color="var(--bone)"/>
-  </div>
 </div>);}
 createRoot(document.getElementById('root')).render(<Demo/>);

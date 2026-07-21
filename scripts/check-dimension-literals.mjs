@@ -671,7 +671,6 @@ export function scanAttributes(rawText) {
  *  not match nothing in silence. */
 const PASSTHROUGH = new Map([
   ['Icon', { prop: 'size', governs: 'fontSize' }],
-  ['Rotor', { prop: 'size', governs: 'width' }],
   ['AppLogo', { prop: 'size', governs: 'width' }],
 ]);
 
