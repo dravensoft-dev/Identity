@@ -6,43 +6,43 @@
 
 /* Buttons — filled primary */
 .mat-mdc-unelevated-button {
-  --mdc-filled-button-container-color: var(--color-primary);
-  --mdc-filled-button-label-text-color: var(--color-primary-content);
-  --mdc-filled-button-container-shape: var(--r-sm);
+  --mat-button-filled-container-color: var(--color-primary);
+  --mat-button-filled-label-text-color: var(--color-primary-content);
+  --mat-button-filled-container-shape: var(--r-sm);
 }
 /* Buttons — outlined (default text/stroked) read the brand + hairline */
 .mat-mdc-outlined-button {
-  --mdc-outlined-button-outline-color: var(--border);
-  --mdc-outlined-button-label-text-color: var(--color-primary);
-  --mdc-outlined-button-container-shape: var(--r-sm);
+  --mat-button-outlined-outline-color: var(--border);
+  --mat-button-outlined-label-text-color: var(--color-primary);
+  --mat-button-outlined-container-shape: var(--r-sm);
 }
 /* Danger button — outline only: border + text in --color-error, transparent fill.
    Apply `class="arena-danger"` on the mat-button. Never a filled danger surface. */
 .mat-mdc-button.arena-danger,
 .mat-mdc-outlined-button.arena-danger {
-  --mdc-text-button-label-text-color: var(--color-error);
-  --mdc-outlined-button-label-text-color: var(--color-error);
-  --mdc-outlined-button-outline-color: var(--color-error);
+  --mat-button-text-label-text-color: var(--color-error);
+  --mat-button-outlined-label-text-color: var(--color-error);
+  --mat-button-outlined-outline-color: var(--color-error);
 }
 
 /* Form field — outline appearance */
 .mat-mdc-form-field.mat-form-field-appearance-outline {
-  --mdc-outlined-text-field-outline-color: var(--border);
-  --mdc-outlined-text-field-focus-outline-color: var(--color-primary);
-  --mdc-outlined-text-field-container-shape: var(--r-sm);
-  --mdc-outlined-text-field-label-text-color: var(--mute);
+  --mat-form-field-outlined-outline-color: var(--border);
+  --mat-form-field-outlined-focus-outline-color: var(--color-primary);
+  --mat-form-field-outlined-container-shape: var(--r-sm);
+  --mat-form-field-outlined-label-text-color: var(--mute);
 }
 
 /* Card — elevated surface, large radius */
 .mat-mdc-card {
-  --mdc-elevated-card-container-color: var(--surface-card);
-  --mdc-elevated-card-container-shape: var(--r-lg);
+  --mat-card-elevated-container-color: var(--surface-card);
+  --mat-card-elevated-container-shape: var(--r-lg);
 }
 
 /* Dialog — surface + large radius */
 .mat-mdc-dialog-surface {
-  --mdc-dialog-container-shape: var(--r-lg);
-  --mdc-dialog-container-color: var(--surface-card);
+  --mat-dialog-container-shape: var(--r-lg);
+  --mat-dialog-container-color: var(--surface-card);
 }
 
 /* Table — hairline rows; header is the mono uppercase micro-label */
@@ -59,25 +59,25 @@
 
 /* Tabs — active label + indicator on the brand */
 .mat-mdc-tab-group {
-  --mat-tab-header-active-label-text-color: var(--color-primary);
-  --mat-tab-header-active-focus-label-text-color: var(--color-primary);
-  --mdc-tab-indicator-active-indicator-color: var(--color-primary);
+  --mat-tab-active-label-text-color: var(--color-primary);
+  --mat-tab-active-focus-label-text-color: var(--color-primary);
+  --mat-tab-active-indicator-color: var(--color-primary);
 }
 
 /* Snackbar / toast surface — medium radius */
 .mat-mdc-snack-bar-container {
-  --mdc-snackbar-container-shape: var(--r-md);
-  --mdc-snackbar-container-color: var(--surface-card);
-  --mdc-snackbar-supporting-text-color: var(--color-base-content);
+  --mat-snack-bar-container-shape: var(--r-md);
+  --mat-snack-bar-container-color: var(--surface-card);
+  --mat-snack-bar-supporting-text-color: var(--color-base-content);
 }
 
 /* Progress — spinner + bar on the brand */
 .mat-mdc-progress-spinner {
-  --mdc-circular-progress-active-indicator-color: var(--color-primary);
+  --mat-progress-spinner-active-indicator-color: var(--color-primary);
 }
 .mat-mdc-progress-bar {
-  --mdc-linear-progress-active-indicator-color: var(--color-primary);
-  --mdc-linear-progress-track-color: var(--border);
+  --mat-progress-bar-active-indicator-color: var(--color-primary);
+  --mat-progress-bar-track-color: var(--border);
 }
 
 /* Nav list — Arena's SideNav. Material owns the list; these are its Arena values.
