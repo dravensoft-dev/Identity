@@ -29,7 +29,7 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator';
 GlobalRegistrator.register();
 
 import '@angular/compiler';
-import test, { after } from 'node:test';
+import test, { after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -57,6 +57,8 @@ import { StatCard } from '../primitives/stat-card/stat-card';
 import { statCardStyles } from '../primitives/stat-card/stat-card.variants';
 import { Tag } from '../primitives/tag/tag';
 import { tagStyles } from '../primitives/tag/tag.variants';
+import { ThemeToggle } from '../primitives/theme-toggle/theme-toggle';
+import { ThemeService } from '../theme/theme-service';
 
 /* Only ONE file in this directory may call TestBed.initTestEnvironment():
  * bun runs every test file in one process, and Angular's TestBed throws
@@ -147,6 +149,26 @@ class ErrorStateWithoutActionHost {}
   template: `<arena-page-head class="consumer-class" />`,
 })
 class PageHeadWithoutActionsHost {}
+
+@Component({
+  standalone: true,
+  imports: [ThemeToggle],
+  template: `<arena-theme-toggle />`,
+})
+class ThemeToggleHost {}
+
+/* ThemeService is `providedIn: 'root'`, so it is one singleton shared by
+ * every test in this file's TestBed environment -- nothing here ever calls
+ * `TestBed.resetTestingModule()` (see this file's own header comment on why
+ * only one file may call `initTestEnvironment()` at all). Reset it to
+ * Arena's dark default before each test so ThemeToggle's own tests below
+ * cannot depend on execution order, and so no earlier test in this file
+ * that happens to run first leaves the class on <html> in a state a later,
+ * unrelated test would trip over. */
+beforeEach(() => {
+  TestBed.inject(ThemeService).set('dark');
+  document.documentElement.classList.remove('arena-light');
+});
 
 test('arena-avatar: the root recipe classes land on the host element itself', async () => {
   const fixture = TestBed.createComponent(AvatarHost);
@@ -521,6 +543,92 @@ test('arena-page-head: a platform with no ResizeObserver still renders, on the w
   } finally {
     globals.ResizeObserver = saved;
   }
+});
+
+/* ThemeToggle is the layer's first primitive to inject a service
+ * (ThemeService) and the only one so far whose styled `root` is NOT
+ * host-bound -- its root must be a real `<button>` for keyboard operability,
+ * and `<arena-theme-toggle>` cannot itself become one (components-
+ * divergences.md records this as a deliberate structural divergence). It is
+ * also the first primitive in this file with no signal inputs at all, so
+ * none of the NG0303 limitation the tests above document (Skeleton's
+ * `variant`, Breadcrumbs' `items`, PageHead's measured width) applies here
+ * -- there is no input this harness would need ngtsc to drive. A real
+ * TestBed render can therefore exercise the whole chain for real: a real
+ * click calling the component's `toggle()`, which calls the shared
+ * `ThemeService.toggle()`, whose own `effect()` writes the `arena-light`
+ * class onto the real document, which feeds back into the component's
+ * `dark` computed and what it renders next. */
+test('arena-theme-toggle: starts dark -- aria-pressed true and the sun glyph, the state it is currently IN', async () => {
+  const fixture = TestBed.createComponent(ThemeToggleHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+
+  const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+  assert.equal(button.getAttribute('aria-pressed'), 'true', 'dark is Arena\'s default, so aria-pressed must report true');
+  assert.equal(button.getAttribute('aria-label'), 'Switch to light theme');
+
+  const icon = button.querySelector('i') as HTMLElement;
+  assert.ok(icon.classList.contains('ph-sun'), `expected the sun glyph while dark -- the icon shows the state you are IN: "${icon.className}"`);
+  assert.ok(!icon.classList.contains('ph-moon'));
+});
+
+test('arena-theme-toggle: a real click flips ThemeService\'s own signal and the arena-light class on <html>, not just local component state', async () => {
+  const fixture = TestBed.createComponent(ThemeToggleHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+
+  const service = TestBed.inject(ThemeService);
+  assert.equal(service.theme(), 'dark', 'sanity: starts dark');
+  assert.ok(!document.documentElement.classList.contains('arena-light'), 'sanity: starts without the light class');
+
+  const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+  button.click();
+  fixture.detectChanges();
+  await fixture.whenStable();
+
+  assert.equal(
+    service.theme(),
+    'light',
+    'ThemeService\'s own signal must have flipped -- proves the component calls the shared service\'s toggle() rather than reimplementing the light/dark switch locally',
+  );
+  assert.ok(
+    document.documentElement.classList.contains('arena-light'),
+    'ThemeService\'s own effect must have applied the class change to the real document -- that is the service\'s job, not the component\'s',
+  );
+
+  assert.equal(button.getAttribute('aria-pressed'), 'false', 'aria-pressed must report the CURRENT (now light) state, not the state before the click');
+  assert.equal(button.getAttribute('aria-label'), 'Switch to dark theme');
+  const icon = button.querySelector('i') as HTMLElement;
+  assert.ok(
+    icon.classList.contains('ph-moon'),
+    `expected the moon glyph now that the theme is light -- the icon shows the state you are IN, never the state a click would move you to: "${icon.className}"`,
+  );
+  assert.ok(!icon.classList.contains('ph-sun'));
+});
+
+test('arena-theme-toggle: a second click flips back to dark -- the toggle is not a one-shot', async () => {
+  const fixture = TestBed.createComponent(ThemeToggleHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+
+  const service = TestBed.inject(ThemeService);
+  const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+
+  button.click();
+  fixture.detectChanges();
+  await fixture.whenStable();
+  assert.equal(service.theme(), 'light');
+
+  button.click();
+  fixture.detectChanges();
+  await fixture.whenStable();
+
+  assert.equal(service.theme(), 'dark');
+  assert.ok(!document.documentElement.classList.contains('arena-light'));
+  assert.equal(button.getAttribute('aria-pressed'), 'true');
+  const icon = button.querySelector('i') as HTMLElement;
+  assert.ok(icon.classList.contains('ph-sun'));
 });
 
 /* Every primitive host-binds its recipe's visible slot directly onto its own

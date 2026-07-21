@@ -13,3 +13,4 @@ export * from './projection-markers';
 export * from './skeleton';
 export * from './stat-card';
 export * from './tag';
+export * from './theme-toggle';

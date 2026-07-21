@@ -54,6 +54,65 @@ keeps its fade and drops its travel, an opacity-only animation needs no clause.
 
 **Converges:** no. Each layer uses its own idiom over the same token values.
 
+### ThemeToggle is the one Angular primitive that does not host-bind its root
+
+**Every other Angular primitive:** the recipe's `root` slot is bound onto the host —
+`host: { '[class]': 'styles().root()' }` — and no wrapper element is rendered.
+
+**`arena-theme-toggle`:** keeps the host a bare, unstyled `<arena-theme-toggle>` and
+renders a real `<button>` inside it that carries `styles().root()`.
+
+**Why:** ThemeToggle is the layer's first (and, through Task 27, only) primitive whose
+root is a native interactive control. A `<button>` is required for keyboard operability,
+focus and implicit ARIA semantics that `<arena-theme-toggle>` — an unknown custom
+element — cannot acquire just by having classes bound to it. The host-bind rule exists to
+eliminate elements that exist ONLY to carry styling; a real `<button>` is not one of
+those, so the rule's own reason does not apply here. This also preserves the public API
+the plan and `theme-toggle.prompt.md` document: `<arena-theme-toggle />` with no wrapper
+markup a consumer needs to know about.
+
+**Consequence to know:** unlike every other primitive, a consumer attribute written
+directly on `<arena-theme-toggle>` (a static `class=""`, an ARIA attribute) lands on the
+inert host, not on the styled, interactive `<button>` inside it — there is no host
+binding for it to compose with. No primitive in this layer currently needs that
+passthrough (ThemeToggle takes no inputs), so this is recorded as a known shape rather
+than a gap to close.
+
+**Converges:** no. This is the correct shape for a primitive whose root is a real
+interactive control, and it is expected to stay the layer's one exception.
+
+### ThemeToggle — Angular reads a signal, React observes the DOM
+
+**React:** `ThemeToggle.jsx` owns no theme state either, but the truth it reads is the
+`arena-light` class on `<html>`, and it reads that back through a `MutationObserver`
+(`useEffect` + `mo.observe(document.documentElement, { attributes: true, attributeFilter:
+['class'] })`), because `theme.js` is an IIFE with no exports and `window.__toggleTheme`
+is the only handle it offers.
+
+**Angular:** `arena-theme-toggle` injects the layer's own `ThemeService` and reads its
+`theme` signal directly (`computed(() => this.themeService.theme() === 'dark')`) — no
+DOM observation at all. Clicking calls `ThemeService.toggle()`, whose own `effect()` is
+what writes the `arena-light` class back onto `<html>`.
+
+**Why:** a signal is read, not observed. The Angular layer already has an equivalent to
+React's DOM-truth-plus-observer pair that does not need a `MutationObserver` at all, so
+using it is the better answer to the same problem, not a narrowing of it.
+
+**Also not ported:** React's `label` prop (a function `(dark) => string` letting a
+consumer override the accessible name/title) and its `{...rest}` spread (forwarded onto
+the underlying `<button>`, via `IconButton`). The brief's Interfaces line states
+`ThemeToggle` takes no inputs, and neither omission was given a reason in the brief. This
+is recorded per the standing rule ("say so rather than silently narrow, don't cite
+YAGNI") rather than implemented, since the previous entry above already means a consumer
+cannot reach the inner `<button>` from the host anyway — adding a `label` input without
+the attribute passthrough `...rest` gave React would still leave a real gap. A future
+task can add `label` as a signal input if a consumer needs a customized name; there is no
+`--rest`-shaped equivalent to add in Angular's signal-input model (see PageHead's own
+entry above for the same conclusion about `style`/`{...rest}`).
+
+**Converges:** no on the MutationObserver-vs-signal shape (Angular's is strictly better).
+The `label` customization gap is low-priority open debt, on the Angular layer this time.
+
 ### The Angular layer has no Button primitive
 
 **React:** `Button.jsx` is a component, and `ConfirmDialog.jsx` renders `<Button>` for its footer.
