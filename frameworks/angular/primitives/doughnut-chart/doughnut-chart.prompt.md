@@ -37,3 +37,14 @@ measured.
 - Don't place it on a surface other than `--surface-card`. The gap between slices is that
   surface showing through a `--surface-card` stroke, not a border on the slice; on a
   different background the gaps read as stripes of the wrong colour.
+
+**Known accessibility gap.** The legend column is an `overflow: auto` scroll region with
+nothing focusable inside it, so on Chrome — which, unlike Firefox, does not tab to
+scrollable containers — a keyboard-only user cannot scroll it. The visually-hidden numbers
+table does not cure this: it is invisible to a *sighted* keyboard user, who can see the
+legend and cannot reach it. Keeping to five or six slices, as above, is what keeps the
+region from needing to scroll at all, and is the reason this has not yet bitten. The fix
+is `tabindex="0"` with `role="group"` and an `aria-label` on the legend column, applied
+across all three charts and both layers at once rather than here alone. Hover-only data
+is the milder half of the same gap and affects all three charts: every label and value is
+already in the visually-hidden table, so only the centre percentage is pointer-exclusive.

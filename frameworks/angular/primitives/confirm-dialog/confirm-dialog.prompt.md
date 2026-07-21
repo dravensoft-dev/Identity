@@ -6,7 +6,7 @@ enables. `destructive` turns the eyebrow red and gives the confirm button Arena'
 recipe.
 
 ```html
-<arena-confirm-dialog [open]="confirming()" destructive
+<arena-confirm-dialog [open]="confirming()" [destructive]="true"
                       title="Delete project Ardennes?"
                       eyebrow="Irreversible" confirmLabel="Delete project"
                       requireText="Ardennes"
@@ -24,3 +24,8 @@ recipe.
 - Don't reach for `destructive` on a merely inconvenient action. The filled red is the
   system's loudest surface and it stops working once it is common.
 - Don't use this for a routine question — that is `MatDialog` wearing Arena.
+- Don't write `destructive` as a bare attribute. Like every boolean in this layer it
+  is a plain signal input with no `booleanAttribute` transform, so a bare
+  `destructive` arrives as the empty string and reads as **false** — the dialog
+  silently renders its ordinary confirm button on an irreversible action, which is
+  the most dangerous way this trap can bite. Bind it: `[destructive]="true"`.

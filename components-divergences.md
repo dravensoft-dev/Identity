@@ -35,7 +35,43 @@ carry a display utility.** This shipped as a real bug once (a zero-area Skeleton
 machine-guarded by a manifest-driven assertion in
 `frameworks/angular/test/host-class-binding.test.ts`.
 
-**Converges:** no. This is the correct Angular idiom.
+**Consequence to know:** React's `style` prop and `{...rest}` spread have **no Angular
+counterpart, and need none — in every host-bound primitive.** A consumer writes
+`style="…"` or any other attribute directly on `<arena-x>`, which is the same element the
+recipe's `root` classes are bound to, and Angular composes a static attribute with a
+`[class]` binding rather than clobbering it. This is stated once, here, rather than
+repeated per component: it follows from host-binding and therefore holds for every
+primitive that host-binds, including ones added after this note. `PageHead` and
+`UnauthCard` carry their own entries below only because each records something further;
+neither is the source of this rule, and a new host-bound primitive owes no entry for it.
+
+**The sharp edge, and it is layer-wide:** Angular writes a *static* attribute to the DOM
+during the creation pass whether or not it also matches an input. So an input named after
+a native attribute leaves the native attribute behind — `<arena-page-head title="X">`
+puts a real `title` on the host and the browser draws a tooltip over the whole header.
+This affects `title` on `page-head`, `empty-state`, `error-state` and `chart-card`, and
+`name` on `app-logo`. Binding the input (`[title]="…"`) avoids it. React does not have
+the problem because it destructures the prop out before spreading `...rest`. A host
+binding of `'[attr.title]': 'null'` would close it, and must then be applied to all five
+at once rather than one primitive at a time. **Not yet done.**
+
+**Converges:** no. This is the correct Angular idiom. The stray-attribute edge above is a
+defect within it and is expected to converge once fixed layer-wide.
+
+### The two carve-outs: a root that must be a specific element is not host-bound
+
+`theme-toggle`'s root must be a real `<button>` for keyboard operability, focus and
+implicit semantics; `activity-feed`'s must be a real `<ul>` with `<li>` rows, or a screen
+reader stops announcing a list. `<arena-x>` is a custom element and cannot be made
+either by binding classes to it.
+
+**The rule, stated generally:** host-binding targets elements that exist *only* to carry
+styling. When the root must be a specific semantic or interactive element, keep that
+element and do not host-bind. Both carve-outs keep their own entries below with the
+component-specific detail; this is the rule they are instances of. The display-utility
+guard still applies and still passes for both.
+
+**Converges:** no.
 
 ### Animation CSS is compiled once for Angular, injected per component in React
 
@@ -633,10 +669,15 @@ is falsy, so the area silently never paints. The working form is `[area]="true"`
 LineChart decision — it is what every boolean input in this layer currently does (`Alert`'s
 `dismissible`, `ConfirmDialog`'s `open`/`destructive`, `Onboarding`'s `open`,
 `CommandPalette`'s `open`), so adding the transform to this one primitive alone would have made the
-layer inconsistent in a way a reader could not predict. **`alert.prompt.md` and
-`confirm-dialog.prompt.md` both document the bare-attribute form today, so both are advertising a
-usage that silently does nothing** — a layer-wide fix (add `transform: booleanAttribute` to every
-boolean input and correct those two prompts) belongs to the docs close-out, not to one chart slice.
+layer inconsistent in a way a reader could not predict.
+
+**Close-out status:** `alert.prompt.md` and `confirm-dialog.prompt.md` had both documented the
+bare-attribute form, advertising a usage that silently does nothing; both now show the bound form
+and carry a Don't line explaining why. The trap itself is stated once, layer-wide, under "Two traps
+this layer's idiom sets" in `frameworks/angular/README.md`, so it no longer depends on a reader
+finding a chart's divergence entry. **The underlying fix — `transform: booleanAttribute` on all six
+boolean inputs — is still not done**, because it is a behavioural change to five primitives at once
+rather than a documentation change.
 
 **Converges:** yes, once the layer takes `booleanAttribute` uniformly. Recorded here because this
 slice found it, not because LineChart is special.
@@ -645,8 +686,9 @@ slice found it, not because LineChart is special.
 
 **React:** `DoughnutChart.jsx` computes its slices from `values` and draws the ring, the centre
 label and the numbers table from them — but the legend from `labels`, `{labels.map((l, i) => ...
-{fmt(values[i])})}`. With more labels than values that renders a legend row with a swatch coloured
-for a slice that does not exist and a value of the literal string `undefined`; with fewer, a real
+{fmt(values[i])})}`. With more labels than values that renders a legend row whose swatch has **no
+background at all** — `colors` has length `values.length`, so `colors[i]` is `undefined` — beside a
+value of the literal string `undefined`; with fewer, a real
 slice has no legend row at all, which on this chart is worse than on the other two because the
 legend is the only place a slice is ever named.
 

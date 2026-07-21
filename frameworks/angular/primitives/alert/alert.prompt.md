@@ -9,7 +9,7 @@ the sibling `alert.variants.ts` recipe.
   Merge or park the release before 18:00 UTC.
 </arena-alert>
 
-<arena-alert tone="danger" title="Sync failed" actionLabel="Retry" dismissible
+<arena-alert tone="danger" title="Sync failed" actionLabel="Retry" [dismissible]="true"
              (action)="retry()" (closed)="hide()">
   Three records could not be written.
 </arena-alert>
@@ -22,3 +22,7 @@ the sibling `alert.variants.ts` recipe.
 - Don't use an alert for something transient — that is `MatSnackBar` wearing Arena.
 - Don't stack more than one alert in the same region. Two competing alerts read as
   one broken page; summarise instead.
+- Don't write `dismissible` as a bare attribute. Like every boolean in this layer it
+  is a plain signal input with no `booleanAttribute` transform, so a bare
+  `dismissible` arrives as the empty string and reads as **false** — the close control
+  silently never appears. Bind it: `[dismissible]="true"`.

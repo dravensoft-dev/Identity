@@ -32,6 +32,12 @@ Two naming notes: the density keys take the token's suffix verbatim, so
 `--container-page` (`max-w-page`) because a key named `max` shadows
 Tailwind's built-in `max-w-max`.
 
+A theme key is not bound to one axis. `--dz-ctl-h` is exposed as the `--spacing-ctl-h`
+key, so it reaches `h-ctl-h` **and** `w-ctl-h` / `min-w-ctl-h` — `ThemeToggle` uses all
+three to make an icon-only control exactly square at the control height. That is one
+token reaching three utilities, not a new value; the coverage gate counts the token,
+not the utilities it reaches.
+
 ## The animation that lives in CSS, and why
 
 `animations.css` holds `@keyframes` and the utility that rides them —
@@ -81,6 +87,45 @@ extension, it is itself a failure.
    individual `tokens/*.css`).
 2. `@import "./theme.css";` — the Tailwind `@theme` preset.
 3. Consume a component manifest from `./components/<Component>.manifest.json`.
+
+## What ships here
+
+`components/` holds one manifest per component, and — for every one with an Angular
+consumer — a static specimen page beside it. **Nineteen manifests and eighteen
+specimens** ship today: ActivityFeed, Alert, AppLogo, Avatar, Breadcrumbs,
+BulkActionBar, ChartCard, CommandPalette, ConfirmDialog, EmptyState, ErrorState,
+Onboarding, PageHead, Skeleton, StatCard, Tag, ThemeToggle and UnauthCard have both;
+**Button has a manifest and no specimen**, because it mirrors React's `Button.jsx` and
+has no `arena-*` primitive to specimen — Material provides the Angular button. The
+twenty-odd components a framework-neutral consumer hand-rolls because Material would
+otherwise provide them, `SideNav` among them, are still to come.
+
+**The three SVG charts and Calendar have no manifest, on purpose.** `BarChart`,
+`LineChart` and `DoughnutChart` are SVG geometry driven by measured container width:
+their identity is path data and attribute bindings, and a manifest that tried to hold it
+would be a lie about where the styling lives. Calendar is date arithmetic and JS
+responsive branches; what a manifest could capture is a fraction of it, and that fraction
+would drift from the rest.
+
+`utilities.css` is **generated** — `bun run build:tailwind` compiles the preset with
+the manifests as content, and `bun run check:tailwind-generated` fails when the
+committed file and the source disagree. It exists so a static specimen page can render
+a manifest without a build step; do not edit it. The same build also emits a
+`<Component>.manifest.ts` (`as const`) beside each `<Component>.manifest.json`; the
+JSON stays the single source of truth and the `.ts` is generated output, so a new
+manifest needs a `bun run build:tailwind` before the gates pass.
+
+**A variant name is scanned as a class name.** Tailwind reads a manifest as raw text, so
+a variant *name* that collides with a utility (`visible`, `block`, `line`, `fixed`,
+`static`…) leaks a dead rule into `utilities.css`. It is harmless per instance and
+accumulates across the set; `BulkActionBar` hit it with `visible` and the layer settled
+on `open` as the shared name for a shown/hidden boolean. Name variants with that in mind.
+
+**`compoundVariants` are unusable here**, for two independent reasons: the
+`classesFor()` helper every specimen uses throws on a manifest carrying them by design,
+and the generated `manifest.ts`'s `as const` makes the array a readonly tuple that
+`tailwind-variants` rejects, failing `check:angular`. Model the same thing as a plain
+boolean variant.
 
 ## Three consumption paths
 

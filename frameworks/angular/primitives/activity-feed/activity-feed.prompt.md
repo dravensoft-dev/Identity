@@ -21,3 +21,10 @@ time; `tone` colours the leading dot from Badge's vocabulary. Styling is the sib
   danger is outline everywhere else — a tone dot is an identity mark, the same family as
   `Tag`'s own dot and `Avatar`'s presence dot, not a danger surface. See README's Danger
   convention section.
+
+**No row escape hatch yet.** React's `ActivityFeed` takes a `renderItem` prop that
+replaces a row wholesale. A signal input cannot carry that, and the two Angular answers —
+content projection, or a structural directive taking a row context — are a real design
+choice that has not been made rather than an omission. Until it is, a consumer needing a
+different row imports the exported `activityFeedStyles` and composes the slots
+themselves, which is what `renderItem` gives React's consumers anyway.
