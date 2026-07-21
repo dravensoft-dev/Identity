@@ -436,7 +436,7 @@ function skip(reason) {
  * round-trip, arenaReady) overlaps across pages instead of serializing, low
  * enough to stay well short of thrashing. Picked from the middle of that
  * range with no other tiebreaker. */
-const PAGE_CONCURRENCY = 5;
+const PAGE_CONCURRENCY = 1;
 
 /** Run `fn` over `items` with at most `limit` calls in flight at once,
  *  returning results in `items`' original order regardless of which call
