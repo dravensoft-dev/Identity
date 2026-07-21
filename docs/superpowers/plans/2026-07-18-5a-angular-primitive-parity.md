@@ -64,7 +64,7 @@ Every task's requirements implicitly include this section.
 - **The Tailwind layer derives every utility from an existing token and introduces no new hex and no new value.** If a manifest needs a value with no token behind it, **stop** — that is out of scope here (this plan changes no token; plan 4 completed them) and it must be raised, not worked around with a literal.
 - **Angular conventions, from `frameworks/angular/README.md`, without exception:** standalone (no `NgModule`), `ChangeDetectionStrategy.OnPush`, `arena-` selector prefix, `input()`/`output()`/`model()` signal I/O, `inject()` for DI, kebab-case filenames with no type suffix, barrels with no `../` imports inside the layer, **no comments beyond one JSDoc line per exported symbol**.
 - **Design conventions, from `CLAUDE.md` and `README.md`:** dark-first (light is `.arena-light`), **danger is outline — transparent fill, border and content in `--error`** (the single exception is `ConfirmDialog`'s final confirmation), Phosphor icons (Bold default, Fill for status, Duotone for onboarding only), no gradients, no emoji, **English only**.
-- **React is the reference implementation for shape and behaviour** — where an Angular primitive and its React counterpart disagree on what the component *does*, React is right. It is **not** the design authority for values; `tokens/src/` is.
+- **For component design, `tokens/` and `tokens/src/` are the only source of truth.** A layer that disagrees with the token layer is wrong. **No layer is the absolute authority for component behaviour** — Arena is in an implementation phase across frameworks, and the layers may legitimately diverge in what a component *does*. React remains the useful reference to read when deciding what a component should do, but where the layers genuinely differ, decide the behaviour on its merits and **record the divergence in `components-divergences.md` at the repo root**. A divergence that is not written down is a bug; a written one, with its reason, is a decision.
 - **`frameworks/react/` is byte-unchanged by this plan.** `git diff --stat main -- frameworks/react/` must print nothing at the end. So is `tokens/`, `styles.css`, `support.js`, `theme.js`, `jsx-loader.js` and the plugin manifests.
 - **`bun run check` must exit 0 before every commit.** Not "at the end" — every commit.
 - **Never hand-edit generated output:** `tokens/palette.css`, `typography.css`, `spacing.css`, `effects.css`, and — new in this plan — `frameworks/tailwind/utilities.css`.
@@ -2054,9 +2054,15 @@ This is the one component in the whole system allowed a **filled** danger surfac
 only on its final confirmation. `bg-error-fill` appears here and nowhere else in this
 plan or in 5b. It also does **not** close on click-outside, by design.
 
-The two footer buttons are the dialog's own, not `Button`: this is the same decision
-React took, and it is what keeps the filled-danger fill one component away from any
-caller rather than one prop away. A consumer's own buttons belong on `mat-button`.
+The two footer buttons are the dialog's own, not `Button`: React's `ConfirmDialog.jsx`
+imports and renders React's own `Button` component for both (lines 2, 33, 42) — the
+Angular layer hand-rolls them because it has no `arena-button` primitive at all
+(`components-divergences.md`'s "The Angular layer has no Button primitive"), not
+because React took the same decision. Angular Material's `mat-button` fills that role
+for a consumer's own buttons. The filled-danger fill still stays one component away
+from any caller rather than one prop away, which is the real reason a shared
+`Button.manifest.json` (mirroring React's `Button.jsx`) is not enough on its own — it is
+the Angular *primitive* that is absent, not the manifest.
 
 **Files:**
 - Create: `frameworks/tailwind/components/ConfirmDialog.manifest.json`
