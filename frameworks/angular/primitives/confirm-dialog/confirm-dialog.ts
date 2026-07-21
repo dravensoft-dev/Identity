@@ -4,6 +4,7 @@ import {
   DOCUMENT,
   ElementRef,
   afterRenderEffect,
+  booleanAttribute,
   computed,
   inject,
   input,
@@ -99,12 +100,12 @@ export function isConfirmLocked(required: string | undefined, typed: string): bo
   `,
 })
 export class ConfirmDialog {
-  readonly open = input(false);
+  readonly open = input(false, { transform: booleanAttribute });
   readonly title = input<string>();
   readonly eyebrow = input('Confirm');
   readonly confirmLabel = input('Confirm');
   readonly cancelLabel = input('Cancel');
-  readonly destructive = input(false);
+  readonly destructive = input(false, { transform: booleanAttribute });
   readonly requireText = input<string>();
   readonly cancelled = output<void>();
   readonly confirmed = output<void>();

@@ -4,6 +4,7 @@ import {
   DOCUMENT,
   ElementRef,
   afterRenderEffect,
+  booleanAttribute,
   computed,
   effect,
   inject,
@@ -184,7 +185,7 @@ export function activeOptionId(uid: string, active: number, rowCount: number): s
   `,
 })
 export class CommandPalette {
-  readonly open = input(false);
+  readonly open = input(false, { transform: booleanAttribute });
   readonly commands = input<ArenaCommand[]>([]);
   readonly placeholder = input('Search for an action or project…');
   readonly closed = output<void>();

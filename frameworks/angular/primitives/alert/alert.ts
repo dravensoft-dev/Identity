@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, output } from '@angular/core';
 import { alertStyles } from './alert.variants';
 
 type Tone = 'info' | 'success' | 'warning' | 'danger' | 'neutral';
@@ -48,7 +48,7 @@ export class Alert {
   readonly title = input<string>();
   readonly icon = input<string>();
   readonly actionLabel = input<string>();
-  readonly dismissible = input(false);
+  readonly dismissible = input(false, { transform: booleanAttribute });
   readonly action = output<void>();
   readonly closed = output<void>();
 

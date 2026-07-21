@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, signal } from '@angular/core';
 import { containerWidth } from '../container-size';
 import { ArenaChartTone, CHART_HEIGHT, PAD, SR_ONLY, niceMax, resolveColors, ticks } from '../chart-internals';
 
@@ -206,7 +206,7 @@ export class LineChart {
   readonly seriesLabel = input<string>();
   readonly slot = input<number>();
   readonly tone = input<ArenaChartTone>();
-  readonly area = input(false);
+  readonly area = input(false, { transform: booleanAttribute });
   readonly valueFormatter = input<(value: number) => string>((value) => String(value));
 
   protected readonly height = CHART_HEIGHT;

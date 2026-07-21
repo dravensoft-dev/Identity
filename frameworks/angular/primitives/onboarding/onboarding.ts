@@ -4,6 +4,7 @@ import {
   DOCUMENT,
   ElementRef,
   afterRenderEffect,
+  booleanAttribute,
   computed,
   inject,
   input,
@@ -93,7 +94,7 @@ export interface ArenaOnboardingStep {
   `,
 })
 export class Onboarding {
-  readonly open = input(false);
+  readonly open = input(false, { transform: booleanAttribute });
   readonly steps = input<ArenaOnboardingStep[]>([]);
   readonly index = input(0);
   readonly anchorRect = input<DOMRect>();
