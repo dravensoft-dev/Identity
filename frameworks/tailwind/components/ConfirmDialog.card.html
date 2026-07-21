@@ -1,0 +1,34 @@
+<!-- @dsCard group="Angular" viewport="760x618" name="ConfirmDialog" subtitle="The one filled danger surface, rendered from ConfirmDialog.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:var(--sp-6)}.row{display:flex;flex-wrap:wrap;gap:calc(var(--sp-1) * 3.5);align-items:flex-start;margin-bottom:var(--sp-4)}.sub{font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-label);line-height:var(--lh-snug);color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:var(--sp-1)}</style>
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./ConfirmDialog.manifest.json')).json();
+
+/* The root slot is `fixed`, which a side-by-side specimen cannot show twice
+   -- so the panel is rendered on its own here, using only the slots below
+   root, and the root/scrim overlay is not part of this specimen at all. */
+function panel({ destructive, invalid, title, eyebrow, body, confirmLabel, requireText }) {
+  const c = classesFor(manifest, { destructive: String(destructive), invalid: String(invalid) });
+  const head = el('div', { class: c.head }, el('div', { class: c.eyebrow, text: eyebrow }), el('div', { class: c.title, text: title }));
+  const content = el('div', { class: c.body }, body);
+  if (requireText) {
+    content.append(el('div', { class: c.requireBlock },
+      el('div', { class: c.requireLabel, text: `Type "${requireText}" to confirm` }),
+      el('input', { class: c.input, value: invalid ? 'Ardenne' : '' })));
+  }
+  const foot = el('div', { class: c.foot },
+    el('button', { class: c.cancel, type: 'button', text: 'Cancel' }),
+    el('button', { class: c.confirm, type: 'button', text: confirmLabel }));
+  return el('div', { class: c.panel }, head, content, foot);
+}
+
+mountSpecimen({ sections: [
+  section('Routine confirmation', [panel({ destructive: false, invalid: false, eyebrow: 'Confirm', title: 'Publish release 4.1.0?', body: 'The tag is created and the marketplace entry updates immediately.', confirmLabel: 'Publish' })]),
+  section('Destructive, with a typed confirmation', [panel({ destructive: true, invalid: true, eyebrow: 'Irreversible', title: 'Delete project Ardennes?', body: 'Every deployment, log and artifact under this project is removed.', confirmLabel: 'Delete project', requireText: 'Ardennes' })]),
+]});
+</script></body></html>
