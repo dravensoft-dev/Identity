@@ -36,7 +36,7 @@ GlobalRegistrator.register();
 import '@angular/compiler';
 import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Component } from '@angular/core';
@@ -786,8 +786,14 @@ test('every Angular primitive\'s root slot carries a display utility, so host-bi
     .map((entry) => entry.name);
   assert.ok(names.length > 0, 'no primitive directories found -- the guard would silently check nothing');
 
-  for (const excluded of NO_MANIFEST)
+  for (const excluded of NO_MANIFEST) {
     assert.ok(names.includes(excluded), `NO_MANIFEST names "${excluded}", which is not a primitive directory -- stale entry`);
+    const excludedManifestPath = join(manifestsDir, `${kebabToPascal(excluded)}.manifest.json`);
+    assert.ok(
+      !existsSync(excludedManifestPath),
+      `NO_MANIFEST names "${excluded}", but ${excludedManifestPath} now exists -- the exclusion is stale and should be removed so this primitive is checked like every other one`,
+    );
+  }
 
   for (const name of names) {
     if (NO_MANIFEST.has(name)) continue;
