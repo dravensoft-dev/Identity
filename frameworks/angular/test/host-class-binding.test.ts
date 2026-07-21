@@ -848,6 +848,22 @@ test('arena-bar-chart: the numbers table is bound as a style object, not stringi
   // asserts the constant itself carries it.
 });
 
+test('arena-bar-chart: the SVG presentation styles reach the DOM as tokens, not as literals', async () => {
+  const fixture = TestBed.createComponent(BarChartHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  // The charts are the layer's declared styling exception, so this is the one
+  // place a token has to survive a camelCase style object, Angular's style
+  // normalization, and an SVG element to land as a real CSS declaration.
+  // Grid lines render with default inputs (ticks always yields five), so this
+  // needs no signal input to be reachable.
+  const line = fixture.nativeElement.querySelector('arena-bar-chart line') as SVGElement;
+  assert.equal(line.style.strokeWidth, 'var(--bw)');
+  assert.equal(line.getAttribute('style'), 'stroke-width: var(--bw);');
+  const text = fixture.nativeElement.querySelector('arena-bar-chart text') as SVGElement;
+  assert.equal(text.getAttribute('style'), 'font-size: var(--dz-text-2xs);');
+});
+
 test('arena-bar-chart: the picture carries an accessible name and the numbers carry a caption', async () => {
   const fixture = TestBed.createComponent(BarChartHost);
   fixture.detectChanges();
