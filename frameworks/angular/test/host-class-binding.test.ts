@@ -301,7 +301,7 @@ test('arena-stat-card: a consumer-supplied class on the host survives the [class
 /* BulkActionBar's whole presence is driven by `count` alone (React's
  * `BulkActionBar.jsx` returns `null` at zero) -- following ConfirmDialog's
  * resolution for the same shape, the host stays permanently in the DOM and a
- * `visible` variant toggles `hidden`, rather than wrapping the host itself in
+ * `open` variant toggles `hidden`, rather than wrapping the host itself in
  * an `@if`. `count` defaults to 0, so `bulkActionBarStyles()`'s own default
  * output already includes `hidden` -- this is real coverage, not a stand-in,
  * of a real TestBed render landing that default state on the actual host. */
