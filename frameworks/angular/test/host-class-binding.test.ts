@@ -73,6 +73,8 @@ import { Tag } from '../primitives/tag/tag';
 import { tagStyles } from '../primitives/tag/tag.variants';
 import { ThemeToggle } from '../primitives/theme-toggle/theme-toggle';
 import { ThemeService } from '../theme/theme-service';
+import { UnauthCard } from '../primitives/unauth-card/unauth-card';
+import { unauthCardStyles } from '../primitives/unauth-card/unauth-card.variants';
 
 /* Only ONE file in this directory may call TestBed.initTestEnvironment():
  * bun runs every test file in one process, and Angular's TestBed throws
@@ -196,6 +198,14 @@ class PageHeadWithoutActionsHost {}
   template: `<arena-theme-toggle />`,
 })
 class ThemeToggleHost {}
+
+@Component({
+  standalone: true,
+  imports: [UnauthCard],
+  host: { 'data-host': 'unauth-card' },
+  template: `<arena-unauth-card class="consumer-class" />`,
+})
+class UnauthCardWithoutProjectionHost {}
 
 @Component({
   standalone: true,
@@ -1372,6 +1382,61 @@ test('arena-doughnut-chart: with no data it draws no slice at all, rather than a
   assert.equal(host.querySelector('path'), null, 'an empty doughnut must paint no slice');
   assert.equal(host.querySelector('text'), null, 'the centre label must not render with nothing hovered');
   assert.equal(host.querySelectorAll('tbody tr').length, 0, 'the numbers table must have no rows');
+});
+
+test('arena-unauth-card: the root recipe classes land on the host element itself, and a consumer class survives the binding', async () => {
+  const fixture = TestBed.createComponent(UnauthCardWithoutProjectionHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-unauth-card') as HTMLElement;
+  for (const cls of unauthCardStyles().root().split(/\s+/))
+    assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
+  assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+});
+
+/* Same fix, same toolchain limitation `arena-empty-state`'s and
+ * `arena-error-state`'s own action-wrapper tests document above: `[brand]`
+ * and `[footer]` are React's `{brand && <div>...}` / `{footer && <div>...}`
+ * gates ported to Angular's own idiom, `contentChild(ArenaBrand)` /
+ * `contentChild(ArenaFooter)` (`../primitives/projection-markers`). The
+ * positive case -- something actually projected into either slot -- cannot
+ * be TestBed-rendered here: `contentChild` needs ngtsc's initializer-API
+ * transform, which this JIT-only harness never runs, so with the `@if` gate
+ * in place neither query can ever resolve truthy under this harness and the
+ * gated `<ng-content>` can never mount for this file to find.
+ * `bun run check:angular` (`ngc --strictTemplates`) is the real authority
+ * that both queries and both `@if` gates typecheck against the component's
+ * real members. What IS real coverage: with nothing projected into either
+ * slot, both wrappers -- `mb-7` on `brand`, `mt-5` on `footer` -- must be
+ * entirely absent from the DOM, so a consumer who supplies neither ships no
+ * dead space for either, matching React's exact gate rather than the task
+ * brief's own sample template, which rendered both unconditionally. */
+test('arena-unauth-card: the brand and footer wrappers are both absent from the DOM when nothing is projected into either', async () => {
+  const fixture = TestBed.createComponent(UnauthCardWithoutProjectionHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-unauth-card') as HTMLElement;
+
+  const brandClass = unauthCardStyles().brand().split(/\s+/)[0];
+  assert.equal(
+    host.querySelector(`.${brandClass}`),
+    null,
+    'the brand wrapper div must not render when the [brand] slot is empty',
+  );
+  const footerClass = unauthCardStyles().footer().split(/\s+/)[0];
+  assert.equal(
+    host.querySelector(`.${footerClass}`),
+    null,
+    'the footer wrapper div must not render when the [footer] slot is empty',
+  );
+  // With no eyebrow/title bound either (undrivable through a literal attribute
+  // under this harness, same limitation as ChartCard's own `title` above), the
+  // panel and its body are the only two elements the bare card renders.
+  const panelClass = unauthCardStyles().panel().split(/\s+/)[0];
+  const bodyClass = unauthCardStyles().body().split(/\s+/)[0];
+  assert.ok(host.querySelector(`.${panelClass}`), 'the panel must always render -- it is not gated');
+  assert.ok(host.querySelector(`.${bodyClass}`), 'the body wrapper must always render -- it is not gated');
+  assert.equal(host.children.length, 1, 'the host renders only the panel div, unconditionally');
 });
 
 after(() => {

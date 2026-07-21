@@ -21,3 +21,16 @@ export class ArenaAction {}
  *  `ArenaActions` alongside the primitive it is projecting into. */
 @Directive({ selector: '[arena-actions]', standalone: true })
 export class ArenaActions {}
+
+/** Marks the element a consumer projects into `arena-unauth-card`'s `[brand]` slot,
+ *  matching the `[brand]` attribute its `ng-content select` uses. Declared once here
+ *  for the same reason `ArenaAction` is, so a future second primitive with a lock-up
+ *  slot never redeclares the selector. A consumer wiring a brand lock-up imports
+ *  `ArenaBrand` alongside `UnauthCard`. */
+@Directive({ selector: '[brand]', standalone: true })
+export class ArenaBrand {}
+
+/** Same mechanism as `ArenaBrand`, for `arena-unauth-card`'s `[footer]` slot. A
+ *  consumer wiring footer content imports `ArenaFooter` alongside `UnauthCard`. */
+@Directive({ selector: '[footer]', standalone: true })
+export class ArenaFooter {}

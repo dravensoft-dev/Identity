@@ -1,0 +1,41 @@
+<!-- @dsCard group="Angular" viewport="640x729" name="UnauthCard" subtitle="The signed-out frame, rendered from UnauthCard.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:var(--sp-6)}.row{display:flex;justify-content:center;margin-bottom:var(--sp-4)}.sub{font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-label);line-height:var(--lh-snug);color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:var(--sp-1)}</style>
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./UnauthCard.manifest.json')).json();
+const logo = await (await fetch('./AppLogo.manifest.json')).json();
+
+function panel({ eyebrow, title, body, footer }) {
+  const c = classesFor(manifest);
+  const l = classesFor(logo, { size: 'md' });
+  return el('div', { class: c.root },
+    el('div', { class: c.panel },
+      el('div', { class: c.body },
+        el('div', { class: c.brand },
+          el('span', { class: l.root },
+            el('span', { class: l.mark }, el('img', { src: '../../../assets/rotor-crimson.svg', alt: '' })),
+            el('span', { class: l.name }, 'Draven', el('span', { class: l.dim, text: 'soft' })))),
+        el('div', { class: c.eyebrow, text: eyebrow }),
+        el('div', { class: c.title, text: title }),
+        el('div', { class: 'font-body text-md text-base-content/82', text: body }),
+        el('div', { class: c.footer, text: footer }))));
+}
+
+mountSpecimen({ sections: [
+  section('Sign in', [panel({
+    eyebrow: 'Delivery Console', title: 'Sign in',
+    body: 'Form controls compose inside the frame; the component holds none of them.',
+    footer: 'Trouble signing in? Contact your administrator.',
+  })]),
+  section('Check your inbox — the same frame', [panel({
+    eyebrow: 'Delivery Console', title: 'Check your inbox',
+    body: 'We sent a sign-in link to your work address. It expires in 15 minutes.',
+    footer: 'Wrong address? Start again.',
+  })]),
+]});
+</script></body></html>

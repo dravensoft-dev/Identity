@@ -767,6 +767,24 @@ convention before shipping, not because the layers disagree.
 
 **Converges:** n/a — both layers already agree.
 
+### UnauthCard — behaviour matches React; only the `style`/`...rest` prop has no counterpart
+
+**React:** `UnauthCard.jsx` takes `brand`, `eyebrow`, `title`, `footer`, `children`,
+plus `style` and a `{...rest}` spread forwarded onto its own root `<div>`; `brand` and
+`footer` each render only when truthy (`{brand && <div>...}` / `{footer && <div>...}`).
+
+**Angular:** `arena-unauth-card` takes `eyebrow` and `title` as signal inputs and
+projects `[brand]` and default content and `[footer]`, gating the `brand`/`footer`
+wrappers on `contentChild(ArenaBrand)` / `contentChild(ArenaFooter)` — the same gate
+React's own `&&` checks perform, reached the only way an `ng-content` slot can report
+whether anything was projected (the fix `EmptyState`/`ErrorState` already shipped for
+their own action slot). React's `style` and `{...rest}` have no input to mirror them,
+and need none, for the same reason `PageHead`'s entry above gives: in Angular a
+consumer writes `style="..."` or any attribute directly on `<arena-unauth-card>`, the
+same host element the recipe's `root` classes are bound to.
+
+**Converges:** n/a — no behavioural divergence found.
+
 ## How to add an entry
 
 When you find a behavioural difference between layers:
