@@ -51,10 +51,15 @@
     --text-ctl-sm: var(--dz-text-sm);
     --text-ctl-xs: var(--dz-text-xs);
     --text-ctl-2xs: var(--dz-text-2xs);
+    --text-logo-sm: var(--logo-text-sm);
+    --text-logo-md: var(--logo-text-md);
+    --text-logo-lg: var(--logo-text-lg);
+    --text-logo-xl: var(--logo-text-xl);
     --font-weight-medium: var(--fw-medium);
     --font-weight-semibold: var(--fw-semibold);
     --font-weight-bold: var(--fw-bold);
     --font-weight-extrabold: var(--fw-extrabold);
+    --font-weight-black: var(--fw-black);
     --leading-snug: var(--lh-snug);
     --leading-body: var(--lh-body);
     --leading-ctl: var(--dz-lh);
@@ -81,6 +86,10 @@
     --size-avatar-sm: var(--avatar-sm);
     --size-avatar-md: var(--avatar-md);
     --size-avatar-lg: var(--avatar-lg);
+    --size-logo-mark-sm: var(--logo-mark-sm);
+    --size-logo-mark-md: var(--logo-mark-md);
+    --size-logo-mark-lg: var(--logo-mark-lg);
+    --size-logo-mark-xl: var(--logo-mark-xl);
     --radius-xs: var(--r-xs);
     --radius-sm: var(--r-sm);
     --radius-md: var(--r-md);
@@ -367,6 +376,22 @@
     width: var(--size-avatar-xs);
     height: var(--size-avatar-xs);
   }
+  .size-logo-mark-lg {
+    width: var(--size-logo-mark-lg);
+    height: var(--size-logo-mark-lg);
+  }
+  .size-logo-mark-md {
+    width: var(--size-logo-mark-md);
+    height: var(--size-logo-mark-md);
+  }
+  .size-logo-mark-sm {
+    width: var(--size-logo-mark-sm);
+    height: var(--size-logo-mark-sm);
+  }
+  .size-logo-mark-xl {
+    width: var(--size-logo-mark-xl);
+    height: var(--size-logo-mark-xl);
+  }
   .h-1\.5 {
     height: calc(var(--spacing) * 1.5);
   }
@@ -456,6 +481,9 @@
   }
   .flex-1 {
     flex: 1;
+  }
+  .flex-none {
+    flex: none;
   }
   .shrink-0 {
     flex-shrink: 0;
@@ -811,6 +839,18 @@
   .text-h4 {
     font-size: var(--text-h4);
   }
+  .text-logo-lg {
+    font-size: var(--text-logo-lg);
+  }
+  .text-logo-md {
+    font-size: var(--text-logo-md);
+  }
+  .text-logo-sm {
+    font-size: var(--text-logo-sm);
+  }
+  .text-logo-xl {
+    font-size: var(--text-logo-xl);
+  }
   .text-md {
     font-size: var(--text-md);
   }
@@ -828,6 +868,10 @@
   .leading-snug {
     --tw-leading: var(--leading-snug);
     line-height: var(--leading-snug);
+  }
+  .font-black {
+    --tw-font-weight: var(--font-weight-black);
+    font-weight: var(--font-weight-black);
   }
   .font-bold {
     --tw-font-weight: var(--font-weight-bold);
@@ -986,6 +1030,15 @@
   .outline-none {
     --tw-outline-style: none;
     outline-style: none;
+  }
+  :is(.\*\:block > *) {
+    display: block;
+  }
+  :is(.\*\:h-full > *) {
+    height: 100%;
+  }
+  :is(.\*\:w-full > *) {
+    width: 100%;
   }
   @media (hover: hover) {
     .hover\:bg-\[var\(--danger-soft\)\]:hover {

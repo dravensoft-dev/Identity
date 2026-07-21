@@ -1,4 +1,5 @@
 export * from './alert';
+export * from './app-logo';
 export * from './avatar';
 export * from './bar-chart';
 export * from './breadcrumbs';

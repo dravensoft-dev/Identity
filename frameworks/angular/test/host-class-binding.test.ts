@@ -43,6 +43,8 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
+import { AppLogo } from '../primitives/app-logo/app-logo';
+import { appLogoStyles } from '../primitives/app-logo/app-logo.variants';
 import { Avatar } from '../primitives/avatar/avatar';
 import { avatarStyles } from '../primitives/avatar/avatar.variants';
 import { BarChart } from '../primitives/bar-chart/bar-chart';
@@ -93,6 +95,24 @@ import { ThemeService } from '../theme/theme-service';
  * -- the actual authority on whether skeleton.ts's `@if`/`@for` template
  * typechecks against the component's real inputs. */
 TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
+
+/* `name` is `input.required<string>()` (Resolution D of task 24's brief: nothing
+ * defaults, on purpose -- an empty lock-up would ship no one's mark by omission,
+ * so there is no fallback value to fall back to). A static literal attribute in
+ * a template does not route to a signal input under this JIT-only harness (the
+ * file header above documents why for Skeleton's `variant` and Breadcrumbs'
+ * `items`), so this host exists only to prove what DOES happen with one --
+ * `AppLogoStrayAttributeTest` below never calls `detectChanges()`, because
+ * `name()` throws NG0950 ("Input is required but no value is available yet")
+ * the moment the child's template tries to read it, since the required input
+ * was truly never satisfied under this harness, not merely defaulted quietly
+ * the way an optional input is. */
+@Component({
+  standalone: true,
+  imports: [AppLogo],
+  template: `<arena-app-logo name="Draven" class="consumer-class"><span>mark</span></arena-app-logo>`,
+})
+class AppLogoStaticAttributeHost {}
 
 @Component({
   standalone: true,
@@ -198,6 +218,161 @@ class LineChartHost {}
   template: `<arena-doughnut-chart />`,
 })
 class DoughnutChartHost {}
+
+/* `arena-app-logo` is the first primitive in this layer with a `required`
+ * signal input (`name`). Every other component's optional signal inputs are
+ * undrivable through a TestBed template binding (NG0303) or a literal
+ * attribute (a silent no-op that leaves the field at its default) under this
+ * JIT-only harness -- documented at the top of this file. A required input
+ * has no default to fall back to, so neither path renders the component at
+ * all: it throws NG0950 ("Input is required but no value is available yet")
+ * the instant the template reads it during change detection, proven by
+ * `AppLogoStaticAttributeHost`'s own test below, which deliberately never
+ * calls `detectChanges()` for exactly that reason.
+ *
+ * What DOES work, probed by hand before writing this: `TestBed.createComponent
+ * (AppLogo)` (skipping a host wrapper, so AppLogo itself is the fixture's root)
+ * creates the instance without running change detection, and at that point
+ * `instance.name` / `instance.dim` are still just plain writable object
+ * properties -- `input.required()` is a class-field assignment, not something
+ * TypeScript's `readonly` enforces at runtime, and nothing about it depends on
+ * ngtsc's initializer-API transform (the transform is what wires a *binding*
+ * to the field; the field itself exists the moment the class is constructed).
+ * Overwriting `instance.name` with a plain function that returns a fixed
+ * string before the first `detectChanges()` bypasses Angular's input system
+ * entirely -- no `ɵcmp.inputs` lookup, no required-input check -- while still
+ * running the REAL compiled template through REAL change detection against
+ * the REAL `AppLogo` class. It is not a stand-in component with a look-alike
+ * template: it is this component, rendered for real, with its one otherwise
+ * unreachable input satisfied by direct assignment instead of a binding. */
+function renderAppLogo(name: string, dim?: string) {
+  const fixture = TestBed.createComponent(AppLogo);
+  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
+  instance['name'] = () => name;
+  if (dim !== undefined) instance['dim'] = () => dim;
+  return fixture;
+}
+
+test('arena-app-logo: the root recipe classes land on the host element itself', () => {
+  const fixture = renderAppLogo('Draven');
+  fixture.detectChanges();
+  const host = fixture.nativeElement as HTMLElement;
+  for (const cls of appLogoStyles().root().split(/\s+/))
+    assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
+  fixture.destroy();
+});
+
+test('arena-app-logo: a class already on the host before the first detectChanges survives the [class] host binding', () => {
+  const fixture = renderAppLogo('Draven');
+  // Stands in for a consumer's static `class="..."` attribute the way the other
+  // primitives' *Host wrapper components carry one in their own template -- not
+  // reachable here via a wrapper because a wrapper's own detectChanges would
+  // recurse into AppLogo's template and hit the required-input throw this
+  // block's header comment explains. Setting the token directly on the DOM
+  // node before Angular's own host `[class]` binding ever runs is a faithful
+  // stand-in: Angular's class binding adds/removes only the tokens it itself
+  // manages (per Angular's own docs on class/style bindings, cited in this
+  // file's header comment) and must leave an unrelated token alone either way.
+  (fixture.nativeElement as HTMLElement).classList.add('consumer-class');
+  fixture.detectChanges();
+  const host = fixture.nativeElement as HTMLElement;
+  assert.ok(host.classList.contains('consumer-class'), `host lost the pre-existing class: "${host.className}"`);
+  for (const cls of appLogoStyles().root().split(/\s+/))
+    assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
+  fixture.destroy();
+});
+
+/* Resolution C of task 24's brief: the two-ink wordmark (`DRAVEN` + `SOFT`) is
+ * ONE WORD split into two inks, and `app-logo.ts`'s template places `@if
+ * (dim(); as tail) {...}` immediately after `{{ name() }}` -- and the second
+ * `<span>` immediately after `{{ tail }}` -- with no whitespace anywhere in
+ * the source between them, entirely on one template-literal line, because
+ * Angular's own whitespace handling (collapsing runs of whitespace between
+ * inline nodes, generally NOT inserting any where the source has none) is a
+ * real behaviour to verify against a real render, not to assume survives from
+ * React's JSX. This is that verification: a real `AppLogo` instance, real
+ * `@angular/compiler` JIT template compilation, real DOM. */
+test('arena-app-logo: the two-ink wordmark renders as one word with no space -- "DRAVEN" + "SOFT" reads as exactly "DRAVENSOFT"', () => {
+  const fixture = renderAppLogo('DRAVEN', 'SOFT');
+  fixture.detectChanges();
+  const host = fixture.nativeElement as HTMLElement;
+  const nameClass = appLogoStyles().name().split(/\s+/)[0];
+  const nameEl = host.querySelector(`.${nameClass}`) as HTMLElement;
+  assert.ok(nameEl, 'the name slot did not render');
+  assert.equal(
+    nameEl.textContent,
+    'DRAVENSOFT',
+    `expected the wordmark to read as one word with no space, got ${JSON.stringify(nameEl.textContent)}`,
+  );
+  // The first child must be exactly the text node "DRAVEN" -- no leading or
+  // trailing whitespace collapsed in from the template's own indentation --
+  // and the next must be the `dim` span wrapping exactly "SOFT", proving the
+  // concatenation is real DOM adjacency and not a coincidental textContent match
+  // (e.g. two nodes each carrying a stray space that happen to net to none). The
+  // `@if` block leaves its own anchor comment node behind regardless of which
+  // branch rendered (confirmed below, and by the sibling "no dim" test), so
+  // comments are filtered out here rather than asserted into an exact count.
+  const significant = Array.from(nameEl.childNodes).filter((n) => n.nodeType !== Node.COMMENT_NODE);
+  assert.equal(significant.length, 2, `expected exactly two non-comment child nodes, got ${significant.length}`);
+  assert.equal(significant[0].nodeType, Node.TEXT_NODE);
+  assert.equal(significant[0].textContent, 'DRAVEN');
+  const dimEl = significant[1] as HTMLElement;
+  assert.equal(dimEl.nodeType, Node.ELEMENT_NODE);
+  assert.equal(dimEl.textContent, 'SOFT');
+  const dimClass = appLogoStyles().dim().split(/\s+/)[0];
+  assert.ok(dimEl.classList.contains(dimClass), `the dim span is missing its recipe class "${dimClass}"`);
+  fixture.destroy();
+});
+
+test('arena-app-logo: with no dim, the wordmark renders the name alone and no dim span at all', () => {
+  const fixture = renderAppLogo('Draven');
+  fixture.detectChanges();
+  const host = fixture.nativeElement as HTMLElement;
+  const nameClass = appLogoStyles().name().split(/\s+/)[0];
+  const nameEl = host.querySelector(`.${nameClass}`) as HTMLElement;
+  assert.equal(nameEl.textContent, 'Draven');
+  // The `@if` control-flow block leaves its own anchor comment node behind even
+  // when it does not render (Angular's usual `ng-container`-style bookkeeping) --
+  // that comment does not count toward textContent (confirmed above: it never
+  // appeared in "DRAVENSOFT") and is not an element, so it is excluded here by
+  // node type rather than asserted away entirely.
+  for (const node of Array.from(nameEl.childNodes))
+    assert.notEqual(node.nodeType, Node.ELEMENT_NODE, 'no dim was set, so no dim <span> should render');
+  // `dim`'s own recipe class contains a `/` (an opacity modifier, e.g.
+  // "text-base-content/62"), which is not a valid bare CSS class selector --
+  // querySelector(`.${cls}`) throws a DOMException on it. `.children` sidesteps
+  // that: with no dim rendered, the name slot has no element children at all.
+  assert.equal(nameEl.children.length, 0, 'no dim was set, so the name slot should have no element children');
+  fixture.destroy();
+});
+
+/* Resolution J of task 24's brief: known layer-wide issue, not fixed here. An
+ * input named `name` collides with a real global HTML attribute, the same
+ * class of problem `components-divergences.md` and the brief record for
+ * `title`. Proven here: a static literal `name="Draven"` on `<arena-app-logo>`
+ * lands on the host as a plain DOM attribute BEFORE Angular ever runs change
+ * detection (Angular sets an element's static, non-bound attributes during
+ * its template's creation pass, which for a nested component runs as part of
+ * its parent's own construction -- `TestBed.createComponent(Host)` alone is
+ * enough, with no `detectChanges()` call, confirmed by hand before writing
+ * this) -- a stray, inert attribute that never reaches the component's own
+ * `name` signal input, which stays unset and would throw NG0950 the moment
+ * anything tried to read it. `detectChanges()` is deliberately never called
+ * in this test for that reason: it would throw before either assertion ran --
+ * and for the same reason `fixture.destroy()` runs at the end: TestBed
+ * attaches every created fixture to the shared `ApplicationRef`, and a later
+ * test's own `detectChanges()` walks every still-attached view (zoneless CD
+ * has no per-component isolation) -- confirmed by hand: without this
+ * `destroy()`, the very next test in file order (`arena-avatar`'s) failed
+ * with this same NG0950, thrown out of THIS fixture's still-pending required
+ * input while detecting changes for an entirely unrelated component. */
+test('arena-app-logo: a static "name" attribute lands as a stray DOM attribute on the host, not as the component input -- known layer-wide issue, not fixed here (Resolution J)', () => {
+  const fixture = TestBed.createComponent(AppLogoStaticAttributeHost);
+  const host = fixture.nativeElement.querySelector('arena-app-logo') as HTMLElement;
+  assert.equal(host.getAttribute('name'), 'Draven', 'the literal attribute should still land on the host element itself');
+  assert.equal(host.getAttribute('class'), 'consumer-class', 'sanity: the static class attribute lands the same way');
+  fixture.destroy();
+});
 
 test('arena-avatar: the root recipe classes land on the host element itself', async () => {
   const fixture = TestBed.createComponent(AvatarHost);
