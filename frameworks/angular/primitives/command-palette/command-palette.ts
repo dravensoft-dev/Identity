@@ -1,10 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DOCUMENT,
   ElementRef,
   afterRenderEffect,
   computed,
   effect,
+  inject,
   input,
   output,
   signal,
@@ -12,6 +14,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { commandPaletteStyles } from './command-palette.variants';
+import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../focus-trap';
 
 let nextId = 0;
 
@@ -65,6 +68,34 @@ export function scrollRowIntoView(list: HTMLElement, index: number): void {
   if (row instanceof HTMLElement) row.scrollIntoView({ block: 'nearest' });
 }
 
+/** The DOM id the row rendered at `index` carries, given the palette
+ *  instance's unique `uid` prefix. Exported as a plain function of its
+ *  arguments so `activeOptionId` can build on it and be tested with no
+ *  Angular runtime and no DOM at all.
+ *  @param uid the palette instance's unique id prefix
+ *  @param index the row's position in the filtered list
+ *  @returns the id that row's `role="option"` element carries */
+export function optionRowId(uid: string, index: number): string {
+  return `${uid}-option-${index}`;
+}
+
+/** The id `aria-activedescendant` should carry: the active row's own id when
+ *  a row actually exists at that index, or `undefined` when the filtered
+ *  list is empty -- the single most load-bearing piece of the combobox's
+ *  ARIA wiring, since a screen reader announces whatever this points at, and
+ *  pointing it at an id with no matching element is worse than omitting the
+ *  attribute outright. Exported as a plain function of its arguments so this
+ *  property is testable with no Angular runtime and no DOM at all: it always
+ *  points at a real, existing row id, and is `undefined` rather than
+ *  dangling when there is none.
+ *  @param uid the palette instance's unique id prefix
+ *  @param active the active row index
+ *  @param rowCount how many rows are currently visible
+ *  @returns the active row's DOM id, or `undefined` when no row exists there */
+export function activeOptionId(uid: string, active: number, rowCount: number): string | undefined {
+  return active >= 0 && active < rowCount ? optionRowId(uid, active) : undefined;
+}
+
 /** Keyboard-first action launcher (Cmd/Ctrl+K). Type to filter, arrow to a
  *  command, Enter to run it, Escape to leave, or hover a row to select it --
  *  a palette that needs the mouse is not a palette. Fully controlled: the
@@ -86,13 +117,29 @@ export function scrollRowIntoView(list: HTMLElement, index: number): void {
  *  Accessible as an editable combobox with a listbox popup (ARIA 1.2): the
  *  search input carries `role="combobox"` with `aria-expanded`,
  *  `aria-controls` and `aria-activedescendant` pointing at the active row's
- *  id, and each row carries `role="option"` with `aria-selected`. React's
- *  `CommandPalette.jsx` sets none of this -- a screen reader user gets no
- *  indication of which row is active, or that the input drives a list at
- *  all -- see `components-divergences.md`. Selection stays virtual: DOM
- *  focus never leaves the input (`tabindex="-1"` keeps every row out of the
- *  tab order), so no separate focus trap is needed the way
- *  `arena-confirm-dialog` needs one for its several interactive controls. */
+ *  id, and each row carries `role="option"` with `aria-selected`.
+ *  `aria-expanded` stays statically `true`: the listbox popup is always
+ *  mounted and visible for as long as the combobox itself is open, including
+ *  with zero matching rows (that state renders a "No results" message as a
+ *  sibling of the listbox rather than inside it, since a listbox's children
+ *  must be `option`/`group`, never a bare `div`), so there is no collapsed
+ *  state for `aria-expanded` to distinguish. React's `CommandPalette.jsx`
+ *  sets none of this ARIA wiring -- a screen reader user gets no indication
+ *  of which row is active, or that the input drives a list at all -- see
+ *  `components-divergences.md`.
+ *
+ *  DOM focus is moved into the search input explicitly on open and restored
+ *  to whatever held it beforehand on close -- never a bare `autofocus`
+ *  attribute, which the HTML autofocus processing model skips once the
+ *  document's autofocus-processed flag is set, which opening this palette
+ *  from a keyboard shortcut or a click always has by the time `@if (open())`
+ *  inserts the input. Every row stays `tabindex="-1"`, so the input is the
+ *  panel's only legal Tab stop; Tab and Shift+Tab are still trapped there --
+ *  with exactly one focusable element the trap simply re-focuses it and
+ *  consumes the key -- so focus can never escape to the page behind the
+ *  scrim. All of this reuses `arena-confirm-dialog`'s own focus contract,
+ *  generalized into `frameworks/angular/primitives/focus-trap.ts`
+ *  (`handleOpenTransition`, `trapTabKey`) rather than reimplemented here. */
 @Component({
   selector: 'arena-command-palette',
   standalone: true,
@@ -103,21 +150,18 @@ export function scrollRowIntoView(list: HTMLElement, index: number): void {
   },
   template: `
     @if (open()) {
-      <div [class]="styles().panel()" role="dialog" aria-modal="true" aria-label="Command palette"
+      <div #panel [class]="styles().panel()" role="dialog" aria-modal="true" aria-label="Command palette"
            (click)="$event.stopPropagation()">
         <div [class]="styles().search()">
           <i [class]="styles().searchIcon() + ' ph-bold ph-magnifying-glass'" aria-hidden="true"></i>
           <input [class]="styles().input()" [value]="query()" [attr.placeholder]="placeholder()"
                  role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="true"
                  [attr.aria-controls]="listboxId" [attr.aria-activedescendant]="activeId()"
-                 [attr.aria-label]="placeholder()"
-                 (input)="onQuery($event)" (keydown)="onKey($event)" autofocus />
+                 [attr.aria-label]="placeholder() || 'Search commands'"
+                 (input)="onQuery($event)" (keydown)="onKey($event)" />
           <span [class]="styles().esc()">ESC</span>
         </div>
         <div #list [class]="styles().list()" [id]="listboxId" role="listbox" aria-label="Commands">
-          @if (filtered().length === 0) {
-            <div [class]="styles().empty()">No results for "{{ query() }}".</div>
-          }
           @for (command of filtered(); track command.id ?? command.label; let i = $index) {
             <button type="button" [id]="optionId(i)" role="option" [attr.aria-selected]="i === active()" tabindex="-1"
                     [class]="styles().row() + (i === active() ? ' ' + styles().rowActive() : '')"
@@ -132,6 +176,9 @@ export function scrollRowIntoView(list: HTMLElement, index: number): void {
             </button>
           }
         </div>
+        @if (filtered().length === 0) {
+          <div [class]="styles().empty()">No results for "{{ query() }}".</div>
+        }
       </div>
     }
   `,
@@ -148,11 +195,20 @@ export class CommandPalette {
   protected readonly styles = computed(() => commandPaletteStyles({ open: this.open() }));
   protected readonly filtered = computed(() => filterCommands(this.commands(), this.query()));
 
+  private readonly doc = inject(DOCUMENT);
   private readonly uid = `arena-command-palette-${nextId++}`;
   protected readonly listboxId = `${this.uid}-listbox`;
-  protected readonly activeId = computed(() => (this.filtered()[this.active()] ? this.optionId(this.active()) : undefined));
+  protected readonly activeId = computed(() => activeOptionId(this.uid, this.active(), this.filtered().length));
 
   private readonly list = viewChild<ElementRef<HTMLElement>>('list');
+  private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
+
+  /** Bookkeeping `handleOpenTransition` mutates across renders -- a plain
+   *  object rather than a signal, matching `arena-confirm-dialog`'s own
+   *  field, for the identical reason: reading it inside the effect below
+   *  must never register as a dependency, or writing it there would make
+   *  the effect re-run itself. */
+  private readonly focusTrap: FocusTrapState = { wasOpen: false, restoreTo: null };
 
   constructor() {
     effect(() => {
@@ -160,6 +216,12 @@ export class CommandPalette {
         this.query.set('');
         this.active.set(0);
       }
+    });
+    afterRenderEffect(() => {
+      const isOpen = this.open();
+      untracked(() => {
+        handleOpenTransition(this.focusTrap, isOpen, this.panel()?.nativeElement ?? null, this.doc.activeElement);
+      });
     });
     afterRenderEffect(() => {
       const index = this.active();
@@ -172,7 +234,7 @@ export class CommandPalette {
   }
 
   protected optionId(index: number): string {
-    return `${this.uid}-option-${index}`;
+    return optionRowId(this.uid, index);
   }
 
   protected onQuery(event: Event): void {
@@ -195,6 +257,9 @@ export class CommandPalette {
     } else if (event.key === 'Escape') {
       event.preventDefault();
       this.closed.emit();
+    } else if (event.key === 'Tab') {
+      const panel = this.panel()?.nativeElement;
+      if (panel) trapTabKey(panel, event, this.doc.activeElement);
     }
   }
 

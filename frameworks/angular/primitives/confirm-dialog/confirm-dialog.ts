@@ -13,92 +13,23 @@ import {
   viewChild,
 } from '@angular/core';
 import { confirmDialogStyles } from './confirm-dialog.variants';
+import {
+  type FocusTrapState,
+  focusFirstFocusable,
+  focusableElements,
+  handleOpenTransition,
+  trapTabKey,
+} from '../focus-trap';
 
 let nextId = 0;
 
-/** A modal is reachable by keyboard iff its interactive elements can be
- *  enumerated at the moment a key is pressed — computed fresh on every Tab,
- *  never cached, because `disabled` on the confirm button changes as the user
- *  types into the require-text field. */
-const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
-/** Every focusable descendant of `container`, in DOM order. Exported as a
- *  plain DOM function — not a class method — so it is testable against a
- *  real, hand-built element tree without going through Angular's component
- *  compiler at all. @param container @returns focusable elements, DOM order */
-export function focusableElements(container: HTMLElement): HTMLElement[] {
-  return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
-}
-
-/** Moves focus to `container`'s first focusable descendant, or to `container`
- *  itself (which must carry `tabindex="-1"`) when it has none.
- *  @param container the panel to focus into */
-export function focusFirstFocusable(container: HTMLElement): void {
-  const [first] = focusableElements(container);
-  (first ?? container).focus();
-}
-
-/** Keeps Tab/Shift+Tab cycling within `container` instead of escaping to the
- *  page behind a modal — the standard boundary-wrap trap: Shift+Tab from the
- *  first focusable wraps to the last, Tab from the last wraps to the first.
- *  A container with no focusable descendant traps the key outright, since
- *  there is nowhere legal for focus to go. @param container the panel
- *  @param event the keydown event; consulted and, at a boundary, consumed
- *  @param activeElement the currently focused element (`document.activeElement`) */
-export function trapTabKey(container: HTMLElement, event: KeyboardEvent, activeElement: Element | null): void {
-  const focusables = focusableElements(container);
-  if (focusables.length === 0) {
-    event.preventDefault();
-    return;
-  }
-  const first = focusables[0];
-  const last = focusables[focusables.length - 1];
-  if (event.shiftKey && activeElement === first) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
-}
-
-/** Mutable bookkeeping `handleOpenTransition` carries across calls — plain
- *  fields, not signals, because a signal write inside the effect that reads
- *  `open()` would make the effect depend on itself. */
-export interface FocusTrapState {
-  wasOpen: boolean;
-  restoreTo: HTMLElement | null;
-}
-
-/** The whole open/close focus contract, as one pure transition: on the
- *  false-to-true edge, remembers `activeElement` and moves focus into
- *  `panel`'s first focusable descendant; on the true-to-false edge, restores
- *  focus to what was remembered. Re-running with `isOpen` unchanged (a
- *  render caused by something other than `open` itself — typing into the
- *  require-text field, for instance) does nothing, so focus is never
- *  stolen back from a field the user is actively using. Exported as a pure
- *  function of its arguments (no `this`) so the whole open-then-close
- *  sequence is testable against a hand-built DOM, independent of whether
- *  Angular's own `open` input can be driven in the test harness in use.
- *  @param state mutated in place @param isOpen the dialog's current `open()`
- *  @param panel the rendered panel element, or `null` while closed
- *  @param activeElement `document.activeElement` at the moment of the call */
-export function handleOpenTransition(
-  state: FocusTrapState,
-  isOpen: boolean,
-  panel: HTMLElement | null,
-  activeElement: Element | null,
-): void {
-  if (isOpen && !state.wasOpen) {
-    state.restoreTo = activeElement as HTMLElement | null;
-    if (panel) focusFirstFocusable(panel);
-  } else if (!isOpen && state.wasOpen) {
-    state.restoreTo?.focus();
-    state.restoreTo = null;
-  }
-  state.wasOpen = isOpen;
-}
+/** Re-exported for `confirm-dialog-focus-trap.test.ts` and any other consumer
+ *  that reached these through `arena-confirm-dialog` before the fix wave
+ *  (plan 5a, Task 14 review) that generalized them into
+ *  `frameworks/angular/primitives/focus-trap.ts`, now shared with
+ *  `arena-command-palette`. */
+export type { FocusTrapState };
+export { focusFirstFocusable, focusableElements, handleOpenTransition, trapTabKey };
 
 /** Whether the confirm button should stay disabled: `requireText` locks it
  *  until the typed value matches exactly. An unset `requireText` never locks

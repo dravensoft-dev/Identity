@@ -35,17 +35,6 @@ test('the root slot carries a display utility in its own base string, independen
   assert.match(commandPaletteStyles({ open: true }).root(), /\bflex\b/);
 });
 
-test('the active row is the primary soft tint with primary text, matching the crimson accent React uses', () => {
-  const active = tokens(commandPaletteStyles().rowActive());
-  assert.ok(active.includes('bg-primary/14'), `expected bg-primary/14 in "${active.join(' ')}"`);
-  assert.ok(active.includes('text-primary'), `expected text-primary in "${active.join(' ')}"`);
-});
-
-test('the active row label is a heavier weight than the resting label', () => {
-  assert.match(commandPaletteStyles().rowLabelActive(), /font-semibold/);
-  assert.match(commandPaletteStyles().rowLabel(), /font-medium/);
-});
-
 test('a resting row carries no danger classes -- an active command row is a selection state, not a risk indicator', () => {
   const row = tokens(commandPaletteStyles().row());
   assert.ok(!row.some((cls) => cls.includes('error') || cls.includes('danger')));

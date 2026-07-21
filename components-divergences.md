@@ -259,7 +259,9 @@ and nothing else — the search `<input>` carries no `role`, no `aria-expanded`,
 `aria-controls` and no `aria-activedescendant`, and each row is a plain `<button>` with
 no `role="option"` and no `aria-selected`. A screen reader user gets no indication that
 the input drives a filtered list, or which row is currently active as arrow keys move
-through it.
+through it. It does, however, focus its input explicitly on open
+(`setTimeout(() => inputRef.current.focus(), 0)`), and it does not restore focus to
+whatever opened it once it closes.
 
 **Angular:** `arena-command-palette` implements the ARIA 1.2 editable-combobox-with-
 listbox-popup pattern: the input carries `role="combobox"`, `aria-autocomplete="list"`,
@@ -268,19 +270,79 @@ row list's id; the row list itself carries `role="listbox"`; and `aria-activedes
 on the input tracks the active row's id, computed from a per-instance unique id
 (a module-level counter, matching `arena-confirm-dialog`'s `nextId` shape, so two
 palettes on one page never collide). Each row carries `role="option"`, `aria-selected`
-and `tabindex="-1"`. Selection is virtual: DOM focus never leaves the input while the
-palette is open, so there is no separate focus trap to build — nothing else in the
-palette is ever a legal Tab stop.
+and `tabindex="-1"`. The "No results" message is a sibling of the listbox, not a child
+of it — a listbox's children must be `option`/`group`, and a bare `div` inside one is
+undefined content. `aria-expanded` stays statically `true`: the popup is mounted and
+visible for as long as the combobox itself is open, including with zero matching rows,
+so there is no collapsed state for it to report.
+
+DOM focus is moved into the search input explicitly on open, and restored to whatever
+held it beforehand on close, reusing `arena-confirm-dialog`'s own focus contract —
+`handleOpenTransition` and `trapTabKey`, generalized out of `confirm-dialog.ts` into
+`frameworks/angular/primitives/focus-trap.ts` so this component did not need a second
+implementation. Every row stays `tabindex="-1"`, so the search input is the panel's
+only legal Tab stop; Tab and Shift+Tab are trapped there — with exactly one focusable
+element the trap simply re-focuses it and consumes the key — so focus can never escape
+past the palette to the page behind the scrim.
+
+*Corrects an earlier version of this entry*, which claimed that because DOM focus never
+leaves the input, "there is no separate focus trap to build." That reasoning does not
+follow: a focus trap stops focus escaping *outward*, not just cycling inward, and with
+every row `tabindex="-1"` and no `keydown` branch for Tab, the browser's own default
+handling would have moved focus to whatever came next in document order — a control on
+the page behind the `fixed inset-0` scrim, while the palette stayed open and still
+asserted `aria-modal="true"`. The trap above closes that gap; this entry now describes
+what the component actually does.
+
+**Also unlike React:** the earlier `autofocus` attribute this component shipped with
+never reliably worked. Per the HTML autofocus processing model, an `autofocus` element
+inserted after the document's autofocus-processed flag is set is skipped — and that
+flag is set by any user interaction, so a palette opened by Cmd/Ctrl+K (itself a user
+interaction) had the flag already set by the time `@if (open())` inserted the input.
+DOM focus stayed wherever the page had it, every keydown handler was bound to the
+input, and the palette was mouse-only. The explicit `handleOpenTransition` wiring above
+replaced it. Angular also gains a capability React never had: focus is restored to
+whatever opened the palette once it closes, which React's `CommandPalette.jsx` does not
+do.
+
+**The search input keeps `outline-none` with no substituted focus ring**, unlike
+`ConfirmDialog.manifest.json`'s require-text input, which was corrected to add one (see
+above). The case differs: the search input is the palette's *only* focusable element,
+and the new focus contract guarantees it holds DOM focus for the entire time the
+palette is open — a ring's usual job, disambiguating which of several controls is
+focused, has no ambiguity to resolve here. The input is also a flush, borderless
+segment of one compound single-row control (icon, input, `ESC` badge) laid out with
+only a `gap-2.5` between them inside a panel that itself clips overflow
+(`overflow-hidden`); a ring drawn tight to just the input would crowd its neighbors and
+risks being clipped at the panel edge, neither of which `ConfirmDialog`'s stand-alone,
+block-level bordered input has to contend with. Left as `outline-none` on purpose, not
+by omission.
 
 **Why:** the same category of gap `ConfirmDialog`, `ErrorState` and `Onboarding`
 already closed — an interactive, keyboard-driven list with no roles and no active-item
 announcement is not usable with a screen reader, and mirroring the gap would have
 shipped it into a second layer. This is also the task brief's own explicit ask: "A
 combobox/listbox pattern wants role, aria-activedescendant or managed focus, and an
-accessible name."
+accessible name." The focus-management gap (bare `autofocus`, no Tab trap) was caught
+in review as the second occurrence of the exact trap `ConfirmDialog` hit first.
 
-**Converges:** yes — React should gain the same roles and `aria-activedescendant`
-wiring. **Open debt on the React layer.**
+**Tested how:** `frameworks/angular/test/command-palette-focus-trap.test.ts` exercises
+the shared `handleOpenTransition`/`trapTabKey` helpers against a hand-built DOM tree
+shaped like the palette's panel (one real `<input>`, several `tabindex="-1"` row
+buttons) — real focus movement, real `document.activeElement`, and a Tab that must not
+reach a control placed behind the scrim. It does not render `<arena-command-palette>`
+through TestBed, for the reason `command-palette-keyboard.test.ts` already documents
+(`open` can never become `true` under this repo's JIT-only harness), so it is not proof
+that the component's own `afterRenderEffect`/`onKey` wiring calls these functions at
+the right time — `ngc --strictTemplates` (`check:angular`) is what proves that wiring
+compiles against the component's real `viewChild`/`inject(DOCUMENT)` types.
+`activeOptionId`, the function `aria-activedescendant` is computed from, is asserted
+directly in `command-palette-keyboard.test.ts`: it always resolves to a real row's id,
+and is `undefined` rather than dangling when the filtered list is empty or the active
+index is out of range.
+
+**Converges:** yes — React should gain the same roles, `aria-activedescendant` wiring,
+Tab trap and focus restore-on-close. **Open debt on the React layer.**
 
 ### CommandPalette — running a command does not close the palette in Angular
 

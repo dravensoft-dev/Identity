@@ -30,7 +30,13 @@ GlobalRegistrator.register();
 import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import type { ArenaCommand } from '../primitives/command-palette/command-palette';
-import { filterCommands, nextActiveIndex, scrollRowIntoView } from '../primitives/command-palette/command-palette';
+import {
+  activeOptionId,
+  filterCommands,
+  nextActiveIndex,
+  optionRowId,
+  scrollRowIntoView,
+} from '../primitives/command-palette/command-palette';
 
 const COMMANDS: ArenaCommand[] = [
   { id: 'deploy', label: 'Deploy to production', hint: 'client portal', shortcut: '⌘D' },
@@ -103,6 +109,22 @@ test('scrollRowIntoView does nothing when no row exists at the given index', () 
   const list = document.createElement('div');
   document.body.appendChild(list);
   assert.doesNotThrow(() => scrollRowIntoView(list, 0));
+});
+
+test('optionRowId formats a row id from the instance prefix and the row index', () => {
+  assert.equal(optionRowId('arena-command-palette-0', 2), 'arena-command-palette-0-option-2');
+});
+
+test('activeOptionId points at the active row\'s real id when a row exists there -- the property aria-activedescendant depends on', () => {
+  assert.equal(activeOptionId('arena-command-palette-0', 1, 4), optionRowId('arena-command-palette-0', 1));
+});
+
+test('activeOptionId is undefined, not dangling, when the filtered list is empty', () => {
+  assert.equal(activeOptionId('arena-command-palette-0', 0, 0), undefined);
+});
+
+test('activeOptionId is undefined when the active index is out of range for a non-empty list', () => {
+  assert.equal(activeOptionId('arena-command-palette-0', 5, 3), undefined);
 });
 
 after(() => {

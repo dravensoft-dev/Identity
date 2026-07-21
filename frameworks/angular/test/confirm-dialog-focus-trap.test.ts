@@ -1,6 +1,12 @@
 /* ConfirmDialog's accessibility fix wave (plan 5a, Task 8 review) added a
  * real focus trap: focus moves into the panel on open, Tab/Shift+Tab cycle
  * within it, and focus is restored to whatever held it beforehand on close.
+ * Plan 5a's Task 14 review generalized that trap's mechanics out of
+ * `confirm-dialog.ts` into `frameworks/angular/primitives/focus-trap.ts`, so
+ * `arena-command-palette` could reuse it instead of writing a second
+ * implementation -- `confirm-dialog.ts` still re-exports the same names for
+ * any caller that reached them there, which is why importing from either
+ * module works, but this file was pointed at the canonical module.
  *
  * This does NOT render `<arena-confirm-dialog>` through TestBed. Probed by
  * hand before writing this file: `[open]="true"` on the component and
@@ -39,9 +45,9 @@ import {
   focusFirstFocusable,
   focusableElements,
   handleOpenTransition,
-  isConfirmLocked,
   trapTabKey,
-} from '../primitives/confirm-dialog/confirm-dialog';
+} from '../primitives/focus-trap';
+import { isConfirmLocked } from '../primitives/confirm-dialog/confirm-dialog';
 
 /** Builds a panel with the same focusable shape ConfirmDialog's template
  *  renders when `requireText` is set: an input, then two buttons (cancel,
