@@ -39,7 +39,8 @@ Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
 quartet: `<name>.ts` (standalone, `OnPush`, signal I/O, `arena-` selector),
 `<name>.variants.ts` (a `tailwind-variants` recipe built with the shared `tv`),
 `<name>.prompt.md` (usage + Do/Don't), and a barrel. `primitives/tag/` is the
-reference shape.
+reference shape. The three SVG charts are the one exception and have no
+`<name>.variants.ts` — see below.
 
 The layer ships **21 primitives**: `activity-feed`, `alert`, `app-logo`, `avatar`,
 `bar-chart`, `breadcrumbs`, `bulk-action-bar`, `chart-card`, `command-palette`,
@@ -63,8 +64,8 @@ tile with a microlabel, so it has a manifest like every other expressible compon
 Four shared files sit beside the primitives and are not components:
 `container-size.ts` (the host element's width as a signal, plus `readBreakpoint`),
 `chart-internals.ts` (the chart maths and the identity-or-meaning colour contract),
-`focus-trap.ts` (the shared overlay focus trap used by `confirm-dialog`,
-`command-palette` and `onboarding`) and `projection-markers.ts` (the `[arena-action]`,
+`focus-trap.ts` (the shared overlay focus trap, generalized out of `confirm-dialog` and
+used by it and `command-palette`) and `projection-markers.ts` (the `[arena-action]`,
 `[arena-actions]`, `[brand]` and `[footer]` marker directives that let a component
 detect whether an optional slot was projected, so its spacing wrapper can be gated).
 
