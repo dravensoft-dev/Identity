@@ -51,7 +51,18 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 /* Evaluated inside the page. Waits for fonts, then for jsx-loader's
  * arenaReady (absent on the 15 pages that use no JSX), then polls until the
  * measurement stops changing — arenaReady is a floor, not a finish line, and
- * React renders after the import resolves.
+ * React renders after the import resolves. document.fonts.ready is a floor
+ * for the same reason, and the stability loop re-checks it below (see
+ * fontsSettled): it resolves once every font face the document has *asked
+ * for so far* is loaded, but content that mounts after — an icon glyph, a
+ * monospace label — can ask for a face nothing had requested yet, and
+ * document.fonts does not re-open the promise that already resolved. Found
+ * by hand chasing exactly this: two pages (forms.card.html,
+ * ConfirmDialog.card.html) measured a taller box than they render at rest,
+ * for as long as ~200ms after document.fonts.ready — a fallback glyph's
+ * metrics before the real font swaps in — every time, reproducibly. The old
+ * 150ms/3-reads floor almost always outlasted that swap by accident; nothing
+ * about it was ever waiting for fonts on purpose.
  *
  * scrollHeight never drops below clientHeight, so it answers "does the
  * content over-run" and cannot answer "does it under-run". contentHeight is
@@ -67,8 +78,9 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
  * getElementsByTagName('*') catches that at any depth and for anything out
  * of normal flow, and is still one flat pass with no recursion — measured by
  * hand at under 1ms against alert.card.html's real 26 elements and about
- * 100ms against a synthetic 20,000-element page, so it stays well inside the
- * STABILITY_POLL_MS cadence of the stability loop below for anything these pages render.
+ * 100ms against a synthetic 20,000-element page, so it stays comfortably
+ * inside a single frame's budget (~16ms at 60Hz) — the cadence the stability
+ * loop below now polls at — for anything these pages render.
  *
  * The 20s deadline is computed *before* either await, not after — it is the
  * budget for the whole script, readiness included, not just the stability
@@ -81,20 +93,57 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
  * { timedOut: true } into a bare rejection instead. Racing readiness against
  * the same deadline the stability loop uses is what keeps the two in one
  * bound: whatever readiness does, the script itself never runs past 20s. */
-/* How often the stability loop below re-reads the page, and therefore the
- * floor every page pays even when it settles instantly (two sleeps at this
- * cadence, since the loop wants three identical reads in a row). 250ms was
- * chosen back when a page's own animation was a live source of change the
- * loop had to ride out; freezeAnimations now removes that source before this
- * script ever runs, so 150ms is tight enough to shave real time off the 27
- * static specimens without weakening the one thing this cadence still has to
- * survive: these pages mount React only after an async import resolves, so a
- * late render can still change the page well after "readiness". 150ms stays
- * above the 100ms tick rate check-card-viewports.test.mjs's slow-readiness
- * fixture uses to prove the deadline is real — matching or undercutting that
- * tick would let two polls land on the same mutated value by coincidence and
- * report stability that was never real. */
-const STABILITY_POLL_MS = 150;
+/* How the stability loop below waits between reads. A fixed setTimeout used
+ * to sit here — 150ms, tuned only to clear a mutation tick in this file's own
+ * test fixture, never because a page needed that long to settle — and every
+ * page paid it whether or not its layout had already finished changing: two
+ * sleeps at that cadence, since the loop wants three identical reads in a
+ * row, meant a 300ms floor per page regardless of how fast it actually
+ * settled. freezeAnimations (below) already removes the one real source of
+ * continuous change these pages have, so once layout stops changing it stays
+ * stopped — there is nothing to gain by re-checking it every 150ms instead of
+ * every time the browser might actually have painted something new, which is
+ * a real frame, not an invented interval.
+ *
+ * nextFrame() (inside MEASURE_SCRIPT) waits for exactly that: one
+ * requestAnimationFrame callback, so a page that is already settled confirms
+ * it across a handful of real ~16ms frames instead of invented 150ms sleeps.
+ * FRAME_FALLBACK_MS backs it with a plain timer for the one case rAF cannot
+ * cover on its own: a backgrounded or throttled tab can starve
+ * requestAnimationFrame outright, and without a fallback the loop would wait
+ * on a callback that may never come instead of advancing toward the 20s
+ * deadline. These pages run in a headless target that should stay
+ * foregrounded, so in practice the timer never wins the race against a real
+ * frame — but the loop must still terminate on schedule if it somehow did.
+ *
+ * The loop still asks for three identical reads in a row (stable >= 2), the
+ * same count it asked for under the old fixed interval. That count was never
+ * about surviving a slow poll — it was about surviving these pages' own
+ * multi-frame settling: React mounts only after an async import resolves,
+ * and a freshly-populated page can keep shifting layout for a frame or two
+ * past that point. At 150ms a cadence three reads deep cost 300ms per page;
+ * at frame cadence the same three reads cost a handful of milliseconds, so
+ * there is no reason to relax the count along with the cadence. On its own,
+ * though, three-in-a-row was not enough: it counts identical *layout* reads,
+ * and forms.card.html and ConfirmDialog.card.html both hold a stable-looking
+ * fallback-glyph layout for well over three frames before the real font
+ * swaps in (see fontsSettled below, and its own comment above). fontsSettled()
+ * is the second, independent gate that case needed — the two together, not a bigger
+ * number for either alone, are what it took to match the old floor's result
+ * exactly. Verified empirically against all 45 @dsCard pages in the repo:
+ * every one measures the same contentHeight, scrollHeight and scrollWidth
+ * this loop reported before the switch to frames, across repeated runs (see
+ * the report accompanying this change).
+ *
+ * check-card-viewports.test.mjs's slow-readiness fixture is what proves the
+ * 20s deadline still bounds a page that never settles, and it now mutates
+ * its own height every animation frame — the same primitive this loop polls
+ * on — rather than on a fixed millisecond tick: no two of the loop's reads
+ * can straddle a real frame without the page having changed in between, and
+ * the only way they could land on the same stale value is the loop's own
+ * frame wait resolving through the fallback timer with no real frame firing
+ * in between, which a live foreground tab does not do. */
+const FRAME_FALLBACK_MS = 34;
 export const MEASURE_SCRIPT = `(async () => {
   const read = () => {
     const de = document.documentElement;
@@ -120,6 +169,14 @@ export const MEASURE_SCRIPT = `(async () => {
   readiness.catch(() => {}); // seen as handled even if it loses the race below
   await Promise.race([readiness, new Promise((r) => setTimeout(r, Math.max(0, deadline - Date.now())))]);
 
+  const nextFrame = () => new Promise((resolve) => {
+    let settled = false;
+    const finish = () => { if (!settled) { settled = true; resolve(); } };
+    requestAnimationFrame(finish);
+    setTimeout(finish, ${FRAME_FALLBACK_MS});
+  });
+  const fontsSettled = () => !document.fonts || document.fonts.status === 'loaded';
+
   let previous = null;
   let stable = 0;
   while (Date.now() < deadline) {
@@ -127,8 +184,8 @@ export const MEASURE_SCRIPT = `(async () => {
     const key = JSON.stringify(now);
     stable = key === previous ? stable + 1 : 0;
     previous = key;
-    if (stable >= 2 && now.rendered) return { ...now, timedOut: false };
-    await new Promise((r) => setTimeout(r, ${STABILITY_POLL_MS}));
+    if (stable >= 2 && now.rendered && fontsSettled()) return { ...now, timedOut: false };
+    await nextFrame();
   }
   return { ...read(), timedOut: true };
 })()`;

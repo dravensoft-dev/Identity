@@ -9,7 +9,7 @@ import { findChromium, launchChromium } from './lib/chromium.mjs';
 import { connect } from './lib/cdp.mjs';
 import {
   parseDsCard, classify, summarizeCards, skipExitCode, findCardPages, UNDER_RUN_SLACK,
-  measurePage, measureCardPage, mapWithConcurrency, interleaveForDispatch,
+  measurePage, measureCardPage, mapWithConcurrency, interleaveForDispatch, MEASURE_SCRIPT,
 } from './check-card-viewports.mjs';
 
 /* The only test here that needs a browser. It skips — loudly, in the
@@ -125,21 +125,27 @@ test('measurePage rejects instead of hanging when a page never answers', { skip:
 
 /* Models the reviewer's exact repro: window.arenaReady resolves slowly
  * (12s), and content the stability loop watches keeps changing for a while
- * after that — settling at 19.5s past readiness, i.e. 31.5s after
- * navigation, well inside the budget the *pre-fix* script mistakenly
- * granted itself (readiness time + 20s = 32s), but nowhere near the honest
- * single 20s budget the fix computes before either await.
+ * after that — well past the honest single 20s budget the script computes
+ * before either await, so the loop never gets to see three identical reads
+ * in a row and must report its own timedOut: true.
  *
- * Confirmed by hand against the unfixed script: measurePage rejected at
- * 30152ms with "Runtime.evaluate did not settle within 30000ms" — the outer
- * CDP timeout fired first because the in-page one never had a chance to.
- * Against the fix it resolves at ~20.1s with timedOut: true.
+ * Confirmed by hand against the unfixed (pre-deadline) script: measurePage
+ * rejected at 30152ms with "Runtime.evaluate did not settle within 30000ms"
+ * — the outer CDP timeout fired first because the in-page one never had a
+ * chance to. Against the fix it resolves at ~20.1s with timedOut: true.
  *
- * The mutation ticks every 100ms — faster than the loop's 250ms poll — so
- * no two poll reads 250ms apart can ever coincide on the same value before
- * the deadline; without that margin, two polls could land inside the same
- * tick by chance and register as "stable" long before 20s, making the test
- * flaky rather than a real test of the deadline. */
+ * The mutation is driven by requestAnimationFrame, chained indefinitely,
+ * rather than a millisecond tick — the same primitive the settling loop
+ * itself now polls on (see FRAME_FALLBACK_MS's comment in
+ * check-card-viewports.mjs). Incrementing on every real frame, starting well
+ * before the loop ever takes its first read at 12s, means no two of the
+ * loop's reads can straddle a real frame without this fixture having changed
+ * the box's height at least once in between — unlike a fixed-interval tick,
+ * which would need retuning any time the loop's own polling interval changed
+ * to keep proving the same thing. The only way two reads could coincide on a
+ * stale value is the loop's own frame wait resolving through its fallback
+ * timer with no real frame firing at all in between, which does not happen
+ * against a live, foregrounded Chromium target. */
 const slowReadinessPage = `<!doctype html><html><head><meta charset="utf-8">
 <script>
 window.arenaReady = () => new Promise((resolve) => setTimeout(resolve, 12000));
@@ -150,11 +156,12 @@ window.arenaReady = () => new Promise((resolve) => setTimeout(resolve, 12000));
 setTimeout(() => {
   const box = document.getElementById('box');
   let n = 0;
-  const grow = setInterval(() => {
+  const grow = () => {
     n += 1;
     box.style.height = (10 + n) + 'px';
-    if (n >= 195) clearInterval(grow); // 195 * 100ms = 19.5s of continuous change
-  }, 100);
+    if (n < 3000) requestAnimationFrame(grow); // keeps changing well past the 20s deadline
+  };
+  requestAnimationFrame(grow);
 }, 12000);
 </script>
 </body></html>`;
@@ -175,6 +182,56 @@ test('a slow-but-honest page times out inside the script instead of past the out
     chrome.kill();
     await server.close();
   }
+});
+
+/* MEASURE_SCRIPT is a string evaluated inside the page, so its runtime
+ * behaviour — does a settled page actually confirm across real frames, does
+ * a starved rAF actually fall back, does the deadline actually hold — can
+ * only be proven against a real browser, which the tests above already do
+ * (measurePage, and the slow-readiness timeout test in particular). What
+ * follows is what a plain string check on the source can still catch: that
+ * the shape the browser tests exercise is still there at all, so a future
+ * edit that silently drops the fallback timer, the frame wait, or the
+ * three-reads threshold fails here even when nobody runs the browser suite
+ * for it. This is not a substitute for the browser-backed tests — it is a
+ * cheap trip-wire for the same properties they verify at runtime. */
+test('MEASURE_SCRIPT settles on requestAnimationFrame instead of a fixed interval', () => {
+  assert.match(MEASURE_SCRIPT, /requestAnimationFrame\(finish\)/, 'the stability loop must wait on a real frame');
+  assert.match(MEASURE_SCRIPT, /await nextFrame\(\);/, 'the loop\'s own wait must be the frame helper, not an inline sleep');
+  assert.doesNotMatch(MEASURE_SCRIPT, /STABILITY_POLL_MS/, 'the old fixed-interval constant must be gone');
+});
+
+test('MEASURE_SCRIPT backs the frame wait with a bounded fallback timer', () => {
+  assert.match(MEASURE_SCRIPT, /setTimeout\(finish,\s*34\)/, 'a starved rAF (backgrounded/throttled tab) must still let the loop advance toward the 20s deadline');
+});
+
+test('MEASURE_SCRIPT still computes the 20s deadline before awaiting readiness', () => {
+  const deadlineAt = MEASURE_SCRIPT.indexOf('const deadline');
+  const readinessAt = MEASURE_SCRIPT.indexOf('const readiness');
+  assert.ok(deadlineAt >= 0 && readinessAt >= 0, 'both must be present in the script');
+  assert.ok(deadlineAt < readinessAt, 'the deadline must be computed before readiness is awaited, so it bounds the whole script, not just the stability loop');
+});
+
+test('MEASURE_SCRIPT still requires three consecutive identical reads, rendered content, and settled fonts, before accepting', () => {
+  assert.match(MEASURE_SCRIPT, /stable >= 2 && now\.rendered && fontsSettled\(\)/, 'the confirming-read count did not change along with the polling cadence, and the font-race gate must be part of the same accept check, not a separate one that could be skipped');
+});
+
+/* fontsSettled() is the fix for a real regression this change first
+ * introduced and then closed (see its comment in check-card-viewports.mjs):
+ * document.fonts.ready resolves once, but forms.card.html and
+ * ConfirmDialog.card.html both request a font face — an icon glyph, a
+ * monospace label — only after that promise has already settled, so a fast
+ * frame-cadence loop could lock onto three identical reads of the
+ * fallback-glyph layout before the real font ever swaps in. This is a plain
+ * string check on the guard existing at all; the browser-backed regression
+ * itself is what the before/after measurement diff in the report proves, not
+ * this test. */
+test('MEASURE_SCRIPT re-checks document.fonts.status rather than trusting a single await', () => {
+  assert.match(MEASURE_SCRIPT, /fontsSettled = \(\) => !document\.fonts \|\| document\.fonts\.status === 'loaded'/);
+});
+
+test('MEASURE_SCRIPT still reports timedOut: true on exhaustion, never a passing shape', () => {
+  assert.match(MEASURE_SCRIPT, /return \{ \.\.\.read\(\), timedOut: true \};/);
 });
 
 /* Fakes the CDP transport, not the browser — measureCardPage's job is to
