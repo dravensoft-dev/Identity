@@ -304,6 +304,66 @@ step happens to omit `title`.
 placement (any refactor toward one wrapper needs the same stopPropagation), and should
 gain the same `title`-falls-back-to-`eyebrow` label. **Open debt on the React layer.**
 
+### Onboarding — Angular's modal is a real modal, React's is an assertion
+
+**React:** `Onboarding.jsx:50` renders `role="dialog" aria-modal="true"` on the panel and
+manages no focus whatsoever — nothing moves focus into the panel when the tour opens,
+nothing restores it when the tour closes, Tab and Shift+Tab walk straight out of the panel
+into the page behind the scrim, and Escape does nothing. A keyboard user therefore has to
+tab the whole page to reach "Next", while `aria-modal="true"` has already told assistive
+technology that the page they are tabbing through is unavailable.
+
+**Angular:** `arena-onboarding` implements the contract it asserts. Focus moves into the
+panel's first focusable control on open — Back on a middle step, Skip on the first, since
+`@if (index() > 0)` omits Back there — and is restored to whatever held it beforehand on
+close. Tab and Shift+Tab cycle within the panel: Tab from Next wraps to the first control
+rather than reaching anything behind the `fixed inset-0` scrim. Escape reports dismissal
+through the existing `skip` output — the same one the scrim click and the Skip button
+already use — rather than introducing a second close path a host would have to wire
+separately; Escape is how a user leaves a tour, not how they finish it, so it reports
+`skip` even on the last step, where the Skip button itself is not rendered. The panel
+carries `tabindex="-1"` so the trap has a fallback focus target, though the template
+always renders at least the Next button, so the fallback is never reached in practice.
+
+None of this is a fourth implementation: it reuses
+`frameworks/angular/primitives/focus-trap.ts` (`handleOpenTransition`, `trapTabKey`)
+unchanged, the module `arena-confirm-dialog`'s fix wave produced and
+`arena-command-palette` already shares. The transition is driven off `visible()`, not
+`open()` — an `open` tour with an empty `steps` array renders no panel, so there is
+nothing to focus into.
+
+**Why:** this is the third occurrence on this branch of one defect —
+`aria-modal="true"` asserted over a free-roaming focus — after `ConfirmDialog` and
+`CommandPalette`. The ruling that settled the first two applies unchanged: a trap stops
+focus escaping *outward*, so `tabindex="-1"` on the contents is not a trap, and a modal
+that a keyboard user cannot reach or leave is not shippable. Onboarding predates the
+shared helper, which is why it was missed rather than decided. Mirroring React here
+would have propagated the same gap into a second layer for the third time.
+
+**Tested how:** `frameworks/angular/test/onboarding-focus-trap.test.ts` exercises the
+shared helpers against a hand-built DOM tree shaped like Onboarding's panel (the
+non-focusable dots div, then Back / Skip / Next), with a real focusable control appended
+to the page behind the scrim that the trap must never hand focus to — real focus
+movement, real `document.activeElement`, a genuine open-then-close-then-restore sequence,
+a first-step panel with no Back, and a same-state re-run standing in for advancing a step,
+which must not yank focus back to Back. It does **not** render `<arena-onboarding>`
+through TestBed, for the reason `confirm-dialog-focus-trap.test.ts` documents: under this
+repo's JIT-only harness `open` can never become `true`, so `@if (visible())` can never
+render the panel. **What that leaves unproven is that the component's own
+`afterRenderEffect` and `onKeydown` invoke these functions at the right moment** — the
+helpers themselves are proven, the wiring is proven only to the extent that
+`ngc --strictTemplates` (`bun run check:angular`) typechecks it against the real
+`viewChild` and `inject(DOCUMENT)` types. The same limit already applies to
+`ConfirmDialog` and `CommandPalette`.
+
+**Also still missing, on both layers:** `inert` on the background. The keyboard trap is
+what keeps focus in; a pointer-driven assistive technology that never goes through Tab is
+not covered — identical to the caveat `ConfirmDialog`'s entry records.
+
+**Converges:** yes — React should gain focus-in on open, restore on close, a Tab trap and
+Escape-to-skip. **Open debt on the React layer**, the same shape as `ConfirmDialog`'s,
+`ErrorState`'s and `CommandPalette`'s.
+
 ### Onboarding — no icon, on either layer
 
 **React:** `Onboarding.jsx` renders no icon anywhere — no `<i className="ph-...">` in the

@@ -1,5 +1,18 @@
-import { ChangeDetectionStrategy, Component, DOCUMENT, computed, inject, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DOCUMENT,
+  ElementRef,
+  afterRenderEffect,
+  computed,
+  inject,
+  input,
+  output,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { onboardingStyles } from './onboarding.variants';
+import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../focus-trap';
 
 /** One step of an `arena-onboarding` tour. All three fields are optional so a
  *  step can carry only the ones it needs -- React's `Onboarding.jsx` renders
@@ -22,7 +35,19 @@ export interface ArenaOnboardingStep {
  *  same as React's `onClick={onSkip}` on its own scrim div. Because the
  *  panel is a descendant of the host here (React renders scrim and panel as
  *  siblings), a click inside the panel stops its own propagation so it
- *  never reaches the host's scrim listener. */
+ *  never reaches the host's scrim listener.
+ *
+ *  Modal by assertion and by behaviour, not just by assertion: because the
+ *  panel carries `aria-modal="true"`, focus moves into it on open and is
+ *  restored to whatever held it beforehand on close, Tab/Shift+Tab cycle
+ *  within the panel rather than walking into the page behind the scrim, and
+ *  Escape reports dismissal through the same `skip` output the scrim click
+ *  and the Skip button already use. This reuses `arena-confirm-dialog`'s
+ *  focus contract through the shared
+ *  `frameworks/angular/primitives/focus-trap.ts`
+ *  (`handleOpenTransition`, `trapTabKey`) rather than a second
+ *  implementation. React's `Onboarding.jsx` has none of it -- see
+ *  `components-divergences.md`. */
 @Component({
   selector: 'arena-onboarding',
   standalone: true,
@@ -30,10 +55,12 @@ export interface ArenaOnboardingStep {
   host: {
     '[class]': 'styles().root()',
     '(click)': 'onScrimClick()',
+    '(keydown)': 'onKeydown($event)',
   },
   template: `
     @if (visible()) {
-      <div [class]="styles().panel()" role="dialog" aria-modal="true" [attr.aria-label]="label()"
+      <div #panel [class]="styles().panel()" role="dialog" aria-modal="true" tabindex="-1"
+           [attr.aria-label]="label()"
            (click)="$event.stopPropagation()"
            [style.top.px]="position()?.top" [style.left.px]="position()?.left">
         @if (step().eyebrow; as eyebrow) {
@@ -76,6 +103,7 @@ export class Onboarding {
   readonly done = output<void>();
 
   private readonly doc = inject(DOCUMENT);
+  private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
 
   protected readonly visible = computed(() => this.open() && this.steps().length > 0);
   protected readonly step = computed<ArenaOnboardingStep>(() => this.steps()[this.index()] ?? {});
@@ -110,7 +138,42 @@ export class Onboarding {
     return { top, left: Math.max(EDGE, left) };
   });
 
+  /** Bookkeeping `handleOpenTransition` mutates across renders -- a plain
+   *  object rather than a signal, matching `arena-confirm-dialog`'s and
+   *  `arena-command-palette`'s own field, for the identical reason: reading
+   *  it inside the effect below must never register as a dependency, or
+   *  writing it there would make the effect re-run itself. */
+  private readonly focusTrap: FocusTrapState = { wasOpen: false, restoreTo: null };
+
+  constructor() {
+    afterRenderEffect(() => {
+      // `visible()`, not `open()`: an `open` tour with no steps renders no
+      // panel at all, so there is nothing to move focus into and nothing
+      // for the user to have escaped from on the way back out.
+      const isOpen = this.visible();
+      untracked(() => {
+        handleOpenTransition(this.focusTrap, isOpen, this.panel()?.nativeElement ?? null, this.doc.activeElement);
+      });
+    });
+  }
+
   protected onScrimClick(): void {
     if (this.visible()) this.skip.emit();
+  }
+
+  /** Escape routes to `skip` -- the tour's existing dismissal, the same one
+   *  the scrim click and the Skip button report -- rather than inventing a
+   *  second close path the host would have to wire separately. */
+  protected onKeydown(event: KeyboardEvent): void {
+    if (!this.visible()) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.skip.emit();
+      return;
+    }
+    if (event.key === 'Tab') {
+      const panel = this.panel()?.nativeElement;
+      if (panel) trapTabKey(panel, event, this.doc.activeElement);
+    }
   }
 }
