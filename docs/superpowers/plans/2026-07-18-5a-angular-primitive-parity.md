@@ -97,7 +97,7 @@ identical by construction, since `colors.css` is nothing but that mapping.
 | `var(--danger)`, `var(--error)` | `text-error` / `border-error` | **never** `bg-error` — danger is outline |
 | `var(--danger-soft)` | `bg-error/14` | |
 | `var(--danger-fill)` | `bg-error-fill` | ConfirmDialog's final step only |
-| `Avatar`'s presence dot (`status` variant) | `bg-success` / `bg-warning` / `bg-error` / `bg-base-content/52` | **carve-out from the row above:** presence is its own semantic family, not a danger surface — a status taxonomy read at a glyph's size, where an outline would not register. See README's Danger convention section. This is the only place in the ledger a filled `bg-error` is correct. |
+| `Avatar`'s presence dot (`status` variant) | `bg-success` / `bg-warning` / `bg-error` / `bg-base-content/52` | **carve-out from the row above:** presence is its own semantic family, not a danger surface — a status taxonomy read at a glyph's size, where an outline would not register. See README's Danger convention section. `Tag`'s leading dot and `ActivityFeed`'s per-row tone dot are the same carve-out, filled via `bg-current`/`currentColor` from `tone` — an identity mark, not a risk indicator. |
 | `var(--success)` / `--success-soft` | `text-success` / `bg-success/16` | |
 | `var(--warning)` / `--warning-soft` | `text-warning` / `bg-warning/18` | |
 | `var(--info)` / `--info-soft` | `text-info` / `bg-info/16` | |
