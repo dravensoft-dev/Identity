@@ -252,6 +252,61 @@ intentional simplification rather than a narrowing to flag.
 **Converges:** no — Angular's shape is preferred; React should stop treating Clear as
 optional. **Open debt on the React layer**, low priority.
 
+### CommandPalette — Angular is an accessible combobox, React sets no roles at all
+
+**React:** `CommandPalette.jsx` renders `role="dialog" aria-modal="true"` on the panel
+and nothing else — the search `<input>` carries no `role`, no `aria-expanded`, no
+`aria-controls` and no `aria-activedescendant`, and each row is a plain `<button>` with
+no `role="option"` and no `aria-selected`. A screen reader user gets no indication that
+the input drives a filtered list, or which row is currently active as arrow keys move
+through it.
+
+**Angular:** `arena-command-palette` implements the ARIA 1.2 editable-combobox-with-
+listbox-popup pattern: the input carries `role="combobox"`, `aria-autocomplete="list"`,
+`aria-haspopup="listbox"`, `aria-expanded="true"` and `aria-controls` pointing at the
+row list's id; the row list itself carries `role="listbox"`; and `aria-activedescendant`
+on the input tracks the active row's id, computed from a per-instance unique id
+(a module-level counter, matching `arena-confirm-dialog`'s `nextId` shape, so two
+palettes on one page never collide). Each row carries `role="option"`, `aria-selected`
+and `tabindex="-1"`. Selection is virtual: DOM focus never leaves the input while the
+palette is open, so there is no separate focus trap to build — nothing else in the
+palette is ever a legal Tab stop.
+
+**Why:** the same category of gap `ConfirmDialog`, `ErrorState` and `Onboarding`
+already closed — an interactive, keyboard-driven list with no roles and no active-item
+announcement is not usable with a screen reader, and mirroring the gap would have
+shipped it into a second layer. This is also the task brief's own explicit ask: "A
+combobox/listbox pattern wants role, aria-activedescendant or managed focus, and an
+accessible name."
+
+**Converges:** yes — React should gain the same roles and `aria-activedescendant`
+wiring. **Open debt on the React layer.**
+
+### CommandPalette — running a command does not close the palette in Angular
+
+**React:** `CommandPalette.jsx`'s internal `run(c)` helper calls `onClose()`
+unconditionally before invoking the command, for both a row click and Enter — so
+running a command always closes the palette, even when the host's own `onClose`
+forgets to, and even when Enter is pressed with an empty filtered list.
+
+**Angular:** `run.emit(command)` reports the command alone; nothing in the component
+closes it. The host is expected to react the same way it already does to
+`arena-confirm-dialog`'s `confirmed`/`cancelled` and `arena-onboarding`'s
+`skip`/`done` — by setting `open` to `false` itself, as `command-palette.prompt.md`'s
+own example shows: `(run)="paletteOpen.set(false); dispatch($event)"`.
+
+**Why:** every other controlled Angular primitive in this layer already puts the
+`open`-mutating decision on the host, since `open` is an input the component itself
+never owns or writes. Auto-closing here would have been the one primitive in the layer
+that manages its own visibility, inconsistent with its siblings for no stated reason.
+Not treated as a defect in either layer — a considered idiom difference, not a bug —
+but recorded because it is a real behavioural gap a consumer could get wrong: a `run`
+handler that forgets to close the palette leaves it open after running.
+
+**Converges:** no — this is the correct Angular idiom, matching `ConfirmDialog` and
+`Onboarding`. Low priority for React, since React's self-closing behaviour is also
+defensible on its own.
+
 ## How to add an entry
 
 When you find a behavioural difference between layers:

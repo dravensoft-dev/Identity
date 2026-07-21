@@ -2,6 +2,7 @@ export * from './alert';
 export * from './avatar';
 export * from './breadcrumbs';
 export * from './bulk-action-bar';
+export * from './command-palette';
 export * from './confirm-dialog';
 export * from './empty-state';
 export * from './error-state';

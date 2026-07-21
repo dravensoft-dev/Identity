@@ -50,6 +50,7 @@
     --text-ctl-sm: var(--dz-text-sm);
     --text-ctl-xs: var(--dz-text-xs);
     --text-ctl-2xs: var(--dz-text-2xs);
+    --font-weight-medium: var(--fw-medium);
     --font-weight-semibold: var(--fw-semibold);
     --font-weight-bold: var(--fw-bold);
     --font-weight-extrabold: var(--fw-extrabold);
@@ -92,6 +93,7 @@
     --ease-emphatic: var(--ease-emphatic);
     --blur-scrim: var(--scrim-blur);
     --z-index-modal-nested: var(--z-modal-nested);
+    --z-index-palette: var(--z-palette);
     --z-index-onboarding: var(--z-onboarding);
   }
 }
@@ -274,6 +276,9 @@
   .z-onboarding {
     z-index: var(--z-index-onboarding);
   }
+  .z-palette {
+    z-index: var(--z-index-palette);
+  }
   .mt-1 {
     margin-top: var(--spacing-1);
   }
@@ -379,6 +384,9 @@
   .h-full {
     height: 100%;
   }
+  .max-h-80 {
+    max-height: calc(var(--spacing) * 80);
+  }
   .min-h-13 {
     min-height: calc(var(--spacing) * 13);
   }
@@ -399,6 +407,9 @@
   }
   .w-115 {
     width: calc(var(--spacing) * 115);
+  }
+  .w-140 {
+    width: calc(var(--spacing) * 140);
   }
   .w-\[62\%\] {
     width: 62%;
@@ -479,6 +490,9 @@
   .self-start {
     align-self: flex-start;
   }
+  .overflow-auto {
+    overflow: auto;
+  }
   .overflow-hidden {
     overflow: hidden;
   }
@@ -507,6 +521,10 @@
   .border-\[length\:var\(--bw-strong\)\] {
     border-style: var(--tw-border-style);
     border-width: var(--bw-strong);
+  }
+  .border-b-\[length\:var\(--bw\)\] {
+    border-bottom-style: var(--tw-border-style);
+    border-bottom-width: var(--bw);
   }
   .border-dashed {
     --tw-border-style: dashed;
@@ -588,6 +606,12 @@
   .bg-primary {
     background-color: var(--color-primary);
   }
+  .bg-primary\/14 {
+    background-color: var(--color-primary);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-primary) 14%, transparent);
+    }
+  }
   .bg-scrim {
     background-color: var(--color-scrim);
   }
@@ -618,8 +642,14 @@
   .p-0 {
     padding: 0px;
   }
+  .p-1\.5 {
+    padding: calc(var(--spacing) * 1.5);
+  }
   .p-5 {
     padding: var(--spacing-5);
+  }
+  .px-1\.5 {
+    padding-inline: calc(var(--spacing) * 1.5);
   }
   .px-2 {
     padding-inline: var(--spacing-2);
@@ -651,17 +681,26 @@
   .py-1 {
     padding-block: var(--spacing-1);
   }
+  .py-2\.5 {
+    padding-block: calc(var(--spacing) * 2.5);
+  }
   .py-3\.5 {
     padding-block: calc(var(--spacing) * 3.5);
   }
   .py-4 {
     padding-block: var(--spacing-4);
   }
+  .py-4\.5 {
+    padding-block: calc(var(--spacing) * 4.5);
+  }
   .py-14 {
     padding-block: calc(var(--spacing) * 14);
   }
   .pt-5\.5 {
     padding-top: calc(var(--spacing) * 5.5);
+  }
+  .pt-\[12vh\] {
+    padding-top: 12vh;
   }
   .pr-3 {
     padding-right: var(--spacing-3);
@@ -674,6 +713,9 @@
   }
   .text-center {
     text-align: center;
+  }
+  .text-left {
+    text-align: left;
   }
   .font-body {
     font-family: var(--font-body);
@@ -757,6 +799,10 @@
   .font-extrabold {
     --tw-font-weight: var(--font-weight-extrabold);
     font-weight: var(--font-weight-extrabold);
+  }
+  .font-medium {
+    --tw-font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-medium);
   }
   .font-semibold {
     --tw-font-weight: var(--font-weight-semibold);
