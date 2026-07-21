@@ -1,6 +1,7 @@
 import { afterNextRender, DestroyRef, DOCUMENT, ElementRef, inject, signal, Signal } from '@angular/core';
 
-/* Breakpoints are constants for the life of the document, so each is read once. */
+/* A successfully-resolved breakpoint is a constant for the life of the document,
+ * so it is cached once per name. A FAILED read is never cached -- see readBreakpoint. */
 const breakpoints = new Map<string, number>();
 
 /** The host element's content width, `null` until the first measure -- render the
@@ -30,11 +31,18 @@ export function containerWidth(): Signal<number | null> {
   return width.asReadonly();
 }
 
-/** Reads `--bp-<name>` off the document root, once per name. Returns `NaN` when the
- *  token is absent; every comparison against `NaN` is false, which lands on the wide
- *  layout. Call from an injection context -- `inject(DOCUMENT)` runs before the cache
- *  is consulted rather than after, so the contract is the same on every call instead
- *  of binding only on the first one and silently depending on call order thereafter.
+/** Reads `--bp-<name>` off the document root, caching a successful read once per
+ *  name. Returns `NaN` when the token is absent -- either because there is no
+ *  `defaultView` (the platform-server case the `ResizeObserver` guard above also
+ *  serves) or because the stylesheet's custom properties have not resolved yet at
+ *  call time. That failure is deliberately NOT cached, so a later call -- once a
+ *  `document`/stylesheet is available -- re-reads and can recover the real value,
+ *  rather than pinning every caller to the wide layout for the life of the module.
+ *  Every comparison against `NaN` is false in the meantime, which lands on the wide
+ *  layout. Call from an injection context -- `inject(DOCUMENT)` runs before the
+ *  cache is consulted rather than after, so the contract is the same on every call
+ *  instead of binding only on the first one and silently depending on call order
+ *  thereafter.
  *  @param name the breakpoint token's suffix @returns the breakpoint in px, or `NaN` */
 export function readBreakpoint(name: 'sm' | 'md' | 'lg'): number {
   const doc = inject(DOCUMENT);
@@ -43,6 +51,6 @@ export function readBreakpoint(name: 'sm' | 'md' | 'lg'): number {
   const raw = doc.defaultView?.getComputedStyle(doc.documentElement).getPropertyValue(`--bp-${name}`);
   const value = Number.parseFloat(raw ?? '');
   const px = Number.isFinite(value) ? value : Number.NaN;
-  breakpoints.set(name, px);
+  if (Number.isFinite(px)) breakpoints.set(name, px);
   return px;
 }
