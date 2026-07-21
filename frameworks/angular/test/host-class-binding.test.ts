@@ -102,7 +102,7 @@ TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
  * a template does not route to a signal input under this JIT-only harness (the
  * file header above documents why for Skeleton's `variant` and Breadcrumbs'
  * `items`), so this host exists only to prove what DOES happen with one --
- * `AppLogoStrayAttributeTest` below never calls `detectChanges()`, because
+ * the test using `AppLogoStaticAttributeHost` below never calls `detectChanges()`, because
  * `name()` throws NG0950 ("Input is required but no value is available yet")
  * the moment the child's template tries to read it, since the required input
  * was truly never satisfied under this harness, not merely defaulted quietly
