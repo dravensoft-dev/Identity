@@ -2,16 +2,14 @@
 export default {
   "component": "Skeleton",
   "slots": {
-    "root": "arena-shimmer",
+    "root": "block arena-shimmer",
     "stack": "flex flex-col gap-2.5 w-full",
     "line": "arena-shimmer h-3 rounded-xs w-full",
     "lastLine": "arena-shimmer h-3 rounded-xs w-[62%]"
   },
   "variants": {
     "variant": {
-      "text": {
-        "root": "hidden"
-      },
+      "text": {},
       "line": {
         "root": "h-3 w-full rounded-xs"
       },

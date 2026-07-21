@@ -31,6 +31,9 @@ GlobalRegistrator.register();
 import '@angular/compiler';
 import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync, readdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
@@ -145,6 +148,60 @@ test('arena-skeleton: the host itself carries the loading status, not a wrapper 
   assert.equal(host.getAttribute('role'), 'status');
   assert.equal(host.getAttribute('aria-label'), 'Loading');
   assert.equal(host.children.length, 0, 'the default (non-stacked) variant renders no children of its own');
+});
+
+/* Every primitive host-binds its recipe's visible slot directly onto its own
+ * custom element (this file's own header comment), and an unknown element's
+ * UA-default display is `inline` -- a box that a width/height utility cannot
+ * size. Skeleton's `block arena-shimmer` fix (Skeleton.manifest.json) exists
+ * because its `root` slot shipped without a display utility and collapsed to
+ * a zero-area box under exactly that default. Sixteen more primitives are
+ * still to come, so this guard is general rather than one more per-primitive
+ * assertion: every directory under `primitives/` is read at run time and
+ * checked against its manifest, so a future slice inherits the guard for
+ * free rather than needing its own copy pasted in.
+ *
+ * The obvious version of this guard would render each host in this file's
+ * real TestBed tree and assert `getComputedStyle(host).display !== 'inline'`
+ * -- but that only proves something if the generated stylesheet is actually
+ * in effect. It is not: `frameworks/tailwind/utilities.css` wraps every
+ * rule in `@layer utilities { ... }`, and happy-dom's CSS engine does not
+ * evaluate rules inside `@layer` at all (confirmed by hand: injecting
+ * `@layer utilities { .inline-flex { display: inline-flex } }` into a
+ * happy-dom document and reading `getComputedStyle` on a classed element
+ * back reports `''`, not `'inline-flex'` -- the same probe with the `@layer`
+ * wrapper stripped resolves correctly). A computed-style assertion here
+ * would therefore pass whether or not the real utility ever applies,
+ * which is worse than no guard at all -- it would look like coverage while
+ * testing nothing. So this asserts the weaker but real thing instead: the
+ * manifest string a real browser DOES apply carries a display utility,
+ * checked as a whole word so `flex-col` cannot be mistaken for `flex`. */
+const DISPLAY_UTILITY =
+  /(?:^|\s)(?:block|inline-block|inline|flex|inline-flex|grid|inline-grid|table|inline-table|table-[a-z-]+|flow-root|contents|list-item|hidden)(?=\s|$)/;
+
+function kebabToPascal(dirName: string): string {
+  return dirName.split('-').map((segment) => segment[0].toUpperCase() + segment.slice(1)).join('');
+}
+
+test('every Angular primitive\'s root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
+  const primitivesDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'primitives');
+  const manifestsDir = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'tailwind', 'components');
+  const names = readdirSync(primitivesDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
+  assert.ok(names.length > 0, 'no primitive directories found -- the guard would silently check nothing');
+
+  for (const name of names) {
+    const manifestPath = join(manifestsDir, `${kebabToPascal(name)}.manifest.json`);
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { slots?: Record<string, string> };
+    const root = manifest.slots?.root;
+    assert.ok(typeof root === 'string', `${name}: ${manifestPath} has no "slots.root" string`);
+    assert.match(
+      root as string,
+      DISPLAY_UTILITY,
+      `${name}: root slot "${root}" carries no display utility -- host-binding it collapses to the UA-default inline box`,
+    );
+  }
 });
 
 after(() => {
