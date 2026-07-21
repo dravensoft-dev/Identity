@@ -43,3 +43,12 @@ test('the close and action controls carry no border or fill of their own -- they
   assert.match(styles.close(), /bg-transparent/);
   assert.match(styles.close(), /border-none/);
 });
+
+test('the message slot carries the title-separating margin when a title is present', () => {
+  assert.match(alertStyles({ titled: true }).message(), /\bmt-1\b/);
+});
+
+test('the message slot carries no margin when there is no title -- the default, matching React\'s unset marginTop', () => {
+  assert.doesNotMatch(alertStyles({ titled: false }).message(), /\bmt-1\b/);
+  assert.doesNotMatch(alertStyles().message(), /\bmt-1\b/);
+});

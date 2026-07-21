@@ -37,9 +37,16 @@ export default {
         "icon": "text-neutral",
         "action": "text-neutral"
       }
+    },
+    "titled": {
+      "true": {
+        "message": "mt-1"
+      },
+      "false": {}
     }
   },
   "defaultVariants": {
-    "tone": "info"
+    "tone": "info",
+    "titled": false
   }
 } as const;

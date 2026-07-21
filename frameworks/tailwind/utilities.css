@@ -243,6 +243,9 @@
   .bottom-0 {
     bottom: 0px;
   }
+  .mt-1 {
+    margin-top: var(--spacing-1);
+  }
   .mt-2\.5 {
     margin-top: calc(var(--spacing) * 2.5);
   }

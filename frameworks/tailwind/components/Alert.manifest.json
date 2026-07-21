@@ -16,7 +16,11 @@
       "warning": { "root": "bg-warning/18 border-warning", "icon": "text-warning", "action": "text-warning" },
       "danger": { "root": "bg-error/14 border-error", "icon": "text-error", "action": "text-error" },
       "neutral": { "root": "bg-base-200 border-neutral", "icon": "text-neutral", "action": "text-neutral" }
+    },
+    "titled": {
+      "true": { "message": "mt-1" },
+      "false": {}
     }
   },
-  "defaultVariants": { "tone": "info" }
+  "defaultVariants": { "tone": "info", "titled": false }
 }

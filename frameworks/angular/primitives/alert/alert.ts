@@ -52,6 +52,6 @@ export class Alert {
   readonly action = output<void>();
   readonly closed = output<void>();
 
-  protected readonly styles = computed(() => alertStyles({ tone: this.tone() }));
+  protected readonly styles = computed(() => alertStyles({ tone: this.tone(), titled: !!this.title() }));
   protected readonly toneIcon = computed(() => TONE_ICONS[this.tone()]);
 }
