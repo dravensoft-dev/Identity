@@ -298,6 +298,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The six arbitrary values are gone.** Five in `Button.manifest.json` and one in
   `tag.variants.ts` existed only because the token they needed was not exposed. Each is now
   a real utility.
+- **`frameworks/angular/theme/arena-material.css` bridges Angular Material 22.0.5
+  again — 24 custom-property names corrected, and a gate that keeps them honest.**
+  Angular Material had renamed its theming custom properties, and before this change
+  only the two `--mat-table-*` names and the `.arena-side-nav` rules were read by the
+  installed package — every button, the outlined form field, the elevated card, the
+  dialog container, the tab header and indicator, the snackbar and both progress
+  indicators rendered stock Material, silently. The renames were not uniform prefix
+  swaps — word order moved too (`--mdc-filled-button-container-color` →
+  `--mat-button-filled-container-color`, `--mdc-circular-progress-active-indicator-color`
+  → `--mat-progress-spinner-active-indicator-color`), which is why no pattern match had
+  caught them. `@angular/material` is now pinned as a devDependency at 22.0.5, and a new
+  `bun run check:material` gate pulls every custom property out of the CSS with
+  `scripts/lib/css-decls.mjs` and asserts each one is read by the installed package and
+  each Arena token it references exists — a grep, not a renderer, so it stays
+  runtime-portable under plain `node` with no browser. The gate now reports 34 bridge
+  properties resolving. Documented in `frameworks/angular/README.md`, including what the
+  gate does not cover: it checks that a name exists, not that it is the right name for
+  the element being styled.
 
 ### Removed
 
@@ -322,25 +340,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Known issues
 
-- **Most of `frameworks/angular/theme/arena-material.css` is inert against Angular
-  Material 22, and is not fixed in this change.** Angular Material renamed its theming
-  custom properties, and 24 of the 26 property names the file carried before the SideNav
-  work no longer exist. A property Material does not read fails silently — no error, no
-  warning, the control just renders stock Material. Only the two `--mat-table-*` names
-  and the new `.arena-side-nav` rules resolve today; every button, the outlined form
-  field, the elevated card, the dialog container, the tab header and indicator, the
-  snackbar and both progress indicators do not. The renames were not uniform prefix
-  swaps — word order moved too (`--mdc-filled-button-container-color` →
-  `--mat-button-filled-container-color`, `--mdc-circular-progress-active-indicator-color`
-  → `--mat-progress-spinner-active-indicator-color`), which is why no pattern match
-  caught them. **Root cause:** `@angular/material` is not a dependency of this repo, so
-  nothing in the tree can verify a property name and the Material version the bridge
-  targets is written nowhere. **Proposed fix, not yet done:** add `@angular/material` as
-  a devDependency and a `check:material` gate that pulls the names out of the CSS with
-  `scripts/lib/css-decls.mjs` and asserts each appears in the installed package — a grep,
-  not a renderer, so it stays runtime-portable under plain `node`. Documented in
-  `frameworks/angular/README.md`; it is its own piece of work, deliberately not folded
-  into the primitive-parity change that surfaced it.
 - **The three charts surface hover data pointer-only, and the doughnut's legend column
   is an `overflow: auto` region with nothing focusable** — a WCAG 2.1.1 failure on
   Chrome, which unlike Firefox does not tab to scrollable containers. The visually-hidden

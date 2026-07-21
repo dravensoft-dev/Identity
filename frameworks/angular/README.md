@@ -10,10 +10,10 @@ Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
   `--mdc-*` / `--mat-*` vars so every Material control renders in Arena. What it covers:
   buttons (filled, outlined, and an outline-only `arena-danger`), the outlined form
   field, cards, dialogs, tables, tabs, the snackbar, spinner/progress-bar, and
-  **SideNav** — `mat-nav-list` with `<a mat-list-item [activated]>`. **Most of that
-  coverage is currently inert against Angular Material 22 — read
-  [Known issue](#known-issue--most-of-the-material-bridge-is-currently-inert) before
-  adopting it.** SideNav is the
+  **SideNav** — `mat-nav-list` with `<a mat-list-item [activated]>`. **The bridge is
+  verified against Angular Material 22.0.5 — read
+  [Material bridge](#material-bridge-supported-and-verified) for what that means and
+  what it does not.** SideNav is the
   one component of its spec that stays a Material bridge rather than becoming an
   `arena-*` primitive: `mat-nav-list` already handles the anchor-or-button
   distinction, the active state and the keyboard behaviour, so reimplementing it
@@ -110,46 +110,33 @@ Reimplementing them as `arena-*` would duplicate years of hardened keyboard
 accessibility, overlay positioning, i18n and focus management — badly — and would
 strip `arena-material.css` of most of its reason to exist.
 
-### Known issue — most of the Material bridge is currently inert
+### Material bridge: supported and verified
 
-**Read this before adopting the bridge.** The list above states the design intent, not
-what `arena-material.css` currently achieves. Angular Material renamed its theming
-custom properties, and **24 of the 26 property names the file carried before the
-SideNav work do not exist in Angular Material 22**. A custom property Material does not
-read is silently inert: nothing errors, nothing warns, the control simply renders stock
-Material.
+**The primitives stand alone.** No file under `frameworks/angular/primitives/` imports
+`@angular/material` — a consumer can use all 21 with no Material installed at all.
+`@angular/material` is an **optional** peer dependency of the published package; nothing
+here requires it.
 
-- **What still works:** the table (`--mat-table-background-color`,
-  `--mat-table-row-item-outline-color`) and the `.arena-side-nav` rules, whose property
-  names were verified against the real published package.
-- **What does not:** every filled, outlined and text button, the outlined form field,
-  the elevated card, the dialog container, the tab header and indicator, the snackbar,
-  and both the circular and linear progress indicators. Those render Material's own
-  defaults today, not Arena's.
+**Material is the recommended bridge for the rest.** Arena does not reimplement the
+components Material already provides — Button, Input, Select, Dialog, Menu, Table, Toast
+and the others carry overlay positioning, focus management, keyboard navigation and
+i18n, and duplicating that badly would be worse than bridging it. `arena-material.css`
+is that bridge: it maps Arena tokens onto Angular Material's `--mdc-*` / `--mat-*` custom
+properties so the components listed above render in Arena instead of stock Material.
 
-The renames were not uniform prefix swaps, which is why no pattern match caught them —
-word order moved as well:
+**The bridge is verified, not rendered.** `bun run check:material` pulls every custom
+property `arena-material.css` sets out of the file with `scripts/lib/css-decls.mjs` and
+asserts each one is a name the installed Angular Material package actually reads, and
+that every Arena token it references exists. What the gate does **not** cover: it checks
+that a name exists, not that it is the right name for the element being styled — that
+distinction is exactly the class of error that hit this file once already, and only a
+real render catches it. There is no Angular Material application in this repo, so the
+bridge has been verified name-by-name against the installed package, not visually
+confirmed in a running app.
 
-| Was | Is |
-| --- | --- |
-| `--mdc-filled-button-container-color` | `--mat-button-filled-container-color` |
-| `--mdc-elevated-card-container-color` | `--mat-card-elevated-container-color` |
-| `--mdc-dialog-container-shape` | `--mat-dialog-container-shape` |
-| `--mat-tab-header-active-label-text-color` | `--mat-tab-active-label-text-color` |
-| `--mdc-tab-indicator-active-indicator-color` | `--mat-tab-active-indicator-color` |
-| `--mdc-circular-progress-active-indicator-color` | `--mat-progress-spinner-active-indicator-color` |
-
-**Why it rotted, and the proposed fix.** `@angular/material` is not a dependency of
-this repo, so nothing in the tree can verify a property name and the version the bridge
-targets is written nowhere. The fix is two things together: add `@angular/material` as
-a **devDependency** (dev-only, like the rest of this repo's tooling — nothing here is
-published), and add a `check:material` gate that pulls the property names out of
-`arena-material.css` with the existing `scripts/lib/css-decls.mjs` and asserts each one
-appears in the installed package. That is a grep, not a renderer, so it stays
-runtime-portable under plain `node` with no browser — and it pins the Material version
-the bridge targets, which is the thing whose absence allowed this to happen. **Neither
-the renames nor the gate is done**; both are their own piece of work, deliberately not
-folded into the primitive-parity plan that surfaced them.
+**It targets Angular Material 22.0.5.** That version is pinned as a devDependency in the
+root `package.json` — a bridge with no stated target version cannot be falsified, and
+`check:material` fails the moment the bridge and the installed package disagree.
 
 ## Verifying the layer
 
