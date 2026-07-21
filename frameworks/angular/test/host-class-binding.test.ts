@@ -1,14 +1,19 @@
 /* Pins the host-binding shape the reference primitives (avatar, tag) settled
- * on after review, and that every later primitive follows: the recipe's
- * visible slot is bound onto the component's own host element
- * (`host: { '[class]': 'styles().root()' }`), not onto a wrapper span one
- * level inside it. In React, a component's root element IS the flex item its
- * parent row lays out; in Angular that flex item is the host, so a `root`
- * class such as `shrink-0` protects nothing unless it lives there. Skeleton
- * (below) is the one variation: its host binds to whichever slot is actually
- * visible for the current variant (`root`, or `stack` when `variant="text"`),
- * because `root` alone is `hidden` in that case -- same principle, one more
- * level of indirection.
+ * on after review, and that every later primitive follows except
+ * `arena-theme-toggle`: the recipe's visible slot is bound onto the
+ * component's own host element (`host: { '[class]': 'styles().root()' }`),
+ * not onto a wrapper span one level inside it. In React, a component's root
+ * element IS the flex item its parent row lays out; in Angular that flex
+ * item is the host, so a `root` class such as `shrink-0` protects nothing
+ * unless it lives there. Skeleton (below) is the one variation: its host
+ * binds to whichever slot is actually visible for the current variant
+ * (`root`, or `stack` when `variant="text"`), because `root` alone is
+ * `hidden` in that case -- same principle, one more level of indirection.
+ * `arena-theme-toggle` is the one exception rather than a variation: its
+ * root is a real `<button>` rendered inside its own unstyled host, not a
+ * binding on the host at all, because a native interactive control cannot be
+ * an unknown custom element (see components-divergences.md, "ThemeToggle is
+ * the one Angular primitive that does not host-bind its root").
  *
  * A host `[class]` binding could instead have clobbered a consumer's own
  * `class="..."` attribute on `<arena-avatar>` / `<arena-tag>` — Angular's own
@@ -29,7 +34,7 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator';
 GlobalRegistrator.register();
 
 import '@angular/compiler';
-import test, { after, beforeEach } from 'node:test';
+import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -156,19 +161,6 @@ class PageHeadWithoutActionsHost {}
   template: `<arena-theme-toggle />`,
 })
 class ThemeToggleHost {}
-
-/* ThemeService is `providedIn: 'root'`, so it is one singleton shared by
- * every test in this file's TestBed environment -- nothing here ever calls
- * `TestBed.resetTestingModule()` (see this file's own header comment on why
- * only one file may call `initTestEnvironment()` at all). Reset it to
- * Arena's dark default before each test so ThemeToggle's own tests below
- * cannot depend on execution order, and so no earlier test in this file
- * that happens to run first leaves the class on <html> in a state a later,
- * unrelated test would trip over. */
-beforeEach(() => {
-  TestBed.inject(ThemeService).set('dark');
-  document.documentElement.classList.remove('arena-light');
-});
 
 test('arena-avatar: the root recipe classes land on the host element itself', async () => {
   const fixture = TestBed.createComponent(AvatarHost);
@@ -558,8 +550,25 @@ test('arena-page-head: a platform with no ResizeObserver still renders, on the w
  * click calling the component's `toggle()`, which calls the shared
  * `ThemeService.toggle()`, whose own `effect()` writes the `arena-light`
  * class onto the real document, which feeds back into the component's
- * `dark` computed and what it renders next. */
+ * `dark` computed and what it renders next.
+ *
+ * `ThemeService` is `providedIn: 'root'`, so it is one singleton shared by
+ * every test in this file's TestBed environment -- nothing here ever calls
+ * `TestBed.resetTestingModule()` (see this file's own header comment on why
+ * only one file may call `initTestEnvironment()` at all). `resetTheme()`
+ * below puts it back to Arena's dark default at the top of each of the three
+ * tests that follow, so they cannot depend on execution order among
+ * themselves or leave the class on `<html>` in a state a later one would
+ * trip over. It is called per-test rather than as a file-level `beforeEach`
+ * so the ~20 unrelated tests above it -- none of which touch ThemeService --
+ * never pay for a reset they do not need. */
+function resetTheme(): void {
+  TestBed.inject(ThemeService).set('dark');
+  document.documentElement.classList.remove('arena-light');
+}
+
 test('arena-theme-toggle: starts dark -- aria-pressed true and the sun glyph, the state it is currently IN', async () => {
+  resetTheme();
   const fixture = TestBed.createComponent(ThemeToggleHost);
   fixture.detectChanges();
   await fixture.whenStable();
@@ -574,6 +583,7 @@ test('arena-theme-toggle: starts dark -- aria-pressed true and the sun glyph, th
 });
 
 test('arena-theme-toggle: a real click flips ThemeService\'s own signal and the arena-light class on <html>, not just local component state', async () => {
+  resetTheme();
   const fixture = TestBed.createComponent(ThemeToggleHost);
   fixture.detectChanges();
   await fixture.whenStable();
@@ -608,6 +618,7 @@ test('arena-theme-toggle: a real click flips ThemeService\'s own signal and the 
 });
 
 test('arena-theme-toggle: a second click flips back to dark -- the toggle is not a one-shot', async () => {
+  resetTheme();
   const fixture = TestBed.createComponent(ThemeToggleHost);
   fixture.detectChanges();
   await fixture.whenStable();
@@ -631,10 +642,18 @@ test('arena-theme-toggle: a second click flips back to dark -- the toggle is not
   assert.ok(icon.classList.contains('ph-sun'));
 });
 
-/* Every primitive host-binds its recipe's visible slot directly onto its own
- * custom element (this file's own header comment), and an unknown element's
- * UA-default display is `inline` -- a box that a width/height utility cannot
- * size. Skeleton's `block arena-shimmer` fix (Skeleton.manifest.json) exists
+/* Every primitive except `arena-theme-toggle` host-binds its recipe's
+ * visible slot directly onto its own custom element (this file's own header
+ * comment) -- `arena-theme-toggle`'s root is a real `<button>` instead,
+ * since a native interactive control cannot be an unknown custom element;
+ * see components-divergences.md ("ThemeToggle is the one Angular primitive
+ * that does not host-bind its root"). Either way the manifest's `root` slot
+ * still needs a display utility below: an unknown element's UA-default
+ * display is `inline` -- a box that a width/height utility cannot size, and
+ * `arena-theme-toggle`'s own manifest keeps one too even though its root
+ * lands on a real `<button>`, so the check stays uniform across every
+ * primitive rather than special-casing the one exception. Skeleton's
+ * `block arena-shimmer` fix (Skeleton.manifest.json) exists
  * because its `root` slot shipped without a display utility and collapsed to
  * a zero-area box under exactly that default. Sixteen more primitives are
  * still to come, so this guard is general rather than one more per-primitive
