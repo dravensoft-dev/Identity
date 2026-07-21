@@ -257,6 +257,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `tag.variants.ts` existed only because the token they needed was not exposed. Each is now
   a real utility.
 
+### Removed
+
+- **`Rotor` is gone from every layer — breaking.** The Rotor is Dravensoft's **brand
+  mark, not an Arena component**: a primitive whose only job is to render one company's
+  identity does not belong in a design system that ships MIT, and the products that
+  need an animated mark will implement it themselves. Removed:
+  `frameworks/react/components/brand/Rotor.{jsx,js,d.ts,prompt.md}`,
+  `guidelines/brand-rotor.html`, the Rotor demos in `brand.card.html`, and
+  `@keyframes arena-rotor` / `@utility arena-rotor-spin` from
+  `frameworks/tailwind/animations.css` (so the rebuilt `utilities.css` no longer
+  carries the `arena-rotor` keyframes). The `Rotor` entry left `PASSTHROUGH` in
+  `scripts/check-dimension-literals.mjs`. The Angular layer never shipped a `rotor`
+  primitive, and now never will — plan 5a's Task 17 is cancelled.
+- **The mark itself is unaffected.** `assets/rotor-{crimson,bone,ink}.svg` and
+  `app-icon.svg` stay exactly as they are and remain in active use; so do the
+  `--loop-brand` and `--loop-brand-reduced` tokens, now described as the brand mark's
+  rotation rather than as a component's; so does the brand manual's "The Rotor" section.
+- **The lock-up is `AppLogo`.** It takes the mark as its `mark` node — every call site
+  in the repo passes `assets/rotor-crimson.svg` — alongside a product `name`. It is not
+  a mark-only renderer: both props are required, and it renders nothing without them.
+
 ### Notes
 
 - `tailwindcss` and `@tailwindcss/cli` are pinned to exactly `4.3.3` as dev dependencies.

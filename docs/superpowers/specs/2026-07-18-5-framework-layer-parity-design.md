@@ -75,16 +75,22 @@ Material wearing Arena; the rest with Arena's own primitives.
 | Spinner | `mat-progress-spinner` |
 | Calendar | `mat-datepicker` |
 
-**Arena implements these 19 as `arena-*` primitives.** Material has no equivalent.
+**Arena implements these 18 as `arena-*` primitives.** Material has no equivalent.
 
 ```
-Rotor  BarChart  ChartCard  DoughnutChart  LineChart
+BarChart  ChartCard  DoughnutChart  LineChart
 Avatar  Skeleton  StatCard  Tag
 Alert  ConfirmDialog  EmptyState  ErrorState  Onboarding
 Breadcrumbs  BulkActionBar  CommandPalette  PageHead  ThemeToggle
 ```
 
-`tag` exists, so **18 are new**.
+`tag` exists, so **17 are new**.
+
+**`Rotor` was on this list and is not any more.** The user ruled on 2026-07-21 that the
+Rotor is Dravensoft's brand mark, not an Arena component, and it was removed from every
+layer — plan 5a's Task 17 is cancelled and records the detail. The mark itself
+(`assets/rotor-*.svg`) and the `--loop-brand*` tokens are unaffected; the brand lock-up
+is `AppLogo`, which takes the mark as its `mark` node alongside a product name.
 
 ### The Tailwind layer is scoped differently, and here is why
 
@@ -198,10 +204,10 @@ with no consumer, was never exercised, and accumulated five arbitrary values tha
 violate the layer's own stated rule. Authoring 35 manifests before writing anything
 that consumes them would reproduce that condition thirty-five times.
 
-**Phase 1 — the 15 paired slices.** Each is one manifest + one Angular primitive +
-one specimen. `tag` is the first and arrives from the coverage spec; 14 follow:
+**Phase 1 — the 14 paired slices.** Each is one manifest + one Angular primitive +
+one specimen. `tag` is the first and arrives from the coverage spec; 13 follow:
 Avatar, Skeleton, StatCard, Alert, ConfirmDialog, EmptyState, ErrorState, Onboarding,
-Breadcrumbs, BulkActionBar, CommandPalette, PageHead, ThemeToggle, Rotor.
+Breadcrumbs, BulkActionBar, CommandPalette, PageHead, ThemeToggle.
 
 **Phase 2 — the 4 Angular charts.** BarChart, ChartCard, DoughnutChart, LineChart.
 No manifests. The one genuinely new engineering: React measures its container with

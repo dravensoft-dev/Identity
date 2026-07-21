@@ -1279,11 +1279,19 @@ React ships the shimmer as a `<style>` injected once into the head, because keyf
 are the one thing an inline style object cannot hold. The Tailwind layer has the same
 boundary one level over: **a manifest holds class names, so keyframes live in the
 layer's own CSS**, compiled into `utilities.css` with everything else. This task adds
-that file and its first two utilities; Task 17 (Rotor) is its only other consumer in
+that file and its first two utilities; Task 17 (Rotor) was its only other consumer in
 this plan.
 
 The reduced-motion answers are React's, and they are not the same answer twice:
 the shimmer is decorative, so it **stops**; the rotor reports work, so it **slows**.
+
+> **Superseded, 2026-07-21.** Task 17 was cancelled (see its section below), and with
+> it went `arena-rotor-spin`'s only prospective consumer. `@keyframes arena-rotor` and
+> `@utility arena-rotor-spin` have been **removed from `frameworks/tailwind/animations.css`**,
+> so the file ships `arena-shimmer` alone and the "two utilities" wording above, the
+> Interfaces line, and the CSS and README blocks quoted in the steps below all describe
+> the file as it was, not as it is. The reduced-motion rule they state is unchanged and
+> still governs: decorative motion stops, motion that reports work slows.
 
 **Files:**
 - Create: `frameworks/tailwind/animations.css`
@@ -1295,7 +1303,7 @@ the shimmer is decorative, so it **stops**; the rotor reports work, so it **slow
 - Modify: `frameworks/angular/primitives/index.ts`
 
 **Interfaces:**
-- Produces: the `arena-shimmer` and `arena-rotor-spin` utilities; `Skeleton`
+- Produces: the `arena-shimmer` utility (and, at the time, `arena-rotor-spin`, since removed); `Skeleton`
   (selector `arena-skeleton`), inputs `variant: 'text'|'line'|'block'|'circle'`,
   `lines: number`; `skeletonStyles`.
 
@@ -3996,207 +4004,39 @@ git commit -m "feat(angular): add the theme-toggle primitive, reading ThemeServi
 
 ---
 
-## Task 17: Rotor
+## Task 17: Rotor — CANCELLED
 
-**Reference:** `frameworks/react/components/brand/Rotor.jsx`, demoed in
-`frameworks/react/components/brand/brand.card.html`.
+**Cancelled 2026-07-21, by the user's decision.** The Rotor is **Dravensoft's brand
+mark, not an Arena component**. It is slated for implementation in the products that
+need it, and it never earned a place in a design system that ships MIT: a primitive
+whose entire job is to render one company's identity is not a primitive.
 
-The brand mark, and the one component in the system whose size is **deliberately not
-themeable** — `check-dimension-literals.mjs`'s `EXEMPT` says so for React, and the
-reason carries: fixing the mark's size to a token would quietly make Dravensoft's
-identity resizable by a re-skin. So `size` is a plain input in pixels, not a class.
+So this slice is not deferred, renumbered or reduced — it is gone, and nothing replaces
+it. In the same change:
 
-The spin utility already exists from Task 5.
+- React's `Rotor.jsx`, `Rotor.js`, `Rotor.d.ts` and `Rotor.prompt.md` were deleted,
+  along with `guidelines/brand-rotor.html` and the Rotor half of `brand.card.entry.jsx`.
+- `@keyframes arena-rotor` and `@utility arena-rotor-spin` were removed from
+  `frameworks/tailwind/animations.css` (see the Superseded note under Task 5).
+- The `['Rotor', { prop: 'size', governs: 'width' }]` entry left `PASSTHROUGH` in
+  `scripts/check-dimension-literals.mjs`, and `stalePassthrough`'s tests with it.
+- No `Rotor.manifest.json`, no `Rotor.card.html`, and no
+  `frameworks/angular/primitives/rotor/` was ever created, so the Angular layer has
+  nothing to remove.
 
-**Files:**
-- Create: `frameworks/tailwind/components/Rotor.manifest.json`
-- Create: `frameworks/tailwind/components/Rotor.card.html`
-- Create: `frameworks/angular/primitives/rotor/{rotor.ts,rotor.variants.ts,rotor.prompt.md,index.ts}`
-- Modify: `frameworks/angular/primitives/index.ts`
-- Modify (conditionally, Step 5): `scripts/check-dimension-literals.mjs`
+**What stays, and is not affected:** `assets/rotor-{crimson,bone,ink}.svg` and
+`app-icon.svg` are the mark itself and remain in active use as `<img>` sources; the
+`--loop-brand` / `--loop-brand-reduced` tokens stay, now described as the brand mark's
+rotation rather than as a component's; and `Dravensoft Identity.dc.html`'s "The Rotor"
+section is brand identity, untouched.
 
-**Interfaces:**
-- Produces: `Rotor` (selector `arena-rotor`), inputs `size: number`, `color: string`,
-  `spin: boolean`; `rotorStyles`.
+**The lock-up is `AppLogo`.** It takes the mark as its `mark` node — every call site in
+the repo passes `assets/rotor-crimson.svg` — alongside a product name. It renders
+nothing without both (`AppLogo.jsx:15`), so it is not a mark-only renderer and must not
+be described as one. Arena ships no component that renders the mark on its own.
 
-- [ ] **Step 1: Write the manifest**
-
-Create `frameworks/tailwind/components/Rotor.manifest.json`:
-
-```json
-{
-  "component": "Rotor",
-  "slots": {
-    "root": "inline-flex",
-    "svg": ""
-  },
-  "variants": {
-    "spin": {
-      "true": { "svg": "arena-rotor-spin" },
-      "false": { "svg": "" }
-    }
-  },
-  "defaultVariants": { "spin": "false" }
-}
-```
-
-The manifest is this thin on purpose: the mark's geometry is path data and its size is
-not themeable, so there is nothing else here for a class string to carry.
-
-- [ ] **Step 2: Write the recipe and the primitive**
-
-Create `frameworks/angular/primitives/rotor/rotor.variants.ts`:
-
-```ts
-import { tv } from '../../../tailwind/tv';
-import manifest from '../../../tailwind/components/Rotor.manifest.json' with { type: 'json' };
-
-export const rotorStyles = tv(manifest);
-```
-
-Create `frameworks/angular/primitives/rotor/rotor.ts`:
-
-```ts
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { rotorStyles } from './rotor.variants';
-
-const BLADE = 'M50 50 L92 64.3 L75.2 75.2 L64.3 92 Z';
-
-/** Dravensoft's brand mark. `spin` is for loading and splash surfaces only. */
-@Component({
-  selector: 'arena-rotor',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <span [class]="styles().root()" [style.width.px]="size()" [style.height.px]="size()">
-      <svg viewBox="0 0 100 100" [attr.width]="size()" [attr.height]="size()"
-           [attr.fill]="color()" [class]="styles().svg()">
-        <path [attr.d]="blade" />
-        <path [attr.d]="blade" transform="rotate(120 50 50)" />
-        <path [attr.d]="blade" transform="rotate(240 50 50)" />
-      </svg>
-    </span>
-  `,
-})
-export class Rotor {
-  readonly size = input(48);
-  readonly color = input('var(--crimson)');
-  readonly spin = input(false);
-
-  protected readonly blade = BLADE;
-  protected readonly styles = computed(() => rotorStyles({ spin: this.spin() ? 'true' : 'false' }));
-}
-```
-
-- [ ] **Step 3: Write the prompt and the barrels**
-
-Create `frameworks/angular/primitives/rotor/rotor.prompt.md`:
-
-```markdown
-Dravensoft's brand mark — three blades at 120°. `spin` loops the rotation and belongs
-only on loading and splash surfaces. Under `prefers-reduced-motion` the spin **slows**
-rather than stopping: a frozen rotor on a loading screen reads as a hung process.
-
-```html
-<arena-rotor />
-<arena-rotor [size]="96" spin />
-<arena-rotor [size]="24" color="var(--gold)" />
-```
-
-**Do / Don't**
-- `size` is in pixels and is deliberately not a token. The mark is Dravensoft's
-  identity, and a re-skin must not be able to resize it — the same reason its React
-  counterpart carries an exemption in `check-dimension-literals.mjs`.
-- Don't spin the rotor as decoration. Rotation means "work is happening"; a spinning
-  brand mark on an idle page means nothing and costs battery.
-- Don't recolour it outside the brand palette. `--crimson` is the default and `--gold`
-  is the only other sanctioned mark colour.
-```
-
-Create `frameworks/angular/primitives/rotor/index.ts`:
-
-```ts
-export * from './rotor';
-export * from './rotor.variants';
-```
-
-Add `export * from './rotor';` to `frameworks/angular/primitives/index.ts`,
-alphabetically (after `./page-head`).
-
-- [ ] **Step 4: Write the specimen**
-
-Create `frameworks/tailwind/components/Rotor.card.html`:
-
-```html
-<!-- @dsCard group="Angular" viewport="600x260" name="Rotor" subtitle="The brand mark, rendered from Rotor.manifest.json" -->
-<!doctype html><html><head><meta charset="utf-8">
-<link rel="stylesheet" href="../../../styles.css">
-<link rel="stylesheet" href="../utilities.css">
-<style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:var(--sp-6)}.row{display:flex;flex-wrap:wrap;gap:calc(var(--sp-1) * 3.5);align-items:center;margin-bottom:var(--sp-4)}.sub{font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-label);line-height:var(--lh-snug);color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:var(--sp-1)}</style>
-</head><body><div id="root"></div>
-<script type="module">
-import { mountSpecimen, section, el, classesFor } from '../specimen.js';
-
-const manifest = await (await fetch('./Rotor.manifest.json')).json();
-const BLADE = 'M50 50 L92 64.3 L75.2 75.2 L64.3 92 Z';
-
-function rotor({ size, color = 'var(--crimson)', spin = false }) {
-  const c = classesFor(manifest, { spin: String(spin) });
-  const svg = el('svg', { viewBox: '0 0 100 100', width: size, height: size, fill: color, class: c.svg });
-  for (const transform of [null, 'rotate(120 50 50)', 'rotate(240 50 50)']) {
-    svg.append(el('path', { d: BLADE, transform }));
-  }
-  const box = el('span', { class: c.root }, svg);
-  box.style.width = `${size}px`;
-  box.style.height = `${size}px`;
-  return box;
-}
-
-mountSpecimen({ sections: [
-  section('Sizes', [rotor({ size: 24 }), rotor({ size: 48 }), rotor({ size: 96 })]),
-  section('Spinning, and in gold', [rotor({ size: 48, spin: true }), rotor({ size: 48, color: 'var(--gold)' })]),
-]});
-</script></body></html>
-```
-
-- [ ] **Step 5: Run the dimension gate and settle the exemption**
-
-Run: `bun run check:dimensions`
-
-Two possible outcomes, and only one of them changes a file:
-
-- **It passes.** Nothing to do — the gate's rules do not reach an Angular signal input's
-  default, and adding an exemption for a violation it does not report would itself fail
-  as a stale entry.
-- **It reports `frameworks/angular/primitives/rotor/rotor.ts` with `48`.** Add the
-  entry to `EXEMPT` in `scripts/check-dimension-literals.mjs`, in the same shape and
-  with the reason the React entry carries:
-
-  ```js
-  ['frameworks/angular/primitives/rotor/rotor.ts:size:48',
-   'the same brand-mark exemption Rotor.jsx carries — Dravensoft\'s identity is explicitly not themeable, and fixing the mark\'s size to a token would make it resizable by a re-skin'],
-  ```
-
-  Use the key exactly as the gate prints it; a key that matches nothing fails as a
-  stale exemption, which is the discipline working.
-
-- [ ] **Step 6: Rebuild, gate, look, commit**
-
-Run: `bun run build:tailwind && bun run check`
-Expected: `check-all: all 11 step(s) passed`.
-
-Compare against React's `brand/brand.card.html`, then turn on reduced motion and
-confirm the spin **slows to a crawl rather than stopping**.
-
-```bash
-git add frameworks/tailwind/components/Rotor.manifest.json \
-        frameworks/tailwind/components/Rotor.card.html \
-        frameworks/tailwind/utilities.css \
-        frameworks/angular/primitives/rotor frameworks/angular/primitives/index.ts
-# only if Step 5 required it:
-# git add scripts/check-dimension-literals.mjs
-git commit -m "feat(angular): add the rotor primitive"
-```
+**Do not renumber the remaining tasks.** The execution ledger and the cross-references
+throughout this plan depend on the existing numbers; Task 17 stays a hole, by design.
 
 ---
 
@@ -6031,11 +5871,11 @@ In `frameworks/angular/README.md`, replace the sentence
 "This milestone ships `tag`; further primitives follow it." with:
 
 ```markdown
-The layer ships **21 primitives**: `activity-feed`, `alert`, `app-logo`, `avatar`,
+The layer ships **20 primitives**: `activity-feed`, `alert`, `app-logo`, `avatar`,
 `bar-chart`, `breadcrumbs`, `bulk-action-bar`, `chart-card`, `command-palette`,
 `confirm-dialog`, `doughnut-chart`, `empty-state`, `error-state`, `line-chart`,
-`onboarding`, `page-head`, `rotor`, `skeleton`, `stat-card`, `theme-toggle`,
-`unauth-card` — plus `tag`, the reference shape, for 22 in all.
+`onboarding`, `page-head`, `skeleton`, `stat-card`, `theme-toggle`,
+`unauth-card` — plus `tag`, the reference shape, for 21 in all.
 
 **`SideNav` is not among them, and that is the rule working.** Material's `mat-nav-list`
 covers the item list, so Arena dresses it in `arena-material.css` (`.arena-side-nav`)
@@ -6096,10 +5936,10 @@ In `frameworks/tailwind/README.md`, after the "Consumption order" section, add:
 ```markdown
 ## What ships here
 
-`components/` holds one manifest per component plus its specimen page. Twenty ship
+`components/` holds one manifest per component plus its specimen page. Nineteen ship
 today — ActivityFeed, AppLogo, Button, Tag, Alert, Avatar, Breadcrumbs, BulkActionBar,
 ChartCard, CommandPalette, ConfirmDialog, EmptyState, ErrorState, Onboarding, PageHead,
-Rotor, Skeleton, StatCard, ThemeToggle, UnauthCard — and plan 5b adds the twenty more a
+Skeleton, StatCard, ThemeToggle, UnauthCard — and plan 5b adds the twenty more a
 framework-neutral consumer hand-rolls because Material would otherwise provide them,
 `SideNav` among them.
 
@@ -6171,15 +6011,15 @@ the last version describes a tree nobody has):
 
 ```markdown
 ### Added
-- **Angular layer parity — 21 new primitives.** `activity-feed`, `alert`, `app-logo`,
+- **Angular layer parity — 20 new primitives.** `activity-feed`, `alert`, `app-logo`,
   `avatar`, `bar-chart`, `breadcrumbs`, `bulk-action-bar`, `chart-card`,
   `command-palette`, `confirm-dialog`, `doughnut-chart`, `empty-state`, `error-state`,
-  `line-chart`, `onboarding`, `page-head`, `rotor`, `skeleton`, `stat-card`,
+  `line-chart`, `onboarding`, `page-head`, `skeleton`, `stat-card`,
   `theme-toggle`, `unauth-card`, each a full quartet and each styled by a Tailwind
   manifest it does not own. Parity is of outcome, not of inventory: the 22 components
   Angular Material provides stay Material's, dressed by `arena-material.css` —
   `SideNav` among them, bridged through `mat-nav-list` rather than reimplemented.
-- **18 new component manifests** under `frameworks/tailwind/components/`, each with a
+- **17 new component manifests** under `frameworks/tailwind/components/`, each with a
   static specimen page that renders the real markup from the real recipe.
 - **`frameworks/tailwind/utilities.css`** — the compiled utility layer, generated by
   `bun run build:tailwind` and gated by `bun run check:tailwind-generated`, so a static
@@ -6189,9 +6029,8 @@ the last version describes a tree nobody has):
 - **`frameworks/angular/primitives/container-size.ts`** — the host element's width as a
   signal, and `readBreakpoint`. Responsive branches measure the container, never the
   viewport, and are code rather than media queries.
-- **`frameworks/tailwind/animations.css`** — the two keyframe utilities a manifest
-  cannot express (`arena-shimmer`, `arena-rotor-spin`), each answering
-  `prefers-reduced-motion` on its own terms.
+- **`frameworks/tailwind/animations.css`** — the keyframe utility a manifest cannot
+  express (`arena-shimmer`), answering `prefers-reduced-motion` on its own terms.
 
 ### Changed
 - `check-arbitrary-values.mjs` now accepts a bracket carrying a single value in a unit

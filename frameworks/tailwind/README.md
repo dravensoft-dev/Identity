@@ -32,11 +32,11 @@ Two naming notes: the density keys take the token's suffix verbatim, so
 `--container-page` (`max-w-page`) because a key named `max` shadows
 Tailwind's built-in `max-w-max`.
 
-## Two animations live in CSS, and why
+## The animation that lives in CSS, and why
 
-`animations.css` holds `@keyframes` and the two utilities that ride them —
-`arena-shimmer` (Skeleton) and `arena-rotor-spin` (Rotor) — because a manifest
-holds class names and keyframes are not one. It is the same boundary React
+`animations.css` holds `@keyframes` and the utility that rides them —
+`arena-shimmer` (Skeleton) — because a manifest holds class names and keyframes
+are not one. It is the same boundary React
 already has: an inline style object cannot express keyframes either, so React
 injects a `<style>` once per component. Every value in it is a `var()` into a
 token, and each animation answers `prefers-reduced-motion` on its own terms —
