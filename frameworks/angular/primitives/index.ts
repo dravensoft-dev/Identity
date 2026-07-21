@@ -1,5 +1,6 @@
 export * from './alert';
 export * from './avatar';
+export * from './bar-chart';
 export * from './breadcrumbs';
 export * from './bulk-action-bar';
 export * from './chart-card';

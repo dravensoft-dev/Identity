@@ -45,6 +45,7 @@ import { By } from '@angular/platform-browser';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { Avatar } from '../primitives/avatar/avatar';
 import { avatarStyles } from '../primitives/avatar/avatar.variants';
+import { BarChart } from '../primitives/bar-chart/bar-chart';
 import { Breadcrumbs } from '../primitives/breadcrumbs/breadcrumbs';
 import type { ArenaCrumb, ArenaCrumbNavigateEvent } from '../primitives/breadcrumbs/breadcrumbs';
 import { breadcrumbsStyles } from '../primitives/breadcrumbs/breadcrumbs.variants';
@@ -171,6 +172,14 @@ class PageHeadWithoutActionsHost {}
   template: `<arena-theme-toggle />`,
 })
 class ThemeToggleHost {}
+
+@Component({
+  standalone: true,
+  imports: [BarChart],
+  host: { 'data-host': 'bar-chart' },
+  template: `<arena-bar-chart />`,
+})
+class BarChartHost {}
 
 test('arena-avatar: the root recipe classes land on the host element itself', async () => {
   const fixture = TestBed.createComponent(AvatarHost);
@@ -751,6 +760,24 @@ function kebabToPascal(dirName: string): string {
   return dirName.split('-').map((segment) => segment[0].toUpperCase() + segment.slice(1)).join('');
 }
 
+/* The primitives that have no manifest at all, named rather than inferred --
+ * the same discipline check-dimension-literals.mjs applies to its EXEMPT map,
+ * and for the same reason: a guard that silently skips whatever it cannot find
+ * stops being a guard the first time someone forgets a manifest.
+ *
+ * The hand-written SVG charts are the plan's one declared exception to the
+ * manifest/recipe shape. A chart's visual identity is path data and
+ * presentation attributes, and a class string cannot hold either, so there is
+ * no `slots.root` for the loop above to read. They are NOT exempt from the
+ * claim that guard makes -- an `<arena-bar-chart>` is exactly as much an
+ * unknown, UA-default-inline element as an `<arena-tag>`, and a chart whose
+ * host collapses to an inline box measures the wrong width and lays every bar
+ * out against it. They prove it a different way: a static `display` in their
+ * own host metadata, which the render test below asserts against a real DOM.
+ * An inline `style` attribute is not wrapped in `@layer`, so happy-dom's CSS
+ * engine does evaluate it -- the limitation described above does not apply. */
+const NO_MANIFEST = new Set(['bar-chart']);
+
 test('every Angular primitive\'s root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
   const primitivesDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'primitives');
   const manifestsDir = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'tailwind', 'components');
@@ -759,7 +786,11 @@ test('every Angular primitive\'s root slot carries a display utility, so host-bi
     .map((entry) => entry.name);
   assert.ok(names.length > 0, 'no primitive directories found -- the guard would silently check nothing');
 
+  for (const excluded of NO_MANIFEST)
+    assert.ok(names.includes(excluded), `NO_MANIFEST names "${excluded}", which is not a primitive directory -- stale entry`);
+
   for (const name of names) {
+    if (NO_MANIFEST.has(name)) continue;
     const manifestPath = join(manifestsDir, `${kebabToPascal(name)}.manifest.json`);
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { slots?: Record<string, string> };
     const root = manifest.slots?.root;
@@ -770,6 +801,64 @@ test('every Angular primitive\'s root slot carries a display utility, so host-bi
       `${name}: root slot "${root}" carries no display utility -- host-binding it collapses to the UA-default inline box`,
     );
   }
+});
+
+/* The three tests below are the manifest guard's counterpart for a primitive
+ * that has no manifest to guard. They render with DEFAULT inputs only -- no
+ * `[values]` binding and no literal attribute, both of which this harness
+ * silently drops (see the header) -- so everything asserted here is reachable
+ * without ever driving a signal input. The geometry that does need inputs is
+ * asserted as plain functions in bar-chart-geometry.test.ts instead. */
+
+test('arena-bar-chart: the host is a block-level box, so the width it measures is a real content width', async () => {
+  const fixture = TestBed.createComponent(BarChartHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-bar-chart') as HTMLElement;
+  // `containerWidth()` observes this element. An unknown element defaults to
+  // display:inline, and a non-replaced inline box has no meaningful content
+  // width for a ResizeObserver to report -- every bar would be laid out against
+  // the wrong number. Both reads are asserted: the inline style attribute the
+  // component declares, and what the CSS engine resolves it to.
+  assert.equal(host.style.display, 'block', `host declared display "${host.style.display}"`);
+  assert.equal(getComputedStyle(host).display, 'block');
+  // The tooltip is absolutely positioned against this host, so it must also be
+  // the containing block rather than inheriting one from an ancestor.
+  assert.equal(host.style.position, 'relative');
+});
+
+test('arena-bar-chart: the numbers table is bound as a style object, not stringified into the attribute', async () => {
+  const fixture = TestBed.createComponent(BarChartHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const table = fixture.nativeElement.querySelector('arena-bar-chart table') as HTMLElement;
+  assert.ok(table, 'the visually-hidden numbers table did not render');
+  // `[attr.style]="SR_ONLY"` would set the literal string "[object Object]" and
+  // apply nothing, leaving the table visible on the page. `[style]` takes the
+  // object, which is what chart-internals.ts documents.
+  assert.ok(!(table.getAttribute('style') ?? '').includes('[object Object]'),
+    `the style object was stringified: "${table.getAttribute('style')}"`);
+  assert.equal(table.style.position, 'absolute');
+  assert.equal(table.style.width, '1px');
+  assert.equal(table.style.height, '1px');
+  assert.equal(table.style.margin, '-1px');
+  // SR_ONLY's `clip` is deliberately not asserted here: happy-dom's
+  // CSSStyleDeclaration does not expose the deprecated `clip` property, so it
+  // reads back as '' whether or not it was applied. chart-internals.test.ts
+  // asserts the constant itself carries it.
+});
+
+test('arena-bar-chart: the picture carries an accessible name and the numbers carry a caption', async () => {
+  const fixture = TestBed.createComponent(BarChartHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const svg = fixture.nativeElement.querySelector('arena-bar-chart svg') as SVGElement;
+  assert.equal(svg.getAttribute('role'), 'img');
+  // No seriesLabel is set, so this is the fallback name -- a role="img" with no
+  // name announces as an unlabeled graphic.
+  assert.equal(svg.getAttribute('aria-label'), 'Bar chart');
+  const caption = fixture.nativeElement.querySelector('arena-bar-chart table caption') as HTMLElement;
+  assert.equal(caption.textContent?.trim(), 'Bar chart');
 });
 
 after(() => {

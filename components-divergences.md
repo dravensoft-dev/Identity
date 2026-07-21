@@ -486,6 +486,65 @@ the `.ts` port is scanned, so the exemption is explicit rather than accidental.
 **Converges:** no. Each layer uses its own framework's style-binding idiom, and neither
 is wrong. Recorded because the five chart primitives all consume `SR_ONLY` unchanged.
 
+### BarChart — the category axis is drawn per bar, not per label
+
+**React:** `BarChart.jsx` draws the value axis, the bars and the tooltip from `values`, but the
+category axis from `labels` — `{labels.map((l, i) => <text x={PAD.l + i * step + step / 2} ...>)}`.
+With more labels than values that renders a label under empty space, positioned by a `step`
+computed from a different array's length; with fewer, the surplus bars go unlabelled either way.
+
+**Angular:** `arena-bar-chart` draws the category axis from the same `bars()` collection the marks
+come from, taking each bar's label as `labels()[index] ?? ''`. A label with no bar is dropped; a
+bar with no label renders an empty string.
+
+**Why:** the two arrays are one dataset, and the bar is the thing being labelled. Drawing a label
+at a column position that no column occupies is not a considered behaviour — it is what falls out
+of iterating the wrong array, and it puts text under blank plot. Identical output whenever the
+arrays are the same length, which is every correct call. `bar-chart.prompt.md` states the rule
+under Don't.
+
+**Converges:** yes — React should iterate its bars. **Open debt on the React layer**, low priority
+(it only shows on mismatched input).
+
+### BarChart — the charts are the layer's styling exception, and they state it in objects
+
+**React:** `BarChart.jsx` writes every style as a JSX inline style object — `style={{ strokeWidth:
+'var(--bw)' }}`, `style={{ fontSize: 'var(--dz-text-2xs)' }}` — with camelCase keys.
+
+**Angular:** the same values live in module-level constants bound with `[style]`
+(`LINE_STYLE`, `TICK_LABEL_STYLE`, `CATEGORY_LABEL_STYLE`, `BAR_STYLE`, `TOOLTIP_STYLE` and the
+two tooltip text styles), rather than as `style="stroke-width:var(--bw)"` strings in the template.
+
+**Why:** it is what keeps the values checkable. `check-dimension-literals.mjs` locates a governed
+property by an unbroken run of letters before a colon, so a kebab-case declaration inside a
+template string is either invisible to it (`font-size:` reads as a property named `size`, which is
+not governed) or actively misread — `stroke-width:` matches as `width`, whose lookbehind excludes
+`\w` and `.` but not `-`, and the value scan then runs off into the rest of the template and
+reports a garbled literal. The first draft of this component hit exactly that, twice. A camelCase
+object gives the gate the same view of the Angular chart that it already has of React's, so
+`strokeWidth` and `fontSize` are judged as themselves. **The two remaining chart slices should
+follow this shape**, and the same trap is waiting for any future template that writes a hyphenated
+governed property inline.
+
+**Also worth knowing:** the host declares `display:block;position:relative` in its own `host`
+metadata. It is the box `containerWidth()` observes and the containing block the tooltip is
+positioned against, and `<arena-bar-chart>` is an unknown element whose UA default is
+`display:inline` — the same hazard every manifest's `root` slot carries a display utility for. A
+chart has no manifest, so it states the display itself; `host-class-binding.test.ts` names the
+chart primitives in `NO_MANIFEST` and asserts the rendered host's `display` and `position` against
+a real DOM instead of against a manifest string.
+
+**One gate blind spot, recorded rather than papered over:** the tooltip's
+`[style.top]="'calc(' + point.y + 'px - var(--sp-2))'"` is the same data-to-pixel projection React
+carries a named `EXEMPT` entry for. Angular's binding syntax puts it outside all four of the gate's
+scanners, so it needs no exemption — but it is unexempted because it is unseen, not because it is
+tokenized. `check:dimensions` is clean on this component for real reasons everywhere else.
+
+**Not ported:** React's `style` prop and `{...rest}` spread, for the reason PageHead's entry above
+already gives — in Angular a consumer writes those directly on the host.
+
+**Converges:** no on the idiom; each layer states the same token values in its own form.
+
 ## How to add an entry
 
 When you find a behavioural difference between layers:
