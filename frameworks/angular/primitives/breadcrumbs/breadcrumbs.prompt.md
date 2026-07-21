@@ -1,0 +1,19 @@
+Arena breadcrumb trail. Mono, wide-tracked, with the last crumb as the current page --
+not a link, and carrying `aria-current="page"`. The host itself is the `nav` landmark
+(`role="navigation"`, `aria-label="Breadcrumb"`); no wrapper element is rendered inside it.
+Use it where a hierarchy is deeper than tabs can show.
+
+```html
+<arena-breadcrumbs [items]="[
+  { label: 'Clients', href: '/clients' },
+  { label: 'Ardennes', href: '/clients/ardennes' },
+  { label: 'Deployments' }
+]" (navigate)="go($event)" />
+```
+
+**Do / Don't**
+- Keep the last crumb non-navigable. A link to the page you are on is noise, and it
+  breaks the trail's promise that everything to the left is somewhere else.
+- Don't use breadcrumbs for steps in a flow. A trail describes where something *is*,
+  not how far through it you are -- that is the coachmark's dots or a stepper.
+- Don't truncate the middle of a trail to save space. Wrap it; the row already does.

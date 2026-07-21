@@ -58,6 +58,7 @@
     --leading-ctl: var(--dz-lh);
     --tracking-tight: var(--ls-tight);
     --tracking-normal: var(--ls-normal);
+    --tracking-mono-nav: var(--ls-mono-nav);
     --tracking-uppercase-status: var(--ls-uppercase-status);
     --tracking-field-label: var(--ls-field-label);
     --tracking-label: var(--ls-label);
@@ -429,6 +430,9 @@
   .flex-col {
     flex-direction: column;
   }
+  .flex-wrap {
+    flex-wrap: wrap;
+  }
   .items-center {
     align-items: center;
   }
@@ -747,6 +751,10 @@
     --tw-tracking: var(--tracking-label);
     letter-spacing: var(--tracking-label);
   }
+  .tracking-mono-nav {
+    --tw-tracking: var(--tracking-mono-nav);
+    letter-spacing: var(--tracking-mono-nav);
+  }
   .tracking-normal {
     --tw-tracking: var(--tracking-normal);
     letter-spacing: var(--tracking-normal);
@@ -814,6 +822,9 @@
     --tw-numeric-spacing: tabular-nums;
     font-variant-numeric: var(--tw-ordinal,) var(--tw-slashed-zero,) var(--tw-numeric-figure,) var(--tw-numeric-spacing,) var(--tw-numeric-fraction,);
   }
+  .no-underline {
+    text-decoration-line: none;
+  }
   .opacity-60 {
     opacity: 60%;
   }
@@ -828,6 +839,11 @@
   }
   .transition-\[background\,transform\,box-shadow\] {
     transition-property: background,transform,box-shadow;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .transition-\[color\] {
+    transition-property: color;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
@@ -859,6 +875,14 @@
   @media (hover: hover) {
     .hover\:bg-\[var\(--danger-soft\)\]:hover {
       background-color: var(--danger-soft);
+    }
+    .hover\:text-base-content\/82:hover {
+      color: var(--color-base-content);
+    }
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:text-base-content\/82:hover {
+        color: color-mix(in oklab, var(--color-base-content) 82%, transparent);
+      }
     }
     .hover\:shadow-2:hover {
       --tw-shadow: var(--shadow-2);

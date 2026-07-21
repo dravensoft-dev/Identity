@@ -39,6 +39,8 @@ import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { Avatar } from '../primitives/avatar/avatar';
 import { avatarStyles } from '../primitives/avatar/avatar.variants';
+import { Breadcrumbs } from '../primitives/breadcrumbs/breadcrumbs';
+import { breadcrumbsStyles } from '../primitives/breadcrumbs/breadcrumbs.variants';
 import { EmptyState } from '../primitives/empty-state/empty-state';
 import { emptyStateStyles } from '../primitives/empty-state/empty-state.variants';
 import { ErrorState } from '../primitives/error-state/error-state';
@@ -94,6 +96,14 @@ class TagHost {}
   template: `<arena-skeleton class="consumer-class" />`,
 })
 class SkeletonHost {}
+
+@Component({
+  standalone: true,
+  imports: [Breadcrumbs],
+  host: { 'data-host': 'breadcrumbs' },
+  template: `<arena-breadcrumbs class="consumer-class" />`,
+})
+class BreadcrumbsHost {}
 
 @Component({
   standalone: true,
@@ -175,6 +185,33 @@ test('arena-skeleton: the host itself carries the loading status, not a wrapper 
   assert.equal(host.getAttribute('role'), 'status');
   assert.equal(host.getAttribute('aria-label'), 'Loading');
   assert.equal(host.children.length, 0, 'the default (non-stacked) variant renders no children of its own');
+});
+
+test('arena-breadcrumbs: the root recipe classes land on the host element itself', async () => {
+  const fixture = TestBed.createComponent(BreadcrumbsHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-breadcrumbs') as HTMLElement;
+  for (const cls of breadcrumbsStyles().root().split(/\s+/))
+    assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
+});
+
+test('arena-breadcrumbs: a consumer-supplied class on the host survives the [class] binding', async () => {
+  const fixture = TestBed.createComponent(BreadcrumbsHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-breadcrumbs') as HTMLElement;
+  assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+});
+
+test('arena-breadcrumbs: the host itself carries the nav landmark, not a wrapper inside it', async () => {
+  const fixture = TestBed.createComponent(BreadcrumbsHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-breadcrumbs') as HTMLElement;
+  assert.equal(host.getAttribute('role'), 'navigation');
+  assert.equal(host.getAttribute('aria-label'), 'Breadcrumb');
+  assert.equal(host.children.length, 0, 'with no items, the trail renders no crumbs of its own');
 });
 
 test('arena-stat-card: the root recipe classes land on the host element itself', async () => {

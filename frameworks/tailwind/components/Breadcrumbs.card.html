@@ -1,0 +1,30 @@
+<!-- @dsCard group="Angular" viewport="700x147" name="Breadcrumbs" subtitle="Trail and current page, rendered from Breadcrumbs.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:var(--sp-6)}.row{display:flex;flex-wrap:wrap;gap:calc(var(--sp-1) * 3.5);align-items:center;margin-bottom:var(--sp-4)}.sub{font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-label);line-height:var(--lh-snug);color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:var(--sp-1)}</style>
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Breadcrumbs.manifest.json')).json();
+const c = classesFor(manifest);
+
+function trail(labels, separator = '/') {
+  const nav = el('nav', { class: c.root, 'aria-label': 'Breadcrumb' });
+  labels.forEach((label, i) => {
+    const last = i === labels.length - 1;
+    if (last) nav.append(el('span', { class: c.current, 'aria-current': 'page', text: label }));
+    else {
+      nav.append(el('a', { class: c.crumb, href: '#', text: label }));
+      nav.append(el('span', { class: c.separator, 'aria-hidden': 'true', text: separator }));
+    }
+  });
+  return nav;
+}
+
+mountSpecimen({ sections: [
+  section('Three levels', [trail(['Clients', 'Ardennes', 'Deployments'])]),
+  section('With a chevron separator', [trail(['Home', 'Settings', 'Access'], '›')]),
+]});
+</script></body></html>
