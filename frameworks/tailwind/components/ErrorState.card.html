@@ -19,7 +19,7 @@ function errorState({ icon, title, message, code, actionLabel }) {
   if (actionLabel) {
     /* Stands in for the projected mat-button; the manifest styles the slot,
        not the button. Rendered only when an action was actually given, the
-       same gate the component applies with contentChild(ArenaErrorAction). */
+       same gate the component applies with contentChild(ArenaAction). */
     const actions = el('div', { class: c.actions });
     actions.append(el('span', { class: 'font-body text-ctl text-primary', text: `[ ${actionLabel} ]` }));
     root.append(actions);

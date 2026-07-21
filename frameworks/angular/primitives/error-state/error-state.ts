@@ -1,15 +1,6 @@
-import { ChangeDetectionStrategy, Component, Directive, computed, contentChild, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, contentChild, input } from '@angular/core';
+import { ArenaAction } from '../projection-markers';
 import { errorStateStyles } from './error-state.variants';
-
-/** Marks the element a consumer projects into `arena-error-state`'s actions
- *  slot. Carries no behaviour of its own — same content-query anchor as
- *  `EmptyState`'s `ArenaAction`, under a distinct class name because both
- *  primitives project through the identical `[arena-action]` attribute and
- *  the aggregate `primitives/index.ts` barrel re-exports both with
- *  `export *`. A consumer wiring an action imports `ArenaErrorAction`
- *  alongside `ErrorState`. */
-@Directive({ selector: '[arena-action]', standalone: true })
-export class ArenaErrorAction {}
 
 /** Section- or screen-level failure, with recovery and an optional support
  *  code. The host itself is the recipe's `root`, the flex item a parent
@@ -43,7 +34,7 @@ export class ErrorState {
   readonly message = input<string>();
   readonly code = input<string>();
 
-  protected readonly action = contentChild(ArenaErrorAction);
+  protected readonly action = contentChild(ArenaAction);
 
   protected readonly styles = computed(() => errorStateStyles());
 }

@@ -266,7 +266,8 @@ test('arena-error-state: the root recipe classes land on the host element itself
  * `bun run check:angular` is the real authority that the query and the `@if`
  * gate typecheck. The negative case below is real coverage of the same
  * reported bug's exact repro, ported to `arena-error-state`'s own actions
- * slot and its own marker directive, `ArenaErrorAction`. */
+ * slot, gated on the same shared marker directive `arena-empty-state` uses,
+ * `ArenaAction` (`../primitives/projection-markers`). */
 test('arena-error-state: the actions wrapper is absent from the DOM when no [arena-action] content is projected', async () => {
   const fixture = TestBed.createComponent(ErrorStateWithoutActionHost);
   fixture.detectChanges();

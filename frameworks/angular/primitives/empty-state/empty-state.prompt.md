@@ -13,9 +13,12 @@ action ships no dead space for one.
 </arena-empty-state>
 ```
 
-Import `ArenaAction` alongside `EmptyState` in the host component's `imports` —
+Import `ArenaAction` from `frameworks/angular/primitives/projection-markers` (or the
+primitives barrel) alongside `EmptyState` in the host component's `imports` —
 `arena-action` is a directive, not a plain attribute, because it is how the empty
-state detects that an action was projected at all.
+state detects that an action was projected at all. `ArenaAction` is shared: every
+primitive that projects a single action through `[arena-action]` (`EmptyState`,
+`ErrorState`) imports the same directive rather than declaring its own.
 
 **Do / Don't**
 - Say what the thing *is* in the message, not just that there are none of it. An empty

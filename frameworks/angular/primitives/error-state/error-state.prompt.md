@@ -16,12 +16,12 @@ bare error state ships no dead space for a retry it does not offer.
 </arena-error-state>
 ```
 
-Import `ArenaErrorAction` alongside `ErrorState` in the host component's `imports` —
+Import `ArenaAction` from `frameworks/angular/primitives/projection-markers` (or the
+primitives barrel) alongside `ErrorState` in the host component's `imports` —
 `arena-action` is a directive, not a plain attribute, because it is how the error
-state detects that an action was projected at all. (It is a distinct symbol from
-`arena-empty-state`'s `ArenaAction`, even though both mark the same `[arena-action]`
-attribute — the two primitives' barrels are re-exported together, so identically
-named classes would collide.)
+state detects that an action was projected at all. It is the same directive
+`arena-empty-state` uses for its own action slot — both primitives mark the identical
+`[arena-action]` attribute, so the marker is declared once and imported by each.
 
 **Do / Don't**
 - Always offer a retry when a retry could work. An error state with no action is a
@@ -31,5 +31,5 @@ named classes would collide.)
 - Don't put the raw exception in `message`. The code chip is where a machine-readable
   detail goes; the message is for a person.
 - Don't use this for a validation failure on a field — that belongs on the field.
-- Don't forget to import `ArenaErrorAction` when projecting an action — without it,
+- Don't forget to import `ArenaAction` when projecting an action — without it,
   the `arena-action` attribute is inert and the action silently fails to render.

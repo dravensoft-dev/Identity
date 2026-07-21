@@ -1,17 +1,6 @@
-import { ChangeDetectionStrategy, Component, Directive, computed, contentChild, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, contentChild, input } from '@angular/core';
+import { ArenaAction } from '../projection-markers';
 import { emptyStateStyles } from './empty-state.variants';
-
-/** Marks the element a consumer projects into `arena-empty-state`'s action
- *  slot. Carries no behaviour of its own — it exists purely as a
- *  content-query anchor, because Angular content queries do not accept a CSS
- *  selector as a locator (only a directive/component type, a template
- *  reference variable, or a DI token), so detecting whether an action was
- *  actually projected needs a real directive matching the same
- *  `[arena-action]` attribute `ng-content select` already uses for
- *  projection. A consumer wiring an action imports `ArenaAction` alongside
- *  `EmptyState`. */
-@Directive({ selector: '[arena-action]', standalone: true })
-export class ArenaAction {}
 
 /** Section- or screen-level empty state, with one clear way forward. The
  *  action is projected rather than owned — a real `mat-button` wearing

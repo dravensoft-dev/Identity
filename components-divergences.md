@@ -66,6 +66,13 @@ component needing footer buttons styles them itself from its own manifest.
 `Button.manifest.json` defines — the gap, the transition, and the hover shadow — or it ships a
 control with no feedback. This was missed once on `ConfirmDialog` and corrected.
 
+**`ErrorState` names this directly:** React's `ErrorState.jsx` takes three props for its footer —
+`onRetry`, `retryLabel` and `secondaryAction` — where `EmptyState.jsx` takes one (`action`, a
+rendered node). Angular's `arena-error-state` collapses all three into the single projected
+`[arena-action]` slot the same way `arena-empty-state` collapses its one, so a consumer wires the
+retry button, its label, and any secondary action itself as projected content rather than through
+component inputs.
+
 **Converges:** no, by design.
 
 ---
@@ -110,6 +117,26 @@ stays testable against a real DOM despite that.
 
 **Converges:** yes — React should be brought up to this. **Open debt on the React layer**,
 including the missing `inert`.
+
+### ErrorState — Angular announces itself, React is silent
+
+**React:** `ErrorState.jsx` sets no `role` at all — it renders as a plain `<div>`, so a screen
+reader gives no indication that a failure just appeared unless the surrounding page happens to
+move focus there.
+
+**Angular:** `arena-error-state` host-binds `role="alert"`, an assertive live region announced
+immediately on mount.
+
+**Why:** an error surface can mount without a page reload — a failed fetch swapping a loading
+state for `arena-error-state` in place — and a sighted user sees it instantly while a screen
+reader user gets nothing unless the mount itself is announced. `role="alert"` is the correct,
+narrow tool for exactly that: an unprompted, important status change. This is not the same
+precedent as `Alert.ts`: React's own `Alert.jsx` already sets `role={tone === 'danger' ? 'alert'
+: 'status'}`, and Angular's `Alert.ts` mirrors that exactly — no divergence there, so it is not
+what motivates this one.
+
+**Converges:** yes — React should be brought up to this. **Open debt on the React layer**, the
+same shape as `ConfirmDialog`'s accessibility debt above.
 
 ### ConfirmDialog — no `width` prop in Angular
 
