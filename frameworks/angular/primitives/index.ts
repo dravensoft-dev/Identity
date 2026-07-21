@@ -3,6 +3,7 @@ export * from './avatar';
 export * from './confirm-dialog';
 export * from './empty-state';
 export * from './error-state';
+export * from './onboarding';
 export * from './projection-markers';
 export * from './skeleton';
 export * from './stat-card';

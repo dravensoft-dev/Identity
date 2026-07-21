@@ -138,6 +138,58 @@ what motivates this one.
 **Converges:** yes — React should be brought up to this. **Open debt on the React layer**, the
 same shape as `ConfirmDialog`'s accessibility debt above.
 
+### Onboarding — the scrim is dismissible, and Angular always names the dialog
+
+**React:** `Onboarding.jsx` renders the scrim and the panel as two sibling `<div>`s. The
+scrim's `onClick={onSkip}` closes the tour; because the panel is a *sibling*, not a
+descendant, a click inside the panel never reaches that handler. The panel's
+`aria-label={step.title}` is empty whenever a step omits `title` — the dialog then has no
+accessible name at all.
+
+**Angular:** following `ConfirmDialog`'s resolution, `scrim` was renamed to `root` and
+host-bound (`host: { '[class]': 'styles().root()' }`), with `open` driving it between the
+overlay and `hidden`. Unlike `ConfirmDialog`, the panel is necessarily a *descendant* of
+`root` here, not a sibling — Angular's host-binding shape gives every primitive exactly
+one host element. So the host also host-binds `(click)="onScrimClick()"` to keep React's
+click-to-skip behaviour, and the panel stops that click's propagation
+(`(click)="$event.stopPropagation()"`) so a click on the panel — including its own Back /
+Skip / Next buttons — never reaches the scrim's listener. The panel's `aria-label` falls
+back through `title` → `eyebrow` → a generic `"Step N of M"`, so the dialog always has a
+name, the same shape `ConfirmDialog`'s `labelId` computation already established.
+
+**Why:** the click-to-skip behaviour is real product behaviour worth keeping, but the
+sibling-div structure it was built on cannot survive the mandatory host-binding shape —
+stopping propagation on the panel is what reproduces it under one shared ancestor. The
+missing accessible name is the same category of gap `ConfirmDialog` and `ErrorState`
+already fixed: a dialog with no name announces as unlabeled to a screen reader whenever a
+step happens to omit `title`.
+
+**Converges:** yes, on both — React should stop nesting the click assumption in sibling
+placement (any refactor toward one wrapper needs the same stopPropagation), and should
+gain the same `title`-falls-back-to-`eyebrow` label. **Open debt on the React layer.**
+
+### Onboarding — no icon, on either layer
+
+**React:** `Onboarding.jsx` renders no icon anywhere — no `<i className="ph-...">` in the
+component, despite Duotone being licensed system-wide for "features and onboarding" per
+README's iconography convention and `frameworks/angular/icons/icon-manifest.ts`'s
+`{ role: 'onboarding', phosphor: 'ph-sparkle', weight: 'duotone' }` entry.
+
+**Angular:** matches React exactly — no icon slot, no `icon` input. `icon-manifest.ts`'s
+`onboarding` role is a registry seed for a consumer building their own icon usage, not
+something any primitive in this layer currently consumes directly (no primitive imports
+from `icon-manifest.ts`; `EmptyState`/`ErrorState` instead take a plain `icon: string`
+input the consumer fills from wherever they like).
+
+**Why:** the task brief's own sample manifest and template carry no icon either, matching
+React. Adding one would have been a real feature addition with no brief authority and no
+React precedent — YAGNI.
+
+**Converges:** n/a — not a divergence between the layers, recorded here only because a
+Duotone icon on the coachmark was flagged as worth double-checking. If a future revision
+wants one, `ph-sparkle` duotone with the crimson accent on the primary layer is the
+existing registry answer.
+
 ### ConfirmDialog — no `width` prop in Angular
 
 **React:** `ConfirmDialog.jsx` takes a `width` prop, defaulting to `calc(var(--sp-1) * 115)`.
