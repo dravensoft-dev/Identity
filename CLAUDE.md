@@ -174,7 +174,7 @@ framework-agnostic language (`tokens/`, `guidelines/`, `assets/`, `scripts/`,
 `styles.css`) plus the demo runtime (`theme.js`, `support.js`)
 and brand (`*.dc.html`). React lives in `frameworks/react/`;
 `frameworks/angular/` holds the Angular layer: a Tailwind preset entry
-(`theme/arena-tailwind.css`) and an Angular Material MDC token bridge
+(`theme/arena-tailwind.css`) and an Angular Material `--mat-*` token bridge
 (`theme/arena-material.css`), a Phosphor icon manifest (`icons/`), a
 dark-first signal `ThemeService`
 (`theme/theme-service.ts` + `theme/no-fouc.html`), and

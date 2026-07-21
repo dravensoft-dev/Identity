@@ -42,7 +42,10 @@ against the installed package, not visually confirmed in a running app.
   destructive action — it renders as an outline (border + text in `--color-error`).
   Never make a filled danger button; the only filled danger surface is
   `ConfirmDialog`'s final confirmation.
-- Use `mat-form-field-appearance-outline` — the bridge does not style the `fill`
-  appearance, so an outlined form field is the one that actually wears Arena.
+- Set `appearance="outline"` on `<mat-form-field>` — the bridge does not style the
+  `fill` appearance, so an outlined form field is the one that actually wears Arena.
+  Bind the input, not the class: `mat-form-field-appearance-outline` is what Material
+  generates from it, and hand-adding the class yields the outline CSS hooks without
+  the outline template.
 - Don't add a value here that isn't a `var()` into a token. If a control needs a
   colour Arena doesn't have, add the token first.

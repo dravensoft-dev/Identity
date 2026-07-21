@@ -106,8 +106,8 @@ ProgressBar (`mat-progress-bar`), Spinner (`mat-progress-spinner`), Calendar
 (`mat-datepicker`) and SideNav (`mat-nav-list` + `<a mat-list-item [activated]>`, scoped
 by `.arena-side-nav`). `arena-material.css` dresses Button (filled and outlined
 variants only; a plain text button gets nothing outside `.arena-danger`), Input and
-Textarea (outlined appearance only — Material's default fill appearance renders
-unstyled), Card, Table, Tabs, Dialog, Toast, ProgressBar, Spinner and SideNav;
+Textarea (outlined appearance only — a form field left on Material's default fill
+appearance keeps Material's own styling), Card, Table, Tabs, Dialog, Toast, ProgressBar, Spinner and SideNav;
 IconButton, Select, Checkbox, Radio, Switch, SegmentedControl, Badge, Menu, Tooltip,
 Pagination and Calendar still render with Material's own defaults.
 
@@ -139,7 +139,9 @@ asserts each one is a name the installed Angular Material package actually reads
 that every Arena token it references exists. What the gate does **not** cover: it checks
 that a name exists, not that it is the right name for the element being styled — that
 distinction is exactly the class of error that hit this file once already, and only a
-real render catches it. There is no Angular Material application in this repo, so the
+real render catches it. It has two further limits, both disclosed in full in
+`scripts/check-material.mjs`'s header: it never examines the selectors those properties
+sit in, and its existence oracle reads only Material's `fesm2022/` bundles. There is no Angular Material application in this repo, so the
 bridge has been verified name-by-name against the installed package, not visually
 confirmed in a running app.
 
