@@ -1,0 +1,31 @@
+<!-- @dsCard group="Angular" viewport="760x627" name="Alert" subtitle="Tones, action and dismiss, rendered from Alert.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:var(--sp-6)}.row{display:flex;flex-direction:column;gap:calc(var(--sp-1) * 3.5);align-items:stretch;margin-bottom:var(--sp-4)}.sub{font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-label);line-height:var(--lh-snug);color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:var(--sp-1)}</style>
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Alert.manifest.json')).json();
+const ICONS = { info: 'ph-fill ph-info', success: 'ph-fill ph-check-circle', warning: 'ph-fill ph-warning', danger: 'ph-fill ph-warning-octagon', neutral: 'ph-fill ph-note' };
+
+function alert({ tone, title, message, actionLabel, dismissible }) {
+  const c = classesFor(manifest, { tone });
+  const body = el('div', { class: c.body },
+    el('div', { class: c.title, text: title }),
+    el('div', { class: c.message, text: message }));
+  if (actionLabel) body.append(el('button', { class: c.action, type: 'button', text: actionLabel }));
+  const root = el('div', { class: c.root }, el('i', { class: `${c.icon} ${ICONS[tone]}`, 'aria-hidden': 'true' }), body);
+  if (dismissible) root.append(el('button', { class: c.close, type: 'button', 'aria-label': 'Dismiss' }, el('i', { class: 'ph-bold ph-x' })));
+  return root;
+}
+
+mountSpecimen({ sections: [
+  section('Tones', ['info', 'success', 'warning', 'danger', 'neutral'].map((tone) =>
+    alert({ tone, title: `${tone[0].toUpperCase()}${tone.slice(1)} title`, message: 'One sentence saying what happened and what to do about it.' }))),
+  section('With an action, dismissible', [
+    alert({ tone: 'danger', title: 'Sync failed', message: 'Three records could not be written.', actionLabel: 'Retry', dismissible: true }),
+  ]),
+]});
+</script></body></html>

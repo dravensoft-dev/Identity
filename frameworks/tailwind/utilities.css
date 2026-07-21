@@ -40,19 +40,25 @@
     --font-body: var(--font-body);
     --font-mono: var(--font-mono);
     --text-h2: var(--fs-h2);
+    --text-sm: var(--fs-sm);
     --text-ctl: var(--dz-text);
     --text-ctl-md: var(--dz-text-md);
     --text-ctl-sm: var(--dz-text-sm);
     --text-ctl-xs: var(--dz-text-xs);
     --text-ctl-2xs: var(--dz-text-2xs);
     --font-weight-semibold: var(--fw-semibold);
+    --font-weight-bold: var(--fw-bold);
     --font-weight-extrabold: var(--fw-extrabold);
     --leading-snug: var(--lh-snug);
+    --leading-body: var(--lh-body);
+    --leading-ctl: var(--dz-lh);
     --tracking-normal: var(--ls-normal);
+    --tracking-uppercase-status: var(--ls-uppercase-status);
     --tracking-label: var(--ls-label);
     --spacing-1: var(--sp-1);
     --spacing-2: var(--sp-2);
     --spacing-3: var(--sp-3);
+    --spacing-4: var(--sp-4);
     --spacing-5: var(--sp-5);
     --spacing-10: var(--sp-10);
     --spacing-24: var(--sp-24);
@@ -237,6 +243,9 @@
   .bottom-0 {
     bottom: 0px;
   }
+  .mt-2\.5 {
+    margin-top: calc(var(--spacing) * 2.5);
+  }
   .block {
     display: block;
   }
@@ -315,6 +324,9 @@
   .w-full {
     width: 100%;
   }
+  .flex-1 {
+    flex: 1;
+  }
   .shrink-0 {
     flex-shrink: 0;
   }
@@ -328,11 +340,17 @@
       background-color: var(--color-base-200);
     }
   }
+  .cursor-pointer {
+    cursor: pointer;
+  }
   .flex-col {
     flex-direction: column;
   }
   .items-center {
     align-items: center;
+  }
+  .items-start {
+    align-items: flex-start;
   }
   .justify-between {
     justify-content: space-between;
@@ -387,6 +405,10 @@
     border-style: var(--tw-border-style);
     border-width: var(--bw-strong);
   }
+  .border-none {
+    --tw-border-style: none;
+    border-style: none;
+  }
   .border-base-200 {
     border-color: var(--color-base-200);
   }
@@ -395,6 +417,9 @@
   }
   .border-error {
     border-color: var(--color-error);
+  }
+  .border-info {
+    border-color: var(--color-info);
   }
   .border-neutral {
     border-color: var(--color-neutral);
@@ -426,11 +451,29 @@
   .bg-error {
     background-color: var(--color-error);
   }
+  .bg-error\/14 {
+    background-color: var(--color-error);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-error) 14%, transparent);
+    }
+  }
+  .bg-info\/16 {
+    background-color: var(--color-info);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-info) 16%, transparent);
+    }
+  }
   .bg-primary {
     background-color: var(--color-primary);
   }
   .bg-success {
     background-color: var(--color-success);
+  }
+  .bg-success\/16 {
+    background-color: var(--color-success);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-success) 16%, transparent);
+    }
   }
   .bg-transparent {
     background-color: transparent;
@@ -438,8 +481,17 @@
   .bg-warning {
     background-color: var(--color-warning);
   }
+  .bg-warning\/18 {
+    background-color: var(--color-warning);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-warning) 18%, transparent);
+    }
+  }
   .object-cover {
     object-fit: cover;
+  }
+  .p-0 {
+    padding: 0px;
   }
   .p-5 {
     padding: var(--spacing-5);
@@ -450,6 +502,9 @@
   .px-3 {
     padding-inline: var(--spacing-3);
   }
+  .px-4 {
+    padding-inline: var(--spacing-4);
+  }
   .px-4\.5 {
     padding-inline: calc(var(--spacing) * 4.5);
   }
@@ -458,6 +513,9 @@
   }
   .py-0\.5 {
     padding-block: calc(var(--spacing) * 0.5);
+  }
+  .py-3\.5 {
+    padding-block: calc(var(--spacing) * 3.5);
   }
   .font-body {
     font-family: var(--font-body);
@@ -480,6 +538,12 @@
   .text-\[length\:calc\(var\(--avatar-xs\)\*0\.4\)\] {
     font-size: calc(var(--avatar-xs) * 0.4);
   }
+  .text-\[length\:var\(--icon-lg\)\] {
+    font-size: var(--icon-lg);
+  }
+  .text-\[length\:var\(--icon-md\)\] {
+    font-size: var(--icon-md);
+  }
   .text-\[length\:var\(--icon-sm\)\] {
     font-size: var(--icon-sm);
   }
@@ -501,9 +565,24 @@
   .text-h2 {
     font-size: var(--text-h2);
   }
+  .text-sm {
+    font-size: var(--text-sm);
+  }
+  .leading-body {
+    --tw-leading: var(--leading-body);
+    line-height: var(--leading-body);
+  }
+  .leading-ctl {
+    --tw-leading: var(--leading-ctl);
+    line-height: var(--leading-ctl);
+  }
   .leading-snug {
     --tw-leading: var(--leading-snug);
     line-height: var(--leading-snug);
+  }
+  .font-bold {
+    --tw-font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-bold);
   }
   .font-extrabold {
     --tw-font-weight: var(--font-weight-extrabold);
@@ -520,6 +599,10 @@
   .tracking-normal {
     --tw-tracking: var(--tracking-normal);
     letter-spacing: var(--tracking-normal);
+  }
+  .tracking-uppercase-status {
+    --tw-tracking: var(--tracking-uppercase-status);
+    letter-spacing: var(--tracking-uppercase-status);
   }
   .text-base-content {
     color: var(--color-base-content);
@@ -547,6 +630,9 @@
   }
   .text-info {
     color: var(--color-info);
+  }
+  .text-neutral {
+    color: var(--color-neutral);
   }
   .text-primary {
     color: var(--color-primary);
