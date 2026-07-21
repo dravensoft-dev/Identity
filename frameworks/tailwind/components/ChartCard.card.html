@@ -1,0 +1,41 @@
+<!-- @dsCard group="Angular" viewport="700x534" name="ChartCard" subtitle="The tile a chart sits on, rendered from ChartCard.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:var(--sp-6)}.row{display:flex;flex-wrap:wrap;gap:calc(var(--sp-1) * 3.5);align-items:flex-start;margin-bottom:var(--sp-4)}.sub{font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-label);line-height:var(--lh-snug);color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:var(--sp-1)}</style>
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./ChartCard.manifest.json')).json();
+const c = classesFor(manifest);
+
+/* The chart itself is not rendered here — it has no manifest, by design. The
+   placeholder stands where one goes, so the tile's padding and gap are what the
+   page is actually showing. The head row is omitted entirely when there is
+   neither a title nor an action, matching the primitive's own gate — an empty
+   head would otherwise ship a dead flex row above the placeholder. */
+function tile({ title, withAction }) {
+  const children = [];
+  if (title || withAction) {
+    const head = el('div', { class: c.head });
+    if (title) head.append(el('span', { class: c.title, text: title }));
+    if (withAction) {
+      const actions = el('div', { class: c.actions });
+      actions.append(el('span', { class: 'font-body text-ctl-md text-base-content/62', text: '[ Export ]' }));
+      head.append(actions);
+    }
+    children.push(head);
+  }
+  const slot = el('div', { class: 'w-full bg-base-300 rounded-sm' });
+  slot.style.height = '140px';
+  const root = el('div', { class: c.root }, ...children, slot);
+  root.style.width = '300px';
+  return root;
+}
+
+mountSpecimen({ sections: [
+  section('With a title and an action', [tile({ title: 'Deployments per week', withAction: true })]),
+  section('Title only, and bare', [tile({ title: 'Error rate' }), tile({})]),
+]});
+</script></body></html>

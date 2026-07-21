@@ -50,6 +50,8 @@ import type { ArenaCrumb, ArenaCrumbNavigateEvent } from '../primitives/breadcru
 import { breadcrumbsStyles } from '../primitives/breadcrumbs/breadcrumbs.variants';
 import { BulkActionBar } from '../primitives/bulk-action-bar/bulk-action-bar';
 import { bulkActionBarStyles } from '../primitives/bulk-action-bar/bulk-action-bar.variants';
+import { ChartCard } from '../primitives/chart-card/chart-card';
+import { chartCardStyles } from '../primitives/chart-card/chart-card.variants';
 import { EmptyState } from '../primitives/empty-state/empty-state';
 import { emptyStateStyles } from '../primitives/empty-state/empty-state.variants';
 import { ErrorState } from '../primitives/error-state/error-state';
@@ -132,6 +134,14 @@ class StatCardHost {}
   template: `<arena-bulk-action-bar class="consumer-class" />`,
 })
 class BulkActionBarHost {}
+
+@Component({
+  standalone: true,
+  imports: [ChartCard],
+  host: { 'data-host': 'chart-card' },
+  template: `<arena-chart-card class="consumer-class" />`,
+})
+class ChartCardHost {}
 
 @Component({
   standalone: true,
@@ -353,6 +363,64 @@ test('arena-bulk-action-bar: the host renders no children while count is 0 (the 
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-bulk-action-bar') as HTMLElement;
   assert.equal(host.children.length, 0, 'with no selection, the interactive content gated by @if (count() > 0) must not be in the DOM at all');
+});
+
+test('arena-chart-card: the root recipe classes land on the host element itself', async () => {
+  const fixture = TestBed.createComponent(ChartCardHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-chart-card') as HTMLElement;
+  for (const cls of chartCardStyles().root().split(/\s+/))
+    assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
+});
+
+test('arena-chart-card: a consumer-supplied class on the host survives the [class] binding', async () => {
+  const fixture = TestBed.createComponent(ChartCardHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-chart-card') as HTMLElement;
+  assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+});
+
+/* The bare case: no `title` and nothing projected into `[arena-actions]` or
+ * the default slot. Only this negative path is provable here. A positive
+ * render (binding `title="..."` in a host template, the same literal-attribute
+ * shape `arena-empty-state`'s and `arena-error-state`'s own `title="..."`
+ * tests use above) was tried and probed by hand first: under this harness a
+ * literal `title` attribute on `<arena-chart-card>` does NOT reach the
+ * component's `input<string>()` at all -- `ɵcmp.inputs` for a signal-only
+ * input is populated by ngtsc's initializer-API transform, which this JIT
+ * harness never runs, so the compiler falls back to treating `title` as a
+ * plain HTML global attribute (it happens to be a legal one) instead of
+ * routing it to the input. The probe confirmed `host.getAttribute('title')`
+ * is set while the component's own `title()` stays `undefined` and the head
+ * row never renders -- the same family of gap `host-class-binding.test.ts`
+ * already documents for Skeleton's `variant` and Breadcrumbs' `items` (there
+ * it throws NG0303 through a bracket binding; here it silently no-ops
+ * through a literal one, because `title` happens to collide with a real
+ * global attribute name -- the same collision `components-divergences.md`
+ * and this plan's Resolution J record as a known, unfixed layer-wide issue).
+ * `contentChild(ArenaActions)` has the identical positive-case gap for the
+ * same ngtsc reason (see arena-empty-state's own comment above). So neither
+ * half of `@if (title() || actions())` can be driven true here; what IS real
+ * coverage is the negative path -- with both undefined, the whole head row,
+ * not just the actions wrapper inside it, must be absent, matching React's
+ * `{(title || actions) && (...)}` gate rather than the task brief's
+ * unconditional `head`. `bun run check:angular` (`ngc --strictTemplates`)
+ * is the authority that the gate and the `contentChild` query typecheck
+ * against the component's real members. */
+test('arena-chart-card: the head row is entirely absent when there is neither a title nor projected actions', async () => {
+  const fixture = TestBed.createComponent(ChartCardHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-chart-card') as HTMLElement;
+  const headClass = chartCardStyles().head().split(/\s+/)[0];
+  assert.equal(
+    host.querySelector(`.${headClass}`),
+    null,
+    'an empty chart card (no title, no actions) must not render the head row at all',
+  );
+  assert.equal(host.children.length, 0, 'a bare chart card renders no children of its own');
 });
 
 /* Regression coverage for a review finding on Task 9: the action wrapper
