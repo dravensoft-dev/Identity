@@ -36,10 +36,12 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { Avatar } from '../primitives/avatar/avatar';
 import { avatarStyles } from '../primitives/avatar/avatar.variants';
 import { Breadcrumbs } from '../primitives/breadcrumbs/breadcrumbs';
+import type { ArenaCrumb, ArenaCrumbNavigateEvent } from '../primitives/breadcrumbs/breadcrumbs';
 import { breadcrumbsStyles } from '../primitives/breadcrumbs/breadcrumbs.variants';
 import { EmptyState } from '../primitives/empty-state/empty-state';
 import { emptyStateStyles } from '../primitives/empty-state/empty-state.variants';
@@ -212,6 +214,61 @@ test('arena-breadcrumbs: the host itself carries the nav landmark, not a wrapper
   assert.equal(host.getAttribute('role'), 'navigation');
   assert.equal(host.getAttribute('aria-label'), 'Breadcrumb');
   assert.equal(host.children.length, 0, 'with no items, the trail renders no crumbs of its own');
+});
+
+/* Review finding on Task 12: `(click)="navigate.emit(crumb)"` never touched
+ * the click event, so a crumb's native navigation to `crumb.href` always
+ * fired alongside the output and a consumer had no way to call
+ * `preventDefault()` and substitute SPA routing. The fix forwards the real
+ * `MouseEvent` alongside the crumb as `ArenaCrumbNavigateEvent`.
+ *
+ * The template wires `(click)="onCrumbClick(crumb, $event)"`, but `items` is
+ * a signal input, and this harness cannot drive a signal input through a
+ * template binding here (NG0303) -- the same limitation
+ * `confirm-dialog-focus-trap.test.ts` and this file's own header comment
+ * document for `Skeleton`'s `variant` and `ConfirmDialog`'s `open`: the
+ * harness runs `@angular/compiler`'s runtime JIT and never `ngtsc`, so a
+ * signal input never reaches `ɵcmp.inputs`. Without a bound, non-empty
+ * `items` array there is no real `<a>` in the DOM for this test to click.
+ *
+ * What IS provable for real: `onCrumbClick` is the exact method the
+ * template's `(click)` binds to, not a stand-in. This test creates a real
+ * `Breadcrumbs` instance via TestBed, calls that real method with a real
+ * `MouseEvent`, and asserts on the actual emitted payload -- including that
+ * calling `preventDefault()` on the emitted event flips the *same* event
+ * object's `defaultPrevented`, proving the primitive forwards the live
+ * native event rather than a copy. `bun run check:angular`
+ * (`ngc --strictTemplates`) is the authority that `(click)="onCrumbClick(crumb,
+ * $event)"` itself typechecks against the component's real members. */
+test('arena-breadcrumbs: a crumb click forwards the real MouseEvent, so a consumer can preventDefault() the anchor\'s native navigation', async () => {
+  const fixture = TestBed.createComponent(BreadcrumbsHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const breadcrumbs = fixture.debugElement.query(By.directive(Breadcrumbs)).componentInstance as Breadcrumbs;
+
+  let received: ArenaCrumbNavigateEvent | undefined;
+  breadcrumbs.navigate.subscribe((payload) => {
+    received = payload;
+  });
+
+  const crumb: ArenaCrumb = { label: 'Clients', href: '/clients' };
+  const clickEvent = new MouseEvent('click', { cancelable: true });
+  (breadcrumbs as unknown as { onCrumbClick(crumb: ArenaCrumb, event: MouseEvent): void }).onCrumbClick(crumb, clickEvent);
+
+  assert.ok(received, 'navigate did not emit');
+  assert.equal(received!.crumb, crumb, 'the emitted crumb is not the same object the click targeted');
+  assert.equal(
+    received!.event,
+    clickEvent,
+    'the emitted event is not the real MouseEvent the click produced -- a consumer could not preventDefault() the actual anchor navigation',
+  );
+  assert.equal(clickEvent.defaultPrevented, false, 'sanity: the event starts un-prevented');
+  received!.event.preventDefault();
+  assert.equal(
+    clickEvent.defaultPrevented,
+    true,
+    'calling preventDefault() on the emitted event must prevent the real anchor navigation -- proves it is the live native event, not a copy',
+  );
 });
 
 test('arena-stat-card: the root recipe classes land on the host element itself', async () => {
