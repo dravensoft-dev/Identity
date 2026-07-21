@@ -79,3 +79,25 @@
   --mdc-linear-progress-active-indicator-color: var(--color-primary);
   --mdc-linear-progress-track-color: var(--border);
 }
+
+/* Nav list — Arena's SideNav. Material owns the list; these are its Arena values.
+   The active item is crimson on crimson-soft, semibold; the rest are muted medium.
+   A nav-list item's own shape and its activated background read
+   --mat-list-active-indicator-{shape,color}, not --mat-list-list-item-container-*
+   (that pair only styles mat-selection-list's .mdc-list-item--selected).
+   Scoped to .arena-side-nav so a mat-nav-list elsewhere keeps Material's own look. */
+.arena-side-nav.mat-mdc-nav-list {
+  --mat-list-active-indicator-shape: var(--r-sm);
+  --mat-list-list-item-label-text-font: var(--font-body);
+  --mat-list-list-item-label-text-size: var(--dz-text);
+  --mat-list-list-item-label-text-weight: var(--fw-medium);
+  --mat-list-list-item-label-text-color: var(--mute);
+  --mat-list-list-item-hover-label-text-color: var(--mute);
+  --mat-list-list-item-focus-label-text-color: var(--crimson);
+}
+.arena-side-nav .mdc-list-item--activated {
+  --mat-list-active-indicator-color: var(--crimson-soft);
+  --mat-list-list-item-label-text-color: var(--crimson);
+  --mat-list-list-item-label-text-weight: var(--fw-semibold);
+  --mat-list-list-item-hover-label-text-color: var(--crimson);
+}
