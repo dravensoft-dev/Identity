@@ -729,32 +729,39 @@ same length, which is every correct call. `line-chart.prompt.md` states the rule
 **Converges:** yes — React should iterate its points. **Open debt on the React layer**, low
 priority.
 
-### LineChart — `area` must be bound, where React's JSX shorthand works bare
+### LineChart — `area` used to need binding, where React's JSX shorthand works bare — closed
 
 **React:** `<LineChart area />` works. JSX's boolean attribute shorthand passes the literal `true`,
 so `area && n > 0` is satisfied.
 
-**Angular:** `<arena-line-chart area />` compiles (confirmed against real `ngc --strictTemplates` —
-a static attribute matching an input is not rejected) but sets the input to the empty string, which
-is falsy, so the area silently never paints. The working form is `[area]="true"`, which is what
-`line-chart.prompt.md` documents.
+**Angular:** `<arena-line-chart area />` compiled (confirmed against real `ngc --strictTemplates` —
+a static attribute matching an input is not rejected) but used to set the input to the empty
+string, which is falsy, so the area silently never painted. `line-chart.prompt.md` documented the
+bound form, `[area]="true"`, as the workaround.
 
-**Why:** `area` is declared `input(false)` with no `booleanAttribute` transform. That is not a
-LineChart decision — it is what every boolean input in this layer currently does (`Alert`'s
-`dismissible`, `ConfirmDialog`'s `open`/`destructive`, `Onboarding`'s `open`,
+**Why it happened:** `area` was declared `input(false)` with no `booleanAttribute` transform. That
+was not a LineChart decision — it was what every boolean input in this layer did at the time
+(`Alert`'s `dismissible`, `ConfirmDialog`'s `open`/`destructive`, `Onboarding`'s `open`,
 `CommandPalette`'s `open`), so adding the transform to this one primitive alone would have made the
 layer inconsistent in a way a reader could not predict.
 
 **Close-out status:** `alert.prompt.md` and `confirm-dialog.prompt.md` had both documented the
-bare-attribute form, advertising a usage that silently does nothing; both now show the bound form
+bare-attribute form, advertising a usage that silently did nothing; both now show the bound form
 and carry a Don't line explaining why. The trap itself is stated once, layer-wide, under "Two traps
-this layer's idiom sets" in `frameworks/angular/README.md`, so it no longer depends on a reader
-finding a chart's divergence entry. **The underlying fix — `transform: booleanAttribute` on all six
-boolean inputs — is still not done**, because it is a behavioural change to five primitives at once
-rather than a documentation change.
+this layer's idiom sets" in `frameworks/angular/README.md`. **The underlying fix —
+`transform: booleanAttribute` on all six boolean inputs (`onboarding`'s `open`,
+`confirm-dialog`'s `open` and `destructive`, `alert`'s `dismissible`, `line-chart`'s `area`,
+`command-palette`'s `open`) — has now landed**, closing the gap this entry described: a bare
+`<arena-line-chart area>` now resolves the same way React's bare `area` does, because
+`booleanAttribute` treats a present-but-empty attribute string as `true` rather than as a falsy
+empty string. This repo's own JIT-only test harness cannot render a static attribute through a
+signal input to prove it directly (see `frameworks/angular/test/host-class-binding.test.ts`'s
+header comment); `bun run check:angular` (`ngc --strictTemplates`, real `ngtsc`) is what compiles
+the transform against each component's real input, and the transform's own behaviour on an empty
+attribute string is unit-testable independent of any one component's render.
 
-**Converges:** yes, once the layer takes `booleanAttribute` uniformly. Recorded here because this
-slice found it, not because LineChart is special.
+**Converges:** yes — done. Recorded here because this slice found it, not because LineChart was
+special.
 
 ### DoughnutChart — the legend is drawn per slice, not per label
 
@@ -900,6 +907,53 @@ consumer writes `style="..."` or any attribute directly on `<arena-unauth-card>`
 same host element the recipe's `root` classes are bound to.
 
 **Converges:** n/a — no behavioural divergence found.
+
+### Breadcrumbs — a single `navigate` output replaces a per-item `onClick`
+
+**React:** `Breadcrumbs.jsx` takes `items` as `{ label, href?, onClick? }[]` and wires
+each non-current item's own `onClick` directly onto its anchor: `<a href={it.href ||
+'#'} onClick={it.onClick}>`. A consumer wanting to intercept navigation supplies a
+different `onClick` per item.
+
+**Angular:** `arena-breadcrumbs` takes `ArenaCrumb { label, href? }` with no per-item
+callback field, and emits one `navigate` output carrying an `ArenaCrumbNavigateEvent`
+(`{ crumb, event }`) whenever a non-current crumb is clicked
+(`frameworks/angular/primitives/breadcrumbs/breadcrumbs.ts:59`).
+
+**Why:** a crumb renders as a real `<a href>`, so without the native event a consumer
+has no way to call `event.preventDefault()` and substitute SPA routing — forwarding it
+gives the same capability React's per-item `onClick` gives by wiring the DOM handler
+directly, while native navigation (ctrl-click, middle-click, open-in-new-tab) keeps
+working for a consumer who wires nothing, which is why the primitive never calls
+`preventDefault()` itself. One output covers every item instead of a callback prop per
+crumb — Angular's `output()` is a single per-component emitter, not a per-item slot the
+way a React prop can be, so a callback-per-crumb shape does not translate directly.
+
+**Converges:** no — one output carrying the crumb and the native event is the correct
+Angular idiom for this, and preserves everything a consumer could do with React's
+per-item callback.
+
+### StatCard — `delta` is one object prop in React, three flat inputs in Angular
+
+**React:** `StatCard.jsx` takes `delta` as a single object prop, `{ value, tone,
+direction }`, destructured internally (`delta.value`, `delta.tone`, `delta.direction`).
+
+**Angular:** `arena-stat-card` flattens it into three separate signal inputs —
+`deltaValue: string`, `deltaTone: 'neutral'|'positive'|'negative'` (default
+`'neutral'`), `deltaDirection: 'up'|'down'` (default `'up'`) — rather than one `delta`
+input.
+
+**Why:** the component's own JSDoc states the reasoning directly: `tone` and
+`deltaTone` answer different questions about the same number. `tone` says what state
+the number IS in right now — a service at 99.98% uptime is healthy whether or not it
+improved this week, and two open incidents are two open incidents even when that is
+down from five. `deltaTone` says whether the change it just made was good;
+`deltaDirection` says which way it pointed. These are three separate facts, not one
+bundle to destructure, and every delta sign renders as an outline pill, never a filled
+background, regardless of which of the three is being read.
+
+**Converges:** no — this is the Angular idiom for the same set of facts React groups
+into one prop; nothing a consumer could express with React's `delta` object is lost.
 
 ## How to add an entry
 
