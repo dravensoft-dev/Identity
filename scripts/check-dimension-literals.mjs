@@ -48,23 +48,24 @@ const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
  * The rest of SVG_ATTRS deliberately does NOT join this set — `r`, `x`, `y`,
  * `cx`, `cy`, `x1`, `x2`, `y1`, `y2` are one- and two-letter names that
  * collide with ordinary object keys having nothing to do with CSS, and
- * governing them today would buy nothing: PROP_COLON only fires at a
- * colon in a scanned `.jsx`/`.ts`/`.tsx` file (EXTENSIONS, above), and a
- * grep of frameworks/ turns up no `r:`/`x:`/`cx:` object key anywhere in
- * that set. The one PAD-shaped object that would collide —
- * `chart-internals.js`'s own `PAD = { t: 8, r: 8, b: 28, l: 44 }` — is
- * invisible to this gate for an unrelated reason: it is a `.js` file, and
- * EXTENSIONS never includes `.js`. That is not a safety net this decision
- * can lean on — a `.jsx` file with the same PAD shape would collide the
- * moment `r` joined PROPS, since scanValue's gate is shared by every
- * scanner here, colon and attribute alike, with no way to govern `r` in
- * attribute position only. Adding these nine later is a judgment call
- * that needs the tree re-checked at that time, not a decision this
- * comment can make permanent. Those SVG_ATTRS members stay listed for
- * documentation and for the day a real quoted-literal site needs one of
- * them, but scanValue's gate means none of them is judged anywhere today
- * — every current chart/Checkbox site this task closes is fontSize,
- * strokeWidth, width, or height, all already governed. */
+ * governing them today would cost something real, not a hypothetical one:
+ * `frameworks/angular/primitives/chart-internals.ts` carries
+ * `PAD = { t: 8, r: 8, b: 28, l: 44 } as const` — a `.ts` file, which
+ * EXTENSIONS does include, so PROP_COLON already reaches its `r: 8` object
+ * key. Adding `r` to PROPS today would immediately flag that object as a
+ * bare-number dimension literal, even though the key is a plot-padding
+ * name with nothing to do with an SVG radius. React's sibling,
+ * `chart-internals.js`'s own identically-shaped `PAD`, still escapes —
+ * for the unrelated reason that it is a `.js` file and EXTENSIONS never
+ * includes `.js` — but that is not a safety net this decision leans on:
+ * the Angular file alone already makes the collision real, not academic.
+ * Adding these nine later is a judgment call that needs the tree
+ * re-checked at that time, not a decision this comment can make
+ * permanent. Those SVG_ATTRS members stay listed for documentation and
+ * for the day a real quoted-literal site needs one of them, but
+ * scanValue's gate means none of them is judged anywhere today — every
+ * current chart/Checkbox site this task closes is fontSize, strokeWidth,
+ * width, or height, all already governed. */
 const PROPS = new Set([
   'fontSize', 'lineHeight', 'letterSpacing', 'fontWeight',
   'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
@@ -98,7 +99,7 @@ export const EXEMPT = new Map([
   ['frameworks/react/components/display/Calendar.jsx:height:`max(calc(var(--sp-1) * 4.5), ${rawH}px)`',
    'the max()\'s floor, calc(var(--sp-1) * 4.5), already reads a token, and stays governed — only the computed arm is exempt: rawH is an event\'s duration in minutes projected to pixels, the same data-to-pixel category as the two chart entries above, never a fixed dimension'],
   ['frameworks/angular/primitives/chart-internals.ts:width:\'1px\'',
-   'SR_ONLY is the standard visually-hidden idiom, and its 1px box is not a design dimension — it is the smallest rendered area that keeps the element in the accessibility tree while clip:rect(0 0 0 0) hides it. 0 would drop it from the tree in some engines and defeat the whole point; any token value would make it visible. Nothing in tokens/src/ could stand in for it, because the number is a constraint of the a11y idiom, not of Arena\'s scale'],
+   'SR_ONLY is the standard visually-hidden idiom, and its 1px box is not a design dimension — it is the smallest non-zero footprint that keeps the element in the accessibility tree, paired with clip:rect(0 0 0 0) to hide it regardless of box size. 0 would drop it from the tree in some engines and defeat the whole point. Nothing in tokens/src/ could stand in for it: the number is a constraint of the a11y idiom, and it must be a fixed literal for the negative margin below to cancel exactly'],
   ['frameworks/angular/primitives/chart-internals.ts:height:\'1px\'',
    'the other axis of the same 1px visually-hidden box as the width entry above'],
   ['frameworks/angular/primitives/chart-internals.ts:margin:\'-1px\'',

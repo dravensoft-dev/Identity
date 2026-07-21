@@ -212,12 +212,19 @@ test('barPath never rounds wider than half the bar or taller than the bar', () =
 });
 
 test('barPath with no radius is a plain rectangle path', () => {
-  const d = barPath(0, 0, 10, 40, -5);
-  // A negative radius clamps to 0, so every control point collapses onto the
-  // corner it belongs to and the outline is the rectangle itself.
-  for (const [px, py] of controlPoints(d))
-    assert.ok(d.includes(`${px},${py} ${px},${py}`) || d.includes(`Q${px},${py} ${px},${py}`));
-  assert.ok(d.startsWith('M0,40 '));
+  const [x, y, w, h] = [0, 0, 10, 40];
+  const d = barPath(x, y, w, h, -5);
+  // A negative radius clamps to 0, so every curve's control point sits on
+  // its corner (as always) AND its endpoint collapses onto that same
+  // corner -- the "curve" is really a straight pass through it.
+  const points = controlPoints(d);
+  assert.equal(points.length, 2, 'exactly two corners');
+  const corners = [[x, y], [x + w, y]];
+  points.forEach(([px, py], i) => {
+    assert.deepEqual([px, py], corners[i], `control point sits on the corner: ${d}`);
+    assert.ok(d.includes(`${px},${py} ${px},${py}`), `endpoint collapses onto the same corner: ${d}`);
+  });
+  assert.ok(d.startsWith(`M${x},${y + h} `));
 });
 
 // --- arcPath --------------------------------------------------------------
@@ -279,9 +286,9 @@ test('the layout constants carry the values the chart family shares', () => {
 test('SR_ONLY hides the element without removing it from the accessibility tree', () => {
   // The table it styles is the chart's text alternative, so it must stay
   // rendered and stay measurable -- clipped, not `display:none`.
-  assert.equal(SR_ONLY['position'], 'absolute');
-  assert.equal(SR_ONLY['clip'], 'rect(0 0 0 0)');
-  assert.equal(SR_ONLY['overflow'], 'hidden');
+  assert.equal(SR_ONLY.position, 'absolute');
+  assert.equal(SR_ONLY.clip, 'rect(0 0 0 0)');
+  assert.equal(SR_ONLY.overflow, 'hidden');
   assert.ok(!('display' in SR_ONLY), 'display:none would drop it from the accessibility tree');
 });
 
@@ -297,6 +304,6 @@ test('every SR_ONLY value carries its unit, because Angular appends none', () =>
 });
 
 test('SR_ONLY cancels its own footprint so the hidden table shifts no sibling', () => {
-  assert.equal(SR_ONLY['margin'], `-${SR_ONLY['width']}`);
-  assert.equal(SR_ONLY['width'], SR_ONLY['height']);
+  assert.equal(SR_ONLY.margin, `-${SR_ONLY.width}`);
+  assert.equal(SR_ONLY.width, SR_ONLY.height);
 });

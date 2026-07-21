@@ -25,10 +25,10 @@ export const PAD = { t: 8, r: 8, b: 28, l: 44 } as const;
  *  of its numbers: a picture no one can read is not an alternative. Bind it with
  *  `[style]="SR_ONLY"`. Values carry their units because Angular's style binding, unlike
  *  React's, never appends one — a bare `1` would be dropped as an invalid length. */
-export const SR_ONLY: Readonly<Record<string, string>> = {
+export const SR_ONLY = {
   position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px',
   overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: '0',
-};
+} as const satisfies Readonly<Record<string, string>>;
 
 /** Identity colour for slot N (1-based, clamped to the ramp). Slots are assigned IN
  *  ORDER and NEVER cycled: a 9th series folds to "Other", small multiples, or direct
