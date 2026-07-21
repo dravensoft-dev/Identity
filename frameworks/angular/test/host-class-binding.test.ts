@@ -39,6 +39,8 @@ import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { Avatar } from '../primitives/avatar/avatar';
 import { avatarStyles } from '../primitives/avatar/avatar.variants';
+import { EmptyState } from '../primitives/empty-state/empty-state';
+import { emptyStateStyles } from '../primitives/empty-state/empty-state.variants';
 import { Skeleton } from '../primitives/skeleton/skeleton';
 import { skeletonStyles } from '../primitives/skeleton/skeleton.variants';
 import { StatCard } from '../primitives/stat-card/stat-card';
@@ -97,6 +99,13 @@ class SkeletonHost {}
   template: `<arena-stat-card class="consumer-class" label="Revenue" value="$48.2k" />`,
 })
 class StatCardHost {}
+
+@Component({
+  standalone: true,
+  imports: [EmptyState],
+  template: `<arena-empty-state title="No projects yet" />`,
+})
+class EmptyStateWithoutActionHost {}
 
 test('arena-avatar: the root recipe classes land on the host element itself', async () => {
   const fixture = TestBed.createComponent(AvatarHost);
@@ -174,6 +183,60 @@ test('arena-stat-card: a consumer-supplied class on the host survives the [class
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-stat-card') as HTMLElement;
   assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+});
+
+/* Regression coverage for a review finding on Task 9: the action wrapper
+ * used to render unconditionally regardless of whether a consumer projected
+ * anything into it, shipping dead trailing space (the wrapper's own `mt-1.5`
+ * inside a `gap-3` flex column) on every empty state with no action. The fix
+ * gates the wrapper on `contentChild(ArenaAction)`, a marker directive
+ * standing in for the `[arena-action]` CSS selector `ng-content select`
+ * already used, because Angular content queries do not accept a CSS
+ * selector as a locator (only a directive/component type, a template
+ * reference variable, or a DI token -- confirmed against the Angular docs
+ * before writing this).
+ *
+ * Only the negative case is provable here. `contentChild` is a signal-based
+ * initializer API, the same family as `input()`, whose fields this harness
+ * has twice been unable to drive (Skeleton's `variant`, ConfirmDialog's
+ * `open`) because the harness runs `@angular/compiler`'s runtime template
+ * JIT and never `ngtsc`, the compiler-cli transform that discovers
+ * initializer-API fields and registers them into the component's static
+ * metadata. Projected static content is not a bound input, so this was
+ * worth trying independently -- but it hits the same wall a third time, and
+ * worse: confirmed with two throwaway probes (built, run, then deleted)
+ * before writing this comment. First, a component identical to `EmptyState`
+ * but with the `@if` gate removed -- a plain, unconditional `ng-content` --
+ * still projects the real button into the DOM under this harness, proving
+ * projection itself is not the problem; its own `contentChild(ProbeAction)`
+ * field nonetheless resolved to `undefined` even though the matching
+ * content was genuinely there. Second, the classic decorator form,
+ * `@ContentChild(ProbeAction) action?: ProbeAction`, does not merely fail to
+ * update -- Angular throws `Error: Standard Angular field decorators are
+ * not supported in JIT mode` the moment the decorator runs. So there is no
+ * form of content query -- signal or classic -- this harness can drive, and
+ * with the `@if` gate in place (as shipped) the positive case can never
+ * render here: `action()` never becomes truthy, so `ng-content` never
+ * mounts, so the projected button never reaches the DOM for this test to
+ * find. The real authority for whether `EmptyState`'s template typechecks
+ * against its real `contentChild` query is `bun run check:angular`
+ * (`ngc --strictTemplates`, real `ngtsc`), not this harness -- and that gate
+ * passes. The negative case below has no such gap: with nothing projected,
+ * `action()` is correctly `undefined` regardless of which compiler produced
+ * it, so it is real coverage of the reported bug's exact repro (an empty
+ * state with no action must not ship the wrapper's dead space). */
+test('arena-empty-state: the action wrapper is absent from the DOM when no [arena-action] content is projected', async () => {
+  const fixture = TestBed.createComponent(EmptyStateWithoutActionHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-empty-state') as HTMLElement;
+  assert.equal(host.querySelector('button'), null, 'no action was projected, so no action markup should exist at all');
+  const actionClass = emptyStateStyles().action().split(/\s+/)[0];
+  assert.equal(
+    host.querySelector(`:scope > .${actionClass}`),
+    null,
+    'the action wrapper div must not render when the action slot is empty',
+  );
 });
 
 /* Every primitive host-binds its recipe's visible slot directly onto its own
