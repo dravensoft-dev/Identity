@@ -371,6 +371,10 @@
     width: 0px;
     height: 0px;
   }
+  .size-1\.5 {
+    width: calc(var(--spacing) * 1.5);
+    height: calc(var(--spacing) * 1.5);
+  }
   .size-2 {
     width: var(--spacing-2);
     height: var(--spacing-2);
@@ -801,6 +805,12 @@
   }
   .bg-scrim {
     background-color: var(--color-scrim);
+  }
+  .bg-secondary\/16 {
+    background-color: var(--color-secondary);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-secondary) 16%, transparent);
+    }
   }
   .bg-success {
     background-color: var(--color-success);

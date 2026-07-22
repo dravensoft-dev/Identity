@@ -1,0 +1,29 @@
+<!-- @dsCard group="Tailwind" viewport="760x160" name="Badge" subtitle="Seven tones, rendered from Badge.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Badge.manifest.json')).json();
+const TONES = ['neutral', 'accent', 'gold', 'success', 'warning', 'danger', 'info'];
+
+function badge(tone, label, dot = false) {
+  const c = classesFor(manifest, { tone });
+  const node = el('span', { class: c.root });
+  if (dot) node.append(el('span', { class: c.dot }));
+  node.append(label);
+  return node;
+}
+
+mountSpecimen({ sections: [
+  section('Tones', TONES.map((tone) => badge(tone, tone))),
+  section('With a status dot', [
+    badge('success', 'Live', true),
+    badge('warning', 'Degraded', true),
+    badge('danger', 'Down', true),
+  ]),
+]});
+</script></body></html>
