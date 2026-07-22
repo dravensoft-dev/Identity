@@ -62,6 +62,32 @@ export const chartLegendMin = 120;
 export const chartLegendMax = 180;
 /* Between the doughnut plot and its legend. Equals --sp-4. */
 export const chartLegendGap = 16;
+/* Rest time before a tooltip appears. Long enough that crossing a toolbar reveals nothing. */
+export const delayOpen = 400;
+/*
+   Grace period after the pointer leaves. Short, and much shorter than open:
+   it exists so travelling between a trigger and its own tooltip does not dismiss it,
+   not to keep the tooltip around.
+ */
+export const delayClose = 120;
+/*
+   A toast that only has to be read. This is the value the Delivery Console
+   shipped hard-coded before it was a token.
+ */
+export const dismissDefault = 4200;
+/*
+   A toast carrying a button. WCAG 2.2.1: it asks the reader to DECIDE, not
+   only to read, and 4.2s is enough for the second task only if they were already
+   looking. persist (README H1) still overrides both and stays mandatory in
+   critical states.
+ */
+export const dismissActionable = 7000;
+/*
+   How many page numbers flank the current one before the list elides. The
+   window's total width is a CONSEQUENCE and is derived at the point of use, never
+   authored: first + last + (2 * siblings + 1) + two ellipses.
+ */
+export const limitPaginationSiblings = 1;
 
 /* Derived, not authored: the number of --color-cat-* slots in
  * tokens/src/palette.dark.json. Assigned in order and NEVER cycled -- a 9th
