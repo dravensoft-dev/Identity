@@ -7,10 +7,34 @@
  * the component itself. Every class on a specimen's own elements comes from
  * classesFor(); a class typed into the page instead would be styling the
  * manifest does not carry, which is the one thing a specimen must never show.
+ *
+ * It also links the two Phosphor stylesheets every specimen needs — the same
+ * `bold`/`fill` pair React's own card pages link — so a `ph-*` glyph renders
+ * as a glyph instead of an empty inline box. React's pages link it by a
+ * four-deep relative path from `frameworks/react/components/<group>/`; every
+ * page in this folder lives one level shallower, at
+ * `frameworks/tailwind/components/`, so the equivalent path here is three
+ * `..` segments, not four. Doing it here, once, at module load — rather than
+ * in each `*.card.html` — is what makes it apply to every specimen already
+ * written and every one still to come, the same reason `specimen.css` was
+ * pulled out on its own.
  */
 import { classesFor } from './manifest-classes.js';
 
-/** @param {string} tag @param {object} [props] `class`, `text`, and any attribute
+for (const style of ['bold', 'fill']) {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = `../../../node_modules/@phosphor-icons/web/src/${style}/style.css`;
+  document.head.appendChild(link);
+}
+
+/** @param {string} tag @param {object} [props] `class`, `text`, any attribute, and
+ *  `style` — an object of camelCase CSS properties (`{ strokeWidth: 'var(--bw-strong)' }`),
+ *  applied via `Object.assign(node.style, …)` rather than a kebab-case string, the same
+ *  shape the three Angular SVG charts bind `[style]` with and for the same reason: a
+ *  camelCase key reads as itself rather than as a kebab-case property name a gate could
+ *  misparse, and it keeps a token-valued dimension (a stroke width, a glyph size) out of
+ *  a hand-typed numeric literal.
  *  @param {...(Node|string)} children @returns {HTMLElement} */
 export function el(tag, props = {}, ...children) {
   const node = tag === 'svg' || tag === 'path' || tag === 'circle'
@@ -20,6 +44,7 @@ export function el(tag, props = {}, ...children) {
     if (v === undefined || v === null || v === false) continue;
     if (k === 'text') node.textContent = v;
     else if (k === 'class') node.setAttribute('class', v);
+    else if (k === 'style' && typeof v === 'object') Object.assign(node.style, v);
     else node.setAttribute(k, String(v));
   }
   for (const child of children) node.append(child);
