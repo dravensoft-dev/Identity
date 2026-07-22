@@ -461,40 +461,46 @@ Create `frameworks/react/test/pagination-window.test.jsx` — `.jsx` to match it
 siblings in that directory, even though it contains no JSX; `test:react` runs
 `bun test frameworks/react/test`, so anything in there is picked up:
 
+**The tests must NOT re-derive `2 * siblings + 5`.** A test that recomputes the
+implementation's own formula passes even when that formula is wrong in both places, which
+is a test that cannot fail. Instead: pin the concrete output at the shipped token value,
+and guard the token so that changing it forces someone to revisit the pins deliberately.
+
 ```js
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { pageWindow } from '../components/navigation/pagination-window.js';
 import { limitPaginationSiblings } from '../tokens.generated.js';
 
-test('below the threshold every page is listed, with no ellipsis', () => {
-  const threshold = 2 * limitPaginationSiblings + 5;
-  assert.deepEqual(pageWindow(1, threshold), Array.from({ length: threshold }, (_, i) => i + 1));
+/* The pins below are written for one sibling either side. If this fails, the token
+ * moved and the expected windows must be re-derived BY HAND, not by importing the
+ * implementation's formula -- which would make every assertion below tautological. */
+test('the pinned windows are written for a sibling count of one', () => {
+  assert.equal(limitPaginationSiblings, 1);
 });
 
-test('one past the threshold the list elides', () => {
-  const threshold = 2 * limitPaginationSiblings + 5;
-  const out = pageWindow(1, threshold + 1);
-  assert.ok(out.includes('…'));
-  assert.equal(out.length <= threshold, true);
+test('seven pages fit whole, and eight do not', () => {
+  assert.deepEqual(pageWindow(1, 7), [1, 2, 3, 4, 5, 6, 7]);
+  assert.ok(pageWindow(1, 8).includes('…'));
 });
 
-test('the current page keeps a sibling on each side', () => {
-  const out = pageWindow(10, 20).filter((p) => typeof p === 'number');
-  assert.ok(out.includes(10 - limitPaginationSiblings));
-  assert.ok(out.includes(10 + limitPaginationSiblings));
+test('a window in the middle elides on both sides', () => {
+  assert.deepEqual(pageWindow(10, 20), [1, '…', 9, 10, 11, '…', 20]);
 });
 
-test('first and last are always present', () => {
-  const out = pageWindow(10, 20);
-  assert.equal(out[0], 1);
-  assert.equal(out[out.length - 1], 20);
+test('a window at the start elides on the right only', () => {
+  assert.deepEqual(pageWindow(1, 20), [1, 2, '…', 20]);
 });
 
-test('a window at the start does not emit a leading ellipsis', () => {
-  assert.equal(pageWindow(1, 20)[1], 2);
+test('a window at the end elides on the left only', () => {
+  assert.deepEqual(pageWindow(20, 20), [1, '…', 19, 20]);
 });
 ```
+
+Note the middle case is exactly the current output of the untokenized `pages()`. Run
+`pageWindow`'s predecessor first if you want to confirm the pins describe today's
+behaviour rather than your expectation of it:
+`bun -e 'const p=(c,t)=>{if(t<=7)return Array.from({length:t},(_,i)=>i+1);const o=[1],f=Math.max(2,c-1),e=Math.min(t-1,c+1);if(f>2)o.push("…");for(let x=f;x<=e;x++)o.push(x);if(e<t-1)o.push("…");o.push(t);return o};console.log(JSON.stringify([p(1,7),p(10,20),p(1,20),p(20,20)]))'`
 
 - [ ] **Step 3: Run it to make sure it fails**
 
