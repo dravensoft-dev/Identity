@@ -6,6 +6,20 @@
  * two carry the same value. A value bound at import time cannot re-theme or
  * re-densify — that is the accepted price of reading it in JS at all. */
 
+/*
+   The pixel height of one hour. Script-readable because
+   y = ((min - startMin) / 60) * hour-h is arithmetic, and no CSS expression
+   computes a position from a minute-of-day. An orphan before this: --sp-10 is 40
+   and --sp-12 is 48, so nothing in the spacing scale was 44.
+ */
+export const calendarHourH = 44;
+/*
+   The popover's width. Script-readable because Math.min/Math.max compare it
+   against window.innerWidth. This ALSO replaces the calc(var(--sp-1) * 80) the
+   component rendered: the value existed twice in two idioms, held in step by a
+   comment. One token now, read both ways.
+ */
+export const onboardingWidth = 320;
 /* Plot height before padding. */
 export const chartHeight = 280;
 /*

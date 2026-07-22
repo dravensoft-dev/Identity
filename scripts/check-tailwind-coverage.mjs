@@ -50,6 +50,8 @@ export const EXCLUDED = new Map([
   ['chart-legend-min', 'script-readable: a clamp bound compared against a measured width'],
   ['chart-legend-max', 'script-readable: a clamp bound compared against a measured width'],
   ['chart-legend-gap', 'script-readable: subtracted from a measured width to size the plot'],
+  ['calendar-hour-h', 'script-readable: JS projects a minute-of-day onto a pixel offset from it'],
+  ['onboarding-width', 'script-readable: compared against window.innerWidth by Math.min/Math.max. Also rendered directly as var(--onboarding-width), which is a use, not a utility'],
 ]);
 
 /** The Arena token names a preset's @theme block references.

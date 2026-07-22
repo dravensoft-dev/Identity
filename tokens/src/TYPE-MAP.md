@@ -29,6 +29,7 @@ these values, do not re-derive them.
 | Easings (`ease-*`) | `effects.json` | `cubicBezier` | `[x1,y1,x2,y2]` |
 | Layering (`z-*`) | `layering.json` | `number` | unitless integers; the family declares the order, the values only preserve it |
 | Chart geometry (`chart-*`) | `chart.json` | `dimension` | px; **script-readable** — emitted to `frameworks/*/tokens.generated.*` as bare numbers as well as to CSS, because JS arithmetic computes SVG positions from them. Does not re-densify: a value bound at import time cannot respond to `.arena-compact` |
+| Component geometry (`calendar-hour-h`, `onboarding-width`) | `component.json` | `dimension` | px; **script-readable**. Named after a component rather than a role, like `avatar-*` and `logo-*`. `onboarding-width` also replaces a `calc(var(--sp-1) * 80)` the component rendered — one value that existed in two idioms |
 
 ## Value formats are strict 2025.10
 
