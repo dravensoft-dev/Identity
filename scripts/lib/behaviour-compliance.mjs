@@ -3,17 +3,41 @@
  *
  * Three return values, and the third is the point. `true` and `false` are a
  * verdict; `null` means "no single element can decide this" — focus behaviour,
- * key handling, and the auto-dismiss claim are behaviours, not attributes, and
- * a suite must assert them by acting on the tree rather than by reading it.
- * A future compliance gate holds every suite to that: a requirement whose
- * evaluate() is null must be named in a behavioural test or the gate fails.
+ * key handling, the auto-dismiss claim and every CONDITIONAL state are
+ * behaviours, not attributes, and a suite must assert them by acting on the tree
+ * rather than by reading it. `scripts/check-compliance.mjs` holds every suite to
+ * that: a requirement whose evaluate() is null must be named in a behavioural
+ * test or the gate fails.
+ *
+ * `null` is never a fallthrough. Every requirement key is in exactly one of two
+ * exported sets — DECIDABLE or BEHAVIOURAL — and a key in neither throws. It used
+ * to fall off the end of evaluate() and return null, which had a failure mode
+ * worth naming because it is silent in both directions: a typo in a pattern file
+ * ("states.chekced") returned null, comparePattern told the suite author to
+ * declare it behavioural, the author did, and from then on the misspelt
+ * requirement passed forever while the real one was never checked at all. A
+ * throw turns that into a loud error at the only moment anyone is looking.
+ *
+ * Requirement semantics key off the requirement KEY and the PATTERN NAME, never
+ * off the requirement's value. This is the correction that matters most in this
+ * file. The values in behaviour/patterns/*.json are human prose written for a
+ * reader — navigation's roles.element is a whole sentence ("navigation (native
+ * nav, or role=navigation when nav cannot be used)"), and button's roles.label is
+ * a list of three alternatives. The first implementation compared
+ * `roleOf(el) === String(value)`, which made a real <nav> fail its own pattern
+ * and reported false OVERCLAIMs against seven components that were correct
+ * (SideNav, Button, Checkbox, Switch, IconButton, Tag, ThemeToggle). That is
+ * worse than a missed defect: the cheapest way to silence a false OVERCLAIM is to
+ * write a fabricated exception into the binding, which corrupts the exact debt
+ * record this layer exists to keep honest and inverts the gate's meaning. The
+ * prose stays prose; the machine reads ELEMENT_ROLE and LABEL_ACCEPTS_TEXT.
  *
  * Why this file is DOM-generic rather than DOM-typed: it is consumed from three
  * runtimes — bun+happy-dom on the React side, bun+happy-dom under Angular's
  * TestBed, and plain node in its own test suite, which has no DOM at all. It
- * therefore touches exactly three members: `tagName`, `getAttribute`,
- * `hasAttribute`. Anything richer (querySelector, matches, closest) belongs to
- * the caller, which knows its own tree.
+ * therefore touches exactly four members: `tagName`, `getAttribute`,
+ * `hasAttribute`, `textContent`. Anything richer (querySelector, matches,
+ * closest) belongs to the caller, which knows its own tree.
  *
  * Why a real DOM at all, rather than the text scan the spec proposed: a text
  * scan was built and measured against the whole tree before this file existed.
@@ -70,6 +94,50 @@ const INPUT_ROLE = {
 /** Tags that take focus with no `tabindex` of their own. */
 const NATIVELY_FOCUSABLE = new Set(['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA']);
 
+/** Pattern name -> the ARIA role its `roles.element` requirement asks for.
+ *
+ *  This map exists because the requirement's own value cannot be used. Compare
+ *  navigation's value — "navigation (native nav, or role=navigation when nav
+ *  cannot be used)" — with dialog-modal's, which is the bare word "dialog". Both
+ *  are correct prose for a human; only one happens to be a role token, and
+ *  depending on that coincidence is what made a real <nav> fail.
+ *
+ *  It must cover every pattern carrying a `roles.element` requirement, and name
+ *  no pattern that does not exist. Both directions are asserted in
+ *  scripts/behaviour-compliance.test.mjs against the real files, so this map
+ *  cannot silently drift from behaviour/patterns/.
+ *  @type {Record<string, string>} */
+export const ELEMENT_ROLE = {
+  alert: 'alert',
+  button: 'button',
+  checkbox: 'checkbox',
+  combobox: 'combobox',
+  'dialog-modal': 'dialog',
+  listbox: 'listbox',
+  'menu-button': 'button',   // the trigger is a button; the popup it owns is the menu
+  navigation: 'navigation',
+  status: 'status',
+  switch: 'switch',
+  textbox: 'textbox',
+  toolbar: 'toolbar',
+  tooltip: 'tooltip',
+};
+
+/** The patterns whose `roles.label` prose admits an element's own text content as
+ *  its accessible name: "text content, aria-labelledby, or aria-label".
+ *
+ *  This is a whitelist rather than a blanket rule, and the blanket rule is the
+ *  bug it prevents. dialog-modal's roles.label says "aria-labelledby or
+ *  aria-label" and means it — Dialog's exception records that its title carries
+ *  no id and the dialog element carries neither attribute. If text content were
+ *  credited everywhere, that true exception would be reported STALE and deleted,
+ *  and a real accessibility defect would leave the debt record.
+ *
+ *  Asserted against the real pattern files: every name here must have a
+ *  roles.label value that actually mentions text content.
+ *  @type {Set<string>} */
+export const LABEL_ACCEPTS_TEXT = new Set(['button', 'checkbox', 'switch']);
+
 /** The element's ARIA role: explicit if authored, else implicit, else null.
  *  @param {{tagName: string, getAttribute: (n: string) => string | null}} el */
 export function roleOf(el) {
@@ -81,18 +149,24 @@ export function roleOf(el) {
     return INPUT_ROLE[type] ?? 'textbox';
   }
   // A <section> is only a region when it is named; unnamed it exposes no role.
-  if (tag === 'SECTION') return hasAccessibleName(el) ? 'region' : null;
+  // Text content never names a section, hence the explicit `false`.
+  if (tag === 'SECTION') return hasAccessibleName(el, false) ? 'region' : null;
   return IMPLICIT_ROLE[tag] ?? null;
 }
 
-/** Whether the element carries an ARIA name. Content-derived names (a <button>'s
- *  own text) are deliberately not credited: every roles.label requirement in
- *  behaviour/patterns/ asks for an explicit one, and crediting text content would
- *  pass Dialog, whose exception says plainly that its title has no id and the
- *  dialog element carries neither attribute.
- *  @param {{getAttribute: (n: string) => string | null}} el */
-export function hasAccessibleName(el) {
-  return Boolean(el.getAttribute('aria-label') || el.getAttribute('aria-labelledby'));
+/** Whether the element carries an accessible name.
+ *
+ *  `acceptsText` decides whether the element's own text content counts, and the
+ *  caller must pass it deliberately — it defaults to false, the stricter answer,
+ *  so a new call site cannot accidentally widen the rule. Only the patterns in
+ *  LABEL_ACCEPTS_TEXT say text content is enough; see that map for why crediting
+ *  it everywhere would wrongly retire Dialog's true exception.
+ *  @param {{getAttribute: (n: string) => string | null, textContent?: string | null}} el
+ *  @param {boolean} [acceptsText] */
+export function hasAccessibleName(el, acceptsText = false) {
+  if (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby')) return true;
+  if (!acceptsText) return false;
+  return Boolean((el.textContent ?? '').trim());
 }
 
 /** Whether the element can take keyboard focus. Not a claim about focus *order*
@@ -107,7 +181,10 @@ export function isFocusable(el) {
 }
 
 /** Requirement key -> the ARIA attribute that satisfies it, for the requirements
- *  that are pure attribute presence. */
+ *  that are pure, unconditional attribute presence.
+ *
+ *  Several keys were removed from this map and moved to BEHAVIOURAL, because
+ *  their prose is conditional and presence is the wrong question — see that set. */
 const ATTRIBUTE_FOR = {
   'roles.aria-modal': 'aria-modal',
   'roles.haspopup': 'aria-haspopup',
@@ -115,17 +192,12 @@ const ATTRIBUTE_FOR = {
   'roles.controls': 'aria-controls',
   'roles.activedescendant': 'aria-activedescendant',
   'roles.describedby': 'aria-describedby',
-  'states.checked': 'aria-checked',
   'states.selected': 'aria-selected',
-  'states.multiselectable': 'aria-multiselectable',
-  'states.posinset': 'aria-posinset',
-  'states.busy': 'aria-busy',
-  'states.required': 'aria-required',
-  'states.readonly': 'aria-readonly',
 };
 
 /** Requirement keys naming a role the element itself must expose. `roles.element`
- *  is excluded because its required role comes from the pattern's value, not the key. */
+ *  is excluded because its required role comes from ELEMENT_ROLE, keyed by the
+ *  pattern, not from the key. */
 const ROLE_NAMED_BY_KEY = {
   'roles.grid': 'grid',
   'roles.row': 'row',
@@ -141,24 +213,78 @@ const ROLE_NAMED_BY_KEY = {
   'roles.graphic': 'img',
 };
 
-/** The requirement keys evaluate() can decide from one element. Everything else
- *  returns null and must be asserted behaviourally. @type {Set<string>} */
+/** The requirement keys evaluate() can decide from one element, derived from the
+ *  maps above rather than restated. A hand-written second list is a second place
+ *  for the rule to live, and it was already out of step with evaluate() once.
+ *  @type {Set<string>} */
 export const DECIDABLE = new Set([
-  'roles.element', 'roles.label',
+  'roles.element',
+  'roles.label',
   ...Object.keys(ATTRIBUTE_FOR),
   ...Object.keys(ROLE_NAMED_BY_KEY),
-  'states.disabled', 'states.multiline',
+  'states.checked',
+  'states.multiline',
   'live.politeness',
+]);
+
+/** The requirement keys that are genuinely behaviours rather than attributes, for
+ *  which evaluate() returns null and a suite must assert by acting on the tree.
+ *
+ *  Two families and a tail. `focus.*` and `keyboard.*` are behaviours by nature.
+ *  `content.noAutoDismiss` is a claim about the passage of time; `alternative.table`
+ *  is a claim about a sibling subtree, outside the one-element surface.
+ *
+ *  The tail is the correction. Six CONDITIONAL states live here that a presence
+ *  check used to answer wrongly, because their prose carries a "when": disabled is
+ *  "aria-disabled set to true WHEN the action is unavailable", and likewise
+ *  required, readonly, multiselectable, busy and posinset. A snapshot of one
+ *  element cannot decide a conditional claim — an enabled <button> correctly
+ *  carries no aria-disabled, and reading that as unmet produced
+ *  "Button, enabled: states.disabled: OVERCLAIM" against a component doing exactly
+ *  the right thing. Only a suite that renders the condition and then asserts can
+ *  answer these, which is precisely what "behavioural" means here.
+ *
+ *  `states.checked` deliberately did NOT move: "aria-checked set to true, false,
+ *  or mixed" is unconditional — a checkbox always has a checked state.
+ *  @type {Set<string>} */
+export const BEHAVIOURAL = new Set([
+  // focus.*
+  'focus.unaffected', 'focus.onOpen', 'focus.onClose', 'focus.trap', 'focus.roving', 'focus.never',
+  // keyboard.*
+  'keyboard.Space', 'keyboard.Enter', 'keyboard.Escape',
+  'keyboard.ArrowKeys', 'keyboard.ArrowUp', 'keyboard.ArrowDown',
+  'keyboard.ArrowLeft', 'keyboard.ArrowRight',
+  'keyboard.Home', 'keyboard.End',
+  'keyboard.PageUp', 'keyboard.PageDown',
+  'keyboard.TypeAhead',
+  // claims outside one element's snapshot
+  'content.noAutoDismiss',
+  'alternative.table',
+  // conditional states — see the note above
+  'states.disabled', 'states.required', 'states.readonly',
+  'states.multiselectable', 'states.busy', 'states.posinset',
 ]);
 
 /** Decide one requirement against one element.
  *  @param {object} el
  *  @param {string} key dotted requirement key, e.g. 'roles.element'
- *  @param {unknown} value the pattern's declared value for that key
+ *  @param {unknown} value the pattern's declared prose for that key. Reported in
+ *    an OVERCLAIM message so a reader sees what was asked for; never parsed.
+ *  @param {string} patternName the owning pattern's name, which is what selects
+ *    the semantics for roles.element and roles.label
  *  @returns {true | false | null} null = undecidable from this element alone */
-export function evaluate(el, key, value) {
-  if (key === 'roles.element') return roleOf(el) === String(value);
-  if (key === 'roles.label') return hasAccessibleName(el);
+export function evaluate(el, key, value, patternName) {
+  if (key === 'roles.element') {
+    const wanted = ELEMENT_ROLE[patternName];
+    if (!wanted) {
+      throw new Error(
+        `evaluate: pattern "${patternName}" requires roles.element but has no ELEMENT_ROLE entry. ` +
+        'Add one in scripts/lib/behaviour-compliance.mjs naming the role that pattern requires.',
+      );
+    }
+    return roleOf(el) === wanted;
+  }
+  if (key === 'roles.label') return hasAccessibleName(el, LABEL_ACCEPTS_TEXT.has(patternName));
 
   const attr = ATTRIBUTE_FOR[key];
   if (attr) return el.getAttribute(attr) !== null;
@@ -169,8 +295,14 @@ export function evaluate(el, key, value) {
     return Array.isArray(wanted) ? wanted.includes(actual) : actual === wanted;
   }
 
-  if (key === 'states.disabled') {
-    return el.hasAttribute('disabled') || el.getAttribute('aria-disabled') !== null;
+  if (key === 'states.checked') {
+    // A native checkbox or radio exposes checked-ness through the platform, with
+    // no aria-checked to read. Crediting only the attribute applied the
+    // implicit-semantics principle to roles and withheld it from states, which is
+    // the same defect in a different place.
+    if (el.getAttribute('aria-checked') !== null) return true;
+    const role = roleOf(el);
+    return el.tagName.toUpperCase() === 'INPUT' && (role === 'checkbox' || role === 'radio');
   }
   if (key === 'states.multiline') {
     return el.tagName.toUpperCase() === 'TEXTAREA' || el.getAttribute('aria-multiline') !== null;
@@ -182,8 +314,14 @@ export function evaluate(el, key, value) {
     return ['status', 'alert', 'log'].includes(roleOf(el));
   }
 
-  // focus.*, keyboard.*, content.*, alternative.* — behaviours, not attributes.
-  return null;
+  if (BEHAVIOURAL.has(key)) return null;
+
+  throw new Error(
+    `evaluate: unrecognised requirement key "${key}". ` +
+    'Every key must be in DECIDABLE or BEHAVIOURAL in scripts/lib/behaviour-compliance.mjs. ' +
+    'If this came from a pattern file, check it for a typo — an unknown key used to return ' +
+    'null, which a suite could silence forever by declaring it behavioural.',
+  );
 }
 
 /**
@@ -230,7 +368,7 @@ export function comparePattern({ pattern, binding, subjects = {}, fallback = nul
       problems.push(`${key}: no subject element — nothing was rendered, or the selector matched nothing.`);
       continue;
     }
-    const verdict = evaluate(el, key, value);
+    const verdict = evaluate(el, key, value, pattern.name);
 
     if (verdict === null) {
       if (declared.has(key)) { used.add(key); continue; }
