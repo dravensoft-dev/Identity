@@ -17,8 +17,8 @@ function logo(size, orientation = 'horizontal') {
 }
 
 mountSpecimen({ sections: [
-  section('Horizontal — sm, md, lg', [logo('sm'), logo('md'), logo('lg')]),
+  section('Horizontal — sm, md, lg', [logo('sm'), logo('md'), logo('lg')], { gap: 'loose' }),
   section('Horizontal — xl', [logo('xl')]),
-  section('Vertical', [logo('md', 'vertical'), logo('lg', 'vertical')]),
+  section('Vertical', [logo('md', 'vertical'), logo('lg', 'vertical')], { gap: 'loose' }),
 ]});
 </script></body></html>

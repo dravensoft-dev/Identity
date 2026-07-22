@@ -3,9 +3,11 @@
    component. Every class a specimen puts on a component's own element comes
    from its manifest through classesFor(); what is left over is the page: a
    background, a micro-label per section, and a row to lay the examples out in.
-   The three rules below are the ones the React card pages already use, so a
+   The rules below are the ones the React card pages already use, so a
    specimen and its React counterpart sit on the same surface and a difference
-   between them is a difference in the component. */
+   between them is a difference in the component. The `.row` modifiers exist
+   because a specimen sometimes has to lay its row out differently to make its
+   point — see section()'s JSDoc in specimen.js for what each one is for. */
 body {
   margin: 0;
   padding: var(--sp-6);
@@ -27,6 +29,30 @@ body {
 .row.stack {
   flex-direction: column;
   align-items: stretch;
+}
+
+/* Equalize cross-axis height across a row's examples, for a set the
+   component itself renders at a uniform height. */
+.row.align-stretch {
+  align-items: stretch;
+}
+
+/* Top-align a row instead of centring it, for comparing examples of
+   deliberately different height. */
+.row.align-start {
+  align-items: flex-start;
+}
+
+/* Centre a row's content on the main axis, for a section holding a single
+   full-frame example that is centred in its real presentational context. */
+.row.justify-center {
+  justify-content: center;
+}
+
+/* Widen the gap beyond the default, for examples small or visually similar
+   enough that the default gap reads as one continuous shape. */
+.row.gap-loose {
+  gap: calc(var(--sp-1) * 6);
 }
 
 .sub {

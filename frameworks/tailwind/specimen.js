@@ -27,19 +27,54 @@ export function el(tag, props = {}, ...children) {
 }
 
 /** @param {string} label @param {(Node|string)[]} nodes
- *  @param {{stack?: boolean}} [opts] stack: lay the examples out in a column,
- *    for components that occupy a full row on their own
- *  @returns {{label: string, nodes: (Node|string)[], stack: boolean}} */
+ *  @param {{stack?: boolean, align?: 'stretch'|'start', justify?: 'center', gap?: 'loose'}} [opts]
+ *    Each is a named escape hatch from the shared row's default (wrapped,
+ *    centred cross-axis, default gap) for when that default would hide or
+ *    distort the point a section is making. Reach for one only when it does:
+ *    - `stack`: lay the examples out in a column instead of a row, for a
+ *      component that occupies a full row on its own (Alert, Table, a Dialog
+ *      panel) — a row would otherwise flow it into one column anyway.
+ *    - `align: 'stretch'`: equalize cross-axis height across the row's
+ *      examples, for a set the component itself renders at a uniform height
+ *      (StatCard's tiles). The default `center` floats the shorter ones at
+ *      their own height instead, which reads as the component failing to
+ *      tile evenly when it is the specimen, not the component, doing that.
+ *    - `align: 'start'`: top-align instead of centring, for comparing two
+ *      examples of deliberately different height (a headed vs. a bare
+ *      ChartCard tile). Centring shifts the shorter one down and the two
+ *      slots go out of alignment, so the comparison reads as an accidental
+ *      offset instead of the deliberate omission it demonstrates.
+ *    - `justify: 'center'`: centre the row's content on the main axis, for a
+ *      section holding one full-frame example (UnauthCard's signed-out
+ *      panel) whose real presentational context centres it. The default
+ *      packs content flush left, which is only ever right for a row of
+ *      independent, left-reading examples.
+ *    - `gap: 'loose'`: widen the gap beyond the default, for examples small
+ *      or visually similar enough (AppLogo's lock-ups) that the default gap
+ *      reads as one continuous shape rather than separate instances.
+ *  @returns {{label: string, nodes: (Node|string)[], stack: boolean, align?: 'stretch'|'start', justify?: 'center', gap?: 'loose'}} */
 export function section(label, nodes, opts = {}) {
-  return { label, nodes, stack: Boolean(opts.stack) };
+  return {
+    label,
+    nodes,
+    stack: Boolean(opts.stack),
+    align: opts.align,
+    justify: opts.justify,
+    gap: opts.gap,
+  };
 }
 
 /** Renders the sections into `mount`, each under its micro-label.
- *  @param {{sections: {label: string, nodes: (Node|string)[]}[], mount?: Element}} opts */
+ *  @param {{sections: {label: string, nodes: (Node|string)[], stack?: boolean, align?: 'stretch'|'start', justify?: 'center', gap?: 'loose'}[], mount?: Element}} opts */
 export function mountSpecimen({ sections, mount = document.getElementById('root') }) {
-  for (const { label, nodes, stack } of sections) {
+  for (const { label, nodes, stack, align, justify, gap } of sections) {
     mount.append(el('div', { class: 'sub', text: label }));
-    const row = el('div', { class: stack ? 'row stack' : 'row' });
+    const classes = ['row'];
+    if (stack) classes.push('stack');
+    if (align) classes.push(`align-${align}`);
+    if (justify) classes.push(`justify-${justify}`);
+    if (gap) classes.push(`gap-${gap}`);
+    const row = el('div', { class: classes.join(' ') });
     for (const node of nodes) row.append(node);
     mount.append(row);
   }

@@ -29,7 +29,7 @@ mountSpecimen({ sections: [
     tile({ label: 'Revenue', value: '$48.2k', delta: '12%', deltaTone: 'positive' }),
     tile({ label: 'p95 latency', value: '184ms', delta: '9%', direction: 'down', deltaTone: 'positive' }),
     tile({ label: 'Open incidents', value: '3', delta: '2', deltaTone: 'negative', sub: 'since Friday' }),
-  ]),
+  ], { align: 'stretch' }),
   section('Without a delta', [tile({ label: 'Active projects', value: '17', sub: 'across 6 clients' })]),
   section('Value tones -- what the number IS, independent of the delta', [
     tile({ label: 'Neutral', value: '128', tone: 'neutral' }),

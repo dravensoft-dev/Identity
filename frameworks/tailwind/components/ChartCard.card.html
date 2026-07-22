@@ -36,6 +36,6 @@ function tile({ title, withAction }) {
 
 mountSpecimen({ sections: [
   section('With a title and an action', [tile({ title: 'Deployments per week', withAction: true })]),
-  section('Title only, and bare', [tile({ title: 'Error rate' }), tile({})]),
+  section('Title only, and bare', [tile({ title: 'Error rate' }), tile({})], { align: 'start' }),
 ]});
 </script></body></html>
