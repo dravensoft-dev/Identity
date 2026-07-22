@@ -106,6 +106,7 @@
     --ease-in-out: var(--ease-in-out);
     --ease-emphatic: var(--ease-emphatic);
     --blur-scrim: var(--scrim-blur);
+    --z-index-dropdown: var(--z-dropdown);
     --z-index-modal: var(--z-modal);
     --z-index-modal-nested: var(--z-modal-nested);
     --z-index-palette: var(--z-palette);
@@ -279,6 +280,9 @@
   .top-1\/2 {
     top: calc(1 / 2 * 100%);
   }
+  .top-full {
+    top: 100%;
+  }
   .right-0 {
     right: 0px;
   }
@@ -294,6 +298,15 @@
   .bottom-6 {
     bottom: var(--spacing-6);
   }
+  .left-0 {
+    left: 0px;
+  }
+  .left-auto {
+    left: auto;
+  }
+  .z-dropdown {
+    z-index: var(--z-index-dropdown);
+  }
   .z-modal {
     z-index: var(--z-index-modal);
   }
@@ -308,6 +321,9 @@
   }
   .m-0 {
     margin: 0px;
+  }
+  .my-1 {
+    margin-block: var(--spacing-1);
   }
   .mt-0\.5 {
     margin-top: calc(var(--spacing) * 0.5);
@@ -488,6 +504,9 @@
   .h-full {
     height: 100%;
   }
+  .h-px {
+    height: 1px;
+  }
   .max-h-80 {
     max-height: calc(var(--spacing) * 80);
   }
@@ -548,6 +567,9 @@
   .min-w-0 {
     min-width: 0px;
   }
+  .min-w-50 {
+    min-width: calc(var(--spacing) * 50);
+  }
   .min-w-ctl-h {
     min-width: var(--spacing-ctl-h);
   }
@@ -596,6 +618,9 @@
     @media (prefers-reduced-motion: reduce) {
       animation-duration: var(--loop-reduced);
     }
+  }
+  .arena-menu {
+    animation: arena-menu var(--dur-fast) var(--ease-out);
   }
   .arena-pop {
     animation: arena-pop var(--dur-mid) var(--ease-emphatic);
@@ -919,6 +944,9 @@
   .py-1 {
     padding-block: var(--spacing-1);
   }
+  .py-2 {
+    padding-block: var(--spacing-2);
+  }
   .py-2\.5 {
     padding-block: calc(var(--spacing) * 2.5);
   }
@@ -960,6 +988,9 @@
   }
   .pr-9 {
     padding-right: calc(var(--spacing) * 9);
+  }
+  .pb-1 {
+    padding-bottom: var(--spacing-1);
   }
   .pb-5\.5 {
     padding-bottom: calc(var(--spacing) * 5.5);
@@ -1347,6 +1378,25 @@
     .hover\:bg-primary:hover {
       background-color: var(--color-primary);
     }
+    .hover\:bg-primary\/14:hover {
+      background-color: var(--color-primary);
+    }
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:bg-primary\/14:hover {
+        background-color: color-mix(in oklab, var(--color-primary) 14%, transparent);
+      }
+    }
+    .hover\:bg-transparent:hover {
+      background-color: transparent;
+    }
+    .hover\:text-base-content\/62:hover {
+      color: var(--color-base-content);
+    }
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:text-base-content\/62:hover {
+        color: color-mix(in oklab, var(--color-base-content) 62%, transparent);
+      }
+    }
     .hover\:text-base-content\/82:hover {
       color: var(--color-base-content);
     }
@@ -1354,6 +1404,12 @@
       .hover\:text-base-content\/82:hover {
         color: color-mix(in oklab, var(--color-base-content) 82%, transparent);
       }
+    }
+    .hover\:text-error:hover {
+      color: var(--color-error);
+    }
+    .hover\:text-primary:hover {
+      color: var(--color-primary);
     }
     .hover\:shadow-2:hover {
       --tw-shadow: var(--shadow-2);

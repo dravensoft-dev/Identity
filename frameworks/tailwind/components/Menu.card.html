@@ -1,0 +1,52 @@
+<!-- @dsCard group="Tailwind" viewport="700x400" name="Menu" subtitle="Items, headers and dividers, rendered from Menu.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Menu.manifest.json')).json();
+const c = classesFor(manifest);
+
+const ITEMS = [
+  { header: 'This deployment' },
+  { label: 'View logs', icon: 'ph-bold ph-list-magnifying-glass', shortcut: 'L' },
+  { label: 'Re-run', icon: 'ph-bold ph-arrow-clockwise' },
+  { label: 'Promote', icon: 'ph-bold ph-arrow-fat-line-up', disabled: true },
+  { divider: true },
+  { label: 'Delete', icon: 'ph-bold ph-trash', destructive: true },
+];
+
+/* Rendered open and un-pinned: the panel is `absolute`, and a specimen that had
+   to hover a trigger would show nothing in a screenshot. */
+function menu() {
+  const panel = el('div', { class: c.panel, role: 'menu' });
+  panel.style.position = 'static';
+  for (const item of ITEMS) {
+    if (item.divider) { panel.append(el('div', { class: c.divider })); continue; }
+    if (item.header) { panel.append(el('div', { class: c.header, text: item.header })); continue; }
+    /* Exactly one modifier is combined with the base `item`, mirroring React's own
+       ternary (`item.disabled ? mute : (hover && !destructive ? crimson : color)`,
+       where the disabled branch is checked first and wins unconditionally): stacking
+       itemDestructive's hover alongside itemDefault's would put two same-property
+       hover rules on one row, and Tailwind's generated order — alphabetical by value,
+       not by manifest order — lets the wrong one win the cascade. */
+    const modifier = item.disabled ? c.itemDisabled : item.destructive ? c.itemDestructive : c.itemDefault;
+    const classes = [c.item, modifier].filter(Boolean).join(' ');
+    const row = el('button', { class: classes, type: 'button', role: 'menuitem', disabled: item.disabled },
+      el('span', { class: c.icon }, el('i', { class: item.icon, 'aria-hidden': 'true' })),
+      el('span', { class: c.label, text: item.label }));
+    if (item.shortcut) row.append(el('span', { class: c.shortcut, text: item.shortcut }));
+    panel.append(row);
+  }
+  const box = el('div', { class: c.root });
+  box.style.display = 'block';
+  box.style.width = '240px';
+  box.append(panel);
+  return box;
+}
+
+mountSpecimen({ sections: [section('Open — hover a row', [menu()])]});
+</script></body></html>
