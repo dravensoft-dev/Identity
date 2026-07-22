@@ -38,6 +38,18 @@ export const EXCLUDED = new Map([
   ['bw-strong', 'v4 has no border-width namespace; no consumer today, available as border-[length:var(--bw-strong)]'],
   ['focus-width', 'no namespace — the focus ring is composed, not a single utility'],
   ['focus-offset', 'no namespace — the focus ring is composed, not a single utility'],
+  ['chart-height', 'script-readable: JS computes SVG positions from it, never a utility'],
+  ['chart-pad-top', 'script-readable: JS computes SVG positions from it, never a utility'],
+  ['chart-pad-right', 'script-readable: JS computes SVG positions from it, never a utility'],
+  ['chart-pad-bottom', 'script-readable: JS computes SVG positions from it, never a utility'],
+  ['chart-pad-left', 'script-readable: JS computes SVG positions from it, never a utility'],
+  ['chart-bar-radius', 'script-readable: passed to barPath(), which builds an SVG path string'],
+  ['chart-bar-gap', 'script-readable: subtracted from the per-bar step width'],
+  ['chart-point-r', 'script-readable: an SVG circle r attribute computed per point'],
+  ['chart-point-r-hover', 'script-readable: an SVG circle r attribute computed per point'],
+  ['chart-legend-min', 'script-readable: a clamp bound compared against a measured width'],
+  ['chart-legend-max', 'script-readable: a clamp bound compared against a measured width'],
+  ['chart-legend-gap', 'script-readable: subtracted from a measured width to size the plot'],
 ]);
 
 /** The Arena token names a preset's @theme block references.
