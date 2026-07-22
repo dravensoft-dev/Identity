@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 import { onboardingStyles } from './onboarding.variants';
 import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../focus-trap';
+import { onboardingWidth, sp3, sp4 } from '../../tokens.generated';
 
 /** One step of an `arena-onboarding` tour. All three fields are optional so a
  *  step can carry only the ones it needs -- React's `Onboarding.jsx` renders
@@ -125,16 +126,16 @@ export class Onboarding {
   }));
 
   /** Clamped against the viewport, or null when the coachmark floats. `W`
-   *  and `EDGE` stay plain numbers for the reason `Onboarding.jsx` states:
-   *  `Math.min`/`Math.max` need real numbers, and nothing in this layer
-   *  reads a custom property back into JS. */
+   *  and `EDGE` are still real numbers, the same reason `Onboarding.jsx`
+   *  states: `Math.min`/`Math.max` need real numbers. Both are authored once
+   *  in tokens/src/ now instead of here and in React's copy. */
   protected readonly position = computed(() => {
     const rect = this.anchorRect();
     if (!rect) return null;
     const view = this.doc.defaultView;
-    const W = 320;
-    const EDGE = 16;
-    const top = Math.min(rect.bottom + 12, (view?.innerHeight ?? 900) - 220);
+    const W = onboardingWidth;
+    const EDGE = sp4;
+    const top = Math.min(rect.bottom + sp3, (view?.innerHeight ?? 900) - 220);
     const left = view ? Math.min(rect.left, view.innerWidth - W - EDGE) : rect.left;
     return { top, left: Math.max(EDGE, left) };
   });

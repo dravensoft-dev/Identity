@@ -4,8 +4,8 @@
   --sp-0:0;
   --sp-1:4px;
   --sp-2:8px;
-  --sp-3:12px;
-  --sp-4:16px;
+  --sp-3:12px; /* Script-readable: Onboarding's gap below its anchor is arithmetic on a DOMRect. */
+  --sp-4:16px; /* Script-readable: Onboarding's minimum gutter from either viewport edge, compared against window.innerWidth. */
   --sp-5:20px;
   --sp-6:24px;
   --sp-8:32px;

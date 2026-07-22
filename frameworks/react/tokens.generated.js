@@ -6,6 +6,10 @@
  * two carry the same value. A value bound at import time cannot re-theme or
  * re-densify — that is the accepted price of reading it in JS at all. */
 
+/* Script-readable: Onboarding's gap below its anchor is arithmetic on a DOMRect. */
+export const sp3 = 12;
+/* Script-readable: Onboarding's minimum gutter from either viewport edge, compared against window.innerWidth. */
+export const sp4 = 16;
 /*
    The pixel height of one hour. Script-readable because
    y = ((min - startMin) / 60) * hour-h is arithmetic, and no CSS expression
