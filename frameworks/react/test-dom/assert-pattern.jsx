@@ -47,8 +47,15 @@ let patternCache = null;
  * @param {string} o.bindingPath absolute path to the component's *.behaviour.json
  * @param {Record<string, Element | null>} [o.subjects] requirement key -> the element
  *   that must carry it. The key `default` sets the element used for every
- *   requirement not named individually; without it, the container's first element
- *   child is used.
+ *   requirement not named individually. The absence of the key and a `null` value
+ *   under it are different claims and must stay different: omit `default`
+ *   entirely to get the container's first element child as fallback; pass
+ *   `default: someQuerySelectorResult` to use a real selector, and when that
+ *   selector matched nothing (`null`), that `null` must reach comparePattern
+ *   unchanged so its own "no subject element" diagnostic fires — collapsing it
+ *   to the first-child fallback here would compare the wrong element and
+ *   misreport a missed selector as an OVERCLAIM against it. A future Angular
+ *   wrapper must keep this same distinction.
  * @param {Record<string, boolean>} [o.behavioural] requirement key -> the verdict this
  *   suite's own behavioural test established (true = proved met, false = proved unmet).
  */
@@ -62,13 +69,20 @@ export function assertPattern({ root, bindingPath, subjects = {}, behavioural = 
     // would throw something far less legible than the binding's own name.
     throw new Error(`${bindingPath}\n  names pattern "${binding.pattern}", which has no file in ${PATTERN_DIR}`);
   }
+  // `??` here previously collapsed a present-but-null `default` (selector
+  // matched nothing) into the same fallback as an absent one (caller named no
+  // default at all), so a typo'd selector silently compared against
+  // root.firstElementChild instead of surfacing comparePattern's own "no
+  // subject element" diagnostic. `'default' in subjects` keeps the two cases
+  // apart: present-and-null passes null through, absent falls back.
   const { default: fallbackSubject, ...perRequirement } = subjects;
+  const fallback = 'default' in subjects ? fallbackSubject : root.firstElementChild;
 
   const problems = comparePattern({
     pattern,
     binding,
     subjects: perRequirement,
-    fallback: fallbackSubject ?? root.firstElementChild,
+    fallback,
     behavioural,
   });
 

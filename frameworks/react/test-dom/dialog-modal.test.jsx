@@ -33,6 +33,18 @@ afterEach(cleanup);
  * which is exactly the state the rest of this suite exists to end. */
 const BEHAVIOURAL = { 'focus.onOpen': false, 'focus.onClose': false, 'focus.trap': false, 'keyboard.Escape': false };
 
+/* Finding 2: the three synthetic-binding tests below used to write a fixed
+ * filename into tmpdir() and unlinkSync it only after the assertion, with no
+ * try/finally — a failing assertion leaked the file, and the fixed name could
+ * collide with a concurrent process running the same suite. Every call site
+ * pairs write with a try/finally unlink, and this generates a name unique per
+ * process and per call so two runs (or two calls in one run) never collide. */
+let tempCounter = 0;
+function tempBindingPath(label) {
+  tempCounter += 1;
+  return join(tmpdir(), `arena-${label}-${process.pid}-${tempCounter}.behaviour.json`);
+}
+
 test('Dialog matches its dialog-modal binding, in both directions', () => {
   const container = mount(
     <Dialog open onClose={() => {}} title="Delete project">
@@ -75,45 +87,73 @@ test('ConfirmDialog matches its dialog-modal binding, in both directions', () =>
  * under frameworks/ would be picked up by check:behaviour as a real declaration. */
 
 test('assertPattern reports a stale exception', () => {
-  const p = join(tmpdir(), 'arena-stale.behaviour.json');
+  const p = tempBindingPath('stale');
   // Dialog does render role="dialog" and aria-modal="true"; excepting them is a lie.
   writeFileSync(p, JSON.stringify({
     pattern: 'dialog-modal',
     exceptions: [{ requirement: 'roles.aria-modal', reason: 'synthetic' }],
   }));
-  const container = mount(<Dialog open onClose={() => {}} title="t"><p>b</p></Dialog>);
-  assert.throws(() => assertPattern({
-    root: container,
-    bindingPath: p,
-    subjects: { default: container.querySelector('[role="dialog"]') },
-    behavioural: BEHAVIOURAL,
-  }), /STALE EXCEPTION/);
-  unlinkSync(p);
+  try {
+    const container = mount(<Dialog open onClose={() => {}} title="t"><p>b</p></Dialog>);
+    assert.throws(() => assertPattern({
+      root: container,
+      bindingPath: p,
+      subjects: { default: container.querySelector('[role="dialog"]') },
+      behavioural: BEHAVIOURAL,
+    }), /STALE EXCEPTION/);
+  } finally {
+    unlinkSync(p);
+  }
 });
 
 test('assertPattern reports an overclaim', () => {
-  const p = join(tmpdir(), 'arena-overclaim.behaviour.json');
+  const p = tempBindingPath('overclaim');
   // Dialog has no aria-label; a binding with no exceptions at all overclaims it.
   writeFileSync(p, JSON.stringify({ pattern: 'dialog-modal', exceptions: [] }));
+  try {
+    const container = mount(<Dialog open onClose={() => {}} title="t"><p>b</p></Dialog>);
+    assert.throws(() => assertPattern({
+      root: container,
+      bindingPath: p,
+      subjects: { default: container.querySelector('[role="dialog"]') },
+      behavioural: BEHAVIOURAL,
+    }), /OVERCLAIM/);
+  } finally {
+    unlinkSync(p);
+  }
+});
+
+test('assertPattern reports a missed selector as "no subject element", not as an OVERCLAIM', () => {
+  // subjects.default is present but null — the caller named a selector and it
+  // matched nothing. That must reach comparePattern's own "no subject element"
+  // diagnostic, not silently fall back to root.firstElementChild (Dialog's
+  // scrim div, which carries neither role nor aria-modal and would misreport
+  // every requirement as an OVERCLAIM against the wrong element).
   const container = mount(<Dialog open onClose={() => {}} title="t"><p>b</p></Dialog>);
   assert.throws(() => assertPattern({
     root: container,
-    bindingPath: p,
-    subjects: { default: container.querySelector('[role="dialog"]') },
+    bindingPath: join(REACT_COMPONENTS, 'feedback/Dialog.behaviour.json'),
+    subjects: { default: container.querySelector('[role="nonexistent"]') },
     behavioural: BEHAVIOURAL,
-  }), /OVERCLAIM/);
-  unlinkSync(p);
+  }), (err) => {
+    assert.match(err.message, /no subject element/);
+    assert.doesNotMatch(err.message, /OVERCLAIM/);
+    return true;
+  });
 });
 
 test('assertPattern refuses an undeclared undecidable requirement', () => {
-  const p = join(tmpdir(), 'arena-undeclared.behaviour.json');
+  const p = tempBindingPath('undeclared');
   writeFileSync(p, JSON.stringify({ pattern: 'dialog-modal', exceptions: [] }));
-  const container = mount(<Dialog open onClose={() => {}} title="t"><p>b</p></Dialog>);
-  assert.throws(() => assertPattern({
-    root: container,
-    bindingPath: p,
-    subjects: { default: container.querySelector('[role="dialog"]') },
-    behavioural: {},           // nothing declared
-  }), /not declared behavioural/);
-  unlinkSync(p);
+  try {
+    const container = mount(<Dialog open onClose={() => {}} title="t"><p>b</p></Dialog>);
+    assert.throws(() => assertPattern({
+      root: container,
+      bindingPath: p,
+      subjects: { default: container.querySelector('[role="dialog"]') },
+      behavioural: {},           // nothing declared
+    }), /not declared behavioural/);
+  } finally {
+    unlinkSync(p);
+  }
 });
