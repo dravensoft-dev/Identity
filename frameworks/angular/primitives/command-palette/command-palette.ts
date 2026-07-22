@@ -165,12 +165,12 @@ export function activeOptionId(uid: string, active: number, rowCount: number): s
         <div #list [class]="styles().list()" [id]="listboxId" role="listbox" aria-label="Commands">
           @for (command of filtered(); track command.id ?? command.label; let i = $index) {
             <button type="button" [id]="optionId(i)" role="option" [attr.aria-selected]="i === active()" tabindex="-1"
-                    [class]="styles().row() + (i === active() ? ' ' + styles().rowActive() : '')"
+                    [class]="styles().row() + ' ' + (i === active() ? styles().rowActive() : styles().rowDefault())"
                     (mouseenter)="onHover(i)" (click)="run.emit(command)">
               @if (command.icon; as glyph) {
                 <span [class]="styles().rowIcon()"><i [class]="glyph" aria-hidden="true"></i></span>
               }
-              <span [class]="styles().rowLabel() + (i === active() ? ' ' + styles().rowLabelActive() : '')">{{ command.label }}</span>
+              <span [class]="styles().rowLabel() + ' ' + (i === active() ? styles().rowLabelActive() : styles().rowLabelDefault())">{{ command.label }}</span>
               @if (command.shortcut; as shortcut) {
                 <span [class]="styles().shortcut()">{{ shortcut }}</span>
               }
