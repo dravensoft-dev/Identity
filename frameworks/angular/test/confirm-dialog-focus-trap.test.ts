@@ -31,14 +31,14 @@
  * binding works in this harness. This is what the component's constructor
  * actually calls, not a reimplementation that could drift from it.
  *
- * No TestBed here, so no TestBed.initTestEnvironment() call and no conflict
- * with host-class-binding.test.ts, which owns the one call this suite is
- * allowed. GlobalRegistrator's own lifecycle is still this file's own,
- * copied from that file's header per this task's brief. */
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
-GlobalRegistrator.register();
+ * No TestBed here, so nothing to initialise -- only a DOM, taken from the
+ * directory's shared one (`ensureDom()`, testbed-env.ts) rather than
+ * registered and unregistered per file. See that file for why the document
+ * has to be shared. */
+import { ensureDom } from './testbed-env';
+ensureDom();
 
-import test, { after, beforeEach } from 'node:test';
+import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   type FocusTrapState,
@@ -207,6 +207,3 @@ test('isConfirmLocked: locks until the trimmed typed value matches exactly', () 
   assert.equal(isConfirmLocked('Ardennes', '  Ardennes  '), false, 'surrounding whitespace in what was typed must be trimmed');
 });
 
-after(() => {
-  GlobalRegistrator.unregister();
-});

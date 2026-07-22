@@ -428,6 +428,22 @@ scheduled for deletion the same week.
   commit Angular to gaining a schedule view, and it does not resolve whether the gap
   should stay this way. It is simply open.
 
+- **A chart's `aria-label` is checked for existence, never for usefulness, and the
+  charts fall back to a name that is only their type.** `figure-with-data-table`'s
+  `roles.label` requires "aria-label naming the chart", and
+  `frameworks/angular/test/chart-data-table.test.ts` proves the three verifiable
+  parts of that pattern against a real render — the `<table>` exists, it is
+  visually hidden rather than absent, and its cells pair each category with its
+  plotted value. It cannot prove the fourth. With no `seriesLabel`, `bar-chart.ts`
+  emits the constant `Bar chart`; `line-chart.ts` falls back the same way, and
+  `doughnut-chart.ts` is worse — its `aria-label="Doughnut chart"` is a literal with
+  no caller-supplied path at all. Each satisfies the requirement mechanically while
+  telling a screen-reader user
+  nothing — a page with two bar charts on it announces both identically. No
+  assertion separates a present name from a useful one; that is human judgement,
+  and the suite pins the fallback rather than faking a verdict on it. The React
+  charts do the same thing and are not covered by a suite at all.
+
 - **Every claim the delegated declarations make about Angular Material is unpinned.**
   `frameworks/angular/behaviour-delegated.json` asserts what Material's controls do —
   that `MatButtonToggleGroup` applies `role="group"` rather than `role="radiogroup"`,

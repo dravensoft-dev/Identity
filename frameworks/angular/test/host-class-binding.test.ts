@@ -30,11 +30,8 @@
  * This is the one test in the layer that needs a DOM: everything else in this
  * directory asserts against the plain-TypeScript `.variants.ts` recipe, per
  * this suite's own header comment in tag-variants.test.ts. */
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
-GlobalRegistrator.register();
-
 import '@angular/compiler';
-import test, { after } from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -42,7 +39,7 @@ import { fileURLToPath } from 'node:url';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
+import { useTestEnvironment } from './testbed-env';
 import { ActivityFeed } from '../primitives/activity-feed/activity-feed';
 import { activityFeedStyles } from '../primitives/activity-feed/activity-feed.variants';
 import { AppLogo } from '../primitives/app-logo/app-logo';
@@ -76,12 +73,16 @@ import { ThemeService } from '../theme/theme-service';
 import { UnauthCard } from '../primitives/unauth-card/unauth-card';
 import { unauthCardStyles } from '../primitives/unauth-card/unauth-card.variants';
 
-/* Only ONE file in this directory may call TestBed.initTestEnvironment():
- * bun runs every test file in one process, and Angular's TestBed throws
- * ("Cannot set base providers because it has already been called") the
- * second time it is called across files that ran together. Skeleton's
- * host-binding coverage lives here, beside Tag's and Avatar's, for exactly
- * that reason rather than in a file of its own.
+/* The TestBed environment may be initialised only ONCE per process: bun runs
+ * every test file in one process, and Angular's TestBed throws ("Cannot set
+ * base providers because it has already been called") the second time it is
+ * called across files that ran together. This file used to own that call
+ * outright, which is why Skeleton's host-binding coverage lives here beside
+ * Tag's and Avatar's rather than in a file of its own. It now goes through
+ * `useTestEnvironment()` (testbed-env.ts), which resets the previous suite's
+ * platform first, so a later suite needing a real render no longer has to be
+ * appended to this one -- see that file for why a reset rather than a plain
+ * initialise-once guard is what the per-file happy-dom lifecycle forces.
  *
  * It stops at Skeleton's default variant. This harness runs each test file
  * through bun's own TypeScript stripping plus `@angular/compiler`'s runtime
@@ -98,7 +99,7 @@ import { unauthCardStyles } from '../primitives/unauth-card/unauth-card.variants
  * not touch, and `bun run check:angular` runs the real `ngc --strictTemplates`
  * -- the actual authority on whether skeleton.ts's `@if`/`@for` template
  * typechecks against the component's real inputs. */
-TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
+useTestEnvironment();
 
 /* `name` is `input.required<string>()` (Resolution D of task 24's brief: nothing
  * defaults, on purpose -- an empty lock-up would ship no one's mark by omission,
@@ -983,8 +984,9 @@ test('arena-page-head: a platform with no ResizeObserver still renders, on the w
  *
  * `ThemeService` is `providedIn: 'root'`, so it is one singleton shared by
  * every test in this file's TestBed environment -- nothing here ever calls
- * `TestBed.resetTestingModule()` (see this file's own header comment on why
- * only one file may call `initTestEnvironment()` at all). `resetTheme()`
+ * `TestBed.resetTestingModule()` (see this file's own header comment, and
+ * testbed-env.ts, on why the environment is claimed once per process).
+ * `resetTheme()`
  * below puts it back to Arena's dark default at the top of each of the three
  * tests that follow, so they cannot depend on execution order among
  * themselves or leave the class on `<html>` in a state a later one would
@@ -1466,6 +1468,3 @@ test('arena-unauth-card: the brand and footer wrappers are both absent from the 
   assert.equal(host.children.length, 1, 'the host renders only the panel div, unconditionally');
 });
 
-after(() => {
-  GlobalRegistrator.unregister();
-});
