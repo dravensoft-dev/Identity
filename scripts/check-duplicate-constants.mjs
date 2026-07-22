@@ -2,17 +2,26 @@
  * layers, which is how chart geometry drifted before the script-readable token
  * target existed: CAT_SLOTS, CHART_HEIGHT and PAD were declared identically in
  * frameworks/react/components/charts/chart-internals.js and
- * frameworks/angular/primitives/chart-internals.ts, and W and EDGE in the two
- * Onboarding implementations. All five would have failed here the day the
- * second one was written.
+ * frameworks/angular/primitives/chart-internals.ts. Those three would have
+ * failed here the day the second one was written -- but W and EDGE, in the two
+ * Onboarding implementations, would NOT have: both were declared inside a
+ * function body (React's Onboarding component; Angular's computed(() => {...}))
+ * rather than at module level, and numericConstants' regex is ^-anchored under
+ * /m, so it only matches column-zero declarations. Three of the five, not all
+ * five.
  *
  * WHAT THIS DOES NOT CATCH, stated so nobody reads it as more than it is: a
- * design value declared in ONE layer only. Deciding whether a bare number in a
- * JS object is a design value needs judgement no scanner has -- a number in an
- * object is not a dimension until something uses it as one, which is exactly
- * why check-dimension-literals.mjs cannot reach these. This gate takes the
- * decidable half: cross-layer duplication, no judgement call, near-zero false
- * positives.
+ * design value declared in ONE layer only, and a constant declared inside a
+ * function body in EITHER layer (see W/EDGE above) -- module-level-in-both is
+ * a narrower shape than "duplicated," and the two layers do not share an
+ * idiom for where a design number lives: React tends to write it inline in a
+ * function body, Angular tends to name it at module level, so a real
+ * cross-layer duplicate escapes whenever either side uses the inline idiom.
+ * Deciding whether a bare number in a JS object is a design value needs
+ * judgement no scanner has -- a number in an object is not a dimension until
+ * something uses it as one, which is exactly why check-dimension-literals.mjs
+ * cannot reach these. This gate takes the decidable half: module-level
+ * cross-layer duplication, no judgement call, near-zero false positives.
  *
  *   bun scripts/check-duplicate-constants.mjs   -> exit 0 if clean, 1 on duplication
  */

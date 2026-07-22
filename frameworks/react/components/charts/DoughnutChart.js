@@ -30,7 +30,7 @@ export function DoughnutChart({ labels = [], values = [], slots, valueFormatter,
   });
   return React.createElement("div", {
     ref,
-    style: { position: "relative", width: "100%", height, display: "flex", gap: "calc(var(--sp-1) * 4)", ...style },
+    style: { position: "relative", width: "100%", height, display: "flex", gap: "var(--chart-legend-gap)", ...style },
     ...rest
   }, React.createElement("svg", {
     width: plotW,

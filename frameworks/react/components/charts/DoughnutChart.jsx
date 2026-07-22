@@ -34,7 +34,7 @@ export function DoughnutChart({ labels = [], values = [], slots, valueFormatter,
   });
 
   return (
-    <div ref={ref} style={{ position: 'relative', width: '100%', height, display: 'flex', gap: 'calc(var(--sp-1) * 4)', ...style }} {...rest}>
+    <div ref={ref} style={{ position: 'relative', width: '100%', height, display: 'flex', gap: 'var(--chart-legend-gap)', ...style }} {...rest}>
       <svg width={plotW} height={height} role="img" aria-label="Doughnut chart"
         onMouseLeave={() => setHover(null)} style={{ display: 'block', flexShrink: 0 }}>
         {segments.map(({ i, a0, a1 }) => a1 > a0 && (

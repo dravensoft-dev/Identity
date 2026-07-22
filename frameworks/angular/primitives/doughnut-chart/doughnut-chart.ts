@@ -23,9 +23,9 @@ const LEGEND_MAX = chartLegendMax;
 const LEGEND_SHARE = 0.34;
 
 /** The flex gap between the ring and the legend, in px. The SVG is sized in user
- *  units, so the gap has to be subtracted from the plot as a number — it is the
- *  pixel value of the host's own `calc(var(--sp-1) * 4)`, and the two move together.
- *  From tokens/src/chart.json. */
+ *  units, so the gap has to be subtracted from the plot as a number, read from the
+ *  same `--chart-legend-gap` token the host's `gap` reads as a custom property —
+ *  one token, two readings. From tokens/src/chart.json. */
 const LEGEND_GAP = chartLegendGap;
 
 /** How far the ring's outer edge sits inside the plot box, in px. Breathing room so a
@@ -196,7 +196,7 @@ export function doughnutRadii(plotWidth: number, height: number): { outer: numbe
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    style: 'display:flex;position:relative;width:100%;gap:calc(var(--sp-1) * 4)',
+    style: 'display:flex;position:relative;width:100%;gap:var(--chart-legend-gap)',
     '[style.height.px]': 'height',
   },
   template: `
