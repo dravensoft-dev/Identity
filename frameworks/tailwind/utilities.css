@@ -1196,6 +1196,10 @@
     --tw-shadow: var(--shadow-3);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
+  .shadow-\[inset_0_calc\(var\(--bw-strong\)\*-1\)_0_var\(--crimson\)\] {
+    --tw-shadow: inset 0 calc(var(--bw-strong) * -1) 0 var(--tw-shadow-color, var(--crimson));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
   .shadow-none {
     --tw-shadow: 0 0 #0000;
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);

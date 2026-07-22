@@ -1,0 +1,25 @@
+<!-- @dsCard group="Tailwind" viewport="700x240" name="Tabs" subtitle="Navigation between views, rendered from Tabs.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Tabs.manifest.json')).json();
+
+function tabs(labels, active) {
+  const root = el('div', { class: classesFor(manifest).root });
+  for (const label of labels) {
+    const c = classesFor(manifest, { selected: String(label === active) });
+    root.append(el('button', { class: c.tab, type: 'button', text: label }));
+  }
+  return root;
+}
+
+mountSpecimen({ sections: [
+  section('Three views', [tabs(['Overview', 'Deployments', 'Settings'], 'Deployments')], { stack: true }),
+  section('First selected', [tabs(['Logs', 'Metrics'], 'Logs')], { stack: true }),
+]});
+</script></body></html>
