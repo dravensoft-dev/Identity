@@ -22,9 +22,8 @@ the sibling `alert.variants.ts` recipe.
 - Don't use an alert for something transient — that is `MatSnackBar` wearing Arena.
 - Don't stack more than one alert in the same region. Two competing alerts read as
   one broken page; summarise instead.
-- Don't write `dismissible="false"` expecting it to suppress the close control. A bare
-  `dismissible` and `[dismissible]="true"` both mean true — that much now matches a
-  native HTML boolean attribute, because `dismissible` carries the `booleanAttribute`
-  transform. But unlike a native attribute, the literal string `"false"` also reads as
-  **false**, since `booleanAttribute` special-cases that one value rather than treating
-  any present value as true. A condition belongs in a binding: `[dismissible]="cond"`.
+- Don't express a condition as an attribute string. `dismissible` carries the
+  `booleanAttribute` transform, so a bare `dismissible` and `[dismissible]="true"` both
+  mean true, and the one literal string `"false"` means false. Every *other* string is
+  true — `"0"`, `"off"` and `"no"` all suppress nothing. Bind the expression
+  (`[dismissible]="canDismiss"`) and keep the bare attribute for a constant true.

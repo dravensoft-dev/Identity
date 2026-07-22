@@ -40,9 +40,12 @@ measured.
 
 **The legend is keyboard-reachable.** The legend column is an `overflow: auto` scroll
 region, and it carries `tabindex="0"`, `role="group"` and `aria-label="Doughnut chart
-legend"` (`doughnut-chart.ts:200`), so on Chrome — which, unlike Firefox, does not tab to
-scrollable containers on its own — a keyboard-only user can still Tab to the column and
-scroll it. `role="group"` was chosen over the WAI scrollable-region pattern's
+legend"` (`doughnut-chart.ts`), so a keyboard-only user can Tab to the column and scroll
+it. Current Chrome and Firefox do put a scrollable container in the tab order on their
+own, so this is belt-and-braces on an up-to-date browser — but it is not something to
+rely on: it is a recent default (Chrome shipped it in 127), older engines do not do it,
+and a UA-supplied tab stop carries no accessible name. The explicit trio makes the
+behaviour deterministic and names the region. `role="group"` was chosen over the WAI scrollable-region pattern's
 `role="region"` because a region is meant to be a landmark a user jumps to directly;
 this column is one row of a small chart, not a page landmark, and `aria-label` still
 gives it an accessible name either way. The visually-hidden numbers table does not
@@ -50,9 +53,10 @@ substitute for this: it is invisible to a *sighted* keyboard user, who can see t
 legend and, before this fix, could not reach it. This closes the Angular half of the
 gap only — `DoughnutChart.jsx`'s legend has the identical `overflow: auto` with no
 `tabindex`, `role` or `aria-label`, and still needs the same treatment (see
-`components-divergences.md`). It was never needed on the other two charts: BarChart's
-and LineChart's own scroll regions are `overflow: visible` (`bar-chart.ts:128`,
-`line-chart.ts:141`), so neither one traps a keyboard user the way a scrollable box
-with nothing focusable inside it does. Hover-only data is a separate, still-open gap
+`components-divergences.md`). It was never needed on the other two charts: neither
+BarChart nor LineChart has a legend column at all, and their plot boxes are
+`overflow: visible` (`bar-chart.ts:128`, `line-chart.ts:141`) — nothing there scrolls,
+so nothing there strands a keyboard user the way a scrollable box with nothing focusable
+inside it does. Hover-only data is a separate, still-open gap
 and affects all three charts: every label and value is already in the visually-hidden
 table, so only the centre percentage is pointer-exclusive.

@@ -788,16 +788,18 @@ already gives — in Angular a consumer writes those directly on the host.
 ### DoughnutChart — the legend is keyboard-reachable in Angular, not yet in React
 
 **React:** `DoughnutChart.jsx:54` renders the legend column as `overflow: 'auto'` with nothing
-focusable inside it. On Chrome — which, unlike Firefox, does not add a scrollable container to the
-tab order on its own — a keyboard-only user has no way to scroll it, so a slice past the visible
-rows of a long legend is unreachable by keyboard even though it is right there on screen.
+focusable inside it and no accessible name. Current Chrome and Firefox add a scrollable container
+to the tab order themselves, so on an up-to-date browser the column can be reached — but that is a
+recent default (Chrome shipped it in 127), it is absent on older engines, and the tab stop it
+supplies is unnamed. A slice past the visible rows of a long legend is unreachable by keyboard
+wherever the UA does not supply that stop.
 
 **Angular:** `arena-doughnut-chart`'s legend column carries the identical `overflow: auto`, plus
-`tabindex="0"`, `role="group"` and `aria-label="Doughnut chart legend"` (`doughnut-chart.ts:200`),
+`tabindex="0"`, `role="group"` and `aria-label="Doughnut chart legend"` (`doughnut-chart.ts`),
 so the column is itself a tab stop and the browser's native scroll keys move it once focused.
 
 **Why:** the Angular fix closes a real WCAG 2.1.1 (Keyboard) defect that both layers used to share.
-React was out of scope for this branch and was correctly left byte-unchanged, so it still has the
+React was out of scope for this branch and `DoughnutChart.jsx` was left unchanged, so it still has the
 defect the Angular legend no longer does. This is not a considered design difference — it is debt
 on the React side, and it is recorded rather than left silent because the two layers now visibly
 differ in an accessibility affordance.

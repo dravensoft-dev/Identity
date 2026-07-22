@@ -24,10 +24,9 @@ recipe.
 - Don't reach for `destructive` on a merely inconvenient action. The filled red is the
   system's loudest surface and it stops working once it is common.
 - Don't use this for a routine question — that is `MatDialog` wearing Arena.
-- Don't write `destructive="false"` expecting the ordinary confirm button. A bare
-  `destructive` and `[destructive]="true"` both mean true — `destructive` carries the
-  `booleanAttribute` transform, so a bare attribute now means what it means on a native
-  HTML boolean attribute. But unlike a native attribute, the literal string `"false"`
-  also reads as **false**, because `booleanAttribute` special-cases that one value
-  rather than treating any present value as true — computing whether the action is
-  destructive still belongs in a binding: `[destructive]="isIrreversible"`.
+- Don't express a condition as an attribute string. `destructive` carries the
+  `booleanAttribute` transform, so a bare `destructive` and `[destructive]="true"` both
+  mean true, and the one literal string `"false"` means false. Every *other* string is
+  true — `"0"`, `"off"` and `"no"` all give you the destructive button. Whether an
+  action is irreversible is a computed fact, so bind it:
+  `[destructive]="isIrreversible"`. Keep the bare attribute for a constant true.

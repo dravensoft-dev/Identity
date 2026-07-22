@@ -72,14 +72,18 @@ const CENTRE_LABEL_STYLE = { fontSize: 'var(--dz-text-lg)' } as const satisfies 
  *  `role="group"` rather than the WAI scrollable-region pattern's `role="region"`: a region
  *  is a page landmark a screen reader user jumps to directly, and this column is one part of
  *  a small chart, not something worth surfacing at that level — `aria-label` still gives it
- *  an accessible name either way. No focus style is bound here: this layer styles focus with
- *  a token-valued `boxShadow` driven by a `(focus)`/`(blur)` signal (`Input.jsx`'s React
- *  counterpart does the same with `onFocus`/`onBlur`), but that fires for a mouse click same
- *  as a Tab press, where the UA's own `:focus-visible` heuristic — which inline styles cannot
- *  express, only a real stylesheet rule can — already suppresses the ring on a mouse-focused
- *  `tabindex` element and only shows it for keyboard focus. Wiring `(focus)` here would trade
- *  that heuristic for a ring that also flashes on click, so the fallback stays the browser's
- *  own outline rather than a worse tokenized one. */
+ *  an accessible name either way. No focus style is bound here, and the reason is the
+ *  charts' no-manifest exception rather than a preference: this layer styles focus with
+ *  `focus-visible:` utilities carried by a component's manifest (see
+ *  `ConfirmDialog.manifest.json`'s `focus-visible:ring-[length:var(--focus-width)]`), and
+ *  `utilities.css` is generated from manifests only — so the three charts, which
+ *  deliberately have none, cannot reach that idiom without being given one. The two
+ *  inline alternatives are both worse than the UA default: a `[style]` object cannot
+ *  express `:focus-visible` at all, and toggling a token-valued `boxShadow` from
+ *  `(focus)`/`(blur)` would fire on a mouse click as readily as a Tab press, trading the
+ *  browser's own keyboard-only heuristic for a ring that flashes on every click. Giving
+ *  the doughnut a manifest purely to tokenize this outline is the real option, and it
+ *  loses on cost today. */
 const LEGEND_STYLE = {
   flex: '1', minWidth: '0', display: 'flex', flexDirection: 'column',
   justifyContent: 'center', gap: 'calc(var(--sp-1) * 1.5)', overflow: 'auto',
