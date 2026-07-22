@@ -81,6 +81,20 @@ asserts the modules match the source and the CSS and that no flag is orphaned;
 `bun run check:duplicate-constants` fails a numeric constant declared in both
 layers, which is how chart geometry drifted before this existed.
 
+**Behaviour has values, and they are tokens like any other.** `tokens/src/behaviour.json`
+holds `delay` (pointer intent), `dismiss` (how long a transient notice lives) and
+`limit` (quantity invariants). All are script-readable, because their consumers are
+`setTimeout` arguments and array bounds rather than CSS properties. Two rules govern
+what belongs there. **A behaviour value is a decision the system makes, not a
+mechanism** — `--delay-open` is how long a tooltip waits, and that is a design
+decision; a debounce interval on a synchronous in-memory filter is not, which is why
+`debounce` was proposed and deliberately not shipped. And **a value is not a
+contract**: which keys a dialog answers, where focus lands, what dismisses it — none
+of that is expressible as a token, none of it lives in `tokens/`, and DTCG does not
+model it. That layer is designed in
+`docs/superpowers/specs/2026-07-22-7-behaviour-tokens-and-contracts-design.md` and
+is not built yet.
+
 **A dimension in a framework layer is a token or a derivation of tokens. A bare
 literal is a bug.** This is machine-checked: `bun run check:dimensions` scans
 `frameworks/` for literals in the properties the token layer governs and fails on
@@ -304,6 +318,31 @@ scheduled for deletion the same week.
   the recorded rationale for the other chart exclusions — *a multiplier that
   derives one dimension from another is not itself a design value* — does not
   cover either of them, so a reader applying it reaches the opposite conclusion.
+- **`Tooltip` is not keyboard-reachable, and now it also waits.** It has
+  `onMouseEnter`/`onMouseLeave` and no `onFocus`/`onBlur`, so a keyboard user
+  never sees it at all. Plan 7a added a pointer-intent delay and did not fix
+  this — deliberately, because it is contract work rather than a value. When it
+  is fixed, **the focus path must reveal immediately**: routing focus through
+  `--delay-open` would make a control that is already hard to reach also feel
+  broken. The token's own `$description` says so.
+- **Two behaviour families were proposed and not shipped**, and the reasons
+  should be re-read before anyone adds them. `debounce` is speculative:
+  `CommandPalette` filters a local array synchronously and `ResizeObserver`
+  already coalesces, so debouncing either adds latency and removes nothing.
+  `limit.results` would introduce a palette result cap that does not exist
+  today, which is a product decision with a UX consequence rather than a
+  tokenization of an existing value.
+- **A group-level `$description` in `tokens/src/` never reaches the generated JS
+  modules.** `collectScriptTokens()` in `scripts/build-tokens.mjs` skips group
+  nodes (`if (item.group || !isScript(item.token)) continue;`), so only a
+  leaf token's own description is carried into
+  `frameworks/react/tokens.generated.js` and
+  `frameworks/angular/tokens.generated.ts`. Group prose survives only in the
+  CSS. This is pre-existing and not caused by this plan — `chart.json`'s group
+  description is lost the same way — but it bit here: `delay`'s group
+  description carries the constraint that these delays are pointer intent and
+  that a keyboard focus must reveal immediately, and someone reading only the
+  generated module will not see it.
 
 ### Where the rest of the debt lives
 
