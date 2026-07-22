@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validatePattern, loadPatterns } from './lib/behaviour-contracts.mjs';
+import { validatePattern, loadPatterns, validateBinding, reactComponents, angularPrimitives } from './lib/behaviour-contracts.mjs';
 
 const ok = {
   name: 'dialog-modal',
@@ -59,4 +59,69 @@ test('none aside, exactly the patterns with no APG pattern page cite something e
     .map(([stem]) => stem)
     .sort();
   assert.deepEqual(nonApg, ['figure-with-data-table', 'status', 'textbox']);
+});
+
+const patterns = new Map([
+  ['dialog-modal', { name: 'dialog-modal', source: 'x', requires: { 'focus.trap': true, 'keyboard.Escape': 'close' } }],
+  ['none', { name: 'none', source: 'n/a', requires: {} }],
+]);
+
+test('a binding naming a real pattern with no exceptions is valid', () => {
+  assert.deepEqual(validateBinding('Dialog', 'react', { pattern: 'dialog-modal' }, patterns), []);
+});
+
+test('a binding naming a pattern that does not exist is a problem', () => {
+  assert.match(validateBinding('Dialog', 'react', { pattern: 'modal' }, patterns)[0], /unknown pattern "modal"/);
+});
+
+test('binding none without a reason is a problem', () => {
+  assert.match(validateBinding('Card', 'react', { pattern: 'none' }, patterns)[0], /requires a reason/);
+});
+
+test('binding none with a reason is valid', () => {
+  assert.deepEqual(validateBinding('Card', 'react', { pattern: 'none', reason: 'a surface' }, patterns), []);
+});
+
+test('an exception naming a requirement the pattern does not have is a problem', () => {
+  const b = { pattern: 'dialog-modal', exceptions: [{ requirement: 'focus.restore', reason: 'x' }] };
+  assert.match(validateBinding('Dialog', 'react', b, patterns)[0], /no requirement "focus.restore"/);
+});
+
+test('an exception without a reason is a problem', () => {
+  const b = { pattern: 'dialog-modal', exceptions: [{ requirement: 'focus.trap' }] };
+  assert.match(validateBinding('Dialog', 'react', b, patterns)[0], /reason/);
+});
+
+test('a delegated binding must name what provides the behaviour', () => {
+  const b = { pattern: 'dialog-modal', delegatedTo: '' };
+  assert.match(validateBinding('Dialog', 'angular', b, patterns)[0], /delegatedTo/);
+});
+
+/* An Angular primitive's directory is kebab-case (stat-card) and its React
+ * counterpart is Pascal (StatCard). Deriving one from the other is the same
+ * unsafe round-trip that bit the script-readable gate -- so the binding CARRIES
+ * the counterpart's name instead. Without it the cross-layer assertion silently
+ * never fires, which would quietly disable the one check this plan exists for. */
+test('an angular binding must name its React counterpart', () => {
+  const b = { pattern: 'dialog-modal' };
+  assert.match(validateBinding('stat-card', 'angular', b, patterns)[0], /must declare "component"/);
+});
+
+test('an angular binding that names its counterpart is valid', () => {
+  const b = { pattern: 'dialog-modal', component: 'StatCard' };
+  assert.deepEqual(validateBinding('stat-card', 'angular', b, patterns), []);
+});
+
+test('the React inventory finds every component and no demo entry', () => {
+  const found = reactComponents('.');
+  assert.equal(found.length, 43);
+  assert.ok(found.includes('Dialog'));
+  assert.ok(!found.some((c) => c.endsWith('.card.entry')));
+});
+
+test('the Angular inventory finds every primitive and no bare module', () => {
+  const found = angularPrimitives('.');
+  assert.equal(found.length, 21);
+  assert.ok(found.includes('tag'));
+  assert.ok(!found.includes('chart-internals'));
 });

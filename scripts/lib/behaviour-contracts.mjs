@@ -52,3 +52,62 @@ export function loadPatterns(root) {
   }
   return out;
 }
+
+/** @returns {string[]} problems; empty means valid */
+export function validateBinding(component, layer, binding, patterns) {
+  const problems = [];
+  const where = `${layer}/${component}`;
+  const pattern = patterns.get(binding.pattern);
+
+  if (!pattern) {
+    problems.push(`${where}: unknown pattern "${binding.pattern}" — no such file in ${PATTERN_DIR}`);
+    return problems;
+  }
+  if (binding.pattern === NONE && !binding.reason) {
+    problems.push(`${where}: binding none requires a reason — "nothing recorded" and "verified presentational" must not look alike`);
+  }
+  if ('delegatedTo' in binding && !binding.delegatedTo) {
+    problems.push(`${where}: delegatedTo must name what provides the behaviour, e.g. "Angular Material matTooltip"`);
+  }
+  /* An Angular primitive's directory name is kebab-case; its React counterpart is
+   * Pascal. Never derive one from the other -- scriptName('sp-4') is 'sp4' and
+   * nothing recovers 'sp-4' from that, and the same asymmetry applies here.
+   * Carrying the name is what lets the cross-layer assertion fire at all. */
+  if (layer === 'angular' && !binding.component) {
+    problems.push(`${where}: an angular binding must declare "component", naming its React counterpart (e.g. "StatCard" for stat-card)`);
+  }
+  for (const exception of binding.exceptions ?? []) {
+    if (!(exception.requirement in pattern.requires)) {
+      problems.push(`${where}: exception names no requirement "${exception.requirement}" in pattern ${binding.pattern} — stale or mistyped`);
+    }
+    if (!exception.reason) {
+      problems.push(`${where}: exception for "${exception.requirement}" has no reason`);
+    }
+  }
+  return problems;
+}
+
+/** Every React component, by exported name. A `*.card.entry.jsx` is a demo page's
+ *  composition script, not a component, and has no contract. */
+export function reactComponents(root) {
+  const base = join(root, 'frameworks/react/components');
+  const out = [];
+  for (const group of readdirSync(base)) {
+    for (const file of readdirSync(join(base, group))) {
+      if (extname(file) !== '.jsx' || file.includes('.card.entry.')) continue;
+      out.push(basename(file, '.jsx'));
+    }
+  }
+  return out.sort();
+}
+
+/** Every Angular primitive, by directory name. Bare `.ts` files under
+ *  primitives/ are shared internals (chart-internals, focus-trap), not
+ *  components, so the walk keys on directories. */
+export function angularPrimitives(root) {
+  const base = join(root, 'frameworks/angular/primitives');
+  return readdirSync(base, { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name)
+    .sort();
+}

@@ -43,6 +43,7 @@
     "check:arbitrary": "bun scripts/check-arbitrary-values.mjs",
     "check:dimensions": "bun scripts/check-dimension-literals.mjs",
     "check:states": "bun scripts/check-manifest-states.mjs",
+    "check:behaviour": "bun scripts/check-behaviour.mjs",
     "check:fonts": "bun scripts/check-fonts-generated.mjs",
     "check:angular": "bun scripts/check-angular.mjs",
     "check:material": "bun scripts/check-material.mjs",
