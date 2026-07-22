@@ -1,0 +1,14 @@
+{
+  "name": "listbox",
+  "source": "https://www.w3.org/WAI/ARIA/apg/patterns/listbox/",
+  "description": "A list of selectable options presented on its own, not as a combobox popup. Selection can be single or multiple.",
+  "requires": {
+    "roles.element": "listbox",
+    "roles.option": "option",
+    "roles.label": "the listbox has aria-labelledby or aria-label",
+    "states.selected": "aria-selected set to true on each selected option, false on the rest",
+    "states.multiselectable": "aria-multiselectable set to true when more than one option can be selected at once",
+    "keyboard.ArrowUp": "moves focus to the previous option",
+    "keyboard.ArrowDown": "moves focus to the next option"
+  }
+}

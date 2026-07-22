@@ -1,0 +1,10 @@
+{
+  "name": "figure-with-data-table",
+  "source": "https://www.w3.org/WAI/WCAG22/Understanding/non-text-content.html",
+  "description": "A chart. APG has no pattern for one, so this is Arena's own, adopted from WCAG 1.1.1 rather than invented: a picture nobody can read is not an alternative, so every chart pairs a labelled graphic with a real table of its numbers. The table is visually hidden, not absent. This describes what both chart layers (React and Angular) already do, not an aspiration.",
+  "requires": {
+    "roles.graphic": "img",
+    "roles.label": "aria-label naming the chart",
+    "alternative.table": "a real <table> of the plotted numbers, visually hidden"
+  }
+}
