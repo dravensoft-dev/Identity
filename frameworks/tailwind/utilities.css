@@ -447,9 +447,6 @@
     width: var(--size-logo-mark-xl);
     height: var(--size-logo-mark-xl);
   }
-  .h-1\.5 {
-    height: calc(var(--spacing) * 1.5);
-  }
   .h-2 {
     height: var(--spacing-2);
   }
@@ -488,9 +485,6 @@
   }
   .min-h-30 {
     min-height: calc(var(--spacing) * 30);
-  }
-  .w-1\.5 {
-    width: calc(var(--spacing) * 1.5);
   }
   .w-2 {
     width: var(--spacing-2);
