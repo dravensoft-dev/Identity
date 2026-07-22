@@ -70,6 +70,19 @@ missing — add it to `tokens/src/` first.
 
 <!-- check-arbitrary-values allow: text-[13px] bg-[#b52a20] duration-[200ms] w-[calc(var(--sp-4)+8px)] -->
 
+**A `transition-[...]`/`duration-[...]` pair is one duration for every listed
+property.** `Button.jsx` transitions `background` and `transform` at `--dur-fast`
+but `box-shadow` at the slower `--dur-mid` — React can do that because each CSS
+property gets its own line in the `transition` shorthand. `Button.manifest.json`'s
+`duration-[var(--dur-fast)]` cannot: Tailwind's `duration-` utility sets one
+`transition-duration` for the whole `transition-property` list, and there is no
+second `duration-` utility to layer on for just one property. Expressing the
+split would mean writing the whole `transition` declaration as one raw arbitrary
+**property** (`[transition:background_var(--dur-fast)_var(--ease-out),…]`,
+no `utility-` prefix) — a fourth bracket shape outside the three this file
+documents, so it stays undone rather than reached for quietly: Primary's hover
+shadow arrives about 100ms early against React, left as known debt.
+
 The gate scans `.md` too, because a `.prompt.md`'s Don't block is exactly
 where a bad example belongs, and an unflagged one is a bad example someone
 copies into a manifest. The marker above is the one legal escape: an HTML
@@ -143,3 +156,49 @@ boolean variant.
 
 Authoring a manifest for a component whose React source uses a value not yet in
 a token is a spec violation — add the token first, then reference it here.
+
+## A state modifier always outranks a variant on the same property
+
+Hover, focus and disabled are Tailwind state modifiers (`hover:`, `focus-within:`,
+`disabled:`), never variants — that is what lets a static specimen render one
+variant combination and be right without a browser interaction driving it.
+
+The corollary matters just as much: **a state modifier beats a plain variant
+class on the same property, always**, both on specificity — a pseudo-class adds
+a selector, so `focus-within:border-secondary` compiles to `(0,2,0)` against a
+variant's plain `border-error` at `(0,1,0)` — and on source order. A state
+modifier left on a slot's **base** string therefore leaks through every variant
+built on that slot, including the ones that must lose to it. `Input.manifest.json`
+shipped exactly this: `focus-within:border-secondary` / `focus-within:ring-secondary/16`
+sat on the base `field` slot, so all three `state` values (`neutral`, `error`,
+`valid`) inherited it. `error`'s own `border-error`/`ring-error` are plain classes
+with lower specificity, so focusing an errored field always turned it gold —
+the validation signal disappeared exactly when the user tried to fix it, even
+though React's own precedence (`shownError ? danger : focus ? gold : isValid ?
+success : …`) says error must win.
+
+The fix: move the `focus-within:` classes off the base and into the specific
+variant branches that are allowed to lose to them (`neutral` and `valid` here —
+both correctly turn gold on focus, matching React), and leave the branch that
+must win (`error`) with no focus-within rule to compete against, so its plain
+class holds regardless of focus. Read the React source's state-precedence
+ternary before writing the manifest — its order **is** the override order a
+state modifier is allowed to have, and the base slot is only a safe place for a
+modifier every variant branch is willing to lose to.
+
+## A co-varying value belongs in the variant it co-varies with
+
+A value that must track another prop can look, briefly, like a constant — don't
+flatten it to the constant of the "middle" case. `IconButton.manifest.json`'s
+`showLabel: false` compound shipped `w-ctl-h` (the `md` height, 40px) as the
+icon-only width for every `size`. It isn't constant: React sets `width:
+showLabel ? 'auto' : d` where `d` is the *size-specific* height (`sm` 32, `md`
+40, `lg` 48) — so `sm` rendered 40×32, and only `lg` happened to look square,
+by accident, because its own `min-w-ctl-h-lg` (48) outranked the wrong 40px
+width. The fix dropped `w-*` from the `showLabel` compound entirely: `size`
+already carries the correct `min-w-ctl-h-{sm,md,lg}` per size, and with `p-0`
+alongside it, an icon glyph narrower than every size's minimum floors the box
+at exactly the control height — square, at all three sizes, with no second
+width class to conflict with it. Before flattening a value that varies with a
+prop to one class, ask which *other* variant group it actually co-varies with,
+and put it there instead.

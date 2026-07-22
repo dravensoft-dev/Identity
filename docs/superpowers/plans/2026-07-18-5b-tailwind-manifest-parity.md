@@ -87,6 +87,38 @@ rather than restating durations.
 - **A manifest is a pure function of the component's props.** Hover, focus and disabled
   are Tailwind state modifiers (`hover:`, `focus-within:`, `disabled:`), never variants —
   that is what lets a static specimen render a variant combination and be right.
+  **Corollary: a state modifier always outranks a plain variant class on the same
+  property**, on both specificity (a pseudo-class adds a selector, so `focus-within:X`
+  is `(0,2,0)` against a plain variant's `(0,1,0)`) and source order, so a state
+  modifier placed on the *base* slot leaks through every variant, including the ones
+  it must lose to. When a variant needs to WIN over a state that would otherwise beat
+  it, the state modifier has to be scoped into the variant branches where it applies,
+  never left unconditional on the base — restate it per branch rather than hope
+  order saves you. Tasks 3–5 shipped exactly this bug: `Input.manifest.json`'s
+  `field` slot put `focus-within:border-secondary` / `focus-within:ring-secondary/16`
+  on the base, so every `state` (`neutral`, `error`, `valid`) inherited it — and
+  because `error`'s own `border-error`/`ring-error` are plain classes, focusing an
+  errored field always turned it gold, hiding the validation error at exactly the
+  moment the user tries to fix it. The fix moved the `focus-within:` classes off the
+  base and into `neutral` and `valid` only (both do turn gold on focus — React does
+  the same), leaving `error` with no focus-within rule to compete with, so its plain
+  `border-error` holds regardless of focus. Read `state = neutral ? … : focus ? … :
+  isValid ? … : …`-shaped precedence in the React source *before* writing the
+  manifest — the ternary order **is** the override order, and the base slot is only
+  safe for a state modifier that every variant branch is allowed to lose to.
+- **A value that co-varies with one variant belongs in that variant's group, not
+  flattened to the constant of the middle case.** `IconButton.manifest.json`'s
+  `showLabel: false` compound shipped `w-ctl-h` — the `md`-size width — as if width
+  were constant across `size` when icon-only. It isn't: React sets `width:
+  showLabel ? 'auto' : d` where `d` is the *size-specific* height (`sm` 32, `md` 40,
+  `lg` 48), so `sm` rendered 40×32 (not square) and only `lg` looked right, by
+  accident, because its own `min-w-ctl-h-lg` (48) happened to override the wrong
+  40px width. The fix dropped `w-*` from the `showLabel` compound entirely and let
+  `min-w-ctl-h-{sm,md,lg}` (already correctly in the `size` group) plus `p-0`
+  establish the square — the icon glyph is narrower than every size's minimum, so
+  the box floors at exactly the control height, matching React without adding a
+  second, competing width class. Before flattening a co-varying value to a single
+  class, ask which *other* variant it actually depends on, and put it there.
 - **No React changes.** `git diff --stat main -- frameworks/react/` stays empty.
 - **`bun run check` exits 0 before every commit**, and every task rebuilds
   `utilities.css` first (`bun run build:tailwind`) — a manifest whose classes never
