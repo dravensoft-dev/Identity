@@ -194,6 +194,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   no flag is orphaned.
 - `check:duplicate-constants` — a numeric constant may not be declared in both
   framework layers.
+- **Behaviour contracts.** `behaviour/patterns/` holds nineteen patterns — fifteen
+  adopted from an actual WAI-ARIA APG page with their source URLs (fourteen a pattern
+  page, plus `navigation`, from the landmark-regions practice page), two adopted from
+  the ARIA 1.2 role reference instead (`status`, `textbox`, because APG has no pattern
+  page for either role), plus `figure-with-data-table` (Arena's own, from WCAG, because
+  APG has no chart pattern) and `none` (adopted from nowhere, because it is the absence
+  of a pattern). Every component declares which it implements, in every layer: 43
+  React bindings, 21 Angular, and 22 controls Angular delegates to Material.
+- `check:behaviour` — every component declares, every named pattern and requirement
+  exists, no delegated entry is stale, and the layers agree or say why not. It asserts
+  declaration and coherence, **not** that a component behaves as it declares.
 
 ### Changed
 
@@ -267,6 +278,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `calc(var(--sp-1) * 80)`, collapsing a value that existed in three places.
 - The console's hard-coded `4200` is `--dismiss-default`, and a toast carrying an action gets `--dismiss-actionable` instead (WCAG 2.2.1).
 - `Pagination`'s sibling count is `--limit-pagination-siblings`; its elision threshold derives from it as `2 * siblings + 5` rather than being a second hard-coded `7`. No rendered output changes.
+- `CommandPalette`'s ARIA gap is an exception with a reason rather than a "divergence", which by definition could not be a defect.
 
 ### Fixed
 
