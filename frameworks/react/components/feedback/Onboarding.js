@@ -2,16 +2,17 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
+import { onboardingWidth, sp3, sp4 } from "../../tokens.generated.js";
 export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip, onDone, anchorRect }) {
   if (!open || !steps.length)
     return null;
   const step = steps[index] || {};
   const last = index === steps.length - 1;
-  const W = 320;
-  const EDGE = 16;
+  const W = onboardingWidth;
+  const EDGE = sp4;
   let pos = { position: "fixed", right: "calc(var(--sp-1) * 6)", bottom: "calc(var(--sp-1) * 6)", zIndex: "var(--z-onboarding)" };
   if (anchorRect) {
-    const top = Math.min(anchorRect.bottom + 12, (typeof window !== "undefined" ? window.innerHeight : 900) - 220);
+    const top = Math.min(anchorRect.bottom + sp3, (typeof window !== "undefined" ? window.innerHeight : 900) - 220);
     let left = anchorRect.left;
     if (typeof window !== "undefined")
       left = Math.min(left, window.innerWidth - W - EDGE);
@@ -27,7 +28,7 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
     "aria-label": step.title,
     style: {
       ...pos,
-      width: "calc(var(--sp-1) * 80)",
+      width: "var(--onboarding-width)",
       maxWidth: "92vw",
       background: "var(--surface-card)",
       border: "var(--bw) solid var(--line-strong)",

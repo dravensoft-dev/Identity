@@ -28,6 +28,8 @@ these values, do not re-derive them.
 | Loop durations (`loop-spin/sweep/shimmer/brand/reduced/brand-reduced`) | `effects.json` | `duration` | ms; cyclical motion, deliberately separate from `dur`'s transition range |
 | Easings (`ease-*`) | `effects.json` | `cubicBezier` | `[x1,y1,x2,y2]` |
 | Layering (`z-*`) | `layering.json` | `number` | unitless integers; the family declares the order, the values only preserve it |
+| Chart geometry (`chart-*`) | `chart.json` | `dimension` | px; **script-readable** — emitted to `frameworks/*/tokens.generated.*` as bare numbers as well as to CSS, because JS arithmetic computes SVG positions from them. Does not re-densify: a value bound at import time cannot respond to `.arena-compact` |
+| Component geometry (`calendar-hour-h`, `onboarding-width`) | `component.json` | `dimension` | px; **script-readable**. Named after a component rather than a role, like `avatar-*` and `logo-*`. `onboarding-width` also replaces a `calc(var(--sp-1) * 80)` the component rendered — one value that existed in two idioms |
 
 ## Value formats are strict 2025.10
 
@@ -39,6 +41,23 @@ these values, do not re-derive them.
 - Every `dimension` and `duration` is `{ "value": N, "unit": "px" | "ms" }` — the
   unit is required even when `N` is 0.
 - `number`, `fontWeight` values are bare numbers; `cubicBezier` is an array of 4.
+
+## Script-readable tokens
+
+A token carrying `$extensions["com.dravensoft.arena"].script: true` is emitted
+**twice**: as the CSS custom property it would have had anyway, and as a bare
+number exported from each framework layer's generated module
+(`frameworks/react/tokens.generated.js`, `frameworks/angular/tokens.generated.ts`).
+
+The flag lives in the source, not in a list inside the build script, because a
+second list is a second thing to keep in sync.
+
+Flag a token only when **JS arithmetic must consume it to produce a position**.
+A value the browser can apply directly stays CSS-only. Two consequences follow
+and neither is negotiable: a script-readable value is bound at import time, so
+it **cannot re-theme and cannot re-densify**; and only `dimension`, `duration`
+and `number` are flaggable, because those are the only types whose value is a
+number.
 
 ## What is not in this map
 

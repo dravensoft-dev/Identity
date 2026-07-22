@@ -31,6 +31,8 @@
     "build:vendor": "bun scripts/build-vendor.mjs",
     "build:demos": "bun scripts/build-demos.mjs",
     "check:tokens": "bun scripts/check-tokens-generated.mjs",
+    "check:script-tokens": "bun scripts/check-script-tokens.mjs",
+    "check:duplicate-constants": "bun scripts/check-duplicate-constants.mjs",
     "check:vendor": "bun scripts/check-vendor-generated.mjs",
     "check:demos": "bun scripts/check-demos-generated.mjs",
     "check:dtcg": "bun scripts/check-dtcg.mjs",

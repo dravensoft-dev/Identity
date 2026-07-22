@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useContainerWidth } from '../../use-container-width.js';
 import { resolveColors, niceMax, ticks, srOnly, PAD, CHART_HEIGHT } from './chart-internals.js';
+import { chartPointR, chartPointRHover } from '../../tokens.generated.js';
 
 export function LineChart({
   labels = [], values = [], seriesLabel, slot, tone, area = false,
@@ -67,7 +68,7 @@ export function LineChart({
           strokeLinejoin="round" strokeLinecap="round" />}
 
         {values.map((v, i) => (
-          <circle key={i} cx={xOf(i)} cy={yOf(v)} r={hover === i ? 5 : 4}
+          <circle key={i} cx={xOf(i)} cy={yOf(v)} r={hover === i ? chartPointRHover : chartPointR}
             fill={color} stroke="var(--surface-card)" style={{ strokeWidth: 'var(--bw-strong)' }} />
         ))}
 

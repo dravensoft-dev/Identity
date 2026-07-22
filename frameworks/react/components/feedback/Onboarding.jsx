@@ -1,4 +1,5 @@
 import React from 'react';
+import { onboardingWidth, sp3, sp4 } from '../../tokens.generated.js';
 
 /** Guided onboarding (H10). Step-by-step coachmark: presents features within the product
  * with progress, "Skip", and "Next". Controlled: the host keeps `index`.
@@ -7,26 +8,16 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
   if (!open || !steps.length) return null;
   const step = steps[index] || {};
   const last = index === steps.length - 1;
-  // The popover's own width also bounds the right-edge clamp below, which
-  // needs a real JS number (it is compared against window.innerWidth) --
-  // W stays a plain constant for that reason. The rendered `width:` further
-  // down uses the CSS-string derivation of the same value, calc(var(--sp-1)
-  // * 80); the two must be changed together if the popover's width ever is.
-  const W = 320;
-  // Mirrors var(--sp-4) (16px) -- the popover's minimum gutter from either
-  // viewport edge. Both edges of the clamp below read this one constant so
-  // they cannot drift apart from each other; it stays a plain number, not a
-  // token reference, for the same reason W does: Math.min/Math.max need
-  // real JS numbers, and nothing in this layer reads a CSS custom
-  // property's value back into JS.
-  const EDGE = 16;
+  // The popover's own geometry, from tokens/src/. These were plain constants
+  // because Math.min/Math.max need real numbers; they are still real numbers,
+  // but authored once in tokens/src/ instead of here and in Angular's copy.
+  const W = onboardingWidth;
+  const EDGE = sp4;
 
   let pos = { position: 'fixed', right: 'calc(var(--sp-1) * 6)', bottom: 'calc(var(--sp-1) * 6)', zIndex: 'var(--z-onboarding)' };
   if (anchorRect) {
-    // Three plain numbers, for the same reason W and EDGE are: all of these
-    // are arithmetic on a DOMRect and on window.innerHeight, and nothing in
-    // this layer reads a custom property's value back into JS.
-    //   12  -- the gap below the anchor. Mirrors var(--sp-3).
+    // Two plain numbers remain here, both arithmetic on a DOMRect and on
+    // window.innerHeight:
     //   220 -- a floor estimate of the popover's own height, so a callout
     //          anchored near the bottom of the viewport is not pushed below
     //          the fold. It is deliberately an over-estimate: too high only
@@ -34,7 +25,7 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
     //   900 -- the assumed viewport height before mount, where there is no
     //          window to measure. Not a design value; the charts make the
     //          same assumption about width.
-    const top = Math.min(anchorRect.bottom + 12, (typeof window !== 'undefined' ? window.innerHeight : 900) - 220);
+    const top = Math.min(anchorRect.bottom + sp3, (typeof window !== 'undefined' ? window.innerHeight : 900) - 220);
     let left = anchorRect.left;
     if (typeof window !== 'undefined') left = Math.min(left, window.innerWidth - W - EDGE);
     pos = { position: 'fixed', top, left: Math.max(EDGE, left), zIndex: 'var(--z-onboarding)' };
@@ -48,7 +39,7 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
         * than a second token. */}
       <div onClick={onSkip} style={{ position: 'fixed', inset: 0, zIndex: 'calc(var(--z-onboarding) - 10)', background: 'var(--scrim)' }} />
       <div role="dialog" aria-modal="true" aria-label={step.title}
-        style={{ ...pos, width: 'calc(var(--sp-1) * 80)', maxWidth: '92vw', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)',
+        style={{ ...pos, width: 'var(--onboarding-width)', maxWidth: '92vw', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)',
           borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', padding: 'calc(var(--sp-1) * 5)' }}>
         {step.eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 'calc(var(--sp-1) * 2)' }}>{step.eyebrow}</div>}
         {step.title && <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 'var(--fs-h4)', color: 'var(--bone)', letterSpacing: 'var(--ls-tight)' }}>{step.title}</div>}

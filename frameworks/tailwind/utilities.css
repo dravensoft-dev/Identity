@@ -569,9 +569,6 @@
   .w-10 {
     width: var(--spacing-10);
   }
-  .w-80 {
-    width: calc(var(--spacing) * 80);
-  }
   .w-85 {
     width: calc(var(--spacing) * 85);
   }
@@ -586,6 +583,9 @@
   }
   .w-\[62\%\] {
     width: 62%;
+  }
+  .w-\[var\(--onboarding-width\)\] {
+    width: var(--onboarding-width);
   }
   .w-auto {
     width: auto;

@@ -1341,9 +1341,9 @@ test('arena-doughnut-chart: the host is the flex row itself, so the box it measu
   // containing block rather than leaving it to escape to an ancestor.
   assert.equal(host.style.position, 'relative');
   // The row's own two properties: it fills its parent, and the gap between the ring and
-  // the legend is the token derivation the plot width subtracts 16px for.
+  // the legend is the same token the plot width subtracts as a number.
   assert.equal(host.style.width, '100%');
-  assert.equal(host.style.gap, 'calc(var(--sp-1) * 4)');
+  assert.equal(host.style.gap, 'var(--chart-legend-gap)');
 });
 
 test('arena-doughnut-chart: the numbers table is bound as a style object, not stringified into the attribute', async () => {

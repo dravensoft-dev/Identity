@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useContainerWidth, readBreakpoint } from '../../use-container-width.js';
 import { catColor } from '../charts/chart-internals.js';
+import { calendarHourH } from '../../tokens.generated.js';
 import {
   addDays, defaultDayStart, formatHM, layoutDay, nowMinutes, parseHM,
   placeEvents, rangeTitle, startOfWeek, todayIso, weekdayOf, formatDate,
 } from './calendar-internals.js';
 
-const HOUR_H = 44;
 const GUTTER = 'calc(var(--sp-1) * 14)';
 
 /** Week/day schedule on a time grid. `events`: [{id, title, start, end, slot, meta}]
@@ -68,7 +68,7 @@ export function Calendar({
   // An hour of grid minimum, so an inverted or absurd pair still renders something.
   const startMin = Math.max(0, Math.min(rawStart, endMin - 60));
 
-  const y = (min) => ((min - startMin) / 60) * HOUR_H;
+  const y = (min) => ((min - startMin) / 60) * calendarHourH;
   const hours = [];
   for (let m = Math.ceil(startMin / 60) * 60; m <= endMin; m += 60) hours.push(m);
 

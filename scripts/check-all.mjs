@@ -4,7 +4,7 @@
  * inherited, not buffered), and a pass/fail summary prints once every step
  * has finished. Exit 1 if any step failed, 0 if all passed.
  *
- * Seventeen steps total: the sixteen gates in GATES below, plus the test suite.
+ * Nineteen steps total: the eighteen gates in GATES below, plus the test suite.
  *
  * Three gates can report a third status. check:cards needs a headless
  * browser, and check:vendor and check:demos each need a Bun-only builder
@@ -41,6 +41,8 @@ const repoRoot = join(here, '..');
 export const GATES = [
   { name: 'check:dtcg', file: 'check-dtcg.mjs' },
   { name: 'check:tokens', file: 'check-tokens-generated.mjs' },
+  { name: 'check:script-tokens', file: 'check-script-tokens.mjs' },
+  { name: 'check:duplicate-constants', file: 'check-duplicate-constants.mjs' },
   { name: 'check:ramp', file: 'check-ramp.mjs' },
   { name: 'check:tailwind', file: 'check-tailwind.mjs' },
   { name: 'check:tailwind-generated', file: 'check-tailwind-generated.mjs' },

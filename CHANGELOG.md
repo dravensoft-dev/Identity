@@ -183,6 +183,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`avatar` family** (24/32/40/56) and **`dz.text-lg`** (16px), the two values the
   layers derived from or rendered without a token.
 - **`--layout-sidebar`** (232px), used by the console shell.
+- **A script-readable token target.** A token flagged `script: true` in `tokens/src/`
+  now emits a bare number to `frameworks/react/tokens.generated.js` and
+  `frameworks/angular/tokens.generated.ts` as well as a CSS custom property, so
+  JavaScript reads design values instead of restating them. Sixteen tokens are
+  flagged, across `tokens/src/chart.json` (new), `tokens/src/component.json` (new)
+  and `spacing.json`.
+- `check:script-tokens` — the generated modules match the source and the CSS, and
+  no flag is orphaned.
+- `check:duplicate-constants` — a numeric constant may not be declared in both
+  framework layers.
 
 ### Changed
 
@@ -248,6 +258,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   design change and it moves rendered pixels**, not a mechanical substitution: each
   cluster's snap direction (round up or down) was decided once, by the coordinator, and
   applied consistently everywhere that cluster appears, rather than re-decided per site.
+- Chart geometry, `Calendar`'s hour height and `Onboarding`'s popover width are
+  tokens rather than constants. **No rendered value changed.** Thirteen hand-declared
+  constants across both layers are gone, five of which were duplicated verbatim
+  between them.
+- `Onboarding` renders `var(--onboarding-width)` in place of
+  `calc(var(--sp-1) * 80)`, collapsing a value that existed in three places.
 
 ### Fixed
 

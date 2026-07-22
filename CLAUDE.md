@@ -67,6 +67,20 @@ live in each platform's own idiom: the runtime colour derivations (`color-mix`, 
 target rebuilds that thin layer in its idiom on top of the same standard values — it
 never re-defines a value.
 
+**A third thing lives in the composition layer as of the script-readable
+target: a token whose consumer is JavaScript rather than CSS.** A token flagged
+`$extensions["com.dravensoft.arena"].script: true` in `tokens/src/` emits twice —
+the custom property it always would have, and a bare number exported from
+`frameworks/react/tokens.generated.js` and `frameworks/angular/tokens.generated.ts`.
+Emission is **per layer** so a component's import never crosses the `tokens/` ↔
+`frameworks/` boundary. Flag a token only when JS arithmetic must consume it to
+produce a position — an SVG `y` from a data value, a clamp against
+`window.innerWidth`. The price, and it is not negotiable: a value bound at
+import time **cannot re-theme and cannot re-densify**. `bun run check:script-tokens`
+asserts the modules match the source and the CSS and that no flag is orphaned;
+`bun run check:duplicate-constants` fails a numeric constant declared in both
+layers, which is how chart geometry drifted before this existed.
+
 **A dimension in a framework layer is a token or a derivation of tokens. A bare
 literal is a bug.** This is machine-checked: `bun run check:dimensions` scans
 `frameworks/` for literals in the properties the token layer governs and fails on
@@ -225,7 +239,7 @@ It is the converse of `check:coverage` and just as narrow: it does not attempt
 "every utility traces to a token" in general, only this one verified case,
 because everywhere else in a cleared namespace already resolves to nothing
 and `check:tailwind` catches that on its own.
-`bun run check` runs all sixteen plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
+`bun run check` runs all eighteen plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
 skips quietly — makes that a hard failure instead. An Angular primitive's recipe is its
 manifest — `frameworks/angular/primitives/tag/` is the reference shape.
 

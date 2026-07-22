@@ -72,3 +72,43 @@
   --z-onboarding:1200; /* the coachmark; the scrim beneath it derives at the point of use as calc(var(--z-onboarding) - 10) — one slot, two uses */
   --z-toast:1300; /* floats above everything, including onboarding — a transient notice raised by an action taken inside a dialog must stay visible */
 }
+:root{
+  /*
+     Chart plot geometry. Script-readable: JS arithmetic must consume these
+     to produce an SVG position, and no CSS expression can compute a y attribute
+     from a data value. They are emitted to both targets — the custom property and
+     the per-layer JS module — so they still appear in the Overview. Accepted cost:
+     a value bound at import time cannot re-densify, so chart geometry does not
+     respond to .arena-compact. It never did.
+   */
+  --chart-height:280px; /* Plot height before padding. */
+  /*
+     Equals --sp-2. Authored rather than aliased: build-tokens.mjs loads one
+     source file per call, so a DTCG reference across files would not resolve.
+   */
+  --chart-pad-top:8px;
+  --chart-pad-right:8px; /* Equals --sp-2. See pad-top. */
+  /*
+     Holds the category labels. This is a CONSEQUENCE of the type scale, not a
+     chosen dimension: it is enough room for a label at --dz-text-2xs. If the type
+     scale moves, revisit it — it will not fail loudly.
+   */
+  --chart-pad-bottom:28px;
+  --chart-pad-left:44px; /* Holds the value labels. A consequence of the type scale, like pad-bottom. */
+  /*
+     A bar's data end. Deliberately NOT --r-sm (6px): naming the value Arena
+     already renders is free, snapping to the radius scale is a visible 2px design
+     change and must be taken as one.
+   */
+  --chart-bar-radius:4px;
+  --chart-bar-gap:2px; /* Surface between bars. Equals --bw-strong, coincidentally. */
+  --chart-point-r:4px; /* A line chart's point at rest. */
+  /*
+     A line chart's point under the pointer. The 1px delta IS the hover
+     affordance — the pair only means anything together.
+   */
+  --chart-point-r-hover:5px;
+  --chart-legend-min:120px; /* Doughnut legend, narrowest. */
+  --chart-legend-max:180px; /* Doughnut legend, widest. */
+  --chart-legend-gap:16px; /* Between the doughnut plot and its legend. Equals --sp-4. */
+}

@@ -3,7 +3,7 @@ export default {
   "component": "Onboarding",
   "slots": {
     "root": "fixed inset-0 z-onboarding block bg-scrim",
-    "panel": "fixed w-80 max-w-[92vw] bg-base-200 border-[length:var(--bw)] border-neutral rounded-lg shadow-3 p-5",
+    "panel": "fixed w-[var(--onboarding-width)] max-w-[92vw] bg-base-200 border-[length:var(--bw)] border-neutral rounded-lg shadow-3 p-5",
     "eyebrow": "font-mono text-ctl-xs tracking-label uppercase text-primary mb-2",
     "title": "font-display font-extrabold text-h4 text-base-content tracking-tight",
     "body": "font-body text-md leading-body text-base-content/82 mt-2",

@@ -4,6 +4,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useContainerWidth, readBreakpoint } from "../../use-container-width.js";
 import { catColor } from "../charts/chart-internals.js";
+import { calendarHourH } from "../../tokens.generated.js";
 import {
   addDays,
   defaultDayStart,
@@ -18,7 +19,6 @@ import {
   weekdayOf,
   formatDate
 } from "./calendar-internals.js";
-const HOUR_H = 44;
 const GUTTER = "calc(var(--sp-1) * 14)";
 export function Calendar({
   events = [],
@@ -65,7 +65,7 @@ export function Calendar({
   const endMin = parseHM(dayEnd, 23 * 60);
   const rawStart = dayStart !== undefined ? parseHM(dayStart, 8 * 60) : defaultDayStart(visible);
   const startMin = Math.max(0, Math.min(rawStart, endMin - 60));
-  const y = (min) => (min - startMin) / 60 * HOUR_H;
+  const y = (min) => (min - startMin) / 60 * calendarHourH;
   const hours = [];
   for (let m = Math.ceil(startMin / 60) * 60;m <= endMin; m += 60)
     hours.push(m);

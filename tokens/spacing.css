@@ -4,8 +4,8 @@
   --sp-0:0;
   --sp-1:4px;
   --sp-2:8px;
-  --sp-3:12px;
-  --sp-4:16px;
+  --sp-3:12px; /* Script-readable: Onboarding's gap below its anchor is arithmetic on a DOMRect. */
+  --sp-4:16px; /* Script-readable: Onboarding's minimum gutter from either viewport edge, compared against window.innerWidth. */
   --sp-5:20px;
   --sp-6:24px;
   --sp-8:32px;
@@ -103,6 +103,25 @@
   --icon-md:16px;
   --icon-lg:18px;
   --icon-xl:34px; /* Illustration-scale icon (EmptyState, ErrorState) — a distinct role from the 14/16/18 inline-control cluster. */
+}
+:root{
+  /* Calendar time grid. */
+  /*
+     The pixel height of one hour. Script-readable because
+     y = ((min - startMin) / 60) * hour-h is arithmetic, and no CSS expression
+     computes a position from a minute-of-day. An orphan before this: --sp-10 is 40
+     and --sp-12 is 48, so nothing in the spacing scale was 44.
+   */
+  --calendar-hour-h:44px;
+
+  /* Onboarding coachmark. */
+  /*
+     The popover's width. Script-readable because Math.min/Math.max compare it
+     against window.innerWidth. This ALSO replaces the calc(var(--sp-1) * 80) the
+     component rendered: the value existed twice in two idioms, held in step by a
+     comment. One token now, read both ways.
+   */
+  --onboarding-width:320px;
 }
 .arena-compact{
   /*

@@ -4,6 +4,7 @@
 import React, { useState } from "react";
 import { useContainerWidth } from "../../use-container-width.js";
 import { resolveColors, arcPath, srOnly, CHART_HEIGHT } from "./chart-internals.js";
+import { chartLegendMin, chartLegendMax, chartLegendGap } from "../../tokens.generated.js";
 export function DoughnutChart({ labels = [], values = [], slots, valueFormatter, style, ...rest }) {
   const [ref, measured] = useContainerWidth();
   const [hover, setHover] = useState(null);
@@ -13,8 +14,8 @@ export function DoughnutChart({ labels = [], values = [], slots, valueFormatter,
   const fmt = valueFormatter || ((v) => String(v));
   const colors = resolveColors({ slots: slots ?? Array.from({ length: n }, (_, i) => i + 1), count: n });
   const total = values.reduce((a, b) => a + Math.max(0, b), 0);
-  const legendW = Math.min(180, Math.max(120, width * 0.34));
-  const plotW = Math.max(1, width - legendW - 16);
+  const legendW = Math.min(chartLegendMax, Math.max(chartLegendMin, width * 0.34));
+  const plotW = Math.max(1, width - legendW - chartLegendGap);
   const cx = plotW / 2;
   const cy = height / 2;
   const rOuter = Math.max(1, Math.min(plotW, height) / 2 - 8);
@@ -29,7 +30,7 @@ export function DoughnutChart({ labels = [], values = [], slots, valueFormatter,
   });
   return React.createElement("div", {
     ref,
-    style: { position: "relative", width: "100%", height, display: "flex", gap: "calc(var(--sp-1) * 4)", ...style },
+    style: { position: "relative", width: "100%", height, display: "flex", gap: "var(--chart-legend-gap)", ...style },
     ...rest
   }, React.createElement("svg", {
     width: plotW,

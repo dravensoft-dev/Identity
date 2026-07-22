@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, signal } from '@angular/core';
 import { containerWidth } from '../container-size';
 import { ArenaChartTone, CHART_HEIGHT, PAD, SR_ONLY, niceMax, resolveColors, ticks } from '../chart-internals';
+import { chartPointR, chartPointRHover } from '../../tokens.generated';
 
 /** The plot width assumed for the first paint, before `containerWidth()` has
  *  measured anything. Wide on purpose — a chart that starts narrow and widens
@@ -9,9 +10,10 @@ const ASSUMED_WIDTH = 600;
 
 /** The point marker's radius in px: the larger one is the hovered point. Both are
  *  SVG user units on a mark, not a CSS length on Arena's dimension scale, and the
- *  token layer models neither — `LineChart.jsx` writes the same two numbers. */
-const POINT_R = 4;
-const POINT_R_HOVER = 5;
+ *  token layer models neither — `LineChart.jsx` writes the same two numbers, from
+ *  tokens/src/chart.json. */
+const POINT_R = chartPointR;
+const POINT_R_HOVER = chartPointRHover;
 
 /* Every static style below is a camelCase object bound with `[style]`, never a
  * `style="a-b:c"` string in the template, for the reason bar-chart.ts records at
