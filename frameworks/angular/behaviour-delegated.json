@@ -34,8 +34,8 @@
   },
   "IconButton": {
     "pattern": "button",
-    "delegatedTo": "Angular Material MatButton (matIconButton)",
-    "reason": "matIconButton is the icon-only variant of the same MatButton family Button delegates to, and provides the same native <button> role and keyboard activation. arena-material.css dresses the filled and outlined text variants but has no rule for the icon-button host class, so its colour is Material's own default rather than Arena's tokens today."
+    "delegatedTo": "Angular Material MatIconButton (matIconButton)",
+    "reason": "matIconButton is the icon-only sibling of the same MatButton family Button delegates to, and provides the same native <button> role and keyboard activation. arena-material.css dresses the filled and outlined text variants but has no rule for the icon-button host class, so its colour is Material's own default rather than Arena's tokens today."
   },
   "Input": {
     "pattern": "textbox",
@@ -179,12 +179,6 @@
   "Tooltip": {
     "pattern": "tooltip",
     "delegatedTo": "Angular Material matTooltip",
-    "exceptions": [
-      {
-        "requirement": "timing.open-delay",
-        "reason": "matTooltip's showDelay and hideDelay default to 0, so Angular reveals instantly where React now waits --delay-open. The seam is MAT_TOOLTIP_DEFAULT_OPTIONS and nothing wires it. Recorded in CLAUDE.md's Known debt."
-      }
-    ],
-    "reason": "matTooltip provides the directive, its positioning via the CDK overlay, and its dismissal. Arena has no arena-tooltip primitive and should not grow one. arena-material.css has no rule for the tooltip panel, so it renders in Material's own colours, not Arena's tokens, today."
+    "reason": "matTooltip provides the directive, its positioning via the CDK overlay, and its dismissal. Arena has no arena-tooltip primitive and should not grow one. arena-material.css has no rule for the tooltip panel, so it renders in Material's own colours, not Arena's tokens, today. This is not a gap against the tooltip pattern -- APG's Keyboard Interaction and Roles/States/Properties sections say nothing about timing, so a tooltip with no delay is still a conforming tooltip -- it is a gap against Arena's own convention: matTooltip's showDelay and hideDelay default to 0, so Angular reveals a tooltip instantly where React now waits --delay-open. The seam is MAT_TOOLTIP_DEFAULT_OPTIONS and nothing wires it. Recorded in CLAUDE.md's Known debt section, in the bullet beginning \"`delay` and `dismiss` govern React only\"."
   }
 }

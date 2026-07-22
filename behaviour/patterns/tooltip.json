@@ -6,7 +6,6 @@
     "roles.element": "tooltip",
     "roles.describedby": "the triggering element references the tooltip with aria-describedby",
     "keyboard.Escape": "dismisses the tooltip",
-    "focus.never": "the tooltip itself never receives focus; it is bound to its trigger's hover or focus state, and a focus-invoked tooltip dismisses on the trigger's blur",
-    "timing.open-delay": "the source page's own words: a tooltip 'typically appears after a small delay' on hover, so a pointer merely passing over the trigger does not flash it open"
+    "focus.never": "the tooltip itself never receives focus; it is bound to its trigger's hover or focus state, and a focus-invoked tooltip dismisses on the trigger's blur"
   }
 }
