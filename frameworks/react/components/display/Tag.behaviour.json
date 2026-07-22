@@ -1,6 +1,8 @@
 {
   "pattern": "button",
   "exceptions": [
+    { "requirement": "roles.element",
+      "reason": "The <button> only renders when onRemove is passed ({onRemove && <button>...</button>}). Without it -- the common case -- Tag is a plain <span> with no button, no role and no interactivity at all, and this whole pattern does not apply; it would bind none instead. This binding, and every exception in it including the one below, describes Tag only in the shape it takes when onRemove is supplied." },
     { "requirement": "states.disabled",
       "reason": "The remove button has no disabled concept at all -- aria-disabled is never set, and there is no prop to make removal unavailable while still visible. It is either rendered (fully enabled) or not rendered at all." }
   ]

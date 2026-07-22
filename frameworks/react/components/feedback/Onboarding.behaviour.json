@@ -1,6 +1,8 @@
 {
   "pattern": "dialog-modal",
   "exceptions": [
+    { "requirement": "roles.label",
+      "reason": "aria-label is set to step.title, and OnboardingStep.title is declared optional in Onboarding.d.ts. React omits an attribute whose value is undefined, so a step that omits title renders the dialog with no aria-label at all -- met when the caller supplies a title on the current step, unmet when they don't." },
     { "requirement": "focus.onOpen",
       "reason": "No code moves focus into the coachmark when it opens -- no autoFocus, no ref, no querySelector. Focus stays wherever it already was." },
     { "requirement": "focus.onClose",

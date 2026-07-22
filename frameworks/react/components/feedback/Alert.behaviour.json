@@ -2,6 +2,6 @@
   "pattern": "alert",
   "exceptions": [
     { "requirement": "roles.element",
-      "reason": "role is only \"alert\" when tone===\"danger\". Every other tone (info, success, warning, neutral -- including the default) renders role=\"status\" instead, which is a different, more polite live region than this pattern requires." }
+      "reason": "role is only \"alert\" when tone===\"danger\". Every other tone (info, success, warning, neutral -- including the default) renders role=\"status\" instead, which is a different, more polite live region than this pattern requires. This binding stays on alert rather than moving to status on purpose, even though status is what most instances actually render: alert is the safety-relevant contract, the one that matters when Alert is carrying a condition the user must not miss, and a silent downgrade to the calmer pattern would describe the case that matters least. The exception records that only the danger tone actually earns it; every other tone is documented here as falling short of the pattern this binds, not as evidence the pattern should change." }
   ]
 }
