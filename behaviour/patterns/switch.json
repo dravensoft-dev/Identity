@@ -1,0 +1,11 @@
+{
+  "name": "switch",
+  "source": "https://www.w3.org/WAI/ARIA/apg/patterns/switch/",
+  "description": "A two-state on/off control, distinct from checkbox in having no mixed state and in reading as an immediate effect rather than a pending form value.",
+  "requires": {
+    "roles.element": "switch",
+    "roles.label": "text content, aria-labelledby, or aria-label",
+    "keyboard.Space": "toggle between on and off",
+    "states.checked": "aria-checked set to true when on, false when off"
+  }
+}

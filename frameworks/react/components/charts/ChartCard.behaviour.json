@@ -1,0 +1,5 @@
+{
+  "pattern": "none",
+  "reason": "ChartCard is the card frame a chart sits on -- a surface, an optional uppercase title microlabel (deliberately not a heading element, so a dashboard grid of tiles does not fabricate one h2 per tile) and an `actions` slot that only positions whatever the caller passes in. It manages no state, adds no role, and owns no interactive element of its own; any control a user acts on lives in `actions` or `children`, not in ChartCard.",
+  "exceptions": []
+}

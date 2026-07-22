@@ -1,0 +1,9 @@
+{
+  "pattern": "status",
+  "exceptions": [
+    { "requirement": "roles.element",
+      "reason": "Only the circle variant is missing the role. The block, line and (single- or multi-line) text variants all render role=\"status\" aria-label=\"Loading\", but the circle variant renders aria-hidden=\"true\" with no role at all -- a screen reader is told nothing is loading while the circle placeholder is on screen." },
+    { "requirement": "live.politeness",
+      "reason": "Same variant, same cause: role=\"status\" carries an implicit aria-live=\"polite\", but the circle variant has no role at all -- aria-hidden=\"true\" and nothing else -- so it has no implicit live region either. There is nothing to announce a change politely or otherwise while the circle placeholder is on screen." }
+  ]
+}

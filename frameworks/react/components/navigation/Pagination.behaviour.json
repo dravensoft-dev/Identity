@@ -1,0 +1,7 @@
+{
+  "pattern": "navigation",
+  "exceptions": [
+    { "requirement": "roles.label",
+      "reason": "aria-label is the hardcoded string \"Pagination\" with no prop to override it. Two Pagination instances on one page -- e.g. two paginated tables in the same dashboard, a routine layout -- carry the identical label and are not distinguishable as separate landmarks." }
+  ]
+}

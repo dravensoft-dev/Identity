@@ -1,0 +1,14 @@
+{
+  "name": "dialog-modal",
+  "source": "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/",
+  "description": "A window that covers the app and takes the whole interaction until it is dismissed. Shared by Dialog, ConfirmDialog and Onboarding, which is the point: this contract was written three times implicitly before it was written once here.",
+  "requires": {
+    "roles.element": "dialog",
+    "roles.aria-modal": "true",
+    "roles.label": "aria-labelledby or aria-label",
+    "focus.onOpen": "first-focusable",
+    "focus.onClose": "restore-invoker",
+    "focus.trap": true,
+    "keyboard.Escape": "close"
+  }
+}

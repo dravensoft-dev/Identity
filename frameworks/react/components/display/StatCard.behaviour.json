@@ -1,0 +1,5 @@
+{
+  "pattern": "none",
+  "reason": "StatCard renders a label, a value, an optional delta pill and a sub-line -- all static text and markup. There is no onClick, no focusable element, and no role anywhere in the file; even the delta arrow icon is aria-hidden. A user can read the metric but cannot act on it.",
+  "exceptions": []
+}

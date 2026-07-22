@@ -1,0 +1,15 @@
+{
+  "pattern": "dialog-modal",
+  "exceptions": [
+    { "requirement": "roles.label",
+      "reason": "No aria-labelledby or aria-label anywhere -- `title` renders as a plain styled div with no id, and the dialog element carries neither attribute. A screen reader announces \"dialog\" with no name." },
+    { "requirement": "focus.onOpen",
+      "reason": "No code moves focus anywhere when the dialog opens -- there is no ref, no autoFocus, no querySelector. Focus stays wherever it already was, normally the control that opened the dialog." },
+    { "requirement": "focus.onClose",
+      "reason": "No stored reference to what had focus before open, and no code that restores it on close either." },
+    { "requirement": "focus.trap",
+      "reason": "Nothing constrains Tab inside the dialog -- there is no keydown handler, so Tab and Shift+Tab walk straight past the dialog's edges into the page behind the scrim." },
+    { "requirement": "keyboard.Escape",
+      "reason": "No keydown listener anywhere. The only dismissal path is a mouse click on the backdrop (onClick={onClose} on the outer div) -- a keyboard user has no way to close the dialog with Escape at all." }
+  ]
+}

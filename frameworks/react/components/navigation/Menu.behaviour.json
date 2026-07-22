@@ -1,0 +1,17 @@
+{
+  "pattern": "menu-button",
+  "exceptions": [
+    { "requirement": "roles.haspopup",
+      "reason": "aria-haspopup=\"menu\" is set on the wrapping <span> around `trigger`, not on the trigger element itself (e.g. the IconButton's own <button>). A screen reader focused on the actual interactive element never sees it, since ARIA states on an ancestor are not inherited by the focused descendant." },
+    { "requirement": "roles.expanded",
+      "reason": "Same placement problem as roles.haspopup: aria-expanded lives on the wrapping <span>, not on the focusable trigger, so it is invisible to assistive tech at the point where it is needed." },
+    { "requirement": "focus.onOpen",
+      "reason": "No code moves focus into the menu when it opens. DOM focus stays wherever it already was -- normally the trigger -- so the pattern's 'first menu item' focus never happens." },
+    { "requirement": "keyboard.Enter",
+      "reason": "Enter does open the menu, because the trigger's native click bubbles to the wrapping span's onClick, but focus is never moved to the first menu item afterward -- only half of this requirement is met." },
+    { "requirement": "keyboard.Space",
+      "reason": "Same as keyboard.Enter: Space opens the menu via the same bubbled click, but focus never moves to the first item." },
+    { "requirement": "keyboard.Escape",
+      "reason": "Escape does close the menu (a document keydown listener calls setOpen(false)), but nothing explicitly restores focus to the trigger button afterward -- if a user had tabbed into a menu item, focus is left nowhere in particular once the menu unmounts." }
+  ]
+}

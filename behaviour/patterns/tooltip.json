@@ -1,0 +1,11 @@
+{
+  "name": "tooltip",
+  "source": "https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/",
+  "description": "Additional information about another element, bound to that element's hover or focus state rather than independently interactive.",
+  "requires": {
+    "roles.element": "tooltip",
+    "roles.describedby": "the triggering element references the tooltip with aria-describedby",
+    "keyboard.Escape": "dismisses the tooltip",
+    "focus.never": "the tooltip itself never receives focus; it is bound to its trigger's hover or focus state, and a focus-invoked tooltip dismisses on the trigger's blur"
+  }
+}

@@ -92,8 +92,34 @@ decision; a debounce interval on a synchronous in-memory filter is not, which is
 contract**: which keys a dialog answers, where focus lands, what dismisses it — none
 of that is expressible as a token, none of it lives in `tokens/`, and DTCG does not
 model it. That layer is designed in
-`docs/superpowers/specs/2026-07-22-7-behaviour-tokens-and-contracts-design.md` and
-is not built yet.
+`docs/superpowers/specs/2026-07-22-7-behaviour-tokens-and-contracts-design.md`, and the
+next paragraph is what got built from it.
+
+**Behaviour also has contracts, and they are not tokens.** `behaviour/patterns/*.json`
+states what a kind of component must do — roles, keys, focus, dismissal — one file per
+pattern, each citing the source it was adopted from. Fifteen cite the WAI-ARIA APG page
+they were adopted from; two, `status` and `textbox`, cite the ARIA 1.2 role reference
+instead because APG has no pattern page for either role; `figure-with-data-table` is
+Arena's own and cites WCAG instead, because APG has no chart pattern; `none` and
+`absent` cite nothing, because there is nothing to adopt from when the claim is that no
+pattern applies. `requires` is a flat map of **dotted** keys, and that shape is
+load-bearing: an exception names exactly one requirement, so one entry cannot excuse a
+whole clause.
+
+Every component declares, in **every** layer, beside its own source — React at
+`<Name>.behaviour.json`, Angular at `<name>.behaviour.json`, and the twenty-two
+controls Material provides or lacks, in `frameworks/angular/behaviour-delegated.json`.
+**Delegation is a state, not an absence**: Angular has a tooltip, it is `matTooltip`,
+and a declaration reading "absent" would be false for it — Calendar is the one entry
+in that file where "absent" is true, and it binds the `absent` pattern precisely so
+that fact is machine-checkable rather than only stated in its `reason`.
+
+`bun run check:behaviour` asserts every component declares, that no declaration names a
+pattern or requirement that does not exist, that no delegated entry is stale, and that
+the layers agree or say why not. When they disagree the gate names both and picks no
+winner — the pattern is the authority. **It does not assert that a component behaves as
+it declares**: a component can bind `dialog-modal` and trap no focus. A green run is a
+coverage claim, never an accessibility one.
 
 **A dimension in a framework layer is a token or a derivation of tokens. A bare
 literal is a bug.** This is machine-checked: `bun run check:dimensions` scans
@@ -253,7 +279,7 @@ It is the converse of `check:coverage` and just as narrow: it does not attempt
 "every utility traces to a token" in general, only this one verified case,
 because everywhere else in a cleared namespace already resolves to nothing
 and `check:tailwind` catches that on its own.
-`bun run check` runs all eighteen plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
+`bun run check` runs all nineteen plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
 skips quietly — makes that a hard failure instead. An Angular primitive's recipe is its
 manifest — `frameworks/angular/primitives/tag/` is the reference shape.
 
@@ -372,6 +398,35 @@ scheduled for deletion the same week.
   `duration` to either value at all. The seams a future pass would bind these
   through are `MAT_TOOLTIP_DEFAULT_OPTIONS` (`showDelay`, `hideDelay`) and
   `MatSnackBarConfig.duration` — neither is wired today.
+- **`Calendar` and `Table` implement no keyboard navigation at all** — zero `role=`,
+  zero `tabIndex`, zero key handling, in components that render interactive data. Both
+  bind `grid` with an exception per unmet requirement rather than `none`, because
+  "presentational" would be a lie: they are not simple, they are unimplemented. This
+  was invisible before the contract layer, which is the clearest evidence that layer
+  was worth building.
+- **The binding schema cannot express "this pattern applies conditionally".** `Tag`
+  renders a real `<button>` only when `onRemove` is passed; without it — the common
+  case — it is a plain `<span>` matching no interactive pattern at all. It is bound to
+  `button` with an exception as a stopgap, so a reader of the binding alone would think
+  the pattern always applies. The spec's own open questions name this unresolved: "How
+  does a pattern express an optional requirement?" was answered by pushing anything
+  per-component into the binding rather than the pattern, and a whole pattern applying
+  only sometimes is the same problem one level up, still open.
+- **`validateUnboundPrimitives`'s two failure branches have no isolated test.** Its
+  transitional `UNBOUND_PRIMITIVES` map was emptied once the Angular primitives were
+  all bound, and the five tests exercising its failure paths went with it — the one
+  surviving test only asserts the empty map is clean. The function takes no
+  injectable-map parameter, so keeping those tests would have meant widening its
+  signature for a map that, by design, stays empty. Dead code while the map is empty;
+  an untested guard if it is ever repopulated.
+- **Angular has no `Calendar`, and nothing has decided whether it should.** React's
+  `Calendar` is a day/hour schedule grid with absolutely-positioned event blocks;
+  Angular has no equivalent from either an `arena-*` primitive or Angular Material —
+  `mat-calendar` is a month/date-selection grid, a different widget solving a
+  different problem. `frameworks/angular/behaviour-delegated.json`'s `Calendar` entry
+  binds pattern `absent` and records this as a fact, not a decision: it does not
+  commit Angular to gaining a schedule view, and it does not resolve whether the gap
+  should stay this way. It is simply open.
 
 ### Where the rest of the debt lives
 

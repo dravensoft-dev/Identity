@@ -1,0 +1,12 @@
+{
+  "name": "toolbar",
+  "source": "https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/",
+  "description": "A container grouping a set of controls -- buttons, menu buttons, checkboxes, or similar -- that act on the current selection or view, sharing a single tab stop.",
+  "requires": {
+    "roles.element": "toolbar",
+    "roles.label": "the toolbar element has aria-labelledby (referencing a visible label) or aria-label when no visible label exists",
+    "focus.roving": "one tab stop into the toolbar; Tab and Shift+Tab move focus into and out of it, landing on the first non-disabled control on entry",
+    "keyboard.ArrowRight": "moves focus to the next control, optionally wrapping from the last to the first",
+    "keyboard.ArrowLeft": "moves focus to the previous control, optionally wrapping from the first to the last"
+  }
+}

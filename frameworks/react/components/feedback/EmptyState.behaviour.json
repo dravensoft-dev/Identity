@@ -1,0 +1,5 @@
+{
+  "pattern": "none",
+  "reason": "EmptyState renders an icon, a title, a message and an `action` slot; it manages no state, adds no role, and owns no interactive element of its own -- any button a user can act on belongs to the caller's `action` content, not to EmptyState itself.",
+  "exceptions": []
+}

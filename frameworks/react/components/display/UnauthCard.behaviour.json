@@ -1,0 +1,5 @@
+{
+  "pattern": "none",
+  "reason": "UnauthCard composes Card with a brand slot, eyebrow, title, children and footer, all caller-supplied; it manages no state, adds no role, and owns no interactive element of its own. Any input or button a user actually acts on -- sign-in fields, a submit button -- lives in `children`, not in UnauthCard.",
+  "exceptions": []
+}

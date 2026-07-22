@@ -1,0 +1,14 @@
+{
+  "name": "radiogroup",
+  "source": "https://www.w3.org/WAI/ARIA/apg/patterns/radio/",
+  "description": "A set of mutually exclusive options where only one can be checked at a time. The group, not each button, is what a label and a single tab stop attach to.",
+  "requires": {
+    "roles.group": "radiogroup",
+    "roles.item": "radio",
+    "roles.label": "the radiogroup element has aria-labelledby or aria-label",
+    "focus.roving": "one tab stop for the whole group; on entry, focus lands on the checked button, or the first button if none is checked",
+    "keyboard.ArrowKeys": "Right/Down or Left/Up moves focus to the next/previous button, unchecking the previously focused one and checking the newly focused one, wrapping at the ends",
+    "keyboard.Space": "checks the focused radio button if it is not already checked",
+    "states.checked": "aria-checked set to true on the checked button, false on the rest"
+  }
+}

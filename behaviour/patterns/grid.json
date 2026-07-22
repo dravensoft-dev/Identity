@@ -1,0 +1,15 @@
+{
+  "name": "grid",
+  "source": "https://www.w3.org/WAI/ARIA/apg/patterns/grid/",
+  "description": "A two-dimensional arrangement of cells a user navigates by row and column, one tab stop for the whole grid.",
+  "requires": {
+    "roles.grid": "grid",
+    "roles.row": "row",
+    "roles.cell": "gridcell, or columnheader/rowheader for a header cell",
+    "roles.label": "the grid element has aria-labelledby or aria-label",
+    "focus.roving": "one tab stop into the grid; a single cell is in the page Tab sequence at a time",
+    "keyboard.ArrowKeys": "moves focus one cell in the arrow's direction; focus does not move past the grid's edge",
+    "keyboard.Home": "moves focus to the first cell in the current row",
+    "keyboard.End": "moves focus to the last cell in the current row"
+  }
+}

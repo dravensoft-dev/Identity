@@ -1,0 +1,5 @@
+{
+  "pattern": "none",
+  "reason": "Avatar renders a person/entity representation -- an image or initials, plus an optional presence dot labelled with aria-label and title. There is no onClick, no focusable element, and no role granting it any interactive semantics anywhere in the file. A user can look at it but cannot act on it; the presence dot is a static labelled marker, not a live announcement -- it carries no role or aria-live, so it never fires on its own.",
+  "exceptions": []
+}

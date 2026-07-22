@@ -1,0 +1,14 @@
+{
+  "name": "feed",
+  "source": "https://www.w3.org/WAI/ARIA/apg/patterns/feed/",
+  "description": "A scrollable list of articles, typically loaded incrementally, navigated by article rather than by individual focusable element within one.",
+  "requires": {
+    "roles.feed": "feed",
+    "roles.article": "article, one per unit of content",
+    "roles.label": "the feed element has aria-labelledby or aria-label",
+    "states.posinset": "aria-posinset and aria-setsize on each article, or -1 for setsize when the total is not yet known",
+    "states.busy": "aria-busy set to true on the feed during a multi-step update, false once it settles",
+    "keyboard.PageDown": "moves focus to the next article",
+    "keyboard.PageUp": "moves focus to the previous article"
+  }
+}

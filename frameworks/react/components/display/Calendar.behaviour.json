@@ -1,0 +1,21 @@
+{
+  "pattern": "grid",
+  "exceptions": [
+    { "requirement": "roles.grid",
+      "reason": "No role=\"grid\" anywhere -- the day/hour layout is built entirely from plain <div>s." },
+    { "requirement": "roles.row",
+      "reason": "No role=\"row\" anywhere -- hours and days are positioned absolutely, not laid out as ARIA rows." },
+    { "requirement": "roles.cell",
+      "reason": "No role=\"gridcell\" (or columnheader/rowheader) anywhere -- day columns and event blocks carry no cell semantics." },
+    { "requirement": "roles.label",
+      "reason": "The outer <section> does carry aria-label (a computed schedule title, e.g. \"Schedule, Jul 20 - 26\"), but no element anywhere carries role=\"grid\" for that label to describe -- there is no grid element this requirement can attach to." },
+    { "requirement": "focus.roving",
+      "reason": "No tabIndex anywhere in the grid area. Individual events become native <button> elements when `onEventClick` is set, each its own stop in the normal Tab sequence -- the opposite of one roving stop for the whole grid." },
+    { "requirement": "keyboard.ArrowKeys",
+      "reason": "Calendar implements no keyboard navigation of the grid at all -- no onKeyDown handler exists anywhere in the file. The Previous/Next/Today controls are separate native buttons, not arrow-key navigation of the day/time grid itself. This is a defect, recorded so it stops looking like a component nobody had anything to say about." },
+    { "requirement": "keyboard.Home",
+      "reason": "Same as ArrowKeys -- no keyboard handling of the grid exists at all." },
+    { "requirement": "keyboard.End",
+      "reason": "Same as ArrowKeys -- no keyboard handling of the grid exists at all." }
+  ]
+}

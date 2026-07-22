@@ -1,0 +1,12 @@
+{
+  "name": "button",
+  "source": "https://www.w3.org/WAI/ARIA/apg/patterns/button/",
+  "description": "A single, immediate action a user presses. Covers both a plain command button and a toggle button, whose label stays constant while aria-pressed reflects the toggled state.",
+  "requires": {
+    "roles.element": "button",
+    "roles.label": "text content, aria-labelledby, or aria-label",
+    "keyboard.Space": "activate",
+    "keyboard.Enter": "activate",
+    "states.disabled": "aria-disabled set to true when the action is unavailable"
+  }
+}

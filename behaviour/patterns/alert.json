@@ -1,0 +1,10 @@
+{
+  "name": "alert",
+  "source": "https://www.w3.org/WAI/ARIA/apg/patterns/alert/",
+  "description": "A brief, important message that announces itself without interrupting the user's task -- distinct from alertdialog, which this repo does not adopt, because an alert never takes focus or blocks interaction.",
+  "requires": {
+    "roles.element": "alert",
+    "focus.unaffected": "an alert must not receive or move keyboard focus",
+    "content.noAutoDismiss": "an alert must not disappear on a timer -- this comes from WCAG 2.2.3, not the APG page cited as this pattern's source, which is silent on dismissal timing"
+  }
+}

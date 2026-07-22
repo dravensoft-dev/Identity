@@ -1,0 +1,5 @@
+{
+  "pattern": "none",
+  "reason": "PageHead renders a heading (h1), an optional subtitle paragraph, and an actions slot that only positions whatever the caller passes in. It manages no state, adds no role, and owns no interactive element of its own -- any button or control a user can act on inside it belongs to the caller's `actions` content, not to PageHead itself.",
+  "exceptions": []
+}
