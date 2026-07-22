@@ -3,7 +3,7 @@
   "slots": {
     "root": "inline-flex items-center gap-2.5",
     "track": "inline-flex items-center w-10 h-5.5 p-0.5 rounded-pill transition-[background] duration-[var(--dur-mid)] ease-out",
-    "thumb": "size-4.5 rounded-full bg-primary-content transition-[transform] duration-[var(--dur-mid)] ease-out",
+    "thumb": "size-4.5 rounded-pill bg-primary-content transition-[transform] duration-[var(--dur-mid)] ease-out",
     "label": "inline-flex items-center gap-1.5 font-body text-ctl text-base-content/82",
     "guard": "text-[length:var(--icon-sm)] text-base-content/62",
     "input": "absolute opacity-0 size-0"

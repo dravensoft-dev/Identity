@@ -5,7 +5,7 @@ export default {
     "root": "relative inline-flex shrink-0",
     "box": "inline-flex items-center justify-center overflow-hidden bg-base-300 border-[length:var(--bw)] border-neutral font-display font-extrabold tracking-normal text-base-content/82",
     "image": "w-full h-full object-cover",
-    "status": "absolute right-0 bottom-0 rounded-full border-[length:var(--bw-strong)] border-base-200"
+    "status": "absolute right-0 bottom-0 rounded-pill border-[length:var(--bw-strong)] border-base-200"
   },
   "variants": {
     "size": {
@@ -32,7 +32,7 @@ export default {
     },
     "shape": {
       "circle": {
-        "box": "rounded-full"
+        "box": "rounded-pill"
       },
       "rounded": {
         "box": "rounded-md"

@@ -30,7 +30,7 @@ test('the presence dot diameter is exactly max(8px, diameter * 0.28), matching A
 });
 
 test('shape=circle rounds the box fully, shape=rounded uses the medium radius', () => {
-  assert.match(avatarStyles({ shape: 'circle' }).box(), /rounded-full/);
+  assert.match(avatarStyles({ shape: 'circle' }).box(), /rounded-pill/);
   assert.match(avatarStyles({ shape: 'rounded' }).box(), /rounded-md/);
 });
 

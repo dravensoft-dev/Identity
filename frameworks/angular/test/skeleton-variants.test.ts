@@ -20,7 +20,7 @@ test('variant="text" carries no root override -- the host never reads root() for
   assert.doesNotMatch(text, /\bhidden\b/);
   assert.match(text, /\barena-shimmer\b/);
   // No shape-specific class from any of the other variants leaked in.
-  for (const cls of ['h-24', 'rounded-sm', 'size-10', 'rounded-full', 'h-3', 'rounded-xs'])
+  for (const cls of ['h-24', 'rounded-sm', 'size-10', 'rounded-pill', 'h-3', 'rounded-xs'])
     assert.doesNotMatch(text, new RegExp(`\\b${cls.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`));
 });
 

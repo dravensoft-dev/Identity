@@ -17,7 +17,7 @@ export default {
         "root": "h-24 w-full rounded-sm"
       },
       "circle": {
-        "root": "size-10 rounded-full"
+        "root": "size-10 rounded-pill"
       }
     }
   },

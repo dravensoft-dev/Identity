@@ -4,7 +4,7 @@
     "root": "relative inline-flex shrink-0",
     "box": "inline-flex items-center justify-center overflow-hidden bg-base-300 border-[length:var(--bw)] border-neutral font-display font-extrabold tracking-normal text-base-content/82",
     "image": "w-full h-full object-cover",
-    "status": "absolute right-0 bottom-0 rounded-full border-[length:var(--bw-strong)] border-base-200"
+    "status": "absolute right-0 bottom-0 rounded-pill border-[length:var(--bw-strong)] border-base-200"
   },
   "variants": {
     "size": {
@@ -14,7 +14,7 @@
       "lg": { "root": "size-avatar-lg", "box": "size-avatar-lg text-[length:calc(var(--avatar-lg)*0.4)]", "status": "size-[max(calc(var(--sp-1)*2),calc(var(--avatar-lg)*0.28))]" }
     },
     "shape": {
-      "circle": { "box": "rounded-full" },
+      "circle": { "box": "rounded-pill" },
       "rounded": { "box": "rounded-md" }
     },
     "status": {

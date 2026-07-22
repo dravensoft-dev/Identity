@@ -3,8 +3,8 @@
   "slots": {
     "group": "flex flex-col gap-3",
     "root": "inline-flex items-start gap-2.5",
-    "ring": "inline-flex items-center justify-center size-5 shrink-0 rounded-full bg-base-300 border-[length:var(--bw)] transition-[border-color] duration-[var(--dur-fast)] ease-out",
-    "dot": "size-2.5 rounded-full bg-primary",
+    "ring": "inline-flex items-center justify-center size-5 shrink-0 rounded-pill bg-base-300 border-[length:var(--bw)] transition-[border-color] duration-[var(--dur-fast)] ease-out",
+    "dot": "size-2.5 rounded-pill bg-primary",
     "text": "flex flex-col gap-0.5",
     "label": "font-body text-ctl text-base-content/82 leading-snug",
     "hint": "font-body text-ctl-sm text-base-content/62 leading-body",

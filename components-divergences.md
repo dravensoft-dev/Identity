@@ -147,11 +147,16 @@ axes, since border and padding are carved out of the declared size rather than a
 it — 34×34, not 36×36 (36×36 double-counts the border on an outer number that already
 includes it, and drops `px-2` entirely).
 
-`Input` is the one form control where the two layers agree, and only because
-`Input.jsx:58` opts into `border-box` locally and `Input.manifest.json`'s `field` slot
-carried a matching (but, under preflight, redundant) `box-border` class — removed in the
-same change that added this entry, since every slot in this layer is already border-box
-without it.
+`Input`, `Button` and `ConfirmDialog` are the three components where the two layers
+agree, and only because their React source opts into `border-box` locally — `Input.jsx:58`,
+`Button.jsx`'s spinner and `ConfirmDialog.jsx`'s require-text input all set `boxSizing:
+'border-box'` (`Spinner.jsx` is the fourth opt-in named above, but its manifest slot
+carries no matching class either way). Each manifest's matching slot —
+`Input.manifest.json`'s `field`, `Button.manifest.json`'s `spinner`,
+`ConfirmDialog.manifest.json`'s `input` — carried a (but, under preflight, redundant)
+`box-border` class; `Input`'s was removed in the change that added this entry, `Button`'s
+and `ConfirmDialog`'s in the close-out that followed, since every slot in this layer is
+already border-box without it.
 
 **Why:** Tailwind v4's own default is border-box, and it is the more common contemporary
 assumption; the divergence is best read as a pre-existing gap in React's four opted-in

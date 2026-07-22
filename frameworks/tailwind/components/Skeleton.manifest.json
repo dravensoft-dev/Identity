@@ -11,7 +11,7 @@
       "text": {},
       "line": { "root": "h-3 w-full rounded-xs" },
       "block": { "root": "h-24 w-full rounded-sm" },
-      "circle": { "root": "size-10 rounded-full" }
+      "circle": { "root": "size-10 rounded-pill" }
     }
   },
   "defaultVariants": { "variant": "block" }

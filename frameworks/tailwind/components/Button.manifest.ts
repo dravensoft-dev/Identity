@@ -3,7 +3,7 @@ export default {
   "component": "Button",
   "slots": {
     "root": "inline-flex items-center justify-center gap-2 rounded-sm font-body font-semibold tracking-normal border-[length:var(--bw)] cursor-pointer transition-[background,transform,box-shadow] duration-[var(--dur-fast)] ease-out active:scale-98 disabled:opacity-45 disabled:cursor-not-allowed",
-    "spinner": "arena-btn-spin inline-block size-3.5 box-border border-[length:var(--bw-strong)] border-current border-t-transparent rounded-full"
+    "spinner": "arena-btn-spin inline-block size-3.5 border-[length:var(--bw-strong)] border-current border-t-transparent rounded-pill"
   },
   "variants": {
     "variant": {

@@ -10,7 +10,7 @@ export default {
     "body": "px-6 py-4 font-body text-md leading-body text-base-content/82",
     "requireBlock": "mt-3.5",
     "requireLabel": "font-mono text-ctl-xs tracking-field-label uppercase text-base-content/62 mb-1.5",
-    "input": "w-full h-ctl-h box-border px-3 bg-base-300 border-[length:var(--bw)] rounded-sm text-base-content font-mono text-ctl outline-none focus-visible:ring-[length:var(--focus-width)] focus-visible:ring-error",
+    "input": "w-full h-ctl-h px-3 bg-base-300 border-[length:var(--bw)] rounded-sm text-base-content font-mono text-ctl outline-none focus-visible:ring-[length:var(--focus-width)] focus-visible:ring-error",
     "foot": "flex justify-end gap-2.5 px-6 pb-5.5",
     "cancel": "inline-flex items-center justify-center h-ctl-h px-4.5 rounded-sm border-[length:var(--bw)] border-transparent bg-transparent text-base-content/82 font-body font-semibold text-ctl cursor-pointer gap-2 transition-[background,transform,box-shadow] duration-[var(--dur-fast)] ease-[var(--ease-out)]",
     "confirm": "inline-flex items-center justify-center h-ctl-h px-4.5 rounded-sm border-[length:var(--bw)] border-transparent font-body font-semibold text-ctl cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed gap-2 transition-[background,transform,box-shadow] duration-[var(--dur-fast)] ease-[var(--ease-out)] hover:shadow-2"

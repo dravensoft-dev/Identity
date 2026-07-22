@@ -403,9 +403,6 @@
   .ml-auto {
     margin-left: auto;
   }
-  .box-border {
-    box-sizing: border-box;
-  }
   .block {
     display: block;
   }
@@ -787,9 +784,6 @@
   }
   .rounded-\[inherit\] {
     border-radius: inherit;
-  }
-  .rounded-full {
-    border-radius: calc(infinity * 1px);
   }
   .rounded-lg {
     border-radius: var(--radius-lg);
