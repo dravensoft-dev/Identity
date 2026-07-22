@@ -1,0 +1,14 @@
+{
+  "component": "BulkActionBar",
+  "pattern": "toolbar",
+  "exceptions": [
+    { "requirement": "roles.element",
+      "reason": "arena-bulk-action-bar's host renders role=\"region\", not toolbar -- the same stopgap React's BulkActionBar.jsx carries, from before this catalog had a toolbar pattern; now that toolbar exists, this is a real gap in the component, not the catalog." },
+    { "requirement": "focus.roving",
+      "reason": "The per-action buttons and the Clear button are plain elements in normal Tab order -- there is no roving tabindex, no single shared tab stop for the group." },
+    { "requirement": "keyboard.ArrowRight",
+      "reason": "No keydown handling anywhere in the file; arrow keys do nothing." },
+    { "requirement": "keyboard.ArrowLeft",
+      "reason": "Same as ArrowRight -- no keydown handling exists at all." }
+  ]
+}

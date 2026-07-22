@@ -1,0 +1,5 @@
+{
+  "component": "ErrorState",
+  "pattern": "alert",
+  "exceptions": []
+}

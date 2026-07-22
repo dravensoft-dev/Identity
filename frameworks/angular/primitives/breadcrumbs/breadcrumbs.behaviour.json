@@ -1,0 +1,8 @@
+{
+  "component": "Breadcrumbs",
+  "pattern": "navigation",
+  "exceptions": [
+    { "requirement": "roles.label",
+      "reason": "The host's aria-label is the hardcoded string \"Breadcrumb\" with no input to override it -- the same limitation React's Breadcrumbs.jsx has. Two arena-breadcrumbs instances on one page carry the identical label and are not distinguishable as separate landmarks." }
+  ]
+}

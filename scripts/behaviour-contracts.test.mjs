@@ -1,11 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import {
   validatePattern, loadPatterns, validateBinding, reactComponents, angularPrimitives,
-  UNBOUND_PRIMITIVES, hasUnboundPrimitive, validateUnboundPrimitives,
+  validateUnboundPrimitives,
 } from './lib/behaviour-contracts.mjs';
 
 const ok = {
@@ -132,60 +129,15 @@ test('the Angular inventory finds every primitive and no bare module', () => {
   assert.ok(!found.includes('chart-internals'));
 });
 
-/* A primitive directory existing and its binding having parsed are different
- * facts -- check-behaviour.mjs used to conflate them and reported "no
- * primitive" for every unbound one. hasUnboundPrimitive is what closes that
- * gap; these are the five components whose Angular directory currently has
- * no <name>.behaviour.json yet exists on disk (verified with
- * `ls frameworks/angular/primitives/`). */
-test('hasUnboundPrimitive is true for a component with an unbound Angular directory', () => {
-  assert.ok(hasUnboundPrimitive('Breadcrumbs'));
-  assert.ok(hasUnboundPrimitive('BulkActionBar'));
-  assert.ok(hasUnboundPrimitive('CommandPalette'));
-  assert.ok(hasUnboundPrimitive('PageHead'));
-  assert.ok(hasUnboundPrimitive('ThemeToggle'));
-});
-
-test('hasUnboundPrimitive is false for a component with no Angular primitive at all', () => {
-  assert.equal(hasUnboundPrimitive('Button'), false);
-  assert.equal(hasUnboundPrimitive('SideNav'), false);
-});
-
-test('UNBOUND_PRIMITIVES names exactly the primitive directories that currently have no behaviour.json', () => {
-  const base = 'frameworks/angular/primitives';
-  for (const [dir, component] of Object.entries(UNBOUND_PRIMITIVES)) {
-    assert.ok(angularPrimitives('.').includes(dir), `${dir}: not a real primitive directory`);
-    assert.ok(!existsSync(`${base}/${dir}/${dir}.behaviour.json`), `${dir}: is bound now -- entry is stale`);
-    assert.ok(reactComponents('.').includes(component), `${component}: not a real React component`);
-  }
-});
-
+/* hasUnboundPrimitive and its five named entries (Breadcrumbs, BulkActionBar,
+ * CommandPalette, PageHead, ThemeToggle) existed only for the transitional
+ * state where those five Angular directories had no <name>.behaviour.json
+ * yet. All 21 Angular primitives are bound now (behaviour Task 6), which
+ * makes UNBOUND_PRIMITIVES permanently empty by design and hasUnboundPrimitive
+ * itself dead code -- both were removed from lib/behaviour-contracts.mjs, and
+ * the tests that asserted their transitional content went with them. What
+ * remains is the one test below that still means something with an empty
+ * map: the self-check stays clean. */
 test('validateUnboundPrimitives is clean against the real repo state', () => {
   assert.deepEqual(validateUnboundPrimitives('.'), []);
-});
-
-test('validateUnboundPrimitives flags a directory that no longer exists on disk', () => {
-  // A fresh empty root has none of UNBOUND_PRIMITIVES' directories at all.
-  const root = mkdtempSync(join(tmpdir(), 'behaviour-contracts-'));
-  try {
-    const problems = validateUnboundPrimitives(root);
-    assert.equal(problems.length, Object.keys(UNBOUND_PRIMITIVES).length);
-    for (const p of problems) assert.match(p, /no longer exists/);
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
-});
-
-test('validateUnboundPrimitives flags an entry whose primitive has since been bound', () => {
-  const root = mkdtempSync(join(tmpdir(), 'behaviour-contracts-'));
-  try {
-    const dir = join(root, 'frameworks/angular/primitives/breadcrumbs');
-    mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, 'breadcrumbs.behaviour.json'), '{"pattern":"navigation","component":"Breadcrumbs"}');
-    const problems = validateUnboundPrimitives(root);
-    const breadcrumbsProblem = problems.find((p) => p.startsWith('UNBOUND_PRIMITIVES: "breadcrumbs"'));
-    assert.match(breadcrumbsProblem, /is bound, so this override is stale/);
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
 });

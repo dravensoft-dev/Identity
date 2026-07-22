@@ -1,0 +1,6 @@
+{
+  "component": "ChartCard",
+  "pattern": "none",
+  "reason": "arena-chart-card is the card frame a chart sits on -- an uppercase title microlabel (deliberately not a heading element) and a `[arena-actions]` slot that only positions whatever the caller projects into it, with the head row rendered only when the title or the slot is actually present. It manages no state, adds no role, and owns no interactive element of its own; any control a user acts on lives in the projected content, not in ChartCard.",
+  "exceptions": []
+}

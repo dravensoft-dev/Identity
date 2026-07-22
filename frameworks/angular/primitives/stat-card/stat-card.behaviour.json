@@ -1,0 +1,6 @@
+{
+  "component": "StatCard",
+  "pattern": "none",
+  "reason": "arena-stat-card renders a label, a value, an optional delta pill and a sub-line -- all static text and markup. There is no output, no click binding, and no role anywhere in the file; even the delta arrow icon and the head icon are aria-hidden. A user can read the metric but cannot act on it.",
+  "exceptions": []
+}

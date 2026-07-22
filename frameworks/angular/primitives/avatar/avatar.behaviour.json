@@ -1,0 +1,6 @@
+{
+  "component": "Avatar",
+  "pattern": "none",
+  "reason": "arena-avatar renders a person/entity mark -- an <img> when `src` is set, initials otherwise -- plus an optional presence dot labelled with aria-label and title. There is no output, no click binding, and no role granting it interactive semantics anywhere in the file. The presence dot is a static labelled marker, not a live announcement -- it carries no role or aria-live, so it never fires on its own.",
+  "exceptions": []
+}

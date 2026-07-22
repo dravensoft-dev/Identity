@@ -1,0 +1,6 @@
+{
+  "component": "UnauthCard",
+  "pattern": "none",
+  "reason": "arena-unauth-card composes a panel with projected `[brand]` and `[footer]` slots, an eyebrow, a title and default-slot content, all caller-supplied; it manages no state, adds no role, and owns no interactive element of its own. Any input or button a user actually acts on -- sign-in fields, a submit button -- lives in the projected content, not in UnauthCard.",
+  "exceptions": []
+}

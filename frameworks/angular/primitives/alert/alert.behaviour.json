@@ -1,0 +1,8 @@
+{
+  "component": "Alert",
+  "pattern": "alert",
+  "exceptions": [
+    { "requirement": "roles.element",
+      "reason": "The host's role binding is `tone() === 'danger' ? 'alert' : 'status'` -- role is only \"alert\" when tone is danger. Every other tone (info, success, warning, neutral -- including the default) renders role=\"status\" instead, the same more-polite live region React's Alert.jsx falls back to for the identical set of tones. This binding stays on alert because it is the safety-relevant contract, the one that matters when Alert is carrying a condition the user must not miss; the exception records that only the danger tone actually earns it." }
+  ]
+}

@@ -19,7 +19,7 @@ import { dirname, join } from 'node:path';
 import {
   loadPatterns, validatePattern, validateBinding,
   reactComponents, angularPrimitives, PATTERN_DIR,
-  hasUnboundPrimitive, validateUnboundPrimitives,
+  validateUnboundPrimitives,
 } from './lib/behaviour-contracts.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -87,13 +87,15 @@ async function main() {
    *    parse" are different questions -- a primitive whose directory exists
    *    but has no behaviour.json yet is already reported by step 3's "no
    *    <name>.behaviour.json"; it must not ALSO be reported here as though no
-   *    primitive existed at all. hasUnboundPrimitive answers the first
-   *    question for exactly that case. */
+   *    primitive existed at all. Every Angular primitive directory is bound
+   *    now, so `angular` already carries every one of them by the time this
+   *    step runs -- there is no longer an UNBOUND_PRIMITIVES-shaped gap to
+   *    guard against here; the map's own self-check (step 3b) is what keeps
+   *    that fact honest if a future primitive lands unbound. */
   const delegatedPath = join(root, 'frameworks/angular/behaviour-delegated.json');
   const delegated = existsSync(delegatedPath) ? read(delegatedPath) : {};
   for (const [component] of react) {
     if (angular.has(component)) continue;
-    if (hasUnboundPrimitive(component)) continue;
     const entry = delegated[component];
     if (!entry) {
       problems.push(`angular/${component}: no primitive and no entry in behaviour-delegated.json — say whether Material provides it or nothing does`);

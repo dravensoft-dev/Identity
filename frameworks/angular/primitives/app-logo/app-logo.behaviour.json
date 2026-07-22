@@ -1,0 +1,6 @@
+{
+  "component": "AppLogo",
+  "pattern": "none",
+  "reason": "arena-app-logo renders a sized mark slot (projected content via ng-content) plus a name/dim text pair. It manages no state, adds no role, and owns no interactive element of its own -- there is no output and no click binding anywhere in the file. Any interactivity belongs to whatever the caller projects into the mark slot, not to AppLogo itself.",
+  "exceptions": []
+}

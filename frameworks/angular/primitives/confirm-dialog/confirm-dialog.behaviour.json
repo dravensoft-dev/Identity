@@ -1,0 +1,8 @@
+{
+  "component": "ConfirmDialog",
+  "pattern": "dialog-modal",
+  "exceptions": [
+    { "requirement": "roles.element",
+      "reason": "The panel renders role=\"alertdialog\", not \"dialog\" -- the same deliberate choice React's ConfirmDialog.jsx makes for a destructive-action confirmation (APG treats alertdialog as dialog's specialisation for exactly this case), but it remains a real deviation from this pattern's literal requirement, which the shared dialog-modal contract does not carve out." }
+  ]
+}

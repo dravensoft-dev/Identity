@@ -1,0 +1,6 @@
+{
+  "component": "PageHead",
+  "pattern": "none",
+  "reason": "arena-page-head renders a heading (h1), an optional subtitle paragraph, and a `[arena-actions]` slot that only positions whatever the caller projects into it. It manages no state, adds no role, and owns no interactive element of its own -- any button or control a user can act on inside it belongs to the caller's projected content, not to PageHead itself.",
+  "exceptions": []
+}

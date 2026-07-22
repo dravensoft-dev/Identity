@@ -1,0 +1,9 @@
+{
+  "component": "DoughnutChart",
+  "pattern": "figure-with-data-table",
+  "exceptions": [],
+  "additions": [
+    { "provides": "keyboard.legend-reachable",
+      "reason": "The legend column scrolls (`overflow: auto`) once its rows outgrow the clamped width, and a tabindex-less overflow box is a keyboard trap (WCAG 2.1.1). The legend carries tabindex=\"0\" and role=\"group\" with an aria-label so a keyboard user can reach and scroll it. React's DoughnutChart.jsx has no equivalent affordance on its own legend. This is Angular ahead of the pattern, not diverging from it -- figure-with-data-table does not require it." }
+  ]
+}
