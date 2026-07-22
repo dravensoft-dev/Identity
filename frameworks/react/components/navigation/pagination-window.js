@@ -1,3 +1,11 @@
+/* Shared internals for Arena's Pagination. NOT a component — no quartet.
+ *
+ * pageWindow() is pure: a current page and a total in, an array of page
+ * numbers (and '…' where the list elides) out. It is split out of
+ * Pagination.jsx so a node:test suite can import it directly — a plain
+ * function is easier to reason about, and easier to be wrong about, away
+ * from the JSX.
+ */
 import { limitPaginationSiblings } from '../../tokens.generated.js';
 
 /* How many slots the elided form occupies: first + last + the current page and

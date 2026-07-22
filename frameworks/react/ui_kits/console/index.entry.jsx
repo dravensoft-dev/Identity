@@ -32,7 +32,11 @@ function App(){
     view = <LoginScreen onLogin={() => setScreen('dashboard')} />;
   } else if (screen === 'project') {
     view = <ProjectScreen onNav={nav} project={project}
-      onToast={() => pushToast({ tone: 'success', title: 'Deployment in progress', message: 'build #4822 → production' })} />;
+      onToast={() => {
+        pushToast({ tone: 'success', title: 'Deployment in progress', message: 'build #4822 → production' });
+        pushToast({ tone: 'neutral', title: 'Previous build still serving traffic', message: 'build #4821 → production',
+          action: { label: 'Undo', onClick: () => {} } });
+      }} />;
   } else {
     view = <DashboardScreen onNav={nav}
       onOpenProject={(p) => { setProject(p); setScreen('project'); }} />;
@@ -43,7 +47,7 @@ function App(){
       {view}
       <div className="toast-wrap">
         {toasts.map((t) => (
-          <Toast key={t.id} tone={t.tone} title={t.title} message={t.message}
+          <Toast key={t.id} tone={t.tone} title={t.title} message={t.message} persist={t.persist} action={t.action}
             onClose={() => setToasts((ts) => ts.filter((x) => x.id !== t.id))} />
         ))}
       </div>

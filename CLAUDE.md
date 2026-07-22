@@ -343,6 +343,27 @@ scheduled for deletion the same week.
   description carries the constraint that these delays are pointer intent and
   that a keyboard focus must reveal immediately, and someone reading only the
   generated module will not see it.
+- **`delay` and `dismiss` govern React only, and Angular is not silently exempt
+  — it just has no token-shaped seam yet.** Plan 7a's own Global Constraints
+  first misstated this as the same "Angular has no primitive" asymmetry that
+  is correct for `debounce`-style speculation, when it is not: Angular has no
+  `Tooltip`, `Toast` or `Pagination` **primitive**, but it provides all three
+  through Angular Material, dressed by `arena-material.css` — the same
+  "Material provides the control" bucket 21 of the 39 Tailwind manifests
+  belong to (`Tooltip.manifest.json`, `Toast.manifest.json` and
+  `Pagination.manifest.json` all exist). `check:script-tokens` cannot see
+  this — its orphan rule is "imported by at least one layer," and it is
+  satisfied by React alone by construction, the same structural blind spot the
+  first bullet in this section describes for chart internals. So today:
+  React's `Tooltip` waits `--delay-open`/`--delay-close` before a pointer
+  reveals or withdraws it; Angular's `matTooltip` does not — `showDelay` and
+  `hideDelay` default to 0, so the exact flash-on-crossing defect plan 7a
+  fixed on the React side is still live on the Angular side. Likewise React's
+  Delivery Console runs the toast clock off `--dismiss-default` /
+  `--dismiss-actionable`; Angular has no consumer wiring `MatSnackBarConfig`'s
+  `duration` to either value at all. The seams a future pass would bind these
+  through are `MAT_TOOLTIP_DEFAULT_OPTIONS` (`showDelay`, `hideDelay`) and
+  `MatSnackBarConfig.duration` — neither is wired today.
 
 ### Where the rest of the debt lives
 

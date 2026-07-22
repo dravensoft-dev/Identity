@@ -44,7 +44,7 @@ The spec's open question 2 says the proposed numbers are *"a starting point, not
 - **`tokens/src/` is authored; `tokens/*.css` and `frameworks/*/tokens.generated.*` are generated.** Never hand-edit them. Rebuild with `bun run build:tokens`.
 - **DTCG 2025.10:** `duration` values are `{value, unit}` objects with the unit required; `number` is bare. `$extensions` keys are reverse-DNS — Arena's is exactly `com.dravensoft.arena`.
 - **Only `dimension`, `duration` and `number` are flaggable** `script: true`; `serialize-script.mjs` throws on anything else.
-- **A flagged token must be imported by at least one framework layer** or `check:script-tokens` fails it as an orphan. All three families here are consumed by React alone — Angular has no `Tooltip`, no `Toast` and no `Pagination` primitive. That asymmetry is exactly what the "at least one layer" rule exists for, and it is correct here.
+- **A flagged token must be imported by at least one framework layer** or `check:script-tokens` fails it as an orphan. All three families here are consumed by React alone — Angular has no `Tooltip`, no `Toast` and no `Pagination` *primitive*. That is not the same claim as "Angular lacks the behaviour," and this plan's own Scope section says so about `SideNav` twenty lines above this one: Angular provides all three through Material (`frameworks/tailwind/components/Tooltip.manifest.json`, `Toast.manifest.json` and `Pagination.manifest.json` all exist, and `arena-material.css` already dresses `.mat-mdc-snack-bar-container`), the same "Material provides the control" bucket 21 of the 39 Tailwind manifests belong to. So the "at least one layer" rule is still satisfied and `check:script-tokens` is still right to pass — but this is a real cross-layer divergence, not a benign asymmetry: `matTooltip`'s `showDelay`/`hideDelay` default to 0, so the exact flash-on-crossing defect this plan just fixed in React is still live in Angular today, and no gate here is silent about that by accident — it is silent by design, because a value with no importer in a layer is invisible to `check:script-tokens` by construction. That is why it needs a prose record instead, in `CLAUDE.md`'s *Known debt*.
 - **Every new token needs a `check:coverage` `EXCLUDED` entry with a reason**, because that gate inventories the four generated CSS files. 5.5's plan omitted this and would have failed its own completion gate.
 - **Components carry no CSS classes**; they render with inline `style` objects reading custom properties, and handle interaction with local `useState`.
 - **`bun run check` is a completion gate**, run once at the end — not per commit.
@@ -568,7 +568,7 @@ bun -e 'import("./frameworks/react/components/navigation/pagination-window.js").
 Expected: `[1,2,3,4,5,6,7]` and `[1,"…",9,10,11,"…",20]`.
 
 Run: `bun scripts/check-script-tokens.mjs`
-Expected: **PASS** — every flagged token now has an importer. All five are imported by React alone, which the "at least one layer" rule permits, and correctly: Angular has no `Tooltip`, no `Toast` and no `Pagination` primitive.
+Expected: **PASS** — every flagged token now has an importer. All five are imported by React alone, which the "at least one layer" rule permits: Angular has no `Tooltip`, no `Toast` and no `Pagination` *primitive*, but it does provide the behaviour through Material, so this is a recorded cross-layer divergence (see Global Constraints above and `CLAUDE.md`'s *Known debt*), not a benign asymmetry.
 
 Run: `bun run check:dimensions && bun run build:demos && bun run check:demos`
 Expected: all PASS.

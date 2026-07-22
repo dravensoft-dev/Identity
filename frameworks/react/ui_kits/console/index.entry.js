@@ -35,7 +35,15 @@ function App() {
     view = React.createElement(ProjectScreen, {
       onNav: nav,
       project,
-      onToast: () => pushToast({ tone: "success", title: "Deployment in progress", message: "build #4822 → production" })
+      onToast: () => {
+        pushToast({ tone: "success", title: "Deployment in progress", message: "build #4822 → production" });
+        pushToast({
+          tone: "neutral",
+          title: "Previous build still serving traffic",
+          message: "build #4821 → production",
+          action: { label: "Undo", onClick: () => {} }
+        });
+      }
     });
   } else {
     view = React.createElement(DashboardScreen, {
@@ -53,6 +61,8 @@ function App() {
     tone: t.tone,
     title: t.title,
     message: t.message,
+    persist: t.persist,
+    action: t.action,
     onClose: () => setToasts((ts) => ts.filter((x) => x.id !== t.id))
   }))));
 }

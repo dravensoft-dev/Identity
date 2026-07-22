@@ -20,12 +20,12 @@ export function Tooltip({ children, content, style }) {
   const [show, setShow] = useState(false);
   const timer = useRef(null);
   const schedule = (next, ms) => {
-    if (timer.current)
+    if (timer.current !== null)
       clearTimeout(timer.current);
     timer.current = setTimeout(() => setShow(next), ms);
   };
   useEffect(() => () => {
-    if (timer.current)
+    if (timer.current !== null)
       clearTimeout(timer.current);
   }, []);
   return React.createElement("span", {

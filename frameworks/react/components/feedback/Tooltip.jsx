@@ -28,10 +28,10 @@ export function Tooltip({ children, content, style }) {
    * through here. */
   const timer = useRef(null);
   const schedule = (next, ms) => {
-    if (timer.current) clearTimeout(timer.current);
+    if (timer.current !== null) clearTimeout(timer.current);
     timer.current = setTimeout(() => setShow(next), ms);
   };
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  useEffect(() => () => { if (timer.current !== null) clearTimeout(timer.current); }, []);
   return (
     <span style={{ position: 'relative', display: 'inline-flex', ...style }}
       onMouseEnter={() => schedule(true, delayOpen)} onMouseLeave={() => schedule(false, delayClose)}>
