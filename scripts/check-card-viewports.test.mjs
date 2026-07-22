@@ -83,6 +83,45 @@ test('contentHeight follows an absolutely positioned descendant at any depth', {
   }
 });
 
+/* Reproduces the real card harness: specimen.css's body carries its own
+ * padding (var(--sp-6), 24px — modelled here as a literal since this fixture
+ * is not itself an Arena page), and that padding is exactly what stops the
+ * last in-flow child's bottom margin from collapsing through to the
+ * document's own margin — the standard CSS collapsing-margins rule, since a
+ * parent's bottom padding sits between the child's margin and the parent's
+ * own border edge. So the margin stays inside the flow and pushes the
+ * document's real, rendered bottom edge down by exactly itself. Nothing in
+ * the old contentHeight formula ever added it: getBoundingClientRect never
+ * includes an element's own margin, only its border box, and the formula's
+ * one margin-adjacent term (`padding`) reads the *body's* paddingBottom, not
+ * any child's margin. #box is 100px tall with margin-bottom:16px inside a
+ * 24px-padded body — the true bottom is 24 (top padding) + 100 (box) + 16
+ * (its margin) + 24 (bottom padding) = 164, not 148. This is the exact shape
+ * that made four consecutive real specimens each need 16px more than the
+ * gate suggested: every one of them ends its last section in a `.row`, and
+ * `.row`'s own margin-bottom in specimen.css is var(--sp-4) — 16px. */
+const trailingMarginPage = `<!doctype html><html><head><meta charset="utf-8">
+<style>html,body{margin:0}body{padding:24px}#box{height:100px;margin-bottom:16px}</style></head>
+<body><div id="box"></div></body></html>`;
+
+test('contentHeight follows a trailing block margin the body\'s own padding stops from collapsing away', { skip: browser.path ? false : browser.reason }, async () => {
+  const root = mkdtempSync(join(tmpdir(), 'arena-cards-'));
+  writeFileSync(join(root, 'trailing-margin.html'), trailingMarginPage);
+
+  const server = await startStaticServer(root);
+  const chrome = await launchChromium(browser.path);
+  const cdp = await connect(chrome.wsUrl);
+
+  try {
+    const result = await measurePage(cdp, `http://127.0.0.1:${server.port}/trailing-margin.html`, { width: 400, height: 200 });
+    assert.equal(result.contentHeight, 164, 'the true bottom includes #box\'s own trailing margin, not just the body\'s padding');
+  } finally {
+    cdp.close();
+    chrome.kill();
+    await server.close();
+  }
+});
+
 /* A raw TCP listener that accepts the connection and then says nothing —
  * no response, ever. Confirmed by hand against this exact fixture: Chromium's
  * Page.navigate does not settle even at 8s against it. It reproduces the same

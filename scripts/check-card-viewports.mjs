@@ -82,6 +82,29 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
  * inside a single frame's budget (~16ms at 60Hz) — the cadence the stability
  * loop below now polls at — for anything these pages render.
  *
+ * That scan still misses one shape, found by hand: a bottom margin on the
+ * *last in-flow child*, which every specimen carries, since specimen.css's
+ * `.row` sets margin-bottom and a section is usually a page's last element.
+ * getBoundingClientRect never includes an element's own margin, only its
+ * border box, so no descendant rect the scan reads ever carries it — and
+ * body's own bottom padding (the `padding` term above) is a different box
+ * than the child's margin, so adding it does not either. But that margin is
+ * not lost space: every card harness's body carries its own bottom padding
+ * (specimen.css, var(--sp-6)), which is exactly what stops the child's
+ * margin from collapsing through to become the document's own margin (the
+ * ordinary CSS collapsing-margins rule — a parent's bottom padding sits
+ * between a child's margin and the parent's border edge, so the two cannot
+ * touch and collapse). With nowhere to collapse to, the margin stays inside
+ * body's own box and body's auto height already accounts for it — read()
+ * below adds `document.body.getBoundingClientRect().bottom` to the metric
+ * for exactly this reason, alongside (not instead of) the elements scan:
+ * body's own rendered box is blind to an out-of-flow overlay the same way
+ * the scan is blind to a trailing margin, so the true content bottom is
+ * whichever of the two is greater. Found by hand chasing a `contentHeight`
+ * that was reliably 16px short of what four consecutive `*.card.html` pages
+ * actually needed — 16px because var(--sp-4), `.row`'s own margin-bottom,
+ * is 16px.
+ *
  * The 20s deadline is computed *before* either await, not after — it is the
  * budget for the whole script, readiness included, not just the stability
  * loop that follows it. document.fonts.ready and arenaReady() are each as
@@ -150,13 +173,27 @@ export const MEASURE_SCRIPT = `(async () => {
     const style = getComputedStyle(document.body);
     const bottoms = [...document.body.getElementsByTagName('*')].map((el) => el.getBoundingClientRect().bottom + window.scrollY);
     const padding = parseFloat(style.paddingBottom) || 0;
+    // body's own rendered bottom edge. body's auto height already folds in
+    // the bottom margin of its last in-flow child — collapsing-margins
+    // stops that margin from escaping through body's own box specifically
+    // *because* body carries bottom padding (every card harness's body
+    // does, via specimen.css), so the margin lands inside body's border box
+    // rather than past it. Neither term above sees it: getBoundingClientRect
+    // never includes an element's own margin, and \`padding\` is body's
+    // paddingBottom, not any child's margin. Taking the max of the two
+    // metrics is what keeps the absolutely-positioned-overlay case above
+    // (which body's own auto height does not see at all, since an
+    // out-of-flow descendant contributes nothing to it) and this trailing-
+    // margin case (which the elements scan does not see) both covered —
+    // each metric is the true content bottom in the case the other misses.
+    const bodyBottom = document.body.getBoundingClientRect().bottom + window.scrollY;
     const root = document.querySelector('#root');
     return {
       scrollWidth: de.scrollWidth,
       scrollHeight: de.scrollHeight,
       clientWidth: de.clientWidth,
       clientHeight: de.clientHeight,
-      contentHeight: Math.ceil(Math.max(0, ...bottoms) + padding),
+      contentHeight: Math.ceil(Math.max(bodyBottom, Math.max(0, ...bottoms) + padding)),
       rendered: !root || root.childElementCount > 0,
     };
   };
