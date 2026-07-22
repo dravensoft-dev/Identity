@@ -505,6 +505,12 @@
   .min-w-ctl-h {
     min-width: var(--spacing-ctl-h);
   }
+  .min-w-ctl-h-lg {
+    min-width: var(--spacing-ctl-h-lg);
+  }
+  .min-w-ctl-h-sm {
+    min-width: var(--spacing-ctl-h-sm);
+  }
   .flex-1 {
     flex: 1;
   }
@@ -562,6 +568,9 @@
   }
   .justify-end {
     justify-content: flex-end;
+  }
+  .gap-0 {
+    gap: 0px;
   }
   .gap-1 {
     gap: var(--spacing-1);
@@ -819,8 +828,14 @@
   .pr-3 {
     padding-right: var(--spacing-3);
   }
+  .pr-3\.5 {
+    padding-right: calc(var(--spacing) * 3.5);
+  }
   .pb-5\.5 {
     padding-bottom: calc(var(--spacing) * 5.5);
+  }
+  .pl-3 {
+    padding-left: var(--spacing-3);
   }
   .pl-4 {
     padding-left: var(--spacing-4);
@@ -1106,6 +1121,9 @@
       .hover\:bg-error\/14:hover {
         background-color: color-mix(in oklab, var(--color-error) 14%, transparent);
       }
+    }
+    .hover\:bg-primary:hover {
+      background-color: var(--color-primary);
     }
     .hover\:text-base-content\/82:hover {
       color: var(--color-base-content);
