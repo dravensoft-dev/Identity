@@ -111,8 +111,9 @@ tokenized by hand, and nothing holds that. The `*.card.html` specimens under
 structurally rather than by hand: every class they render comes from the manifest through
 `classesFor()`, so a literal typed into a specimen is styling the manifest does not carry
 — the one thing a specimen must never show. **They do still carry bare `px` for
-demo-harness sizing** (Skeleton, StatCard, ChartCard, PageHead pin a width so the card
-composes), which nothing holds either. **Two blind spots are known and neither is fixed**:
+demo-harness sizing** (ActivityFeed, Card, ChartCard, Input, Menu, PageHead, ProgressBar,
+Select, Skeleton, StatCard and Textarea pin a width so the card composes), which nothing
+holds either. **Two blind spots are known and neither is fixed**:
 the gate cannot see a kebab-case SVG attribute — `scanAttributes`' lookbehind `(?<![\w.-])`
 rejects `width` preceded by `-`, so `stroke-width="1"` never matches, and `font-size`
 reduces to `size`, which is not in `PROPS` — while `PROP_COLON` omits `-` from *its*
@@ -123,12 +124,13 @@ static styling as camelCase `[style]` **objects**: in that shape `strokeWidth` a
 not a workaround. Angular's `[style.x]` binding form is invisible to all four scanners
 too. Closing this properly needs `PROP_COLON` taught kebab-awareness plus the Angular
 binding form, with its own suite. **No gate compares a Tailwind manifest against the
-component it mirrors in general, and the mapping is not always one-to-one**: most
-manifests now mirror both a React component and an `arena-*` primitive, but
-`Button.manifest.json` mirrors React's `Button.jsx` with no Angular consumer (Material
-provides the button), and `Tag.manifest.json` mirrors the **Angular** primitive
-`arena-tag`, a different component from React's `Tag.jsx`. Check by hand when a manifest
-and a component it mirrors might have drifted.
+component it mirrors, and the mapping is not one-to-one**: 18 of the 39 manifests mirror
+both a React component and an `arena-*` primitive; the other 21 mirror a React component
+alone, because Angular Material provides that control and `arena-material.css` dresses
+it — `SideNav` among them, bridged through `mat-nav-list`. `Tag.manifest.json` is the one
+that mirrors an **Angular** primitive whose React namesake is a different component.
+`check:tailwind` proves every class resolves; nothing proves a manifest still matches the
+component it was derived from, so check by hand when either has moved.
 
 One narrow slice of that general problem is machine-checked, though: `check:states`
 (`scripts/check-manifest-states.mjs`) flags a `hover:`/`focus:`-family Tailwind state

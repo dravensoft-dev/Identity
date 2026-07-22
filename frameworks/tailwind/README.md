@@ -15,12 +15,12 @@ new hex and no new value in this folder. Re-skin Arena by swapping
 ## What the preset exposes
 
 Every token in `tokens/palette.css`, `typography.css`, `spacing.css` and
-`effects.css` reaches a utility, except eleven that cannot — `--sp-0` (`p-0`
+`effects.css` reaches a utility, except seventeen that cannot — `--sp-0` (`p-0`
 is a literal `0px` in v4), the three `--bp-*` (read by JS, never a media
-query), the three `--dur-*` and the two `--bw-*` and the two `--focus-*`
-(v4 has no namespace for them). Those eleven are listed with their reason in
-`EXCLUDED` in `scripts/check-tailwind-coverage.mjs`, and that gate fails the
-build if a token is added and reaches nothing.
+query), the three `--dur-*`, the six `--loop-*`, and the two `--bw-*` and the
+two `--focus-*` (v4 has no namespace for any of the five). Those seventeen are
+listed with their reason in `EXCLUDED` in `scripts/check-tailwind-coverage.mjs`,
+and that gate fails the build if a token is added and reaches nothing.
 
 `tokens/colors.css` is excluded as a category. Its aliases (`--crimson`,
 `--mute`, `--danger-soft`, `--text-strong`…) alias tokens the preset already
@@ -103,22 +103,21 @@ extension, it is itself a failure.
 
 ## What ships here
 
-`components/` holds one manifest per component, and — for every one with an Angular
-consumer — a static specimen page beside it. **Nineteen manifests and eighteen
-specimens** ship today: ActivityFeed, Alert, AppLogo, Avatar, Breadcrumbs,
-BulkActionBar, ChartCard, CommandPalette, ConfirmDialog, EmptyState, ErrorState,
-Onboarding, PageHead, Skeleton, StatCard, Tag, ThemeToggle and UnauthCard have both;
-**Button has a manifest and no specimen**, because it mirrors React's `Button.jsx` and
-has no `arena-*` primitive to specimen — Material provides the Angular button. The
-twenty-odd components a framework-neutral consumer hand-rolls because Material would
-otherwise provide them, `SideNav` among them, are still to come.
+`components/` holds **39 manifests**, one per component, each with a specimen page
+beside it that renders the real markup from the real recipe with no build step. Eighteen
+have an Angular primitive consuming them; twenty-one do not, and what holds those up is
+`bun run check:tailwind` — every class a manifest declares must produce a rule, so a
+manifest with no consumer cannot rot silently. `SideNav` is the odd one in that second
+group: Angular consumes it through Material's `mat-nav-list`, dressed by
+`arena-material.css`, rather than through an `arena-*` primitive.
 
 **The three SVG charts and Calendar have no manifest, on purpose.** `BarChart`,
 `LineChart` and `DoughnutChart` are SVG geometry driven by measured container width:
 their identity is path data and attribute bindings, and a manifest that tried to hold it
-would be a lie about where the styling lives. Calendar is date arithmetic and JS
-responsive branches; what a manifest could capture is a fraction of it, and that fraction
-would drift from the rest.
+would be a lie about where the styling lives. `ChartCard` is not one of them and does
+have a manifest — it is a bordered tile. Calendar is date arithmetic and JS responsive
+branches; what a manifest could capture is a fraction of it, and that fraction would
+drift from the rest.
 
 `utilities.css` is **generated** — `bun run build:tailwind` compiles the preset with
 the manifests as content, and `bun run check:tailwind-generated` fails when the
