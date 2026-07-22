@@ -584,6 +584,9 @@
   .min-w-0 {
     min-width: 0px;
   }
+  .min-w-8\.5 {
+    min-width: calc(var(--spacing) * 8.5);
+  }
   .min-w-50 {
     min-width: calc(var(--spacing) * 50);
   }
@@ -1517,6 +1520,12 @@
   }
   .disabled\:cursor-not-allowed:disabled {
     cursor: not-allowed;
+  }
+  .disabled\:text-base-content\/40:disabled {
+    color: var(--color-base-content);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-base-content) 40%, transparent);
+    }
   }
   .disabled\:opacity-45:disabled {
     opacity: 45%;
