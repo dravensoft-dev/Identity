@@ -117,6 +117,8 @@ past it." Verified against the current sources:
 | `Radio`'s `ring` | 22×22 (same derivation) | 20×20 (`size-5`, border included) |
 | `Select`'s `field` height | 42px (`--dz-ctl-h`=40 + 2×`--bw`) | 40px (`h-ctl-h`, border included) |
 | `Switch`'s `track` | 44×26 outer, 40×22 content (`w-10 h-5.5`=40×22 content + 2×`p-0.5`=2 each side; no border) | 40×22 outer, 36×18 content (`w-10 h-5.5 p-0.5`, padding included) |
+| `Toast`'s `root` | 375px outer (`w-85`=340 content + 2×`px-4`=32 + `--bw`=1 right + `--bw-strong`=2 left) | 340px outer (`w-85`, border and padding included) |
+| `Pagination`'s `nav`/`page` | 52×36 outer (`h-8.5 min-w-8.5`=34 content each axis + 2×`px-2`=16 each side on width + 2×`--bw`=2 each axis) | 34×34 outer (`h-8.5 min-w-8.5`, border and padding included) |
 
 `Switch` carries no border at all — `p-0.5` alone is enough to reproduce the same
 divergence, which is why the rule above is stated for padding and not just border. The
@@ -125,6 +127,25 @@ over inside its content box after centring the 18px thumb vertically (22px conte
 18px thumb), on top of the 2px padding, for a 4px inset from the track's outer edge;
 Tailwind's border-box content box is exactly 18px tall — no slack — so its inset is the
 2px padding alone.
+
+`Toast`'s `root` is the largest divergence in the layer so far by a distance: React's
+content-box outer width is `w-85` (340px content) plus both horizontal paddings
+(`px-4` = 16px a side = 32px) plus its two mismatched border widths (`--bw` = 1px on the
+right and top/bottom, `--bw-strong` = 2px on the left) = 375px, against Tailwind's 340px
+border-box outer — a 35px, ~9–10% divergence. It is not a `size-*`-style square target,
+but the rule draws no such exception: an explicit size combined with border or padding
+diverges either way, and `Toast` combines it with both.
+
+`Pagination`'s `nav` (the prev/next arrows) and `page` (a single-digit page number) repeat
+the same shape at a smaller scale, and on two axes at once because the slot pairs a fixed
+height with a `min-width`, each carrying its own padding and border. React's content-box
+outer is 52×36: `h-8.5`/`min-w-8.5` (34px content on both axes) plus `px-2` (8px a side,
+16px total, added to width only) plus the `--bw` border (1px a side, 2px total, added to
+both axes) — width 34 + 16 + 2 = 52, height 34 + 0 + 2 = 36 (there is no vertical
+padding). Tailwind's border-box renders both utilities at their nominal 34px outer on both
+axes, since border and padding are carved out of the declared size rather than added past
+it — 34×34, not 36×36 (36×36 double-counts the border on an outer number that already
+includes it, and drops `px-2` entirely).
 
 `Input` is the one form control where the two layers agree, and only because
 `Input.jsx:58` opts into `border-box` locally and `Input.manifest.json`'s `field` slot
