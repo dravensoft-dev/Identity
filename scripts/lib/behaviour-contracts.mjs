@@ -60,6 +60,18 @@ export function loadPatterns(root) {
   return out;
 }
 
+/** Read one *.behaviour.json from a path.
+ *
+ *  Exported so the compliance suites read a binding through exactly the code
+ *  check:behaviour reads it with. A second `JSON.parse` in the React and Angular
+ *  suites would be a second definition of the file format, free to drift from
+ *  this one the day a binding grows a field that needs interpreting rather than
+ *  just parsing -- and the suites would keep passing while asserting against a
+ *  shape the gate no longer agrees with. */
+export function loadBinding(absPath) {
+  return JSON.parse(readFileSync(absPath, 'utf8'));
+}
+
 /** @returns {string[]} problems; empty means valid */
 export function validateBinding(component, layer, binding, patterns) {
   const problems = [];

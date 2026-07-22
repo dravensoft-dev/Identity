@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   validatePattern, loadPatterns, validateBinding, reactComponents, angularPrimitives,
-  validateUnboundPrimitives, crossLayerAgrees,
+  validateUnboundPrimitives, crossLayerAgrees, loadBinding,
 } from './lib/behaviour-contracts.mjs';
 
 const ok = {
@@ -198,6 +198,16 @@ test('a real mismatch with no divergesFrom on either side disagrees', () => {
 test('absent on either side is skipped even with no divergesFrom declared', () => {
   assert.equal(crossLayerAgrees({ pattern: 'grid' }, { pattern: 'absent' }), true);
   assert.equal(crossLayerAgrees({ pattern: 'absent' }, { pattern: 'grid' }), true);
+});
+
+/* Against the real file rather than a fixture, because the thing worth proving is
+ * that the compliance suites and check:behaviour read the same bytes off disk.
+ * Path is relative to the repo root, as every other on-disk assertion in this
+ * suite is -- loadPatterns('.') above sets that convention. */
+test('loadBinding reads a real binding from disk', () => {
+  const b = loadBinding('./frameworks/react/components/feedback/Dialog.behaviour.json');
+  assert.equal(b.pattern, 'dialog-modal');
+  assert.ok(Array.isArray(b.exceptions));
 });
 
 test('the real Calendar binding needs no divergesFrom to agree with React', () => {
