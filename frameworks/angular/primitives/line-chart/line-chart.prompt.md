@@ -36,7 +36,9 @@ tooltip is positioned against.
 - Don't pass more `labels` than `values`. A point is drawn per value and takes the label
   at its own index, so a surplus label is silently dropped rather than drawn with no
   point above it.
-- Don't write `area` as a bare attribute. It is a plain boolean input with no
-  `booleanAttribute` transform (as every boolean in this layer currently is), so a bare
-  `area` arrives as the empty string and reads as false — the area silently never
-  paints. Bind it: `[area]="true"`.
+- Don't write `area="false"` expecting the fill to disappear. A bare `area` and
+  `[area]="true"` both mean true — `area` carries the `booleanAttribute` transform, so a
+  bare attribute now behaves like a native HTML boolean attribute. But unlike a native
+  attribute, the literal string `"false"` also reads as **false**, since
+  `booleanAttribute` special-cases that one value rather than treating any present
+  value as true. Bind a computed value instead: `[area]="isVolume"`.

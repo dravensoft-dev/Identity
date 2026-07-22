@@ -118,6 +118,13 @@ TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
 })
 class AppLogoStaticAttributeHost {}
 
+/* The literal `name="Juan Carlos"` below is inert under this JIT-only harness, the same way
+ * `EmptyStateWithoutActionHost`'s `title` is further down -- `name` is a signal input
+ * (`input('')`) and a static attribute never reaches a signal input here (see this file's
+ * header comment). It renders as a stray DOM attribute on the host and leaves `name()` itself
+ * at its default, the empty string. Left in place rather than removed because no test below
+ * reads it -- only the class merge is asserted -- so it changes nothing either way; recorded
+ * here so a reader does not take it for a working name binding. */
 @Component({
   standalone: true,
   imports: [Avatar],
@@ -147,6 +154,13 @@ class SkeletonHost {}
 })
 class BreadcrumbsHost {}
 
+/* The literal `label="Revenue"` and `value="$48.2k"` below are inert under this JIT-only
+ * harness for the same reason as `AvatarHost` above -- both are signal inputs (`input('')`)
+ * and a static attribute never reaches one here (see this file's header comment). They render
+ * as stray DOM attributes on the host and leave `label()`/`value()` at their defaults, the
+ * empty string. Left in place rather than removed because no test below reads them -- only the
+ * class merge is asserted -- so it changes nothing either way; recorded here so a reader does
+ * not take them for working bindings. */
 @Component({
   standalone: true,
   imports: [StatCard],

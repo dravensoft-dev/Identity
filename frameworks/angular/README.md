@@ -162,17 +162,20 @@ never the *component*: it hand-builds the DOM from the manifest, so a component-
 bug can render correctly in the card while being broken in the primitive. The three SVG
 charts have no specimen at all, by the same exception that gives them no manifest.
 
-## One trap this layer's idiom sets, and one it used to
+## One trap this layer's idiom used to set, and one it still does
 
 Both are layer-wide and silent; the first is closed, the second has bitten during implementation.
 
 **A bare boolean attribute used to read as `false` — fixed.** Every boolean input here — `alert`'s
 `dismissible`, `confirm-dialog`'s `open`/`destructive`, `line-chart`'s `area`, and `open` on
 `command-palette` and `onboarding` — is now a signal `input(false, { transform: booleanAttribute })`,
-so `<arena-alert dismissible>` resolves to `true` the same way a native HTML boolean attribute
-does: `booleanAttribute` treats a present-but-empty attribute string as `true` rather than as a
-falsy empty string. Binding still works (`[dismissible]="true"`) and remains the clearer form in a
-component's own prompt docs, but the bare form is no longer a silent no-op.
+so `<arena-alert dismissible>` now resolves to `true`, where it used to resolve to the empty
+string and read as false: `booleanAttribute` treats a present-but-empty attribute string as
+`true` rather than as a falsy empty string. The equivalence to a native HTML boolean attribute
+stops there, though — `booleanAttribute` also special-cases the literal string `"false"` as
+`false`, where a native attribute (`<details open="false">`) stays open on any present value
+regardless of what it says. Binding still works (`[dismissible]="true"`) and remains the
+clearer form in a component's own prompt docs, but the bare form is no longer a silent no-op.
 
 **An input named after a native attribute leaves the native attribute behind.** Angular
 writes a static attribute to the DOM during the creation pass whether or not it also

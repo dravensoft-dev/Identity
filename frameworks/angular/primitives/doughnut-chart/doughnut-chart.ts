@@ -68,7 +68,18 @@ const CENTRE_LABEL_STYLE = { fontSize: 'var(--dz-text-lg)' } as const satisfies 
  *  alone. `overflow: auto` so a long list scrolls rather than escaping the chart's height —
  *  which is why the element carries `tabindex="0"`/`role="group"`/`aria-label` in the
  *  template: a scrollable region nothing else can focus is unreachable by a keyboard user
- *  (WCAG 2.1.1), the same failure a `tabindex`-less `overflow: auto` box always is. */
+ *  (WCAG 2.1.1), the same failure a `tabindex`-less `overflow: auto` box always is.
+ *  `role="group"` rather than the WAI scrollable-region pattern's `role="region"`: a region
+ *  is a page landmark a screen reader user jumps to directly, and this column is one part of
+ *  a small chart, not something worth surfacing at that level — `aria-label` still gives it
+ *  an accessible name either way. No focus style is bound here: this layer styles focus with
+ *  a token-valued `boxShadow` driven by a `(focus)`/`(blur)` signal (`Input.jsx`'s React
+ *  counterpart does the same with `onFocus`/`onBlur`), but that fires for a mouse click same
+ *  as a Tab press, where the UA's own `:focus-visible` heuristic — which inline styles cannot
+ *  express, only a real stylesheet rule can — already suppresses the ring on a mouse-focused
+ *  `tabindex` element and only shows it for keyboard focus. Wiring `(focus)` here would trade
+ *  that heuristic for a ring that also flashes on click, so the fallback stays the browser's
+ *  own outline rather than a worse tokenized one. */
 const LEGEND_STYLE = {
   flex: '1', minWidth: '0', display: 'flex', flexDirection: 'column',
   justifyContent: 'center', gap: 'calc(var(--sp-1) * 1.5)', overflow: 'auto',

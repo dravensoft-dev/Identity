@@ -38,13 +38,21 @@ measured.
   surface showing through a `--surface-card` stroke, not a border on the slice; on a
   different background the gaps read as stripes of the wrong colour.
 
-**Known accessibility gap.** The legend column is an `overflow: auto` scroll region with
-nothing focusable inside it, so on Chrome — which, unlike Firefox, does not tab to
-scrollable containers — a keyboard-only user cannot scroll it. The visually-hidden numbers
-table does not cure this: it is invisible to a *sighted* keyboard user, who can see the
-legend and cannot reach it. Keeping to five or six slices, as above, is what keeps the
-region from needing to scroll at all, and is the reason this has not yet bitten. The fix
-is `tabindex="0"` with `role="group"` and an `aria-label` on the legend column, applied
-across all three charts and both layers at once rather than here alone. Hover-only data
-is the milder half of the same gap and affects all three charts: every label and value is
-already in the visually-hidden table, so only the centre percentage is pointer-exclusive.
+**The legend is keyboard-reachable.** The legend column is an `overflow: auto` scroll
+region, and it carries `tabindex="0"`, `role="group"` and `aria-label="Doughnut chart
+legend"` (`doughnut-chart.ts:200`), so on Chrome — which, unlike Firefox, does not tab to
+scrollable containers on its own — a keyboard-only user can still Tab to the column and
+scroll it. `role="group"` was chosen over the WAI scrollable-region pattern's
+`role="region"` because a region is meant to be a landmark a user jumps to directly;
+this column is one row of a small chart, not a page landmark, and `aria-label` still
+gives it an accessible name either way. The visually-hidden numbers table does not
+substitute for this: it is invisible to a *sighted* keyboard user, who can see the
+legend and, before this fix, could not reach it. This closes the Angular half of the
+gap only — `DoughnutChart.jsx`'s legend has the identical `overflow: auto` with no
+`tabindex`, `role` or `aria-label`, and still needs the same treatment (see
+`components-divergences.md`). It was never needed on the other two charts: BarChart's
+and LineChart's own scroll regions are `overflow: visible` (`bar-chart.ts:128`,
+`line-chart.ts:141`), so neither one traps a keyboard user the way a scrollable box
+with nothing focusable inside it does. Hover-only data is a separate, still-open gap
+and affects all three charts: every label and value is already in the visually-hidden
+table, so only the centre percentage is pointer-exclusive.

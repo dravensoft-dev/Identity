@@ -729,40 +729,6 @@ same length, which is every correct call. `line-chart.prompt.md` states the rule
 **Converges:** yes — React should iterate its points. **Open debt on the React layer**, low
 priority.
 
-### LineChart — `area` used to need binding, where React's JSX shorthand works bare — closed
-
-**React:** `<LineChart area />` works. JSX's boolean attribute shorthand passes the literal `true`,
-so `area && n > 0` is satisfied.
-
-**Angular:** `<arena-line-chart area />` compiled (confirmed against real `ngc --strictTemplates` —
-a static attribute matching an input is not rejected) but used to set the input to the empty
-string, which is falsy, so the area silently never painted. `line-chart.prompt.md` documented the
-bound form, `[area]="true"`, as the workaround.
-
-**Why it happened:** `area` was declared `input(false)` with no `booleanAttribute` transform. That
-was not a LineChart decision — it was what every boolean input in this layer did at the time
-(`Alert`'s `dismissible`, `ConfirmDialog`'s `open`/`destructive`, `Onboarding`'s `open`,
-`CommandPalette`'s `open`), so adding the transform to this one primitive alone would have made the
-layer inconsistent in a way a reader could not predict.
-
-**Close-out status:** `alert.prompt.md` and `confirm-dialog.prompt.md` had both documented the
-bare-attribute form, advertising a usage that silently did nothing; both now show the bound form
-and carry a Don't line explaining why. The trap itself is stated once, layer-wide, under "Two traps
-this layer's idiom sets" in `frameworks/angular/README.md`. **The underlying fix —
-`transform: booleanAttribute` on all six boolean inputs (`onboarding`'s `open`,
-`confirm-dialog`'s `open` and `destructive`, `alert`'s `dismissible`, `line-chart`'s `area`,
-`command-palette`'s `open`) — has now landed**, closing the gap this entry described: a bare
-`<arena-line-chart area>` now resolves the same way React's bare `area` does, because
-`booleanAttribute` treats a present-but-empty attribute string as `true` rather than as a falsy
-empty string. This repo's own JIT-only test harness cannot render a static attribute through a
-signal input to prove it directly (see `frameworks/angular/test/host-class-binding.test.ts`'s
-header comment); `bun run check:angular` (`ngc --strictTemplates`, real `ngtsc`) is what compiles
-the transform against each component's real input, and the transform's own behaviour on an empty
-attribute string is unit-testable independent of any one component's render.
-
-**Converges:** yes — done. Recorded here because this slice found it, not because LineChart was
-special.
-
 ### DoughnutChart — the legend is drawn per slice, not per label
 
 **React:** `DoughnutChart.jsx` computes its slices from `values` and draws the ring, the centre
@@ -818,6 +784,27 @@ together, and both this component and React's carry the pair.
 already gives — in Angular a consumer writes those directly on the host.
 
 **Converges:** no. Each layer expresses the same box in its own idiom, and neither is wrong.
+
+### DoughnutChart — the legend is keyboard-reachable in Angular, not yet in React
+
+**React:** `DoughnutChart.jsx:54` renders the legend column as `overflow: 'auto'` with nothing
+focusable inside it. On Chrome — which, unlike Firefox, does not add a scrollable container to the
+tab order on its own — a keyboard-only user has no way to scroll it, so a slice past the visible
+rows of a long legend is unreachable by keyboard even though it is right there on screen.
+
+**Angular:** `arena-doughnut-chart`'s legend column carries the identical `overflow: auto`, plus
+`tabindex="0"`, `role="group"` and `aria-label="Doughnut chart legend"` (`doughnut-chart.ts:200`),
+so the column is itself a tab stop and the browser's native scroll keys move it once focused.
+
+**Why:** the Angular fix closes a real WCAG 2.1.1 (Keyboard) defect that both layers used to share.
+React was out of scope for this branch and was correctly left byte-unchanged, so it still has the
+defect the Angular legend no longer does. This is not a considered design difference — it is debt
+on the React side, and it is recorded rather than left silent because the two layers now visibly
+differ in an accessibility affordance.
+
+**Converges:** yes — React should get the same `tabindex`/`role`/`aria-label` treatment its legend
+column lacks today. **Open debt on the React layer**, the same shape as the per-slice-legend entry
+above.
 
 ### AppLogo — the mark is a prop in React, projected content in Angular
 
@@ -925,9 +912,7 @@ has no way to call `event.preventDefault()` and substitute SPA routing — forwa
 gives the same capability React's per-item `onClick` gives by wiring the DOM handler
 directly, while native navigation (ctrl-click, middle-click, open-in-new-tab) keeps
 working for a consumer who wires nothing, which is why the primitive never calls
-`preventDefault()` itself. One output covers every item instead of a callback prop per
-crumb — Angular's `output()` is a single per-component emitter, not a per-item slot the
-way a React prop can be, so a callback-per-crumb shape does not translate directly.
+`preventDefault()` itself.
 
 **Converges:** no — one output carrying the crumb and the native event is the correct
 Angular idiom for this, and preserves everything a consumer could do with React's
@@ -943,17 +928,26 @@ direction }`, destructured internally (`delta.value`, `delta.tone`, `delta.direc
 `'neutral'`), `deltaDirection: 'up'|'down'` (default `'up'`) — rather than one `delta`
 input.
 
-**Why:** the component's own JSDoc states the reasoning directly: `tone` and
-`deltaTone` answer different questions about the same number. `tone` says what state
-the number IS in right now — a service at 99.98% uptime is healthy whether or not it
-improved this week, and two open incidents are two open incidents even when that is
-down from five. `deltaTone` says whether the change it just made was good;
-`deltaDirection` says which way it pointed. These are three separate facts, not one
-bundle to destructure, and every delta sign renders as an outline pill, never a filled
-background, regardless of which of the three is being read.
+**Why:** `tone`, `deltaTone` and `deltaDirection` are three separate facts about the number —
+`tone` says what state it IS in right now (a service at 99.98% uptime is healthy whether or not it
+improved this week), `deltaTone` says whether the change was good, `deltaDirection` says which way
+it pointed — but that much is equally true of React, which also keeps them distinct
+(`tone` alongside `delta.tone`/`delta.direction`) rather than folding them into one flag. It
+explains why the fields exist, not why Angular ungroups them where React nests them. The actual
+reason is signal inputs: each is `input()`-per-field, so a single object `delta` input would force
+a consumer to hand a fresh object identity to change one field, and would give `deltaTone`'s and
+`deltaDirection`'s defaults (`'neutral'`, `'up'`) nowhere to live the way a plain input's own
+default does. Three flat inputs let a consumer set one field, at its own default, independent of
+the others.
 
-**Converges:** no — this is the Angular idiom for the same set of facts React groups
-into one prop; nothing a consumer could express with React's `delta` object is lost.
+**Converges:** no — this is the Angular idiom for the same set of facts React groups into one prop.
+Almost nothing a consumer could express with React's `delta` object is lost, but the two layers
+gate the pill differently: React renders it whenever the `delta` object itself is truthy
+(`{delta && ...}`), Angular whenever `deltaValue()` is truthy (`@if (deltaValue(); as delta)`). A
+delta with a populated `tone`/`direction` but an empty `value` therefore renders an (empty) arrow
+pill in React and renders nothing in Angular — negligible in practice, since a delta with no value
+to show is not a delta worth passing, but it is the one real behavioural difference the split
+introduces.
 
 ## How to add an entry
 
