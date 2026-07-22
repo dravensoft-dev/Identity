@@ -367,6 +367,10 @@
   .inline-flex {
     display: inline-flex;
   }
+  .size-0 {
+    width: 0px;
+    height: 0px;
+  }
   .size-2 {
     width: var(--spacing-2);
     height: var(--spacing-2);
@@ -374,6 +378,10 @@
   .size-3\.5 {
     width: calc(var(--spacing) * 3.5);
     height: calc(var(--spacing) * 3.5);
+  }
+  .size-5 {
+    width: var(--spacing-5);
+    height: var(--spacing-5);
   }
   .size-10 {
     width: var(--spacing-10);
@@ -551,6 +559,9 @@
     @media (prefers-reduced-motion: reduce) {
       animation-duration: var(--loop-reduced);
     }
+  }
+  .cursor-not-allowed {
+    cursor: not-allowed;
   }
   .cursor-pointer {
     cursor: pointer;
@@ -1072,6 +1083,9 @@
   }
   .no-underline {
     text-decoration-line: none;
+  }
+  .opacity-0 {
+    opacity: 0%;
   }
   .opacity-50 {
     opacity: 50%;
