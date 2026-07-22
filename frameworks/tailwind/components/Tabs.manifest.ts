@@ -11,7 +11,7 @@ export default {
         "tab": "font-semibold text-base-content shadow-[inset_0_calc(var(--bw-strong)*-1)_0_var(--crimson)]"
       },
       "false": {
-        "tab": "font-medium text-base-content/62 shadow-none hover:text-base-content/82"
+        "tab": "font-medium text-base-content/62 shadow-none"
       }
     }
   },
