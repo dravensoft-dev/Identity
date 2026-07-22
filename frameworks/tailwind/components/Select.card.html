@@ -19,7 +19,7 @@ function select({ label, options, value, disabled }) {
   for (const option of options) {
     field.append(el('option', { value: option, selected: option === value || undefined }, option));
   }
-  root.append(el('div', { class: c.wrap }, field, el('span', { class: c.caret }, el('i', { class: 'ph-bold ph-caret-down' }))));
+  root.append(el('div', { class: c.wrap }, field, el('span', { class: c.caret }, el('i', { class: 'ph-bold ph-caret-down', 'aria-hidden': 'true' }))));
   return root;
 }
 

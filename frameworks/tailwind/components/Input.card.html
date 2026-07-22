@@ -23,8 +23,8 @@ function input({ label, value, placeholder, hint, error, state = 'neutral', requ
   if (icon) field.append(el('span', { class: c.icon }, el('i', { class: icon, 'aria-hidden': 'true' })));
   if (prefix) field.append(el('span', { class: c.prefix, text: prefix }));
   field.append(el('input', { class: c.input, id: inputId, value: value ?? '', placeholder, disabled: disabled || undefined }));
-  if (state === 'error') field.append(el('i', { class: `${c.statusIcon} ph-fill ph-warning-circle` }));
-  if (state === 'valid') field.append(el('i', { class: `${c.statusIcon} ph-fill ph-check-circle` }));
+  if (state === 'error') field.append(el('i', { class: `${c.statusIcon} ph-fill ph-warning-circle`, 'aria-hidden': 'true' }));
+  if (state === 'valid') field.append(el('i', { class: `${c.statusIcon} ph-fill ph-check-circle`, 'aria-hidden': 'true' }));
   root.append(field);
   if (error) root.append(el('span', { class: c.error, text: error }));
   else if (hint) root.append(el('span', { class: c.hint, text: hint }));
