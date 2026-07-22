@@ -1,0 +1,6 @@
+{
+  "name": "none",
+  "source": "n/a — the absence of a pattern is not adopted from anywhere",
+  "description": "A component with no interactive affordance: it renders, and a user cannot act on it. Binding this REQUIRES a reason, because the whole purpose of this layer is that 'nothing recorded' and 'verified presentational' stop looking alike.",
+  "requires": {}
+}
