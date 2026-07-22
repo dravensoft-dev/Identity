@@ -1,0 +1,37 @@
+<!-- @dsCard group="Tailwind" viewport="700x320" name="Radio" subtitle="A group with hints, rendered from Radio.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Radio.manifest.json')).json();
+const base = classesFor(manifest);
+
+function radio({ label, hint, checked = false, disabled = false, name }) {
+  const c = classesFor(manifest, { checked: String(checked), disabled: String(disabled) });
+  const ring = el('span', { class: c.ring });
+  if (checked) ring.append(el('span', { class: c.dot }));
+  const text = el('span', { class: c.text }, el('span', { class: c.label, text: label }));
+  if (hint) text.append(el('span', { class: c.hint, text: hint }));
+  const input = el('input', { type: 'radio', name, class: c.input, checked: checked || undefined, disabled: disabled || undefined });
+  return el('label', { class: c.root }, ring, text, input);
+}
+
+function group(options) {
+  const name = 'rg-' + Math.random().toString(36).slice(2, 7);
+  const box = el('div', { class: base.group, role: 'radiogroup' });
+  for (const option of options) box.append(radio({ ...option, name }));
+  return box;
+}
+
+mountSpecimen({ sections: [
+  section('A group', [group([
+    { label: 'Deploy on merge', hint: 'Every merge to main ships immediately.', checked: true },
+    { label: 'Deploy on tag', hint: 'Only a release tag ships.' },
+    { label: 'Manual only', hint: 'Locked by the organisation policy.', disabled: true },
+  ])]),
+]});
+</script></body></html>
