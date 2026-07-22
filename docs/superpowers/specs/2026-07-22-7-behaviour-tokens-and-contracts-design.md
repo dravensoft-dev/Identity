@@ -1,12 +1,15 @@
 # Behaviour tokens and behaviour contracts — Design
 
 **Status:** DRAFT — not approved. Written 2026-07-22 at the request of the repo owner.
-Open questions at the end are real and must be answered before a plan is written from
-this.
-**Execution order:** plan 7 of 9 — after 5.5 (the script-readable token target), before 8
-(API capability contracts). Publication is plan 9 and goes last.
-**Depends on:** `2026-07-19-5.5-chart-geometry-token-target-design.md` — hard
-dependency, for the reason in *Sequencing*. That spec is itself a DRAFT.
+**Revised 2026-07-22 after plan 5.5 shipped**: its hard dependency is no longer a draft
+to be argued for but working infrastructure with names, and §3 now describes what exists
+rather than what was proposed. See *What plan 5.5's execution settled*. The remaining
+open questions are real and must be answered before a plan is written from this.
+**Execution order:** plan 7 of 9 — **next**. 5.5 is merged (`5d043ec`); 8 follows this;
+publication is plan 9 and goes last.
+**Depends on:** the script-readable token target from
+`2026-07-19-5.5-chart-geometry-token-target-design.md` — **shipped and merged**, no
+longer a dependency to wait on. This spec extends it rather than requiring it be built.
 **Blocks:** `2026-07-22-8-api-contracts-design.md` (plan 8).
 
 ## Problem
@@ -71,6 +74,59 @@ plan 8's subject, designed in the sibling spec.
 **It does not move `dur`, `ease` or `loop`.** Those are motion — how a transition looks —
 and they stay in `effects.json`. Moving them would churn `--dur-*` through the whole
 Tailwind layer for no gain.
+
+## What plan 5.5's execution settled
+
+5.5 is merged (`5d043ec`). Some of what it taught is not in its spec, because it only
+appeared while executing — and every item here is a thing a plan written from THIS spec
+would otherwise rediscover the hard way.
+
+**Four gates will react to new tokens, and only one is obvious.**
+
+- `check:coverage` inventories **the four generated CSS files**, so every behaviour token
+  lands in it and must either reach a Tailwind utility or be named in `EXCLUDED` with a
+  reason. `delay`, `dismiss`, `debounce` and `limit` reach no utility and should not — the
+  consumer is `setTimeout`, not a class. The precedent to follow is `bp-sm`/`bp-md`/`bp-lg`
+  (*"read by JS through getComputedStyle, never a media query"*). **5.5's plan omitted this
+  entirely and would have failed its own completion gate**; it was caught in pre-flight.
+- `check-all.test.mjs` asserts the gate count **and the gate-name array by literal value**.
+  This spec adds two gates, so it moves 18 → 20 — and the test moves with them or it fails.
+- `check:script-tokens` will start reporting orphans the moment a behaviour token is
+  flagged and before anything imports it. That red state is correct and expected; the plan
+  must say so per step, or an implementer will silence it.
+- `check:dtcg` needs no change: `$extensions` accepts any reverse-DNS key.
+
+**A gate script cannot run its scan at top level.** Its own test imports it for pure
+helpers, and an unguarded `process.exit(1)` kills the test process before any assertion
+runs. Wrap the scan in `main()` behind `if (process.argv[1] === fileURLToPath(import.meta.url))`,
+the idiom `check-arbitrary-values.mjs` and `check-dimension-literals.mjs` already use.
+Both gates this spec proposes will hit this.
+
+**The day-one strategy works, and is now evidence rather than hope.** §8 proposes writing
+every binding first, declaring exceptions where reality does not comply, and being green
+from the first commit — where green means *declared*, not *compliant*. 5.5 ran the same
+shape for `EXCLUDED` and `EXEMPT` across ten tasks and never had a red tree.
+
+**The gates 5.5 shipped have a known hole, and this spec inherits its shape.** Recorded in
+CLAUDE.md under *Known debt*: `check:script-tokens`' orphan rule is *imported by at least
+one layer*, so once one layer imports a token the gate says nothing about the other, and
+`check:duplicate-constants` cannot close it because the layers have opposite idioms.
+**The same asymmetry threatens this spec's central claim.** Per-layer binding files are
+what let a gate catch React and Angular declaring different patterns for one component —
+but a rule phrased as *at least one layer* would silently accept one layer declaring
+nothing. Phrase level 1 as **every layer**, and treat a component absent from a layer
+(Angular has no `Calendar`, no `Button`) as an explicit declaration rather than an absence.
+
+**Debt goes in CLAUDE.md, never in the plan.** 5.5's close-out recorded three follow-ups
+into its own plan document, which is deleted once executed — they were nearly lost and had
+to be moved. Any plan from this spec should file its residue under CLAUDE.md's *Known debt*
+from the start.
+
+**Expect the plan itself to be wrong in places, and let execution find it.** Five defects
+in 5.5's plan surfaced only by running it: a `*/` inside a block comment, top-level code
+that killed its own test, an unsafe camelCase↔kebab inverse, a wrong import depth, and a
+"prove the gate fails" step that could not fail. Reviewers caught all five, and each was
+back-ported into the plan rather than only into the code.
 
 ## Design
 
@@ -159,34 +215,37 @@ leaves them unreachable in practice: a component would have to `getComputedStyle
 `"4200ms"`, and parse it to a number. Nobody pays that cost twice, and the second time
 they write `4200` by hand — which is the state the repo is in today.
 
-`2026-07-19-5.5-chart-geometry-token-target-design.md` already designed the mechanism
-this needs, for chart geometry, and this spec adopts it wholesale rather than inventing
-a second one:
+**This is no longer a mechanism to design. Plan 5.5 shipped it, and this spec's job here
+shrinks to authoring four token families into infrastructure that already works.** Flag a
+token and it emits; nothing in this section needs building.
 
-- the token is flagged **in the DTCG source**, not in a list inside the build script —
-  `$extensions: { "com.dravensoft.arena": { "script": true } }`;
-- `scripts/build-tokens.mjs` gains a second platform, filtered to flagged tokens;
-- emission is **dual** — the CSS custom property *and* the module entry — so a
-  script-readable token still appears in the Overview;
-- a parity gate asserts the two carry the same value, and an orphan gate fails a flag
-  nobody imports.
+What exists, by name, as of `5d043ec`:
 
-**Behaviour values strengthen that spec rather than merely leaning on it.** 5.5 accepts
-a real cost in its §1: a value emitted to JS is bound at import time and therefore
-**cannot re-densify or re-theme**. For chart geometry that is a genuine limitation the
-spec has to argue past. For a debounce it is not a limitation at all — a dismissal
-timeout has no light-mode variant and no compact variant, and never will. Behaviour
-values are the cleaner fit for the mechanism, and a second independent consumer is the
-strongest evidence that the build surface is worth existing.
+- the flag is `$extensions: { "com.dravensoft.arena": { "script": true } }`, declared in
+  the DTCG source rather than in a list inside the build script;
+- `scripts/build-tokens.mjs` exports `collectScriptTokens()` (which carries **both** a
+  token's kebab `cssName` and its camel `jsName` — never re-derive one from the other,
+  `scriptName('sp-4')` is `sp4` and nothing recovers `sp-4` from that),
+  `buildScriptModules()` and `SCRIPT_TARGETS`;
+- `scripts/lib/serialize-script.mjs` renders a flagged token to its bare number, and
+  **refuses any `$type` whose value is not a number** — only `dimension`, `duration` and
+  `number` are flaggable, which covers all four behaviour families;
+- emission is **dual and per layer**: the CSS custom property *and* an entry in
+  `frameworks/react/tokens.generated.js` and `frameworks/angular/tokens.generated.ts`;
+- `bun run check:script-tokens` asserts the committed modules match the source, that each
+  export agrees with its custom property, and that no flag is orphaned.
 
-**5.5 emits per framework layer, and this spec inherits that.** The module is not one
-file under `tokens/` but one per layer, in that layer's own language —
-`frameworks/react/tokens.generated.js` and `frameworks/angular/tokens.generated.ts`. So
-behaviour values arrive by an **intra-layer** import, the same shape as the
-`../charts/chart-internals.js` that `Calendar` already carries, and the copy-in kit gains
-one entry in the dependency list `README.md:52` already maintains rather than a new
-concept. That resolution is recorded in 5.5's *What 2026-07-22 settled*, and it is what
-took this spec's open question 1 off the blocking list.
+So behaviour values do not get their own module. **They extend the two that exist**, and
+arrive by the same intra-layer import — the shape `../charts/chart-internals.js` already
+had, which is why the copy-in kit needed one more entry in the dependency list at
+`README.md:52` rather than a new concept. That was this spec's open question 1, and 5.5
+settled it in practice, not just on paper.
+
+**Behaviour values remain the cleaner fit for the mechanism, and shipping proved it.**
+5.5 accepts a real cost: a value bound at import time **cannot re-densify or re-theme**.
+For chart geometry that is a limitation the spec had to argue past, and CLAUDE.md now
+states it as non-negotiable. For a debounce it is not a limitation at all — a dismissal
+timeout has no light-mode variant and no compact variant, and never will.
 
 ### 4. The contract layer — patterns
 
@@ -292,8 +351,10 @@ so the same "factor the logic into plain exported functions" strategy applies.
 because `frameworks/react/vendor/*.js` is built from them, `happy-dom` because Angular
 needs it. The marginal cost is a directory, not a project.
 
-`bun run check` goes from sixteen gates to eighteen, and the set of non-portable gates
-stays exactly `check:cards`, `check:vendor`, `check:demos`.
+`bun run check` goes from **eighteen** gates to twenty — 5.5 already took it from sixteen
+to eighteen — and the set of non-portable gates stays exactly `check:cards`,
+`check:vendor`, `check:demos`. `scripts/check-all.test.mjs` asserts both the count and the
+name array literally, so it moves with them.
 
 ### 7. What becomes of `components-divergences.md`
 
@@ -349,18 +410,17 @@ the unowned `4200`) and are useful whether or not the contract layer proceeds.
 ```
 5a  Angular primitive parity          <- executed
 5b  Tailwind manifest parity          <- executed
-5.5 chart geometry / script target    <- next. DRAFT, unapproved. HARD DEPENDENCY.
-7   THIS SPEC
+5.5 chart geometry / script target    <- EXECUTED and merged, 5d043ec
+7   THIS SPEC                         <- next
 8   API capability contracts
 9   four-package build + publish      <- moved from 6 on 2026-07-22; last
 ```
 
-**Why after 5.5, and why that is a hard dependency rather than a preference.** This spec
-needs a build target that emits JS from DTCG. 5.5 designs exactly that, including the
-`$extensions` flag, the dual emission and the parity gate. Building a second one here
-would be two mechanisms for one job — the drift this repo exists to prevent. If 5.5 is
-rejected, this spec must be re-argued from scratch, and §3 is where it would have to be
-re-fought.
+**Why after 5.5, and why that was a hard dependency rather than a preference.** This spec
+needs a build target that emits JS from DTCG. 5.5 built exactly that — the `$extensions`
+flag, the dual per-layer emission, the parity and orphan gates. Building a second one here
+would have been two mechanisms for one job, the drift this repo exists to prevent. That
+risk is now closed: the mechanism exists, is gated, and this spec extends it.
 
 **Why publication is now last, which removes a tension this spec used to carry.** In the
 original chain, publication was plan 6 and sat *before* this spec — so a JS export
@@ -424,7 +484,8 @@ in both.
 
 ## Affected files, provisionally
 
-**Build:** `scripts/build-tokens.mjs` (second platform, from 5.5), a new
+**Build:** `scripts/build-tokens.mjs` — **no change to the emission mechanism**, which 5.5
+built; only new flagged tokens in the source. Plus a new
 `scripts/check-behaviour.mjs` and its test, `scripts/check-behaviour-generated.mjs`,
 `scripts/check-all.mjs`, `package.json`.
 
@@ -444,7 +505,8 @@ component per layer, `frameworks/react/test/` (first React render suite),
 **Angular:** the corresponding primitives, and `container-size.ts`.
 
 **Docs:** `CLAUDE.md` (the layer contract gains a behaviour layer; the quartet gains a
-fifth file; the gate count moves from sixteen to eighteen), `README.md` — specifically
+fifth file; the gate count moves from eighteen to twenty, and CLAUDE.md's *Known debt*
+section gains this plan's residue rather than the plan document keeping it), `README.md` — specifically
 the copy-in dependency list at `README.md:52`, which gains the components that now import
 the generated module —
 `components-divergences.md` (split along the seam), `CHANGELOG.md` under

@@ -2,10 +2,16 @@
 
 **Status:** DRAFT — not approved. Written 2026-07-22, in the same session as plan 7's
 spec and at the repo owner's explicit request to capture the decision while it was
-fresh. **It is written against infrastructure that does not exist yet** — plan 7 builds
-the binding convention, the exception format and the component→layer resolver this spec
-reuses. Expect to revise it once plan 7 lands; that is the accepted cost of writing it
-now.
+fresh. **It is still written against infrastructure that does not exist yet** — plan 7
+builds the binding convention, the exception format and the component→layer resolver this
+spec reuses. Expect to revise it once plan 7 lands; that is the accepted cost of writing
+it now.
+**Revised 2026-07-22 after plan 5.5 shipped**, which is the nearest thing to a rehearsal
+this spec has: 5.5 proved the shape both later specs assume — a sidecar record with a
+reason per entry, a stale entry failing the gate that owns it, committed generated output
+guarded by a rebuild comparison, and a normative gate landing green on day one because
+everything is *declared* rather than compliant. None of that is hypothetical now. See
+*What plan 5.5 rehearsed*.
 **Execution order:** plan 8 of 9 — after 7, before 9 (four-package build + publish).
 **Depends on:** `2026-07-22-7-behaviour-tokens-and-contracts-design.md`, hard.
 **Blocks:** `2026-07-18-9-four-package-build-publish-design.md` (plan 9) — this spec
@@ -66,6 +72,43 @@ is offered; the behaviour contract says Escape triggers it.
 **It does not extend to the Tailwind layer.** Manifests carry no API. The mapping is
 already known to be uneven — 18 of 39 mirror both layers, 21 mirror React alone — and
 adding a third binding target here would be inventing work.
+
+## What plan 5.5 rehearsed
+
+5.5 is merged (`5d043ec`). It built nothing this spec needs, but it exercised every
+mechanism this spec assumes, which turns four assumptions into observations.
+
+**The stale-entry rule works, and it was verified adversarially rather than trusted.**
+A reviewer injected an `EXEMPT` entry naming a constant that was not duplicated and
+confirmed the gate failed calling it stale, then injected a matching entry beside a real
+duplicate and confirmed it suppressed. This spec's `unsupported` bindings rest entirely
+on that rule holding: an `unsupported` entry for a capability a layer has since gained
+must fail. It will.
+
+**Phrase coverage as "every layer", never "at least one".** 5.5's orphan rule is *at
+least one layer* — correct there, because `calendarHourH` is legitimately React-only —
+and the consequence is now recorded in CLAUDE.md under *Known debt*: once one layer
+satisfies the gate, it says nothing about the other. This spec's assertion 1 must be the
+strict form. A component a layer does not have (`Button`, `Calendar`) is declared absent,
+not silently skipped.
+
+**A gate cannot run its scan at top level.** Its own test imports it for pure helpers,
+and an unguarded `process.exit(1)` kills the test process. Use `main()` behind
+`if (process.argv[1] === fileURLToPath(import.meta.url))`, as `check-arbitrary-values.mjs`
+and `check-dimension-literals.mjs` do. 5.5's gate hit this and so will `check:api`.
+
+**There is a third place a value can live, and this spec's scope excludes it on a
+premise worth re-testing.** *What this does NOT solve* declines the Tailwind layer
+because "manifests carry no API". That is true of props — but 5.5's whole-branch review
+found `Onboarding.manifest.json` still rendering the coachmark width as `w-80`,
+independently of the token both framework layers had just adopted, because no task in a
+ten-task plan had the manifest in scope. Nothing per-task could see it; only the
+whole-branch pass did. The lesson is not that this spec should cover manifests. It is
+that **"both layers" is not the same as "everywhere the thing is expressed"**, and a plan
+from this spec should have one pass that asks where else a capability is restated.
+
+**And the feasibility claim in §3 still holds**: TypeScript 6.0.3 remains a
+devDependency, so the gate parses both layers with the compiler API rather than by regex.
 
 ## Design
 
@@ -234,7 +277,9 @@ every binding first, classify honestly, green from the first commit where green 
 layer, `scripts/check-api-contracts.mjs` and its test.
 
 **Build:** `scripts/check-all.mjs`, `package.json` (`check:api`, taking the gate count
-from eighteen to nineteen).
+from **twenty to twenty-one** — sixteen before plan 5.5, eighteen after it, twenty after
+plan 7). `scripts/check-all.test.mjs` asserts both the count and the gate-name array by
+literal value and moves with them, which plan 5.5 learned by breaking it.
 
 **Docs:** `CLAUDE.md`, `components-divergences.md` (API entries migrate out),
 `CHANGELOG.md` under `## [Unreleased]`.

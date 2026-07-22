@@ -264,3 +264,77 @@ render, and it could never have been afforded at one run per commit.
 - **Forgetting the `ref` fails silently**, which is why it is machine-checked rather than written down and hoped for. The marketplace would advertise the new version while Claude Code keeps fetching the old tag, reads the *old* `plugin.json` there, and resolves the old version. The manifest's version always wins over the marketplace entry's, so the update is never offered and nothing errors. Verify with `bun scripts/check-release.mjs` — it reads the version from `plugin.json` (the authority) and asserts the marketplace entry, the README header, the CHANGELOG's top entry, `source.ref` and the tag all agree, and above all that **the `plugin.json` at the pinned tag hands out the version being advertised**. Run it before publishing; a release that skips it is the one that ships nothing.
 - **Charts** carry identity (the `--color-cat-*` ramp, in order, never cycled) or meaning (`tone`, the status colors) — never both in one chart. Status colors are never series colors. One axis, always.
 - Responsive branches are JS, not media queries (inline styles cannot hold one), and measure the **container** via `useContainerWidth` — not the viewport.
+
+## Known debt
+
+Things that are wrong or incomplete on purpose, recorded so the next reader does
+not rediscover them. **This section is the index; most debt lives next to the
+code it burdens, and the list at the end says where.**
+
+Debt belongs here — not in a spec or a plan under `docs/superpowers/`. Those are
+deleted once executed (`24f250b`, *"delete the executed specs and plans"*), and
+debt filed in one dies with it. That has already happened once: plan 5.5's
+close-out recorded three follow-ups into its own plan document, which was
+scheduled for deletion the same week.
+
+- **The two script-readable gates leave a structural hole between them, and it is
+  wider than it looks.** `check:script-tokens`' orphan rule is *imported by at
+  least one layer* — correct, because `calendarHourH` is legitimately React-only
+  (Angular has no `Calendar`). But once one layer imports a token, that gate says
+  nothing about whether the other still carries its own copy.
+  `check:duplicate-constants` does not close it: it fires only when **both**
+  layers declare a module-level named numeric `const`, so a layer that imports
+  the token has no declaration left to pair with.
+  The layers make this worse by having opposite idioms — React writes design
+  numbers inline in function bodies, Angular names them at module level — so the
+  gate requires a symmetry that is usually absent. **Of the values still
+  duplicated verbatim across the layers today (`600`, an axis-label `8`, `0.34`,
+  `0.62`, `900`, `220`), it catches none.** It caught three of the historical
+  five only because `chart-internals` happened to be symmetric in both layers.
+  The sharper rule, if this is ever worth closing: for each flagged token, assert
+  that **every** layer either imports it or contains no module-level `const`
+  whose value equals it. That would have caught `Onboarding.manifest.json`'s
+  `w-80`, which shipped and had to be fixed by hand.
+- **Two 8px insets meet the chart-token criterion and were left out.** The
+  doughnut's `rOuter` inset (`DoughnutChart.jsx`, `doughnut-chart.ts`), commented
+  as *"breathing room so a slice's stroke is not clipped"*, and the axis-label
+  offset in `PAD.l - 8` / `height - 8`, which appears six times across the two
+  layers. Both are spacing decisions in px, indistinguishable in kind from
+  `--chart-pad-top`, which **is** a token and is also 8. This is debt, not scope:
+  the recorded rationale for the other chart exclusions — *a multiplier that
+  derives one dimension from another is not itself a design value* — does not
+  cover either of them, so a reader applying it reaches the opposite conclusion.
+
+### Where the rest of the debt lives
+
+Each of these is a record with its own stale-entry rule: an entry that no longer
+matches a real violation fails the gate that owns it. Read the entries, never a
+count written here, which would drift.
+
+- **`components-divergences.md`** — 1119 lines, and the largest debt record in the
+  repo. Every behaviour difference between the React and Angular layers, with its
+  reason and whether it is expected to converge. Structural divergences first,
+  then per-component. Its own opening admits the cost: no layer is the authority
+  for component behaviour, so a divergence cannot be a defect. Plan 7's spec
+  proposes replacing that with a normative contract.
+- **`scripts/check-dimension-literals.mjs`** — `EXEMPT` (a literal that is the
+  true value at its site: a runtime data-to-pixel projection, a stacking context
+  scoped to one container, the visually-hidden idiom) and `PASSTHROUGH`. Its two
+  known blind spots — a kebab-case SVG attribute, and Angular's `[style.x]`
+  binding form — are **not** in the script's own header; they are documented in
+  the `check:dimensions` paragraph under *Architecture* above, which is the only
+  place they are written down.
+- **`scripts/check-manifest-states.mjs`** — `EXEMPT` (a state delegated to a
+  composed child, or a deliberate Angular-only accessibility addition) and
+  `SOURCE_OVERRIDES` (the manifest-to-component mapping is not one-to-one).
+- **`scripts/check-tailwind-coverage.mjs`** — `EXCLUDED`, every token that
+  deliberately reaches no Tailwind utility, with the reason. The gate asserts the
+  entry exists, never that the reason is true — so a reason can rot silently, and
+  one did: `onboarding-width`'s was written anticipatorily and was false for two
+  commits.
+- **`scripts/check-duplicate-constants.mjs`** — `EXEMPT`, empty today, plus a
+  header stating plainly what the gate does not catch.
+- **`scripts/build-tokens.mjs`** — `load()` reads one source file per call, so a
+  DTCG alias cannot resolve across files. Three chart tokens restate `--sp-2` and
+  `--sp-4` because of it. The constraint is self-imposed and removable; the fix is
+  written on `load()` itself.

@@ -131,7 +131,21 @@ export async function buildScriptModules() {
   return new Map(SCRIPT_TARGETS.map((path) => [path, body]));
 }
 
-/** Resolves one source file to its named, ordered token tree. */
+/** Resolves one source file to its named, ordered token tree.
+ *
+ *  KNOWN DEBT, and you have probably just hit it: this builds a fresh
+ *  StyleDictionary per source file, so a DTCG alias CANNOT RESOLVE ACROSS FILES.
+ *  Writing `"$value": "{sp.2}"` in chart.json does not reach spacing.json's sp.2
+ *  — the dictionary loading chart.json has never seen it.
+ *
+ *  Three tokens pay for this today by restating a value that already exists:
+ *  chart.pad-top and chart.pad-right are 8 (= --sp-2), and chart.legend-gap is
+ *  16 (= --sp-4). Their $descriptions say so rather than pretending otherwise.
+ *
+ *  The constraint is self-imposed and removable: load all of tokens/src/ into
+ *  one dictionary and partition the walk by each token's source file. Nobody has
+ *  needed it enough to do it. If you are here because you wanted an alias, that
+ *  is the fix — do not add a fourth restatement. */
 async function load(source) {
   const sd = new StyleDictionary({
     source: [join(root, 'tokens/src', source)],
