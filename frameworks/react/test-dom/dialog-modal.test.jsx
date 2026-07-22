@@ -25,12 +25,25 @@ import { ConfirmDialog } from '../components/feedback/ConfirmDialog.jsx';
 afterEach(cleanup);
 
 /* Every one of these is excepted by both bindings, and `false` means "a
- * behavioural test proved this requirement is NOT met". Neither component has a
- * keydown listener, a focus ref, or any stored invoker — read either source and
- * the four verdicts are visible in what is absent from it. The tests that
- * establish them by acting on the tree are plan 7c's task 6; until those land
- * these four verdicts rest on the same reading the exceptions' own reasons do,
- * which is exactly the state the rest of this suite exists to end. */
+ * behavioural test proved this requirement is NOT met".
+ *
+ * Those tests exist. Three of the four are established by acting on a real tree
+ * in behavioural.test.jsx, which sits beside this file: keyboard.Escape (a
+ * keydown is dispatched and the close callback does not run, for both
+ * components), focus.onOpen (an element is focused first, then the dialog is
+ * mounted, and activeElement has not moved) and focus.onClose (focus is placed
+ * inside, the dialog is closed, and focus falls to body rather than returning
+ * to the invoker). The fourth, focus.trap, is not reachable by render at all —
+ * happy-dom does not implement sequential focus navigation, so Tab does not
+ * move activeElement — and is asserted as a pure function over
+ * frameworks/angular/primitives/focus-trap.ts in
+ * frameworks/angular/test/confirm-dialog-focus-trap.test.ts and
+ * command-palette-focus-trap.test.ts.
+ *
+ * So these verdicts no longer rest on a reading of the source, which is exactly
+ * the state the rest of this suite exists to end. Change one here and the
+ * matching assertion in behavioural.test.jsx must change with it — that file's
+ * header explains why those assertions pin a defect on purpose. */
 const BEHAVIOURAL = { 'focus.onOpen': false, 'focus.onClose': false, 'focus.trap': false, 'keyboard.Escape': false };
 
 /* Finding 2: the three synthetic-binding tests below used to write a fixed
