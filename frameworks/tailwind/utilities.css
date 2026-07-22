@@ -1485,17 +1485,6 @@
         background-color: color-mix(in oklab, var(--color-primary) 14%, transparent);
       }
     }
-    .hover\:bg-transparent:hover {
-      background-color: transparent;
-    }
-    .hover\:text-base-content\/62:hover {
-      color: var(--color-base-content);
-    }
-    @supports (color: color-mix(in lab, red, red)) {
-      .hover\:text-base-content\/62:hover {
-        color: color-mix(in oklab, var(--color-base-content) 62%, transparent);
-      }
-    }
     .hover\:text-base-content\/82:hover {
       color: var(--color-base-content);
     }
