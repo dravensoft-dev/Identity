@@ -26,17 +26,20 @@ export function el(tag, props = {}, ...children) {
   return node;
 }
 
-/** @param {string} label @param {(Node|string)[]} nodes @returns {{label: string, nodes: (Node|string)[]}} */
-export function section(label, nodes) {
-  return { label, nodes };
+/** @param {string} label @param {(Node|string)[]} nodes
+ *  @param {{stack?: boolean}} [opts] stack: lay the examples out in a column,
+ *    for components that occupy a full row on their own
+ *  @returns {{label: string, nodes: (Node|string)[], stack: boolean}} */
+export function section(label, nodes, opts = {}) {
+  return { label, nodes, stack: Boolean(opts.stack) };
 }
 
 /** Renders the sections into `mount`, each under its micro-label.
  *  @param {{sections: {label: string, nodes: (Node|string)[]}[], mount?: Element}} opts */
 export function mountSpecimen({ sections, mount = document.getElementById('root') }) {
-  for (const { label, nodes } of sections) {
+  for (const { label, nodes, stack } of sections) {
     mount.append(el('div', { class: 'sub', text: label }));
-    const row = el('div', { class: 'row' });
+    const row = el('div', { class: stack ? 'row stack' : 'row' });
     for (const node of nodes) row.append(node);
     mount.append(row);
   }
