@@ -1,0 +1,35 @@
+<!-- @dsCard group="Tailwind" viewport="420x373" name="SideNav" subtitle="The sidebar's navigation list, rendered from SideNav.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./SideNav.manifest.json')).json();
+
+function nav(entries, current, ariaLabel) {
+  const root = el('nav', { class: classesFor(manifest).root, 'aria-label': ariaLabel });
+  for (const { label, href } of entries) {
+    const on = label === current;
+    const c = classesFor(manifest, { active: String(on) });
+    root.append(href
+      ? el('a', { class: c.item, href, 'aria-current': on ? 'page' : undefined, text: label })
+      : el('button', { class: c.item, type: 'button', 'aria-current': on ? 'page' : undefined, text: label }));
+  }
+  return root;
+}
+
+mountSpecimen({ sections: [
+  section('Links, one current', [nav([
+    { label: 'Overview', href: '#overview' },
+    { label: 'Projects', href: '#projects' },
+    { label: 'Activity', href: '#activity' },
+    { label: 'Settings', href: '#settings' },
+  ], 'Projects', 'Primary')], { stack: true }),
+  section('Buttons — no href, same figure', [nav([
+    { label: 'Overview' }, { label: 'Projects' },
+  ], 'Overview', 'Primary (buttons demo)')], { stack: true }),
+]});
+</script></body></html>
