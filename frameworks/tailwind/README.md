@@ -280,3 +280,60 @@ change anything — every slot is already border-box from the preflight, so the
 class is a no-op that only reads as if some *other* slot were missing it.
 `Input.manifest.json` shipped exactly that on its `field` slot before this rule
 was written down.
+
+## P1 — invented states
+
+Before adding any state modifier a brief does not contain, cite the line of the
+mirrored React component that implements it. "Every other component has one"
+is not evidence — it is the failure mode.
+
+This has produced the exact same defect twice on this branch: `Tabs`'
+`selected: false` branch carried a `hover:` copied from `SegmentedControl`'s
+near-identical variant (removed, and written down above), and
+`Pagination.manifest.json` shipped three (`nav`'s and `pageOther`'s
+`hover:bg-base-200`, `pageCurrent`'s `hover:shadow-2`) in the very next batch —
+one commit after the rule was first stated in prose. `Pagination.jsx` has no
+`useState`, no `onMouseEnter`/`onMouseLeave`, no hover branch anywhere; the
+justification offered was the same "every other clickable primitive in this
+layer has one" reasoning the Tabs entry above already names as the failure
+mode, not a defense against it. A manifest authored by reading a neighbour
+instead of the component it mirrors is how this keeps happening. `bun run
+check:states` (`scripts/check-manifest-states.mjs`) now catches the shape
+this rule describes — see below — but citing the source line is still the
+right first move, since the gate is crude by design and does not replace
+reading the component.
+
+## P2 — hover on a disableable slot
+
+Any `hover:` on a slot that can also be `:disabled` must be guarded
+(`not-disabled:hover:`) or paired with a disabled property that neutralizes
+it. `:hover` matches a disabled element's pseudo-class in Chrome and Firefox —
+they suppress the *events* a disabled control would otherwise dispatch, not
+selector matching — so an unguarded `hover:bg-*` still paints on a disabled
+button, including the exact case `Pagination.manifest.json`'s `nav` slot
+shipped: a disabled prev/next arrow, rendered dim and `not-allowed` by design,
+tinting on hover anyway.
+
+`IconButton.manifest.json` gets away with an unguarded `hover:bg-base-200`
+only because its `disabled:opacity-45` mutes *everything* the element renders,
+tint included — the hover still technically fires, but nothing shows through
+the reduced opacity that a sighted user would read as feedback. A bare
+`hover:bg-*` with no such blanket disabled treatment does not get this for
+free; guard it explicitly.
+
+## P3 — border-box is a table entry, not a paragraph
+
+For every slot combining an explicit size with border or padding, both
+numbers go into `components-divergences.md`'s border-box table as part of the
+task that touches that slot. The table entry is the deliverable; the prose
+reasoning is not — and a conclusion of "does not apply" still requires
+computing and recording the same two numbers, not asserting the conclusion.
+
+Three passes over this exact rule got the numbers wrong, and got them wrong
+the same way each time: by reasoning in prose and dropping padding from the
+computation. Padding carves out of a border-box total exactly the way a
+border does — the rule earlier in this file says so explicitly — and a prose
+summary is where that term quietly goes missing. Compute both totals
+(content-box outer, border-box outer) from the actual utility values and the
+actual component source before writing the sentence that describes them, and
+put the two numbers in the table first.
