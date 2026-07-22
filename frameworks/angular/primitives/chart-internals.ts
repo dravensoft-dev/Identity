@@ -9,17 +9,26 @@
  * ours to write.
  */
 
+import {
+  chartHeight, chartPadTop, chartPadRight, chartPadBottom, chartPadLeft,
+} from '../tokens.generated';
+
 /** A series that IS a state rather than an identity. */
 export type ArenaChartTone = 'success' | 'warning' | 'danger' | 'info';
 
 /** How many identity slots the categorical ramp defines. Assigned in order, never cycled. */
 export const CAT_SLOTS = 8;
 
-/** The chart plot's height in px, before padding. */
-export const CHART_HEIGHT = 280;
+/** The chart plot's height in px, before padding. From tokens/src/chart.json. */
+export const CHART_HEIGHT = chartHeight;
 
-/** Plot padding in px. Left pad holds the value labels; bottom pad holds the category labels. */
-export const PAD = { t: 8, r: 8, b: 28, l: 44 } as const;
+/** Plot padding in px. Left pad holds the value labels; bottom pad holds the
+ *  category labels. From tokens/src/chart.json -- these were declared here AND
+ *  in React's chart-internals.js, identically, which is the duplication the
+ *  script-readable target exists to end. */
+export const PAD = {
+  t: chartPadTop, r: chartPadRight, b: chartPadBottom, l: chartPadLeft,
+} as const;
 
 /** Visually hidden, still read aloud. Every chart pairs role="img" with a real <table>
  *  of its numbers: a picture no one can read is not an alternative. Bind it with

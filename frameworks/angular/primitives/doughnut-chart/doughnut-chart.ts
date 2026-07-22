@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { containerWidth } from '../container-size';
 import { CHART_HEIGHT, SR_ONLY, arcPath, resolveColors } from '../chart-internals';
+import { chartLegendMin, chartLegendMax, chartLegendGap } from '../../tokens.generated';
 
 /** The plot width assumed for the first paint, before `containerWidth()` has
  *  measured anything. Wide on purpose — a chart that starts narrow and widens
@@ -14,15 +15,18 @@ const START_ANGLE = -Math.PI / 2;
 /** The legend column's width in px: 34% of the container, clamped. Below the floor
  *  the labels ellipsis away to nothing; above the ceiling the ring starves. These
  *  are SVG-adjacent layout arithmetic on a measured pixel width, not CSS lengths on
- *  Arena's dimension scale — `DoughnutChart.jsx` writes the same three numbers. */
-const LEGEND_MIN = 120;
-const LEGEND_MAX = 180;
+ *  Arena's dimension scale — `DoughnutChart.jsx` writes the same three numbers, from
+ *  tokens/src/chart.json. The 0.34 share stays a literal: a ratio deriving one
+ *  dimension from another is not itself a design value. */
+const LEGEND_MIN = chartLegendMin;
+const LEGEND_MAX = chartLegendMax;
 const LEGEND_SHARE = 0.34;
 
 /** The flex gap between the ring and the legend, in px. The SVG is sized in user
  *  units, so the gap has to be subtracted from the plot as a number — it is the
- *  pixel value of the host's own `calc(var(--sp-1) * 4)`, and the two move together. */
-const LEGEND_GAP = 16;
+ *  pixel value of the host's own `calc(var(--sp-1) * 4)`, and the two move together.
+ *  From tokens/src/chart.json. */
+const LEGEND_GAP = chartLegendGap;
 
 /** How far the ring's outer edge sits inside the plot box, in px. Breathing room so a
  *  slice's stroke is not clipped by the SVG's own edge. */
