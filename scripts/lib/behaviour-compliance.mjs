@@ -272,7 +272,11 @@ export const BEHAVIOURAL = new Set([
  *    an OVERCLAIM message so a reader sees what was asked for; never parsed.
  *  @param {string} patternName the owning pattern's name, which is what selects
  *    the semantics for roles.element and roles.label
- *  @returns {true | false | null} null = undecidable from this element alone */
+ *  @returns {true | false | null} null = undecidable from this element alone
+ *  @throws {Error} on a key in neither DECIDABLE nor BEHAVIOURAL, and on a
+ *    roles.element requirement whose pattern has no ELEMENT_ROLE entry. Both are
+ *    programming errors — a typo in a pattern file, or a map left un-extended —
+ *    not verdicts about a component, so neither may be returned as one. */
 export function evaluate(el, key, value, patternName) {
   if (key === 'roles.element') {
     const wanted = ELEMENT_ROLE[patternName];
@@ -345,61 +349,112 @@ export function evaluate(el, key, value, patternName) {
  * looks stale, judged against the trigger it is true. Naming the element the
  * requirement is *about* is stated once per suite rather than inferred forever.
  *
+ * `behavioural` is a MAP of verdicts, not a list of keys, and that is the second
+ * correction this file has needed. It used to be `string[]`: naming a key there
+ * meant only "my suite asserts this somehow", and the undecidable branch did
+ * `used.add(key); continue;` without ever consulting the binding's exceptions. So
+ * for every behavioural key the layer's one real property — that an exception can
+ * expire — simply did not hold. Measured against the real tree when this was
+ * found: 48 of the 94 live exceptions sat on keys that path skipped (focus.roving,
+ * keyboard.Escape, focus.onOpen/onClose/trap, the arrow keys, the six conditional
+ * states). The sharp form returned `[]` in silence — a binding excepting
+ * `states.disabled` ("we do not implement this") beside a suite declaring
+ * `states.disabled` behavioural ("my own test asserts this") is flatly
+ * contradictory, and the comparison said nothing about it.
+ *
+ * So a suite now declares the VERDICT its behavioural test established — `true`
+ * = my test proved the requirement met, `false` = my test proved it unmet — and
+ * that verdict flows into exactly the same bidirectional rule as a DOM-derived
+ * one: met + excepted is a STALE EXCEPTION, unmet + unexcepted is an OVERCLAIM.
+ *
+ * Be clear about what this does and does not establish. It does NOT make this
+ * module prove the behaviour — nothing here traps focus or presses a key; the
+ * suite's own test does that, and the declaration is only the wire carrying that
+ * test's result to the binding. That wire was the missing half. A declaration is
+ * still a claim by the suite author, exactly as `check:behaviour`'s green run is
+ * "a coverage claim, never an accessibility one".
+ *
  * @param {object} o
  * @param {{name: string, requires: Record<string, unknown>}} o.pattern
  * @param {{pattern: string, exceptions?: {requirement: string, reason: string}[]}} o.binding
  * @param {Record<string, object|null>} [o.subjects] requirement key -> the element that must carry it
  * @param {object|null} [o.fallback] the element used for any requirement not named in `subjects`
- * @param {string[]} [o.behavioural] requirement keys the caller asserts by acting on
- *   the tree rather than by reading it. Every undecidable requirement must be listed
- *   or this reports it — silence about an unverifiable claim is what this layer exists
- *   to remove.
+ * @param {Record<string, boolean>} [o.behavioural] requirement key -> the verdict the
+ *   caller's own behavioural test established, for requirements that must be asserted
+ *   by acting on the tree rather than by reading it. Every undecidable requirement must
+ *   appear as a key or this reports it — silence about an unverifiable claim is what
+ *   this layer exists to remove.
  * @returns {string[]} one message per problem, empty when clean
+ * @throws {Error} whatever evaluate() throws — an unrecognised requirement key, or a
+ *   roles.element requirement on a pattern with no ELEMENT_ROLE entry. Both are
+ *   programming errors rather than verdicts, so they are not returned as problems.
+ *   In a render suite that means the whole test aborts instead of reporting this
+ *   component's problems beside the others; that is intended, but callers should
+ *   know it can happen.
  */
-export function comparePattern({ pattern, binding, subjects = {}, fallback = null, behavioural = [] }) {
+export function comparePattern({ pattern, binding, subjects = {}, fallback = null, behavioural = {} }) {
   const excepted = new Map((binding.exceptions ?? []).map((e) => [e.requirement, e.reason]));
-  const declared = new Set(behavioural);
+  const declared = new Map(Object.entries(behavioural));
   const used = new Set();
   const problems = [];
+  // Finding 3: when a subject was missing, every requirement is skipped, so every
+  // declared key also goes unused. Reporting those as "the pattern no longer
+  // requires it, or it is now decidable" states two causes that are both false in
+  // that state, and an author who follows the instruction deletes a correct
+  // declaration and gets the opposite error next run. The report stays — silence
+  // would hide a real stale declaration — but it must name the real cause.
+  let missedSubject = false;
 
   for (const [key, value] of Object.entries(pattern.requires)) {
     const el = key in subjects ? subjects[key] : fallback;
     if (!el) {
+      missedSubject = true;
       problems.push(`${key}: no subject element — nothing was rendered, or the selector matched nothing.`);
       continue;
     }
-    const verdict = evaluate(el, key, value, pattern.name);
+    const domVerdict = evaluate(el, key, value, pattern.name);
 
-    if (verdict === null) {
-      if (declared.has(key)) { used.add(key); continue; }
-      problems.push(
-        `${key}: undecidable from the DOM and not declared behavioural. ` +
-        'Assert it by acting on the tree and list it in `behavioural`, or explain why it cannot be asserted at all.',
-      );
-      continue;
+    // Where the verdict comes from decides the wording, never the rule.
+    let verdict = domVerdict;
+    let source = 'the rendered DOM';
+    if (domVerdict === null) {
+      if (!declared.has(key)) {
+        problems.push(
+          `${key}: undecidable from the DOM and not declared behavioural. ` +
+          'Assert it by acting on the tree and record the verdict in `behavioural`, ' +
+          'or explain why it cannot be asserted at all.',
+        );
+        continue;
+      }
+      used.add(key);
+      verdict = declared.get(key) === true;
+      source = 'your behavioural test';
     }
 
     const hasException = excepted.has(key);
     if (verdict && hasException) {
       problems.push(
-        `${key}: STALE EXCEPTION — met in the rendered DOM, but the binding still excepts it.\n` +
+        `${key}: STALE EXCEPTION — met according to ${source}, but the binding still excepts it.\n` +
         `      reason on file: ${excepted.get(key)}\n` +
         '      Delete the exception, or name a subject if the exception is about a different element.',
       );
     } else if (!verdict && !hasException) {
       problems.push(
-        `${key}: OVERCLAIM — the binding declares no exception, but the rendered DOM does not meet it.\n` +
+        `${key}: OVERCLAIM — the binding declares no exception, but ${source} does not meet it.\n` +
         `      pattern requires: ${JSON.stringify(value)}`,
       );
     }
   }
 
-  for (const key of declared) {
+  for (const key of declared.keys()) {
     if (used.has(key)) continue;
-    problems.push(
-      `${key}: declared behavioural but never reached. ` +
-      'Either the pattern no longer requires it, or it is now decidable from the DOM — remove it from `behavioural`.',
-    );
+    problems.push(missedSubject
+      ? `${key}: declared behavioural but never reached, because a subject element above was ` +
+        'missing and its requirement was skipped. Fix the missing subject first — this ' +
+        'declaration may well be correct.'
+      : `${key}: declared behavioural but never reached. ` +
+        'Either the pattern no longer requires it, or it is now decidable from the DOM — ' +
+        'remove it from `behavioural`.');
   }
   return problems;
 }

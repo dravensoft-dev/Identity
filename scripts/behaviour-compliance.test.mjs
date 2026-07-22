@@ -46,8 +46,9 @@ test('roleOf prefers an explicit role', () => {
 });
 
 test('roleOf takes the first token of a multi-token role', () => {
-  // ARIA allows a fallback list; the first supported token wins, and Arena never
-  // authors a list whose first token is not the intended one.
+  // ARIA allows a fallback list; roleOf takes the first token and trims
+  // surrounding whitespace. That is all this pins — whether any Arena component
+  // actually authors such a list is not checked anywhere.
   assert.equal(roleOf(el('div', { role: 'doc-abstract  region' })), 'doc-abstract');
   assert.equal(roleOf(el('div', { role: '  button ' })), 'button');
 });
@@ -148,6 +149,25 @@ test('ELEMENT_ROLE names no pattern that does not require roles.element', () => 
     (name) => !PATTERNS.has(name) || !('roles.element' in (PATTERNS.get(name).requires ?? {})),
   );
   assert.deepEqual(stale, []);
+});
+
+test('every ELEMENT_ROLE value is the role its own pattern names', () => {
+  // The keys of this map were checked in both directions and its VALUES were not,
+  // which left the map one typo away from the exact defect the previous fix round
+  // existed to remove: `toolbar: 'toolbr'` satisfied every other test here and
+  // would report a false OVERCLAIM against a correct <div role="toolbar">, whose
+  // cheapest cure is a fabricated exception in the binding.
+  //
+  // The tie is that all 13 roles appear verbatim inside their own pattern's
+  // roles.element prose — even navigation's, which is a whole sentence wrapped
+  // around the word. That is the only machine-checkable link between this map and
+  // the source of truth; a value that is a real role but the WRONG one for the
+  // pattern is still out of reach here, and only a rendered component catches it.
+  for (const [name, role] of Object.entries(ELEMENT_ROLE)) {
+    const prose = String(PATTERNS.get(name)?.requires?.['roles.element'] ?? '');
+    assert.match(prose, new RegExp(`\\b${role}\\b`, 'i'),
+      `ELEMENT_ROLE.${name} is "${role}", which does not appear in that pattern's roles.element: ${prose}`);
+  }
 });
 
 test('every pattern in LABEL_ACCEPTS_TEXT really admits text content as its name', () => {
@@ -318,7 +338,10 @@ const DIALOG_MODAL = {
   },
 };
 
-const BEHAVIOURAL_KEYS = ['focus.trap', 'keyboard.Escape'];
+/** The shape `behavioural` takes now: key -> the verdict the caller's own
+ *  behavioural test established. Both of DIALOG_MODAL's undecidable requirements,
+ *  declared met, which is what a passing focus-trap and Escape test would report. */
+const BEHAVIOURAL_MET = { 'focus.trap': true, 'keyboard.Escape': true };
 
 test('comparePattern is silent when the DOM and the binding agree', () => {
   const subject = el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Delete' });
@@ -326,7 +349,7 @@ test('comparePattern is silent when the DOM and the binding agree', () => {
     pattern: DIALOG_MODAL,
     binding: { pattern: 'dialog-modal', exceptions: [] },
     fallback: subject,
-    behavioural: BEHAVIOURAL_KEYS,
+    behavioural: BEHAVIOURAL_MET,
   });
   assert.deepEqual(problems, []);
 });
@@ -337,7 +360,7 @@ test('comparePattern treats a binding with no exceptions field as having none', 
     pattern: DIALOG_MODAL,
     binding: { pattern: 'dialog-modal' },   // no `exceptions` key at all
     fallback: subject,
-    behavioural: BEHAVIOURAL_KEYS,
+    behavioural: BEHAVIOURAL_MET,
   });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /OVERCLAIM/);
@@ -349,7 +372,7 @@ test('comparePattern reports a stale exception when the requirement is met', () 
     pattern: DIALOG_MODAL,
     binding: { pattern: 'dialog-modal', exceptions: [{ requirement: 'roles.label', reason: 'synthetic' }] },
     fallback: subject,
-    behavioural: BEHAVIOURAL_KEYS,
+    behavioural: BEHAVIOURAL_MET,
   });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /STALE EXCEPTION/);
@@ -362,7 +385,7 @@ test('comparePattern reports an overclaim when a requirement is unmet and unexce
     pattern: DIALOG_MODAL,
     binding: { pattern: 'dialog-modal', exceptions: [] },
     fallback: subject,
-    behavioural: BEHAVIOURAL_KEYS,
+    behavioural: BEHAVIOURAL_MET,
   });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /OVERCLAIM/);
@@ -379,7 +402,7 @@ test('comparePattern is silent for a correct button, which is the case it used t
     pattern: button,
     binding: { pattern: 'button', exceptions: [] },
     fallback: el('button', {}, 'Save'),
-    behavioural: ['keyboard.Space', 'keyboard.Enter', 'states.disabled'],
+    behavioural: { 'keyboard.Space': true, 'keyboard.Enter': true, 'states.disabled': true },
   });
   assert.deepEqual(problems, []);
 });
@@ -390,7 +413,7 @@ test('comparePattern refuses an undecidable requirement that was not declared be
     pattern: DIALOG_MODAL,
     binding: { pattern: 'dialog-modal', exceptions: [] },
     fallback: subject,
-    behavioural: [],
+    behavioural: {},
   });
   assert.equal(problems.length, 2);
   for (const p of problems) assert.match(p, /not declared behavioural/);
@@ -402,11 +425,91 @@ test('comparePattern reports a behavioural declaration the pattern no longer has
     pattern: DIALOG_MODAL,
     binding: { pattern: 'dialog-modal', exceptions: [] },
     fallback: subject,
-    behavioural: [...BEHAVIOURAL_KEYS, 'focus.roving'],
+    behavioural: { ...BEHAVIOURAL_MET, 'focus.roving': true },
   });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /never reached/);
   assert.match(problems[0], /focus\.roving/);
+});
+
+/* The four branches of a declared behavioural verdict.
+ *
+ * These exist because the old `string[]` shape had no branches at all: a declared
+ * key did `used.add(key); continue;` and the binding's exceptions were never
+ * consulted, so an exception on a behavioural key could rot forever — 48 of the 94
+ * live exceptions in the tree at the time sat on exactly such keys. The first two
+ * cases below both returned `[]` in silence. */
+
+const EXCEPTS_TRAP = {
+  pattern: 'dialog-modal',
+  exceptions: [{ requirement: 'focus.trap', reason: 'no focus trap is implemented' }],
+};
+const NAMED_DIALOG = () => el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Delete' });
+
+test('comparePattern reports a stale exception on a behavioural key declared met', () => {
+  // The contradiction this whole change exists for: the binding says "we do not
+  // implement this", the suite's own test says it proved it met. One of the two is
+  // wrong and the layer must say so rather than pass both.
+  const problems = comparePattern({
+    pattern: DIALOG_MODAL,
+    binding: EXCEPTS_TRAP,
+    fallback: NAMED_DIALOG(),
+    behavioural: { ...BEHAVIOURAL_MET },
+  });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /STALE EXCEPTION/);
+  assert.match(problems[0], /focus\.trap/);
+  assert.match(problems[0], /your behavioural test/, 'the message names where the verdict came from');
+});
+
+test('comparePattern reports an overclaim on a behavioural key declared unmet', () => {
+  const problems = comparePattern({
+    pattern: DIALOG_MODAL,
+    binding: { pattern: 'dialog-modal', exceptions: [] },
+    fallback: NAMED_DIALOG(),
+    behavioural: { ...BEHAVIOURAL_MET, 'focus.trap': false },
+  });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /OVERCLAIM/);
+  assert.match(problems[0], /focus\.trap/);
+  assert.match(problems[0], /your behavioural test/);
+});
+
+test('comparePattern is silent when a behavioural verdict of false matches an exception', () => {
+  // The honest state, and the common one: the component does not do it, the
+  // suite's test confirms it does not, the binding records why. Nothing to report.
+  const problems = comparePattern({
+    pattern: DIALOG_MODAL,
+    binding: EXCEPTS_TRAP,
+    fallback: NAMED_DIALOG(),
+    behavioural: { ...BEHAVIOURAL_MET, 'focus.trap': false },
+  });
+  assert.deepEqual(problems, []);
+});
+
+test('comparePattern is silent when a behavioural verdict of true has no exception', () => {
+  const problems = comparePattern({
+    pattern: DIALOG_MODAL,
+    binding: { pattern: 'dialog-modal', exceptions: [] },
+    fallback: NAMED_DIALOG(),
+    behavioural: { ...BEHAVIOURAL_MET },
+  });
+  assert.deepEqual(problems, []);
+});
+
+test('comparePattern still refuses an undecidable key absent from the map', () => {
+  // Present-with-a-false-verdict and absent are different states, and only the
+  // second is a hole in the suite. Declaring `false` is an assertion; omitting the
+  // key is silence, which is what this layer exists to remove.
+  const problems = comparePattern({
+    pattern: DIALOG_MODAL,
+    binding: EXCEPTS_TRAP,
+    fallback: NAMED_DIALOG(),
+    behavioural: { 'keyboard.Escape': true },
+  });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /focus\.trap/);
+  assert.match(problems[0], /not declared behavioural/);
 });
 
 test('comparePattern uses a per-requirement subject over the fallback', () => {
@@ -421,7 +524,7 @@ test('comparePattern uses a per-requirement subject over the fallback', () => {
     binding: { pattern: 'menu-button', exceptions: [{ requirement: 'roles.haspopup', reason: 'on the wrapper' }] },
     subjects: { 'roles.haspopup': trigger },
     fallback: wrapper,
-    behavioural: [],
+    behavioural: {},
   });
   assert.deepEqual(onTrigger, [], 'the exception is true when judged against the trigger');
 
@@ -429,7 +532,7 @@ test('comparePattern uses a per-requirement subject over the fallback', () => {
     pattern,
     binding: { pattern: 'menu-button', exceptions: [{ requirement: 'roles.haspopup', reason: 'on the wrapper' }] },
     fallback: wrapper,
-    behavioural: [],
+    behavioural: {},
   });
   assert.equal(onWrapper.length, 1);
   assert.match(onWrapper[0], /STALE EXCEPTION/, 'and falsely stale when judged against the wrapper');
@@ -440,7 +543,7 @@ test('comparePattern reports a missing subject once per requirement', () => {
     pattern: DIALOG_MODAL,
     binding: { pattern: 'dialog-modal', exceptions: [] },
     fallback: null,
-    behavioural: BEHAVIOURAL_KEYS,
+    behavioural: BEHAVIOURAL_MET,
   });
   // The exact count, not `> 0` — one message per requirement, plus one per
   // declared behavioural key, because a requirement skipped for want of a
@@ -450,6 +553,10 @@ test('comparePattern reports a missing subject once per requirement', () => {
   const missing = problems.filter((p) => /no subject element/.test(p));
   const unreached = problems.filter((p) => /never reached/.test(p));
   assert.equal(missing.length, Object.keys(DIALOG_MODAL.requires).length);
-  assert.equal(unreached.length, BEHAVIOURAL_KEYS.length);
+  assert.equal(unreached.length, Object.keys(BEHAVIOURAL_MET).length);
+  // And the wording names the real cause. The generic message tells the author the
+  // pattern no longer requires it or it has become decidable; both are false here,
+  // and following it deletes a correct declaration.
+  for (const p of unreached) assert.match(p, /because a subject element above was missing/);
   assert.equal(problems.length, missing.length + unreached.length);
 });
