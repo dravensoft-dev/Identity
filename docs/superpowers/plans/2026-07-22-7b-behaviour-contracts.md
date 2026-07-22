@@ -480,6 +480,21 @@ test('a delegated binding must name what provides the behaviour', () => {
   assert.match(validateBinding('Dialog', 'angular', b, patterns)[0], /delegatedTo/);
 });
 
+/* An Angular primitive's directory is kebab-case (stat-card) and its React
+ * counterpart is Pascal (StatCard). Deriving one from the other is the same
+ * unsafe round-trip that bit the script-readable gate -- so the binding CARRIES
+ * the counterpart's name instead. Without it the cross-layer assertion silently
+ * never fires, which would quietly disable the one check this plan exists for. */
+test('an angular binding must name its React counterpart', () => {
+  const b = { pattern: 'dialog-modal' };
+  assert.match(validateBinding('stat-card', 'angular', b, patterns)[0], /must declare "component"/);
+});
+
+test('an angular binding that names its counterpart is valid', () => {
+  const b = { pattern: 'dialog-modal', component: 'StatCard' };
+  assert.deepEqual(validateBinding('stat-card', 'angular', b, patterns), []);
+});
+
 test('the React inventory finds every component and no demo entry', () => {
   const found = reactComponents('.');
   assert.equal(found.length, 43);
@@ -521,6 +536,13 @@ export function validateBinding(component, layer, binding, patterns) {
   if ('delegatedTo' in binding && !binding.delegatedTo) {
     problems.push(`${where}: delegatedTo must name what provides the behaviour, e.g. "Angular Material matTooltip"`);
   }
+  /* An Angular primitive's directory name is kebab-case; its React counterpart is
+   * Pascal. Never derive one from the other -- scriptName('sp-4') is 'sp4' and
+   * nothing recovers 'sp-4' from that, and the same asymmetry applies here.
+   * Carrying the name is what lets the cross-layer assertion fire at all. */
+  if (layer === 'angular' && !binding.component) {
+    problems.push(`${where}: an angular binding must declare "component", naming its React counterpart (e.g. "StatCard" for stat-card)`);
+  }
   for (const exception of binding.exceptions ?? []) {
     if (!(exception.requirement in pattern.requires)) {
       problems.push(`${where}: exception names no requirement "${exception.requirement}" in pattern ${binding.pattern} — stale or mistyped`);
@@ -558,7 +580,7 @@ export function angularPrimitives(root) {
 }
 ```
 
-Add `statSync` is not needed; `withFileTypes` covers it. Ensure `readdirSync` is already imported at the top of the file from Task 1 — it is.
+`readdirSync`, `join`, `basename` and `extname` are already imported at the top of the file from Task 1, so no import changes are needed. `angularPrimitives` filters to directories with `withFileTypes` deliberately: `frameworks/angular/primitives/` holds five bare `.ts` files alongside the twenty-one directories — `chart-internals.ts`, `focus-trap.ts`, `container-size.ts`, `projection-markers.ts`, `index.ts` — and none of those is a component.
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
@@ -637,6 +659,9 @@ async function main() {
     }
     const binding = read(path);
     problems.push(...validateBinding(name, 'angular', binding, patterns));
+    if (binding.component && !react.has(binding.component)) {
+      problems.push(`angular/${name}: component "${binding.component}" is not a React component — mistyped, or React dropped it`);
+    }
     angular.set(binding.component ?? name, binding);
   }
 
@@ -887,7 +912,9 @@ Every React component declares."
 
 - [ ] **Step 2: Bind the twenty-one Angular primitives**
 
-One file per directory in `frameworks/angular/primitives/`. Each names the same pattern its React counterpart does — **every Angular primitive has one**, verified — unless the layer genuinely diverges, in which case declare `divergesFrom` naming the React pattern plus a reason.
+One file per directory in `frameworks/angular/primitives/`. **Each must declare `component`, naming its React counterpart in Pascal case** — `{"component": "StatCard", "pattern": "..."}` for `stat-card`. That is not bookkeeping: the directory name is kebab and the React name is Pascal, deriving one from the other is unsafe, and without the field the gate's cross-layer assertion silently never fires.
+
+Each names the same pattern its React counterpart does — **every Angular primitive has one**, verified — unless the layer genuinely diverges, in which case declare `divergesFrom` naming the React pattern plus a reason.
 
 `doughnut-chart` binds `figure-with-data-table` with an **addition**, not an exception: its legend carries `tabindex="0"` and `role="group"` because the legend scrolls and a `tabindex`-less `overflow` box is a keyboard trap (WCAG 2.1.1). React's has none. Record it in the binding's `additions` array so it is visible rather than looking like an undeclared difference:
 
@@ -1109,5 +1136,7 @@ silent in a way that showed up."
 **Placeholder scan.** No TBD, no "add error handling", no "similar to Task N".
 
 **Type consistency.** `loadPatterns`/`validatePattern`/`PATTERN_DIR` are defined in Task 1 and consumed in Tasks 2 and 3. `validateBinding`/`reactComponents`/`angularPrimitives` are defined in Task 3 and consumed by the gate. The binding fields used in Tasks 4–7 — `pattern`, `reason`, `exceptions[].requirement`, `exceptions[].reason`, `delegatedTo`, `dressedBy`, `divergesFrom`, `additions` — are exactly those Task 3's validator reads, except `dressedBy` and `additions`, which are deliberately unvalidated and Task 6 says why.
+
+**A deliberate brittleness worth not "fixing".** Task 3's suite pins `reactComponents` at 43 and `angularPrimitives` at 21. Those literals break when a component is added — and that is correct, not brittle: adding a component to this repo now *requires* declaring its contract, so a failing count is the reminder. A reviewer should not soften it into `assert.ok(length > 0)`, which would pass a walker that silently collected nothing.
 
 **Known risk, and it is the real one.** Tasks 4–7 author 85 declarations, and **the gate cannot check whether any of them is true**. It checks that a pattern named exists, not that the component implements it. A binding claiming `dialog-modal` for a component that traps no focus passes level 1 cleanly. That is inherent to a declaration layer and is why 7c exists — but it means these four tasks rest on the implementer actually reading each component, and a reviewer should spot-check bindings against sources rather than only against the schema.
