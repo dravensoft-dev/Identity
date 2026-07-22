@@ -267,6 +267,21 @@
   .pointer-events-none {
     pointer-events: none;
   }
+  .arena-prog-indeterminate::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 40%;
+    border-radius: inherit;
+    background: currentColor;
+    animation: arena-prog var(--loop-sweep) var(--ease-in-out) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arena-prog-indeterminate::after {
+      animation-duration: var(--loop-reduced);
+    }
+  }
   .absolute {
     position: absolute;
   }
@@ -488,8 +503,17 @@
     width: var(--size-logo-mark-xl);
     height: var(--size-logo-mark-xl);
   }
+  .h-1 {
+    height: var(--spacing-1);
+  }
+  .h-1\.5 {
+    height: calc(var(--spacing) * 1.5);
+  }
   .h-2 {
     height: var(--spacing-2);
+  }
+  .h-2\.5 {
+    height: calc(var(--spacing) * 2.5);
   }
   .h-3 {
     height: var(--spacing-3);
@@ -745,6 +769,9 @@
   }
   .overflow-hidden {
     overflow: hidden;
+  }
+  .rounded-\[inherit\] {
+    border-radius: inherit;
   }
   .rounded-full {
     border-radius: calc(infinity * 1px);
