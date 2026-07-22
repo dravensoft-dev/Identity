@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { cssCounterpart, importedNames } from './check-script-tokens.mjs';
+import { buildScriptModules } from './build-tokens.mjs';
 
 test('cssCounterpart strips the unit from a px declaration', () => {
   assert.equal(cssCounterpart('280px'), 280);
@@ -41,4 +42,10 @@ test('importedNames spans a multi-line import', () => {
 test('importedNames ignores an import from anything else', () => {
   const src = "import { catColor } from './chart-internals.js';";
   assert.deepEqual([...importedNames(src)], []);
+});
+
+test('catSlots is derived from the ramp and equals its slot count', async () => {
+  const modules = await buildScriptModules();
+  const body = modules.get('frameworks/react/tokens.generated.js');
+  assert.match(body, /^export const catSlots = 8;$/m);
 });

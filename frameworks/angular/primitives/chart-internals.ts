@@ -10,14 +10,15 @@
  */
 
 import {
-  chartHeight, chartPadTop, chartPadRight, chartPadBottom, chartPadLeft,
+  chartHeight, chartPadTop, chartPadRight, chartPadBottom, chartPadLeft, catSlots,
 } from '../tokens.generated';
 
 /** A series that IS a state rather than an identity. */
 export type ArenaChartTone = 'success' | 'warning' | 'danger' | 'info';
 
-/** How many identity slots the categorical ramp defines. Assigned in order, never cycled. */
-export const CAT_SLOTS = 8;
+/** How many identity slots the categorical ramp defines. Assigned in order,
+ *  never cycled. Derived from the ramp itself, so adding a slot needs no edit here. */
+export const CAT_SLOTS = catSlots;
 
 /** The chart plot's height in px, before padding. From tokens/src/chart.json. */
 export const CHART_HEIGHT = chartHeight;

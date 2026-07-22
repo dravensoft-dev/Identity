@@ -98,6 +98,19 @@ export async function collectScriptTokens() {
   return out;
 }
 
+/** The categorical ramp's cardinality, counted from the source rather than
+ *  authored. It is the one derived export: a count of tokens in a family is
+ *  not a value anyone should have to keep in step by hand, and it was declared
+ *  as `CAT_SLOTS = 8` in BOTH framework layers before this. Add cat-9 to
+ *  palette.dark.json and the next build propagates it with no other edit. */
+async function catSlotCount() {
+  let n = 0;
+  for (const item of walk(await load('palette.dark.json'))) {
+    if (!item.group && /^color-cat-\d+$/.test(item.token.name)) n += 1;
+  }
+  return n;
+}
+
 /** @returns {Promise<Map<string,string>>} repo-relative path -> module source */
 export async function buildScriptModules() {
   const tokens = await collectScriptTokens();
@@ -106,6 +119,13 @@ export async function buildScriptModules() {
     if (t.$description) lines.push(...comment(t.$description).split('\n').map((l) => l.replace(/^ {2}/, '')));
     lines.push(`export const ${t.jsName} = ${t.value};`);
   }
+  lines.push(
+    '',
+    '/* Derived, not authored: the number of --color-cat-* slots in',
+    ' * tokens/src/palette.dark.json. Assigned in order and NEVER cycled -- a 9th',
+    ' * series folds to "Other", small multiples, or direct labels. */',
+    `export const catSlots = ${await catSlotCount()};`,
+  );
   const body = `${lines.join('\n')}\n`;
   return new Map(SCRIPT_TARGETS.map((path) => [path, body]));
 }

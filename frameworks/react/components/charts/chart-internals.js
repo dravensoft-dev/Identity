@@ -9,10 +9,10 @@
  */
 
 import {
-  chartHeight, chartPadTop, chartPadRight, chartPadBottom, chartPadLeft,
+  chartHeight, chartPadTop, chartPadRight, chartPadBottom, chartPadLeft, catSlots,
 } from '../../tokens.generated.js';
 
-export const CAT_SLOTS = 8;
+export const CAT_SLOTS = catSlots;
 
 /* CHART_HEIGHT and PAD keep their names and shapes -- the call sites read
  * PAD.l, and renaming them would be churn on top of a relocation. What changed

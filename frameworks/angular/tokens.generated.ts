@@ -44,3 +44,8 @@ export const chartLegendMin = 120;
 export const chartLegendMax = 180;
 /* Between the doughnut plot and its legend. Equals --sp-4. */
 export const chartLegendGap = 16;
+
+/* Derived, not authored: the number of --color-cat-* slots in
+ * tokens/src/palette.dark.json. Assigned in order and NEVER cycled -- a 9th
+ * series folds to "Other", small multiples, or direct labels. */
+export const catSlots = 8;
