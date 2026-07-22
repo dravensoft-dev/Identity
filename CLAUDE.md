@@ -428,6 +428,23 @@ scheduled for deletion the same week.
   commit Angular to gaining a schedule view, and it does not resolve whether the gap
   should stay this way. It is simply open.
 
+- **Every claim the delegated declarations make about Angular Material is unpinned.**
+  `frameworks/angular/behaviour-delegated.json` asserts what Material's controls do —
+  that `MatButtonToggleGroup` applies `role="group"` rather than `role="radiogroup"`,
+  that `MatTable` adds no keyboard handling, that `matTooltip`'s `showDelay` defaults to
+  0 — and which Material surfaces `arena-material.css` dresses. **None of it records the
+  Material version it was verified against**, which was `@angular/material` 22.0.5. If a
+  Material release fixes one of those, nothing notices: `check:behaviour` verifies that a
+  declaration names a pattern and requirement that exist, never that a claim about a
+  third-party library is still true, and the whole suite stays green while the reason
+  strings quietly become false. The `dressedBy` claims rot the same way from the other
+  side — add a `.mat-mdc-checkbox` rule to the bridge tomorrow and eight entries still
+  assert the bridge has none. Two cheap mitigations, neither yet done: record the
+  verified Material version as one top-level field and check it against `package.json`,
+  and have `check:material` assert that every `dressedBy` path really contains a rule
+  matching the named control's host class — the same shape as `check:states`' own
+  staleness rule.
+
 ### Where the rest of the debt lives
 
 Each of these is a record with its own stale-entry rule: an entry that no longer
