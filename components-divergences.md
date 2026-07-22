@@ -87,6 +87,50 @@ guard still applies and still passes for both.
 
 **Converges:** no.
 
+### The Tailwind layer is border-box; React is content-box
+
+**The Tailwind layer** — `frameworks/tailwind/`'s compiled `utilities.css`, consumed
+directly by every `*.card.html` specimen and, through `theme/arena-tailwind.css`'s
+preset import, by a real Tailwind-based Angular consumer app too — carries Tailwind
+v4's own preflight (`frameworks/tailwind/utilities.css:112`, `@layer base`): `*, ::after,
+::before, ::backdrop, ::file-selector-button { box-sizing: border-box; … }`.
+
+**React** sets no such rule anywhere in `tokens/` or `styles.css`, so every React
+component is `content-box` — the CSS default — unless it opts in itself. Only four do:
+`Input.jsx`, `Button.jsx`, `Spinner.jsx` and `ConfirmDialog.jsx` each set `boxSizing:
+'border-box'` locally; every other component, including every other form control, is
+content-box.
+
+**What this means numerically:** a slot that combines an explicit size with a border
+renders a box that is **2×`--bw` (2px) smaller in the Tailwind layer** than the
+content-box React renders at the same nominal size utility — the size utility sets the
+same number either way, but content-box adds the border *outside* it while border-box
+draws the border *inside* it. Verified against the current sources:
+
+| Slot | React (content-box) | Tailwind (border-box) |
+|---|---|---|
+| `Checkbox`'s `box` | 22×22 (`size-5`=20 content + 2×`--bw`=2) | 20×20 (`size-5`, border included) |
+| `Radio`'s `ring` | 22×22 (same derivation) | 20×20 (`size-5`, border included) |
+| `Select`'s `field` height | 42px (`--dz-ctl-h`=40 + 2×`--bw`) | 40px (`h-ctl-h`, border included) |
+
+`Input` is the one form control where the two layers agree, and only because
+`Input.jsx:58` opts into `border-box` locally and `Input.manifest.json`'s `field` slot
+carried a matching (but, under preflight, redundant) `box-border` class — removed in the
+same change that added this entry, since every slot in this layer is already border-box
+without it.
+
+**Why:** Tailwind v4's own default is border-box, and it is the more common contemporary
+assumption; the divergence is best read as a pre-existing gap in React's four opted-in
+components rather than something for the Tailwind layer to correct by matching
+content-box. Fixing it by widening a Tailwind size utility per affected slot would just
+be the `+2px` compensation the layer's own README now warns against adding.
+
+**Converges:** not from this side. **Open item on the React layer**, low priority — React
+could set `box-sizing: border-box` globally (matching every other modern CSS reset,
+including Tailwind's own) rather than per-component, which would also make its four
+existing opt-ins redundant the same way `Input`'s Tailwind `box-border` just was. Doing so
+is out of scope here: this change touches no file under `frameworks/react/`.
+
 ### Animation CSS is compiled once for Angular, injected per component in React
 
 **React:** each animated component injects a `<style>` tag once, guarded by a module-level

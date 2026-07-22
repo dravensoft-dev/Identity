@@ -202,3 +202,24 @@ at exactly the control height — square, at all three sizes, with no second
 width class to conflict with it. Before flattening a value that varies with a
 prop to one class, ask which *other* variant group it actually co-varies with,
 and put it there instead.
+
+## This layer is border-box; React is content-box, and that is expected
+
+`utilities.css`'s preflight sets `box-sizing: border-box` on every element (`@layer
+base`). Nothing in `tokens/` or `styles.css` does, so a React component is
+content-box unless it opts in itself — most do not. **A slot that combines an
+explicit size with a border therefore renders a different total box in the two
+layers, by exactly twice the border width**, and that is not a manifest defect
+to chase with a compensating `+2px` or a taller size utility: `size-5` at
+`border-[length:var(--bw)]` is a correct, deliberate 20×20 in this layer even
+though React's equivalent, unless it opts into `box-sizing: border-box` itself,
+renders 22×22 for the same nominal size. See `components-divergences.md` →
+"The Tailwind layer is border-box; React is content-box" for the numbers this
+produced in Checkbox's `box`, Radio's `ring` and Select's `field`, and for why
+the fix is documentation, not a value change, in either layer.
+
+**Corollary:** never add a `box-border` class to a manifest slot expecting it to
+change anything — every slot is already border-box from the preflight, so the
+class is a no-op that only reads as if some *other* slot were missing it.
+`Input.manifest.json` shipped exactly that on its `field` slot before this rule
+was written down.
