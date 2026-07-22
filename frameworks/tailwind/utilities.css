@@ -106,6 +106,7 @@
     --ease-in-out: var(--ease-in-out);
     --ease-emphatic: var(--ease-emphatic);
     --blur-scrim: var(--scrim-blur);
+    --z-index-modal: var(--z-modal);
     --z-index-modal-nested: var(--z-modal-nested);
     --z-index-palette: var(--z-palette);
     --z-index-onboarding: var(--z-onboarding);
@@ -292,6 +293,9 @@
   }
   .bottom-6 {
     bottom: var(--spacing-6);
+  }
+  .z-modal {
+    z-index: var(--z-index-modal);
   }
   .z-modal-nested {
     z-index: var(--z-index-modal-nested);
@@ -508,6 +512,9 @@
   .w-115 {
     width: calc(var(--spacing) * 115);
   }
+  .w-120 {
+    width: calc(var(--spacing) * 120);
+  }
   .w-140 {
     width: calc(var(--spacing) * 140);
   }
@@ -589,6 +596,9 @@
     @media (prefers-reduced-motion: reduce) {
       animation-duration: var(--loop-reduced);
     }
+  }
+  .arena-pop {
+    animation: arena-pop var(--dur-mid) var(--ease-emphatic);
   }
   .cursor-not-allowed {
     cursor: not-allowed;
