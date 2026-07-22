@@ -38,11 +38,14 @@ three to make an icon-only control exactly square at the control height. That is
 token reaching three utilities, not a new value; the coverage gate counts the token,
 not the utilities it reaches.
 
-## The animation that lives in CSS, and why
+## The animations that live in CSS, and why
 
-`animations.css` holds `@keyframes` and the utility that rides them —
-`arena-shimmer` (Skeleton) — because a manifest holds class names and keyframes
-are not one. It is the same boundary React
+`animations.css` holds the `@keyframes` and the utilities that ride them —
+`arena-shimmer` (Skeleton), `arena-pop` (Dialog), `arena-menu` (Menu),
+`arena-fade` (Tooltip), `arena-prog-indeterminate` (ProgressBar),
+`arena-btn-spin` (Button) and `arena-spinner` — because a manifest holds class
+names and keyframes are not one. That file's own header is the normative list;
+if it and this paragraph ever disagree, the file wins. It is the same boundary React
 already has: an inline style object cannot express keyframes either, so React
 injects a `<style>` once per component. Every value in it is a `var()` into a
 token, and each animation answers `prefers-reduced-motion` on its own terms —

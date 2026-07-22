@@ -120,6 +120,11 @@ past it." Verified against the current sources:
 | `Toast`'s `root` | 375px outer (`w-85`=340 content + 2×`px-4`=32 + `--bw`=1 right + `--bw-strong`=2 left) | 340px outer (`w-85`, border and padding included) |
 | `Pagination`'s `nav`/`page` | 52×36 outer (`h-8.5 min-w-8.5`=34 content each axis + 2×`px-2`=16 each side on width + 2×`--bw`=2 each axis) | 34×34 outer (`h-8.5 min-w-8.5`, border and padding included) |
 | `Spinner`'s `circle` | **agrees** — 14×14, 20×20, 32×32 outer at sm/md/lg | same, 14×14 / 20×20 / 32×32 |
+| `Menu`'s `panel` | 214px min outer (`--sp-1`×50=200 min content + 2×`--sp-1`×1.5=12 padding + 2×`--bw`=2) | 200px (`min-w-50 p-1.5 border`, both included) |
+| `Button`'s `root` | 42px tall at `md` (`--dz-ctl-h`=40 + 2×`--bw`) | 40px (`h-ctl-h`, border included) |
+| `IconButton`'s `root`, ghost only | 34/42/50 at sm/md/lg (size + 2×`--bw`) | 32/40/48 (border included) |
+| `Dialog`'s `panel` | 482px (`--sp-1`×120=480 + 2×`--bw`) | 480px (`w-120`, border included) |
+| `SegmentedControl`'s `segment` | **agrees** — 28/34 tall at sm/md | same; the height axis carries no padding and the width is auto |
 
 `Switch` carries no border at all — `p-0.5` alone is enough to reproduce the same
 divergence, which is why the rule above is stated for padding and not just border. The
@@ -148,10 +153,13 @@ axes, since border and padding are carved out of the declared size rather than a
 it — 34×34, not 36×36 (36×36 double-counts the border on an outer number that already
 includes it, and drops `px-2` entirely).
 
-`Input`, `Button`, `ConfirmDialog` and `Spinner` are the four components where the two
-layers agree, and only because their React source opts into `border-box` locally —
-`Input.jsx:58`, `Button.jsx`'s spinner, `ConfirmDialog.jsx`'s require-text input and
-`Spinner.jsx:49-51` all set `boxSizing: 'border-box'`. `Spinner` is the cleanest
+Four **elements** — not four components — agree, and only because their React source opts
+into `border-box` at that element: `Input.jsx:58`'s field, `Button.jsx:85`'s spinner span,
+`ConfirmDialog.jsx`'s require-text input and `Spinner.jsx:49-51`'s circle all set
+`boxSizing: 'border-box'`. The distinction matters and was got wrong here once: **the opt-in
+is per-element, so `Button`'s spinner agreeing tells you nothing about `Button`'s root**,
+which sets no `boxSizing` and diverges by 2px — it has its own row in the table above.
+`Spinner` is the cleanest
 demonstration that the agreement is the opt-in and not luck: its `circle` slot combines
 an explicit size with a `--bw-strong` border — P3's trigger exactly — and still measures
 14×14, 20×20 and 32×32 in both layers at sm/md/lg, because React declared the same box

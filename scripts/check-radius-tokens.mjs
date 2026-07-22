@@ -35,6 +35,13 @@
  * underneath, so this gate names that one class rather than guessing at
  * others that might share the shape.
  *
+ * SCOPE: manifests only. It does not scan the `*.card.html` specimens or the
+ * compiled `utilities.css`, so a specimen typing `rounded-full` onto an element
+ * directly would pass unseen. That is narrower than the name suggests and is
+ * stated here rather than left for a reader to discover -- nothing in the tree
+ * does it today, and a specimen is supposed to take every class from
+ * `classesFor()` anyway, but neither of those is this gate enforcing it.
+ *
  *   bun scripts/check-radius-tokens.mjs   -> exit 0 clean, 1 otherwise
  *   node scripts/check-radius-tokens.mjs  -> same, runtime-portable
  */

@@ -18,7 +18,10 @@
    keep the fade and drop the travel, redefining their keyframes inside the
    media query rather than disabling the animation; Tooltip animates opacity
    only and carries no reduced-motion clause at all — there is no motion to
-   reduce. */
+   reduce; and the two spinners, Button's and the standalone one, report work in
+   progress like the progress sweep does, so they slow to --loop-reduced rather
+   than freezing. That is all seven, and this list is the normative one: the
+   Tailwind README points here rather than restating it. */
 
 @keyframes arena-shimmer {
   0% { background-position: -140% 0; }

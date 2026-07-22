@@ -204,24 +204,33 @@ export function evaluateManifest(manifest, sourceText, sources) {
   const capability = sourceImplements(sourceText);
   const findings = [];
   const matchedKeys = [];
+  let sites = 0;
   for (const [slot, classList] of classStringsBySlot(manifest)) {
     const families = new Set();
     for (const cls of classList) for (const f of stateFamilies(cls)) families.add(f);
     for (const family of families) {
       const key = `${name}:${slot}:${family}`;
-      matchedKeys.push(key);
+      sites += 1;
+      // matchedKeys is pushed only AFTER the capability check, so an exemption
+      // whose source has since GAINED the affordance goes stale and fails --
+      // which is what the staleness message promises. Pushing before made that
+      // clause unreachable: the key stayed fresh as long as the slot kept the
+      // modifier, however the source changed. `sites` stays the honest count of
+      // everything examined, which is what the summary line reports.
       if (capability[family]) continue;
+      matchedKeys.push(key);
       if (EXEMPT.has(key)) continue;
       findings.push({ component: name, slot, family, sources });
     }
   }
-  return { findings, matchedKeys };
+  return { findings, matchedKeys, sites };
 }
 
 /** @returns {{findings: {component: string, slot: string, family: string, sources: string[]}[], matchedKeys: string[]}} */
 export function collect() {
   const findings = [];
   const matchedKeys = [];
+  let sites = 0;
   const manifestFiles = readdirSync(COMPONENTS_DIR).filter((f) => f.endsWith('.manifest.json')).sort();
   for (const file of manifestFiles) {
     const manifest = JSON.parse(readFileSync(join(COMPONENTS_DIR, file), 'utf8'));
@@ -230,12 +239,13 @@ export function collect() {
     const result = evaluateManifest(manifest, sourceText, sources);
     findings.push(...result.findings);
     matchedKeys.push(...result.matchedKeys);
+    sites += result.sites;
   }
-  return { findings, matchedKeys };
+  return { findings, matchedKeys, sites };
 }
 
 function main() {
-  const { findings, matchedKeys } = collect();
+  const { findings, matchedKeys, sites } = collect();
   const stale = staleExemptions(matchedKeys);
   let failed = false;
 
@@ -258,7 +268,7 @@ function main() {
   }
 
   if (failed) process.exit(1);
-  console.log(`check-manifest-states: clean -- ${matchedKeys.length} state-modifier site(s) checked, ${EXEMPT.size} exempted on the record`);
+  console.log(`check-manifest-states: clean -- ${sites} state-modifier site(s) checked, ${EXEMPT.size} exempted on the record`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

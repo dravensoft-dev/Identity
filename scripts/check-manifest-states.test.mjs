@@ -162,3 +162,30 @@ test('every EXEMPT entry is exercised by the real tree (none is dead weight)', (
   const stale = staleExemptions(matchedKeys);
   assert.deepEqual(stale, []);
 });
+
+/* A key is recorded as "matched" only when it was a real exemption CANDIDATE --
+ * i.e. the source does NOT implement the family. If the source later gains the
+ * affordance, the key stops being matched, any EXEMPT entry naming it goes
+ * stale, and the gate fails so the now-unnecessary exemption gets removed.
+ * Pushing the key before the capability check made that unreachable: the entry
+ * stayed fresh forever as long as the slot kept the modifier, however the
+ * source changed -- while the failure message promised exactly this case. */
+test('a key stops being matched once its source implements the family', () => {
+  const manifest = { component: 'Fab', slots: { root: 'inline-flex hover:bg-primary' } };
+
+  const withoutHover = evaluateManifest(manifest, 'export function Fab() { return null; }', ['<x>']);
+  assert.ok(
+    withoutHover.matchedKeys.includes('Fab:root:hover'),
+    'a source implementing no hover leaves the key an exemption candidate',
+  );
+
+  const withHover = evaluateManifest(manifest, 'onMouseEnter={() => setHover(true)}', ['<x>']);
+  assert.ok(
+    !withHover.matchedKeys.includes('Fab:root:hover'),
+    'once the source implements hover the key is no longer a candidate, so an EXEMPT naming it goes stale',
+  );
+  assert.deepEqual(withHover.findings, [], 'and it is not a finding either -- the source implements it');
+
+  assert.equal(withoutHover.sites, 1, 'both are still counted as sites examined');
+  assert.equal(withHover.sites, 1);
+});
