@@ -60,7 +60,7 @@ The spec left six contract-layer questions. All six are answered here, five of t
 ## Global Constraints
 
 - **English only** — all code, comments, docs and copy. **No emoji**, in product or docs.
-- **A pattern is adopted, not invented.** Every pattern file carries a `source`. Of the eighteen, **sixteen** cite a WAI-ARIA Authoring Practices Guide page. Two do not and each says why in its own file: `figure-with-data-table` cites WCAG, because APG has no chart pattern, and `none` cites nothing, because the absence of a pattern is not adopted from anywhere.
+- **A pattern is adopted, not invented.** Every pattern file carries a `source`. Of the eighteen, **fourteen** cite an actual WAI-ARIA Authoring Practices Guide pattern page. **Two** cite the ARIA 1.2 role reference instead — `status` and `textbox` — because APG has no pattern page for either role. The remaining two say why in their own file: `figure-with-data-table` cites WCAG, because APG has no chart pattern, and `none` cites nothing, because the absence of a pattern is not adopted from anywhere.
 - **Coverage is phrased as EVERY layer, never "at least one".** A component a layer does not implement is declared — as `delegated`, or as absent with a reason — never skipped.
 - **A stale entry fails the gate that owns it.** An exception naming a requirement that does not exist in its pattern fails, exactly as `check-dimension-literals.mjs`'s `EXEMPT` does.
 - **Gates must be runtime-portable.** `scripts/check-all.mjs` also runs under plain `node`; only `check:cards`, `check:vendor` and `check:demos` may be non-portable, and this gate is not one of them. Verify under `node`, not only `bun`.
@@ -1093,7 +1093,7 @@ Under `## [Unreleased]`:
 
 ```markdown
 ### Added
-- **Behaviour contracts.** `behaviour/patterns/` holds eighteen patterns — sixteen adopted from the WAI-ARIA APG with their source URLs, plus `figure-with-data-table` (Arena's own, from WCAG, because APG has no chart pattern) and `none` (adopted from nowhere, because it is the absence of a pattern). Every component declares which it implements, in every layer: 43 React bindings, 21 Angular, and 21 controls Angular delegates to Material.
+- **Behaviour contracts.** `behaviour/patterns/` holds eighteen patterns — fourteen adopted from an actual WAI-ARIA APG pattern page with their source URLs, two adopted from the ARIA 1.2 role reference instead (`status`, `textbox`, because APG has no pattern page for either role), plus `figure-with-data-table` (Arena's own, from WCAG, because APG has no chart pattern) and `none` (adopted from nowhere, because it is the absence of a pattern). Every component declares which it implements, in every layer: 43 React bindings, 21 Angular, and 21 controls Angular delegates to Material.
 - `check:behaviour` — every component declares, every named pattern and requirement exists, no delegated entry is stale, and the layers agree or say why not. It asserts declaration and coherence, **not** that a component behaves as it declares.
 
 ### Changed

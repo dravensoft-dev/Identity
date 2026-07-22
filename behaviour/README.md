@@ -12,10 +12,12 @@ closes this". Putting a pattern under `tokens/src/` would mean relaxing
 ## Patterns
 
 One file per pattern in `patterns/`, each citing the source it was adopted from.
-Sixteen come from the [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/patterns/).
-Two do not, and each says why in its own `source`: `figure-with-data-table`, which
-cites WCAG because APG has no chart pattern, and `none`, which cites nothing at all
-because the absence of a pattern is not adopted from anywhere.
+Fourteen cite an actual [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/patterns/)
+page. Two cite the ARIA 1.2 role reference instead — `status` and `textbox` — because
+APG has no pattern page for either role. The remaining two say why in their own
+`source`: `figure-with-data-table`, which cites WCAG because APG has no chart pattern,
+and `none`, which cites nothing at all because the absence of a pattern is not adopted
+from anywhere.
 
 `requires` is a flat map of dotted keys. That shape is load-bearing: an exception
 in a binding names exactly one requirement, so one exception cannot quietly excuse

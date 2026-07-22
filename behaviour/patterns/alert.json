@@ -5,6 +5,6 @@
   "requires": {
     "roles.element": "alert",
     "focus.unaffected": "an alert must not receive or move keyboard focus",
-    "content.noAutoDismiss": "an alert must not disappear on a timer (WCAG 2.2.3)"
+    "content.noAutoDismiss": "an alert must not disappear on a timer -- this comes from WCAG 2.2.3, not the APG page cited as this pattern's source, which is silent on dismissal timing"
   }
 }

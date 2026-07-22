@@ -9,6 +9,7 @@
     "states.selected": "aria-selected set to true on each selected option, false on the rest",
     "states.multiselectable": "aria-multiselectable set to true when more than one option can be selected at once",
     "keyboard.ArrowUp": "moves focus to the previous option",
-    "keyboard.ArrowDown": "moves focus to the next option"
+    "keyboard.ArrowDown": "moves focus to the next option",
+    "keyboard.TypeAhead": "typing a character moves focus to the next option whose name starts with that character; typing several characters in rapid succession matches on the accumulated string"
   }
 }
