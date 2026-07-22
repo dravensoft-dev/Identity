@@ -79,10 +79,12 @@ import { unauthCardStyles } from '../primitives/unauth-card/unauth-card.variants
  * called across files that ran together. This file used to own that call
  * outright, which is why Skeleton's host-binding coverage lives here beside
  * Tag's and Avatar's rather than in a file of its own. It now goes through
- * `useTestEnvironment()` (testbed-env.ts), which resets the previous suite's
- * platform first, so a later suite needing a real render no longer has to be
- * appended to this one -- see that file for why a reset rather than a plain
- * initialise-once guard is what the per-file happy-dom lifecycle forces.
+ * `useTestEnvironment()` (testbed-env.ts), which claims the one TestBed
+ * environment the whole directory shares -- a plain `if (claimed) return`
+ * guard, not a reset -- so a later suite needing a real render no longer has
+ * to be appended to this one; see that file for why a reset was tried and
+ * measurably does not work (`resetTestEnvironment()` leaves the process-wide
+ * DOM adapter pointing at whichever document was live at first initialisation).
  *
  * It stops at Skeleton's default variant. This harness runs each test file
  * through bun's own TypeScript stripping plus `@angular/compiler`'s runtime
@@ -891,29 +893,44 @@ test('arena-error-state: the actions wrapper is absent from the DOM when no [are
  * the helper started the width at 0 instead of `null`, `0 < 480` would select
  * the narrow branch and these assertions would fail. (`page-head-variants.test.ts`
  * deliberately touches only `--bp-md`/`--bp-lg` so its stubbed reads can never
- * poison the module-level cache this file depends on, in either file order.) */
+ * poison the module-level cache this file depends on, in either file order --
+ * that split is about `container-size.ts`'s own cache, keyed per breakpoint
+ * name, so it holds regardless of file order or of the document being shared;
+ * it is unaffected by whether `--bp-sm` itself is cleared off the real
+ * document afterward.) Each test below clears `--bp-sm` in a `finally`: this
+ * directory now shares one real document for its whole run (testbed-env.ts),
+ * so a property left on `documentElement` would otherwise outlive this file
+ * rather than the per-file document it used to die with. */
 const BP_SM = '480px';
 
 test('arena-page-head: the root recipe classes land on the host element itself', async () => {
   document.documentElement.style.setProperty('--bp-sm', BP_SM);
-  const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
-  fixture.detectChanges();
-  await fixture.whenStable();
-  const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
-  for (const cls of pageHeadStyles().root().split(/\s+/))
-    assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
-  assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+  try {
+    const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
+    for (const cls of pageHeadStyles().root().split(/\s+/))
+      assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
+    assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+  } finally {
+    document.documentElement.style.removeProperty('--bp-sm');
+  }
 });
 
 test('arena-page-head: an unmeasured width renders the WIDE layout, so the narrow branch never flashes on first paint', async () => {
   document.documentElement.style.setProperty('--bp-sm', BP_SM);
-  const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
-  fixture.detectChanges();
-  await fixture.whenStable();
-  const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
-  assert.ok(host.classList.contains('flex-row'), `an unmeasured page head must render as a row: "${host.className}"`);
-  assert.ok(host.classList.contains('items-start'), `an unmeasured page head must render top-aligned: "${host.className}"`);
-  assert.ok(!host.classList.contains('flex-col'), 'the narrow branch must not render before anything has been measured');
+  try {
+    const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
+    assert.ok(host.classList.contains('flex-row'), `an unmeasured page head must render as a row: "${host.className}"`);
+    assert.ok(host.classList.contains('items-start'), `an unmeasured page head must render top-aligned: "${host.className}"`);
+    assert.ok(!host.classList.contains('flex-col'), 'the narrow branch must not render before anything has been measured');
+  } finally {
+    document.documentElement.style.removeProperty('--bp-sm');
+  }
 });
 
 /* Same fix, same toolchain limitation as arena-empty-state's action wrapper
@@ -931,18 +948,22 @@ test('arena-page-head: an unmeasured width renders the WIDE layout, so the narro
  * sibling of the `ArenaAction` that `arena-empty-state` uses. */
 test('arena-page-head: the actions wrapper is absent from the DOM when no [arena-actions] content is projected', async () => {
   document.documentElement.style.setProperty('--bp-sm', BP_SM);
-  const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
-  fixture.detectChanges();
-  await fixture.whenStable();
-  const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
-  assert.equal(host.querySelector('button'), null, 'no actions were projected, so no action markup should exist at all');
-  const actionsClass = pageHeadStyles().actions().split(/\s+/)[0];
-  assert.equal(
-    host.querySelector(`:scope > .${actionsClass}`),
-    null,
-    'the actions wrapper div must not render when the actions slot is empty',
-  );
-  assert.equal(host.children.length, 1, 'a page head with no actions renders the titles block and nothing else');
+  try {
+    const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
+    assert.equal(host.querySelector('button'), null, 'no actions were projected, so no action markup should exist at all');
+    const actionsClass = pageHeadStyles().actions().split(/\s+/)[0];
+    assert.equal(
+      host.querySelector(`:scope > .${actionsClass}`),
+      null,
+      'the actions wrapper div must not render when the actions slot is empty',
+    );
+    assert.equal(host.children.length, 1, 'a page head with no actions renders the titles block and nothing else');
+  } finally {
+    document.documentElement.style.removeProperty('--bp-sm');
+  }
 });
 
 /* `containerWidth()` guards its observer with `typeof ResizeObserver ===
@@ -964,6 +985,7 @@ test('arena-page-head: a platform with no ResizeObserver still renders, on the w
     assert.ok(host.classList.contains('flex-row'), `with no ResizeObserver the width stays null, which is the wide layout: "${host.className}"`);
   } finally {
     globals.ResizeObserver = saved;
+    document.documentElement.style.removeProperty('--bp-sm');
   }
 });
 

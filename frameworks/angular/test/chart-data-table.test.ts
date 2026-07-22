@@ -15,8 +15,13 @@
  * Inputs are driven by overwriting the instance field before the first
  * `detectChanges()`, for the reason alert-role-tones.test.ts's header gives at
  * length: this harness runs Angular's JIT and never `ngtsc`, so a signal input
- * reaches `ɵcmp.inputs` neither through a template binding nor through
- * `componentRef.setInput()`. */
+ * never reaches `ɵcmp.inputs` -- but a template binding and `setInput()` fail
+ * differently, and that difference is why neither is used here. A template
+ * binding throws NG0303. `setInput()` does not throw at all: it silently
+ * no-ops and the render keeps the field's default, which would make a suite
+ * built on it pass vacuously against default data with nothing announcing the
+ * mistake. Overwriting the instance field renders the REAL component against
+ * REAL data instead. */
 import { useTestEnvironment } from './testbed-env';
 useTestEnvironment();
 
@@ -46,27 +51,29 @@ function renderBarChart() {
 
 test('arena-bar-chart renders a real <table> carrying every plotted number', () => {
   const fixture = renderBarChart();
-  const host = fixture.nativeElement as Element;
+  try {
+    const host = fixture.nativeElement as Element;
 
-  const table = host.querySelector('table');
-  assert.notEqual(table, null, 'a chart with no data table is a picture nobody can read');
+    const table = host.querySelector('table');
+    assert.notEqual(table, null, 'a chart with no data table is a picture nobody can read');
 
-  const rows = [...table!.querySelectorAll('tbody tr')];
-  assert.equal(rows.length, VALUES.length, 'one row per bar, so the table and the picture cannot disagree');
+    const rows = [...table!.querySelectorAll('tbody tr')];
+    assert.equal(rows.length, VALUES.length, 'one row per bar, so the table and the picture cannot disagree');
 
-  // Each row pairs its category with its value, in order. Asserting the pairing
-  // rather than a flat set of cell text is what makes a transposed or truncated
-  // table fail -- a bag of the right strings in the wrong rows would pass the
-  // looser check.
-  const pairs = rows.map((row) => [...row.querySelectorAll('th, td')].map((c) => (c.textContent ?? '').trim()));
-  assert.deepEqual(pairs, LABELS.map((label, i) => [label, String(VALUES[i])]));
+    // Each row pairs its category with its value, in order. Asserting the pairing
+    // rather than a flat set of cell text is what makes a transposed or truncated
+    // table fail -- a bag of the right strings in the wrong rows would pass the
+    // looser check.
+    const pairs = rows.map((row) => [...row.querySelectorAll('th, td')].map((c) => (c.textContent ?? '').trim()));
+    assert.deepEqual(pairs, LABELS.map((label, i) => [label, String(VALUES[i])]));
 
-  // And the table names what it is a table OF.
-  assert.equal((table!.querySelector('caption')?.textContent ?? '').trim(), `${SERIES} — bar chart`);
-  const headers = [...table!.querySelectorAll('thead th')].map((c) => (c.textContent ?? '').trim());
-  assert.deepEqual(headers, ['Category', SERIES]);
-
-  fixture.destroy();
+    // And the table names what it is a table OF.
+    assert.equal((table!.querySelector('caption')?.textContent ?? '').trim(), `${SERIES} — bar chart`);
+    const headers = [...table!.querySelectorAll('thead th')].map((c) => (c.textContent ?? '').trim());
+    assert.deepEqual(headers, ['Category', SERIES]);
+  } finally {
+    fixture.destroy();
+  }
 });
 
 /* Hidden, not absent, and the distinction is the requirement. A table removed
@@ -78,19 +85,21 @@ test('arena-bar-chart renders a real <table> carrying every plotted number', () 
  * is a constraint of the accessibility idiom rather than a design dimension. */
 test('arena-bar-chart hides its data table visually without removing it from the accessibility tree', () => {
   const fixture = renderBarChart();
-  const table = (fixture.nativeElement as Element).querySelector('table') as HTMLTableElement;
+  try {
+    const table = (fixture.nativeElement as Element).querySelector('table') as HTMLTableElement;
 
-  assert.equal(table.hasAttribute('hidden'), false, 'a hidden table is not an alternative -- it is no table at all');
-  assert.equal(table.getAttribute('aria-hidden'), null, 'the table must stay in the accessibility tree');
-  assert.notEqual(table.style.display, 'none', 'display:none would remove it from the accessibility tree');
+    assert.equal(table.hasAttribute('hidden'), false, 'a hidden table is not an alternative -- it is no table at all');
+    assert.equal(table.getAttribute('aria-hidden'), null, 'the table must stay in the accessibility tree');
+    assert.notEqual(table.style.display, 'none', 'display:none would remove it from the accessibility tree');
 
-  // The visually-hidden idiom itself: clipped to a 1px box, out of flow.
-  assert.equal(table.style.position, 'absolute');
-  assert.equal(table.style.width, '1px');
-  assert.equal(table.style.height, '1px');
-  assert.equal(table.style.overflow, 'hidden');
-
-  fixture.destroy();
+    // The visually-hidden idiom itself: clipped to a 1px box, out of flow.
+    assert.equal(table.style.position, 'absolute');
+    assert.equal(table.style.width, '1px');
+    assert.equal(table.style.height, '1px');
+    assert.equal(table.style.overflow, 'hidden');
+  } finally {
+    fixture.destroy();
+  }
 });
 
 /* The binding declares `"exceptions": []` -- every requirement of
@@ -109,14 +118,17 @@ test('arena-bar-chart hides its data table visually without removing it from the
  * two tests above established. */
 test('arena-bar-chart matches its figure-with-data-table binding, which excepts nothing', () => {
   const fixture = renderBarChart();
-  const host = fixture.nativeElement as Element;
-  assertPattern({
-    root: host,
-    bindingPath: BINDING,
-    subjects: { default: host.querySelector('[role="img"]') },
-    behavioural: { 'alternative.table': true },
-  });
-  fixture.destroy();
+  try {
+    const host = fixture.nativeElement as Element;
+    assertPattern({
+      root: host,
+      bindingPath: BINDING,
+      subjects: { default: host.querySelector('[role="img"]') },
+      behavioural: { 'alternative.table': true },
+    });
+  } finally {
+    fixture.destroy();
+  }
 });
 
 /* The unnamed case, which is the one worth pinning. `seriesLabel` is optional, so
@@ -135,16 +147,19 @@ test('arena-bar-chart with no seriesLabel still names itself, though only by typ
   instance['labels'] = () => LABELS;
   instance['values'] = () => VALUES;
   fixture.detectChanges();
-  const host = fixture.nativeElement as Element;
+  try {
+    const host = fixture.nativeElement as Element;
 
-  const graphic = host.querySelector('[role="img"]') as Element;
-  assert.equal(graphic.getAttribute('aria-label'), 'Bar chart');
-  assertPattern({
-    root: host,
-    bindingPath: BINDING,
-    subjects: { default: graphic },
-    behavioural: { 'alternative.table': true },
-  });
-  fixture.destroy();
+    const graphic = host.querySelector('[role="img"]') as Element;
+    assert.equal(graphic.getAttribute('aria-label'), 'Bar chart');
+    assertPattern({
+      root: host,
+      bindingPath: BINDING,
+      subjects: { default: graphic },
+      behavioural: { 'alternative.table': true },
+    });
+  } finally {
+    fixture.destroy();
+  }
 });
 

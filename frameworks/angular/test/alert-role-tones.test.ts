@@ -15,12 +15,24 @@
  * The input is driven by overwriting the instance field before the first
  * `detectChanges()`, not by `componentRef.setInput()`. This harness runs
  * `@angular/compiler`'s JIT and never `ngtsc`, so a signal input never reaches
- * `ɵcmp.inputs` and BOTH a template binding and `setInput()` throw NG0303 --
- * host-class-binding.test.ts's header documents that, and `renderAppLogo` /
- * `renderActivityFeed` there are the established shape this copies. What it buys
- * and what it costs are the same as there: the REAL component, the REAL compiled
- * template and REAL change detection, but nothing about the input CONTRACT --
- * `bun run check:angular`'s `ngc --strictTemplates` is the authority for that. */
+ * `ɵcmp.inputs` -- but the two failure modes are NOT the same, and the
+ * difference is the reason this file does not use `setInput()`: a template
+ * binding throws NG0303, while `setInput()` on the same undiscovered input
+ * does not throw at all -- it silently no-ops and the render keeps the
+ * field's default (confirmed by hand: `setInput('tone', 'danger')` against
+ * this component prints the NG0303 message to console but leaves `role`
+ * at `status`, the default tone's role). The throw is the safe failure --
+ * it stops the test file from loading. The no-op is the dangerous one: a
+ * future suite that called `setInput()` here would render, assert, and pass
+ * VACUOUSLY against the default tone with no signal anything was wrong.
+ * onboarding-focus-trap.test.ts's header states this correctly; this file
+ * copies that finding rather than the template-binding half of it. What
+ * overwriting the field buys and what it costs are otherwise the same as
+ * host-class-binding.test.ts's header describes for `renderAppLogo` /
+ * `renderActivityFeed`, the established shape this copies: the REAL
+ * component, the REAL compiled template and REAL change detection, but
+ * nothing about the input CONTRACT -- `bun run check:angular`'s
+ * `ngc --strictTemplates` is the authority for that. */
 import { useTestEnvironment } from './testbed-env';
 useTestEnvironment();
 
@@ -49,8 +61,11 @@ test('arena-alert exposes role=alert only for the danger tone -- every other ton
   const seen: Record<string, string | null> = {};
   for (const tone of TONES) {
     const fixture = renderAlert(tone);
-    seen[tone] = (fixture.nativeElement as Element).getAttribute('role');
-    fixture.destroy();
+    try {
+      seen[tone] = (fixture.nativeElement as Element).getAttribute('role');
+    } finally {
+      fixture.destroy();
+    }
   }
   assert.deepEqual(seen, {
     info: 'status',
@@ -70,22 +85,31 @@ test('arena-alert exposes role=alert only for the danger tone -- every other ton
 test('arena-alert neither takes focus nor moves it -- focus.unaffected, proved by acting on the tree', () => {
   const anchor = document.createElement('button');
   document.body.appendChild(anchor);
-  anchor.focus();
-  assert.equal(document.activeElement, anchor, 'sanity: focus starts on the anchor button');
+  try {
+    anchor.focus();
+    assert.equal(document.activeElement, anchor, 'sanity: focus starts on the anchor button');
 
-  const fixture = renderAlert('danger');
-  const host = fixture.nativeElement as Element;
+    const fixture = renderAlert('danger');
+    try {
+      const host = fixture.nativeElement as Element;
 
-  assert.equal(host.getAttribute('tabindex'), null, 'an alert must not be placed in the tab order');
-  assert.equal(isFocusable(host), false, 'an alert host must not be able to take focus');
-  assert.equal(
-    document.activeElement,
-    anchor,
-    'rendering an alert must not steal focus from whatever the user was on',
-  );
-
-  fixture.destroy();
-  anchor.remove();
+      assert.equal(host.getAttribute('tabindex'), null, 'an alert must not be placed in the tab order');
+      assert.equal(isFocusable(host), false, 'an alert host must not be able to take focus');
+      assert.equal(
+        document.activeElement,
+        anchor,
+        'rendering an alert must not steal focus from whatever the user was on',
+      );
+    } finally {
+      fixture.destroy();
+    }
+  } finally {
+    // On the shared document (testbed-env.ts) an undestroyed fixture is not the
+    // only thing that would outlive this test -- this anchor would too, and it
+    // is exactly the kind of stray focusable element the assertion above is
+    // checking for. A failed assertion must not leave it behind for the next file.
+    anchor.remove();
+  }
 });
 
 /* `content.noAutoDismiss` -- "an alert must not disappear on a timer" -- is a
@@ -135,21 +159,24 @@ test('arena-alert survives every timer its own render schedules, fired early -- 
     for (const [name, original] of saved) globals[name] = original;
   }
 
-  const host = fixture!.nativeElement as Element;
-  assert.ok(host.querySelector('button[aria-label="Dismiss"]'), 'the dismissible branch should have rendered');
-  assert.ok(captured.length > 0, 'sanity: a real render does schedule something -- Angular\'s own scheduler does');
+  try {
+    const host = fixture!.nativeElement as Element;
+    assert.ok(host.querySelector('button[aria-label="Dismiss"]'), 'the dismissible branch should have rendered');
+    assert.ok(captured.length > 0, 'sanity: a real render does schedule something -- Angular\'s own scheduler does');
 
-  for (const fire of captured) fire();
-  fixture!.detectChanges();
+    for (const fire of captured) fire();
+    fixture!.detectChanges();
 
-  // Still here, role intact, dismiss control intact. An alert goes away when the
-  // consumer acts on `closed`, never on its own clock.
-  assert.equal(host.getAttribute('role'), 'alert', 'the alert must still be a live region after every timer has fired');
-  assert.ok(
-    host.querySelector('button[aria-label="Dismiss"]'),
-    'the alert must still be rendered after every timer it scheduled has fired',
-  );
-  fixture!.destroy();
+    // Still here, role intact, dismiss control intact. An alert goes away when the
+    // consumer acts on `closed`, never on its own clock.
+    assert.equal(host.getAttribute('role'), 'alert', 'the alert must still be a live region after every timer has fired');
+    assert.ok(
+      host.querySelector('button[aria-label="Dismiss"]'),
+      'the alert must still be rendered after every timer it scheduled has fired',
+    );
+  } finally {
+    fixture!.destroy();
+  }
 });
 
 /* The binding is asserted on a NON-danger tone, and the tone is the whole point.
@@ -171,11 +198,14 @@ test('arena-alert survives every timer its own render schedules, fired early -- 
  * pattern, applying only sometimes. */
 test('arena-alert matches its alert binding on the default tone, which is the branch the exception describes', () => {
   const fixture = renderAlert('info');
-  assertPattern({
-    root: fixture.nativeElement as Element,
-    bindingPath: BINDING,
-    behavioural: { 'focus.unaffected': true, 'content.noAutoDismiss': true },
-  });
-  fixture.destroy();
+  try {
+    assertPattern({
+      root: fixture.nativeElement as Element,
+      bindingPath: BINDING,
+      behavioural: { 'focus.unaffected': true, 'content.noAutoDismiss': true },
+    });
+  } finally {
+    fixture.destroy();
+  }
 });
 
