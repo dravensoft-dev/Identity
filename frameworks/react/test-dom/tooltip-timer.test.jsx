@@ -22,6 +22,18 @@
  * ever proves flaky, shorten the margins around the delays; do not add a
  * fake-timer dependency.
  *
+ * A KNOWN, PRE-EXISTING WART, recorded so the next reader does not think they
+ * caused it: on a loaded `bun test frameworks/react/test-dom/` run this suite
+ * intermittently prints "An update to Tooltip inside a test was not wrapped in
+ * act(...)". It is a warning, never a failure -- the run stays green. It is a
+ * real-timer race between a pending Tooltip timer and an act() boundary, it
+ * does not reproduce when the file is run on its own, and it was measured at
+ * comparable rates before and after this file was last revised (5 of 15 runs
+ * against the previous version of these tests, 3 of 15 against this one), so it
+ * is a property of the real-timer design and not of any one test. Fixing it
+ * properly means retiring real timers here, which the paragraph above refuses
+ * for a reason. Do not chase it by widening MARGIN.
+ *
  * The events: React 18 does not listen for `mouseenter`/`mouseleave` at all.
  * Its EnterLeaveEventPlugin synthesises onMouseEnter/onMouseLeave from
  * `mouseover`/`mouseout` delegated at the root container, so dispatching a
@@ -49,10 +61,37 @@ function hover(el, type) {
   act(() => { el.dispatchEvent(new window.MouseEvent(type, { bubbles: true })); });
 }
 
+/** Raw wall-clock sleep, with no act() scope of its own. */
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 /** Wait real wall-clock time inside act(), so any state update the timer
  *  produces is flushed before the assertion reads the DOM. */
 async function wait(ms) {
-  await act(async () => { await new Promise((r) => setTimeout(r, ms)); });
+  await act(async () => { await sleep(ms); });
+}
+
+/** Record every timer id scheduled and cleared while `body` runs, then restore
+ *  the real functions. The unmount test below uses the same instrumentation;
+ *  this hoists it so two tests share one idiom.
+ *  @returns {Promise<{scheduled: number[], cleared: number[]}>} */
+async function recordingTimers(body) {
+  const realSetTimeout = globalThis.setTimeout;
+  const realClearTimeout = globalThis.clearTimeout;
+  const scheduled = [];
+  const cleared = [];
+  globalThis.setTimeout = (...args) => {
+    const id = realSetTimeout(...args);
+    scheduled.push(id);
+    return id;
+  };
+  globalThis.clearTimeout = (id) => { cleared.push(id); return realClearTimeout(id); };
+  try {
+    await body({ scheduled, cleared });
+  } finally {
+    globalThis.setTimeout = realSetTimeout;
+    globalThis.clearTimeout = realClearTimeout;
+  }
+  return { scheduled, cleared };
 }
 
 /** Tooltip's pointer handlers sit on the wrapper span it renders, not on the
@@ -94,23 +133,66 @@ test('crossing out before the delay cancels the reveal rather than queueing it',
   assert.equal(container.querySelector('[role="tooltip"]'), null);
 });
 
-test('re-entering during the close grace period keeps the tooltip up rather than letting the queued close win', async () => {
+test('re-entering during the close grace period clears the pending close timer rather than queueing an open behind it', async () => {
   /* The other half of the single-timer rule, and the half the source comment
    * calls out by name: "leaving and re-entering inside the close grace period
-   * must cancel the pending close, not queue an open behind it." */
+   * must cancel the pending close, not queue an open behind it."
+   *
+   * WHY THIS TEST INSTRUMENTS THE TIMER INSTEAD OF WATCHING THE DOM. It used to
+   * wait past every boundary and assert the tooltip was visible, and that was
+   * blind to the one mutation it exists to catch. Drop the clearTimeout from
+   * schedule() and BOTH timers survive: the orphaned close fires at
+   * --delay-close, the re-entry's own open fires --delay-open after the
+   * re-entry, and by the end of a long wait the tooltip is shown again either
+   * way. That assertion proved "eventually re-shown", never "the pending close
+   * was cancelled" -- the two differ only in the window between those
+   * boundaries.
+   *
+   * Sampling the DOM mid-window is the obvious repair and it does work, but it
+   * buys the proof with a timing margin: the assertion has to land between
+   * --delay-close and (re-entry + --delay-open), about 170ms of slack either
+   * side, on a suite whose waits already overrun under a loaded directory run.
+   * Tightening that further was not worth it when an exact answer was available.
+   *
+   * ONE VARIANT IS A TRAP AND IS RECORDED SO IT IS NOT RE-ATTEMPTED: reading the
+   * DOM from INSIDE a single act() scope, to avoid splitting the window across
+   * two. That silently stops proving anything. React's async act() defers the
+   * commit to the end of the scope, so the read returns the PRE-update DOM, and
+   * the mutation below passes again -- verified, not assumed.
+   *
+   * So the cancellation is asserted where it actually happens: on the timer.
+   * `mouseout` schedules exactly one close timer; the re-entry must pass THAT id
+   * to clearTimeout. No timing margin, no deferred-commit hazard, and it is the
+   * same instrumentation the unmount test below already relies on. */
   const container = mount(<Tooltip content="Details"><button type="button">Hover</button></Tooltip>);
   hover(trigger(container), 'mouseover');
   await wait(delayOpen + MARGIN);
   assert.ok(container.textContent.includes('Details'), 'precondition: shown');
 
-  hover(trigger(container), 'mouseout');
-  await wait(Math.floor(delayClose / 2));
-  hover(trigger(container), 'mouseover');
-  /* The re-entry cleared the pending close and scheduled setShow(true), which
-   * is a no-op on an already-true state. Wait past both boundaries: the close
-   * must never land. */
+  await recordingTimers(async ({ scheduled, cleared }) => {
+    hover(trigger(container), 'mouseout');
+    assert.ok(scheduled.length > 0, 'precondition: leaving scheduled a close timer');
+    const closeTimer = scheduled[scheduled.length - 1];
+
+    await wait(Math.floor(delayClose / 2));
+    assert.ok(
+      !cleared.includes(closeTimer),
+      'precondition: the close is still pending -- the re-entry happens inside the grace period, not after it',
+    );
+
+    hover(trigger(container), 'mouseover');
+    assert.ok(
+      cleared.includes(closeTimer),
+      'the re-entry cleared the pending close timer -- the close never fires, rather than firing and being undone by a queued open',
+    );
+  });
+
+  /* And the observable consequence: drain past every boundary and the tooltip
+   * is still up. This is the weaker claim the test used to make on its own --
+   * it cannot tell a cancelled close from one that fired and was undone -- but
+   * "briefly visible and then lost" would be its own defect, so it is kept. */
   await wait(delayOpen + delayClose + MARGIN);
-  assert.ok(container.textContent.includes('Details'), 'the pending close was cancelled by the re-entry');
+  assert.ok(container.textContent.includes('Details'), 'and it is still up after every boundary has passed');
 });
 
 test('unmounting while a reveal is pending clears the timer instead of firing into a dead component', async () => {
@@ -120,18 +202,7 @@ test('unmounting while a reveal is pending clears the timer instead of firing in
    * instruments the real timer instead -- it records the id Tooltip schedules
    * on mouseover and asserts that exact id is passed to clearTimeout during
    * unmount, which is the useEffect cleanup and nothing else. */
-  const realSetTimeout = globalThis.setTimeout;
-  const realClearTimeout = globalThis.clearTimeout;
-  const scheduled = [];
-  const cleared = [];
-  globalThis.setTimeout = (...args) => {
-    const id = realSetTimeout(...args);
-    scheduled.push(id);
-    return id;
-  };
-  globalThis.clearTimeout = (id) => { cleared.push(id); return realClearTimeout(id); };
-
-  try {
+  await recordingTimers(async ({ scheduled, cleared }) => {
     const container = mount(<Tooltip content="Details"><button type="button">Hover</button></Tooltip>);
     scheduled.length = 0;              // ignore anything mounting itself scheduled
     hover(trigger(container), 'mouseover');
@@ -143,11 +214,9 @@ test('unmounting while a reveal is pending clears the timer instead of firing in
       cleared.includes(pending),
       'the pending reveal timer was cleared on unmount, not left to fire',
     );
-  } finally {
-    globalThis.setTimeout = realSetTimeout;
-    globalThis.clearTimeout = realClearTimeout;
-  }
+  });
 
-  // And nothing fires afterwards either.
-  await new Promise((r) => realSetTimeout(r, delayOpen + MARGIN));
+  // And nothing fires afterwards either. recordingTimers has already restored
+  // the real setTimeout, so this is an uninstrumented wall-clock wait.
+  await sleep(delayOpen + MARGIN);
 });

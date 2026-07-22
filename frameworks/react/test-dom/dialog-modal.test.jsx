@@ -24,26 +24,49 @@ import { ConfirmDialog } from '../components/feedback/ConfirmDialog.jsx';
 
 afterEach(cleanup);
 
-/* Every one of these is excepted by both bindings, and `false` means "a
- * behavioural test proved this requirement is NOT met".
+/* Every one of these is excepted by both bindings, and `false` means "this
+ * requirement is NOT met".
  *
- * Those tests exist. Three of the four are established by acting on a real tree
- * in behavioural.test.jsx, which sits beside this file: keyboard.Escape (a
- * keydown is dispatched and the close callback does not run, for both
- * components), focus.onOpen (an element is focused first, then the dialog is
- * mounted, and activeElement has not moved) and focus.onClose (focus is placed
- * inside, the dialog is closed, and focus falls to body rather than returning
- * to the invoker). The fourth, focus.trap, is not reachable by render at all —
- * happy-dom does not implement sequential focus navigation, so Tab does not
- * move activeElement — and is asserted as a pure function over
- * frameworks/angular/primitives/focus-trap.ts in
- * frameworks/angular/test/confirm-dialog-focus-trap.test.ts and
- * command-palette-focus-trap.test.ts.
+ * THREE OF THE FOUR ARE PROVEN. Each is established by acting on a real tree in
+ * behavioural.test.jsx, which sits beside this file, and each names its own test:
  *
- * So these verdicts no longer rest on a reading of the source, which is exactly
- * the state the rest of this suite exists to end. Change one here and the
- * matching assertion in behavioural.test.jsx must change with it — that file's
- * header explains why those assertions pin a defect on purpose. */
+ *   keyboard.Escape — "Dialog does not close on Escape" and "ConfirmDialog does
+ *     not close on Escape either": a keydown is dispatched on the dialog and
+ *     allowed to bubble, and the close callback does not run.
+ *   focus.onOpen — "Dialog moves focus nowhere on open" and "ConfirmDialog moves
+ *     focus nowhere on open without requireText": an element outside is focused
+ *     first, the dialog is then opened, and activeElement has not moved.
+ *   focus.onClose — "Dialog does not restore focus to the invoker on close" and
+ *     the matching ConfirmDialog test: the dialog is opened by clicking an
+ *     already-focused invoker, focus is moved inside, the dialog is closed, and
+ *     focus falls to body rather than returning to the invoker.
+ *
+ * THE FOURTH, focus.trap, IS NOT PROVEN BY ANY TEST. It is established by
+ * READING THE SOURCE: there is no focus-trap implementation anywhere in
+ * frameworks/react/ — no Tab keydown handler, no focusable-boundary query, no
+ * wrap logic, nothing. `false` is therefore true, but it rests on the author's
+ * reading exactly as it did before this suite existed, and that admission is the
+ * honest state of it.
+ *
+ * It cannot be promoted to a proof here: happy-dom does not implement sequential
+ * focus navigation, so pressing Tab does not move document.activeElement, and a
+ * test that dispatched a Tab keydown and asserted focus had not moved would pass
+ * identically against a component with a perfect trap and one with none. A
+ * browser-driven gate would be this repo's fourth non-portable gate and is
+ * refused.
+ *
+ * DO NOT CITE THE ANGULAR FOCUS-TRAP SUITES AS EVIDENCE FOR THIS VERDICT. An
+ * earlier version of this comment did. They are not evidence, for two
+ * independent reasons: they test a DIFFERENT LAYER (they import
+ * ../primitives/focus-trap and ../primitives/confirm-dialog/confirm-dialog —
+ * Angular, which has its own trap implementation React does not share), and they
+ * assert the OPPOSITE POLARITY (that the trap works, where this map claims React
+ * has none). Angular having a working trap says nothing whatever about React
+ * lacking one.
+ *
+ * Change a verdict here and the matching assertion in behavioural.test.jsx must
+ * change with it — that file's header explains why those assertions pin a defect
+ * on purpose. */
 const BEHAVIOURAL = { 'focus.onOpen': false, 'focus.onClose': false, 'focus.trap': false, 'keyboard.Escape': false };
 
 /* Finding 2: the three synthetic-binding tests below used to write a fixed

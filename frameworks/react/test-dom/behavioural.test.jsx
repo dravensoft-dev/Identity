@@ -4,18 +4,25 @@
  * acting on a real tree, so that map no longer rests on the author's reading of
  * the source.
  *
- * focus.trap is deliberately absent from this file. happy-dom does not
- * implement sequential focus navigation -- pressing Tab does not move
- * document.activeElement -- so "Tab cycles inside the trap and cannot escape"
- * is unreachable by render, and a test that dispatched a Tab keydown and
- * asserted focus had not moved would pass against a component with a perfect
- * trap and against one with none. It is asserted instead as a pure function
- * over frameworks/angular/primitives/focus-trap.ts, in
- * frameworks/angular/test/confirm-dialog-focus-trap.test.ts and
- * command-palette-focus-trap.test.ts, which already cover the wrap-at-both-
- * boundaries and cannot-reach-a-control-behind-the-scrim properties. A
- * browser-driven gate would be this repo's fourth non-portable gate and is
- * refused.
+ * focus.trap is deliberately absent from this file, and NOTHING ELSE PROVES IT
+ * EITHER. happy-dom does not implement sequential focus navigation -- pressing
+ * Tab does not move document.activeElement -- so "Tab cycles inside the trap and
+ * cannot escape" is unreachable by render, and a test that dispatched a Tab
+ * keydown and asserted focus had not moved would pass against a component with a
+ * perfect trap and against one with none. A browser-driven gate would be this
+ * repo's fourth non-portable gate and is refused.
+ *
+ * So focus.trap: false is established by READING THE SOURCE -- there is no
+ * focus-trap implementation anywhere in frameworks/react/ -- and it is the one
+ * verdict in the BEHAVIOURAL map that still rests on the author's word. That is
+ * a real gap, stated rather than papered over.
+ *
+ * It is NOT covered by frameworks/angular/test/confirm-dialog-focus-trap.test.ts
+ * or command-palette-focus-trap.test.ts. An earlier version of this comment
+ * claimed it was. Those suites test the ANGULAR layer -- they import
+ * ../primitives/focus-trap, which React does not use -- and they assert the trap
+ * WORKS, the opposite polarity to the claim here that React has no trap at all.
+ * Neither fact bears on this verdict. Do not re-add the citation.
  *
  * ---------------------------------------------------------------------------
  * READ THIS BEFORE "FIXING" ANY TEST IN THIS FILE.
@@ -110,12 +117,26 @@ test('Dialog moves focus nowhere on open -- its focus.onOpen exception is still 
 
 /* focus.onClose is "restore-invoker", and it needs a component that can
  * actually close -- mounting `open` and asserting nothing would prove nothing.
- * This wrapper holds the open state so onClose really unmounts the dialog. */
+ * This wrapper holds the open state so onClose really unmounts the dialog.
+ *
+ * IT STARTS CLOSED, AND THAT IS THE WHOLE POINT. An earlier version of this
+ * harness mounted with open=true and focused the invoker afterwards, which made
+ * the test vacuous against the obvious implementation: every real
+ * restore-the-invoker captures document.activeElement at the instant `open`
+ * becomes true, and in that harness the instant `open` became true was the
+ * initial render -- before anything had been focused. So it captured body,
+ * restored body, and both assertions below still passed. Proved by mutation:
+ * Dialog patched to capture-on-open/restore-on-close left this suite green.
+ *
+ * Starting closed and opening BY CLICKING THE ALREADY-FOCUSED INVOKER is what
+ * makes the invoker genuinely the previously-focused element at capture time,
+ * so an implementation has something real to restore and this test goes red the
+ * day one appears. */
 function DialogHarness() {
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
   return (
     <div>
-      <button type="button" data-role="invoker">Open</button>
+      <button type="button" data-role="invoker" onClick={() => setOpen(true)}>Open</button>
       <Dialog open={open} onClose={() => setOpen(false)} title="t">
         <button type="button" data-role="inside">Inside</button>
       </Dialog>
@@ -128,6 +149,14 @@ test('Dialog does not restore focus to the invoker on close -- its focus.onClose
   const invoker = container.querySelector('[data-role="invoker"]');
   invoker.focus();
   assert.equal(document.activeElement, invoker, 'precondition: the invoker holds focus');
+  assert.equal(container.querySelector('[role="dialog"]'), null, 'precondition: the dialog starts closed');
+
+  /* Open by clicking the focused invoker, not by mounting open. This is the
+   * only ordering under which the invoker is what a capture-on-open
+   * implementation would record; see the harness comment above. */
+  click(invoker);
+  assert.notEqual(container.querySelector('[role="dialog"]'), null, 'precondition: the click opened the dialog');
+  assert.equal(document.activeElement, invoker, 'precondition: the invoker still holds focus at the moment of opening');
 
   /* Move focus inside the dialog by hand. The component never does this itself
    * (that is the focus.onOpen exception, asserted above), but focus.onClose is
@@ -192,4 +221,59 @@ test('ConfirmDialog DOES focus the confirmation input when requireText is set --
   assert.notEqual(input, null, 'precondition: requireText renders the confirmation input');
   assert.equal(document.activeElement, input, 'the autoFocus input took focus on open');
   invoker.remove();
+});
+
+/* ConfirmDialog's focus.onClose had NO behavioural coverage before this: the
+ * BEHAVIOURAL map in dialog-modal.test.jsx declares focus.onClose false for both
+ * components, but only Dialog's verdict was established by acting on a tree, so
+ * ConfirmDialog's rested on a reading of the source -- the exact state this
+ * suite exists to end.
+ *
+ * Same shape as DialogHarness and for the same reason: it starts CLOSED and is
+ * opened by clicking the already-focused invoker, so the invoker really is what
+ * a capture-on-open implementation would record. Closing goes through Cancel
+ * rather than a scrim click, because ConfirmDialog deliberately has no
+ * click-outside path (asserted above) -- Cancel is the only dismissal it has. */
+function ConfirmDialogHarness() {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <div>
+      <button type="button" data-role="invoker" onClick={() => setOpen(true)}>Open</button>
+      <ConfirmDialog
+        open={open}
+        onCancel={() => setOpen(false)}
+        onConfirm={() => {}}
+        title="t"
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+      />
+    </div>
+  );
+}
+
+test('ConfirmDialog does not restore focus to the invoker on close -- its focus.onClose exception is still true', () => {
+  const container = mount(<ConfirmDialogHarness />);
+  const invoker = container.querySelector('[data-role="invoker"]');
+  invoker.focus();
+  assert.equal(document.activeElement, invoker, 'precondition: the invoker holds focus');
+
+  click(invoker);
+  const dialog = container.querySelector('[role="alertdialog"]');
+  assert.notEqual(dialog, null, 'precondition: the click opened the dialog');
+  assert.equal(document.activeElement, invoker, 'precondition: the invoker still holds focus at the moment of opening');
+
+  /* Focus Cancel before clicking it, so focus is genuinely inside the dialog
+   * when it goes away -- a keyboard user reaching Cancel by Tab is the only
+   * dismissal path this component offers, and it is the case focus.onClose is
+   * about. */
+  const cancel = [...dialog.querySelectorAll('button')].find((b) => b.textContent === 'Cancel');
+  assert.notEqual(cancel, undefined, 'precondition: the Cancel button is present');
+  act(() => { cancel.focus(); });
+  assert.equal(document.activeElement, cancel, 'precondition: focus is inside the dialog');
+
+  click(cancel);
+  assert.equal(container.querySelector('[role="alertdialog"]'), null, 'precondition: Cancel really closed the dialog');
+
+  assert.notEqual(document.activeElement, invoker, 'focus was NOT restored to the invoker');
+  assert.equal(document.activeElement, document.body, 'focus fell to body, the no-restore default');
 });
