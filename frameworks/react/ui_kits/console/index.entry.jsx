@@ -1,5 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import { dismissDefault, dismissActionable } from '../../tokens.generated.js';
 import { LoginScreen } from './LoginScreen.jsx';
 import { DashboardScreen } from './DashboardScreen.jsx';
 import { ProjectScreen } from './ProjectScreen.jsx';
@@ -13,7 +14,12 @@ function App(){
   const pushToast = (t) => {
     const id = Math.random();
     setToasts((ts) => [...ts, { ...t, id }]);
-    setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)), 4200);
+    /* A toast carrying a button asks the reader to DECIDE, not only to read, and
+     * gets longer for it (WCAG 2.2.1). `persist` overrides both and never
+     * auto-dismisses -- mandatory in critical states, per README H1. */
+    if (t.persist) return;
+    setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)),
+      t.action ? dismissActionable : dismissDefault);
   };
 
   const nav = (id) => {
