@@ -32,7 +32,7 @@ function arrow(direction, disabled) {
   return el('button', {
     class: c.nav, type: 'button',
     'aria-label': direction < 0 ? 'Previous' : 'Next', disabled: disabled || undefined,
-  }, el('i', { class: direction < 0 ? 'ph-bold ph-caret-left' : 'ph-bold ph-caret-right' }));
+  }, el('i', { class: direction < 0 ? 'ph-bold ph-caret-left' : 'ph-bold ph-caret-right', 'aria-hidden': 'true' }));
 }
 
 function pagination(current, total) {

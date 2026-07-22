@@ -20,7 +20,7 @@ function toast({ tone = 'neutral', title, message, action, persist }) {
     'aria-live': tone === 'danger' ? 'assertive' : 'polite',
     'data-persist': persist ? '' : undefined,
   }, body,
-    el('button', { class: c.close, type: 'button', 'aria-label': 'Close' }, el('i', { class: 'ph-bold ph-x' })));
+    el('button', { class: c.close, type: 'button', 'aria-label': 'Close' }, el('i', { class: 'ph-bold ph-x', 'aria-hidden': 'true' })));
 }
 
 mountSpecimen({ sections: [
