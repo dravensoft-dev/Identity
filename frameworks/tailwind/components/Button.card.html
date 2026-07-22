@@ -11,7 +11,7 @@ const manifest = await (await fetch('./Button.manifest.json')).json();
 
 function button(label, opts = {}, { disabled = false, loading = false } = {}) {
   const c = classesFor(manifest, opts);
-  const node = el('button', { class: c.root, type: 'button', disabled: disabled || undefined });
+  const node = el('button', { class: c.root, type: 'button', disabled: (disabled || loading) || undefined });
   if (loading) node.append(el('span', { class: c.spinner, 'aria-hidden': 'true' }));
   node.append(label);
   return node;

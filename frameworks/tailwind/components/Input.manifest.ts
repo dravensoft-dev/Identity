@@ -5,7 +5,7 @@ export default {
     "root": "flex flex-col gap-1.5",
     "label": "font-mono text-ctl-xs tracking-field-label uppercase text-base-content/62",
     "required": "text-primary ml-1",
-    "field": "flex items-center gap-2 h-ctl-h box-border px-3 bg-base-300 border-[length:var(--bw)] rounded-sm transition-[border-color,box-shadow] duration-[var(--dur-fast)] ease-out focus-within:border-secondary focus-within:ring-[length:var(--focus-width)] focus-within:ring-secondary/16",
+    "field": "flex items-center gap-2 h-ctl-h box-border px-3 bg-base-300 border-[length:var(--bw)] rounded-sm transition-[border-color,box-shadow] duration-[var(--dur-fast)] ease-out",
     "icon": "inline-flex text-base-content/62 text-[length:var(--icon-md)]",
     "prefix": "font-mono text-ctl-md text-base-content/62",
     "input": "flex-1 min-w-0 bg-transparent border-none outline-none text-base-content font-body text-ctl",
@@ -16,14 +16,14 @@ export default {
   "variants": {
     "state": {
       "neutral": {
-        "field": "border-base-300"
+        "field": "border-base-300 focus-within:border-secondary focus-within:ring-[length:var(--focus-width)] focus-within:ring-secondary/16"
       },
       "error": {
         "field": "border-error ring-[length:var(--focus-width)] ring-error/14",
         "statusIcon": "text-error"
       },
       "valid": {
-        "field": "border-success ring-[length:var(--focus-width)] ring-success/16",
+        "field": "border-success ring-[length:var(--focus-width)] ring-success/16 focus-within:border-secondary focus-within:ring-[length:var(--focus-width)] focus-within:ring-secondary/16",
         "statusIcon": "text-success"
       }
     },

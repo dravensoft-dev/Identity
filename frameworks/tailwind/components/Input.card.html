@@ -13,15 +13,16 @@ function input({ label, value, placeholder, hint, error, state = 'neutral', requ
   const c = classesFor(manifest, { state, disabled: String(Boolean(disabled)) });
   const root = el('div', { class: c.root });
   root.style.width = '260px';
+  const inputId = label ? 'tw-input-' + label.replace(/\s+/g, '-').toLowerCase() : undefined;
   if (label) {
-    const tag = el('label', { class: c.label }, label);
+    const tag = el('label', { class: c.label, for: inputId }, label);
     if (required) tag.append(el('span', { class: c.required, text: '*' }));
     root.append(tag);
   }
   const field = el('div', { class: c.field });
   if (icon) field.append(el('span', { class: c.icon }, el('i', { class: icon, 'aria-hidden': 'true' })));
   if (prefix) field.append(el('span', { class: c.prefix, text: prefix }));
-  field.append(el('input', { class: c.input, value: value ?? '', placeholder, disabled: disabled || undefined }));
+  field.append(el('input', { class: c.input, id: inputId, value: value ?? '', placeholder, disabled: disabled || undefined }));
   if (state === 'error') field.append(el('i', { class: `${c.statusIcon} ph-fill ph-warning-circle` }));
   if (state === 'valid') field.append(el('i', { class: `${c.statusIcon} ph-fill ph-check-circle` }));
   root.append(field);

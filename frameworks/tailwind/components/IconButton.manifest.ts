@@ -30,7 +30,7 @@ export default {
         "root": "w-auto gap-2 pl-3 pr-3.5"
       },
       "false": {
-        "root": "w-ctl-h p-0 gap-0"
+        "root": "p-0 gap-0"
       }
     }
   },
