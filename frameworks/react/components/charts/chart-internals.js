@@ -8,10 +8,19 @@
  * the legend and the axes are ours to write. They are.
  */
 
+import {
+  chartHeight, chartPadTop, chartPadRight, chartPadBottom, chartPadLeft,
+} from '../../tokens.generated.js';
+
 export const CAT_SLOTS = 8;
-export const CHART_HEIGHT = 280;
-/* Left pad holds the value labels; bottom pad holds the category labels. */
-export const PAD = { t: 8, r: 8, b: 28, l: 44 };
+
+/* CHART_HEIGHT and PAD keep their names and shapes -- the call sites read
+ * PAD.l, and renaming them would be churn on top of a relocation. What changed
+ * is where the numbers come from: tokens/src/chart.json, via the generated
+ * module. Do not reintroduce a literal here; check-script-tokens.mjs asserts
+ * the token and the custom property agree, and a literal is outside that. */
+export const CHART_HEIGHT = chartHeight;
+export const PAD = { t: chartPadTop, r: chartPadRight, b: chartPadBottom, l: chartPadLeft };
 
 /** Identity color for slot N (1-based, clamped to the ramp).
  *  Slots are assigned IN ORDER and NEVER cycled: a 9th series folds to

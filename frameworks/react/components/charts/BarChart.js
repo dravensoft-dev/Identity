@@ -4,6 +4,7 @@
 import React, { useState } from "react";
 import { useContainerWidth } from "../../use-container-width.js";
 import { resolveColors, niceMax, ticks, barPath, srOnly, PAD, CHART_HEIGHT } from "./chart-internals.js";
+import { chartBarGap, chartBarRadius } from "../../tokens.generated.js";
 export function BarChart({
   labels = [],
   values = [],
@@ -26,7 +27,7 @@ export function BarChart({
   const iw = Math.max(1, width - PAD.l - PAD.r);
   const ih = Math.max(1, height - PAD.t - PAD.b);
   const step = iw / Math.max(1, n);
-  const bw = Math.max(1, step - 2);
+  const bw = Math.max(1, step - chartBarGap);
   const yOf = (v) => PAD.t + ih - Math.max(0, v) / max * ih;
   const baseline = PAD.t + ih;
   const name = seriesLabel ? `${seriesLabel} — bar chart` : "Bar chart";
@@ -71,7 +72,7 @@ export function BarChart({
     return React.createElement("g", {
       key: i
     }, React.createElement("path", {
-      d: barPath(x, y, bw, baseline - y, 4),
+      d: barPath(x, y, bw, baseline - y, chartBarRadius),
       fill: colors[i],
       opacity: hover === null || hover === i ? 1 : 0.55,
       style: { transition: "opacity var(--dur-fast) var(--ease-out)" }

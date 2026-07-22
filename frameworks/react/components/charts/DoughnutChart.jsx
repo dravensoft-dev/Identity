@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useContainerWidth } from '../../use-container-width.js';
 import { resolveColors, arcPath, srOnly, CHART_HEIGHT } from './chart-internals.js';
+import { chartLegendMin, chartLegendMax, chartLegendGap } from '../../tokens.generated.js';
 
 export function DoughnutChart({ labels = [], values = [], slots, valueFormatter, style, ...rest }) {
   const [ref, measured] = useContainerWidth();
@@ -13,8 +14,11 @@ export function DoughnutChart({ labels = [], values = [], slots, valueFormatter,
   const colors = resolveColors({ slots: slots ?? Array.from({ length: n }, (_, i) => i + 1), count: n });   // identity only — slices ARE categories
 
   const total = values.reduce((a, b) => a + Math.max(0, b), 0);
-  const legendW = Math.min(180, Math.max(120, width * 0.34));
-  const plotW = Math.max(1, width - legendW - 16);
+  // 0.34 stays a plain number: the repo's position is that a multiplier which
+  // derives one dimension from another is not itself a design value. Same for
+  // rInner's 0.62 below, and for TYPE-MAP's note on Avatar's 0.4 and 0.28.
+  const legendW = Math.min(chartLegendMax, Math.max(chartLegendMin, width * 0.34));
+  const plotW = Math.max(1, width - legendW - chartLegendGap);
   const cx = plotW / 2;
   const cy = height / 2;
   const rOuter = Math.max(1, Math.min(plotW, height) / 2 - 8);
