@@ -1,0 +1,190 @@
+{
+  "Badge": {
+    "pattern": "none",
+    "delegatedTo": "Angular Material MatBadge",
+    "reason": "matBadge is Material's small labelled/numeric indicator directive. React's Badge renders the same small labelled shape -- an optional dot plus text, no interactive affordance of its own -- and Arena has no arena-badge primitive and should not grow one. arena-material.css does not dress it: no .mat-badge-content rule exists in the bridge today, so its colours are Material's own defaults, not Arena's tokens."
+  },
+  "Button": {
+    "pattern": "button",
+    "delegatedTo": "Angular Material MatButton",
+    "dressedBy": "frameworks/angular/theme/arena-material.css",
+    "reason": "MatButton renders a native <button>, which brings the button role, text-content labelling and Space/Enter activation for free. The bridge dresses the filled (.mat-mdc-unelevated-button) and outlined (.mat-mdc-outlined-button) variants with Arena's primary colour, content colour and --r-sm radius, plus an .arena-danger modifier that keeps danger outline-only. Arena has no arena-button primitive and should not grow one."
+  },
+  "Calendar": {
+    "pattern": "none",
+    "divergesFrom": "grid",
+    "reason": "This is the one entry in this file that is genuinely absent, not delegated. Arena's Calendar is a day/hour schedule grid with absolutely-positioned event blocks -- a scheduling view, not a date picker. Angular Material's calendar surface (mat-calendar, the view inside MatDatepicker) is a month/date-selection grid: a different widget solving a different problem, with no day/hour axis and no event blocks. There is no real Material control this delegates to, and arena-material.css dresses none. Recorded in CLAUDE.md's Known debt, in the check:script-tokens discussion of calendarHourH: \"Angular has no Calendar.\""
+  },
+  "Card": {
+    "pattern": "none",
+    "delegatedTo": "Angular Material MatCard",
+    "dressedBy": "frameworks/angular/theme/arena-material.css",
+    "reason": "MatCard already provides the bordered surface and its header/content/actions slots; it manages no interactive state of its own, the same as React's Card. The bridge dresses its container colour (--surface-card) and --r-lg radius. Arena has no arena-card primitive and should not grow one."
+  },
+  "Checkbox": {
+    "pattern": "checkbox",
+    "delegatedTo": "Angular Material MatCheckbox",
+    "reason": "MatCheckbox wraps a real native <input type=\"checkbox\">, which brings the checkbox role, label association and Space-to-toggle from the native element rather than an authored re-implementation. arena-material.css does not dress it -- no .mat-mdc-checkbox rule exists in the bridge today -- so its colours are Material's own defaults, not Arena's tokens."
+  },
+  "Dialog": {
+    "pattern": "dialog-modal",
+    "delegatedTo": "Angular Material MatDialog",
+    "dressedBy": "frameworks/angular/theme/arena-material.css",
+    "reason": "MatDialog (the CDK dialog underneath it) provides the modal surface, aria-modal, first-focus-on-open, restore-focus-on-close and Escape-to-close -- the entire requirement list React's own Dialog binding records as unmet. The bridge dresses the surface colour and --r-lg radius on .mat-mdc-dialog-surface. Arena has no arena-dialog primitive and should not grow one."
+  },
+  "IconButton": {
+    "pattern": "button",
+    "delegatedTo": "Angular Material MatButton (matIconButton)",
+    "reason": "matIconButton is the icon-only variant of the same MatButton family Button delegates to, and provides the same native <button> role and keyboard activation. arena-material.css dresses the filled and outlined text variants but has no rule for the icon-button host class, so its colour is Material's own default rather than Arena's tokens today."
+  },
+  "Input": {
+    "pattern": "textbox",
+    "delegatedTo": "Angular Material matInput",
+    "dressedBy": "frameworks/angular/theme/arena-material.css",
+    "reason": "matInput provides the textbox role and reflects multiline/required/readonly state from the native element it directs. It is always composed inside <mat-form-field appearance=\"outline\">, and the bridge dresses that field -- outline colour, focus colour, --r-sm radius, label colour -- rather than the input element itself. Arena has no arena-input primitive and should not grow one."
+  },
+  "Menu": {
+    "pattern": "menu-button",
+    "delegatedTo": "Angular Material MatMenu (matMenuTriggerFor, mat-menu-item)",
+    "reason": "The matMenuTriggerFor directive sets aria-haspopup and aria-expanded on the actual focusable trigger element (not a wrapping node, which is exactly where React's own Menu binding records this as unmet), moves focus to the first item on open, and the CDK overlay under it implements Escape and arrow-key navigation inside the panel. arena-material.css has no rule for the menu panel or its items, so it renders in Material's own colours, not Arena's tokens, today."
+  },
+  "Pagination": {
+    "pattern": "navigation",
+    "delegatedTo": "Angular Material MatPaginator",
+    "reason": "MatPaginator already renders a labelled control set for moving between pages of a data set. arena-material.css does not dress it -- no .mat-mdc-paginator rule exists in the bridge today -- so its colours are Material's own defaults, not Arena's tokens."
+  },
+  "ProgressBar": {
+    "pattern": "status",
+    "delegatedTo": "Angular Material MatProgressBar",
+    "dressedBy": "frameworks/angular/theme/arena-material.css",
+    "exceptions": [
+      {
+        "requirement": "roles.element",
+        "reason": "MatProgressBar implements the ARIA role=\"progressbar\" pattern (per Angular Material's own accessibility docs), not this pattern's literal role=\"status\" -- the same divergence React's own ProgressBar binding already records against this same pattern, for the same reason: the catalogue has no dedicated progressbar pattern."
+      },
+      {
+        "requirement": "live.politeness",
+        "reason": "role=\"progressbar\" carries no implicit aria-live politeness the way role=\"status\" does, and MatProgressBar sets none explicitly -- a screen reader is not guaranteed to announce value changes automatically, the same gap React's own binding records."
+      }
+    ],
+    "reason": "MatProgressBar renders the indicator, its determinate/indeterminate/buffer/query modes and its value plumbing (aria-valuenow, aria-valuemin, aria-valuemax). The bridge dresses its active-indicator and track colour on the brand and border tokens. Arena has no arena-progress-bar primitive and should not grow one."
+  },
+  "Radio": {
+    "pattern": "radiogroup",
+    "delegatedTo": "Angular Material MatRadioGroup (mat-radio-button)",
+    "reason": "MatRadioGroup already provides the group/radio role pair, roving focus onto the checked (or first) button, and arrow-key selection. arena-material.css does not dress it -- no .mat-mdc-radio-button rule exists in the bridge today -- so its colours are Material's own defaults, not Arena's tokens."
+  },
+  "SegmentedControl": {
+    "pattern": "radiogroup",
+    "delegatedTo": "Angular Material MatButtonToggleGroup (mat-button-toggle)",
+    "exceptions": [
+      {
+        "requirement": "roles.group",
+        "reason": "Angular Material's own accessibility docs state that MatButtonToggleGroup applies role=\"group\", not role=\"radiogroup\" -- this pattern's literal requirement -- to the group element, even in its default single-selection (exclusive) mode. A consumer must still label the group with aria-label or aria-labelledby, which the docs also call out."
+      }
+    ],
+    "reason": "In its default (non-multiple) mode, MatButtonToggleGroup behaves like a radio-button group: exactly one toggle is selected, its value drives the group's own, and it supports ngModel the way a radio group does. arena-material.css does not dress it -- no .mat-button-toggle-group rule exists in the bridge today -- so its colours are Material's own defaults, not Arena's tokens."
+  },
+  "Select": {
+    "pattern": "combobox",
+    "delegatedTo": "Angular Material MatSelect",
+    "dressedBy": "frameworks/angular/theme/arena-material.css",
+    "reason": "MatSelect follows the ARIA 1.2 combobox pattern directly (Angular Material's own accessibility docs say so in those words): the trigger controls a role=\"listbox\" popup, with aria-expanded, aria-controls and aria-activedescendant wired by the component rather than left implicit the way React's native <select> leaves them. Like Input, it is composed inside <mat-form-field appearance=\"outline\">, and the bridge dresses that field, not the select element itself. Arena has no arena-select primitive and should not grow one."
+  },
+  "SideNav": {
+    "pattern": "navigation",
+    "delegatedTo": "Angular Material mat-nav-list",
+    "dressedBy": "frameworks/angular/theme/arena-material.css",
+    "reason": "mat-nav-list already provides the anchor-or-button distinction, the active state and the keyboard behaviour. The bridge declares colour, weight, font and shape and deliberately no geometry -- re-specifying Material's list metrics is the duplication the bridge exists to avoid. See components-divergences.md's SideNav entry for the full three-way comparison."
+  },
+  "Spinner": {
+    "pattern": "status",
+    "delegatedTo": "Angular Material MatProgressSpinner",
+    "dressedBy": "frameworks/angular/theme/arena-material.css",
+    "exceptions": [
+      {
+        "requirement": "roles.element",
+        "reason": "MatProgressSpinner implements the ARIA role=\"progressbar\" pattern (per Angular Material's own accessibility docs), not this pattern's literal role=\"status\". Unlike Angular's ProgressBar, this is a divergence React's own Spinner binding does NOT carry -- React's Spinner fully implements role=\"status\" with no exceptions -- so the two layers read the same pattern differently for this one component."
+      },
+      {
+        "requirement": "live.politeness",
+        "reason": "role=\"progressbar\" carries no implicit aria-live politeness the way role=\"status\" does, and MatProgressSpinner sets none explicitly, unlike React's Spinner which this pattern records as fully compliant."
+      }
+    ],
+    "reason": "MatProgressSpinner renders the indicator and its determinate/indeterminate/buffer/query modes, with aria-valuenow mirrored from value. The bridge dresses its active-indicator colour on the brand. Arena has no arena-spinner primitive and should not grow one."
+  },
+  "Switch": {
+    "pattern": "switch",
+    "delegatedTo": "Angular Material MatSlideToggle",
+    "reason": "MatSlideToggle already renders role=\"switch\", label association and Space-to-toggle. arena-material.css does not dress it -- no .mat-mdc-slide-toggle rule exists in the bridge today -- so its colours are Material's own defaults, not Arena's tokens."
+  },
+  "Table": {
+    "pattern": "grid",
+    "delegatedTo": "Angular Material MatTable",
+    "dressedBy": "frameworks/angular/theme/arena-material.css",
+    "exceptions": [
+      {
+        "requirement": "roles.grid",
+        "reason": "MatTable defaults to role=\"table\", not role=\"grid\" (Angular Material's own accessibility docs). The role can be changed by hand, but nothing in Arena's usage does, so this stays unmet the same way React's own Table binding records it."
+      },
+      {
+        "requirement": "roles.row",
+        "reason": "Row role follows the table's own role -- with the default role=\"table\", rows carry row semantics appropriate to a table, not the grid pattern's roving-focus row, mirroring React's own exception."
+      },
+      {
+        "requirement": "roles.cell",
+        "reason": "Same as roles.row: cell roles follow the default table role, not the grid pattern's gridcell/columnheader/rowheader, mirroring React's own exception."
+      },
+      {
+        "requirement": "roles.label",
+        "reason": "Material's own docs say to always provide aria-label or aria-labelledby on the table element; nothing in this delegation supplies one, so it is unmet the same way React's own Table binding records it."
+      },
+      {
+        "requirement": "focus.roving",
+        "reason": "Angular Material's own accessibility docs are explicit: switching to role=\"grid\" or role=\"treegrid\" 'does not add keyboard input handling or focus management' -- there is no roving tab stop either way."
+      },
+      {
+        "requirement": "keyboard.ArrowKeys",
+        "reason": "Per the same Material docs quote: changing the role adds no keyboard input handling at all, so arrow-key navigation is unmet regardless of which role is set."
+      },
+      {
+        "requirement": "keyboard.Home",
+        "reason": "Same as ArrowKeys -- Material supplies no keyboard handling of the grid, with either role."
+      },
+      {
+        "requirement": "keyboard.End",
+        "reason": "Same as ArrowKeys -- Material supplies no keyboard handling of the grid, with either role."
+      }
+    ],
+    "reason": "MatTable provides the row/column definition machinery (matColumnDef, mat-header-row, mat-row) and a real data-bound table, rather than a bespoke Arena re-implementation of table layout. The bridge dresses its background and row hairline colour, and gives the header cell the mono uppercase micro-label treatment. Arena has no arena-table primitive and should not grow one."
+  },
+  "Tabs": {
+    "pattern": "tabs",
+    "delegatedTo": "Angular Material MatTabGroup",
+    "dressedBy": "frameworks/angular/theme/arena-material.css",
+    "reason": "MatTabGroup already provides the tablist/tab/tabpanel role triad, aria-selected, roving focus and Left/Right arrow-key navigation between tabs -- the entire list React's own Tabs binding records as unmet. The bridge dresses the active label and indicator colour on the brand. Arena has no arena-tabs primitive and should not grow one."
+  },
+  "Textarea": {
+    "pattern": "textbox",
+    "delegatedTo": "Angular Material matInput",
+    "dressedBy": "frameworks/angular/theme/arena-material.css",
+    "reason": "The same matInput directive Input delegates to, applied to a <textarea> rather than an <input>, and composed the same way inside <mat-form-field appearance=\"outline\">. The bridge dresses that field, not the textarea element itself. Arena has no arena-textarea primitive and should not grow one."
+  },
+  "Toast": {
+    "pattern": "alert",
+    "delegatedTo": "Angular Material MatSnackBar",
+    "dressedBy": "frameworks/angular/theme/arena-material.css",
+    "reason": "MatSnackBar owns the surface, its enter/exit animation and its dismissal (action button, explicit dismiss(), or an optional duration). The bridge dresses the snack-bar container colour, --r-md radius and supporting-text colour. Arena has no arena-toast primitive and should not grow one."
+  },
+  "Tooltip": {
+    "pattern": "tooltip",
+    "delegatedTo": "Angular Material matTooltip",
+    "exceptions": [
+      {
+        "requirement": "timing.open-delay",
+        "reason": "matTooltip's showDelay and hideDelay default to 0, so Angular reveals instantly where React now waits --delay-open. The seam is MAT_TOOLTIP_DEFAULT_OPTIONS and nothing wires it. Recorded in CLAUDE.md's Known debt."
+      }
+    ],
+    "reason": "matTooltip provides the directive, its positioning via the CDK overlay, and its dismissal. Arena has no arena-tooltip primitive and should not grow one. arena-material.css has no rule for the tooltip panel, so it renders in Material's own colours, not Arena's tokens, today."
+  }
+}
