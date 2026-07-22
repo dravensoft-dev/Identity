@@ -1123,6 +1123,60 @@
     background-position: 140% 0;
   }
 }
+@keyframes arena-pop {
+  from {
+    opacity: 0;
+    transform: translateY(var(--sp-2)) scale(.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes arena-menu {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--sp-1) * -1));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes arena-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes arena-prog {
+  0% {
+    left: -40%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes arena-pop {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes arena-menu {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
 @property --tw-border-style {
   syntax: "*";
   inherits: false;
