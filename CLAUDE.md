@@ -215,8 +215,15 @@ machine-checked, not hoped for: `bun run check:tailwind` compiles the preset
 with the manifests as content and asserts every class emits a rule and every
 theme key resolves to a real token; `bun run check:coverage` asserts every
 token either reaches a utility or is named in `EXCLUDED` with a reason;
-`bun run check:arbitrary` fails on a bracket carrying a raw literal.
-`bun run check` runs all fifteen plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
+`bun run check:arbitrary` fails on a bracket carrying a raw literal;
+`bun run check:radius` fails on the one core Tailwind utility in this
+namespace that resolves without one — `rounded-full` (`calc(infinity * 1px)`,
+never sourced from `--radius-*`) where `rounded-pill` (`--r-pill`) belongs.
+It is the converse of `check:coverage` and just as narrow: it does not attempt
+"every utility traces to a token" in general, only this one verified case,
+because everywhere else in a cleared namespace already resolves to nothing
+and `check:tailwind` catches that on its own.
+`bun run check` runs all sixteen plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
 skips quietly — makes that a hard failure instead. An Angular primitive's recipe is its
 manifest — `frameworks/angular/primitives/tag/` is the reference shape.
 

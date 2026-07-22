@@ -37,6 +37,7 @@
     "check:tailwind": "bun scripts/check-tailwind.mjs",
     "check:tailwind-generated": "bun scripts/check-tailwind-generated.mjs",
     "check:coverage": "bun scripts/check-tailwind-coverage.mjs",
+    "check:radius": "bun scripts/check-radius-tokens.mjs",
     "check:arbitrary": "bun scripts/check-arbitrary-values.mjs",
     "check:dimensions": "bun scripts/check-dimension-literals.mjs",
     "check:states": "bun scripts/check-manifest-states.mjs",
