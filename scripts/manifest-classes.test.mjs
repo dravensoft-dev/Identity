@@ -11,7 +11,7 @@ test('the default variants apply when nothing is chosen', () => {
   const { root, dot } = classesFor(tag);
   assert.ok(root.includes('rounded-pill'), 'the base slot is present');
   assert.ok(root.includes('border-base-300'), 'tone=neutral is the default');
-  assert.equal(dot, 'h-1.5 w-1.5 rounded-pill bg-current');
+  assert.equal(dot, 'size-1.5 rounded-pill bg-current');
 });
 
 test('a chosen variant replaces the default', () => {
