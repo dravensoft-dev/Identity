@@ -3,8 +3,8 @@
 **Status:** DRAFT — not approved. Written 2026-07-22 at the request of the repo owner.
 Open questions at the end are real and must be answered before a plan is written from
 this.
-**Execution order:** plan 7 of 8 — after 6 (four-package build + publish), before 8
-(API capability contracts).
+**Execution order:** plan 7 of 9 — after 5.5 (the script-readable token target), before 8
+(API capability contracts). Publication is plan 9 and goes last.
 **Depends on:** `2026-07-19-5.5-chart-geometry-token-target-design.md` — hard
 dependency, for the reason in *Sequencing*. That spec is itself a DRAFT.
 **Blocks:** `2026-07-22-8-api-contracts-design.md` (plan 8).
@@ -347,10 +347,10 @@ the unowned `4200`) and are useful whether or not the contract layer proceeds.
 ```
 5a  Angular primitive parity          <- executed
 5b  Tailwind manifest parity          <- executed
-5.5 chart geometry / script target    <- DRAFT, unapproved. HARD DEPENDENCY.
-6   four-package build + publish
+5.5 chart geometry / script target    <- next. DRAFT, unapproved. HARD DEPENDENCY.
 7   THIS SPEC
 8   API capability contracts
+9   four-package build + publish      <- moved from 6 on 2026-07-22; last
 ```
 
 **Why after 5.5, and why that is a hard dependency rather than a preference.** This spec
@@ -360,10 +360,13 @@ would be two mechanisms for one job — the drift this repo exists to prevent. I
 rejected, this spec must be re-argued from scratch, and §3 is where it would have to be
 re-fought.
 
-**Why after 6.** 5.5's own argument applies unchanged: a JS export condition is cheap to
-add before the first publish and awkward forever after. If 6 ships before 5.5 and 7,
-that argument was lost and both specs inherit the awkwardness — which is an argument for
-resequencing 5.5 before 6, not against this spec.
+**Why publication is now last, which removes a tension this spec used to carry.** In the
+original chain, publication was plan 6 and sat *before* this spec — so a JS export
+condition would have shipped, and then this spec would have added a second family of
+values to it. The 2026-07-22 renumbering moves publication to plan 9, after 5.5, 7 and 8.
+The token package's shape is therefore settled before anything is published, which is
+5.5's own argument (*a published version is permanent in a way a package name is not*)
+applied to the whole chain rather than to one plan.
 
 **Why before 8.** Plan 8 reuses this plan's infrastructure directly: the
 component→layer resolver, the exception format with its stale-entry rule, and the

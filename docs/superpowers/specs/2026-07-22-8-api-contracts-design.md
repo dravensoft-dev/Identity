@@ -6,8 +6,12 @@ fresh. **It is written against infrastructure that does not exist yet** — plan
 the binding convention, the exception format and the component→layer resolver this spec
 reuses. Expect to revise it once plan 7 lands; that is the accepted cost of writing it
 now.
-**Execution order:** plan 8 of 8 — last.
+**Execution order:** plan 8 of 9 — after 7, before 9 (four-package build + publish).
 **Depends on:** `2026-07-22-7-behaviour-tokens-and-contracts-design.md`, hard.
+**Blocks:** `2026-07-18-9-four-package-build-publish-design.md` (plan 9) — this spec
+settles the public API surface of both framework packages, and publishing before it means
+publishing a surface that is about to be classified and, in at least one known case
+(`ConfirmDialog`'s missing `width`), corrected.
 
 ## Problem
 
@@ -176,7 +180,7 @@ architecture section, is a decision for the end of plan 8 and not before.
 
 ## Sequencing
 
-Last. It reuses, and does not rebuild:
+Last before publication (plan 9). It reuses, and does not rebuild:
 
 - plan 7's sidecar-next-to-the-component convention;
 - plan 7's component→layer resolver, including the two known mapping exceptions

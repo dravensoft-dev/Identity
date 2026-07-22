@@ -2,12 +2,29 @@
 
 **Date:** 2026-07-18 · **revised 2026-07-18** after v4.0.0 shipped and the framework
 layers were audited · **decisions settled 2026-07-18**, see "Component coverage".
-**Status:** Approved in design; **plan written**
-(`docs/superpowers/plans/2026-07-18-6-four-package-build-publish.md`, **plan 6 of 6 —
-last**). Executable now, but **publishing stays switched off** until framework-layer
-coverage (plan 3), the token/geometry boundary (plan 4,
-`2026-07-18-4-token-geometry-boundary-design.md`) *and* Angular / Tailwind parity
-(plan 5) land — see "Component coverage" near the end.
+**Status:** Approved in design. **Renumbered 2026-07-22 from plan 6 to plan 9 — still
+last, and now last by a longer margin.** Its implementation plan was deleted rather than
+carried forward, because three specs landed between this one and its turn; it will be
+rewritten when the chain reaches it.
+
+**Publishing stays switched off** until framework-layer coverage (plan 3), the
+token/geometry boundary (plan 4, `2026-07-18-4-token-geometry-boundary-design.md`) and
+Angular / Tailwind parity (plan 5) land — see "Component coverage" near the end — and,
+as of the 2026-07-22 renumbering, until three further specs land as well:
+
+- **5.5** (`2026-07-19-5.5-chart-geometry-token-target-design.md`) adds a **second entry
+  point** to `@dravensoft/arena-tokens`: a script-readable JS/TS target emitted from
+  DTCG alongside the CSS.
+- **7** (`2026-07-22-7-behaviour-tokens-and-contracts-design.md`) adds a second family of
+  values to that entry point, and a `behaviour/` contract layer at the repo root that
+  the packaging story has to account for.
+- **8** (`2026-07-22-8-api-contracts-design.md`) settles the public API surface of both
+  framework packages.
+
+The rationale is this spec's own, applied three more times: *a published version is
+permanent in a way a package name is not*. An export condition is cheap to add before the
+first publish and awkward forever after, and there are now three specs that change what
+gets exported.
 
 Plan 4 is a later addition to this chain and matters here for a reason coverage and
 parity do not: it changes token **values** and adds two token families (`icon` and
