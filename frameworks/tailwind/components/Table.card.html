@@ -43,7 +43,7 @@ function cards() {
     for (const column of COLUMNS) {
       card.append(el('div', { class: c.cardRow },
         el('span', { class: c.cardLabel, text: column.header }),
-        el('span', { class: c.cardValue, text: row[column.key] })));
+        el('span', { class: column.mono ? c.cardValueMono : c.cardValue, text: row[column.key] })));
     }
     list.append(card);
   }

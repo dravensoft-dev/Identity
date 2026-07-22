@@ -11,12 +11,13 @@ export default {
     "rowInteractive": "cursor-pointer hover:bg-base-200",
     "td": "px-row-px py-row-py text-left align-middle text-ctl font-body text-base-content/82",
     "tdMono": "px-row-px py-row-py text-left align-middle text-ctl font-mono text-secondary",
-    "empty": "px-4 py-8 text-center text-ctl text-base-content/62",
+    "empty": "px-4 py-8 text-center align-middle text-ctl text-base-content/62",
     "cards": "flex flex-col gap-4",
     "card": "flex flex-col gap-stack bg-base-200 border-[length:var(--bw)] border-base-300 rounded-lg p-row-px",
     "cardRow": "flex items-baseline justify-between gap-3",
     "cardLabel": "font-mono text-ctl-2xs font-bold tracking-column-header uppercase text-base-content/62",
     "cardValue": "min-w-0 text-right text-ctl font-body text-base-content/82",
+    "cardValueMono": "min-w-0 text-right text-ctl font-mono text-secondary",
     "cardBlock": "w-full flex justify-end gap-2 border-t-[length:var(--bw)] border-base-300 pt-2"
   }
 } as const;
