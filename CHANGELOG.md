@@ -259,7 +259,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   cluster's snap direction (round up or down) was decided once, by the coordinator, and
   applied consistently everywhere that cluster appears, rather than re-decided per site.
 - Chart geometry, `Calendar`'s hour height and `Onboarding`'s popover width are
-  tokens rather than constants. **No rendered value changed.** Ten hand-declared
+  tokens rather than constants. **No rendered value changed.** Thirteen hand-declared
   constants across both layers are gone, five of which were duplicated verbatim
   between them.
 - `Onboarding` renders `var(--onboarding-width)` in place of
