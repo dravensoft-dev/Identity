@@ -112,6 +112,7 @@
     --z-index-modal-nested: var(--z-modal-nested);
     --z-index-palette: var(--z-palette);
     --z-index-onboarding: var(--z-onboarding);
+    --z-index-toast: var(--z-toast);
   }
 }
 @layer base {
@@ -326,6 +327,9 @@
   .z-palette {
     z-index: var(--z-index-palette);
   }
+  .z-toast {
+    z-index: var(--z-index-toast);
+  }
   .z-tooltip {
     z-index: var(--z-index-tooltip);
   }
@@ -537,6 +541,9 @@
   }
   .w-80 {
     width: calc(var(--spacing) * 80);
+  }
+  .w-85 {
+    width: calc(var(--spacing) * 85);
   }
   .w-115 {
     width: calc(var(--spacing) * 115);
@@ -770,9 +777,17 @@
     border-top-style: var(--tw-border-style);
     border-top-width: var(--bw);
   }
+  .border-r-\[length\:var\(--bw\)\] {
+    border-right-style: var(--tw-border-style);
+    border-right-width: var(--bw);
+  }
   .border-b-\[length\:var\(--bw\)\] {
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: var(--bw);
+  }
+  .border-l-\[length\:var\(--bw-strong\)\] {
+    border-left-style: var(--tw-border-style);
+    border-left-width: var(--bw-strong);
   }
   .border-dashed {
     --tw-border-style: dashed;
@@ -812,8 +827,29 @@
   .border-warning {
     border-color: var(--color-warning);
   }
+  .border-t-base-300 {
+    border-top-color: var(--color-base-300);
+  }
   .border-t-transparent {
     border-top-color: transparent;
+  }
+  .border-r-base-300 {
+    border-right-color: var(--color-base-300);
+  }
+  .border-b-base-300 {
+    border-bottom-color: var(--color-base-300);
+  }
+  .border-l-error {
+    border-left-color: var(--color-error);
+  }
+  .border-l-neutral {
+    border-left-color: var(--color-neutral);
+  }
+  .border-l-secondary {
+    border-left-color: var(--color-secondary);
+  }
+  .border-l-success {
+    border-left-color: var(--color-success);
   }
   .bg-base-100\/30 {
     background-color: var(--color-base-100);
@@ -925,6 +961,9 @@
   }
   .p-row-px {
     padding: var(--spacing-row-px);
+  }
+  .px-1 {
+    padding-inline: var(--spacing-1);
   }
   .px-1\.5 {
     padding-inline: calc(var(--spacing) * 1.5);
