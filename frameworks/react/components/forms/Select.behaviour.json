@@ -1,0 +1,13 @@
+{
+  "pattern": "combobox",
+  "exceptions": [
+    { "requirement": "roles.element",
+      "reason": "Select renders a native <select>, so the combobox role is implicit rather than authored. Verify when level 2 lands." },
+    { "requirement": "roles.expanded",
+      "reason": "Same native <select>: the browser tracks and exposes the popup's open/closed state to assistive tech without an authored aria-expanded attribute anywhere in the JSX. Verify when level 2 lands." },
+    { "requirement": "roles.controls",
+      "reason": "The native <select>'s dropdown is rendered by the OS/browser chrome, not a DOM node this component owns, so there is no popup element for an authored aria-controls to reference -- the association is entirely implicit in the native widget. Verify when level 2 lands." },
+    { "requirement": "roles.activedescendant",
+      "reason": "Native <select> keeps DOM focus on the element itself and tracks the highlighted option internally; there is no authored aria-activedescendant, but the browser exposes the active option to assistive tech as part of the native combobox mapping. Verify when level 2 lands." }
+  ]
+}

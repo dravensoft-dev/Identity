@@ -1,0 +1,21 @@
+{
+  "pattern": "tabs",
+  "exceptions": [
+    { "requirement": "roles.tablist",
+      "reason": "The wrapping <div> carries no role=\"tablist\" -- it is a plain div with only layout styling." },
+    { "requirement": "roles.tab",
+      "reason": "Each tab is a plain <button> with no role=\"tab\"." },
+    { "requirement": "roles.tabpanel",
+      "reason": "Tabs.jsx renders no tabpanel at all -- panel content is left entirely to the consumer, with no id/aria-controls wiring offered to connect one." },
+    { "requirement": "roles.controls",
+      "reason": "No tab carries aria-controls; there is no panel id for it to reference even if one were added." },
+    { "requirement": "states.selected",
+      "reason": "The active tab is communicated only visually -- bold weight and a crimson underline via inset box-shadow -- with no aria-selected attribute anywhere." },
+    { "requirement": "focus.roving",
+      "reason": "Not implemented. Every tab button keeps its own place in the normal Tab sequence; there is no single roving tab stop for the group." },
+    { "requirement": "keyboard.ArrowLeft",
+      "reason": "Not implemented -- the component has no onKeyDown handler at all, only onClick." },
+    { "requirement": "keyboard.ArrowRight",
+      "reason": "Not implemented, same as ArrowLeft." }
+  ]
+}

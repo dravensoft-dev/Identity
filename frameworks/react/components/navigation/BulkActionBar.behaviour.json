@@ -1,0 +1,7 @@
+{
+  "pattern": "navigation",
+  "exceptions": [
+    { "requirement": "roles.element",
+      "reason": "BulkActionBar renders role=\"region\", not navigation -- it groups bulk actions on a selection, not links for moving through the app, so a labeled region is the semantically correct landmark, not a defect. Bound to the navigation pattern only because this catalog has no toolbar/region pattern of its own yet; the mismatch is in the catalog, not the component." }
+  ]
+}

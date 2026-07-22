@@ -1,0 +1,13 @@
+{
+  "pattern": "combobox",
+  "exceptions": [
+    { "requirement": "roles.element",
+      "reason": "The search input carries no role attribute at all -- no role=\"combobox\" is ever authored. Angular's arena-command-palette is the accessible reference; this is a real defect, not idiom." },
+    { "requirement": "roles.expanded",
+      "reason": "No aria-expanded is set anywhere, on the input or on any trigger. Converging on Angular's implementation." },
+    { "requirement": "roles.controls",
+      "reason": "No aria-controls references the results list; the input and the list of filtered commands are not associated for assistive tech at all. Converging on Angular's implementation." },
+    { "requirement": "roles.activedescendant",
+      "reason": "The highlighted row is tracked only in component state (the `i` index) and shown purely with a background-color change; there is no aria-activedescendant, so a screen reader user gets no indication of which command is active while arrowing through the list. Converging on Angular's implementation." }
+  ]
+}
