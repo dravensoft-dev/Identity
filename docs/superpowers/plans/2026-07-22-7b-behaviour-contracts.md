@@ -60,7 +60,7 @@ The spec left six contract-layer questions. All six are answered here, five of t
 ## Global Constraints
 
 - **English only** — all code, comments, docs and copy. **No emoji**, in product or docs.
-- **A pattern is adopted, not invented.** Every pattern file carries a `source` URL. Seventeen come from the WAI-ARIA Authoring Practices Guide; exactly one (`figure-with-data-table`) does not, and it cites WCAG instead and says why in its own file.
+- **A pattern is adopted, not invented.** Every pattern file carries a `source`. Of the eighteen, **sixteen** cite a WAI-ARIA Authoring Practices Guide page. Two do not and each says why in its own file: `figure-with-data-table` cites WCAG, because APG has no chart pattern, and `none` cites nothing, because the absence of a pattern is not adopted from anywhere.
 - **Coverage is phrased as EVERY layer, never "at least one".** A component a layer does not implement is declared — as `delegated`, or as absent with a reason — never skipped.
 - **A stale entry fails the gate that owns it.** An exception naming a requirement that does not exist in its pattern fails, exactly as `check-dimension-literals.mjs`'s `EXEMPT` does.
 - **Gates must be runtime-portable.** `scripts/check-all.mjs` also runs under plain `node`; only `check:cards`, `check:vendor` and `check:demos` may be non-portable, and this gate is not one of them. Verify under `node`, not only `bun`.
@@ -273,9 +273,10 @@ closes this". Putting a pattern under `tokens/src/` would mean relaxing
 ## Patterns
 
 One file per pattern in `patterns/`, each citing the source it was adopted from.
-Seventeen come from the [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/patterns/);
-one, `figure-with-data-table`, does not, because APG has no chart pattern — it
-cites WCAG instead and says so in its own file.
+Sixteen come from the [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/patterns/).
+Two do not, and each says why in its own `source`: `figure-with-data-table`, which
+cites WCAG because APG has no chart pattern, and `none`, which cites nothing at all
+because the absence of a pattern is not adopted from anywhere.
 
 `requires` is a flat map of dotted keys. That shape is load-bearing: an exception
 in a binding names exactly one requirement, so one exception cannot quietly excuse
@@ -358,7 +359,7 @@ test('every pattern but none cites an APG or WCAG URL', () => {
   }
 });
 
-test('exactly one pattern is not from the APG', () => {
+test('none aside, exactly one pattern is not from the APG', () => {
   const nonApg = [...loadPatterns('.')]
     .filter(([stem, p]) => stem !== 'none' && !p.source.includes('/ARIA/apg/'))
     .map(([stem]) => stem);
@@ -406,7 +407,7 @@ Expected: `18`
 
 ```bash
 git add behaviour/patterns/
-git commit -m "feat(behaviour): the catalogue, seventeen adopted and one written
+git commit -m "feat(behaviour): the catalogue, sixteen adopted from APG and two that cannot be
 
 Sixteen more patterns, each citing its APG page. The keyboard clauses were read
 off the source tables rather than recalled, because level 1 of the gate verifies
@@ -1092,7 +1093,7 @@ Under `## [Unreleased]`:
 
 ```markdown
 ### Added
-- **Behaviour contracts.** `behaviour/patterns/` holds eighteen patterns — seventeen adopted from the WAI-ARIA APG with their source URLs, one (`figure-with-data-table`) Arena's own from WCAG, because APG has no chart pattern. Every component declares which it implements, in every layer: 43 React bindings, 21 Angular, and 21 controls Angular delegates to Material.
+- **Behaviour contracts.** `behaviour/patterns/` holds eighteen patterns — sixteen adopted from the WAI-ARIA APG with their source URLs, plus `figure-with-data-table` (Arena's own, from WCAG, because APG has no chart pattern) and `none` (adopted from nowhere, because it is the absence of a pattern). Every component declares which it implements, in every layer: 43 React bindings, 21 Angular, and 21 controls Angular delegates to Material.
 - `check:behaviour` — every component declares, every named pattern and requirement exists, no delegated entry is stale, and the layers agree or say why not. It asserts declaration and coherence, **not** that a component behaves as it declares.
 
 ### Changed
