@@ -455,6 +455,9 @@
   .h-5\.5 {
     height: calc(var(--spacing) * 5.5);
   }
+  .h-7 {
+    height: calc(var(--spacing) * 7);
+  }
   .h-8\.5 {
     height: calc(var(--spacing) * 8.5);
   }
@@ -829,6 +832,9 @@
   .p-0\.5 {
     padding: calc(var(--spacing) * 0.5);
   }
+  .p-1 {
+    padding: var(--spacing-1);
+  }
   .p-1\.5 {
     padding: calc(var(--spacing) * 1.5);
   }
@@ -849,6 +855,9 @@
   }
   .px-3 {
     padding-inline: var(--spacing-3);
+  }
+  .px-3\.5 {
+    padding-inline: calc(var(--spacing) * 3.5);
   }
   .px-4 {
     padding-inline: var(--spacing-4);
@@ -1054,6 +1063,9 @@
     --tw-tracking: var(--tracking-uppercase-status);
     letter-spacing: var(--tracking-uppercase-status);
   }
+  .whitespace-nowrap {
+    white-space: nowrap;
+  }
   .text-base-content {
     color: var(--color-base-content);
   }
@@ -1121,6 +1133,10 @@
   .opacity-60 {
     opacity: 60%;
   }
+  .shadow-1 {
+    --tw-shadow: var(--shadow-1);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
   .shadow-2 {
     --tw-shadow: var(--shadow-2);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
@@ -1153,6 +1169,11 @@
     --tw-backdrop-blur: blur(var(--blur-scrim));
     -webkit-backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
     backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
+  }
+  .transition-\[background\,color\] {
+    transition-property: background,color;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
   .transition-\[background\,transform\,box-shadow\] {
     transition-property: background,transform,box-shadow;
@@ -1208,6 +1229,10 @@
   .outline-none {
     --tw-outline-style: none;
     outline-style: none;
+  }
+  .select-none {
+    -webkit-user-select: none;
+    user-select: none;
   }
   :is(.\*\:block > *) {
     display: block;
