@@ -130,6 +130,25 @@ Copied from the spec and `CLAUDE.md`. Every task's requirements implicitly inclu
   Each gate task carries an explicit break-it-and-revert step.
 - **Debt goes in `CLAUDE.md`'s *Known debt*, never in this document.** Plans under
   `docs/superpowers/` are deleted once executed (`24f250b`).
+- **Every test in this repo uses `node:test` and `node:assert/strict`. There is no
+  `bun:test` anywhere** — all 60 existing suites import `test` from `node:test` and
+  `assert` from `node:assert/strict`, including the ones that only ever run under bun.
+  New suites match that. This plan's first draft wrote `bun:test` imports in five
+  places and they were corrected before Task 3; if you find one that survived, it is a
+  plan error, not a licence. Conversions, since the plan's early drafts used the other
+  vocabulary: `expect(x).toBe(y)` → `assert.equal(x, y)`; `.toEqual` →
+  `assert.deepEqual`; `.not.toBeNull()` → `assert.notEqual(x, null)`; `.toContain(y)` →
+  `assert.ok(x.includes(y))`; `expect(fn).toThrow(/re/)` → `assert.throws(fn, /re/)`;
+  `beforeAll`/`afterAll` → `before`/`after` from `node:test`. Note there is no
+  fake-timer facility — a timing test uses real timers and short waits.
+- **`bun test` matches a directory argument as a SUBSTRING.** `bun test frameworks/react/test`
+  also sweeps in `frameworks/react/test-dom`. Every directory argument in `package.json`
+  and in `check-all.mjs`'s `testStep()` carries a trailing slash for that reason. Keep it.
+- **The DOM harness directory runs as its own `bun test` process, and this is load-bearing.**
+  `@happy-dom/global-registrator` throws "Happy DOM has already been globally registered"
+  when a process that already has it registered imports an Angular suite that registers
+  again. Task 2 proved this by reproducing the crash. `testStep()` therefore returns TWO
+  steps under bun, not one merged invocation. Do not re-merge them.
 - **English only**, no emoji, no gradients. Specs and plans under `docs/superpowers/`.
 
 ## State of the tree, re-derived at `73f2116`
@@ -167,7 +186,7 @@ python3 -c "import json;print(len(json.load(open('frameworks/angular/behaviour-d
 | `frameworks/react/test-dom/dialog-modal.test.jsx` | `Dialog`, `ConfirmDialog`. |
 | `frameworks/react/test-dom/placement-and-branches.test.jsx` | `Menu` (placement), `Skeleton` (branches). |
 | `frameworks/react/test-dom/behavioural.test.jsx` | Escape, initial focus — the requirements a DOM snapshot cannot decide. |
-| `frameworks/react/test-dom/tooltip-timer.test.jsx` | The recorded-debt tooltip timer, via `bun:test` fake timers. |
+| `frameworks/react/test-dom/tooltip-timer.test.jsx` | The recorded-debt tooltip timer, via real timers and short waits. |
 | `frameworks/angular/test/compliance.ts` | `assertPattern()`, Angular side — same contract, Angular's element access. |
 | `frameworks/angular/test/alert-role-tones.test.ts` | The conditional-role case. |
 | `frameworks/angular/test/chart-data-table.test.ts` | `alternative.table`, both the Angular charts and (by parity note) React's. |
@@ -794,7 +813,8 @@ Create `frameworks/react/test-dom/smoke.test.jsx`:
  * is one process per directory; the six suites next door assert on
  * renderToStaticMarkup precisely to prove those components render with no DOM
  * present, and giving them one would quietly change what they prove. */
-import { test, expect, afterEach } from 'bun:test';
+import test, { afterEach } from 'node:test';
+import assert from 'node:assert/strict';
 import { mount, cleanup } from './harness.jsx';
 import React from 'react';
 
@@ -802,19 +822,19 @@ afterEach(cleanup);
 
 test('mount renders a React tree into a real document', () => {
   const el = mount(<div role="dialog" aria-modal="true">hello</div>);
-  expect(el.querySelector('[role="dialog"]')).not.toBeNull();
-  expect(el.querySelector('[role="dialog"]').getAttribute('aria-modal')).toBe('true');
+  assert.notEqual(el.querySelector('[role="dialog"]'), null);
+  assert.equal(el.querySelector('[role="dialog"]').getAttribute('aria-modal'), 'true');
 });
 
 test('mount resolves an implicit role through a real element, not a string', () => {
   const el = mount(<button type="button">Go</button>);
-  expect(el.querySelector('button').tagName).toBe('BUTTON');
+  assert.equal(el.querySelector('button').tagName, 'BUTTON');
 });
 
 test('cleanup empties the document body', () => {
   mount(<div id="leftover" />);
   cleanup();
-  expect(document.body.innerHTML).toBe('');
+  assert.equal(document.body.innerHTML, '');
 });
 ```
 
@@ -1031,7 +1051,8 @@ Create `frameworks/react/test-dom/dialog-modal.test.jsx`:
  * focus.trap, keyboard.Escape) are declared `behavioural` here and asserted by
  * acting on the tree in behavioural.test.jsx. assertPattern refuses to skip one
  * that is not declared. */
-import { test, afterEach } from 'bun:test';
+import test, { afterEach } from 'node:test';
+import assert from 'node:assert/strict';
 import React from 'react';
 import { join } from 'node:path';
 import { mount, cleanup } from './harness.jsx';
@@ -1178,7 +1199,6 @@ Record which of the three each failure was; Task 8's CHANGELOG entry needs the c
 Add to `dialog-modal.test.jsx`:
 
 ```jsx
-import { expect } from 'bun:test';
 import { writeFileSync, readFileSync, unlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 
@@ -1190,12 +1210,12 @@ test('assertPattern reports a stale exception', () => {
     exceptions: [{ requirement: 'roles.aria-modal', reason: 'synthetic' }],
   }));
   const container = mount(<Dialog open onClose={() => {}} title="t"><p>b</p></Dialog>);
-  expect(() => assertPattern({
+  assert.throws(() => assertPattern({
     root: container,
     bindingPath: p,
     subjects: { default: container.querySelector('[role="dialog"]') },
     behavioural: BEHAVIOURAL,
-  })).toThrow(/STALE EXCEPTION/);
+  }), /STALE EXCEPTION/);
   unlinkSync(p);
 });
 
@@ -1204,12 +1224,12 @@ test('assertPattern reports an overclaim', () => {
   // Dialog has no aria-label; a binding with no exceptions at all overclaims it.
   writeFileSync(p, JSON.stringify({ pattern: 'dialog-modal', exceptions: [] }));
   const container = mount(<Dialog open onClose={() => {}} title="t"><p>b</p></Dialog>);
-  expect(() => assertPattern({
+  assert.throws(() => assertPattern({
     root: container,
     bindingPath: p,
     subjects: { default: container.querySelector('[role="dialog"]') },
     behavioural: BEHAVIOURAL,
-  })).toThrow(/OVERCLAIM/);
+  }), /OVERCLAIM/);
   unlinkSync(p);
 });
 
@@ -1217,12 +1237,12 @@ test('assertPattern refuses an undeclared undecidable requirement', () => {
   const p = join(tmpdir(), 'arena-undeclared.behaviour.json');
   writeFileSync(p, JSON.stringify({ pattern: 'dialog-modal', exceptions: [] }));
   const container = mount(<Dialog open onClose={() => {}} title="t"><p>b</p></Dialog>);
-  expect(() => assertPattern({
+  assert.throws(() => assertPattern({
     root: container,
     bindingPath: p,
     subjects: { default: container.querySelector('[role="dialog"]') },
     behavioural: {},           // nothing declared
-  })).toThrow(/not declared behavioural/);
+  }), /not declared behavioural/);
   unlinkSync(p);
 });
 ```
@@ -1271,7 +1291,8 @@ Create `frameworks/react/test-dom/placement-and-branches.test.jsx`:
  * Skeleton's, because an attribute on the wrong element and an attribute in
  * three of four branches are textually identical to correct ones. Neither
  * mistake survives a rendered DOM. */
-import { test, expect, afterEach } from 'bun:test';
+import test, { afterEach } from 'node:test';
+import assert from 'node:assert/strict';
 import React from 'react';
 import { join } from 'node:path';
 import { mount, cleanup } from './harness.jsx';
@@ -1287,16 +1308,16 @@ test('Menu carries aria-haspopup on an element that cannot take focus — the ex
     <Menu trigger={<button type="button">Open</button>} items={[{ label: 'Rename' }]} />,
   );
   const carrier = container.querySelector('[aria-haspopup]');
-  expect(carrier).not.toBeNull();
+  assert.notEqual(carrier, null);
   // This is the assertion a text scan cannot make: the attribute exists, and the
   // element holding it is not the one a screen reader lands on.
-  expect(carrier.tagName).toBe('SPAN');
-  expect(isFocusable(carrier)).toBe(false);
+  assert.equal(carrier.tagName, 'SPAN');
+  assert.equal(isFocusable(carrier), false);
   // ...while the real trigger, which focus does reach, carries neither state.
   const trigger = container.querySelector('button');
-  expect(isFocusable(trigger)).toBe(true);
-  expect(trigger.getAttribute('aria-haspopup')).toBeNull();
-  expect(trigger.getAttribute('aria-expanded')).toBeNull();
+  assert.equal(isFocusable(trigger), true);
+  assert.equal(trigger.getAttribute('aria-haspopup'), null);
+  assert.equal(trigger.getAttribute('aria-expanded'), null);
 });
 
 test('Menu matches its menu-button binding when the subject is the focusable trigger', () => {
@@ -1324,15 +1345,15 @@ test('Skeleton renders role=status in three variants and not in circle', () => {
     seen[variant] = Boolean(container.querySelector('[role="status"]'));
     cleanup();
   }
-  expect(seen).toEqual({ block: true, line: true, text: true, circle: false });
+  assert.deepEqual(seen, { block: true, line: true, text: true, circle: false });
 });
 
 test('Skeleton circle is aria-hidden with no live region — both exceptions stand', () => {
   const container = mount(<Skeleton variant="circle" />);
   const el = container.firstElementChild;
-  expect(el.getAttribute('aria-hidden')).toBe('true');
-  expect(el.getAttribute('role')).toBeNull();
-  expect(el.getAttribute('aria-live')).toBeNull();
+  assert.equal(el.getAttribute('aria-hidden'), 'true');
+  assert.equal(el.getAttribute('role'), null);
+  assert.equal(el.getAttribute('aria-live'), null);
 });
 
 test('Skeleton block variant matches its status binding with no exception in play', () => {
@@ -1508,7 +1529,8 @@ Create `frameworks/angular/test/alert-role-tones.test.ts`:
  * Inputs are set with componentRef.setInput() rather than a template binding:
  * this harness runs Angular's JIT and a signal input driven through a template
  * throws NG0303. */
-import { test, expect, beforeAll, afterAll } from 'bun:test';
+import test, { after } from 'node:test';
+import assert from 'node:assert/strict';
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 GlobalRegistrator.register();
 
@@ -1530,7 +1552,7 @@ test('arena-alert exposes role=alert only for the danger tone', () => {
     seen[tone] = (fixture.nativeElement as Element).getAttribute('role');
     fixture.destroy();
   }
-  expect(seen).toEqual({
+  assert.deepEqual(seen, {
     danger: 'alert', info: 'status', success: 'status', warning: 'status', neutral: 'status',
   });
 });
@@ -1547,7 +1569,7 @@ test('arena-alert matches its alert binding on a non-danger tone, where the exce
   fixture.destroy();
 });
 
-afterAll(() => { GlobalRegistrator.unregister(); });
+after(() => { GlobalRegistrator.unregister(); });
 ```
 
 **Before running:** confirm `Alert`'s exported class name and its input name (`tone`) by
@@ -1570,7 +1592,8 @@ Create `frameworks/angular/test/chart-data-table.test.ts`:
  * What stays unverifiable is the roles.label half — whether the aria-label is a
  * *good* name for the chart. No suite can judge that, and it is recorded as debt
  * rather than faked here. */
-import { test, expect, afterAll } from 'bun:test';
+import test, { after } from 'node:test';
+import assert from 'node:assert/strict';
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 GlobalRegistrator.register();
 
@@ -1592,12 +1615,12 @@ test('arena-bar-chart renders a real table carrying the plotted numbers', () => 
   const host = fixture.nativeElement as Element;
 
   const table = host.querySelector('table');
-  expect(table).not.toBeNull();
+  assert.notEqual(table, null);
 
   const cells = [...table!.querySelectorAll('td, th')].map((c) => c.textContent!.trim());
   for (const row of DATA) {
-    expect(cells).toContain(row.label);
-    expect(cells).toContain(String(row.value));
+    assert.ok(cells.includes(row.label));
+    assert.ok(cells.includes(String(row.value)));
   }
   fixture.destroy();
 });
@@ -1617,7 +1640,7 @@ test('arena-bar-chart matches its figure-with-data-table binding', () => {
   fixture.destroy();
 });
 
-afterAll(() => { GlobalRegistrator.unregister(); });
+after(() => { GlobalRegistrator.unregister(); });
 ```
 
 **Before running:** read `frameworks/angular/primitives/bar-chart/bar-chart.ts` for the real
@@ -1648,7 +1671,7 @@ Everything `evaluate()` returns `null` for. Three kinds, and the harness bounds 
 
 - **Reachable by acting on the tree:** `keyboard.Escape` (dispatch a `keydown`, assert the close callback ran), `focus.onOpen` (assert `document.activeElement` after mount).
 - **Not reachable by render, ever:** `focus.trap` — `happy-dom` does not implement sequential focus navigation, so Tab does not move `document.activeElement`. Asserted as a **pure function** over `frameworks/angular/primitives/focus-trap.ts`, which is already factored for it. **No browser gate.**
-- **Recorded debt this task closes:** `Tooltip`'s cancel-on-transition timer, which `CLAUDE.md` names explicitly and says needs no harness at all — `bun:test`'s fake timers reach it.
+- **Recorded debt this task closes:** `Tooltip`'s cancel-on-transition timer, which `CLAUDE.md` names explicitly and says needs no harness at all — a timer test reaches it without any DOM.
 
 **Files:**
 - Create: `frameworks/react/test-dom/behavioural.test.jsx`
@@ -1673,7 +1696,8 @@ Create `frameworks/react/test-dom/behavioural.test.jsx`:
  * asserted as a pure function over frameworks/angular/primitives/focus-trap.ts
  * instead. A browser-driven gate would be this repo's fourth non-portable gate
  * and is refused. */
-import { test, expect, afterEach } from 'bun:test';
+import test, { afterEach } from 'node:test';
+import assert from 'node:assert/strict';
 import React from 'react';
 import { mount, cleanup, act } from './harness.jsx';
 import { Dialog } from '../components/feedback/Dialog.jsx';
@@ -1697,7 +1721,7 @@ test('Dialog does not close on Escape — its keyboard.Escape exception is still
   // The exception says: "No keydown listener anywhere. The only dismissal path is
   // a mouse click on the backdrop." This asserts that is STILL true, and fails the
   // day somebody implements Escape without deleting the exception.
-  expect(closed).toBe(false);
+  assert.equal(closed, false);
 });
 
 test('Dialog moves focus nowhere on open — its focus.onOpen exception is still true', () => {
@@ -1705,8 +1729,8 @@ test('Dialog moves focus nowhere on open — its focus.onOpen exception is still
   const container = mount(
     <Dialog open onClose={() => {}} title="t"><button type="button">Inside</button></Dialog>,
   );
-  expect(document.activeElement).toBe(before);
-  expect(container.querySelector('button')).not.toBe(document.activeElement);
+  assert.equal(document.activeElement, before);
+  assert.notEqual(container.querySelector('button'), document.activeElement);
 });
 
 test('ConfirmDialog does not close on Escape either — its exception is still true', () => {
@@ -1715,7 +1739,7 @@ test('ConfirmDialog does not close on Escape either — its exception is still t
     <ConfirmDialog open onCancel={() => { cancelled = true; }} onConfirm={() => {}} title="t" confirmLabel="Delete" />,
   );
   press(container.querySelector('[role="alertdialog"], [role="dialog"]'), 'Escape');
-  expect(cancelled).toBe(false);
+  assert.equal(cancelled, false);
 });
 ```
 
@@ -1748,7 +1772,8 @@ Create `frameworks/react/test-dom/tooltip-timer.test.jsx`:
  * --delay-open elapses must cancel the pending reveal, not queue a second one,
  * and unmounting must clear the timer rather than leave it to fire into a dead
  * component. */
-import { test, expect, afterEach, beforeEach, setSystemTime } from 'bun:test';
+import test, { afterEach } from 'node:test';
+import assert from 'node:assert/strict';
 import React from 'react';
 import { mount, cleanup, act } from './harness.jsx';
 import { Tooltip } from '../components/feedback/Tooltip.jsx';
@@ -1765,7 +1790,7 @@ test('the tooltip does not reveal before --delay-open elapses', async () => {
   const trigger = container.querySelector('button');
   hover(trigger, 'mouseenter');
   await act(async () => { await new Promise((r) => setTimeout(r, delayOpen - 50)); });
-  expect(container.textContent).not.toContain('Details');
+  assert.ok(!container.textContent.includes('Details'));
 });
 
 test('the tooltip reveals once --delay-open has elapsed', async () => {
@@ -1773,7 +1798,7 @@ test('the tooltip reveals once --delay-open has elapsed', async () => {
   const trigger = container.querySelector('button');
   hover(trigger, 'mouseenter');
   await act(async () => { await new Promise((r) => setTimeout(r, delayOpen + 50)); });
-  expect(container.textContent).toContain('Details');
+  assert.ok(container.textContent.includes('Details'));
 });
 
 test('crossing out before the delay cancels the reveal rather than queueing it', async () => {
@@ -1785,13 +1810,13 @@ test('crossing out before the delay cancels the reveal rather than queueing it',
   await act(async () => { await new Promise((r) => setTimeout(r, delayOpen + delayClose + 100)); });
   // The flash-on-crossing defect plan 7a fixed: without the cancel rule, the
   // pending reveal fires after the pointer has already left.
-  expect(container.textContent).not.toContain('Details');
+  assert.ok(!container.textContent.includes('Details'));
 });
 
 test('unmounting while a reveal is pending does not throw', async () => {
   const container = mount(<Tooltip label="Details"><button type="button">Hover</button></Tooltip>);
   hover(container.querySelector('button'), 'mouseenter');
-  expect(() => cleanup()).not.toThrow();
+  assert.doesNotThrow(() => cleanup());
   await new Promise((r) => setTimeout(r, delayOpen + 100));
 });
 ```
@@ -1802,10 +1827,10 @@ prop name (`label` is a guess — it may be `content` or `title`) and read
 (`delayOpen`/`delayClose` are guesses; the generator's naming is `scriptName()`'d, and the
 plan-level rule is *never derive one layer's name from the other's* — read the file).
 
-These use real timers with small waits rather than `bun:test`'s fake timers because
+These use real timers with small waits rather than fake timers because
 `act()` and fake timers interact badly; total suite cost is under a second at
-`--delay-open` = 400ms. If that proves flaky, switch to `setSystemTime` with
-`jest.useFakeTimers()`-style control and drive `act()` manually.
+`--delay-open` = 400ms. node:test has no fake-timer facility of its own, so if this
+proves flaky, shorten the waits rather than reaching for one.
 
 - [ ] **Step 4: Run it**
 
