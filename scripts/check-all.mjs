@@ -4,7 +4,9 @@
  * inherited, not buffered), and a pass/fail summary prints once every step
  * has finished. Exit 1 if any step failed, 0 if all passed.
  *
- * Twenty steps total: the nineteen gates in GATES below, plus the test suite.
+ * The nineteen gates in GATES below, plus the test suite: one more step under
+ * node (scripts/ only), two more under bun (the merged framework suites, and
+ * frameworks/react/test-dom in a process of its own -- see testStep).
  *
  * Three gates can report a third status. check:cards needs a headless
  * browser, and check:vendor and check:demos each need a Bun-only builder
@@ -60,22 +62,46 @@ export const GATES = [
   { name: 'check:material', file: 'check-material.mjs' },
 ];
 
-/** The test-suite step for the runtime this process is executing under.
+/** The test-suite step(s) for the runtime this process is executing under.
  *  `bun test` has no `node:test` equivalent invocation, so the two runtimes
- *  need different args.
+ *  need different args. Returns an array, not a single step, because under
+ *  bun the DOM harness needs a process of its own -- see below.
  *
- *  Under bun, all three suite roots run: scripts/, plus each framework
- *  layer's own test/ directory. Under node, only scripts/ does, and that
- *  asymmetry is deliberate rather than an oversight -- the framework suites
- *  import `.jsx` and `.ts` directly, which bun transpiles and plain node does
- *  not. Keeping the node path alive for scripts/ is what keeps every GATE
+ *  Under bun this is two separate `bun test` invocations, not one merged
+ *  call. scripts/, frameworks/react/test/ and frameworks/angular/test run
+ *  together in the first, exactly as before frameworks/react/test-dom
+ *  existed; frameworks/react/test-dom runs alone in the second. They cannot
+ *  be merged: a single `bun test` invocation shares one process (and one
+ *  `globalThis`) across every file it matches, harness.jsx's
+ *  `GlobalRegistrator.register()` is deliberately never paired with an
+ *  `unregister()` (see harness.jsx's own reasoning), and several
+ *  frameworks/angular/test files call `GlobalRegistrator.register()` of
+ *  their own, unconditionally. Combine the two and the first such Angular
+ *  file to run after harness.jsx throws "Happy DOM has already been globally
+ *  registered" -- reproduced by hand, not assumed.
+ *
+ *  'frameworks/react/test/' carries a trailing slash for a second, unrelated
+ *  reason: `bun test` matches a directory argument as a path *substring*, not
+ *  a path prefix, so the bare string 'frameworks/react/test' also matches
+ *  every file under the sibling 'frameworks/react/test-dom/' -- silently
+ *  pulling the DOM harness back into the one invocation it must stay out of.
+ *  The trailing slash anchors the match at the directory boundary; also
+ *  reproduced by hand.
+ *
+ *  Under node, only scripts/ runs, and that asymmetry is deliberate rather
+ *  than an oversight -- the framework suites (test-dom included) import
+ *  `.jsx` and `.ts` directly, which bun transpiles and plain node does not.
+ *  Keeping the node path alive for scripts/ is what keeps every GATE
  *  runtime-portable; the framework suites simply are not, and pretending
  *  otherwise would mean a build step for tests.
  *  @param {{isBun: boolean, testFiles: string[]}} env
- *  @returns {{name: string, args: string[]}} */
+ *  @returns {{name: string, args: string[]}[]} */
 export function testStep({ isBun, testFiles }) {
-  if (isBun) return { name: 'test (bun test scripts/ + framework suites)', args: ['test', 'scripts', 'frameworks/react/test', 'frameworks/angular/test'] };
-  return { name: 'test (node --test scripts/*.test.mjs)', args: ['--test', ...testFiles] };
+  if (isBun) return [
+    { name: 'test (bun test scripts/ + framework suites)', args: ['test', 'scripts', 'frameworks/react/test/', 'frameworks/angular/test'] },
+    { name: 'test (bun test frameworks/react/test-dom, isolated)', args: ['test', 'frameworks/react/test-dom'] },
+  ];
+  return [{ name: 'test (node --test scripts/*.test.mjs)', args: ['--test', ...testFiles] }];
 }
 
 /** A step's exit code as a status. Exit 2 is the loud skip
@@ -121,8 +147,7 @@ function main() {
     .filter((f) => f.endsWith('.test.mjs'))
     .sort()
     .map((f) => join(repoRoot, 'scripts', f));
-  const { name: testName, args: testArgs } = testStep({ isBun, testFiles });
-  results.push(runStep(testName, testArgs));
+  for (const { name, args } of testStep({ isBun, testFiles })) results.push(runStep(name, args));
 
   console.log(`\n${'-'.repeat(60)}`);
   console.log(summarize(results));
