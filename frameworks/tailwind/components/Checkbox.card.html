@@ -9,12 +9,19 @@ import { mountSpecimen, section, el, classesFor } from '../specimen.js';
 
 const manifest = await (await fetch('./Checkbox.manifest.json')).json();
 
+// Token-valued, not hand-typed: `--sp-3` (12px) is the check glyph's box, `--bw-strong`
+// (2px) is its stroke — the same values `Checkbox.jsx` reads, bound as a camelCase
+// `[style]` object so a token change cannot drift silently under a literal `.card.html`
+// never scans (see the three Angular SVG charts for the same shape and the same reason).
+const CHECK_GLYPH_STYLE = { width: 'var(--sp-3)', height: 'var(--sp-3)' };
+const CHECK_STROKE_STYLE = { strokeWidth: 'var(--bw-strong)' };
+
 function checkbox({ label, checked = false, disabled = false }) {
   const c = classesFor(manifest, { checked: String(checked), disabled: String(disabled) });
   const box = el('span', { class: c.box });
   if (checked) {
-    const svg = el('svg', { width: 12, height: 12, viewBox: '0 0 12 12', fill: 'none', class: c.check });
-    svg.append(el('path', { d: 'M2 6l3 3 5-6', stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+    const svg = el('svg', { viewBox: '0 0 12 12', fill: 'none', class: c.check, style: CHECK_GLYPH_STYLE });
+    svg.append(el('path', { d: 'M2 6l3 3 5-6', stroke: 'currentColor', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', style: CHECK_STROKE_STYLE }));
     box.append(svg);
   }
   const input = el('input', { type: 'checkbox', class: c.input, checked: checked || undefined, disabled: disabled || undefined });
