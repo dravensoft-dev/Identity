@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { delayOpen, delayClose } from '../../tokens.generated.js';
 
 /* Keyframes cannot be expressed in an inline style object, so they ship as a
  * <style> injected once into the head — the pattern ProgressBar establishes.
@@ -20,9 +21,20 @@ function useFadeKeyframes() {
 export function Tooltip({ children, content, style }) {
   useFadeKeyframes();
   const [show, setShow] = useState(false);
+  /* One timer, cleared on every transition. Two timers would race: leaving and
+   * re-entering inside the close grace period must cancel the pending close,
+   * not queue an open behind it. The delays are POINTER intent -- a keyboard
+   * focus, when Tooltip grows one, must reveal immediately and must not route
+   * through here. */
+  const timer = useRef(null);
+  const schedule = (next, ms) => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setShow(next), ms);
+  };
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   return (
     <span style={{ position: 'relative', display: 'inline-flex', ...style }}
-      onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
+      onMouseEnter={() => schedule(true, delayOpen)} onMouseLeave={() => schedule(false, delayClose)}>
       {children}
       {show && (
         <span role="tooltip" style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%) translateY(calc(var(--sp-2) * -1))',
