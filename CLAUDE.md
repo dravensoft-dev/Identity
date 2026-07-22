@@ -291,6 +291,14 @@ debt filed in one dies with it. That has already happened once: plan 5.5's
 close-out recorded three follow-ups into its own plan document, which was
 scheduled for deletion the same week.
 
+- **`Tooltip`'s timer is the one genuinely new behaviour on this layer, and it has
+  no test.** Plan 7a gave `Pagination` five pinned tests — a pure relocation that
+  changes no output and could not break — and gave the tooltip's `useRef`, its
+  cancel-on-transition rule and its unmount cleanup none. The branch tested the
+  thing that could not break and left the thing that could. The plan defers a
+  DOM-based React harness to plan 7b, which is why this was not fixed in place, but
+  the cancel-and-reschedule rule needs no harness at all: `bun:test`'s fake timers
+  reach it. Raised in whole-branch review and merged knowingly.
 - **The two script-readable gates leave a structural hole between them, and it is
   wider than it looks.** `check:script-tokens`' orphan rule is *imported by at
   least one layer* — correct, because `calendarHourH` is legitimately React-only
