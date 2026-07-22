@@ -205,6 +205,7 @@ instead, and Task 7's gate enforces that.
   - `isFocusable(el) -> boolean`
   - `evaluate(el, key, value) -> true | false | null` — `null` = undecidable from this element.
   - `DECIDABLE -> Set<string>` — the requirement keys `evaluate` can decide, by prefix or exact key.
+  - `ELEMENT_ROLE`, `LABEL_ACCEPTS_TEXT`, `BEHAVIOURAL` — the pattern-keyed maps; requirement semantics key off the requirement key and the pattern NAME, never off the prose value in the pattern file.
   - `comparePattern({ pattern, binding, subjects, fallback, behavioural }) -> string[]` — the bidirectional comparison, pure and framework-agnostic. Returns one message per problem, empty when clean. **Both layers' assertion wrappers call this**; neither reimplements it.
 
 - [ ] **Step 1: Write the failing test**
@@ -333,7 +334,7 @@ const DIALOG_MODAL = {
   },
 };
 
-const BEHAVIOURAL = ['focus.trap', 'keyboard.Escape'];
+const BEHAVIOURAL = { 'focus.trap': false, 'keyboard.Escape': false };
 
 test('comparePattern is silent when the DOM and the binding agree', () => {
   const subject = el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Delete' });
@@ -378,7 +379,7 @@ test('comparePattern refuses an undecidable requirement that was not declared be
     pattern: DIALOG_MODAL,
     binding: { pattern: 'dialog-modal', exceptions: [] },
     fallback: subject,
-    behavioural: [],
+    behavioural: {},
   });
   assert.equal(problems.length, 2);
   for (const p of problems) assert.match(p, /not declared behavioural/);
@@ -390,7 +391,7 @@ test('comparePattern reports a behavioural declaration the pattern no longer has
     pattern: DIALOG_MODAL,
     binding: { pattern: 'dialog-modal', exceptions: [] },
     fallback: subject,
-    behavioural: [...BEHAVIOURAL, 'focus.roving'],
+    behavioural: { ...BEHAVIOURAL, 'focus.roving': false },
   });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /never reached/);
@@ -409,7 +410,7 @@ test('comparePattern uses a per-requirement subject over the fallback', () => {
     binding: { pattern: 'menu-button', exceptions: [{ requirement: 'roles.haspopup', reason: 'on the wrapper' }] },
     subjects: { 'roles.haspopup': trigger },
     fallback: wrapper,
-    behavioural: [],
+    behavioural: {},
   });
   assert.deepEqual(onTrigger, [], 'the exception is true when judged against the trigger');
 
@@ -417,7 +418,7 @@ test('comparePattern uses a per-requirement subject over the fallback', () => {
     pattern,
     binding: { pattern: 'menu-button', exceptions: [{ requirement: 'roles.haspopup', reason: 'on the wrapper' }] },
     fallback: wrapper,
-    behavioural: [],
+    behavioural: {},
   });
   assert.equal(onWrapper.length, 1);
   assert.match(onWrapper[0], /STALE EXCEPTION/, 'and falsely stale when judged against the wrapper');
@@ -661,55 +662,77 @@ export function evaluate(el, key, value) {
  * @param {{pattern: string, exceptions?: {requirement: string, reason: string}[]}} o.binding
  * @param {Record<string, object|null>} [o.subjects] requirement key -> the element that must carry it
  * @param {object|null} [o.fallback] the element used for any requirement not named in `subjects`
- * @param {string[]} [o.behavioural] requirement keys the caller asserts by acting on
- *   the tree rather than by reading it. Every undecidable requirement must be listed
- *   or this reports it — silence about an unverifiable claim is what this layer exists
- *   to remove.
+ * @param {Record<string, boolean>} [o.behavioural] requirement key -> the verdict the
+ *   caller's own behavioural test established: `true` = my test proved it met, `false`
+ *   = proved unmet. These run through the SAME bidirectional rule as a DOM verdict.
+ *   That is not decoration: 48 of the 94 live exceptions in this tree sit on
+ *   behavioural keys, so skipping them — as an earlier draft of this function did —
+ *   left the layer's headline property holding for barely half its subjects. The
+ *   declaration is NOT a proof; the suite's own test is. What the declaration adds is
+ *   the link between that test's result and the binding, which is the half that was
+ *   missing.
  * @returns {string[]} one message per problem, empty when clean
+ * @throws {Error} whatever evaluate() throws — an unrecognised requirement key, or a
+ *   pattern with no ELEMENT_ROLE entry. Both are programming errors rather than
+ *   verdicts, but note that in a render suite a throw aborts the test rather than
+ *   reporting one problem beside the others.
  */
-export function comparePattern({ pattern, binding, subjects = {}, fallback = null, behavioural = [] }) {
+export function comparePattern({ pattern, binding, subjects = {}, fallback = null, behavioural = {} }) {
   const excepted = new Map((binding.exceptions ?? []).map((e) => [e.requirement, e.reason]));
-  const declared = new Set(behavioural);
   const used = new Set();
   const problems = [];
+  let missingSubject = false;
 
-  for (const [key, value] of Object.entries(pattern.requires)) {
-    const el = key in subjects ? subjects[key] : fallback;
-    if (!el) {
-      problems.push(`${key}: no subject element — nothing was rendered, or the selector matched nothing.`);
-      continue;
-    }
-    const verdict = evaluate(el, key, value);
-
-    if (verdict === null) {
-      if (declared.has(key)) { used.add(key); continue; }
-      problems.push(
-        `${key}: undecidable from the DOM and not declared behavioural. ` +
-        'Assert it by acting on the tree and list it in `behavioural`, or explain why it cannot be asserted at all.',
-      );
-      continue;
-    }
-
+  /** One requirement, one verdict, both directions. `source` only names where the
+   *  verdict came from, so a reader of the failure knows whether to look at the
+   *  markup or at the suite's own assertion. */
+  const judge = (key, verdict, value, source) => {
     const hasException = excepted.has(key);
     if (verdict && hasException) {
       problems.push(
-        `${key}: STALE EXCEPTION — met in the rendered DOM, but the binding still excepts it.\n` +
+        `${key}: STALE EXCEPTION — met according to ${source}, but the binding still excepts it.\n` +
         `      reason on file: ${excepted.get(key)}\n` +
         '      Delete the exception, or name a subject if the exception is about a different element.',
       );
     } else if (!verdict && !hasException) {
       problems.push(
-        `${key}: OVERCLAIM — the binding declares no exception, but the rendered DOM does not meet it.\n` +
+        `${key}: OVERCLAIM — the binding declares no exception, but ${source} does not meet it.\n` +
         `      pattern requires: ${JSON.stringify(value)}`,
       );
     }
+  };
+
+  for (const [key, value] of Object.entries(pattern.requires)) {
+    const el = key in subjects ? subjects[key] : fallback;
+    if (!el) {
+      missingSubject = true;
+      problems.push(`${key}: no subject element — nothing was rendered, or the selector matched nothing.`);
+      continue;
+    }
+    const verdict = evaluate(el, key, value, pattern.name);
+
+    if (verdict === null) {
+      if (key in behavioural) { used.add(key); judge(key, behavioural[key], value, 'your behavioural test'); continue; }
+      problems.push(
+        `${key}: undecidable from the DOM and not declared behavioural. ` +
+        'Assert it by acting on the tree and declare the verdict in `behavioural`, or explain why it cannot be asserted at all.',
+      );
+      continue;
+    }
+    judge(key, verdict, value, 'the rendered DOM');
   }
 
-  for (const key of declared) {
+  for (const key of Object.keys(behavioural)) {
     if (used.has(key)) continue;
+    // When a subject was missing, every requirement was skipped, so this key was
+    // not reached for a completely different reason — and telling the author to
+    // delete the declaration would be wrong twice over: they would remove a
+    // correct declaration and then get the opposite error on the next run.
     problems.push(
-      `${key}: declared behavioural but never reached. ` +
-      'Either the pattern no longer requires it, or it is now decidable from the DOM — remove it from `behavioural`.',
+      missingSubject
+        ? `${key}: declared behavioural but never reached, because no subject element was found. Fix that first.`
+        : `${key}: declared behavioural but never reached. ` +
+          'Either the pattern no longer requires it, or it is now decidable from the DOM — remove it from `behavioural`.',
     );
   }
   return problems;
@@ -719,7 +742,7 @@ export function comparePattern({ pattern, binding, subjects = {}, fallback = nul
 - [ ] **Step 4: Run the tests to verify they pass, under both runtimes**
 
 Run: `bun test scripts/behaviour-compliance.test.mjs`
-Expected: PASS, 22 tests.
+Expected: PASS, 47 tests.
 
 Run: `node --test scripts/behaviour-compliance.test.mjs`
 Expected: PASS — the file must be node-portable, because `check-all.mjs` runs `scripts/`
@@ -1018,7 +1041,9 @@ import { ConfirmDialog } from '../components/feedback/ConfirmDialog.jsx';
 
 afterEach(cleanup);
 
-const BEHAVIOURAL = ['focus.onOpen', 'focus.onClose', 'focus.trap', 'keyboard.Escape'];
+// Every one of these is excepted by both bindings, and behavioural.test.jsx proves
+// each is still unmet. false = "my test proved this requirement is NOT met".
+const BEHAVIOURAL = { 'focus.onOpen': false, 'focus.onClose': false, 'focus.trap': false, 'keyboard.Escape': false };
 
 test('Dialog matches its dialog-modal binding, in both directions', () => {
   const container = mount(
@@ -1107,10 +1132,10 @@ export const PATTERN_DIR = join(here, '..', '..', '..', 'behaviour', 'patterns')
  *   that must carry it. The key `default` sets the element used for every
  *   requirement not named individually; without it, the container's first element
  *   child is used.
- * @param {string[]} [o.behavioural] requirement keys this suite asserts by acting
- *   on the tree rather than by reading it.
+ * @param {Record<string, boolean>} [o.behavioural] requirement key -> the verdict this
+ *   suite's own behavioural test established (true = proved met, false = proved unmet).
  */
-export function assertPattern({ root, bindingPath, subjects = {}, behavioural = [] }) {
+export function assertPattern({ root, bindingPath, subjects = {}, behavioural = {} }) {
   const binding = JSON.parse(readFileSync(bindingPath, 'utf8'));
   const pattern = JSON.parse(readFileSync(join(PATTERN_DIR, `${binding.pattern}.json`), 'utf8'));
   const { default: fallbackSubject, ...perRequirement } = subjects;
@@ -1196,7 +1221,7 @@ test('assertPattern refuses an undeclared undecidable requirement', () => {
     root: container,
     bindingPath: p,
     subjects: { default: container.querySelector('[role="dialog"]') },
-    behavioural: [],           // nothing declared
+    behavioural: {},           // nothing declared
   })).toThrow(/not declared behavioural/);
   unlinkSync(p);
 });
@@ -1286,7 +1311,7 @@ test('Menu matches its menu-button binding when the subject is the focusable tri
     // is what makes the haspopup and expanded exceptions verifiably true rather
     // than verifiably false.
     subjects: { default: trigger },
-    behavioural: ['focus.onOpen', 'keyboard.Enter', 'keyboard.Space', 'keyboard.Escape'],
+    behavioural: { 'focus.onOpen': false, 'keyboard.Enter': false, 'keyboard.Space': false, 'keyboard.Escape': false },
   });
 });
 
@@ -1316,7 +1341,7 @@ test('Skeleton block variant matches its status binding with no exception in pla
     root: container,
     bindingPath: join(REACT_COMPONENTS, 'display/Skeleton.behaviour.json'),
     subjects: { default: container.querySelector('[role="status"]') },
-    behavioural: ['focus.unaffected'],
+    behavioural: { 'focus.unaffected': true },
     // NOTE: this one is expected to report the two exceptions as STALE, because
     // for the block variant they are. See step 3 — the fix is a per-variant
     // binding note, not a deleted exception.
@@ -1349,7 +1374,7 @@ test('Skeleton matches its status binding on the circle variant, which is what i
     root: container,
     bindingPath: join(REACT_COMPONENTS, 'display/Skeleton.behaviour.json'),
     subjects: { default: container.firstElementChild },
-    behavioural: ['focus.unaffected'],
+    behavioural: { 'focus.unaffected': true },
   });
 });
 ```
@@ -1446,10 +1471,11 @@ export interface AssertPatternOptions {
   /** Requirement key -> the element that must carry it. `default` overrides the
    *  element used for every requirement not named individually. */
   subjects?: Record<string, Element | null>;
-  behavioural?: string[];
+  /** Requirement key -> the verdict this suite's own behavioural test established. */
+  behavioural?: Record<string, boolean>;
 }
 
-export function assertPattern({ root, bindingPath, subjects = {}, behavioural = [] }: AssertPatternOptions): void {
+export function assertPattern({ root, bindingPath, subjects = {}, behavioural = {} }: AssertPatternOptions): void {
   const binding = JSON.parse(readFileSync(bindingPath, 'utf8'));
   const pattern = JSON.parse(readFileSync(join(PATTERN_DIR, `${binding.pattern}.json`), 'utf8'));
   const { default: fallbackSubject, ...perRequirement } = subjects;
@@ -1516,7 +1542,7 @@ test('arena-alert matches its alert binding on a non-danger tone, where the exce
   assertPattern({
     root: fixture.nativeElement as Element,
     bindingPath: BINDING,
-    behavioural: ['focus.unaffected', 'content.noAutoDismiss'],
+    behavioural: { 'focus.unaffected': true, 'content.noAutoDismiss': true },
   });
   fixture.destroy();
 });
@@ -1586,7 +1612,7 @@ test('arena-bar-chart matches its figure-with-data-table binding', () => {
     root: host,
     bindingPath: join(ANGULAR_PRIMITIVES, 'bar-chart/bar-chart.behaviour.json'),
     subjects: { default: host.querySelector('[role="img"]') ?? host },
-    behavioural: ['alternative.table'],   // asserted by the test above
+    behavioural: { 'alternative.table': true },   // proved by the test above
   });
   fixture.destroy();
 });
