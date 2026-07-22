@@ -111,3 +111,21 @@
     animation-duration: var(--loop-reduced);
   }
 }
+
+/* Byte-identical to arena-btn-spin above, and deliberately not merged with it:
+   Button's inline spinner and the standalone Spinner are two components, and
+   one utility shared between them makes a change to either a change to both.
+   What they do share is --loop-spin, which is the level at which "these two
+   spin at the same speed" is meant to be stated. */
+@keyframes arena-spinner {
+  to { transform: rotate(360deg); }
+}
+
+/* Reports work in progress, so it slows rather than stopping. */
+@utility arena-spinner {
+  animation: arena-spinner var(--loop-spin) linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-duration: var(--loop-reduced);
+  }
+}

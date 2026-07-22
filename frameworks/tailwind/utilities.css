@@ -86,6 +86,7 @@
     --spacing-row-py: var(--dz-row-py);
     --spacing-row-px: var(--dz-row-px);
     --spacing-stack: var(--dz-stack);
+    --size-icon-sm: var(--icon-sm);
     --size-avatar-xs: var(--avatar-xs);
     --size-avatar-sm: var(--avatar-sm);
     --size-avatar-md: var(--avatar-md);
@@ -451,6 +452,10 @@
     width: var(--spacing-5);
     height: var(--spacing-5);
   }
+  .size-8 {
+    width: var(--spacing-8);
+    height: var(--spacing-8);
+  }
   .size-10 {
     width: var(--spacing-10);
     height: var(--spacing-10);
@@ -486,6 +491,10 @@
   .size-avatar-xs {
     width: var(--size-avatar-xs);
     height: var(--size-avatar-xs);
+  }
+  .size-icon-sm {
+    width: var(--size-icon-sm);
+    height: var(--size-icon-sm);
   }
   .size-logo-mark-lg {
     width: var(--size-logo-mark-lg);
@@ -667,6 +676,12 @@
   }
   .arena-btn-spin {
     animation: arena-btn-spin var(--loop-spin) linear infinite;
+    @media (prefers-reduced-motion: reduce) {
+      animation-duration: var(--loop-reduced);
+    }
+  }
+  .arena-spinner {
+    animation: arena-spinner var(--loop-spin) linear infinite;
     @media (prefers-reduced-motion: reduce) {
       animation-duration: var(--loop-reduced);
     }
@@ -1610,6 +1625,11 @@
   }
 }
 @keyframes arena-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes arena-spinner {
   to {
     transform: rotate(360deg);
   }
