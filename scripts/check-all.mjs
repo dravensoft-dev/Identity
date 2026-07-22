@@ -4,7 +4,7 @@
  * inherited, not buffered), and a pass/fail summary prints once every step
  * has finished. Exit 1 if any step failed, 0 if all passed.
  *
- * Fifteen steps total: the fourteen gates in GATES below, plus the test suite.
+ * Sixteen steps total: the fifteen gates in GATES below, plus the test suite.
  *
  * Three gates can report a third status. check:cards needs a headless
  * browser, and check:vendor and check:demos each need a Bun-only builder
@@ -47,6 +47,7 @@ export const GATES = [
   { name: 'check:coverage', file: 'check-tailwind-coverage.mjs' },
   { name: 'check:arbitrary', file: 'check-arbitrary-values.mjs' },
   { name: 'check:dimensions', file: 'check-dimension-literals.mjs' },
+  { name: 'check:states', file: 'check-manifest-states.mjs' },
   { name: 'check:fonts', file: 'check-fonts-generated.mjs' },
   { name: 'check:vendor', file: 'check-vendor-generated.mjs' },
   { name: 'check:demos', file: 'check-demos-generated.mjs' },

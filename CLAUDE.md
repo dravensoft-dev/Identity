@@ -123,12 +123,33 @@ static styling as camelCase `[style]` **objects**: in that shape `strokeWidth` a
 not a workaround. Angular's `[style.x]` binding form is invisible to all four scanners
 too. Closing this properly needs `PROP_COLON` taught kebab-awareness plus the Angular
 binding form, with its own suite. **No gate compares a Tailwind manifest against the
-component it mirrors, and the mapping is not always one-to-one**: most manifests now
-mirror both a React component and an `arena-*` primitive, but `Button.manifest.json`
-mirrors React's `Button.jsx` with no Angular consumer (Material provides the button), and
-`Tag.manifest.json` mirrors the **Angular** primitive `arena-tag`, a different component
-from React's `Tag.jsx`. Check by hand when a manifest and a component it mirrors might
-have drifted.
+component it mirrors in general, and the mapping is not always one-to-one**: most
+manifests now mirror both a React component and an `arena-*` primitive, but
+`Button.manifest.json` mirrors React's `Button.jsx` with no Angular consumer (Material
+provides the button), and `Tag.manifest.json` mirrors the **Angular** primitive
+`arena-tag`, a different component from React's `Tag.jsx`. Check by hand when a manifest
+and a component it mirrors might have drifted.
+
+One narrow slice of that general problem is machine-checked, though: `check:states`
+(`scripts/check-manifest-states.mjs`) flags a `hover:`/`focus:`-family Tailwind state
+modifier in a manifest whose mirrored React component implements no hover/focus
+anywhere — no `onMouseEnter`/`onMouseLeave`, no `onFocus`/`onBlur`, no `useState`
+hover/focus tracking, no `:hover`/`:focus` in an injected style string. It exists because
+this exact shape shipped twice on one branch — `Tabs`, then `Pagination` one batch after
+the first was fixed and written down — and prose alone did not stop the second
+occurrence. It resolves the manifest-to-component mapping itself for the same two
+exceptions named above (`Tag` against `tag.ts`, via a `SOURCE_OVERRIDES` map) and carries
+a `check-dimension-literals.mjs`-shaped `EXEMPT` map, keyed `<Component>:<slot>:<family>`
+with a reason each, for a handful of hits that are real but that a whole-file text scan
+cannot resolve on its own — a state delegated to a composed child component
+(`ConfirmDialog`'s confirm/cancel buttons are React's own `<Button>`; `ThemeToggle`
+renders nothing but `<IconButton>`) or a documented, deliberate accessibility addition on
+the Angular side that React does not have (`ConfirmDialog`'s require-text input). A stale
+`EXEMPT` entry — one naming a component/slot/family that no longer carries that state —
+fails the gate, the same invariant `check-dimension-literals.mjs`'s own `EXEMPT` holds.
+**This checks states only** — it says nothing about whether a manifest's colors, sizes,
+or slot structure still match the component it mirrors, which is the open problem the
+paragraph above describes and remains unclosed.
 
 **The Overview generates itself, and that is the point.** `Arena - Overview.html` reads
 names and `$description`s from `tokens/src/*.json` and the alias names from
@@ -195,7 +216,7 @@ with the manifests as content and asserts every class emits a rule and every
 theme key resolves to a real token; `bun run check:coverage` asserts every
 token either reaches a utility or is named in `EXCLUDED` with a reason;
 `bun run check:arbitrary` fails on a bracket carrying a raw literal.
-`bun run check` runs all fourteen plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
+`bun run check` runs all fifteen plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
 skips quietly — makes that a hard failure instead. An Angular primitive's recipe is its
 manifest — `frameworks/angular/primitives/tag/` is the reference shape.
 
