@@ -107,6 +107,7 @@
     --ease-emphatic: var(--ease-emphatic);
     --blur-scrim: var(--scrim-blur);
     --z-index-dropdown: var(--z-dropdown);
+    --z-index-tooltip: var(--z-tooltip);
     --z-index-modal: var(--z-modal);
     --z-index-modal-nested: var(--z-modal-nested);
     --z-index-palette: var(--z-palette);
@@ -298,8 +299,14 @@
   .bottom-6 {
     bottom: var(--spacing-6);
   }
+  .bottom-full {
+    bottom: 100%;
+  }
   .left-0 {
     left: 0px;
+  }
+  .left-1\/2 {
+    left: calc(1 / 2 * 100%);
   }
   .left-auto {
     left: auto;
@@ -318,6 +325,9 @@
   }
   .z-palette {
     z-index: var(--z-index-palette);
+  }
+  .z-tooltip {
+    z-index: var(--z-index-tooltip);
   }
   .m-0 {
     margin: 0px;
@@ -591,6 +601,10 @@
   .border-collapse {
     border-collapse: collapse;
   }
+  .-translate-x-1\/2 {
+    --tw-translate-x: calc(calc(1 / 2 * 100%) * -1);
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
   .translate-x-0 {
     --tw-translate-x: 0px;
     translate: var(--tw-translate-x) var(--tw-translate-y);
@@ -601,6 +615,10 @@
   }
   .-translate-y-1\/2 {
     --tw-translate-y: calc(calc(1 / 2 * 100%) * -1);
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+  .-translate-y-2 {
+    --tw-translate-y: calc(var(--spacing-2) * -1);
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
   .arena-shimmer {
@@ -618,6 +636,9 @@
     @media (prefers-reduced-motion: reduce) {
       animation-duration: var(--loop-reduced);
     }
+  }
+  .arena-fade {
+    animation: arena-fade var(--dur-fast) var(--ease-out);
   }
   .arena-menu {
     animation: arena-menu var(--dur-fast) var(--ease-out);
@@ -806,6 +827,9 @@
   .bg-base-300 {
     background-color: var(--color-base-300);
   }
+  .bg-base-content {
+    background-color: var(--color-base-content);
+  }
   .bg-base-content\/52 {
     background-color: var(--color-base-content);
     @supports (color: color-mix(in lab, red, red)) {
@@ -943,6 +967,9 @@
   }
   .py-1 {
     padding-block: var(--spacing-1);
+  }
+  .py-1\.5 {
+    padding-block: calc(var(--spacing) * 1.5);
   }
   .py-2 {
     padding-block: var(--spacing-2);
@@ -1157,6 +1184,9 @@
   }
   .whitespace-nowrap {
     white-space: nowrap;
+  }
+  .text-base-100 {
+    color: var(--color-base-100);
   }
   .text-base-content {
     color: var(--color-base-content);
