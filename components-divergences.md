@@ -13,6 +13,14 @@ recorded here rather than treated as a defect in whichever layer was written sec
 This file is the record. A divergence that is not written down is a bug; a divergence that is
 written down, with its reason, is a decision.
 
+**The "no absolute authority" claim above is superseded.** `behaviour/patterns/*.json` now
+settles the authority question this file leaves open: the pattern is the authority, and a
+component's gap against it is a defect or a declared exception, not a symmetric difference
+between equally-valid layers. The per-component entries below predate that layer and are
+pending migration into `.behaviour.json` bindings — a citation of this file from a binding is
+pointing at a divergence still awaiting that migration, not evidence that the old policy
+still holds.
+
 Each entry states: what differs, in which layers, why, and whether it is expected to converge.
 
 ---

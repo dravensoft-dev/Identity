@@ -1,4 +1,7 @@
 {
   "pattern": "radiogroup",
-  "exceptions": []
+  "exceptions": [
+    { "requirement": "roles.label",
+      "reason": "The radiogroup div carries no aria-label and no aria-labelledby at all -- there is no name prop or label prop threaded onto it, so unlike Breadcrumbs and Pagination (which at least hardcode a label a screen reader can announce) this group has no accessible name of any kind." }
+  ]
 }

@@ -33,9 +33,14 @@ test('a requirement key must be dotted, so an exception can name exactly one lea
   assert.match(validatePattern('dialog-modal', flat)[0], /"trap" must be dotted/);
 });
 
-test('the none pattern is the one allowed to have no requirements', () => {
+test('the none pattern is one of the two allowed to have no requirements', () => {
   const none = { name: 'none', source: 'n/a', requires: {} };
   assert.deepEqual(validatePattern('none', none), []);
+});
+
+test('the absent pattern is the other one allowed to have no requirements', () => {
+  const absent = { name: 'absent', source: 'n/a', requires: {} };
+  assert.deepEqual(validatePattern('absent', absent), []);
 });
 
 test('every pattern on disk is valid', () => {
@@ -44,9 +49,9 @@ test('every pattern on disk is valid', () => {
   assert.deepEqual(problems, []);
 });
 
-test('every pattern but none cites a w3.org source', () => {
+test('every pattern but none and absent cites a w3.org source', () => {
   for (const [stem, p] of loadPatterns('.')) {
-    if (stem === 'none') continue;
+    if (stem === 'none' || stem === 'absent') continue;
     assert.match(p.source, /^https:\/\/www\.w3\.org\//, `${stem} must cite a w3.org source`);
   }
 });
@@ -55,18 +60,21 @@ test('every pattern but none cites a w3.org source', () => {
  * not assumed: APG has no pattern page for textbox or status, so both cite the ARIA 1.2
  * role reference instead. figure-with-data-table is Arena's own, cited from WCAG because
  * APG has no chart pattern at all. tooltip DOES have an APG pattern page -- despite an
- * earlier draft of this plan assuming otherwise -- and cites it, so it is not in this list. */
+ * earlier draft of this plan assuming otherwise -- and cites it, so it is not in this list.
+ * absent cites nothing, the same as none, and for the same reason -- there is nothing to
+ * adopt when there is no component. */
 test('none aside, exactly the patterns with no APG pattern page cite something else', () => {
   const nonApg = [...loadPatterns('.')]
     .filter(([stem, p]) => stem !== 'none' && !p.source.includes('/ARIA/apg/'))
     .map(([stem]) => stem)
     .sort();
-  assert.deepEqual(nonApg, ['figure-with-data-table', 'status', 'textbox']);
+  assert.deepEqual(nonApg, ['absent', 'figure-with-data-table', 'status', 'textbox']);
 });
 
 const patterns = new Map([
   ['dialog-modal', { name: 'dialog-modal', source: 'x', requires: { 'focus.trap': true, 'keyboard.Escape': 'close' } }],
   ['none', { name: 'none', source: 'n/a', requires: {} }],
+  ['absent', { name: 'absent', source: 'n/a', requires: {} }],
 ]);
 
 test('a binding naming a real pattern with no exceptions is valid', () => {
@@ -83,6 +91,33 @@ test('binding none without a reason is a problem', () => {
 
 test('binding none with a reason is valid', () => {
   assert.deepEqual(validateBinding('Card', 'react', { pattern: 'none', reason: 'a surface' }, patterns), []);
+});
+
+test('binding absent without a reason is a problem', () => {
+  assert.match(
+    validateBinding('Calendar', 'angular-delegated', { pattern: 'absent' }, patterns)[0],
+    /binding absent requires a reason/,
+  );
+});
+
+test('binding absent with a reason is valid', () => {
+  assert.deepEqual(
+    validateBinding('Calendar', 'angular-delegated', { pattern: 'absent', reason: 'no such component' }, patterns),
+    [],
+  );
+});
+
+/* This is the finding IMPORTANT-2 fixed: "renders but does nothing" (none) and
+ * "there is no such component here" (absent) used to collapse onto the same
+ * "none" value, distinguishable only by prose in the reason field. They are
+ * now different pattern names, so a tool -- not just a reader -- can tell a
+ * Card (renders, inert) from a Calendar (Angular has none) apart. */
+test('none and absent are distinct patterns, not the same fact spelled two ways', () => {
+  const renders = { pattern: 'none', reason: 'a presentational surface that renders' };
+  const doesNotExist = { pattern: 'absent', reason: 'no such component exists in this layer' };
+  assert.notEqual(renders.pattern, doesNotExist.pattern);
+  assert.deepEqual(validateBinding('Card', 'angular-delegated', renders, patterns), []);
+  assert.deepEqual(validateBinding('Calendar', 'angular-delegated', doesNotExist, patterns), []);
 });
 
 test('an exception naming a requirement the pattern does not have is a problem', () => {

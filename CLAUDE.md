@@ -97,17 +97,22 @@ next paragraph is what got built from it.
 
 **Behaviour also has contracts, and they are not tokens.** `behaviour/patterns/*.json`
 states what a kind of component must do — roles, keys, focus, dismissal — one file per
-pattern, each citing the WAI-ARIA APG page it was adopted from. Exactly one,
-`figure-with-data-table`, is Arena's own and cites WCAG instead, because APG has no
-chart pattern. `requires` is a flat map of **dotted** keys, and that shape is
+pattern, each citing the source it was adopted from. Fifteen cite the WAI-ARIA APG page
+they were adopted from; two, `status` and `textbox`, cite the ARIA 1.2 role reference
+instead because APG has no pattern page for either role; `figure-with-data-table` is
+Arena's own and cites WCAG instead, because APG has no chart pattern; `none` and
+`absent` cite nothing, because there is nothing to adopt from when the claim is that no
+pattern applies. `requires` is a flat map of **dotted** keys, and that shape is
 load-bearing: an exception names exactly one requirement, so one entry cannot excuse a
 whole clause.
 
 Every component declares, in **every** layer, beside its own source — React at
 `<Name>.behaviour.json`, Angular at `<name>.behaviour.json`, and the twenty-two
-controls Angular delegates to Material in `frameworks/angular/behaviour-delegated.json`.
+controls Material provides or lacks, in `frameworks/angular/behaviour-delegated.json`.
 **Delegation is a state, not an absence**: Angular has a tooltip, it is `matTooltip`,
-and a declaration reading "absent" would be false.
+and a declaration reading "absent" would be false for it — Calendar is the one entry
+in that file where "absent" is true, and it binds the `absent` pattern precisely so
+that fact is machine-checkable rather than only stated in its `reason`.
 
 `bun run check:behaviour` asserts every component declares, that no declaration names a
 pattern or requirement that does not exist, that no delegated entry is stale, and that

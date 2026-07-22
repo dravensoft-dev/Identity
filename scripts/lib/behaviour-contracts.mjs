@@ -15,10 +15,17 @@ import { join, basename, extname } from 'node:path';
 
 export const PATTERN_DIR = 'behaviour/patterns';
 
-/** The one pattern allowed to require nothing: a component that carries no
- *  interactive affordance at all still has to SAY so, which is the whole point
- *  -- "no entry" and "verified presentational" must stop looking alike. */
+/** The two patterns allowed to require nothing, and binding either REQUIRES a
+ *  reason -- a component that carries no interactive affordance at all
+ *  (`none`) still has to SAY so, and so does a layer that has no such
+ *  component at all (`absent`). Collapsing them into one value is exactly the
+ *  conflation this layer exists to end: "Angular's Card renders but does
+ *  nothing" and "Angular has no Calendar" are different facts, and a tool
+ *  reading the binding must be able to tell them apart, not just a person
+ *  reading the prose next to it. */
 const NONE = 'none';
+const ABSENT = 'absent';
+const REQUIRES_OPTIONAL = new Set([NONE, ABSENT]);
 
 /** @returns {string[]} problems; empty means valid */
 export function validatePattern(fileStem, pattern) {
@@ -30,7 +37,7 @@ export function validatePattern(fileStem, pattern) {
     problems.push(`${fileStem}: no source — a pattern is adopted, not invented, and must cite where from`);
   }
   const keys = Object.keys(pattern.requires ?? {});
-  if (fileStem !== NONE && keys.length === 0) {
+  if (!REQUIRES_OPTIONAL.has(fileStem) && keys.length === 0) {
     problems.push(`${fileStem}: requires is empty — a pattern must state at least one requirement`);
   }
   for (const key of keys) {
@@ -63,8 +70,8 @@ export function validateBinding(component, layer, binding, patterns) {
     problems.push(`${where}: unknown pattern "${binding.pattern}" — no such file in ${PATTERN_DIR}`);
     return problems;
   }
-  if (binding.pattern === NONE && !binding.reason) {
-    problems.push(`${where}: binding none requires a reason — "nothing recorded" and "verified presentational" must not look alike`);
+  if (REQUIRES_OPTIONAL.has(binding.pattern) && !binding.reason) {
+    problems.push(`${where}: binding ${binding.pattern} requires a reason — "nothing recorded", "verified presentational" and "does not exist here" must not look alike`);
   }
   if ('delegatedTo' in binding && !binding.delegatedTo) {
     problems.push(`${where}: delegatedTo must name what provides the behaviour, e.g. "Angular Material matTooltip"`);

@@ -1,4 +1,7 @@
 {
   "pattern": "textbox",
-  "exceptions": []
+  "exceptions": [
+    { "requirement": "states.readonly",
+      "reason": "No readOnly prop is authored -- disabled and required are both destructured with explicit defaults and drive the component's own logic and styling (opacity, the required asterisk); readOnly is neither destructured, defaulted, documented in Input.prompt.md, nor reflected in any visual state. ...rest lands on the native <input>, so a consumer could still smuggle readOnly through by hand, but nothing about the component's design supports or acknowledges a read-only state -- the same gap Tag.behaviour.json records for its remove button's missing disabled concept." }
+  ]
 }

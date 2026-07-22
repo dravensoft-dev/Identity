@@ -194,14 +194,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   no flag is orphaned.
 - `check:duplicate-constants` — a numeric constant may not be declared in both
   framework layers.
-- **Behaviour contracts.** `behaviour/patterns/` holds nineteen patterns — fifteen
+- **Behaviour contracts.** `behaviour/patterns/` holds twenty patterns — fifteen
   adopted from an actual WAI-ARIA APG page with their source URLs (fourteen a pattern
   page, plus `navigation`, from the landmark-regions practice page), two adopted from
   the ARIA 1.2 role reference instead (`status`, `textbox`, because APG has no pattern
   page for either role), plus `figure-with-data-table` (Arena's own, from WCAG, because
-  APG has no chart pattern) and `none` (adopted from nowhere, because it is the absence
-  of a pattern). Every component declares which it implements, in every layer: 43
-  React bindings, 21 Angular, and 22 controls Angular delegates to Material.
+  APG has no chart pattern), `none` (adopted from nowhere, because it is the absence
+  of a pattern in a component that still renders) and `absent` (adopted from nowhere
+  for the same reason, but for a component that does not exist in the layer at all —
+  `none` and `absent` used to be one value, which conflated "renders but does nothing"
+  with "there is no such component here"). Every component declares which it
+  implements, in every layer: 43 React bindings, 21 Angular, and the twenty-two
+  controls Material provides or lacks.
 - `check:behaviour` — every component declares, every named pattern and requirement
   exists, no delegated entry is stale, and the layers agree or say why not. It asserts
   declaration and coherence, **not** that a component behaves as it declares.
@@ -282,6 +286,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`Radio.behaviour.json` claimed full compliance against `radiogroup` while `Radio.jsx`
+  renders `<div role="radiogroup">` with no `aria-label` and no `aria-labelledby` at
+  all** — a stricter gap than `Breadcrumbs` and `Pagination` already except (a
+  hardcoded label, at least present) that had somehow passed with zero exceptions.
+  Now excepts `roles.label` with a reason describing what is actually missing.
+- **`none` conflated "renders but does nothing" with "there is no such component
+  here"**, the same ambiguity this whole layer exists to end, one level down: Angular's
+  `Calendar` entry bound `none` while its own `reason` said "genuinely absent, not
+  delegated" — a fact only a reader of the prose could recover, not a tool. Split into
+  two patterns, `none` (a real, rendered, inert surface) and the new `absent` (no such
+  component in this layer at all); `Calendar` now binds `absent`.
+- **`Select.behaviour.json` excepted four `combobox` requirements that a native
+  `<select>` already satisfies implicitly**, while `Checkbox` (same shape, zero
+  exceptions) had it right. Wrote down the rule — a requirement met by native element
+  semantics, authored or unconditional, counts as met; a requirement for which the
+  component exposes no supported way to reach it is an exception — in
+  `behaviour/README.md`, cleared `Select`'s four exceptions, and gave `Input` and
+  `Textarea` a `states.readonly` exception each: neither authors, defaults, documents
+  or visually reflects a read-only state, the same absent-capability shape
+  `Tag.behaviour.json` already records for its remove button's missing `disabled`.
+- **`components-divergences.md`'s preamble still asserted "no layer is the absolute
+  authority for component behaviour"**, the position `behaviour/patterns/*.json`
+  exists to overturn, while bindings that cite this file as evidence — including one
+  that calls its own gap "a real defect, not idiom" — now assume the opposite. Added a
+  note that the pattern is the authority and the per-component entries here are
+  pending migration into bindings.
 - **`tailwind-merge` silently swallowed every Arena-specific `--text-*` key that met a
   colour class in the same slot.** It recognizes Tailwind's own default font-size
   suffixes under the `text-` prefix but classified any Arena-custom one (`text-ctl*`,

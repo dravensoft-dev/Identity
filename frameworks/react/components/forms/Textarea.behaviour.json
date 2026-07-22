@@ -1,4 +1,7 @@
 {
   "pattern": "textbox",
-  "exceptions": []
+  "exceptions": [
+    { "requirement": "states.readonly",
+      "reason": "Same gap as Input: no readOnly prop is authored, defaulted, documented, or reflected in any visual state -- rows, maxLength, counter and autoResize are all deliberately surfaced, but read-only is not among them. ...rest reaches the native <textarea>, so a consumer could pass readOnly by hand, but the component itself does not support or acknowledge that state." }
+  ]
 }

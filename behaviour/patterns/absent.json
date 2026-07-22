@@ -1,0 +1,6 @@
+{
+  "name": "absent",
+  "source": "n/a — the absence of a component is not adopted from anywhere",
+  "description": "This layer has no such component at all: nothing renders, there is no element for a requirement to hold or fail against. Distinct from `none`, which is a real, rendered component that simply offers no interactive affordance -- `none` still has a surface a requirement could in principle apply to; `absent` has no surface to apply anything to. Binding this REQUIRES a reason, because the whole purpose of this layer is that 'nothing recorded', 'verified presentational' and 'does not exist here' must all read differently.",
+  "requires": {}
+}
