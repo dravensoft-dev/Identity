@@ -334,6 +334,9 @@
   .mb-7 {
     margin-bottom: calc(var(--spacing) * 7);
   }
+  .ml-1 {
+    margin-left: var(--spacing-1);
+  }
   .ml-auto {
     margin-left: auto;
   }
@@ -1042,6 +1045,9 @@
   .no-underline {
     text-decoration-line: none;
   }
+  .opacity-50 {
+    opacity: 50%;
+  }
   .opacity-60 {
     opacity: 60%;
   }
@@ -1052,6 +1058,22 @@
   .shadow-3 {
     --tw-shadow: var(--shadow-3);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .ring-\[length\:var\(--focus-width\)\] {
+    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(var(--focus-width) + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .ring-error\/14 {
+    --tw-ring-color: var(--color-error);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-ring-color: color-mix(in oklab, var(--color-error) 14%, transparent);
+    }
+  }
+  .ring-success\/16 {
+    --tw-ring-color: var(--color-success);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-ring-color: color-mix(in oklab, var(--color-success) 16%, transparent);
+    }
   }
   .backdrop-blur-scrim {
     --tw-backdrop-blur: blur(var(--blur-scrim));
@@ -1065,6 +1087,11 @@
   }
   .transition-\[background\] {
     transition-property: background;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .transition-\[border-color\,box-shadow\] {
+    transition-property: border-color,box-shadow;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
@@ -1106,6 +1133,19 @@
   }
   :is(.\*\:w-full > *) {
     width: 100%;
+  }
+  .focus-within\:border-secondary:focus-within {
+    border-color: var(--color-secondary);
+  }
+  .focus-within\:ring-\[length\:var\(--focus-width\)\]:focus-within {
+    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(var(--focus-width) + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .focus-within\:ring-secondary\/16:focus-within {
+    --tw-ring-color: var(--color-secondary);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-ring-color: color-mix(in oklab, var(--color-secondary) 16%, transparent);
+    }
   }
   @media (hover: hover) {
     .hover\:bg-base-200:hover {
