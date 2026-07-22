@@ -12,8 +12,7 @@
   },
   "Calendar": {
     "pattern": "absent",
-    "divergesFrom": "grid",
-    "reason": "This is the one entry in this file that is genuinely absent, not delegated -- pattern \"absent\", not \"none\", because Angular has no such component at all, not a rendered-but-inert one. Arena's Calendar is a day/hour schedule grid with absolutely-positioned event blocks -- a scheduling view, not a date picker. Angular Material's calendar surface (mat-calendar, the view inside MatDatepicker) is a month/date-selection grid: a different widget solving a different problem, with no day/hour axis and no event blocks. There is no real Material control this delegates to, and arena-material.css dresses none. Recorded in CLAUDE.md's Known debt, in the check:script-tokens discussion of calendarHourH: \"Angular has no Calendar.\""
+    "reason": "This is the one entry in this file that is genuinely absent, not delegated -- pattern \"absent\", not \"none\", because Angular has no such component at all, not a rendered-but-inert one. Arena's Calendar is a day/hour schedule grid with absolutely-positioned event blocks -- a scheduling view, not a date picker. Angular Material's calendar surface (mat-calendar, the view inside MatDatepicker) is a month/date-selection grid: a different widget solving a different problem, with no day/hour axis and no event blocks. There is no real Material control this delegates to, and arena-material.css dresses none. Whether Angular should gain a schedule view is a separate, open question this entry does not answer: it records that React has one and Angular does not, not a decision that Angular never will. Nothing has decided either way. Recorded in CLAUDE.md's Known debt."
   },
   "Card": {
     "pattern": "none",

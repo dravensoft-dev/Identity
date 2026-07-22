@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   validatePattern, loadPatterns, validateBinding, reactComponents, angularPrimitives,
-  validateUnboundPrimitives,
+  validateUnboundPrimitives, crossLayerAgrees,
 } from './lib/behaviour-contracts.mjs';
 
 const ok = {
@@ -175,4 +175,33 @@ test('the Angular inventory finds every primitive and no bare module', () => {
  * map: the self-check stays clean. */
 test('validateUnboundPrimitives is clean against the real repo state', () => {
   assert.deepEqual(validateUnboundPrimitives('.'), []);
+});
+
+/* crossLayerAgrees carries check-behaviour.mjs's step 6 -- "the two layers agree,
+ * or the difference is declared" -- so it can be tested without a filesystem walk.
+ * The absent clauses are the point: Calendar is the one binding in the repo that
+ * needs them, and they must fire on absent specifically, not paper over every
+ * mismatch. */
+test('two bindings naming the same pattern agree', () => {
+  assert.equal(crossLayerAgrees({ pattern: 'grid' }, { pattern: 'grid' }), true);
+});
+
+test('a declared divergesFrom on either side is accepted', () => {
+  assert.equal(crossLayerAgrees({ pattern: 'grid' }, { pattern: 'none', divergesFrom: 'grid' }), true);
+  assert.equal(crossLayerAgrees({ pattern: 'grid', divergesFrom: 'none' }, { pattern: 'none' }), true);
+});
+
+test('a real mismatch with no divergesFrom on either side disagrees', () => {
+  assert.equal(crossLayerAgrees({ pattern: 'grid' }, { pattern: 'none' }), false);
+});
+
+test('absent on either side is skipped even with no divergesFrom declared', () => {
+  assert.equal(crossLayerAgrees({ pattern: 'grid' }, { pattern: 'absent' }), true);
+  assert.equal(crossLayerAgrees({ pattern: 'absent' }, { pattern: 'grid' }), true);
+});
+
+test('the real Calendar binding needs no divergesFrom to agree with React', () => {
+  const reactBinding = { pattern: 'grid' };
+  const angularCalendar = { pattern: 'absent', reason: 'Angular has no such component at all.' };
+  assert.equal(crossLayerAgrees(reactBinding, angularCalendar), true);
 });

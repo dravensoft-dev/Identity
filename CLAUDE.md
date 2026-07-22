@@ -419,6 +419,14 @@ scheduled for deletion the same week.
   injectable-map parameter, so keeping those tests would have meant widening its
   signature for a map that, by design, stays empty. Dead code while the map is empty;
   an untested guard if it is ever repopulated.
+- **Angular has no `Calendar`, and nothing has decided whether it should.** React's
+  `Calendar` is a day/hour schedule grid with absolutely-positioned event blocks;
+  Angular has no equivalent from either an `arena-*` primitive or Angular Material —
+  `mat-calendar` is a month/date-selection grid, a different widget solving a
+  different problem. `frameworks/angular/behaviour-delegated.json`'s `Calendar` entry
+  binds pattern `absent` and records this as a fact, not a decision: it does not
+  commit Angular to gaining a schedule view, and it does not resolve whether the gap
+  should stay this way. It is simply open.
 
 ### Where the rest of the debt lives
 

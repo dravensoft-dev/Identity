@@ -19,7 +19,7 @@ import { dirname, join } from 'node:path';
 import {
   loadPatterns, validatePattern, validateBinding,
   reactComponents, angularPrimitives, PATTERN_DIR,
-  validateUnboundPrimitives,
+  validateUnboundPrimitives, crossLayerAgrees,
 } from './lib/behaviour-contracts.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -114,12 +114,17 @@ async function main() {
     }
   }
 
-  /* 6. The two layers agree, or the difference is declared. */
+  /* 6. The two layers agree, or the difference is declared. Skip the comparison
+   *    when either side binds "absent" -- a layer with no such component at all
+   *    has no surface for a pattern to hold or fail against, so there is nothing
+   *    to compare its (nonexistent) behaviour to, and no divergesFrom could ever
+   *    be true of it either: you cannot diverge from a pattern you do not exist
+   *    to implement. crossLayerAgrees carries that rule so this step's own
+   *    behaviour is importable and testable. */
   for (const [component, reactBinding] of react) {
     const other = angular.get(component) ?? delegated[component];
     if (!other) continue;
-    if (other.pattern === reactBinding.pattern) continue;
-    if (other.divergesFrom === reactBinding.pattern || reactBinding.divergesFrom === other.pattern) continue;
+    if (crossLayerAgrees(reactBinding, other)) continue;
     problems.push(
       `${component}: react binds "${reactBinding.pattern}", angular binds "${other.pattern}", and neither declares divergesFrom.`
       + ` The PATTERN is the authority, not either layer — decide which is the defect.`,

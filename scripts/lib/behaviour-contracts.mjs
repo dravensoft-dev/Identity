@@ -94,6 +94,23 @@ export function validateBinding(component, layer, binding, patterns) {
   return problems;
 }
 
+/** True when a React binding and the other layer's binding for the same component
+ *  may coexist without check-behaviour.mjs's cross-layer step flagging them: they
+ *  name the same pattern, one declares `divergesFrom` naming the other's pattern,
+ *  or either side binds `absent`. That last clause is not a special case bolted on
+ *  -- it follows from what `absent` means: a layer with no such component at all
+ *  has no surface for a pattern requirement to hold or fail against, so there is
+ *  nothing to compare its (nonexistent) behaviour to. Declaring `divergesFrom`
+ *  against an absent binding would assert a divergence from a component that does
+ *  not exist, which is not true either -- silence is the honest state here, not a
+ *  declared difference. */
+export function crossLayerAgrees(a, b) {
+  if (a.pattern === b.pattern) return true;
+  if (a.pattern === ABSENT || b.pattern === ABSENT) return true;
+  if (a.divergesFrom === b.pattern || b.divergesFrom === a.pattern) return true;
+  return false;
+}
+
 /** Every React component, by exported name. A `*.card.entry.jsx` is a demo page's
  *  composition script, not a component, and has no contract. */
 export function reactComponents(root) {
