@@ -4,9 +4,21 @@
  * to this component's real markup, render the component Arena's README
  * specifies? So the harness supplies only what that needs — labelled rows, the
  * page chrome the React card pages already use, and nothing that could style
- * the component itself. Every class on a specimen's own elements comes from
- * classesFor(); a class typed into the page instead would be styling the
- * manifest does not carry, which is the one thing a specimen must never show.
+ * the component itself. Every class on a specimen's own element — the
+ * component's own root and its structural slots — comes from classesFor(); a
+ * class typed onto one of those instead would be styling the manifest does
+ * not carry, which is the one thing a specimen must never show.
+ *
+ * The one carve-out: a stand-in for *projected content* — the body text a
+ * consumer would pass as children, not a slot the manifest owns — is styled
+ * by hand, because the manifest has no slot for content it never renders
+ * itself. `ChartCard`, `EmptyState`, `ErrorState`, `PageHead` and `Card`'s own
+ * `body` text, and `UnauthCard`'s panel copy, all do this: the class strings
+ * typed there style prose the specimen invented to have something to show,
+ * not a class the component itself carries. That is still content-styling,
+ * never component-styling, so the prohibition above stays intact for what it
+ * actually guards — a specimen's own root and slots always come from
+ * classesFor(), with no exception.
  *
  * It also links the two Phosphor stylesheets every specimen needs — the same
  * `bold`/`fill` pair React's own card pages link — so a `ph-*` glyph renders
