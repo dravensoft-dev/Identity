@@ -186,6 +186,57 @@ ternary before writing the manifest — its order **is** the override order a
 state modifier is allowed to have, and the base slot is only a safe place for a
 modifier every variant branch is willing to lose to.
 
+## Two classes at equal specificity are ordered alphabetically, not by manifest order
+
+Tailwind emits same-specificity utilities sorted by value inside each property
+bucket, so `bg-transparent` always compiles after `bg-primary/14` and
+`text-base-content/82` always compiles after `/62`, whatever order the
+manifest declares them in or however sensible the manifest's own ordering
+looks. When a base slot and an additive modifier slot both set one property,
+the alphabetically-later value wins the cascade — which is arbitrary with
+respect to intent, not a rule anyone chose, and unpredictable from reading the
+manifest alone. Never rely on it, and never "fix" it by reordering the class
+string — reordering does nothing, because this is the *compiled stylesheet's*
+order, not the string's. A property a modifier slot overrides does not belong
+on the base slot at all; put it in every modifier branch instead, so the base
+slot only ever carries a property no sibling modifier touches.
+
+This is a different failure from the one above: a state modifier (`hover:`,
+`focus-within:`) always wins on *specificity*, a real, deterministic ordering
+axis. Two *plain* classes for the same property, from a base slot and a named
+modifier slot, share one specificity band, and Tailwind's own sort order
+inside that band is what decides — which is what makes it look "correct" far
+more often than it should. `Menu`'s `item`/`itemDefault`/`itemDestructive`/
+`itemDisabled` is the reference shape: `item` carries only what no modifier
+branch overrides (layout, no color, no cursor), and every color and cursor
+value lives in exactly one of the three modifier slots, never on `item`
+itself. `CommandPalette`'s `row`/`rowDefault`/`rowActive` and
+`rowLabel`/`rowLabelDefault`/`rowLabelActive` follow the same shape for the
+same reason — a resting row needs its own explicit background and text color,
+not an absence that happens to lose to the active row's tint by alphabetical
+luck. A `tv()` `variants` block does not carry this risk the same way: each of
+its slot's classes resolves through one `slot()` call, and the configured
+`tv` (`frameworks/tailwind/tv.ts`) merges that call's own base and chosen
+branch with `tailwind-merge`, which resolves same-property conflicts by
+config, not by generation order. The risk above is specifically about **named
+sibling slots** — extra `slots` keys, outside any `variants` block, that a
+consumer string-concatenates onto a base slot by hand (a specimen's `el()`
+call, or an Angular component's own template interpolation) — because that
+concatenation never goes through `tailwind-merge` at all, in the specimen
+*or* in the real component.
+
+Also written down here because it was almost missed twice more: `Tabs`'
+`selected: false` branch once carried `hover:text-base-content/82`, copied
+from `SegmentedControl.manifest.json`'s near-identical `selected` variant,
+whose component genuinely implements a hover state. `Tabs.jsx` has no hover
+state at all — no `useState`, no `onMouseEnter`, nothing. No gate compares a
+manifest to the component it mirrors (see "No gate compares a Tailwind
+manifest against the component it mirrors" in the root `CLAUDE.md`), so a
+manifest written by copying a neighbouring manifest, rather than by reading
+the component's own source, is how a divergence like this enters the layer
+and stays there permanently, undetected, until someone happens to read both
+side by side.
+
 ## A co-varying value belongs in the variant it co-varies with
 
 A value that must track another prop can look, briefly, like a constant — don't
