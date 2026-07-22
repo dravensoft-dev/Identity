@@ -1,0 +1,21 @@
+{
+  "pattern": "grid",
+  "exceptions": [
+    { "requirement": "roles.grid",
+      "reason": "No role=\"grid\" anywhere -- the wide layout is a bare native <table>, and grep confirms zero role attributes of any kind in the file." },
+    { "requirement": "roles.row",
+      "reason": "No role=\"row\" is set anywhere; rows are plain <tr> in the wide layout or plain <div> in the narrow, card-mode layout." },
+    { "requirement": "roles.cell",
+      "reason": "No role=\"gridcell\", \"columnheader\" or \"rowheader\" anywhere; cells are plain <td>/<th> or plain <div>s in the narrow layout." },
+    { "requirement": "roles.label",
+      "reason": "No aria-labelledby or aria-label anywhere in the file -- confirmed by grep, zero aria- attributes of any kind." },
+    { "requirement": "focus.roving",
+      "reason": "No tabIndex anywhere. When `onRowClick` is set a whole row becomes clickable (onClick, cursor:pointer) but is never made a keyboard target -- no tabIndex=0, no role, nothing. A mouse is the only way to activate a row." },
+    { "requirement": "keyboard.ArrowKeys",
+      "reason": "No onKeyDown handler exists anywhere in the file. This is a defect, recorded so it stops looking like a component nobody had anything to say about." },
+    { "requirement": "keyboard.Home",
+      "reason": "Same as ArrowKeys -- no keyboard handling exists at all." },
+    { "requirement": "keyboard.End",
+      "reason": "Same as ArrowKeys -- no keyboard handling exists at all." }
+  ]
+}

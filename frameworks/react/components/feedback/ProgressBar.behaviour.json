@@ -1,0 +1,9 @@
+{
+  "pattern": "status",
+  "exceptions": [
+    { "requirement": "roles.element",
+      "reason": "Renders role=\"progressbar\", not \"status\" -- the more specific ARIA role for this exact widget, and arguably more correct than this pattern's literal requirement. The catalogue has no dedicated progressbar pattern, so status is the closest fit, and this is the one place the two roles diverge." },
+    { "requirement": "live.politeness",
+      "reason": "No aria-live is set anywhere, and unlike role=\"status\", role=\"progressbar\" carries no implicit live-region politeness -- a screen reader is not guaranteed to announce value changes automatically." }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "pattern": "alert",
+  "exceptions": [
+    { "requirement": "roles.element",
+      "reason": "role is only \"alert\" when tone===\"danger\" (paired with aria-live=\"assertive\"); every other tone -- including the default, neutral -- renders role=\"status\" with aria-live=\"polite\" instead." },
+    { "requirement": "content.noAutoDismiss",
+      "reason": "Toast.jsx itself has no timer, but its own doc comment describes toasts as auto-dismissed by \"the host\" by default, and describes `persist` as \"mandatory in critical/error states\" to opt out. Nothing in this file enforces persist=true when tone=\"danger\" -- that safeguard is a documented convention for the caller, not code, so a danger toast can still be rendered to disappear on a timer." }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "pattern": "none",
+  "reason": "Card renders a bordered surface with an optional eyebrow/title header and an `action` slot; it manages no state, adds no role, and owns no interactive element of its own -- any button or control inside comes from `children` or `action`, both caller-supplied content, not from Card itself.",
+  "exceptions": []
+}

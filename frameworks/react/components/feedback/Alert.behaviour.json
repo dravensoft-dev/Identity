@@ -1,0 +1,7 @@
+{
+  "pattern": "alert",
+  "exceptions": [
+    { "requirement": "roles.element",
+      "reason": "role is only \"alert\" when tone===\"danger\". Every other tone (info, success, warning, neutral -- including the default) renders role=\"status\" instead, which is a different, more polite live region than this pattern requires." }
+  ]
+}

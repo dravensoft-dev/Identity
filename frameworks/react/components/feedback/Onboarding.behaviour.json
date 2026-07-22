@@ -1,0 +1,13 @@
+{
+  "pattern": "dialog-modal",
+  "exceptions": [
+    { "requirement": "focus.onOpen",
+      "reason": "No code moves focus into the coachmark when it opens -- no autoFocus, no ref, no querySelector. Focus stays wherever it already was." },
+    { "requirement": "focus.onClose",
+      "reason": "No stored reference to what had focus before open, so nothing restores it when the coachmark advances past its last step or is skipped." },
+    { "requirement": "focus.trap",
+      "reason": "Nothing constrains Tab -- a keyboard user can tab straight out of the coachmark into the page behind the scrim while it is still open." },
+    { "requirement": "keyboard.Escape",
+      "reason": "No keydown listener anywhere. The scrim has onClick={onSkip}, so a mouse click outside dismisses it, but there is no keyboard equivalent." }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "pattern": "tooltip",
+  "exceptions": [
+    { "requirement": "focus.never",
+      "reason": "Tooltip is not keyboard-reachable -- it has onMouseEnter/onMouseLeave and no onFocus/onBlur, so it is bound only to hover, never to the trigger's focus state. Recorded as known debt in CLAUDE.md's Known debt section." },
+    { "requirement": "roles.describedby",
+      "reason": "The trigger (`children`) is rendered as-is, with no id wired to the tooltip and no aria-describedby added to it -- the two elements are not associated for assistive tech at all, even while the tooltip is visible." },
+    { "requirement": "keyboard.Escape",
+      "reason": "No keydown listener anywhere -- the only way to hide the tooltip is onMouseLeave. There is no keyboard dismissal path." }
+  ]
+}

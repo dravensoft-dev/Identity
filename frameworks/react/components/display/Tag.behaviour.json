@@ -1,0 +1,7 @@
+{
+  "pattern": "button",
+  "exceptions": [
+    { "requirement": "states.disabled",
+      "reason": "The remove button has no disabled concept at all -- aria-disabled is never set, and there is no prop to make removal unavailable while still visible. It is either rendered (fully enabled) or not rendered at all." }
+  ]
+}

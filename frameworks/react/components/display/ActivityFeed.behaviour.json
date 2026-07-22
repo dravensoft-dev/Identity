@@ -1,0 +1,19 @@
+{
+  "pattern": "feed",
+  "exceptions": [
+    { "requirement": "roles.feed",
+      "reason": "No role=\"feed\" -- the list renders as a plain <ul> with no role added." },
+    { "requirement": "roles.article",
+      "reason": "No role=\"article\" on any row -- each <li> is a plain list item, or whatever `renderItem` returns when the caller supplies it." },
+    { "requirement": "roles.label",
+      "reason": "No aria-labelledby or aria-label anywhere -- the <ul> carries none, and nothing else in the file does either." },
+    { "requirement": "states.posinset",
+      "reason": "No aria-posinset or aria-setsize on any row -- a row's position within the feed is not exposed to assistive tech at all." },
+    { "requirement": "states.busy",
+      "reason": "No aria-busy anywhere. There is no concept of a pending update in this component; it just re-renders from the `items` prop with no busy signal during that swap." },
+    { "requirement": "keyboard.PageDown",
+      "reason": "No onKeyDown handler exists anywhere in the file; PageDown does nothing." },
+    { "requirement": "keyboard.PageUp",
+      "reason": "Same as PageDown -- no keyboard handling exists at all." }
+  ]
+}

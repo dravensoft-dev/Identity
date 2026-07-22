@@ -1,0 +1,5 @@
+{
+  "pattern": "none",
+  "reason": "Badge renders a small labelled chip -- an optional dot plus text content. There is no onClick, no focusable element and no role anywhere in the file. A user can read it but cannot act on it.",
+  "exceptions": []
+}

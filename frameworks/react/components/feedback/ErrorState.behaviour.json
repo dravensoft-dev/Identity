@@ -1,0 +1,7 @@
+{
+  "pattern": "alert",
+  "exceptions": [
+    { "requirement": "roles.element",
+      "reason": "No role attribute at all -- the block is a plain div. Nothing announces the error to assistive tech when it appears; a screen reader user only learns of it by reading forward into the page." }
+  ]
+}

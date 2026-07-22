@@ -1,0 +1,17 @@
+{
+  "pattern": "dialog-modal",
+  "exceptions": [
+    { "requirement": "roles.element",
+      "reason": "Renders role=\"alertdialog\", not \"dialog\" -- arguably the more correct choice for a destructive-action confirmation (APG treats alertdialog as dialog's specialisation for exactly this case), but it is a real deviation from this pattern's literal requirement, which the shared dialog-modal contract does not carve out." },
+    { "requirement": "roles.label",
+      "reason": "No aria-labelledby or aria-label -- `title` and `eyebrow` render as plain styled divs with no id referenced anywhere." },
+    { "requirement": "focus.onOpen",
+      "reason": "Only met when `requireText` is set: the confirmation input carries autoFocus and is the first focusable element in DOM order. Without `requireText` -- the common case -- nothing moves focus at all." },
+    { "requirement": "focus.onClose",
+      "reason": "No stored reference to the previously-focused element, and no code that restores it on close." },
+    { "requirement": "focus.trap",
+      "reason": "No keydown handler constrains Tab; focus can walk straight out of the dialog into the page behind it." },
+    { "requirement": "keyboard.Escape",
+      "reason": "Not implemented -- no keydown listener anywhere. This is compounded by the component's own documented choice not to close on click-outside either (\"Does NOT close on click-outside (avoids losses)\"), so a keyboard-only user currently has no way to cancel except tabbing to the Cancel button and activating it." }
+  ]
+}
