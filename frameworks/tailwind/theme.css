@@ -27,6 +27,7 @@
    as content and asserts every key still resolves to a real Arena token;
    scripts/check-tailwind-coverage.mjs asserts no token is missing from it. */
 @import 'tailwindcss';
+@import './animations.css';
 
 @theme {
   /* ---- colour → tokens/palette.css ------------------------------------- */

@@ -1,0 +1,42 @@
+<!-- @dsCard group="Angular" viewport="760x465" name="CommandPalette" subtitle="Search and selection, rendered from CommandPalette.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./CommandPalette.manifest.json')).json();
+const c = classesFor(manifest);
+
+const COMMANDS = [
+  { label: 'Create a project', icon: 'ph-bold ph-plus', shortcut: 'C' },
+  { label: 'Open deployments', icon: 'ph-bold ph-rocket-launch', shortcut: 'G D' },
+  { label: 'Invite a teammate', icon: 'ph-bold ph-user-plus' },
+  { label: 'Switch to light theme', icon: 'ph-bold ph-sun', shortcut: 'T' },
+];
+
+function palette({ query, activeIndex, commands }) {
+  const list = el('div', { class: c.list });
+  if (commands.length === 0) list.append(el('div', { class: c.empty, text: `No results for "${query}".` }));
+  commands.forEach((command, i) => {
+    const active = i === activeIndex;
+    const row = el('button', { class: `${c.row} ${active ? c.rowActive : c.rowDefault}`, type: 'button' });
+    if (command.icon) row.append(el('span', { class: c.rowIcon }, el('i', { class: command.icon, 'aria-hidden': 'true' })));
+    row.append(el('span', { class: `${c.rowLabel} ${active ? c.rowLabelActive : c.rowLabelDefault}`, text: command.label }));
+    if (command.shortcut) row.append(el('span', { class: c.shortcut, text: command.shortcut }));
+    list.append(row);
+  });
+  const search = el('div', { class: c.search },
+    el('i', { class: `${c.searchIcon} ph-bold ph-magnifying-glass`, 'aria-hidden': 'true' }),
+    el('input', { class: c.input, value: query, placeholder: 'Search for an action or project…' }),
+    el('span', { class: c.esc, text: 'ESC' }));
+  return el('div', { class: c.panel }, search, list);
+}
+
+mountSpecimen({ sections: [
+  section('Second row selected', [palette({ query: '', activeIndex: 1, commands: COMMANDS })], { stack: true }),
+  section('No results', [palette({ query: 'zzz', activeIndex: 0, commands: [] })], { stack: true }),
+]});
+</script></body></html>

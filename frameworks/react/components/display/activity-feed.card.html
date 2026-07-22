@@ -2,27 +2,7 @@
 <!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../../../styles.css">
 <style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:var(--sp-6)}.sub{font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-label);line-height:var(--lh-snug);color:var(--mute);text-transform:uppercase;margin-bottom:var(--sp-2)}</style>
 <script type="importmap">
-{"imports":{"react":"https://esm.sh/react@18","react/jsx-runtime":"https://esm.sh/react@18/jsx-runtime","react-dom/client":"https://esm.sh/react-dom@18/client"}}
+{"imports":{"react":"../../../../frameworks/react/vendor/react.js","react/jsx-runtime":"../../../../frameworks/react/vendor/react-jsx-runtime.js","react-dom/client":"../../../../frameworks/react/vendor/react-dom-client.js"}}
 </script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="../../../../jsx-loader.js"></script></head><body><div id="root"></div>
-<script type="text/babel" data-type="module" data-presets="react">
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-const { ActivityFeed } = await arenaImport('../../components/display/ActivityFeed.jsx');
-const { Card } = await arenaImport('../../components/display/Card.jsx');
-const ITEMS = [
-  {id:1,actor:'ana@',action:'approved the release',target:'build #4821',time:'2h ago',tone:'success'},
-  {id:2,actor:'CI',action:'deployed to production',target:'build #4821',time:'2h ago'},
-  {id:3,actor:'diego@',action:'opened incident',target:'checkout latency',time:'3h ago',tone:'danger'},
-  {id:4,actor:'nora@',action:'merged',target:'PR #338 · session cache',time:'5h ago',tone:'info'},
-];
-function Demo(){return(<div>
-  <div className="sub">Inside a Card — the feed renders no surface of its own</div>
-  <Card><ActivityFeed items={ITEMS}/></Card>
-  <div className="sub" style={{marginTop:'var(--sp-5)'}}>renderItem — the row the grammar does not fit</div>
-  <Card><ActivityFeed items={[{id:9,label:'Retention policy changed by two people at once'}]}
-    renderItem={(e)=><span style={{fontSize:'var(--dz-text)',color:'var(--bone-dim)'}}>{e.label}</span>}/></Card>
-</div>);}
-createRoot(document.getElementById('root')).render(<Demo/>);
-</script></body></html>
+</head><body><div id="root"></div>
+<script type="module" src="activity-feed.card.entry.js"></script></body></html>

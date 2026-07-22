@@ -1,0 +1,30 @@
+<!-- @dsCard group="Tailwind" viewport="760x340" name="Button" subtitle="Four variants, three sizes, rendered from Button.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Button.manifest.json')).json();
+
+function button(label, opts = {}, { disabled = false, loading = false } = {}) {
+  const c = classesFor(manifest, opts);
+  const node = el('button', { class: c.root, type: 'button', disabled: (disabled || loading) || undefined });
+  if (loading) node.append(el('span', { class: c.spinner, 'aria-hidden': 'true' }));
+  node.append(label);
+  return node;
+}
+
+mountSpecimen({ sections: [
+  section('Variants', ['primary', 'secondary', 'ghost', 'danger'].map((variant) =>
+    button(variant[0].toUpperCase() + variant.slice(1), { variant }))),
+  section('Sizes', ['sm', 'md', 'lg'].map((size) => button(`Deploy (${size})`, { size }))),
+  section('States', [
+    button('Disabled', {}, { disabled: true }),
+    button('Loading', {}, { loading: true }),
+    button('Full width', { full: 'true' }),
+  ]),
+]});
+</script></body></html>

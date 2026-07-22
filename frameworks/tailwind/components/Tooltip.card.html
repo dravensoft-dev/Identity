@@ -1,0 +1,27 @@
+<!-- @dsCard group="Tailwind" viewport="700x133" name="Tooltip" subtitle="The inverted overlay, rendered from Tooltip.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Tooltip.manifest.json')).json();
+const c = classesFor(manifest);
+
+function tooltip(label, content) {
+  const bubble = el('span', { class: c.bubble, role: 'tooltip', text: content });
+  const root = el('span', { class: c.root },
+    el('span', { class: 'font-body text-ctl text-base-content/82', text: label }), bubble);
+  root.style.marginTop = 'var(--sp-8)';
+  return root;
+}
+
+mountSpecimen({ sections: [
+  section('Always shown here — in use it appears on hover', [
+    tooltip('Deployments', 'Everything shipped in the last 30 days'),
+    tooltip('p95', '95th percentile response time'),
+  ]),
+]});
+</script></body></html>

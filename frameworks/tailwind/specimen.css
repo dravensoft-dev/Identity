@@ -1,0 +1,67 @@
+/* frameworks/tailwind/specimen.css
+   Page chrome for the *.card.html specimens — and nothing that could style a
+   component. Every class a specimen puts on a component's own element comes
+   from its manifest through classesFor(); what is left over is the page: a
+   background, a micro-label per section, and a row to lay the examples out in.
+   The rules below are the ones the React card pages already use, so a
+   specimen and its React counterpart sit on the same surface and a difference
+   between them is a difference in the component. The `.row` modifiers exist
+   because a specimen sometimes has to lay its row out differently to make its
+   point — see section()'s JSDoc in specimen.js for what each one is for. */
+body {
+  margin: 0;
+  padding: var(--sp-6);
+  background: var(--bg);
+  color: var(--text-strong);
+  font-family: var(--font-body);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--sp-1) * 3.5);
+  align-items: center;
+  margin-bottom: var(--sp-4);
+}
+
+/* Stack the examples instead of flowing them — for full-width components
+   (Alert, Table, Dialog panels) whose row would otherwise be one column. */
+.row.stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Equalize cross-axis height across a row's examples, for a set the
+   component itself renders at a uniform height. */
+.row.align-stretch {
+  align-items: stretch;
+}
+
+/* Top-align a row instead of centring it, for comparing examples of
+   deliberately different height. */
+.row.align-start {
+  align-items: flex-start;
+}
+
+/* Centre a row's content on the main axis, for a section holding a single
+   full-frame example that is centred in its real presentational context. */
+.row.justify-center {
+  justify-content: center;
+}
+
+/* Widen the gap beyond the default, for examples small or visually similar
+   enough that the default gap reads as one continuous shape. */
+.row.gap-loose {
+  gap: calc(var(--sp-1) * 6);
+}
+
+.sub {
+  width: 100%;
+  margin-bottom: var(--sp-1);
+  font-family: var(--font-mono);
+  font-size: var(--dz-text-2xs);
+  letter-spacing: var(--ls-label);
+  line-height: var(--lh-snug);
+  color: var(--mute);
+  text-transform: uppercase;
+}

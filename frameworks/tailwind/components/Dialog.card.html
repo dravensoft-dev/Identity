@@ -1,0 +1,37 @@
+<!-- @dsCard group="Tailwind" viewport="800x505" name="Dialog" subtitle="The routine modal, rendered from Dialog.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Dialog.manifest.json')).json();
+const c = classesFor(manifest);
+
+/* The panel is shown outside its `fixed` scrim, which a specimen cannot render
+   twice on one page. The scrim's own look is checked on the ConfirmDialog and
+   CommandPalette specimens, which show it in place. */
+function dialog({ eyebrow, title, body, actions }) {
+  const foot = el('div', { class: c.foot });
+  for (const action of actions) foot.append(el('span', { class: 'font-body text-ctl text-base-content/82', text: `[ ${action} ]` }));
+  return el('div', { class: c.panel },
+    el('div', { class: c.head }, el('div', { class: c.eyebrow, text: eyebrow }), el('div', { class: c.title, text: title })),
+    el('div', { class: c.body, text: body }),
+    foot);
+}
+
+mountSpecimen({ sections: [
+  section('With a footer', [dialog({
+    eyebrow: 'Deployment', title: 'Promote build 482 to production?',
+    body: 'The current production build stays available for rollback for seven days.',
+    actions: ['Cancel', 'Promote'],
+  })], { stack: true }),
+  section('Content only', [dialog({
+    eyebrow: 'Changelog', title: "What's new in 4.1",
+    body: 'The token layer is now DTCG JSON, and every framework layer reads the same values.',
+    actions: [],
+  })], { stack: true }),
+]});
+</script></body></html>

@@ -94,18 +94,64 @@ runtime projection of data onto a screen position — a chart tooltip's offset d
 from a hovered value, an hour label's offset derived from a clock minute, an event
 block's height derived from its duration — where the literal is the true value at
 that site because nothing in `tokens/src/` could stand in for a number computed from
-data at runtime. A stale exemption — one that no longer matches a real violation —
+data at runtime; and, since `chart-internals.ts`, the **visually-hidden idiom** —
+`SR_ONLY`'s 1px box and the −1px margin that must cancel it exactly, where the number
+is a constraint of the accessibility idiom rather than a design dimension and a token
+would break the cancellation. That third category widened the map's charter beyond
+runtime projections, so read the reasons rather than assuming the rule.
+A stale exemption — one that no longer matches a real violation —
 fails the gate itself. **A change to `EXEMPT` or `PASSTHROUGH` is a change to
 `scripts/check-dimension-literals.test.mjs` too** — that suite asserts on both maps by
 name, so an entry added or removed without touching it leaves the tests describing a
-gate that no longer exists. The gate scans `.jsx`, `.ts` and `.tsx` under `frameworks/` —
-it does not scan `.html`;
-the root-level and `guidelines/` pages stay clean only because they were tokenized by
-hand, and nothing holds that. **No gate compares a Tailwind manifest against the
-component it mirrors, and the mapping is not obvious**: `Button.manifest.json`
-mirrors React's `Button.jsx`, while `Tag.manifest.json` mirrors the **Angular**
-primitive `arena-tag` — a different component from React's `Tag.jsx`. Check both by
-hand when a manifest and its mirrored component might have drifted.
+gate that no longer exists. The gate scans `.jsx`, `.ts` and `.tsx` under `frameworks/`,
+including every `*.entry.jsx` demo-page composition script (see below) — it does not scan
+`.html`, so the root-level and `guidelines/` pages stay clean only because they were
+tokenized by hand, and nothing holds that. The `*.card.html` specimens under
+`frameworks/tailwind/components/` are the one family of unscanned pages that stays clean
+structurally rather than by hand: every class they render comes from the manifest through
+`classesFor()`, so a literal typed into a specimen is styling the manifest does not carry
+— the one thing a specimen must never show. **They do still carry bare `px` for
+demo-harness sizing** (ActivityFeed, Card, ChartCard, Input, Menu, PageHead, ProgressBar,
+Select, Skeleton, StatCard and Textarea pin a width so the card composes), which nothing
+holds either. **Two blind spots are known and neither is fixed**:
+the gate cannot see a kebab-case SVG attribute — `scanAttributes`' lookbehind `(?<![\w.-])`
+rejects `width` preceded by `-`, so `stroke-width="1"` never matches, and `font-size`
+reduces to `size`, which is not in `PROPS` — while `PROP_COLON` omits `-` from *its*
+lookbehind, so `stroke-width:` inside a template string false-positives as the governed
+`width` and scavenges an unrelated number. This is why the three SVG charts write their
+static styling as camelCase `[style]` **objects**: in that shape `strokeWidth` and
+`fontSize` are judged as themselves, which is strictly more coverage than an attribute,
+not a workaround. Angular's `[style.x]` binding form is invisible to all four scanners
+too. Closing this properly needs `PROP_COLON` taught kebab-awareness plus the Angular
+binding form, with its own suite. **No gate compares a Tailwind manifest against the
+component it mirrors, and the mapping is not one-to-one**: 18 of the 39 manifests mirror
+both a React component and an `arena-*` primitive; the other 21 mirror a React component
+alone, because Angular Material provides that control and `arena-material.css` dresses
+it — `SideNav` among them, bridged through `mat-nav-list`. `Tag.manifest.json` is the one
+that mirrors an **Angular** primitive whose React namesake is a different component.
+`check:tailwind` proves every class resolves; nothing proves a manifest still matches the
+component it was derived from, so check by hand when either has moved.
+
+One narrow slice of that general problem is machine-checked, though: `check:states`
+(`scripts/check-manifest-states.mjs`) flags a `hover:`/`focus:`-family Tailwind state
+modifier in a manifest whose mirrored React component implements no hover/focus
+anywhere — no `onMouseEnter`/`onMouseLeave`, no `onFocus`/`onBlur`, no `useState`
+hover/focus tracking, no `:hover`/`:focus` in an injected style string. It exists because
+this exact shape shipped twice on one branch — `Tabs`, then `Pagination` one batch after
+the first was fixed and written down — and prose alone did not stop the second
+occurrence. It resolves the manifest-to-component mapping itself for the same two
+exceptions named above (`Tag` against `tag.ts`, via a `SOURCE_OVERRIDES` map) and carries
+a `check-dimension-literals.mjs`-shaped `EXEMPT` map, keyed `<Component>:<slot>:<family>`
+with a reason each, for a handful of hits that are real but that a whole-file text scan
+cannot resolve on its own — a state delegated to a composed child component
+(`ConfirmDialog`'s confirm/cancel buttons are React's own `<Button>`; `ThemeToggle`
+renders nothing but `<IconButton>`) or a documented, deliberate accessibility addition on
+the Angular side that React does not have (`ConfirmDialog`'s require-text input). A stale
+`EXEMPT` entry — one naming a component/slot/family that no longer carries that state —
+fails the gate, the same invariant `check-dimension-literals.mjs`'s own `EXEMPT` holds.
+**This checks states only** — it says nothing about whether a manifest's colors, sizes,
+or slot structure still match the component it mirrors, which is the open problem the
+paragraph above describes and remains unclosed.
 
 **The Overview generates itself, and that is the point.** `Arena - Overview.html` reads
 names and `$description`s from `tokens/src/*.json` and the alias names from
@@ -128,30 +174,38 @@ and letter spacing is a `number` carrying an `em` render hint in `$extensions`.
 
 **Components carry no CSS classes.** Each `frameworks/react/components/**/*.jsx` renders with inline `style` objects reading the custom properties (`background: 'var(--crimson)'`), and handles hover/active/focus with local `useState`. There is no `.btn` class to target; theming happens entirely through token values. Keep new components self-contained the same way — `Button.jsx` is the reference shape.
 
-**The one exception: a `<style>` tag injected once**, for what an inline style genuinely cannot express — `@keyframes` (`ProgressBar`, `Spinner`, `Skeleton`, `Button`, `Dialog`, `Menu`, `Tooltip`, `Rotor`) and vendor pseudo-elements (`Input`'s `::-webkit-calendar-picker-indicator`, which is invisible on the dark surface otherwise). The pattern is always the same, and every one of them follows it: a module-level `let injected = false` guard, a `useEffect`, `document.head.appendChild`. Never a `<style>` rendered inside the component's own markup — that ships one tag per instance and leaks the CSS into the element's `textContent`.
+**The one exception: a `<style>` tag injected once**, for what an inline style genuinely cannot express — `@keyframes` (`ProgressBar`, `Spinner`, `Skeleton`, `Button`, `Dialog`, `Menu`, `Tooltip`) and vendor pseudo-elements (`Input`'s `::-webkit-calendar-picker-indicator`, which is invisible on the dark surface otherwise). The pattern is always the same, and every one of them follows it: a module-level `let injected = false` guard, a `useEffect`, `document.head.appendChild`. Never a `<style>` rendered inside the component's own markup — that ships one tag per instance and leaks the CSS into the element's `textContent`.
 
-Inject **as little as the job needs**. Prefer keyframes alone and leave the `animation` shorthand inline (`Dialog`, `Menu`, `Tooltip`); a reduced-motion variant that only changes the *movement* can redefine the keyframes inside the media query, which needs no selector. Reach for a class of ours **only when a selector is unavoidable** — a media query that changes duration (`Rotor`, `Spinner`, `Button`), a pseudo-element (`ProgressBar`, `Input`), a background the keyframes animate (`Skeleton`) — and **never as a shortcut around an inline style that would have worked**.
+Inject **as little as the job needs**. Prefer keyframes alone and leave the `animation` shorthand inline (`Dialog`, `Menu`, `Tooltip`); a reduced-motion variant that only changes the *movement* can redefine the keyframes inside the media query, which needs no selector. Reach for a class of ours **only when a selector is unavoidable** — a media query that changes duration (`Spinner`, `Button`), a pseudo-element (`ProgressBar`, `Input`), a background the keyframes animate (`Skeleton`) — and **never as a shortcut around an inline style that would have worked**.
 
-**Every animation answers `prefers-reduced-motion`**, and the answer depends on what the motion means. Motion that reports work in progress *slows* rather than stops (`Spinner`, `ProgressBar`, `Button`, `Rotor`) — a frozen spinner reads as a hung process. Decorative motion stops outright (`Skeleton`). An entrance keeps its fade and drops its travel (`Dialog`, `Menu`) — the movement is the vestibular trigger, the fade is the meaning. An opacity-only animation needs no clause at all (`Tooltip`): there is no motion to reduce.
+**Every animation answers `prefers-reduced-motion`**, and the answer depends on what the motion means. Motion that reports work in progress *slows* rather than stops (`Spinner`, `ProgressBar`, `Button`) — a frozen spinner reads as a hung process. Decorative motion stops outright (`Skeleton`). An entrance keeps its fade and drops its travel (`Dialog`, `Menu`) — the movement is the vestibular trigger, the fade is the meaning. An opacity-only animation needs no clause at all (`Tooltip`): there is no motion to reduce.
 
 **Every component is a quartet.** `X.jsx` (implementation), `X.d.ts` (types, with a `@startingPoint` doc comment), `X.prompt.md` (usage, examples, Do/Don't per README's H10 rule), and an entry in the group's `*.card.html` demo. Adding a component means adding all four.
 
-The Angular layer's quartet is the analogue: `<name>.ts` (standalone `OnPush` component, `arena-` selector, signal I/O, no component `styles`), `<name>.variants.ts` (a `tailwind-variants` recipe built with `frameworks/tailwind/tv.ts`), `<name>.prompt.md`, and a barrel export. Dark-first (`.arena-light`), danger stays outline, Phosphor icons.
+The Angular layer's quartet is the analogue: `<name>.ts` (standalone `OnPush` component, `arena-` selector, signal I/O, no component `styles`), `<name>.variants.ts` (a `tailwind-variants` recipe built with `frameworks/tailwind/tv.ts`), `<name>.prompt.md`, and a barrel export. Dark-first (`.arena-light`), danger stays outline, Phosphor icons. The three SVG charts are the one exception and have no `<name>.variants.ts` — see the charts note below.
 
-**Specimen/demo pages** start with an HTML comment `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card rendering — keep it as the first line, which is the only line `check:cards` reads. **That viewport is machine-checked**: `bun run check:cards` loads every declaring page at its declared width in headless Chromium and fails when the rendered content over-runs the box in either axis, because the card is cropped to it and the overflow is lost silently. Declaring it by arithmetic does not work — it was tried, and the page clipped in both axes anyway. Measure by running the gate. A page that declares far *more* height than it renders only warns. `frameworks/react/ui_kits/console/index.html` carries no `@dsCard` on purpose: it is an app with its own scroll area, not a card. Component demos load React from esm.sh via an importmap, pull in Babel standalone, and use `jsx-loader.js`'s `window.arenaImport('../path/X.jsx')` to import JSX in the browser with no build step (it transpiles and rewrites relative imports to blob URLs recursively).
+**A host-bound root is the Angular layer's default, and it has two carve-outs.** A primitive binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than rendering a wrapper div, so the host is the flex item its parent lays out and — where the component measures itself — the measured element is the styled element. Two primitives correctly do **not**: `theme-toggle`, whose root must be a real `<button>` for keyboard operability, and `activity-feed`, whose root must be a real `<ul>` with `<li>` rows. The rule targets elements that exist only to carry styling; when the root must be a specific semantic or interactive element, keep it. **A host-bound root must carry a display utility** — `<arena-x>` is an unknown element defaulting to `display:inline`, where width and height do not apply, so a root slot without one renders a zero-area host. That is machine-guarded by a manifest-driven assertion in `frameworks/angular/test/host-class-binding.test.ts`.
+
+**The Angular test harness is JIT, and that bounds what a test can prove.** `frameworks/angular/test/` renders real zoneless Angular trees under `bun test` via `happy-dom`, which needs three test-only devDependencies beyond the `node:test`/`node:assert` baseline the rest of the repo uses — `@angular/platform-browser`, `happy-dom` and `@happy-dom/global-registrator` (register/unregister in paired hooks). Because the harness runs `@angular/compiler`'s JIT and never `ngtsc`, **a signal input cannot be driven through a template binding or a literal attribute** — the first throws NG0303, the second is a silent no-op — and `contentChild()` queries do not resolve. Factor the logic into plain exported functions and test those against a real DOM rather than faking a render; `check:angular`'s `ngc --strictTemplates` is the authority that the input contract and the queries actually compile. `TestBed.initTestEnvironment()` may be called only once per `bun test` process, so anything needing a real component render goes in `host-class-binding.test.ts` with **scoped** hooks, and every directly-created fixture must be `destroy()`-ed — zoneless change detection sweeps all attached views, so a fixture left dirty throws out of an unrelated later test.
+
+**Specimen/demo pages** start with an HTML comment `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card rendering — keep it as the first line, which is the only line `check:cards` reads. **That viewport is machine-checked**: `bun run check:cards` loads every declaring page at its declared width in headless Chromium and fails when the rendered content over-runs the box in either axis, because the card is cropped to it and the overflow is lost silently. Declaring it by arithmetic does not work — it was tried, and the page clipped in both axes anyway. Measure by running the gate. A page that declares far *more* height than it renders only warns. `frameworks/react/ui_kits/console/index.html` carries no `@dsCard` on purpose: it is an app with its own scroll area, not a card. Component demos load React from a local importmap pointing at `frameworks/react/vendor/*.js` — a committed, generated ESM bundle of the `react`/`react-dom` devDependencies, since React 18 ships CommonJS only and the importmap needs real ES modules (`bun run build:vendor`, guarded by `check:vendor`; see `scripts/build-vendor.mjs`) — and pull `@phosphor-icons/web` straight from `node_modules/` (the static server is rooted at the repo root and does not exclude it). **JSX is compiled ahead of time, not in the browser.** Each demo page's own script used to be inline JSX, transpiled at load by `@babel/standalone` through `jsx-loader.js`'s `window.arenaImport()`; that inline block is now a real sibling source file (`<page>.entry.jsx`, e.g. `alert.card.entry.jsx` next to `alert.card.html`), and every component `.jsx` plus every `.entry.jsx` has a compiled `.js` sibling — same directory, same basename — that the page loads with a plain `<script type="module" src="…">`. `bun run build:demos` (`scripts/build-demos.mjs`) compiles them with Bun's own transpiler (classic JSX, matching what `@babel/standalone`'s default preset was doing) and rewrites each relative import's `.jsx` extension to `.js`, so the recursive-import behavior `jsx-loader.js` used to do at runtime now happens once, at build time; `check:demos` (`scripts/check-demos-generated.mjs`) guards drift and orphaned output, on the same committed-generated-output contract as `check:vendor`. There is a build step for the demos now — this repo does not claim otherwise.
 
 `support.js` is a generated bundle (`dc-runtime`, whose source is not in this repo) used only by the root `*.dc.html` pages. Do not edit it.
 
 **Framework layers live under `frameworks/`.** The root holds only the
 framework-agnostic language (`tokens/`, `guidelines/`, `assets/`, `scripts/`,
-`styles.css`) plus the demo runtime (`theme.js`, `jsx-loader.js`, `support.js`)
+`styles.css`) plus the demo runtime (`theme.js`, `support.js`)
 and brand (`*.dc.html`). React lives in `frameworks/react/`;
 `frameworks/angular/` holds the Angular layer: a Tailwind preset entry
-(`theme/arena-tailwind.css`) and an Angular Material MDC token bridge
+(`theme/arena-tailwind.css`) and an Angular Material `--mat-*` token bridge
 (`theme/arena-material.css`), a Phosphor icon manifest (`icons/`), a
 dark-first signal `ThemeService`
-(`theme/theme-service.ts` + `theme/no-fouc.html`), and standalone `OnPush`
-primitives under `primitives/` (`tag` is the reference), each styled by the
+(`theme/theme-service.ts` + `theme/no-fouc.html`), and
+21 standalone `OnPush` primitives under `primitives/` (`tag` is the reference
+shape; the three SVG charts are the declared exception — no manifest, no
+`.variants.ts`, token-valued camelCase `[style]` objects like React's, and reviewed
+against React's `charts.card.html` rather than a specimen of their own), each
+styled by the
 shared `frameworks/tailwind/` recipes through the configured `tv`
 (`frameworks/tailwind/tv.ts`) — see `frameworks/angular/ADOPTION.md`.
 `frameworks/tailwind/` is a **single shared** Tailwind v4 layer (`@theme`
@@ -163,8 +217,15 @@ machine-checked, not hoped for: `bun run check:tailwind` compiles the preset
 with the manifests as content and asserts every class emits a rule and every
 theme key resolves to a real token; `bun run check:coverage` asserts every
 token either reaches a utility or is named in `EXCLUDED` with a reason;
-`bun run check:arbitrary` fails on a bracket carrying a raw literal.
-`bun run check` runs all nine plus the test suite, without stopping at the first failure. **`check:cards` is the one gate that is not runtime-portable** — it needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths). Where there is none it exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
+`bun run check:arbitrary` fails on a bracket carrying a raw literal;
+`bun run check:radius` fails on the one core Tailwind utility in this
+namespace that resolves without one — `rounded-full` (`calc(infinity * 1px)`,
+never sourced from `--radius-*`) where `rounded-pill` (`--r-pill`) belongs.
+It is the converse of `check:coverage` and just as narrow: it does not attempt
+"every utility traces to a token" in general, only this one verified case,
+because everywhere else in a cleared namespace already resolves to nothing
+and `check:tailwind` catches that on its own.
+`bun run check` runs all sixteen plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
 skips quietly — makes that a hard failure instead. An Angular primitive's recipe is its
 manifest — `frameworks/angular/primitives/tag/` is the reference shape.
 

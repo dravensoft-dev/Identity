@@ -1,0 +1,42 @@
+<!-- @dsCard group="Tailwind" viewport="760x615" name="Textarea" subtitle="States and the counter, rendered from Textarea.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Textarea.manifest.json')).json();
+
+function textarea({ label, value = '', hint, error, state = 'neutral', maxLength, required }) {
+  const c = classesFor(manifest, { state });
+  const root = el('div', { class: c.root });
+  root.style.width = '300px';
+  const taId = label ? 'tw-ta-' + label.replace(/\s+/g, '-').toLowerCase() : undefined;
+  if (label) {
+    const tag = el('label', { class: c.label, for: taId }, label);
+    if (required) tag.append(el('span', { class: c.required, text: '*' }));
+    root.append(tag);
+  }
+  root.append(el('textarea', { class: c.field, id: taId, rows: 4 }, value));
+  const foot = el('div', { class: c.foot });
+  foot.append(error ? el('span', { class: c.error, text: error })
+    : hint ? el('span', { class: c.hint, text: hint }) : el('span'));
+  if (maxLength) {
+    const near = value.length > maxLength * 0.9;
+    foot.append(el('span', { class: near ? c.counterNear : c.counter, text: `${value.length}/${maxLength}` }));
+  }
+  root.append(foot);
+  return root;
+}
+
+mountSpecimen({ sections: [
+  section('Neutral, with a hint', [textarea({ label: 'Release notes', value: 'Fixes the upstream timeout.', hint: 'Markdown is supported.' })]),
+  section('Error', [textarea({ label: 'Release notes', value: '', error: 'Release notes are required.', state: 'error', required: true })]),
+  section('Counter, and near the limit', [
+    textarea({ label: 'Summary', value: 'Short summary.', maxLength: 140 }),
+    textarea({ label: 'Summary', value: 'A summary long enough to pass ninety per cent of the limit and turn the counter to the warning colour, which is what this example is for.'.slice(0, 132), maxLength: 140 }),
+  ]),
+]});
+</script></body></html>

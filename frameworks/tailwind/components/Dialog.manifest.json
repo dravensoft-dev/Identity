@@ -1,0 +1,12 @@
+{
+  "component": "Dialog",
+  "slots": {
+    "scrim": "fixed inset-0 z-modal flex items-center justify-center bg-scrim backdrop-blur-scrim",
+    "panel": "arena-pop w-120 max-w-[92vw] bg-base-200 border-[length:var(--bw)] border-neutral rounded-lg shadow-3 overflow-hidden",
+    "head": "px-6 pt-5.5",
+    "eyebrow": "font-mono text-ctl-xs tracking-label uppercase text-primary mb-2",
+    "title": "font-display font-extrabold text-h3 text-base-content tracking-tight",
+    "body": "px-6 py-4 font-body text-md leading-body text-base-content/82",
+    "foot": "flex justify-end gap-2.5 px-6 pb-5.5"
+  }
+}

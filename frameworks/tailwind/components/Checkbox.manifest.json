@@ -1,0 +1,21 @@
+{
+  "component": "Checkbox",
+  "slots": {
+    "root": "inline-flex items-center gap-2.5",
+    "box": "inline-flex items-center justify-center size-5 rounded-xs border-[length:var(--bw)] transition-[background] duration-[var(--dur-fast)] ease-out",
+    "check": "text-primary-content",
+    "label": "font-body text-ctl text-base-content/82",
+    "input": "absolute opacity-0 size-0"
+  },
+  "variants": {
+    "checked": {
+      "true": { "box": "bg-primary border-primary" },
+      "false": { "box": "bg-base-300 border-neutral" }
+    },
+    "disabled": {
+      "true": { "root": "opacity-50 cursor-not-allowed" },
+      "false": { "root": "cursor-pointer" }
+    }
+  },
+  "defaultVariants": { "checked": "false", "disabled": "false" }
+}

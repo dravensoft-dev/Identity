@@ -1,0 +1,38 @@
+<!-- @dsCard group="Tailwind" viewport="700x101" name="Checkbox" subtitle="Checked, unchecked and disabled, rendered from Checkbox.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Checkbox.manifest.json')).json();
+
+// Token-valued, not hand-typed: `--sp-3` (12px) is the check glyph's box, `--bw-strong`
+// (2px) is its stroke — the same values `Checkbox.jsx` reads, bound as a camelCase
+// `[style]` object so a token change cannot drift silently under a literal `.card.html`
+// never scans (see the three Angular SVG charts for the same shape and the same reason).
+const CHECK_GLYPH_STYLE = { width: 'var(--sp-3)', height: 'var(--sp-3)' };
+const CHECK_STROKE_STYLE = { strokeWidth: 'var(--bw-strong)' };
+
+function checkbox({ label, checked = false, disabled = false }) {
+  const c = classesFor(manifest, { checked: String(checked), disabled: String(disabled) });
+  const box = el('span', { class: c.box });
+  if (checked) {
+    const svg = el('svg', { viewBox: '0 0 12 12', fill: 'none', class: c.check, style: CHECK_GLYPH_STYLE });
+    svg.append(el('path', { d: 'M2 6l3 3 5-6', stroke: 'currentColor', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', style: CHECK_STROKE_STYLE }));
+    box.append(svg);
+  }
+  const input = el('input', { type: 'checkbox', class: c.input, checked: checked || undefined, disabled: disabled || undefined });
+  return el('label', { class: c.root }, box, el('span', { class: c.label, text: label }), input);
+}
+
+mountSpecimen({ sections: [
+  section('States', [
+    checkbox({ label: 'Notify on failure', checked: true }),
+    checkbox({ label: 'Notify on success' }),
+    checkbox({ label: 'Managed by policy', checked: true, disabled: true }),
+  ]),
+]});
+</script></body></html>

@@ -1,0 +1,32 @@
+<!-- @dsCard group="Angular" viewport="700x654" name="EmptyState" subtitle="Nothing here yet, rendered from EmptyState.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./EmptyState.manifest.json')).json();
+const c = classesFor(manifest);
+
+function emptyState({ icon, title, message, actionLabel }) {
+  const root = el('div', { class: c.root },
+    el('div', { class: c.icon }, el('i', { class: icon, 'aria-hidden': 'true' })),
+    el('div', { class: c.title, text: title }),
+    el('div', { class: c.message, text: message }));
+  if (actionLabel) {
+    /* Stands in for the projected mat-button; the manifest styles the slot, not
+       the button. */
+    const action = el('div', { class: c.action });
+    action.append(el('span', { class: 'font-body text-ctl text-primary', text: `[ ${actionLabel} ]` }));
+    root.append(action);
+  }
+  return root;
+}
+
+mountSpecimen({ sections: [
+  section('With an action', [emptyState({ icon: 'ph-bold ph-folder-open', title: 'No projects yet', message: 'A project groups deployments, logs and artifacts for one client.', actionLabel: 'Create a project' })], { stack: true }),
+  section('Without one', [emptyState({ icon: 'ph-bold ph-magnifying-glass', title: 'No results', message: 'Nothing matches that filter. Widen the date range or clear the status filter.' })], { stack: true }),
+]});
+</script></body></html>

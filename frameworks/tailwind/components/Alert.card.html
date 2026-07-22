@@ -1,0 +1,34 @@
+<!-- @dsCard group="Angular" viewport="760x733" name="Alert" subtitle="Tones, action and dismiss, rendered from Alert.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Alert.manifest.json')).json();
+const ICONS = { info: 'ph-fill ph-info', success: 'ph-fill ph-check-circle', warning: 'ph-fill ph-warning', danger: 'ph-fill ph-warning-octagon', neutral: 'ph-fill ph-note' };
+
+function alert({ tone, title, message, actionLabel, dismissible }) {
+  const c = classesFor(manifest, { tone, titled: !!title });
+  const body = el('div', { class: c.body },
+    ...(title ? [el('div', { class: c.title, text: title })] : []),
+    el('div', { class: c.message, text: message }));
+  if (actionLabel) body.append(el('button', { class: c.action, type: 'button', text: actionLabel }));
+  const root = el('div', { class: c.root }, el('i', { class: `${c.icon} ${ICONS[tone]}`, 'aria-hidden': 'true' }), body);
+  if (dismissible) root.append(el('button', { class: c.close, type: 'button', 'aria-label': 'Dismiss' }, el('i', { class: 'ph-bold ph-x', 'aria-hidden': 'true' })));
+  return root;
+}
+
+mountSpecimen({ sections: [
+  section('Tones', ['info', 'success', 'warning', 'danger', 'neutral'].map((tone) =>
+    alert({ tone, title: `${tone[0].toUpperCase()}${tone.slice(1)} title`, message: 'One sentence saying what happened and what to do about it.' })), { stack: true }),
+  section('With an action, dismissible', [
+    alert({ tone: 'danger', title: 'Sync failed', message: 'Three records could not be written.', actionLabel: 'Retry', dismissible: true }),
+  ], { stack: true }),
+  section('No title -- the message sits flush against the top, with no separating margin', [
+    alert({ tone: 'neutral', message: 'A titleless alert carries no top margin on its message.' }),
+  ], { stack: true }),
+]});
+</script></body></html>

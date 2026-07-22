@@ -1,0 +1,56 @@
+<!-- @dsCard group="Tailwind" viewport="760x179" name="Pagination" subtitle="Pages and ellipsis, rendered from Pagination.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Pagination.manifest.json')).json();
+const c = classesFor(manifest);
+
+/* The same page list React computes: first, last, the current page and its
+   neighbours, with an ellipsis wherever the run breaks. */
+function pages(current, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const out = [1];
+  const from = Math.max(2, current - 1);
+  const to = Math.min(total - 1, current + 1);
+  if (from > 2) out.push('…');
+  for (let p = from; p <= to; p++) out.push(p);
+  if (to < total - 1) out.push('…');
+  out.push(total);
+  return out;
+}
+
+/* disabled is a real HTML attribute here, so the manifest's `disabled:` state
+   modifier on `nav` (see Pagination.manifest.json) drives the dimmed color and
+   the not-allowed cursor on its own — no separate disabled class to stack and
+   no ordering to reason about. */
+function arrow(direction, disabled) {
+  return el('button', {
+    class: c.nav, type: 'button',
+    'aria-label': direction < 0 ? 'Previous' : 'Next', disabled: disabled || undefined,
+  }, el('i', { class: direction < 0 ? 'ph-bold ph-caret-left' : 'ph-bold ph-caret-right', 'aria-hidden': 'true' }));
+}
+
+function pagination(current, total) {
+  const nav = el('nav', { class: c.root, 'aria-label': 'Pagination' }, arrow(-1, current <= 1));
+  for (const page of pages(current, total)) {
+    if (page === '…') { nav.append(el('span', { class: c.ellipsis, text: '…' })); continue; }
+    const isCurrent = page === current;
+    nav.append(el('button', {
+      class: `${c.page} ${isCurrent ? c.pageCurrent : c.pageOther}`, type: 'button',
+      'aria-current': isCurrent ? 'page' : undefined, text: String(page),
+    }));
+  }
+  nav.append(arrow(1, current >= total));
+  return nav;
+}
+
+mountSpecimen({ sections: [
+  section('Short — every page shown', [pagination(3, 5)]),
+  section('Long — with ellipsis, and the first page disabled', [pagination(1, 24), pagination(12, 24)]),
+]});
+</script></body></html>

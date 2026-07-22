@@ -1,0 +1,134 @@
+/* frameworks/tailwind/animations.css
+   Keyframes and the utility that rides them. Imported by theme.css, so
+   `bun run build:tailwind` compiles them into utilities.css with everything
+   else and a manifest reaches them by name.
+
+   This is the Tailwind layer's version of a boundary React already has: an
+   inline style object cannot express @keyframes, so React injects a <style>
+   once per component; a manifest cannot express them either, so they are
+   authored here rather than smuggled into a bracket. Every value below is a
+   var() into a token, the durations included: plan 4.5 named them in the
+   --loop-* family precisely because a loop is not a transition, so nothing here
+   restates a number React also states.
+
+   Reduced motion is answered per animation, on the terms the motion sets: the
+   shimmer is decorative, so it stops outright; ProgressBar's indeterminate
+   sweep reports work in progress, so it slows rather than stops — a frozen
+   indicator reads as a hung process; Dialog and Menu are entrances, so they
+   keep the fade and drop the travel, redefining their keyframes inside the
+   media query rather than disabling the animation; Tooltip animates opacity
+   only and carries no reduced-motion clause at all — there is no motion to
+   reduce; and the two spinners, Button's and the standalone one, report work in
+   progress like the progress sweep does, so they slow to --loop-reduced rather
+   than freezing. That is all seven, and this list is the normative one: the
+   Tailwind README points here rather than restating it. */
+
+@keyframes arena-shimmer {
+  0% { background-position: -140% 0; }
+  100% { background-position: 140% 0; }
+}
+
+@utility arena-shimmer {
+  background-image: linear-gradient(100deg, var(--color-base-200) 30%, var(--color-base-300) 50%, var(--color-base-200) 70%);
+  background-size: 220% 100%;
+  animation: arena-shimmer var(--loop-shimmer) var(--ease-in-out) infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background-image: none;
+    background-color: var(--color-base-200);
+  }
+}
+
+@keyframes arena-pop {
+  from { opacity: 0; transform: translateY(var(--sp-2)) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes arena-menu {
+  from { opacity: 0; transform: translateY(calc(var(--sp-1) * -1)); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes arena-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes arena-prog {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+
+/* An entrance keeps its fade and drops its travel under reduced motion — so the
+   keyframes are redefined rather than the animation disabled, which is why
+   neither of these needs a selector of its own. */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes arena-pop { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes arena-menu { from { opacity: 0; } to { opacity: 1; } }
+}
+
+@utility arena-pop {
+  animation: arena-pop var(--dur-mid) var(--ease-emphatic);
+}
+
+@utility arena-menu {
+  animation: arena-menu var(--dur-fast) var(--ease-out);
+}
+
+/* Opacity only — no reduced-motion clause on purpose. */
+@utility arena-fade {
+  animation: arena-fade var(--dur-fast) var(--ease-out);
+}
+
+/* The indeterminate sweep is a pseudo-element, which is the one thing an inline
+   style genuinely cannot reach — the same reason ProgressBar.jsx injects a class
+   rather than keeping its animation inline. Slows under reduced motion; a frozen
+   progress bar reads as a hung process. */
+@utility arena-prog-indeterminate {
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 40%;
+    border-radius: inherit;
+    background: currentColor;
+    animation: arena-prog var(--loop-sweep) var(--ease-in-out) infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::after { animation-duration: var(--loop-reduced); }
+  }
+}
+
+@keyframes arena-btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Reports work in progress, so it slows rather than stopping. */
+@utility arena-btn-spin {
+  animation: arena-btn-spin var(--loop-spin) linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-duration: var(--loop-reduced);
+  }
+}
+
+/* Byte-identical to arena-btn-spin above, and deliberately not merged with it:
+   Button's inline spinner and the standalone Spinner are two components, and
+   one utility shared between them makes a change to either a change to both.
+   What they do share is --loop-spin, which is the level at which "these two
+   spin at the same speed" is meant to be stated. */
+@keyframes arena-spinner {
+  to { transform: rotate(360deg); }
+}
+
+/* Reports work in progress, so it slows rather than stopping. */
+@utility arena-spinner {
+  animation: arena-spinner var(--loop-spin) linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-duration: var(--loop-reduced);
+  }
+}

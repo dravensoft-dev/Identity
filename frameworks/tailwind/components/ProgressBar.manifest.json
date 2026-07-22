@@ -1,0 +1,27 @@
+{
+  "component": "ProgressBar",
+  "slots": {
+    "root": "w-full",
+    "head": "flex items-baseline justify-between gap-3 mb-2",
+    "label": "font-body text-ctl-md text-base-content/82",
+    "value": "font-mono text-ctl-sm text-base-content/62",
+    "track": "relative rounded-pill bg-base-300 overflow-hidden",
+    "fill": "absolute inset-0 bg-current rounded-[inherit] transition-[width] duration-[var(--dur-mid)] ease-out",
+    "indeterminate": "arena-prog-indeterminate"
+  },
+  "variants": {
+    "tone": {
+      "accent": { "track": "text-primary" },
+      "gold": { "track": "text-secondary" },
+      "success": { "track": "text-success" },
+      "danger": { "track": "text-error" },
+      "info": { "track": "text-info" }
+    },
+    "size": {
+      "sm": { "track": "h-1" },
+      "md": { "track": "h-1.5" },
+      "lg": { "track": "h-2.5" }
+    }
+  },
+  "defaultVariants": { "tone": "accent", "size": "md" }
+}

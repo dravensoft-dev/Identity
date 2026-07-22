@@ -1,0 +1,37 @@
+<!-- @dsCard group="Angular" viewport="760x215" name="BulkActionBar" subtitle="Selection actions, rendered from BulkActionBar.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./BulkActionBar.manifest.json')).json();
+const base = classesFor(manifest, { open: true });
+
+function bar(count, noun, actions) {
+  const list = el('div', { class: base.actions });
+  for (const action of actions) {
+    const c = classesFor(manifest, { destructive: !!action.destructive });
+    const button = el('button', { class: c.action, type: 'button' });
+    if (action.icon) button.append(el('span', { class: base.actionIcon }, el('i', { class: action.icon, 'aria-hidden': 'true' })));
+    button.append(action.label);
+    list.append(button);
+  }
+  return el('div', { class: base.root, role: 'region', 'aria-label': 'Actions on the selection' },
+    el('span', { class: base.count }, el('b', { class: base.number, text: String(count) }), ` ${noun} selected`),
+    el('span', { class: base.divider }),
+    list,
+    el('button', { class: base.clear, type: 'button', text: 'Clear' }));
+}
+
+mountSpecimen({ sections: [
+  section('With a destructive action', [bar(12, 'deployments', [
+    { label: 'Re-run', icon: 'ph-bold ph-arrow-clockwise' },
+    { label: 'Archive', icon: 'ph-bold ph-archive' },
+    { label: 'Delete', icon: 'ph-bold ph-trash', destructive: true },
+  ])], { stack: true }),
+  section('Single selection', [bar(1, 'project', [{ label: 'Export', icon: 'ph-bold ph-download-simple' }])], { stack: true }),
+]});
+</script></body></html>

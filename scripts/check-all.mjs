@@ -4,12 +4,14 @@
  * inherited, not buffered), and a pass/fail summary prints once every step
  * has finished. Exit 1 if any step failed, 0 if all passed.
  *
- * Ten steps total: the nine gates in GATES below, plus the test suite.
+ * Seventeen steps total: the sixteen gates in GATES below, plus the test suite.
  *
- * One gate can report a third status. check:cards needs a headless browser,
- * which is the one thing here that is not portable; where there is none it
- * exits 2 and this runner marks it SKIP and calls the whole run INCOMPLETE,
- * so a missing browser can never be mistaken for a clean tree.
+ * Three gates can report a third status. check:cards needs a headless
+ * browser, and check:vendor and check:demos each need a Bun-only builder
+ * (Bun.build, Bun.Transpiler) that plain node has no equivalent for; where
+ * any of the three is missing it exits 2 and this runner marks it SKIP and
+ * calls the whole run INCOMPLETE, so a missing dependency can never be
+ * mistaken for a clean tree.
  *
  * Every gate is spawned as `process.execPath <script>.mjs`, exactly how
  * scripts/lib/tailwind-compile.mjs spawns the Tailwind CLI, so the runner
@@ -41,11 +43,18 @@ export const GATES = [
   { name: 'check:tokens', file: 'check-tokens-generated.mjs' },
   { name: 'check:ramp', file: 'check-ramp.mjs' },
   { name: 'check:tailwind', file: 'check-tailwind.mjs' },
+  { name: 'check:tailwind-generated', file: 'check-tailwind-generated.mjs' },
   { name: 'check:coverage', file: 'check-tailwind-coverage.mjs' },
+  { name: 'check:radius', file: 'check-radius-tokens.mjs' },
   { name: 'check:arbitrary', file: 'check-arbitrary-values.mjs' },
   { name: 'check:dimensions', file: 'check-dimension-literals.mjs' },
+  { name: 'check:states', file: 'check-manifest-states.mjs' },
   { name: 'check:fonts', file: 'check-fonts-generated.mjs' },
+  { name: 'check:vendor', file: 'check-vendor-generated.mjs' },
+  { name: 'check:demos', file: 'check-demos-generated.mjs' },
   { name: 'check:cards', file: 'check-card-viewports.mjs' },
+  { name: 'check:angular', file: 'check-angular.mjs' },
+  { name: 'check:material', file: 'check-material.mjs' },
 ];
 
 /** The test-suite step for the runtime this process is executing under.

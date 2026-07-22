@@ -1,0 +1,39 @@
+<!-- @dsCard group="Angular" viewport="820x437" name="PageHead" subtitle="Wide and narrow layouts, rendered from PageHead.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./PageHead.manifest.json')).json();
+
+/* Both branches are rendered side by side rather than resized, because a specimen
+   showing one layout at a time cannot show that the branch exists. */
+function head({ title, subtitle, actions, narrow, width }) {
+  const c = classesFor(manifest, { narrow });
+  const box = el('div', { class: c.root });
+  box.style.width = width;
+  const titles = el('div', { class: c.titles }, el('h1', { class: c.title, text: title }));
+  if (subtitle) titles.append(el('p', { class: c.subtitle, text: subtitle }));
+  box.append(titles);
+  /* Stands in for the projected mat-buttons; the manifest styles the slot, not the
+     buttons. Rendered only where actions were actually given, the same gate the
+     component applies with contentChild(ArenaActions). */
+  if (actions) {
+    box.append(el('div', { class: c.actions },
+      el('span', { class: 'font-body text-ctl text-base-content/82', text: '[ Export ]' }),
+      el('span', { class: 'font-body text-ctl text-primary', text: '[ New deployment ]' })));
+  }
+  return box;
+}
+
+const full = { title: 'Deployments', subtitle: 'Everything shipped in the last 30 days', actions: true };
+
+mountSpecimen({ sections: [
+  section('Wide — row, actions right', [head({ ...full, narrow: false, width: '640px' })]),
+  section('Below --bp-sm — stacked, actions full width', [head({ ...full, narrow: true, width: '360px' })]),
+  section('No subtitle, no actions — the actions wrapper is not rendered', [head({ title: 'Settings', narrow: false, width: '640px' })]),
+]});
+</script></body></html>

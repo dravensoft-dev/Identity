@@ -1,0 +1,29 @@
+<!-- @dsCard group="Angular" viewport="600x120" name="ThemeToggle" subtitle="Dark and light states, rendered from ThemeToggle.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./ThemeToggle.manifest.json')).json();
+const c = classesFor(manifest);
+
+/* The specimen toggles the real class on <html>, so the button below is also the
+   control for the rest of the page — which is the fastest way to check a manifest
+   in both themes. */
+function toggle() {
+  const icon = el('i', { class: `${c.icon} ph-bold ph-sun`, 'aria-hidden': 'true' });
+  const button = el('button', { class: c.root, type: 'button', 'aria-pressed': 'true', 'aria-label': 'Switch to light theme' }, icon);
+  button.addEventListener('click', () => {
+    const light = document.documentElement.classList.toggle('arena-light');
+    icon.setAttribute('class', `${c.icon} ph-bold ${light ? 'ph-moon' : 'ph-sun'}`);
+    button.setAttribute('aria-pressed', String(!light));
+    button.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
+  });
+  return button;
+}
+
+mountSpecimen({ sections: [section('Click it — the page follows', [toggle()])]});
+</script></body></html>

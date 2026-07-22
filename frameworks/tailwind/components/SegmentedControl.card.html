@@ -1,0 +1,28 @@
+<!-- @dsCard group="Tailwind" viewport="760x193" name="SegmentedControl" subtitle="A filter, not tabs — rendered from SegmentedControl.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./SegmentedControl.manifest.json')).json();
+
+function control({ options, value, size = 'md', ariaLabel }) {
+  const name = 'sc-' + Math.random().toString(36).slice(2, 7);
+  const track = el('div', { class: classesFor(manifest, { size }).track, role: 'radiogroup', 'aria-label': ariaLabel });
+  for (const option of options) {
+    const on = option === value;
+    const c = classesFor(manifest, { size, selected: String(on) });
+    const input = el('input', { type: 'radio', name, class: c.input, checked: on || undefined });
+    track.append(el('label', { class: c.segment }, option, input));
+  }
+  return track;
+}
+
+mountSpecimen({ sections: [
+  section('Medium', [control({ options: ['All', 'Running', 'Failed'], value: 'Running', ariaLabel: 'Filter by status' })]),
+  section('Small', [control({ options: ['24h', '7d', '30d', '90d'], value: '7d', size: 'sm', ariaLabel: 'Filter by time range' })]),
+]});
+</script></body></html>

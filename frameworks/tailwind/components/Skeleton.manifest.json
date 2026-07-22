@@ -1,0 +1,18 @@
+{
+  "component": "Skeleton",
+  "slots": {
+    "root": "block arena-shimmer",
+    "stack": "flex flex-col gap-2.5 w-full",
+    "line": "arena-shimmer h-3 rounded-xs w-full",
+    "lastLine": "arena-shimmer h-3 rounded-xs w-[62%]"
+  },
+  "variants": {
+    "variant": {
+      "text": {},
+      "line": { "root": "h-3 w-full rounded-xs" },
+      "block": { "root": "h-24 w-full rounded-sm" },
+      "circle": { "root": "size-10 rounded-pill" }
+    }
+  },
+  "defaultVariants": { "variant": "block" }
+}

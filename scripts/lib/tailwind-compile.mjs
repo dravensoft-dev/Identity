@@ -53,15 +53,20 @@ export function escapeClass(cls) {
  *  the whole repository for class-shaped strings, so the compiled CSS — and
  *  every gate reading it — would depend on unrelated text anywhere in the
  *  tree instead of on the preset and the manifests alone.
+ *  `extra`, when given, registers one more glob as content — used by
+ *  scripts/tailwind-vocabulary.test.mjs to compile a throwaway manifest
+ *  without writing it into the repository.
  *  @param {string} preset absolute path to the preset CSS
  *  @param {string} components absolute path to the manifests directory
+ *  @param {string} [extra] absolute glob of additional content
  *  @returns {string} */
-export function entryStylesheet(preset, components) {
-  return `@import '${preset}' source(none);\n@source '${components}/*.manifest.json';\n`;
+export function entryStylesheet(preset, components, extra) {
+  return `@import '${preset}' source(none);\n@source '${components}/*.manifest.json';\n`
+    + (extra ? `@source '${extra}';\n` : '');
 }
 
 /** Compile the preset together with every component manifest as content.
- *  @param {{root?: string}} [opts]
+ *  @param {{root?: string, extraSource?: string}} [opts]
  *  @returns {{css: string, manifests: Map<string, object>}} */
 export function compileLayer(opts = {}) {
   const root = opts.root ?? repoRoot;
@@ -73,7 +78,7 @@ export function compileLayer(opts = {}) {
   for (const f of readdirSync(components).filter((f) => f.endsWith('.manifest.json')).sort())
     manifests.set(f, JSON.parse(readFileSync(join(components, f), 'utf8')));
 
-  const entry = entryStylesheet(preset, components);
+  const entry = entryStylesheet(preset, components, opts.extraSource);
   const dir = mkdtempSync(join(tmpdir(), 'arena-tw-'));
   const out = join(dir, 'out.css');
   try {

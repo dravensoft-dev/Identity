@@ -1,54 +1,8 @@
 <!-- @dsCard group="Components" viewport="700x640" name="Navigation" subtitle="Tabs · SegmentedControl · SideNav · PageHead · Breadcrumbs · BulkActionBar" -->
-<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../../../styles.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../../../styles.css"><link rel="stylesheet" href="../../../../node_modules/@phosphor-icons/web/src/bold/style.css">
 <style>body{margin:0;background:var(--bg);color:var(--text-strong);font-family:var(--font-body);padding:var(--sp-6)}.row{display:flex;flex-wrap:wrap;gap:calc(var(--sp-1) * 3.5);align-items:center;margin-bottom:var(--sp-4)}.sub{font-family:var(--font-mono);font-size:var(--dz-text-2xs);letter-spacing:var(--ls-label);line-height:var(--lh-snug);color:var(--mute);text-transform:uppercase;width:100%;margin-bottom:var(--sp-1)}</style>
 <script type="importmap">
-{"imports":{"react":"https://esm.sh/react@18","react/jsx-runtime":"https://esm.sh/react@18/jsx-runtime","react-dom/client":"https://esm.sh/react-dom@18/client"}}
+{"imports":{"react":"../../../../frameworks/react/vendor/react.js","react/jsx-runtime":"../../../../frameworks/react/vendor/react-jsx-runtime.js","react-dom/client":"../../../../frameworks/react/vendor/react-dom-client.js"}}
 </script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="../../../../jsx-loader.js"></script></head><body><div id="root"></div>
-<script type="text/babel" data-type="module" data-presets="react">
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-const { Tabs } = await arenaImport('../../components/navigation/Tabs.jsx');
-const { SegmentedControl } = await arenaImport('../../components/navigation/SegmentedControl.jsx');
-const { PageHead } = await arenaImport('../../components/navigation/PageHead.jsx');
-const { Breadcrumbs } = await arenaImport('../../components/navigation/Breadcrumbs.jsx');
-const { SideNav } = await arenaImport('../../components/navigation/SideNav.jsx');
-const { BulkActionBar } = await arenaImport('../../components/navigation/BulkActionBar.jsx');
-const { Button } = await arenaImport('../../components/forms/Button.jsx');
-function Demo(){const[v,setV]=React.useState('Overview');const[range,setRange]=React.useState('7d');const[sel,setSel]=React.useState(3);return(<div>
-  <Tabs tabs={['Overview','Deployments','Activity','Settings']} value={v} onChange={setV}/>
-  <div className="row" style={{marginTop:14}}>
-    <div className="sub">SegmentedControl — filters inside the tab, never navigates</div>
-    <SegmentedControl ariaLabel="Time range" options={['24h','7d','30d']} value={range} onChange={setRange}/>
-    <span style={{color:'var(--mute)',fontFamily:'var(--font-mono)',fontSize:12}}>Active view: <span style={{color:'var(--gold)'}}>{v}</span> · Range: <span style={{color:'var(--gold)'}}>{range}</span></span>
-  </div>
-  <div className="sub">Breadcrumbs — the last item is the current location</div>
-  <div className="row">
-    <Breadcrumbs items={[{label:'Projects',href:'#'},{label:'Client Portal',href:'#'},{label:'Deployments'}]} />
-  </div>
-  <div className="sub">SideNav — anchors navigate, the active item is aria-current</div>
-  <div className="row" style={{width:'var(--layout-sidebar)'}}>
-    <SideNav ariaLabel="Primary" active="deploys" style={{width:'100%'}}
-      items={[
-        {id:'dashboard',icon:<i className="ph-bold ph-squares-four"/>,label:'Projects',href:'#projects'},
-        {id:'deploys',icon:<i className="ph-bold ph-rocket-launch"/>,label:'Deployments',href:'#deploys'},
-        {id:'settings',icon:<i className="ph-bold ph-gear-six"/>,label:'Settings'},
-      ]} />
-  </div>
-  <div className="sub">PageHead</div>
-  <PageHead title="Client Portal" subtitle="Last published 2 h ago · build #4821"
-    actions={<><Button variant="secondary" size="sm">View logs</Button><Button variant="primary" size="sm">Deploy</Button></>} />
-  <div className="sub">BulkActionBar — destructive stays outline, never filled</div>
-  <div className="row">
-    <BulkActionBar count={sel} noun="deployments" onClear={()=>setSel(0)} style={{width:'100%'}}
-      actions={[
-        {label:'Re-run',icon:<i className="ph-bold ph-arrow-clockwise"/>,onClick:()=>{}},
-        {label:'Archive',icon:<i className="ph-bold ph-archive"/>,onClick:()=>{}},
-        {label:'Delete',icon:<i className="ph-bold ph-trash"/>,onClick:()=>{},destructive:true},
-      ]} />
-    {sel===0 && <button onClick={()=>setSel(3)} style={{background:'none',border:'1px solid var(--color-base-300)',borderRadius:'var(--r-sm)',color:'var(--mute)',cursor:'pointer',fontFamily:'var(--font-mono)',fontSize:11,letterSpacing:'.1em',textTransform:'uppercase',padding:'8px 12px'}}>Restore selection</button>}
-  </div>
-</div>);}
-createRoot(document.getElementById('root')).render(<Demo/>);
-</script></body></html>
+</head><body><div id="root"></div>
+<script type="module" src="navigation.card.entry.js"></script></body></html>

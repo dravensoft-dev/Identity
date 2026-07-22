@@ -1,0 +1,31 @@
+<!-- @dsCard group="Angular" viewport="700x263" name="Skeleton" subtitle="Loading placeholders, rendered from Skeleton.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Skeleton.manifest.json')).json();
+
+function single(variant) {
+  const c = classesFor(manifest, { variant });
+  const box = el('div', { class: c.root });
+  box.style.width = variant === 'circle' ? '' : '160px';
+  return box;
+}
+
+function stacked(lines) {
+  const c = classesFor(manifest, { variant: 'text' });
+  const stack = el('div', { class: c.stack });
+  stack.style.width = '220px';
+  for (let i = 1; i <= lines; i++) stack.append(el('div', { class: i === lines ? c.lastLine : c.line }));
+  return stack;
+}
+
+mountSpecimen({ sections: [
+  section('Single shapes', ['line', 'block', 'circle'].map(single)),
+  section('Text, three lines', [stacked(3)]),
+]});
+</script></body></html>

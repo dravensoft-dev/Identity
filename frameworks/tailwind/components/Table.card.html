@@ -1,0 +1,65 @@
+<!-- @dsCard group="Tailwind" viewport="860x855" name="Table" subtitle="Both layouts, rendered from Table.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Table.manifest.json')).json();
+const c = classesFor(manifest);
+
+const COLUMNS = [
+  { key: 'project', header: 'Project' },
+  { key: 'commit', header: 'Commit', mono: true },
+  { key: 'status', header: 'Status' },
+];
+const ROWS = [
+  { project: 'Client portal', commit: '4f2a1c9', status: 'Live' },
+  { project: 'Billing service', commit: '9db3e07', status: 'Rolling out' },
+  { project: 'Auth service', commit: 'c1e8a44', status: 'Failed' },
+];
+
+function wide() {
+  const head = el('tr', { class: c.headRow });
+  for (const column of COLUMNS) head.append(el('th', { class: c.th, text: column.header }));
+  const body = el('tbody');
+  for (const row of ROWS) {
+    const tr = el('tr', { class: `${c.row} ${c.rowInteractive}` });
+    for (const column of COLUMNS) {
+      tr.append(el('td', { class: column.mono ? c.tdMono : c.td, text: row[column.key] }));
+    }
+    body.append(tr);
+  }
+  const table = el('table', { class: c.table }, el('thead', {}, head), body);
+  return el('div', { class: c.frame }, table);
+}
+
+function cards() {
+  const list = el('div', { class: c.cards });
+  for (const row of ROWS) {
+    const card = el('div', { class: c.card });
+    for (const column of COLUMNS) {
+      card.append(el('div', { class: c.cardRow },
+        el('span', { class: c.cardLabel, text: column.header }),
+        el('span', { class: column.mono ? c.cardValueMono : c.cardValue, text: row[column.key] })));
+    }
+    list.append(card);
+  }
+  return list;
+}
+
+function emptyTable() {
+  const head = el('tr', { class: c.headRow });
+  for (const column of COLUMNS) head.append(el('th', { class: c.th, text: column.header }));
+  const cell = el('td', { class: c.empty, colspan: COLUMNS.length, text: 'No deployments in this range.' });
+  return el('div', { class: c.frame }, el('table', { class: c.table }, el('thead', {}, head), el('tbody', {}, el('tr', {}, cell))));
+}
+
+mountSpecimen({ sections: [
+  section('Wide layout', [wide()], { stack: true }),
+  section('Card layout — what the consumer renders below --bp-md, measured on the container, never a media query', [cards()], { stack: true }),
+  section('Empty', [emptyTable()], { stack: true }),
+]});
+</script></body></html>

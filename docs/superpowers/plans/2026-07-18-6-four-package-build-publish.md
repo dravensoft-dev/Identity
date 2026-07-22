@@ -91,10 +91,12 @@ The four-package spec is **blocked on framework-layer coverage**, and the user h
 chosen **option 3: full component parity in Angular and Tailwind before anything
 is published**. That is two workstreams that are *not* in this plan:
 
-- `docs/superpowers/specs/2026-07-18-3-framework-layer-token-coverage-design.md` —
-  needs its own plan.
-- Growing Angular and Tailwind from 1 component each to parity with React — needs a
-  spec and a plan. The target moved since this line was written: React was 40
+- Framework-layer token coverage — that spec and plan were executed and have since
+  been deleted; `check:coverage` is what carries the result forward.
+- Growing Angular and Tailwind from 1 component each to parity with React — **both are
+  now done**: plan 5a shipped 21 Angular primitives and plan 5b shipped 39 Tailwind
+  manifests, so this plan's remaining prerequisite is met. The target moved since this
+  line was written: React was 40
   components, then spec 4.75 (approved in design, executed after this plan's text)
   added `AppLogo`, `SideNav`, `ActivityFeed` and `UnauthCard`, raising it to 44. Plans
   5a and 5b's own counts (21 primitives, 21 orphan manifests) already reflect that;

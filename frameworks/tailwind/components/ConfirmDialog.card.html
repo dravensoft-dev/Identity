@@ -1,0 +1,43 @@
+<!-- @dsCard group="Angular" viewport="760x649" name="ConfirmDialog" subtitle="The one filled danger surface, rendered from ConfirmDialog.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./ConfirmDialog.manifest.json')).json();
+
+/* The root slot is `fixed`, which a side-by-side specimen cannot show twice
+   -- so the first two sections render the panel alone, using only the slots
+   below root. The third section renders root itself, open: true, so the
+   scrim, the blur and the open variant this whole primitive host-binds are
+   actually visible somewhere in the only visual artifact of this component. */
+function panel({ destructive, invalid, title, eyebrow, body, confirmLabel, requireText }) {
+  const c = classesFor(manifest, { destructive: String(destructive), invalid: String(invalid) });
+  const head = el('div', { class: c.head }, el('div', { class: c.eyebrow, text: eyebrow }), el('div', { class: c.title, text: title }));
+  const content = el('div', { class: c.body }, body);
+  if (requireText) {
+    content.append(el('div', { class: c.requireBlock },
+      el('div', { class: c.requireLabel, text: `Type "${requireText}" to confirm` }),
+      el('input', { class: c.input, value: invalid ? 'Ardenne' : '' })));
+  }
+  const foot = el('div', { class: c.foot },
+    el('button', { class: c.cancel, type: 'button', text: 'Cancel' }),
+    el('button', { class: c.confirm, type: 'button', text: confirmLabel }));
+  return el('div', { class: c.panel }, head, content, foot);
+}
+
+function overlay() {
+  const c = classesFor(manifest, { open: 'true' });
+  return el('div', { class: c.root },
+    panel({ destructive: true, invalid: false, eyebrow: 'Irreversible', title: 'Delete project Ardennes?', body: 'Every deployment, log and artifact under this project is removed.', confirmLabel: 'Delete project', requireText: 'Ardennes' }));
+}
+
+mountSpecimen({ sections: [
+  section('Routine confirmation', [panel({ destructive: false, invalid: false, eyebrow: 'Confirm', title: 'Publish release 4.1.0?', body: 'The tag is created and the marketplace entry updates immediately.', confirmLabel: 'Publish' })]),
+  section('Destructive, with a typed confirmation', [panel({ destructive: true, invalid: true, eyebrow: 'Irreversible', title: 'Delete project Ardennes?', body: 'Every deployment, log and artifact under this project is removed.', confirmLabel: 'Delete project', requireText: 'Ardennes' })]),
+  section('The root slot: the fixed, blurred scrim, open', [overlay()]),
+]});
+</script></body></html>
