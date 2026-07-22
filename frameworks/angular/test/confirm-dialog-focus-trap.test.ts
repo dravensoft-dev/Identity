@@ -10,9 +10,13 @@
  *
  * This does NOT render `<arena-confirm-dialog>` through TestBed. Probed by
  * hand before writing this file: `[open]="true"` on the component and
- * `fixture.componentRef.setInput('open', true)` both throw NG0303 ("Can't
- * bind to 'open' since it isn't a known property") under this repo's test
- * toolchain -- confirmed with a throwaway host component and deleted after.
+ * `fixture.componentRef.setInput('open', true)` are both unusable under this
+ * repo's test toolchain, but NOT in the same way, and the difference is the
+ * dangerous part: the template binding throws NG0303 ("Can't bind to 'open'
+ * since it isn't a known property"), while `setInput` logs NG0303 and then
+ * SILENTLY NO-OPS, leaving the render on its default. A throw announces
+ * itself; a silent no-op lets a suite pass vacuously against default data.
+ * Re-probed with a throwaway host component and deleted after.
  * host-class-binding.test.ts's own header comment documents the same root
  * cause for Skeleton's `variant="text"`: this harness runs `bun`'s TypeScript
  * stripping plus `@angular/compiler`'s runtime JIT, never `ngtsc`, and only

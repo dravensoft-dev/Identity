@@ -92,9 +92,13 @@ import { unauthCardStyles } from '../primitives/unauth-card/unauth-card.variants
  * discovers a class's `input()` fields and registers them into `ɵcmp.inputs`.
  * Without that transform a signal input is invisible to both template
  * property binding (`[lines]="3"` fails NG0303, "not a known property") and
- * `ComponentRef.setInput()` (same NG0303) -- confirmed with an isolated
- * throwaway component before this was written, so it is a property of the
- * harness, not of Skeleton, Tag or Avatar. `variant="text"` therefore cannot
+ * `ComponentRef.setInput()` -- but they fail differently, and the second is
+ * the one to watch: the binding THROWS NG0303, while `setInput` logs NG0303
+ * and then silently no-ops, leaving the component on its default. A throw
+ * announces itself; a silent no-op lets a suite pass vacuously against
+ * defaults it never changed. Confirmed with an isolated throwaway component
+ * before this was written, so it is a property of the harness, not of
+ * Skeleton, Tag or Avatar. `variant="text"` therefore cannot
  * be driven through a bound TestBed template here; only literal defaults
  * render. skeleton-variants.test.ts covers every variant's class output
  * against the plain-TypeScript recipe instead, which this limitation does
