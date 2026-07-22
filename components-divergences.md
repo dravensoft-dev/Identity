@@ -956,10 +956,11 @@ the `size-*` idiom `ActivityFeed`'s own `size-2` and the rest of the layer alrea
 the two square-dot slots stop minting one duplicate rule in `utilities.css` for the same
 6×6 box. The rendered box is unchanged.)
 
-**Checked against "danger is outline" on purpose:** the ledger's rule (`docs/superpowers/
-plans/2026-07-18-5a-angular-primitive-parity.md`'s token→utility table) is explicit that
-`Avatar`'s presence dot is "the only place in the ledger a filled `bg-error` is correct,"
-which reads as if it names one component. It does not scope that narrowly — README's own
+**Checked against "danger is outline" on purpose:** plan 5a's token→utility ledger — since
+deleted with the executed plans, and recorded here because this was its only load-bearing
+claim outside it — was explicit that `Avatar`'s presence dot is "the only place in the
+ledger a filled `bg-error` is correct," which reads as if it names one component. It does
+not scope that narrowly — README's own
 danger section states the reasoning generally: "'Danger is outline' governs controls and
 surfaces, not presence... An outline dot at that size would not read at all." A tone dot
 identifying what KIND of event a feed row is (a status taxonomy, exactly like a chart's

@@ -1,10 +1,12 @@
-/* Every utility class the manifests in plans 5a/5b rely on, compiled for real.
+/* Every utility class the manifests rely on, compiled for real.
  *
- * The ledger in docs/superpowers/plans/2026-07-18-5a-angular-primitive-parity.md
- * claims a mapping from Arena token to Tailwind utility. This asserts the claim
- * against the compiler rather than against the preset's source text: a theme key
- * can exist and still emit nothing (a cleared namespace, a name that shadows a
- * built-in), and that failure is invisible until a specimen renders unstyled.
+ * The Arena token -> Tailwind utility mapping was first written as a ledger in
+ * plan 5a, which has since been deleted along with the other executed plans;
+ * this file is now the mapping's only executable statement. It asserts the
+ * claim against the compiler rather than against the preset's source text: a
+ * theme key can exist and still emit nothing (a cleared namespace, a name that
+ * shadows a built-in), and that failure is invisible until a specimen renders
+ * unstyled.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
