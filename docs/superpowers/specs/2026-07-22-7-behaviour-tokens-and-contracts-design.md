@@ -346,10 +346,13 @@ already carries exactly this and its limits are known.
 Level 3 needs no browser. Angular reuses the existing zoneless `happy-dom` harness, with
 its documented JIT limits — signal inputs cannot be driven through a template binding,
 so the same "factor the logic into plain exported functions" strategy applies.
-**React gets its first render suite in the repo**: `frameworks/react/test/`, using
-`happy-dom` and `react-dom/client`. Both are already devDependencies — `react`/`react-dom`
-because `frameworks/react/vendor/*.js` is built from them, `happy-dom` because Angular
-needs it. The marginal cost is a directory, not a project.
+**React needs a DOM-based harness, which is less than it sounds and less than this spec
+first claimed.** `frameworks/react/test/` already exists with five suites — they assert on
+`renderToStaticMarkup` output, which is enough for structure and conditional branches but
+cannot dispatch an event or hold focus. What is missing is a DOM, not a suite: `happy-dom`
+plus `react-dom/client`, both already devDependencies (`react`/`react-dom` because
+`frameworks/react/vendor/*.js` is built from them, `happy-dom` because Angular needs it).
+The marginal cost is a second harness style inside an existing directory.
 
 `bun run check` goes from **eighteen** gates to twenty — 5.5 already took it from sixteen
 to eighteen — and the set of non-portable gates stays exactly `check:cards`,
@@ -495,7 +498,8 @@ Generated: the behaviour entries appear in `frameworks/react/tokens.generated.js
 duplicated — plus the custom properties in whichever CSS file the dual emission lands in.
 
 **New:** `behaviour/patterns/*.json` (~17 + `none`), one `X.behaviour.json` per
-component per layer, `frameworks/react/test/` (first React render suite),
+component per layer, `frameworks/react/test/` (a DOM-based harness beside the five
+`renderToStaticMarkup` suites already there),
 `frameworks/angular/test/behaviour.test.ts`.
 
 **React:** `Tooltip.jsx`, `Toast.jsx`/`Toast.d.ts`, `CommandPalette.jsx`,
