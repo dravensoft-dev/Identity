@@ -986,8 +986,12 @@ git commit -m "feat(react): a DOM test harness, in its own process so the static
 The core of the plan. `assertPattern` makes one statement per requirement, in both
 directions at once, and that statement is the stale-exception rule.
 
-`dialog-modal` is the anchor the spec names: three components share the contract and the
-cost of being wrong is highest. Two of them are React's (`Dialog`, `ConfirmDialog`).
+`dialog-modal` is the anchor the spec names, and it is the most-shared contract in the
+tree. Re-derived rather than recalled: **five bindings name it** — React's `Dialog`,
+`ConfirmDialog` and `Onboarding`, Angular's `confirm-dialog` and `onboarding` — plus a
+delegated `Dialog` entry for Material. This task covers the first two. `Onboarding` in
+both layers is left for a later pass, and whoever scopes it should know that is two more
+bindings, not one.
 
 **Files:**
 - Create: `frameworks/react/test-dom/assert-pattern.jsx`
