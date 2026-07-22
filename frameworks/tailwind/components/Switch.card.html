@@ -12,7 +12,7 @@ const manifest = await (await fetch('./Switch.manifest.json')).json();
 function toggle({ label, checked = false, disabled = false, confirm = false }) {
   const c = classesFor(manifest, { checked: String(checked), disabled: String(disabled) });
   const text = el('span', { class: c.label }, label);
-  if (confirm) text.append(el('i', { class: `${c.guard} ph-bold ph-shield-check`, title: 'Requires confirmation', 'aria-hidden': 'true' }));
+  if (confirm) text.append(el('i', { class: `${c.guard} ph-bold ph-shield-check`, title: 'Requires confirmation' }));
   const input = el('input', { type: 'checkbox', role: 'switch', class: c.input, checked: checked || undefined, 'aria-checked': String(checked), disabled: disabled || undefined });
   return el('label', { class: c.root }, el('span', { class: c.track }, el('span', { class: c.thumb })), text, input);
 }
