@@ -1,0 +1,17 @@
+{
+  "component": "Select",
+  "slots": {
+    "root": "flex flex-col gap-1.5",
+    "label": "font-mono text-ctl-xs tracking-field-label uppercase text-base-content/62",
+    "wrap": "relative",
+    "field": "appearance-none w-full h-ctl-h pl-3 pr-9 bg-base-300 text-base-content border-[length:var(--bw)] border-base-300 rounded-sm font-body text-ctl cursor-pointer transition-[border-color] duration-[var(--dur-fast)] ease-out focus:border-secondary focus:ring-[length:var(--focus-width)] focus:ring-secondary/16 focus:outline-none",
+    "caret": "absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-base-content/62 text-[length:var(--icon-sm)]"
+  },
+  "variants": {
+    "disabled": {
+      "true": { "root": "opacity-50" },
+      "false": {}
+    }
+  },
+  "defaultVariants": { "disabled": "false" }
+}
