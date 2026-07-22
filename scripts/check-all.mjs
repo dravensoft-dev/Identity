@@ -4,7 +4,7 @@
  * inherited, not buffered), and a pass/fail summary prints once every step
  * has finished. Exit 1 if any step failed, 0 if all passed.
  *
- * The nineteen gates in GATES below, plus the test suite: one more step under
+ * The twenty gates in GATES below, plus the test suite: one more step under
  * node (scripts/ only), two more under bun (the merged framework suites, and
  * frameworks/react/test-dom in a process of its own -- see testStep).
  *
@@ -54,6 +54,7 @@ export const GATES = [
   { name: 'check:dimensions', file: 'check-dimension-literals.mjs' },
   { name: 'check:states', file: 'check-manifest-states.mjs' },
   { name: 'check:behaviour', file: 'check-behaviour.mjs' },
+  { name: 'check:compliance', file: 'check-compliance.mjs' },
   { name: 'check:fonts', file: 'check-fonts-generated.mjs' },
   { name: 'check:vendor', file: 'check-vendor-generated.mjs' },
   { name: 'check:demos', file: 'check-demos-generated.mjs' },
