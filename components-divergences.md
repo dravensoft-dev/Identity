@@ -101,17 +101,30 @@ component is `content-box` — the CSS default — unless it opts in itself. Onl
 'border-box'` locally; every other component, including every other form control, is
 content-box.
 
-**What this means numerically:** a slot that combines an explicit size with a border
-renders a box that is **2×`--bw` (2px) smaller in the Tailwind layer** than the
-content-box React renders at the same nominal size utility — the size utility sets the
-same number either way, but content-box adds the border *outside* it while border-box
-draws the border *inside* it. Verified against the current sources:
+**What this means numerically:** a slot that combines an explicit size with a border, or
+an explicit size with padding, renders a box that is **smaller in the Tailwind layer by
+twice that border's or that padding's width** than the content-box React renders at the
+same nominal size utility — the size utility sets the same number either way, but
+content-box adds the border/padding *outside* it while border-box draws it *inside* it.
+Padding is not a special case of border here; it is the same subtraction, because
+border-box's whole rule is "the declared size is the outer edge, and everything between
+that edge and the content — border and padding alike — is carved out of it, not added
+past it." Verified against the current sources:
 
 | Slot | React (content-box) | Tailwind (border-box) |
 |---|---|---|
 | `Checkbox`'s `box` | 22×22 (`size-5`=20 content + 2×`--bw`=2) | 20×20 (`size-5`, border included) |
 | `Radio`'s `ring` | 22×22 (same derivation) | 20×20 (`size-5`, border included) |
 | `Select`'s `field` height | 42px (`--dz-ctl-h`=40 + 2×`--bw`) | 40px (`h-ctl-h`, border included) |
+| `Switch`'s `track` | 44×26 outer, 40×22 content (`w-10 h-5.5`=40×22 content + 2×`p-0.5`=2 each side; no border) | 40×22 outer, 36×18 content (`w-10 h-5.5 p-0.5`, padding included) |
+
+`Switch` carries no border at all — `p-0.5` alone is enough to reproduce the same
+divergence, which is why the rule above is stated for padding and not just border. The
+same subtraction cascades into the thumb: React's content-box track has 2px slack left
+over inside its content box after centring the 18px thumb vertically (22px content −
+18px thumb), on top of the 2px padding, for a 4px inset from the track's outer edge;
+Tailwind's border-box content box is exactly 18px tall — no slack — so its inset is the
+2px padding alone.
 
 `Input` is the one form control where the two layers agree, and only because
 `Input.jsx:58` opts into `border-box` locally and `Input.manifest.json`'s `field` slot
@@ -898,9 +911,12 @@ variant setting only the *text* colour (`text-error` for danger, etc.) that `cur
 then fills the dot with. The rendered result is the same filled circle React's produces;
 only the mechanism differs — Angular routes every tone through one `bg-current` declaration
 instead of writing a `bg-<tone>` per value, which is `Tag.manifest.json`'s own dot slot
-exactly (`"dot": "h-1.5 w-1.5 rounded-pill bg-current"`, unconditionally rendered by
+exactly (`"dot": "size-1.5 rounded-pill bg-current"`, unconditionally rendered by
 `tag.ts`'s template alongside its projected content) — taken rather than re-derived, per
-this task's own brief.
+this task's own brief. (`Tag`'s dot originally read `h-1.5 w-1.5`; it was brought onto
+the `size-*` idiom `ActivityFeed`'s own `size-2` and the rest of the layer already use, so
+the two square-dot slots stop minting one duplicate rule in `utilities.css` for the same
+6×6 box. The rendered box is unchanged.)
 
 **Checked against "danger is outline" on purpose:** the ledger's rule (`docs/superpowers/
 plans/2026-07-18-5a-angular-primitive-parity.md`'s token→utility table) is explicit that
@@ -940,6 +956,34 @@ consumer writes `style="..."` or any attribute directly on `<arena-unauth-card>`
 same host element the recipe's `root` classes are bound to.
 
 **Converges:** n/a — no behavioural divergence found.
+
+### UnauthCard's `panel` hand-duplicates Card's surface classes
+
+**Not a framework divergence** — both sides of this coupling live in the Tailwind
+layer — but it is exactly the kind of thing that silently drifts if nothing records it,
+which is this file's whole purpose, so it is recorded here rather than nowhere.
+
+`UnauthCard.manifest.json`'s `panel` slot is `bg-base-200 border-[length:var(--bw)]
+border-base-300 rounded-lg overflow-hidden shadow-3 p-5` — the surface classes
+(background, border, radius, overflow) are typed out by hand, and they are the same
+values `Card.manifest.json`'s `root` slot carries (`bg-base-200 border-[length:var(--bw)]
+rounded-lg overflow-hidden`, with `border-base-300` supplied by its `accent: "false"`
+variant). `UnauthCard` predates `Card.manifest.json`; now that `Card` exists, the two
+manifests describe the same surface twice, once each.
+
+**Deliberately not refactored to share one:** `UnauthCard`'s padding split — `panel`
+at `p-5` holding a separate `body` at `p-4` — was already litigated on its own terms and
+is not the same shape as `Card`'s single `body: p-5`, so collapsing `panel` onto `Card`'s
+`root` is not a clean substitution.
+
+**Risk this creates:** no gate compares one manifest to another, so a future change to
+`Card`'s radius, border colour or border width updates `Card.manifest.json` alone —
+`UnauthCard.manifest.json`'s `panel` keeps whatever it had, silently, until someone
+notices the two surfaces no longer match by eye. Check `UnauthCard.manifest.json`'s
+`panel` by hand whenever `Card.manifest.json`'s `root` or its `accent` variant changes.
+
+**Converges:** not planned — the padding split is the reason a shared recipe was
+rejected, not an oversight to fix later.
 
 ### Breadcrumbs — a single `navigate` output replaces a per-item `onClick`
 

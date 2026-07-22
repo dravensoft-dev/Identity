@@ -208,15 +208,21 @@ and put it there instead.
 `utilities.css`'s preflight sets `box-sizing: border-box` on every element (`@layer
 base`). Nothing in `tokens/` or `styles.css` does, so a React component is
 content-box unless it opts in itself — most do not. **A slot that combines an
-explicit size with a border therefore renders a different total box in the two
-layers, by exactly twice the border width**, and that is not a manifest defect
-to chase with a compensating `+2px` or a taller size utility: `size-5` at
+explicit size with a border, or an explicit size with padding, therefore
+renders a different total box in the two layers** — border-box subtracts
+border and padding alike from the declared size, content-box adds both
+outside it, and either one alone produces the same divergence, by exactly
+twice that border's or that padding's width. This is not a manifest defect to
+chase with a compensating `+2px` or a taller size utility: `size-5` at
 `border-[length:var(--bw)]` is a correct, deliberate 20×20 in this layer even
-though React's equivalent, unless it opts into `box-sizing: border-box` itself,
-renders 22×22 for the same nominal size. See `components-divergences.md` →
-"The Tailwind layer is border-box; React is content-box" for the numbers this
-produced in Checkbox's `box`, Radio's `ring` and Select's `field`, and for why
-the fix is documentation, not a value change, in either layer.
+though React's equivalent, unless it opts into `box-sizing: border-box`
+itself, renders 22×22 for the same nominal size — and the same holds for
+`Switch.manifest.json`'s `track` (`w-10 h-5.5 p-0.5`, no border at all: the
+padding alone is what shrinks its content box under border-box). See
+`components-divergences.md` → "The Tailwind layer is border-box; React is
+content-box" for the numbers this produced in Checkbox's `box`, Radio's
+`ring`, Select's `field` and Switch's `track`, and for why the fix is
+documentation, not a value change, in either layer.
 
 **Corollary:** never add a `box-border` class to a manifest slot expecting it to
 change anything — every slot is already border-box from the preflight, so the
