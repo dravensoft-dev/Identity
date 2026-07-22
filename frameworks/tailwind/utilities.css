@@ -865,6 +865,9 @@
   .px-4\.5 {
     padding-inline: calc(var(--spacing) * 4.5);
   }
+  .px-5 {
+    padding-inline: var(--spacing-5);
+  }
   .px-6 {
     padding-inline: var(--spacing-6);
   }
@@ -894,6 +897,9 @@
   }
   .py-14 {
     padding-block: calc(var(--spacing) * 14);
+  }
+  .pt-4\.5 {
+    padding-top: calc(var(--spacing) * 4.5);
   }
   .pt-5\.5 {
     padding-top: calc(var(--spacing) * 5.5);
@@ -1143,6 +1149,10 @@
   }
   .shadow-3 {
     --tw-shadow: var(--shadow-3);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-none {
+    --tw-shadow: 0 0 #0000;
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
   .ring {

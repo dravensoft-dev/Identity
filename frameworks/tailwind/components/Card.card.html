@@ -1,0 +1,34 @@
+<!-- @dsCard group="Tailwind" viewport="800x360" name="Card" subtitle="Surfaces and emphasis, rendered from Card.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Card.manifest.json')).json();
+
+function card({ eyebrow, title, body, accent = false, floating = false }) {
+  const c = classesFor(manifest, { accent: String(accent), floating: String(floating) });
+  const root = el('div', { class: c.root });
+  root.style.width = '240px';
+  if (eyebrow || title) {
+    const head = el('div', { class: c.head }, el('div', {},
+      eyebrow ? el('div', { class: c.eyebrow, text: eyebrow }) : '',
+      title ? el('div', { class: c.title, text: title }) : ''));
+    root.append(head);
+  }
+  root.append(el('div', { class: c.body }, el('span', { class: 'font-body text-md text-base-content/82', text: body })));
+  return root;
+}
+
+mountSpecimen({ sections: [
+  section('Plain, floating, accented', [
+    card({ eyebrow: 'Delivery', title: 'Client portal', body: 'Six deployments this week.' }),
+    card({ eyebrow: 'Delivery', title: 'Billing service', body: 'Two deployments this week.', floating: true }),
+    card({ eyebrow: 'Attention', title: 'Auth service', body: 'Rollback pending review.', accent: true }),
+  ]),
+  section('Body only', [card({ body: 'A card with no header is just a surface — use it for content that names itself.' })]),
+]});
+</script></body></html>
