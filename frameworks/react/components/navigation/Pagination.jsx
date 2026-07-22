@@ -1,14 +1,5 @@
 import React from 'react';
-function pages(current, total) {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const out = [1];
-  const from = Math.max(2, current - 1), to = Math.min(total - 1, current + 1);
-  if (from > 2) out.push('…');
-  for (let p = from; p <= to; p++) out.push(p);
-  if (to < total - 1) out.push('…');
-  out.push(total);
-  return out;
-}
+import { pageWindow } from './pagination-window.js';
 /** Navigation between pages of a large set (tables, lists). Numbers in mono;
  * active page in crimson. For infinite scroll or "load more" don't use Pagination. */
 export function Pagination({ page = 1, pageCount = 1, onChange, style }) {
@@ -24,7 +15,7 @@ export function Pagination({ page = 1, pageCount = 1, onChange, style }) {
   return (
     <nav aria-label="Pagination" style={{ display: 'inline-flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 1.5)', ...style }}>
       {nav(-1, page <= 1)}
-      {pages(page, pageCount).map((p, i) =>
+      {pageWindow(page, pageCount).map((p, i) =>
         p === '…'
           ? <span key={'e' + i} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--mute)', padding: '0 calc(var(--sp-1) * 1)' }}>…</span>
           : (

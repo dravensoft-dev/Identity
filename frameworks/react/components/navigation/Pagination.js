@@ -2,20 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-function pages(current, total) {
-  if (total <= 7)
-    return Array.from({ length: total }, (_, i) => i + 1);
-  const out = [1];
-  const from = Math.max(2, current - 1), to = Math.min(total - 1, current + 1);
-  if (from > 2)
-    out.push("…");
-  for (let p = from;p <= to; p++)
-    out.push(p);
-  if (to < total - 1)
-    out.push("…");
-  out.push(total);
-  return out;
-}
+import { pageWindow } from "./pagination-window.js";
 export function Pagination({ page = 1, pageCount = 1, onChange, style }) {
   const go = (p) => {
     if (p >= 1 && p <= pageCount && p !== page)
@@ -45,7 +32,7 @@ export function Pagination({ page = 1, pageCount = 1, onChange, style }) {
   return React.createElement("nav", {
     "aria-label": "Pagination",
     style: { display: "inline-flex", alignItems: "center", gap: "calc(var(--sp-1) * 1.5)", ...style }
-  }, nav(-1, page <= 1), pages(page, pageCount).map((p, i) => p === "…" ? React.createElement("span", {
+  }, nav(-1, page <= 1), pageWindow(page, pageCount).map((p, i) => p === "…" ? React.createElement("span", {
     key: "e" + i,
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-md)", color: "var(--mute)", padding: "0 calc(var(--sp-1) * 1)" }
   }, "…") : React.createElement("button", {

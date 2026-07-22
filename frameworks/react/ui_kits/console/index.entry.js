@@ -3,6 +3,7 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
+import { dismissDefault, dismissActionable } from "../../tokens.generated.js";
 import { LoginScreen } from "./LoginScreen.js";
 import { DashboardScreen } from "./DashboardScreen.js";
 import { ProjectScreen } from "./ProjectScreen.js";
@@ -14,7 +15,9 @@ function App() {
   const pushToast = (t) => {
     const id = Math.random();
     setToasts((ts) => [...ts, { ...t, id }]);
-    setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)), 4200);
+    if (t.persist)
+      return;
+    setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)), t.action ? dismissActionable : dismissDefault);
   };
   const nav = (id) => {
     if (id === "dashboard") {
@@ -32,7 +35,15 @@ function App() {
     view = React.createElement(ProjectScreen, {
       onNav: nav,
       project,
-      onToast: () => pushToast({ tone: "success", title: "Deployment in progress", message: "build #4822 → production" })
+      onToast: () => {
+        pushToast({ tone: "success", title: "Deployment in progress", message: "build #4822 → production" });
+        pushToast({
+          tone: "neutral",
+          title: "Previous build still serving traffic",
+          message: "build #4821 → production",
+          action: { label: "Undo", onClick: () => {} }
+        });
+      }
     });
   } else {
     view = React.createElement(DashboardScreen, {
@@ -50,6 +61,8 @@ function App() {
     tone: t.tone,
     title: t.title,
     message: t.message,
+    persist: t.persist,
+    action: t.action,
     onClose: () => setToasts((ts) => ts.filter((x) => x.id !== t.id))
   }))));
 }

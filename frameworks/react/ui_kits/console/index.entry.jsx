@@ -1,5 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import { dismissDefault, dismissActionable } from '../../tokens.generated.js';
 import { LoginScreen } from './LoginScreen.jsx';
 import { DashboardScreen } from './DashboardScreen.jsx';
 import { ProjectScreen } from './ProjectScreen.jsx';
@@ -13,7 +14,12 @@ function App(){
   const pushToast = (t) => {
     const id = Math.random();
     setToasts((ts) => [...ts, { ...t, id }]);
-    setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)), 4200);
+    /* A toast carrying a button asks the reader to DECIDE, not only to read, and
+     * gets longer for it (WCAG 2.2.1). `persist` overrides both and never
+     * auto-dismisses -- mandatory in critical states, per README H1. */
+    if (t.persist) return;
+    setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)),
+      t.action ? dismissActionable : dismissDefault);
   };
 
   const nav = (id) => {
@@ -26,7 +32,11 @@ function App(){
     view = <LoginScreen onLogin={() => setScreen('dashboard')} />;
   } else if (screen === 'project') {
     view = <ProjectScreen onNav={nav} project={project}
-      onToast={() => pushToast({ tone: 'success', title: 'Deployment in progress', message: 'build #4822 → production' })} />;
+      onToast={() => {
+        pushToast({ tone: 'success', title: 'Deployment in progress', message: 'build #4822 → production' });
+        pushToast({ tone: 'neutral', title: 'Previous build still serving traffic', message: 'build #4821 → production',
+          action: { label: 'Undo', onClick: () => {} } });
+      }} />;
   } else {
     view = <DashboardScreen onNav={nav}
       onOpenProject={(p) => { setProject(p); setScreen('project'); }} />;
@@ -37,7 +47,7 @@ function App(){
       {view}
       <div className="toast-wrap">
         {toasts.map((t) => (
-          <Toast key={t.id} tone={t.tone} title={t.title} message={t.message}
+          <Toast key={t.id} tone={t.tone} title={t.title} message={t.message} persist={t.persist} action={t.action}
             onClose={() => setToasts((ts) => ts.filter((x) => x.id !== t.id))} />
         ))}
       </div>

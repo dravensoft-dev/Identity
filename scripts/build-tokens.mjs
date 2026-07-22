@@ -40,6 +40,7 @@ export const FILES = [
     { selector: ':root', source: 'effects.json' },
     { selector: ':root', source: 'layering.json' },
     { selector: ':root', source: 'chart.json' },
+    { selector: ':root', source: 'behaviour.json' },
   ] },
 ];
 

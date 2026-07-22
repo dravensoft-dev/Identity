@@ -30,6 +30,7 @@ these values, do not re-derive them.
 | Layering (`z-*`) | `layering.json` | `number` | unitless integers; the family declares the order, the values only preserve it |
 | Chart geometry (`chart-*`) | `chart.json` | `dimension` | px; **script-readable** — emitted to `frameworks/*/tokens.generated.*` as bare numbers as well as to CSS, because JS arithmetic computes SVG positions from them. Does not re-densify: a value bound at import time cannot respond to `.arena-compact` |
 | Component geometry (`calendar-hour-h`, `onboarding-width`) | `component.json` | `dimension` | px; **script-readable**. Named after a component rather than a role, like `avatar-*` and `logo-*`. `onboarding-width` also replaces a `calc(var(--sp-1) * 80)` the component rendered — one value that existed in two idioms |
+| Behaviour (`delay-*`, `dismiss-*`, `limit-*`) | `behaviour.json` | `duration`, except `limit-*` | ms, and `limit-*` is a bare `number` like `z-*`. **Script-readable** — the consumer is a `setTimeout` argument or an array bound, so these are read as numbers in JS as well as emitted to CSS. Behaviour VALUES only; the behaviour CONTRACT (which keys, which roles, where focus goes) is not a token and lives outside `tokens/` |
 
 ## Value formats are strict 2025.10
 

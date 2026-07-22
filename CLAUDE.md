@@ -81,6 +81,20 @@ asserts the modules match the source and the CSS and that no flag is orphaned;
 `bun run check:duplicate-constants` fails a numeric constant declared in both
 layers, which is how chart geometry drifted before this existed.
 
+**Behaviour has values, and they are tokens like any other.** `tokens/src/behaviour.json`
+holds `delay` (pointer intent), `dismiss` (how long a transient notice lives) and
+`limit` (quantity invariants). All are script-readable, because their consumers are
+`setTimeout` arguments and array bounds rather than CSS properties. Two rules govern
+what belongs there. **A behaviour value is a decision the system makes, not a
+mechanism** — `--delay-open` is how long a tooltip waits, and that is a design
+decision; a debounce interval on a synchronous in-memory filter is not, which is why
+`debounce` was proposed and deliberately not shipped. And **a value is not a
+contract**: which keys a dialog answers, where focus lands, what dismisses it — none
+of that is expressible as a token, none of it lives in `tokens/`, and DTCG does not
+model it. That layer is designed in
+`docs/superpowers/specs/2026-07-22-7-behaviour-tokens-and-contracts-design.md` and
+is not built yet.
+
 **A dimension in a framework layer is a token or a derivation of tokens. A bare
 literal is a bug.** This is machine-checked: `bun run check:dimensions` scans
 `frameworks/` for literals in the properties the token layer governs and fails on
@@ -277,6 +291,14 @@ debt filed in one dies with it. That has already happened once: plan 5.5's
 close-out recorded three follow-ups into its own plan document, which was
 scheduled for deletion the same week.
 
+- **`Tooltip`'s timer is the one genuinely new behaviour on this layer, and it has
+  no test.** Plan 7a gave `Pagination` five pinned tests — a pure relocation that
+  changes no output and could not break — and gave the tooltip's `useRef`, its
+  cancel-on-transition rule and its unmount cleanup none. The branch tested the
+  thing that could not break and left the thing that could. The plan defers a
+  DOM-based React harness to plan 7b, which is why this was not fixed in place, but
+  the cancel-and-reschedule rule needs no harness at all: `bun:test`'s fake timers
+  reach it. Raised in whole-branch review and merged knowingly.
 - **The two script-readable gates leave a structural hole between them, and it is
   wider than it looks.** `check:script-tokens`' orphan rule is *imported by at
   least one layer* — correct, because `calendarHourH` is legitimately React-only
@@ -304,6 +326,52 @@ scheduled for deletion the same week.
   the recorded rationale for the other chart exclusions — *a multiplier that
   derives one dimension from another is not itself a design value* — does not
   cover either of them, so a reader applying it reaches the opposite conclusion.
+- **`Tooltip` is not keyboard-reachable, and now it also waits.** It has
+  `onMouseEnter`/`onMouseLeave` and no `onFocus`/`onBlur`, so a keyboard user
+  never sees it at all. Plan 7a added a pointer-intent delay and did not fix
+  this — deliberately, because it is contract work rather than a value. When it
+  is fixed, **the focus path must reveal immediately**: routing focus through
+  `--delay-open` would make a control that is already hard to reach also feel
+  broken. The token's own `$description` says so.
+- **Two behaviour families were proposed and not shipped**, and the reasons
+  should be re-read before anyone adds them. `debounce` is speculative:
+  `CommandPalette` filters a local array synchronously and `ResizeObserver`
+  already coalesces, so debouncing either adds latency and removes nothing.
+  `limit.results` would introduce a palette result cap that does not exist
+  today, which is a product decision with a UX consequence rather than a
+  tokenization of an existing value.
+- **A group-level `$description` in `tokens/src/` never reaches the generated JS
+  modules.** `collectScriptTokens()` in `scripts/build-tokens.mjs` skips group
+  nodes (`if (item.group || !isScript(item.token)) continue;`), so only a
+  leaf token's own description is carried into
+  `frameworks/react/tokens.generated.js` and
+  `frameworks/angular/tokens.generated.ts`. Group prose survives only in the
+  CSS. This is pre-existing and not caused by this plan — `chart.json`'s group
+  description is lost the same way — but it bit here: `delay`'s group
+  description carries the constraint that these delays are pointer intent and
+  that a keyboard focus must reveal immediately, and someone reading only the
+  generated module will not see it.
+- **`delay` and `dismiss` govern React only, and Angular is not silently exempt
+  — it just has no token-shaped seam yet.** Plan 7a's own Global Constraints
+  first misstated this as the same "Angular has no primitive" asymmetry that
+  is correct for `debounce`-style speculation, when it is not: Angular has no
+  `Tooltip`, `Toast` or `Pagination` **primitive**, but it provides all three
+  through Angular Material, dressed by `arena-material.css` — the same
+  "Material provides the control" bucket 21 of the 39 Tailwind manifests
+  belong to (`Tooltip.manifest.json`, `Toast.manifest.json` and
+  `Pagination.manifest.json` all exist). `check:script-tokens` cannot see
+  this — its orphan rule is "imported by at least one layer," and it is
+  satisfied by React alone by construction, the same structural blind spot the
+  first bullet in this section describes for chart internals. So today:
+  React's `Tooltip` waits `--delay-open`/`--delay-close` before a pointer
+  reveals or withdraws it; Angular's `matTooltip` does not — `showDelay` and
+  `hideDelay` default to 0, so the exact flash-on-crossing defect plan 7a
+  fixed on the React side is still live on the Angular side. Likewise React's
+  Delivery Console runs the toast clock off `--dismiss-default` /
+  `--dismiss-actionable`; Angular has no consumer wiring `MatSnackBarConfig`'s
+  `duration` to either value at all. The seams a future pass would bind these
+  through are `MAT_TOOLTIP_DEFAULT_OPTIONS` (`showDelay`, `hideDelay`) and
+  `MatSnackBarConfig.duration` — neither is wired today.
 
 ### Where the rest of the debt lives
 

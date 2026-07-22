@@ -112,3 +112,51 @@
   --chart-legend-max:180px; /* Doughnut legend, widest. */
   --chart-legend-gap:16px; /* Between the doughnut plot and its legend. Equals --sp-4. */
 }
+:root{
+  /*
+     Pointer intent — how long a pointer must rest on a target before a
+     deferred affordance appears, and how long it may leave before that affordance
+     withdraws. Deliberately not part of dur: dur measures how long a transition
+     takes once it has been decided, delay measures how long we wait before
+     deciding. These apply to the POINTER only. A keyboard focus must reveal its
+     tooltip immediately — a delay there reads as an unresponsive control, and a
+     future plan adding focus support must not route it through these.
+   */
+  --delay-open:400ms; /* Rest time before a tooltip appears. Long enough that crossing a toolbar reveals nothing. */
+  /*
+     Grace period after the pointer leaves. Short, and much shorter than open:
+     it exists so travelling between a trigger and its own tooltip does not dismiss it,
+     not to keep the tooltip around.
+   */
+  --delay-close:120ms;
+
+  /*
+     Automatic permanence — how long a transient notice remains before it
+     withdraws itself. The HOST owns dismissal, not Toast: Toast renders and exposes
+     persist, the host runs the clock.
+   */
+  /*
+     A toast that only has to be read. This is the value the Delivery Console
+     shipped hard-coded before it was a token.
+   */
+  --dismiss-default:4200ms;
+  /*
+     A toast carrying a button. WCAG 2.2.1: it asks the reader to DECIDE, not
+     only to read, and 4.2s is enough for the second task only if they were already
+     looking. persist (README H1) still overrides both and stays mandatory in
+     critical states.
+   */
+  --dismiss-actionable:7000ms;
+
+  /*
+     Quantity bounds — system-wide invariants about how much is shown. Not
+     geometry, and the twin of z: same $type, same character. The family declares the
+     invariant; a component derives its own consequences from it.
+   */
+  /*
+     How many page numbers flank the current one before the list elides. The
+     window's total width is a CONSEQUENCE and is derived at the point of use, never
+     authored: first + last + (2 * siblings + 1) + two ellipses.
+   */
+  --limit-pagination-siblings:1;
+}

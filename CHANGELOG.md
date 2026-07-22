@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Behaviour values are tokens.** `tokens/src/behaviour.json` holds `delay` (pointer intent), `dismiss` (transient-notice permanence) and `limit` (quantity invariants) — five script-readable tokens, emitted both as custom properties and as numbers JavaScript reads.
 - **Angular layer parity — 20 new primitives, for 21 in all.** `activity-feed`,
   `alert`, `app-logo`, `avatar`, `bar-chart`, `breadcrumbs`, `bulk-action-bar`,
   `chart-card`, `command-palette`, `confirm-dialog`, `doughnut-chart`, `empty-state`,
@@ -264,6 +265,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   between them.
 - `Onboarding` renders `var(--onboarding-width)` in place of
   `calc(var(--sp-1) * 80)`, collapsing a value that existed in three places.
+- The console's hard-coded `4200` is `--dismiss-default`, and a toast carrying an action gets `--dismiss-actionable` instead (WCAG 2.2.1).
+- `Pagination`'s sibling count is `--limit-pagination-siblings`; its elision threshold derives from it as `2 * siblings + 5` rather than being a second hard-coded `7`. No rendered output changes.
 
 ### Fixed
 
@@ -354,6 +357,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ConfirmDialog.manifest.json`.** Both slots' React sources already opt into
   `box-sizing: border-box` locally, so — exactly like `Input.manifest.json` before it —
   the class changed nothing under this layer's own border-box preflight.
+- **`Tooltip` no longer flashes when a pointer crosses it.** It waits `--delay-open` before appearing and `--delay-close` before withdrawing. This changes behaviour deliberately: the tooltip used to appear instantly.
+- **The Delivery Console honours `persist`.** It ignored the prop entirely, so a toast marked "does not auto-dismiss" was dismissed anyway after 4.2 seconds.
 
 ### Removed
 
