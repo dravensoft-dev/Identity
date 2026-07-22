@@ -542,6 +542,15 @@
   .cursor-pointer {
     cursor: pointer;
   }
+  .resize {
+    resize: both;
+  }
+  .resize-none {
+    resize: none;
+  }
+  .resize-y {
+    resize: vertical;
+  }
   .list-none {
     list-style-type: none;
   }
@@ -1176,6 +1185,19 @@
     .hover\:shadow-2:hover {
       --tw-shadow: var(--shadow-2);
       box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+    }
+  }
+  .focus\:border-secondary:focus {
+    border-color: var(--color-secondary);
+  }
+  .focus\:ring-\[length\:var\(--focus-width\)\]:focus {
+    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(var(--focus-width) + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .focus\:ring-secondary\/16:focus {
+    --tw-ring-color: var(--color-secondary);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-ring-color: color-mix(in oklab, var(--color-secondary) 16%, transparent);
     }
   }
   .focus-visible\:ring-\[length\:var\(--focus-width\)\]:focus-visible {
