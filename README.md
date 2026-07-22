@@ -35,7 +35,7 @@ This registers the `design` skill under the `arena` plugin. Invoke it explicitly
 ### Use in a project (copy-in kit)
 To use the tokens and components directly in an app:
 
-1. **Copy** `tokens/`, `assets/`, `styles.css` and `frameworks/react/use-container-width.js` into your app (e.g. under `/arena`). `use-container-width.js` is the shared hook `Table` (and any responsive component) imports; copy it whenever you copy one of those.
+1. **Copy** `tokens/`, `assets/`, `styles.css`, `frameworks/react/use-container-width.js` and `frameworks/react/tokens.generated.js` into your app (e.g. under `/arena`). `use-container-width.js` is the shared hook `Table` (and any responsive component) imports; copy it whenever you copy one of those. `tokens.generated.js` is the design values JavaScript reads as numbers rather than through CSS; it is generated from `tokens/src/`, so never edit it.
 2. **Link the entry point.** `styles.css` only `@import`s the token files, exposing every design token as a CSS custom property (`--color-*`, `--font-*`, `--r-*`, `--shadow-*`, …) and loading the fonts:
    ```html
    <link rel="stylesheet" href="/arena/styles.css" />
@@ -49,7 +49,7 @@ To use the tokens and components directly in an app:
    ```
    Every component ships a `.d.ts` (types) and a `.prompt.md` (usage, examples, Do/Don't).
 
-   A few components build on another one rather than restating it, so copy the dependency with them: `ConfirmDialog` and `ErrorState` need `forms/Button.jsx`, `ThemeToggle` needs `forms/IconButton.jsx`, and `Calendar` needs `charts/chart-internals.js` for the categorical ramp.
+   A few components build on another one rather than restating it, so copy the dependency with them: `ConfirmDialog` and `ErrorState` need `forms/Button.jsx`, `ThemeToggle` needs `forms/IconButton.jsx`, and `Calendar` needs `charts/chart-internals.js` for the categorical ramp. The charts, `Calendar` and `Onboarding` also need `frameworks/react/tokens.generated.js` — the design values JavaScript reads as numbers rather than through CSS (a chart's plot height, an hour's height on the time grid, the coachmark's width). Copy it beside `use-container-width.js`; it is generated from `tokens/src/`, so never edit it.
 
 ### How components are styled
 Components render with **inline `style` objects that read the CSS custom properties** (e.g. `background: 'var(--crimson)'`). They do **not** expose utility classes — there is no `class="btn"`. `styles.css` provides only the token variables and fonts; all component logic lives in the `.jsx`. This keeps each component self-contained and fully themeable: change a token and every component follows.
