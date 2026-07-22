@@ -1,7 +1,13 @@
 {
-  "pattern": "navigation",
+  "pattern": "toolbar",
   "exceptions": [
     { "requirement": "roles.element",
-      "reason": "BulkActionBar renders role=\"region\", not navigation -- it groups bulk actions on a selection, not links for moving through the app, so a labeled region is the semantically correct landmark, not a defect. Bound to the navigation pattern only because this catalog has no toolbar/region pattern of its own yet; the mismatch is in the catalog, not the component." }
+      "reason": "BulkActionBar renders role=\"region\", not toolbar. That was the honest stopgap while the catalog had no toolbar pattern; now that toolbar exists, this is a real gap in the component, not the catalog." },
+    { "requirement": "focus.roving",
+      "reason": "The action buttons are plain elements in normal Tab order -- there is no roving tabindex, no single shared tab stop for the group." },
+    { "requirement": "keyboard.ArrowRight",
+      "reason": "No keydown handling at all; arrow keys do nothing." },
+    { "requirement": "keyboard.ArrowLeft",
+      "reason": "No keydown handling at all; arrow keys do nothing." }
   ]
 }

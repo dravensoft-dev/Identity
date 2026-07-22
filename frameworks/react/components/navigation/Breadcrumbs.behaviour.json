@@ -1,4 +1,7 @@
 {
   "pattern": "navigation",
-  "exceptions": []
+  "exceptions": [
+    { "requirement": "roles.label",
+      "reason": "aria-label is the hardcoded string \"Breadcrumb\" with no prop to override it. Two Breadcrumbs instances on one page carry the identical label and are not distinguishable as separate landmarks." }
+  ]
 }

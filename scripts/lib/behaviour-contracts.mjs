@@ -10,7 +10,7 @@
  *
  * Everything here is pure. scripts/check-behaviour.mjs does the filesystem walk
  * and the reporting; this module is what its suite can import. */
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, basename, extname } from 'node:path';
 
 export const PATTERN_DIR = 'behaviour/patterns';
@@ -110,4 +110,60 @@ export function angularPrimitives(root) {
     .filter((e) => e.isDirectory())
     .map((e) => e.name)
     .sort();
+}
+
+/** "Does an Angular primitive exist for this React component" is a different
+ *  question from "did its binding parse", and check-behaviour.mjs used to ask
+ *  the second when it meant the first: a primitive directory whose
+ *  `<name>.behaviour.json` does not exist yet (unbound) was never added to
+ *  the script's `angular` Map, so it read as though no primitive existed at
+ *  all -- a false "no primitive and no entry in behaviour-delegated.json" for
+ *  every unbound primitive.
+ *
+ *  A BOUND primitive answers this itself: its binding carries an explicit
+ *  `component` field naming its React counterpart, precisely so the two
+ *  layers' different naming conventions (kebab-case directory, Pascal-case
+ *  component) never have to be derived from one another -- that derivation
+ *  has bitten this repo twice already (see check-manifest-states.mjs's
+ *  SOURCE_OVERRIDES for the other case). An UNBOUND primitive has no binding
+ *  to carry that field, so this map records the same fact explicitly instead
+ *  -- directory name to React component name, for every primitive that
+ *  currently has no `<name>.behaviour.json`. Once a primitive gains its
+ *  binding, delete its entry here: the binding's own `component` field
+ *  becomes the source of truth, and validateUnboundPrimitives below fails
+ *  the gate on a leftover entry so this cannot silently drift stale. */
+export const UNBOUND_PRIMITIVES = {
+  'breadcrumbs': 'Breadcrumbs',
+  'bulk-action-bar': 'BulkActionBar',
+  'command-palette': 'CommandPalette',
+  'page-head': 'PageHead',
+  'theme-toggle': 'ThemeToggle',
+};
+
+/** @returns {boolean} true when `component` is named in UNBOUND_PRIMITIVES --
+ *  i.e. an Angular primitive directory exists for it even though nothing has
+ *  bound it yet. Membership only, deliberately: existence on disk is
+ *  asserted separately, by validateUnboundPrimitives, so a stale entry fails
+ *  the gate instead of silently changing what this predicate answers. */
+export function hasUnboundPrimitive(component) {
+  return Object.values(UNBOUND_PRIMITIVES).includes(component);
+}
+
+/** @returns {string[]} problems: an UNBOUND_PRIMITIVES entry that no longer
+ *  describes reality -- its directory has vanished, or it has since gained a
+ *  `<name>.behaviour.json` and so is bound now, which makes the override
+ *  redundant and, left in place, misleading. */
+export function validateUnboundPrimitives(root) {
+  const problems = [];
+  for (const [dir, component] of Object.entries(UNBOUND_PRIMITIVES)) {
+    const dirPath = join(root, 'frameworks/angular/primitives', dir);
+    if (!existsSync(dirPath)) {
+      problems.push(`UNBOUND_PRIMITIVES: "${dir}" (-> ${component}) names a primitive directory that no longer exists`);
+      continue;
+    }
+    if (existsSync(join(dirPath, `${dir}.behaviour.json`))) {
+      problems.push(`UNBOUND_PRIMITIVES: "${dir}" now has ${dir}.behaviour.json -- it is bound, so this override is stale; remove the entry and trust binding.component instead`);
+    }
+  }
+  return problems;
 }

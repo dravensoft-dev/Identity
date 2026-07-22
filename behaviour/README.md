@@ -12,7 +12,7 @@ closes this". Putting a pattern under `tokens/src/` would mean relaxing
 ## Patterns
 
 One file per pattern in `patterns/`, each citing the source it was adopted from.
-Fourteen cite an actual [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/patterns/)
+Fifteen cite an actual [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/patterns/)
 page. Two cite the ARIA 1.2 role reference instead — `status` and `textbox` — because
 APG has no pattern page for either role. The remaining two say why in their own
 `source`: `figure-with-data-table`, which cites WCAG because APG has no chart pattern,

@@ -19,6 +19,7 @@ import { dirname, join } from 'node:path';
 import {
   loadPatterns, validatePattern, validateBinding,
   reactComponents, angularPrimitives, PATTERN_DIR,
+  hasUnboundPrimitive, validateUnboundPrimitives,
 } from './lib/behaviour-contracts.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -71,15 +72,28 @@ async function main() {
     angular.set(binding.component ?? name, binding);
   }
 
+  /* 3b. UNBOUND_PRIMITIVES itself stays honest: an entry naming a directory
+   *     that vanished, or one that has since gained a behaviour.json (and so
+   *     is bound, making the override redundant), fails the gate. */
+  problems.push(...validateUnboundPrimitives(root));
+
   /* 4. Every React component Angular does NOT implement as a primitive is
    *    declared in the delegated file -- as provided by Material, or as
    *    genuinely absent. Coverage is EVERY layer, never "at least one": a
    *    component nobody declares for Angular is exactly the silence this gate
-   *    exists to end. */
+   *    exists to end.
+   *
+   *    "Angular does not implement it" and "Angular's binding for it did not
+   *    parse" are different questions -- a primitive whose directory exists
+   *    but has no behaviour.json yet is already reported by step 3's "no
+   *    <name>.behaviour.json"; it must not ALSO be reported here as though no
+   *    primitive existed at all. hasUnboundPrimitive answers the first
+   *    question for exactly that case. */
   const delegatedPath = join(root, 'frameworks/angular/behaviour-delegated.json');
   const delegated = existsSync(delegatedPath) ? read(delegatedPath) : {};
   for (const [component] of react) {
     if (angular.has(component)) continue;
+    if (hasUnboundPrimitive(component)) continue;
     const entry = delegated[component];
     if (!entry) {
       problems.push(`angular/${component}: no primitive and no entry in behaviour-delegated.json — say whether Material provides it or nothing does`);
