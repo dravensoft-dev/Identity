@@ -1,0 +1,30 @@
+<!-- @dsCard group="Tailwind" viewport="700x155" name="Switch" subtitle="On, off and guarded, rendered from Switch.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../utilities.css">
+<link rel="stylesheet" href="../specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../specimen.js';
+
+const manifest = await (await fetch('./Switch.manifest.json')).json();
+
+function toggle({ label, checked = false, disabled = false, confirm = false }) {
+  const c = classesFor(manifest, { checked: String(checked), disabled: String(disabled) });
+  const text = el('span', { class: c.label }, label);
+  if (confirm) text.append(el('i', { class: `${c.guard} ph-bold ph-shield-check`, title: 'Requires confirmation', 'aria-hidden': 'true' }));
+  const input = el('input', { type: 'checkbox', role: 'switch', class: c.input, checked: checked || undefined, 'aria-checked': String(checked), disabled: disabled || undefined });
+  return el('label', { class: c.root }, el('span', { class: c.track }, el('span', { class: c.thumb })), text, input);
+}
+
+mountSpecimen({ sections: [
+  section('States', [
+    toggle({ label: 'Email notifications', checked: true }),
+    toggle({ label: 'Slack notifications' }),
+    toggle({ label: 'Managed by policy', checked: true, disabled: true }),
+  ]),
+  section('Guarded — opens a confirmation instead of flipping', [
+    toggle({ label: 'Auto-deploy to production', checked: true, confirm: true }),
+  ]),
+]});
+</script></body></html>
