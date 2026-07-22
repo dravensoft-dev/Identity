@@ -119,6 +119,7 @@ past it." Verified against the current sources:
 | `Switch`'s `track` | 44×26 outer, 40×22 content (`w-10 h-5.5`=40×22 content + 2×`p-0.5`=2 each side; no border) | 40×22 outer, 36×18 content (`w-10 h-5.5 p-0.5`, padding included) |
 | `Toast`'s `root` | 375px outer (`w-85`=340 content + 2×`px-4`=32 + `--bw`=1 right + `--bw-strong`=2 left) | 340px outer (`w-85`, border and padding included) |
 | `Pagination`'s `nav`/`page` | 52×36 outer (`h-8.5 min-w-8.5`=34 content each axis + 2×`px-2`=16 each side on width + 2×`--bw`=2 each axis) | 34×34 outer (`h-8.5 min-w-8.5`, border and padding included) |
+| `Spinner`'s `circle` | **agrees** — 14×14, 20×20, 32×32 outer at sm/md/lg | same, 14×14 / 20×20 / 32×32 |
 
 `Switch` carries no border at all — `p-0.5` alone is enough to reproduce the same
 divergence, which is why the rule above is stated for padding and not just border. The
@@ -147,11 +148,14 @@ axes, since border and padding are carved out of the declared size rather than a
 it — 34×34, not 36×36 (36×36 double-counts the border on an outer number that already
 includes it, and drops `px-2` entirely).
 
-`Input`, `Button` and `ConfirmDialog` are the three components where the two layers
-agree, and only because their React source opts into `border-box` locally — `Input.jsx:58`,
-`Button.jsx`'s spinner and `ConfirmDialog.jsx`'s require-text input all set `boxSizing:
-'border-box'` (`Spinner.jsx` is the fourth opt-in named above, but its manifest slot
-carries no matching class either way). Each manifest's matching slot —
+`Input`, `Button`, `ConfirmDialog` and `Spinner` are the four components where the two
+layers agree, and only because their React source opts into `border-box` locally —
+`Input.jsx:58`, `Button.jsx`'s spinner, `ConfirmDialog.jsx`'s require-text input and
+`Spinner.jsx:49-51` all set `boxSizing: 'border-box'`. `Spinner` is the cleanest
+demonstration that the agreement is the opt-in and not luck: its `circle` slot combines
+an explicit size with a `--bw-strong` border — P3's trigger exactly — and still measures
+14×14, 20×20 and 32×32 in both layers at sm/md/lg, because React declared the same box
+model the preflight declares. Each manifest's matching slot —
 `Input.manifest.json`'s `field`, `Button.manifest.json`'s `spinner`,
 `ConfirmDialog.manifest.json`'s `input` — carried a (but, under preflight, redundant)
 `box-border` class; `Input`'s was removed in the change that added this entry, `Button`'s
@@ -1064,6 +1068,36 @@ delta with a populated `tone`/`direction` but an empty `value` therefore renders
 pill in React and renders nothing in Angular — negligible in practice, since a delta with no value
 to show is not a delta worth passing, but it is the one real behavioural difference the split
 introduces.
+
+### SideNav is described three times, and only the colours agree
+
+**React:** `SideNav.jsx` renders a `<nav>` with direct `<a>`/`<button>` children and owns its
+full appearance — geometry included: `px-3 py-2.5` and `gap-3` per item.
+
+**Tailwind:** `SideNav.manifest.json` mirrors `SideNav.jsx` property for property, geometry
+and all. Plan 5b added it so a consumer on neither React nor Material has something to build
+against.
+
+**Angular:** there is no `arena-side-nav` primitive. The Angular path is the Material bridge —
+`arena-material.css`'s `.arena-side-nav` rules dressing `mat-nav-list` — because `mat-nav-list`
+already provides the anchor-or-button distinction, the active state and the keyboard behaviour.
+
+**Why the three differ, and where:** the bridge declares **only colour, weight, font and
+shape**. It declares **no geometry at all**, so on the Angular path an item's padding, gap and
+row height are `mat-list-item`'s Material defaults, not React's and not the manifest's. The
+bridge also uniquely sets `--mat-list-list-item-focus-label-text-color: var(--crimson)`, a focus
+affordance neither of the other two has.
+
+Neither difference is a defect in any of the three. The manifest is right to mirror React
+(that is its contract), and it would be wrong to invent the focus colour — `check:states`
+exists precisely to catch a state a manifest asserts that its source does not implement. The
+bridge is deliberately partial: it dresses what Material renders rather than re-specifying
+Material's layout, which is the whole reason SideNav stays a bridge.
+
+**Converges:** the colours already do. The geometry does not and should not — reconciling it
+would mean overriding Material's own list metrics from the bridge, which is exactly the
+duplication the bridge exists to avoid. Recorded so that a reader comparing the three does not
+mistake the gap for drift.
 
 ## How to add an entry
 
