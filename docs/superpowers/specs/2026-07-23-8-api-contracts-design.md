@@ -455,6 +455,16 @@ landed in Plan A.
 
 ## Four things Plan A discovered that Plan B must settle early
 
+> **Resolved by Plan B0 (2026-07-23).** All four below — and two more it found by measuring
+> (an inbound function that returns a value, and a token-derived closed numeric set) — were
+> settled through the audit protocol before any component was contracted. The decisions live
+> in `api/README.md` (the single-icon and per-item conventions, the inbound-function rule, the
+> numeric-set note) and in `frameworks/angular/primitives/projection-markers.ts` (the selector
+> convention). **The present-tense descriptions below are the pre-decision state and are no
+> longer true of the tree** — `stat-card`'s icon is a string, not a slot, and the action
+> selectors are `[action]`/`[actions]`, not `[arena-*]`. Read `api/README.md` for what holds
+> now; this section is kept as the record of what Plan A discovered, not as current fact.
+
 None of these was visible when this spec was written; all four were found by running the
 gate against the real tree.
 
