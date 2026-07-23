@@ -35,3 +35,6 @@ coverage/
 
 # SDD scratch (ledger, task briefs, review packages) is machine-local, not product.
 .superpowers/
+
+# Claude Code local settings and task lock, machine-local, not product.
+.claude/
