@@ -50,3 +50,11 @@ test('no icon renders no wrapper at all -- not an empty one', () => {
   const html = renderToStaticMarkup(<StatCard label="Deploys" value="128" />);
   assert.doesNotMatch(html, /aria-hidden="true"/);
 });
+
+/* Per api/README.md's "Required-ness governs the implementation and the
+ * runtime" clause, `label` and `value` fail hard when absent, matching
+ * Angular's `input.required` -- not the earlier fail-soft `undefined` render. */
+test('throws when a required member is absent', () => {
+  assert.throws(() => renderToStaticMarkup(<StatCard value="128" />), /label.*required/);
+  assert.throws(() => renderToStaticMarkup(<StatCard label="Deploys" />), /value.*required/);
+});

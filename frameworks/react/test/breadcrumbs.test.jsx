@@ -44,3 +44,17 @@ test('with no onNavigate at all, a non-current crumb still renders as an anchor 
   const html = renderToStaticMarkup(<Breadcrumbs items={ITEMS} />);
   assert.match(html, /<a href="\/clients"[^>]*>Clients<\/a>/);
 });
+
+/* Per api/README.md's "Required-ness governs the implementation and the
+ * runtime" clause, an absent `items` fails hard, matching Angular's
+ * `input.required`. An empty-but-supplied `items={[]}` is a different case --
+ * truthy, so it stays legal, and renders an empty trail rather than throwing. */
+test('throws when items is absent', () => {
+  assert.throws(() => renderToStaticMarkup(<Breadcrumbs />), /items.*required/);
+});
+
+test('an empty items array is supplied-but-empty and stays legal', () => {
+  const html = renderToStaticMarkup(<Breadcrumbs items={[]} />);
+  assert.match(html, /<nav aria-label="Breadcrumb"/);
+  assert.doesNotMatch(html, /<a /);
+});

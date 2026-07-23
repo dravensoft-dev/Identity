@@ -12,7 +12,7 @@ const TEXT = { sm: 'var(--logo-text-sm)', md: 'var(--logo-text-md)', lg: 'var(--
 /** Brand lock-up: a mark beside (horizontal) or above (vertical) a product
  *  name. `mark` and `name` are required and nothing stands in for them. */
 export function AppLogo({ size = 'md', orientation = 'horizontal', mark, name, dim }) {
-  if (!mark || !name) return null;
+  if (!mark || !name) throw new Error('AppLogo: `mark` and `name` are required');
   const vertical = orientation === 'vertical';
   const markSize = MARK[size] || MARK.md;
   const textSize = TEXT[size] || TEXT.md;

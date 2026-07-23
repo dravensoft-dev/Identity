@@ -3,7 +3,10 @@
  * copies this tree into their own product, so a component that rendered
  * Dravensoft's mark when passed nothing would ship someone else's trademark
  * by omission. The argument is only true if the absence is enforced, which is
- * what these first two tests are for -- a comment claiming it would not be. */
+ * what these first three tests are for -- a comment claiming it would not be.
+ * Per api/README.md's "Required-ness governs the implementation and the
+ * runtime" clause, enforcement is now a throw (fail-hard), matching
+ * Angular's `input.required`, rather than the earlier fail-soft empty render. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -12,16 +15,16 @@ import { AppLogo } from '../components/brand/AppLogo.jsx';
 
 const MARK = <img src="../../../../assets/rotor-crimson.svg" alt="" />;
 
-test('renders nothing without a mark', () => {
-  assert.equal(renderToStaticMarkup(<AppLogo name="Draven" />), '');
+test('throws without a mark', () => {
+  assert.throws(() => renderToStaticMarkup(<AppLogo name="Draven" />), /mark.*required/);
 });
 
-test('renders nothing without a name', () => {
-  assert.equal(renderToStaticMarkup(<AppLogo mark={MARK} />), '');
+test('throws without a name', () => {
+  assert.throws(() => renderToStaticMarkup(<AppLogo mark={MARK} />), /required/);
 });
 
-test('renders nothing when given neither', () => {
-  assert.equal(renderToStaticMarkup(<AppLogo />), '');
+test('throws when given neither', () => {
+  assert.throws(() => renderToStaticMarkup(<AppLogo />), /required/);
 });
 
 test('a size picks both halves of the lock-up from the logo scale', () => {

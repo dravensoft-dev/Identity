@@ -99,6 +99,18 @@ comparable because the concept does not apply to either platform: an outbound me
 never "required" — a consumer is always free not to listen — and neither React's optional
 function prop nor Angular's `output()` has a notion of a mandatory listener.
 
+**Required-ness governs the implementation and the runtime.** `check:api` proves both layers
+*declare* a member identically required — the implementation half, which already held. The
+contract's `required` also governs **runtime**: the implementing component must enforce it,
+failing hard when a required member is absent rather than rendering with a missing value.
+Angular's `input.required` throws by construction; React throws from its render for the same
+reason (`AppLogo`, `StatCard` and `Breadcrumbs` all do), so an absent required member fails
+identically on both layers, and a consumer honouring the declared type reaches neither path.
+Like R2 and R3, the runtime half is an **authoring rule the audit applies, not a gate check**:
+`check:api` reads only the declared surface (React's `.d.ts`, Angular's `input.required`), never
+the render, so it cannot see whether a component actually throws — the audit protocol enforces
+that it does.
+
 ### The binding table
 
 The gate needs the mapping to be mechanical rather than a matter of taste, so it is

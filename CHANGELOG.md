@@ -38,6 +38,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   tone but no value. Their entries in `components-divergences.md` are deleted, because the
   divergences no longer exist.
 
+- **A required contract member now governs runtime, not only the declared surface.**
+  `api/README.md` states normatively that an absent required member must fail hard, and
+  React's three shipped A-contract components (`AppLogo`, `StatCard`, `Breadcrumbs`) now
+  throw when a required member is missing, matching Angular's `input.required` instead of
+  the earlier fail-soft null/empty render. The two layers converge rather than diverge, so
+  no `components-divergences.md` entry is added.
 - **Behaviour values are tokens.** `tokens/src/behaviour.json` holds `delay` (pointer intent), `dismiss` (transient-notice permanence) and `limit` (quantity invariants) — five script-readable tokens, emitted both as custom properties and as numbers JavaScript reads.
 - **Angular layer parity — 20 new primitives, for 21 in all.** `activity-feed`,
   `alert`, `app-logo`, `avatar`, `bar-chart`, `breadcrumbs`, `bulk-action-bar`,

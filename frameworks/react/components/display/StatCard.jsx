@@ -32,6 +32,7 @@ const VALUE_TONES = {
 };
 
 export function StatCard({ label, value, tone = 'neutral', delta, sub, icon }) {
+  if (!label || !value) throw new Error('StatCard: `label` and `value` are required');
   const t = delta?.value ? (DELTA_TONES[delta.tone] || DELTA_TONES.neutral) : null;
   const valueColor = VALUE_TONES[tone] || VALUE_TONES.neutral;
   return (
