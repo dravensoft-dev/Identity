@@ -4,7 +4,7 @@
 
 **Goal:** Give Arena a framework-neutral record of what each component must *offer*, and a gate that tells "differs correctly" from "is missing" from "differs in kind" — the three things a prose divergence record makes look identical.
 
-**Architecture:** A neutral contract per component at `behaviour/contracts/<Component>.api.json` lists its capabilities. A binding sidecar next to each layer's source (`<Component>.api.json` for React, `<name>.api.json` for Angular, and one shared `frameworks/angular/api-delegated.json` for the 22 controls Material provides) maps each capability onto that layer's real members and classifies the mapping with a `form` from a closed vocabulary. `scripts/check-api-contracts.mjs` reads both layers' *source* with the TypeScript compiler API — never by import, never by regex — and asserts coverage, member existence, no orphan members, and that every cross-layer form pair is a classified one. It reuses plan 7's conventions wholesale and rebuilds none of them.
+**Architecture:** A neutral contract per component at `api/<Component>.json` lists its capabilities. A binding sidecar next to each layer's source (`<Component>.api.json` for React, `<name>.api.json` for Angular, and one shared `frameworks/angular/api-delegated.json` for the 22 controls Material provides) maps each capability onto that layer's real members and classifies the mapping with a `form` from a closed vocabulary. `scripts/check-api-contracts.mjs` reads both layers' *source* with the TypeScript compiler API — never by import, never by regex — and asserts coverage, member existence, no orphan members, and that every cross-layer form pair is a classified one. It reuses plan 7's conventions wholesale and rebuilds none of them.
 
 **Tech Stack:** Node/Bun ESM under `scripts/`, TypeScript 6.0.3 compiler API (already a devDependency for `ngc`), `node:test`/`node:assert` for the suite. No new dependency.
 
@@ -61,7 +61,21 @@ The spec (`docs/superpowers/specs/2026-07-22-8-api-contracts-design.md`) closes 
 
 **New — the contract layer**
 
-- `behaviour/contracts/<Component>.api.json` × 43 — the neutral contract. One per React component; a component's identity across layers is its React name, exactly as `check-behaviour.mjs` already establishes.
+- `api/<Component>.json` × 43 — the neutral contract. One per React component; a component's identity across layers is its React name, exactly as `check-behaviour.mjs` already establishes.
+
+  **Why `api/` at the root and not `behaviour/contracts/`.** An earlier draft of this plan
+  filed these under `behaviour/`, which is wrong on the spec's own terms: *"It does not
+  cover behaviour. Plan 7's subject."* A reader opening `behaviour/contracts/StatCard.json`
+  would reasonably expect a behaviour contract. `api/` is `behaviour/`'s sibling, and the
+  pair reads correctly from the directory listing alone — **`behaviour/` answers what a
+  component must DO, `api/` answers what it must OFFER.** Neither belongs under `tokens/`,
+  for the reason `scripts/lib/behaviour-contracts.mjs:7-9` already records: a contract is
+  not a value, DTCG does not model one, and `check:dtcg` reads `tokens/src/` and demands
+  strict DTCG 2025.10 of everything in it.
+
+  The file inside `api/` is `<Component>.json`, not `<Component>.api.json` — the directory
+  already says `api`. The sidecars keep their `.api.json` suffix, because there they sit
+  beside a `.behaviour.json` and the suffix is what tells the two apart.
 - `frameworks/react/components/<group>/<Component>.api.json` × 43 — React bindings, sidecar beside the `.jsx`/`.d.ts`/`.prompt.md`/`.behaviour.json`.
 - `frameworks/angular/primitives/<name>/<name>.api.json` × 21 — Angular bindings.
 - `frameworks/angular/api-delegated.json` — one file, 22 entries.
@@ -252,7 +266,7 @@ Create `scripts/lib/api-contracts.mjs`:
 /* The vocabulary and validators for Arena's API capability contract layer.
  *
  * A CONTRACT says what a component must OFFER -- its capabilities, framework
- * neutral, at behaviour/contracts/<Component>.api.json. A BINDING says how one
+ * neutral, at api/<Component>.json. A BINDING says how one
  * layer spells each capability: which of its real members carry it, and under
  * which `form`.
  *
@@ -267,7 +281,7 @@ Create `scripts/lib/api-contracts.mjs`:
  * Everything here is pure. scripts/check-api-contracts.mjs does the filesystem
  * walk and the reporting; this module is what its suite can import. */
 
-export const CONTRACT_DIR = 'behaviour/contracts';
+export const CONTRACT_DIR = 'api';
 
 /** What a capability IS. Closed, and deliberately coarse -- the shape of a
  *  value is `shape`'s job, not this one's. */
@@ -387,7 +401,7 @@ export function validateApiBinding(component, layer, binding, contract) {
 
   for (const [name, entry] of Object.entries(binding)) {
     if (!contracted.has(name)) {
-      problems.push(`${where(name)}: no such capability in ${CONTRACT_DIR}/${component}.api.json — stale, or contract it first`);
+      problems.push(`${where(name)}: no such capability in ${CONTRACT_DIR}/${component}.json — stale, or contract it first`);
       continue;
     }
     if (!FORMS.has(entry.form)) {
@@ -659,7 +673,7 @@ git commit -m "feat(api): read each layer's real members with the TypeScript AST
 **Files:**
 - Create: `scripts/check-api-contracts.mjs`
 - Test: `scripts/check-api-contracts.test.mjs`
-- Create: `behaviour/contracts/.gitkeep` (removed again in Task 5, once the directory holds real contracts)
+- Create: `api/.gitkeep` (removed again in Task 5, once the directory holds real contracts)
 
 **Interfaces:**
 - Consumes: everything Task 1 and Task 2 produce.
@@ -826,9 +840,9 @@ async function main() {
   const contracts = new Map();
   const components = reactComponents(root);
   for (const component of components) {
-    const path = join(root, CONTRACT_DIR, `${component}.api.json`);
+    const path = join(root, CONTRACT_DIR, `${component}.json`);
     if (!existsSync(path)) {
-      problems.push(`${component}: no ${CONTRACT_DIR}/${component}.api.json — every component declares what it OFFERS, including a presentational one`);
+      problems.push(`${component}: no ${CONTRACT_DIR}/${component}.json — every component declares what it OFFERS, including a presentational one`);
       continue;
     }
     const contract = read(path);
@@ -838,8 +852,8 @@ async function main() {
 
   /* A contract for something React does not have is stale. */
   for (const file of readdirSync(join(root, CONTRACT_DIR))) {
-    if (!file.endsWith('.api.json')) continue;
-    const component = file.slice(0, -'.api.json'.length);
+    if (!file.endsWith('.json')) continue;
+    const component = file.slice(0, -'.json'.length);
     if (!contracts.has(component)) {
       problems.push(`${component}: a contract exists for a component React no longer has`);
     }
@@ -986,16 +1000,16 @@ Expected: PASS, 6 tests. The `main()` guard is what makes this possible — impo
 - [ ] **Step 5: Run the gate itself and confirm it fails loudly**
 
 ```bash
-mkdir -p behaviour/contracts && touch behaviour/contracts/.gitkeep
+mkdir -p api && touch api/.gitkeep
 bun scripts/check-api-contracts.mjs; echo "exit=$?"
 ```
 
-Expected: `exit=1`, and 43 problems, each of the form `ActivityFeed: no behaviour/contracts/ActivityFeed.api.json — every component declares what it OFFERS, including a presentational one`. This is the gate working. It stays red until Task 10.
+Expected: `exit=1`, and 43 problems, each of the form `ActivityFeed: no api/ActivityFeed.json — every component declares what it OFFERS, including a presentational one`. This is the gate working. It stays red until Task 10.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add scripts/check-api-contracts.mjs scripts/check-api-contracts.test.mjs behaviour/contracts/.gitkeep
+git add scripts/check-api-contracts.mjs scripts/check-api-contracts.test.mjs api/.gitkeep
 git commit -m "feat(api): the capability contract gate, not yet wired into check-all"
 ```
 
@@ -1201,7 +1215,7 @@ These five tasks are one job done five times, once per group. **Read this preamb
 **The procedure, per component:**
 
 1. Read the component's `.d.ts` and, if Angular has a primitive, its `<name>.ts`.
-2. Write `behaviour/contracts/<Component>.api.json` **by hand**. Do not paste the `.d.ts` and rename fields — that makes React the reference layer by construction, which contradicts plan 7's finding that Angular is the accessible reference more often. Ask what the component *offers*, then check both layers spell it.
+2. Write `api/<Component>.json` **by hand**. Do not paste the `.d.ts` and rename fields — that makes React the reference layer by construction, which contradicts plan 7's finding that Angular is the accessible reference more often. Ask what the component *offers*, then check both layers spell it.
 3. `shape` is descriptive prose-in-a-string, and no gate reads it. Write the union out for a small closed set (`"'up'|'down'"`); write an object for a compound value; write `"icon-ref"`, `"node"`, `"string[]"` and the like where a precise type would be a lie across layers.
 4. Write the React binding beside the `.jsx`. Write the Angular binding beside the primitive, **with a `component` field naming the React counterpart** — a kebab-case directory does not recover a Pascal name.
 5. Run `bun scripts/check-api-contracts.mjs` and read only the lines naming components in this group. It will report the rest of the tree as missing until Task 10; that is expected.
@@ -1225,10 +1239,10 @@ These five tasks are one job done five times, once per group. **Read this preamb
 ### Task 5: Contracts and bindings — `forms` (9 components)
 
 **Files:**
-- Create: `behaviour/contracts/{Button,Checkbox,IconButton,Input,Radio,Select,Switch,Textarea,ThemeToggle}.api.json`
+- Create: `api/{Button,Checkbox,IconButton,Input,Radio,Select,Switch,Textarea,ThemeToggle}.json`
 - Create: `frameworks/react/components/forms/{Button,Checkbox,IconButton,Input,Radio,Select,Switch,Textarea,ThemeToggle}.api.json`
 - Create: `frameworks/angular/primitives/theme-toggle/theme-toggle.api.json`
-- Delete: `behaviour/contracts/.gitkeep`
+- Delete: `api/.gitkeep`
 
 **Interfaces:**
 - Consumes: the gate and vocabulary from Tasks 1–4.
@@ -1240,7 +1254,7 @@ Eight of the nine `.d.ts` in this group extend a `React.*HTMLAttributes<...>`. T
 
 - [ ] **Step 1: Write the worked example — `Button`**
 
-Read `frameworks/react/components/forms/Button.d.ts` first, then create `behaviour/contracts/Button.api.json`:
+Read `frameworks/react/components/forms/Button.d.ts` first, then create `api/Button.json`:
 
 ```json
 {
@@ -1299,7 +1313,7 @@ Read `frameworks/angular/primitives/theme-toggle/theme-toggle.ts`, then create `
 }
 ```
 
-Fill in one entry per capability in `behaviour/contracts/ThemeToggle.api.json`, binding each to the members `angularMembers()` finds. To see exactly what the reader sees:
+Fill in one entry per capability in `api/ThemeToggle.json`, binding each to the members `angularMembers()` finds. To see exactly what the reader sees:
 
 ```bash
 node --input-type=module -e "
@@ -1322,8 +1336,8 @@ Expected: only lines of the form `angular/<Component>: no primitive and no entry
 - [ ] **Step 6: Commit**
 
 ```bash
-git rm behaviour/contracts/.gitkeep
-git add behaviour/contracts frameworks/react/components/forms frameworks/angular/primitives/theme-toggle
+git rm api/.gitkeep
+git add api frameworks/react/components/forms frameworks/angular/primitives/theme-toggle
 git commit -m "feat(api): contracts and bindings for the forms group"
 ```
 
@@ -1332,7 +1346,7 @@ git commit -m "feat(api): contracts and bindings for the forms group"
 ### Task 6: Contracts and bindings — `display` (10 components)
 
 **Files:**
-- Create: `behaviour/contracts/{ActivityFeed,Avatar,Badge,Calendar,Card,Skeleton,StatCard,Table,Tag,UnauthCard}.api.json`
+- Create: `api/{ActivityFeed,Avatar,Badge,Calendar,Card,Skeleton,StatCard,Table,Tag,UnauthCard}.json`
 - Create: the matching 10 `frameworks/react/components/display/*.api.json`
 - Create: `frameworks/angular/primitives/{activity-feed,avatar,skeleton,stat-card,tag,unauth-card}/<name>.api.json` — **check which of these directories exist before writing**; `frameworks/angular/primitives/` is the authority, not this list.
 
@@ -1344,7 +1358,7 @@ git commit -m "feat(api): contracts and bindings for the forms group"
 
 - [ ] **Step 1: Write `StatCard`'s contract**
 
-Create `behaviour/contracts/StatCard.api.json`:
+Create `api/StatCard.json`:
 
 ```json
 {
@@ -1427,7 +1441,7 @@ Expected: only `no primitive and no entry in api-delegated.json` lines for the c
 - [ ] **Step 6: Commit**
 
 ```bash
-git add behaviour/contracts frameworks/react/components/display frameworks/angular/primitives
+git add api frameworks/react/components/display frameworks/angular/primitives
 git commit -m "feat(api): contracts and bindings for the display group, including StatCard.icon's unrecorded divergence"
 ```
 
@@ -1436,7 +1450,7 @@ git commit -m "feat(api): contracts and bindings for the display group, includin
 ### Task 7: Contracts and bindings — `feedback` (10 components)
 
 **Files:**
-- Create: `behaviour/contracts/{Alert,ConfirmDialog,Dialog,EmptyState,ErrorState,Onboarding,ProgressBar,Spinner,Toast,Tooltip}.api.json`
+- Create: `api/{Alert,ConfirmDialog,Dialog,EmptyState,ErrorState,Onboarding,ProgressBar,Spinner,Toast,Tooltip}.json`
 - Create: the matching 10 `frameworks/react/components/feedback/*.api.json`
 - Create: `frameworks/angular/primitives/{alert,confirm-dialog,empty-state,error-state,onboarding}/<name>.api.json` — again, verify against the real directory listing before writing.
 
@@ -1448,7 +1462,7 @@ git commit -m "feat(api): contracts and bindings for the display group, includin
 
 - [ ] **Step 1: Contract `ConfirmDialog`, including `width`**
 
-Read `frameworks/react/components/feedback/ConfirmDialog.d.ts` and `frameworks/angular/primitives/confirm-dialog/confirm-dialog.ts`. Add to `behaviour/contracts/ConfirmDialog.api.json`, alongside its other capabilities:
+Read `frameworks/react/components/feedback/ConfirmDialog.d.ts` and `frameworks/angular/primitives/confirm-dialog/confirm-dialog.ts`. Add to `api/ConfirmDialog.json`, alongside its other capabilities:
 
 ```json
 { "name": "width", "kind": "input", "required": false,
@@ -1499,7 +1513,7 @@ Expected: only `no primitive and no entry in api-delegated.json` lines.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add behaviour/contracts frameworks/react/components/feedback frameworks/angular/primitives
+git add api frameworks/react/components/feedback frameworks/angular/primitives
 git commit -m "feat(api): contracts and bindings for the feedback group; ConfirmDialog's width is labelled a gap"
 ```
 
@@ -1508,7 +1522,7 @@ git commit -m "feat(api): contracts and bindings for the feedback group; Confirm
 ### Task 8: Contracts and bindings — `navigation` (9 components)
 
 **Files:**
-- Create: `behaviour/contracts/{Breadcrumbs,BulkActionBar,CommandPalette,Menu,PageHead,Pagination,SegmentedControl,SideNav,Tabs}.api.json`
+- Create: `api/{Breadcrumbs,BulkActionBar,CommandPalette,Menu,PageHead,Pagination,SegmentedControl,SideNav,Tabs}.json`
 - Create: the matching 9 `frameworks/react/components/navigation/*.api.json`
 - Create: `frameworks/angular/primitives/{breadcrumbs,bulk-action-bar,command-palette,page-head}/<name>.api.json` — verify against the real listing.
 
@@ -1520,7 +1534,7 @@ git commit -m "feat(api): contracts and bindings for the feedback group; Confirm
 
 - [ ] **Step 1: `Breadcrumbs` — the event-prop / output pair**
 
-`behaviour/contracts/Breadcrumbs.api.json`:
+`api/Breadcrumbs.json`:
 
 ```json
 {
@@ -1583,7 +1597,7 @@ Expected: only `no primitive and no entry in api-delegated.json` lines.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add behaviour/contracts frameworks/react/components/navigation frameworks/angular/primitives
+git add api frameworks/react/components/navigation frameworks/angular/primitives
 git commit -m "feat(api): contracts and bindings for the navigation group"
 ```
 
@@ -1592,7 +1606,7 @@ git commit -m "feat(api): contracts and bindings for the navigation group"
 ### Task 9: Contracts and bindings — `charts` (4) and `brand` (1)
 
 **Files:**
-- Create: `behaviour/contracts/{BarChart,ChartCard,DoughnutChart,LineChart,AppLogo}.api.json`
+- Create: `api/{BarChart,ChartCard,DoughnutChart,LineChart,AppLogo}.json`
 - Create: `frameworks/react/components/charts/{BarChart,ChartCard,DoughnutChart,LineChart}.api.json`
 - Create: `frameworks/react/components/brand/AppLogo.api.json`
 - Create: `frameworks/angular/primitives/{bar-chart,chart-card,doughnut-chart,line-chart,app-logo}/<name>.api.json`
@@ -1617,7 +1631,7 @@ Two things to expect and record faithfully rather than paper over:
 
 - [ ] **Step 3: `AppLogo` — the node-prop / content-slot pair, and a section that migrates**
 
-`behaviour/contracts/AppLogo.api.json`:
+`api/AppLogo.json`:
 
 ```json
 {
@@ -1653,8 +1667,8 @@ The React binding gives `mark` whatever member `AppLogo.d.ts` declares for it, w
 - [ ] **Step 4: Verify — all 43 contracts now exist**
 
 ```bash
-ls behaviour/contracts/*.api.json | wc -l
-bun scripts/check-api-contracts.mjs 2>&1 | grep -c 'no behaviour/contracts'
+ls api/*.json | wc -l
+bun scripts/check-api-contracts.mjs 2>&1 | grep -c 'no api/'
 ```
 
 Expected: `43` and `0`.
@@ -1662,7 +1676,7 @@ Expected: `43` and `0`.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add behaviour/contracts frameworks/react/components/charts frameworks/react/components/brand frameworks/angular/primitives
+git add api frameworks/react/components/charts frameworks/react/components/brand frameworks/angular/primitives
 git commit -m "feat(api): contracts and bindings for the charts and brand groups — all 43 contracts exist"
 ```
 
@@ -1728,7 +1742,7 @@ Create `frameworks/angular/api-delegated.json`, one entry per component, every c
 }
 ```
 
-Adjust `Button`'s capability names to whatever `behaviour/contracts/Button.api.json` really lists — the entry above shows the *shape*, and the gate will name any capability you miss.
+Adjust `Button`'s capability names to whatever `api/Button.json` really lists — the entry above shows the *shape*, and the gate will name any capability you miss.
 
 **Do not reflexively write `delegated` for every capability.** Where Material's control genuinely lacks something React offers, that is `unsupported` with a reason, and it is a gap worth counting. The `loading` entry above is the archetype; expect several more across the 22. Getting this right is the entire value of the task — a file of 22 uniformly-`delegated` entries would be a rubber stamp.
 
@@ -1874,7 +1888,7 @@ Split out of `components-divergences.md`, which held four kinds of content at on
 and could not be retired while any of them had nowhere else to live. These are the
 ones no contract can absorb: how a layer draws something, as distinct from what it
 must do (`behaviour/patterns/` and each component's `*.behaviour.json`) or what it
-must offer (`behaviour/contracts/` and each component's `*.api.json`).
+must offer (`api/` and each component's `*.api.json`).
 
 **This file is non-normative prose.** Nothing verifies it. Where it disagrees with a
 `.behaviour.json` or an `.api.json`, this file is wrong.
@@ -1958,7 +1972,7 @@ git commit -m "docs(divergences): retire the six API sections, now expressed as 
 ```markdown
 **This file is non-normative prose, and nothing verifies it.** The normative records are
 `behaviour/patterns/*.json` with each component's `*.behaviour.json` (what a component must
-DO) and `behaviour/contracts/*.api.json` with each component's `*.api.json` (what it must
+DO) and `api/*.json` with each component's `*.api.json` (what it must
 OFFER). Where this file disagrees with either, **this file is wrong.**
 
 `check:behaviour` and `check:compliance` verify the first pair; `check:api` verifies the
@@ -2008,7 +2022,7 @@ Add, immediately after the paragraph beginning **"And now something does check w
 
 ```markdown
 **A contract also says what a component must OFFER, and that is a different
-record.** `behaviour/contracts/<Component>.api.json` lists a component's
+record.** `api/<Component>.json` lists a component's
 capabilities, framework-neutral; a binding sidecar beside each layer's source
 (`<Component>.api.json` for React, `<name>.api.json` for Angular, plus
 `frameworks/angular/api-delegated.json` for the 22 controls Material provides)
@@ -2126,7 +2140,7 @@ Under `## [Unreleased]` — **never under the last released version**; the plugi
 
 ```markdown
 ### Added
-- API capability contracts. `behaviour/contracts/*.api.json` records what each of the
+- API capability contracts. `api/*.json` records what each of the
   43 components must offer, framework-neutral; a binding sidecar beside each layer's
   source maps every capability onto that layer's real members and classifies the
   mapping with a `form` from a closed vocabulary. `bun run check:api` (gate
@@ -2204,7 +2218,7 @@ When every task is done, all of these must hold. Check them, do not assume them.
 
 ```bash
 # 43 contracts, one per React component
-ls behaviour/contracts/*.api.json | wc -l                       # 43
+ls api/*.json | wc -l                       # 43
 
 # 43 React bindings
 find frameworks/react/components -name '*.api.json' | wc -l     # 43
