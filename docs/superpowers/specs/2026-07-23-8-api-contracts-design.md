@@ -98,10 +98,15 @@ component, but it may only fill the interior of an element Arena renders — nev
 substitute the element that carries the behaviour contract.
 
 > `TableColumn.render` survives: it paints inside the `<td>` Arena emits, so the row and
-> cell roles remain Arena's and remain verifiable. `ActivityFeed.renderItem` and
-> `Calendar.renderEvent` do not: each replaces the whole carrier element, and for
-> `ActivityFeed` that element is the `<li>` holding `posinset` and `busy` in its
-> behaviour binding.
+> cell roles remain Arena's and remain verifiable. **`ActivityFeed.renderItem` and
+> `Calendar.renderEvent` survive R3 too** — this section originally claimed they did not, and
+> plan 8B0 measured the source and found the claim false. `ActivityFeed.jsx` renders
+> `<li …>{renderItem ? renderItem(item) : …}</li>`, so the `<li>`, and any `posinset` or
+> `busy` that ever lands on it, stay Arena's; `Calendar.jsx` does the same inside the
+> positioned element carrying the event's `onClick` and `aria-label`. Both fill and neither
+> replaces. R3 is therefore not what removes either of them — plan 8B0 removed `renderItem`
+> because per-item projection has no binding in Angular, which is a vocabulary limit and not
+> a rule violation.
 
 **R4 — No platform types and no escapes.** `React.CSSProperties`, the `{...rest}` spread,
 `React.Key`, `DOMRect`, `React.MouseEvent`, `React.HTMLInputTypeAttribute` and

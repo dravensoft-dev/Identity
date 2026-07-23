@@ -141,6 +141,20 @@ detect a filled slot without a `contentChild` query on a marker directive, so an
 either ships an unconditional zero-area wrapper or costs a directive a consumer must remember
 to import. `Alert` had already reached this answer independently in both layers.
 
+**A field inside a predefined object is never a node, and inside an *array* of predefined
+objects it can only be a primitive.** R1 offers two remedies for a node-valued field — make it
+a slot of the component, or make it a primitive Arena draws — and the first is unavailable per
+item, because a component-level slot cannot vary across a list. So `BulkAction.icon`,
+`Command.icon`, `ActivityItem`'s text fields and `OnboardingStep.body` are all primitives, and
+Arena draws them; a per-item icon is a Phosphor class name, the same answer the convention
+above gives for a single one. The consequence is stated rather than hidden: a consumer cannot
+place their own markup inside one row of a list Arena renders. `ActivityFeed.renderItem` was
+removed for that reason and **not** because it broke R3 — measured against the source, it fills
+the `<li>` Arena renders rather than replacing it, exactly as `TableColumn.render` fills a
+`<td>`, so R3 permits it. What it has no answer for is Angular: per-item projection needs a
+structural directive and `ngTemplateOutlet`, a binding no row of the table above covers and no
+reader function reads, and landing that machinery for one member was judged the wrong trade.
+
 ## Contract format
 
 `api/components/<Component>.json`:
