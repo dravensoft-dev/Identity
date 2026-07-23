@@ -145,6 +145,28 @@ gate never demands totality, only that every claim in the record is true. A gree
 suite asserting all four of a component's exceptions are still true passes while
 the component stays exactly as broken.
 
+**Arena's third contract is the API, and it lives at `api/`.** `api/components/<Name>.json`
+states, once and neutrally, the members that component's API presents; every layer
+implementing it implements exactly those members. A member is one of **seven forms** —
+primitive, enum, predefined object, array of primitives, array of predefined objects,
+slot, event — and five derived rules govern them (R1 an object is pure data, R2 who draws
+decides data versus slot, R3 a parameterised slot fills and never replaces, R4 no platform
+types and no escapes, R5 no unions between forms). `api/README.md` is the normative
+statement and the first thing a new platform target reads, the way `tokens/src/TYPE-MAP.md`
+is for the token layer. Shared objects and enums are declared once in `api/types/` and
+emitted **per layer** by `bun run build:api` into the committed
+`frameworks/react/api.generated.d.ts` and `frameworks/angular/api.generated.ts`, so a
+component's import never crosses the `api/` ↔ `frameworks/` boundary. The word *prop* never
+appears in a contract: it is React's vocabulary, and a neutral contract using it would
+already have chosen a layer. **The structural difference from `behaviour/` is one file, not
+one per layer** — behaviour files a binding beside each layer's source and has a gate
+compare them, which admits two files that disagree and makes the gate's job to notice; a
+contract that forbids divergence has nowhere for a second opinion to live, and
+**`check:api` carries no exception map at all**. Coverage is partial by design and grows one
+component at a time, the same charter `COVERED` carries in `check-compliance.mjs`: a green
+run is a claim about the contracted components and says nothing about the rest — and,
+being orthogonal to behaviour, it says nothing about what any of them *does* either.
+
 **React has two test directories and they must not merge.**
 `frameworks/react/test/` asserts on `renderToStaticMarkup` — no DOM, by design,
 because those suites prove those components render correctly server-side.
