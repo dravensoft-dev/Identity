@@ -104,7 +104,8 @@ substitute the element that carries the behaviour contract.
 > `<li …>{renderItem ? renderItem(item) : …}</li>`, so the `<li>`, and any `posinset` or
 > `busy` that ever lands on it, stay Arena's; `Calendar.jsx` does the same inside the
 > positioned element carrying the event's `onClick` and `aria-label`. Both fill and neither
-> replaces. R3 is therefore not what removes either of them — plan 8B0 removed `renderItem`
+> replaces. R3 is therefore not what removes either of them — plan 8B0's audit removes
+> `renderItem`, with the removal itself landing when `ActivityFeed` is brought under contract,
 > because per-item projection has no binding in Angular, which is a vocabulary limit and not
 > a rule violation.
 
