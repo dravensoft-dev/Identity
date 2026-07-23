@@ -1,0 +1,12 @@
+{
+  "component": "Breadcrumbs",
+  "description": "A trail of ancestor locations ending at the current one. An explicit return path for hierarchies deeper than tabs.",
+  "api": {
+    "items": { "form": "array", "of": "Crumb", "required": true,
+               "description": "The trail, root first. The last entry is the current location and is never a link." },
+    "separator": { "form": "primitive", "type": "string", "default": "/",
+                   "description": "Drawn between crumbs, never before the first. Arena draws it, in its own aria-hidden span." },
+    "navigate": { "form": "event", "payload": "Crumb",
+                  "description": "A non-current crumb was activated, carrying that crumb alone. The native MouseEvent is not forwarded, so a listener cannot call preventDefault() on the anchor's own navigation -- ctrl-click, middle-click and open-in-new-tab still work for a consumer who wires nothing; intercepting a plain click to substitute SPA routing belongs at the router (routerLink, Link), not here." }
+  }
+}

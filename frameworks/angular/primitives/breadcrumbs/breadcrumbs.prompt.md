@@ -3,10 +3,12 @@ not a link, and carrying `aria-current="page"`. The host itself is the `nav` lan
 (`role="navigation"`, `aria-label="Breadcrumb"`); no wrapper element is rendered inside it.
 Use it where a hierarchy is deeper than tabs can show.
 
-A crumb renders as a real `<a href>`, so a plain click still navigates the browser. To
-substitute SPA routing, call `event.preventDefault()` on the forwarded `MouseEvent` and
-route yourself -- leave it alone and the native navigation (and ctrl-click, middle-click,
-open-in-new-tab) keeps working for free:
+A crumb renders as a real `<a href>`, so a plain click still navigates the browser.
+`navigate` reports the clicked `Crumb` alone -- the native `MouseEvent` is not forwarded,
+so a listener cannot call `preventDefault()` to stop the anchor's own navigation.
+Ctrl-click, middle-click and open-in-new-tab keep working for a consumer who wires
+nothing; intercepting a plain click to substitute SPA routing now belongs at the router
+(`routerLink`), not here:
 
 ```html
 <arena-breadcrumbs [items]="[
@@ -17,8 +19,7 @@ open-in-new-tab) keeps working for free:
 ```
 
 ```ts
-go({ crumb, event }: ArenaCrumbNavigateEvent): void {
-  event.preventDefault();
+go(crumb: Crumb): void {
   this.router.navigateByUrl(crumb.href ?? '/');
 }
 ```
@@ -29,9 +30,8 @@ go({ crumb, event }: ArenaCrumbNavigateEvent): void {
 - Don't use breadcrumbs for steps in a flow. A trail describes where something *is*,
   not how far through it you are -- that is the coachmark's dots or a stepper.
 - Don't truncate the middle of a trail to save space. Wrap it; the row already does.
-- Don't call `preventDefault()` inside a `(navigate)` handler unconditionally unless you
-  are actually routing -- do it only on the branch that substitutes navigation, or a
-  consumer loses ctrl-click/middle-click/open-in-new-tab for no reason.
+- Don't reach for `(navigate)` to call `preventDefault()` -- it never receives the click
+  event, so it cannot stop the anchor's own navigation. Intercept at the router instead.
 
 **Accessibility note:** the trail renders no `<ol>`/`<li>` wrapper (matching React), so a
 screen reader gets no "list, N items" orientation cue that the WAI-ARIA APG's breadcrumb

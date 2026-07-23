@@ -48,7 +48,7 @@ import { Avatar } from '../primitives/avatar/avatar';
 import { avatarStyles } from '../primitives/avatar/avatar.variants';
 import { BarChart } from '../primitives/bar-chart/bar-chart';
 import { Breadcrumbs } from '../primitives/breadcrumbs/breadcrumbs';
-import type { ArenaCrumb, ArenaCrumbNavigateEvent } from '../primitives/breadcrumbs/breadcrumbs';
+import type { Crumb } from '../api.generated';
 import { breadcrumbsStyles } from '../primitives/breadcrumbs/breadcrumbs.variants';
 import { BulkActionBar } from '../primitives/bulk-action-bar/bulk-action-bar';
 import { bulkActionBarStyles } from '../primitives/bulk-action-bar/bulk-action-bar.variants';
@@ -160,6 +160,24 @@ class SkeletonHost {}
   template: `<arena-breadcrumbs class="consumer-class" />`,
 })
 class BreadcrumbsHost {}
+
+/* `items` is `input.required<Crumb[]>()`, and this JIT-only harness cannot
+ * drive a signal input through a template binding (this file's header
+ * comment, and the NG0950 failure `AppLogoStaticAttributeHost` pins for
+ * `name`) -- `BreadcrumbsHost`'s template above supplies no `items` binding
+ * at all, so the child's first `detectChanges()` would throw the same
+ * NG0950 the moment its own template reads `items()`. TestBed builds a
+ * host's child view eagerly, before the first change-detection pass, which
+ * is what makes the real child `Breadcrumbs` instance queryable here; this
+ * overwrites its `items` field with a plain function before that first
+ * `detectChanges()` -- `renderAppLogo`'s own bypass technique, applied to a
+ * nested child rather than a fixture's own root. */
+function createBreadcrumbsHost(items: Crumb[] = []) {
+  const fixture = TestBed.createComponent(BreadcrumbsHost);
+  const instance = fixture.debugElement.query(By.directive(Breadcrumbs)).componentInstance as unknown as Record<string, unknown>;
+  instance['items'] = () => items;
+  return fixture;
+}
 
 /* The literal `label="Revenue"` and `value="$48.2k"` below are inert under this JIT-only
  * harness for the same reason as `AvatarHost` above -- both are signal inputs (`input('')`)
@@ -602,7 +620,7 @@ test('arena-skeleton: the host itself carries the loading status, not a wrapper 
 });
 
 test('arena-breadcrumbs: the root recipe classes land on the host element itself', async () => {
-  const fixture = TestBed.createComponent(BreadcrumbsHost);
+  const fixture = createBreadcrumbsHost();
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-breadcrumbs') as HTMLElement;
@@ -611,7 +629,7 @@ test('arena-breadcrumbs: the root recipe classes land on the host element itself
 });
 
 test('arena-breadcrumbs: a consumer-supplied class on the host survives the [class] binding', async () => {
-  const fixture = TestBed.createComponent(BreadcrumbsHost);
+  const fixture = createBreadcrumbsHost();
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-breadcrumbs') as HTMLElement;
@@ -619,7 +637,7 @@ test('arena-breadcrumbs: a consumer-supplied class on the host survives the [cla
 });
 
 test('arena-breadcrumbs: the host itself carries the nav landmark, not a wrapper inside it', async () => {
-  const fixture = TestBed.createComponent(BreadcrumbsHost);
+  const fixture = createBreadcrumbsHost();
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-breadcrumbs') as HTMLElement;
@@ -628,59 +646,43 @@ test('arena-breadcrumbs: the host itself carries the nav landmark, not a wrapper
   assert.equal(host.children.length, 0, 'with no items, the trail renders no crumbs of its own');
 });
 
-/* Review finding on Task 12: `(click)="navigate.emit(crumb)"` never touched
- * the click event, so a crumb's native navigation to `crumb.href` always
- * fired alongside the output and a consumer had no way to call
- * `preventDefault()` and substitute SPA routing. The fix forwards the real
- * `MouseEvent` alongside the crumb as `ArenaCrumbNavigateEvent`.
+/* `navigate` carries the clicked `Crumb` alone -- the API contract
+ * (`api/components/Breadcrumbs.json`) deliberately does not forward the
+ * native `MouseEvent`, so a listener can no longer call `preventDefault()`
+ * to substitute SPA routing; the anchor's own navigation always fires
+ * alongside the emission (ctrl-click, middle-click and open-in-new-tab keep
+ * working, which is the point). This is a real capability loss from the
+ * previous `ArenaCrumbNavigateEvent { crumb, event }` shape, recorded in
+ * both `breadcrumbs.prompt.md` and the class doc comment, not something
+ * this test can restore.
  *
- * The template wires `(click)="onCrumbClick(crumb, $event)"`, but `items` is
- * a signal input, and this harness cannot drive a signal input through a
- * template binding here (NG0303) -- the same limitation
- * `confirm-dialog-focus-trap.test.ts` and this file's own header comment
- * document for `Skeleton`'s `variant` and `ConfirmDialog`'s `open`: the
- * harness runs `@angular/compiler`'s runtime JIT and never `ngtsc`, so a
- * signal input never reaches `ɵcmp.inputs`. Without a bound, non-empty
- * `items` array there is no real `<a>` in the DOM for this test to click.
- *
- * What IS provable for real: `onCrumbClick` is the exact method the
- * template's `(click)` binds to, not a stand-in. This test creates a real
- * `Breadcrumbs` instance via TestBed, calls that real method with a real
- * `MouseEvent`, and asserts on the actual emitted payload -- including that
- * calling `preventDefault()` on the emitted event flips the *same* event
- * object's `defaultPrevented`, proving the primitive forwards the live
- * native event rather than a copy. `bun run check:angular`
- * (`ngc --strictTemplates`) is the authority that `(click)="onCrumbClick(crumb,
- * $event)"` itself typechecks against the component's real members. */
-test('arena-breadcrumbs: a crumb click forwards the real MouseEvent, so a consumer can preventDefault() the anchor\'s native navigation', async () => {
-  const fixture = TestBed.createComponent(BreadcrumbsHost);
+ * The template wires `(click)="onCrumbClick(crumb)"`, but `items` is a
+ * signal input this JIT-only harness cannot drive through a template
+ * binding (this file's header comment), so `createBreadcrumbsHost` is used
+ * to satisfy it by direct field assignment, exactly as the three tests
+ * above do. What IS provable for real: `onCrumbClick` is the exact method
+ * the template's `(click)` binds to, not a stand-in. This test creates a
+ * real `Breadcrumbs` instance via TestBed, calls that real method with a
+ * real `Crumb`, and asserts `navigate` emits that crumb alone. `bun run
+ * check:angular` (`ngc --strictTemplates`) is the authority that
+ * `(click)="onCrumbClick(crumb)"` itself typechecks against the
+ * component's real members. */
+test('arena-breadcrumbs: a crumb click emits the clicked Crumb alone through navigate', async () => {
+  const fixture = createBreadcrumbsHost();
   fixture.detectChanges();
   await fixture.whenStable();
   const breadcrumbs = fixture.debugElement.query(By.directive(Breadcrumbs)).componentInstance as Breadcrumbs;
 
-  let received: ArenaCrumbNavigateEvent | undefined;
+  let received: Crumb | undefined;
   breadcrumbs.navigate.subscribe((payload) => {
     received = payload;
   });
 
-  const crumb: ArenaCrumb = { label: 'Clients', href: '/clients' };
-  const clickEvent = new MouseEvent('click', { cancelable: true });
-  (breadcrumbs as unknown as { onCrumbClick(crumb: ArenaCrumb, event: MouseEvent): void }).onCrumbClick(crumb, clickEvent);
+  const crumb: Crumb = { label: 'Clients', href: '/clients' };
+  (breadcrumbs as unknown as { onCrumbClick(crumb: Crumb): void }).onCrumbClick(crumb);
 
   assert.ok(received, 'navigate did not emit');
-  assert.equal(received!.crumb, crumb, 'the emitted crumb is not the same object the click targeted');
-  assert.equal(
-    received!.event,
-    clickEvent,
-    'the emitted event is not the real MouseEvent the click produced -- a consumer could not preventDefault() the actual anchor navigation',
-  );
-  assert.equal(clickEvent.defaultPrevented, false, 'sanity: the event starts un-prevented');
-  received!.event.preventDefault();
-  assert.equal(
-    clickEvent.defaultPrevented,
-    true,
-    'calling preventDefault() on the emitted event must prevent the real anchor navigation -- proves it is the live native event, not a copy',
-  );
+  assert.equal(received, crumb, 'the emitted payload is not the same crumb object the click targeted');
 });
 
 test('arena-stat-card: the root recipe classes land on the host element itself', async () => {

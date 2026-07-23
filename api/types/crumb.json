@@ -1,0 +1,11 @@
+{
+  "name": "Crumb",
+  "kind": "object",
+  "description": "One entry in a breadcrumb trail. `href` is omitted for the current page, which is never rendered as a link.",
+  "fields": {
+    "label": { "form": "primitive", "type": "string", "required": true,
+               "description": "What the crumb reads." },
+    "href": { "form": "primitive", "type": "string",
+              "description": "Where it goes. Absent on the last entry, the current location." }
+  }
+}

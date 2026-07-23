@@ -6,6 +6,14 @@
  * tokens.generated.* already carries. scripts/check-api.mjs asserts the
  * committed files match api/types/. See api/README.md for the vocabulary. */
 
+/** One entry in a breadcrumb trail. `href` is omitted for the current page, which is never rendered as a link. */
+export interface Crumb {
+  /** What the crumb reads. */
+  label: string;
+  /** Where it goes. Absent on the last entry, the current location. */
+  href?: string;
+}
+
 /** Whether a change was GOOD. Separate from Direction because revenue down is negative and latency down is positive, and only the product knows which. Every sign renders outline, never filled. */
 export type DeltaTone = 'neutral' | 'positive' | 'negative';
 

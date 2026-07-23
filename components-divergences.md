@@ -997,29 +997,6 @@ notices the two surfaces no longer match by eye. Check `UnauthCard.manifest.json
 **Converges:** not planned — the padding split is the reason a shared recipe was
 rejected, not an oversight to fix later.
 
-### Breadcrumbs — a single `navigate` output replaces a per-item `onClick`
-
-**React:** `Breadcrumbs.jsx` takes `items` as `{ label, href?, onClick? }[]` and wires
-each non-current item's own `onClick` directly onto its anchor: `<a href={it.href ||
-'#'} onClick={it.onClick}>`. A consumer wanting to intercept navigation supplies a
-different `onClick` per item.
-
-**Angular:** `arena-breadcrumbs` takes `ArenaCrumb { label, href? }` with no per-item
-callback field, and emits one `navigate` output carrying an `ArenaCrumbNavigateEvent`
-(`{ crumb, event }`) whenever a non-current crumb is clicked
-(`frameworks/angular/primitives/breadcrumbs/breadcrumbs.ts:59`).
-
-**Why:** a crumb renders as a real `<a href>`, so without the native event a consumer
-has no way to call `event.preventDefault()` and substitute SPA routing — forwarding it
-gives the same capability React's per-item `onClick` gives by wiring the DOM handler
-directly, while native navigation (ctrl-click, middle-click, open-in-new-tab) keeps
-working for a consumer who wires nothing, which is why the primitive never calls
-`preventDefault()` itself.
-
-**Converges:** no — one output carrying the crumb and the native event is the correct
-Angular idiom for this, and preserves everything a consumer could do with React's
-per-item callback.
-
 ### StatCard — `delta` is one object prop in React, three flat inputs in Angular
 
 **React:** `StatCard.jsx` takes `delta` as a single object prop, `{ value, tone,
