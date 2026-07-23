@@ -126,6 +126,21 @@ whatever it named, nothing it did not. Angular has no equivalent question: a
 component's own file imports straight from `../../api.generated` and there is no
 prior local declaration to preserve.
 
+## Conventions the audits settled
+
+R2 decides data-versus-slot by asking who draws the content, and there are shapes where both
+answers are true of two different designs. These are the ones the audits settled, so a later
+contract cites the convention rather than re-deriving it — and so a reader of the contracts is
+never asked to remember which components are which.
+
+**A single icon is a primitive `string` carrying a Phosphor class name, never a slot.** Arena
+draws the `<i class="…">`; the consumer names the glyph. This keeps the glyph inside what
+`check:compliance` can judge, keeps the icon inside Arena's own iconography, and — the reason
+that decided it — lets each layer gate the wrapper on the value's presence. Angular cannot
+detect a filled slot without a `contentChild` query on a marker directive, so an icon *slot*
+either ships an unconditional zero-area wrapper or costs a directive a consumer must remember
+to import. `Alert` had already reached this answer independently in both layers.
+
 ## Contract format
 
 `api/components/<Component>.json`:

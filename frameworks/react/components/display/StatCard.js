@@ -37,7 +37,9 @@ export function StatCard({ label, value, tone = "neutral", delta, sub, icon }) {
   }, label), icon && React.createElement("span", {
     "aria-hidden": "true",
     style: { display: "inline-flex", fontSize: "var(--icon-sm)", color: "var(--mute)", opacity: 0.6 }
-  }, icon)), React.createElement("div", {
+  }, React.createElement("i", {
+    className: icon
+  }))), React.createElement("div", {
     style: {
       fontFamily: "var(--font-display)",
       fontWeight: "var(--fw-extrabold)",

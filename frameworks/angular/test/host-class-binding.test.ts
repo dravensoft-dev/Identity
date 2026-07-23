@@ -224,40 +224,19 @@ class StatCardHost {}
 
 /* `renderStatCard` reuses `renderAppLogo`'s bypass technique above: construct the
  * real `StatCard` directly with `TestBed.createComponent`, then overwrite `label`/
- * `value` (and, when given, `delta`) as plain functions before the first
+ * `value` (and, when given, `delta`/`icon`) as plain functions before the first
  * `detectChanges()` -- no host wrapper, so a consumer class is instead added via
  * `classList.add` before that first `detectChanges()`, exactly as `renderAppLogo`'s
  * own second test does. This proves template and DOM shape only, never the input
  * contract itself; `bun run check:angular` (`ngc --strictTemplates`) is the real
- * authority that `label`/`value`/`delta` are declared correctly. */
-function renderStatCard(label: string, value: string, delta?: StatDelta) {
+ * authority that `label`/`value`/`delta`/`icon` are declared correctly. */
+function renderStatCard(label: string, value: string, delta?: StatDelta, icon?: string) {
   const fixture = TestBed.createComponent(StatCard);
   const instance = fixture.componentInstance as unknown as Record<string, unknown>;
   instance['label'] = () => label;
   instance['value'] = () => value;
   if (delta !== undefined) instance['delta'] = () => delta;
-  return fixture;
-}
-
-/* `icon` (`api/components/StatCard.json`) is a slot (`<ng-content select="[icon]" />`),
- * not an input -- `renderStatCard` above has no wrapper and so nothing to project
- * content THROUGH. This host exists for exactly that, the same shape
- * `createBreadcrumbsHost`/`createAppLogoMarkHost` already use: a real wrapper
- * supplying real projected content, with the child `StatCard`'s required `label`/
- * `value` bypassed by direct field assignment via `By.directive` before the first
- * `detectChanges()`. */
-@Component({
-  standalone: true,
-  imports: [StatCard],
-  template: `<arena-stat-card><span icon>i</span></arena-stat-card>`,
-})
-class StatCardIconHost {}
-
-function createStatCardIconHost() {
-  const fixture = TestBed.createComponent(StatCardIconHost);
-  const instance = fixture.debugElement.query(By.directive(StatCard)).componentInstance as unknown as Record<string, unknown>;
-  instance['label'] = () => 'Revenue';
-  instance['value'] = () => '$48.2k';
+  if (icon !== undefined) instance['icon'] = () => icon;
   return fixture;
 }
 
@@ -831,20 +810,28 @@ test('arena-stat-card: a delta with a value renders the pill; a delta with a ton
   emptyValue.destroy();
 });
 
-/* Real coverage of `icon` content projection, absent before this: nothing rendered
- * `arena-stat-card` with real projected content and read it back. Arena renders the
- * `aria-hidden` wrapper span unconditionally (stat-card.ts's own doc comment explains
- * why -- a slot gives the component nothing to inspect the way a primitive input
- * does), so this proves the wrapper exists AND that a consumer's projected glyph lands
- * inside it, not merely that the wrapper renders. */
-test('arena-stat-card: content selected for [icon] projects into the icon slot', () => {
-  const fixture = createStatCardIconHost();
+/* Real coverage of `icon` as a Phosphor class name (`api/components/StatCard.json`,
+ * per the "Conventions the audits settled" section of `api/README.md`), replacing the
+ * old slot-projection test: `icon` gates the wrapper on `@if (icon(); as glyph)`, so
+ * an unfilled icon must render no wrapper at all rather than an empty one. */
+test('arena-stat-card: an icon class name renders the <i> inside the aria-hidden wrapper', () => {
+  const fixture = renderStatCard('Deploys', '128', undefined, 'ph-bold ph-rocket');
   fixture.detectChanges();
-  const host = fixture.nativeElement.querySelector('arena-stat-card') as HTMLElement;
+  const host = fixture.nativeElement as HTMLElement;
   const iconClass = statCardStyles().icon().split(/\s+/)[0];
   const iconSlot = host.querySelector(`.${iconClass}`);
   assert.ok(iconSlot, 'the icon wrapper element itself is missing');
-  assert.equal(iconSlot?.querySelector('span')?.textContent, 'i', 'the projected <span icon> should render inside the icon slot');
+  assert.equal(iconSlot?.getAttribute('aria-hidden'), 'true', 'the wrapper must stay aria-hidden');
+  assert.ok(iconSlot?.querySelector('i.ph-bold.ph-rocket'), 'the glyph <i> must carry the icon class name');
+  fixture.destroy();
+});
+
+test('arena-stat-card: no icon renders no wrapper at all -- not an empty one', () => {
+  const fixture = renderStatCard('Deploys', '128');
+  fixture.detectChanges();
+  const host = fixture.nativeElement as HTMLElement;
+  const iconClass = statCardStyles().icon().split(/\s+/)[0];
+  assert.equal(host.querySelector(`.${iconClass}`), null, 'no icon means no icon wrapper at all');
   fixture.destroy();
 });
 

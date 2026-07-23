@@ -24,13 +24,11 @@ sibling `stat-card.variants.ts` recipe.
 <arena-stat-card label="Open incidents" value="3" tone="danger" [delta]="{ value: '2', direction: 'up', tone: 'positive' }" sub="2 acknowledged" />
 ```
 
-`icon` is a slot, not an input — project the glyph with the `icon` attribute selector,
-the same shape `arena-app-logo`'s `mark` slot uses:
+`icon` is a Phosphor class name, not a slot — Arena draws the `<i>` and its
+aria-hidden wrapper, and an unfilled `icon` renders no wrapper at all:
 
 ```html
-<arena-stat-card label="Build time" value="4m 12s" [delta]="{ value: '+3s', direction: 'up' }">
-  <i icon class="ph-bold ph-timer"></i>
-</arena-stat-card>
+<arena-stat-card label="Build time" value="4m 12s" [delta]="{ value: '+3s', direction: 'up' }" icon="ph-bold ph-timer" />
 ```
 
 **Do / Don't**

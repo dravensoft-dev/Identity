@@ -1050,34 +1050,6 @@ would mean overriding Material's own list metrics from the bridge, which is exac
 duplication the bridge exists to avoid. Recorded so that a reader comparing the three does not
 mistake the gap for drift.
 
-### StatCard — the icon wrapper renders unconditionally in Angular, only when `icon` is truthy in React
-
-**React:** `StatCard.jsx` renders the icon wrapper only when a consumer passes one:
-`{icon && <span aria-hidden="true" ...>{icon}</span>}` — no `icon`, no wrapper at all.
-
-**Angular:** `arena-stat-card`'s template renders `<span [class]="styles().icon()"
-aria-hidden="true"><ng-content select="[icon]" /></span>` unconditionally — the wrapper is
-always in the DOM, whether or not a consumer projects anything into `[icon]`.
-
-**Why:** `stat-card.ts`'s own doc comment states the reason: a slot gives the component
-nothing to inspect the way a primitive input does. `contentChild` can detect projected
-content, but only under a real `ngtsc` build, and reaching for it here would need a new marker
-directive for one `aria-hidden`, zero-footprint span — the same idiom `UnauthCard`/`EmptyState`/
-`ErrorState` already use for their own optional slots (`contentChild(ArenaAction)` etc.). The
-wrapper is `inline-flex` with no min-width and no padding, so an unfilled slot collapses to a
-zero-width box that changes nothing onscreen, and `aria-hidden="true"` keeps it silent for
-assistive tech either way — the same choice `arena-app-logo` made for its own (required) `mark`
-slot.
-
-**Worth knowing:** `icon` is a slot on `arena-stat-card` (projected content) but a plain string
-input on `arena-empty-state`/`arena-error-state` (`title`'s sibling `icon?: string`, resolved to
-a Phosphor class name) — two different idioms for the same word, on the same layer. Settling
-that split is Plan B's, not this one's; noted here only because it is directly adjacent to this
-entry's own subject.
-
-**Converges:** no, not yet — closing this needs the marker-directive idiom named above, which is
-Plan B's scope, not done here.
-
 ## How to add an entry
 
 When you find a behavioural difference between layers:

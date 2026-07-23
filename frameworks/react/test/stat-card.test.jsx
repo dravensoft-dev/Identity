@@ -35,3 +35,18 @@ test('no delta at all renders no pill either -- the same gate, at its other edge
   assert.doesNotMatch(html, /ph-arrow-up/);
   assert.doesNotMatch(html, /ph-arrow-down/);
 });
+
+/* `icon` is a Phosphor class-name string, not a slot, per the "Conventions the
+ * audits settled" section of `api/README.md` and `api/components/StatCard.json`.
+ * Arena draws the `<i>` and its aria-hidden wrapper; an absent icon renders
+ * neither -- not an empty wrapper. */
+test('an icon renders the glyph Arena draws, inside the aria-hidden wrapper', () => {
+  const html = renderToStaticMarkup(<StatCard label="Deploys" value="128" icon="ph-bold ph-rocket" />);
+  assert.match(html, /aria-hidden="true"/);
+  assert.match(html, /class="[^"]*ph-rocket/);
+});
+
+test('no icon renders no wrapper at all -- not an empty one', () => {
+  const html = renderToStaticMarkup(<StatCard label="Deploys" value="128" />);
+  assert.doesNotMatch(html, /aria-hidden="true"/);
+});

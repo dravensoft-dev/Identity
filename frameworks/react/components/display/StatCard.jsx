@@ -42,7 +42,7 @@ export function StatCard({ label, value, tone = 'neutral', delta, sub, icon }) {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'calc(var(--sp-1) * 3)' }}>
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{label}</span>
-        {icon && <span aria-hidden="true" style={{ display: 'inline-flex', fontSize: 'var(--icon-sm)', color: 'var(--mute)', opacity: 0.6 }}>{icon}</span>}
+        {icon && <span aria-hidden="true" style={{ display: 'inline-flex', fontSize: 'var(--icon-sm)', color: 'var(--mute)', opacity: 0.6 }}><i className={icon} /></span>}
       </div>
       <div style={{
         fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 'var(--fs-h2)', lineHeight: 'var(--lh-snug)',

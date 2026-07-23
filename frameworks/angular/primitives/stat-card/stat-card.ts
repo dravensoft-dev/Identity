@@ -28,20 +28,10 @@ import type { Tone, StatDelta } from '../../api.generated';
  *  per-field ergonomics three flat inputs gave Angular alone. The host itself is
  *  the recipe's `root` — it is the flex item a
  *  parent row lays out, so root-level classes must live on the host, not one
- *  element inside it. `icon` is a slot (`<ng-content select="[icon]" />`), not an
- *  input: Arena still renders the aria-hidden wrapper span, and only the glyph
- *  inside it comes from the consumer, matching `arena-app-logo`'s `mark` slot.
- *
- *  The old `@if (icon(); as glyph)` gate came from `icon` being a primitive
- *  input the component could inspect; a slot has nothing to inspect the same
- *  way -- `contentChild` can detect projected content, but only under a real
- *  `ngtsc` build, and reaching for it here would need a new marker directive
- *  for one aria-hidden, zero-footprint span. The wrapper renders
- *  unconditionally instead, the same choice `arena-app-logo` already made for
- *  its own (required) `mark` slot: it is `inline-flex` with no min-width and
- *  no padding, so an unfilled slot collapses to a zero-width box that changes
- *  nothing onscreen, and `aria-hidden="true"` keeps it silent for assistive
- *  tech either way. */
+ *  element inside it. `icon` is a Phosphor class name, not a slot: Arena draws
+ *  the `<i>` and its aria-hidden wrapper, gated on `@if (icon(); as glyph)`, so
+ *  an unfilled icon renders no wrapper at all, per `api/components/StatCard.json`
+ *  and the convention in `api/README.md`'s *Conventions the audits settled*. */
 @Component({
   selector: 'arena-stat-card',
   standalone: true,
@@ -50,7 +40,9 @@ import type { Tone, StatDelta } from '../../api.generated';
   template: `
     <div [class]="styles().head()">
       <span [class]="styles().label()">{{ label() }}</span>
-      <span [class]="styles().icon()" aria-hidden="true"><ng-content select="[icon]" /></span>
+      @if (icon(); as glyph) {
+        <span [class]="styles().icon()" aria-hidden="true"><i [class]="glyph"></i></span>
+      }
     </div>
     <div [class]="styles().value()">{{ value() }}</div>
     @if (delta()?.value; as amount) {
@@ -70,6 +62,7 @@ export class StatCard {
   readonly tone = input<Tone>('neutral');
   readonly delta = input<StatDelta>();
   readonly sub = input<string>();
+  readonly icon = input<string>();
 
   protected readonly styles = computed(() => statCardStyles({ tone: this.tone(), deltaTone: this.delta()?.tone ?? 'neutral' }));
 }

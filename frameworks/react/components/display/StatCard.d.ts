@@ -21,7 +21,9 @@ export interface StatCardProps {
   delta?: StatDelta;
   /** Small muted line under the value — context, e.g. "vs last week". */
   sub?: string;
-  /** @startingPoint A ~14px Phosphor icon; rendered muted at .6 opacity. */
-  icon?: React.ReactNode;
+  /** @startingPoint A Phosphor class name (e.g. "ph-bold ph-timer") for a
+   * small glyph beside the label; rendered muted at .6 opacity. Arena draws
+   * the `<i>` and its aria-hidden wrapper — absent renders neither. */
+  icon?: string;
 }
 export function StatCard(props: StatCardProps): JSX.Element;

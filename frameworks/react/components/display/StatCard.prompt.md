@@ -11,7 +11,7 @@ gate on the same fact, per `api/components/StatCard.json`).
 <StatCard label="Deploys" value="128" delta={{ value: '+12%', direction: 'up', tone: 'positive' }} sub="vs last week" />
 <StatCard label="p95 latency" value="340 ms" delta={{ value: '-18%', direction: 'down', tone: 'positive' }} sub="vs last week" />
 <StatCard label="Open incidents" value="3" delta={{ value: '+2', direction: 'up', tone: 'negative' }} />
-<StatCard label="Build time" value="4m 12s" delta={{ value: '+3s', direction: 'up' }} icon={<i className="ph-bold ph-timer" />} />
+<StatCard label="Build time" value="4m 12s" delta={{ value: '+3s', direction: 'up' }} icon="ph-bold ph-timer" />
 ```
 
 `tone` on the card colors the **value**; `delta.tone` colors the **pill**. They answer different questions — what the number *is* versus how it *moved* — and either can be set without the other:
