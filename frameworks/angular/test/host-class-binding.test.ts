@@ -898,7 +898,7 @@ test('arena-chart-card: a consumer-supplied class on the host survives the [clas
   assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
 });
 
-/* The bare case: no `title` and nothing projected into `[arena-actions]` or
+/* The bare case: no `title` and nothing projected into `[actions]` or
  * the default slot. Only this negative path is provable here. A positive
  * render (binding `title="..."` in a host template, the same literal-attribute
  * shape `arena-empty-state`'s and `arena-error-state`'s own `title="..."`
@@ -944,7 +944,7 @@ test('arena-chart-card: the head row is entirely absent when there is neither a 
  * anything into it, shipping dead trailing space (the wrapper's own `mt-1.5`
  * inside a `gap-3` flex column) on every empty state with no action. The fix
  * gates the wrapper on `contentChild(ArenaAction)`, a marker directive
- * standing in for the `[arena-action]` CSS selector `ng-content select`
+ * standing in for the `[action]` CSS selector `ng-content select`
  * already used, because Angular content queries do not accept a CSS
  * selector as a locator (only a directive/component type, a template
  * reference variable, or a DI token -- confirmed against the Angular docs
@@ -979,7 +979,7 @@ test('arena-chart-card: the head row is entirely absent when there is neither a 
  * `action()` is correctly `undefined` regardless of which compiler produced
  * it, so it is real coverage of the reported bug's exact repro (an empty
  * state with no action must not ship the wrapper's dead space). */
-test('arena-empty-state: the action wrapper is absent from the DOM when no [arena-action] content is projected', async () => {
+test('arena-empty-state: the action wrapper is absent from the DOM when no [action] content is projected', async () => {
   const fixture = TestBed.createComponent(EmptyStateWithoutActionHost);
   fixture.detectChanges();
   await fixture.whenStable();
@@ -1013,7 +1013,7 @@ test('arena-error-state: the root recipe classes land on the host element itself
  * reported bug's exact repro, ported to `arena-error-state`'s own actions
  * slot, gated on the same shared marker directive `arena-empty-state` uses,
  * `ArenaAction` (`../primitives/projection-markers`). */
-test('arena-error-state: the actions wrapper is absent from the DOM when no [arena-action] content is projected', async () => {
+test('arena-error-state: the actions wrapper is absent from the DOM when no [action] content is projected', async () => {
   const fixture = TestBed.createComponent(ErrorStateWithoutActionHost);
   fixture.detectChanges();
   await fixture.whenStable();
@@ -1098,7 +1098,7 @@ test('arena-page-head: an unmeasured width renders the WIDE layout, so the narro
  * dead space to every page with no actions. It is gated on the shared
  * `ArenaActions` marker (`../primitives/projection-markers`), the plural
  * sibling of the `ArenaAction` that `arena-empty-state` uses. */
-test('arena-page-head: the actions wrapper is absent from the DOM when no [arena-actions] content is projected', async () => {
+test('arena-page-head: the actions wrapper is absent from the DOM when no [actions] content is projected', async () => {
   document.documentElement.style.setProperty('--bp-sm', BP_SM);
   try {
     const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);

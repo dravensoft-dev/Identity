@@ -5,14 +5,14 @@ own `role="img"`.
 
 ```html
 <arena-chart-card title="Deployments per week">
-  <button arena-actions mat-icon-button aria-label="Export"><i class="ph-bold ph-download-simple"></i></button>
+  <button actions mat-icon-button aria-label="Export"><i class="ph-bold ph-download-simple"></i></button>
   <arena-bar-chart [labels]="weeks" [values]="counts" seriesLabel="Deployments" />
 </arena-chart-card>
 ```
 
 Import `ArenaActions` from `frameworks/angular/primitives/projection-markers` (or the
 primitives barrel) alongside `ChartCard` in the host component's `imports` —
-`arena-actions` is a directive, not a plain attribute, because it is how the card
+`actions` is a directive, not a plain attribute, because it is how the card
 detects that actions were projected at all. Without it the attribute is inert, the
 head row never renders when there is no title, and the button silently disappears.
 `ArenaActions` is shared: every primitive with a plural, toolbar-shaped projected slot

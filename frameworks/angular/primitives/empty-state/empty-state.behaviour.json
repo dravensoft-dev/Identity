@@ -1,6 +1,6 @@
 {
   "component": "EmptyState",
   "pattern": "none",
-  "reason": "arena-empty-state renders an optional icon, title and message, plus an `[arena-action]` slot that only wraps whatever the caller projects into it. It manages no state, adds no role, and owns no interactive element of its own -- any button a user can act on belongs to the caller's projected content, not to EmptyState.",
+  "reason": "arena-empty-state renders an optional icon, title and message, plus an `[action]` slot that only wraps whatever the caller projects into it. It manages no state, adds no role, and owns no interactive element of its own -- any button a user can act on belongs to the caller's projected content, not to EmptyState.",
   "exceptions": []
 }

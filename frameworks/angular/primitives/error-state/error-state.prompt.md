@@ -12,16 +12,16 @@ bare error state ships no dead space for a retry it does not offer.
                    title="Couldn't reach the delivery API"
                    message="The dashboard is showing the last data it cached."
                    code="ERR_UPSTREAM_504">
-  <button arena-action mat-flat-button (click)="retry()">Retry</button>
+  <button action mat-flat-button (click)="retry()">Retry</button>
 </arena-error-state>
 ```
 
 Import `ArenaAction` from `frameworks/angular/primitives/projection-markers` (or the
 primitives barrel) alongside `ErrorState` in the host component's `imports` —
-`arena-action` is a directive, not a plain attribute, because it is how the error
+`action` is a directive, not a plain attribute, because it is how the error
 state detects that an action was projected at all. It is the same directive
 `arena-empty-state` uses for its own action slot — both primitives mark the identical
-`[arena-action]` attribute, so the marker is declared once and imported by each.
+`[action]` attribute, so the marker is declared once and imported by each.
 
 **Do / Don't**
 - Always offer a retry when a retry could work. An error state with no action is a
@@ -32,4 +32,4 @@ state detects that an action was projected at all. It is the same directive
   detail goes; the message is for a person.
 - Don't use this for a validation failure on a field — that belongs on the field.
 - Don't forget to import `ArenaAction` when projecting an action — without it,
-  the `arena-action` attribute is inert and the action silently fails to render.
+  the `action` attribute is inert and the action silently fails to render.

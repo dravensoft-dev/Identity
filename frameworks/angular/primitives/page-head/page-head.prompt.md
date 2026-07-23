@@ -5,7 +5,7 @@ they are real `mat-button`s wearing Arena.
 
 ```html
 <arena-page-head title="Deployments" subtitle="Everything shipped in the last 30 days">
-  <div arena-actions>
+  <div actions>
     <button mat-stroked-button>Export</button>
     <button mat-flat-button>New deployment</button>
   </div>
@@ -14,7 +14,7 @@ they are real `mat-button`s wearing Arena.
 
 Import `ArenaActions` from `frameworks/angular/primitives/projection-markers` (or the
 primitives barrel) alongside `PageHead` in the host component's `imports` —
-`arena-actions` is a directive, not a plain attribute, because it is how the page head
+`actions` is a directive, not a plain attribute, because it is how the page head
 detects that actions were projected at all. Without it the attribute is inert, the
 actions wrapper never renders, and the buttons silently disappear. `ArenaActions` is
 shared: every primitive with a plural, toolbar-shaped projected slot imports the same
@@ -32,5 +32,5 @@ initializer or the constructor), render the wide layout while the width is still
 - Keep the subtitle to one line of orientation. It is not the place for instructions.
 - Don't write a media query to stack it. It already stacks, on its own width, which is
   the measurement that is right more often.
-- Don't wrap each button in its own `arena-actions` element. One wrapper holds them
+- Don't wrap each button in its own `actions` element. One wrapper holds them
   all; the recipe already lays them out in a wrapping row.

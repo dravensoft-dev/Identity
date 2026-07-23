@@ -65,9 +65,11 @@ Four shared files sit beside the primitives and are not components:
 `container-size.ts` (the host element's width as a signal, plus `readBreakpoint`),
 `chart-internals.ts` (the chart maths and the identity-or-meaning colour contract),
 `focus-trap.ts` (the shared overlay focus trap, generalized out of `confirm-dialog` and
-used by it and `command-palette`) and `projection-markers.ts` (the `[arena-action]`,
-`[arena-actions]`, `[brand]` and `[footer]` marker directives that let a component
-detect whether an optional slot was projected, so its spacing wrapper can be gated).
+used by it and `command-palette`) and `projection-markers.ts` (the `[action]`,
+`[actions]`, `[brand]` and `[footer]` marker directives that let a component
+detect whether an optional slot was projected, so its spacing wrapper can be gated —
+each bare, with no `arena-` prefix, because the attribute is the contract member's
+name, per `api/README.md`'s binding table).
 
 A primitive defines no styling of its own. Its recipe lives in
 `frameworks/tailwind/components/<Component>.manifest.json` and reaches the

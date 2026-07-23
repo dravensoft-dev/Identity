@@ -23,7 +23,7 @@ import { emptyStateStyles } from './empty-state.variants';
       <div [class]="styles().message()">{{ body }}</div>
     }
     @if (action()) {
-      <div [class]="styles().action()"><ng-content select="[arena-action]" /></div>
+      <div [class]="styles().action()"><ng-content select="[action]" /></div>
     }
   `,
 })

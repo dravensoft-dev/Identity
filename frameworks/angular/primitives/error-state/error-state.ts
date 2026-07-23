@@ -24,7 +24,7 @@ import { errorStateStyles } from './error-state.variants';
       <code [class]="styles().code()">{{ support }}</code>
     }
     @if (action()) {
-      <div [class]="styles().actions()"><ng-content select="[arena-action]" /></div>
+      <div [class]="styles().actions()"><ng-content select="[action]" /></div>
     }
   `,
 })

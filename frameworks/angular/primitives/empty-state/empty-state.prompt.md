@@ -9,15 +9,15 @@ action ships no dead space for one.
 <arena-empty-state icon="ph-bold ph-folder-open"
                    title="No projects yet"
                    message="A project groups deployments, logs and artifacts for one client.">
-  <button arena-action mat-flat-button (click)="create()">Create a project</button>
+  <button action mat-flat-button (click)="create()">Create a project</button>
 </arena-empty-state>
 ```
 
 Import `ArenaAction` from `frameworks/angular/primitives/projection-markers` (or the
 primitives barrel) alongside `EmptyState` in the host component's `imports` —
-`arena-action` is a directive, not a plain attribute, because it is how the empty
+`action` is a directive, not a plain attribute, because it is how the empty
 state detects that an action was projected at all. `ArenaAction` is shared: every
-primitive that projects a single action through `[arena-action]` (`EmptyState`,
+primitive that projects a single action through `[action]` (`EmptyState`,
 `ErrorState`) imports the same directive rather than declaring its own.
 
 **Do / Don't**
@@ -28,4 +28,4 @@ primitive that projects a single action through `[arena-action]` (`EmptyState`,
 - Don't use an empty state for a failed load — that is `arena-error-state`, and the
   difference matters: one invites, the other apologises and offers a retry.
 - Don't forget to import `ArenaAction` when projecting an action — without it, the
-  `arena-action` attribute is inert and the action silently fails to render.
+  `action` attribute is inert and the action silently fails to render.

@@ -10,7 +10,7 @@ import { pageHeadStyles } from './page-head.variants';
  *  renders, so the narrow branch never flashes. The host is the recipe's `root` —
  *  it is the flex item a parent lays out, and it is also the element
  *  `containerWidth()` measures, so what is styled and what is measured are the
- *  same box. The actions wrapper renders only when a `[arena-actions]` element was
+ *  same box. The actions wrapper renders only when a `[actions]` element was
  *  actually projected: it is a slot in a `gap`-bearing flex parent, so an
  *  unprojected one would ship dead space to every page with no actions. */
 @Component({
@@ -26,7 +26,7 @@ import { pageHeadStyles } from './page-head.variants';
       }
     </div>
     @if (actions()) {
-      <div [class]="styles().actions()"><ng-content select="[arena-actions]" /></div>
+      <div [class]="styles().actions()"><ng-content select="[actions]" /></div>
     }
   `,
 })

@@ -318,7 +318,7 @@ control with no feedback. This was missed once on `ConfirmDialog` and corrected.
 **`ErrorState` names this directly:** React's `ErrorState.jsx` takes three props for its footer —
 `onRetry`, `retryLabel` and `secondaryAction` — where `EmptyState.jsx` takes one (`action`, a
 rendered node). Angular's `arena-error-state` collapses all three into the single projected
-`[arena-action]` slot the same way `arena-empty-state` collapses its one, so a consumer wires the
+`[action]` slot the same way `arena-empty-state` collapses its one, so a consumer wires the
 retry button, its label, and any secondary action itself as projected content rather than through
 component inputs.
 
@@ -684,7 +684,7 @@ defensible on its own.
 `{...rest}` spread, and gates the actions wrapper on `{actions && ...}`.
 
 **Angular:** `arena-page-head` takes `title` and `subtitle` as signal inputs and projects
-`[arena-actions]`, gating that wrapper on `contentChild(ArenaActions)` — the same gate,
+`[actions]`, gating that wrapper on `contentChild(ArenaActions)` — the same gate,
 reached the only way an `ng-content` slot can report whether anything was projected. The
 responsive branch is identical in substance: both measure the component's own box, both
 compare against `--bp-sm` read off the document root, and both render the wide layout
