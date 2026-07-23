@@ -47,6 +47,13 @@ export function classify(raw) {
   const ts = raw.trim();
   if (!ts) throw new UnrecognisedShape('empty type annotation');
 
+  /* `readonly` is a modifier on the annotation, not part of its shape --
+   * Angular's `input<readonly ActivityItem[]>([])` means exactly what
+   * `input<ActivityItem[]>([])` would, so it is stripped before any other
+   * test rather than left to make the array branch's trailing-`[]` check
+   * fail on a leading word it never expected. */
+  if (ts.startsWith('readonly ')) return classify(ts.slice('readonly '.length));
+
   if (ts === 'React.ReactNode' || ts === 'ReactNode') return { form: 'slot' };
   if (PRIMITIVES.has(ts)) return { form: 'primitive', type: ts };
   if (PLATFORM_TYPES.includes(ts) || ts.startsWith('Record<') || /^React\./.test(ts)) {
@@ -118,6 +125,30 @@ function stripComments(text) {
   return text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
 }
 
+/** Splits `text` on `sep` only where bracket depth -- `()`, `{}`, `[]`, `<>`
+ *  -- is zero. A plain `text.split(sep)` is wrong wherever a comma can occur
+ *  INSIDE one of those pairs: a heritage clause's own generic
+ *  (`Omit<BarChartProps, 'slots'>`) or an `input()` call's trailing options
+ *  object (`input(false, { transform: booleanAttribute })`) both carry a
+ *  comma that is not the separator being split on. */
+function splitTopLevel(text, sep) {
+  const parts = [];
+  let depth = 0;
+  let current = '';
+  for (const ch of text) {
+    if (ch === '(' || ch === '{' || ch === '[' || ch === '<') depth += 1;
+    else if (ch === ')' || ch === '}' || ch === ']' || ch === '>') depth -= 1;
+    if (ch === sep && depth === 0) {
+      parts.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  parts.push(current);
+  return parts;
+}
+
 /** @returns {{heritage: string[], members: object[]}} */
 export function reactSurface(source, interfaceName) {
   const decl = new RegExp(`export\\s+interface\\s+${interfaceName}\\b([^{]*)\\{`).exec(source);
@@ -125,7 +156,7 @@ export function reactSurface(source, interfaceName) {
   const heritage = /extends\s+([^{]+)/.exec(decl[1]);
   const body = braceBody(source, decl.index + decl[0].length - 1);
   return {
-    heritage: heritage ? heritage[1].split(',').map((h) => h.trim()).filter(Boolean) : [],
+    heritage: heritage ? splitTopLevel(heritage[1], ',').map((h) => h.trim()).filter(Boolean) : [],
     members: interfaceMembers(body),
   };
 }
@@ -176,7 +207,15 @@ function classMember(name, initialiser) {
     return { name, required: Boolean(required), ...classify(type) };
   }
   const bare = /^input\s*\(([\s\S]*)\)$/.exec(init);
-  if (bare) return { name, required: false, ...classify(literalType(bare[1].trim(), name)) };
+  if (bare) {
+    /* `input(false, { transform: booleanAttribute })` is one argument -- the
+     * initial value -- plus a trailing options object the type is never
+     * declared by. Only the first, depth-zero-split argument feeds
+     * literalType; the options object is ignored rather than fed in whole,
+     * which is what made this throw on every primitive using the idiom. */
+    const firstArg = splitTopLevel(bare[1], ',')[0].trim();
+    return { name, required: false, ...classify(literalType(firstArg, name)) };
+  }
   throw new UnrecognisedShape(`unreadable member initialiser for "${name}": ${init}`);
 }
 

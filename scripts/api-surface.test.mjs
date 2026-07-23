@@ -90,6 +90,11 @@ test('reactSurface surfaces heritage -- the {...rest} escape is a member surface
   assert.deepEqual(reactSurface(src, 'XProps').heritage, ['React.HTMLAttributes<HTMLSpanElement>']);
 });
 
+test('reactSurface splits heritage only at depth zero -- a generic\'s own comma is not a heritage separator', () => {
+  const src = `export interface LineChartProps extends Omit<BarChartProps, 'slots'> { a: string; }`;
+  assert.deepEqual(reactSurface(src, 'LineChartProps').heritage, ["Omit<BarChartProps, 'slots'>"]);
+});
+
 test('reactSurface throws when the interface it was asked for is not there', () => {
   assert.throws(() => reactSurface('export interface YProps { a: string; }', 'XProps'), UnrecognisedShape);
 });
@@ -137,6 +142,22 @@ test('angularSurface steps over a method body without mistaking its remains for 
 test('angularSurface throws on a public member whose initialiser it cannot read', () => {
   const src = `export class X { readonly a = somethingElse<string>(); }`;
   assert.throws(() => angularSurface(src, 'X'), UnrecognisedShape);
+});
+
+test('angularSurface reads the input(default, {transform}) idiom, classifying from the first argument alone', () => {
+  const src = `export class X { readonly dismissible = input(false, { transform: booleanAttribute }); }`;
+  assert.deepEqual(angularSurface(src, 'X').members, [
+    { name: 'dismissible', required: false, form: 'primitive', type: 'boolean' },
+  ]);
+});
+
+test('a bare input() with no argument at all still throws -- no generic and no default is no declared type', () => {
+  const src = `export class X { readonly a = input(); }`;
+  assert.throws(() => angularSurface(src, 'X'), UnrecognisedShape);
+});
+
+test('classify strips a leading readonly modifier before the array check -- Angular\'s input<readonly T[]>', () => {
+  assert.deepEqual(classify('readonly ActivityItem[]'), { form: 'array', of: 'ActivityItem' });
 });
 
 test('a bare ng-content is the default slot, named content; an attribute selector names its own', () => {
