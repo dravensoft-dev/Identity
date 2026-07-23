@@ -95,9 +95,8 @@ decision; a debounce interval on a synchronous in-memory filter is not, which is
 `debounce` was proposed and deliberately not shipped. And **a value is not a
 contract**: which keys a dialog answers, where focus lands, what dismisses it — none
 of that is expressible as a token, none of it lives in `tokens/`, and DTCG does not
-model it. That layer is designed in
-`docs/superpowers/specs/2026-07-22-7-behaviour-tokens-and-contracts-design.md`, and the
-next paragraph is what got built from it.
+model it. That layer lives beside the components instead, and the next paragraph is
+what got built.
 
 **Behaviour also has contracts, and they are not tokens.** `behaviour/patterns/*.json`
 states what a kind of component must do — roles, keys, focus, dismissal — one file per
