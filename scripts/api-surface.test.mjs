@@ -36,6 +36,23 @@ test('a function type is an event, and its single parameter is the payload', () 
   assert.deepEqual(classify('() => void'), { form: 'event', payload: null });
 });
 
+test('an inbound function that RETURNS a value is refused -- no form in the vocabulary is one', () => {
+  /* `event` is the only outbound form and it is a name plus a payload; the six
+   * inbound forms are all data. A formatter -- `(value: number) => string`, which
+   * BarChart, LineChart, DoughnutChart and ThemeToggle all declared before plan
+   * 8B0 -- is inbound AND returns, so it is none of the seven. Before this rule
+   * classify() read it as an event with payload `number`, which would have let a
+   * contract declare it, both layers match it, and check:api report it green. */
+  assert.throws(() => classify('(value: number) => string'), UnrecognisedShape);
+  assert.throws(() => classify('(isDark: boolean) => string'), UnrecognisedShape);
+  assert.throws(() => classify('() => string'), UnrecognisedShape);
+});
+
+test('an event still reads as an event -- the rule is the return type, not the arrow', () => {
+  assert.deepEqual(classify('(crumb: Crumb) => void'), { form: 'event', payload: 'Crumb' });
+  assert.deepEqual(classify('() => void'), { form: 'event', payload: null });
+});
+
 test('an array is one form discriminated by what it holds', () => {
   assert.deepEqual(classify('Crumb[]'), { form: 'array', of: 'Crumb' });
   assert.deepEqual(classify('string[]'), { form: 'array', of: 'string' });

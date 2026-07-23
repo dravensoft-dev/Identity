@@ -87,8 +87,24 @@ export function classify(raw) {
     return { form: 'platform', type: ts };
   }
 
-  const arrow = /^\(([\s\S]*)\)\s*=>\s*[\s\S]+$/.exec(ts);
+  const arrow = /^\(([\s\S]*)\)\s*=>\s*([\s\S]+)$/.exec(ts);
   if (arrow) {
+    /* An arrow is an EVENT only if it returns void. `event` is the vocabulary's
+     * one outbound form -- a name plus a payload -- and the six inbound forms
+     * are all data; an inbound function that RETURNS a value is none of the
+     * seven. Judging the arrow by its parameter alone read
+     * `(value: number) => string` as an event with payload `number`, which
+     * would have let a contract declare a formatter, both layers agree with it,
+     * and check:api call it green. The return type is right there in the
+     * declaration, so this is one of the few vocabulary edges the reader can
+     * actually hold. See api/README.md, "The vocabulary: seven forms". */
+    const returns = arrow[2].trim();
+    if (returns !== 'void') {
+      throw new UnrecognisedShape(
+        `an inbound function that returns "${returns}" is none of the seven forms — `
+        + `only an event (returning void) is a function member: ${ts}`,
+      );
+    }
     const params = arrow[1].trim();
     if (!params) return { form: 'event', payload: null };
     if (params.includes(',')) {

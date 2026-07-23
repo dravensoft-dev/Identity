@@ -31,6 +31,16 @@ Six of the seven are inbound; **event** is the only outbound one. The two array 
 encoded as one `form: "array"` discriminated by `of`, which is a representation choice and
 not a narrowing of the vocabulary.
 
+**An inbound function is none of the seven.** `event` is the only function-shaped member, it is
+outbound, and it returns nothing. A member the component *calls* and whose result it uses — a
+formatter, a label producer — has no form here, and `classify()` in
+`scripts/lib/api-surface.mjs` refuses one rather than reading it as an event with the parameter
+as its payload. Where such a member exists it is replaced by data the component renders itself: the charts'
+`valueFormatter` becomes `valueSuffix`, a primitive Arena appends to every number it draws —
+the axis tick, the tooltip and the accessible data table alike. That replacement lands when
+the charts are brought under contract; the reader's refusal lands now, so no contract can
+declare the old shape in the meantime.
+
 **The word `prop` does not appear in a contract.** It is React's vocabulary, and a neutral
 contract that used it would already have chosen a layer. A contract declares *members*;
 each layer binds them in its own idiom.
