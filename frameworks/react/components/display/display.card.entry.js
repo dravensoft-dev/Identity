@@ -60,21 +60,21 @@ function Demo() {
     className: "row",
     style: { alignItems: "stretch" }
   }, React.createElement("div", {
-    style: { flex: 1 }
+    style: { flex: 1, display: "flex" }
   }, React.createElement(StatCard, {
     label: "Deploys",
     value: "128",
     delta: { value: "+12%", direction: "up", tone: "positive" },
     sub: "vs last week"
   })), React.createElement("div", {
-    style: { flex: 1 }
+    style: { flex: 1, display: "flex" }
   }, React.createElement(StatCard, {
     label: "p95 latency",
     value: "340 ms",
     delta: { value: "-18%", direction: "down", tone: "positive" },
     sub: "vs last week"
   })), React.createElement("div", {
-    style: { flex: 1 }
+    style: { flex: 1, display: "flex" }
   }, React.createElement(StatCard, {
     label: "Open incidents",
     value: "3",
@@ -82,7 +82,7 @@ function Demo() {
     delta: { value: "-2", direction: "down", tone: "positive" },
     sub: "2 acknowledged"
   })), React.createElement("div", {
-    style: { flex: 1 }
+    style: { flex: 1, display: "flex" }
   }, React.createElement(StatCard, {
     label: "Build time",
     value: "4m 12s",
