@@ -5,29 +5,33 @@
  * plain exported functions, so it is testable with no `TestBed` at all.
  *
  * This does NOT render `<arena-command-palette>` through TestBed, for the
- * same confirmed reason `confirm-dialog-focus-trap.test.ts` documents:
- * `[open]="true"` and `componentRef.setInput('open', true)` both throw
- * NG0303 under this repo's JIT-only test toolchain, because only `ngtsc`
+ * same confirmed reason `confirm-dialog-focus-trap.test.ts` documents -- and
+ * the two ways `open` cannot be set fail DIFFERENTLY, which is the part that
+ * bites: `[open]="true"` THROWS NG0303, while `componentRef.setInput('open',
+ * true)` logs NG0303 and then silently NO-OPS, leaving `open` on its default.
+ * A throw announces itself; a silent no-op lets a suite pass vacuously against
+ * a default it never changed. Both stem from the same cause -- only `ngtsc`
  * (never run here) discovers a class's `input()` fields into `ɵcmp.inputs`.
  * Since `open` can never become `true` here, no TestBed-based test can
  * render an actually-open palette; `filterCommands`, `nextActiveIndex` and
  * `scrollRowIntoView` are exported precisely so they stay testable despite
  * that.
  *
- * `scrollRowIntoView` needs `document.createElement`, so this file
- * registers its own happy-dom global the way `confirm-dialog-focus-trap.
- * test.ts` does -- a second, independent register/unregister pair beside
- * that file's, not the one `host-class-binding.test.ts` owns via
- * `TestBed.initTestEnvironment()`. happy-dom's own `Element.scrollIntoView`
+ * `scrollRowIntoView` needs `document.createElement`, so this file asks for
+ * the directory's shared happy-dom global (`ensureDom()`, testbed-env.ts).
+ * There is exactly one document for the whole process and it is never torn
+ * down -- that file's header explains why a per-file register/unregister pair,
+ * which is what this suite used to carry, is not merely wasteful but breaks
+ * the TestBed suites outright. happy-dom's own `Element.scrollIntoView`
  * is a documented no-op (see `node_modules/happy-dom/lib/nodes/element/
  * Element.js`), so what is asserted below is that the right element is
  * asked to scroll, not that a real browser's scroll position changes --
  * `bun run check:cards` is the one path in this repo that renders a real
  * browser at all. */
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
-GlobalRegistrator.register();
+import { ensureDom } from './testbed-env';
+ensureDom();
 
-import test, { after } from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { ArenaCommand } from '../primitives/command-palette/command-palette';
 import {
@@ -127,6 +131,3 @@ test('activeOptionId is undefined when the active index is out of range for a no
   assert.equal(activeOptionId('arena-command-palette-0', 5, 3), undefined);
 });
 
-after(() => {
-  GlobalRegistrator.unregister();
-});

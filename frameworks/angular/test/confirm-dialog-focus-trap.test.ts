@@ -10,9 +10,13 @@
  *
  * This does NOT render `<arena-confirm-dialog>` through TestBed. Probed by
  * hand before writing this file: `[open]="true"` on the component and
- * `fixture.componentRef.setInput('open', true)` both throw NG0303 ("Can't
- * bind to 'open' since it isn't a known property") under this repo's test
- * toolchain -- confirmed with a throwaway host component and deleted after.
+ * `fixture.componentRef.setInput('open', true)` are both unusable under this
+ * repo's test toolchain, but NOT in the same way, and the difference is the
+ * dangerous part: the template binding throws NG0303 ("Can't bind to 'open'
+ * since it isn't a known property"), while `setInput` logs NG0303 and then
+ * SILENTLY NO-OPS, leaving the render on its default. A throw announces
+ * itself; a silent no-op lets a suite pass vacuously against default data.
+ * Re-probed with a throwaway host component and deleted after.
  * host-class-binding.test.ts's own header comment documents the same root
  * cause for Skeleton's `variant="text"`: this harness runs `bun`'s TypeScript
  * stripping plus `@angular/compiler`'s runtime JIT, never `ngtsc`, and only
@@ -31,14 +35,14 @@
  * binding works in this harness. This is what the component's constructor
  * actually calls, not a reimplementation that could drift from it.
  *
- * No TestBed here, so no TestBed.initTestEnvironment() call and no conflict
- * with host-class-binding.test.ts, which owns the one call this suite is
- * allowed. GlobalRegistrator's own lifecycle is still this file's own,
- * copied from that file's header per this task's brief. */
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
-GlobalRegistrator.register();
+ * No TestBed here, so nothing to initialise -- only a DOM, taken from the
+ * directory's shared one (`ensureDom()`, testbed-env.ts) rather than
+ * registered and unregistered per file. See that file for why the document
+ * has to be shared. */
+import { ensureDom } from './testbed-env';
+ensureDom();
 
-import test, { after, beforeEach } from 'node:test';
+import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   type FocusTrapState,
@@ -207,6 +211,3 @@ test('isConfirmLocked: locks until the trimmed typed value matches exactly', () 
   assert.equal(isConfirmLocked('Ardennes', '  Ardennes  '), false, 'surrounding whitespace in what was typed must be trimmed');
 });
 
-after(() => {
-  GlobalRegistrator.unregister();
-});

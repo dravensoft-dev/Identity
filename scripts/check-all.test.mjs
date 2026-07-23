@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { testStep, summarize, stepStatus, GATES } from './check-all.mjs';
 
-test('GATES lists the nineteen check gates', () => {
-  assert.equal(GATES.length, 19);
+test('GATES lists the twenty check gates', () => {
+  assert.equal(GATES.length, 20);
   assert.deepEqual(
     GATES.map((g) => g.name),
-    ['check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:behaviour', 'check:fonts', 'check:vendor', 'check:demos', 'check:cards', 'check:angular', 'check:material'],
+    ['check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:behaviour', 'check:compliance', 'check:fonts', 'check:vendor', 'check:demos', 'check:cards', 'check:angular', 'check:material'],
   );
 });
 
@@ -14,14 +14,22 @@ test('check:material runs last, after check:angular, the other Angular-layer gat
   assert.equal(GATES.at(-1).name, 'check:material');
 });
 
-test('testStep runs every suite under bun', () => {
-  const step = testStep({ isBun: true, testFiles: ['a.test.mjs', 'b.test.mjs'] });
-  assert.deepEqual(step.args, ['test', 'scripts', 'frameworks/react/test', 'frameworks/angular/test']);
+test('testStep runs every suite under bun, with the DOM harness isolated in its own process', () => {
+  // Not one merged invocation: `bun test` shares a process (and a globalThis)
+  // across every file a single call matches, and frameworks/react/test-dom's
+  // harness registers happy-dom without ever unregistering it -- fine alone,
+  // fatal combined with frameworks/angular/test, whose own files register it
+  // too. Two steps is what keeps that combination from ever happening.
+  const steps = testStep({ isBun: true, testFiles: ['a.test.mjs', 'b.test.mjs'] });
+  assert.deepEqual(steps.map((s) => s.args), [
+    ['test', 'scripts', 'frameworks/react/test/', 'frameworks/angular/test'],
+    ['test', 'frameworks/react/test-dom'],
+  ]);
 });
 
 test('testStep runs `node --test` over the discovered files under node', () => {
-  const step = testStep({ isBun: false, testFiles: ['/repo/scripts/a.test.mjs', '/repo/scripts/b.test.mjs'] });
-  assert.deepEqual(step.args, ['--test', '/repo/scripts/a.test.mjs', '/repo/scripts/b.test.mjs']);
+  const steps = testStep({ isBun: false, testFiles: ['/repo/scripts/a.test.mjs', '/repo/scripts/b.test.mjs'] });
+  assert.deepEqual(steps.map((s) => s.args), [['--test', '/repo/scripts/a.test.mjs', '/repo/scripts/b.test.mjs']]);
 });
 
 test('stepStatus maps exit 2 to a skip, and everything else to pass or fail', () => {

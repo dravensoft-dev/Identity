@@ -29,14 +29,14 @@
  * that wiring compiles against the component's real `viewChild` and
  * `inject(DOCUMENT)` types.
  *
- * No TestBed here, so no TestBed.initTestEnvironment() call and no conflict
- * with host-class-binding.test.ts, which owns the one call this suite is
- * allowed. GlobalRegistrator's lifecycle is this file's own, matching the two
- * sibling focus-trap suites. */
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
-GlobalRegistrator.register();
+ * No TestBed here, so nothing to initialise -- only a DOM, taken from the
+ * directory's shared one (`ensureDom()`, testbed-env.ts) rather than
+ * registered and unregistered per file, matching the two sibling focus-trap
+ * suites. See that file for why the document has to be shared. */
+import { ensureDom } from './testbed-env';
+ensureDom();
 
-import test, { after, beforeEach } from 'node:test';
+import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   type FocusTrapState,
@@ -193,6 +193,3 @@ test('Tab from Skip, a middle control, is left to the browser -- the trap only a
   assert.ok(!event.defaultPrevented);
 });
 
-after(() => {
-  GlobalRegistrator.unregister();
-});

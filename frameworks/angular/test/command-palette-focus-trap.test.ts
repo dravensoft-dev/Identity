@@ -30,10 +30,10 @@
  * `ngc --strictTemplates` (`check:angular`) is the authority that it
  * compiles against the component's real `viewChild` and `inject(DOCUMENT)`
  * types. */
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
-GlobalRegistrator.register();
+import { ensureDom } from './testbed-env';
+ensureDom();
 
-import test, { after } from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../primitives/focus-trap';
 
@@ -118,6 +118,3 @@ test('Tab can never reach a control behind the scrim -- the exact failure the re
   assert.equal(document.activeElement, input);
 });
 
-after(() => {
-  GlobalRegistrator.unregister();
-});

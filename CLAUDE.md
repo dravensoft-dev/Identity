@@ -7,9 +7,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Arena — Dravensoft's design system. It is **not a published npm package**, but it does
 have a **dev-only, private `package.json`** at the root: the token layer is built from
 DTCG JSON by Style Dictionary, and the build and check scripts are tested with
-`bun test`, as is each framework layer from its own `test/` directory
-(`bun run test:scripts` / `test:react` / `test:angular`, or `bun run test` for all
-three). **A test under `scripts/` may not import a framework layer's `.ts` or `.jsx`**,
+`bun test`, as is each framework layer from its own test directory
+(`bun run test:scripts` / `test:react` / `test:react-dom` / `test:angular`, or
+`bun run test` for all four). Those four run in **two `bun test` processes**, not one:
+`test` is `bun test scripts frameworks/react/test/ frameworks/angular/test && bun test
+frameworks/react/test-dom`, because `frameworks/react/test-dom/` registers a DOM
+globally and must not share a process with the DOM-free suites (see the two-React-test-directories
+note under *Architecture*). **A test under `scripts/` may not import a framework layer's `.ts` or `.jsx`**,
 because `scripts/` is the one suite `check-all.mjs` also runs under plain node, and those
 files use the extensionless imports their own toolchains expect and node does not resolve.
 A property worth asserting against a real recipe or component is asserted from that
@@ -120,6 +124,37 @@ the layers agree or say why not. When they disagree the gate names both and pick
 winner — the pattern is the authority. **It does not assert that a component behaves as
 it declares**: a component can bind `dialog-modal` and trap no focus. A green run is a
 coverage claim, never an accessibility one.
+
+**And now something does check whether a component behaves as it declares — by
+rendering it.** `check:compliance` is the coverage record; the verification itself
+lives in render suites (`frameworks/react/test-dom/`, `frameworks/angular/test/`)
+that assert, per requirement of a component's bound pattern, that the rendered DOM
+either meets it with no exception declared, or fails it with one declared. That
+single bidirectional statement is the stale-exception rule the layer was modelled
+on and did not have: **an exception can finally expire.** The shared evaluator is
+`scripts/lib/behaviour-compliance.mjs`, DOM-generic on purpose — it touches only
+`tagName`, `getAttribute` and `hasAttribute`, because it is consumed from three
+runtimes including plain node in its own test, which has no DOM. It returns a
+third value, `null`, for requirements no single element can decide (`focus.*`,
+`keyboard.*`, `content.noAutoDismiss`, `alternative.table`); a suite must name
+each of those in its `behavioural` map and assert it by acting on the tree, and
+`assertPattern` throws if one is silently skipped. **Coverage is partial by design
+and grows one component at a time** — `COVERED` in `scripts/check-compliance.mjs`
+is the record, with the same bidirectional staleness rule `EXEMPT` carries; the
+gate never demands totality, only that every claim in the record is true. A green
+`check:compliance` still says nothing about whether a component is accessible: a
+suite asserting all four of a component's exceptions are still true passes while
+the component stays exactly as broken.
+
+**React has two test directories and they must not merge.**
+`frameworks/react/test/` asserts on `renderToStaticMarkup` — no DOM, by design,
+because those suites prove those components render correctly server-side.
+`frameworks/react/test-dom/` registers `@happy-dom/global-registrator`, which
+installs globals **process-wide**, and `bun test <dir>` is one process per
+directory. Putting a DOM in the first directory's process would quietly change
+what its six suites prove and nothing would fail to say so. `testStep()` in
+`scripts/check-all.mjs` lists all three framework directories, and
+`check-all.test.mjs` asserts that array by literal value.
 
 **A dimension in a framework layer is a token or a derivation of tokens. A bare
 literal is a bug.** This is machine-checked: `bun run check:dimensions` scans
@@ -240,7 +275,9 @@ The Angular layer's quartet is the analogue: `<name>.ts` (standalone `OnPush` co
 
 **A host-bound root is the Angular layer's default, and it has two carve-outs.** A primitive binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than rendering a wrapper div, so the host is the flex item its parent lays out and — where the component measures itself — the measured element is the styled element. Two primitives correctly do **not**: `theme-toggle`, whose root must be a real `<button>` for keyboard operability, and `activity-feed`, whose root must be a real `<ul>` with `<li>` rows. The rule targets elements that exist only to carry styling; when the root must be a specific semantic or interactive element, keep it. **A host-bound root must carry a display utility** — `<arena-x>` is an unknown element defaulting to `display:inline`, where width and height do not apply, so a root slot without one renders a zero-area host. That is machine-guarded by a manifest-driven assertion in `frameworks/angular/test/host-class-binding.test.ts`.
 
-**The Angular test harness is JIT, and that bounds what a test can prove.** `frameworks/angular/test/` renders real zoneless Angular trees under `bun test` via `happy-dom`, which needs three test-only devDependencies beyond the `node:test`/`node:assert` baseline the rest of the repo uses — `@angular/platform-browser`, `happy-dom` and `@happy-dom/global-registrator` (register/unregister in paired hooks). Because the harness runs `@angular/compiler`'s JIT and never `ngtsc`, **a signal input cannot be driven through a template binding or a literal attribute** — the first throws NG0303, the second is a silent no-op — and `contentChild()` queries do not resolve. Factor the logic into plain exported functions and test those against a real DOM rather than faking a render; `check:angular`'s `ngc --strictTemplates` is the authority that the input contract and the queries actually compile. `TestBed.initTestEnvironment()` may be called only once per `bun test` process, so anything needing a real component render goes in `host-class-binding.test.ts` with **scoped** hooks, and every directly-created fixture must be `destroy()`-ed — zoneless change detection sweeps all attached views, so a fixture left dirty throws out of an unrelated later test.
+**The Angular test harness is JIT, and that bounds what a test can prove.** `frameworks/angular/test/` renders real zoneless Angular trees under `bun test` via `happy-dom`, which needs three test-only devDependencies beyond the `node:test`/`node:assert` baseline the rest of the repo uses — `@angular/platform-browser`, `happy-dom` and `@happy-dom/global-registrator`. Because the harness runs `@angular/compiler`'s JIT and never `ngtsc`, **a signal input cannot be driven through a template binding, a literal attribute, or `componentRef.setInput()`** — the first two ways fail loudly (NG0303, thrown), the third does not: `setInput()` on an undiscovered signal input silently no-ops and the render keeps the field's default, which is the more dangerous failure because a suite built on it passes vacuously with nothing announcing the mistake. Overwrite the instance field directly instead. `contentChild()` queries do not resolve either. Factor the logic into plain exported functions and test those against a real DOM rather than faking a render; `check:angular`'s `ngc --strictTemplates` is the authority that the input contract and the queries actually compile.
+
+`bun test` runs every file in this directory in ONE process, and both happy-dom's document and Angular's `TestBed` environment can each be claimed only once per process — `GlobalRegistrator.register()` throws if already registered, and `TestBed.initTestEnvironment()` throws ("base providers ... already been called") the second time it runs across files that share a process. `testbed-env.ts` claims both, once, for the whole directory: `ensureDom()` and `useTestEnvironment()` are plain `if (claimed) return` guards, not a reset — `TestBed.resetTestEnvironment()` was tried and measurably does not work, because `BrowserDomAdapter.makeCurrent()` installs a process-wide DOM adapter on the FIRST platform creation that nothing resets, so a second per-file document would render into a document the adapter no longer points at (`getComputedStyle` reading the wrong document was the observed failure). So the directory shares one real document and one TestBed environment for its entire run rather than one pair per file; any suite needing a real component render just calls `useTestEnvironment()` (or `ensureDom()` alone, for a suite that needs a DOM but not TestBed) and is a normal new file, not an addition to `host-class-binding.test.ts`. The shared document also means state written onto it — a custom property set on `documentElement.style`, an element appended to `document.body` — outlives the file that wrote it unless that file clears it, typically in a `finally`; every directly-created fixture must still be `destroy()`-ed for the same reason — zoneless change detection sweeps all attached views, so a fixture left dirty throws out of an unrelated later test, and with one shared document that hazard now crosses files rather than staying inside one.
 
 **Specimen/demo pages** start with an HTML comment `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card rendering — keep it as the first line, which is the only line `check:cards` reads. **That viewport is machine-checked**: `bun run check:cards` loads every declaring page at its declared width in headless Chromium and fails when the rendered content over-runs the box in either axis, because the card is cropped to it and the overflow is lost silently. Declaring it by arithmetic does not work — it was tried, and the page clipped in both axes anyway. Measure by running the gate. A page that declares far *more* height than it renders only warns. `frameworks/react/ui_kits/console/index.html` carries no `@dsCard` on purpose: it is an app with its own scroll area, not a card. Component demos load React from a local importmap pointing at `frameworks/react/vendor/*.js` — a committed, generated ESM bundle of the `react`/`react-dom` devDependencies, since React 18 ships CommonJS only and the importmap needs real ES modules (`bun run build:vendor`, guarded by `check:vendor`; see `scripts/build-vendor.mjs`) — and pull `@phosphor-icons/web` straight from `node_modules/` (the static server is rooted at the repo root and does not exclude it). **JSX is compiled ahead of time, not in the browser.** Each demo page's own script used to be inline JSX, transpiled at load by `@babel/standalone` through `jsx-loader.js`'s `window.arenaImport()`; that inline block is now a real sibling source file (`<page>.entry.jsx`, e.g. `alert.card.entry.jsx` next to `alert.card.html`), and every component `.jsx` plus every `.entry.jsx` has a compiled `.js` sibling — same directory, same basename — that the page loads with a plain `<script type="module" src="…">`. `bun run build:demos` (`scripts/build-demos.mjs`) compiles them with Bun's own transpiler (classic JSX, matching what `@babel/standalone`'s default preset was doing) and rewrites each relative import's `.jsx` extension to `.js`, so the recursive-import behavior `jsx-loader.js` used to do at runtime now happens once, at build time; `check:demos` (`scripts/check-demos-generated.mjs`) guards drift and orphaned output, on the same committed-generated-output contract as `check:vendor`. There is a build step for the demos now — this repo does not claim otherwise.
 
@@ -279,7 +316,7 @@ It is the converse of `check:coverage` and just as narrow: it does not attempt
 "every utility traces to a token" in general, only this one verified case,
 because everywhere else in a cleared namespace already resolves to nothing
 and `check:tailwind` catches that on its own.
-`bun run check` runs all nineteen plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
+`bun run check` runs all twenty plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
 skips quietly — makes that a hard failure instead. An Angular primitive's recipe is its
 manifest — `frameworks/angular/primitives/tag/` is the reference shape.
 
@@ -412,13 +449,62 @@ scheduled for deletion the same week.
   does a pattern express an optional requirement?" was answered by pushing anything
   per-component into the binding rather than the pattern, and a whole pattern applying
   only sometimes is the same problem one level up, still open.
-- **`validateUnboundPrimitives`'s two failure branches have no isolated test.** Its
-  transitional `UNBOUND_PRIMITIVES` map was emptied once the Angular primitives were
-  all bound, and the five tests exercising its failure paths went with it — the one
-  surviving test only asserts the empty map is clean. The function takes no
-  injectable-map parameter, so keeping those tests would have meant widening its
-  signature for a map that, by design, stays empty. Dead code while the map is empty;
-  an untested guard if it is ever repopulated.
+- **A behaviour text scan was designed, built, measured and rejected — do not
+  re-propose it without reading this.** Plan 7c's spec proposed a static scan of
+  component sources as the cheap tier beneath the render suites. It was
+  implemented as a probe and run against the whole tree before being cut. In the
+  "claimed met but no textual evidence" direction it reported **60 of 118 true
+  claims as unmet (51%)**, across 25 components, because of a cause the spec never
+  named: **implicit ARIA**. A native `<button>` satisfies `roles.element`,
+  `keyboard.Space` and `keyboard.Enter` while leaving nothing to grep;
+  `<input type="checkbox">` satisfies `states.checked`. A text scan penalises
+  exactly the correctly-authored components. In the "exception is now stale"
+  direction it wrongly retired **18 of 94 live exceptions (19%)**, and **all
+  eighteen are irreducible** — none is a regex that could be sharpened. Each is a
+  claim about *placement* (`Menu`'s `aria-haspopup` on a wrapping `<span>` rather
+  than the focusable trigger), *branch* (`Skeleton`'s `role="status"` in three of
+  four variants), *conditional value* (`alert.ts`'s
+  `'[attr.role]': "tone() === 'danger' ? 'alert' : 'status'"`, and `Toast.jsx`'s
+  same shape), or *semantic completeness* (`Menu`'s Enter opens the menu but never
+  moves focus). A rendered DOM resolves all three at once, which is why the render
+  suites absorbed the stale-exception check instead of sharing it with a scan.
+- **A binding cannot scope an exception to a variant, and `Skeleton` is the proof.**
+  `Skeleton`'s `roles.element` and `live.politeness` exceptions are true of the
+  `circle` variant and false of `block`, `line` and `text`. The compliance suite
+  works around it by asserting against the `circle` variant specifically, which
+  pins the claim but leaves a reader of the binding alone believing the exception
+  is unconditional. This is the same gap already recorded for `Tag`'s `button`
+  pattern applying only when `onRemove` is passed — one level down, at the
+  requirement rather than the pattern, and still open. The spec's own unresolved
+  question, *"How does a pattern express an optional requirement?"*, is this.
+  `comparePattern`'s stale-exception message has no vocabulary for "true in one
+  variant" either — it offers only "delete it or name a subject".
+- **Compliance coverage is 6 of 64 bindings and nothing schedules the rest.**
+  `COVERED` guards the accuracy of what it claims, never the completeness of it, so
+  the 58 uncovered bindings — including every one of `Table`'s and `Calendar`'s
+  eight exceptions, the components with no keyboard navigation at all — remain
+  exactly as unverified as they were before this gate existed. The gate was built
+  that way on purpose: one demanding 47 suites on day one would have been switched
+  off. The consequence is that the layer's headline property, *an exception can
+  expire*, currently holds for six components and not for the rest.
+  `figure-with-data-table`'s `roles.label` half stays unverifiable regardless — a
+  suite can assert an `aria-label` exists, never that it is a good name for the
+  chart. **A component bound in both layers is satisfied by either layer's suite**:
+  `COVERED` maps a component name to one suite file, so the day a dual-bound
+  component's entry points at (say) the React suite, the Angular contract goes
+  unverified while the claim reads satisfied. No `COVERED` entry is dual-layer
+  today, so this is latent, not live — the fix is a compound `<component>:<layer>`
+  key, and it must be made before a dual-bound component is added to `COVERED`.
+- **Seven exceptions are now only as true as the behavioural verdict a suite
+  declares for them.** `ActivityFeed`'s `posinset`/`busy`, `Tag`'s `disabled`,
+  `Input`'s and `Textarea`'s `readonly`, and Angular `activity-feed`'s
+  `posinset`/`busy` are requirements no single element can decide from the DOM, so
+  the suite asserts each by acting on the tree and records the verdict in
+  `behavioural`. That verdict is trusted, not re-derived: a suite that declares the
+  wrong verdict pins a false claim exactly as a scan would have. And `comparePattern`
+  **throws** on an unknown requirement key or a missing `ELEMENT_ROLE` entry — one
+  bad key aborts the whole test rather than reporting one problem, so a suite's
+  wrapper (`assertPattern`) must expect the throw, not only a returned problem list.
 - **Angular has no `Calendar`, and nothing has decided whether it should.** React's
   `Calendar` is a day/hour schedule grid with absolutely-positioned event blocks;
   Angular has no equivalent from either an `arena-*` primitive or Angular Material —
@@ -428,18 +514,70 @@ scheduled for deletion the same week.
   commit Angular to gaining a schedule view, and it does not resolve whether the gap
   should stay this way. It is simply open.
 
+- **A chart's `aria-label` is checked for existence, never for usefulness, and the
+  charts fall back to a name that is only their type.** `figure-with-data-table`'s
+  `roles.label` requires "aria-label naming the chart", and
+  `frameworks/angular/test/chart-data-table.test.ts` proves the three verifiable
+  parts of that pattern against a real render — the `<table>` exists, it is
+  visually hidden rather than absent, and its cells pair each category with its
+  plotted value. It cannot prove the fourth. With no `seriesLabel`, `bar-chart.ts`
+  emits the constant `Bar chart`; `line-chart.ts` falls back the same way, and
+  `doughnut-chart.ts` is worse — its `aria-label="Doughnut chart"` is a literal with
+  no caller-supplied path at all. Each satisfies the requirement mechanically while
+  telling a screen-reader user
+  nothing — a page with two bar charts on it announces both identically. No
+  assertion separates a present name from a useful one; that is human judgement,
+  and the suite pins the fallback rather than faking a verdict on it. The React
+  charts do the same thing and are not covered by a suite at all.
+
+- **Every claim the delegated declarations make about Angular Material is unpinned.**
+  `frameworks/angular/behaviour-delegated.json` asserts what Material's controls do —
+  that `MatButtonToggleGroup` applies `role="group"` rather than `role="radiogroup"`,
+  that `MatTable` adds no keyboard handling, that `matTooltip`'s `showDelay` defaults to
+  0 — and which Material surfaces `arena-material.css` dresses. **None of it records the
+  Material version it was verified against**, which was `@angular/material` 22.0.5. If a
+  Material release fixes one of those, nothing notices: `check:behaviour` verifies that a
+  declaration names a pattern and requirement that exist, never that a claim about a
+  third-party library is still true, and the whole suite stays green while the reason
+  strings quietly become false. The `dressedBy` claims rot the same way from the other
+  side — add a `.mat-mdc-checkbox` rule to the bridge tomorrow and eight entries still
+  assert the bridge has none. Two cheap mitigations, neither yet done: record the
+  verified Material version as one top-level field and check it against `package.json`,
+  and have `check:material` assert that every `dressedBy` path really contains a rule
+  matching the named control's host class — the same shape as `check:states`' own
+  staleness rule.
+
 ### Where the rest of the debt lives
 
 Each of these is a record with its own stale-entry rule: an entry that no longer
 matches a real violation fails the gate that owns it. Read the entries, never a
 count written here, which would drift.
 
-- **`components-divergences.md`** — 1119 lines, and the largest debt record in the
+- **`components-divergences.md`** — the largest debt record in the
   repo. Every behaviour difference between the React and Angular layers, with its
   reason and whether it is expected to converge. Structural divergences first,
   then per-component. Its own opening admits the cost: no layer is the authority
   for component behaviour, so a divergence cannot be a defect. Plan 7's spec
   proposes replacing that with a normative contract.
+  Plan 7c deferred the migration to a plan 7d rather than folding it in, on the
+  spec's own instruction to sequence it last — the compliance suites change which
+  exceptions are true, and migrating prose into entries that are about to move
+  wastes the work. Two findings for whoever writes 7d, derived from the file and
+  not recalled: it is **1127 lines**, not the 1119 the spec states (7b's preamble
+  note moved it), and the structural/per-component seam is at the
+  `## Per-component divergences` heading on **line 329**, which matches the spec's
+  "roughly the first 300 lines". But the spec's three-way split has a **fourth
+  bucket it does not name**: of the ~790 per-component lines, only about a third
+  are behaviour that migrates into `exceptions` (~11 sections); ~5 are API and
+  belong to plan 8; and **~9 are per-component *rendering* divergences** — BarChart's
+  per-bar category axis, DoughnutChart's per-slice legend, `chart-internals`' units,
+  UnauthCard's hand-duplicated panel classes, SideNav being described three times —
+  which are neither behaviour nor API and have no destination in the spec's scheme.
+  They stay as prose alongside the structural half. Three bindings cite this
+  document as supporting evidence (`command-palette.behaviour.json`, the `SideNav`
+  delegated entry, and `frameworks/angular/primitives/onboarding/onboarding.ts`);
+  a migration that deletes a cited section without redirecting the citation breaks
+  it, and 7c did not touch them.
 - **`scripts/check-dimension-literals.mjs`** — `EXEMPT` (a literal that is the
   true value at its site: a runtime data-to-pixel projection, a stacking context
   scoped to one container, the visually-hidden idiom) and `PASSTHROUGH`. Its two

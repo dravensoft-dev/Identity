@@ -30,11 +30,8 @@
  * This is the one test in the layer that needs a DOM: everything else in this
  * directory asserts against the plain-TypeScript `.variants.ts` recipe, per
  * this suite's own header comment in tag-variants.test.ts. */
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
-GlobalRegistrator.register();
-
 import '@angular/compiler';
-import test, { after } from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -42,7 +39,7 @@ import { fileURLToPath } from 'node:url';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
+import { useTestEnvironment } from './testbed-env';
 import { ActivityFeed } from '../primitives/activity-feed/activity-feed';
 import { activityFeedStyles } from '../primitives/activity-feed/activity-feed.variants';
 import { AppLogo } from '../primitives/app-logo/app-logo';
@@ -76,12 +73,18 @@ import { ThemeService } from '../theme/theme-service';
 import { UnauthCard } from '../primitives/unauth-card/unauth-card';
 import { unauthCardStyles } from '../primitives/unauth-card/unauth-card.variants';
 
-/* Only ONE file in this directory may call TestBed.initTestEnvironment():
- * bun runs every test file in one process, and Angular's TestBed throws
- * ("Cannot set base providers because it has already been called") the
- * second time it is called across files that ran together. Skeleton's
- * host-binding coverage lives here, beside Tag's and Avatar's, for exactly
- * that reason rather than in a file of its own.
+/* The TestBed environment may be initialised only ONCE per process: bun runs
+ * every test file in one process, and Angular's TestBed throws ("Cannot set
+ * base providers because it has already been called") the second time it is
+ * called across files that ran together. This file used to own that call
+ * outright, which is why Skeleton's host-binding coverage lives here beside
+ * Tag's and Avatar's rather than in a file of its own. It now goes through
+ * `useTestEnvironment()` (testbed-env.ts), which claims the one TestBed
+ * environment the whole directory shares -- a plain `if (claimed) return`
+ * guard, not a reset -- so a later suite needing a real render no longer has
+ * to be appended to this one; see that file for why a reset was tried and
+ * measurably does not work (`resetTestEnvironment()` leaves the process-wide
+ * DOM adapter pointing at whichever document was live at first initialisation).
  *
  * It stops at Skeleton's default variant. This harness runs each test file
  * through bun's own TypeScript stripping plus `@angular/compiler`'s runtime
@@ -89,16 +92,20 @@ import { unauthCardStyles } from '../primitives/unauth-card/unauth-card.variants
  * discovers a class's `input()` fields and registers them into `ɵcmp.inputs`.
  * Without that transform a signal input is invisible to both template
  * property binding (`[lines]="3"` fails NG0303, "not a known property") and
- * `ComponentRef.setInput()` (same NG0303) -- confirmed with an isolated
- * throwaway component before this was written, so it is a property of the
- * harness, not of Skeleton, Tag or Avatar. `variant="text"` therefore cannot
+ * `ComponentRef.setInput()` -- but they fail differently, and the second is
+ * the one to watch: the binding THROWS NG0303, while `setInput` logs NG0303
+ * and then silently no-ops, leaving the component on its default. A throw
+ * announces itself; a silent no-op lets a suite pass vacuously against
+ * defaults it never changed. Confirmed with an isolated throwaway component
+ * before this was written, so it is a property of the harness, not of
+ * Skeleton, Tag or Avatar. `variant="text"` therefore cannot
  * be driven through a bound TestBed template here; only literal defaults
  * render. skeleton-variants.test.ts covers every variant's class output
  * against the plain-TypeScript recipe instead, which this limitation does
  * not touch, and `bun run check:angular` runs the real `ngc --strictTemplates`
  * -- the actual authority on whether skeleton.ts's `@if`/`@for` template
  * typechecks against the component's real inputs. */
-TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
+useTestEnvironment();
 
 /* `name` is `input.required<string>()` (Resolution D of task 24's brief: nothing
  * defaults, on purpose -- an empty lock-up would ship no one's mark by omission,
@@ -890,29 +897,44 @@ test('arena-error-state: the actions wrapper is absent from the DOM when no [are
  * the helper started the width at 0 instead of `null`, `0 < 480` would select
  * the narrow branch and these assertions would fail. (`page-head-variants.test.ts`
  * deliberately touches only `--bp-md`/`--bp-lg` so its stubbed reads can never
- * poison the module-level cache this file depends on, in either file order.) */
+ * poison the module-level cache this file depends on, in either file order --
+ * that split is about `container-size.ts`'s own cache, keyed per breakpoint
+ * name, so it holds regardless of file order or of the document being shared;
+ * it is unaffected by whether `--bp-sm` itself is cleared off the real
+ * document afterward.) Each test below clears `--bp-sm` in a `finally`: this
+ * directory now shares one real document for its whole run (testbed-env.ts),
+ * so a property left on `documentElement` would otherwise outlive this file
+ * rather than the per-file document it used to die with. */
 const BP_SM = '480px';
 
 test('arena-page-head: the root recipe classes land on the host element itself', async () => {
   document.documentElement.style.setProperty('--bp-sm', BP_SM);
-  const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
-  fixture.detectChanges();
-  await fixture.whenStable();
-  const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
-  for (const cls of pageHeadStyles().root().split(/\s+/))
-    assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
-  assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+  try {
+    const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
+    for (const cls of pageHeadStyles().root().split(/\s+/))
+      assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
+    assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+  } finally {
+    document.documentElement.style.removeProperty('--bp-sm');
+  }
 });
 
 test('arena-page-head: an unmeasured width renders the WIDE layout, so the narrow branch never flashes on first paint', async () => {
   document.documentElement.style.setProperty('--bp-sm', BP_SM);
-  const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
-  fixture.detectChanges();
-  await fixture.whenStable();
-  const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
-  assert.ok(host.classList.contains('flex-row'), `an unmeasured page head must render as a row: "${host.className}"`);
-  assert.ok(host.classList.contains('items-start'), `an unmeasured page head must render top-aligned: "${host.className}"`);
-  assert.ok(!host.classList.contains('flex-col'), 'the narrow branch must not render before anything has been measured');
+  try {
+    const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
+    assert.ok(host.classList.contains('flex-row'), `an unmeasured page head must render as a row: "${host.className}"`);
+    assert.ok(host.classList.contains('items-start'), `an unmeasured page head must render top-aligned: "${host.className}"`);
+    assert.ok(!host.classList.contains('flex-col'), 'the narrow branch must not render before anything has been measured');
+  } finally {
+    document.documentElement.style.removeProperty('--bp-sm');
+  }
 });
 
 /* Same fix, same toolchain limitation as arena-empty-state's action wrapper
@@ -930,18 +952,22 @@ test('arena-page-head: an unmeasured width renders the WIDE layout, so the narro
  * sibling of the `ArenaAction` that `arena-empty-state` uses. */
 test('arena-page-head: the actions wrapper is absent from the DOM when no [arena-actions] content is projected', async () => {
   document.documentElement.style.setProperty('--bp-sm', BP_SM);
-  const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
-  fixture.detectChanges();
-  await fixture.whenStable();
-  const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
-  assert.equal(host.querySelector('button'), null, 'no actions were projected, so no action markup should exist at all');
-  const actionsClass = pageHeadStyles().actions().split(/\s+/)[0];
-  assert.equal(
-    host.querySelector(`:scope > .${actionsClass}`),
-    null,
-    'the actions wrapper div must not render when the actions slot is empty',
-  );
-  assert.equal(host.children.length, 1, 'a page head with no actions renders the titles block and nothing else');
+  try {
+    const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
+    assert.equal(host.querySelector('button'), null, 'no actions were projected, so no action markup should exist at all');
+    const actionsClass = pageHeadStyles().actions().split(/\s+/)[0];
+    assert.equal(
+      host.querySelector(`:scope > .${actionsClass}`),
+      null,
+      'the actions wrapper div must not render when the actions slot is empty',
+    );
+    assert.equal(host.children.length, 1, 'a page head with no actions renders the titles block and nothing else');
+  } finally {
+    document.documentElement.style.removeProperty('--bp-sm');
+  }
 });
 
 /* `containerWidth()` guards its observer with `typeof ResizeObserver ===
@@ -963,6 +989,7 @@ test('arena-page-head: a platform with no ResizeObserver still renders, on the w
     assert.ok(host.classList.contains('flex-row'), `with no ResizeObserver the width stays null, which is the wide layout: "${host.className}"`);
   } finally {
     globals.ResizeObserver = saved;
+    document.documentElement.style.removeProperty('--bp-sm');
   }
 });
 
@@ -983,8 +1010,9 @@ test('arena-page-head: a platform with no ResizeObserver still renders, on the w
  *
  * `ThemeService` is `providedIn: 'root'`, so it is one singleton shared by
  * every test in this file's TestBed environment -- nothing here ever calls
- * `TestBed.resetTestingModule()` (see this file's own header comment on why
- * only one file may call `initTestEnvironment()` at all). `resetTheme()`
+ * `TestBed.resetTestingModule()` (see this file's own header comment, and
+ * testbed-env.ts, on why the environment is claimed once per process).
+ * `resetTheme()`
  * below puts it back to Arena's dark default at the top of each of the three
  * tests that follow, so they cannot depend on execution order among
  * themselves or leave the class on `<html>` in a state a later one would
@@ -1466,6 +1494,3 @@ test('arena-unauth-card: the brand and footer wrappers are both absent from the 
   assert.equal(host.children.length, 1, 'the host renders only the panel div, unconditionally');
 });
 
-after(() => {
-  GlobalRegistrator.unregister();
-});

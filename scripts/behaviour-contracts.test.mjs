@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   validatePattern, loadPatterns, validateBinding, reactComponents, angularPrimitives,
-  validateUnboundPrimitives, crossLayerAgrees,
+  crossLayerAgrees, loadBinding,
 } from './lib/behaviour-contracts.mjs';
 
 const ok = {
@@ -164,19 +164,6 @@ test('the Angular inventory finds every primitive and no bare module', () => {
   assert.ok(!found.includes('chart-internals'));
 });
 
-/* hasUnboundPrimitive and its five named entries (Breadcrumbs, BulkActionBar,
- * CommandPalette, PageHead, ThemeToggle) existed only for the transitional
- * state where those five Angular directories had no <name>.behaviour.json
- * yet. All 21 Angular primitives are bound now (behaviour Task 6), which
- * makes UNBOUND_PRIMITIVES permanently empty by design and hasUnboundPrimitive
- * itself dead code -- both were removed from lib/behaviour-contracts.mjs, and
- * the tests that asserted their transitional content went with them. What
- * remains is the one test below that still means something with an empty
- * map: the self-check stays clean. */
-test('validateUnboundPrimitives is clean against the real repo state', () => {
-  assert.deepEqual(validateUnboundPrimitives('.'), []);
-});
-
 /* crossLayerAgrees carries check-behaviour.mjs's step 6 -- "the two layers agree,
  * or the difference is declared" -- so it can be tested without a filesystem walk.
  * The absent clauses are the point: Calendar is the one binding in the repo that
@@ -198,6 +185,16 @@ test('a real mismatch with no divergesFrom on either side disagrees', () => {
 test('absent on either side is skipped even with no divergesFrom declared', () => {
   assert.equal(crossLayerAgrees({ pattern: 'grid' }, { pattern: 'absent' }), true);
   assert.equal(crossLayerAgrees({ pattern: 'absent' }, { pattern: 'grid' }), true);
+});
+
+/* Against the real file rather than a fixture, because the thing worth proving is
+ * that the compliance suites and check:behaviour read the same bytes off disk.
+ * Path is relative to the repo root, as every other on-disk assertion in this
+ * suite is -- loadPatterns('.') above sets that convention. */
+test('loadBinding reads a real binding from disk', () => {
+  const b = loadBinding('./frameworks/react/components/feedback/Dialog.behaviour.json');
+  assert.equal(b.pattern, 'dialog-modal');
+  assert.ok(Array.isArray(b.exceptions));
 });
 
 test('the real Calendar binding needs no divergesFrom to agree with React', () => {

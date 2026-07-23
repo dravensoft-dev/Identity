@@ -80,3 +80,12 @@ could force it through.
 **What it does not assert is whether the component actually behaves as it says.**
 That is a later plan's work. A component can bind `dialog-modal` here and trap no
 focus at all.
+
+`check:behaviour` still proves only that a declaration is well formed. What proves
+a declaration is *true* is a render suite: for a component listed in `COVERED`
+(`scripts/check-compliance.mjs`), a suite asserts per requirement that the rendered
+DOM either meets it with no exception declared or fails it with one declared. That
+is bidirectional on purpose — it catches an overclaim and a stale exception with
+one statement — and it is why an exception can now expire. Coverage is partial:
+`check:compliance` guards that the record is accurate, never that it is complete.
+Neither gate is an accessibility claim about any component.
