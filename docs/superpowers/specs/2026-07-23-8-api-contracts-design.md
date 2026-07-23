@@ -1,10 +1,18 @@
 # 8 — API capability contracts
 
-**Status:** design, approved 2026-07-23. Plan A is specified in full; Plans B, C and D
-carry their objective only, deliberately — the repository they execute against will not
-be the repository that exists today, and detail written now would describe a tree nobody
-will have. Plan E is specified in full for the opposite reason: it is a record of tests
-suspended today, and a record that omits what it suspended is worthless.
+**Status:** design, approved 2026-07-23. **Plan A shipped 2026-07-23** — the vocabulary,
+the directory, the generator, the gate and three migrated components are on `main`; its
+implementation plan was `docs/superpowers/plans/2026-07-23-8a-api-contracts-foundation.md`.
+Plans B, C and D still carry their objective plus what Plan A settled, deliberately — the
+repository they execute against will not be the repository that exists today, and detail
+written now would describe a tree nobody will have. Plan E is specified in full for the
+opposite reason: it is a record of tests suspended today, and a record that omits what it
+suspended is worthless.
+
+Everything below the *What this establishes* heading and above *What Plan A settled* is
+the original design and is unchanged. Plans B through E were revised on 2026-07-23, after
+Plan A executed, against what it actually decided and discovered — the sections say which
+figures were re-measured rather than inherited.
 
 ## The problem
 
@@ -364,17 +372,137 @@ still owns, and does not change any published version or the plugin manifest.
 
 ---
 
-# Plan B — the twenty-one shared components
+# What Plan A settled
+
+Binding on Plans B, C and D. Each of these was an open question when this spec was
+written and is now closed; an audit that reopens one is wasting the maintainer's time.
+
+**The binding table is mechanical and normative.** It lives in `api/README.md` and is
+implemented by `bindingName()` in `scripts/check-api.mjs`. A contract member `x` of an
+inbound non-slot form binds as a React prop `x` and an Angular `input()` named `x`; the
+slot named `content` binds as React's `children` and a bare `<ng-content />`; a slot
+named `x` binds as a React node-valued prop `x` and `<ng-content select="[x]" />`; an
+event named `x` binds as React's `onX` and an Angular `output()` named `x`.
+
+**The contract governs required-ness**, not only name, form and type — but only for the
+four inbound non-slot forms. A slot's and an event's required-ness are not compared,
+because `<ng-content>` cannot declare projected content mandatory and no platform has a
+mandatory listener. The carve-out is a statement about what the platforms can express,
+not an exception.
+
+**R2 and R3 are not machine-checkable, and nothing asserts them.** The gate asserts R1,
+R4 and R5. R2 ("who draws decides data versus slot") is a fact about markup ownership and
+R3 ("a parameterised slot fills, never replaces") is a fact about the rendered tree;
+neither is visible in a member list. Both are authoring rules the audit protocol applies,
+which means each is exactly as strong as the audit that applied it. `api/README.md` says
+so and `CLAUDE.md`'s *Known debt* records it.
+
+**Three further things the gate does not assert**, and every later plan inherits them —
+they are gaps in the gate's reach, not authoring rules. `default` is in the contract
+format and read by nothing. **React's checked surface is its hand-written `.d.ts`, never
+its `.jsx`**, so R4 is enforced against real source on the Angular side and against a
+declaration on the React side. A member `description` lives in the contract only and
+reaches no generated module, so it exists three times — contract, `.d.ts` JSDoc,
+`prompt.md` — with nothing holding the three in step. All three are written down in
+`api/README.md`'s "What the gate asserts, and what it cannot".
+
+**Precedents the audits should follow rather than re-derive:**
+
+- **A consumer-supplied asset is a slot with a meaningful name, not the default
+  `content` slot.** `AppLogo`'s mark is `mark`, because a reader of the contract alone
+  learns nothing from `content`. Reserve `content` for a component whose slot genuinely
+  has no better name.
+- **A per-item callback inside an object becomes a component-level event carrying the
+  item**, and the native DOM event is *not* forwarded, because a platform event type is
+  an R4 violation inside a payload. `Breadcrumbs` set this: `Crumb.onClick` became
+  `navigate(Crumb)`, both layers lost `preventDefault()`, and interception moved to the
+  router. `BulkAction.onClick`, `Command.onRun`, `MenuItemDef.onClick`,
+  `ToastAction.onClick` and `Alert.action.onClick` are the same shape and the same
+  answer — but each still goes through the audit, because each has its own capability
+  cost to state.
+- **A single icon is a slot in both layers.** `StatCard`'s is, and Angular keeps
+  rendering the `aria-hidden` wrapper; only the glyph comes from the consumer. Note that
+  Angular cannot know whether a slot was filled without a `contentChild` query, so its
+  wrapper now renders unconditionally — a zero-area empty span, recorded as a rendering
+  divergence in `components-divergences.md`.
+
+**Two things Plan A changed about `components-divergences.md`.** It deleted three
+entries whose whole content was an API divergence, and it *added* two: `AppLogo`'s
+`if (!mark || !name) return null` guard, which is a rendering divergence that survived
+the API one, and `StatCard`'s unconditional icon wrapper. The file is **1089 lines** as
+of Plan A's merge, not the 1127 `CLAUDE.md` records for plan 7d — re-measure before
+citing it, and expect it to move in both directions.
+
+---
+
+# Plan B — the eighteen remaining shared components
 
 **Objective.** Bring every component both layers already implement under contract, one at
 a time through the audit protocol, until React and Angular present an identical member
 surface for all of them and no API divergence remains between the two layers.
 
 The subjects, resolved structurally and not from memory: `ActivityFeed`, `Alert`,
-`AppLogo`, `Avatar`, `BarChart`, `Breadcrumbs`, `BulkActionBar`, `ChartCard`,
-`CommandPalette`, `ConfirmDialog`, `DoughnutChart`, `EmptyState`, `ErrorState`,
-`LineChart`, `Onboarding`, `PageHead`, `Skeleton`, `StatCard`, `Tag`, `ThemeToggle`,
-`UnauthCard`. Three of them land in Plan A, leaving eighteen.
+`Avatar`, `BarChart`, `BulkActionBar`, `ChartCard`, `CommandPalette`, `ConfirmDialog`,
+`DoughnutChart`, `EmptyState`, `ErrorState`, `LineChart`, `Onboarding`, `PageHead`,
+`Skeleton`, `Tag`, `ThemeToggle`, `UnauthCard`. `AppLogo`, `Breadcrumbs` and `StatCard`
+landed in Plan A.
+
+## Four things Plan A discovered that Plan B must settle early
+
+None of these was visible when this spec was written; all four were found by running the
+gate against the real tree.
+
+**1. Angular's slot selectors are not consistent, and the binding table makes that a
+defect.** Today the layer mixes bare selectors — `[mark]` (`app-logo`), `[icon]`
+(`stat-card`), `[brand]` and `[footer]` (`unauth-card`) — with prefixed ones:
+`[arena-actions]` (`chart-card`, `page-head`) and `[arena-action]` (`empty-state`,
+`error-state`). Under the binding table a slot named `x` is `select="[x]"`, so
+`[arena-actions]` declares a member literally named `arena-actions`, which is not a
+member name any contract should carry and does not match React's `actions` prop. **Settle
+the convention before contracting any component with an actions slot** — `ChartCard`,
+`EmptyState`, `ErrorState`, `PageHead` and `UnauthCard` are all blocked on it — and
+renaming a selector is a breaking change to every Angular call site, so it is one
+decision made once rather than five made separately.
+
+**2. Angular has two `icon` idioms and Plan A created the split.** `stat-card`'s `icon`
+is now a slot; `alert`, `empty-state` and `error-state` still declare
+`icon = input<string>()`, a Phosphor class name Arena draws. R2 points at the string for
+those three and the slot for `stat-card`, because that is what each does today — R2
+describes, it does not arbitrate. One of the two wins for the whole layer, and Plan B
+owns the decision. It is not deferrable: `Alert`, `EmptyState` and `ErrorState` are all
+Plan B subjects.
+
+**3. A per-item icon cannot be a slot, and that contradicts the single-icon precedent.**
+R1 says a node field inside a predefined object becomes a slot of the component or a
+primitive if Arena draws it. But `BulkAction.icon`, `Command.icon` and `MenuItemDef.icon`
+live inside *arrays* of objects, and a component-level slot cannot vary per item — so
+each must become a **primitive**, meaning Arena draws per-item icons while (under the
+`StatCard` precedent) it does not draw single ones. That is a defensible split, but it is
+a split, and it should be decided deliberately in `BulkActionBar`'s audit rather than
+discovered in `CommandPalette`'s.
+
+**4. The `style`/`{...rest}` removal is larger than this spec estimated.** R4's own
+section above says "`style` on 20 React components". Measured on the tree at Plan A's
+merge, after three components lost theirs: **26 of the 43 React `.d.ts` files still
+declare `style?: React.CSSProperties`**, and **6 still extend `React.HTMLAttributes` or
+`React.SVGAttributes`** — the `{...rest}` escape. Not all of those 26 are Plan B
+subjects; the rest fall to Plan C. Re-measure rather than trusting either number.
+
+## What Plan B inherits from Plan A's shape
+
+Each component's migration touches the same set Plan A's did: the contract, the React
+`.jsx` and `.d.ts`, the Angular `.ts` and its `.variants.ts` if slots move, both layers'
+test suites, `*.prompt.md` in both layers, the group's `*.card.html` demo and its
+`.entry.jsx`, the compiled `.js` siblings via `build:demos`, and the divergences entry.
+Plan A's three took roughly one commit each plus a review pass; the charts
+(`BarChart`, `LineChart`, `DoughnutChart`) will not, because they are the layer's
+declared styling exception and carry no manifest.
+
+**Test the layer you changed.** Plan A's clearest self-inflicted lesson: it fixed a real
+React defect (`StatCard`'s empty delta pill) and shipped it with a render test on the
+*Angular* side only, because React had no suite for that component. `frameworks/react/test/`
+is DOM-free `renderToStaticMarkup` and costs a few lines; a migration that changes
+rendered output writes one.
 
 # Plan C — the twenty-two React-only components
 
@@ -390,7 +518,41 @@ coincide exactly, which is what makes the sequence work.
 
 `Table` is where R3 gets its first real test: `TableColumn.render` is the repository's
 only parameterised slot, and the rule that it may fill a cell but never replace a row was
-written for it.
+written for it. **Plan A changed what that test costs:** R3 turned out not to be
+machine-checkable, so nothing will catch a wrong answer here. The rule holds exactly as
+far as `Table`'s audit holds it, and `check:compliance` — the only layer that can see a
+rendered tree — does not read contracts.
+
+## Two subjects the reader cannot parse today, by design
+
+Plan A's reader (`scripts/lib/api-surface.mjs`) throws `UnrecognisedShape` on a shape it
+cannot read, and a throw is a gate failure rather than a silent omission. Two React
+`.d.ts` files in the tree throw today. Neither is a defect — both are components Plan C
+exists to settle — but each means **Plan C must decide the API question before the gate
+can check the answer**, and one of the two may require extending the reader:
+
+- **`SideNav.d.ts`** — `onNav?: (id: string, event: React.MouseEvent) => void`, an event
+  with two parameters, against the module's stated convention that an event carries
+  exactly one payload. `Breadcrumbs` already answered this shape once: the DOM event
+  leaves the payload (R4) and the item alone travels. Applying that answer here makes the
+  member readable with no reader change; deciding otherwise means changing the convention,
+  which is a change to `api/README.md`, not to `SideNav`.
+- **`Table.d.ts`** — a generic `TableColumn<T>`. Generics are outside the seven forms
+  entirely, and no form in the vocabulary expresses one. This is the harder of the two:
+  it is not a member that violates a rule, it is a shape the vocabulary has no word for.
+  Settle it in `Table`'s audit before writing the contract, and expect the answer to be
+  either "the row type is not parameterised in the contract" or a change to the
+  vocabulary itself.
+
+## Other R4 work Plan C carries
+
+`Input.type` is `React.HTMLInputTypeAttribute` and becomes an Arena enum — deciding
+*which* input types Arena supports is a product decision the audit must surface, not a
+transcription. `Table.getRowKey`'s return is `React.Key`; `Menu`'s `MenuItemDef.icon`,
+`Toast`'s `ToastAction.onClick` and `SegmentedControl`/`Select`/`Tabs`' union options
+(R5) are the rest. `Tabs.tabs`, `Select.options` and `SegmentedControl.options` are the
+three R5 violations this spec names, and the reader already classifies each as a `union`
+and reports it — so for those three the gate is ready before the audit is.
 
 # Plan D — the twenty-two Angular primitives, built on the CDK
 
@@ -437,6 +599,38 @@ CDK, and React's `Calendar` is no reference either, since `CLAUDE.md` records th
 implements no keyboard navigation at all. `Table` and `Tooltip` carry the same warning —
 Plan D should repair behaviour rather than port a contract that is known to be deficient.
 
+## What Plan A changes about how Plan D is verified
+
+**The Plan C contract is Plan D's acceptance criterion, and for once the gate is on the
+strong side of it.** `check:api` reads Angular's surface from the real `<name>.ts`
+component, not from a declaration file — the asymmetry that weakens it on the React side
+is an advantage here. A CDK-built primitive either declares the contract's members or it
+does not, and no `.d.ts` stands between the two. So each of the twenty-two arrives with a
+machine-checked API the day it is written, which is the opposite of how the existing
+twenty-one arrived.
+
+Three things to carry in:
+
+- **Required-ness is contracted**, so `input.required<T>()` versus `input<T>(default)` is
+  no longer a free choice per primitive — the contract Plan C wrote decides it, and the
+  gate compares it. Plan A hit this twice: making a member required is an NG0950 hazard
+  in the JIT test harness, and `frameworks/angular/test/host-class-binding.test.ts`
+  carries the query-child-and-overwrite bypass that works around it. Reuse it rather than
+  rediscovering it.
+- **Slot required-ness is not comparable**, so a CDK primitive whose projected content is
+  genuinely mandatory has no way to say so and no gate to catch a caller who omits it.
+  That is a real hole in every one of the twenty-two that projects content.
+- **The slot-selector convention Plan B settles applies here too.** Twenty-two new
+  primitives is the largest single batch of `<ng-content select>` this layer will ever
+  gain; they must be written to whatever convention Plan B lands on, not to whatever each
+  one's author prefers.
+
+**`api.generated.ts` is already in `ngc`'s program.** `frameworks/angular/index.ts`
+re-exports it and `tsconfig.check.json`'s `files: ["./index.ts"]` pulls it in, so a
+contract type that fails to resolve breaks `check:angular`. That is currently luck rather
+than design — nothing states the dependency — but Plan D can rely on it, and should write
+it down when it does.
+
 # Plan E — restore the suspended tests
 
 **Objective.** Uncomment the seven tests suspended for speed while plans A through D
@@ -448,6 +642,29 @@ constantly. Measured on this tree before any change: **770 tests across 63 files
 48.14s**, of which **41.56s came from seven tests in two files**. Suspending exactly
 those seven brings the suite to **5.91s for 763 tests** — an eight-fold speed-up for
 0.9% of the tests.
+
+**Those figures are the merged process only**, which was ambiguous as written and is
+resolved here: `bun run test` is two `bun test` invocations, and 770/763 across 63 files
+counts `scripts/` plus `frameworks/react/test/` plus `frameworks/angular/test`. The
+isolated DOM process (`frameworks/react/test-dom`) was and is a separate 26 tests across
+5 files. All seven suspended tests live in `scripts/`, so restoring them moves the merged
+process only.
+
+## The running count
+
+Each plan updates this line when it lands, because the restore check below is a
+comparison and a comparison needs a baseline that is not stale.
+
+| After | Merged process | Isolated DOM process |
+|---|---|---|
+| suspension (2026-07-23, before Plan A) | 763 across 63 files | 26 across 5 files |
+| **Plan A** (2026-07-23) | **856 across 68 files** | 26 across 5 files |
+
+Plan A added 93 tests and 5 files: three new script suites for the API layer
+(`build-api-types.test.mjs`, `api-surface.test.mjs`, `check-api.test.mjs`), plus React
+and Angular render tests added during its migrations and review passes. Every one of them
+is accounted for in that branch's commits; a plan that cannot account for its own delta
+is the thing this table exists to catch.
 
 ## What is suspended
 
@@ -499,14 +716,46 @@ runs. But a green suite between now and then is a weaker claim than it was on
 
 Delete the five header lines of each block, strip the leading `// ` from every line until
 the `PLAN-E-SUSPENDED-END` marker, delete the marker, then run `bun run test` and
-`bun run check` in full. The suite should return to roughly 770 tests and ~48s; a
-materially different count means a plan added or removed tests without recording it.
+`bun run check` in full.
+
+**The check is a delta, not a number.** The original "roughly 770 tests and ~48s" stopped
+being the right target the moment Plan A added 93 tests, and it will be wrong again after
+B, C and D. The rule instead: **record the merged-process count immediately before
+restoring, restore, and expect exactly that count plus 7.** Anything else means a plan
+added or removed tests without recording it in the table above — which is the failure this
+whole section exists to catch, and the table is what makes it catchable.
+
+The wall-clock target survives unchanged, because the seven suspended tests dominate it
+and nothing in plans A–D touches what they do: expect the merged process to gain roughly
+**41.5s** (33.59s of headless Chromium in `check-card-viewports.test.mjs`, 7.97s of `ngc`
+in `check-angular.test.mjs`). Measured after Plan A, the merged process runs in **6.8s**,
+so restoring should land near 48s again — the same figure as the original tree, arrived at
+from a different count.
+
+**Restoring needs a real browser and a working `ngc`.** The five card-viewport tests
+launch headless Chromium over CDP and the two Angular tests shell out to
+`ngc --strictTemplates`; on a machine where `check:cards` reports its loud skip, the
+restored suite cannot pass and the restore is not verified. Run Plan E where
+`bun run check` reports all steps PASS rather than INCOMPLETE.
 
 Plan E is the last thing done, after D, and it is not optional: a suspended test that
 outlives the reason for suspending it is exactly the stale exception every gate in this
 repository is built to reject.
 
-## Risks carried across all four plans
+## Risks carried across the remaining plans
+
+**A green `check:api` is narrower than the charter it is read against, and the gap is
+where this layer will rot.** The gate has no exception map, and that sentence is stated
+forcefully in three places — it invites the reading that a green run means the two layers
+present the same API. It means something narrower in four specific ways, all now written
+down in `api/README.md`'s "What the gate asserts, and what it cannot": R2 and R3 are not
+asserted at all; `default` is in the format and read by nothing; and React's surface is a
+hand-written `.d.ts` the `.jsx` is never checked against. Restoring `style` and a
+`{...rest}` spread to any migrated React component's `.jsx` leaves the gate green today.
+Every plan that adds a contract should re-read that section first and add to it rather
+than assume it is complete — the `check:tailwind-coverage` reason that "was written
+anticipatorily and was false for two commits" is this repository's own record of how such
+a claim rots.
 
 **A contract can be correct and the component still broken.** The API contract is
 orthogonal to behaviour, exactly as `check:behaviour` is a coverage claim and never an
