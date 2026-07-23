@@ -118,13 +118,40 @@ useTestEnvironment();
  * `name()` throws NG0950 ("Input is required but no value is available yet")
  * the moment the child's template tries to read it, since the required input
  * was truly never satisfied under this harness, not merely defaulted quietly
- * the way an optional input is. */
+ * the way an optional input is.
+ *
+ * The projected `<span mark>mark</span>` carries the `mark` ATTRIBUTE
+ * `<ng-content select="[mark]" />` actually selects on -- a bare
+ * `<span>mark</span>` with no such attribute matches no selector at all (this
+ * component's template has no catch-all `<ng-content>` for it to fall back
+ * to) and projects nowhere, which this host used to do silently. The
+ * "under this harness" test below never reads the projected content, so
+ * that mistake cost it nothing directly -- but it meant this host proved
+ * less than its own name claimed, and the real mark-projection test further
+ * down (`createAppLogoMarkHost`) reuses this same host precisely because,
+ * with the attribute now correct, it is one that actually projects. */
 @Component({
   standalone: true,
   imports: [AppLogo],
-  template: `<arena-app-logo name="Draven" class="consumer-class"><span>mark</span></arena-app-logo>`,
+  template: `<arena-app-logo name="Draven" class="consumer-class"><span mark>mark</span></arena-app-logo>`,
 })
 class AppLogoStaticAttributeHost {}
+
+/* Reuses `AppLogoStaticAttributeHost`'s own template -- its `<span mark>mark</span>`
+ * is real projected content, not a stand-in for one -- but bypasses the required
+ * `name` input the same way `createBreadcrumbsHost` bypasses `items`: query the
+ * real child `AppLogo` instance via `By.directive` before the first
+ * `detectChanges()`, and overwrite its `name` field with a plain function.
+ * `detectChanges()` then runs for real, so this is the one place in the file that
+ * proves `[mark]` content projection renders, rather than only that the literal
+ * `name` attribute lands as a stray DOM attribute (the neighbouring test's own,
+ * narrower claim). */
+function createAppLogoMarkHost() {
+  const fixture = TestBed.createComponent(AppLogoStaticAttributeHost);
+  const instance = fixture.debugElement.query(By.directive(AppLogo)).componentInstance as unknown as Record<string, unknown>;
+  instance['name'] = () => 'Draven';
+  return fixture;
+}
 
 /* The literal `name="Juan Carlos"` below is inert under this JIT-only harness, the same way
  * `EmptyStateWithoutActionHost`'s `title` is further down -- `name` is a signal input
@@ -209,6 +236,28 @@ function renderStatCard(label: string, value: string, delta?: StatDelta) {
   instance['label'] = () => label;
   instance['value'] = () => value;
   if (delta !== undefined) instance['delta'] = () => delta;
+  return fixture;
+}
+
+/* `icon` (`api/components/StatCard.json`) is a slot (`<ng-content select="[icon]" />`),
+ * not an input -- `renderStatCard` above has no wrapper and so nothing to project
+ * content THROUGH. This host exists for exactly that, the same shape
+ * `createBreadcrumbsHost`/`createAppLogoMarkHost` already use: a real wrapper
+ * supplying real projected content, with the child `StatCard`'s required `label`/
+ * `value` bypassed by direct field assignment via `By.directive` before the first
+ * `detectChanges()`. */
+@Component({
+  standalone: true,
+  imports: [StatCard],
+  template: `<arena-stat-card><span icon>i</span></arena-stat-card>`,
+})
+class StatCardIconHost {}
+
+function createStatCardIconHost() {
+  const fixture = TestBed.createComponent(StatCardIconHost);
+  const instance = fixture.debugElement.query(By.directive(StatCard)).componentInstance as unknown as Record<string, unknown>;
+  instance['label'] = () => 'Revenue';
+  instance['value'] = () => '$48.2k';
   return fixture;
 }
 
@@ -495,6 +544,23 @@ test('arena-app-logo: under this JIT-only harness, a static "name" attribute lan
   fixture.destroy();
 });
 
+/* Real coverage of `mark` content projection, absent before this: nothing rendered
+ * `arena-app-logo` with real projected content and read it back. `createAppLogoMarkHost`
+ * bypasses the required `name` input the way `createBreadcrumbsHost` bypasses `items`,
+ * so `detectChanges()` runs for real and the projected `<span mark>mark</span>` is
+ * proven to land inside the component's own mark slot, not merely to exist somewhere
+ * in the host's light DOM. */
+test('arena-app-logo: content selected for [mark] projects into the mark slot', () => {
+  const fixture = createAppLogoMarkHost();
+  fixture.detectChanges();
+  const host = fixture.nativeElement.querySelector('arena-app-logo') as HTMLElement;
+  const markClass = appLogoStyles().mark().split(/\s+/)[0];
+  const markSlot = host.querySelector(`.${markClass}`);
+  assert.ok(markSlot, 'the mark slot element itself is missing');
+  assert.equal(markSlot?.querySelector('span')?.textContent, 'mark', 'the projected <span mark> should render inside the mark slot');
+  fixture.destroy();
+});
+
 /* `arena-activity-feed` is the second primitive in this file (after
  * `arena-theme-toggle`) whose styled root is NOT host-bound -- its root must
  * be a real `<ul>` so its rows can be real `<li>`s, and `<arena-activity-feed>`
@@ -660,6 +726,7 @@ test('arena-breadcrumbs: the root recipe classes land on the host element itself
   const host = fixture.nativeElement.querySelector('arena-breadcrumbs') as HTMLElement;
   for (const cls of breadcrumbsStyles().root().split(/\s+/))
     assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
+  fixture.destroy();
 });
 
 test('arena-breadcrumbs: a consumer-supplied class on the host survives the [class] binding', async () => {
@@ -668,6 +735,7 @@ test('arena-breadcrumbs: a consumer-supplied class on the host survives the [cla
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-breadcrumbs') as HTMLElement;
   assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+  fixture.destroy();
 });
 
 test('arena-breadcrumbs: the host itself carries the nav landmark, not a wrapper inside it', async () => {
@@ -678,6 +746,7 @@ test('arena-breadcrumbs: the host itself carries the nav landmark, not a wrapper
   assert.equal(host.getAttribute('role'), 'navigation');
   assert.equal(host.getAttribute('aria-label'), 'Breadcrumb');
   assert.equal(host.children.length, 0, 'with no items, the trail renders no crumbs of its own');
+  fixture.destroy();
 });
 
 /* `navigate` carries the clicked `Crumb` alone -- the API contract
@@ -717,6 +786,7 @@ test('arena-breadcrumbs: a crumb click emits the clicked Crumb alone through nav
 
   assert.ok(received, 'navigate did not emit');
   assert.equal(received, crumb, 'the emitted payload is not the same crumb object the click targeted');
+  fixture.destroy();
 });
 
 test('arena-stat-card: the root recipe classes land on the host element itself', () => {
@@ -759,6 +829,23 @@ test('arena-stat-card: a delta with a value renders the pill; a delta with a ton
     'a delta with a tone/direction but an empty value must render no pill at all',
   );
   emptyValue.destroy();
+});
+
+/* Real coverage of `icon` content projection, absent before this: nothing rendered
+ * `arena-stat-card` with real projected content and read it back. Arena renders the
+ * `aria-hidden` wrapper span unconditionally (stat-card.ts's own doc comment explains
+ * why -- a slot gives the component nothing to inspect the way a primitive input
+ * does), so this proves the wrapper exists AND that a consumer's projected glyph lands
+ * inside it, not merely that the wrapper renders. */
+test('arena-stat-card: content selected for [icon] projects into the icon slot', () => {
+  const fixture = createStatCardIconHost();
+  fixture.detectChanges();
+  const host = fixture.nativeElement.querySelector('arena-stat-card') as HTMLElement;
+  const iconClass = statCardStyles().icon().split(/\s+/)[0];
+  const iconSlot = host.querySelector(`.${iconClass}`);
+  assert.ok(iconSlot, 'the icon wrapper element itself is missing');
+  assert.equal(iconSlot?.querySelector('span')?.textContent, 'i', 'the projected <span icon> should render inside the icon slot');
+  fixture.destroy();
 });
 
 /* BulkActionBar's whole presence is driven by `count` alone (React's
