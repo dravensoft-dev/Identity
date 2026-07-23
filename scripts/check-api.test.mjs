@@ -211,6 +211,55 @@ test('an event with mismatched required-ness reports nothing -- an outbound memb
   assert.deepEqual(problems, []);
 });
 
+/* Corollary of the CRITICAL fix to templateSlots(): compareSurface must
+ * detect a member name declared TWICE in one layer's own surface. Before
+ * this, the AGREEMENT loop re-`seen.add()`d the same bound name silently --
+ * a duplicate matching the contract passed with zero problems, which is
+ * exactly how the stale duplicate `icon` slot (doc comment + real template)
+ * slipped through StatCard's real contract check. */
+test('a member name declared twice in one layer\'s surface is reported as a duplicate', () => {
+  const contract = { component: 'X', api: { icon: { form: 'slot' } } };
+  const members = [
+    { name: 'icon', form: 'slot', required: false },
+    { name: 'icon', form: 'slot', required: false },
+  ];
+  const problems = compareSurface(contract, members, 'angular');
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /icon/);
+  assert.match(problems[0], /twice/);
+});
+
+/* IMPORTANT: an inline literal union (`'sm' | 'md'`) classifies as
+ * {form:'enum', values:[...]} with no `type` -- compareSurface's own type
+ * comparison guarded on `m.type &&`, so it never ran for this shape, and an
+ * inline union matched a contract enum member on form alone regardless of
+ * its actual values. `types` is the fourth parameter carrying every declared
+ * api/types/ type, resolved OUTSIDE compareSurface (main() reads the
+ * filesystem, compareSurface stays string-in/data-out). */
+const LOGO_SIZE_TYPES = new Map([
+  ['LogoSize', { name: 'LogoSize', kind: 'enum', values: ['sm', 'md', 'lg', 'xl'] }],
+]);
+
+test('an inline literal union whose values match the contract enum reports nothing', () => {
+  const contract = { component: 'X', api: { size: { form: 'enum', type: 'LogoSize' } } };
+  const members = [{ name: 'size', form: 'enum', values: ['sm', 'md', 'lg', 'xl'], required: false }];
+  assert.deepEqual(compareSurface(contract, members, 'react', LOGO_SIZE_TYPES), []);
+});
+
+test('an inline literal union whose values differ from the contract enum is reported, naming both sets', () => {
+  const contract = { component: 'X', api: { size: { form: 'enum', type: 'LogoSize' } } };
+  const members = [{ name: 'size', form: 'enum', values: ['sm', 'md'], required: false }];
+  const problems = compareSurface(contract, members, 'react', LOGO_SIZE_TYPES);
+  assert.equal(problems.length, 1);
+  for (const value of ['sm', 'md', 'lg', 'xl']) assert.match(problems[0], new RegExp(value));
+});
+
+test('an inline literal union naming an enum absent from the types map reports nothing -- resolution is not this function\'s job', () => {
+  const contract = { component: 'X', api: { size: { form: 'enum', type: 'LogoSize' } } };
+  const members = [{ name: 'size', form: 'enum', values: ['sm', 'md'], required: false }];
+  assert.deepEqual(compareSurface(contract, members, 'react'), []);
+});
+
 /* the `named` form: an identifier the reader could not resolve on its own --
  * it resolves ONLY against a contract `enum` or `object` member. */
 
@@ -360,6 +409,38 @@ test('R1: a predefined object may not carry a slot or an event field', () => {
   assert.equal(problems.length, 1);
   assert.match(problems[0], /R1/);
   assert.match(problems[0], /onClick/);
+});
+
+/* MINOR: an object field's enum type name was never checked against the
+ * declared type list. {form:'enum', type:'Nonexistent'} would emit an
+ * unresolvable TypeScript reference into BOTH generated modules -- caught
+ * downstream by ngc only because frameworks/angular/index.ts re-exports
+ * ./api.generated and tsconfig.check.json pulls it in, which is luck, not
+ * design (React's own .d.ts has nothing that would catch it at all). */
+test('an object field naming an enum type nobody declared fails', () => {
+  const problems = validateTypes([{
+    name: 'Widget', kind: 'object',
+    fields: { tone: { form: 'enum', type: 'Nonexistent' } },
+  }]);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /Nonexistent/);
+});
+
+test('an object field naming a real type that is an object, not an enum, fails', () => {
+  const problems = validateTypes([
+    { name: 'Crumb', kind: 'object', fields: { label: { form: 'primitive', type: 'string' } } },
+    { name: 'Widget', kind: 'object', fields: { thing: { form: 'enum', type: 'Crumb' } } },
+  ]);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /Crumb/);
+});
+
+test('an object field naming a declared enum passes', () => {
+  const problems = validateTypes([
+    { name: 'Tone', kind: 'enum', values: ['neutral', 'accent'] },
+    { name: 'Widget', kind: 'object', fields: { tone: { form: 'enum', type: 'Tone' } } },
+  ]);
+  assert.deepEqual(problems, []);
 });
 
 test('a contract naming a type nobody declared fails', () => {

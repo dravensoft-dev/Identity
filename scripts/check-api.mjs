@@ -21,8 +21,16 @@
  *                       `<ng-content>` cannot declare projected content
  *                       mandatory, and an outbound event is never "required" on
  *                       either platform. See the comment beside the comparison
- *                       in compareSurface().
- *   4. DERIVED RULES.   R1, R4 and R5, against the declared types.
+ *                       in compareSurface(). A member name declared TWICE in one
+ *                       layer's own surface is reported too -- a duplicate is
+ *                       "not fewer, not more" failing silently otherwise, the
+ *                       shape a slot mentioned in a doc comment as well as the
+ *                       real template exposed.
+ *   4. DERIVED RULES.   R1, R4 and R5, against the declared types. R1 also
+ *                       covers a field's OWN reference: an object field naming
+ *                       an enum checks that the named type is declared and is
+ *                       itself an enum, not only that primitives are spelled
+ *                       correctly.
  *   5. GENERATED DRIFT. The committed api.generated.* match api/types/.
  *
  * THERE IS NO EXCEPTION MAP, and that is not an oversight. Every other record in
@@ -83,6 +91,14 @@ export function bindingName(name, form, layer) {
 export function validateTypes(types) {
   const problems = [];
   const seen = new Set();
+  /* Built from ALL types up front, not filled in as the loop below reaches
+   * each one -- a field may name an enum declared later in file-name order
+   * (loadTypes()'s own contract is alphabetical-by-filename, not
+   * dependency order), and this must resolve either way. */
+  const kindByName = new Map();
+  for (const type of types) {
+    if (type.name) kindByName.set(type.name, type.kind);
+  }
   for (const type of types) {
     if (!type.name) { problems.push('api/types: a type has no name'); continue; }
     if (seen.has(type.name)) problems.push(`${type.name}: declared twice`);
@@ -97,7 +113,21 @@ export function validateTypes(types) {
     for (const [field, spec] of Object.entries(type.fields ?? {})) {
       if (spec.form === 'primitive') {
         if (!PRIMITIVE_TYPES.has(spec.type)) problems.push(`${type.name}.${field}: "${spec.type}" is not a primitive`);
-      } else if (spec.form !== 'enum') {
+      } else if (spec.form === 'enum') {
+        /* An object field's enum type name was previously never checked
+         * against the declared type list -- {form:'enum', type:'Nonexistent'}
+         * would emit an unresolvable TypeScript reference into BOTH generated
+         * modules (renderApiModule emits `field.type` verbatim, undeclared or
+         * not). Caught downstream today only because
+         * frameworks/angular/index.ts re-exports ./api.generated and
+         * tsconfig.check.json pulls it in -- luck, not design; React's own
+         * .d.ts has no such backstop at all. */
+        if (!kindByName.has(spec.type)) {
+          problems.push(`${type.name}.${field}: names enum type "${spec.type}", which api/types/ does not declare`);
+        } else if (kindByName.get(spec.type) !== 'enum') {
+          problems.push(`${type.name}.${field}: "${spec.type}" is a ${kindByName.get(spec.type)}, used where an enum belongs`);
+        }
+      } else {
         problems.push(`${type.name}.${field}: form "${spec.form}" is not allowed inside a predefined object — R1, an object is pure data`);
       }
     }
@@ -139,8 +169,13 @@ export function validateContract(contract, typeNames) {
 }
 
 /** Assertions 2, 3 and the layer half of 4, for one layer of one component.
+ *  @param {Map<string,object>} [types] every declared api/types/ type, keyed
+ *  by name, resolved by the CALLER (main() reads the filesystem once; this
+ *  function stays pure and string-in/data-out, same as every other export
+ *  here). Needed only to resolve an inline literal union's VALUES against a
+ *  contract enum member -- see the comment beside that comparison below.
  *  @returns {string[]} problems */
-export function compareSurface(contract, members, layer) {
+export function compareSurface(contract, members, layer, types = new Map()) {
   const problems = [];
   const where = `${layer}/${contract.component}`;
 
@@ -167,7 +202,23 @@ export function compareSurface(contract, members, layer) {
   }
 
   const seen = new Set();
+  const rawSeen = new Set();
   for (const m of members) {
+    /* Duplicate detection is on the RAW member name, before any contract
+     * binding is consulted -- two identical `icon` slots (stat-card.ts's own
+     * doc comment quoting the real template, before the templateSlots() fix
+     * above) must be caught even though both bind to a name the contract
+     * does declare, which is exactly the shape that made `seen.add()` alone
+     * silently swallow the second one: a Set add is a no-op on a name
+     * already present, so nothing distinguished "declared once, matched"
+     * from "declared twice, matched twice". This still falls through to
+     * every check below for the duplicate itself -- R4/R5/agreement judge a
+     * member on its own regardless of how many times its name repeats. */
+    if (rawSeen.has(m.name)) {
+      problems.push(`${where}.${m.name}: declared twice in this layer's own surface -- a slot mentioned in a doc comment as well as the real template is the known case`);
+    } else {
+      rawSeen.add(m.name);
+    }
     if (m.form === 'platform') {
       problems.push(`${where}.${m.name}: "${m.type}" is a platform type and none of the seven forms — R4`);
       continue;
@@ -249,6 +300,30 @@ export function compareSurface(contract, members, layer) {
     if ((spec.form === 'enum' || spec.form === 'object') && m.type && m.type !== spec.type) {
       problems.push(`${where}.${m.name}: typed ${m.type}, contract says ${spec.type}`);
     }
+    /* An INLINE literal union (`'sm' | 'md'`) classifies as {form:'enum',
+     * values:[...]} with no `type` -- classify() has nothing to name it
+     * with, unlike a named identifier (`LogoSize`), which comes back as
+     * `form: 'named'` and is resolved above. That absence of `m.type` is
+     * exactly why the check above never ran for this shape: its guard is
+     * `m.type &&`, so a layer spelling the contract's enum as an inline
+     * union always matched on FORM alone, with its actual values compared
+     * to nothing. Resolve the contract's own enum by name against `types`
+     * (the caller's api/types/ map) and compare the two VALUE SETS,
+     * membership only -- order carries no meaning in either union. */
+    if (spec.form === 'enum' && m.form === 'enum' && Array.isArray(m.values)) {
+      const declared = types.get(spec.type);
+      if (declared?.kind === 'enum' && Array.isArray(declared.values)) {
+        const layerSet = new Set(m.values);
+        const contractSet = new Set(declared.values);
+        const same = layerSet.size === contractSet.size && [...layerSet].every((v) => contractSet.has(v));
+        if (!same) {
+          problems.push(
+            `${where}.${m.name}: inline union values [${m.values.join(', ')}] do not match `
+            + `${spec.type}'s declared values [${declared.values.join(', ')}]`,
+          );
+        }
+      }
+    }
   }
 
   for (const [bound, spec] of expected) {
@@ -295,6 +370,12 @@ function main() {
   const types = readdirSync(typeDir).filter((f) => f.endsWith('.json')).sort().map((f) => read(join(typeDir, f)));
   problems.push(...validateTypes(types));
   const typeNames = new Map(types.map((t) => [t.name, t.kind]));
+  /* compareSurface's fourth parameter -- the FULL declared type (values
+   * included, not just its kind), so it can resolve an inline literal
+   * union's value set against the enum its contract member names. Built
+   * here, once, from the same api/types/ read `typeNames` already uses --
+   * compareSurface itself never touches the filesystem. */
+  const typesByName = new Map(types.map((t) => [t.name, t]));
 
   const contractDir = join(root, 'api/components');
   const files = existsSync(contractDir) ? readdirSync(contractDir).filter((f) => f.endsWith('.json')).sort() : [];
@@ -331,7 +412,7 @@ function main() {
       for (const base of surface.heritage ?? []) {
         problems.push(`${layer}/${contract.component}: extends "${base}" — the {...rest} escape is none of the seven forms, R4`);
       }
-      problems.push(...compareSurface(contract, surface.members, layer));
+      problems.push(...compareSurface(contract, surface.members, layer, typesByName));
     }
   }
 
