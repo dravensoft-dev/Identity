@@ -5,9 +5,12 @@
  * plain exported functions, so it is testable with no `TestBed` at all.
  *
  * This does NOT render `<arena-command-palette>` through TestBed, for the
- * same confirmed reason `confirm-dialog-focus-trap.test.ts` documents:
- * `[open]="true"` and `componentRef.setInput('open', true)` both throw
- * NG0303 under this repo's JIT-only test toolchain, because only `ngtsc`
+ * same confirmed reason `confirm-dialog-focus-trap.test.ts` documents -- and
+ * the two ways `open` cannot be set fail DIFFERENTLY, which is the part that
+ * bites: `[open]="true"` THROWS NG0303, while `componentRef.setInput('open',
+ * true)` logs NG0303 and then silently NO-OPS, leaving `open` on its default.
+ * A throw announces itself; a silent no-op lets a suite pass vacuously against
+ * a default it never changed. Both stem from the same cause -- only `ngtsc`
  * (never run here) discovers a class's `input()` fields into `ɵcmp.inputs`.
  * Since `open` can never become `true` here, no TestBed-based test can
  * render an actually-open palette; `filterCommands`, `nextActiveIndex` and
