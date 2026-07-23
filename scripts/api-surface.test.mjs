@@ -289,6 +289,34 @@ test('angularSurface throws on a constructor parameter property -- it declares a
   });
 });
 
+test('angularSurface throws on a constructor parameter property hidden behind a function-typed parameter -- the first ) is the arrow type\'s, not the constructor\'s', () => {
+  const src = `
+    export class X {
+      readonly a = input<string>();
+      constructor(cb: (x: number) => void, private y: string) {}
+      readonly b = input<string>();
+    }
+  `;
+  assert.throws(() => angularSurface(src, 'X'), (err) => {
+    assert.ok(err instanceof UnrecognisedShape);
+    assert.match(err.message, /parameter-propert/i);
+    return true;
+  });
+});
+
+test('angularSurface does not mistake a default value\'s bare "readonly" identifier for a parameter-property modifier', () => {
+  const src = `
+    export class X {
+      readonly a = input<string>();
+      constructor(x = { readonly: true }) {}
+      readonly b = input<string>();
+    }
+  `;
+  const { members } = angularSurface(src, 'X');
+  assert.equal(members.length, 2);
+  assert.deepEqual(members.map((m) => m.name), ['a', 'b']);
+});
+
 test('angularSurface reports template slots alongside declared members', () => {
   const src = `
     @Component({ template: \`<span><ng-content select="[mark]" /></span>\` })

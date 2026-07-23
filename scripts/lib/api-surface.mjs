@@ -20,13 +20,18 @@
  *
  * See api/README.md for the vocabulary and the per-layer binding table.
  *
- * TWO KNOWN BLIND SPOTS, dormant against today's corpus and not fixed here:
+ * THREE KNOWN BLIND SPOTS, dormant against today's corpus and not fixed here:
  * `splitTopLevel` tracks bracket nesting only and is not string-literal
  * aware -- a bracket character inside a quoted string at depth zero would
- * misalign the depth count. `braceBody` is a plain brace counter with the
+ * misalign the depth count. `braceBody` is a plain bracket counter with the
  * same gap one level up: no quote or comment awareness. No shape in the
  * corpus triggers either today; a quote-aware scanner is a larger change
- * than either was written to make. */
+ * than either was written to make. Third: the index-signature carve-out in
+ * `classify` (`/^\{\s*\[/`) tests only the literal's FIRST member, so a mixed
+ * literal such as `{ label: string; [k: string]: unknown }` -- a named field
+ * alongside an index signature -- slips past the carve-out and is classified
+ * as `platform` rather than thrown. No shape in the corpus is a mixed
+ * literal today; this is known and dormant, not fixed here. */
 
 /** Thrown when the reader meets a shape it does not recognise. Never caught
  *  inside this module. */
@@ -126,19 +131,24 @@ export function classify(raw) {
   throw new UnrecognisedShape(`unreadable type annotation: ${ts}`);
 }
 
-/** The balanced interior of the block whose opening brace is at `openIndex`.
- *  A depth counter, not a regex: an interface member can itself carry braces
- *  and a `.*?}` would stop at the first one. */
-export function braceBody(source, openIndex) {
+/** The balanced interior of the bracketed block whose opening character is at
+ *  `openIndex`. A depth counter, not a regex: an interface member can itself
+ *  carry braces and a `.*?}` would stop at the first one. Defaults to `{}`
+ *  for its original caller (an interface or class body); the constructor
+ *  parameter-property check below passes `(`/`)` to balance a parameter
+ *  list against the constructor's OWN opening paren rather than the first
+ *  `)` in the fragment, which can belong to a nested arrow-function type
+ *  (`cb: (x: number) => void`) instead. */
+export function braceBody(source, openIndex, open = '{', close = '}') {
   let depth = 0;
   for (let i = openIndex; i < source.length; i += 1) {
-    if (source[i] === '{') depth += 1;
-    else if (source[i] === '}') {
+    if (source[i] === open) depth += 1;
+    else if (source[i] === close) {
       depth -= 1;
       if (depth === 0) return source.slice(openIndex + 1, i);
     }
   }
-  throw new UnrecognisedShape('unbalanced braces');
+  throw new UnrecognisedShape(`unbalanced ${open}${close}`);
 }
 
 /** Comments are stripped BEFORE splitting on `;`, because a semicolon inside a
@@ -270,8 +280,24 @@ export function angularSurface(source, className) {
      * outcome this module forbids -- so a parameter list carrying an
      * access modifier throws instead of being skipped. */
     if (/^constructor\s*\(/.test(text)) {
-      const params = text.slice(text.indexOf('(') + 1, text.indexOf(')'));
-      if (/\b(public|private|protected|readonly)\b/.test(params)) {
+      /* The parameter list must be balanced against the constructor's OWN
+       * opening paren, via braceBody -- not "up to the first )", which a
+       * parameter carrying a function type (`cb: (x: number) => void, ...`)
+       * would truncate at the arrow type's closing paren, silently dropping
+       * every parameter after it (and with it, a real parameter-property
+       * modifier the truncated tail would have carried). */
+      const params = braceBody(text, text.indexOf('('), '(', ')');
+      /* Split into individual parameters at PARAMETER-LIST depth zero and
+       * check only each parameter's OWN leading modifier -- not "does the
+       * word public/private/protected/readonly occur anywhere in the
+       * parameter list" -- so a default value that merely contains one of
+       * those words as an identifier (`x = { readonly: true }`) is not
+       * mistaken for an access modifier. A real parameter property always
+       * carries its modifier(s) at the very start of its own parameter,
+       * so this is exact, not a heuristic. */
+      const hasParameterProperty = splitTopLevel(params, ',', { brackets: '(){}[]' })
+        .some((p) => /^\s*(public|private|protected|readonly)\b/.test(p));
+      if (hasParameterProperty) {
         throw new UnrecognisedShape(
           `constructor uses the parameter-property idiom, which declares a public member the reader does not read: ${text}`,
         );
