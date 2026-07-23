@@ -1,0 +1,6 @@
+{
+  "name": "AvatarStatus",
+  "kind": "enum",
+  "description": "A presence state, drawn as a filled dot in the corner in the state's colour — `offline` is a visible muted dot, not the absence of one. There is no invisible value: to show no presence at all, omit the optional `status` member.",
+  "values": ["online", "busy", "away", "offline"]
+}

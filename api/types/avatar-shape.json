@@ -1,0 +1,6 @@
+{
+  "name": "AvatarShape",
+  "kind": "enum",
+  "description": "Circle for a person, rounded for a team or organisation.",
+  "values": ["circle", "rounded"]
+}

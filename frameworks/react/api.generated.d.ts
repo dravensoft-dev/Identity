@@ -6,6 +6,15 @@
  * tokens.generated.* already carries. scripts/check-api.mjs asserts the
  * committed files match api/types/. See api/README.md for the vocabulary. */
 
+/** Circle for a person, rounded for a team or organisation. */
+export type AvatarShape = 'circle' | 'rounded';
+
+/** The avatar's diameter, a fixed repertoire: xs a dense table row, sm a comment byline, md the default, lg a profile header. */
+export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg';
+
+/** A presence state, drawn as a filled dot in the corner in the state's colour — `offline` is a visible muted dot, not the absence of one. There is no invisible value: to show no presence at all, omit the optional `status` member. */
+export type AvatarStatus = 'online' | 'busy' | 'away' | 'offline';
+
 /** One entry in a breadcrumb trail. `href` is omitted for the current page, which is never rendered as a link. */
 export interface Crumb {
   /** What the crumb reads. */

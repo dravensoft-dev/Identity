@@ -4,13 +4,12 @@
 import React from "react";
 const SIZES = { xs: "var(--avatar-xs)", sm: "var(--avatar-sm)", md: "var(--avatar-md)", lg: "var(--avatar-lg)" };
 const STATUS = { online: "var(--success)", busy: "var(--danger)", away: "var(--warning)", offline: "var(--status-offline)" };
-export function Avatar({ src, name = "", size = "md", shape = "circle", status, style, ...rest }) {
+export function Avatar({ src, name = "", size = "md", shape = "circle", status }) {
   const d = SIZES[size] || SIZES.md;
   const radius = shape === "rounded" ? "var(--r-md)" : "50%";
   const initials = name.trim().split(/\s+/).slice(0, 2).map((w) => w[0] || "").join("").toUpperCase();
   return React.createElement("span", {
-    style: { position: "relative", display: "inline-flex", width: d, height: d, flexShrink: 0, ...style },
-    ...rest
+    style: { position: "relative", display: "inline-flex", width: d, height: d, flexShrink: 0 }
   }, React.createElement("span", {
     style: {
       width: d,

@@ -1,9 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { avatarStyles } from './avatar.variants';
-
-type Size = 'xs' | 'sm' | 'md' | 'lg';
-type Shape = 'circle' | 'rounded';
-type Status = 'online' | 'busy' | 'away' | 'offline';
+import { AvatarSize, AvatarShape, AvatarStatus } from '../../api.generated';
 
 /** Person or entity mark — the image when `src` is set, initials from `name` otherwise.
  *  The host itself is the recipe's `root` — it is the flex item a parent row lays
@@ -29,9 +26,9 @@ type Status = 'online' | 'busy' | 'away' | 'offline';
 export class Avatar {
   readonly src = input<string>();
   readonly name = input('');
-  readonly size = input<Size>('md');
-  readonly shape = input<Shape>('circle');
-  readonly status = input<Status>();
+  readonly size = input<AvatarSize>('md');
+  readonly shape = input<AvatarShape>('circle');
+  readonly status = input<AvatarStatus>();
 
   protected readonly styles = computed(() =>
     avatarStyles({ size: this.size(), shape: this.shape(), status: this.status() ?? 'none' }));

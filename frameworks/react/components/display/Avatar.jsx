@@ -3,12 +3,12 @@ const SIZES = { xs: 'var(--avatar-xs)', sm: 'var(--avatar-sm)', md: 'var(--avata
 const STATUS = { online: 'var(--success)', busy: 'var(--danger)', away: 'var(--warning)', offline: 'var(--status-offline)' };
 /** Representation of a person or entity. `src` for image; without it, initials on panel.
  * `shape` circle (people) or rounded (teams/orgs). `status` adds a presence dot. */
-export function Avatar({ src, name = '', size = 'md', shape = 'circle', status, style, ...rest }) {
+export function Avatar({ src, name = '', size = 'md', shape = 'circle', status }) {
   const d = SIZES[size] || SIZES.md;
   const radius = shape === 'rounded' ? 'var(--r-md)' : '50%';
   const initials = name.trim().split(/\s+/).slice(0, 2).map((w) => w[0] || '').join('').toUpperCase();
   return (
-    <span style={{ position: 'relative', display: 'inline-flex', width: d, height: d, flexShrink: 0, ...style }} {...rest}>
+    <span style={{ position: 'relative', display: 'inline-flex', width: d, height: d, flexShrink: 0 }}>
       <span style={{ width: d, height: d, borderRadius: radius, overflow: 'hidden', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         background: 'var(--color-base-300)', border: 'var(--bw) solid var(--line-strong)',
         fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: `calc(${d} * 0.4)`, color: 'var(--bone-dim)', letterSpacing: 'var(--ls-normal)' }}>

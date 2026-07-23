@@ -1,0 +1,16 @@
+{
+  "component": "Avatar",
+  "description": "A person or entity mark: the image when `src` is set, initials from `name` otherwise, with an optional presence dot.",
+  "api": {
+    "src": { "form": "primitive", "type": "string",
+             "description": "Image URL. Absent renders initials from `name`." },
+    "name": { "form": "primitive", "type": "string",
+              "description": "The person or entity name. Its first two words' initials render when there is no `src`, and it is the image's alt text." },
+    "size": { "form": "enum", "type": "AvatarSize", "default": "md",
+              "description": "The avatar's diameter." },
+    "shape": { "form": "enum", "type": "AvatarShape", "default": "circle",
+               "description": "Circle for a person, rounded for a team." },
+    "status": { "form": "enum", "type": "AvatarStatus",
+                "description": "A presence dot in the state's colour. `offline` is a visible muted dot; omit `status` entirely for no dot. Optional — there is no invisible enum value." }
+  }
+}
