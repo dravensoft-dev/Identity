@@ -1,18 +1,8 @@
 import * as React from 'react';
+import type { StatDelta, Tone } from '../../api.generated';
 
-/** A single metric on the card surface: label, big value, optional delta pill. */
-export interface StatDelta {
-  /** Preformatted, e.g. "+12%" or "-340ms". StatCard never formats. */
-  value: string;
-  /** Which way the number moved. Draws the arrow — nothing else. */
-  direction: 'up' | 'down';
-  /**
-   * Whether that movement is GOOD. Deliberately separate from `direction`:
-   * revenue down is negative, latency down is positive, and only the product
-   * knows which. Defaults to 'neutral' — an unlabelled delta claims nothing.
-   */
-  tone?: 'positive' | 'negative' | 'neutral';
-}
+export type { StatDelta };
+
 export interface StatCardProps {
   /** Short uppercase microlabel (<= 2 words). */
   label: string;
@@ -27,12 +17,11 @@ export interface StatCardProps {
    * not it improved; two open incidents are `danger` even when that is down
    * from five. Vocabulary is Badge's, so one set of tone names covers both.
    */
-  tone?: 'neutral' | 'accent' | 'gold' | 'success' | 'warning' | 'danger' | 'info';
+  tone?: Tone;
   delta?: StatDelta;
   /** Small muted line under the value — context, e.g. "vs last week". */
   sub?: string;
   /** @startingPoint A ~14px Phosphor icon; rendered muted at .6 opacity. */
   icon?: React.ReactNode;
-  style?: React.CSSProperties;
 }
 export function StatCard(props: StatCardProps): JSX.Element;

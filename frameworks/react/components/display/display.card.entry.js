@@ -59,30 +59,34 @@ function Demo() {
   }, "StatCard — the value says what IS, the pill says how it MOVED"), React.createElement("div", {
     className: "row",
     style: { alignItems: "stretch" }
+  }, React.createElement("div", {
+    style: { flex: 1 }
   }, React.createElement(StatCard, {
     label: "Deploys",
     value: "128",
     delta: { value: "+12%", direction: "up", tone: "positive" },
-    sub: "vs last week",
+    sub: "vs last week"
+  })), React.createElement("div", {
     style: { flex: 1 }
-  }), React.createElement(StatCard, {
+  }, React.createElement(StatCard, {
     label: "p95 latency",
     value: "340 ms",
     delta: { value: "-18%", direction: "down", tone: "positive" },
-    sub: "vs last week",
+    sub: "vs last week"
+  })), React.createElement("div", {
     style: { flex: 1 }
-  }), React.createElement(StatCard, {
+  }, React.createElement(StatCard, {
     label: "Open incidents",
     value: "3",
     tone: "danger",
     delta: { value: "-2", direction: "down", tone: "positive" },
-    sub: "2 acknowledged",
+    sub: "2 acknowledged"
+  })), React.createElement("div", {
     style: { flex: 1 }
-  }), React.createElement(StatCard, {
+  }, React.createElement(StatCard, {
     label: "Build time",
     value: "4m 12s",
-    delta: { value: "+3s", direction: "up" },
-    style: { flex: 1 }
-  })));
+    delta: { value: "+3s", direction: "up" }
+  }))));
 }
 createRoot(document.getElementById("root")).render(React.createElement(Demo, null));

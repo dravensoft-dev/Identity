@@ -997,37 +997,6 @@ notices the two surfaces no longer match by eye. Check `UnauthCard.manifest.json
 **Converges:** not planned — the padding split is the reason a shared recipe was
 rejected, not an oversight to fix later.
 
-### StatCard — `delta` is one object prop in React, three flat inputs in Angular
-
-**React:** `StatCard.jsx` takes `delta` as a single object prop, `{ value, tone,
-direction }`, destructured internally (`delta.value`, `delta.tone`, `delta.direction`).
-
-**Angular:** `arena-stat-card` flattens it into three separate signal inputs —
-`deltaValue: string`, `deltaTone: 'neutral'|'positive'|'negative'` (default
-`'neutral'`), `deltaDirection: 'up'|'down'` (default `'up'`) — rather than one `delta`
-input.
-
-**Why:** `tone`, `deltaTone` and `deltaDirection` are three separate facts about the number —
-`tone` says what state it IS in right now (a service at 99.98% uptime is healthy whether or not it
-improved this week), `deltaTone` says whether the change was good, `deltaDirection` says which way
-it pointed — but that much is equally true of React, which also keeps them distinct
-(`tone` alongside `delta.tone`/`delta.direction`) rather than folding them into one flag. It
-explains why the fields exist, not why Angular ungroups them where React nests them. The actual
-reason is signal inputs: each is `input()`-per-field, so a single object `delta` input would force
-a consumer to hand a fresh object identity to change one field, and would give `deltaTone`'s and
-`deltaDirection`'s defaults (`'neutral'`, `'up'`) nowhere to live the way a plain input's own
-default does. Three flat inputs let a consumer set one field, at its own default, independent of
-the others.
-
-**Converges:** no — this is the Angular idiom for the same set of facts React groups into one prop.
-Almost nothing a consumer could express with React's `delta` object is lost, but the two layers
-gate the pill differently: React renders it whenever the `delta` object itself is truthy
-(`{delta && ...}`), Angular whenever `deltaValue()` is truthy (`@if (deltaValue(); as delta)`). A
-delta with a populated `tone`/`direction` but an empty `value` therefore renders an (empty) arrow
-pill in React and renders nothing in Angular — negligible in practice, since a delta with no value
-to show is not a delta worth passing, but it is the one real behavioural difference the split
-introduces.
-
 ### SideNav is described three times, and only the colours agree
 
 **React:** `SideNav.jsx` renders a `<nav>` with direct `<a>`/`<button>` children and owns its

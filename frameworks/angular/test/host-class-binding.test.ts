@@ -66,6 +66,7 @@ import { Skeleton } from '../primitives/skeleton/skeleton';
 import { skeletonStyles } from '../primitives/skeleton/skeleton.variants';
 import { StatCard } from '../primitives/stat-card/stat-card';
 import { statCardStyles } from '../primitives/stat-card/stat-card.variants';
+import type { StatDelta } from '../api.generated';
 import { Tag } from '../primitives/tag/tag';
 import { tagStyles } from '../primitives/tag/tag.variants';
 import { ThemeToggle } from '../primitives/theme-toggle/theme-toggle';
@@ -179,19 +180,52 @@ function createBreadcrumbsHost(items: Crumb[] = []) {
   return fixture;
 }
 
-/* The literal `label="Revenue"` and `value="$48.2k"` below are inert under this JIT-only
- * harness for the same reason as `AvatarHost` above -- both are signal inputs (`input('')`)
- * and a static attribute never reaches one here (see this file's header comment). They render
- * as stray DOM attributes on the host and leave `label()`/`value()` at their defaults, the
- * empty string. Left in place rather than removed because no test below reads them -- only the
- * class merge is asserted -- so it changes nothing either way; recorded here so a reader does
- * not take them for working bindings. */
+/* `label` and `value` became `input.required<string>()` in Task 7 (`api/components/
+ * StatCard.json`) -- the same NG0950 hazard `arena-app-logo`'s `name` and
+ * `arena-breadcrumbs`'s `items` already hit under this JIT-only harness (see this
+ * file's header comment). A literal attribute never routes to a signal input here,
+ * so `StatCardHost`'s template below -- kept as the NG0950 proof, mirroring
+ * `AppLogoStaticAttributeHost` -- must never call `detectChanges()`: `label()` would
+ * throw the instant the template reads it, since the required input was truly never
+ * satisfied under this harness rather than merely defaulted quietly. */
 @Component({
   standalone: true,
   imports: [StatCard],
   template: `<arena-stat-card class="consumer-class" label="Revenue" value="$48.2k" />`,
 })
 class StatCardHost {}
+
+/* `renderStatCard` reuses `renderAppLogo`'s bypass technique above: construct the
+ * real `StatCard` directly with `TestBed.createComponent`, then overwrite `label`/
+ * `value` (and, when given, `delta`) as plain functions before the first
+ * `detectChanges()` -- no host wrapper, so a consumer class is instead added via
+ * `classList.add` before that first `detectChanges()`, exactly as `renderAppLogo`'s
+ * own second test does. This proves template and DOM shape only, never the input
+ * contract itself; `bun run check:angular` (`ngc --strictTemplates`) is the real
+ * authority that `label`/`value`/`delta` are declared correctly. */
+function renderStatCard(label: string, value: string, delta?: StatDelta) {
+  const fixture = TestBed.createComponent(StatCard);
+  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
+  instance['label'] = () => label;
+  instance['value'] = () => value;
+  if (delta !== undefined) instance['delta'] = () => delta;
+  return fixture;
+}
+
+/* Proves the NG0950 hazard `renderStatCard` above exists to route around --
+ * mirrors `AppLogoStaticAttributeHost`'s own test for `name` at the top of this
+ * file. `detectChanges()` is deliberately never called: it would throw before
+ * either assertion ran, and for the reason that test's own comment records,
+ * `fixture.destroy()` runs regardless so a still-pending required input cannot
+ * poison the next test through the shared document/ApplicationRef. */
+test('arena-stat-card: under this JIT-only harness, a static "label"/"value" attribute lands as a stray DOM attribute on the host and does not reach ɵcmp.inputs -- known layer-wide issue, not fixed here (Resolution J)', () => {
+  const fixture = TestBed.createComponent(StatCardHost);
+  const host = fixture.nativeElement.querySelector('arena-stat-card') as HTMLElement;
+  assert.equal(host.getAttribute('label'), 'Revenue', 'the literal attribute should still land on the host element itself');
+  assert.equal(host.getAttribute('value'), '$48.2k', 'sanity: the second literal attribute lands the same way');
+  assert.equal(host.getAttribute('class'), 'consumer-class', 'sanity: the static class attribute lands the same way');
+  fixture.destroy();
+});
 
 @Component({
   standalone: true,
@@ -685,21 +719,46 @@ test('arena-breadcrumbs: a crumb click emits the clicked Crumb alone through nav
   assert.equal(received, crumb, 'the emitted payload is not the same crumb object the click targeted');
 });
 
-test('arena-stat-card: the root recipe classes land on the host element itself', async () => {
-  const fixture = TestBed.createComponent(StatCardHost);
+test('arena-stat-card: the root recipe classes land on the host element itself', () => {
+  const fixture = renderStatCard('Revenue', '$48.2k');
   fixture.detectChanges();
-  await fixture.whenStable();
-  const host = fixture.nativeElement.querySelector('arena-stat-card') as HTMLElement;
+  const host = fixture.nativeElement as HTMLElement;
   for (const cls of statCardStyles().root().split(/\s+/))
     assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
+  fixture.destroy();
 });
 
-test('arena-stat-card: a consumer-supplied class on the host survives the [class] binding', async () => {
-  const fixture = TestBed.createComponent(StatCardHost);
+test('arena-stat-card: a class already on the host before the first detectChanges survives the [class] host binding', () => {
+  const fixture = renderStatCard('Revenue', '$48.2k');
+  (fixture.nativeElement as HTMLElement).classList.add('consumer-class');
   fixture.detectChanges();
-  await fixture.whenStable();
-  const host = fixture.nativeElement.querySelector('arena-stat-card') as HTMLElement;
-  assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+  const host = fixture.nativeElement as HTMLElement;
+  assert.ok(host.classList.contains('consumer-class'), `host lost the pre-existing class: "${host.className}"`);
+  for (const cls of statCardStyles().root().split(/\s+/))
+    assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
+  fixture.destroy();
+});
+
+/* Real coverage of the pill's gate, now that both layers read the same
+ * contract member: `delta()?.value` truthy renders the pill, matching React's
+ * `delta?.value && (...)` exactly (Task 7's fix for React's old empty-pill
+ * behaviour). Reachable here because `renderStatCard`'s bypass sets `delta`
+ * as a plain function, the same technique the label/value fields already use. */
+test('arena-stat-card: a delta with a value renders the pill; a delta with a tone but no value renders nothing', () => {
+  const withValue = renderStatCard('Deploys', '128', { value: '+12%', direction: 'up', tone: 'positive' });
+  withValue.detectChanges();
+  const deltaClass = statCardStyles().delta().split(/\s+/)[0];
+  assert.ok((withValue.nativeElement as HTMLElement).querySelector(`.${deltaClass}`), 'a delta with a value must render the pill');
+  withValue.destroy();
+
+  const emptyValue = renderStatCard('Deploys', '128', { value: '', direction: 'up', tone: 'positive' });
+  emptyValue.detectChanges();
+  assert.equal(
+    (emptyValue.nativeElement as HTMLElement).querySelector(`.${deltaClass}`),
+    null,
+    'a delta with a tone/direction but an empty value must render no pill at all',
+  );
+  emptyValue.destroy();
 });
 
 /* BulkActionBar's whole presence is driven by `count` alone (React's

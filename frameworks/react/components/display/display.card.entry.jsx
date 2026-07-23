@@ -28,12 +28,12 @@ function Demo(){return (<div>
   </div>
   <div className="sub">StatCard — the value says what IS, the pill says how it MOVED</div>
   <div className="row" style={{alignItems:'stretch'}}>
-    <StatCard label="Deploys" value="128" delta={{value:'+12%',direction:'up',tone:'positive'}} sub="vs last week" style={{flex:1}} />
-    <StatCard label="p95 latency" value="340 ms" delta={{value:'-18%',direction:'down',tone:'positive'}} sub="vs last week" style={{flex:1}} />
+    <div style={{flex:1}}><StatCard label="Deploys" value="128" delta={{value:'+12%',direction:'up',tone:'positive'}} sub="vs last week" /></div>
+    <div style={{flex:1}}><StatCard label="p95 latency" value="340 ms" delta={{value:'-18%',direction:'down',tone:'positive'}} sub="vs last week" /></div>
     {/* The two tones disagree here, which is the point: three open incidents is
         still a bad state, and it is still an improvement on five. */}
-    <StatCard label="Open incidents" value="3" tone="danger" delta={{value:'-2',direction:'down',tone:'positive'}} sub="2 acknowledged" style={{flex:1}} />
-    <StatCard label="Build time" value="4m 12s" delta={{value:'+3s',direction:'up'}} style={{flex:1}} />
+    <div style={{flex:1}}><StatCard label="Open incidents" value="3" tone="danger" delta={{value:'-2',direction:'down',tone:'positive'}} sub="2 acknowledged" /></div>
+    <div style={{flex:1}}><StatCard label="Build time" value="4m 12s" delta={{value:'+3s',direction:'up'}} /></div>
   </div>
 </div>);}
 createRoot(document.getElementById('root')).render(<Demo/>);

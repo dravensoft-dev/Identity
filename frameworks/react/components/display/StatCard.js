@@ -16,8 +16,8 @@ const VALUE_TONES = {
   danger: "var(--danger)",
   info: "var(--info)"
 };
-export function StatCard({ label, value, tone = "neutral", delta, sub, icon, style, ...rest }) {
-  const t = delta ? DELTA_TONES[delta.tone] || DELTA_TONES.neutral : null;
+export function StatCard({ label, value, tone = "neutral", delta, sub, icon }) {
+  const t = delta?.value ? DELTA_TONES[delta.tone] || DELTA_TONES.neutral : null;
   const valueColor = VALUE_TONES[tone] || VALUE_TONES.neutral;
   return React.createElement("div", {
     style: {
@@ -28,10 +28,8 @@ export function StatCard({ label, value, tone = "neutral", delta, sub, icon, sty
       minHeight: "calc(var(--sp-1) * 30)",
       display: "flex",
       flexDirection: "column",
-      gap: "calc(var(--sp-1) * 2)",
-      ...style
-    },
-    ...rest
+      gap: "calc(var(--sp-1) * 2)"
+    }
   }, React.createElement("div", {
     style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "calc(var(--sp-1) * 3)" }
   }, React.createElement("span", {
@@ -49,7 +47,7 @@ export function StatCard({ label, value, tone = "neutral", delta, sub, icon, sty
       fontVariantNumeric: "tabular-nums",
       margin: 0
     }
-  }, value), delta && React.createElement("span", {
+  }, value), delta?.value && React.createElement("span", {
     style: {
       alignSelf: "flex-start",
       display: "inline-flex",

@@ -1,0 +1,13 @@
+{
+  "name": "StatDelta",
+  "kind": "object",
+  "description": "How a metric moved. Preformatted — StatCard never formats. The pill's colour says whether the change was GOOD, not which way it points, which is why direction and tone are separate fields.",
+  "fields": {
+    "value": { "form": "primitive", "type": "string", "required": true,
+               "description": "Preformatted, e.g. \"+12%\" or \"-340ms\"." },
+    "direction": { "form": "enum", "type": "Direction", "required": true,
+                   "description": "Which way the number moved. Draws the arrow — nothing else." },
+    "tone": { "form": "enum", "type": "DeltaTone",
+              "description": "Whether that movement is GOOD. Defaults to neutral — an unlabelled delta claims nothing." }
+  }
+}

@@ -26,5 +26,15 @@ export type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
 /** Whether the parts sit side by side or stacked. */
 export type Orientation = 'horizontal' | 'vertical';
 
+/** How a metric moved. Preformatted — StatCard never formats. The pill's colour says whether the change was GOOD, not which way it points, which is why direction and tone are separate fields. */
+export interface StatDelta {
+  /** Preformatted, e.g. "+12%" or "-340ms". */
+  value: string;
+  /** Which way the number moved. Draws the arrow — nothing else. */
+  direction: Direction;
+  /** Whether that movement is GOOD. Defaults to neutral — an unlabelled delta claims nothing. */
+  tone?: DeltaTone;
+}
+
 /** What state a value IS in right now, as against how it moved. Badge's vocabulary, so one set of tone names covers the system rather than a second set that is nearly the same. */
 export type Tone = 'neutral' | 'accent' | 'gold' | 'success' | 'warning' | 'danger' | 'info';

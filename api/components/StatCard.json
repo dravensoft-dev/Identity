@@ -1,0 +1,18 @@
+{
+  "component": "StatCard",
+  "description": "One metric on a card surface: a micro-label, the number, an optional delta pill and a sub-line.",
+  "api": {
+    "label": { "form": "primitive", "type": "string", "required": true,
+               "description": "Short uppercase microlabel, two words at most." },
+    "value": { "form": "primitive", "type": "string", "required": true,
+               "description": "Preformatted, e.g. \"1,284\" or \"99.9%\". StatCard never formats." },
+    "tone": { "form": "enum", "type": "Tone", "default": "neutral",
+              "description": "What state the number IS in right now, as against how it moved. Badge's vocabulary." },
+    "delta": { "form": "object", "type": "StatDelta",
+               "description": "How the number moved. Absent renders no pill." },
+    "sub": { "form": "primitive", "type": "string",
+             "description": "Small muted line under the value — context, e.g. \"vs last week\"." },
+    "icon": { "form": "slot",
+              "description": "A small glyph beside the label, drawn muted. Arena renders the aria-hidden wrapper; the consumer supplies the glyph." }
+  }
+}
