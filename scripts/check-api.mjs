@@ -159,7 +159,6 @@ export function compareSurface(contract, members, layer) {
 
   const seen = new Set();
   for (const m of members) {
-    if (collided.has(m.name)) { seen.add(m.name); continue; }
     if (m.form === 'platform') {
       problems.push(`${where}.${m.name}: "${m.type}" is a platform type and none of the seven forms — R4`);
       continue;
@@ -172,6 +171,15 @@ export function compareSurface(contract, members, layer) {
       problems.push(`${where}.${m.name}: the event payload "${m.payload}" is a platform type — R4`);
       continue;
     }
+    /* Only NOW, after a member's own form validity (R4, R5) has already been
+     * judged unconditionally, does a collided bound name stop the check. A
+     * collision means two distinct contract members claim this one bound
+     * name, so there is no way to know which one this layer member is meant
+     * to satisfy -- the AGREEMENT comparison below is impossible while they
+     * collide. That is not true of the checks above: R4 and R5 judge a
+     * member entirely on its own, with no reference to any contract spec, so
+     * they must still fire even at a collided name. */
+    if (collided.has(m.name)) { seen.add(m.name); continue; }
     const spec = expected.get(m.name);
     if (!spec) {
       problems.push(`${where}.${m.name}: declared, but the contract does not name it — add it to the contract or remove it from the layer`);

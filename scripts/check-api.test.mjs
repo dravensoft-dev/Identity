@@ -224,6 +224,70 @@ test('two contract members binding to the same name in one layer is reported as 
   assert.match(problems[0], /collide/);
 });
 
+/* Regression: the collision skip must not swallow a member's OWN form
+ * validity. R4 and R5 judge a member on its own, with no reference to any
+ * contract spec, so they must still fire even when the member's bound name
+ * is also the site of a contract-authoring collision. */
+
+test('a collided bound name still reports the member\'s own R4 violation (platform type)', () => {
+  const contract = {
+    component: 'X',
+    api: {
+      content: { form: 'slot' },
+      children: { form: 'primitive', type: 'string' },
+    },
+  };
+  const problems = compareSurface(
+    contract,
+    [{ name: 'children', form: 'platform', type: 'React.CSSProperties', required: false }],
+    'react',
+  );
+  assert.equal(problems.length, 2);
+  assert.ok(problems.some((p) => /collide/.test(p) && /content/.test(p) && /children/.test(p)));
+  assert.ok(problems.some((p) => /R4/.test(p) && /React\.CSSProperties/.test(p)));
+});
+
+test('a collided bound name still reports the member\'s own R5 violation (union)', () => {
+  const contract = {
+    component: 'X',
+    api: {
+      content: { form: 'slot' },
+      children: { form: 'primitive', type: 'string' },
+    },
+  };
+  const problems = compareSurface(
+    contract,
+    [{ name: 'children', form: 'union', parts: ['string', 'TabItem'], required: false }],
+    'react',
+  );
+  assert.equal(problems.length, 2);
+  assert.ok(problems.some((p) => /collide/.test(p) && /content/.test(p) && /children/.test(p)));
+  assert.ok(problems.some((p) => /R5/.test(p)));
+});
+
+/* The second collision shape the previous fix left untested: an event
+ * contract member binds in React by prefixing "on" + capitalised name, which
+ * can collide with a contract member that is literally named that way. */
+
+test('an event member colliding with a literally-named onX member is reported, naming both', () => {
+  const contract = {
+    component: 'X',
+    api: {
+      x: { form: 'event', payload: null },
+      onX: { form: 'primitive', type: 'string' },
+    },
+  };
+  const problems = compareSurface(
+    contract,
+    [{ name: 'onX', form: 'primitive', type: 'string', required: false }],
+    'react',
+  );
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /collide/);
+  assert.match(problems[0], /"x"/);
+  assert.match(problems[0], /"onX"/);
+});
+
 /* 4 — the derived rules, on the type side */
 
 test('R1: a predefined object may not carry a slot or an event field', () => {
