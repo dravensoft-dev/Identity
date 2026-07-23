@@ -8,6 +8,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **A third contract: the API capability contract.** `api/components/<Name>.json` states,
+  once and neutrally, the members a component's API presents; every layer implementing it
+  implements exactly those members, and an API divergence becomes a defect rather than a
+  recorded difference. A member is one of seven forms — primitive, enum, predefined object,
+  array of primitives, array of predefined objects, slot, event — governed by five derived
+  rules, all normatively stated in `api/README.md`, which also carries the per-layer binding
+  table (a `content` slot is React's `children`; an event `navigate` is React's `onNavigate`).
+  Shared objects and enums are declared once in `api/types/` and emitted per layer by
+  `bun run build:api` into the committed `frameworks/react/api.generated.d.ts` and
+  `frameworks/angular/api.generated.ts`. `bun run check:api` is the twenty-first gate and
+  carries **no exception map**: coverage is partial by design and grows one component at a
+  time, but every contract in the directory must be true of every layer implementing it.
+  The gate asserts three of the five rules — R1, R4 and R5; R2 and R3 are authoring rules
+  no member list can express, and `CLAUDE.md` records that rather than implying otherwise.
+  The contract governs a member's required-ness as well as its name, form and type, except
+  for slots and events, which neither platform pair can declare mandatory.
+
+  `AppLogo`, `Breadcrumbs` and `StatCard` are the first three, migrated end to end in both
+  layers. **Breaking, per component:** React loses `style` and the `{...rest}` spread on all
+  three (R4); `AppLogo`'s `name` and `dim` narrow from `ReactNode` to `string` and Angular's
+  mark moves to `<ng-content select="[mark]" />`; `Breadcrumbs` loses the per-crumb `onClick`
+  for a `navigate` event carrying the crumb — the native `MouseEvent` is no longer forwarded,
+  so neither layer can `preventDefault()` and interception belongs at the router — `separator`
+  narrows to a string, `items` becomes required, and Angular's `ArenaCrumb` is renamed `Crumb`;
+  `StatCard`'s three flat `delta*` inputs in Angular become one `delta` object, its `icon`
+  becomes a slot in both layers, and `label`/`value` become required. The delta pill now gates
+  on `delta.value` in both layers, which fixes the empty pill React rendered for a delta with a
+  tone but no value. Their entries in `components-divergences.md` are deleted, because the
+  divergences no longer exist.
+
 - **Behaviour values are tokens.** `tokens/src/behaviour.json` holds `delay` (pointer intent), `dismiss` (transient-notice permanence) and `limit` (quantity invariants) — five script-readable tokens, emitted both as custom properties and as numbers JavaScript reads.
 - **Angular layer parity — 20 new primitives, for 21 in all.** `activity-feed`,
   `alert`, `app-logo`, `avatar`, `bar-chart`, `breadcrumbs`, `bulk-action-bar`,
