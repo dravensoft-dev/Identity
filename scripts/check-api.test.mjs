@@ -149,6 +149,81 @@ test('an array of the wrong element type fails', () => {
   assert.ok(compareSurface(CONTRACT, members, 'angular').some((p) => /items/.test(p)));
 });
 
+/* the `named` form: an identifier the reader could not resolve on its own --
+ * it resolves ONLY against a contract `enum` or `object` member. */
+
+test('a named member resolves against an enum contract member, and a type mismatch still fails', () => {
+  const contract = { component: 'X', api: { tone: { form: 'enum', type: 'Tone' } } };
+  assert.deepEqual(
+    compareSurface(contract, [{ name: 'tone', form: 'named', type: 'Tone', required: false }], 'react'),
+    [],
+  );
+  const problems = compareSurface(
+    contract,
+    [{ name: 'tone', form: 'named', type: 'Status', required: false }],
+    'react',
+  );
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /Status/);
+  assert.match(problems[0], /Tone/);
+});
+
+test('a named member resolves against an object contract member, and a type mismatch still fails', () => {
+  const contract = { component: 'X', api: { crumb: { form: 'object', type: 'Crumb' } } };
+  assert.deepEqual(
+    compareSurface(contract, [{ name: 'crumb', form: 'named', type: 'Crumb', required: false }], 'react'),
+    [],
+  );
+  const problems = compareSurface(
+    contract,
+    [{ name: 'crumb', form: 'named', type: 'Widget', required: false }],
+    'react',
+  );
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /Widget/);
+  assert.match(problems[0], /Crumb/);
+});
+
+test('a named member against a primitive contract member is reported, not coerced into matching', () => {
+  const problems = compareSurface(
+    { component: 'X', api: { separator: { form: 'primitive', type: 'string' } } },
+    [{ name: 'separator', form: 'named', type: 'Direction', required: false }],
+    'react',
+  );
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /Direction/);
+  assert.match(problems[0], /primitive/);
+});
+
+test('a named member against an event contract member is reported, not coerced into matching', () => {
+  const problems = compareSurface(
+    { component: 'X', api: { navigate: { form: 'event', payload: null } } },
+    [{ name: 'onNavigate', form: 'named', type: 'ClickHandler', required: false }],
+    'react',
+  );
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /ClickHandler/);
+  assert.match(problems[0], /event/);
+});
+
+/* bindingName collisions: two distinct contract members that bind to the
+ * same name in one layer must not silently overwrite each other. */
+
+test('two contract members binding to the same name in one layer is reported as a collision', () => {
+  const contract = {
+    component: 'X',
+    api: {
+      content: { form: 'slot' },
+      children: { form: 'primitive', type: 'string' },
+    },
+  };
+  const problems = compareSurface(contract, [{ name: 'children', form: 'slot', required: false }], 'react');
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /content/);
+  assert.match(problems[0], /children/);
+  assert.match(problems[0], /collide/);
+});
+
 /* 4 — the derived rules, on the type side */
 
 test('R1: a predefined object may not carry a slot or an event field', () => {

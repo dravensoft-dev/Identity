@@ -136,12 +136,30 @@ export function compareSurface(contract, members, layer) {
   const where = `${layer}/${contract.component}`;
 
   const expected = new Map();
+  const collided = new Set();
   for (const [name, spec] of Object.entries(contract.api ?? {})) {
-    expected.set(bindingName(name, spec.form, layer), { member: name, ...spec });
+    const bound = bindingName(name, spec.form, layer);
+    if (expected.has(bound)) {
+      /* Two distinct contract members bound to the same name in this layer --
+       * a contract-authoring error, not a layer defect. The first spec stays
+       * in `expected`; the collision problem below is what matters, and
+       * neither member is compared against `members` afterwards -- with two
+       * contract members claiming one bound name, there is no way to know
+       * which one a layer member matching that name is meant to satisfy, so
+       * verification of either is not possible while they collide. */
+      problems.push(
+        `${where}: contract members "${expected.get(bound).member}" and "${name}" both bind to "${bound}" `
+        + `in ${layer} -- rename one; verification of either against the layer is not possible while they collide`,
+      );
+      collided.add(bound);
+      continue;
+    }
+    expected.set(bound, { member: name, ...spec });
   }
 
   const seen = new Set();
   for (const m of members) {
+    if (collided.has(m.name)) { seen.add(m.name); continue; }
     if (m.form === 'platform') {
       problems.push(`${where}.${m.name}: "${m.type}" is a platform type and none of the seven forms — R4`);
       continue;
@@ -161,11 +179,18 @@ export function compareSurface(contract, members, layer) {
     }
     seen.add(m.name);
     /* A `named` form is the reader saying "an identifier I cannot resolve".
-     * It matches an enum or an object member; the contract's own type name is
-     * what decides which, and validateContract already proved that name is
-     * declared and of the right kind. */
-    const form = m.form === 'named' ? spec.form : m.form;
-    if (form !== spec.form) {
+     * It resolves ONLY against a contract `enum` or `object` member -- those
+     * are the two forms a declared type name can carry; the contract's own
+     * type name is what decides which, and validateContract already proved
+     * that name is declared and of the right kind. Against any other
+     * contract form (primitive, slot, array, event) a bare type reference
+     * cannot satisfy it, so it is a mismatch like any other form disagreement. */
+    if (m.form === 'named') {
+      if (spec.form !== 'enum' && spec.form !== 'object') {
+        problems.push(`${where}.${m.name}: declared as named type "${m.type}", contract says ${spec.form}`);
+        continue;
+      }
+    } else if (m.form !== spec.form) {
       problems.push(`${where}.${m.name}: declared as ${m.form}, contract says ${spec.form}`);
       continue;
     }
@@ -181,7 +206,7 @@ export function compareSurface(contract, members, layer) {
   }
 
   for (const [bound, spec] of expected) {
-    if (seen.has(bound)) continue;
+    if (seen.has(bound) || collided.has(bound)) continue;
     problems.push(`${where}: does not declare "${bound}" (contract member "${spec.member}", ${spec.form})`
       + (spec.required === false ? ' — an optional member is still a declared member' : ''));
   }
@@ -207,8 +232,11 @@ function angularPath(component) {
 function main() {
   const problems = [];
 
-  /* 5. Generated drift, first: every later assertion reads type names, and a
-   *    stale module means the layers are typed against something else. */
+  /* 5. Generated drift, first -- not because any later assertion depends on
+   *    it (typeNames below is built straight from api/types/, never from the
+   *    generated modules; the two read independent sources), but because a
+   *    stale generated module is the problem most likely to explain every
+   *    other one, so it should head the list. */
   for (const [path, expected] of buildApiModules()) {
     let actual;
     try { actual = readFileSync(join(root, path), 'utf8'); }
