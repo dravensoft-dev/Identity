@@ -1,0 +1,16 @@
+{
+  "component": "AppLogo",
+  "description": "Brand lock-up: a mark beside or above a product name.",
+  "api": {
+    "mark": { "form": "slot", "required": true,
+              "description": "The mark, as an asset the consumer supplies. Required: Arena ships MIT and a default would ship Dravensoft's trademark to whoever never read the API. The slot sizes the mark; a mark that brings its own dimensions fights the lock-up." },
+    "name": { "form": "primitive", "type": "string", "required": true,
+              "description": "The product name, or its first half when `dim` carries the second." },
+    "dim": { "form": "primitive", "type": "string",
+             "description": "The wordmark's second half, drawn muted. Present for the manual's Primary variant, absent for Monochrome — which is why there is no `variant` member: the mark's ink and this are the same two decisions." },
+    "size": { "form": "enum", "type": "LogoSize", "default": "md",
+              "description": "Both halves at once — the mark's slot and the wordmark." },
+    "orientation": { "form": "enum", "type": "Orientation", "default": "horizontal",
+                     "description": "Mark beside the name, or above it." }
+  }
+}

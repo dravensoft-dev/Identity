@@ -911,41 +911,6 @@ differ in an accessibility affordance.
 column lacks today. **Open debt on the React layer**, the same shape as the per-slice-legend entry
 above.
 
-### AppLogo — the mark is a prop in React, projected content in Angular
-
-**React:** `AppLogo.jsx` takes `mark` as a prop — a React element — and clones it
-(`React.cloneElement(mark, { style: { display: 'block', width: '100%', height: '100%', ...mark.props.style } })`)
-to stretch it to fill the slot, because a mark carrying its own dimensions and a `size`
-prop would fight over how the mark sits against the wordmark.
-
-**Angular:** `arena-app-logo` takes the mark as projected content (`<ng-content />`
-inside the `mark` slot) and stretches it with child variants on that slot
-(`*:block *:w-full *:h-full` in `AppLogo.manifest.json`) rather than reaching into the
-projected node. A consumer writes `<arena-app-logo name="...">  <img ... /> </arena-app-logo>`
-instead of passing a `[mark]` input.
-
-**Why:** Angular has no equivalent to `React.cloneElement` — there is no way for a
-component to reach into a projected `ng-content` node and rewrite its style from the
-outside. The CSS descendant-combinator variant (`*:w-full *:h-full`) achieves the exact
-same visual result — the projected element fills the slot regardless of its own
-dimensions — through the platform's own idiom instead of DOM manipulation. This is a
-structural difference in the public API, not a narrowing: nothing about what a consumer
-can express is lost, only how they pass it.
-
-**Also not ported:** React's `style` prop and `{...rest}` spread, for the reason
-PageHead's entry above already gives — in Angular a consumer writes those directly on
-the host, which is the same element the recipe's `root` classes are bound to.
-
-**Also not ported:** React's `if (!mark || !name) return null` guard
-(`AppLogo.jsx:15`), which renders nothing when either is missing. Angular has no
-counterpart — `name` is `input.required`, so a missing `name` is a compile-time/runtime
-contract violation at the call site, not a variant to render around, and per a standing
-ruling AppLogo must never render mark-only. Dropping the guard is deliberate, not a gap.
-
-**Converges:** no. Each layer expresses the same constraint (the slot sizes the mark,
-never the reverse) through its own platform's mechanism for reaching projected/child
-content.
-
 ### ActivityFeed — the tone dot is filled, matching Tag's own dot and Avatar's presence carve-out; not a divergence
 
 **React:** `ActivityFeed.jsx`'s dot is `background: TONES[item.tone] || TONES.accent` — a

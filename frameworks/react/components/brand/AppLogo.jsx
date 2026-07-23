@@ -11,7 +11,7 @@ const TEXT = { sm: 'var(--logo-text-sm)', md: 'var(--logo-text-md)', lg: 'var(--
 
 /** Brand lock-up: a mark beside (horizontal) or above (vertical) a product
  *  name. `mark` and `name` are required and nothing stands in for them. */
-export function AppLogo({ size = 'md', orientation = 'horizontal', mark, name, dim, style, ...rest }) {
+export function AppLogo({ size = 'md', orientation = 'horizontal', mark, name, dim }) {
   if (!mark || !name) return null;
   const vertical = orientation === 'vertical';
   const markSize = MARK[size] || MARK.md;
@@ -21,7 +21,7 @@ export function AppLogo({ size = 'md', orientation = 'horizontal', mark, name, d
     : mark;
   return (
     <span style={{ display: 'inline-flex', flexDirection: vertical ? 'column' : 'row', alignItems: 'center',
-      gap: vertical ? 'calc(var(--sp-1) * 3)' : 'calc(var(--sp-1) * 2.5)', ...style }} {...rest}>
+      gap: vertical ? 'calc(var(--sp-1) * 3)' : 'calc(var(--sp-1) * 2.5)' }}>
       <span style={{ display: 'inline-flex', flex: 'none', width: markSize, height: markSize }}>{fill}</span>
       <span style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-black)', fontSize: textSize,
         letterSpacing: 'var(--ls-tight)', textTransform: 'uppercase', color: 'var(--bone)' }}>

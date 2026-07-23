@@ -4,7 +4,7 @@
 import React from "react";
 const MARK = { sm: "var(--logo-mark-sm)", md: "var(--logo-mark-md)", lg: "var(--logo-mark-lg)", xl: "var(--logo-mark-xl)" };
 const TEXT = { sm: "var(--logo-text-sm)", md: "var(--logo-text-md)", lg: "var(--logo-text-lg)", xl: "var(--logo-text-xl)" };
-export function AppLogo({ size = "md", orientation = "horizontal", mark, name, dim, style, ...rest }) {
+export function AppLogo({ size = "md", orientation = "horizontal", mark, name, dim }) {
   if (!mark || !name)
     return null;
   const vertical = orientation === "vertical";
@@ -16,10 +16,8 @@ export function AppLogo({ size = "md", orientation = "horizontal", mark, name, d
       display: "inline-flex",
       flexDirection: vertical ? "column" : "row",
       alignItems: "center",
-      gap: vertical ? "calc(var(--sp-1) * 3)" : "calc(var(--sp-1) * 2.5)",
-      ...style
-    },
-    ...rest
+      gap: vertical ? "calc(var(--sp-1) * 3)" : "calc(var(--sp-1) * 2.5)"
+    }
   }, React.createElement("span", {
     style: { display: "inline-flex", flex: "none", width: markSize, height: markSize }
   }, fill), React.createElement("span", {
