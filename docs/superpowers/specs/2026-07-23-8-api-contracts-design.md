@@ -3,7 +3,8 @@
 **Status:** design, approved 2026-07-23. Plan A is specified in full; Plans B, C and D
 carry their objective only, deliberately — the repository they execute against will not
 be the repository that exists today, and detail written now would describe a tree nobody
-will have.
+will have. Plan E is specified in full for the opposite reason: it is a record of tests
+suspended today, and a record that omits what it suspended is worthless.
 
 ## The problem
 
@@ -435,6 +436,75 @@ elements do most of the work and `ListKeyManager` covers the roving tabindex. An
 CDK, and React's `Calendar` is no reference either, since `CLAUDE.md` records that it
 implements no keyboard navigation at all. `Table` and `Tooltip` carry the same warning —
 Plan D should repair behaviour rather than port a contract that is known to be deficient.
+
+# Plan E — restore the suspended tests
+
+**Objective.** Uncomment the seven tests suspended for speed while plans A through D
+reshape the repository, and run the whole suite and every gate green with all of them
+live.
+
+Plans A through D touch nearly every component in both layers, so the test suite is run
+constantly. Measured on this tree before any change: **770 tests across 63 files in
+48.14s**, of which **41.56s came from seven tests in two files**. Suspending exactly
+those seven brings the suite to **5.91s for 763 tests** — an eight-fold speed-up for
+0.9% of the tests.
+
+## What is suspended
+
+Both blocks are commented with a leading `// ` per line, opened by a five-line
+`PLAN-E-SUSPENDED` header and closed by a `PLAN-E-SUSPENDED-END` marker. Line-prefix
+comments rather than a `/* */` block on purpose: both regions contain doc comments whose
+`*/` would close an enclosing block early. `grep -rn PLAN-E-SUSPENDED scripts/` finds
+every one.
+
+**`scripts/check-card-viewports.test.mjs`, lines 19-224 — five tests, 33.59s.**
+Each launches headless Chromium over CDP: `measurePage reports content that fits, and
+content that over-runs`; `contentHeight follows an absolutely positioned descendant at
+any depth`; `contentHeight follows a trailing block margin the body's own padding stops
+from collapsing away`; `measurePage rejects instead of hanging when a page never
+answers`; `a slow-but-honest page times out inside the script instead of past the outer
+CDP bound`. The file's other ~20 tests are pure functions — `parseDsCard`,
+`summarizeCards`, and the string assertions on `MEASURE_SCRIPT` — and stay live, which
+is why the file was cut surgically rather than suspended whole.
+
+**`scripts/check-angular.test.mjs`, lines 9-38 — two tests, 7.97s.**
+Both shell out to a full `ngc --strictTemplates` run over the Angular layer: `the Angular
+layer as committed typechecks`, and `a template referencing a member that does not
+exist fails`. The whole file is the `ngc` run, so there was nothing to keep.
+
+## What is actually lost, stated precisely
+
+Less than the headline suggests, and the distinction matters. **The gates themselves
+still run.** `check-all.mjs` invokes `check-card-viewports.mjs` and `check-angular.mjs`
+as steps in their own right; what is suspended is the tests that verify *those gates'
+machinery*, not the gates. `bun run check` still measures every `@dsCard` page in a real
+browser and still typechecks the Angular layer with `ngc`.
+
+What is genuinely uncovered until Plan E:
+
+- **`measurePage`'s behaviour against a real browser.** The file's own comment already
+  says the surviving `MEASURE_SCRIPT` string assertions are *"not a substitute for the
+  browser-backed tests — it is a cheap trip-wire"*. During plans A-D that trip-wire is
+  all there is: a change to the stability loop, the frame wait or the deadline would be
+  caught only in shape, not in behaviour.
+- **`typecheck()`'s own contract** — that it reports a non-zero status with locatable
+  output on a bad template. `check:angular` proves the layer compiles; the suspended test
+  proves the gate would notice if it did not.
+
+Neither hole is one plans A-D are likely to fall into, and both close the moment Plan E
+runs. But a green suite between now and then is a weaker claim than it was on
+2026-07-23, and that is the trade being made.
+
+## Restoring
+
+Delete the five header lines of each block, strip the leading `// ` from every line until
+the `PLAN-E-SUSPENDED-END` marker, delete the marker, then run `bun run test` and
+`bun run check` in full. The suite should return to roughly 770 tests and ~48s; a
+materially different count means a plan added or removed tests without recording it.
+
+Plan E is the last thing done, after D, and it is not optional: a suspended test that
+outlives the reason for suspending it is exactly the stale exception every gate in this
+repository is built to reject.
 
 ## Risks carried across all four plans
 
