@@ -46,6 +46,7 @@
     "check:states": "bun scripts/check-manifest-states.mjs",
     "check:behaviour": "bun scripts/check-behaviour.mjs",
     "check:compliance": "bun scripts/check-compliance.mjs",
+    "check:api": "bun scripts/check-api.mjs",
     "check:fonts": "bun scripts/check-fonts-generated.mjs",
     "check:angular": "bun scripts/check-angular.mjs",
     "check:material": "bun scripts/check-material.mjs",

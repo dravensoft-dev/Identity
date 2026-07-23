@@ -568,6 +568,19 @@ scheduled for deletion the same week.
   matching the named control's host class — the same shape as `check:states`' own
   staleness rule.
 
+- **`check:api` asserts three of its five rules, not five.** R1 (an object is pure
+  data) is enforced by the type schema, R4 (no platform types) by the reader
+  recognising them by name, and R5 (no unions between forms) by a member carrying
+  exactly one form. **R2 and R3 are not machine-checkable and nothing checks
+  them.** R2 — "who draws decides data versus slot" — is a fact about markup
+  ownership, and a contract naming a slot for content Arena actually draws passes
+  the gate. R3 — "a parameterised slot fills, never replaces" — is a fact about the
+  rendered tree; `check:compliance` is the only layer that can see a rendered tree,
+  and it does not read contracts. Both are authoring rules the audit protocol
+  applies, which means they are exactly as strong as the audit that applied them.
+  `Table.render` in plan C is where R3 first matters, and it will matter with no
+  gate behind it.
+
 ### Where the rest of the debt lives
 
 Each of these is a record with its own stale-entry rule: an entry that no longer
