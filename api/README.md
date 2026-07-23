@@ -218,6 +218,19 @@ Declared once, in `api/types/`, one file per type:
   "values": ["neutral", "accent", "gold", "success", "warning", "danger", "info"] }
 ```
 
+**A closed set of values is not always an enum.** The charts' categorical ramp slot is the
+case that decided the rule: it is a bounded 1..N, but it is declared a bare `number` on both
+layers, not an `api/types/` enum. The bound N lives in exactly one authoritative place —
+`tokens/src/palette.dark.json`'s `--color-cat-*` ramp — and reaches the components as the
+derived `catSlots` constant in `tokens.generated.*`; `catColor()`'s `Math.min(CAT_SLOTS, …)`
+clamp already enforces it at runtime in both layers, and it re-derives itself the day the ramp
+gains or loses a colour. Modelling it as an enum would hand-copy that derived N into a contract
+as a literal set with nothing tying the copy back to the palette — a stale-assertion surface of
+exactly the kind this layer exists to remove, and the generator emits enum values quoted, so a
+numeric set would not even render. An enum is right when the closed set is authored in the
+contract and owned by it — `Tone` above — and wrong when it merely restates a value the token
+layer already derives.
+
 A `description` on a type or on one of its fields is carried into the generated modules
 as a doc comment — `build-api-types.mjs` reads `api/types/` only. Group-level prose is
 lost in `tokens/`'s generator and that is recorded as debt in `CLAUDE.md`; this generator
