@@ -337,7 +337,7 @@ It is the converse of `check:coverage` and just as narrow: it does not attempt
 "every utility traces to a token" in general, only this one verified case,
 because everywhere else in a cleared namespace already resolves to nothing
 and `check:tailwind` catches that on its own.
-`bun run check` runs all twenty plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
+`bun run check` runs all twenty-one plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
 skips quietly — makes that a hard failure instead. An Angular primitive's recipe is its
 manifest — `frameworks/angular/primitives/tag/` is the reference shape.
 
@@ -579,7 +579,20 @@ scheduled for deletion the same week.
   and it does not read contracts. Both are authoring rules the audit protocol
   applies, which means they are exactly as strong as the audit that applied them.
   `Table.render` in plan C is where R3 first matters, and it will matter with no
-  gate behind it.
+  gate behind it. Two more gaps, neither an authoring rule and both closeable in
+  principle: **`default` is documented in the contract format and read by nothing** —
+  all three shipped contracts carry one, but `spec.default` is referenced nowhere in
+  `scripts/`, so a contract's stated default can disagree with both layers' real
+  defaults with nothing to say so. Left unimplemented on purpose: React's default lives
+  in a `.jsx` destructuring pattern the gate never reads (the next point), so the
+  comparison could only run against Angular, which is worse than not claiming it. And
+  **React's checked surface is its `.d.ts`, never its `.jsx`** — `check-api.mjs` reads
+  `<Name>.d.ts` and never opens the implementation, while Angular's surface comes from
+  its real `<name>.ts` component; restoring `style, ...rest` to `AppLogo.jsx` right now
+  would leave `check:api` green, since nothing looks at the `.jsx` again once the `.d.ts`
+  agrees with the contract. A gate whose claim is "an API divergence is a defect" enforces
+  that claim against real source on one layer and against a hand-written declaration on
+  the other.
 
 ### Where the rest of the debt lives
 

@@ -107,6 +107,25 @@ implicit is what lets the agreement assertion see it: a layer that accepts arbit
 children without the contract declaring a `content` slot is offering a member no contract
 governs.
 
+### Re-exporting a shared type from React's `.d.ts`
+
+A React component's `.d.ts` imports its enum and object types from
+`../../api.generated`, and it should **re-export exactly the named types the
+pre-migration `.d.ts` itself declared and exported locally** — no more, no less. A
+type the old file spelled as a named, exported interface (`StatCard.d.ts`'s old
+`StatDelta`, `Breadcrumbs.d.ts`'s old `Crumb`) keeps working for an existing
+consumer's `import type { StatDelta } from '.../StatCard'` only if the migrated file
+re-exports it (`export type { StatDelta };`); a type the old file spelled as a bare
+inline literal union (`AppLogo.d.ts`'s old `size?: 'sm' | 'md' | 'lg' | 'xl'`,
+`StatCard.d.ts`'s old `tone?: 'neutral' | 'accent' | …'`) had no name for a consumer
+to import in the first place, so the migrated file re-exports nothing for it —
+`LogoSize` and `Tone` both stay un-re-exported for exactly that reason. This is a
+back-compat rule, not a design principle: it exists only so a consumer's existing
+import keeps resolving, and it is mechanical — read the pre-migration file, re-export
+whatever it named, nothing it did not. Angular has no equivalent question: a
+component's own file imports straight from `../../api.generated` and there is no
+prior local declaration to preserve.
+
 ## Contract format
 
 `api/components/<Component>.json`:
@@ -159,10 +178,23 @@ Declared once, in `api/types/`, one file per type:
   "values": ["neutral", "accent", "gold", "success", "warning", "danger", "info"] }
 ```
 
-A `description` on any node — a type, a field, a member — is carried into the generated
-modules as a doc comment. Group-level prose is lost in `tokens/`'s generator and that is
-recorded as debt in `CLAUDE.md`; this generator carries descriptions on every node it
-emits, including type-level ones, so the same hole is not reopened.
+A `description` on a type or on one of its fields is carried into the generated modules
+as a doc comment — `build-api-types.mjs` reads `api/types/` only. Group-level prose is
+lost in `tokens/`'s generator and that is recorded as debt in `CLAUDE.md`; this generator
+carries descriptions on every node it emits from `api/types/`, including type-level ones,
+so that hole is not reopened here.
+
+**A member's own `description` — the one written on a contract member in
+`api/components/<Component>.json`, as `separator`'s is in the example above — is not one
+of those nodes, and nothing reads it for emission.** Nothing in `scripts/` reads
+`api/components/*.json` to generate anything; the contract exists to be read by
+`check:api` and by whoever migrates a component, not to be built from. So a member
+description lives in the contract only, and each layer's own doc comment
+(`AppLogoProps`'s JSDoc, `arena-app-logo`'s class comment) restates it by hand — today
+that restatement happens a third time again in the component's `.prompt.md`. Nothing
+holds the three in step; a member description can drift from its layer's prose and
+nothing here will notice. This is a known limit, not a gap left to close quietly — see
+`CLAUDE.md`'s Known debt.
 
 `bun run build:api` emits `frameworks/react/api.generated.d.ts` and
 `frameworks/angular/api.generated.ts` from these files. Both are committed and both carry
@@ -183,6 +215,30 @@ Two of the five rules are **authoring rules the audit applies, and no gate asser
 - **R3 is not machine-checkable.** Whether a parameterised slot fills a cell or replaces a
   row is a fact about the rendered tree, not about the member list. `check:compliance` is
   the layer that can see a rendered tree, and it does not read contracts.
+
+Two more things the gate does not assert, for reasons that are not R2/R3's — these are
+gaps in the gate's own reach, not authoring rules left to human judgement:
+
+- **`default` is documented and read by nothing.** The contract format above shows
+  `"default": "/"`, and all three shipped contracts (`AppLogo`, `Breadcrumbs`, `StatCard`)
+  carry at least one — but `spec.default` is referenced nowhere in `scripts/`. A contract
+  saying `default: "md"` while React defaults to `'lg'` and Angular defaults to `'sm'`
+  is invisible to `check:api` today. This is deliberately **not** implemented: React's
+  default lives in a `.jsx` destructuring pattern the gate never reads at all (see the
+  next point), so a default comparison could only ever be enforced against Angular, which
+  would be worse than not claiming it — a gate that is silently one-sided is a false
+  promise of parity, not a partial one.
+- **React's checked surface is its hand-written `.d.ts`, never its `.jsx`.**
+  `check-api.mjs` resolves a React component to `<Name>.d.ts` and reads that; the
+  implementation is never opened. Angular has no declaration file to read instead — its
+  surface comes from the real `<name>.ts` component. So R4's own "no platform types and no
+  escapes" is enforced against real source on the Angular side and only against a
+  declaration on the React side: restoring `style` and a `{...rest}` spread to
+  `AppLogo.jsx` right now (they were removed from the `.d.ts` under this migration, per
+  R4) would leave `check:api` green, because nothing looks at the `.jsx` again once the
+  `.d.ts` agrees with the contract. This is a real limit on a gate whose whole claim is
+  that an API divergence is a defect — it holds only as far as the `.d.ts` is honest about
+  what the `.jsx` does.
 
 R1, R4 and R5 *are* asserted: R1 by the type schema (a field may only be a primitive or an
 enum), R4 by the reader recognising platform types by name and reporting them, R5 by a
