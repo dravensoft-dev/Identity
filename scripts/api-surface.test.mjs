@@ -171,6 +171,85 @@ test('an ng-content selector that is not an attribute selector throws -- the bin
   assert.throws(() => templateSlots('<ng-content select="img" />'), UnrecognisedShape);
 });
 
+test('reactSurface keeps a member whole across an internal ; inside its own annotation -- Onboarding.d.ts\'s anchorRect: DOMRect | { left: number; bottom: number }', () => {
+  const src = `
+    export interface XProps {
+      open: boolean;
+      anchorRect?: DOMRect | { left: number; bottom: number };
+      extra: string;
+    }
+  `;
+  const { members } = reactSurface(src, 'XProps');
+  assert.equal(members.length, 3, 'the object literal\'s internal ; must not manufacture a fourth, bogus member');
+  assert.deepEqual(members.map((m) => m.name), ['open', 'anchorRect', 'extra']);
+  const anchorRect = members.find((m) => m.name === 'anchorRect');
+  /* A naive, non-brace-aware split cuts this member at the object literal's
+   * own internal ;, and the first half -- "DOMRect | { left: number" --
+   * still matches the union branch on its own, so it was silently accepted
+   * as a complete (but wrong) member instead of throwing or being rejected.
+   * Pinning the FULL, correct parts is what catches that: a corrupted split
+   * would produce parts ending in an unclosed "{ left: number" fragment. */
+  assert.deepEqual(anchorRect, {
+    name: 'anchorRect', required: false, form: 'union',
+    parts: ['DOMRect', '{ left: number; bottom: number }'],
+  });
+});
+
+test('a bare inline object-type annotation throws as unreadable, and the message names the whole thing -- Alert.d.ts\'s action: { label: string; onClick: () => void }', () => {
+  const src = `
+    export interface XProps {
+      title?: string;
+      action?: { label: string; onClick: () => void };
+      onClose?: () => void;
+    }
+  `;
+  /* Decision: an inline/anonymous object-type literal is not a recognised
+   * form and THROWS, the same way `{ [k: string]: unknown }` already does
+   * above -- the contract's predefined-object form (api/README.md) is
+   * authored as a named type, so an ad hoc inline literal is refused rather
+   * than added as a second, unnamed way to say the same thing. */
+  assert.throws(() => reactSurface(src, 'XProps'), (err) => {
+    assert.ok(err instanceof UnrecognisedShape);
+    /* Before the fix this message named a fragment truncated by the object
+     * literal's own internal ; ("{ label: string"), not the whole
+     * annotation -- pinning the closing "}); }" portion proves the split
+     * kept the member whole even though classify() still cannot read it. */
+    assert.match(err.message, /\{ label: string; onClick: \(\) => void \}/);
+    return true;
+  });
+});
+
+test('angularSurface skips a protected computed with a multi-statement body -- its own internal ; must not split it', () => {
+  const src = `
+    export class X {
+      readonly name = input<string>();
+      protected readonly computedThing = computed(() => {
+        const a = 1;
+        return a;
+      });
+      readonly navigate = output<Crumb>();
+    }
+  `;
+  const { members } = angularSurface(src, 'X');
+  assert.deepEqual(members.map((m) => m.name), ['name', 'navigate']);
+});
+
+test('angularSurface skips a constructor block, the same way protected and private members are -- a public member on either side still comes back', () => {
+  const src = `
+    export class X {
+      readonly a = input<string>();
+      constructor() {
+        effect(() => {
+          doSomething();
+        });
+      }
+      readonly b = input<string>();
+    }
+  `;
+  const { members } = angularSurface(src, 'X');
+  assert.deepEqual(members.map((m) => m.name), ['a', 'b']);
+});
+
 test('angularSurface reports template slots alongside declared members', () => {
   const src = `
     @Component({ template: \`<span><ng-content select="[mark]" /></span>\` })

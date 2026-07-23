@@ -125,25 +125,64 @@ function stripComments(text) {
   return text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
 }
 
-/** Splits `text` on `sep` only where bracket depth -- `()`, `{}`, `[]`, `<>`
- *  -- is zero. A plain `text.split(sep)` is wrong wherever a comma can occur
+/** Splits `text` on `sep` only where bracket depth is zero, over the pairs
+ *  named in `brackets` (default all four TypeScript can nest: `()`, `{}`,
+ *  `[]`, `<>`). A plain `text.split(sep)` is wrong wherever `sep` can occur
  *  INSIDE one of those pairs: a heritage clause's own generic
  *  (`Omit<BarChartProps, 'slots'>`) or an `input()` call's trailing options
  *  object (`input(false, { transform: booleanAttribute })`) both carry a
- *  comma that is not the separator being split on. */
-function splitTopLevel(text, sep) {
+ *  comma that is not the separator being split on.
+ *
+ *  Two callers -- `interfaceMembers` and `angularSurface`, splitting a whole
+ *  member LIST on `;` rather than a single type or argument list on `,` --
+ *  pass `brackets: '(){}[]'`, excluding angle brackets. Those bodies are
+ *  real code, not a pure type position, and in real code `<`/`>` are as
+ *  often comparison operators as generics; an unmatched one (`ConfirmDialog`'s
+ *  `this.typed().length > 0` inside a `computed()` body) would throw the
+ *  depth count off for everything after it. No legitimate use in this
+ *  repository nests a `;` inside a bare `<...>` generic, so the omission
+ *  costs nothing where it is made.
+ *
+ *  `closeBrace: true` (the same two callers, splitting a class body) ends a
+ *  part the instant a `}` returns bracket depth to zero, with no `sep`
+ *  there at all. A class member whose own body is `{ ... }` -- a method, a
+ *  constructor -- carries no trailing `;`, so nothing but the brace itself
+ *  marks where it ends and the next member begins; without this, a member
+ *  with no semicolon after it merges into whatever follows, up to the next
+ *  depth-zero `;`, silently swallowing a real member along with it.
+ *
+ *  A `{` is tracked as a TEMPLATE-LITERAL interpolation, never a member
+ *  body, when the character immediately before it is `$` -- a field
+ *  initialiser like `` `${this.uid}-listbox` `` returns bracket depth to
+ *  zero at that `}` too, and without this distinction `closeBrace` cut the
+ *  member in half there, before its own closing backtick and `;`. */
+function splitTopLevel(text, sep, { brackets = '(){}[]<>', closeBrace = false } = {}) {
   const parts = [];
-  let depth = 0;
+  const stack = [];
   let current = '';
+  let prev = '';
   for (const ch of text) {
-    if (ch === '(' || ch === '{' || ch === '[' || ch === '<') depth += 1;
-    else if (ch === ')' || ch === '}' || ch === ']' || ch === '>') depth -= 1;
-    if (ch === sep && depth === 0) {
+    const at = brackets.indexOf(ch);
+    if (at !== -1 && at % 2 === 0) {
+      stack.push(ch === '{' && prev === '$' ? 'template' : 'plain');
+    } else if (at !== -1 && at % 2 === 1) {
+      const kind = stack.pop();
+      if (closeBrace && ch === '}' && stack.length === 0 && kind !== 'template') {
+        current += ch;
+        parts.push(current);
+        current = '';
+        prev = ch;
+        continue;
+      }
+    }
+    if (ch === sep && stack.length === 0) {
       parts.push(current);
       current = '';
-    } else {
-      current += ch;
+      prev = ch;
+      continue;
     }
+    current += ch;
+    prev = ch;
   }
   parts.push(current);
   return parts;
@@ -163,7 +202,11 @@ export function reactSurface(source, interfaceName) {
 
 function interfaceMembers(body) {
   const members = [];
-  for (const raw of stripComments(body).split(';')) {
+  /* Brace-depth aware: a plain `.split(';')` cuts straight through a member
+   * annotation's own internal `;` -- an inline object type in a union
+   * (`DOMRect | { left: number; bottom: number }`) is the real case that
+   * exposed this, see Onboarding.d.ts's `anchorRect`. */
+  for (const raw of splitTopLevel(stripComments(body), ';', { brackets: '(){}[]' })) {
     const text = raw.trim();
     if (!text) continue;
     const m = /^([A-Za-z_$][\w$]*)(\?)?\s*:\s*([\s\S]+)$/.exec(text);
@@ -179,14 +222,25 @@ export function angularSurface(source, className) {
   if (!decl) throw new UnrecognisedShape(`no "export class ${className}" in this source`);
   const body = braceBody(source, decl.index + decl[0].length - 1);
   const members = [];
-  for (const raw of stripComments(body).split(';')) {
+  /* Brace-depth aware, and split after a `}` that returns to depth zero as
+   * well as after a top-level `;` -- see `splitTopLevel`'s own comment. A
+   * `protected`/`private` computed with a multi-statement body
+   * (`computed(() => { const a = ...; return a; })`) has its own internal
+   * `;`s; a plain `.split(';')` cut through those and tested only the first
+   * statement fragment against the skip below, throwing on the rest. A
+   * `constructor() { ... }` needs the brace-close split for a different
+   * reason: it ends with no `;` at all, so without it a constructor merges
+   * into whatever member follows. */
+  for (const raw of splitTopLevel(stripComments(body), ';', { brackets: '(){}[]', closeBrace: true })) {
     const text = raw.trim();
-    /* A method body's statements split on `;` like anything else, so what is
-     * left after skipping the `protected onX(...) {` fragment is a lone `}`.
-     * Dropping brace-only fragments is what lets a primitive carry a method
-     * without the reader mistaking its remains for a malformed member. */
+    /* A brace-only or blank fragment can still occur -- e.g. the leftover
+     * after a public field's own object-literal value closes to depth zero
+     * ahead of its trailing `;`. Dropping it is what lets a primitive carry
+     * one without the reader mistaking its remains for a malformed member. */
     if (!text || /^[{}\s]*$/.test(text)) continue;
-    if (/^(protected|private)\b/.test(text)) continue;
+    /* A constructor is never part of a component's declared API member
+     * surface, the same reason `protected`/`private` are skipped here. */
+    if (/^(protected|private|constructor)\b/.test(text)) continue;
     const m = /^readonly\s+([A-Za-z_$][\w$]*)\s*=\s*([\s\S]+)$/.exec(text);
     if (!m) throw new UnrecognisedShape(`unreadable class member: ${text}`);
     members.push(classMember(m[1], m[2]));
