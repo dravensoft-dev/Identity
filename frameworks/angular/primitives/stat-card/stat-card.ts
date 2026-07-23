@@ -15,12 +15,18 @@ import type { Tone, StatDelta } from '../../api.generated';
  *
  *  `delta` is a single `input<StatDelta>()` rather than three flat `input()`s, per
  *  the API contract's Reshape A. That is a real cost, not a free win: a consumer
- *  must hand a fresh object identity to change one field, and the per-field
- *  defaults (`'neutral'` for `tone`, `'up'` for `direction`) move from an input's
- *  own default into `??` fallbacks this template applies instead. The contract
- *  overrules that objection rather than refuting it — one member surface across
- *  both layers is worth more than the per-field ergonomics three flat inputs gave
- *  Angular alone. The host itself is the recipe's `root` — it is the flex item a
+ *  must hand a fresh object identity to change one field. Only `tone`'s per-field
+ *  default moves this way, into the `??` fallback `styles` applies
+ *  (`this.delta()?.tone ?? 'neutral'`) — `direction` has none to move: it is
+ *  `required: true` on `StatDelta` (`api/types/stat-delta.json`), so a delta with
+ *  no direction is not a contracted shape to default around. The template's own
+ *  `delta()?.direction === 'down' ? … : …` ternary reads as a fallback but is not
+ *  one: it treats every non-`'down'` value as `'up'`, which is simply "the arrow
+ *  points up unless told otherwise," not a default value substituted for an
+ *  absent one. The contract overrules the object-identity objection rather than
+ *  refuting it — one member surface across both layers is worth more than the
+ *  per-field ergonomics three flat inputs gave Angular alone. The host itself is
+ *  the recipe's `root` — it is the flex item a
  *  parent row lays out, so root-level classes must live on the host, not one
  *  element inside it. `icon` is a slot (`<ng-content select="[icon]" />`), not an
  *  input: Arena still renders the aria-hidden wrapper span, and only the glyph
