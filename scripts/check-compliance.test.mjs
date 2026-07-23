@@ -8,10 +8,10 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { COVERED, SUITE_DIRS, suiteMentions, validateCoverage } from './check-compliance.mjs';
 
-test('validateCoverage is clean against a tree that matches its record', () => {
+test('validateCoverage is clean when a composite key names the layer its suite verifies', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', pattern: 'dialog-modal' }],
-    covered: { Dialog: 'dialog-modal.test.jsx' },
+    bindings: [{ name: 'Dialog', pattern: 'dialog-modal', layer: 'react', stem: 'Dialog' }],
+    covered: { 'Dialog:react': 'dialog-modal.test.jsx' },
     suites: { 'dialog-modal.test.jsx': 'assertPattern for Dialog.behaviour.json' },
   });
   assert.deepEqual(problems, []);
@@ -19,8 +19,8 @@ test('validateCoverage is clean against a tree that matches its record', () => {
 
 test('validateCoverage fails a COVERED entry naming a binding that no longer exists', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', pattern: 'dialog-modal' }],
-    covered: { Dialog: 'dialog-modal.test.jsx', Ghost: 'dialog-modal.test.jsx' },
+    bindings: [{ name: 'Dialog', pattern: 'dialog-modal', layer: 'react', stem: 'Dialog' }],
+    covered: { 'Dialog:react': 'dialog-modal.test.jsx', 'Ghost:react': 'dialog-modal.test.jsx' },
     suites: { 'dialog-modal.test.jsx': 'Dialog.behaviour.json' },
   });
   assert.equal(problems.length, 1);
@@ -30,8 +30,8 @@ test('validateCoverage fails a COVERED entry naming a binding that no longer exi
 
 test('validateCoverage fails a COVERED entry whose suite never mentions the component', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', pattern: 'dialog-modal' }],
-    covered: { Dialog: 'dialog-modal.test.jsx' },
+    bindings: [{ name: 'Dialog', pattern: 'dialog-modal', layer: 'react', stem: 'Dialog' }],
+    covered: { 'Dialog:react': 'dialog-modal.test.jsx' },
     suites: { 'dialog-modal.test.jsx': 'assertPattern for Menu.behaviour.json' },
   });
   assert.equal(problems.length, 1);
@@ -41,8 +41,8 @@ test('validateCoverage fails a COVERED entry whose suite never mentions the comp
 
 test('validateCoverage fails a COVERED entry naming a suite file that does not exist', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', pattern: 'dialog-modal' }],
-    covered: { Dialog: 'gone.test.jsx' },
+    bindings: [{ name: 'Dialog', pattern: 'dialog-modal', layer: 'react', stem: 'Dialog' }],
+    covered: { 'Dialog:react': 'gone.test.jsx' },
     suites: {},
   });
   assert.equal(problems.length, 1);
@@ -54,8 +54,11 @@ test('validateCoverage says nothing about an uncovered binding', () => {
   // guards the record's accuracy, never demands totality — a gate that demanded
   // 47 suites on day one would have been switched off.
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', pattern: 'dialog-modal' }, { name: 'Table', pattern: 'grid' }],
-    covered: { Dialog: 'dialog-modal.test.jsx' },
+    bindings: [
+      { name: 'Dialog', pattern: 'dialog-modal', layer: 'react', stem: 'Dialog' },
+      { name: 'Table', pattern: 'grid', layer: 'react', stem: 'Table' },
+    ],
+    covered: { 'Dialog:react': 'dialog-modal.test.jsx' },
     suites: { 'dialog-modal.test.jsx': 'Dialog.behaviour.json' },
   });
   assert.deepEqual(problems, []);
@@ -75,36 +78,63 @@ test('suiteMentions matches a binding filename in a suite body', () => {
  * that is what the suite text is searched for. */
 test('a binding whose file stem differs from its component name is matched on the stem', () => {
   const clean = validateCoverage({
-    bindings: [{ name: 'BarChart', pattern: 'figure-with-data-table', stem: 'bar-chart' }],
-    covered: { BarChart: 'chart-data-table.test.ts' },
+    bindings: [{ name: 'BarChart', pattern: 'figure-with-data-table', layer: 'angular', stem: 'bar-chart' }],
+    covered: { 'BarChart:angular': 'chart-data-table.test.ts' },
     suites: { 'chart-data-table.test.ts': "join(P, 'bar-chart/bar-chart.behaviour.json')" },
   });
   assert.deepEqual(clean, []);
 
   const stale = validateCoverage({
-    bindings: [{ name: 'BarChart', pattern: 'figure-with-data-table', stem: 'bar-chart' }],
-    covered: { BarChart: 'chart-data-table.test.ts' },
+    bindings: [{ name: 'BarChart', pattern: 'figure-with-data-table', layer: 'angular', stem: 'bar-chart' }],
+    covered: { 'BarChart:angular': 'chart-data-table.test.ts' },
     suites: { 'chart-data-table.test.ts': 'nothing relevant here' },
   });
   assert.equal(stale.length, 1);
   assert.match(stale[0], /bar-chart\.behaviour\.json/);
 });
 
-/* A name declared in both layers has two stems (React's `Alert`, Angular's
- * `alert`), and either satisfies the claim -- the record says a suite verifies
- * this component somewhere, not in which layer. Recorded rather than assumed:
- * a future record that needs to distinguish the layers has to change key shape. */
-test('a name bound in both layers is satisfied by either layer\'s stem', () => {
+/* The fix itself: a composite key resolves ONE layer's binding, never the
+ * sibling layer's -- the defect the bare-name key had, where a mention of
+ * EITHER layer's stem satisfied the claim regardless of which layer the key
+ * named. */
+test('a composite key is verified only by its own layer, never the sibling layer', () => {
   const bindings = [
-    { name: 'Alert', pattern: 'alert', stem: 'Alert' },
-    { name: 'Alert', pattern: 'alert', stem: 'alert' },
+    { name: 'ConfirmDialog', pattern: 'dialog-modal', layer: 'react', stem: 'ConfirmDialog' },
+    { name: 'ConfirmDialog', pattern: 'dialog-modal', layer: 'angular', stem: 'confirm-dialog' },
   ];
-  for (const body of ["'Alert.behaviour.json'", "'alert/alert.behaviour.json'"]) {
-    assert.deepEqual(
-      validateCoverage({ bindings, covered: { Alert: 's.test.ts' }, suites: { 's.test.ts': body } }),
-      [],
-    );
-  }
+  // The React suite mentions the React stem -> the react claim holds.
+  assert.deepEqual(
+    validateCoverage({ bindings, covered: { 'ConfirmDialog:react': 's.test.jsx' },
+      suites: { 's.test.jsx': "join(P, 'feedback/ConfirmDialog.behaviour.json')" } }),
+    [],
+  );
+  // The SAME suite does NOT satisfy an angular claim -- it never mentions confirm-dialog.behaviour.json.
+  const stale = validateCoverage({ bindings, covered: { 'ConfirmDialog:angular': 's.test.jsx' },
+    suites: { 's.test.jsx': "join(P, 'feedback/ConfirmDialog.behaviour.json')" } });
+  assert.equal(stale.length, 1);
+  assert.match(stale[0], /confirm-dialog\.behaviour\.json/);
+});
+
+test('a composite key naming a layer the component is not bound in fails', () => {
+  const problems = validateCoverage({
+    bindings: [{ name: 'Dialog', pattern: 'dialog-modal', layer: 'react', stem: 'Dialog' }],
+    covered: { 'Dialog:angular': 'dialog-modal.test.jsx' },
+    suites: { 'dialog-modal.test.jsx': 'Dialog.behaviour.json' },
+  });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /Dialog/);
+  assert.match(problems[0], /angular/);
+});
+
+test('a COVERED key without a :layer suffix is rejected -- the shape is mandatory', () => {
+  const problems = validateCoverage({
+    bindings: [{ name: 'Dialog', pattern: 'dialog-modal', layer: 'react', stem: 'Dialog' }],
+    covered: { Dialog: 'dialog-modal.test.jsx' },
+    suites: { 'dialog-modal.test.jsx': 'Dialog.behaviour.json' },
+  });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /Dialog/);
+  assert.match(problems[0], /:layer|composite|<component>:<layer>/i);
 });
 
 test('every COVERED entry names a real suite file and a real binding', () => {
@@ -112,9 +142,9 @@ test('every COVERED entry names a real suite file and a real binding', () => {
   // COVERED from documentation into an invariant.
   assert.ok(Object.keys(COVERED).length > 0, 'COVERED should not be empty');
   const here = dirname(fileURLToPath(import.meta.url));
-  for (const [name, suiteFile] of Object.entries(COVERED)) {
+  for (const [key, suiteFile] of Object.entries(COVERED)) {
     const found = SUITE_DIRS.map((d) => join(d, suiteFile)).find((p) => existsSync(p));
-    assert.ok(found, `COVERED["${name}"] names ${suiteFile}, which is in neither suite directory`);
+    assert.ok(found, `COVERED["${key}"] names ${suiteFile}, which is in neither suite directory`);
     assert.ok(readFileSync(found, 'utf8').includes('.behaviour.json'), `${suiteFile} reads no binding`);
   }
   assert.ok(here.endsWith('scripts'));

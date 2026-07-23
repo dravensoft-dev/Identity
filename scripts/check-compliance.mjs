@@ -45,28 +45,38 @@ export const SUITE_DIRS = [
 ];
 
 /**
- * Bindings verified by a render suite: component name -> the suite file that
- * verifies it.
+ * Bindings verified by a render suite: `<Component>:<layer>` -> the suite
+ * file that verifies it.
  *
- * Keyed by the Pascal-case COMPONENT name on both layers. An Angular binding
- * names its React counterpart in its own `component` field and that field is
- * used rather than derived, because kebab->Pascal has no safe inverse and a
- * cross-layer check that silently never fires looks exactly like coverage. The
- * Angular binding FILE, though, is named for the kebab directory it sits in
+ * Keyed by the Pascal-case COMPONENT name and the layer the suite actually
+ * renders, joined by a `:`. A bare component-name key used to let a mention of
+ * EITHER layer's binding file satisfy the claim, which was a real defect: four
+ * of these six components (`ConfirmDialog`, `Skeleton`, `Alert`, `BarChart`)
+ * are bound in both layers, so a suite covering one layer was silently marking
+ * the OTHER layer's contract "covered" too, with no suite ever touching it.
+ * `ConfirmDialog`'s React suite was marking its Angular contract covered, and
+ * `Alert`'s Angular suite was doing the same to its React one. The compound
+ * key names exactly the layer the suite verifies; a component bound in both
+ * layers needs two entries, one per layer, each proven independently. A key
+ * with no `:layer` suffix is rejected outright rather than falling back to
+ * name-only resolution, so the old shape cannot creep back in silently.
+ *
+ * The Angular binding FILE is named for the kebab directory it sits in
  * (`bar-chart/bar-chart.behaviour.json` declares component "BarChart"), so the
- * mention check below searches for the file stem, not the key.
+ * mention check below searches for the file stem of THAT layer's binding, not
+ * the key.
  *
  * Add an entry when you add a suite. Removing or renaming a suite without
  * removing its entry fails this gate, which is the point.
  * @type {Record<string, string>}
  */
 export const COVERED = {
-  Dialog: 'dialog-modal.test.jsx',
-  ConfirmDialog: 'dialog-modal.test.jsx',
-  Menu: 'placement-and-branches.test.jsx',
-  Skeleton: 'placement-and-branches.test.jsx',
-  Alert: 'alert-role-tones.test.ts',
-  BarChart: 'chart-data-table.test.ts',
+  'Dialog:react': 'dialog-modal.test.jsx',
+  'ConfirmDialog:react': 'dialog-modal.test.jsx',
+  'Menu:react': 'placement-and-branches.test.jsx',
+  'Skeleton:react': 'placement-and-branches.test.jsx',
+  'Alert:angular': 'alert-role-tones.test.ts',
+  'BarChart:angular': 'chart-data-table.test.ts',
 };
 
 /** Does a suite's source read this binding at all?
@@ -84,44 +94,56 @@ export function suiteMentions(source, stem) {
  *  gate in this chain read module globals and its failure branches were
  *  therefore untestable, which is recorded as debt.
  *
- *  A binding record may carry `stem`, the basename of the file it was read from,
- *  when that differs from the component name; it defaults to the name. Records
- *  sharing a name (a component bound in both layers) contribute one stem each,
- *  and a mention of ANY of them satisfies the claim -- the record says a suite
- *  verifies this component somewhere, not in which layer.
+ *  A binding record carries `layer` ('react' or 'angular') and `stem`, the
+ *  basename of the file it was read from, when that differs from the component
+ *  name; `stem` defaults to the name. A `COVERED` key is `<Component>:<layer>`
+ *  and resolves to the ONE binding matching both name and layer -- never to
+ *  any binding sharing the name, which is the dual-bound defect this shape
+ *  replaces. A key with no `:layer` suffix is rejected rather than silently
+ *  falling back to name-only resolution.
  *
- *  @param {{bindings: {name: string, pattern: string, stem?: string}[], covered: Record<string,string>, suites: Record<string,string>}} o
+ *  @param {{bindings: {name: string, pattern: string, layer: string, stem?: string}[], covered: Record<string,string>, suites: Record<string,string>}} o
  *  @returns {string[]} one message per problem, empty when clean */
 export function validateCoverage({ bindings, covered, suites }) {
   const problems = [];
-  /** @type {Map<string, string[]>} component name -> its binding file stems */
-  const stems = new Map();
+  /** @type {Map<string, string>} "name:layer" -> its binding file stem */
+  const byKey = new Map();
   for (const b of bindings) {
-    if (!stems.has(b.name)) stems.set(b.name, []);
-    stems.get(b.name).push(b.stem ?? b.name);
+    byKey.set(`${b.name}:${b.layer}`, b.stem ?? b.name);
   }
 
-  for (const [name, suiteFile] of Object.entries(covered)) {
-    if (!stems.has(name)) {
-      problems.push(`COVERED names "${name}", for which there is no binding in the tree. Delete the entry.`);
+  for (const [key, suiteFile] of Object.entries(covered)) {
+    const sep = key.lastIndexOf(':');
+    if (sep === -1) {
+      problems.push(
+        `COVERED key "${key}" has no ":layer" suffix. Every key must be shaped "<component>:<layer>".`,
+      );
+      continue;
+    }
+    const name = key.slice(0, sep);
+    const layer = key.slice(sep + 1);
+
+    if (!byKey.has(key)) {
+      problems.push(
+        `COVERED names "${key}", for which there is no binding named "${name}" in the ${layer} layer. Delete the entry.`,
+      );
       continue;
     }
     if (!(suiteFile in suites)) {
-      problems.push(`COVERED maps "${name}" to "${suiteFile}", which does not exist. Fix the path or delete the entry.`);
+      problems.push(`COVERED maps "${key}" to "${suiteFile}", which does not exist. Fix the path or delete the entry.`);
       continue;
     }
-    const candidates = stems.get(name);
-    if (!candidates.some((stem) => suiteMentions(suites[suiteFile], stem))) {
-      const wanted = candidates.map((s) => `${s}.behaviour.json`).join(' or ');
+    const stem = byKey.get(key);
+    if (!suiteMentions(suites[suiteFile], stem)) {
       problems.push(
-        `COVERED maps "${name}" to "${suiteFile}", but that suite never mentions ${wanted}. The coverage claim is stale.`,
+        `COVERED maps "${key}" to "${suiteFile}", but that suite never mentions ${stem}.behaviour.json. The coverage claim is stale.`,
       );
     }
   }
   return problems;
 }
 
-/** Read every binding in the tree as {name, pattern, stem}.
+/** Read every binding in the tree as {name, pattern, layer, stem}.
  *
  *  React components live one group directory deep and reactComponents() returns
  *  bare names, so the group is found by looking; Angular primitives are one
@@ -141,7 +163,7 @@ function collectBindings() {
     const group = groups.find((g) => existsSync(join(reactBase, g, `${name}.behaviour.json`)));
     if (!group) continue; // check:behaviour owns "every component declares"; this gate does not duplicate it.
     const binding = loadBinding(join(reactBase, group, `${name}.behaviour.json`));
-    out.push({ name, pattern: binding.pattern, stem: name });
+    out.push({ name, pattern: binding.pattern, layer: 'react', stem: name });
   }
 
   const angularBase = join(repoRoot, 'frameworks/angular/primitives');
@@ -149,7 +171,7 @@ function collectBindings() {
     const path = join(angularBase, dir, `${dir}.behaviour.json`);
     if (!existsSync(path)) continue;
     const binding = loadBinding(path);
-    out.push({ name: binding.component, pattern: binding.pattern, stem: dir });
+    out.push({ name: binding.component, pattern: binding.pattern, layer: 'angular', stem: dir });
   }
 
   return out;

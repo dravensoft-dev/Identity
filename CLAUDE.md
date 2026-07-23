@@ -510,12 +510,14 @@ scheduled for deletion the same week.
   expire*, currently holds for six components and not for the rest.
   `figure-with-data-table`'s `roles.label` half stays unverifiable regardless — a
   suite can assert an `aria-label` exists, never that it is a good name for the
-  chart. **A component bound in both layers is satisfied by either layer's suite**:
-  `COVERED` maps a component name to one suite file, so the day a dual-bound
-  component's entry points at (say) the React suite, the Angular contract goes
-  unverified while the claim reads satisfied. No `COVERED` entry is dual-layer
-  today, so this is latent, not live — the fix is a compound `<component>:<layer>`
-  key, and it must be made before a dual-bound component is added to `COVERED`.
+  chart. **`COVERED` is keyed by `<component>:<layer>`, not by component name**, because four of the six
+  entries (`ConfirmDialog`, `Skeleton`, `Alert`, `BarChart`) are bound in both layers, and a
+  name-only key let a mention of *either* layer's binding satisfy the claim — so `ConfirmDialog`'s
+  React suite marked its unverified Angular contract covered, and `Alert`'s Angular suite did the
+  same to its React one. Each entry now names the one layer its suite verifies (`ConfirmDialog:react`,
+  `Alert:angular`), and `validateCoverage()` resolves that layer's binding alone; the sibling layer
+  is simply uncovered, which the gate is silent about by charter but no longer reports as satisfied.
+  A key without a `:layer` suffix is rejected, so the old name-only shape cannot creep back.
 - **Seven exceptions are now only as true as the behavioural verdict a suite
   declares for them.** `ActivityFeed`'s `posinset`/`busy`, `Tag`'s `disabled`,
   `Input`'s and `Textarea`'s `readonly`, and Angular `activity-feed`'s
