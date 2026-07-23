@@ -195,7 +195,7 @@ test('reactSurface keeps a member whole across an internal ; inside its own anno
   });
 });
 
-test('a bare inline object-type annotation throws as unreadable, and the message names the whole thing -- Alert.d.ts\'s action: { label: string; onClick: () => void }', () => {
+test('a bare inline object-type annotation classifies as platform, reported rather than thrown -- Alert.d.ts\'s action: { label: string; onClick: () => void }', () => {
   const src = `
     export interface XProps {
       title?: string;
@@ -203,20 +203,31 @@ test('a bare inline object-type annotation throws as unreadable, and the message
       onClose?: () => void;
     }
   `;
-  /* Decision: an inline/anonymous object-type literal is not a recognised
-   * form and THROWS, the same way `{ [k: string]: unknown }` already does
-   * above -- the contract's predefined-object form (api/README.md) is
-   * authored as a named type, so an ad hoc inline literal is refused rather
-   * than added as a second, unnamed way to say the same thing. */
-  assert.throws(() => reactSurface(src, 'XProps'), (err) => {
-    assert.ok(err instanceof UnrecognisedShape);
-    /* Before the fix this message named a fragment truncated by the object
-     * literal's own internal ; ("{ label: string"), not the whole
-     * annotation -- pinning the closing "}); }" portion proves the split
-     * kept the member whole even though classify() still cannot read it. */
-    assert.match(err.message, /\{ label: string; onClick: \(\) => void \}/);
-    return true;
+  /* REVERSED DECISION: a previous pass classified a bare inline object-type
+   * literal as UnrecognisedShape (thrown), reasoning it was "the same ad hoc
+   * escape R4 already forbids by name for Record<string, unknown>" -- but a
+   * shape R4 forbids by name is exactly the definition of {form: 'platform'}
+   * a few lines above in classify(), not of UnrecognisedShape. This test now
+   * pins the corrected verdict: reported as platform, with the WHOLE,
+   * uncorrupted literal text carried as `type`, so the gate can name the rule
+   * R4 violates rather than the reader simply giving up. */
+  const { members } = reactSurface(src, 'XProps');
+  assert.equal(members.length, 3);
+  const action = members.find((m) => m.name === 'action');
+  assert.deepEqual(action, {
+    name: 'action', required: false, form: 'platform',
+    type: '{ label: string; onClick: () => void }',
   });
+});
+
+test('a union between a platform type and an inline object-type literal stays a union at the top level -- Onboarding.d.ts\'s anchorRect: DOMRect | { left: number; bottom: number }', () => {
+  /* The containing member is a union (R5), so union classification applies
+   * at the top level regardless of the reversed inline-object-type decision
+   * above -- classify() never recurses into a union's parts, so the platform
+   * branch for a bare `{...}` literal has no effect here: the whole
+   * annotation does not itself start with `{`, it starts with `DOMRect`. */
+  const out = classify('DOMRect | { left: number; bottom: number }');
+  assert.deepEqual(out, { form: 'union', parts: ['DOMRect', '{ left: number; bottom: number }'] });
 });
 
 test('angularSurface skips a protected computed with a multi-statement body -- its own internal ; must not split it', () => {
@@ -248,6 +259,34 @@ test('angularSurface skips a constructor block, the same way protected and priva
   `;
   const { members } = angularSurface(src, 'X');
   assert.deepEqual(members.map((m) => m.name), ['a', 'b']);
+});
+
+test('angularSurface does not cut a member at a template-literal interpolation\'s own } -- command-palette.ts\'s `arena-command-palette-${nextId++}` field', () => {
+  const src = `
+    export class X {
+      readonly open = input(false, { transform: booleanAttribute });
+      private readonly uid = \`arena-command-palette-\${nextId++}\`;
+      readonly commands = input<Command[]>([]);
+    }
+  `;
+  const { members } = angularSurface(src, 'X');
+  assert.equal(members.length, 2, 'the interpolation\'s own } must not manufacture a spurious member split');
+  assert.deepEqual(members.map((m) => m.name), ['open', 'commands']);
+});
+
+test('angularSurface skips a zero-parameter constructor and still returns its neighbouring public members', () => {
+  const src = `export class X { readonly a = input<string>(); constructor() {} readonly b = input<string>(); }`;
+  const { members } = angularSurface(src, 'X');
+  assert.deepEqual(members.map((m) => m.name), ['a', 'b']);
+});
+
+test('angularSurface throws on a constructor parameter property -- it declares a genuinely public member the reader does not read', () => {
+  const src = `export class X { readonly a = input<string>(); constructor(public readonly foo: string) {} }`;
+  assert.throws(() => angularSurface(src, 'X'), (err) => {
+    assert.ok(err instanceof UnrecognisedShape);
+    assert.match(err.message, /parameter-propert/i);
+    return true;
+  });
 });
 
 test('angularSurface reports template slots alongside declared members', () => {

@@ -18,7 +18,15 @@
  * missing from the list. That is why every unreadable branch below throws
  * instead of returning early or skipping the line.
  *
- * See api/README.md for the vocabulary and the per-layer binding table. */
+ * See api/README.md for the vocabulary and the per-layer binding table.
+ *
+ * TWO KNOWN BLIND SPOTS, dormant against today's corpus and not fixed here:
+ * `splitTopLevel` tracks bracket nesting only and is not string-literal
+ * aware -- a bracket character inside a quoted string at depth zero would
+ * misalign the depth count. `braceBody` is a plain brace counter with the
+ * same gap one level up: no quote or comment awareness. No shape in the
+ * corpus triggers either today; a quote-aware scanner is a larger change
+ * than either was written to make. */
 
 /** Thrown when the reader meets a shape it does not recognise. Never caught
  *  inside this module. */
@@ -57,6 +65,20 @@ export function classify(raw) {
   if (ts === 'React.ReactNode' || ts === 'ReactNode') return { form: 'slot' };
   if (PRIMITIVES.has(ts)) return { form: 'primitive', type: ts };
   if (PLATFORM_TYPES.includes(ts) || ts.startsWith('Record<') || /^React\./.test(ts)) {
+    return { form: 'platform', type: ts };
+  }
+
+  /* An anonymous inline object type is not a predefined object -- a predefined
+   * object is declared in api/types/ and has a name. It is the same ad hoc
+   * escape `Record<string, unknown>` is, and R4 forbids both. Reporting it as
+   * a platform type lets the gate name the rule; throwing would only say the
+   * reader gave up. (Alert.d.ts's `action: { label: string; onClick: () =>
+   * void }` and Onboarding.d.ts's `anchorRect: DOMRect | { left: number;
+   * bottom: number }` are the real cases.) An index-signature literal
+   * (`{ [k: string]: unknown }`) is excluded on purpose: it declares no named
+   * field at all, so it is not "an object type standing in for a name" the
+   * way a record of fields is -- it stays an unreadable shape, thrown below. */
+  if (ts.startsWith('{') && ts.endsWith('}') && !/^\{\s*\[/.test(ts)) {
     return { form: 'platform', type: ts };
   }
 
@@ -239,8 +261,24 @@ export function angularSurface(source, className) {
      * one without the reader mistaking its remains for a malformed member. */
     if (!text || /^[{}\s]*$/.test(text)) continue;
     /* A constructor is never part of a component's declared API member
-     * surface, the same reason `protected`/`private` are skipped here. */
-    if (/^(protected|private|constructor)\b/.test(text)) continue;
+     * surface, the same reason `protected`/`private` are skipped here --
+     * EXCEPT when it uses TypeScript's parameter-property idiom
+     * (`constructor(public readonly foo: string) {}`), which declares a
+     * genuinely public member in the parameter list rather than in the
+     * class body. Skipping that constructor the same way would silently
+     * swallow a real API member with nothing to say so -- exactly the
+     * outcome this module forbids -- so a parameter list carrying an
+     * access modifier throws instead of being skipped. */
+    if (/^constructor\s*\(/.test(text)) {
+      const params = text.slice(text.indexOf('(') + 1, text.indexOf(')'));
+      if (/\b(public|private|protected|readonly)\b/.test(params)) {
+        throw new UnrecognisedShape(
+          `constructor uses the parameter-property idiom, which declares a public member the reader does not read: ${text}`,
+        );
+      }
+      continue;
+    }
+    if (/^(protected|private)\b/.test(text)) continue;
     const m = /^readonly\s+([A-Za-z_$][\w$]*)\s*=\s*([\s\S]+)$/.exec(text);
     if (!m) throw new UnrecognisedShape(`unreadable class member: ${text}`);
     members.push(classMember(m[1], m[2]));
