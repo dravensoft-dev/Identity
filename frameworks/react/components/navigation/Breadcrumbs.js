@@ -2,7 +2,9 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-export function Breadcrumbs({ items = [], separator = "/", onNavigate }) {
+export function Breadcrumbs({ items, separator = "/", onNavigate }) {
+  if (!items)
+    throw new Error("Breadcrumbs: `items` is required");
   return React.createElement("nav", {
     "aria-label": "Breadcrumb",
     style: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "calc(var(--sp-1) * 2)" }

@@ -6,7 +6,7 @@ const MARK = { sm: "var(--logo-mark-sm)", md: "var(--logo-mark-md)", lg: "var(--
 const TEXT = { sm: "var(--logo-text-sm)", md: "var(--logo-text-md)", lg: "var(--logo-text-lg)", xl: "var(--logo-text-xl)" };
 export function AppLogo({ size = "md", orientation = "horizontal", mark, name, dim }) {
   if (!mark || !name)
-    return null;
+    throw new Error("AppLogo: `mark` and `name` are required");
   const vertical = orientation === "vertical";
   const markSize = MARK[size] || MARK.md;
   const textSize = TEXT[size] || TEXT.md;
