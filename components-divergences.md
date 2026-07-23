@@ -911,6 +911,29 @@ differ in an accessibility affordance.
 column lacks today. **Open debt on the React layer**, the same shape as the per-slice-legend entry
 above.
 
+### AppLogo — React guards against a missing `mark` or `name`; Angular has no counterpart, and needs none
+
+**React:** `AppLogo.jsx`'s `if (!mark || !name) return null` (`AppLogo.jsx:15`) renders nothing
+when either is missing.
+
+**Angular:** has no counterpart — `name` is `input.required`, so a missing `name` is a
+compile-time/runtime contract violation at the call site, not a variant to render around, and
+per a standing ruling AppLogo must never render mark-only. Dropping the guard is deliberate, not
+a gap.
+
+**Why:** this is a rendering divergence, not an API one — the API contract (`api/components/
+AppLogo.json`) already states `mark` and `name` as required members in both layers, and
+`check:api` holds that. What differs is what happens at the one call site that violates it
+anyway: React's guard is a runtime check, reachable because a consumer can still call the
+component with either prop omitted and the code still compiles; Angular's `input.required`
+makes that same omission a build/render-time failure before the template ever runs, so there is
+nothing left for a template-level guard to catch.
+
+**Converges:** no. Each layer enforces the identical constraint — AppLogo never renders mark-only
+or fully empty — through its own platform's mechanism for it, a runtime guard in React and a
+required input in Angular, and neither can adopt the other's without adopting the other's type
+system.
+
 ### ActivityFeed — the tone dot is filled, matching Tag's own dot and Avatar's presence carve-out; not a divergence
 
 **React:** `ActivityFeed.jsx`'s dot is `background: TONES[item.tone] || TONES.accent` — a
@@ -1026,6 +1049,34 @@ Material's layout, which is the whole reason SideNav stays a bridge.
 would mean overriding Material's own list metrics from the bridge, which is exactly the
 duplication the bridge exists to avoid. Recorded so that a reader comparing the three does not
 mistake the gap for drift.
+
+### StatCard — the icon wrapper renders unconditionally in Angular, only when `icon` is truthy in React
+
+**React:** `StatCard.jsx` renders the icon wrapper only when a consumer passes one:
+`{icon && <span aria-hidden="true" ...>{icon}</span>}` — no `icon`, no wrapper at all.
+
+**Angular:** `arena-stat-card`'s template renders `<span [class]="styles().icon()"
+aria-hidden="true"><ng-content select="[icon]" /></span>` unconditionally — the wrapper is
+always in the DOM, whether or not a consumer projects anything into `[icon]`.
+
+**Why:** `stat-card.ts`'s own doc comment states the reason: a slot gives the component
+nothing to inspect the way a primitive input does. `contentChild` can detect projected
+content, but only under a real `ngtsc` build, and reaching for it here would need a new marker
+directive for one `aria-hidden`, zero-footprint span — the same idiom `UnauthCard`/`EmptyState`/
+`ErrorState` already use for their own optional slots (`contentChild(ArenaAction)` etc.). The
+wrapper is `inline-flex` with no min-width and no padding, so an unfilled slot collapses to a
+zero-width box that changes nothing onscreen, and `aria-hidden="true"` keeps it silent for
+assistive tech either way — the same choice `arena-app-logo` made for its own (required) `mark`
+slot.
+
+**Worth knowing:** `icon` is a slot on `arena-stat-card` (projected content) but a plain string
+input on `arena-empty-state`/`arena-error-state` (`title`'s sibling `icon?: string`, resolved to
+a Phosphor class name) — two different idioms for the same word, on the same layer. Settling
+that split is Plan B's, not this one's; noted here only because it is directly adjacent to this
+entry's own subject.
+
+**Converges:** no, not yet — closing this needs the marker-directive idiom named above, which is
+Plan B's scope, not done here.
 
 ## How to add an entry
 
