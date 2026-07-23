@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   validatePattern, loadPatterns, validateBinding, reactComponents, angularPrimitives,
-  validateUnboundPrimitives, crossLayerAgrees, loadBinding,
+  crossLayerAgrees, loadBinding,
 } from './lib/behaviour-contracts.mjs';
 
 const ok = {
@@ -162,19 +162,6 @@ test('the Angular inventory finds every primitive and no bare module', () => {
   assert.equal(found.length, 21);
   assert.ok(found.includes('tag'));
   assert.ok(!found.includes('chart-internals'));
-});
-
-/* hasUnboundPrimitive and its five named entries (Breadcrumbs, BulkActionBar,
- * CommandPalette, PageHead, ThemeToggle) existed only for the transitional
- * state where those five Angular directories had no <name>.behaviour.json
- * yet. All 21 Angular primitives are bound now (behaviour Task 6), which
- * makes UNBOUND_PRIMITIVES permanently empty by design and hasUnboundPrimitive
- * itself dead code -- both were removed from lib/behaviour-contracts.mjs, and
- * the tests that asserted their transitional content went with them. What
- * remains is the one test below that still means something with an empty
- * map: the self-check stays clean. */
-test('validateUnboundPrimitives is clean against the real repo state', () => {
-  assert.deepEqual(validateUnboundPrimitives('.'), []);
 });
 
 /* crossLayerAgrees carries check-behaviour.mjs's step 6 -- "the two layers agree,

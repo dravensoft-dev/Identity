@@ -19,7 +19,7 @@ import { dirname, join } from 'node:path';
 import {
   loadPatterns, validatePattern, validateBinding,
   reactComponents, angularPrimitives, PATTERN_DIR,
-  validateUnboundPrimitives, crossLayerAgrees,
+  crossLayerAgrees,
 } from './lib/behaviour-contracts.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -72,11 +72,6 @@ async function main() {
     angular.set(binding.component ?? name, binding);
   }
 
-  /* 3b. UNBOUND_PRIMITIVES itself stays honest: an entry naming a directory
-   *     that vanished, or one that has since gained a behaviour.json (and so
-   *     is bound, making the override redundant), fails the gate. */
-  problems.push(...validateUnboundPrimitives(root));
-
   /* 4. Every React component Angular does NOT implement as a primitive is
    *    declared in the delegated file -- as provided by Material, or as
    *    genuinely absent. Coverage is EVERY layer, never "at least one": a
@@ -89,9 +84,7 @@ async function main() {
    *    <name>.behaviour.json"; it must not ALSO be reported here as though no
    *    primitive existed at all. Every Angular primitive directory is bound
    *    now, so `angular` already carries every one of them by the time this
-   *    step runs -- there is no longer an UNBOUND_PRIMITIVES-shaped gap to
-   *    guard against here; the map's own self-check (step 3b) is what keeps
-   *    that fact honest if a future primitive lands unbound. */
+   *    step runs. */
   const delegatedPath = join(root, 'frameworks/angular/behaviour-delegated.json');
   const delegated = existsSync(delegatedPath) ? read(delegatedPath) : {};
   for (const [component] of react) {
