@@ -209,6 +209,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `check:behaviour` — every component declares, every named pattern and requirement
   exists, no delegated entry is stale, and the layers agree or say why not. It asserts
   declaration and coherence, **not** that a component behaves as it declares.
+- Behaviour compliance verification: render suites assert, per requirement, that a
+  component's rendered DOM matches its `*.behaviour.json` binding in both
+  directions — a requirement met with no exception declared, or unmet with one
+  declared. A stale exception now fails, which is the property the contract layer
+  was modelled on and lacked.
+- `check:compliance`, the twentieth gate: the record of which bindings a render
+  suite verifies, with a bidirectional staleness rule of its own.
+- `frameworks/react/test-dom/`, a DOM test harness for React, in its own `bun test`
+  process so the six `renderToStaticMarkup` suites keep proving what they prove.
+- `scripts/lib/behaviour-compliance.mjs`, a DOM-generic requirement evaluator that
+  resolves implicit ARIA roles and reports honestly — with a third return value —
+  when a requirement is a behaviour no single element can decide.
+- Tests for `Tooltip`'s pointer-intent timer, recorded as untested debt since plan 7a.
 
 ### Changed
 
@@ -283,6 +296,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The console's hard-coded `4200` is `--dismiss-default`, and a toast carrying an action gets `--dismiss-actionable` instead (WCAG 2.2.1).
 - `Pagination`'s sibling count is `--limit-pagination-siblings`; its elision threshold derives from it as `2 * siblings + 5` rather than being a second hard-coded `7`. No rendered output changes.
 - `CommandPalette`'s ARIA gap is an exception with a reason rather than a "divergence", which by definition could not be a defect.
+- Behaviour exceptions retired or added by the compliance suites: **0 retired, 0 added.**
+  Every binding the six covered suites now render-verify was already accurate as authored
+  in plan 7b, so no exception expired and none had to be added for an overclaim. Recorded
+  as the real count, not the one hoped for.
 
 ### Fixed
 
@@ -422,6 +439,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The lock-up is `AppLogo`.** It takes the mark as its `mark` node — every call site
   in the repo passes `assets/rotor-crimson.svg` — alongside a product `name`. It is not
   a mark-only renderer: both props are required, and it renders nothing without them.
+- `UNBOUND_PRIMITIVES` and `validateUnboundPrimitives`, dead since the Angular
+  primitives were all bound and guarded by branches with no isolated test.
 
 ### Known issues
 

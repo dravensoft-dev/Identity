@@ -7,9 +7,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Arena — Dravensoft's design system. It is **not a published npm package**, but it does
 have a **dev-only, private `package.json`** at the root: the token layer is built from
 DTCG JSON by Style Dictionary, and the build and check scripts are tested with
-`bun test`, as is each framework layer from its own `test/` directory
-(`bun run test:scripts` / `test:react` / `test:angular`, or `bun run test` for all
-three). **A test under `scripts/` may not import a framework layer's `.ts` or `.jsx`**,
+`bun test`, as is each framework layer from its own test directory
+(`bun run test:scripts` / `test:react` / `test:react-dom` / `test:angular`, or
+`bun run test` for all four). Those four run in **two `bun test` processes**, not one:
+`test` is `bun test scripts frameworks/react/test/ frameworks/angular/test && bun test
+frameworks/react/test-dom`, because `frameworks/react/test-dom/` registers a DOM
+globally and must not share a process with the DOM-free suites (see the two-React-test-directories
+note under *Architecture*). **A test under `scripts/` may not import a framework layer's `.ts` or `.jsx`**,
 because `scripts/` is the one suite `check-all.mjs` also runs under plain node, and those
 files use the extensionless imports their own toolchains expect and node does not resolve.
 A property worth asserting against a real recipe or component is asserted from that
@@ -120,6 +124,37 @@ the layers agree or say why not. When they disagree the gate names both and pick
 winner — the pattern is the authority. **It does not assert that a component behaves as
 it declares**: a component can bind `dialog-modal` and trap no focus. A green run is a
 coverage claim, never an accessibility one.
+
+**And now something does check whether a component behaves as it declares — by
+rendering it.** `check:compliance` is the coverage record; the verification itself
+lives in render suites (`frameworks/react/test-dom/`, `frameworks/angular/test/`)
+that assert, per requirement of a component's bound pattern, that the rendered DOM
+either meets it with no exception declared, or fails it with one declared. That
+single bidirectional statement is the stale-exception rule the layer was modelled
+on and did not have: **an exception can finally expire.** The shared evaluator is
+`scripts/lib/behaviour-compliance.mjs`, DOM-generic on purpose — it touches only
+`tagName`, `getAttribute` and `hasAttribute`, because it is consumed from three
+runtimes including plain node in its own test, which has no DOM. It returns a
+third value, `null`, for requirements no single element can decide (`focus.*`,
+`keyboard.*`, `content.noAutoDismiss`, `alternative.table`); a suite must name
+each of those in its `behavioural` map and assert it by acting on the tree, and
+`assertPattern` throws if one is silently skipped. **Coverage is partial by design
+and grows one component at a time** — `COVERED` in `scripts/check-compliance.mjs`
+is the record, with the same bidirectional staleness rule `EXEMPT` carries; the
+gate never demands totality, only that every claim in the record is true. A green
+`check:compliance` still says nothing about whether a component is accessible: a
+suite asserting all four of a component's exceptions are still true passes while
+the component stays exactly as broken.
+
+**React has two test directories and they must not merge.**
+`frameworks/react/test/` asserts on `renderToStaticMarkup` — no DOM, by design,
+because those suites prove those components render correctly server-side.
+`frameworks/react/test-dom/` registers `@happy-dom/global-registrator`, which
+installs globals **process-wide**, and `bun test <dir>` is one process per
+directory. Putting a DOM in the first directory's process would quietly change
+what its six suites prove and nothing would fail to say so. `testStep()` in
+`scripts/check-all.mjs` lists all three framework directories, and
+`check-all.test.mjs` asserts that array by literal value.
 
 **A dimension in a framework layer is a token or a derivation of tokens. A bare
 literal is a bug.** This is machine-checked: `bun run check:dimensions` scans
@@ -281,7 +316,7 @@ It is the converse of `check:coverage` and just as narrow: it does not attempt
 "every utility traces to a token" in general, only this one verified case,
 because everywhere else in a cleared namespace already resolves to nothing
 and `check:tailwind` catches that on its own.
-`bun run check` runs all nineteen plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
+`bun run check` runs all twenty plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
 skips quietly — makes that a hard failure instead. An Angular primitive's recipe is its
 manifest — `frameworks/angular/primitives/tag/` is the reference shape.
 
@@ -414,13 +449,62 @@ scheduled for deletion the same week.
   does a pattern express an optional requirement?" was answered by pushing anything
   per-component into the binding rather than the pattern, and a whole pattern applying
   only sometimes is the same problem one level up, still open.
-- **`validateUnboundPrimitives`'s two failure branches have no isolated test.** Its
-  transitional `UNBOUND_PRIMITIVES` map was emptied once the Angular primitives were
-  all bound, and the five tests exercising its failure paths went with it — the one
-  surviving test only asserts the empty map is clean. The function takes no
-  injectable-map parameter, so keeping those tests would have meant widening its
-  signature for a map that, by design, stays empty. Dead code while the map is empty;
-  an untested guard if it is ever repopulated.
+- **A behaviour text scan was designed, built, measured and rejected — do not
+  re-propose it without reading this.** Plan 7c's spec proposed a static scan of
+  component sources as the cheap tier beneath the render suites. It was
+  implemented as a probe and run against the whole tree before being cut. In the
+  "claimed met but no textual evidence" direction it reported **60 of 118 true
+  claims as unmet (51%)**, across 25 components, because of a cause the spec never
+  named: **implicit ARIA**. A native `<button>` satisfies `roles.element`,
+  `keyboard.Space` and `keyboard.Enter` while leaving nothing to grep;
+  `<input type="checkbox">` satisfies `states.checked`. A text scan penalises
+  exactly the correctly-authored components. In the "exception is now stale"
+  direction it wrongly retired **18 of 94 live exceptions (19%)**, and **all
+  eighteen are irreducible** — none is a regex that could be sharpened. Each is a
+  claim about *placement* (`Menu`'s `aria-haspopup` on a wrapping `<span>` rather
+  than the focusable trigger), *branch* (`Skeleton`'s `role="status"` in three of
+  four variants), *conditional value* (`alert.ts`'s
+  `'[attr.role]': "tone() === 'danger' ? 'alert' : 'status'"`, and `Toast.jsx`'s
+  same shape), or *semantic completeness* (`Menu`'s Enter opens the menu but never
+  moves focus). A rendered DOM resolves all three at once, which is why the render
+  suites absorbed the stale-exception check instead of sharing it with a scan.
+- **A binding cannot scope an exception to a variant, and `Skeleton` is the proof.**
+  `Skeleton`'s `roles.element` and `live.politeness` exceptions are true of the
+  `circle` variant and false of `block`, `line` and `text`. The compliance suite
+  works around it by asserting against the `circle` variant specifically, which
+  pins the claim but leaves a reader of the binding alone believing the exception
+  is unconditional. This is the same gap already recorded for `Tag`'s `button`
+  pattern applying only when `onRemove` is passed — one level down, at the
+  requirement rather than the pattern, and still open. The spec's own unresolved
+  question, *"How does a pattern express an optional requirement?"*, is this.
+  `comparePattern`'s stale-exception message has no vocabulary for "true in one
+  variant" either — it offers only "delete it or name a subject".
+- **Compliance coverage is 6 of 64 bindings and nothing schedules the rest.**
+  `COVERED` guards the accuracy of what it claims, never the completeness of it, so
+  the 58 uncovered bindings — including every one of `Table`'s and `Calendar`'s
+  eight exceptions, the components with no keyboard navigation at all — remain
+  exactly as unverified as they were before this gate existed. The gate was built
+  that way on purpose: one demanding 47 suites on day one would have been switched
+  off. The consequence is that the layer's headline property, *an exception can
+  expire*, currently holds for six components and not for the rest.
+  `figure-with-data-table`'s `roles.label` half stays unverifiable regardless — a
+  suite can assert an `aria-label` exists, never that it is a good name for the
+  chart. **A component bound in both layers is satisfied by either layer's suite**:
+  `COVERED` maps a component name to one suite file, so the day a dual-bound
+  component's entry points at (say) the React suite, the Angular contract goes
+  unverified while the claim reads satisfied. No `COVERED` entry is dual-layer
+  today, so this is latent, not live — the fix is a compound `<component>:<layer>`
+  key, and it must be made before a dual-bound component is added to `COVERED`.
+- **Seven exceptions are now only as true as the behavioural verdict a suite
+  declares for them.** `ActivityFeed`'s `posinset`/`busy`, `Tag`'s `disabled`,
+  `Input`'s and `Textarea`'s `readonly`, and Angular `activity-feed`'s
+  `posinset`/`busy` are requirements no single element can decide from the DOM, so
+  the suite asserts each by acting on the tree and records the verdict in
+  `behavioural`. That verdict is trusted, not re-derived: a suite that declares the
+  wrong verdict pins a false claim exactly as a scan would have. And `comparePattern`
+  **throws** on an unknown requirement key or a missing `ELEMENT_ROLE` entry — one
+  bad key aborts the whole test rather than reporting one problem, so a suite's
+  wrapper (`assertPattern`) must expect the throw, not only a returned problem list.
 - **Angular has no `Calendar`, and nothing has decided whether it should.** React's
   `Calendar` is a day/hour schedule grid with absolutely-positioned event blocks;
   Angular has no equivalent from either an `arena-*` primitive or Angular Material —
@@ -469,12 +553,31 @@ Each of these is a record with its own stale-entry rule: an entry that no longer
 matches a real violation fails the gate that owns it. Read the entries, never a
 count written here, which would drift.
 
-- **`components-divergences.md`** — 1119 lines, and the largest debt record in the
+- **`components-divergences.md`** — the largest debt record in the
   repo. Every behaviour difference between the React and Angular layers, with its
   reason and whether it is expected to converge. Structural divergences first,
   then per-component. Its own opening admits the cost: no layer is the authority
   for component behaviour, so a divergence cannot be a defect. Plan 7's spec
   proposes replacing that with a normative contract.
+  Plan 7c deferred the migration to a plan 7d rather than folding it in, on the
+  spec's own instruction to sequence it last — the compliance suites change which
+  exceptions are true, and migrating prose into entries that are about to move
+  wastes the work. Two findings for whoever writes 7d, derived from the file and
+  not recalled: it is **1127 lines**, not the 1119 the spec states (7b's preamble
+  note moved it), and the structural/per-component seam is at the
+  `## Per-component divergences` heading on **line 329**, which matches the spec's
+  "roughly the first 300 lines". But the spec's three-way split has a **fourth
+  bucket it does not name**: of the ~790 per-component lines, only about a third
+  are behaviour that migrates into `exceptions` (~11 sections); ~5 are API and
+  belong to plan 8; and **~9 are per-component *rendering* divergences** — BarChart's
+  per-bar category axis, DoughnutChart's per-slice legend, `chart-internals`' units,
+  UnauthCard's hand-duplicated panel classes, SideNav being described three times —
+  which are neither behaviour nor API and have no destination in the spec's scheme.
+  They stay as prose alongside the structural half. Three bindings cite this
+  document as supporting evidence (`command-palette.behaviour.json`, the `SideNav`
+  delegated entry, and `frameworks/angular/primitives/onboarding/onboarding.ts`);
+  a migration that deletes a cited section without redirecting the citation breaks
+  it, and 7c did not touch them.
 - **`scripts/check-dimension-literals.mjs`** — `EXEMPT` (a literal that is the
   true value at its site: a runtime data-to-pixel projection, a stacking context
   scoped to one container, the visually-hidden idiom) and `PASSTHROUGH`. Its two
