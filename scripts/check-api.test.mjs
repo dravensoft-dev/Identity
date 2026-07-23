@@ -149,6 +149,68 @@ test('an array of the wrong element type fails', () => {
   assert.ok(compareSurface(CONTRACT, members, 'angular').some((p) => /items/.test(p)));
 });
 
+/* 3b — required-ness. The contract governs a member's required-ness too, for
+ * the four inbound non-slot forms; `slot` and `event` are carved out below. */
+
+test('a contract member required: true implemented as optional by a layer is reported', () => {
+  const problems = compareSurface(
+    { component: 'X', api: { items: { form: 'array', of: 'Crumb', required: true } } },
+    [{ name: 'items', form: 'array', of: 'Crumb', required: false }],
+    'react',
+  );
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /items/);
+  assert.match(problems[0], /required/);
+  assert.match(problems[0], /optional/);
+});
+
+test('a contract member left optional (no `required` key) implemented as required by a layer is reported -- the contract is the authority in both directions', () => {
+  const problems = compareSurface(
+    { component: 'X', api: { separator: { form: 'primitive', type: 'string' } } },
+    [{ name: 'separator', form: 'primitive', type: 'string', required: true }],
+    'angular',
+  );
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /separator/);
+  assert.match(problems[0], /required/);
+});
+
+test('matching required-ness on a primitive and an array member reports nothing', () => {
+  const problems = compareSurface(
+    {
+      component: 'X',
+      api: {
+        items: { form: 'array', of: 'Crumb', required: true },
+        separator: { form: 'primitive', type: 'string' },
+      },
+    },
+    [
+      { name: 'items', form: 'array', of: 'Crumb', required: true },
+      { name: 'separator', form: 'primitive', type: 'string', required: false },
+    ],
+    'react',
+  );
+  assert.deepEqual(problems, []);
+});
+
+test('a required slot mismatched against an optional layer member reports nothing -- Angular\'s <ng-content> cannot declare projected content mandatory', () => {
+  const problems = compareSurface(
+    { component: 'X', api: { mark: { form: 'slot', required: true } } },
+    [{ name: 'mark', form: 'slot', required: false }],
+    'angular',
+  );
+  assert.deepEqual(problems, []);
+});
+
+test('an event with mismatched required-ness reports nothing -- an outbound member is never "required", a consumer is always free not to listen', () => {
+  const problems = compareSurface(
+    { component: 'X', api: { navigate: { form: 'event', payload: 'Crumb', required: true } } },
+    [{ name: 'navigate', form: 'event', payload: 'Crumb', required: false }],
+    'angular',
+  );
+  assert.deepEqual(problems, []);
+});
+
 /* the `named` form: an identifier the reader could not resolve on its own --
  * it resolves ONLY against a contract `enum` or `object` member. */
 

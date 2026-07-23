@@ -61,15 +61,33 @@ predefined object takes their place.
 
 ## What the contract governs, and what it does not
 
-The contract governs the **member surface** — its name, its form, its type — and not the
-syntax by which a platform expresses it. A slot named `mark` is one member; React binds it
-to a node-valued prop, Angular to `<ng-content select="[mark]">`. That is the same contract
-in two idioms, and it is not a divergence. React has no content-projection syntax and
-Angular has no node-valued input; demanding identical call-site syntax would demand
-something neither platform can give.
+The contract governs the **member surface** — its name, its form, its type, its
+required-ness — and not the syntax by which a platform expresses it. A slot named `mark`
+is one member; React binds it to a node-valued prop, Angular to
+`<ng-content select="[mark]">`. That is the same contract in two idioms, and it is not a
+divergence. React has no content-projection syntax and Angular has no node-valued input;
+demanding identical call-site syntax would demand something neither platform can give.
 
 This is the line that makes "zero API divergences" achievable rather than rhetorical:
 identical members, idiomatic binding.
+
+### Required-ness is contracted too, with a carve-out
+
+`required` is not only wording for a missing-member message — the contract's `required`
+value is compared against each layer's, and a layer that implements a member as more or
+less required than the contract says is reported like any other divergence. This holds
+for the four inbound non-slot forms: **primitive**, **enum**, **object**, **array**.
+
+It does not hold for **slot** or **event**, and that is a statement about what the two
+platforms can express, not an exception written to excuse a divergence. A **slot's**
+required-ness is not comparable because React can express one (a `children` prop with no
+`?`) but Angular cannot: `<ng-content>` has no syntax to declare projected content
+mandatory, so the reader always reports a template slot as `required: false`. Comparing it
+would fail every contract that declares a required slot against Angular forever, for a
+platform syntax limit rather than a real divergence. An **event's** required-ness is not
+comparable because the concept does not apply to either platform: an outbound member is
+never "required" — a consumer is always free not to listen — and neither React's optional
+function prop nor Angular's `output()` has a notion of a mandatory listener.
 
 ### The binding table
 

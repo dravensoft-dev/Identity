@@ -10,9 +10,18 @@
  *                       claim, so no separate record can go stale against it.
  *   2. FORM.            No member uses anything outside the seven forms.
  *   3. AGREEMENT.       Every implementing layer declares exactly the contract's
- *                       members. An OPTIONAL member is still a declared member:
- *                       `required: false` governs whether a CONSUMER must supply
- *                       it, never whether a LAYER must offer it.
+ *                       members, same name, same form, same required-ness. An
+ *                       OPTIONAL member is still a declared member: `required:
+ *                       false` governs whether a CONSUMER must supply it, never
+ *                       whether a LAYER must offer it. Required-ness itself is
+ *                       compared only for the four inbound non-slot forms
+ *                       (primitive, enum, object, array) -- a slot's and an
+ *                       event's required-ness is not comparable across layers,
+ *                       because neither platform pair can express it: Angular's
+ *                       `<ng-content>` cannot declare projected content
+ *                       mandatory, and an outbound event is never "required" on
+ *                       either platform. See the comment beside the comparison
+ *                       in compareSurface().
  *   4. DERIVED RULES.   R1, R4 and R5, against the declared types.
  *   5. GENERATED DRIFT. The committed api.generated.* match api/types/.
  *
@@ -201,6 +210,35 @@ export function compareSurface(contract, members, layer) {
     } else if (m.form !== spec.form) {
       problems.push(`${where}.${m.name}: declared as ${m.form}, contract says ${spec.form}`);
       continue;
+    }
+    /* Required-ness is contracted, and compared, for the four inbound
+     * non-slot forms only -- `slot` and `event` are excluded because neither
+     * platform pair can express the concept, not because a divergence there
+     * is excused. A required SLOT is not comparable: React can express one
+     * (`children: React.ReactNode`, no `?`), but Angular's `<ng-content>` has
+     * no way to declare projected content mandatory -- `templateSlots()`
+     * always reports `required: false`, so comparing would fail every
+     * contract that declares a required slot against Angular forever, for a
+     * platform syntax limit and not a real divergence. An EVENT's
+     * required-ness is not comparable either: an outbound member is never
+     * "required" on either platform -- a consumer is always free not to
+     * listen, React binds it as an optional function prop and Angular as an
+     * `output()`, and neither has a notion of a mandatory listener. Both
+     * sides are normalised to a boolean before comparing, so a contract with
+     * no `required` key (optional) reads the same as a layer's explicit
+     * `required: false`. This runs only once the form itself already agrees
+     * (the branch above already `continue`d otherwise), so a member whose
+     * form is wrong reports that, not a second problem about the same
+     * defect. */
+    if (spec.form === 'primitive' || spec.form === 'enum' || spec.form === 'object' || spec.form === 'array') {
+      const contractRequired = Boolean(spec.required);
+      const layerRequired = Boolean(m.required);
+      if (contractRequired !== layerRequired) {
+        problems.push(
+          `${where}.${m.name}: contract says ${contractRequired ? 'required' : 'optional'}, `
+          + `${layer} declares it ${layerRequired ? 'required' : 'optional'}`,
+        );
+      }
     }
     if (spec.form === 'array' && m.of !== spec.of) {
       problems.push(`${where}.${m.name}: array of ${m.of}, contract says array of ${spec.of}`);
