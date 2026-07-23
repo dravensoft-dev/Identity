@@ -2,10 +2,17 @@
 
 **Status:** DRAFT — not approved. Written 2026-07-22, in the same session as plan 7's
 spec and at the repo owner's explicit request to capture the decision while it was
-fresh. **It is still written against infrastructure that does not exist yet** — plan 7
-builds the binding convention, the exception format and the component→layer resolver this
-spec reuses. Expect to revise it once plan 7 lands; that is the accepted cost of writing
-it now.
+fresh.
+**Revised 2026-07-22 after plan 7 landed as the chain 7a → 7b → 7c** (all merged; 7c at
+the branch `behaviour-contracts-7c`). The infrastructure this spec reuses — the
+sidecar-next-to-the-component convention, the per-entry `reason` format with a stale-entry
+rule, and the component→layer resolver in `scripts/lib/behaviour-contracts.mjs` (its
+`reactComponents` / `angularPrimitives` / `loadBinding` exports) — **is no longer
+hypothetical; it exists.** Two judgements below were written assuming plan 7 would also
+migrate the *behaviour* half of `components-divergences.md`; it did not, and the decision
+not to write a plan 7d for that is recorded in *What became of the API entries* and in the
+new *Deciding what to do with `components-divergences.md`* section. Read those before the
+Design, because they change what this plan inherits.
 **Revised 2026-07-22 after plan 5.5 shipped**, which is the nearest thing to a rehearsal
 this spec has: 5.5 proved the shape both later specs assume — a sidecar record with a
 reason per entry, a stale entry failing the gate that owns it, committed generated output
@@ -217,9 +224,102 @@ Four of six turn out to need no action, which is itself the argument for the
 classification: today all six read the same, and the attention goes nowhere in
 particular.
 
-After migration, `components-divergences.md` retains only the structural half that plan 7
-left it. Whether it is then worth keeping as a file, or folded into `CLAUDE.md`'s
-architecture section, is a decision for the end of plan 8 and not before.
+**Correction, post-7c.** This spec was written expecting plan 7 to migrate the *behaviour*
+half of `components-divergences.md` into `exceptions`, leaving only a structural half for
+plan 8 to finish. That did not happen. 7c's spec deferred the migration to a plan 7d, and
+during 7c's execution 7d was assessed and **not written** — because the premise for
+deferring it (that verifying the contracts would change which exceptions are true, so the
+prose should not be migrated until they settled) turned out false: 7c retired **0
+exceptions and added 0**, so nothing moved, and no drift is accumulating for a migration to
+race. The authority already sits with the `exceptions` — 7b established it and 7c now
+verifies six components' worth of them by render — so if the prose and the contract diverge,
+it is the non-normative prose that is wrong.
+
+The consequence for this plan: `components-divergences.md` still holds **all four** of its
+kinds of content, not two. 7c's execution found the seam is not the clean three-way split
+this spec's §4 assumes. Re-derived from the file (1127 lines; the structural/per-component
+seam is at line 329):
+
+- **Structural** (~first 300 lines) — cross-layer facts no binding expresses. Stay as prose.
+- **Per-component behaviour** (~6 sections: ConfirmDialog accessible, CommandPalette
+  combobox, CommandPalette-does-not-close, ErrorState announces, DoughnutChart
+  keyboard-reachable legend, and the like) — these overlap the `exceptions` plan 7 created.
+  **Nobody has migrated them. They are still prose, and this plan does not own them either**
+  unless the decision below says so.
+- **Per-component API** (~7 sections: StatCard `delta`/`icon`, AppLogo mark, Breadcrumbs
+  `navigate`, PageHead / UnauthCard `style`, ConfirmDialog `width`) — **this plan's subject**,
+  migrated and classified per the table above.
+- **Per-component rendering** (~9 sections: BarChart's per-bar axis, DoughnutChart's
+  per-slice legend, `chart-internals`' units, UnauthCard's duplicated panel classes, SideNav
+  described three times) — **the fourth bucket, which §4 as first written did not name.**
+  Neither behaviour nor API, no destination in either contract's schema. Stay as prose.
+
+So this plan removes only the ~7 API sections. Whether `components-divergences.md` is worth
+keeping afterward is no longer "once only the structural half remains" — it is "once the
+API sections are gone and the behaviour, structural and rendering halves remain, three
+kinds of prose with no contract to absorb them." That is a real decision, not a formality,
+and the next section frames it.
+
+## Deciding what to do with `components-divergences.md`
+
+This spec removes the ~7 API sections and no more. But 7c left the file in a state its
+original authors did not plan for — four kinds of content, an authority that has already
+moved to the contracts, and a behaviour half that was supposed to be migrated by plan 7 and
+was not. The file is the **largest single debt record in the repo** (1127 lines), and 13
+places cite it by path (`command-palette.behaviour.json`, the `SideNav` delegated entry,
+`onboarding.ts`, `bulk-action-bar.ts`, `confirm-dialog.ts`, `activity-feed.ts`, two Angular
+test files, `check-manifest-states.mjs`, `frameworks/tailwind/README.md`, and `CLAUDE.md`,
+among others). A change that deletes a cited section without redirecting its citation breaks
+that citation silently — the same failure mode 7c's own review caught in a comment.
+
+None of the decisions below are this spec's to make unilaterally; they are the repo owner's,
+and they gate how wide a plan written from this spec becomes. They must be answered first.
+
+**D1 — Does this plan stay scoped to the API sections, or does it also migrate the ~6
+behaviour sections into `exceptions`?** The argument for folding it in: this plan is already
+opening the file, already redirecting citations, and already fluent in the exception format
+it would migrate into. The argument against: behaviour and API are different contracts with
+different schemas, and 7c deliberately kept the two apart. The controller's recommendation,
+recorded for the owner to accept or reject: **stay scoped to API.** The ~6 behaviour
+sections are a half-day of prose-to-`reason` movement that belongs with whoever is next
+verifying those specific components' behaviour by render, not bolted onto an API plan — and
+folding them in doubles the citation-redirect surface for a payoff of "six fewer duplicated
+paragraphs."
+
+**D2 — What is the authority relationship now, and should it be stated in the file's own
+preamble?** Since 7b, the `exceptions` are the normative record of component behaviour and
+`components-divergences.md` is not. Since 7c, six components' exceptions are verified by
+render and the prose is verified by nothing. The file's preamble still reads as though it
+were a peer record. **Decision:** whether the file's opening should be rewritten to say
+plainly "this is non-normative prose; the normative records are `*.behaviour.json` and
+`*.api.json`; where they disagree, this file is wrong" — which costs one paragraph and stops
+the file being read as authority — versus leaving it and accepting that a reader may trust a
+stale sentence.
+
+**D3 — Do the ~9 rendering sections have a better home than this file, or none?** They are
+the only content with no contract that could ever absorb them — a per-bar axis, a
+duplicated panel class, a legend drawn per slice. Options: leave them in
+`components-divergences.md` (which then survives purely to hold them); fold them into
+`CLAUDE.md`'s architecture section beside the other rendering-idiom notes; or split them into
+a smaller `rendering-divergences.md` so the 1127-line file can be retired. **Decision:** which
+of the three, weighed against the fact that `CLAUDE.md` is already long and the rendering
+notes are genuinely architectural.
+
+**D4 — What is the retirement condition for the file as a whole, stated as a testable
+predicate rather than a vibe?** After this plan, the file holds structural + behaviour +
+rendering. It can only be deleted when every one of those has a home. **Decision:** name the
+predicate — e.g. "delete `components-divergences.md` when the behaviour sections are in
+`exceptions` (D1), the rendering sections are relocated (D3), and the structural sections are
+in `CLAUDE.md`; until then it stays, and its stale-entry discipline stays with it." Writing
+the predicate down is what stops this being reopened as an open question in plan 9 and every
+plan after.
+
+**D5 — Who owns the citation redirect, and is it mechanical enough to gate?** 13 citations,
+by path, to sections that may move or be deleted. **Decision:** whether a plan from this spec
+adds a cheap check that every `components-divergences.md#…` or path reference in the tree
+still resolves to a heading that exists — the same shape as the stale-entry rules this chain
+already trusts — so that a future migration cannot silently break a citation. This is small
+and it closes the one failure mode that makes editing the file dangerous.
 
 ## Sequencing
 
@@ -264,8 +364,15 @@ every binding first, classify honestly, green from the first commit where green 
    every one needs an exclusion, the assertion costs more than it returns.
 5. **Do the three charts get contracts?** They have no manifest and no `.variants.ts`
    already, and their props are data series rather than affordances.
-6. **Is `components-divergences.md` still worth keeping** once both migrations are done
-   and only the structural half remains? §4.
+6. **Is `components-divergences.md` still worth keeping**, and what should happen to the
+   behaviour and rendering halves nobody owns? The premise this question was first written
+   with — "once both migrations are done and only the structural half remains" — is void:
+   the behaviour migration was never done (no plan 7d), so after this plan removes the API
+   sections, three kinds of prose remain, not one. This is now the subject of its own
+   section, *Deciding what to do with `components-divergences.md`*, and its sub-questions
+   must be answered before this plan is written, because they decide whether this plan's
+   scope is "migrate the API entries" or "migrate the API entries and finally retire the
+   file."
 7. **What happens when a capability is genuinely React-only by design** — not a gap, not
    idiom, but a thing Angular should never have? `unsupported` + reason conflates it
    with `ConfirmDialog`'s `width`, which is the exact conflation this spec exists to
