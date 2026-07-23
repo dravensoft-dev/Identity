@@ -1,0 +1,6 @@
+{
+  "name": "Orientation",
+  "kind": "enum",
+  "description": "Whether the parts sit side by side or stacked.",
+  "values": ["horizontal", "vertical"]
+}

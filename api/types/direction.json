@@ -1,0 +1,6 @@
+{
+  "name": "Direction",
+  "kind": "enum",
+  "description": "Which way a number moved. Draws the arrow — nothing else. Deliberately separate from whether that movement was good.",
+  "values": ["up", "down"]
+}

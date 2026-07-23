@@ -1,0 +1,6 @@
+{
+  "name": "DeltaTone",
+  "kind": "enum",
+  "description": "Whether a change was GOOD. Separate from Direction because revenue down is negative and latency down is positive, and only the product knows which. Every sign renders outline, never filled.",
+  "values": ["neutral", "positive", "negative"]
+}
