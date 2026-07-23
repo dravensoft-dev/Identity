@@ -1348,8 +1348,17 @@ tasks above — this list is a map, not a second copy.
 | The single-icon idiom | `api/README.md`, *Conventions the audits settled* | B1 (`StatCard` revision, if any), B2 |
 | A per-item field is a primitive | `api/README.md`, same section | B3 |
 | An inbound function is no form | `api/README.md`; `classify()` throws | B1 (`ThemeToggle`), B4 |
-| An enum's literals may be numbers | `api/README.md`; `enumLiteral()`; `classify()` | B4 |
-| `COVERED`'s dual-layer hole | `CLAUDE.md` *Known debt*, or the compound key | B1 (`ConfirmDialog`, `Skeleton`), B2 (`Alert`), B4 (`BarChart`) |
+| A token-derived closed numeric set is a bare `number`, not an enum | `api/README.md`, *Types* | B4 |
+| `COVERED` is keyed `<component>:<layer>` | `scripts/check-compliance.mjs`; `CLAUDE.md` *Known debt* | B1 (`ConfirmDialog`, `Skeleton`), B2 (`Alert`), B4 (`BarChart`) |
+
+> **Two rows above changed from the plan-as-written, and B4's author must not miss it.** Task 5
+> chose Reshape B (a bare `number`), *not* the plan's recommended A, so **no numeric-enum
+> machinery was built**: `enumLiteral()` does not exist, `classify()` gained no numeric branch,
+> `validateTypes()` gained no mixed-literal rule. B4 needs none — the ramp `slot` is a `number`
+> the reader already reads, and `SeriesTone`/`ArenaChartTone` are *string* enums the generator
+> already emits. And Task 6 chose to fix `COVERED` rather than only record the hole, so the
+> compound key already exists; B1 and B4 add a per-layer entry as they write render tests, they
+> do not build the mechanism.
 
 **The batches, and why each is a batch:**
 

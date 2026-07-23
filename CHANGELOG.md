@@ -255,6 +255,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The API contract layer's five cross-cutting conventions are settled, ahead of bringing the
+  remaining shared components under contract.** An Angular projection selector is now the contract
+  member's own name — `[action]`, `[actions]` rather than `[arena-action]`/`[arena-actions]` — so a
+  slot's member name and its `<ng-content select>` are one string and `api/README.md`'s binding
+  table needs no special case. A single icon is a Phosphor class-name string across the whole layer
+  (`StatCard`'s slot is revised to a string in both layers, and the empty-wrapper divergence Plan A
+  recorded is deleted), and a per-item field inside an array of predefined objects is a primitive
+  for the same reason. Two limits the contract reader could not see are closed: `classify()` now
+  refuses an inbound function that returns a value — the shape the charts' `valueFormatter` has,
+  which it previously misread as an event a contract could have declared — and a token-derived
+  closed numeric set (the charts' ramp slot) is documented as a bare `number` rather than a
+  hand-copied enum. Separately, `check:compliance`'s `COVERED` record is re-keyed by
+  `<component>:<layer>`, closing a live hole where a component verified in one layer was reported
+  covered in the other. **Breaking for an Angular consumer:** an element projected into an
+  `EmptyState`, `ErrorState`, `ChartCard` or `PageHead` action slot now carries `action` /
+  `actions`; the old `arena-`prefixed attribute is inert and its content silently fails to project.
 - **Nine `@dsCard` declarations corrected to what their pages actually render.** No page's
   content changed. `frameworks/react/ui_kits/console/index.html` no longer declares a
   `@dsCard` at all — it is an example app with its own scroll area, not a specimen card.

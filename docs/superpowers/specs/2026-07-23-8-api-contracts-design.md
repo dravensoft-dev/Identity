@@ -665,6 +665,15 @@ comparison and a comparison needs a baseline that is not stale.
 |---|---|---|
 | suspension (2026-07-23, before Plan A) | 763 across 63 files | 26 across 5 files |
 | **Plan A** (2026-07-23) | **856 across 68 files** | 26 across 5 files |
+| **Plan B0** (2026-07-23) | **863 across 68 files** | 26 across 5 files |
+
+Plan B0 added 7 tests and no file: 3 in `frameworks/react/test/stat-card.test.jsx` and
+`frameworks/angular/test/host-class-binding.test.ts` (StatCard's icon revised to a string, its
+render pinned in both layers), 2 in `scripts/api-surface.test.mjs` (the reader refusing an
+inbound function that returns a value), and 2 in `scripts/check-compliance.test.mjs` (COVERED's
+compound `<component>:<layer>` key). Its five audits were mostly prose and the two script tasks
+that shipped machinery each landed a couple of tests; every test is accounted for in the branch's
+commits.
 
 Plan A added 93 tests and 5 files: three new script suites for the API layer
 (`build-api-types.test.mjs`, `api-surface.test.mjs`, `check-api.test.mjs`), plus React
