@@ -325,3 +325,43 @@ test('angularSurface reports template slots alongside declared members', () => {
   assert.deepEqual(angularSurface(src, 'X').members.map((m) => [m.name, m.form]),
     [['name', 'primitive'], ['mark', 'slot']]);
 });
+
+/* CRITICAL: a class doc comment mentioning `<ng-content select="[icon]" />` in
+ * prose must never manufacture a slot -- only the real @Component template
+ * literal is the source of truth. Before this fix, templateSlots() scanned
+ * the WHOLE source, so a doc comment merely quoting the template syntax (the
+ * real shape stat-card.ts shipped) reported the same slot TWICE, and deleting
+ * the real <ng-content> from the template left the doc comment alone to
+ * satisfy the contract -- a component that stopped projecting a slot still
+ * passed. These two tests pin the fix: the doc comment alone yields no slot,
+ * and the real template yields exactly one. */
+test('a class doc comment mentioning <ng-content select="[icon]" /> in prose reports no slot when the real template has none', () => {
+  const src = `
+    /** This component projects a glyph (\`<ng-content select="[icon]" />\`) beside the label. */
+    @Component({ template: \`<span [class]="styles().label()">{{ label() }}</span>\` })
+    export class X { readonly label = input.required<string>(); }
+  `;
+  const { members } = angularSurface(src, 'X');
+  assert.deepEqual(members.map((m) => m.name), ['label'], 'the doc comment must not manufacture an icon slot');
+});
+
+test('the same class with the real template projecting [icon] reports exactly one icon slot', () => {
+  const src = `
+    /** This component projects a glyph (\`<ng-content select="[icon]" />\`) beside the label. */
+    @Component({ template: \`<span aria-hidden="true"><ng-content select="[icon]" /></span><span [class]="styles().label()">{{ label() }}</span>\` })
+    export class X { readonly label = input.required<string>(); }
+  `;
+  const { members } = angularSurface(src, 'X');
+  assert.deepEqual(members.map((m) => [m.name, m.form]), [['label', 'primitive'], ['icon', 'slot']]);
+});
+
+test('a class with no template literal at all (templateUrl, or no @Component) has no slots, and does not throw', () => {
+  const withDecoratorNoTemplate = `
+    @Component({ templateUrl: './x.html' })
+    export class X { readonly label = input.required<string>(); }
+  `;
+  assert.deepEqual(angularSurface(withDecoratorNoTemplate, 'X').members.map((m) => m.name), ['label']);
+
+  const withNoDecoratorAtAll = `export class X { readonly label = input.required<string>(); }`;
+  assert.deepEqual(angularSurface(withNoDecoratorAtAll, 'X').members.map((m) => m.name), ['label']);
+});

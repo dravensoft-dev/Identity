@@ -309,7 +309,7 @@ export function angularSurface(source, className) {
     if (!m) throw new UnrecognisedShape(`unreadable class member: ${text}`);
     members.push(classMember(m[1], m[2]));
   }
-  return { members: [...members, ...templateSlots(source)] };
+  return { members: [...members, ...templateSlots(componentTemplate(source))] };
 }
 
 function classMember(name, initialiser) {
@@ -347,10 +347,48 @@ function literalType(arg, name) {
   throw new UnrecognisedShape(`input("${arg}") on "${name}" declares no type — give it a generic`);
 }
 
+/** The interior of the `@Component({...})` decorator's own `template:` backtick
+ *  literal -- never the whole source. A class doc comment sitting above the
+ *  decorator can quote `<ng-content select="[x]" />` as PROSE (stat-card.ts
+ *  does, describing its own `icon` slot), and prose is not markup: scanning
+ *  the whole file for that reason reported the same slot twice, and -- worse
+ *  -- deleting the real <ng-content> left the doc comment alone to satisfy
+ *  the contract, so a component that stopped projecting a slot still passed.
+ *  `stripComments()` is deliberately NOT run over the whole source first (the
+ *  fix `templateSlots` itself warns against in its header): a `//` inside a
+ *  URL in the template string would be eaten by the `//` half of that helper.
+ *  Instead the decorator's argument is isolated by paren-depth (`braceBody`
+ *  tracking `(`/`)`, which is blind to the `{`/`}` inside it -- an object
+ *  literal argument does not change paren depth), and only the FIRST
+ *  backtick-delimited `template:` literal inside that argument is scanned.
+ *  No `@Component(...)` at all, or a decorator using `templateUrl` instead
+ *  of an inline `template:`, means no slots -- returned as an empty string
+ *  rather than thrown, because "this class has no slots" is not an
+ *  unreadable shape. */
+function componentTemplate(source) {
+  const decorator = /@Component\s*\(/.exec(source);
+  if (!decorator) return '';
+  let args;
+  try {
+    args = braceBody(source, source.indexOf('(', decorator.index), '(', ')');
+  } catch {
+    return '';
+  }
+  const template = /template\s*:\s*`([\s\S]*?)`/.exec(args);
+  return template ? template[1] : '';
+}
+
 /** Angular's slots live in the template, not in a declaration. A bare
  *  <ng-content /> is the default slot, which the contract names `content`; an
  *  attribute selector names its own. Any other selector is refused: the binding
- *  table in api/README.md defines exactly these two forms. */
+ *  table in api/README.md defines exactly these two forms.
+ *
+ *  Takes the TEMPLATE TEXT itself -- a direct fragment in this module's own
+ *  tests, or `componentTemplate(source)`'s extraction in `angularSurface`
+ *  below. It does not go looking for the decorator itself; that is
+ *  `componentTemplate`'s job, kept separate so a caller with an
+ *  already-isolated template string (or a test fixture that is nothing but
+ *  markup) never has to fabricate a surrounding `@Component({...})`. */
 export function templateSlots(source) {
   const out = [];
   for (const m of source.matchAll(/<ng-content\b([^>]*)>/g)) {
