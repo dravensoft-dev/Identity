@@ -452,6 +452,22 @@ citing it, and expect it to move in both directions.
 
 # Plan B — the eighteen remaining shared components
 
+> **COMPLETE as of Plan 8B4 (2026-07-24)**, in batches B0–B4: `check:api` reports
+> **21 contracts across 41 layer implementations**.
+>
+> **The arithmetic does not match the eighteen named below, and the difference is the
+> spec's, not a batch's.** Two corrections, both measured against the tree rather than
+> recalled. `ThemeToggle` was never contracted — B1 **deleted it outright** rather than
+> migrating it, so the eighteen yield seventeen contracts. And `Switch` **is missing from
+> the list below** although both layers implement it; B1 contracted it (with a redesign)
+> and it is a Plan B subject in every sense except being named here. So the real total is
+> 17 + 3 (Plan A) + 1 (`Switch`) = **21**. Anyone re-deriving the subject list should
+> resolve it structurally, as this section's own opening sentence says, rather than from
+> this paragraph.
+>
+> What follows is the plan as written; the sections below carry per-batch annotations where
+> a batch changed what they say.
+
 **Objective.** Bring every component both layers already implement under contract, one at
 a time through the audit protocol, until React and Angular present an identical member
 surface for all of them and no API divergence remains between the two layers.
@@ -512,6 +528,13 @@ merge, after three components lost theirs: **26 of the 43 React `.d.ts` files st
 declare `style?: React.CSSProperties`**, and **6 still extend `React.HTMLAttributes` or
 `React.SVGAttributes`** — the `{...rest}` escape. Not all of those 26 are Plan B
 subjects; the rest fall to Plan C. Re-measure rather than trusting either number.
+
+> **Re-measured at Plan B's completion (2026-07-24): 13 `.d.ts` files still declare
+> `style`, and 6 still carry a heritage clause.** The `style` count halved because every
+> Plan B batch removed one per component; the heritage count did **not** move, because only
+> `LineChart`'s was a Plan B subject and it was an `Omit<>` rather than a `React.*Attributes`.
+> All 13 and all 6 now fall to Plan C. Heed this section's own last sentence and re-measure
+> again — these two numbers have been restated three times and been wrong twice.
 
 ## What Plan B inherits from Plan A's shape
 
@@ -599,6 +622,36 @@ far as `Table`'s audit holds it, and `check:compliance` — the only layer that 
 rendered tree — does not read contracts.
 
 ## Two subjects the reader cannot parse today, by design
+
+> **Re-measured after Plan 8B4 (2026-07-24): it is FOUR, not two, and the two this section
+> does not name are the shape B4 already solved.** Probing all nine of Plan C's readable-looking
+> subjects against `reactSurface()` at `HEAD`:
+>
+> - **`Calendar.d.ts`** — `renderEvent?: (event: CalendarEvent) => React.ReactNode` throws.
+> - **`Input.d.ts`** — `validate?: (value: string) => string | null | undefined` throws.
+>
+> Both are **inbound functions that return a value**, which is none of the seven forms — the
+> identical shape the charts' `valueFormatter` had. **B4 is the worked precedent**: the member
+> is replaced by data the component renders itself (`valueSuffix`), and the capability loss is
+> stated plainly rather than hidden. Neither of these two takes that answer automatically —
+> `Input.validate` returning an error message is a genuinely different problem from a number
+> formatter, and it may well be an event plus a `error` primitive rather than a suffix — but
+> the *rule* is settled and the audit does not have to re-derive it.
+>
+> Two more facts for Plan C, measured at the same time:
+>
+> - **`Calendar.d.ts:5` declares its own local `CatSlot = 1 | … | 8`**, importing nothing from
+>   `BarChart`. B4 deleted the charts' copy and dissolved it into a bare `number` (R5, plus
+>   `api/README.md`'s worked example: the ramp's bound is derived from the palette and a
+>   contract enum would emit it quoted). Calendar's copy is the last one in the tree and takes
+>   the same answer.
+> - **`Select.d.ts` extends `React.SelectHTMLAttributes<HTMLSelectElement>`**, and B4 measured
+>   what that costs: **the reader does not resolve heritage.** It reports the `extends` clause
+>   as the R4 `{...rest}` escape and then reads only the interface's own body, so every
+>   inherited member is invisible to the gate and the contract fails with one *"does not
+>   declare X"* per inherited member. An inherited member is not a declared member here — which
+>   is the argument for flattening, over and above R4's letter. Six React `.d.ts` files still
+>   carry a heritage clause.
 
 Plan A's reader (`scripts/lib/api-surface.mjs`) throws `UnrecognisedShape` on a shape it
 cannot read, and a throw is a gate failure rather than a silent omission. Two React
@@ -692,13 +745,29 @@ Three things to carry in:
   in the JIT test harness, and `frameworks/angular/test/host-class-binding.test.ts`
   carries the query-child-and-overwrite bypass that works around it. Reuse it rather than
   rediscovering it.
+
+  > **Plan B measured the real cost, and it is worth carrying into D's estimates.** Batches
+  > B1–B3 **over**estimated this hazard three times running — three consecutive plans predicted
+  > NG0950 rework that did not materialise, because the suites in question never rendered the
+  > primitive through `TestBed` at all. Then B4 **under**estimated it once: making `labels` and
+  > `values` required broke **13 tests across all three charts** in one file, because those
+  > fixtures render with no bindings whatsoever. The predictor is not "is this member
+  > required" but **"does any suite render this primitive through `TestBed`, and does it drive
+  > this input?"** — a suite that tests plain exported functions is unaffected, and a suite
+  > that already overwrites instance fields is unaffected too. Check that before estimating.
+  > The bypass now has six worked examples in that one file (`createAppLogoMarkHost`,
+  > `createBreadcrumbsHost`, `createBulkActionBarHost`, and B4's three chart helpers), so a
+  > D-era primitive copies rather than invents.
 - **Slot required-ness is not comparable**, so a CDK primitive whose projected content is
   genuinely mandatory has no way to say so and no gate to catch a caller who omits it.
   That is a real hole in every one of the twenty-two that projects content.
 - **The slot-selector convention Plan B settles applies here too.** Twenty-two new
   primitives is the largest single batch of `<ng-content select>` this layer will ever
   gain; they must be written to whatever convention Plan B lands on, not to whatever each
-  one's author prefers.
+  one's author prefers. **Settled: it is the bare attribute selector** (`select="[x]"` for a
+  slot named `x`), landed by B0 in `frameworks/angular/primitives/projection-markers.ts`;
+  `templateSlots()` refuses any other form outright, so this is enforced rather than
+  conventional.
 
 **`api.generated.ts` is already in `ngc`'s program.** `frameworks/angular/index.ts`
 re-exports it and `tsconfig.check.json`'s `files: ["./index.ts"]` pulls it in, so a
@@ -896,6 +965,14 @@ launch headless Chromium over CDP and the two Angular tests shell out to
 `ngc --strictTemplates`; on a machine where `check:cards` reports its loud skip, the
 restored suite cannot pass and the restore is not verified. Run Plan E where
 `bun run check` reports all steps PASS rather than INCOMPLETE.
+
+> **Plan B4 (2026-07-24) hit exactly that skip and it is a one-line fix, worth knowing before
+> Plan E blames its own changes for it.** On this development machine Chromium is installed at
+> `/usr/bin/chromium` but **`CHROME_PATH` is not set**, so `bun run check` reports `check:cards`
+> as SKIP and the whole run as INCOMPLETE — which looks like a failure of whatever you just
+> changed and is not. Export `CHROME_PATH=/usr/bin/chromium` and the gate runs (it measured 70
+> pages). Every "all 23 steps PASS" this spec records for B4 was obtained that way, not by
+> tolerating a skip.
 
 Plan E is the last thing done, after D, and it is not optional: a suspended test that
 outlives the reason for suspending it is exactly the stale exception every gate in this
