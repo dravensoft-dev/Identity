@@ -56,3 +56,26 @@ test('BarChart drops a consumer style object and a consumer attribute, each inde
   assert.doesNotMatch(html, /#ff00ff/, 'a consumer style reached the rendered root -- the R4 escape is back');
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- the {...rest} escape is back');
 });
+
+/* The bar is the thing being labelled, so the category axis iterates `values`
+ * and takes `labels[i]`, matching what `arena-bar-chart` already did
+ * (`labels()[index] ?? ''`). Before this, React iterated `labels`, so a surplus
+ * label was drawn at a column position no bar occupies -- text under blank
+ * plot, spaced by a `step` computed from the OTHER array's length. The contract
+ * states it plainly: "A label with no value at its index is dropped." */
+test('BarChart drops a label with no value at its index, rather than drawing it over empty plot', () => {
+  const html = renderToStaticMarkup(
+    <BarChart labels={['Alpha', 'Beta', 'SURPLUS']} values={[10, 20]} />
+  );
+  assert.doesNotMatch(html, /SURPLUS/, 'a label with no value at its index reached the category axis');
+  // The two real labels still render -- this must drop the surplus, not the axis.
+  assert.match(html, />Alpha</);
+  assert.match(html, />Beta</);
+});
+
+test('BarChart draws an empty label for a bar with no label, rather than throwing or printing undefined', () => {
+  const html = renderToStaticMarkup(<BarChart labels={['Only']} values={[10, 20]} />);
+  assert.doesNotMatch(html, /undefined/, 'a bar with no label rendered the string "undefined"');
+  assert.match(html, />Only</, 'the one supplied label still renders');
+  assert.match(html, /<td>20<\/td>/, 'the unlabelled bar is still plotted and still in the table');
+});

@@ -85,7 +85,7 @@ export function BarChart({
       fill: "transparent",
       onMouseEnter: () => setHover(i)
     }));
-  }), labels.map((l, i) => React.createElement("text", {
+  }), values.map((_, i) => React.createElement("text", {
     key: i,
     x: PAD.l + i * step + step / 2,
     y: height - 8,
@@ -93,7 +93,7 @@ export function BarChart({
     fill: "var(--text-muted)",
     fontFamily: "var(--font-body)",
     style: { fontSize: "var(--fs-xs)" }
-  }, l))), hover !== null && values[hover] !== undefined && React.createElement("div", {
+  }, labels[i] ?? ""))), hover !== null && values[hover] !== undefined && React.createElement("div", {
     style: {
       position: "absolute",
       left: PAD.l + hover * step + step / 2,

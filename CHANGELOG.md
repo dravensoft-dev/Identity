@@ -495,6 +495,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The three React charts drew their labels from `labels` rather than from the marks, so a
+  label with no value at its index was rendered anyway.** `BarChart`'s category axis,
+  `LineChart`'s point axis and `DoughnutChart`'s legend each iterated `labels`; all three now
+  iterate `values` and take `labels[i]`, which is what the Angular primitives already did
+  (`labels()[index] ?? ''`) and what all three API contracts state: *"A label with no value at
+  its index is dropped."* Visible output changes only on mismatched input, which was exactly
+  where it was wrong: a surplus label used to be drawn at a column position no mark occupies,
+  spaced by a step computed from the other array's length, and on the doughnut it produced a
+  legend row with **no swatch colour at all** (`colors[i]` was `undefined`) beside the literal
+  string `undefined`. A mark with no label now renders an empty label rather than nothing.
+  The three `components-divergences.md` entries recording this are deleted, because the
+  divergence no longer exists, and the React `prompt.md`s gain the `labels`/`values` Don't
+  bullet their Angular counterparts already carried.
 - **`Radio.behaviour.json` claimed full compliance against `radiogroup` while `Radio.jsx`
   renders `<div role="radiogroup">` with no `aria-label` and no `aria-labelledby` at
   all** — a stricter gap than `Breadcrumbs` and `Pagination` already except (a

@@ -58,14 +58,16 @@ export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix 
       </svg>
 
       {/* A legend, always — the slices are the series, and identity is never
-          color-alone. */}
+          color-alone. One row per slice, its label taken by index: a label with
+          no value at its index is dropped rather than drawn beside a colourless
+          swatch, and a slice with no label renders an empty string. */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 'calc(var(--sp-1) * 1.5)', overflow: 'auto' }}>
-        {labels.map((l, i) => (
+        {values.map((_, i) => (
           <div key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
             style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', opacity: hover === null || hover === i ? 1 : 0.55 }}>
             <span aria-hidden="true" style={{ width: 'calc(var(--sp-1) * 2.5)', height: 'calc(var(--sp-1) * 2.5)', borderRadius: 'var(--r-xs)', background: colors[i], flexShrink: 0 }} />
             <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-sm)', color: 'var(--text-body)',
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l}</span>
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{labels[i] ?? ''}</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{fmt(values[i])}</span>
           </div>
         ))}

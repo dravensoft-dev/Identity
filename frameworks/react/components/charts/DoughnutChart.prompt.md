@@ -19,3 +19,4 @@ Parts of one whole — a share breakdown across a handful of categories. Always 
 - Don't expect `valueSuffix` to format. It appends a unit and nothing else — no rounding, no thousands separator, no currency. Format the numbers before you pass them.
 - Don't go past eight categories. The ramp is eight slots and is never cycled: a ninth slice would repeat slot 1 and claim two categories are one.
 - Don't compare two doughnuts side by side. Reading angle differences across charts is the thing people are worst at; use grouped bars.
+- Don't pass more `labels` than `values`. A slice is drawn per value and takes the label at its own index, so a surplus label is silently dropped rather than given a legend row with no slice behind it.

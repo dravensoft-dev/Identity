@@ -67,3 +67,27 @@ test('DoughnutChart drops a consumer style object and a consumer attribute, each
   assert.doesNotMatch(html, /#ff00ff/, 'a consumer style reached the rendered root -- the R4 escape is back');
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- the {...rest} escape is back');
 });
+
+/* The slice is the thing being named, so the legend iterates `values` and takes
+ * `labels[i]`, matching what `arena-doughnut-chart` already did
+ * (`labels()[index] ?? ''`). Before this, React iterated `labels`, and a
+ * surplus label was the worst case of the three charts: `colors` has length
+ * `values.length`, so `colors[i]` came back undefined and the row rendered a
+ * COLOURLESS swatch beside the literal string "undefined". The contract states
+ * it plainly: "A label with no value at its index is dropped." */
+test('DoughnutChart drops a label with no value at its index, rather than drawing a colourless swatch beside "undefined"', () => {
+  const html = renderToStaticMarkup(
+    <DoughnutChart labels={['Alpha', 'Beta', 'SURPLUS']} values={[10, 20]} valueSuffix=" rps" />
+  );
+  assert.doesNotMatch(html, /SURPLUS/, 'a label with no value at its index reached the legend');
+  assert.doesNotMatch(html, /undefined/, 'the surplus legend row printed "undefined" as its value');
+  assert.match(html, />Alpha</);
+  assert.match(html, />Beta</);
+});
+
+test('DoughnutChart draws an empty label for a slice with no label, rather than throwing or printing undefined', () => {
+  const html = renderToStaticMarkup(<DoughnutChart labels={['Only']} values={[10, 20]} />);
+  assert.doesNotMatch(html, /undefined/, 'a slice with no label rendered the string "undefined"');
+  assert.match(html, />Only</, 'the one supplied label still renders');
+  assert.match(html, /<td>20<\/td>/, 'the unlabelled slice is still plotted and still in the table');
+});

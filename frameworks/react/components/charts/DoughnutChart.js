@@ -61,7 +61,7 @@ export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix 
     style: { fontSize: "var(--dz-text-lg)" }
   }, Math.round(segments[hover].share * 100), "%")), React.createElement("div", {
     style: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: "calc(var(--sp-1) * 1.5)", overflow: "auto" }
-  }, labels.map((l, i) => React.createElement("div", {
+  }, values.map((_, i) => React.createElement("div", {
     key: i,
     onMouseEnter: () => setHover(i),
     onMouseLeave: () => setHover(null),
@@ -80,7 +80,7 @@ export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix 
       textOverflow: "ellipsis",
       whiteSpace: "nowrap"
     }
-  }, l), React.createElement("span", {
+  }, labels[i] ?? ""), React.createElement("span", {
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-sm)", color: "var(--mute)" }
   }, fmt(values[i]))))), React.createElement("table", {
     style: srOnly

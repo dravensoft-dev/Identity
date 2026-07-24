@@ -58,3 +58,25 @@ test('LineChart drops a consumer style object and a consumer attribute, each ind
   assert.doesNotMatch(html, /#ff00ff/, 'a consumer style reached the rendered root -- the R4 escape is back');
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- the {...rest} escape is back');
 });
+
+/* The point is the thing being labelled, so the point axis iterates `values`
+ * and takes `labels[i]`, matching what `arena-line-chart` already did
+ * (`labels()[index] ?? ''`). Before this, React iterated `labels`, so a surplus
+ * label was drawn at an `xOf(i)` whose spacing came from the OTHER array's
+ * length. The contract states it plainly: "A label with no value at its index
+ * is dropped." */
+test('LineChart drops a label with no value at its index, rather than drawing it over empty plot', () => {
+  const html = renderToStaticMarkup(
+    <LineChart labels={['Alpha', 'Beta', 'SURPLUS']} values={[10, 20]} />
+  );
+  assert.doesNotMatch(html, /SURPLUS/, 'a label with no value at its index reached the point axis');
+  assert.match(html, />Alpha</);
+  assert.match(html, />Beta</);
+});
+
+test('LineChart draws an empty label for a point with no label, rather than throwing or printing undefined', () => {
+  const html = renderToStaticMarkup(<LineChart labels={['Only']} values={[10, 20]} />);
+  assert.doesNotMatch(html, /undefined/, 'a point with no label rendered the string "undefined"');
+  assert.match(html, />Only</, 'the one supplied label still renders');
+  assert.match(html, /<td>20<\/td>/, 'the unlabelled point is still plotted and still in the table');
+});

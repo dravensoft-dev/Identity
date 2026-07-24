@@ -24,3 +24,4 @@ Bars for comparing a value across categories. Dependency-free SVG: it reads `var
 - Don't reach past eight categories. Nine bars in eight slots means two of them lie about being the same.
 - Don't add a second axis. Arena charts have one; a dual axis invents a correlation the data never claimed.
 - Don't expect `valueSuffix` to format. It appends a unit and nothing else — no rounding, no thousands separator, no currency. Format the numbers before you pass them.
+- Don't pass more `labels` than `values`. A bar is drawn per value and takes the label at its own index, so a surplus label is silently dropped rather than drawn without a bar to sit under.

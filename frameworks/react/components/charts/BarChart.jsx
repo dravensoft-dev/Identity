@@ -59,10 +59,13 @@ export function BarChart({
           );
         })}
 
-        {/* category axis */}
-        {labels.map((l, i) => (
+        {/* Category axis — one label per bar, taken by index. The bar is the
+            thing being labelled, so a label with no value at its index is
+            dropped rather than drawn over empty plot, and a bar with no label
+            renders an empty string. */}
+        {values.map((_, i) => (
           <text key={i} x={PAD.l + i * step + step / 2} y={height - 8} textAnchor="middle"
-            fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{l}</text>
+            fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{labels[i] ?? ''}</text>
         ))}
       </svg>
 

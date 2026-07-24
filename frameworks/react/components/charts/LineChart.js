@@ -105,7 +105,7 @@ export function LineChart({
     fill: color,
     stroke: "var(--surface-card)",
     style: { strokeWidth: "var(--bw-strong)" }
-  })), labels.map((l, i) => React.createElement("text", {
+  })), values.map((_, i) => React.createElement("text", {
     key: i,
     x: xOf(i),
     y: height - 8,
@@ -113,7 +113,7 @@ export function LineChart({
     fill: "var(--text-muted)",
     fontFamily: "var(--font-body)",
     style: { fontSize: "var(--fs-xs)" }
-  }, l)), React.createElement("rect", {
+  }, labels[i] ?? "")), React.createElement("rect", {
     x: PAD.l,
     y: PAD.t,
     width: iw,

@@ -73,9 +73,13 @@ export function LineChart({
             fill={color} stroke="var(--surface-card)" style={{ strokeWidth: 'var(--bw-strong)' }} />
         ))}
 
-        {labels.map((l, i) => (
+        {/* Point axis — one label per point, taken by index. The point is the
+            thing being labelled, so a label with no value at its index is
+            dropped rather than drawn over empty plot, and a point with no label
+            renders an empty string. */}
+        {values.map((_, i) => (
           <text key={i} x={xOf(i)} y={height - 8} textAnchor="middle"
-            fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{l}</text>
+            fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{labels[i] ?? ''}</text>
         ))}
 
         {/* One overlay owns the pointer: per-point hit targets would leave dead
