@@ -8,7 +8,6 @@ import { Badge } from "../../components/display/Badge.js";
 import { Tag } from "../../components/display/Tag.js";
 import { StatCard } from "../../components/display/StatCard.js";
 import { Button } from "../../components/forms/Button.js";
-import { Icon } from "./Icon.js";
 const METRICS = [
   { k: "Active projects", v: "12" },
   { k: "Deployments (7d)", v: "48" },
@@ -31,10 +30,7 @@ export function DashboardScreen({ onNav, onOpenProject }) {
     actions: React.createElement(Button, {
       variant: "primary",
       size: "sm",
-      icon: React.createElement(Icon, {
-        name: "plus",
-        size: "var(--icon-md)"
-      })
+      icon: "ph-bold ph-plus"
     }, "New project")
   }, React.createElement("div", {
     style: { display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "calc(var(--sp-1) * 4)", marginBottom: "calc(var(--sp-1) * 7)" }

@@ -31,7 +31,8 @@ const SIZES = {
 
 export function Button({
   children, variant = 'primary', size = 'md', icon, iconRight,
-  disabled = false, loading = false, full = false, style, ...rest
+  disabled = false, loading = false, full = false,
+  type = 'button', name, value, autoFocus = false, form, onClick,
 }) {
   useSpinKeyframes();
   const [hover, setHover] = useState(false);
@@ -61,6 +62,12 @@ export function Button({
 
   return (
     <button
+      type={type}
+      name={name}
+      value={value}
+      autoFocus={autoFocus}
+      form={form}
+      onClick={onClick}
       disabled={disabled || loading}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => { setHover(false); setActive(false); }}
@@ -78,13 +85,13 @@ export function Button({
         opacity: disabled ? 0.45 : 1,
         transform: active ? 'scale(0.98)' : 'none',
         transition: 'background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-mid) var(--ease-out)',
-        ...style,
       }}
-      {...rest}
     >
-      {loading ? <span className="arena-btn-spin" aria-hidden="true" style={{ width: 'calc(var(--sp-1) * 3.5)', height: 'calc(var(--sp-1) * 3.5)', boxSizing: 'border-box', border: 'var(--bw-strong) solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block' }} /> : icon}
+      {loading
+        ? <span className="arena-btn-spin" aria-hidden="true" style={{ width: 'calc(var(--sp-1) * 3.5)', height: 'calc(var(--sp-1) * 3.5)', boxSizing: 'border-box', border: 'var(--bw-strong) solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block' }} />
+        : icon && <i className={icon} aria-hidden="true" />}
       {children}
-      {iconRight}
+      {iconRight && <i className={iconRight} aria-hidden="true" />}
     </button>
   );
 }

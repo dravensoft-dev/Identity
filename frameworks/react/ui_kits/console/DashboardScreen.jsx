@@ -5,7 +5,6 @@ import { Badge } from '../../components/display/Badge.jsx';
 import { Tag } from '../../components/display/Tag.jsx';
 import { StatCard } from '../../components/display/StatCard.jsx';
 import { Button } from '../../components/forms/Button.jsx';
-import { Icon } from './Icon.jsx';
 
 /* Two of the four carry a tone and two do not, which is the ratio the prop is
  * for: a project count is neither good nor bad, and the color only reads as a
@@ -30,7 +29,7 @@ const PROJECTS = [
 export function DashboardScreen({ onNav, onOpenProject }) {
   return (
     <Shell active="dashboard" onNav={onNav} title="Projects"
-      actions={<Button variant="primary" size="sm" icon={<Icon name="plus" size="var(--icon-md)" />}>New project</Button>}>
+      actions={<Button variant="primary" size="sm" icon="ph-bold ph-plus">New project</Button>}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'calc(var(--sp-1) * 4)', marginBottom: 'calc(var(--sp-1) * 7)' }}>
         {METRICS.map((m) => <StatCard key={m.k} label={m.k} value={m.v} tone={m.tone} />)}
       </div>

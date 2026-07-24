@@ -12,7 +12,6 @@ import { Tabs } from "../../components/navigation/Tabs.js";
 import { Button } from "../../components/forms/Button.js";
 import { Switch } from "../../components/forms/Switch.js";
 import { Dialog } from "../../components/feedback/Dialog.js";
-import { Icon } from "./Icon.js";
 const DEPLOYS = [
   { build: "#4821", env: "Production", status: ["success", "Active"], author: "CI · main", dur: "3m 41s" },
   { build: "#4820", env: "Staging", status: ["success", "OK"], author: "ana@", dur: "3m 12s" },
@@ -55,10 +54,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
     actions: React.createElement(Button, {
       variant: "primary",
       size: "sm",
-      icon: React.createElement(Icon, {
-        name: "rocket",
-        size: "var(--icon-md)"
-      }),
+      icon: "ph-bold ph-rocket-launch",
       onClick: () => setOpen(true)
     }, "Deploy")
   }, React.createElement("div", {
@@ -128,10 +124,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
       onClick: () => setOpen(false)
     }, "Cancel"), React.createElement(Button, {
       variant: "primary",
-      icon: React.createElement(Icon, {
-        name: "rocket",
-        size: "var(--icon-md)"
-      }),
+      icon: "ph-bold ph-rocket-launch",
       onClick: deploy
     }, "Deploy #4822"))
   }, "You'll publish build ", React.createElement("b", {

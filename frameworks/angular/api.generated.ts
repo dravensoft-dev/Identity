@@ -49,6 +49,9 @@ export interface BulkAction {
 /** The native button behaviour. 'button' does nothing on its own and is the right default outside a form; 'submit' is what a bare <button> silently defaults to inside one, which is the footgun this member exists to make explicit. */
 export type ButtonType = 'button' | 'submit' | 'reset';
 
+/** Primary for the one main action in a view; secondary for neutral actions; ghost for tertiary ones; danger for destructive ones. Danger is outline and never filled — Arena's only filled danger surface is the final confirmation inside ConfirmDialog. */
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+
 /** One entry in a CommandPalette. `hint` is searched but never shown, so a command can be found by a synonym that never appears in its label. */
 export interface Command {
   /** A stable identity for the command, so a host can switch on it rather than on the label. */

@@ -18,9 +18,7 @@ function Demo() {
   }, React.createElement(Menu, {
     trigger: React.createElement(Button, {
       variant: "secondary",
-      iconRight: React.createElement("i", {
-        className: "ph-bold ph-caret-down"
-      })
+      iconRight: "ph-bold ph-caret-down"
     }, "Actions"),
     items: [
       { header: "Deployment" },

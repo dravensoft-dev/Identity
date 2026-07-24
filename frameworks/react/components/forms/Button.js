@@ -28,8 +28,12 @@ export function Button({
   disabled = false,
   loading = false,
   full = false,
-  style,
-  ...rest
+  type = "button",
+  name,
+  value,
+  autoFocus = false,
+  form,
+  onClick
 }) {
   useSpinKeyframes();
   const [hover, setHover] = useState(false);
@@ -63,6 +67,12 @@ export function Button({
   };
   const p = palettes[variant] || palettes.primary;
   return React.createElement("button", {
+    type,
+    name,
+    value,
+    autoFocus,
+    form,
+    onClick,
     disabled: disabled || loading,
     onMouseEnter: () => setHover(true),
     onMouseLeave: () => {
@@ -91,13 +101,17 @@ export function Button({
       cursor: disabled ? "not-allowed" : "pointer",
       opacity: disabled ? 0.45 : 1,
       transform: active ? "scale(0.98)" : "none",
-      transition: "background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-mid) var(--ease-out)",
-      ...style
-    },
-    ...rest
+      transition: "background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-mid) var(--ease-out)"
+    }
   }, loading ? React.createElement("span", {
     className: "arena-btn-spin",
     "aria-hidden": "true",
     style: { width: "calc(var(--sp-1) * 3.5)", height: "calc(var(--sp-1) * 3.5)", boxSizing: "border-box", border: "var(--bw-strong) solid currentColor", borderTopColor: "transparent", borderRadius: "50%", display: "inline-block" }
-  }) : icon, children, iconRight);
+  }) : icon && React.createElement("i", {
+    className: icon,
+    "aria-hidden": "true"
+  }), children, iconRight && React.createElement("i", {
+    className: iconRight,
+    "aria-hidden": "true"
+  }));
 }

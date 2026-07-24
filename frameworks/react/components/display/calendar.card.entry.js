@@ -42,9 +42,7 @@ function Demo() {
     actions: React.createElement(Button, {
       size: "sm",
       variant: "secondary",
-      icon: React.createElement("i", {
-        className: "ph-bold ph-plus"
-      })
+      icon: "ph-bold ph-plus"
     }, "New event"),
     dayEnd: "18:00"
   }));

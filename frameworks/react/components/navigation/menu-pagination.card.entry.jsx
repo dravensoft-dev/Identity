@@ -10,7 +10,7 @@ function Demo(){
     <div>
       <div className="sub" style={{marginBottom:'var(--sp-3)'}}>Menu — actions / overflow</div>
       <div className="row" style={{alignItems:'center'}}>
-        <Menu trigger={<Button variant="secondary" iconRight={<i className="ph-bold ph-caret-down"/>}>Actions</Button>}
+        <Menu trigger={<Button variant="secondary" iconRight="ph-bold ph-caret-down">Actions</Button>}
           items={[
             {header:'Deployment'},
             {label:'View logs',icon:<i className="ph-bold ph-scroll"/>,onClick:()=>{}},

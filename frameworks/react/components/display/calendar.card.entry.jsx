@@ -44,7 +44,7 @@ function Demo(){
       timeZone={zone}
       events={events}
       onEventClick={(e) => setPicked(e.title)}
-      actions={<Button size="sm" variant="secondary" icon={<i className="ph-bold ph-plus"/>}>New event</Button>}
+      actions={<Button size="sm" variant="secondary" icon="ph-bold ph-plus">New event</Button>}
       dayEnd="18:00"
     />
   </div>);
