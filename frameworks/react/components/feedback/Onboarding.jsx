@@ -6,6 +6,7 @@ import { onboardingWidth, sp3, sp4 } from '../../tokens.generated.js';
  * `anchor` (optional) anchors the callout next to an element by its left and bottom
  * viewport coordinates; a DOMRect satisfies it. Without it the coachmark floats bottom-right. */
 export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onDone, anchor }) {
+  if (open == null) throw new Error('Onboarding: `open` is required');
   if (steps == null) throw new Error('Onboarding: `steps` is required');
   if (!open || !steps.length) return null;
   const step = steps[index] || {};

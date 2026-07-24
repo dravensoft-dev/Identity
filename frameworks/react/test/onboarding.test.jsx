@@ -38,3 +38,8 @@ test('an anchor switches the coachmark from the bottom-right corner to top/left 
   assert.ok(!floating.includes(';top:'), 'the default branch pins no top');
   assert.ok(floating.includes(';right:'), 'the default branch floats off the right edge instead');
 });
+
+test('an absent required member throws rather than rendering', () => {
+  assert.throws(() => renderToStaticMarkup(<Onboarding steps={[{ title: 'One' }]} />), /`open` is required/);
+  assert.throws(() => renderToStaticMarkup(<Onboarding open />), /`steps` is required/);
+});

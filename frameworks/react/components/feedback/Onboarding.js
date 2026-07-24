@@ -4,6 +4,8 @@
 import React from "react";
 import { onboardingWidth, sp3, sp4 } from "../../tokens.generated.js";
 export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onDone, anchor }) {
+  if (open == null)
+    throw new Error("Onboarding: `open` is required");
   if (steps == null)
     throw new Error("Onboarding: `steps` is required");
   if (!open || !steps.length)
