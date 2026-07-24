@@ -36,6 +36,17 @@ test('it constrains its own width and does not centre itself', () => {
   assert.doesNotMatch(html, /min-height/);
 });
 
+test('eyebrow and title render as plain text, and the root carries no consumer style', () => {
+  const html = renderToStaticMarkup(
+    <UnauthCard eyebrow="ARENA" title="Welcome back">
+      <span>fields</span>
+    </UnauthCard>,
+  );
+  assert.ok(html.includes('ARENA'), 'the eyebrow string is rendered');
+  assert.ok(html.includes('Welcome back'), 'the title string is rendered');
+  assert.ok(html.includes('fields'), 'children are rendered');
+});
+
 test('it renders Card rather than a second panel definition', () => {
   const html = renderToStaticMarkup(<UnauthCard><span>x</span></UnauthCard>);
   // Not just the tokens (a hand-rolled div can carry the same two tokens and pass

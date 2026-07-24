@@ -6,17 +6,16 @@ import * as React from 'react';
  *  password field it would stop serving the other three. Fields are composed
  *  from Input and Button.
  * @startingPoint section="Display" subtitle="Signed-out panel" viewport="700x560" */
-export interface UnauthCardProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface UnauthCardProps {
   /** The brand lock-up above the panel's content. An <AppLogo>, in practice. */
   brand?: React.ReactNode;
   /** Mono crimson microlabel — the product, not the task. */
-  eyebrow?: React.ReactNode;
+  eyebrow?: string;
   /** The task. "Welcome back", "Check your inbox". */
-  title?: React.ReactNode;
+  title?: string;
   /** Centred muted line below the content — a recovery link, a legal note. */
   footer?: React.ReactNode;
   /** The fields, composed from Input and Button. */
   children?: React.ReactNode;
-  style?: React.CSSProperties;
 }
 export function UnauthCard(props: UnauthCardProps): JSX.Element;

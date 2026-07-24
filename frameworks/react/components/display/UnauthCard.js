@@ -3,10 +3,9 @@
  * for the full rationale. */
 import React from "react";
 import { Card } from "./Card.js";
-export function UnauthCard({ brand, eyebrow, title, footer, children, style, ...rest }) {
+export function UnauthCard({ brand, eyebrow, title, footer, children }) {
   return React.createElement("div", {
-    style: { width: "100%", maxWidth: "calc(var(--sp-1) * 95 + var(--sp-1) * 18 + var(--bw) * 2)", ...style },
-    ...rest
+    style: { width: "100%", maxWidth: "calc(var(--sp-1) * 95 + var(--sp-1) * 18 + var(--bw) * 2)" }
   }, React.createElement(Card, {
     style: { boxShadow: "var(--shadow-3)" }
   }, React.createElement("div", {

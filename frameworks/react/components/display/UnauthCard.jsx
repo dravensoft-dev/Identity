@@ -13,14 +13,14 @@ import { Card } from './Card.jsx';
  *  Card pads its content at calc(var(--sp-1) * 5) and exposes no padding prop,
  *  so the extra generosity a single-task panel wants is one wrapper inside it:
  *  20px + 16px = the 36px this figure has always had. */
-export function UnauthCard({ brand, eyebrow, title, footer, children, style, ...rest }) {
+export function UnauthCard({ brand, eyebrow, title, footer, children }) {
   return (
     // The panel this replaced put its width, its padding and its border on one
     // content-box element, so reproducing its rendered width means adding the three
     // back together: 95 steps of content, 18 steps of padding (9 on each side) and
     // both 1px borders — 380px + 72px + 2px = 454px, the width this panel has
     // always rendered at. A single `* 95` here silently narrows the panel again.
-    <div style={{ width: '100%', maxWidth: 'calc(var(--sp-1) * 95 + var(--sp-1) * 18 + var(--bw) * 2)', ...style }} {...rest}>
+    <div style={{ width: '100%', maxWidth: 'calc(var(--sp-1) * 95 + var(--sp-1) * 18 + var(--bw) * 2)' }}>
       <Card style={{ boxShadow: 'var(--shadow-3)' }}>
         <div style={{ padding: 'calc(var(--sp-1) * 4)' }}>
           {/* flex, not the default block: AppLogo's root is inline-flex, and a block
