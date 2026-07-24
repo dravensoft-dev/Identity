@@ -105,29 +105,19 @@ export const EXEMPT = new Map([
   ['frameworks/angular/primitives/chart-internals.ts:margin:\'-1px\'',
    'the same idiom\'s negative pull, which must cancel exactly the 1px box above so the hidden table shifts no sibling — it is bound to that literal, not to Arena\'s spacing scale, and a token here would break the cancellation'],
   // Skeleton's API contract (api/components/Skeleton.json, Plan 8B1 Task 3) made
-  // width/height/radius plain CSS strings a CONSUMER supplies per instance —
-  // there is no Arena design value here for a token to stand in for, the same
-  // way a chart's data-to-pixel projection above has none. scanAttributes'
-  // `prop="value"` match has no notion of which element it is styling — built
-  // for an SVG glyph's presentation attributes (BarChart's own
+  // width/height/radius plain CSS strings a CONSUMER supplies per instance.
+  // scanAttributes' `prop="value"` match has no notion of which element it is
+  // styling — built for an SVG glyph's presentation attributes (BarChart's own
   // `<svg width="100%">`), it reads this component's own contract member the
-  // same way. Each value here is the exact pixel size the pre-migration numeric
-  // prop (`width={160}`) rendered, kept unchanged so the demo's layout does not
-  // move under the string-typed contract.
-  ['frameworks/react/components/display/skeleton.card.entry.jsx:width:160px',
-   'skeleton.card.entry.jsx\'s `variant="line"` example — the exact size `width={160}` rendered pre-migration'],
-  ['frameworks/react/components/display/skeleton.card.entry.jsx:width:120px',
-   'skeleton.card.entry.jsx\'s `variant="block"` example — the exact size `width={120}` rendered pre-migration'],
-  ['frameworks/react/components/display/skeleton.card.entry.jsx:height:72px',
-   'skeleton.card.entry.jsx\'s `variant="block"` example — the exact size `height={72}` rendered pre-migration'],
-  ['frameworks/react/components/display/skeleton.card.entry.jsx:width:48px',
-   'skeleton.card.entry.jsx\'s first `variant="circle"` example — the exact size `width={48}` rendered pre-migration'],
-  ['frameworks/react/components/display/skeleton.card.entry.jsx:width:40px',
-   'skeleton.card.entry.jsx\'s in-card `variant="circle"` example — the exact size `width={40}` rendered pre-migration'],
+  // same way. Most of the demo's sizes DO fall on Arena's 4px spacing scale
+  // (var(--sp-1) = 4px) and were rewritten as token arithmetic instead of
+  // exempted — see skeleton.card.entry.jsx. These two do not: they are
+  // arbitrary demo placeholder heights (11px, 90px), the same tolerated
+  // demo-harness sizing the `.card.html` specimens carry un-gated elsewhere.
   ['frameworks/react/components/display/skeleton.card.entry.jsx:height:11px',
-   'skeleton.card.entry.jsx\'s `variant="line"` example paired with `width="45%"` — the exact size `height={11}` rendered pre-migration'],
+   'skeleton.card.entry.jsx\'s `variant="line"` example paired with `width="45%"` — an arbitrary demo placeholder height, not on Arena\'s 4px spacing scale'],
   ['frameworks/react/components/display/skeleton.card.entry.jsx:height:90px',
-   'skeleton.card.entry.jsx\'s closing `variant="block"` example — the exact size `height={90}` rendered pre-migration'],
+   'skeleton.card.entry.jsx\'s closing `variant="block"` example — an arbitrary demo placeholder height, not on Arena\'s 4px spacing scale'],
 ]);
 
 /** Units the token layer genuinely does not model, and that no token could

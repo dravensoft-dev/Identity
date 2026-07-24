@@ -18,14 +18,14 @@ function Demo() {
     lines: 3
   })), React.createElement(Skeleton, {
     variant: "line",
-    width: "160px"
+    width: "calc(var(--sp-1) * 40)"
   }), React.createElement(Skeleton, {
     variant: "block",
-    width: "120px",
-    height: "72px"
+    width: "calc(var(--sp-1) * 30)",
+    height: "calc(var(--sp-1) * 18)"
   }), React.createElement(Skeleton, {
     variant: "circle",
-    width: "48px"
+    width: "var(--sp-12)"
   })), React.createElement("div", {
     className: "sub"
   }, "In place — the placeholder matches the shape of what is loading"), React.createElement("div", {
@@ -39,7 +39,7 @@ function Demo() {
     style: { display: "flex", gap: "var(--sp-3)", alignItems: "center" }
   }, React.createElement(Skeleton, {
     variant: "circle",
-    width: "40px"
+    width: "var(--sp-10)"
   }), React.createElement("div", {
     style: { flex: 1 }
   }, React.createElement(Skeleton, {

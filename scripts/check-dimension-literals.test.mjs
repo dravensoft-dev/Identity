@@ -342,17 +342,22 @@ test('EXEMPT records the three SR_ONLY visually-hidden literals, by name', () =>
 // styling -- built for an SVG glyph's presentation attributes, it reads
 // Skeleton's own contract member (a consumer-supplied per-instance CSS
 // string, not an Arena design value) the same way it reads BarChart's
-// `<svg width="100%">`. The seven demo values are each the exact pixel size
-// the pre-migration numeric prop rendered.
+// `<svg width="100%">`. Review round 1 found five of the original seven
+// demo values fell on Arena's 4px spacing scale and rewrote them as token
+// arithmetic (`calc(var(--sp-1) * N)` or a named `var(--sp-N)`) instead of
+// exempting them -- see skeleton.card.entry.jsx. Only two remain exempt:
+// arbitrary demo placeholder heights that do not fall on that scale.
 
-test('EXEMPT records the seven demo-entry width/height literals Skeleton\'s string contract newly exempts, by name', () => {
-  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:160px'));
-  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:120px'));
-  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:height:72px'));
-  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:48px'));
-  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:40px'));
+test('EXEMPT records the two demo-entry height literals that are not on the 4px spacing scale, by name', () => {
   assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:height:11px'));
   assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:height:90px'));
+  // The five values review round 1 replaced with token arithmetic are no
+  // longer exempt -- and no longer literal, so the gate never sees them.
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:160px'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:120px'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:height:72px'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:48px'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:40px'));
   // The one value that stays legal outright: a percentage is a free unit
   // (FREE_UNITS), so `width="45%"` needed no exemption at all.
   assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:45%'));
