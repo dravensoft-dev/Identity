@@ -278,7 +278,7 @@ eyebrow otherwise, so the dialog always has an accessible name even when a consu
 module-level counter, not a hardcoded string), so two dialogs on one page never collide. Focus
 moves into the panel's first focusable element on open and is restored to whatever held it
 beforehand on close; Tab/Shift+Tab cycle within the panel instead of escaping to the page behind
-it; Escape reports dismissal through the same `cancelled` output the Cancel button uses. The
+it; Escape reports dismissal through the same `cancel` output the Cancel button uses. The
 require-text input keeps `outline-none` but substitutes a token-derived visible ring
 (`focus-visible:ring-[length:var(--focus-width)] focus-visible:ring-error` in
 `ConfirmDialog.manifest.json`) rather than removing focus indication outright. There is still no
@@ -588,7 +588,7 @@ forgets to, and even when Enter is pressed with an empty filtered list.
 
 **Angular:** `run.emit(command)` reports the command alone; nothing in the component
 closes it. The host is expected to react the same way it already does to
-`arena-confirm-dialog`'s `confirmed`/`cancelled` and `arena-onboarding`'s
+`arena-confirm-dialog`'s `confirm`/`cancel` and `arena-onboarding`'s
 `skip`/`done` — by setting `open` to `false` itself, as `command-palette.prompt.md`'s
 own example shows: `(run)="paletteOpen.set(false); dispatch($event)"`.
 
