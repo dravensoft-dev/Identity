@@ -337,6 +337,27 @@ test('EXEMPT records the three SR_ONLY visually-hidden literals, by name', () =>
   assert.ok(!EXEMPT.has("frameworks/angular/primitives/chart-internals.ts:border:'0'"));
 });
 
+// --- Plan 8B1 Task 3: Skeleton's width/height/radius become CSS strings ---
+// scanAttributes' `prop="value"` match has no notion of which element it is
+// styling -- built for an SVG glyph's presentation attributes, it reads
+// Skeleton's own contract member (a consumer-supplied per-instance CSS
+// string, not an Arena design value) the same way it reads BarChart's
+// `<svg width="100%">`. The seven demo values are each the exact pixel size
+// the pre-migration numeric prop rendered.
+
+test('EXEMPT records the seven demo-entry width/height literals Skeleton\'s string contract newly exempts, by name', () => {
+  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:160px'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:120px'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:height:72px'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:48px'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:40px'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:height:11px'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:height:90px'));
+  // The one value that stays legal outright: a percentage is a free unit
+  // (FREE_UNITS), so `width="45%"` needed no exemption at all.
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:45%'));
+});
+
 test('the SR_ONLY object shape produces exactly the raws those keys are cut from', () => {
   // Pins the key format to the real scan output. If SR_ONLY is ever rewritten
   // -- to a CSS string, say -- the raws change shape, these keys go stale, and

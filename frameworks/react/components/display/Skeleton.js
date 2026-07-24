@@ -14,7 +14,7 @@ function useShimmer() {
     document.head.appendChild(s);
   }, []);
 }
-export function Skeleton({ variant = "block", width, height, lines = 3, radius, style }) {
+export function Skeleton({ variant = "block", width, height, lines = 3, radius }) {
   useShimmer();
   const base = { borderRadius: radius || "var(--r-sm)" };
   if (variant === "circle") {
@@ -22,7 +22,7 @@ export function Skeleton({ variant = "block", width, height, lines = 3, radius, 
     return React.createElement("div", {
       className: "arena-skeleton",
       "aria-hidden": "true",
-      style: { width: d, height: d, borderRadius: "50%", ...style }
+      style: { width: d, height: d, borderRadius: "50%" }
     });
   }
   if (variant === "text" || variant === "line") {
@@ -30,7 +30,7 @@ export function Skeleton({ variant = "block", width, height, lines = 3, radius, 
       return React.createElement("div", {
         role: "status",
         "aria-label": "Loading",
-        style: { display: "flex", flexDirection: "column", gap: "calc(var(--sp-1) * 2.5)", width: width || "100%", ...style }
+        style: { display: "flex", flexDirection: "column", gap: "calc(var(--sp-1) * 2.5)", width: width || "100%" }
       }, Array.from({ length: lines }).map((_, i) => React.createElement("div", {
         key: i,
         className: "arena-skeleton",
@@ -41,13 +41,13 @@ export function Skeleton({ variant = "block", width, height, lines = 3, radius, 
       className: "arena-skeleton",
       role: "status",
       "aria-label": "Loading",
-      style: { height: height || "var(--sp-3)", width: width || "100%", borderRadius: "var(--r-xs)", ...style }
+      style: { height: height || "var(--sp-3)", width: width || "100%", borderRadius: "var(--r-xs)" }
     });
   }
   return React.createElement("div", {
     className: "arena-skeleton",
     role: "status",
     "aria-label": "Loading",
-    style: { width: width || "100%", height: height || "var(--sp-24)", ...base, ...style }
+    style: { width: width || "100%", height: height || "var(--sp-24)", ...base }
   });
 }

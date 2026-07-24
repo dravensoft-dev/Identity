@@ -35,6 +35,9 @@ export type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
 /** Whether the parts sit side by side or stacked. */
 export type Orientation = 'horizontal' | 'vertical';
 
+/** The shape the placeholder reserves: a single text line, a stack of lines, a block, or a circle. */
+export type SkeletonVariant = 'text' | 'line' | 'block' | 'circle';
+
 /** How a metric moved. Preformatted — StatCard never formats. The pill's colour says whether the change was GOOD, not which way it points, which is why direction and tone are separate fields. */
 export interface StatDelta {
   /** Preformatted, e.g. "+12%" or "-340ms". */

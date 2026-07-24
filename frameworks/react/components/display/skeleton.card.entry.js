@@ -18,14 +18,14 @@ function Demo() {
     lines: 3
   })), React.createElement(Skeleton, {
     variant: "line",
-    width: 160
+    width: "160px"
   }), React.createElement(Skeleton, {
     variant: "block",
-    width: 120,
-    height: 72
+    width: "120px",
+    height: "72px"
   }), React.createElement(Skeleton, {
     variant: "circle",
-    width: 48
+    width: "48px"
   })), React.createElement("div", {
     className: "sub"
   }, "In place — the placeholder matches the shape of what is loading"), React.createElement("div", {
@@ -39,7 +39,7 @@ function Demo() {
     style: { display: "flex", gap: "var(--sp-3)", alignItems: "center" }
   }, React.createElement(Skeleton, {
     variant: "circle",
-    width: 40
+    width: "40px"
   }), React.createElement("div", {
     style: { flex: 1 }
   }, React.createElement(Skeleton, {
@@ -47,14 +47,15 @@ function Demo() {
     lines: 2
   })))), React.createElement(Card, {
     style: { width: "calc(var(--sp-1) * 70)" }
+  }, React.createElement("div", {
+    style: { marginBottom: "var(--sp-3)" }
   }, React.createElement(Skeleton, {
     variant: "line",
     width: "45%",
-    height: 11,
-    style: { marginBottom: "var(--sp-3)" }
-  }), React.createElement(Skeleton, {
+    height: "11px"
+  })), React.createElement(Skeleton, {
     variant: "block",
-    height: 90
+    height: "90px"
   }))));
 }
 createRoot(document.getElementById("root")).render(React.createElement(Demo, null));
