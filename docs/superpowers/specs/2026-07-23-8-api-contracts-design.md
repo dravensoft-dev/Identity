@@ -738,7 +738,7 @@ comparison and a comparison needs a baseline that is not stale.
 | **Plan B1** (2026-07-23) | **885 across 74 files** | 26 across 5 files |
 | **Plan B2** (2026-07-24) | **910 across 79 files** | 26 across 5 files |
 | **Plan B3** (2026-07-24) | **932 across 82 files** | 26 across 5 files |
-| **Plan B4** (2026-07-24) | **950 across 85 files** | 26 across 5 files |
+| **Plan B4** (2026-07-24) | **958 across 85 files** | 26 across 5 files |
 
 Plan B4 put the last three components of Plan B under contract — BarChart, LineChart and
 DoughnutChart — taking `check:api` from 18 contracts across 35 layer implementations to **21 across
@@ -746,16 +746,22 @@ DoughnutChart — taking `check:api` from 18 contracts across 35 layer implement
 contracted. It added one shared enum (`SeriesTone`, four values, replacing React's local union and
 deleting Angular's `ArenaChartTone`) and declared **no object type at all** — the first batch with
 none, because all three charts are pure data-in components whose members are primitives, arrays of
-primitives and one enum. The net gain over B3 is 18 tests and 3 files in the merged process,
-isolated DOM process unchanged at 26/5: `frameworks/react/test/` gained 17 tests across 3 new files
-(`bar-chart.test.jsx` +5, `line-chart.test.jsx` +6, `doughnut-chart.test.jsx` +6 — React had no
-suite for any of the three before this plan), and Angular gained 1, folded into the existing
-`chart-data-table.test.ts` (4 → 5 tests) as the `valueSuffix` pin on the one suite that holds a
+primitives and one enum. The net gain over B3 is 26 tests and 3 files in the merged process,
+isolated DOM process unchanged at 26/5: `frameworks/react/test/` gained 24 tests across 3 new files
+(`bar-chart.test.jsx` +7, `line-chart.test.jsx` +8, `doughnut-chart.test.jsx` +9 — React had no
+suite for any of the three before this plan), and Angular gained 2, both folded into the existing
+`chart-data-table.test.ts` (4 → 6 tests): the `valueSuffix` pin and the named-`seriesLabel` pin, on
+the one suite that holds a
 chart's behaviour contract. `scripts/` gained **none** — no reader change was needed, because
 `classify()`'s refusal of an inbound function that returns a value was already shipped by Plan B0
-and Task 3b's depth-aware `input.required<T, TransformT>()` extension was untouched. **Unlike B3's
-row, the delta reads correctly straight off this table's two adjacent rows** (950 − 932 = 18,
-85 − 82 = 3) and reconciles exactly with the per-file accounting (17 + 1 + 0 = 18): the branch's
+and Task 3b's depth-aware `input.required<T, TransformT>()` extension was untouched.
+**Eight of those 26 came from the final whole-branch review's fix wave, not from the component
+tasks**, and they are the interesting ones: six pin that React now draws one label per *mark*
+rather than one per *label entry* — the convergence that made the three contracts' shared
+`labels` sentence true of React as well as Angular — and two close guards that existed in two of
+three sibling suites but not the third. **Unlike B3's
+row, the delta reads correctly straight off this table's two adjacent rows** (958 − 932 = 26,
+85 − 82 = 3) and reconciles exactly with the per-file accounting (24 + 2 + 0 = 26): the branch's
 own measured baseline at `0205cfc` was 932 across 82, matching the B3 row. The 2-test undercount
 this table's **B2** row carries is untouched and still out of scope.
 
