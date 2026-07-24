@@ -104,7 +104,21 @@ Every task's requirements implicitly include this section.
     a render test on the Angular side only. `frameworks/react/test/` is DOM-free
     `renderToStaticMarkup` and costs a few lines; a migration that changes rendered output writes
     one.
-15. **A member `description` lives in the contract only.** Nothing generates from
+15. **A task that removes an R4 escape ships a test proving the escape is gone.** `check:api`
+    reads React's `.d.ts` and never opens the `.jsx`, so restoring `style` and `{...rest}` to an
+    implementation leaves the gate green — `api/README.md` says so in *"What the gate asserts, and
+    what it cannot"*. A test is therefore the only possible regression guard, and it must
+    **discriminate**: render the component passing both an unexpected `style` (a literal colour no
+    token resolves to) and an unexpected attribute, and assert neither reaches the rendered HTML.
+    Testing the two separately matters — a component that spread `...style` but not `{...rest}`
+    must still fail. **This applies to Tasks 1, 2 and 4** (Task 3 is R4-clean already; Task 5's R4
+    violation is a platform *type*, not a spread, and is caught by the gate). Added after Task 1's
+    review found its own plan-supplied test titled *"the root carries no consumer style"* while
+    asserting nothing about style.
+16. **A test title states exactly what the body asserts.** The same review found the overclaiming
+    title above; a title that promises more than the assertions deliver is worse than no test,
+    because it reads as coverage that does not exist.
+17. **A member `description` lives in the contract only.** Nothing generates from
     `api/components/*.json`. Each layer's own doc comment and `prompt.md` restate it by hand and
     nothing holds the three in step — a known limit, recorded in `api/README.md`. Restate it
     anyway; do not leave a layer's prose describing the pre-migration member.
@@ -423,8 +437,11 @@ members render as text and that no `style` attribute survives on the root. Follo
 existing import and `renderToStaticMarkup` idiom rather than introducing a new one — read it
 first.
 
+Two tests, per Global Constraints 15 and 16 — one for the narrowing, one for the escape removal.
+The second is the only guard that exists: `check:api` never opens the `.jsx`.
+
 ```jsx
-test('eyebrow and title render as plain text, and the root carries no consumer style', () => {
+test('eyebrow and title render as plain text', () => {
   const html = renderToStaticMarkup(
     <UnauthCard eyebrow="ARENA" title="Welcome back">
       <span>fields</span>
@@ -434,7 +451,21 @@ test('eyebrow and title render as plain text, and the root carries no consumer s
   assert.ok(html.includes('Welcome back'), 'the title string is rendered');
   assert.ok(html.includes('fields'), 'children are rendered');
 });
+
+test('a consumer style prop and stray attributes are dropped, not spread onto the root', () => {
+  const html = renderToStaticMarkup(
+    <UnauthCard style={{ color: 'rgb(255, 0, 0)' }} data-escape="leaked">
+      <span>fields</span>
+    </UnauthCard>,
+  );
+  assert.ok(!html.includes('rgb(255, 0, 0)'), 'a consumer style never reaches the root (R4)');
+  assert.ok(!html.includes('data-escape'), 'a stray attribute never reaches the root (R4)');
+});
 ```
+
+The two assertions must stay separate: a component that spread `...style` but not `{...rest}`
+— or the reverse — must still fail. The colour literal is deliberately one no Arena token
+resolves to, so the component's own `var(--crimson)` eyebrow cannot satisfy it by accident.
 
 - [ ] **Step 9: Run the tests**
 
@@ -762,7 +793,19 @@ test('a count of zero renders nothing', () => {
 test('an absent required member throws rather than rendering', () => {
   assert.throws(() => renderToStaticMarkup(<BulkActionBar actions={[]} />), /`count` is required/);
 });
+
+test('a consumer style prop is dropped, not spread onto the root', () => {
+  const html = renderToStaticMarkup(
+    <BulkActionBar count={1} actions={[]} style={{ color: 'rgb(255, 0, 0)' }} />,
+  );
+  assert.ok(!html.includes('rgb(255, 0, 0)'), 'a consumer style never reaches the root (R4)');
+});
 ```
+
+The last test is required by Global Constraint 15 and is the only guard on this task's R4
+removal — `check:api` reads `BulkActionBar.d.ts` and never opens `BulkActionBar.jsx`.
+`BulkActionBar` carries no `{...rest}`, so one assertion covers it; the colour literal is one
+no Arena token resolves to, so the bar's own `var(--danger)` cannot satisfy it by accident.
 
 - [ ] **Step 10: Extend the Angular suite**
 
@@ -1294,7 +1337,20 @@ test('every field is drawn by Arena, and there is no per-item projection', () =>
 test('an absent items array throws rather than rendering an empty feed', () => {
   assert.throws(() => renderToStaticMarkup(<ActivityFeed />), /`items` is required/);
 });
+
+test('a consumer style prop and stray attributes are dropped, not spread onto the <ul>', () => {
+  const html = renderToStaticMarkup(
+    <ActivityFeed items={[]} style={{ color: 'rgb(255, 0, 0)' }} data-escape="leaked" />,
+  );
+  assert.ok(!html.includes('rgb(255, 0, 0)'), 'a consumer style never reaches the <ul> (R4)');
+  assert.ok(!html.includes('data-escape'), 'a stray attribute never reaches the <ul> (R4)');
+});
 ```
+
+The last test is required by Global Constraint 15 and is the only guard on this task's R4
+removals — `check:api` reads `ActivityFeed.d.ts` and never opens `ActivityFeed.jsx`. Both
+assertions stay separate: `ActivityFeed` sheds *both* `style` and `extends React.HTMLAttributes`,
+and a component that dropped one while keeping the other must still fail.
 
 - [ ] **Step 11: Restate the member prose, run the tests and the gates**
 
