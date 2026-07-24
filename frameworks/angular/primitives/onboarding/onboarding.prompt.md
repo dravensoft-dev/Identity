@@ -23,3 +23,8 @@ tour closes, Tab and Shift+Tab cycle inside the panel, and Escape reports `skip`
   not how they finish, so it never reports `done`.
 - Don't put anything in a tour that the interface should have made obvious. A
   coachmark explaining a confusing control is a bug report with a nicer border.
+- Don't express a condition as an attribute string. `open` carries the
+  `booleanAttribute` transform, so a bare `open` and `[open]="true"` both
+  mean true, and the one literal string `"false"` means false. Every *other* string is
+  true — `"0"`, `"off"` and `"no"` all leave the tour open. Bind the expression
+  (`[open]="touring()"`) rather than relying on the literal.
