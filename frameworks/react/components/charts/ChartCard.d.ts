@@ -7,7 +7,6 @@ export interface ChartCardProps {
   title?: string;
   /** @startingPoint A range Select, or an IconButton or two. */
   actions?: React.ReactNode;
-  children: React.ReactNode;
-  style?: React.CSSProperties;
+  children?: React.ReactNode;
 }
 export function ChartCard(props: ChartCardProps): JSX.Element;

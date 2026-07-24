@@ -1,0 +1,12 @@
+{
+  "component": "ChartCard",
+  "description": "A titled card frame around a chart, with an optional actions slot in its head.",
+  "api": {
+    "title": { "form": "primitive", "type": "string",
+               "description": "The card heading. Absent renders no head unless `actions` is present." },
+    "actions": { "form": "slot",
+                 "description": "Controls in the head row, right-aligned beside the title." },
+    "content": { "form": "slot",
+                 "description": "The chart (or any body) the card frames." }
+  }
+}
