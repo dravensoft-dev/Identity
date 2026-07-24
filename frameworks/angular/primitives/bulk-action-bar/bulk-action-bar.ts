@@ -16,9 +16,10 @@ import type { BulkAction } from '../../api.generated';
  *  `clearable` (default `true`) -- both layers gate the button on it,
  *  because Angular cannot detect a `clear` listener the way React can detect
  *  a passed callback. That default preserves this component's own prior
- *  behaviour, where Clear was unconditional; see `components-divergences.md`
- *  at the repo root, whose "Clear is unconditional in Angular, optional in
- *  React" entry describes the pre-contract shape this member replaces. */
+ *  behaviour, where Clear was unconditional; `api/components/BulkActionBar.json`
+ *  is the authority for the member, and it replaced the
+ *  `components-divergences.md` entry that used to record the two layers
+ *  disagreeing about whether Clear could be hidden at all. */
 @Component({
   selector: 'arena-bulk-action-bar',
   standalone: true,
