@@ -1801,19 +1801,22 @@ Create `api/components/IconButton.json`:
 }
 ```
 
-> **D1's tail, and this task's own blocking question — it is asked HERE, not in Task 6.** `IconButton`
-> and `Button` are the same element and take the **same** element-specific set under D1, so the two
-> contracts must not diverge on it, and this task runs first. D1 admits eleven `<button>` attributes
-> plus `click`; nine are written above. The remaining **`formAction`, `formEncType`, `formMethod`,
-> `formNoValidate` and `formTarget`** are the form-owner overrides, and two are **closed sets** —
-> `formMethod` is `get`/`post`/`dialog`, `formEncType` is three MIME strings — so under the vocabulary
-> each is an **enum**, meaning two more `api/types/` files and two more types in both generated
-> modules, for members no call site in this tree uses. **Present that cost in Step 1 and let the
-> maintainer confirm or cut the five.** Everything written in this task and in Task 6 assumes the
-> nine-member reading; if the five are kept, both contracts and both `.d.ts` files gain them, plus the
-> two enums. This is not a re-litigation of D1 — the rule is settled — it is the one place where
-> applying it mechanically has a price worth naming before it is paid. **Task 6 inherits the answer
-> and does not re-ask.**
+> **D1's tail was RESOLVED before this task ran — the five `form*` overrides are CUT** (recorded in
+> the ledger's "Decisions taken before Task 5"). `IconButton` and `Button` are the same element and
+> take the same element-specific set, so the decision is made once and Task 6 inherits it. D1 admits
+> eleven `<button>` attributes plus `click`; this task and Task 6 declare the **six** that are members
+> — `type`, `disabled`, `name`, `value`, `autoFocus`, `form` — plus the `click` event, and NOT
+> `formAction`, `formEncType`, `formMethod`, `formNoValidate` or `formTarget`. No call site in the
+> tree uses any of the five, and keeping the two closed-set ones would have meant two `api/types/`
+> enums (`FormMethod`, `FormEncType`) for dead members. The `.d.ts` and contract blocks below are
+> already written to this reading, so **there is nothing to re-ask** — do not present the question
+> again. `api/types/` gains exactly `ButtonType` and `IconButtonVariant` here, `ButtonVariant` in
+> Task 6, and no `Form*` enum.
+>
+> **A related scope question was also settled before this task: IconButton is NOT merged into
+> Button.** The maintainer raised and declined it (ledger). It stays a separate component because its
+> required `label` is an accessible-name guardrail a merged Button could not enforce, its variants and
+> square shape differ, and Angular Material keeps it separate as `MatIconButton`. Task 5 is unchanged.
 
 ```bash
 cd /home/juan/Dravensoft/Identity
@@ -2211,12 +2214,13 @@ export interface ButtonProps {
 export function Button(props: ButtonProps): JSX.Element;
 ```
 
-> **D1's tail was settled in Task 5, not here.** `Button` and `IconButton` are the same element and
-> take the same element-specific set, so Task 5 asked the maintainer once whether the five `form*`
-> overrides are kept — and, if kept, whether `formMethod` and `formEncType` become the two `api/types/`
-> enums the vocabulary demands of a closed set. **Read the answer out of the ledger and apply it; do
-> not re-ask.** The `.d.ts` above is written to the nine-member reading Task 5 also assumes; if the
-> five were kept, both contracts and both `.d.ts` files carry them.
+> **D1's tail was settled before Task 5 ran: the five `form*` overrides are CUT** (ledger, "Decisions
+> taken before Task 5"). `Button` and `IconButton` are the same element and take the same set, so both
+> declare `type`, `disabled`, `name`, `value`, `autoFocus`, `form` and the `click` event, and neither
+> declares `formAction`, `formEncType`, `formMethod`, `formNoValidate` or `formTarget`. The `.d.ts`
+> above is already written to that reading, so **there is nothing to re-ask** — no `Form*` enum, no
+> extra member. Task 5 landed `ButtonType` and `IconButtonVariant`; this task adds `ButtonVariant`
+> only.
 
 - [ ] **Step 4: Migrate the `.jsx`**
 
