@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { BarChartProps } from './BarChart';
 
-export type { CatSlot, SeriesTone } from './BarChart';
+export type { SeriesTone } from './BarChart';
 
 /** A line is ONE series, so `slots` (per-mark colors) has no meaning here. */
 export interface LineChartProps extends Omit<BarChartProps, 'slots'> {

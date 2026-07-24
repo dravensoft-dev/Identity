@@ -348,6 +348,25 @@ class UnauthCardWithoutProjectionHost {}
 })
 class BarChartHost {}
 
+/* `arena-bar-chart`'s `labels` and `values` are required signal inputs, which
+ * this JIT harness cannot drive through a template binding (NG0303) or a
+ * literal attribute (a silent no-op). Query the real child `BarChart` instance
+ * via `By.directive` and overwrite both fields before the first
+ * `detectChanges()`, the same bypass createBreadcrumbsHost() and
+ * createBulkActionBarHost() already use. The values are deliberately EMPTY
+ * arrays: these four tests assert host box, style-object binding and the
+ * fallback accessible name, all of which render with no data at all (`ticks`
+ * always yields five grid lines), so driving real data here would test
+ * something else. */
+function createBarChartHost() {
+  const fixture = TestBed.createComponent(BarChartHost);
+  const instance = fixture.debugElement.query(By.directive(BarChart)).componentInstance as unknown as Record<string, unknown>;
+  instance['labels'] = () => [];
+  instance['values'] = () => [];
+  fixture.detectChanges();
+  return fixture;
+}
+
 @Component({
   standalone: true,
   imports: [LineChart],
@@ -1294,16 +1313,20 @@ test('every Angular primitive\'s root slot carries a display utility, so host-bi
   }
 });
 
-/* The three tests below are the manifest guard's counterpart for a primitive
- * that has no manifest to guard. They render with DEFAULT inputs only -- no
- * `[values]` binding and no literal attribute, both of which this harness
- * silently drops (see the header) -- so everything asserted here is reachable
- * without ever driving a signal input. The geometry that does need inputs is
- * asserted as plain functions in bar-chart-geometry.test.ts instead. */
+/* The four tests below are the manifest guard's counterpart for a primitive
+ * that has no manifest to guard. `labels` and `values` became required signal
+ * inputs under the API contract (`api/components/BarChart.json`), so they are
+ * driven through `createBarChartHost()`'s `By.directive` bypass rather than
+ * through a template binding or a literal attribute, both of which this
+ * harness silently drops (see the header). The bypass supplies EMPTY arrays:
+ * everything asserted here -- the host box, the style-object binding, the
+ * token-valued SVG presentation styles and the fallback accessible name --
+ * renders with no data at all, because `ticks` always yields five grid lines.
+ * The geometry that does need real data is asserted as plain functions in
+ * bar-chart-geometry.test.ts instead. */
 
 test('arena-bar-chart: the host is a block-level box, so the width it measures is a real content width', async () => {
-  const fixture = TestBed.createComponent(BarChartHost);
-  fixture.detectChanges();
+  const fixture = createBarChartHost();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-bar-chart') as HTMLElement;
   // `containerWidth()` observes this element. An unknown element defaults to
@@ -1319,8 +1342,7 @@ test('arena-bar-chart: the host is a block-level box, so the width it measures i
 });
 
 test('arena-bar-chart: the numbers table is bound as a style object, not stringified into the attribute', async () => {
-  const fixture = TestBed.createComponent(BarChartHost);
-  fixture.detectChanges();
+  const fixture = createBarChartHost();
   await fixture.whenStable();
   const table = fixture.nativeElement.querySelector('arena-bar-chart table') as HTMLElement;
   assert.ok(table, 'the visually-hidden numbers table did not render');
@@ -1340,8 +1362,7 @@ test('arena-bar-chart: the numbers table is bound as a style object, not stringi
 });
 
 test('arena-bar-chart: the SVG presentation styles reach the DOM as tokens, not as literals', async () => {
-  const fixture = TestBed.createComponent(BarChartHost);
-  fixture.detectChanges();
+  const fixture = createBarChartHost();
   await fixture.whenStable();
   // The charts are the layer's declared styling exception, so this is the one
   // place a token has to survive a camelCase style object, Angular's style
@@ -1356,8 +1377,7 @@ test('arena-bar-chart: the SVG presentation styles reach the DOM as tokens, not 
 });
 
 test('arena-bar-chart: the picture carries an accessible name and the numbers carry a caption', async () => {
-  const fixture = TestBed.createComponent(BarChartHost);
-  fixture.detectChanges();
+  const fixture = createBarChartHost();
   await fixture.whenStable();
   const svg = fixture.nativeElement.querySelector('arena-bar-chart svg') as SVGElement;
   assert.equal(svg.getAttribute('role'), 'img');

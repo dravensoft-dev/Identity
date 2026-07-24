@@ -6,22 +6,24 @@ import { useContainerWidth } from "../../use-container-width.js";
 import { resolveColors, niceMax, ticks, barPath, srOnly, PAD, CHART_HEIGHT } from "./chart-internals.js";
 import { chartBarGap, chartBarRadius } from "../../tokens.generated.js";
 export function BarChart({
-  labels = [],
-  values = [],
+  labels,
+  values,
   seriesLabel,
   slot,
   slots,
   tone,
-  valueFormatter,
-  style,
-  ...rest
+  valueSuffix
 }) {
+  if (!labels)
+    throw new Error("BarChart: `labels` is required");
+  if (!values)
+    throw new Error("BarChart: `values` is required");
   const [ref, measured] = useContainerWidth();
   const [hover, setHover] = useState(null);
   const width = measured ?? 600;
   const height = CHART_HEIGHT;
   const n = values.length;
-  const fmt = valueFormatter || ((v) => String(v));
+  const fmt = (v) => `${v}${valueSuffix ?? ""}`;
   const colors = resolveColors({ slot, slots, tone, count: n });
   const max = niceMax(Math.max(0, ...values));
   const iw = Math.max(1, width - PAD.l - PAD.r);
@@ -33,8 +35,7 @@ export function BarChart({
   const name = seriesLabel ? `${seriesLabel} — bar chart` : "Bar chart";
   return React.createElement("div", {
     ref,
-    style: { position: "relative", width: "100%", height, ...style },
-    ...rest
+    style: { position: "relative", width: "100%", height }
   }, React.createElement("svg", {
     width: "100%",
     height,

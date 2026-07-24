@@ -6,8 +6,8 @@ import assert from 'node:assert/strict';
 import {
   CAT_SLOTS, CHART_HEIGHT, PAD, SR_ONLY,
   catColor, toneColor, resolveColors, niceMax, ticks, barPath, arcPath,
-  type ArenaChartTone,
 } from '../primitives/chart-internals';
+import type { SeriesTone } from '../api.generated';
 
 // --- niceMax --------------------------------------------------------------
 
@@ -87,7 +87,7 @@ test('catColor rounds a fractional slot rather than truncating it', () => {
 // --- toneColor ------------------------------------------------------------
 
 test('every tone in the union resolves to a token reference', () => {
-  const tones: ArenaChartTone[] = ['success', 'warning', 'danger', 'info'];
+  const tones: SeriesTone[] = ['success', 'warning', 'danger', 'info'];
   for (const tone of tones) assert.match(toneColor(tone), /^var\(--[a-z]+\)$/);
   assert.equal(new Set(tones.map(toneColor)).size, tones.length, 'tones must not share a colour');
 });
@@ -175,7 +175,7 @@ test('a tone outside the union falls back to slot 1 instead of yielding undefine
   // React's `toneColor(tone) || catColor(1)` guard, kept. A tone reaches this from a
   // template binding or parsed JSON, so the type alone does not prevent a bad value --
   // and without the guard the array would be full of `undefined`, which paints nothing.
-  const rogue = 'critical' as unknown as ArenaChartTone;
+  const rogue = 'critical' as unknown as SeriesTone;
   assert.deepEqual(resolveColors({ count: 2, tone: rogue }), ['var(--color-cat-1)', 'var(--color-cat-1)']);
 });
 

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, signal } from '@angular/core';
 import { containerWidth } from '../container-size';
-import { ArenaChartTone, CHART_HEIGHT, PAD, SR_ONLY, niceMax, resolveColors, ticks } from '../chart-internals';
+import { CHART_HEIGHT, PAD, SR_ONLY, niceMax, resolveColors, ticks } from '../chart-internals';
+import type { SeriesTone } from '../../api.generated';
 import { chartPointR, chartPointRHover } from '../../tokens.generated';
 
 /** The plot width assumed for the first paint, before `containerWidth()` has
@@ -207,7 +208,7 @@ export class LineChart {
   readonly values = input<number[]>([]);
   readonly seriesLabel = input<string>();
   readonly slot = input<number>();
-  readonly tone = input<ArenaChartTone>();
+  readonly tone = input<SeriesTone>();
   readonly area = input(false, { transform: booleanAttribute });
   readonly valueFormatter = input<(value: number) => string>((value) => String(value));
 

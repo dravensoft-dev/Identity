@@ -1,24 +1,23 @@
-import * as React from 'react';
+import type { SeriesTone } from '../../api.generated';
 
-/** A slot in the categorical ramp. Fixed order, never cycled. */
-export type CatSlot = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-/** For a series that IS a state (error rate, pass/fail). */
-export type SeriesTone = 'success' | 'warning' | 'danger' | 'info';
+export type { SeriesTone };
 
 export interface BarChartProps {
-  /** One label per bar. Same length as `values`. */
+  /** One label per bar, in the same order as `values`. */
   labels: string[];
+  /** The plotted data. One bar per entry. */
   values: number[];
-  /** Names the series for the accessible table and the tooltip. */
+  /** Names the series for the accessible name, the table caption and its value column. */
   seriesLabel?: string;
-  /** @startingPoint One identity color for every bar. Defaults to slot 1. */
-  slot?: CatSlot;
-  /** Per-bar identity override. Wins over `slot`. */
-  slots?: CatSlot[];
+  /** @startingPoint One identity color for every bar. Defaults to ramp slot 1. */
+  slot?: number;
+  /** Per-bar identity override, one ramp slot each. Wins over `slot`. */
+  slots?: number[];
   /** Semantic override. Mutually exclusive with slot/slots — passing both warns
    *  in development and `tone` wins. A chart carries identity or meaning, never both. */
   tone?: SeriesTone;
-  valueFormatter?: (value: number) => string;
-  style?: React.CSSProperties;
+  /** Appended verbatim to every number drawn: the axis ticks, the tooltip and the
+   *  accessible table. Carries its own leading space if one is wanted (`' ms'` vs `'%'`). */
+  valueSuffix?: string;
 }
 export function BarChart(props: BarChartProps): JSX.Element;

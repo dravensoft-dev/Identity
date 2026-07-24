@@ -163,3 +163,44 @@ test('arena-bar-chart with no seriesLabel still names itself, though only by typ
   }
 });
 
+/* `valueSuffix` replaced `valueFormatter` when the charts came under the API
+ * contract: an inbound function that RETURNS a value is none of the seven forms
+ * (api/README.md), so the unit is data the chart appends rather than a callback
+ * it calls. The requirement this pins is `alternative.table`'s -- the hidden
+ * table must carry the numbers a sighted reader sees, and a sighted reader sees
+ * "12 ms", not "12". A suffix that reached the axis and the tooltip but not the
+ * table would leave the two disagreeing, which is exactly the failure the
+ * pairing assertion above exists to catch -- so BOTH sides are asserted here,
+ * the axis ticks the sighted reader sees and the table cells they do not.
+ *
+ * The two ticks named are 12.5 and 37.5, and the choice is deliberate: niceMax
+ * rounds max(VALUES) = 30 UP to 50, so ticks() yields 0, 12.5, 25, 37.5, 50 and
+ * NEITHER of the two is a member of VALUES. A tick assertion naming 30 would
+ * also be satisfied by the table's own `<td>30 ms</td>`, so it would pass
+ * against a component that suffixed the table and left the axis bare. */
+test('arena-bar-chart appends valueSuffix to the axis ticks and to the accessible table alike', () => {
+  const fixture = TestBed.createComponent(BarChart);
+  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
+  instance['labels'] = () => LABELS;
+  instance['values'] = () => VALUES;
+  instance['seriesLabel'] = () => SERIES;
+  instance['valueSuffix'] = () => ' ms';
+  fixture.detectChanges();
+  try {
+    const host = fixture.nativeElement as Element;
+
+    // The picture: the value axis carries the unit.
+    const svgText = [...host.querySelectorAll('svg text')].map((t) => (t.textContent ?? '').trim());
+    assert.ok(svgText.includes('12.5 ms'), `the axis tick lost the suffix: ${JSON.stringify(svgText)}`);
+    assert.ok(svgText.includes('37.5 ms'), `the axis tick lost the suffix: ${JSON.stringify(svgText)}`);
+
+    // The alternative: the same numbers, with the same unit.
+    const table = host.querySelector('table') as HTMLTableElement;
+    const pairs = [...table.querySelectorAll('tbody tr')]
+      .map((row) => [...row.querySelectorAll('th, td')].map((c) => (c.textContent ?? '').trim()));
+    assert.deepEqual(pairs, LABELS.map((label, i) => [label, `${VALUES[i]} ms`]));
+  } finally {
+    fixture.destroy();
+  }
+});
+

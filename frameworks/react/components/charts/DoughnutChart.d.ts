@@ -1,13 +1,10 @@
 import * as React from 'react';
-import { CatSlot } from './BarChart';
-
-export type { CatSlot } from './BarChart';
 
 export interface DoughnutChartProps {
   labels: string[];
   values: number[];
   /** @startingPoint Omit it — slots default to 1..N in order, which is the rule. */
-  slots?: CatSlot[];
+  slots?: number[];
   valueFormatter?: (value: number) => string;
   style?: React.CSSProperties;
 }

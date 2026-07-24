@@ -1,0 +1,21 @@
+{
+  "component": "BarChart",
+  "description": "Categorical bars on one axis. Dependency-free SVG that reads the token layer directly, with a visually-hidden table of the same numbers.",
+  "api": {
+    "labels": { "form": "array", "of": "string", "required": true,
+                "description": "One label per bar, in the same order as `values`. A label with no value at its index is dropped." },
+    "values": { "form": "array", "of": "number", "required": true,
+                "description": "The plotted data. One bar per entry; a negative value clamps to the baseline." },
+    "seriesLabel": { "form": "primitive", "type": "string",
+                     "description": "Names the series for the accessible name, the table caption and its value column. Absent falls back to the chart type alone." },
+    "slot": { "form": "primitive", "type": "number",
+              "default": 1,
+              "description": "One identity colour from the categorical ramp for the whole series. 1-based, clamped to the ramp, never cycled." },
+    "slots": { "form": "array", "of": "number",
+               "description": "Per-bar identity override, one ramp slot each. Wins over `slot`." },
+    "tone": { "form": "enum", "type": "SeriesTone",
+              "description": "Semantic colour, for a series that IS a state. Mutually exclusive with slot/slots — passing both warns in development and tone wins." },
+    "valueSuffix": { "form": "primitive", "type": "string",
+                     "description": "Appended verbatim to every number the chart draws — the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted." }
+  }
+}

@@ -101,6 +101,9 @@ export type Orientation = 'horizontal' | 'vertical';
 /** How the actions block aligns against the title in PageHead's wide layout. */
 export type PageHeadAlign = 'start' | 'center';
 
+/** For a series that IS a state (error rate, pass/fail) rather than an identity. A chart carries identity or meaning, never both — passing tone alongside slot/slots warns in development and tone wins. */
+export type SeriesTone = 'success' | 'warning' | 'danger' | 'info';
+
 /** The shape the placeholder reserves: a single text line, a stack of lines, a block, or a circle. */
 export type SkeletonVariant = 'text' | 'line' | 'block' | 'circle';
 

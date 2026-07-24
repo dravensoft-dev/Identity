@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { containerWidth } from '../container-size';
-import { ArenaChartTone, CHART_HEIGHT, PAD, SR_ONLY, barPath, niceMax, resolveColors, ticks } from '../chart-internals';
+import { CHART_HEIGHT, PAD, SR_ONLY, barPath, niceMax, resolveColors, ticks } from '../chart-internals';
+import type { SeriesTone } from '../../api.generated';
 import { chartBarGap, chartBarRadius } from '../../tokens.generated';
 
 /** The gap between two adjacent bars, in px. It is the plot surface showing
@@ -177,13 +178,13 @@ export function barColumns(count: number, width: number): {
   `,
 })
 export class BarChart {
-  readonly labels = input<string[]>([]);
-  readonly values = input<number[]>([]);
+  readonly labels = input.required<string[]>();
+  readonly values = input.required<number[]>();
   readonly seriesLabel = input<string>();
   readonly slot = input<number>();
   readonly slots = input<number[]>();
-  readonly tone = input<ArenaChartTone>();
-  readonly valueFormatter = input<(value: number) => string>((value) => String(value));
+  readonly tone = input<SeriesTone>();
+  readonly valueSuffix = input<string>();
 
   protected readonly height = CHART_HEIGHT;
   protected readonly pad = PAD;
@@ -198,6 +199,11 @@ export class BarChart {
   protected readonly tickLabelX = PAD.l - 8;
   protected readonly categoryLabelY = CHART_HEIGHT - 8;
   protected readonly hover = signal<number | null>(null);
+
+  /** The unit appended to every number this chart draws — the axis ticks, the
+   *  tooltip and the accessible table alike. Appended verbatim: the caller owns
+   *  the leading space. `private`, so the reader never sees it as a member. */
+  private readonly suffix = computed(() => this.valueSuffix() ?? '');
 
   private readonly measured = containerWidth();
   /** Wide first paint, then measured — the narrow branch never flashes. */
@@ -217,8 +223,8 @@ export class BarChart {
   protected readonly gridLines = computed(() => {
     const max = this.max();
     const innerHeight = this.innerHeight();
-    const format = this.valueFormatter();
-    return ticks(max).map((value) => ({ value, y: barValueY(value, max, innerHeight), label: format(value) }));
+    const suffix = this.suffix();
+    return ticks(max).map((value) => ({ value, y: barValueY(value, max, innerHeight), label: `${value}${suffix}` }));
   });
 
   protected readonly bars = computed(() => {
@@ -228,7 +234,7 @@ export class BarChart {
     const max = this.max();
     const innerHeight = this.innerHeight();
     const baseline = this.baseline();
-    const format = this.valueFormatter();
+    const suffix = this.suffix();
     return values.map((value, index) => {
       const y = barValueY(value, max, innerHeight);
       return {
@@ -239,7 +245,7 @@ export class BarChart {
         path: barPath(columns[index].x, y, barWidth, baseline - y, BAR_RADIUS),
         color: colors[index],
         label: this.labels()[index] ?? '',
-        value: format(value),
+        value: `${value}${suffix}`,
       };
     });
   });
