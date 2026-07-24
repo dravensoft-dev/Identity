@@ -864,14 +864,14 @@ test('arena-stat-card: no icon renders no wrapper at all -- not an empty one', (
  * `bulkActionBarStyles()`'s own zero-count output already includes `hidden`.
  * This is real coverage, not a stand-in, of a real TestBed render landing
  * that state on the actual host. */
-test('arena-bulk-action-bar: the root recipe classes land on the host element itself, hidden by the default count of 0', async () => {
+test('arena-bulk-action-bar: the root recipe classes land on the host element itself, hidden when count is 0', async () => {
   const fixture = createBulkActionBarHost();
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-bulk-action-bar') as HTMLElement;
   for (const cls of bulkActionBarStyles().root().split(/\s+/))
     assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
-  assert.ok(host.classList.contains('hidden'), 'a bar with no selection (the default count of 0) must render hidden');
+  assert.ok(host.classList.contains('hidden'), 'a bar with no selection (count 0) must render hidden');
 });
 
 test('arena-bulk-action-bar: a consumer-supplied class on the host survives the [class] binding', async () => {
@@ -882,7 +882,7 @@ test('arena-bulk-action-bar: a consumer-supplied class on the host survives the 
   assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
 });
 
-test('arena-bulk-action-bar: the host renders no children while count is 0 (the default) -- nothing focusable exists behind the hidden bar', async () => {
+test('arena-bulk-action-bar: the host renders no children while count is 0 -- nothing focusable exists behind the hidden bar', async () => {
   const fixture = createBulkActionBarHost();
   fixture.detectChanges();
   await fixture.whenStable();
