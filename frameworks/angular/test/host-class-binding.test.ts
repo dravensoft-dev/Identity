@@ -152,7 +152,7 @@ function createAppLogoMarkHost() {
 }
 
 /* The literal `name="Juan Carlos"` below is inert under this JIT-only harness, the same way
- * `EmptyStateWithoutActionHost`'s `title` is further down -- `name` is a signal input
+ * `ErrorStateWithoutActionHost`'s `title` is further down -- `name` is a signal input
  * (`input('')`) and a static attribute never reaches a signal input here (see this file's
  * header comment). It renders as a stray DOM attribute on the host and leaves `name()` itself
  * at its default, the empty string. Left in place rather than removed because no test below
@@ -269,26 +269,15 @@ class BulkActionBarHost {}
 })
 class ChartCardHost {}
 
-/* The literal `title="No projects yet"` below is inert under this JIT-only harness --
- * `title` is a signal input (`input<string>()`), and a static attribute never reaches a
- * signal input here (see this file's header comment and the `arena-chart-card` block
- * further down, which probes the same collision by hand). It renders as a stray DOM
- * attribute on the host and leaves `title()` itself `undefined`. Left in place rather
- * than removed because no test below reads it -- only the action wrapper's absence is
- * asserted -- so it changes nothing either way; recorded here so a reader does not take
- * it for a working title binding. */
-@Component({
-  standalone: true,
-  imports: [EmptyState],
-  template: `<arena-empty-state title="No projects yet" />`,
-})
-class EmptyStateWithoutActionHost {}
-
-/* Same inertness as `EmptyStateWithoutActionHost` above, with one extra wrinkle: this
- * component's `title` input defaults to `'Something went wrong'` (`error-state.ts`), the
- * exact string written here -- so even though the literal attribute never reaches the
- * input, the rendered title happens to read the same either way. Nothing below asserts
- * on the title text, only on classes, `role="alert"` and the actions wrapper's absence. */
+/* The literal `title="Something went wrong"` below is inert under this JIT-only harness
+ * for the same reason every other signal input here is (this file's header comment):
+ * `title` is `input<string>()`, and a static attribute never reaches a signal input under
+ * this harness -- it renders as a stray DOM attribute on the host and leaves `title()`
+ * itself `undefined`. This component's `title` input also defaults to `'Something went
+ * wrong'` (`error-state.ts`), the exact string written here -- so even though the literal
+ * attribute never reaches the input, the rendered title happens to read the same either
+ * way. Nothing below asserts on the title text, only on classes, `role="alert"` and the
+ * actions wrapper's absence. */
 @Component({
   standalone: true,
   imports: [ErrorState],
@@ -956,12 +945,33 @@ test('arena-chart-card: the head row is entirely absent when there is neither a 
  * passes. The negative case below has no such gap: with nothing projected,
  * `action()` is correctly `undefined` regardless of which compiler produced
  * it, so it is real coverage of the reported bug's exact repro (an empty
- * state with no action must not ship the wrapper's dead space). */
-test('arena-empty-state: the action wrapper is absent from the DOM when no [action] content is projected', async () => {
-  const fixture = TestBed.createComponent(EmptyStateWithoutActionHost);
+ * state with no action must not ship the wrapper's dead space).
+ *
+ * `title` became `input.required<string>()` under task 8B2 (`api/components/
+ * EmptyState.json`) -- the same NG0950 hazard `arena-app-logo`'s `name`,
+ * `arena-breadcrumbs`'s `items` and `arena-stat-card`'s `label`/`value` already
+ * hit under this JIT-only harness (this file's header comment). The old
+ * `EmptyStateWithoutActionHost` wrapper's literal `title="..."` attribute no
+ * longer reaches the child at all, so its first `detectChanges()` would now
+ * throw NG0950 before either assertion below ran. This test therefore switches
+ * to `renderStatCard`'s own bypass technique: construct `EmptyState` directly
+ * with `TestBed.createComponent` (no host wrapper, so `EmptyState` itself is
+ * the fixture's root) and overwrite `title` as a plain function before that
+ * first `detectChanges()`. `EmptyStateWithoutActionHost` is gone with it -- it
+ * existed only to feed this one test and, unlike `StatCardHost`, never
+ * separately proved the stray-attribute NG0950 shape, so there is nothing left
+ * for it to keep proving. */
+function renderEmptyState(title: string) {
+  const fixture = TestBed.createComponent(EmptyState);
+  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
+  instance['title'] = () => title;
+  return fixture;
+}
+
+test('arena-empty-state: the action wrapper is absent from the DOM when no [action] content is projected', () => {
+  const fixture = renderEmptyState('No projects yet');
   fixture.detectChanges();
-  await fixture.whenStable();
-  const host = fixture.nativeElement.querySelector('arena-empty-state') as HTMLElement;
+  const host = fixture.nativeElement as HTMLElement;
   assert.equal(host.querySelector('button'), null, 'no action was projected, so no action markup should exist at all');
   const actionClass = emptyStateStyles().action().split(/\s+/)[0];
   assert.equal(
@@ -969,6 +979,7 @@ test('arena-empty-state: the action wrapper is absent from the DOM when no [acti
     null,
     'the action wrapper div must not render when the action slot is empty',
   );
+  fixture.destroy();
 });
 
 test('arena-error-state: the root recipe classes land on the host element itself', async () => {
