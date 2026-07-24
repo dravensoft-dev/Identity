@@ -36,8 +36,8 @@ export function DashboardScreen({ onNav, onOpenProject }) {
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 'calc(var(--sp-1) * 4)' }}>
         {PROJECTS.map((p) => (
-          <div key={p.name} onClick={() => onOpenProject && onOpenProject(p)} style={{ cursor: 'pointer' }}>
-            <Card accent={p.status[0] === 'danger'} style={{ height: '100%' }}
+          <div key={p.name} onClick={() => onOpenProject && onOpenProject(p)} style={{ cursor: 'pointer', display: 'grid' }}>
+            <Card accent={p.status[0] === 'danger'}
               eyebrow={p.client}
               title={p.name}
               action={<Badge tone={p.status[0]} dot>{p.status[1]}</Badge>}>

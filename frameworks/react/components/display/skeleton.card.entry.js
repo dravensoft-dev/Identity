@@ -31,10 +31,11 @@ function Demo() {
   }, "In place — the placeholder matches the shape of what is loading"), React.createElement("div", {
     className: "row",
     style: { alignItems: "stretch" }
+  }, React.createElement("div", {
+    style: { width: "calc(var(--sp-1) * 75)" }
   }, React.createElement(Card, {
     eyebrow: "Delivery",
-    title: "Client Portal",
-    style: { width: "calc(var(--sp-1) * 75)" }
+    title: "Client Portal"
   }, React.createElement("div", {
     style: { display: "flex", gap: "var(--sp-3)", alignItems: "center" }
   }, React.createElement(Skeleton, {
@@ -45,9 +46,9 @@ function Demo() {
   }, React.createElement(Skeleton, {
     variant: "text",
     lines: 2
-  })))), React.createElement(Card, {
+  }))))), React.createElement("div", {
     style: { width: "calc(var(--sp-1) * 70)" }
-  }, React.createElement("div", {
+  }, React.createElement(Card, null, React.createElement("div", {
     style: { marginBottom: "var(--sp-3)" }
   }, React.createElement(Skeleton, {
     variant: "line",
@@ -56,6 +57,6 @@ function Demo() {
   })), React.createElement(Skeleton, {
     variant: "block",
     height: "90px"
-  }))));
+  })))));
 }
 createRoot(document.getElementById("root")).render(React.createElement(Demo, null));

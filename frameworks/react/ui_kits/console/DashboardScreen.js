@@ -48,10 +48,9 @@ export function DashboardScreen({ onNav, onOpenProject }) {
   }, PROJECTS.map((p) => React.createElement("div", {
     key: p.name,
     onClick: () => onOpenProject && onOpenProject(p),
-    style: { cursor: "pointer" }
+    style: { cursor: "pointer", display: "grid" }
   }, React.createElement(Card, {
     accent: p.status[0] === "danger",
-    style: { height: "100%" },
     eyebrow: p.client,
     title: p.name,
     action: React.createElement(Badge, {

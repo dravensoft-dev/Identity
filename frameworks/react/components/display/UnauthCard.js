@@ -5,10 +5,8 @@ import React from "react";
 import { Card } from "./Card.js";
 export function UnauthCard({ brand, eyebrow, title, footer, children }) {
   return React.createElement("div", {
-    style: { width: "100%", maxWidth: "calc(var(--sp-1) * 95 + var(--sp-1) * 18 + var(--bw) * 2)" }
-  }, React.createElement(Card, {
-    style: { boxShadow: "var(--shadow-3)" }
-  }, React.createElement("div", {
+    style: { width: "100%", maxWidth: "calc(var(--sp-1) * 95 + var(--sp-1) * 18 + var(--bw) * 2)", borderRadius: "var(--r-lg)", boxShadow: "var(--shadow-3)" }
+  }, React.createElement(Card, null, React.createElement("div", {
     style: { padding: "calc(var(--sp-1) * 4)" }
   }, brand && React.createElement("div", {
     style: { display: "flex", marginBottom: "calc(var(--sp-1) * 7)" }

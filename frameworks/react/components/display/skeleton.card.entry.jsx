@@ -12,16 +12,20 @@ function Demo(){return (<div>
   </div>
   <div className="sub">In place — the placeholder matches the shape of what is loading</div>
   <div className="row" style={{alignItems:'stretch'}}>
-    <Card eyebrow="Delivery" title="Client Portal" style={{width:'calc(var(--sp-1) * 75)'}}>
-      <div style={{display:'flex',gap:'var(--sp-3)',alignItems:'center'}}>
-        <Skeleton variant="circle" width="var(--sp-10)" />
-        <div style={{flex:1}}><Skeleton variant="text" lines={2} /></div>
-      </div>
-    </Card>
-    <Card style={{width:'calc(var(--sp-1) * 70)'}}>
-      <div style={{marginBottom:'var(--sp-3)'}}><Skeleton variant="line" width="45%" height="11px" /></div>
-      <Skeleton variant="block" height="90px" />
-    </Card>
+    <div style={{width:'calc(var(--sp-1) * 75)'}}>
+      <Card eyebrow="Delivery" title="Client Portal">
+        <div style={{display:'flex',gap:'var(--sp-3)',alignItems:'center'}}>
+          <Skeleton variant="circle" width="var(--sp-10)" />
+          <div style={{flex:1}}><Skeleton variant="text" lines={2} /></div>
+        </div>
+      </Card>
+    </div>
+    <div style={{width:'calc(var(--sp-1) * 70)'}}>
+      <Card>
+        <div style={{marginBottom:'var(--sp-3)'}}><Skeleton variant="line" width="45%" height="11px" /></div>
+        <Skeleton variant="block" height="90px" />
+      </Card>
+    </div>
   </div>
 </div>);}
 createRoot(document.getElementById('root')).render(<Demo/>);

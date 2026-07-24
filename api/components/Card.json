@@ -1,0 +1,18 @@
+{
+  "component": "Card",
+  "description": "Surface container. Hairline border on the base surface scale; depth comes from the shadow, never a gradient.",
+  "api": {
+    "content": { "form": "slot",
+                 "description": "The card's body, below the optional header." },
+    "action": { "form": "slot",
+                "description": "Right-aligned in the header, beside the title. Arena draws the header row; the consumer draws what sits in it." },
+    "title": { "form": "primitive", "type": "string",
+               "description": "Header title. Absent, along with eyebrow and action, renders no header block at all." },
+    "eyebrow": { "form": "primitive", "type": "string",
+                 "description": "Mono uppercase label above the title, in the accent colour." },
+    "floating": { "form": "primitive", "type": "boolean", "default": false,
+                  "description": "Adds the warm shadow. Depth comes from the shadow and the surface scale, never a gradient." },
+    "accent": { "form": "primitive", "type": "boolean", "default": false,
+                "description": "Draws the border in the accent colour instead of the surface hairline." }
+  }
+}

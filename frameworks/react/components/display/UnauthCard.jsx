@@ -20,8 +20,8 @@ export function UnauthCard({ brand, eyebrow, title, footer, children }) {
     // back together: 95 steps of content, 18 steps of padding (9 on each side) and
     // both 1px borders — 380px + 72px + 2px = 454px, the width this panel has
     // always rendered at. A single `* 95` here silently narrows the panel again.
-    <div style={{ width: '100%', maxWidth: 'calc(var(--sp-1) * 95 + var(--sp-1) * 18 + var(--bw) * 2)' }}>
-      <Card style={{ boxShadow: 'var(--shadow-3)' }}>
+    <div style={{ width: '100%', maxWidth: 'calc(var(--sp-1) * 95 + var(--sp-1) * 18 + var(--bw) * 2)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)' }}>
+      <Card>
         <div style={{ padding: 'calc(var(--sp-1) * 4)' }}>
           {/* flex, not the default block: AppLogo's root is inline-flex, and a block
               wrapper around an inline-flex child opens a line box whose strut adds

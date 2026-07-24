@@ -101,9 +101,10 @@ export function ProjectScreen({ onNav, project, onToast }) {
     style: { fontSize: "var(--dz-text)", color: "var(--bone-dim)", lineHeight: "var(--lh-body)" }
   }, "Release 2.5 — SEPA gateway."), React.createElement("div", {
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-sm)", color: "var(--gold)", marginTop: "calc(var(--sp-1) * 2.5)" }
-  }, "in 6 days"))), tab === "Settings" && React.createElement(Card, {
-    title: "Automation",
+  }, "in 6 days"))), tab === "Settings" && React.createElement("div", {
     style: { maxWidth: "calc(var(--sp-1) * 130)" }
+  }, React.createElement(Card, {
+    title: "Automation"
   }, React.createElement("div", {
     style: { display: "flex", flexDirection: "column", gap: "calc(var(--sp-1) * 4.5)" }
   }, React.createElement(Switch, {
@@ -117,7 +118,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
   }), React.createElement(Switch, {
     state: true,
     label: "Require 2 approvals for production"
-  }))), React.createElement(Dialog, {
+  })))), React.createElement(Dialog, {
     open,
     onClose: () => setOpen(false),
     eyebrow: "Confirm",

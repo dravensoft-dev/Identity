@@ -89,13 +89,15 @@ export function ProjectScreen({ onNav, project, onToast }) {
       )}
 
       {tab === 'Settings' && (
-        <Card title="Automation" style={{ maxWidth: 'calc(var(--sp-1) * 130)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 4.5)' }}>
-            <Switch state={auto} onFuncOn={() => setAuto(true)} onFuncOff={() => setAuto(false)} label="Auto-deploy on approval" />
-            <Switch state={false} label="Notify Slack on every release" />
-            <Switch state label="Require 2 approvals for production" />
-          </div>
-        </Card>
+        <div style={{ maxWidth: 'calc(var(--sp-1) * 130)' }}>
+          <Card title="Automation">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 4.5)' }}>
+              <Switch state={auto} onFuncOn={() => setAuto(true)} onFuncOff={() => setAuto(false)} label="Auto-deploy on approval" />
+              <Switch state={false} label="Notify Slack on every release" />
+              <Switch state label="Require 2 approvals for production" />
+            </div>
+          </Card>
+        </div>
       )}
 
       <Dialog open={open} onClose={() => setOpen(false)} eyebrow="Confirm" title="Deploy to production"

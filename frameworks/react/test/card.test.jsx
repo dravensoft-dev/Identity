@@ -28,3 +28,24 @@ test('Card renders no header block when it has no title, eyebrow or action', () 
   assert.match(titled, /var\(--fs-h4\)/);
   assert.match(titled, /T/);
 });
+
+/* The action slot renders inside the header row, so it must appear when it is
+ * the ONLY header member -- a card with an action but no title still draws a
+ * header. --fs-h4 is the title's own size and is the header's title branch, so
+ * asserting the action's own text alongside its absence discriminates the two
+ * branches rather than merely proving a header exists. */
+test('Card renders its action slot even with no title or eyebrow', () => {
+  const html = renderToStaticMarkup(<Card action={<span>ACT</span>}>x</Card>);
+  assert.match(html, /ACT/);
+  assert.doesNotMatch(html, /var\(--fs-h4\)/);
+});
+
+/* R4: the `extends React.HTMLAttributes<HTMLDivElement>` heritage clause and
+ * the `{...rest}` spread both left this component, and `style` went with the
+ * heritage. check:api reads the .d.ts and never opens the .jsx, so a test is
+ * the ONLY regression guard. Asserted separately -- see Spinner. */
+test('Card drops a consumer style object and a consumer attribute, each independently', () => {
+  const html = renderToStaticMarkup(<Card style={{ color: '#ff00ff' }} data-stray="x">x</Card>);
+  assert.doesNotMatch(html, /#ff00ff/, 'a consumer style reached the rendered root -- the R4 escape is back');
+  assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- the {...rest} escape is back');
+});
