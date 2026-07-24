@@ -165,7 +165,7 @@ test('arena-bar-chart with no seriesLabel still names itself, though only by typ
 });
 
 /* `valueSuffix` replaced `valueFormatter` when the charts came under the API
- * contract: an inbound function that RETURNS a value is none of the seven forms
+ * contract: an inbound function that RETURNS a value is none of the eight forms
  * (api/README.md), so the unit is data the chart appends rather than a callback
  * it calls. The requirement this pins is `alternative.table`'s -- the hidden
  * table must carry the numbers a sighted reader sees, and a sighted reader sees

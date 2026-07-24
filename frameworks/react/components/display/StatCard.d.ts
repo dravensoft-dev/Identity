@@ -1,4 +1,3 @@
-import * as React from 'react';
 import type { StatDelta, Tone } from '../../api.generated';
 
 export type { StatDelta };
