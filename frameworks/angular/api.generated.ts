@@ -48,5 +48,11 @@ export interface StatDelta {
   tone?: DeltaTone;
 }
 
+/** Whether the switch lies horizontally or stands vertically. */
+export type SwitchOrientation = 'horizontal' | 'vertical';
+
+/** The switch's overall size, from a dense sm to a prominent 2xl. */
+export type SwitchSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+
 /** What state a value IS in right now, as against how it moved. Badge's vocabulary, so one set of tone names covers the system rather than a second set that is nearly the same. */
 export type Tone = 'neutral' | 'accent' | 'gold' | 'success' | 'warning' | 'danger' | 'info';

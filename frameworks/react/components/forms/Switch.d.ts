@@ -1,10 +1,19 @@
-import * as React from 'react';
-/** On/off switch. On = crimson. For immediate binary settings. */
-export interface SwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
-  checked?: boolean; label?: React.ReactNode;
-  /** High-impact toggle (H5): redirects the change to `onRequestChange` to confirm it first. */
+import type { SwitchOrientation, SwitchSize } from '../../api.generated';
+/** A controlled on/off switch showing an icon per state. On = crimson.
+ *  `confirm` (H5): a high-impact change is not applied on the fly — it is
+ *  requested through `onRequestChange` so the host can open a ConfirmDialog;
+ *  `state` only changes after the host flips it. */
+export interface SwitchProps {
+  state?: boolean;
+  orientation?: SwitchOrientation;
+  size?: SwitchSize;
+  iconOn?: string;
+  iconOff?: string;
+  label?: string;
+  disabled?: boolean;
   confirm?: boolean;
-  /** Receives the proposed value when `confirm` is active. Open a ConfirmDialog here. */
-  onRequestChange?: (next: boolean) => void;
+  onFuncOn?: () => void;
+  onFuncOff?: () => void;
+  onRequestChange?: () => void;
 }
 export function Switch(props: SwitchProps): JSX.Element;

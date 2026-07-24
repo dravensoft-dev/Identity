@@ -107,15 +107,15 @@ export function ProjectScreen({ onNav, project, onToast }) {
   }, React.createElement("div", {
     style: { display: "flex", flexDirection: "column", gap: "calc(var(--sp-1) * 4.5)" }
   }, React.createElement(Switch, {
-    checked: auto,
-    onChange: (e) => setAuto(e.target.checked),
+    state: auto,
+    onFuncOn: () => setAuto(true),
+    onFuncOff: () => setAuto(false),
     label: "Auto-deploy on approval"
   }), React.createElement(Switch, {
-    checked: false,
-    onChange: () => {},
+    state: false,
     label: "Notify Slack on every release"
   }), React.createElement(Switch, {
-    checked: true,
+    state: true,
     label: "Require 2 approvals for production"
   }))), React.createElement(Dialog, {
     open,

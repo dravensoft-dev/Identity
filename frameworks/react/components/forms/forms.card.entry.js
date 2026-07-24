@@ -106,8 +106,9 @@ function Demo() {
     onChange: (e) => setChk(e.target.checked),
     label: "Notify on approval"
   }), React.createElement(Switch, {
-    checked: sw,
-    onChange: (e) => setSw(e.target.checked),
+    state: sw,
+    onFuncOn: () => setSw(true),
+    onFuncOff: () => setSw(false),
     label: "Automatic deployment"
   })), React.createElement("div", {
     className: "sub"

@@ -1,0 +1,6 @@
+{
+  "name": "SwitchOrientation",
+  "kind": "enum",
+  "description": "Whether the switch lies horizontally or stands vertically.",
+  "values": ["horizontal", "vertical"]
+}

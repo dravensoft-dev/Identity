@@ -1,0 +1,6 @@
+{
+  "name": "SwitchSize",
+  "kind": "enum",
+  "description": "The switch's overall size, from a dense sm to a prominent 2xl.",
+  "values": ["sm", "md", "lg", "xl", "2xl"]
+}

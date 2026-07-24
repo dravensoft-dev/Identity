@@ -2,21 +2,53 @@
   "component": "Switch",
   "slots": {
     "root": "inline-flex items-center gap-2.5",
-    "track": "inline-flex items-center w-10 h-5.5 p-0.5 rounded-pill transition-[background] duration-[var(--dur-mid)] ease-out",
-    "thumb": "size-4.5 rounded-pill bg-primary-content transition-[transform] duration-[var(--dur-mid)] ease-out",
+    "track": "inline-flex items-center justify-start rounded-pill p-0.5 border-none cursor-pointer disabled:cursor-not-allowed transition-[background] duration-[var(--dur-mid)] ease-out",
+    "knob": "inline-flex items-center justify-center shrink-0 rounded-pill bg-primary-content transition-[transform] duration-[var(--dur-mid)] ease-out",
+    "icon": "leading-none",
     "label": "inline-flex items-center gap-1.5 font-body text-ctl text-base-content/82",
-    "guard": "text-[length:var(--icon-sm)] text-base-content/62",
-    "input": "absolute opacity-0 size-0"
+    "guard": "text-[length:var(--icon-sm)] text-base-content/62"
   },
   "variants": {
+    "size": {
+      "sm":  { "knob": "size-3.5", "icon": "text-[length:calc(var(--sp-1)*2.25)]" },
+      "md":  { "knob": "size-4.5", "icon": "text-[length:calc(var(--sp-1)*2.75)]" },
+      "lg":  { "knob": "size-5.5", "icon": "text-[length:calc(var(--sp-1)*3.25)]" },
+      "xl":  { "knob": "size-6.5", "icon": "text-[length:calc(var(--sp-1)*3.75)]" },
+      "2xl": { "knob": "size-7.5", "icon": "text-[length:calc(var(--sp-1)*4.25)]" }
+    },
+    "orientation": {
+      "horizontal": { "track": "flex-row" },
+      "vertical": { "track": "flex-col" }
+    },
     "checked": {
-      "true": { "track": "bg-primary", "thumb": "translate-x-4.5" },
-      "false": { "track": "bg-neutral", "thumb": "translate-x-0" }
+      "true": { "track": "bg-primary" },
+      "false": { "track": "bg-neutral" }
     },
     "disabled": {
-      "true": { "root": "opacity-50 cursor-not-allowed" },
-      "false": { "root": "cursor-pointer" }
+      "true": { "root": "opacity-50" },
+      "false": { "root": "" }
+    },
+    "footprint": {
+      "horizontal-sm":  { "track": "w-8 h-4.5" },
+      "horizontal-md":  { "track": "w-10 h-5.5" },
+      "horizontal-lg":  { "track": "w-12 h-6.5" },
+      "horizontal-xl":  { "track": "w-14 h-7.5" },
+      "horizontal-2xl": { "track": "w-16 h-8.5" },
+      "vertical-sm":  { "track": "w-4.5 h-8" },
+      "vertical-md":  { "track": "w-5.5 h-10" },
+      "vertical-lg":  { "track": "w-6.5 h-12" },
+      "vertical-xl":  { "track": "w-7.5 h-14" },
+      "vertical-2xl": { "track": "w-8.5 h-16" }
+    },
+    "thumb": {
+      "off-horizontal": { "knob": "translate-x-0" },
+      "on-horizontal": { "knob": "translate-x-full" },
+      "off-vertical": { "knob": "translate-y-0" },
+      "on-vertical": { "knob": "translate-y-full" }
     }
   },
-  "defaultVariants": { "checked": "false", "disabled": "false" }
+  "defaultVariants": {
+    "size": "md", "orientation": "horizontal", "checked": "false", "disabled": "false",
+    "footprint": "horizontal-md", "thumb": "off-horizontal"
+  }
 }

@@ -46,7 +46,7 @@ function Demo(){
       <div className="sub">Checkbox · Switch</div>
       <div className="row">
         <Checkbox checked={chk} onChange={e=>setChk(e.target.checked)} label="Notify on approval" />
-        <Switch checked={sw} onChange={e=>setSw(e.target.checked)} label="Automatic deployment" />
+        <Switch state={sw} onFuncOn={()=>setSw(true)} onFuncOff={()=>setSw(false)} label="Automatic deployment" />
       </div>
       <div className="sub">ThemeToggle</div>
       <div className="row"><ThemeToggle /><span style={{fontSize:'var(--dz-text-md)',color:'var(--mute)'}}>Flips the whole page — every component re-themes from tokens alone.</span></div>

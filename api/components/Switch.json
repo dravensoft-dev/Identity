@@ -1,0 +1,28 @@
+{
+  "component": "Switch",
+  "description": "A controlled on/off switch showing an icon per state. `confirm` gates a high-impact change through a ConfirmDialog before it applies.",
+  "api": {
+    "state": { "form": "primitive", "type": "boolean", "default": false,
+               "description": "The current on/off value. Controlled — the consumer owns it and pushes it each render." },
+    "orientation": { "form": "enum", "type": "SwitchOrientation", "default": "horizontal",
+                     "description": "Whether the switch lies horizontally or stands vertically." },
+    "size": { "form": "enum", "type": "SwitchSize", "default": "md",
+              "description": "The switch's overall size." },
+    "iconOn": { "form": "primitive", "type": "string",
+                "description": "A Phosphor class name for the glyph shown while on. Arena draws the aria-hidden `<i>`." },
+    "iconOff": { "form": "primitive", "type": "string",
+                 "description": "A Phosphor class name for the glyph shown while off." },
+    "label": { "form": "primitive", "type": "string",
+               "description": "The accessible name for the switch, also drawn beside it." },
+    "disabled": { "form": "primitive", "type": "boolean", "default": false,
+                  "description": "Whether the switch is inoperable." },
+    "confirm": { "form": "primitive", "type": "boolean", "default": false,
+                 "description": "When set, a change is not applied on the fly — it is requested through `requestChange` so the host can confirm it first." },
+    "funcOn": { "form": "event",
+                "description": "The switch was turned on." },
+    "funcOff": { "form": "event",
+                 "description": "The switch was turned off." },
+    "requestChange": { "form": "event",
+                       "description": "A change was requested while `confirm` is set — the host opens a ConfirmDialog and, on confirmation, flips `state` (the requested value is always the negation of the current one)." }
+  }
+}

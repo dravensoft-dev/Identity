@@ -2,53 +2,91 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-export function Switch({ checked = false, onChange, onRequestChange, confirm = false, label, disabled = false, style, ...rest }) {
+const SIZES = {
+  sm: { track: "calc(var(--sp-1) * 8)", cross: "calc(var(--sp-1) * 4.5)", knob: "calc(var(--sp-1) * 3.5)", icon: "calc(var(--sp-1) * 2.25)" },
+  md: { track: "calc(var(--sp-1) * 10)", cross: "calc(var(--sp-1) * 5.5)", knob: "calc(var(--sp-1) * 4.5)", icon: "calc(var(--sp-1) * 2.75)" },
+  lg: { track: "calc(var(--sp-1) * 12)", cross: "calc(var(--sp-1) * 6.5)", knob: "calc(var(--sp-1) * 5.5)", icon: "calc(var(--sp-1) * 3.25)" },
+  xl: { track: "calc(var(--sp-1) * 14)", cross: "calc(var(--sp-1) * 7.5)", knob: "calc(var(--sp-1) * 6.5)", icon: "calc(var(--sp-1) * 3.75)" },
+  "2xl": { track: "calc(var(--sp-1) * 16)", cross: "calc(var(--sp-1) * 8.5)", knob: "calc(var(--sp-1) * 7.5)", icon: "calc(var(--sp-1) * 4.25)" }
+};
+const PAD = "calc(var(--sp-1) * 0.5)";
+export function Switch({
+  state = false,
+  orientation = "horizontal",
+  size = "md",
+  iconOn,
+  iconOff,
+  label,
+  disabled = false,
+  confirm = false,
+  onFuncOn,
+  onFuncOff,
+  onRequestChange
+}) {
+  const dims = SIZES[size] || SIZES.md;
+  const vertical = orientation === "vertical";
   const guarded = confirm && typeof onRequestChange === "function";
-  const attempt = (e) => {
+  const icon = state ? iconOn : iconOff;
+  const activate = () => {
     if (disabled)
       return;
     if (guarded) {
-      e.preventDefault();
-      onRequestChange(!checked);
+      onRequestChange();
+      return;
+    }
+    if (state) {
+      onFuncOff && onFuncOff();
+    } else {
+      onFuncOn && onFuncOn();
     }
   };
-  return React.createElement("label", {
-    onClick: attempt,
-    style: { display: "inline-flex", alignItems: "center", gap: "calc(var(--sp-1) * 2.5)", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1, ...style }
-  }, React.createElement("span", {
+  return React.createElement("span", {
+    style: { display: "inline-flex", alignItems: "center", gap: "calc(var(--sp-1) * 2.5)", opacity: disabled ? 0.5 : 1 }
+  }, React.createElement("button", {
+    type: "button",
+    role: "switch",
+    "aria-checked": state,
+    "aria-label": label || undefined,
+    disabled,
+    onClick: activate,
     style: {
-      width: "calc(var(--sp-1) * 10)",
-      height: "calc(var(--sp-1) * 5.5)",
-      borderRadius: "var(--r-pill)",
-      padding: "calc(var(--sp-1) * 0.5)",
       display: "inline-flex",
+      flexDirection: vertical ? "column" : "row",
       alignItems: "center",
-      background: checked ? "var(--crimson)" : "var(--line-strong)",
+      justifyContent: "flex-start",
+      width: vertical ? dims.cross : dims.track,
+      height: vertical ? dims.track : dims.cross,
+      padding: PAD,
+      border: "none",
+      borderRadius: "var(--r-pill)",
+      background: state ? "var(--crimson)" : "var(--line-strong)",
+      cursor: disabled ? "not-allowed" : "pointer",
       transition: "background var(--dur-mid) var(--ease-out)"
     }
   }, React.createElement("span", {
+    "aria-hidden": "true",
     style: {
-      width: "calc(var(--sp-1) * 4.5)",
-      height: "calc(var(--sp-1) * 4.5)",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+      width: dims.knob,
+      height: dims.knob,
       borderRadius: "50%",
       background: "var(--on-accent)",
-      transform: checked ? "translateX(calc(var(--sp-1) * 4.5))" : "translateX(0)",
+      transform: state ? vertical ? "translateY(100%)" : "translateX(100%)" : vertical ? "translateY(0)" : "translateX(0)",
       transition: "transform var(--dur-mid) var(--ease-out)"
     }
-  })), label && React.createElement("span", {
+  }, icon && React.createElement("i", {
+    "aria-hidden": "true",
+    className: icon,
+    style: { fontSize: dims.icon, lineHeight: "var(--lh-tight)" }
+  }))), label && React.createElement("span", {
     style: { display: "inline-flex", alignItems: "center", gap: "calc(var(--sp-1) * 1.5)", fontFamily: "var(--font-body)", fontSize: "var(--dz-text)", color: "var(--bone-dim)" }
   }, label, confirm && React.createElement("i", {
     className: "ph-bold ph-shield-check",
+    "aria-hidden": "true",
     title: "Requires confirmation",
     style: { fontSize: "var(--icon-sm)", color: "var(--mute)" }
-  })), React.createElement("input", {
-    type: "checkbox",
-    role: "switch",
-    checked,
-    "aria-checked": checked,
-    onChange: guarded ? undefined : onChange,
-    disabled,
-    style: { position: "absolute", opacity: 0, width: 0, height: 0 },
-    ...rest
-  }));
+  })));
 }

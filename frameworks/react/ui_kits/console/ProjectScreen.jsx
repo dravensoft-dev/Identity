@@ -91,9 +91,9 @@ export function ProjectScreen({ onNav, project, onToast }) {
       {tab === 'Settings' && (
         <Card title="Automation" style={{ maxWidth: 'calc(var(--sp-1) * 130)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 4.5)' }}>
-            <Switch checked={auto} onChange={(e) => setAuto(e.target.checked)} label="Auto-deploy on approval" />
-            <Switch checked={false} onChange={() => {}} label="Notify Slack on every release" />
-            <Switch checked label="Require 2 approvals for production" />
+            <Switch state={auto} onFuncOn={() => setAuto(true)} onFuncOff={() => setAuto(false)} label="Auto-deploy on approval" />
+            <Switch state={false} label="Notify Slack on every release" />
+            <Switch state label="Require 2 approvals for production" />
           </div>
         </Card>
       )}
