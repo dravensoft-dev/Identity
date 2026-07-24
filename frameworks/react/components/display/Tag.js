@@ -3,7 +3,7 @@
  * for the full rationale. */
 import React from "react";
 const TONES = {
-  neutral: "var(--bone-dim)",
+  neutral: "color-mix(in oklab, var(--color-base-content) 70%, transparent)",
   primary: "var(--color-primary)",
   success: "var(--color-success)",
   warning: "var(--color-warning)",

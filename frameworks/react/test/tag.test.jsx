@@ -9,7 +9,7 @@ test('a tone renders its dot and the tone colour; default is neutral', () => {
   assert.match(html, /Shipped/);
   assert.match(html, /var\(--color-success\)/);
   const neutral = renderToStaticMarkup(<Tag>Draft</Tag>);
-  assert.match(neutral, /var\(--bone-dim\)/);
+  assert.match(neutral, /color-mix\(in oklab, var\(--color-base-content\) 70%, transparent\)/);
 });
 
 test('removable renders a labelled dismiss button that calls onRemove', () => {
