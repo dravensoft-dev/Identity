@@ -8,11 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **An eighth API form: consumer data.** The vocabulary's *"exactly one of seven forms, and nothing
+  else"* was already false — `Table.rows` is a member and was none of them — and `api/README.md`'s
+  own worked example for a parameterised slot named a `TableRow` type that cannot be declared, so the
+  gate would have rejected its own documentation. `consumerData` is a record whose keys the *consumer*
+  names, which Arena routes and never inspects: neither "Arena draws it" (an object) nor "the consumer
+  draws it" (a slot). It is exactly one spelling, `Record<string, unknown>` — a record of a *known*
+  type stays a predefined object and an R4 violation — and two mechanical guards hold it narrow: it
+  may not be a field of a predefined object (extending R1), and a member that takes it in must declare
+  a route back out (a slot parameter or an event payload) or it is data Arena can never surface.
+  `Record<string, unknown>` leaves R4's escape list in the same change. No component declares it yet;
+  `Table` and `Calendar` (Plan C's later batches) are the members it was built for.
+
 - **A third contract: the API capability contract.** `api/components/<Name>.json` states,
   once and neutrally, the members a component's API presents; every layer implementing it
   implements exactly those members, and an API divergence becomes a defect rather than a
-  recorded difference. A member is one of seven forms — primitive, enum, predefined object,
-  array of primitives, array of predefined objects, slot, event — governed by five derived
+  recorded difference. A member is one of eight forms — primitive, enum, predefined object,
+  array of primitives, array of predefined objects, consumer data, slot, event — governed by
+  five derived
   rules, all normatively stated in `api/README.md`, which also carries the per-layer binding
   table (a `content` slot is React's `children`; an event `navigate` is React's `onNavigate`).
   Shared objects and enums are declared once in `api/types/` and emitted per layer by
@@ -261,6 +274,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Five composed primitives brought under the API contract — breaking.** `Spinner`, `Badge`, `Card`,
+  `IconButton` and `Button` now present a neutral contract each; `check:api` reads 26 contracts across
+  46 layer implementations. Every one is single-layer — Angular delegates all five to Material — so
+  the contract governs React alone until each gains an Arena primitive. Three breaking changes a
+  consumer sees: **`Button.icon`/`iconRight` and `IconButton`'s icon are now Phosphor class-name
+  strings** (`icon="ph-bold ph-plus"`), not React nodes — Arena draws the `<i>` and hides it from
+  assistive technology, which keeps the glyph inside Arena's iconography and inside `check:compliance`'s
+  reach; **all five stop accepting `style` and arbitrary DOM attributes** (the `React.CSSProperties`
+  escape and the `{...rest}` spread both left, per R4 — wrap the component in your own element to
+  position it); and **`IconButton` requires both `icon` and `label`**, throwing when either is absent,
+  because an icon-only button with no accessible name is unusable to a screen reader. `IconButton` was
+  weighed against merging into `Button` and kept separate for exactly that guardrail. New shared enums
+  `ControlSize`, `SpinnerTone`, `ButtonType`, `IconButtonVariant`, `ButtonVariant`; `Badge` reuses the
+  existing `Tone`. The flattened `<button>` surface declares `type`, `disabled`, `name`, `value`,
+  `autoFocus`, `form` and a `click` event, and deliberately not the five `form*` overrides, which no
+  call site used.
+
 - **The API contract layer's five cross-cutting conventions are settled, ahead of bringing the
   remaining shared components under contract.** An Angular projection selector is now the contract
   member's own name — `[action]`, `[actions]` rather than `[arena-action]`/`[arena-actions]` — so a
@@ -380,7 +410,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The three SVG charts share one reshape, applied three times — breaking.**
   `valueFormatter` is **deleted from `BarChart`, `LineChart` and `DoughnutChart` in both
   layers** and replaced by `valueSuffix`, a plain string appended verbatim to every number
-  the chart draws: an inbound function that *returns* a value is none of the seven forms
+  the chart draws: an inbound function that *returns* a value is none of the eight forms
   (`api/README.md`), so a unit is data the chart appends rather than a callback it calls.
   **The capability loss is real and has no replacement:** a suffix cannot round, cannot
   insert a thousands separator and cannot format a currency, so a consumer passing

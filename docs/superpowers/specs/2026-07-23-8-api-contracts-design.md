@@ -675,8 +675,19 @@ rendered tree — does not read contracts.
 >   as the R4 `{...rest}` escape and then reads only the interface's own body, so every
 >   inherited member is invisible to the gate and the contract fails with one *"does not
 >   declare X"* per inherited member. An inherited member is not a declared member here — which
->   is the argument for flattening, over and above R4's letter. Six React `.d.ts` files still
->   carry a heritage clause.
+>   is the argument for flattening, over and above R4's letter.
+>
+> **Re-measured while executing Plan 8C1 (2026-07-24): the heritage-clause count this annotation
+> gave as "six" was wrong — it is NINE, and the number is not written here because it drifts every
+> time a batch flattens one.** Measure it with
+> `grep -c '^export interface .*Props extends' frameworks/react/components/*/*.d.ts`. B4's "six"
+> counted only the bare `extends React.*Attributes` clauses and missed the three wrapped in `Omit<>`
+> (`Checkbox`, `Textarea`, `Input`), which `scripts/check-api.mjs` reports as the R4 escape all the
+> same — the same fact B4's own D6 established for `LineChartProps extends Omit<BarChartProps,
+> 'slots'>`. Plan 8C1 flattened four of the nine (`Badge`, `Card`, `IconButton`, `Button`); the rest
+> — `Checkbox`, `Input`, `Select`, `Textarea`, `SideNav` — fall to C2 and C3. This is the fourth time
+> this figure has been written down and it had been wrong three times; re-run the grep rather than
+> trusting any count in this document.
 
 Plan A's reader (`scripts/lib/api-surface.mjs`) throws `UnrecognisedShape` on a shape it
 cannot read, and a throw is a gate failure rather than a silent omission. Two React
@@ -840,6 +851,33 @@ comparison and a comparison needs a baseline that is not stale.
 | **Plan B2** (2026-07-24) | **910 across 79 files** | 26 across 5 files |
 | **Plan B3** (2026-07-24) | **932 across 82 files** | 26 across 5 files |
 | **Plan B4** (2026-07-24) | **958 across 85 files** | 26 across 5 files |
+| **Plan 8C1** (2026-07-24) | **991 across 89 files** | 26 across 5 files |
+
+Plan 8C1 opened Plan C — the twenty-one React-only components — with its first batch: the five
+primitives other components compose (`Spinner`, `Badge`, `Card`, `IconButton`, `Button`), taking
+`check:api` from 21 contracts across 41 layer implementations to **26 across 46**. **Every contract
+in Plan C is single-layer**, because Angular implements none of the twenty-one, so a batch moves the
+layer count by as many contracts as it writes — five here, not ten — and a reader deriving the
+arithmetic from Plan B's `+1 contract / +2 layers` rows would get it wrong. The net gain over B4 is
+33 tests and 4 files in the merged process, isolated DOM process unchanged at 26/5, and it reconciles
+exactly against the per-task deltas: Task 1b added 9 in `scripts/` (the eighth form's reader and gate
+tests) with no component contracted; then `frameworks/react/test/` gained 5 (`spinner`), 4 (`badge`),
+2 (`card`, extending the existing suite), 6 (`icon-button`) and 7 (`button`) across the five
+migrations — 9 + 24 = 33, and 1 (`scripts` file already existed) + 3 new react files + the react dir
+crossing from 85 to 89 total. **Task 1b is the batch's structural event, not a component:** it added
+an eighth form to the vocabulary, `consumerData`, because `api/README.md`'s "exactly one of seven
+forms" sentence was already false (`Table.rows` was a member and none of them) and the README's own
+worked slot example named a `TableRow` type that cannot be declared. It contracts nothing and holds
+`check:api` at 21/41 across itself. The five migrations then declared five new enums
+(`ControlSize` shared across three of them, `SpinnerTone`, `ButtonType` shared across two,
+`IconButtonVariant`, `ButtonVariant`) and reused `Tone` for `Badge`; every enum value set is unique,
+so no reuse was missed. **The two decisions that shaped the batch beyond the plan:** the single-icon
+convention (D2) reached `Button` and `IconButton`, so their icons are Phosphor class strings Arena
+draws rather than slots — `IconButton` ends with no slot at all; and the `<button>` heritage flatten
+(D1) cut the five `form*` overrides, so both declare `type`/`disabled`/`name`/`value`/`autoFocus`/
+`form` and the `click` event and no `Form*` enum. `IconButton` was weighed against merging into
+`Button` and kept separate, because its required `label` is an accessible-name guardrail a merged
+Button could not enforce.
 
 Plan B4 put the last three components of Plan B under contract — BarChart, LineChart and
 DoughnutChart — taking `check:api` from 18 contracts across 35 layer implementations to **21 across
