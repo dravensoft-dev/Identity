@@ -84,10 +84,6 @@ export const EXEMPT = new Map([
    '"ConfirmDialog -- Angular is accessible, React is not yet". React implements no focus ' +
    'tracking on this input at all; the divergence is named there as open debt on the React ' +
    'layer, not an invented state on the Angular/Tailwind side.'],
-  ['ThemeToggle:root:hover',
-   'ThemeToggle.jsx renders nothing of its own but <IconButton label={name} ... {...rest}> -- ' +
-   "its entire body is IconButton's -- so the hover comes from IconButton.jsx's own useState " +
-   'hover tracking. A single-file scan of ThemeToggle.jsx alone cannot see across that composition.'],
 ]);
 
 /** Tailwind state-modifier families this gate looks for, and the regex that

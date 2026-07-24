@@ -80,18 +80,17 @@ including the viewport-wide one, still broken. **Not yet done.**
 **Converges:** no. This is the correct Angular idiom. The stray-attribute edge above is a
 defect within it and is expected to converge once fixed layer-wide.
 
-### The two carve-outs: a root that must be a specific element is not host-bound
+### The carve-out: a root that must be a specific element is not host-bound
 
-`theme-toggle`'s root must be a real `<button>` for keyboard operability, focus and
-implicit semantics; `activity-feed`'s must be a real `<ul>` with `<li>` rows, or a screen
-reader stops announcing a list. `<arena-x>` is a custom element and cannot be made
-either by binding classes to it.
+`activity-feed`'s root must be a real `<ul>` with `<li>` rows, or a screen reader stops
+announcing a list. `<arena-x>` is a custom element and cannot be made one by binding
+classes to it.
 
 **The rule, stated generally:** host-binding targets elements that exist *only* to carry
 styling. When the root must be a specific semantic or interactive element, keep that
-element and do not host-bind. Both carve-outs keep their own entries below with the
-component-specific detail; this is the rule they are instances of. The display-utility
-guard still applies and still passes for both.
+element and do not host-bind. The carve-out keeps its own entry below with the
+component-specific detail; this is the rule it is an instance of. The display-utility
+guard still applies and still passes.
 
 **Converges:** no.
 
@@ -207,86 +206,25 @@ keeps its fade and drops its travel, an opacity-only animation needs no clause.
 
 **Converges:** no. Each layer uses its own idiom over the same token values.
 
-### ThemeToggle is the one Angular primitive that does not host-bind its root
+### ActivityFeed is the Angular primitive that does not host-bind its root
 
-**Every other Angular primitive:** the recipe's `root` slot is bound onto the host —
-`host: { '[class]': 'styles().root()' }` — and no wrapper element is rendered.
-
-**`arena-theme-toggle`:** keeps the host a bare, unstyled `<arena-theme-toggle>` and
-renders a real `<button>` inside it that carries `styles().root()`.
-
-**Why:** ThemeToggle is the layer's first (and, through Task 27, only) primitive whose
-root is a native interactive control. A `<button>` is required for keyboard operability,
-focus and implicit ARIA semantics that `<arena-theme-toggle>` — an unknown custom
-element — cannot acquire just by having classes bound to it. The host-bind rule exists to
-eliminate elements that exist ONLY to carry styling; a real `<button>` is not one of
-those, so the rule's own reason does not apply here. This also preserves the public API
-the plan and `theme-toggle.prompt.md` document: `<arena-theme-toggle />` with no wrapper
-markup a consumer needs to know about.
-
-**Consequence to know:** unlike every other primitive, a consumer attribute written
-directly on `<arena-theme-toggle>` (a static `class=""`, an ARIA attribute) lands on the
-inert host, not on the styled, interactive `<button>` inside it — there is no host
-binding for it to compose with. No primitive in this layer currently needs that
-passthrough (ThemeToggle takes no inputs), so this is recorded as a known shape rather
-than a gap to close.
-
-**Converges:** no. This is the correct shape for a primitive whose root is a real
-interactive control, and it is expected to stay the layer's one exception.
-
-### ThemeToggle — Angular reads a signal, React observes the DOM
-
-**React:** `ThemeToggle.jsx` owns no theme state either, but the truth it reads is the
-`arena-light` class on `<html>`, and it reads that back through a `MutationObserver`
-(`useEffect` + `mo.observe(document.documentElement, { attributes: true, attributeFilter:
-['class'] })`), because `theme.js` is an IIFE with no exports and `window.__toggleTheme`
-is the only handle it offers.
-
-**Angular:** `arena-theme-toggle` injects the layer's own `ThemeService` and reads its
-`theme` signal directly (`computed(() => this.themeService.theme() === 'dark')`) — no
-DOM observation at all. Clicking calls `ThemeService.toggle()`, whose own `effect()` is
-what writes the `arena-light` class back onto `<html>`.
-
-**Why:** a signal is read, not observed. The Angular layer already has an equivalent to
-React's DOM-truth-plus-observer pair that does not need a `MutationObserver` at all, so
-using it is the better answer to the same problem, not a narrowing of it.
-
-**Also not ported:** React's `label` prop (a function `(dark) => string` letting a
-consumer override the accessible name/title) and its `{...rest}` spread (forwarded onto
-the underlying `<button>`, via `IconButton`). The brief's Interfaces line states
-`ThemeToggle` takes no inputs, and neither omission was given a reason in the brief. This
-is recorded per the standing rule ("say so rather than silently narrow, don't cite
-YAGNI") rather than implemented, since the previous entry above already means a consumer
-cannot reach the inner `<button>` from the host anyway — adding a `label` input without
-the attribute passthrough `...rest` gave React would still leave a real gap. A future
-task can add `label` as a signal input if a consumer needs a customized name; there is no
-`--rest`-shaped equivalent to add in Angular's signal-input model (see PageHead's own
-entry above for the same conclusion about `style`/`{...rest}`).
-
-**Converges:** no on the MutationObserver-vs-signal shape (Angular's is strictly better).
-The `label` customization gap is low-priority open debt, on the Angular layer this time.
-
-### ActivityFeed is the second Angular primitive that does not host-bind its root
-
-**Every other Angular primitive except `arena-theme-toggle`:** the recipe's `root` slot is
+**Every other Angular primitive:** the recipe's `root` slot is
 bound onto the host — `host: { '[class]': 'styles().root()' }` — and no wrapper element is
 rendered.
 
 **`arena-activity-feed`:** keeps the host a bare, unstyled `<arena-activity-feed>` and
 renders a real `<ul [class]="base().root()">` inside it, with each row a real `<li>`.
 
-**Why:** this is the same rule `ThemeToggle`'s entry above establishes, hit a second time
-rather than reopened — "when the root must be a specific semantic element, keep it and do
-not host-bind." An `<li>` must be a child of a list element (`<ul>`, `<ol>` or `<menu>`);
-host-binding `root` here would make `<arena-activity-feed>` itself the list and promote its
-rows to children of an element that is not one, silently destroying the list semantics a
-screen reader announces (item count, position-in-set) with no ARIA role added to
-compensate — and none is needed, since the native `<ul>`/`<li>` pair already carries it.
-`ThemeToggle`'s case is a native interactive control that a custom element cannot become;
-this one is a native list structure a custom element cannot become either. Same rule, two
-instances.
+**Why:** this is the general carve-out this file's "two carve-outs" entry above states —
+"when the root must be a specific semantic element, keep it and do not host-bind." An
+`<li>` must be a child of a list element (`<ul>`, `<ol>` or `<menu>`); host-binding `root`
+here would make `<arena-activity-feed>` itself the list and promote its rows to children
+of an element that is not one, silently destroying the list semantics a screen reader
+announces (item count, position-in-set) with no ARIA role added to compensate — and none
+is needed, since the native `<ul>`/`<li>` pair already carries it. A native list structure
+is a structure a custom element cannot become.
 
-**Consequence to know:** as with `ThemeToggle`, a consumer attribute written directly on
+**Consequence to know:** a consumer attribute written directly on
 `<arena-activity-feed>` (a static `class=""`, an ARIA attribute) lands on the inert host,
 not on the styled `<ul>` inside it. `host-class-binding.test.ts`'s manifest-driven display-
 utility guard still covers this component (it reads every primitive's `slots.root` string
@@ -301,7 +239,7 @@ consequence above. There is nothing more to route them to without reopening the
 no-host-bind decision itself.
 
 **Converges:** no. This is the correct shape for a primitive whose root must be a real list
-element, the same way `ThemeToggle`'s is for a primitive whose root must be a real button.
+element, per the carve-out rule stated above.
 
 ### The Angular layer has no Button primitive
 

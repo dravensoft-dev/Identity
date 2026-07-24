@@ -33,8 +33,8 @@ Two naming notes: the density keys take the token's suffix verbatim, so
 Tailwind's built-in `max-w-max`.
 
 A theme key is not bound to one axis. `--dz-ctl-h` is exposed as the `--spacing-ctl-h`
-key, so it reaches `h-ctl-h` **and** `w-ctl-h` / `min-w-ctl-h` — `ThemeToggle` uses all
-three to make an icon-only control exactly square at the control height. That is one
+key, so it reaches `h-ctl-h` **and** `w-ctl-h` / `min-w-ctl-h` — an icon-only control can
+combine all three to come out exactly square at the control height. That is one
 token reaching three utilities, not a new value; the coverage gate counts the token,
 not the utilities it reaches.
 
@@ -106,8 +106,8 @@ extension, it is itself a failure.
 
 ## What ships here
 
-`components/` holds **39 manifests**, one per component, each with a specimen page
-beside it that renders the real markup from the real recipe with no build step. Eighteen
+`components/` holds **38 manifests**, one per component, each with a specimen page
+beside it that renders the real markup from the real recipe with no build step. Seventeen
 have an Angular primitive consuming them; twenty-one do not, and what holds those up is
 `bun run check:tailwind` — every class a manifest declares must produce a rule, so a
 manifest with no consumer cannot rot silently. `SideNav` is the odd one in that second

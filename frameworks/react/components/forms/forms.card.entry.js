@@ -9,7 +9,6 @@ import { Input } from "../../components/forms/Input.js";
 import { Select } from "../../components/forms/Select.js";
 import { Checkbox } from "../../components/forms/Checkbox.js";
 import { Switch } from "../../components/forms/Switch.js";
-import { ThemeToggle } from "../../components/forms/ThemeToggle.js";
 const plus = React.createElement("i", {
   className: "ph-bold ph-plus",
   style: { fontSize: "var(--icon-md)", lineHeight: "var(--dz-lh)" }
@@ -110,12 +109,6 @@ function Demo() {
     onFuncOn: () => setSw(true),
     onFuncOff: () => setSw(false),
     label: "Automatic deployment"
-  })), React.createElement("div", {
-    className: "sub"
-  }, "ThemeToggle"), React.createElement("div", {
-    className: "row"
-  }, React.createElement(ThemeToggle, null), React.createElement("span", {
-    style: { fontSize: "var(--dz-text-md)", color: "var(--mute)" }
-  }, "Flips the whole page — every component re-themes from tokens alone.")));
+  })));
 }
 createRoot(document.getElementById("root")).render(React.createElement(Demo, null));

@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppLogo } from '../../components/brand/AppLogo.jsx';
 import { Avatar } from '../../components/display/Avatar.jsx';
 import { IconButton } from '../../components/forms/IconButton.jsx';
-import { ThemeToggle } from '../../components/forms/ThemeToggle.jsx';
+import { Switch } from '../../components/forms/Switch.jsx';
 import { Icon } from './Icon.jsx';
 import { PageHead } from '../../components/navigation/PageHead.jsx';
 import { SideNav } from '../../components/navigation/SideNav.jsx';
@@ -14,7 +14,36 @@ const NAV = [
   { id: 'settings', icon: <Icon name="settings" size="var(--icon-lg)" />, label: 'Settings', href: '#settings' },
 ];
 
+/* Owns no theme state of its own: the truth is the `arena-light` class on
+ * <html>, and this reads it. The MutationObserver below is what keeps that
+ * honest -- if theme.js or another tab flips the theme, the Switch re-renders
+ * to match. theme.js is an IIFE with no exports, so the only handle it offers
+ * is window.__toggleTheme; use it when present, otherwise do the same two
+ * things it does, against the same class and the same storage key. */
+const THEME_STORAGE_KEY = 'draven-theme';
+const isDarkNow = () =>
+  typeof document !== 'undefined' && !document.documentElement.classList.contains('arena-light');
+
+function flipTheme() {
+  if (typeof window !== 'undefined' && typeof window.__toggleTheme === 'function') {
+    window.__toggleTheme();
+    return;
+  }
+  const goingLight = isDarkNow();
+  document.documentElement.classList.toggle('arena-light', goingLight);
+  try { localStorage.setItem(THEME_STORAGE_KEY, goingLight ? 'light' : 'dark'); } catch (_) {}
+}
+
 export function Shell({ active = 'dashboard', onNav, title, actions, children }) {
+  const [isDark, setIsDark] = useState(true);
+
+  useEffect(() => {
+    setIsDark(isDarkNow());
+    const mo = new MutationObserver(() => setIsDark(isDarkNow()));
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => mo.disconnect();
+  }, []);
+
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'var(--layout-sidebar) 1fr', minHeight: '100%', background: 'var(--bg)' }}>
       <aside style={{ borderRight: 'var(--bw) solid var(--color-base-300)', padding: 'calc(var(--sp-1) * 6) calc(var(--sp-1) * 4)', display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 1)' }}>
@@ -40,7 +69,9 @@ export function Shell({ active = 'dashboard', onNav, title, actions, children })
               {actions}
               <IconButton label="Search"><Icon name="search" /></IconButton>
               <IconButton label="Notifications"><Icon name="bell" /></IconButton>
-              <ThemeToggle />
+              <Switch state={isDark} iconOn="ph-bold ph-sun" iconOff="ph-bold ph-moon" label="Theme"
+                onFuncOn={() => { flipTheme(); setIsDark(true); }}
+                onFuncOff={() => { flipTheme(); setIsDark(false); }} />
             </>} />
         </header>
         <div style={{ padding: 'calc(var(--sp-1) * 8)', flex: 1, overflow: 'auto' }}>{children}</div>

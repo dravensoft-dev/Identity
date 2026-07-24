@@ -6,7 +6,6 @@ import { Input } from '../../components/forms/Input.jsx';
 import { Select } from '../../components/forms/Select.jsx';
 import { Checkbox } from '../../components/forms/Checkbox.jsx';
 import { Switch } from '../../components/forms/Switch.jsx';
-import { ThemeToggle } from '../../components/forms/ThemeToggle.jsx';
 const plus = <i className="ph-bold ph-plus" style={{fontSize:'var(--icon-md)',lineHeight:'var(--dz-lh)'}} />;
 function Demo(){
   const [chk,setChk]=React.useState(true);
@@ -48,8 +47,6 @@ function Demo(){
         <Checkbox checked={chk} onChange={e=>setChk(e.target.checked)} label="Notify on approval" />
         <Switch state={sw} onFuncOn={()=>setSw(true)} onFuncOff={()=>setSw(false)} label="Automatic deployment" />
       </div>
-      <div className="sub">ThemeToggle</div>
-      <div className="row"><ThemeToggle /><span style={{fontSize:'var(--dz-text-md)',color:'var(--mute)'}}>Flips the whole page — every component re-themes from tokens alone.</span></div>
     </div>
   );
 }

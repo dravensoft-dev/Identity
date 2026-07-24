@@ -234,7 +234,7 @@ static styling as camelCase `[style]` **objects**: in that shape `strokeWidth` a
 not a workaround. Angular's `[style.x]` binding form is invisible to all four scanners
 too. Closing this properly needs `PROP_COLON` taught kebab-awareness plus the Angular
 binding form, with its own suite. **No gate compares a Tailwind manifest against the
-component it mirrors, and the mapping is not one-to-one**: 18 of the 39 manifests mirror
+component it mirrors, and the mapping is not one-to-one**: 17 of the 38 manifests mirror
 both a React component and an `arena-*` primitive; the other 21 mirror a React component
 alone, because Angular Material provides that control and `arena-material.css` dresses
 it — `SideNav` among them, bridged through `mat-nav-list`. `Tag.manifest.json` is the one
@@ -254,8 +254,7 @@ exceptions named above (`Tag` against `tag.ts`, via a `SOURCE_OVERRIDES` map) an
 a `check-dimension-literals.mjs`-shaped `EXEMPT` map, keyed `<Component>:<slot>:<family>`
 with a reason each, for a handful of hits that are real but that a whole-file text scan
 cannot resolve on its own — a state delegated to a composed child component
-(`ConfirmDialog`'s confirm/cancel buttons are React's own `<Button>`; `ThemeToggle`
-renders nothing but `<IconButton>`) or a documented, deliberate accessibility addition on
+(`ConfirmDialog`'s confirm/cancel buttons are React's own `<Button>`) or a documented, deliberate accessibility addition on
 the Angular side that React does not have (`ConfirmDialog`'s require-text input). A stale
 `EXEMPT` entry — one naming a component/slot/family that no longer carries that state —
 fails the gate, the same invariant `check-dimension-literals.mjs`'s own `EXEMPT` holds.
@@ -294,7 +293,7 @@ Inject **as little as the job needs**. Prefer keyframes alone and leave the `ani
 
 The Angular layer's quartet is the analogue: `<name>.ts` (standalone `OnPush` component, `arena-` selector, signal I/O, no component `styles`), `<name>.variants.ts` (a `tailwind-variants` recipe built with `frameworks/tailwind/tv.ts`), `<name>.prompt.md`, and a barrel export. Dark-first (`.arena-light`), danger stays outline, Phosphor icons. The three SVG charts are the one exception and have no `<name>.variants.ts` — see the charts note below.
 
-**A host-bound root is the Angular layer's default, and it has two carve-outs.** A primitive binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than rendering a wrapper div, so the host is the flex item its parent lays out and — where the component measures itself — the measured element is the styled element. Two primitives correctly do **not**: `theme-toggle`, whose root must be a real `<button>` for keyboard operability, and `activity-feed`, whose root must be a real `<ul>` with `<li>` rows. The rule targets elements that exist only to carry styling; when the root must be a specific semantic or interactive element, keep it. **A host-bound root must carry a display utility** — `<arena-x>` is an unknown element defaulting to `display:inline`, where width and height do not apply, so a root slot without one renders a zero-area host. That is machine-guarded by a manifest-driven assertion in `frameworks/angular/test/host-class-binding.test.ts`.
+**A host-bound root is the Angular layer's default, and it has one carve-out.** A primitive binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than rendering a wrapper div, so the host is the flex item its parent lays out and — where the component measures itself — the measured element is the styled element. One primitive correctly does **not**: `activity-feed`, whose root must be a real `<ul>` with `<li>` rows. The rule targets elements that exist only to carry styling; when the root must be a specific semantic or interactive element, keep it. **A host-bound root must carry a display utility** — `<arena-x>` is an unknown element defaulting to `display:inline`, where width and height do not apply, so a root slot without one renders a zero-area host. That is machine-guarded by a manifest-driven assertion in `frameworks/angular/test/host-class-binding.test.ts`.
 
 **The Angular test harness is JIT, and that bounds what a test can prove.** `frameworks/angular/test/` renders real zoneless Angular trees under `bun test` via `happy-dom`, which needs three test-only devDependencies beyond the `node:test`/`node:assert` baseline the rest of the repo uses — `@angular/platform-browser`, `happy-dom` and `@happy-dom/global-registrator`. Because the harness runs `@angular/compiler`'s JIT and never `ngtsc`, **a signal input cannot be driven through a template binding, a literal attribute, or `componentRef.setInput()`** — the first two ways fail loudly (NG0303, thrown), the third does not: `setInput()` on an undiscovered signal input silently no-ops and the render keeps the field's default, which is the more dangerous failure because a suite built on it passes vacuously with nothing announcing the mistake. Overwrite the instance field directly instead. `contentChild()` queries do not resolve either. Factor the logic into plain exported functions and test those against a real DOM rather than faking a render; `check:angular`'s `ngc --strictTemplates` is the authority that the input contract and the queries actually compile.
 
@@ -313,7 +312,7 @@ and brand (`*.dc.html`). React lives in `frameworks/react/`;
 (`theme/arena-material.css`), a Phosphor icon manifest (`icons/`), a
 dark-first signal `ThemeService`
 (`theme/theme-service.ts` + `theme/no-fouc.html`), and
-21 standalone `OnPush` primitives under `primitives/` (`tag` is the reference
+20 standalone `OnPush` primitives under `primitives/` (`tag` is the reference
 shape; the three SVG charts are the declared exception — no manifest, no
 `.variants.ts`, token-valued camelCase `[style]` objects like React's, and reviewed
 against React's `charts.card.html` rather than a specimen of their own), each
@@ -500,9 +499,9 @@ scheduled for deletion the same week.
   question, *"How does a pattern express an optional requirement?"*, is this.
   `comparePattern`'s stale-exception message has no vocabulary for "true in one
   variant" either — it offers only "delete it or name a subject".
-- **Compliance coverage is 6 of 64 bindings and nothing schedules the rest.**
+- **Compliance coverage is 6 of 62 bindings and nothing schedules the rest.**
   `COVERED` guards the accuracy of what it claims, never the completeness of it, so
-  the 58 uncovered bindings — including every one of `Table`'s and `Calendar`'s
+  the 56 uncovered bindings — including every one of `Table`'s and `Calendar`'s
   eight exceptions, the components with no keyboard navigation at all — remain
   exactly as unverified as they were before this gate existed. The gate was built
   that way on purpose: one demanding 47 suites on day one would have been switched

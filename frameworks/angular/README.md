@@ -42,11 +42,10 @@ quartet: `<name>.ts` (standalone, `OnPush`, signal I/O, `arena-` selector),
 reference shape. The three SVG charts are the one exception and have no
 `<name>.variants.ts` — see below.
 
-The layer ships **21 primitives**: `activity-feed`, `alert`, `app-logo`, `avatar`,
+The layer ships **20 primitives**: `activity-feed`, `alert`, `app-logo`, `avatar`,
 `bar-chart`, `breadcrumbs`, `bulk-action-bar`, `chart-card`, `command-palette`,
 `confirm-dialog`, `doughnut-chart`, `empty-state`, `error-state`, `line-chart`,
-`onboarding`, `page-head`, `skeleton`, `stat-card`, `tag`, `theme-toggle`,
-`unauth-card`.
+`onboarding`, `page-head`, `skeleton`, `stat-card`, `tag`, `unauth-card`.
 
 **`SideNav` is not among them, and that is the rule working.** Material's `mat-nav-list`
 covers the item list, so Arena dresses it in `arena-material.css` (`.arena-side-nav`)

@@ -652,9 +652,6 @@
   .w-auto {
     width: auto;
   }
-  .w-ctl-h {
-    width: var(--spacing-ctl-h);
-  }
   .w-full {
     width: 100%;
   }

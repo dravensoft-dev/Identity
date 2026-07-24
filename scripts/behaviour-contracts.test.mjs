@@ -152,14 +152,14 @@ test('an angular binding that names its counterpart is valid', () => {
 
 test('the React inventory finds every component and no demo entry', () => {
   const found = reactComponents('.');
-  assert.equal(found.length, 43);
+  assert.equal(found.length, 42);
   assert.ok(found.includes('Dialog'));
   assert.ok(!found.some((c) => c.endsWith('.card.entry')));
 });
 
 test('the Angular inventory finds every primitive and no bare module', () => {
   const found = angularPrimitives('.');
-  assert.equal(found.length, 21);
+  assert.equal(found.length, 20);
   assert.ok(found.includes('tag'));
   assert.ok(!found.includes('chart-internals'));
 });

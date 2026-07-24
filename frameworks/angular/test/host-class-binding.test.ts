@@ -1,6 +1,6 @@
 /* Pins the host-binding shape the reference primitives (avatar, tag) settled
  * on after review, and that every later primitive follows except
- * `arena-theme-toggle`: the recipe's visible slot is bound onto the
+ * `arena-activity-feed`: the recipe's visible slot is bound onto the
  * component's own host element (`host: { '[class]': 'styles().root()' }`),
  * not onto a wrapper span one level inside it. In React, a component's root
  * element IS the flex item its parent row lays out; in Angular that flex
@@ -9,11 +9,11 @@
  * binds to whichever slot is actually visible for the current variant
  * (`root`, or `stack` when `variant="text"`), because `root` alone is
  * `hidden` in that case -- same principle, one more level of indirection.
- * `arena-theme-toggle` is the one exception rather than a variation: its
- * root is a real `<button>` rendered inside its own unstyled host, not a
- * binding on the host at all, because a native interactive control cannot be
- * an unknown custom element (see components-divergences.md, "ThemeToggle is
- * the one Angular primitive that does not host-bind its root").
+ * `arena-activity-feed` is the one exception rather than a variation: its
+ * root must be a real `<ul>` with real `<li>` rows, not a binding on the
+ * host at all, because a native list structure cannot be an unknown custom
+ * element (see components-divergences.md, "ActivityFeed is the Angular
+ * primitive that does not host-bind its root").
  *
  * A host `[class]` binding could instead have clobbered a consumer's own
  * `class="..."` attribute on `<arena-avatar>` / `<arena-tag>` — Angular's own
@@ -69,8 +69,6 @@ import { statCardStyles } from '../primitives/stat-card/stat-card.variants';
 import type { StatDelta } from '../api.generated';
 import { Tag } from '../primitives/tag/tag';
 import { tagStyles } from '../primitives/tag/tag.variants';
-import { ThemeToggle } from '../primitives/theme-toggle/theme-toggle';
-import { ThemeService } from '../theme/theme-service';
 import { UnauthCard } from '../primitives/unauth-card/unauth-card';
 import { unauthCardStyles } from '../primitives/unauth-card/unauth-card.variants';
 
@@ -308,13 +306,6 @@ class PageHeadWithoutActionsHost {}
 
 @Component({
   standalone: true,
-  imports: [ThemeToggle],
-  template: `<arena-theme-toggle />`,
-})
-class ThemeToggleHost {}
-
-@Component({
-  standalone: true,
   imports: [UnauthCard],
   host: { 'data-host': 'unauth-card' },
   template: `<arena-unauth-card class="consumer-class" />`,
@@ -540,11 +531,11 @@ test('arena-app-logo: content selected for [mark] projects into the mark slot', 
   fixture.destroy();
 });
 
-/* `arena-activity-feed` is the second primitive in this file (after
- * `arena-theme-toggle`) whose styled root is NOT host-bound -- its root must
- * be a real `<ul>` so its rows can be real `<li>`s, and `<arena-activity-feed>`
- * cannot itself become one (components-divergences.md, "ActivityFeed is the
- * second Angular primitive that does not host-bind its root"). `items` is a
+/* `arena-activity-feed` is the one primitive in this file whose styled root is
+ * NOT host-bound -- its root must be a real `<ul>` so its rows can be real
+ * `<li>`s, and `<arena-activity-feed>` cannot itself become one
+ * (components-divergences.md, "ActivityFeed is the Angular primitive that
+ * does not host-bind its root"). `items` is a
  * signal input this JIT-only harness cannot drive through a template binding
  * (NG0303, the same limitation this file's header documents for Skeleton's
  * `variant` and Breadcrumbs' `items`) or a literal attribute (a silent
@@ -1128,122 +1119,16 @@ test('arena-page-head: a platform with no ResizeObserver still renders, on the w
   }
 });
 
-/* ThemeToggle is the layer's first primitive to inject a service
- * (ThemeService) and the only one so far whose styled `root` is NOT
- * host-bound -- its root must be a real `<button>` for keyboard operability,
- * and `<arena-theme-toggle>` cannot itself become one (components-
- * divergences.md records this as a deliberate structural divergence). It is
- * also the first primitive in this file with no signal inputs at all, so
- * none of the NG0303 limitation the tests above document (Skeleton's
- * `variant`, Breadcrumbs' `items`, PageHead's measured width) applies here
- * -- there is no input this harness would need ngtsc to drive. A real
- * TestBed render can therefore exercise the whole chain for real: a real
- * click calling the component's `toggle()`, which calls the shared
- * `ThemeService.toggle()`, whose own `effect()` writes the `arena-light`
- * class onto the real document, which feeds back into the component's
- * `dark` computed and what it renders next.
- *
- * `ThemeService` is `providedIn: 'root'`, so it is one singleton shared by
- * every test in this file's TestBed environment -- nothing here ever calls
- * `TestBed.resetTestingModule()` (see this file's own header comment, and
- * testbed-env.ts, on why the environment is claimed once per process).
- * `resetTheme()`
- * below puts it back to Arena's dark default at the top of each of the three
- * tests that follow, so they cannot depend on execution order among
- * themselves or leave the class on `<html>` in a state a later one would
- * trip over. It is called per-test rather than as a file-level `beforeEach`
- * so the ~20 unrelated tests above it -- none of which touch ThemeService --
- * never pay for a reset they do not need. */
-function resetTheme(): void {
-  TestBed.inject(ThemeService).set('dark');
-  document.documentElement.classList.remove('arena-light');
-}
-
-test('arena-theme-toggle: starts dark -- aria-pressed true and the sun glyph, the state it is currently IN', async () => {
-  resetTheme();
-  const fixture = TestBed.createComponent(ThemeToggleHost);
-  fixture.detectChanges();
-  await fixture.whenStable();
-
-  const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-  assert.equal(button.getAttribute('aria-pressed'), 'true', 'dark is Arena\'s default, so aria-pressed must report true');
-  assert.equal(button.getAttribute('aria-label'), 'Switch to light theme');
-
-  const icon = button.querySelector('i') as HTMLElement;
-  assert.ok(icon.classList.contains('ph-sun'), `expected the sun glyph while dark -- the icon shows the state you are IN: "${icon.className}"`);
-  assert.ok(!icon.classList.contains('ph-moon'));
-});
-
-test('arena-theme-toggle: a real click flips ThemeService\'s own signal and the arena-light class on <html>, not just local component state', async () => {
-  resetTheme();
-  const fixture = TestBed.createComponent(ThemeToggleHost);
-  fixture.detectChanges();
-  await fixture.whenStable();
-
-  const service = TestBed.inject(ThemeService);
-  assert.equal(service.theme(), 'dark', 'sanity: starts dark');
-  assert.ok(!document.documentElement.classList.contains('arena-light'), 'sanity: starts without the light class');
-
-  const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-  button.click();
-  fixture.detectChanges();
-  await fixture.whenStable();
-
-  assert.equal(
-    service.theme(),
-    'light',
-    'ThemeService\'s own signal must have flipped -- proves the component calls the shared service\'s toggle() rather than reimplementing the light/dark switch locally',
-  );
-  assert.ok(
-    document.documentElement.classList.contains('arena-light'),
-    'ThemeService\'s own effect must have applied the class change to the real document -- that is the service\'s job, not the component\'s',
-  );
-
-  assert.equal(button.getAttribute('aria-pressed'), 'false', 'aria-pressed must report the CURRENT (now light) state, not the state before the click');
-  assert.equal(button.getAttribute('aria-label'), 'Switch to dark theme');
-  const icon = button.querySelector('i') as HTMLElement;
-  assert.ok(
-    icon.classList.contains('ph-moon'),
-    `expected the moon glyph now that the theme is light -- the icon shows the state you are IN, never the state a click would move you to: "${icon.className}"`,
-  );
-  assert.ok(!icon.classList.contains('ph-sun'));
-});
-
-test('arena-theme-toggle: a second click flips back to dark -- the toggle is not a one-shot', async () => {
-  resetTheme();
-  const fixture = TestBed.createComponent(ThemeToggleHost);
-  fixture.detectChanges();
-  await fixture.whenStable();
-
-  const service = TestBed.inject(ThemeService);
-  const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-
-  button.click();
-  fixture.detectChanges();
-  await fixture.whenStable();
-  assert.equal(service.theme(), 'light');
-
-  button.click();
-  fixture.detectChanges();
-  await fixture.whenStable();
-
-  assert.equal(service.theme(), 'dark');
-  assert.ok(!document.documentElement.classList.contains('arena-light'));
-  assert.equal(button.getAttribute('aria-pressed'), 'true');
-  const icon = button.querySelector('i') as HTMLElement;
-  assert.ok(icon.classList.contains('ph-sun'));
-});
-
-/* Every primitive except `arena-theme-toggle` host-binds its recipe's
+/* Every primitive except `arena-activity-feed` host-binds its recipe's
  * visible slot directly onto its own custom element (this file's own header
- * comment) -- `arena-theme-toggle`'s root is a real `<button>` instead,
- * since a native interactive control cannot be an unknown custom element;
- * see components-divergences.md ("ThemeToggle is the one Angular primitive
- * that does not host-bind its root"). Either way the manifest's `root` slot
+ * comment) -- `arena-activity-feed`'s root is a real `<ul>` instead, since a
+ * native list structure cannot be an unknown custom element; see
+ * components-divergences.md ("ActivityFeed is the Angular primitive that
+ * does not host-bind its root"). Either way the manifest's `root` slot
  * still needs a display utility below: an unknown element's UA-default
  * display is `inline` -- a box that a width/height utility cannot size, and
- * `arena-theme-toggle`'s own manifest keeps one too even though its root
- * lands on a real `<button>`, so the check stays uniform across every
+ * `arena-activity-feed`'s own manifest keeps one too even though its root
+ * lands on a real `<ul>`, so the check stays uniform across every
  * primitive rather than special-casing the one exception. Skeleton's
  * `block arena-shimmer` fix (Skeleton.manifest.json) exists
  * because its `root` slot shipped without a display utility and collapsed to
