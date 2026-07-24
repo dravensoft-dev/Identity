@@ -1,6 +1,6 @@
 {
   "name": "Orientation",
   "kind": "enum",
-  "description": "Whether the parts sit side by side or stacked.",
+  "description": "Whether a component's parts lay out side by side or stacked — which axis it runs along.",
   "values": ["horizontal", "vertical"]
 }

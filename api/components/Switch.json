@@ -4,7 +4,7 @@
   "api": {
     "state": { "form": "primitive", "type": "boolean", "default": false,
                "description": "The current on/off value. Controlled — the consumer owns it and pushes it each render." },
-    "orientation": { "form": "enum", "type": "SwitchOrientation", "default": "horizontal",
+    "orientation": { "form": "enum", "type": "Orientation", "default": "horizontal",
                      "description": "Whether the switch lies horizontally or stands vertically." },
     "size": { "form": "enum", "type": "SwitchSize", "default": "md",
               "description": "The switch's overall size." },

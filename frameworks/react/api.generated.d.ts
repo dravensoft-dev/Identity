@@ -32,7 +32,7 @@ export type Direction = 'up' | 'down';
 /** Both halves of the brand lock-up at once — the mark's slot and the wordmark. A fixed repertoire, not a ratio: sm an application frame, md a signed-out panel, lg the manual's Primary, xl the hero case. */
 export type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
 
-/** Whether the parts sit side by side or stacked. */
+/** Whether a component's parts lay out side by side or stacked — which axis it runs along. */
 export type Orientation = 'horizontal' | 'vertical';
 
 /** The shape the placeholder reserves: a single text line, a stack of lines, a block, or a circle. */
@@ -47,9 +47,6 @@ export interface StatDelta {
   /** Whether that movement is GOOD. Defaults to neutral — an unlabelled delta claims nothing. */
   tone?: DeltaTone;
 }
-
-/** Whether the switch lies horizontally or stands vertically. */
-export type SwitchOrientation = 'horizontal' | 'vertical';
 
 /** The switch's overall size, from a dense sm to a prominent 2xl. */
 export type SwitchSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
