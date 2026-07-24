@@ -1,5 +1,5 @@
 {
   "pattern": "none",
-  "reason": "AppLogo renders a brand lock-up -- a sized mark slot filled with the caller's own node, plus a name/dim text pair. It manages no state, adds no role, and owns no interactive element of its own; when `mark` or `name` is missing it renders null outright. Any click affordance belongs to whatever the caller passes as `mark`, not to AppLogo itself.",
+  "reason": "AppLogo renders a brand lock-up -- a sized mark slot filled with the caller's own node, plus a name/dim text pair. It manages no state, adds no role, and owns no interactive element of its own; when `mark` or `name` is missing it throws, React fail-harding on an absent required member to match Angular's `input.required`. Any click affordance belongs to whatever the caller passes as `mark`, not to AppLogo itself.",
   "exceptions": []
 }

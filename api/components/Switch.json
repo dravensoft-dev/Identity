@@ -12,7 +12,7 @@
                 "description": "A Phosphor class name for the glyph shown while on. Arena draws the aria-hidden `<i>`." },
     "iconOff": { "form": "primitive", "type": "string",
                  "description": "A Phosphor class name for the glyph shown while off." },
-    "label": { "form": "primitive", "type": "string",
+    "label": { "form": "primitive", "type": "string", "required": true,
                "description": "The accessible name for the switch, also drawn beside it." },
     "disabled": { "form": "primitive", "type": "boolean", "default": false,
                   "description": "Whether the switch is inoperable." },

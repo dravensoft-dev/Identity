@@ -23,6 +23,8 @@ export function Switch({
   onFuncOff,
   onRequestChange
 }) {
+  if (!label)
+    throw new Error("Switch: `label` is required (a switch must have an accessible name)");
   const dims = SIZES[size] || SIZES.md;
   const vertical = orientation === "vertical";
   const guarded = confirm && typeof onRequestChange === "function";
@@ -46,7 +48,7 @@ export function Switch({
     type: "button",
     role: "switch",
     "aria-checked": state,
-    "aria-label": label || undefined,
+    "aria-label": label,
     disabled,
     onClick: activate,
     style: {
@@ -82,7 +84,8 @@ export function Switch({
     className: icon,
     style: { fontSize: dims.icon, lineHeight: "var(--lh-tight)" }
   }))), label && React.createElement("span", {
-    style: { display: "inline-flex", alignItems: "center", gap: "calc(var(--sp-1) * 1.5)", fontFamily: "var(--font-body)", fontSize: "var(--dz-text)", color: "var(--bone-dim)" }
+    onClick: activate,
+    style: { display: "inline-flex", alignItems: "center", gap: "calc(var(--sp-1) * 1.5)", fontFamily: "var(--font-body)", fontSize: "var(--dz-text)", color: "var(--bone-dim)", cursor: disabled ? "not-allowed" : "pointer" }
   }, label, confirm && React.createElement("i", {
     className: "ph-bold ph-shield-check",
     "aria-hidden": "true",

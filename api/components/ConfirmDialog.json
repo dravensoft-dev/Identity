@@ -19,7 +19,7 @@
     "requireText": { "form": "primitive", "type": "string",
                      "description": "Locks the confirm button until this exact word is typed." },
     "cancel": { "form": "event",
-                "description": "The dialog was dismissed — Cancel, or Escape." },
+                "description": "The Cancel action was taken. The accessible (Angular) dialog also reports the Escape key; React's ConfirmDialog handles no keydown -- see its behaviour binding." },
     "confirm": { "form": "event",
                  "description": "The action was confirmed." }
   }

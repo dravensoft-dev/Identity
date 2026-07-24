@@ -25,7 +25,7 @@ test('off renders iconOff and aria-checked="false"', () => {
 test('confirm routes a click to onRequestChange and does not fire onFuncOn', () => {
   const seen = [];
   const tree = Switch({
-    state: false, confirm: true,
+    state: false, confirm: true, label: 'x',
     onRequestChange: () => seen.push('requestChange'),
     onFuncOn: () => seen.push('funcOn'),
     onFuncOff: () => seen.push('funcOff'),
@@ -37,19 +37,19 @@ test('confirm routes a click to onRequestChange and does not fire onFuncOn', () 
 
 test('a plain click fires onFuncOn when off and onFuncOff when on', () => {
   const seenOff = [];
-  const treeOff = Switch({ state: false, onFuncOn: () => seenOff.push('on'), onFuncOff: () => seenOff.push('off') });
+  const treeOff = Switch({ state: false, label: 'x', onFuncOn: () => seenOff.push('on'), onFuncOff: () => seenOff.push('off') });
   treeOff.props.children[0].props.onClick();
   assert.deepEqual(seenOff, ['on']);
 
   const seenOn = [];
-  const treeOn = Switch({ state: true, onFuncOn: () => seenOn.push('on'), onFuncOff: () => seenOn.push('off') });
+  const treeOn = Switch({ state: true, label: 'x', onFuncOn: () => seenOn.push('on'), onFuncOff: () => seenOn.push('off') });
   treeOn.props.children[0].props.onClick();
   assert.deepEqual(seenOn, ['off']);
 });
 
 test('disabled ignores the click entirely', () => {
   const seen = [];
-  const tree = Switch({ state: false, disabled: true, onFuncOn: () => seen.push('on') });
+  const tree = Switch({ state: false, disabled: true, label: 'x', onFuncOn: () => seen.push('on') });
   tree.props.children[0].props.onClick();
   assert.deepEqual(seen, []);
 });

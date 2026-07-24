@@ -28,6 +28,7 @@ export function Switch({
   iconOn, iconOff, label, disabled = false, confirm = false,
   onFuncOn, onFuncOff, onRequestChange,
 }) {
+  if (!label) throw new Error('Switch: `label` is required (a switch must have an accessible name)');
   const dims = SIZES[size] || SIZES.md;
   const vertical = orientation === 'vertical';
   const guarded = confirm && typeof onRequestChange === 'function';
@@ -41,7 +42,7 @@ export function Switch({
 
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2.5)', opacity: disabled ? 0.5 : 1 }}>
-      <button type="button" role="switch" aria-checked={state} aria-label={label || undefined} disabled={disabled} onClick={activate}
+      <button type="button" role="switch" aria-checked={state} aria-label={label} disabled={disabled} onClick={activate}
         style={{
           display: 'inline-flex', flexDirection: vertical ? 'column' : 'row', alignItems: 'center', justifyContent: 'flex-start',
           width: vertical ? dims.cross : dims.track, height: vertical ? dims.track : dims.cross,
@@ -62,7 +63,7 @@ export function Switch({
         </span>
       </button>
       {label && (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 1.5)', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', color: 'var(--bone-dim)' }}>
+        <span onClick={activate} style={{ display: 'inline-flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 1.5)', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', color: 'var(--bone-dim)', cursor: disabled ? 'not-allowed' : 'pointer' }}>
           {label}
           {confirm && <i className="ph-bold ph-shield-check" aria-hidden="true" title="Requires confirmation" style={{ fontSize: 'var(--icon-sm)', color: 'var(--mute)' }} />}
         </span>

@@ -9,7 +9,7 @@ export interface SwitchProps {
   size?: SwitchSize;
   iconOn?: string;
   iconOff?: string;
-  label?: string;
+  label: string;
   disabled?: boolean;
   confirm?: boolean;
   onFuncOn?: () => void;
