@@ -197,6 +197,46 @@ What it had no answer for is Angular: per-item projection needs a
 structural directive and `ngTemplateOutlet`, a binding no row of the table above covers and no
 reader function reads, and landing that machinery for one member was judged the wrong trade.
 
+**Flattening a platform heritage clause enumerates the element, not the platform.** R4 removes
+`extends React.ButtonHTMLAttributes<HTMLButtonElement>` and its siblings, and the question that
+leaves is which of the members it carried are real API. The answer is the attributes the **HTML
+specification defines for that element**: they change what the control is or does, so a contract that
+omitted them would be describing a narrower control than the one Arena ships. Global attributes,
+ARIA attributes and the generic DOM handlers are not members — in Angular a consumer writes those on
+the host directly, which is the same reason `style` and the `{...rest}` spread were deliberately not
+ported (`components-divergences.md:681`, `:989`). So `<button>` contributes `type`, `disabled`,
+`name`, `value`, `autoFocus` and the six `form*` overrides, plus a `click` event; `<span>` and
+`<div>` contribute nothing at all, and flattening a component built on one of those adds no member
+beyond the `content` slot it already accepted through `children`.
+
+Two consequences are stated rather than hidden. A heritage clause is a **narrower documented claim
+sitting on top of a wider real behaviour** — `{...rest}` forwards any prop the platform will render,
+declared or not — so flattening removes capability that was reachable and undocumented, and the
+component's `.prompt.md` says which. And there is no type to read it off: this repository declares
+no React types package and runs no `tsc` over `frameworks/react/`, so the enumeration is transcribed
+from the specification and checked by the audit, never resolved by a compiler.
+
+**A tooltip's bubble is a primitive, not a slot.** The same R2 reasoning the single-icon convention
+uses: Arena draws the bubble, the consumer names the text. It also resolves a collision the binding
+table creates — a component that declares both a `content` member and children has two candidates for
+one default slot, and the trigger is the one that is genuinely projected. The cost is that markup
+inside a tooltip stops being possible.
+
+**An event carries exactly one payload, and a platform event is never it.** A handler declaring two
+parameters — the item and the DOM event that produced it — is not readable as an event, and
+`classify()` refuses it. `Breadcrumbs` settled the resolution and it holds generally: **the platform
+event leaves the payload and the item alone travels**, because a platform event type is an R4
+violation inside a payload just as it is anywhere else. What leaves with it is `preventDefault()`, so
+a component whose items render real anchors must say in its `.prompt.md` that the browser's own
+navigation is no longer interceptable from the handler and that routing belongs to the router.
+
+**A member offering "a bare value or a described one" picks the described one.** `(string | X)[]` is
+an R5 violation and a convenience: the bare string means *value and label are the same*. The array of
+predefined objects wins, because it carries strictly more information and the convenience is
+expressible at the call site as `{ value: x, label: x }`, while the reverse is not — a stable value
+with a translatable label cannot be said at all in the string form. Every call site passing bare
+strings is rewritten, and that is the price.
+
 ## Contract format
 
 `api/components/<Component>.json`:
