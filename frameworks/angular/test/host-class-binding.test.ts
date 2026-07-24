@@ -375,6 +375,20 @@ function createBarChartHost() {
 })
 class LineChartHost {}
 
+/* `arena-line-chart`'s required `labels`/`values`, driven the same way
+ * createBarChartHost() drives the bar chart's -- see its comment for why a
+ * template binding and a literal attribute both fail under this JIT harness.
+ * Empty arrays on purpose: these four tests assert host box, style-object
+ * binding and the fallback accessible name, none of which needs data. */
+function createLineChartHost() {
+  const fixture = TestBed.createComponent(LineChartHost);
+  const instance = fixture.debugElement.query(By.directive(LineChart)).componentInstance as unknown as Record<string, unknown>;
+  instance['labels'] = () => [];
+  instance['values'] = () => [];
+  fixture.detectChanges();
+  return fixture;
+}
+
 @Component({
   standalone: true,
   imports: [DoughnutChart],
@@ -1388,16 +1402,19 @@ test('arena-bar-chart: the picture carries an accessible name and the numbers ca
   assert.equal(caption.textContent?.trim(), 'Bar chart');
 });
 
-/* The same four assertions, ported to the second hand-written chart. They render
- * with DEFAULT inputs only, for the reason the bar-chart block above states: an
- * empty `values` still draws the value axis (`ticks` always yields five) and still
- * renders the numbers table, so all of this is reachable without ever driving a
- * signal input. `line-chart-geometry.test.ts` carries the geometry that does need
- * inputs, as plain functions. */
+/* The same four assertions, ported to the second hand-written chart. `labels` and
+ * `values` became required signal inputs under the API contract
+ * (`api/components/LineChart.json`), so they are driven through
+ * `createLineChartHost()`'s `By.directive` bypass rather than through a template
+ * binding or a literal attribute, both of which this harness silently drops (see
+ * the header). The bypass supplies EMPTY arrays, and everything asserted here
+ * still renders: an empty `values` draws the value axis anyway (`ticks` always
+ * yields five) and still renders the numbers table.
+ * `line-chart-geometry.test.ts` carries the geometry that does need real data, as
+ * plain functions. */
 
 test('arena-line-chart: the host is a block-level box, so the width it measures is a real content width', async () => {
-  const fixture = TestBed.createComponent(LineChartHost);
-  fixture.detectChanges();
+  const fixture = createLineChartHost();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-line-chart') as HTMLElement;
   // `containerWidth()` observes this element. An unknown element defaults to
@@ -1412,8 +1429,7 @@ test('arena-line-chart: the host is a block-level box, so the width it measures 
 });
 
 test('arena-line-chart: the numbers table is bound as a style object, not stringified into the attribute', async () => {
-  const fixture = TestBed.createComponent(LineChartHost);
-  fixture.detectChanges();
+  const fixture = createLineChartHost();
   await fixture.whenStable();
   const table = fixture.nativeElement.querySelector('arena-line-chart table') as HTMLElement;
   assert.ok(table, 'the visually-hidden numbers table did not render');
@@ -1433,8 +1449,7 @@ test('arena-line-chart: the numbers table is bound as a style object, not string
 });
 
 test('arena-line-chart: the SVG presentation styles reach the DOM as tokens, not as literals', async () => {
-  const fixture = TestBed.createComponent(LineChartHost);
-  fixture.detectChanges();
+  const fixture = createLineChartHost();
   await fixture.whenStable();
   // The brief wrote these as raw SVG attributes (`stroke-width="1"`,
   // `font-size="10"`), which check-dimension-literals.mjs cannot judge at all --
@@ -1448,8 +1463,7 @@ test('arena-line-chart: the SVG presentation styles reach the DOM as tokens, not
 });
 
 test('arena-line-chart: the picture carries an accessible name and the numbers carry a caption', async () => {
-  const fixture = TestBed.createComponent(LineChartHost);
-  fixture.detectChanges();
+  const fixture = createLineChartHost();
   await fixture.whenStable();
   const svg = fixture.nativeElement.querySelector('arena-line-chart svg') as SVGElement;
   assert.equal(svg.getAttribute('role'), 'img');

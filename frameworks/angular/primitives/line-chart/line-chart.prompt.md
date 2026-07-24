@@ -10,13 +10,16 @@ and `tone` wins, because a chart carries identity or meaning, never both.
 <arena-line-chart [labels]="days" [values]="errorRate" seriesLabel="Error rate" tone="danger" />
 ```
 
-`valueFormatter` formats the tick labels, the tooltip and the numbers table together, so
-a unit written once appears everywhere:
+`valueSuffix` is appended to the tick labels, the tooltip and the numbers table together,
+so a unit written once appears everywhere. It is appended verbatim — write the space
+yourself:
 
 ```html
-<arena-line-chart [labels]="days" [values]="latency" seriesLabel="p95"
-                  [valueFormatter]="msFormatter" />
+<arena-line-chart [labels]="days" [values]="latency" seriesLabel="p95" valueSuffix=" ms" />
 ```
+
+It appends and does not format: no rounding, no thousands separator, no currency. Format
+the numbers before binding them.
 
 The chart sizes itself to its container — give it a parent with a width (an
 `arena-chart-card` is the usual one) rather than setting a width on the chart. The host
@@ -33,6 +36,9 @@ tooltip is positioned against.
 - Don't plot two series by stacking two line charts. One axis, one series; two series
   that share a scale need a chart Arena does not ship yet, and two that do not share one
   are two charts.
+- Don't omit `labels` or `values`. Both are required inputs — Angular throws NG0950 on the
+  first read rather than drawing an empty box, and React throws from its render for the
+  same reason.
 - Don't pass more `labels` than `values`. A point is drawn per value and takes the label
   at its own index, so a surplus label is silently dropped rather than drawn with no
   point above it.

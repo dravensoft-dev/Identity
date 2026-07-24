@@ -15,7 +15,7 @@ function Demo(){return (<div>
       <BarChart labels={['Web','API','Worker','Static']} values={[420,310,140,90]} slots={[1,2,3,4]} seriesLabel="rps" />
     </ChartCard>
     <ChartCard title="p95 latency">
-      <LineChart labels={days} values={[120,138,131,142,180,164,150]} seriesLabel="p95" slot={5} area valueFormatter={(v)=>v+' ms'} />
+      <LineChart labels={days} values={[120,138,131,142,180,164,150]} seriesLabel="p95" slot={5} area valueSuffix=" ms" />
     </ChartCard>
     <ChartCard title="Traffic share">
       <DoughnutChart labels={['Web','API','Worker','Static']} values={[420,310,140,90]} valueFormatter={(v)=>v+' rps'} />
@@ -27,7 +27,7 @@ function Demo(){return (<div>
       <BarChart labels={days} values={[1,0,3,1,5,0,0]} tone="danger" seriesLabel="Failed" />
     </ChartCard>
     <ChartCard title="Error rate">
-      <LineChart labels={days} values={[0.4,0.3,1.2,0.6,2.1,0.5,0.4]} tone="danger" seriesLabel="Error rate" area valueFormatter={(v)=>v+'%'} />
+      <LineChart labels={days} values={[0.4,0.3,1.2,0.6,2.1,0.5,0.4]} tone="danger" seriesLabel="Error rate" area valueSuffix="%" />
     </ChartCard>
   </div>
 </div>);}

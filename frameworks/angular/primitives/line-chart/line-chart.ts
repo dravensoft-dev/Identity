@@ -204,13 +204,13 @@ export function lineAreaPath(points: readonly ArenaLinePoint[], baseline: number
   `,
 })
 export class LineChart {
-  readonly labels = input<string[]>([]);
-  readonly values = input<number[]>([]);
+  readonly labels = input.required<string[]>();
+  readonly values = input.required<number[]>();
   readonly seriesLabel = input<string>();
   readonly slot = input<number>();
   readonly tone = input<SeriesTone>();
   readonly area = input(false, { transform: booleanAttribute });
-  readonly valueFormatter = input<(value: number) => string>((value) => String(value));
+  readonly valueSuffix = input<string>();
 
   protected readonly height = CHART_HEIGHT;
   protected readonly pad = PAD;
@@ -227,6 +227,11 @@ export class LineChart {
   protected readonly tickLabelX = PAD.l - 8;
   protected readonly pointLabelY = CHART_HEIGHT - 8;
   protected readonly hover = signal<number | null>(null);
+
+  /** The unit appended to every number this chart draws — the axis ticks, the
+   *  tooltip and the accessible table alike. Appended verbatim: the caller owns
+   *  the leading space. `private`, so the reader never sees it as a member. */
+  private readonly suffix = computed(() => this.valueSuffix() ?? '');
 
   private readonly measured = containerWidth();
   /** Wide first paint, then measured — the narrow branch never flashes. */
@@ -250,8 +255,8 @@ export class LineChart {
   protected readonly gridLines = computed(() => {
     const max = this.max();
     const innerHeight = this.innerHeight();
-    const format = this.valueFormatter();
-    return ticks(max).map((value) => ({ value, y: lineValueY(value, max, innerHeight), label: format(value) }));
+    const suffix = this.suffix();
+    return ticks(max).map((value) => ({ value, y: lineValueY(value, max, innerHeight), label: `${value}${suffix}` }));
   });
 
   protected readonly points = computed(() => {
@@ -259,13 +264,13 @@ export class LineChart {
     const max = this.max();
     const innerWidth = this.innerWidth();
     const innerHeight = this.innerHeight();
-    const format = this.valueFormatter();
+    const suffix = this.suffix();
     return values.map((value, index) => ({
       index,
       x: lineX(index, values.length, innerWidth),
       y: lineValueY(value, max, innerHeight),
       label: this.labels()[index] ?? '',
-      formatted: format(value),
+      formatted: `${value}${suffix}`,
     }));
   });
 

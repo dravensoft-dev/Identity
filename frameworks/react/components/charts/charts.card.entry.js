@@ -34,7 +34,7 @@ function Demo() {
     seriesLabel: "p95",
     slot: 5,
     area: true,
-    valueFormatter: (v) => v + " ms"
+    valueSuffix: " ms"
   })), React.createElement(ChartCard, {
     title: "Traffic share"
   }, React.createElement(DoughnutChart, {
@@ -60,7 +60,7 @@ function Demo() {
     tone: "danger",
     seriesLabel: "Error rate",
     area: true,
-    valueFormatter: (v) => v + "%"
+    valueSuffix: "%"
   }))));
 }
 createRoot(document.getElementById("root")).render(React.createElement(Demo, null));
