@@ -261,6 +261,27 @@ test('arena-stat-card: under this JIT-only harness, a static "label"/"value" att
 })
 class BulkActionBarHost {}
 
+/* `count` and `actions` became `input.required<number>()` /
+ * `input.required<BulkAction[]>()` under the API contract
+ * (`api/components/BulkActionBar.json`) -- the same NG0950 hazard
+ * `arena-app-logo`'s `name` and `arena-breadcrumbs`'s `items` already hit
+ * under this JIT-only harness (see this file's header comment).
+ * `BulkActionBarHost`'s template above supplies neither binding, so the
+ * child's first `detectChanges()` would throw the moment its own template
+ * reads `count()` -- routed around exactly as `createBreadcrumbsHost` does:
+ * query the real child `BulkActionBar` instance via `By.directive` before
+ * that first `detectChanges()`, and overwrite `count`/`actions` with plain
+ * functions. `count` is set to `0` and `actions` to `[]` -- the same values
+ * `input(0)`/`input([])` used to default to -- so every assertion below,
+ * pinned before this task, keeps proving exactly what it proved before. */
+function createBulkActionBarHost() {
+  const fixture = TestBed.createComponent(BulkActionBarHost);
+  const instance = fixture.debugElement.query(By.directive(BulkActionBar)).componentInstance as unknown as Record<string, unknown>;
+  instance['count'] = () => 0;
+  instance['actions'] = () => [];
+  return fixture;
+}
+
 @Component({
   standalone: true,
   imports: [ChartCard],
@@ -837,11 +858,14 @@ test('arena-stat-card: no icon renders no wrapper at all -- not an empty one', (
  * `BulkActionBar.jsx` returns `null` at zero) -- following ConfirmDialog's
  * resolution for the same shape, the host stays permanently in the DOM and a
  * `open` variant toggles `hidden`, rather than wrapping the host itself in
- * an `@if`. `count` defaults to 0, so `bulkActionBarStyles()`'s own default
- * output already includes `hidden` -- this is real coverage, not a stand-in,
- * of a real TestBed render landing that default state on the actual host. */
+ * an `@if`. `count` is required as of the API contract, so
+ * `createBulkActionBarHost()` sets it to `0` explicitly rather than relying
+ * on a default -- the same value `input(0)` used to supply -- and
+ * `bulkActionBarStyles()`'s own zero-count output already includes `hidden`.
+ * This is real coverage, not a stand-in, of a real TestBed render landing
+ * that state on the actual host. */
 test('arena-bulk-action-bar: the root recipe classes land on the host element itself, hidden by the default count of 0', async () => {
-  const fixture = TestBed.createComponent(BulkActionBarHost);
+  const fixture = createBulkActionBarHost();
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-bulk-action-bar') as HTMLElement;
@@ -851,7 +875,7 @@ test('arena-bulk-action-bar: the root recipe classes land on the host element it
 });
 
 test('arena-bulk-action-bar: a consumer-supplied class on the host survives the [class] binding', async () => {
-  const fixture = TestBed.createComponent(BulkActionBarHost);
+  const fixture = createBulkActionBarHost();
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-bulk-action-bar') as HTMLElement;
@@ -859,7 +883,7 @@ test('arena-bulk-action-bar: a consumer-supplied class on the host survives the 
 });
 
 test('arena-bulk-action-bar: the host renders no children while count is 0 (the default) -- nothing focusable exists behind the hidden bar', async () => {
-  const fixture = TestBed.createComponent(BulkActionBarHost);
+  const fixture = createBulkActionBarHost();
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-bulk-action-bar') as HTMLElement;

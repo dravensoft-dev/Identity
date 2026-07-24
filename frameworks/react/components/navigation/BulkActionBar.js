@@ -2,7 +2,11 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-export function BulkActionBar({ count = 0, noun = "items", actions = [], onClear, style }) {
+export function BulkActionBar({ count, noun = "items", actions, onRun, onClear, clearable = true }) {
+  if (count == null)
+    throw new Error("BulkActionBar: `count` is required");
+  if (actions == null)
+    throw new Error("BulkActionBar: `actions` is required");
   if (!count)
     return null;
   return React.createElement("div", {
@@ -17,8 +21,7 @@ export function BulkActionBar({ count = 0, noun = "items", actions = [], onClear
       background: "var(--surface-card)",
       border: "var(--bw) solid var(--line-strong)",
       borderRadius: "var(--r-md)",
-      boxShadow: "var(--shadow-2)",
-      ...style
+      boxShadow: "var(--shadow-2)"
     }
   }, React.createElement("span", {
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-sm)", letterSpacing: "var(--ls-mono-nav)", color: "var(--bone)" }
@@ -30,7 +33,7 @@ export function BulkActionBar({ count = 0, noun = "items", actions = [], onClear
     style: { display: "flex", alignItems: "center", gap: "calc(var(--sp-1) * 1.5)", flex: 1, flexWrap: "wrap" }
   }, actions.map((a, i) => React.createElement("button", {
     key: i,
-    onClick: a.onClick,
+    onClick: () => onRun && onRun(a),
     style: {
       display: "inline-flex",
       alignItems: "center",
@@ -51,8 +54,11 @@ export function BulkActionBar({ count = 0, noun = "items", actions = [], onClear
     onMouseLeave: (e) => e.currentTarget.style.background = "transparent"
   }, a.icon && React.createElement("span", {
     style: { fontSize: "var(--icon-md)", display: "inline-flex" }
-  }, a.icon), a.label))), onClear && React.createElement("button", {
-    onClick: onClear,
+  }, React.createElement("i", {
+    className: a.icon,
+    "aria-hidden": "true"
+  })), a.label))), clearable && React.createElement("button", {
+    onClick: () => onClear && onClear(),
     "aria-label": "Clear selection",
     style: {
       background: "none",

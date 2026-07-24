@@ -33,12 +33,12 @@ function Demo(){const[v,setV]=React.useState('Overview');const[range,setRange]=R
       actions={<><Button variant="secondary" size="sm">View logs</Button><Button variant="primary" size="sm">Deploy</Button></>} />
   </div>
   <div className="sub">BulkActionBar — destructive stays outline, never filled</div>
-  <div className="row">
-    <BulkActionBar count={sel} noun="deployments" onClear={()=>setSel(0)} style={{width:'100%'}}
+  <div className="row" style={{width:'100%'}}>
+    <BulkActionBar count={sel} noun="deployments" onClear={()=>setSel(0)} onRun={()=>{}}
       actions={[
-        {label:'Re-run',icon:<i className="ph-bold ph-arrow-clockwise"/>,onClick:()=>{}},
-        {label:'Archive',icon:<i className="ph-bold ph-archive"/>,onClick:()=>{}},
-        {label:'Delete',icon:<i className="ph-bold ph-trash"/>,onClick:()=>{},destructive:true},
+        {label:'Re-run',icon:'ph-bold ph-arrow-clockwise'},
+        {label:'Archive',icon:'ph-bold ph-archive'},
+        {label:'Delete',icon:'ph-bold ph-trash',destructive:true},
       ]} />
     {sel===0 && <button onClick={()=>setSel(3)} style={{background:'none',border:'var(--bw) solid var(--color-base-300)',borderRadius:'var(--r-sm)',color:'var(--mute)',cursor:'pointer',fontFamily:'var(--font-mono)',fontSize:'var(--dz-text-xs)',letterSpacing:'var(--ls-badge)',textTransform:'uppercase',padding:'var(--sp-2) var(--sp-3)'}}>Restore selection</button>}
   </div>

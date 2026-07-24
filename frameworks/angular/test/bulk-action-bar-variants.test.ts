@@ -3,7 +3,22 @@
  * recipes use. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { Injector, runInInjectionContext } from '@angular/core';
 import { bulkActionBarStyles } from '../primitives/bulk-action-bar/bulk-action-bar.variants';
+import { BulkActionBar } from '../primitives/bulk-action-bar/bulk-action-bar';
+
+/* This suite asserts against the plain-TypeScript recipe and stays a
+ * recipe suite, not a render suite (host-class-binding.test.ts owns the one
+ * DOM render this primitive gets) -- but `output()` and `input()` both
+ * throw NG0203 ("can only be used within an injection context") the moment
+ * they are read outside one, which a bare `new BulkActionBar()` is. A
+ * `runInInjectionContext` over an empty `Injector` supplies just enough
+ * context to construct the real class and inspect its fields -- no
+ * `TestBed`, no template compilation, no DOM. */
+function constructBulkActionBar() {
+  const injector = Injector.create({ providers: [] });
+  return runInInjectionContext(injector, () => new BulkActionBar());
+}
 
 function tokens(classString: string): string[] {
   return classString.split(/\s+/).filter(Boolean);
@@ -61,4 +76,17 @@ test('the count, number, divider and clear slots do not vary with destructive or
 
 test('the divider uses the one-pixel utility, not a border-width token, since it is not a border', () => {
   assert.match(bulkActionBarStyles().divider(), /\bw-px\b/);
+});
+
+test('the Clear output was renamed from `cleared` to `clear`, per the API contract\'s event binding', () => {
+  const instance = constructBulkActionBar();
+  assert.equal(typeof instance.clear, 'object', '`clear` must exist and be an OutputEmitterRef');
+  assert.equal('cleared' in instance, false, 'the pre-contract `cleared` name must be gone, not merely aliased');
+});
+
+test('classesFor still resolves a destructive action\'s classes to the same recipe output after the BulkAction retype', () => {
+  const instance = constructBulkActionBar();
+  const viaMethod = instance.classesFor({ label: 'Delete', destructive: true }).action();
+  const viaRecipe = bulkActionBarStyles({ destructive: true }).action();
+  assert.equal(viaMethod, viaRecipe);
 });

@@ -77,22 +77,17 @@ function Demo() {
   })), React.createElement("div", {
     className: "sub"
   }, "BulkActionBar — destructive stays outline, never filled"), React.createElement("div", {
-    className: "row"
+    className: "row",
+    style: { width: "100%" }
   }, React.createElement(BulkActionBar, {
     count: sel,
     noun: "deployments",
     onClear: () => setSel(0),
-    style: { width: "100%" },
+    onRun: () => {},
     actions: [
-      { label: "Re-run", icon: React.createElement("i", {
-        className: "ph-bold ph-arrow-clockwise"
-      }), onClick: () => {} },
-      { label: "Archive", icon: React.createElement("i", {
-        className: "ph-bold ph-archive"
-      }), onClick: () => {} },
-      { label: "Delete", icon: React.createElement("i", {
-        className: "ph-bold ph-trash"
-      }), onClick: () => {}, destructive: true }
+      { label: "Re-run", icon: "ph-bold ph-arrow-clockwise" },
+      { label: "Archive", icon: "ph-bold ph-archive" },
+      { label: "Delete", icon: "ph-bold ph-trash", destructive: true }
     ]
   }), sel === 0 && React.createElement("button", {
     onClick: () => setSel(3),

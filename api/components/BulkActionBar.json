@@ -1,0 +1,18 @@
+{
+  "component": "BulkActionBar",
+  "description": "Appears when rows are selected and operates on the selection as a set. Renders nothing at a count of zero.",
+  "api": {
+    "count": { "form": "primitive", "type": "number", "required": true,
+               "description": "How many rows are selected. Zero renders no bar at all." },
+    "noun": { "form": "primitive", "type": "string", "default": "items",
+              "description": "What is being counted, plural — \"items\", \"projects\"." },
+    "actions": { "form": "array", "of": "BulkAction", "required": true,
+                 "description": "The actions offered for the current selection." },
+    "run": { "form": "event", "payload": "BulkAction",
+             "description": "An action was activated, carrying which one." },
+    "clearable": { "form": "primitive", "type": "boolean", "default": true,
+                   "description": "Whether the Clear control is drawn. Both layers gate on this — Angular cannot detect a `clear` listener." },
+    "clear": { "form": "event",
+               "description": "The Clear control was activated." }
+  }
+}
