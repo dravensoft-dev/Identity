@@ -390,6 +390,16 @@ test('a required input with a transform and NO generics declares no type and is 
   );
 });
 
+test('a required input with THREE generics is unreadable, not silently narrowed to the first', () => {
+  assert.throws(
+    () => angularSurface(
+      'export class X {\n  readonly open = input.required<boolean, unknown, string>({ transform: booleanAttribute });\n}',
+      'X',
+    ),
+    UnrecognisedShape,
+  );
+});
+
 test('a class with no template literal at all (templateUrl, or no @Component) has no slots, and does not throw', () => {
   const withDecoratorNoTemplate = `
     @Component({ templateUrl: './x.html' })

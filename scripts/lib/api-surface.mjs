@@ -343,8 +343,18 @@ function classMember(name, initialiser) {
      * declared type, which is T, so only the first generic is classified. Splitting depth-
      * aware rather than on the first comma keeps a generic argument that carries its own
      * comma (Record<string, number>) intact. A single-generic list splits to one entry, so
-     * this is a no-op for every declaration in the tree that has no transform. */
-    return { name, required: Boolean(required), ...classify(splitTopLevel(type, ',')[0]) };
+     * this is a no-op for every declaration in the tree that has no transform. `input`/
+     * `input.required` accept at most two generics (T, TransformT) -- a third is not a
+     * shape either can express, and reading its first entry as the member type would
+     * silently classify a member the source does not actually declare. Unreachable through
+     * valid Angular (ngc would reject a three-generic input()), but the reader's own charter
+     * is that an unreadable shape throws rather than reads a value silently missing a
+     * generic it does not understand. */
+    const generics = splitTopLevel(type, ',');
+    if (generics.length > 2) {
+      throw new UnrecognisedShape(`input${required ? '.required' : ''}<${type}>(...) declares ${generics.length} generics -- Angular's input()/input.required() accept at most two (T, TransformT): ${init}`);
+    }
+    return { name, required: Boolean(required), ...classify(generics[0]) };
   }
   const bare = /^input\s*\(([\s\S]*)\)$/.exec(init);
   if (bare) {
