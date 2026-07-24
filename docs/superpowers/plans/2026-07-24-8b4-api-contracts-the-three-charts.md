@@ -357,12 +357,24 @@ EOF
 bun /tmp/arena-probe-8b4.mjs
 ```
 
-**Expected, and this is the point of the step:** all six lines read `THREW UnrecognisedShape: an
-inbound function that returns "string" is none of the seven forms…`. `classify()` throws on
-`valueFormatter`, and a throw aborts the **whole surface** — so the pre-migration `check:api` for
-these components produces one *"the reader could not read this surface"* message per layer, **not**
-an itemised list of R4/R5 violations the way every earlier batch did. Do not write a task
-expectation that predicts an itemised list.
+**Expected — and this was MEASURED on 2026-07-24, correcting an earlier draft of this plan that
+predicted six throws:** **five** of the six lines read `THREW UnrecognisedShape: an inbound function
+that returns "string" is none of the seven forms…`. `classify()` throws on `valueFormatter`, and a
+throw aborts the **whole surface**, so for those five the pre-migration `check:api` produces one
+*"the reader could not read this surface"* message per layer, **not** an itemised list of R4/R5
+violations the way every earlier batch did.
+
+**`react/LineChart` is the exception and reads cleanly**, returning
+`{"heritage":["Omit<BarChartProps, 'slots'>"],"members":[{"name":"area","required":false,"form":"primitive","type":"boolean"}]}`.
+The reason matters for Task 3's expectations: **the reader does not resolve heritage.**
+`reactSurface()` reports the `extends` clause and then reads only the interface's OWN body, and
+`LineChartProps`' body contains nothing but `area?: boolean`. `valueFormatter`, `style`,
+`labels`, `values`, `seriesLabel`, `slot` and `tone` all live in `BarChartProps` and are never
+seen. So `react/LineChart` fails the gate with an **itemised list** — the heritage clause as R4,
+plus one *"does not declare X"* per contract member it inherits rather than declares — while
+`angular/LineChart` fails with the throw.
+
+Record what the probe actually prints. Any deviation from the above is the audit's finding.
 
 Delete the probe when done: `rm /tmp/arena-probe-8b4.mjs`.
 
@@ -432,6 +444,13 @@ the diff.
 - Modify: `frameworks/react/components/charts/BarChart.d.ts`
 - Modify: `frameworks/react/components/charts/BarChart.jsx`
 - Modify: `frameworks/react/components/charts/BarChart.prompt.md`
+- Modify (coherence only, minimum edit — see Step 5):
+  `frameworks/react/components/charts/LineChart.d.ts` (drops `CatSlot` from its re-export),
+  `frameworks/react/components/charts/DoughnutChart.d.ts` (drops the `CatSlot` import and
+  re-export, `slots` becomes `number[]`),
+  `frameworks/angular/primitives/line-chart/line-chart.ts` (`ArenaChartTone` → `SeriesTone`, see
+  Step 7). **None of these three is migrated here** — deleting a type while a sibling still
+  imports it is what forces each edit, nothing more.
 - Modify: `frameworks/angular/primitives/bar-chart/bar-chart.ts`
 - Modify: `frameworks/angular/primitives/bar-chart/bar-chart.prompt.md`
 - Modify: `frameworks/angular/primitives/chart-internals.ts` (delete `ArenaChartTone`)
@@ -561,6 +580,43 @@ export function BarChart(props: BarChartProps): JSX.Element;
 Three things left the file and each is deliberate: `import * as React from 'react'` (its only
 consumer was `React.CSSProperties`), `export type CatSlot = 1 | … | 8` (D2), and
 `style?: React.CSSProperties` (D5, R4).
+
+**`CatSlot` has two consumers in other files, and both must be fixed in THIS task** — for the same
+reason `line-chart.ts` is renamed here in Step 7, and it is not scope creep. Deleting a type while
+two sibling files still import it leaves broken source for two whole tasks. **Nothing catches it:**
+there is no `tsc` over React's `.d.ts` files anywhere in `package.json`, so unlike the Angular side
+(where `check:angular` fails loudly) this would sit silently until Tasks 3 and 4. Apply the minimum
+that keeps the tree coherent, and nothing more:
+
+In `frameworks/react/components/charts/LineChart.d.ts`, change the re-export line only:
+
+```ts
+export type { SeriesTone } from './BarChart';
+```
+
+(`CatSlot` drops out of it. The `extends Omit<…>` heritage, `area`, and everything else in that
+file stay exactly as they are — flattening it is Task 3's, and doing it here would migrate a
+component with no contract to satisfy.)
+
+In `frameworks/react/components/charts/DoughnutChart.d.ts`, three lines change:
+
+```ts
+// the `import { CatSlot } from './BarChart';` line is DELETED outright
+// the `export type { CatSlot } from './BarChart';` line is DELETED outright
+  slots?: number[];   // was: slots?: CatSlot[];
+```
+
+Everything else in `DoughnutChart.d.ts` — `valueFormatter`, `style`, the missing `seriesLabel` —
+stays untouched; those are Task 4's. Verify no consumer is left:
+
+```bash
+cd /home/juan/Dravensoft/Identity
+grep -rn "CatSlot" frameworks/react/components/charts/
+```
+
+Expected: **no output.** (`frameworks/react/components/display/Calendar.d.ts:5` will still match a
+repo-wide grep — that is its own local declaration, it imports nothing from `BarChart`, and it
+belongs to Plan C. Scope the grep to the charts directory, as above.)
 
 - [ ] **Step 6: Migrate React's `.jsx`**
 
@@ -999,9 +1055,12 @@ Report to the maintainer:
 
 - that `LineChartProps extends Omit<BarChartProps, 'slots'>` is being flattened, and the exact
   member list that replaces it;
-- that Task 2 **already** renamed `line-chart.ts`'s `ArenaChartTone` → `SeriesTone` (Step 7), so
-  that rename is not this task's, and the file's `tone` input should already read
-  `input<SeriesTone>()` when this task opens — verify it does;
+- that Task 2 **already** made two coherence edits this task builds on, and both should be visible
+  when it opens — verify, do not assume: `line-chart.ts`'s `tone` input already reads
+  `input<SeriesTone>()` (Task 2, Step 7), and `LineChart.d.ts`'s re-export line already reads
+  `export type { SeriesTone } from './BarChart';` with `CatSlot` gone (Task 2, Step 5). Neither is
+  this task's to redo. **`LineChart.d.ts` still carries its `extends Omit<…>` heritage at this
+  point** — that is what this task removes;
 - that `area` is Angular's one `input(false, { transform: booleanAttribute })` among the three
   charts, which the reader classifies through its **bare** branch (`literalType('false')` →
   `boolean`, `required: false`) and which must therefore keep its transform. `api/README.md`
@@ -1050,14 +1109,25 @@ cd /home/juan/Dravensoft/Identity
 bun run check:api
 ```
 
-Expected: **FAIL with one message per layer, and that message is the throw**, not the heritage
-clause. The reason is worth knowing before you read the output: `reactSurface()` computes
-`heritage` and `members` in a single call and returns them together, and `interfaceMembers()`
-throws on `valueFormatter` before that return ever happens — so `check-api.mjs`'s heritage loop at
-line 412 is never reached, and the `extends "Omit<BarChartProps, 'slots'>"` message does not
-appear yet. It will appear only if a partial migration removes `valueFormatter` and leaves the
-heritage. **Record what you actually see.** A heritage message appearing alongside the throw would
-mean the reader changed; stop and report.
+Expected: **FAIL, and the two layers fail differently.** This was measured in Task 1 and is not a
+prediction.
+
+**`angular/LineChart` fails with the throw** — one *"the reader could not read this surface — an
+inbound function that returns \"string\" is none of the seven forms"* message, because
+`valueFormatter` is declared on the class itself.
+
+**`react/LineChart` fails with an itemised list**, because **the reader does not resolve
+heritage**. `reactSurface()` reports the `extends` clause and then reads only the interface's OWN
+body, which contains nothing but `area?: boolean` — `valueFormatter` lives in `BarChartProps` and
+is never seen, so nothing throws. Expect roughly seven problems: the heritage clause reported as
+the `{...rest}` R4 escape (`check-api.mjs:412`), plus one *"does not declare X"* for each of
+`labels`, `values`, `seriesLabel`, `slot`, `tone` and `valueSuffix` — every member the contract
+names and the interface inherits rather than declares.
+
+That asymmetry is the whole reason this member list must be flattened: **an inherited member is
+not a declared member as far as this gate is concerned**, and a contract cannot be satisfied by
+inheritance. Record what you actually see; a throw from the React side would mean Task 2 changed
+`LineChart.d.ts` more than its brief allows.
 
 - [ ] **Step 4: Migrate React's `.d.ts`**
 
@@ -1408,7 +1478,10 @@ Report to the maintainer:
   **survive unchanged** because the fixtures set no `seriesLabel` — verify that rather than assume
   it;
 - that the doughnut deliberately gains **no** `tone` and **no** `slot`: a slice IS a category, and
-  both layers' prose says so (`DoughnutChart.jsx:14-15`, `doughnut-chart.prompt.md`).
+  both layers' prose says so (`DoughnutChart.jsx:14-15`, `doughnut-chart.prompt.md`);
+- that Task 2 already made one coherence edit here — `DoughnutChart.d.ts`'s `CatSlot` import and
+  re-export are gone and `slots` already reads `number[]`. Verify that, then note that Step 4 below
+  replaces the whole file anyway, so the edit is confirmed rather than built on.
 
 This blocks.
 
