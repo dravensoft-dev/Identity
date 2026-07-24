@@ -372,6 +372,24 @@ test('the same class with the real template projecting [icon] reports exactly on
   assert.deepEqual(members.map((m) => [m.name, m.form]), [['label', 'primitive'], ['icon', 'slot']]);
 });
 
+test('a required input with a transform reads its FIRST generic, which is the member type', () => {
+  const { members } = angularSurface(
+    'export class X {\n  readonly open = input.required<boolean, unknown>({ transform: booleanAttribute });\n}',
+    'X',
+  );
+  assert.deepEqual(members, [{ name: 'open', required: true, form: 'primitive', type: 'boolean' }]);
+});
+
+test('a required input with a transform and NO generics declares no type and is refused', () => {
+  assert.throws(
+    () => angularSurface(
+      'export class X {\n  readonly open = input.required({ transform: booleanAttribute });\n}',
+      'X',
+    ),
+    /UnrecognisedShape|unreadable/,
+  );
+});
+
 test('a class with no template literal at all (templateUrl, or no @Component) has no slots, and does not throw', () => {
   const withDecoratorNoTemplate = `
     @Component({ templateUrl: './x.html' })

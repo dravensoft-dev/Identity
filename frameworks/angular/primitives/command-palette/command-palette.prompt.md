@@ -24,3 +24,8 @@ active as you arrow through it.
   palette entry is one Enter away from running.
 - Don't make the palette the only way to reach something. It is an accelerator, not
   navigation.
+- Don't express a condition as an attribute string. `open` carries the
+  `booleanAttribute` transform, so a bare `open` and `[open]="true"` both
+  mean true, and the one literal string `"false"` means false. Every *other* string is
+  true — `"0"`, `"off"` and `"no"` all leave the palette open. Bind the expression
+  (`[open]="paletteOpen()"`) rather than relying on the literal.

@@ -4,6 +4,7 @@ import {
   DOCUMENT,
   ElementRef,
   afterRenderEffect,
+  booleanAttribute,
   computed,
   effect,
   inject,
@@ -174,7 +175,7 @@ export function activeOptionId(uid: string, active: number, rowCount: number): s
   `,
 })
 export class CommandPalette {
-  readonly open = input.required<boolean>();
+  readonly open = input.required<boolean, unknown>({ transform: booleanAttribute });
   readonly commands = input.required<Command[]>();
   readonly placeholder = input('Search for an action or project…');
   readonly close = output<void>();

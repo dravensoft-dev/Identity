@@ -338,7 +338,13 @@ function classMember(name, initialiser) {
       if (inner.form === 'platform') return { name, form: 'event', required: false, payload: inner.type, platformPayload: true };
       return { name, form: 'event', required: false, payload: inner.type ?? null };
     }
-    return { name, required: Boolean(required), ...classify(type) };
+    /* Angular's signature is input.required<T, TransformT>(opts): T is what the signal
+     * RETURNS and TransformT is what the binding ACCEPTS. The contract governs the member's
+     * declared type, which is T, so only the first generic is classified. Splitting depth-
+     * aware rather than on the first comma keeps a generic argument that carries its own
+     * comma (Record<string, number>) intact. A single-generic list splits to one entry, so
+     * this is a no-op for every declaration in the tree that has no transform. */
+    return { name, required: Boolean(required), ...classify(splitTopLevel(type, ',')[0]) };
   }
   const bare = /^input\s*\(([\s\S]*)\)$/.exec(init);
   if (bare) {
