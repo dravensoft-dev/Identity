@@ -1,0 +1,12 @@
+{
+  "component": "Badge",
+  "description": "Status label: mono, uppercase, short. Carries an object's actual state or an editorial emphasis, never decoration.",
+  "api": {
+    "content": { "form": "slot",
+                 "description": "The label text. Short — a badge is a chip, not a sentence." },
+    "tone": { "form": "enum", "type": "Tone", "default": "neutral",
+              "description": "System status (success/warning/danger/info) reflects an object's actual state; emphasis (accent, gold) is editorial; neutral carries no semantic weight." },
+    "dot": { "form": "primitive", "type": "boolean", "default": false,
+             "description": "Draws a filled dot in the tone colour before the label." }
+  }
+}

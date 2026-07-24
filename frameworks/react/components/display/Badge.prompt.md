@@ -12,3 +12,4 @@ Status label in mono uppercase. Short text (1–2 words); if it's longer, it's n
 **Don't**
 - Don't use `accent` to communicate a status (use a status tone); reserve `accent`'s crimson for "new/featured".
 - Don't put full sentences inside a Badge, and don't use `dot` on emphasis tones.
+- Don't pass `style` or stray DOM attributes. Badge declares three members — its label content, `tone` and `dot` — and renders nothing else; wrap it in your own element if you need to position it.
