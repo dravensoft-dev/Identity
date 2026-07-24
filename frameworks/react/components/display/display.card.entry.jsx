@@ -26,12 +26,12 @@ function Demo(){return (<div>
   </div>
   <div className="sub">Card</div>
   <div className="row" style={{alignItems:'stretch'}}>
-    <div style={{width:'calc(var(--sp-1) * 75)'}}>
+    <div style={{width:'calc(var(--sp-1) * 75)',display:'grid'}}>
       <Card eyebrow="Delivery" title="Client Portal" action={<Badge tone="success" dot>Deployed</Badge>}>
         <div style={{color:'var(--mute)',fontSize:'var(--dz-text)',lineHeight:'var(--lh-body)'}}>Last published 2 h ago · build #4821</div>
       </Card>
     </div>
-    <div style={{width:'calc(var(--sp-1) * 70)'}}>
+    <div style={{width:'calc(var(--sp-1) * 70)',display:'grid'}}>
       <Card accent floating title="Latency alert">
         <div style={{color:'var(--mute)',fontSize:'var(--dz-text)',lineHeight:'var(--lh-body)'}}>p95 rose to 340 ms on checkout.</div>
       </Card>

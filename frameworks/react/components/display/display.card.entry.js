@@ -47,7 +47,7 @@ function Demo() {
     className: "row",
     style: { alignItems: "stretch" }
   }, React.createElement("div", {
-    style: { width: "calc(var(--sp-1) * 75)" }
+    style: { width: "calc(var(--sp-1) * 75)", display: "grid" }
   }, React.createElement(Card, {
     eyebrow: "Delivery",
     title: "Client Portal",
@@ -58,7 +58,7 @@ function Demo() {
   }, React.createElement("div", {
     style: { color: "var(--mute)", fontSize: "var(--dz-text)", lineHeight: "var(--lh-body)" }
   }, "Last published 2 h ago · build #4821"))), React.createElement("div", {
-    style: { width: "calc(var(--sp-1) * 70)" }
+    style: { width: "calc(var(--sp-1) * 70)", display: "grid" }
   }, React.createElement(Card, {
     accent: true,
     floating: true,

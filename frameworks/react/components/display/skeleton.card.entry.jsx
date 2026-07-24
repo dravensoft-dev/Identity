@@ -12,7 +12,7 @@ function Demo(){return (<div>
   </div>
   <div className="sub">In place — the placeholder matches the shape of what is loading</div>
   <div className="row" style={{alignItems:'stretch'}}>
-    <div style={{width:'calc(var(--sp-1) * 75)'}}>
+    <div style={{width:'calc(var(--sp-1) * 75)',display:'grid'}}>
       <Card eyebrow="Delivery" title="Client Portal">
         <div style={{display:'flex',gap:'var(--sp-3)',alignItems:'center'}}>
           <Skeleton variant="circle" width="var(--sp-10)" />
@@ -20,7 +20,7 @@ function Demo(){return (<div>
         </div>
       </Card>
     </div>
-    <div style={{width:'calc(var(--sp-1) * 70)'}}>
+    <div style={{width:'calc(var(--sp-1) * 70)',display:'grid'}}>
       <Card>
         <div style={{marginBottom:'var(--sp-3)'}}><Skeleton variant="line" width="45%" height="11px" /></div>
         <Skeleton variant="block" height="90px" />

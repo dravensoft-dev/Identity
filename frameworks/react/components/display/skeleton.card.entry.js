@@ -32,7 +32,7 @@ function Demo() {
     className: "row",
     style: { alignItems: "stretch" }
   }, React.createElement("div", {
-    style: { width: "calc(var(--sp-1) * 75)" }
+    style: { width: "calc(var(--sp-1) * 75)", display: "grid" }
   }, React.createElement(Card, {
     eyebrow: "Delivery",
     title: "Client Portal"
@@ -47,7 +47,7 @@ function Demo() {
     variant: "text",
     lines: 2
   }))))), React.createElement("div", {
-    style: { width: "calc(var(--sp-1) * 70)" }
+    style: { width: "calc(var(--sp-1) * 70)", display: "grid" }
   }, React.createElement(Card, null, React.createElement("div", {
     style: { marginBottom: "var(--sp-3)" }
   }, React.createElement(Skeleton, {
