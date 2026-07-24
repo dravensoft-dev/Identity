@@ -726,31 +726,36 @@ comparison and a comparison needs a baseline that is not stale.
 | **Plan B0** (2026-07-23) | **863 across 68 files** | 26 across 5 files |
 | **Plan B1** (2026-07-23) | **885 across 74 files** | 26 across 5 files |
 | **Plan B2** (2026-07-24) | **910 across 79 files** | 26 across 5 files |
-| **Plan B3** (2026-07-24) | **930 across 82 files** | 26 across 5 files |
+| **Plan B3** (2026-07-24) | **932 across 82 files** | 26 across 5 files |
 
 Plan B3 put five more components under contract — UnauthCard, BulkActionBar, CommandPalette,
 ActivityFeed and Onboarding — taking `check:api` from 13 contracts across 25 layer implementations
 to **18 across 35**. It added five new shared types (`BulkAction`, `Command`, `ActivityItem`,
 `OnboardingStep`, `OnboardingAnchor`) and reused one existing enum (`Tone`, for `ActivityItem.tone`)
-rather than declaring a sixth. The net gain over B2 is 20 tests and 3 files in the merged process,
-isolated DOM process unchanged at 26/5: `frameworks/react/test/` gained 14 tests across 3 new files
-(`bulk-action-bar.test.jsx` +4, `command-palette.test.jsx` +3, `onboarding.test.jsx` +3) plus
+rather than declaring a sixth. The net gain over B2 is 22 tests and 3 files in the merged process,
+isolated DOM process unchanged at 26/5: `frameworks/react/test/` gained 15 tests across 3 new files
+(`bulk-action-bar.test.jsx` +4, `command-palette.test.jsx` +3, `onboarding.test.jsx` +4) plus
 assertions folded into the two components that already had a suite (`unauth-card.test.jsx` +2,
 `activity-feed.test.jsx` +2 net — one deleted `renderItem` test against three added); Angular gained
 2, folded entirely into Task 2's existing `bulk-action-bar-variants.test.ts` and
 `host-class-binding.test.ts` rework, no new file (Tasks 3, 4 and 5 each held Angular's count exactly
-at 334, confirmed unmoved). `scripts/` gained 2 more than any earlier batch — Task 3b's pair in
-`scripts/api-surface.test.mjs`, proving the reader now classifies `input.required<T, TransformT>()`
-depth-aware and still refuses the no-generic `input.required({transform})` form — the one addition
-in this plan that touched no component. 14 + 2 + 2 = 18 tests as measured against the tree's actual
+at 334, confirmed unmoved). `scripts/` gained 3 more than any earlier batch, all in
+`scripts/api-surface.test.mjs` (38 → 41) — Task 3b's pair, proving the reader now classifies
+`input.required<T, TransformT>()` depth-aware and still refuses the no-generic
+`input.required({transform})` form, plus the three-or-more-generic pin the final whole-branch review
+added when it found 3b had narrowed the module's own "unreadable shapes throw" rule. Those are the
+only additions in this plan that touched no component. 15 + 2 + 3 = 20 tests as measured against the tree's actual
 state at this plan's own starting commit (`f52ae89`): re-measuring that commit directly gives 912
 across 79 files in the merged process, not the 910 this table's B2 row records — a 2-test
 undercount that predates this plan (it is already present at `787b2d0`, the commit the B2 row was
 written from, with no test file changed between there and the B2 merge) and is left uncorrected
-here as out of this plan's scope. Reading the delta off this table's two adjacent rows (930 − 910 =
-20, 82 − 79 = 3) therefore overstates the tests this plan itself added by 2; the components-and-type
-accounting above is the one that reconciles exactly (14 + 2 + 2 = 18) against the real starting
-count.
+here as out of this plan's scope. Reading the delta off this table's two adjacent rows (932 − 910 =
+22, 82 − 79 = 3) therefore overstates the tests this plan itself added by 2; the components-and-type
+accounting above is the one that reconciles exactly (15 + 2 + 3 = 20) against the real starting
+count. **Every figure in this paragraph is measured at the merge commit `2bdc2a9`, after the final
+whole-branch review's six fixes** — two of which added a test each (`onboarding.test.jsx`'s
+absent-required-member throw and the reader pin above), which is why an earlier draft of this row
+read 930.
 
 Plan B2 put five more components under contract — ChartCard, EmptyState, PageHead, Alert and
 ErrorState — taking `check:api` from 8 contracts across 15 layer implementations to **13 across
