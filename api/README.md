@@ -32,9 +32,9 @@ requirement. The member stays because the behaviour contract is firm. An API dec
 only if every behaviour binding it touches — and every design token it renders from — remains
 exactly as true afterward as before.
 
-## The vocabulary: seven forms
+## The vocabulary: eight forms
 
-A member of any Arena component's API is exactly one of seven forms, and nothing else.
+A member of any Arena component's API is exactly one of eight forms, and nothing else.
 
 | Form | What it is |
 |---|---|
@@ -43,14 +43,29 @@ A member of any Arena component's API is exactly one of seven forms, and nothing
 | **predefined object** | a record of fields, each field itself a primitive or an enum |
 | **array of primitives** | a homogeneous list of one primitive type |
 | **array of predefined objects** | a homogeneous list of one predefined object |
+| **consumer data** | a homogeneous list, or a single record, whose element type the contract does not describe |
 | **slot** | a space the consumer fills; may declare parameters the component lends it |
 | **event** | an outbound member: a name plus a declared payload |
 
-Six of the seven are inbound; **event** is the only outbound one. The two array forms are
+Seven of the eight are inbound; **event** is the only outbound one. The two array forms are
 encoded as one `form: "array"` discriminated by `of`, which is a representation choice and
 not a narrowing of the vocabulary.
 
-**An inbound function is none of the seven.** `event` is the only function-shaped member, it is
+**Consumer data is the one form whose contents the contract deliberately does not state.** It is
+a record whose keys the *consumer* names: Arena routes it and never inspects it, which is neither
+"Arena draws it" (an object) nor "the consumer draws it" (a slot). `Table`'s rows are the case
+that named it — `row[c.key]` indexes the record by a key the consumer chose — and `Calendar`'s
+per-event `meta` bag is the other. It exists because the sentence above used to say *seven*, and
+was false: `Table.rows` is a member and was none of them.
+
+The form is **narrow on purpose**, and that narrowness is what stops it being the escape R4
+closes. It is exactly one spelling, `Record<string, unknown>`; a record of a *known* type is a
+predefined object and must be declared as one, and stays an R4 violation. Two mechanical guards
+hold it in place — it may not be a field of a predefined object (R1 below), and a member that
+takes it in must also declare a route back out. Everything else about it is an authoring rule,
+with the same status R2 and R3 carry.
+
+**An inbound function is none of the eight.** `event` is the only function-shaped member, it is
 outbound, and it returns nothing. A member the component *calls* and whose result it uses — a
 formatter, a label producer — has no form here, and `classify()` in
 `scripts/lib/api-surface.mjs` refuses one rather than reading it as an event with the parameter
@@ -66,10 +81,13 @@ each layer binds them in its own idiom.
 
 ## The five derived rules
 
-**R1 — A predefined object is pure data.** No functions and no slots inside it. A field
-that is a function becomes an **event of the component**, carrying the object in its
-payload; a field that is a node becomes a **slot of the component**, or a primitive if
-Arena draws it.
+**R1 — A predefined object is pure data with known fields.** No functions and no slots
+inside it. A field that is a function becomes an **event of the component**, carrying the
+object in its payload; a field that is a node becomes a **slot of the component**, or a
+primitive if Arena draws it. **And no consumer data inside it either** — an object states its
+fields, and consumer data is by construction a record whose fields are unknown, so a declared
+type cannot carry an undescribed bag. `Calendar`'s per-event `meta` is what this deletes: it
+does not become a field of `CalendarEvent`, it becomes a member of the component.
 
 **R2 — Who draws decides data versus slot.** If Arena draws the content — knows its
 fields and owns its markup — it is an object or an array of objects. If the consumer draws
@@ -82,9 +100,11 @@ component, but it may only fill the interior of an element Arena renders — nev
 substitute the element that carries the behaviour contract.
 
 **R4 — No platform types and no escapes.** `React.CSSProperties`, the `{...rest}` spread,
-`React.Key`, `DOMRect`, `React.MouseEvent`, `React.HTMLInputTypeAttribute` and
-`Record<string, unknown>` are none of the seven forms. An Arena enum or an Arena
-predefined object takes their place.
+`React.Key`, `DOMRect`, `React.MouseEvent` and `React.HTMLInputTypeAttribute` are none of the
+eight forms. An Arena enum or an Arena predefined object takes their place. `Record<string,
+unknown>` was on this list and has left it — it is **consumer data** now, the eighth form, and
+that is a promotion of one exact spelling and nothing wider: `Record<string, Widget>` is a
+record of a known type, which is a predefined object, and it is still an R4 violation.
 
 **R5 — No unions between forms.** A member is one form. `(string | TabItem)[]` picks one.
 
@@ -105,7 +125,8 @@ identical members, idiomatic binding.
 `required` is not only wording for a missing-member message — the contract's `required`
 value is compared against each layer's, and a layer that implements a member as more or
 less required than the contract says is reported like any other divergence. This holds
-for the four inbound non-slot forms: **primitive**, **enum**, **object**, **array**.
+for the five inbound non-slot forms: **primitive**, **enum**, **object**, **array** and
+**consumer data**.
 
 It does not hold for **slot** or **event**, and that is a statement about what the two
 platforms can express, not an exception written to excuse a divergence. A **slot's**
@@ -197,6 +218,46 @@ What it had no answer for is Angular: per-item projection needs a
 structural directive and `ngTemplateOutlet`, a binding no row of the table above covers and no
 reader function reads, and landing that machinery for one member was judged the wrong trade.
 
+**Flattening a platform heritage clause enumerates the element, not the platform.** R4 removes
+`extends React.ButtonHTMLAttributes<HTMLButtonElement>` and its siblings, and the question that
+leaves is which of the members it carried are real API. The answer is the attributes the **HTML
+specification defines for that element**: they change what the control is or does, so a contract that
+omitted them would be describing a narrower control than the one Arena ships. Global attributes,
+ARIA attributes and the generic DOM handlers are not members — in Angular a consumer writes those on
+the host directly, which is the same reason `style` and the `{...rest}` spread were deliberately not
+ported (`components-divergences.md:681`, `:989`). So `<button>` contributes `type`, `disabled`,
+`name`, `value`, `autoFocus` and the six `form*` overrides, plus a `click` event; `<span>` and
+`<div>` contribute nothing at all, and flattening a component built on one of those adds no member
+beyond the `content` slot it already accepted through `children`.
+
+Two consequences are stated rather than hidden. A heritage clause is a **narrower documented claim
+sitting on top of a wider real behaviour** — `{...rest}` forwards any prop the platform will render,
+declared or not — so flattening removes capability that was reachable and undocumented, and the
+component's `.prompt.md` says which. And there is no type to read it off: this repository declares
+no React types package and runs no `tsc` over `frameworks/react/`, so the enumeration is transcribed
+from the specification and checked by the audit, never resolved by a compiler.
+
+**A tooltip's bubble is a primitive, not a slot.** The same R2 reasoning the single-icon convention
+uses: Arena draws the bubble, the consumer names the text. It also resolves a collision the binding
+table creates — a component that declares both a `content` member and children has two candidates for
+one default slot, and the trigger is the one that is genuinely projected. The cost is that markup
+inside a tooltip stops being possible.
+
+**An event carries exactly one payload, and a platform event is never it.** A handler declaring two
+parameters — the item and the DOM event that produced it — is not readable as an event, and
+`classify()` refuses it. `Breadcrumbs` settled the resolution and it holds generally: **the platform
+event leaves the payload and the item alone travels**, because a platform event type is an R4
+violation inside a payload just as it is anywhere else. What leaves with it is `preventDefault()`, so
+a component whose items render real anchors must say in its `.prompt.md` that the browser's own
+navigation is no longer interceptable from the handler and that routing belongs to the router.
+
+**A member offering "a bare value or a described one" picks the described one.** `(string | X)[]` is
+an R5 violation and a convenience: the bare string means *value and label are the same*. The array of
+predefined objects wins, because it carries strictly more information and the convenience is
+expressible at the call site as `{ value: x, label: x }`, while the reverse is not — a stable value
+with a translatable label cannot be said at all in the string form. Every call site passing bare
+strings is rewritten, and that is the price.
+
 ## Contract format
 
 `api/components/<Component>.json`:
@@ -216,16 +277,26 @@ reader function reads, and landing that machinery for one member was judged the 
 }
 ```
 
-`form` takes six values — `primitive`, `enum`, `object`, `array`, `slot`, `event` — and
-`array` is discriminated by `of`: a primitive type name (`"string"`) makes it an array of
-primitives, a declared type name (`"Crumb"`) makes it an array of predefined objects.
+`form` takes seven values — `primitive`, `enum`, `object`, `array`, `consumerData`, `slot`,
+`event` — and `array` is discriminated by `of`: a primitive type name (`"string"`) makes it an
+array of primitives, a declared type name (`"Crumb"`) makes it an array of predefined objects,
+and the form name `"consumerData"` makes it a list of consumer data.
 
 A slot declares its parameters, or none:
 
 ```json
 "mark":  { "form": "slot" },
-"cell":  { "form": "slot", "params": { "value": "string", "row": "TableRow" } }
+"cell":  { "form": "slot", "params": { "value": "string", "row": "consumerData" } }
 ```
+
+**Consumer data is spelled by form name in every position, because there is nothing to
+declare.** `{"form": "array", "of": "consumerData"}` for a row list, `{"form": "consumerData"}`
+for a single record, `"params": { "row": "consumerData" }` for a slot parameter and
+`"payload": "consumerData"` for an event. **Nothing is declared in `api/types/` for it** — a
+type there states its fields, and this form's whole content is that its fields are the
+consumer's. That is what keeps the directory from filling with fieldless types, and it is why
+the `cell` example above no longer names a `TableRow`: a `TableRow` cannot be declared, so a
+contract naming one would be rejected by the very gate this document specifies.
 
 An **optional** member is still a declared member. `required: false` governs whether a
 consumer must supply it, never whether a layer must offer it: a layer omitting an optional
@@ -328,6 +399,32 @@ R1, R4 and R5 *are* asserted: R1 by the type schema (a field may only be a primi
 enum), R4 by the reader recognising platform types by name and reporting them, R5 by a
 member carrying exactly one `form` and by the reader classifying a mixed union as a union
 rather than as any single form.
+
+### What is mechanical about consumer data, and what is not
+
+Exactly two things are checked, and they are the two that keep the eighth form from becoming
+the escape R4 closed:
+
+- **The R1 extension.** A predefined object may not carry a consumer-data field.
+  `validateTypes` reports one by type and field name.
+- **A consumer-data member must have a consumer.** A contract that takes consumer data in and
+  declares no route back out — no slot parameter and no event payload of `consumerData` — is
+  holding data Arena may never inspect and can never hand back, which is dead API.
+  `validateContract` reports each held member by name.
+
+Everything else about the form is an **authoring rule with the same status R2 and R3 carry**.
+Nothing checks that a member spelled as consumer data is genuinely the consumer's data rather
+than a shape someone declined to model; the reader's narrowness — one exact spelling, and a
+record of a known type still reported under R4 — is what makes that judgement hard to reach by
+accident, not a gate that catches it.
+
+And the form is a **deliberate blind spot, which is worth naming rather than discovering.** The
+value of this layer is that a member's type is knowable; this one's is not, by construction. So
+content derived from consumer data reaches the DOM through a slot, and R2's consequence applies
+to it in full: `check:compliance` judges only the DOM Arena renders, so whatever a consumer
+draws from their own row is outside the behaviour contract as well as outside this one. A
+component contracted with consumer data is contracted with a hole in it, on purpose, and both
+gates are silent about the same hole.
 
 ## The audit protocol
 

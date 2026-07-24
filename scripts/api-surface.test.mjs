@@ -37,10 +37,10 @@ test('a function type is an event, and its single parameter is the payload', () 
 });
 
 test('an inbound function that RETURNS a value is refused -- no form in the vocabulary is one', () => {
-  /* `event` is the only outbound form and it is a name plus a payload; the six
+  /* `event` is the only outbound form and it is a name plus a payload; the seven
    * inbound forms are all data. A formatter -- `(value: number) => string`, which
    * BarChart, LineChart, DoughnutChart and ThemeToggle all declared before plan
-   * 8B0 -- is inbound AND returns, so it is none of the seven. Before this rule
+   * 8B0 -- is inbound AND returns, so it is none of the eight. Before this rule
    * classify() read it as an event with payload `number`, which would have let a
    * contract declare it, both layers match it, and check:api report it green. */
   assert.throws(() => classify('(value: number) => string'), UnrecognisedShape);
@@ -59,9 +59,13 @@ test('an array is one form discriminated by what it holds', () => {
   assert.deepEqual(classify('Array<Crumb>'), { form: 'array', of: 'Crumb' });
 });
 
+/* `Record<string, unknown>` left this list when the eighth form landed: it is
+ * consumer data now, not an R4 escape. A record of a KNOWN type is still one,
+ * and is here in its place -- see the consumer-data cases at the end of this
+ * file. */
 test('every platform type R4 names is recognised and reported, never thrown', () => {
   for (const t of ['React.CSSProperties', 'React.Key', 'React.MouseEvent', 'DOMRect',
-    'React.HTMLInputTypeAttribute', 'Record<string, unknown>']) {
+    'React.HTMLInputTypeAttribute', 'Record<string, Widget>']) {
     assert.equal(classify(t).form, 'platform', t);
   }
   assert.ok(PLATFORM_TYPES.includes('React.CSSProperties'));
@@ -409,4 +413,73 @@ test('a class with no template literal at all (templateUrl, or no @Component) ha
 
   const withNoDecoratorAtAll = `export class X { readonly label = input.required<string>(); }`;
   assert.deepEqual(angularSurface(withNoDecoratorAtAll, 'X').members.map((m) => m.name), ['label']);
+});
+
+/* The eighth form. api/README.md's own worked example for a parameterised slot
+ * names a row type that cannot be declared -- a declared type is an object of
+ * primitives/enums (R1) or an enum, and Arena does not know a consumer row's
+ * fields. Table.jsx:28 states what the form actually is: `row[c.key]` indexes
+ * the record by a key the CONSUMER named. R4 used to name
+ * Record<string, unknown> among its escapes and no longer does: this form is
+ * where that one exact spelling went, and Record<string, Widget> -- a record of
+ * a KNOWN type, which is a predefined object -- stayed behind as an R4
+ * violation. The promotion is one spelling wide, and the test below it pins
+ * exactly that. */
+test('classify reads Record<string, unknown> as consumer data rather than as a platform type', () => {
+  assert.deepEqual(classify('Record<string, unknown>'), { form: 'consumerData' });
+});
+
+/* Both array spellings, because they take different routes through classify():
+ * the `[]` suffix is recognised before the platform branch (which would
+ * otherwise swallow it, since it starts with `Record<`), and the `Array<>`
+ * form reaches the array branch and is admitted as an element there. */
+test('classify reads an array of consumer data, which is how a row list is spelled', () => {
+  assert.deepEqual(classify('Record<string, unknown>[]'), { form: 'array', of: 'consumerData' });
+  assert.deepEqual(classify('Array<Record<string, unknown>>'), { form: 'array', of: 'consumerData' });
+});
+
+/* The form is narrow on purpose: it is the recognised Record shape and nothing
+ * else. A record of a KNOWN type is a predefined object and must be declared as
+ * one; an unreadable annotation must still throw. Otherwise the form becomes
+ * the escape hatch R4 exists to close. */
+test('classify still refuses a record of a known type rather than calling it consumer data', () => {
+  assert.deepEqual(classify('Record<string, Widget>'), { form: 'platform', type: 'Record<string, Widget>' });
+  assert.throws(() => classify('TableColumn<T>'), /unreadable type annotation/);
+});
+
+/* An event payload is one of the eighth form's two legal routes back out (the
+ * other is a slot parameter), so BOTH layers have to be able to spell one. Each
+ * had its own reason it could not:
+ *
+ *  - React's `(row: Record<string, unknown>) => void` tripped the
+ *    more-than-one-parameter guard, which tested `params.includes(',')` -- and
+ *    the comma inside `Record<string, unknown>` is not a parameter separator.
+ *  - Angular's `output<Record<string, unknown>>()` read its payload off
+ *    `inner.type`, which consumer data does not carry, so the payload silently
+ *    came back `null` and no contract could ever match it.
+ *
+ * Both are pinned here. The payload is spelled by FORM name, the same way an
+ * array's `of` is, because there is no declared type to name. */
+test('an event payload may be consumer data, in either layer\'s spelling', () => {
+  assert.deepEqual(
+    classify('(row: Record<string, unknown>) => void'),
+    { form: 'event', payload: 'consumerData' },
+  );
+  const { members } = angularSurface(
+    'export class X {\n  readonly select = output<Record<string, unknown>>();\n}',
+    'X',
+  );
+  assert.deepEqual(members, [{ name: 'select', form: 'event', required: false, payload: 'consumerData' }]);
+});
+
+/* The guard that had to be loosened must still fire. A generic's comma is not a
+ * parameter separator; a real second parameter still is -- SideNav.onNav's
+ * `(id: string, event: React.MouseEvent) => void` is the shape that message
+ * exists for, and Plan C relies on it still throwing. */
+test('a genuine second event parameter is still refused after the generic-comma fix', () => {
+  assert.throws(
+    () => classify('(id: string, event: React.MouseEvent) => void'),
+    /more than one parameter/,
+  );
+  assert.throws(() => classify('(a: string, b: string) => void'), /more than one parameter/);
 });

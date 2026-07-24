@@ -8,12 +8,12 @@ const TONES = {
   danger: ['var(--danger-soft)', 'var(--danger)'],
   info: ['var(--info-soft)', 'var(--info)'],
 };
-export function Badge({ children, tone = 'neutral', dot = false, style, ...rest }) {
+export function Badge({ children, tone = 'neutral', dot = false }) {
   const [bg, fg] = TONES[tone] || TONES.neutral;
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 1.5)', padding: 'calc(var(--sp-1) * 1) calc(var(--sp-1) * 2.5)',
       background: bg, color: fg, borderRadius: 'var(--r-pill)',
-      fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--ls-badge)', textTransform: 'uppercase', ...style }} {...rest}>
+      fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--ls-badge)', textTransform: 'uppercase' }}>
       {dot && <span style={{ width: 'calc(var(--sp-1) * 1.5)', height: 'calc(var(--sp-1) * 1.5)', borderRadius: '50%', background: fg }} />}
       {children}
     </span>

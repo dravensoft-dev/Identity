@@ -1,7 +1,7 @@
 Actions menu on a trigger (overflow "⋮", more actions, context). Don't confuse with `CommandPalette` (global search ⌘K) or with `Select` (choosing a form value).
 
 ```jsx
-<Menu align="end" trigger={<IconButton label="More options"><i className="ph-bold ph-dots-three-vertical"/></IconButton>}
+<Menu align="end" trigger={<IconButton label="More options" icon="ph-bold ph-dots-three-vertical" />}
   items={[
     { label:'View logs', icon:<i className="ph-bold ph-scroll"/>, onClick:openLogs },
     { label:'Duplicate', icon:<i className="ph-bold ph-copy"/>, onClick:dup, shortcut:'⌘D' },

@@ -9,7 +9,6 @@ import { Tabs } from '../../components/navigation/Tabs.jsx';
 import { Button } from '../../components/forms/Button.jsx';
 import { Switch } from '../../components/forms/Switch.jsx';
 import { Dialog } from '../../components/feedback/Dialog.jsx';
-import { Icon } from './Icon.jsx';
 
 const DEPLOYS = [
   { build: '#4821', env: 'Production', status: ['success', 'Active'], author: 'CI · main', dur: '3m 41s' },
@@ -56,7 +55,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
 
   return (
     <Shell active="dashboard" onNav={onNav} title={p.name}
-      actions={<Button variant="primary" size="sm" icon={<Icon name="rocket" size="var(--icon-md)" />} onClick={() => setOpen(true)}>Deploy</Button>}>
+      actions={<Button variant="primary" size="sm" icon="ph-bold ph-rocket-launch" onClick={() => setOpen(true)}>Deploy</Button>}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)', marginBottom: 'calc(var(--sp-1) * 5)' }}>
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{p.client}</span>
         <Badge tone="success" dot>Deployed</Badge>
@@ -89,17 +88,19 @@ export function ProjectScreen({ onNav, project, onToast }) {
       )}
 
       {tab === 'Settings' && (
-        <Card title="Automation" style={{ maxWidth: 'calc(var(--sp-1) * 130)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 4.5)' }}>
-            <Switch state={auto} onFuncOn={() => setAuto(true)} onFuncOff={() => setAuto(false)} label="Auto-deploy on approval" />
-            <Switch state={false} label="Notify Slack on every release" />
-            <Switch state label="Require 2 approvals for production" />
-          </div>
-        </Card>
+        <div style={{ maxWidth: 'calc(var(--sp-1) * 130)' }}>
+          <Card title="Automation">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 4.5)' }}>
+              <Switch state={auto} onFuncOn={() => setAuto(true)} onFuncOff={() => setAuto(false)} label="Auto-deploy on approval" />
+              <Switch state={false} label="Notify Slack on every release" />
+              <Switch state label="Require 2 approvals for production" />
+            </div>
+          </Card>
+        </div>
       )}
 
       <Dialog open={open} onClose={() => setOpen(false)} eyebrow="Confirm" title="Deploy to production"
-        footer={<><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button variant="primary" icon={<Icon name="rocket" size="var(--icon-md)" />} onClick={deploy}>Deploy #4822</Button></>}>
+        footer={<><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button variant="primary" icon="ph-bold ph-rocket-launch" onClick={deploy}>Deploy #4822</Button></>}>
         You'll publish build <b style={{ color: 'var(--gold)', fontFamily: 'var(--font-mono)' }}>#4822</b> of <b style={{ color: 'var(--bone)' }}>{p.name}</b> to all {p.client} users. You can roll back at any time.
       </Dialog>
     </Shell>

@@ -9,10 +9,6 @@ import { Input } from "../../components/forms/Input.js";
 import { Select } from "../../components/forms/Select.js";
 import { Checkbox } from "../../components/forms/Checkbox.js";
 import { Switch } from "../../components/forms/Switch.js";
-const plus = React.createElement("i", {
-  className: "ph-bold ph-plus",
-  style: { fontSize: "var(--icon-md)", lineHeight: "var(--dz-lh)" }
-});
 function Demo() {
   const [chk, setChk] = React.useState(true);
   const [sw, setSw] = React.useState(true);
@@ -22,7 +18,7 @@ function Demo() {
     className: "row"
   }, React.createElement(Button, {
     variant: "primary",
-    icon: plus
+    icon: "ph-bold ph-plus"
   }, "Deploy"), React.createElement(Button, {
     variant: "secondary"
   }, "Roll back"), React.createElement(Button, {
@@ -50,10 +46,12 @@ function Demo() {
     variant: "secondary"
   }, "lg"), React.createElement(IconButton, {
     label: "New",
-    variant: "solid"
-  }, plus), React.createElement(IconButton, {
-    label: "New"
-  }, plus)), React.createElement("div", {
+    variant: "solid",
+    icon: "ph-bold ph-plus"
+  }), React.createElement(IconButton, {
+    label: "New",
+    icon: "ph-bold ph-plus"
+  })), React.createElement("div", {
     className: "sub"
   }, "Input · Select"), React.createElement("div", {
     className: "row",

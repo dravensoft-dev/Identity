@@ -1,0 +1,30 @@
+{
+  "component": "IconButton",
+  "description": "Icon-only button. Carries an accessible name in every state, not only on hover.",
+  "api": {
+    "icon": { "form": "primitive", "type": "string", "required": true,
+              "description": "Phosphor class name, e.g. 'ph-bold ph-plus'. Arena draws the <i> and hides it from assistive technology; `label` is the accessible name." },
+    "label": { "form": "primitive", "type": "string", "required": true,
+               "description": "The accessible name, present in every state. Also the visible text when showLabel is set, and the title attribute when it is not." },
+    "size": { "form": "enum", "type": "ControlSize", "default": "md",
+              "description": "Height, from the density tokens — the same scale Button uses, so the two re-densify together in a toolbar." },
+    "variant": { "form": "enum", "type": "IconButtonVariant", "default": "ghost",
+                 "description": "Visual treatment." },
+    "showLabel": { "form": "primitive", "type": "boolean", "default": false,
+                   "description": "Shows the label as text beside the icon (H6). Don't rely on the title alone on touch or keyboard surfaces." },
+    "disabled": { "form": "primitive", "type": "boolean", "default": false,
+                  "description": "Blocks activation and dims the control." },
+    "type": { "form": "enum", "type": "ButtonType", "default": "button",
+              "description": "Native button behaviour. Defaults to 'button' so an icon button inside a form does not submit it by accident." },
+    "name": { "form": "primitive", "type": "string",
+              "description": "Submitted with the form, when the button submits one." },
+    "value": { "form": "primitive", "type": "string",
+               "description": "The value submitted under `name`." },
+    "autoFocus": { "form": "primitive", "type": "boolean", "default": false,
+                   "description": "Focused on mount." },
+    "form": { "form": "primitive", "type": "string",
+              "description": "The id of the form this button belongs to, when it is not a descendant of it." },
+    "click": { "form": "event",
+               "description": "The button was activated, by pointer or by keyboard." }
+  }
+}

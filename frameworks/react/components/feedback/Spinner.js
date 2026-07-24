@@ -21,15 +21,14 @@ const TONES = {
   neutral: "var(--mute)",
   "on-accent": "var(--on-accent)"
 };
-export function Spinner({ size = "md", tone = "accent", label = "Loading", style, ...rest }) {
+export function Spinner({ size = "md", tone = "accent", label = "Loading" }) {
   useSpinKeyframes();
   const d = SIZES[size] || SIZES.md;
   const color = TONES[tone] || TONES.accent;
   return React.createElement("span", {
     role: "status",
     "aria-label": label,
-    style: { display: "inline-flex", color, ...style },
-    ...rest
+    style: { display: "inline-flex", color }
   }, React.createElement("span", {
     className: "arena-spinner",
     "aria-hidden": "true",

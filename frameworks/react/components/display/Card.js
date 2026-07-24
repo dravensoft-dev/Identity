@@ -2,17 +2,15 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-export function Card({ children, title, eyebrow, action, floating = false, accent = false, style, ...rest }) {
+export function Card({ children, title, eyebrow, action, floating = false, accent = false }) {
   return React.createElement("div", {
     style: {
       background: "var(--surface-card)",
       border: "var(--bw) solid " + (accent ? "var(--crimson)" : "var(--color-base-300)"),
       borderRadius: "var(--r-lg)",
       boxShadow: floating ? "var(--shadow-2)" : "none",
-      overflow: "hidden",
-      ...style
-    },
-    ...rest
+      overflow: "hidden"
+    }
   }, (title || eyebrow || action) && React.createElement("div", {
     style: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 5) 0" }
   }, React.createElement("div", null, eyebrow && React.createElement("div", {

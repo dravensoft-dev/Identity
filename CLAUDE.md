@@ -147,11 +147,21 @@ the component stays exactly as broken.
 
 **Arena's third contract is the API, and it lives at `api/`.** `api/components/<Name>.json`
 states, once and neutrally, the members that component's API presents; every layer
-implementing it implements exactly those members. A member is one of **seven forms** —
+implementing it implements exactly those members. A member is one of **eight forms** —
 primitive, enum, predefined object, array of primitives, array of predefined objects,
-slot, event — and five derived rules govern them (R1 an object is pure data, R2 who draws
-decides data versus slot, R3 a parameterised slot fills and never replaces, R4 no platform
-types and no escapes, R5 no unions between forms). `api/README.md` is the normative
+consumer data, slot, event — and five derived rules govern them (R1 an object is pure data
+with known fields, R2 who draws decides data versus slot, R3 a parameterised slot fills and
+never replaces, R4 no platform types and no escapes, R5 no unions between forms).
+**Consumer data is the eighth and the one the contract deliberately does not describe**: a
+record whose keys the *consumer* names — `Table`'s rows, `Calendar`'s per-event `meta` —
+which Arena routes and never inspects. It exists because the vocabulary said *seven* and
+was false; `Table.rows` was a member and was none of them. It is exactly one spelling,
+`Record<string, unknown>`, and a record of a *known* type stays an R4 violation, because a
+form admitting any record would re-legalise the escape R4 closed. Two things about it are
+mechanical — it may not be a field of a predefined object, and a member taking it in must
+declare a route back out (a slot parameter or an event payload) or it is data Arena can
+never surface — and everything else is an authoring rule with R2 and R3's status.
+`api/README.md` is the normative
 statement and the first thing a new platform target reads, the way `tokens/src/TYPE-MAP.md`
 is for the token layer. Shared objects and enums are declared once in `api/types/` and
 emitted **per layer** by `bun run build:api` into the committed
@@ -166,6 +176,23 @@ contract that forbids divergence has nowhere for a second opinion to live, and
 component at a time, the same charter `COVERED` carries in `check-compliance.mjs`: a green
 run is a claim about the contracted components and says nothing about the rest — and,
 being orthogonal to behaviour, it says nothing about what any of them *does* either.
+
+**Plan C's contracts are single-layer, and that is a property of the plan, not a gap.**
+The twenty-one components Plan C brings under contract exist in React alone — they are
+exactly the controls Angular delegates to Material — so each contract governs one layer
+and `check:api` moves by one contract and one layer per component, not the `+1/+2` a
+shared component moves. Their APIs are settled and normative *before* Angular has an
+implementation to defend, which is the whole point of sequencing Plan C ahead of Plan D
+rather than after: it is the remedy for how `StatCard` became an object in React and three
+flat inputs in Angular. **The single-icon convention now reaches `Button` and `IconButton`**
+— a component's icon is a Phosphor class-name string Arena draws, never a slot, so
+`IconButton` presents no slot at all and a per-item or single icon is one system across the
+library. The price is recorded rather than hidden: the flatten of each `<button>`'s heritage
+clause **dropped the five `form*` overrides and every global/ARIA attribute the `{...rest}`
+spread used to forward**, a capability that was reachable and undocumented and now is gone,
+with no gate behind the loss — `check:api` reads the `.d.ts`, and a restored spread in the
+`.jsx` would leave it green. That is the same limit already recorded two paragraphs down for
+every migrated React component; Plan C widens its reach, it does not close it.
 
 **React has two test directories and they must not merge.**
 `frameworks/react/test/` asserts on `renderToStaticMarkup` — no DOM, by design,
@@ -374,14 +401,6 @@ debt filed in one dies with it. That has already happened once: plan 5.5's
 close-out recorded three follow-ups into its own plan document, which was
 scheduled for deletion the same week.
 
-- **`Tooltip`'s timer is the one genuinely new behaviour on this layer, and it has
-  no test.** Plan 7a gave `Pagination` five pinned tests — a pure relocation that
-  changes no output and could not break — and gave the tooltip's `useRef`, its
-  cancel-on-transition rule and its unmount cleanup none. The branch tested the
-  thing that could not break and left the thing that could. The plan defers a
-  DOM-based React harness to plan 7b, which is why this was not fixed in place, but
-  the cancel-and-reschedule rule needs no harness at all: `bun:test`'s fake timers
-  reach it. Raised in whole-branch review and merged knowingly.
 - **The two script-readable gates leave a structural hole between them, and it is
   wider than it looks.** `check:script-tokens`' orphan rule is *imported by at
   least one layer* — correct, because `calendarHourH` is legitimately React-only

@@ -8,15 +8,16 @@
  *   1. COVERAGE.        Every contract names a component at least one layer
  *                       implements. The contract's existence IS the coverage
  *                       claim, so no separate record can go stale against it.
- *   2. FORM.            No member uses anything outside the seven forms.
+ *   2. FORM.            No member uses anything outside the eight forms.
  *   3. AGREEMENT.       Every implementing layer declares exactly the contract's
  *                       members, same name, same form, same required-ness. An
  *                       OPTIONAL member is still a declared member: `required:
  *                       false` governs whether a CONSUMER must supply it, never
  *                       whether a LAYER must offer it. Required-ness itself is
- *                       compared only for the four inbound non-slot forms
- *                       (primitive, enum, object, array) -- a slot's and an
- *                       event's required-ness is not comparable across layers,
+ *                       compared only for the five inbound non-slot forms
+ *                       (primitive, enum, object, array, consumerData) -- a
+ *                       slot's and an event's required-ness is not comparable
+ *                       across layers,
  *                       because neither platform pair can express it: Angular's
  *                       `<ng-content>` cannot declare projected content
  *                       mandatory, and an outbound event is never "required" on
@@ -30,7 +31,14 @@
  *                       covers a field's OWN reference: an object field naming
  *                       an enum checks that the named type is declared and is
  *                       itself an enum, not only that primitives are spelled
- *                       correctly.
+ *                       correctly -- and, since the eighth form landed, that no
+ *                       field is consumer data, whose fields are unknown by
+ *                       construction. The eighth form's own second guard is
+ *                       that a consumer-data member must have a consumer: a
+ *                       slot parameter or an event payload that hands it back.
+ *                       Those two are ALL that is mechanical about the form;
+ *                       everything else about it is an authoring rule with the
+ *                       same status R2 and R3 carry.
  *   5. GENERATED DRIFT. The committed api.generated.* match api/types/.
  *
  * THERE IS NO EXCEPTION MAP, and that is not an oversight. Every other record in
@@ -62,9 +70,13 @@ import { reactSurface, angularSurface, UnrecognisedShape } from './lib/api-surfa
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** The six encoded `form` values. `array` covers both array forms, discriminated
- *  by `of` -- a representation choice, not a narrowing of the vocabulary. */
-const FORMS = new Set(['primitive', 'enum', 'object', 'array', 'slot', 'event']);
+/** The seven encoded `form` values, covering the vocabulary's eight forms:
+ *  `array` covers both array forms, discriminated by `of` -- a representation
+ *  choice, not a narrowing of the vocabulary. `consumerData` is the eighth
+ *  form, and it is the only one whose `of`/`params`/`payload` position carries
+ *  a FORM name where the others carry a declared TYPE name, because there is
+ *  nothing to declare: the contract does not describe the element at all. */
+const FORMS = new Set(['primitive', 'enum', 'object', 'array', 'slot', 'event', 'consumerData']);
 const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);
 
 /** React groups, the same list check-behaviour.mjs walks. */
@@ -127,6 +139,13 @@ export function validateTypes(types) {
         } else if (kindByName.get(spec.type) !== 'enum') {
           problems.push(`${type.name}.${field}: "${spec.type}" is a ${kindByName.get(spec.type)}, used where an enum belongs`);
         }
+      } else if (spec.form === 'consumerData') {
+        /* R1 extended by the eighth form. An object is pure data with KNOWN
+         * fields; consumer data is a record whose fields are unknown by
+         * construction, so it can never be one of them. Reported separately
+         * from the catch-all below because the reason is its own -- this is
+         * the rule that forbids a `meta` bag hidden inside a declared type. */
+        problems.push(`${type.name}.${field}: consumer data may not be a field of a predefined object — R1, an object is pure data with known fields`);
       } else {
         problems.push(`${type.name}.${field}: form "${spec.form}" is not allowed inside a predefined object — R1, an object is pure data`);
       }
@@ -144,9 +163,16 @@ export function validateContract(contract, typeNames) {
     if (typeNames.get(name) !== kind) return `${where}: "${name}" is a ${typeNames.get(name)}, used where a ${kind} belongs`;
     return null;
   };
+  /* The eighth form declares no type, so every position that would normally
+   * resolve a name against api/types/ has to admit it by form name instead --
+   * there is deliberately nothing in that directory to resolve it to, which is
+   * what keeps the directory from filling with fieldless types. */
+  const CONSUMER_DATA = 'consumerData';
+  const held = [];
+  const routes = [];
   for (const [member, spec] of Object.entries(contract.api ?? {})) {
     if (!FORMS.has(spec.form)) {
-      problems.push(`${where}.${member}: form "${spec.form}" is none of the seven — see api/README.md`);
+      problems.push(`${where}.${member}: form "${spec.form}" is none of the eight — see api/README.md`);
       continue;
     }
     if (spec.form === 'primitive' && !PRIMITIVE_TYPES.has(spec.type)) {
@@ -154,15 +180,35 @@ export function validateContract(contract, typeNames) {
     }
     if (spec.form === 'enum') problems.push(...[declared(spec.type, 'enum')].filter(Boolean));
     if (spec.form === 'object') problems.push(...[declared(spec.type, 'object')].filter(Boolean));
-    if (spec.form === 'array' && !PRIMITIVE_TYPES.has(spec.of)) {
+    if (spec.form === 'array' && !PRIMITIVE_TYPES.has(spec.of) && spec.of !== CONSUMER_DATA) {
       problems.push(...[declared(spec.of, 'object')].filter(Boolean));
     }
-    if (spec.form === 'event' && spec.payload) {
+    if (spec.form === 'event' && spec.payload && spec.payload !== CONSUMER_DATA) {
       problems.push(...[declared(spec.payload, 'object')].filter(Boolean));
     }
     for (const [param, type] of Object.entries(spec.params ?? {})) {
-      if (PRIMITIVE_TYPES.has(type)) continue;
+      if (PRIMITIVE_TYPES.has(type) || type === CONSUMER_DATA) continue;
       if (!typeNames.has(type)) problems.push(`${where}.${member}: slot parameter "${param}" names undeclared type "${type}"`);
+    }
+
+    if (spec.form === CONSUMER_DATA || (spec.form === 'array' && spec.of === CONSUMER_DATA)) held.push(member);
+    if (spec.form === 'slot' && Object.values(spec.params ?? {}).includes(CONSUMER_DATA)) routes.push(member);
+    if (spec.form === 'event' && spec.payload === CONSUMER_DATA) routes.push(member);
+  }
+
+  /* Consumer data Arena can never surface is dead API: Arena holds a record it
+   * is forbidden to inspect and has no way to hand back. The only two routes
+   * out are a slot parameter (the consumer draws it) and an event payload (the
+   * consumer receives it), so a contract taking consumer data in must declare
+   * at least one of them. This is one of exactly two mechanical guards on the
+   * form -- the other is the R1 extension above; everything else about it is an
+   * authoring rule with R2 and R3's status. See api/README.md. */
+  if (held.length && !routes.length) {
+    for (const member of held) {
+      problems.push(
+        `${where}.${member}: consumer data with no consumer — Arena may not inspect it, so a contract `
+        + `taking it in must also declare a slot parameter or an event payload of "${CONSUMER_DATA}" that hands it back`,
+      );
     }
   }
   return problems;
@@ -220,7 +266,7 @@ export function compareSurface(contract, members, layer, types = new Map()) {
       rawSeen.add(m.name);
     }
     if (m.form === 'platform') {
-      problems.push(`${where}.${m.name}: "${m.type}" is a platform type and none of the seven forms — R4`);
+      problems.push(`${where}.${m.name}: "${m.type}" is a platform type and none of the eight forms — R4`);
       continue;
     }
     if (m.form === 'union') {
@@ -262,7 +308,7 @@ export function compareSurface(contract, members, layer, types = new Map()) {
       problems.push(`${where}.${m.name}: declared as ${m.form}, contract says ${spec.form}`);
       continue;
     }
-    /* Required-ness is contracted, and compared, for the four inbound
+    /* Required-ness is contracted, and compared, for the five inbound
      * non-slot forms only -- `slot` and `event` are excluded because neither
      * platform pair can express the concept, not because a divergence there
      * is excused. A required SLOT is not comparable: React can express one
@@ -281,7 +327,8 @@ export function compareSurface(contract, members, layer, types = new Map()) {
      * (the branch above already `continue`d otherwise), so a member whose
      * form is wrong reports that, not a second problem about the same
      * defect. */
-    if (spec.form === 'primitive' || spec.form === 'enum' || spec.form === 'object' || spec.form === 'array') {
+    if (spec.form === 'primitive' || spec.form === 'enum' || spec.form === 'object'
+      || spec.form === 'array' || spec.form === 'consumerData') {
       const contractRequired = Boolean(spec.required);
       const layerRequired = Boolean(m.required);
       if (contractRequired !== layerRequired) {
@@ -410,7 +457,7 @@ function main() {
         continue;
       }
       for (const base of surface.heritage ?? []) {
-        problems.push(`${layer}/${contract.component}: extends "${base}" — the {...rest} escape is none of the seven forms, R4`);
+        problems.push(`${layer}/${contract.component}: extends "${base}" — the {...rest} escape is none of the eight forms, R4`);
       }
       problems.push(...compareSurface(contract, surface.members, layer, typesByName));
     }

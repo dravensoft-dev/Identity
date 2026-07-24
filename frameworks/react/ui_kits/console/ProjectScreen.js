@@ -12,7 +12,6 @@ import { Tabs } from "../../components/navigation/Tabs.js";
 import { Button } from "../../components/forms/Button.js";
 import { Switch } from "../../components/forms/Switch.js";
 import { Dialog } from "../../components/feedback/Dialog.js";
-import { Icon } from "./Icon.js";
 const DEPLOYS = [
   { build: "#4821", env: "Production", status: ["success", "Active"], author: "CI · main", dur: "3m 41s" },
   { build: "#4820", env: "Staging", status: ["success", "OK"], author: "ana@", dur: "3m 12s" },
@@ -55,10 +54,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
     actions: React.createElement(Button, {
       variant: "primary",
       size: "sm",
-      icon: React.createElement(Icon, {
-        name: "rocket",
-        size: "var(--icon-md)"
-      }),
+      icon: "ph-bold ph-rocket-launch",
       onClick: () => setOpen(true)
     }, "Deploy")
   }, React.createElement("div", {
@@ -101,9 +97,10 @@ export function ProjectScreen({ onNav, project, onToast }) {
     style: { fontSize: "var(--dz-text)", color: "var(--bone-dim)", lineHeight: "var(--lh-body)" }
   }, "Release 2.5 — SEPA gateway."), React.createElement("div", {
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-sm)", color: "var(--gold)", marginTop: "calc(var(--sp-1) * 2.5)" }
-  }, "in 6 days"))), tab === "Settings" && React.createElement(Card, {
-    title: "Automation",
+  }, "in 6 days"))), tab === "Settings" && React.createElement("div", {
     style: { maxWidth: "calc(var(--sp-1) * 130)" }
+  }, React.createElement(Card, {
+    title: "Automation"
   }, React.createElement("div", {
     style: { display: "flex", flexDirection: "column", gap: "calc(var(--sp-1) * 4.5)" }
   }, React.createElement(Switch, {
@@ -117,7 +114,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
   }), React.createElement(Switch, {
     state: true,
     label: "Require 2 approvals for production"
-  }))), React.createElement(Dialog, {
+  })))), React.createElement(Dialog, {
     open,
     onClose: () => setOpen(false),
     eyebrow: "Confirm",
@@ -127,10 +124,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
       onClick: () => setOpen(false)
     }, "Cancel"), React.createElement(Button, {
       variant: "primary",
-      icon: React.createElement(Icon, {
-        name: "rocket",
-        size: "var(--icon-md)"
-      }),
+      icon: "ph-bold ph-rocket-launch",
       onClick: deploy
     }, "Deploy #4822"))
   }, "You'll publish build ", React.createElement("b", {

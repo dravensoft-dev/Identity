@@ -6,7 +6,6 @@ import { Input } from '../../components/forms/Input.jsx';
 import { Select } from '../../components/forms/Select.jsx';
 import { Checkbox } from '../../components/forms/Checkbox.jsx';
 import { Switch } from '../../components/forms/Switch.jsx';
-const plus = <i className="ph-bold ph-plus" style={{fontSize:'var(--icon-md)',lineHeight:'var(--dz-lh)'}} />;
 function Demo(){
   const [chk,setChk]=React.useState(true);
   const [sw,setSw]=React.useState(true);
@@ -14,7 +13,7 @@ function Demo(){
     <div>
       <div className="sub">Button — variants</div>
       <div className="row">
-        <Button variant="primary" icon={plus}>Deploy</Button>
+        <Button variant="primary" icon="ph-bold ph-plus">Deploy</Button>
         <Button variant="secondary">Roll back</Button>
         <Button variant="ghost">Cancel</Button>
         <Button variant="danger">Delete</Button>
@@ -26,8 +25,8 @@ function Demo(){
         <Button size="sm" variant="secondary">sm</Button>
         <Button size="md" variant="secondary">md</Button>
         <Button size="lg" variant="secondary">lg</Button>
-        <IconButton label="New" variant="solid">{plus}</IconButton>
-        <IconButton label="New">{plus}</IconButton>
+        <IconButton label="New" variant="solid" icon="ph-bold ph-plus" />
+        <IconButton label="New" icon="ph-bold ph-plus" />
       </div>
       <div className="sub">Input · Select</div>
       <div className="row" style={{alignItems:'flex-start'}}>

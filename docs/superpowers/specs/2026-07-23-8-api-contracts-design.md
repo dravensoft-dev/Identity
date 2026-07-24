@@ -48,9 +48,9 @@ capability contract**. One neutral contract per component, stating the members t
 component's API presents. Every layer implementing that component implements exactly
 those members. An API divergence stops being a recorded difference and becomes a defect.
 
-### The vocabulary: seven forms
+### The vocabulary: eight forms
 
-A member of any Arena component's API is exactly one of seven forms, and nothing else:
+A member of any Arena component's API is exactly one of eight forms, and nothing else:
 
 | Form | What it is |
 |---|---|
@@ -59,12 +59,25 @@ A member of any Arena component's API is exactly one of seven forms, and nothing
 | **predefined object** | a record of fields, each field itself a primitive or an enum |
 | **array of primitives** | a homogeneous list of one primitive type |
 | **array of predefined objects** | a homogeneous list of one predefined object |
+| **consumer data** | a homogeneous list, or a single record, whose element type the contract does not describe |
 | **slot** | a space the consumer fills; may declare parameters the component lends it |
 | **event** | an outbound member: a name plus a declared payload |
 
-Six of the seven are inbound; **event** is the only outbound one. Arrays are one encoded
+Seven of the eight are inbound; **event** is the only outbound one. Arrays are one encoded
 form discriminated by what they hold (see *Contract format*), which is a representation
 choice and not a narrowing of the vocabulary.
+
+> **Added by Plan 8C1, Task 1b — the eighth form.** This section said *seven* and was
+> false: `Table.rows` is a member and was none of them, and the *Contract format* section
+> below named a `TableRow` slot-parameter type that cannot be declared. **Consumer data**
+> is a record whose keys the *consumer* names — Arena routes it and never inspects it,
+> which is neither "Arena draws it" (an object) nor "the consumer draws it" (a slot). It
+> is exactly one spelling, `Record<string, unknown>`; a record of a *known* type is a
+> predefined object and stays an R4 violation, because a form admitting any record would
+> re-legalise the escape R4 closed. Exactly two things about it are mechanical — R1's
+> extension below, and the rule that a member taking it in must declare a route back out
+> (a slot parameter or an event payload) — and everything else is an authoring rule with
+> R2 and R3's status. `api/README.md` is the normative statement of all of it.
 
 The word **prop** does not appear in a contract. It is React's vocabulary, and a neutral
 contract that used it would already have chosen a layer. A contract declares *members*;
@@ -110,9 +123,15 @@ substitute the element that carries the behaviour contract.
 > a rule violation.
 
 **R4 — No platform types and no escapes.** `React.CSSProperties`, the `{...rest}` spread,
-`React.Key`, `DOMRect`, `React.MouseEvent`, `React.HTMLInputTypeAttribute` and
-`Record<string, unknown>` are none of the seven forms. An Arena enum or an Arena
-predefined object takes their place.
+`React.Key`, `DOMRect`, `React.MouseEvent` and `React.HTMLInputTypeAttribute` are none of
+the eight forms. An Arena enum or an Arena predefined object takes their place.
+
+> **Re-measured after Plan 8C1, Task 1b.** `Record<string, unknown>` was on that list and
+> has left it: it is **consumer data**, the eighth form. That is a promotion of one exact
+> spelling and nothing wider — `Record<string, Widget>` is still an R4 violation. R1 gained
+> its own extension in the same change: a predefined object may not carry a consumer-data
+> field, which is what deletes `Calendar.meta` from `CalendarEvent` rather than relocating
+> it there.
 
 > Violating today: `style` on 20 React components, plus `ActivityFeed.id`,
 > `Calendar.meta`, `Onboarding.anchorRect`, `Input.type`, `SideNav.onNav`'s event
@@ -151,7 +170,7 @@ identical members, idiomatic binding.
 
 ```
 api/
-  README.md                    the normative vocabulary: seven forms, R1-R5
+  README.md                    the normative vocabulary: eight forms, R1-R5
   types/
     crumb.json                 predefined objects and enums, neutral and shared
     tone.json
@@ -193,9 +212,13 @@ that forbids divergence has nowhere for a second opinion to live.
 }
 ```
 
-`form` takes six values — `primitive`, `enum`, `object`, `array`, `slot`, `event` — and
-`array` is discriminated by `of`: a primitive type name (`"string"`) makes it an array of
-primitives, a declared type name (`"Crumb"`) makes it an array of predefined objects.
+`form` takes seven values — `primitive`, `enum`, `object`, `array`, `consumerData`, `slot`,
+`event` — and `array` is discriminated by `of`: a primitive type name (`"string"`) makes it
+an array of primitives, a declared type name (`"Crumb"`) makes it an array of predefined
+objects, and the form name `"consumerData"` makes it a list of consumer data. **Consumer
+data is spelled by form name in every position**, because nothing is declared in
+`api/types/` for it — a type there states its fields, and this form's whole content is that
+its fields are the consumer's.
 
 A slot declares its parameters, or none:
 
@@ -236,7 +259,7 @@ reopened.
    least one layer. The contract's existence *is* the coverage claim, so no separate
    record can go stale against it. A contract naming a component no layer implements
    fails.
-2. **Form.** No member uses anything outside the seven forms. Read from React's `.d.ts`
+2. **Form.** No member uses anything outside the eight forms. Read from React's `.d.ts`
    and from Angular's `input()` / `output()` / `model()` declarations.
 3. **Agreement.** Every layer implementing a contracted component declares exactly the
    contract's members — same name, same form. Not fewer, not more. An **optional** member
@@ -313,7 +336,7 @@ five work.
 
 ## A.1 — `api/README.md`
 
-The normative statement of the seven forms and R1-R5, written the way
+The normative statement of the eight forms and R1-R5, written the way
 `tokens/src/TYPE-MAP.md` states the DTCG type table: the first thing a new platform
 target reads. `CLAUDE.md` gains an *Architecture* paragraph pointing at it, in the same
 register as the behaviour-contract paragraphs.
@@ -338,8 +361,10 @@ there too.
 
 ## A.4 — The three demonstration components
 
-Three rather than two, because two leave one of the seven forms unexercised by the gate
-on the day it ships. Together these cover six of the seven forms and all five rules.
+Three rather than two, because two leave one of the vocabulary's forms unexercised by the
+gate on the day it ships. Together these cover six of the eight forms and all five rules —
+six of seven when they were chosen; the eighth form landed later, in Plan 8C1's Task 1b,
+and no demonstration component exercises it.
 
 **`AppLogo`** — exercises **slot**, **enum**, **primitive**, and R4.
 Its `mark` is a slot in both layers already, differently expressed, and the contract
@@ -400,7 +425,7 @@ named `x` binds as a React node-valued prop `x` and `<ng-content select="[x]" />
 event named `x` binds as React's `onX` and an Angular `output()` named `x`.
 
 **The contract governs required-ness**, not only name, form and type — but only for the
-four inbound non-slot forms. A slot's and an event's required-ness are not compared,
+five inbound non-slot forms. A slot's and an event's required-ness are not compared,
 because `<ng-content>` cannot declare projected content mandatory and no platform has a
 mandatory listener. The carve-out is a statement about what the platforms can express,
 not an exception.
@@ -573,7 +598,7 @@ about them against the tree at `HEAD`, so 8B4 opens with measurements rather tha
   (`bar-chart.ts:186`, `line-chart.ts:212`, `doughnut-chart.ts:246`, and each React `.d.ts`) as an
   inbound function returning `string`. `classify()` in `scripts/lib/api-surface.mjs` **throws**
   `UnrecognisedShape` on exactly that shape — an inbound function that *returns* a value is none of
-  the seven forms — so no chart contract can be written until it becomes `valueSuffix`, per
+  the eight forms — so no chart contract can be written until it becomes `valueSuffix`, per
   `api/README.md`.
 - **React's `CatSlot = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8` reaches `classify()`'s union branch** with
   unquoted parts and is returned as `{ form: 'union' }` — an R5 violation. It becomes a bare
@@ -630,7 +655,7 @@ rendered tree — does not read contracts.
 > - **`Calendar.d.ts`** — `renderEvent?: (event: CalendarEvent) => React.ReactNode` throws.
 > - **`Input.d.ts`** — `validate?: (value: string) => string | null | undefined` throws.
 >
-> Both are **inbound functions that return a value**, which is none of the seven forms — the
+> Both are **inbound functions that return a value**, which is none of the eight forms — the
 > identical shape the charts' `valueFormatter` had. **B4 is the worked precedent**: the member
 > is replaced by data the component renders itself (`valueSuffix`), and the capability loss is
 > stated plainly rather than hidden. Neither of these two takes that answer automatically —
@@ -650,8 +675,19 @@ rendered tree — does not read contracts.
 >   as the R4 `{...rest}` escape and then reads only the interface's own body, so every
 >   inherited member is invisible to the gate and the contract fails with one *"does not
 >   declare X"* per inherited member. An inherited member is not a declared member here — which
->   is the argument for flattening, over and above R4's letter. Six React `.d.ts` files still
->   carry a heritage clause.
+>   is the argument for flattening, over and above R4's letter.
+>
+> **Re-measured while executing Plan 8C1 (2026-07-24): the heritage-clause count this annotation
+> gave as "six" was wrong — it is NINE, and the number is not written here because it drifts every
+> time a batch flattens one.** Measure it with
+> `grep -c '^export interface .*Props extends' frameworks/react/components/*/*.d.ts`. B4's "six"
+> counted only the bare `extends React.*Attributes` clauses and missed the three wrapped in `Omit<>`
+> (`Checkbox`, `Textarea`, `Input`), which `scripts/check-api.mjs` reports as the R4 escape all the
+> same — the same fact B4's own D6 established for `LineChartProps extends Omit<BarChartProps,
+> 'slots'>`. Plan 8C1 flattened four of the nine (`Badge`, `Card`, `IconButton`, `Button`); the rest
+> — `Checkbox`, `Input`, `Select`, `Textarea`, `SideNav` — fall to C2 and C3. This is the fourth time
+> this figure has been written down and it had been wrong three times; re-run the grep rather than
+> trusting any count in this document.
 
 Plan A's reader (`scripts/lib/api-surface.mjs`) throws `UnrecognisedShape` on a shape it
 cannot read, and a throw is a gate failure rather than a silent omission. Two React
@@ -665,12 +701,19 @@ can check the answer**, and one of the two may require extending the reader:
   leaves the payload (R4) and the item alone travels. Applying that answer here makes the
   member readable with no reader change; deciding otherwise means changing the convention,
   which is a change to `api/README.md`, not to `SideNav`.
-- **`Table.d.ts`** — a generic `TableColumn<T>`. Generics are outside the seven forms
+- **`Table.d.ts`** — a generic `TableColumn<T>`. Generics are outside the eight forms
   entirely, and no form in the vocabulary expresses one. This is the harder of the two:
   it is not a member that violates a rule, it is a shape the vocabulary has no word for.
-  Settle it in `Table`'s audit before writing the contract, and expect the answer to be
-  either "the row type is not parameterised in the contract" or a change to the
-  vocabulary itself.
+
+  > **Settled by Plan 8C1, Task 1, decision D5, and implemented in its Task 1b.** The
+  > answer was the second branch this paragraph anticipated: **a change to the vocabulary
+  > itself**, the eighth form. It needed no type-parameter parser, because the generic
+  > **dissolves on its own** — `TableColumn.render` is one of the two R1 violations named
+  > above, and once `render` leaves the object and becomes a parameterised slot of the
+  > component, `TableColumn` is an ordinary predefined object with no type parameter. What
+  > is left needing a form is `rows` and `Calendar`'s `meta`, and both are spelled
+  > `Record<string, unknown>`. `Table`'s own audit still writes the contract; what it no
+  > longer has to do is invent a vocabulary while doing so.
 
 ## Other R4 work Plan C carries
 
@@ -808,6 +851,33 @@ comparison and a comparison needs a baseline that is not stale.
 | **Plan B2** (2026-07-24) | **910 across 79 files** | 26 across 5 files |
 | **Plan B3** (2026-07-24) | **932 across 82 files** | 26 across 5 files |
 | **Plan B4** (2026-07-24) | **958 across 85 files** | 26 across 5 files |
+| **Plan 8C1** (2026-07-24) | **991 across 89 files** | 26 across 5 files |
+
+Plan 8C1 opened Plan C — the twenty-one React-only components — with its first batch: the five
+primitives other components compose (`Spinner`, `Badge`, `Card`, `IconButton`, `Button`), taking
+`check:api` from 21 contracts across 41 layer implementations to **26 across 46**. **Every contract
+in Plan C is single-layer**, because Angular implements none of the twenty-one, so a batch moves the
+layer count by as many contracts as it writes — five here, not ten — and a reader deriving the
+arithmetic from Plan B's `+1 contract / +2 layers` rows would get it wrong. The net gain over B4 is
+33 tests and 4 files in the merged process, isolated DOM process unchanged at 26/5, and it reconciles
+exactly against the per-task deltas: Task 1b added 9 in `scripts/` (the eighth form's reader and gate
+tests) with no component contracted; then `frameworks/react/test/` gained 5 (`spinner`), 4 (`badge`),
+2 (`card`, extending the existing suite), 6 (`icon-button`) and 7 (`button`) across the five
+migrations — 9 + 24 = 33, and 1 (`scripts` file already existed) + 3 new react files + the react dir
+crossing from 85 to 89 total. **Task 1b is the batch's structural event, not a component:** it added
+an eighth form to the vocabulary, `consumerData`, because `api/README.md`'s "exactly one of seven
+forms" sentence was already false (`Table.rows` was a member and none of them) and the README's own
+worked slot example named a `TableRow` type that cannot be declared. It contracts nothing and holds
+`check:api` at 21/41 across itself. The five migrations then declared five new enums
+(`ControlSize` shared across three of them, `SpinnerTone`, `ButtonType` shared across two,
+`IconButtonVariant`, `ButtonVariant`) and reused `Tone` for `Badge`; every enum value set is unique,
+so no reuse was missed. **The two decisions that shaped the batch beyond the plan:** the single-icon
+convention (D2) reached `Button` and `IconButton`, so their icons are Phosphor class strings Arena
+draws rather than slots — `IconButton` ends with no slot at all; and the `<button>` heritage flatten
+(D1) cut the five `form*` overrides, so both declare `type`/`disabled`/`name`/`value`/`autoFocus`/
+`form` and the `click` event and no `Form*` enum. `IconButton` was weighed against merging into
+`Button` and kept separate, because its required `label` is an accessible-name guardrail a merged
+Button could not enforce.
 
 Plan B4 put the last three components of Plan B under contract — BarChart, LineChart and
 DoughnutChart — taking `check:api` from 18 contracts across 35 layer implementations to **21 across

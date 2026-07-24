@@ -46,6 +46,12 @@ export interface BulkAction {
   destructive?: boolean;
 }
 
+/** The native button behaviour. 'button' does nothing on its own and is the right default outside a form; 'submit' is what a bare <button> silently defaults to inside one, which is the footgun this member exists to make explicit. */
+export type ButtonType = 'button' | 'submit' | 'reset';
+
+/** Primary for the one main action in a view; secondary for neutral actions; ghost for tertiary ones; danger for destructive ones. Danger is outline and never filled — Arena's only filled danger surface is the final confirmation inside ConfirmDialog. */
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+
 /** One entry in a CommandPalette. `hint` is searched but never shown, so a command can be found by a synonym that never appears in its label. */
 export interface Command {
   /** A stable identity for the command, so a host can switch on it rather than on the label. */
@@ -59,6 +65,9 @@ export interface Command {
   /** The keystroke shown at the row's trailing edge, monospaced. Display only — the palette does not bind it. */
   shortcut?: string;
 }
+
+/** The three-step size scale shared by Arena's controls. Heights come from the density tokens, so a control inside .arena-compact re-densifies with the rows around it. */
+export type ControlSize = 'sm' | 'md' | 'lg';
 
 /** One entry in a breadcrumb trail. `href` is omitted for the current page, which is never rendered as a link. */
 export interface Crumb {
@@ -74,10 +83,13 @@ export type DeltaTone = 'neutral' | 'positive' | 'negative';
 /** Which way a number moved. Draws the arrow — nothing else. Deliberately separate from whether that movement was good. */
 export type Direction = 'up' | 'down';
 
+/** 'ghost' sits on a surface and shows its hairline border; 'solid' is the filled accent treatment. Danger is not among them — Arena's danger convention is outline, and an icon-only danger control has no room to say what it destroys. */
+export type IconButtonVariant = 'ghost' | 'solid';
+
 /** Both halves of the brand lock-up at once — the mark's slot and the wordmark. A fixed repertoire, not a ratio: sm an application frame, md a signed-out panel, lg the manual's Primary, xl the hero case. */
 export type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
 
-/** Where the coachmark attaches: the two viewport coordinates it positions from. A DOMRect is structurally assignable to it, so a consumer passes getBoundingClientRect() directly. Declared as its own object rather than taken as a DOMRect because a platform type is none of the seven forms (R4), and because these are the only two fields Onboarding reads. */
+/** Where the coachmark attaches: the two viewport coordinates it positions from. A DOMRect is structurally assignable to it, so a consumer passes getBoundingClientRect() directly. Declared as its own object rather than taken as a DOMRect because a platform type is none of the eight forms (R4), and because these are the only two fields Onboarding reads. */
 export interface OnboardingAnchor {
   /** The anchored element's left edge, in viewport pixels. Clamped inside the viewport before use. */
   left: number;
@@ -106,6 +118,9 @@ export type SeriesTone = 'success' | 'warning' | 'danger' | 'info';
 
 /** The shape the placeholder reserves: a single text line, a stack of lines, a block, or a circle. */
 export type SkeletonVariant = 'text' | 'line' | 'block' | 'circle';
+
+/** Colour for an indeterminate wait. 'accent' on a page surface, 'on-accent' inside a filled button. There is deliberately no success/warning/danger: a wait has no state to report, and a spinner tinted --danger would read as a failure that has not happened. */
+export type SpinnerTone = 'accent' | 'gold' | 'neutral' | 'on-accent';
 
 /** How a metric moved. Preformatted — StatCard never formats. The pill's colour says whether the change was GOOD, not which way it points, which is why direction and tone are separate fields. */
 export interface StatDelta {

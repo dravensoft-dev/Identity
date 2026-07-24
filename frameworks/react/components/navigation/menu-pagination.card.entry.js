@@ -18,9 +18,7 @@ function Demo() {
   }, React.createElement(Menu, {
     trigger: React.createElement(Button, {
       variant: "secondary",
-      iconRight: React.createElement("i", {
-        className: "ph-bold ph-caret-down"
-      })
+      iconRight: "ph-bold ph-caret-down"
     }, "Actions"),
     items: [
       { header: "Deployment" },
@@ -38,10 +36,9 @@ function Demo() {
   }), React.createElement(Menu, {
     align: "end",
     trigger: React.createElement(IconButton, {
-      label: "More options"
-    }, React.createElement("i", {
-      className: "ph-bold ph-dots-three-vertical"
-    })),
+      label: "More options",
+      icon: "ph-bold ph-dots-three-vertical"
+    }),
     items: [
       { label: "Rename", icon: React.createElement("i", {
         className: "ph-bold ph-pencil-simple"

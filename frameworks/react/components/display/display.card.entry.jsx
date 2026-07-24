@@ -26,12 +26,16 @@ function Demo(){return (<div>
   </div>
   <div className="sub">Card</div>
   <div className="row" style={{alignItems:'stretch'}}>
-    <Card eyebrow="Delivery" title="Client Portal" action={<Badge tone="success" dot>Deployed</Badge>} style={{width:'calc(var(--sp-1) * 75)'}}>
-      <div style={{color:'var(--mute)',fontSize:'var(--dz-text)',lineHeight:'var(--lh-body)'}}>Last published 2 h ago · build #4821</div>
-    </Card>
-    <Card accent floating title="Latency alert" style={{width:'calc(var(--sp-1) * 70)'}}>
-      <div style={{color:'var(--mute)',fontSize:'var(--dz-text)',lineHeight:'var(--lh-body)'}}>p95 rose to 340 ms on checkout.</div>
-    </Card>
+    <div style={{width:'calc(var(--sp-1) * 75)',display:'grid'}}>
+      <Card eyebrow="Delivery" title="Client Portal" action={<Badge tone="success" dot>Deployed</Badge>}>
+        <div style={{color:'var(--mute)',fontSize:'var(--dz-text)',lineHeight:'var(--lh-body)'}}>Last published 2 h ago · build #4821</div>
+      </Card>
+    </div>
+    <div style={{width:'calc(var(--sp-1) * 70)',display:'grid'}}>
+      <Card accent floating title="Latency alert">
+        <div style={{color:'var(--mute)',fontSize:'var(--dz-text)',lineHeight:'var(--lh-body)'}}>p95 rose to 340 ms on checkout.</div>
+      </Card>
+    </div>
   </div>
   <div className="sub">StatCard — the value says what IS, the pill says how it MOVED</div>
   <div className="row" style={{alignItems:'stretch'}}>
