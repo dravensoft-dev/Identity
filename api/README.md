@@ -13,6 +13,25 @@ coverage claim and never an accessibility one.
 Read this before adding a platform target, the way `tokens/src/TYPE-MAP.md` is read
 before adding one to the token layer.
 
+## The other two contracts are firm; this layer is additive
+
+Two of Arena's three contracts were settled before this one and are **not reopened by it**.
+The **token** contract (`tokens/`) is the design-value layer. The **behaviour** contract
+(`behaviour/patterns/`) states what each kind of component must do, adopted from the WAI-ARIA
+Authoring Practices Guide — and, where APG has no page, from the ARIA 1.2 role reference or WCAG.
+This API capability layer was added last, and it is **orthogonal and additive**: bringing a
+component under contract may not weaken, remove, or contradict its behaviour binding or the
+tokens it renders from. Neither of the two older layers changes to accommodate an API contract.
+
+When an API reshape appears to require dropping or changing something a behaviour binding depends
+on, **the reshape is what is wrong — not the binding.** `ConfirmDialog` is the worked example:
+its `cancel` event is how the (accessible, Angular) dialog reports an Escape-key or Cancel-button
+dismissal, which the `dialog-modal` pattern requires. A contract that omitted `cancel` to look
+tidier would have left the Escape handler with nothing to emit and silently voided that
+requirement. The member stays because the behaviour contract is firm. An API decision is correct
+only if every behaviour binding it touches — and every design token it renders from — remains
+exactly as true afterward as before.
+
 ## The vocabulary: seven forms
 
 A member of any Arena component's API is exactly one of seven forms, and nothing else.
