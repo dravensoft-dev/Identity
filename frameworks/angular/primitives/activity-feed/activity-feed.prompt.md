@@ -4,9 +4,9 @@ time; `tone` colours the leading dot from Badge's vocabulary. Styling is the sib
 
 ```html
 <arena-activity-feed [items]="[
-  { id: 1, actor: 'Marta', action: 'deployed', target: 'billing@2.4.1', time: '2m', tone: 'success' },
-  { id: 2, actor: 'Ivan', action: 'opened an incident on', target: 'auth', time: '18m', tone: 'danger' },
-  { id: 3, actor: 'Rae', action: 'approved the rollback', time: '1h' }
+  { id: '1', actor: 'Marta', action: 'deployed', target: 'billing@2.4.1', time: '2m', tone: 'success' },
+  { id: '2', actor: 'Ivan', action: 'opened an incident on', target: 'auth', time: '18m', tone: 'danger' },
+  { id: '3', actor: 'Rae', action: 'approved the rollback', time: '1h' }
 ]" />
 ```
 
@@ -22,9 +22,9 @@ time; `tone` colours the leading dot from Badge's vocabulary. Styling is the sib
   `Tag`'s own dot and `Avatar`'s presence dot, not a danger surface. See README's Danger
   convention section.
 
-**No row escape hatch yet.** React's `ActivityFeed` takes a `renderItem` prop that
-replaces a row wholesale. A signal input cannot carry that, and the two Angular answers —
-content projection, or a structural directive taking a row context — are a real design
-choice that has not been made rather than an omission. Until it is, a consumer needing a
+**No row escape hatch.** React's `ActivityFeed` used to take a `renderItem` prop that
+replaced a row wholesale; it was removed from the API contract because Angular has no
+binding for per-item projection (that would need a structural directive and
+`ngTemplateOutlet`, which no row of the binding table covers). A consumer needing a
 different row imports the exported `activityFeedStyles` and composes the slots
-themselves, which is what `renderItem` gives React's consumers anyway.
+themselves — on both layers now, not just this one.

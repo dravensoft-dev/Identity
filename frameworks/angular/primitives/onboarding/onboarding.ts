@@ -15,21 +15,14 @@ import {
 import { onboardingStyles } from './onboarding.variants';
 import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../focus-trap';
 import { onboardingWidth, sp3, sp4 } from '../../tokens.generated';
-
-/** One step of an `arena-onboarding` tour. All three fields are optional so a
- *  step can carry only the ones it needs -- React's `Onboarding.jsx` renders
- *  each conditionally for the same reason. */
-export interface ArenaOnboardingStep {
-  eyebrow?: string;
-  title?: string;
-  body?: string;
-}
+import type { OnboardingAnchor, OnboardingStep } from '../../api.generated';
 
 /** Guided coachmark tour (H10). Presents features within the product with
  *  progress dots, "Skip" and "Next" -- controlled: the host owns `index` and
  *  answers `next`, `back`, `skip` and `done`. Floats bottom-right over an
- *  unblurred scrim by default, or anchors next to `anchorRect` (a
- *  `DOMRect`, usually from `getBoundingClientRect()`), clamped inside the
+ *  unblurred scrim by default, or anchors next to `anchor` (an
+ *  `OnboardingAnchor`; a `DOMRect` is structurally assignable, so
+ *  `getBoundingClientRect()` still passes directly), clamped inside the
  *  viewport. The host is the recipe's `root`, the fixed full-viewport scrim
  *  -- `open` drives it between the overlay and `hidden` rather than a
  *  wrapper element omitting itself, matching `arena-confirm-dialog`. Unlike
@@ -95,10 +88,10 @@ export interface ArenaOnboardingStep {
   `,
 })
 export class Onboarding {
-  readonly open = input(false, { transform: booleanAttribute });
-  readonly steps = input<ArenaOnboardingStep[]>([]);
+  readonly open = input.required<boolean, unknown>({ transform: booleanAttribute });
+  readonly steps = input.required<OnboardingStep[]>();
   readonly index = input(0);
-  readonly anchorRect = input<DOMRect>();
+  readonly anchor = input<OnboardingAnchor>();
   readonly next = output<void>();
   readonly back = output<void>();
   readonly skip = output<void>();
@@ -108,7 +101,7 @@ export class Onboarding {
   private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
 
   protected readonly visible = computed(() => this.open() && this.steps().length > 0);
-  protected readonly step = computed<ArenaOnboardingStep>(() => this.steps()[this.index()] ?? {});
+  protected readonly step = computed<OnboardingStep>(() => this.steps()[this.index()] ?? {});
   protected readonly last = computed(() => this.index() === this.steps().length - 1);
 
   /** The dialog's accessible name. Falls back through `title` to `eyebrow`
@@ -121,7 +114,7 @@ export class Onboarding {
   });
 
   protected readonly styles = computed(() => onboardingStyles({
-    placement: this.anchorRect() ? 'anchored' : 'floating',
+    placement: this.anchor() ? 'anchored' : 'floating',
     open: this.open(),
   }));
 
@@ -130,7 +123,7 @@ export class Onboarding {
    *  states: `Math.min`/`Math.max` need real numbers. Both are authored once
    *  in tokens/src/ now instead of here and in React's copy. */
   protected readonly position = computed(() => {
-    const rect = this.anchorRect();
+    const rect = this.anchor();
     if (!rect) return null;
     const view = this.doc.defaultView;
     const W = onboardingWidth;

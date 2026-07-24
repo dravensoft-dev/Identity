@@ -1,0 +1,15 @@
+{
+  "name": "BulkAction",
+  "kind": "object",
+  "description": "One action a BulkActionBar offers for the current selection. A destructive action stays outline in --error — transparent at rest, the soft --danger-soft tint only on hover — never the filled danger surface, which is ConfirmDialog's alone.",
+  "fields": {
+    "id": { "form": "primitive", "type": "string", "required": true,
+            "description": "A stable identity for the action, so a host can switch on it rather than on the label." },
+    "label": { "form": "primitive", "type": "string", "required": true,
+               "description": "The button's text." },
+    "icon": { "form": "primitive", "type": "string",
+              "description": "A Phosphor class name for the leading glyph Arena draws." },
+    "destructive": { "form": "primitive", "type": "boolean",
+                     "description": "Renders the action outline in --error rather than in --bone-dim." }
+  }
+}

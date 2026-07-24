@@ -3,6 +3,10 @@ The panel every signed-out screen needs. It is a frame, not a form: no `email`, 
 `Button`, which is what lets the same component serve "Welcome back", "Check your
 inbox", "This link expired" and "Enter your two-factor code".
 
+`eyebrow` and `title` are plain strings — Arena draws both entirely (the mono crimson
+microlabel, the display-weight heading), so there is no markup for a consumer to
+supply. `brand`, `footer` and the children default slot stay nodes.
+
 ```jsx
 <UnauthCard
   brand={<AppLogo size="md" mark={<img src="/assets/rotor-crimson.svg" alt="" />} name="Draven" dim="soft" />}
@@ -37,3 +41,8 @@ and writing them is what keeps a split layout beside an illustration possible:
 - **Don't** reach for a bare `Card` for a signed-out screen. This one carries the brand
   slot, the constrained width, the panel padding and the centred footer — the four
   things that would otherwise be rewritten per screen.
+- **Don't** pass JSX into `eyebrow` or `title` — both are strings the component draws
+  itself, not slots.
+- **Don't** pass `style` or other DOM attributes to `UnauthCard` — it accepts no escape
+  hatch. Wrap it in your own `<div>` for outer layout, the way the three-line centring
+  wrapper above already does.

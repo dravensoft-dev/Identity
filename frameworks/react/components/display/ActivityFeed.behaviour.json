@@ -4,7 +4,7 @@
     { "requirement": "roles.feed",
       "reason": "No role=\"feed\" -- the list renders as a plain <ul> with no role added." },
     { "requirement": "roles.article",
-      "reason": "No role=\"article\" on any row -- each <li> is a plain list item, or whatever `renderItem` returns when the caller supplies it." },
+      "reason": "No role=\"article\" on any row -- each <li> is a plain list item." },
     { "requirement": "roles.label",
       "reason": "No aria-labelledby or aria-label anywhere -- the <ul> carries none, and nothing else in the file does either." },
     { "requirement": "states.posinset",

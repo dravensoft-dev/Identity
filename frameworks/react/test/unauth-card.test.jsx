@@ -36,6 +36,36 @@ test('it constrains its own width and does not centre itself', () => {
   assert.doesNotMatch(html, /min-height/);
 });
 
+test('eyebrow and title render as plain text', () => {
+  const html = renderToStaticMarkup(
+    <UnauthCard eyebrow="ARENA" title="Welcome back">
+      <span>fields</span>
+    </UnauthCard>,
+  );
+  assert.ok(html.includes('ARENA'), 'the eyebrow string is rendered');
+  assert.ok(html.includes('Welcome back'), 'the title string is rendered');
+  assert.ok(html.includes('fields'), 'children are rendered');
+});
+
+test('a consumer style prop and stray attributes are dropped, not spread onto the root', () => {
+  const html = renderToStaticMarkup(
+    <UnauthCard
+      eyebrow="ARENA"
+      title="Welcome back"
+      style={{ color: 'rgb(255, 0, 0)' }}
+      data-escape="leaked"
+    >
+      <span>fields</span>
+    </UnauthCard>,
+  );
+  // UnauthCard destructures only its five declared members (brand, eyebrow, title,
+  // footer, children) — no `style`, no `{...rest}` — so both of these are silently
+  // dropped rather than reaching the root <div>. If either escape hatch were
+  // reintroduced, one of these two assertions would fail.
+  assert.ok(!html.includes('rgb(255, 0, 0)'), 'the consumer style value is not rendered anywhere');
+  assert.ok(!html.includes('data-escape'), 'the stray attribute is not rendered anywhere');
+});
+
 test('it renders Card rather than a second panel definition', () => {
   const html = renderToStaticMarkup(<UnauthCard><span>x</span></UnauthCard>);
   // Not just the tokens (a hand-rolled div can carry the same two tokens and pass

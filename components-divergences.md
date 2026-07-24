@@ -232,11 +232,13 @@ regardless of whether the component host-binds it), and `ActivityFeed.manifest.j
 `root` slot (`"flex flex-col list-none m-0 p-0"`) still carries `flex`, so the guard is not
 weakened by this carve-out — it was never conditioned on host-binding in the first place.
 
-**Also not ported:** React's `style` prop and `{...rest}` spread. Unlike `PageHead`/
-`AppLogo`/`DoughnutChart`, where a consumer's static attribute on the host reaches the
-styled root because the host *is* the root, that path does not exist here — see the
-consequence above. There is nothing more to route them to without reopening the
-no-host-bind decision itself.
+**No API divergence left to record:** both layers are under the API contract
+(`api/components/ActivityFeed.json`), whose single member is `items`. The `style` prop
+and `{...rest}` spread that once lived only on the React side were removed when the
+component was brought under contract — which is what makes the consequence above the
+whole story rather than half of it. A consumer attribute still lands on the inert host
+here, and neither layer offers a second route to the styled `<ul>`; that follows from
+the no-host-bind decision, not from anything the contract could restate.
 
 **Converges:** no. This is the correct shape for a primitive whose root must be a real list
 element, per the carve-out rule stated above.
@@ -468,26 +470,6 @@ shipped the same gap into a second layer.
 **Converges:** yes — React's `BulkActionBar.jsx` should gain the border and the
 `--danger-soft` hover to match `Menu.jsx` and the README. **Open debt on the React
 layer.**
-
-### BulkActionBar — Clear is unconditional in Angular, optional in React
-
-**React:** `BulkActionBar.jsx` renders the Clear control only when an `onClear`
-callback is passed (`{onClear && (...)}`); a consumer that omits it gets a bar with no
-way to deselect.
-
-**Angular:** `arena-bulk-action-bar` always renders Clear, wired to the `cleared`
-output. There is no input that hides it.
-
-**Why:** the task brief's own `.prompt.md` states this as a deliberate Do ("Always
-offer Clear. A selection the user cannot see the edges of is a selection they will act
-on by accident"), and Angular's output model does not have a React-style "callback
-provided or not" signal to gate on — every `output()` exists on the component
-regardless of whether a consumer subscribes, so conditioning the button's presence on
-subscription is not idiomatic here the way an optional prop is in React. Treated as an
-intentional simplification rather than a narrowing to flag.
-
-**Converges:** no — Angular's shape is preferred; React should stop treating Clear as
-optional. **Open debt on the React layer**, low priority.
 
 ### CommandPalette — Angular is an accessible combobox, React sets no roles at all
 
@@ -903,21 +885,23 @@ convention before shipping, not because the layers disagree.
 
 **Converges:** n/a — both layers already agree.
 
-### UnauthCard — behaviour matches React; only the `style`/`...rest` prop has no counterpart
+### UnauthCard — behaviour matches React; the brand/footer gate is a projection query
 
-**React:** `UnauthCard.jsx` takes `brand`, `eyebrow`, `title`, `footer`, `children`,
-plus `style` and a `{...rest}` spread forwarded onto its own root `<div>`; `brand` and
-`footer` each render only when truthy (`{brand && <div>...}` / `{footer && <div>...}`).
+**React:** `UnauthCard.jsx` takes `brand`, `eyebrow`, `title`, `footer` and `children`;
+`brand` and `footer` each render only when truthy (`{brand && <div>...}` /
+`{footer && <div>...}`).
 
 **Angular:** `arena-unauth-card` takes `eyebrow` and `title` as signal inputs and
 projects `[brand]` and default content and `[footer]`, gating the `brand`/`footer`
 wrappers on `contentChild(ArenaBrand)` / `contentChild(ArenaFooter)` — the same gate
 React's own `&&` checks perform, reached the only way an `ng-content` slot can report
 whether anything was projected (the fix `EmptyState`/`ErrorState` already shipped for
-their own action slot). React's `style` and `{...rest}` have no input to mirror them,
-and need none, for the same reason `PageHead`'s entry above gives: in Angular a
-consumer writes `style="..."` or any attribute directly on `<arena-unauth-card>`, the
-same host element the recipe's `root` classes are bound to.
+their own action slot).
+
+Both layers are under the API contract (`api/components/UnauthCard.json`) with no API
+divergence: `brand`, `eyebrow`, `title`, `content` and `footer` are the same members in
+each — the `style`/`{...rest}` escape that once lived only on the React side was removed
+when the component was brought under contract, the same way `PageHead`'s was.
 
 **Converges:** n/a — no behavioural divergence found.
 

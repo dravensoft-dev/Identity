@@ -6,6 +6,22 @@
  * tokens.generated.* already carries. scripts/check-api.mjs asserts the
  * committed files match api/types/. See api/README.md for the vocabulary. */
 
+/** One event in a feed: someone did something to something, then. Arena draws every field — a consumer cannot place their own markup inside a row. */
+export interface ActivityItem {
+  /** A stable identity for the row, so a reordered feed does not re-key by index. */
+  id?: string;
+  /** Who. Drawn bold in --bone. */
+  actor: string;
+  /** What they did. Drawn in --bone-dim. */
+  action: string;
+  /** What they did it to. Drawn monospaced in --gold — it is an identifier. */
+  target?: string;
+  /** When. Monospaced --mute, pushed to the trailing edge. Preformatted — ActivityFeed never formats. */
+  time?: string;
+  /** Badge's vocabulary, driving the leading dot. Defaults to accent. */
+  tone?: Tone;
+}
+
 /** The alert's severity — the colour and default icon/role it takes. */
 export type AlertTone = 'info' | 'success' | 'warning' | 'danger' | 'neutral';
 
@@ -17,6 +33,32 @@ export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg';
 
 /** A presence state, drawn as a filled dot in the corner in the state's colour — `offline` is a visible muted dot, not the absence of one. There is no invisible value: to show no presence at all, omit the optional `status` member. */
 export type AvatarStatus = 'online' | 'busy' | 'away' | 'offline';
+
+/** One action a BulkActionBar offers for the current selection. A destructive action stays outline in --error — transparent at rest, the soft --danger-soft tint only on hover — never the filled danger surface, which is ConfirmDialog's alone. */
+export interface BulkAction {
+  /** A stable identity for the action, so a host can switch on it rather than on the label. */
+  id: string;
+  /** The button's text. */
+  label: string;
+  /** A Phosphor class name for the leading glyph Arena draws. */
+  icon?: string;
+  /** Renders the action outline in --error rather than in --bone-dim. */
+  destructive?: boolean;
+}
+
+/** One entry in a CommandPalette. `hint` is searched but never shown, so a command can be found by a synonym that never appears in its label. */
+export interface Command {
+  /** A stable identity for the command, so a host can switch on it rather than on the label. */
+  id: string;
+  /** What the command is called, and the primary text searched. */
+  label: string;
+  /** Searched but never shown — a synonym that finds the command. */
+  hint?: string;
+  /** A Phosphor class name for the leading glyph Arena draws. */
+  icon?: string;
+  /** The keystroke shown at the row's trailing edge, monospaced. Display only — the palette does not bind it. */
+  shortcut?: string;
+}
 
 /** One entry in a breadcrumb trail. `href` is omitted for the current page, which is never rendered as a link. */
 export interface Crumb {
@@ -34,6 +76,24 @@ export type Direction = 'up' | 'down';
 
 /** Both halves of the brand lock-up at once — the mark's slot and the wordmark. A fixed repertoire, not a ratio: sm an application frame, md a signed-out panel, lg the manual's Primary, xl the hero case. */
 export type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
+
+/** Where the coachmark attaches: the two viewport coordinates it positions from. A DOMRect is structurally assignable to it, so a consumer passes getBoundingClientRect() directly. Declared as its own object rather than taken as a DOMRect because a platform type is none of the seven forms (R4), and because these are the only two fields Onboarding reads. */
+export interface OnboardingAnchor {
+  /** The anchored element's left edge, in viewport pixels. Clamped inside the viewport before use. */
+  left: number;
+  /** The anchored element's bottom edge, in viewport pixels. The coachmark sits below it. */
+  bottom: number;
+}
+
+/** One step of a guided tour. All three fields are optional so a step can carry only the ones it needs; Arena renders each conditionally. */
+export interface OnboardingStep {
+  /** Mono crimson microlabel above the title. */
+  eyebrow?: string;
+  /** The step's headline, and the coachmark's accessible name. */
+  title?: string;
+  /** A sentence or two explaining the feature this step presents. */
+  body?: string;
+}
 
 /** Whether a component's parts lay out side by side or stacked — which axis it runs along. */
 export type Orientation = 'horizontal' | 'vertical';

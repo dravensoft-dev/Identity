@@ -1,16 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import type { ActivityItem } from '../../api.generated';
 import { activityFeedStyles } from './activity-feed.variants';
-
-export type ActivityTone = 'neutral' | 'accent' | 'gold' | 'success' | 'warning' | 'danger' | 'info';
-
-export interface ActivityItem {
-  id?: string | number;
-  actor: string;
-  action: string;
-  target?: string;
-  time?: string;
-  tone?: ActivityTone;
-}
 
 export interface ActivityFeedRow {
   item: ActivityItem;
@@ -34,9 +24,8 @@ export function resolveActivityFeedRows(items: readonly ActivityItem[]): Activit
 /** An event feed: someone did something to something, then. Its root is a
  *  real `<ul>` — an `<li>` must be a child of a list element, so unlike
  *  every other primitive in this layer it does not host-bind its root (see
- *  components-divergences.md). `renderItem` has no Angular analogue; a
- *  consumer composing a different row does it by hand from the exported
- *  `activityFeedStyles`. */
+ *  components-divergences.md). Arena draws every row; there is no per-item
+ *  projection binding. */
 @Component({
   selector: 'arena-activity-feed',
   standalone: true,
@@ -61,7 +50,7 @@ export function resolveActivityFeedRows(items: readonly ActivityItem[]): Activit
   `,
 })
 export class ActivityFeed {
-  readonly items = input<readonly ActivityItem[]>([]);
+  readonly items = input.required<readonly ActivityItem[]>();
 
   protected readonly base = computed(() => activityFeedStyles());
   protected readonly rows = computed(() => resolveActivityFeedRows(this.items()));

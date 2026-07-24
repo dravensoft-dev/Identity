@@ -6,24 +6,12 @@ import { createRoot } from "react-dom/client";
 import { CommandPalette } from "../../components/navigation/CommandPalette.js";
 import { Button } from "../../components/forms/Button.js";
 const commands = [
-  { id: "deploy", label: "Deploy to production", hint: "client portal", icon: React.createElement("i", {
-    className: "ph-bold ph-rocket-launch"
-  }), shortcut: "⌘D" },
-  { id: "logs", label: "View build logs", hint: "build 4821", icon: React.createElement("i", {
-    className: "ph-bold ph-terminal-window"
-  }) },
-  { id: "new", label: "New project", icon: React.createElement("i", {
-    className: "ph-bold ph-plus-circle"
-  }), shortcut: "⌘N" },
-  { id: "invite", label: "Invite teammate", hint: "members settings", icon: React.createElement("i", {
-    className: "ph-bold ph-user-plus"
-  }) },
-  { id: "theme", label: "Toggle theme", icon: React.createElement("i", {
-    className: "ph-bold ph-moon"
-  }) },
-  { id: "docs", label: "Open documentation", hint: "arena design system", icon: React.createElement("i", {
-    className: "ph-bold ph-book-open"
-  }) }
+  { id: "deploy", label: "Deploy to production", hint: "client portal", icon: "ph-bold ph-rocket-launch", shortcut: "⌘D" },
+  { id: "logs", label: "View build logs", hint: "build 4821", icon: "ph-bold ph-terminal-window" },
+  { id: "new", label: "New project", icon: "ph-bold ph-plus-circle", shortcut: "⌘N" },
+  { id: "invite", label: "Invite teammate", hint: "members settings", icon: "ph-bold ph-user-plus" },
+  { id: "theme", label: "Toggle theme", icon: "ph-bold ph-moon" },
+  { id: "docs", label: "Open documentation", hint: "arena design system", icon: "ph-bold ph-book-open" }
 ];
 function Demo() {
   const [open, setOpen] = React.useState(true);
@@ -46,7 +34,8 @@ function Demo() {
   }, "Open palette"), React.createElement(CommandPalette, {
     open,
     onClose: () => setOpen(false),
-    commands
+    commands,
+    onRun: (c) => console.log("ran", c.id)
   }));
 }
 createRoot(document.getElementById("root")).render(React.createElement(Demo, null));

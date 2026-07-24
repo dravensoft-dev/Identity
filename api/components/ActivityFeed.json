@@ -1,0 +1,8 @@
+{
+  "component": "ActivityFeed",
+  "description": "An event feed — someone did something to something, then. Arena draws every row.",
+  "api": {
+    "items": { "form": "array", "of": "ActivityItem", "required": true,
+               "description": "The events, newest first by convention. Each row is drawn by Arena; there is no per-item projection." }
+  }
+}

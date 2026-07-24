@@ -11,10 +11,11 @@ const TONES = {
   danger: "var(--danger)",
   info: "var(--info)"
 };
-export function ActivityFeed({ items = [], renderItem, style, ...rest }) {
+export function ActivityFeed({ items }) {
+  if (items == null)
+    throw new Error("ActivityFeed: `items` is required");
   return React.createElement("ul", {
-    style: { display: "flex", flexDirection: "column", listStyle: "none", margin: 0, padding: 0, ...style },
-    ...rest
+    style: { display: "flex", flexDirection: "column", listStyle: "none", margin: 0, padding: 0 }
   }, items.map((item, i) => React.createElement("li", {
     key: item.id != null ? item.id : i,
     style: {
@@ -24,7 +25,7 @@ export function ActivityFeed({ items = [], renderItem, style, ...rest }) {
       padding: "calc(var(--sp-1) * 3.5) 0",
       borderTop: i ? "var(--bw) solid var(--color-base-300)" : "none"
     }
-  }, renderItem ? renderItem(item) : React.createElement(React.Fragment, null, React.createElement("span", {
+  }, React.createElement("span", {
     style: {
       flex: "none",
       width: "calc(var(--sp-1) * 2)",
@@ -40,5 +41,5 @@ export function ActivityFeed({ items = [], renderItem, style, ...rest }) {
     style: { color: "var(--gold)", fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-md)" }
   }, item.target)), item.time && React.createElement("span", {
     style: { marginLeft: "auto", fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-sm)", color: "var(--mute)" }
-  }, item.time)))));
+  }, item.time))));
 }

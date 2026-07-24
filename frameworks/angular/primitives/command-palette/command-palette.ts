@@ -16,19 +16,9 @@ import {
 } from '@angular/core';
 import { commandPaletteStyles } from './command-palette.variants';
 import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../focus-trap';
+import type { Command } from '../../api.generated';
 
 let nextId = 0;
-
-/** One entry in the palette. `hint` is searched but never shown, so a
- *  command can be found by a synonym that never appears in its label --
- *  React's `CommandPalette.jsx` filters the same way. */
-export interface ArenaCommand {
-  id?: string;
-  label: string;
-  hint?: string;
-  icon?: string;
-  shortcut?: string;
-}
 
 /** Commands whose `label` or `hint` contains `query`, case-insensitively --
  *  the same predicate React's `CommandPalette.jsx` filters with. Exported as
@@ -37,7 +27,7 @@ export interface ArenaCommand {
  *  @param commands the full command list
  *  @param query the text typed into the search field
  *  @returns the commands whose label or hint matches, in their original order */
-export function filterCommands(commands: readonly ArenaCommand[], query: string): ArenaCommand[] {
+export function filterCommands(commands: readonly Command[], query: string): Command[] {
   const needle = query.toLowerCase();
   return commands.filter((command) => `${command.label} ${command.hint ?? ''}`.toLowerCase().includes(needle));
 }
@@ -100,7 +90,7 @@ export function activeOptionId(uid: string, active: number, rowCount: number): s
 /** Keyboard-first action launcher (Cmd/Ctrl+K). Type to filter, arrow to a
  *  command, Enter to run it, Escape to leave, or hover a row to select it --
  *  a palette that needs the mouse is not a palette. Fully controlled: the
- *  host owns `open` and reacts to `closed`/`run` the same way it reacts to
+ *  host owns `open` and reacts to `close`/`run` the same way it reacts to
  *  `arena-confirm-dialog`'s `cancel`/`confirm`. Running a command does
  *  not close the palette by itself here, unlike React's
  *  `CommandPalette.jsx`, which calls `onClose` unconditionally before
@@ -110,7 +100,7 @@ export function activeOptionId(uid: string, active: number, rowCount: number): s
  *  `open` drives it between the overlay and `hidden` rather than a wrapper
  *  element omitting itself, matching `arena-confirm-dialog` and
  *  `arena-onboarding`. Like `arena-onboarding`, this scrim IS dismissible:
- *  clicking it emits `closed`, the same as React's `onClick={onClose}` on
+ *  clicking it emits `close`, the same as React's `onClick={onClose}` on
  *  its own scrim div. The panel is a descendant of the host here, not a
  *  sibling the way React renders it, so it stops that click's propagation
  *  itself.
@@ -185,11 +175,11 @@ export function activeOptionId(uid: string, active: number, rowCount: number): s
   `,
 })
 export class CommandPalette {
-  readonly open = input(false, { transform: booleanAttribute });
-  readonly commands = input<ArenaCommand[]>([]);
+  readonly open = input.required<boolean, unknown>({ transform: booleanAttribute });
+  readonly commands = input.required<Command[]>();
   readonly placeholder = input('Search for an action or project…');
-  readonly closed = output<void>();
-  readonly run = output<ArenaCommand>();
+  readonly close = output<void>();
+  readonly run = output<Command>();
 
   protected readonly query = signal('');
   protected readonly active = signal(0);
@@ -257,7 +247,7 @@ export class CommandPalette {
       if (command) this.run.emit(command);
     } else if (event.key === 'Escape') {
       event.preventDefault();
-      this.closed.emit();
+      this.close.emit();
     } else if (event.key === 'Tab') {
       const panel = this.panel()?.nativeElement;
       if (panel) trapTabKey(panel, event, this.doc.activeElement);
@@ -265,6 +255,6 @@ export class CommandPalette {
   }
 
   protected onScrimClick(): void {
-    if (this.open()) this.closed.emit();
+    if (this.open()) this.close.emit();
   }
 }

@@ -3,7 +3,11 @@
  * for the full rationale. */
 import React from "react";
 import { onboardingWidth, sp3, sp4 } from "../../tokens.generated.js";
-export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip, onDone, anchorRect }) {
+export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onDone, anchor }) {
+  if (open == null)
+    throw new Error("Onboarding: `open` is required");
+  if (steps == null)
+    throw new Error("Onboarding: `steps` is required");
   if (!open || !steps.length)
     return null;
   const step = steps[index] || {};
@@ -11,9 +15,9 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
   const W = onboardingWidth;
   const EDGE = sp4;
   let pos = { position: "fixed", right: "calc(var(--sp-1) * 6)", bottom: "calc(var(--sp-1) * 6)", zIndex: "var(--z-onboarding)" };
-  if (anchorRect) {
-    const top = Math.min(anchorRect.bottom + sp3, (typeof window !== "undefined" ? window.innerHeight : 900) - 220);
-    let left = anchorRect.left;
+  if (anchor) {
+    const top = Math.min(anchor.bottom + sp3, (typeof window !== "undefined" ? window.innerHeight : 900) - 220);
+    let left = anchor.left;
     if (typeof window !== "undefined")
       left = Math.min(left, window.innerWidth - W - EDGE);
     pos = { position: "fixed", top, left: Math.max(EDGE, left), zIndex: "var(--z-onboarding)" };

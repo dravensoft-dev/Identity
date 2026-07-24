@@ -112,8 +112,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`SideNav`** (navigation) — the sidebar's navigation list. An item with `href`
   renders an `<a>`, without one a `<button>`; the active item carries
   `aria-current="page"`.
-- **`ActivityFeed`** (display) — the event feed, with Badge's tone vocabulary and a
-  `renderItem` escape hatch.
+- **`ActivityFeed`** (display) — the event feed, with Badge's tone vocabulary. Arena draws
+  every row.
 - **`UnauthCard`** (display) — the signed-out panel. A frame, not a form; renders `Card`
   internally and does not centre itself. `Card`'s own consumers are unaffected, but
   because `Card` exposes no padding prop, `UnauthCard` reaches the signed-out panel's
@@ -325,6 +325,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and a `[secondaryAction]` slot, replacing its single projected `[action]` slot; `icon`
   narrows from `ReactNode` to a `string`; React loses `style` (R4). React's declared no-`role`
   behaviour (its `roles.element` exception) is left exactly as it was.
+- **`UnauthCard` under contract — breaking.** `eyebrow` and `title` narrow from `ReactNode` to
+  primitive `string` — Arena draws both entirely, the microlabel with its own letter-spacing and
+  the title in the display font. `brand`, `content` and `footer` stay slots. React loses `style`
+  and the `{...rest}`/`React.HTMLAttributes` spread (R4). No required-ness changes — all five
+  members stay optional in both layers — and Angular needed no change at all.
+- **`BulkActionBar` under contract — breaking.** New shared type `BulkAction` (`id` and `label`
+  required, `icon?`, `destructive?`). `BulkAction.onClick` leaves the object for the component event
+  `run(BulkAction)` (R1) — **per-item `onClick` handlers no longer work**; `icon` narrows from
+  `ReactNode` to a Phosphor class-name `string` Arena draws. `count` and `actions` both become
+  **required** (React throws, Angular `input.required`). A new `clearable` primitive (default
+  `true`) gates the Clear control in both layers, so React keeps its ability to hide it. **React's
+  default flips**: Clear used to render only when `onClear` was passed; it now renders by default.
+  React consumers who previously omitted `onClear` to hide the control must now pass
+  `clearable={false}`. React loses `style` (R4). Angular's `cleared` output is renamed `clear`,
+  and its local `ArenaBulkAction` interface is deleted in favour of the shared `BulkAction` type.
+- **`CommandPalette` under contract — breaking.** New shared type `Command` (`id`/`label`
+  required, `hint?`/`icon?`/`shortcut?`). `Command.onRun` leaves the object for the component
+  event `run(Command)` (R1); `icon` narrows from `ReactNode` to a Phosphor class-name `string`.
+  `open` and `commands` both become **required** (React throws, Angular `input.required`).
+  Angular's `closed` output is renamed `close`, and its local `ArenaCommand` interface is deleted
+  in favour of the shared `Command` type. CommandPalette carried no `style`/`{...rest}` escape —
+  the only component in the batch already clean of R4.
+- **The contract reader now classifies `input.required<T, TransformT>()` depth-aware.**
+  `scripts/lib/api-surface.mjs` previously fed the whole `<T, TransformT>` generic list to
+  `classify()` as one string and threw on any two-argument form, forcing an Angular
+  `input.required` member with a bare-attribute coercion (`booleanAttribute`) to drop the
+  transform to type-check at all. The reader now reads the *first* generic — what the signal
+  returns — matching `angular.dev`'s own contract for the pair, and still refuses the
+  no-generic `input.required({transform})` form, which declares no type. `CommandPalette.open`
+  and `Onboarding.open` both keep `booleanAttribute` coercion on a required input as a result;
+  no contract's declared type changed. Internal to the reader — no component's `api/` file
+  changed.
+- **`ActivityFeed` under contract — breaking.** New shared type `ActivityItem`. Its `actor`,
+  `action` and `items` all become required — React throws on an absent `items`, Angular uses
+  `input.required`; `target` and `time` narrow from `ReactNode` to `string`; `id` narrows to
+  `string` on both layers, which was `React.Key` on one (R4) and `string | number` on the
+  other (R5); `tone` reuses the existing `Tone` enum rather than declaring its own, the two
+  sets being identical, and Angular's exported `ActivityTone` is deleted. React loses `style`
+  and the `{...rest}` spread (R4) and loses `renderItem` — permitted by R3, since it filled
+  the `<li>` Arena renders rather than replacing it, but removed because Angular has no
+  binding for per-item projection. **A consumer can no longer place their own markup inside
+  one row of a feed Arena renders.**
+- **`Onboarding` under contract — breaking.** New shared types `OnboardingStep` and
+  `OnboardingAnchor`. `open` and `steps` both become **required** (React throws, Angular uses
+  `input.required`, preserving the `booleanAttribute` coercion on `open`). The anchor member
+  drops the `DOMRect | { left: number; bottom: number }` union — a platform type (R4) inside a
+  union between forms (R5) — and is renamed `anchorRect` → `anchor`, typed as the new
+  `OnboardingAnchor { left: number; bottom: number }` object; a `DOMRect` stays structurally
+  assignable, so `getBoundingClientRect()` still passes directly and no call site's *value*
+  needs to change, only its prop/input name. `OnboardingStep.body` narrows from `ReactNode` to
+  `string` (Angular already declared it so), and Angular's exported `ArenaOnboardingStep`
+  interface is deleted in favour of the shared `OnboardingStep` type.
 - **Nine `@dsCard` declarations corrected to what their pages actually render.** No page's
   content changed. `frameworks/react/ui_kits/console/index.html` no longer declares a
   `@dsCard` at all — it is an example app with its own scroll area, not a specimen card.
@@ -573,11 +625,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   fixed full-viewport scrim, draws one over the entire viewport. Binding the input
   avoids it. A host binding of `'[attr.title]': 'null'` would fix it for good, and must
   then be applied to all nine at once. Documented in `frameworks/angular/README.md`.
-- **`ActivityFeed`'s `renderItem` escape hatch has no Angular analogue.** React's
-  row-replacement prop has no signal-input equivalent; the Angular answer is content
-  projection or a structural directive, and choosing between them is a design question
-  this change raises rather than settles. A consumer needing a different row composes
-  the slots from the exported `activityFeedStyles`.
 
 ### Notes
 

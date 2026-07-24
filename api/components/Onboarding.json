@@ -1,0 +1,22 @@
+{
+  "component": "Onboarding",
+  "description": "Guided coachmark tour (H10) — presents features within the product with progress dots, Skip and Next. Controlled: the host owns index and answers the four events.",
+  "api": {
+    "open": { "form": "primitive", "type": "boolean", "required": true,
+              "description": "Whether the tour is shown. Closed renders nothing, scrim included." },
+    "steps": { "form": "array", "of": "OnboardingStep", "required": true,
+               "description": "The tour, in order. An empty tour renders nothing." },
+    "index": { "form": "primitive", "type": "number", "default": 0,
+               "description": "Which step is current. The host owns it and answers next/back." },
+    "anchor": { "form": "object", "type": "OnboardingAnchor",
+                "description": "Where to attach the coachmark, as the two viewport coordinates it positions from. Absent floats it bottom-right." },
+    "next": { "form": "event",
+              "description": "Next was activated on a step that is not the last." },
+    "back": { "form": "event",
+              "description": "Back was activated on a step that is not the first." },
+    "skip": { "form": "event",
+              "description": "Skip was activated, or the scrim was clicked." },
+    "done": { "form": "event",
+              "description": "The final step's confirming control was activated." }
+  }
+}
