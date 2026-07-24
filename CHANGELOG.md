@@ -330,14 +330,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the title in the display font. `brand`, `content` and `footer` stay slots. React loses `style`
   and the `{...rest}`/`React.HTMLAttributes` spread (R4). No required-ness changes — all five
   members stay optional in both layers — and Angular needed no change at all.
-- **`BulkActionBar` under contract — breaking.** New shared type `BulkAction` (`label` required,
-  `icon?`, `destructive?`). `BulkAction.onClick` leaves the object for the component event
+- **`BulkActionBar` under contract — breaking.** New shared type `BulkAction` (`id` and `label`
+  required, `icon?`, `destructive?`). `BulkAction.onClick` leaves the object for the component event
   `run(BulkAction)` (R1) — **per-item `onClick` handlers no longer work**; `icon` narrows from
   `ReactNode` to a Phosphor class-name `string` Arena draws. `count` and `actions` both become
   **required** (React throws, Angular `input.required`). A new `clearable` primitive (default
-  `true`) gates the Clear control in both layers, so React keeps its ability to hide it. React
-  loses `style` (R4). Angular's `cleared` output is renamed `clear`, and its local
-  `ArenaBulkAction` interface is deleted in favour of the shared `BulkAction` type.
+  `true`) gates the Clear control in both layers, so React keeps its ability to hide it. **React's
+  default flips**: Clear used to render only when `onClear` was passed; it now renders by default.
+  React consumers who previously omitted `onClear` to hide the control must now pass
+  `clearable={false}`. React loses `style` (R4). Angular's `cleared` output is renamed `clear`,
+  and its local `ArenaBulkAction` interface is deleted in favour of the shared `BulkAction` type.
 - **`CommandPalette` under contract — breaking.** New shared type `Command` (`id`/`label`
   required, `hint?`/`icon?`/`shortcut?`). `Command.onRun` leaves the object for the component
   event `run(Command)` (R1); `icon` narrows from `ReactNode` to a Phosphor class-name `string`.
@@ -373,7 +375,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `OnboardingAnchor { left: number; bottom: number }` object; a `DOMRect` stays structurally
   assignable, so `getBoundingClientRect()` still passes directly and no call site's *value*
   needs to change, only its prop/input name. `OnboardingStep.body` narrows from `ReactNode` to
-  `string` (Angular already declared it so).
+  `string` (Angular already declared it so), and Angular's exported `ArenaOnboardingStep`
+  interface is deleted in favour of the shared `OnboardingStep` type.
 - **Nine `@dsCard` declarations corrected to what their pages actually render.** No page's
   content changed. `frameworks/react/ui_kits/console/index.html` no longer declares a
   `@dsCard` at all — it is an example app with its own scroll area, not a specimen card.
@@ -622,6 +625,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   fixed full-viewport scrim, draws one over the entire viewport. Binding the input
   avoids it. A host binding of `'[attr.title]': 'null'` would fix it for good, and must
   then be applied to all nine at once. Documented in `frameworks/angular/README.md`.
+
 ### Notes
 
 - **`tokens/src/` is the only source of truth for component design, and no layer is the
