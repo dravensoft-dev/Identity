@@ -22,9 +22,19 @@ test('a step draws its eyebrow, title and body as text, and names the dialog', (
   assert.ok(html.includes('aria-label="Projects"'), 'the dialog-modal binding\'s accessible name is intact');
 });
 
-test('an anchor of two plain numbers positions the coachmark', () => {
-  const html = renderToStaticMarkup(
+test('an anchor switches the coachmark from the bottom-right corner to top/left placement', () => {
+  const floating = renderToStaticMarkup(<Onboarding open steps={[{ title: 'One' }]} />);
+  const anchored = renderToStaticMarkup(
     <Onboarding open steps={[{ title: 'One' }]} anchor={{ left: sp4, bottom: sp3 }} />,
   );
-  assert.ok(html.includes('position:fixed'), 'the anchored branch renders a fixed-position coachmark');
+  // Both branches are position:fixed, so that alone proves nothing -- the first
+  // draft of this test asserted it and would have passed against a component that
+  // ignored `anchor` entirely. What separates them is WHICH edges they pin: the
+  // default floats off right/bottom, the anchored branch computes top/left from
+  // the anchor. The leading `;` matters: a bare 'top:' also matches the footer
+  // row's own `margin-top:`, which both branches render.
+  assert.ok(anchored.includes(';top:'), 'the anchored branch pins a computed top');
+  assert.ok(anchored.includes(';left:'), 'the anchored branch pins a computed left');
+  assert.ok(!floating.includes(';top:'), 'the default branch pins no top');
+  assert.ok(floating.includes(';right:'), 'the default branch floats off the right edge instead');
 });
