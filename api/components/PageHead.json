@@ -1,0 +1,14 @@
+{
+  "component": "PageHead",
+  "description": "A page heading: a required title, an optional subtitle, and an optional actions slot.",
+  "api": {
+    "title": { "form": "primitive", "type": "string", "required": true,
+               "description": "The page title. Required — a page head with no title is a bug, not a state." },
+    "subtitle": { "form": "primitive", "type": "string",
+                  "description": "A muted line under the title." },
+    "actions": { "form": "slot",
+                 "description": "Page-level controls, right-aligned in the head." },
+    "align": { "form": "enum", "type": "PageHeadAlign", "default": "start",
+               "description": "Cross-axis alignment of the actions block against the title, wide layout only." }
+  }
+}

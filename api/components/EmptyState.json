@@ -1,0 +1,14 @@
+{
+  "component": "EmptyState",
+  "description": "A placeholder for an empty collection: an icon, a title, a message, and an optional action.",
+  "api": {
+    "icon": { "form": "primitive", "type": "string",
+              "description": "A Phosphor class name for the glyph Arena draws, muted." },
+    "title": { "form": "primitive", "type": "string", "required": true,
+               "description": "The headline — what is empty." },
+    "message": { "form": "primitive", "type": "string",
+                 "description": "A sentence of guidance under the title." },
+    "action": { "form": "slot",
+                "description": "A single call-to-action control, centred under the message." }
+  }
+}

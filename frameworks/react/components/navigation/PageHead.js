@@ -3,7 +3,9 @@
  * for the full rationale. */
 import React from "react";
 import { useContainerWidth, readBreakpoint } from "../../use-container-width.js";
-export function PageHead({ title, subtitle, actions, style, ...rest }) {
+export function PageHead({ title, subtitle, actions, align = "start" }) {
+  if (!title)
+    throw new Error("PageHead: `title` is required");
   const [ref, width] = useContainerWidth();
   const narrow = width !== null && width < readBreakpoint("sm");
   return React.createElement("div", {
@@ -11,13 +13,10 @@ export function PageHead({ title, subtitle, actions, style, ...rest }) {
     style: {
       display: "flex",
       flexDirection: narrow ? "column" : "row",
-      alignItems: narrow ? "stretch" : "flex-start",
+      alignItems: narrow ? "stretch" : align === "center" ? "center" : "flex-start",
       justifyContent: "space-between",
-      gap: "calc(var(--sp-1) * 4)",
-      marginBottom: "calc(var(--sp-1) * 5)",
-      ...style
-    },
-    ...rest
+      gap: "calc(var(--sp-1) * 4)"
+    }
   }, React.createElement("div", {
     style: { minWidth: 0 }
   }, React.createElement("h1", {

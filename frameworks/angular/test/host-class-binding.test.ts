@@ -152,7 +152,7 @@ function createAppLogoMarkHost() {
 }
 
 /* The literal `name="Juan Carlos"` below is inert under this JIT-only harness, the same way
- * `EmptyStateWithoutActionHost`'s `title` is further down -- `name` is a signal input
+ * `ErrorStateWithoutActionHost`'s `title` is further down -- `name` is a signal input
  * (`input('')`) and a static attribute never reaches a signal input here (see this file's
  * header comment). It renders as a stray DOM attribute on the host and leaves `name()` itself
  * at its default, the empty string. Left in place rather than removed because no test below
@@ -269,26 +269,15 @@ class BulkActionBarHost {}
 })
 class ChartCardHost {}
 
-/* The literal `title="No projects yet"` below is inert under this JIT-only harness --
- * `title` is a signal input (`input<string>()`), and a static attribute never reaches a
- * signal input here (see this file's header comment and the `arena-chart-card` block
- * further down, which probes the same collision by hand). It renders as a stray DOM
- * attribute on the host and leaves `title()` itself `undefined`. Left in place rather
- * than removed because no test below reads it -- only the action wrapper's absence is
- * asserted -- so it changes nothing either way; recorded here so a reader does not take
- * it for a working title binding. */
-@Component({
-  standalone: true,
-  imports: [EmptyState],
-  template: `<arena-empty-state title="No projects yet" />`,
-})
-class EmptyStateWithoutActionHost {}
-
-/* Same inertness as `EmptyStateWithoutActionHost` above, with one extra wrinkle: this
- * component's `title` input defaults to `'Something went wrong'` (`error-state.ts`), the
- * exact string written here -- so even though the literal attribute never reaches the
- * input, the rendered title happens to read the same either way. Nothing below asserts
- * on the title text, only on classes, `role="alert"` and the actions wrapper's absence. */
+/* The literal `title="Something went wrong"` below is inert under this JIT-only harness
+ * for the same reason every other signal input here is (this file's header comment):
+ * `title` is `input<string>()`, and a static attribute never reaches a signal input under
+ * this harness -- it renders as a stray DOM attribute on the host and leaves `title()`
+ * itself `undefined`. This component's `title` input also defaults to `'Something went
+ * wrong'` (`error-state.ts`), the exact string written here -- so even though the literal
+ * attribute never reaches the input, the rendered title happens to read the same either
+ * way. Nothing below asserts on the title text, only on classes, `role="alert"` and the
+ * actions wrapper's absence. */
 @Component({
   standalone: true,
   imports: [ErrorState],
@@ -303,6 +292,24 @@ class ErrorStateWithoutActionHost {}
   template: `<arena-page-head class="consumer-class" />`,
 })
 class PageHeadWithoutActionsHost {}
+
+/* `title` became `input.required<string>()` (`api/components/PageHead.json`) --
+ * the same NG0950 hazard `arena-app-logo`'s `name` and `arena-breadcrumbs`'s
+ * `items` already hit under this JIT-only harness (see this file's header
+ * comment). `PageHeadWithoutActionsHost`'s template above supplies no `title`
+ * binding at all -- kept exactly as it was (it still carries the
+ * `consumer-class` the root-classes test needs), so the required input is
+ * routed around the same way `createBreadcrumbsHost` does: query the real
+ * child `PageHead` instance via `By.directive` before the first
+ * `detectChanges()`, and overwrite its `title` field with a plain function.
+ * The title text itself is irrelevant to every assertion below -- only the
+ * class/DOM shape is checked. */
+function createPageHeadWithoutActionsFixture() {
+  const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+  const instance = fixture.debugElement.query(By.directive(PageHead)).componentInstance as unknown as Record<string, unknown>;
+  instance['title'] = () => 'Portal';
+  return fixture;
+}
 
 @Component({
   standalone: true,
@@ -956,12 +963,33 @@ test('arena-chart-card: the head row is entirely absent when there is neither a 
  * passes. The negative case below has no such gap: with nothing projected,
  * `action()` is correctly `undefined` regardless of which compiler produced
  * it, so it is real coverage of the reported bug's exact repro (an empty
- * state with no action must not ship the wrapper's dead space). */
-test('arena-empty-state: the action wrapper is absent from the DOM when no [action] content is projected', async () => {
-  const fixture = TestBed.createComponent(EmptyStateWithoutActionHost);
+ * state with no action must not ship the wrapper's dead space).
+ *
+ * `title` became `input.required<string>()` under task 8B2 (`api/components/
+ * EmptyState.json`) -- the same NG0950 hazard `arena-app-logo`'s `name`,
+ * `arena-breadcrumbs`'s `items` and `arena-stat-card`'s `label`/`value` already
+ * hit under this JIT-only harness (this file's header comment). The old
+ * `EmptyStateWithoutActionHost` wrapper's literal `title="..."` attribute no
+ * longer reaches the child at all, so its first `detectChanges()` would now
+ * throw NG0950 before either assertion below ran. This test therefore switches
+ * to `renderStatCard`'s own bypass technique: construct `EmptyState` directly
+ * with `TestBed.createComponent` (no host wrapper, so `EmptyState` itself is
+ * the fixture's root) and overwrite `title` as a plain function before that
+ * first `detectChanges()`. `EmptyStateWithoutActionHost` is gone with it -- it
+ * existed only to feed this one test and, unlike `StatCardHost`, never
+ * separately proved the stray-attribute NG0950 shape, so there is nothing left
+ * for it to keep proving. */
+function renderEmptyState(title: string) {
+  const fixture = TestBed.createComponent(EmptyState);
+  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
+  instance['title'] = () => title;
+  return fixture;
+}
+
+test('arena-empty-state: the action wrapper is absent from the DOM when no [action] content is projected', () => {
+  const fixture = renderEmptyState('No projects yet');
   fixture.detectChanges();
-  await fixture.whenStable();
-  const host = fixture.nativeElement.querySelector('arena-empty-state') as HTMLElement;
+  const host = fixture.nativeElement as HTMLElement;
   assert.equal(host.querySelector('button'), null, 'no action was projected, so no action markup should exist at all');
   const actionClass = emptyStateStyles().action().split(/\s+/)[0];
   assert.equal(
@@ -969,6 +997,7 @@ test('arena-empty-state: the action wrapper is absent from the DOM when no [acti
     null,
     'the action wrapper div must not render when the action slot is empty',
   );
+  fixture.destroy();
 });
 
 test('arena-error-state: the root recipe classes land on the host element itself', async () => {
@@ -982,27 +1011,59 @@ test('arena-error-state: the root recipe classes land on the host element itself
   assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
 });
 
-/* Same fix, same toolchain limitation as arena-empty-state's action wrapper
- * above (see that test's header comment for the full reasoning): the
- * positive case cannot be TestBed-rendered here because `contentChild` needs
- * ngtsc's initializer-API transform, which this JIT-only harness never runs.
- * `bun run check:angular` is the real authority that the query and the `@if`
- * gate typecheck. The negative case below is real coverage of the same
- * reported bug's exact repro, ported to `arena-error-state`'s own actions
- * slot, gated on the same shared marker directive `arena-empty-state` uses,
- * `ArenaAction` (`../primitives/projection-markers`). */
-test('arena-error-state: the actions wrapper is absent from the DOM when no [action] content is projected', async () => {
+/* Under the contract (`api/components/ErrorState.json`, Reshape A) Arena draws its own
+ * retry `<button>` from `retryLabel`/`retry`; the projected `[secondaryAction]` slot
+ * (`ArenaSecondaryAction`) is only for what a consumer adds beside it. The actions
+ * wrapper is now gated on `retryLabel() || secondaryAction()` rather than a single
+ * projected `[action]`. The positive half of that gate -- `secondaryAction()`, a
+ * `contentChild` query -- still cannot be TestBed-rendered here for the same toolchain
+ * reason as `arena-empty-state`'s action wrapper above: `contentChild` needs ngtsc's
+ * initializer-API transform, which this JIT-only harness never runs. `bun run
+ * check:angular` is the real authority that the query and the `@if` gate typecheck.
+ * `ErrorStateWithoutActionHost` supplies neither `retryLabel` nor a projected
+ * `[secondaryAction]`, so the wrapper stays absent -- this is the negative case, real
+ * coverage of the same reported bug's exact repro, ported to `arena-error-state`'s own
+ * actions slot. The positive half of `retryLabel` -- a signal input, not a content query
+ * -- IS directly provable, and the test below does exactly that. */
+test('arena-error-state: the actions wrapper is absent from the DOM when neither retryLabel nor [secondaryAction] content is projected', async () => {
   const fixture = TestBed.createComponent(ErrorStateWithoutActionHost);
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-error-state') as HTMLElement;
-  assert.equal(host.querySelector('button'), null, 'no action was projected, so no action markup should exist at all');
+  assert.equal(host.querySelector('button'), null, 'neither retryLabel nor a secondary action was supplied, so no action markup should exist at all');
   const actionsClass = errorStateStyles().actions().split(/\s+/)[0];
   assert.equal(
     host.querySelector(`:scope > .${actionsClass}`),
     null,
-    'the actions wrapper div must not render when the actions slot is empty',
+    'the actions wrapper div must not render when both retryLabel and secondaryAction are absent',
   );
+});
+
+/* Arena draws the retry button itself now -- the positive proof that a `retryLabel`
+ * signal input renders a real `<button>` carrying the manifest's `retry` slot classes.
+ * `retryLabel` is a signal input (`input<string>()`), so -- same JIT-harness limitation
+ * as `PageHead`'s `title` (`createPageHeadWithoutActionsFixture` above) -- it cannot be
+ * driven through a template binding or `setInput()`; the instance field is overwritten
+ * directly, before the first `detectChanges()`, so the template's first read of
+ * `retryLabel()` already sees the overwritten value rather than the default `undefined`. */
+function createErrorStateWithRetryFixture() {
+  const fixture = TestBed.createComponent(ErrorStateWithoutActionHost);
+  const instance = fixture.debugElement.query(By.directive(ErrorState)).componentInstance as unknown as Record<string, unknown>;
+  instance['retryLabel'] = () => 'Retry';
+  return fixture;
+}
+
+test('arena-error-state: retryLabel draws a real retry button carrying the manifest\'s retry slot classes', async () => {
+  const fixture = createErrorStateWithRetryFixture();
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-error-state') as HTMLElement;
+  const button = host.querySelector('button');
+  assert.notEqual(button, null, 'retryLabel was supplied, so a retry button must render');
+  assert.equal(button!.textContent, 'Retry');
+  const retryClass = errorStateStyles().retry().split(/\s+/)[0];
+  assert.ok(button!.classList.contains(retryClass), `retry button is missing recipe class "${retryClass}"`);
+  fixture.destroy();
 });
 
 /* `arena-page-head` is the layer's first consumer of `container-size.ts`, and
@@ -1036,7 +1097,7 @@ const BP_SM = '480px';
 test('arena-page-head: the root recipe classes land on the host element itself', async () => {
   document.documentElement.style.setProperty('--bp-sm', BP_SM);
   try {
-    const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+    const fixture = createPageHeadWithoutActionsFixture();
     fixture.detectChanges();
     await fixture.whenStable();
     const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
@@ -1051,7 +1112,7 @@ test('arena-page-head: the root recipe classes land on the host element itself',
 test('arena-page-head: an unmeasured width renders the WIDE layout, so the narrow branch never flashes on first paint', async () => {
   document.documentElement.style.setProperty('--bp-sm', BP_SM);
   try {
-    const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+    const fixture = createPageHeadWithoutActionsFixture();
     fixture.detectChanges();
     await fixture.whenStable();
     const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
@@ -1079,7 +1140,7 @@ test('arena-page-head: an unmeasured width renders the WIDE layout, so the narro
 test('arena-page-head: the actions wrapper is absent from the DOM when no [actions] content is projected', async () => {
   document.documentElement.style.setProperty('--bp-sm', BP_SM);
   try {
-    const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+    const fixture = createPageHeadWithoutActionsFixture();
     fixture.detectChanges();
     await fixture.whenStable();
     const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
@@ -1108,7 +1169,7 @@ test('arena-page-head: a platform with no ResizeObserver still renders, on the w
   const saved = globals.ResizeObserver;
   delete globals.ResizeObserver;
   try {
-    const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+    const fixture = createPageHeadWithoutActionsFixture();
     fixture.detectChanges();
     await fixture.whenStable();
     const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;

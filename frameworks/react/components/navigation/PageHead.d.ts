@@ -1,4 +1,5 @@
 import * as React from 'react';
+import type { PageHeadAlign } from '../../api.generated';
 
 /** The title block at the top of a page: h1, optional subtitle, optional actions.
  *  Stacks below --bp-sm, measured on its own container rather than the viewport. */
@@ -9,6 +10,7 @@ export interface PageHeadProps {
   subtitle?: string;
   /** @startingPoint One primary Button plus at most two secondary/ghost ones. */
   actions?: React.ReactNode;
-  style?: React.CSSProperties;
+  /** Cross-axis alignment of the actions block against the title, wide layout only. */
+  align?: PageHeadAlign;
 }
 export function PageHead(props: PageHeadProps): JSX.Element;

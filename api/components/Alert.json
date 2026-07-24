@@ -1,0 +1,22 @@
+{
+  "component": "Alert",
+  "description": "A tone-coloured message with an optional icon, a single action, and optional dismissal.",
+  "api": {
+    "tone": { "form": "enum", "type": "AlertTone", "default": "info",
+              "description": "The severity — colour, default icon, and (for danger) the alert role." },
+    "title": { "form": "primitive", "type": "string",
+               "description": "An optional bold lead line above the message." },
+    "content": { "form": "slot",
+                 "description": "The message body." },
+    "icon": { "form": "primitive", "type": "string",
+              "description": "A Phosphor class name overriding the tone's default glyph. Arena draws it." },
+    "actionLabel": { "form": "primitive", "type": "string",
+                     "description": "The label of a single inline action button. Absent renders no action." },
+    "action": { "form": "event",
+                "description": "The inline action button was activated." },
+    "dismissible": { "form": "primitive", "type": "boolean", "default": false,
+                     "description": "Whether the × is shown. Both layers gate the × on this — Angular cannot detect a `close` listener." },
+    "close": { "form": "event",
+               "description": "The × was activated." }
+  }
+}

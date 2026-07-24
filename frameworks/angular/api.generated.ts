@@ -6,6 +6,9 @@
  * tokens.generated.* already carries. scripts/check-api.mjs asserts the
  * committed files match api/types/. See api/README.md for the vocabulary. */
 
+/** The alert's severity — the colour and default icon/role it takes. */
+export type AlertTone = 'info' | 'success' | 'warning' | 'danger' | 'neutral';
+
 /** Circle for a person, rounded for a team or organisation. */
 export type AvatarShape = 'circle' | 'rounded';
 
@@ -34,6 +37,9 @@ export type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
 
 /** Whether a component's parts lay out side by side or stacked — which axis it runs along. */
 export type Orientation = 'horizontal' | 'vertical';
+
+/** How the actions block aligns against the title in PageHead's wide layout. */
+export type PageHeadAlign = 'start' | 'center';
 
 /** The shape the placeholder reserves: a single text line, a stack of lines, a block, or a circle. */
 export type SkeletonVariant = 'text' | 'line' | 'block' | 'circle';

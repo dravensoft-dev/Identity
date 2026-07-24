@@ -5,6 +5,10 @@ than a second button implementation. The dashed border is what distinguishes it 
 wrapper only renders when an action is actually projected — an empty state with no
 action ships no dead space for one.
 
+`title` is required (`input.required<string>()`, per `api/components/EmptyState.json`) —
+say what is empty. `icon` is optional and, like `arena-stat-card`'s, a Phosphor class name
+Arena draws itself, not projected content.
+
 ```html
 <arena-empty-state icon="ph-bold ph-folder-open"
                    title="No projects yet"

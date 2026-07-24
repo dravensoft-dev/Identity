@@ -302,6 +302,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `React.HTMLAttributes` `{...rest}` escape is removed (R4). `tone` is the new `TagTone`
   enum. The behaviour bindings, which previously declared a cross-layer divergence, now
   agree, and that entry in `components-divergences.md` is deleted.
+- **`ChartCard` under contract — breaking.** React loses `style` and the `{...rest}` spread
+  on the root (R4). Three members: `title` (primitive), and two bare slots `actions` and
+  `content`. No behaviour change; Angular was already correct.
+- **`EmptyState` under contract — breaking.** `icon` narrows from `ReactNode` to a Phosphor
+  class-name `string` Arena draws (the narrowing B0 deferred); `title` becomes **required**
+  (React throws on absence, Angular uses `input.required`); React loses `style` (R4). `action`
+  stays a slot.
+- **`PageHead` under contract — breaking.** `title` becomes **required** (React throws,
+  Angular `input.required`). The React `style`/`{...rest}` escape (R4) is not merely dropped
+  but **decomposed into the API**: a new `align` enum (`PageHeadAlign`, `start`|`center`)
+  carries the cross-axis alignment the escape used to set, and the component's baked bottom
+  margin is removed so the parent composes the spacing. New type `PageHeadAlign`.
+- **`Alert` under contract — breaking.** The `action: { label, onClick }` object (an R1+R4
+  violation) splits into `actionLabel` (primitive) and an `action` event. Dismissibility
+  becomes an explicit `dismissible` boolean on both layers, gating the `×` with a `close`
+  event — React's `×` no longer appears merely because `onClose` was passed. `tone` is the
+  new `AlertTone` enum; React loses `style` (R4); Angular's `closed` output is renamed `close`.
+- **`ErrorState` under contract — breaking.** Arena now draws the retry in **both** layers:
+  `retryLabel` (primitive) + a `retry` event, gated on `retryLabel`'s presence (it loses its
+  `"Retry"` default). Angular gains the drawn button (styled by a new manifest `retry` slot)
+  and a `[secondaryAction]` slot, replacing its single projected `[action]` slot; `icon`
+  narrows from `ReactNode` to a `string`; React loses `style` (R4). React's declared no-`role`
+  behaviour (its `roles.element` exception) is left exactly as it was.
 - **Nine `@dsCard` declarations corrected to what their pages actually render.** No page's
   content changed. `frameworks/react/ui_kits/console/index.html` no longer declares a
   `@dsCard` at all — it is an example app with its own scroll area, not a specimen card.

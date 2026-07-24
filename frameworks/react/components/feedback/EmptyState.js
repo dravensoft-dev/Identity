@@ -2,7 +2,9 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-export function EmptyState({ icon, title, message, action, style }) {
+export function EmptyState({ icon, title, message, action }) {
+  if (!title)
+    throw new Error("EmptyState: `title` is required");
   return React.createElement("div", {
     style: {
       display: "flex",
@@ -13,12 +15,14 @@ export function EmptyState({ icon, title, message, action, style }) {
       padding: "calc(var(--sp-1) * 14) calc(var(--sp-1) * 8)",
       border: "var(--bw) dashed var(--line-strong)",
       borderRadius: "var(--r-lg)",
-      background: "var(--surface-card)",
-      ...style
+      background: "var(--surface-card)"
     }
   }, icon && React.createElement("div", {
     style: { fontSize: "var(--icon-xl)", color: "var(--mute)", lineHeight: "var(--dz-lh)" }
-  }, icon), title && React.createElement("div", {
+  }, React.createElement("i", {
+    className: icon,
+    "aria-hidden": "true"
+  })), title && React.createElement("div", {
     style: { fontFamily: "var(--font-display)", fontWeight: "var(--fw-extrabold)", fontSize: "var(--fs-h4)", color: "var(--bone)" }
   }, title), message && React.createElement("div", {
     style: { fontFamily: "var(--font-body)", fontSize: "var(--fs-md)", color: "var(--mute)", maxWidth: "42ch", lineHeight: "var(--lh-body)" }

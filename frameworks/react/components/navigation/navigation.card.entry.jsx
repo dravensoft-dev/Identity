@@ -28,8 +28,10 @@ function Demo(){const[v,setV]=React.useState('Overview');const[range,setRange]=R
       ]} />
   </div>
   <div className="sub">PageHead</div>
-  <PageHead title="Client Portal" subtitle="Last published 2 h ago · build #4821"
-    actions={<><Button variant="secondary" size="sm">View logs</Button><Button variant="primary" size="sm">Deploy</Button></>} />
+  <div style={{marginBottom:'var(--sp-4)'}}>
+    <PageHead title="Client Portal" subtitle="Last published 2 h ago · build #4821"
+      actions={<><Button variant="secondary" size="sm">View logs</Button><Button variant="primary" size="sm">Deploy</Button></>} />
+  </div>
   <div className="sub">BulkActionBar — destructive stays outline, never filled</div>
   <div className="row">
     <BulkActionBar count={sel} noun="deployments" onClear={()=>setSel(0)} style={{width:'100%'}}

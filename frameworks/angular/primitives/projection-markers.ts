@@ -42,3 +42,12 @@ export class ArenaBrand {}
  *  consumer wiring footer content imports `ArenaFooter` alongside `UnauthCard`. */
 @Directive({ selector: '[footer]', standalone: true })
 export class ArenaFooter {}
+
+/** Marks the element a consumer projects into `arena-error-state`'s `[secondaryAction]`
+ *  slot, matching the `secondaryAction` contract member (`api/components/ErrorState.json`).
+ *  Declared once here for the same reason `ArenaAction` is. Arena draws the primary retry
+ *  button itself from `retryLabel`/`retry`; this slot is only for what is projected beside
+ *  it. A consumer wiring a secondary action imports `ArenaSecondaryAction` alongside
+ *  `ErrorState`. */
+@Directive({ selector: '[secondaryAction]', standalone: true })
+export class ArenaSecondaryAction {}

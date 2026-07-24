@@ -390,9 +390,6 @@
   .mb-2 {
     margin-bottom: var(--spacing-2);
   }
-  .mb-5 {
-    margin-bottom: var(--spacing-5);
-  }
   .mb-6 {
     margin-bottom: var(--spacing-6);
   }

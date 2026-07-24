@@ -2,7 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-export function ChartCard({ title, actions, children, style, ...rest }) {
+export function ChartCard({ title, actions, children }) {
   return React.createElement("div", {
     style: {
       background: "var(--surface-card)",
@@ -11,10 +11,8 @@ export function ChartCard({ title, actions, children, style, ...rest }) {
       padding: "calc(var(--sp-1) * 5)",
       display: "flex",
       flexDirection: "column",
-      gap: "calc(var(--sp-1) * 3)",
-      ...style
-    },
-    ...rest
+      gap: "calc(var(--sp-1) * 3)"
+    }
   }, (title || actions) && React.createElement("div", {
     style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "calc(var(--sp-1) * 3)" }
   }, title && React.createElement("span", {

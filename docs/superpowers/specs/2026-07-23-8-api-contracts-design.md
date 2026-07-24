@@ -677,6 +677,19 @@ comparison and a comparison needs a baseline that is not stale.
 | **Plan A** (2026-07-23) | **856 across 68 files** | 26 across 5 files |
 | **Plan B0** (2026-07-23) | **863 across 68 files** | 26 across 5 files |
 | **Plan B1** (2026-07-23) | **885 across 74 files** | 26 across 5 files |
+| **Plan B2** (2026-07-24) | **910 across 79 files** | 26 across 5 files |
+
+Plan B2 put five more components under contract — ChartCard, EmptyState, PageHead, Alert and
+ErrorState — taking `check:api` from 8 contracts across 15 layer implementations to **13 across
+25**. It added one enum type (`AlertTone`) and, at a maintainer's direction, a second
+(`PageHeadAlign`) when PageHead's `style` escape was decomposed into a real `align` member rather
+than merely dropped. The net gain over B1 is 25 tests and 5 files — one render suite per component
+(`chart-card`, `empty-state`, `page-head`, `alert`, `error-state`) — plus assertions folded into
+existing Angular recipe and host-binding suites. It made three components' `title`/`icon` narrow or
+required (EmptyState and PageHead `title` required, EmptyState/ErrorState `icon` narrowed to a
+string), split Alert's `action` object into a label + event with an explicit `dismissible`, and had
+Arena draw ErrorState's retry in both layers. `classesFor` learned to apply `compoundVariants` so the
+PageHead specimen still renders from its manifest.
 
 Plan B1 put five components under contract — Avatar, Skeleton, ConfirmDialog, Tag, and a
 redesigned Switch — introduced the required-runtime convention and 6 new enums/types, and

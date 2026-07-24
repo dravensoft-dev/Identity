@@ -11,27 +11,26 @@ function Demo() {
     className: "sub"
   }, "Neither state is a dead end — each one names the way out"), React.createElement("div", {
     className: "row"
+  }, React.createElement("div", {
+    style: { flex: "1 1 0", minWidth: 0, boxSizing: "border-box" }
   }, React.createElement(EmptyState, {
-    style: { flex: "1 1 0", minWidth: 0, boxSizing: "border-box" },
-    icon: React.createElement("i", {
-      className: "ph-duotone ph-folder-open"
-    }),
+    icon: "ph-duotone ph-folder-open",
     title: "No projects yet",
     message: "Create your first project to start deploying.",
     action: React.createElement(Button, null, "New project")
-  }), React.createElement(ErrorState, {
-    style: { flex: "1 1 0", minWidth: 0, boxSizing: "border-box" },
-    icon: React.createElement("i", {
-      className: "ph-fill ph-warning-octagon"
-    }),
+  })), React.createElement("div", {
+    style: { flex: "1 1 0", minWidth: 0, boxSizing: "border-box" }
+  }, React.createElement(ErrorState, {
+    icon: "ph-fill ph-warning-octagon",
     title: "Couldn't load the panel",
     message: "No connection to the metrics service.",
     code: "ERR_UPSTREAM_504",
+    retryLabel: "Retry",
     onRetry: () => {},
     secondaryAction: React.createElement(Button, {
       variant: "secondary"
     }, "View logs")
-  })), React.createElement("div", {
+  }))), React.createElement("div", {
     className: "sub"
   }, "EmptyState invites the first action · ErrorState retries and exposes the code"));
 }

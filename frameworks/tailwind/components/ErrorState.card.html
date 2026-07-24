@@ -1,4 +1,4 @@
-<!-- @dsCard group="Angular" viewport="700x665" name="ErrorState" subtitle="Failure and recovery, rendered from ErrorState.manifest.json" -->
+<!-- @dsCard group="Angular" viewport="700x684" name="ErrorState" subtitle="Failure and recovery, rendered from ErrorState.manifest.json" -->
 <!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="../../../styles.css">
 <link rel="stylesheet" href="../utilities.css">
@@ -10,25 +10,26 @@ import { mountSpecimen, section, el, classesFor } from '../specimen.js';
 const manifest = await (await fetch('./ErrorState.manifest.json')).json();
 const c = classesFor(manifest);
 
-function errorState({ icon, title, message, code, actionLabel }) {
+function errorState({ icon, title, message, code, retryLabel }) {
   const root = el('div', { class: c.root, role: 'alert' },
     el('div', { class: c.icon }, el('i', { class: icon, 'aria-hidden': 'true' })),
     el('div', { class: c.title, text: title }),
     el('div', { class: c.message, text: message }));
   if (code) root.append(el('code', { class: c.code, text: code }));
-  if (actionLabel) {
-    /* Stands in for the projected mat-button; the manifest styles the slot,
-       not the button. Rendered only when an action was actually given, the
-       same gate the component applies with contentChild(ArenaAction). */
+  if (retryLabel) {
+    /* Under the API contract Arena draws this button itself, styled by the
+       manifest's own retry slot -- not a consumer's projected mat-button.
+       Rendered only when a retry label was actually given, the same gate
+       the real component applies to retryLabel(). */
     const actions = el('div', { class: c.actions });
-    actions.append(el('span', { class: 'font-body text-ctl text-primary', text: `[ ${actionLabel} ]` }));
+    actions.append(el('button', { class: c.retry, type: 'button', text: retryLabel }));
     root.append(actions);
   }
   return root;
 }
 
 mountSpecimen({ sections: [
-  section('With a support code and a retry', [errorState({ icon: 'ph-bold ph-plugs', title: "Couldn't reach the delivery API", message: 'The dashboard is showing the last data it cached.', code: 'ERR_UPSTREAM_504', actionLabel: 'Retry' })], { stack: true }),
+  section('With a support code and a retry', [errorState({ icon: 'ph-bold ph-plugs', title: "Couldn't reach the delivery API", message: 'The dashboard is showing the last data it cached.', code: 'ERR_UPSTREAM_504', retryLabel: 'Retry' })], { stack: true }),
   section('Bare', [errorState({ icon: 'ph-bold ph-warning-octagon', title: 'Something went wrong', message: 'Reload the page. If it keeps happening, the status page has more.' })], { stack: true }),
 ]});
 </script></body></html>

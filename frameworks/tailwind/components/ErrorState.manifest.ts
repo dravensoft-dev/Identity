@@ -7,6 +7,7 @@ export default {
     "title": "font-display font-extrabold text-h4 text-base-content",
     "message": "font-body text-md text-base-content/82 leading-body max-w-[46ch]",
     "code": "font-mono text-ctl-sm text-base-content/62 bg-base-100/30 px-2.5 py-1 rounded-xs",
-    "actions": "flex gap-2.5 mt-1.5"
+    "actions": "flex gap-2.5 mt-1.5",
+    "retry": "inline-flex items-center justify-center h-ctl-h px-4.5 rounded-sm border-[length:var(--bw)] font-body font-semibold text-ctl cursor-pointer gap-2 transition-[background,transform,box-shadow] duration-[var(--dur-fast)] ease-[var(--ease-out)] bg-primary text-primary-content border-primary hover:shadow-2"
   }
 } as const;

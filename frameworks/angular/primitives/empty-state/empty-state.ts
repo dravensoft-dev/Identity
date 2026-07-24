@@ -29,7 +29,7 @@ import { emptyStateStyles } from './empty-state.variants';
 })
 export class EmptyState {
   readonly icon = input<string>();
-  readonly title = input<string>();
+  readonly title = input.required<string>();
   readonly message = input<string>();
 
   protected readonly action = contentChild(ArenaAction);

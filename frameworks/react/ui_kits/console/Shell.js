@@ -89,7 +89,7 @@ export function Shell({ active = "dashboard", onNav, title, actions, children })
     style: { padding: "calc(var(--sp-1) * 5) calc(var(--sp-1) * 8)", borderBottom: "var(--bw) solid var(--color-base-300)" }
   }, React.createElement(PageHead, {
     title,
-    style: { marginBottom: 0, alignItems: "center" },
+    align: "center",
     actions: React.createElement(React.Fragment, null, actions, React.createElement(IconButton, {
       label: "Search"
     }, React.createElement(Icon, {

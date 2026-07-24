@@ -72,6 +72,27 @@ test('the two branches are mutually exclusive -- neither leaks the other\'s dire
   assert.doesNotMatch(narrow.actions(), /\bw-auto\b/);
 });
 
+test('align="center", wide layout, centers the actions block against the title', () => {
+  const centered = pageHeadStyles({ narrow: false, align: 'center' });
+  assert.match(centered.root(), /\bitems-center\b/);
+  assert.doesNotMatch(centered.root(), /\bitems-start\b/);
+});
+
+test('align="start" (the default), wide layout, keeps the actions block top-aligned', () => {
+  const started = pageHeadStyles({ narrow: false, align: 'start' });
+  assert.match(started.root(), /\bitems-start\b/);
+  assert.doesNotMatch(started.root(), /\bitems-center\b/);
+});
+
+test('narrow always stretches, regardless of align', () => {
+  const narrowCenter = pageHeadStyles({ narrow: true, align: 'center' });
+  assert.match(narrowCenter.root(), /\bitems-stretch\b/);
+  assert.doesNotMatch(narrowCenter.root(), /\bitems-center\b/);
+  const narrowStart = pageHeadStyles({ narrow: true, align: 'start' });
+  assert.match(narrowStart.root(), /\bitems-stretch\b/);
+  assert.doesNotMatch(narrowStart.root(), /\bitems-start\b/);
+});
+
 test('the title is the display-weight heading React renders, with its own margin reset', () => {
   const title = pageHeadStyles().title();
   assert.match(title, /\bfont-display\b/);

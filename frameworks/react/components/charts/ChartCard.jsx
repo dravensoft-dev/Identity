@@ -4,13 +4,13 @@ import React from 'react';
  * heading element: a dashboard is a grid of tiles, and emitting an h2 per tile
  * would fabricate a document outline nobody asked for. The chart's own
  * role="img" carries the accessible name. */
-export function ChartCard({ title, actions, children, style, ...rest }) {
+export function ChartCard({ title, actions, children }) {
   return (
     <div style={{
       background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
       borderRadius: 'var(--r-lg)', padding: 'calc(var(--sp-1) * 5)',
-      display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 3)', ...style,
-    }} {...rest}>
+      display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 3)',
+    }}>
       {(title || actions) && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'calc(var(--sp-1) * 3)' }}>
           {title && <span style={{

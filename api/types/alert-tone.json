@@ -1,0 +1,6 @@
+{
+  "name": "AlertTone",
+  "kind": "enum",
+  "description": "The alert's severity — the colour and default icon/role it takes.",
+  "values": ["info", "success", "warning", "danger", "neutral"]
+}

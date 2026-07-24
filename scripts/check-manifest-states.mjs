@@ -84,6 +84,12 @@ export const EXEMPT = new Map([
    '"ConfirmDialog -- Angular is accessible, React is not yet". React implements no focus ' +
    'tracking on this input at all; the divergence is named there as open debt on the React ' +
    'layer, not an invented state on the Angular/Tailwind side.'],
+  ['ErrorState:retry:hover',
+   "ErrorState.jsx renders its retry action as React's own <Button> (imported from " +
+   "forms/Button.jsx), so the hover comes from Button.jsx's own useState hover tracking, " +
+   'not from anything ErrorState.jsx implements itself. A single-file scan of ' +
+   'ErrorState.jsx alone cannot see across that composition -- the same shape ' +
+   "ConfirmDialog:confirm:hover above is exempt for."],
 ]);
 
 /** Tailwind state-modifier families this gate looks for, and the regex that

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, contentChild, input } fro
 import { containerWidth, readBreakpoint } from '../container-size';
 import { ArenaActions } from '../projection-markers';
 import { pageHeadStyles } from './page-head.variants';
+import { PageHeadAlign } from '../../api.generated';
 
 /** Page header: the display-weight title, an optional subtitle, and the page's
  *  actions. It stacks below `--bp-sm`, measured on ITSELF rather than on the
@@ -31,8 +32,9 @@ import { pageHeadStyles } from './page-head.variants';
   `,
 })
 export class PageHead {
-  readonly title = input('');
+  readonly title = input.required<string>();
   readonly subtitle = input<string>();
+  readonly align = input<PageHeadAlign>('start');
 
   protected readonly actions = contentChild(ArenaActions);
 
@@ -41,6 +43,6 @@ export class PageHead {
 
   protected readonly styles = computed(() => {
     const measured = this.width();
-    return pageHeadStyles({ narrow: measured !== null && measured < this.small });
+    return pageHeadStyles({ narrow: measured !== null && measured < this.small, align: this.align() });
   });
 }
