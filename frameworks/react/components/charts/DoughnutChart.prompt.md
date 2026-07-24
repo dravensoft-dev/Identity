@@ -19,4 +19,5 @@ Parts of one whole — a share breakdown across a handful of categories. Always 
 - Don't expect `valueSuffix` to format. It appends a unit and nothing else — no rounding, no thousands separator, no currency. Format the numbers before you pass them.
 - Don't go past eight categories. The ramp is eight slots and is never cycled: a ninth slice would repeat slot 1 and claim two categories are one.
 - Don't compare two doughnuts side by side. Reading angle differences across charts is the thing people are worst at; use grouped bars.
+- Don't omit `labels` or `values`. Both are required props — `DoughnutChart` throws from its render rather than drawing an empty ring, matching Angular's `input.required`. This is a break from the old `labels = []` default: a chart with no data is a caller bug, not a state to render.
 - Don't pass more `labels` than `values`. A slice is drawn per value and takes the label at its own index, so a surplus label is silently dropped rather than given a legend row with no slice behind it.
