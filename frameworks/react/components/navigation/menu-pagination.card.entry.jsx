@@ -18,7 +18,7 @@ function Demo(){
             {divider:true},
             {label:'Delete',icon:<i className="ph-bold ph-trash"/>,destructive:true,onClick:()=>{}},
           ]} />
-        <Menu align="end" trigger={<IconButton label="More options"><i className="ph-bold ph-dots-three-vertical"/></IconButton>}
+        <Menu align="end" trigger={<IconButton label="More options" icon="ph-bold ph-dots-three-vertical" />}
           items={[
             {label:'Rename',icon:<i className="ph-bold ph-pencil-simple"/>,onClick:()=>{}},
             {label:'Archive',icon:<i className="ph-bold ph-archive"/>,onClick:()=>{}},

@@ -26,8 +26,8 @@ function Demo(){
         <Button size="sm" variant="secondary">sm</Button>
         <Button size="md" variant="secondary">md</Button>
         <Button size="lg" variant="secondary">lg</Button>
-        <IconButton label="New" variant="solid">{plus}</IconButton>
-        <IconButton label="New">{plus}</IconButton>
+        <IconButton label="New" variant="solid" icon="ph-bold ph-plus" />
+        <IconButton label="New" icon="ph-bold ph-plus" />
       </div>
       <div className="sub">Input · Select</div>
       <div className="row" style={{alignItems:'flex-start'}}>

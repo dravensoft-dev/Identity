@@ -91,14 +91,12 @@ export function Shell({ active = "dashboard", onNav, title, actions, children })
     title,
     align: "center",
     actions: React.createElement(React.Fragment, null, actions, React.createElement(IconButton, {
-      label: "Search"
-    }, React.createElement(Icon, {
-      name: "search"
-    })), React.createElement(IconButton, {
-      label: "Notifications"
-    }, React.createElement(Icon, {
-      name: "bell"
-    })), React.createElement(Switch, {
+      label: "Search",
+      icon: "ph-bold ph-magnifying-glass"
+    }), React.createElement(IconButton, {
+      label: "Notifications",
+      icon: "ph-bold ph-bell"
+    }), React.createElement(Switch, {
       state: isDark,
       iconOn: "ph-bold ph-sun",
       iconOff: "ph-bold ph-moon",

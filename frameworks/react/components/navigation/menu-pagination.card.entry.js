@@ -38,10 +38,9 @@ function Demo() {
   }), React.createElement(Menu, {
     align: "end",
     trigger: React.createElement(IconButton, {
-      label: "More options"
-    }, React.createElement("i", {
-      className: "ph-bold ph-dots-three-vertical"
-    })),
+      label: "More options",
+      icon: "ph-bold ph-dots-three-vertical"
+    }),
     items: [
       { label: "Rename", icon: React.createElement("i", {
         className: "ph-bold ph-pencil-simple"

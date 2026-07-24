@@ -50,10 +50,12 @@ function Demo() {
     variant: "secondary"
   }, "lg"), React.createElement(IconButton, {
     label: "New",
-    variant: "solid"
-  }, plus), React.createElement(IconButton, {
-    label: "New"
-  }, plus)), React.createElement("div", {
+    variant: "solid",
+    icon: "ph-bold ph-plus"
+  }), React.createElement(IconButton, {
+    label: "New",
+    icon: "ph-bold ph-plus"
+  })), React.createElement("div", {
     className: "sub"
   }, "Input · Select"), React.createElement("div", {
     className: "row",

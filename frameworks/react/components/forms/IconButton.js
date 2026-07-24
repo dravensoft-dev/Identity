@@ -3,12 +3,35 @@
  * for the full rationale. */
 import React, { useState } from "react";
 const SZ = { sm: "var(--dz-ctl-h-sm)", md: "var(--dz-ctl-h)", lg: "var(--dz-ctl-h-lg)" };
-export function IconButton({ children, size = "md", variant = "ghost", label, showLabel = false, disabled = false, style, ...rest }) {
+export function IconButton({
+  icon,
+  label,
+  size = "md",
+  variant = "ghost",
+  showLabel = false,
+  disabled = false,
+  type = "button",
+  name,
+  value,
+  autoFocus = false,
+  form,
+  onClick
+}) {
+  if (!icon)
+    throw new Error("IconButton: `icon` is required");
+  if (!label)
+    throw new Error("IconButton: `label` is required");
   const [hover, setHover] = useState(false);
   const d = SZ[size] || SZ.md;
   const bg = variant === "solid" ? hover ? "var(--crimson-strong)" : "var(--crimson)" : hover ? "var(--panel)" : "transparent";
   const color = variant === "solid" ? "var(--on-accent)" : "var(--bone-dim)";
   return React.createElement("button", {
+    type,
+    name,
+    value,
+    autoFocus,
+    form,
+    onClick,
     "aria-label": label,
     title: showLabel ? undefined : label,
     disabled,
@@ -29,11 +52,12 @@ export function IconButton({ children, size = "md", variant = "ghost", label, sh
       borderRadius: "var(--r-sm)",
       cursor: disabled ? "not-allowed" : "pointer",
       opacity: disabled ? 0.45 : 1,
-      transition: "background var(--dur-fast) var(--ease-out)",
-      ...style
-    },
-    ...rest
-  }, children, showLabel && React.createElement("span", {
+      transition: "background var(--dur-fast) var(--ease-out)"
+    }
+  }, React.createElement("i", {
+    className: icon,
+    "aria-hidden": "true"
+  }), showLabel && React.createElement("span", {
     style: { fontFamily: "var(--font-body)", fontWeight: "var(--fw-semibold)", fontSize: "var(--dz-text)", lineHeight: "var(--dz-lh)" }
   }, label));
 }

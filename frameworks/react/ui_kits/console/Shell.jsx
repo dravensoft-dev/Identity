@@ -67,8 +67,8 @@ export function Shell({ active = 'dashboard', onNav, title, actions, children })
           <PageHead title={title} align="center"
             actions={<>
               {actions}
-              <IconButton label="Search"><Icon name="search" /></IconButton>
-              <IconButton label="Notifications"><Icon name="bell" /></IconButton>
+              <IconButton label="Search" icon="ph-bold ph-magnifying-glass" />
+              <IconButton label="Notifications" icon="ph-bold ph-bell" />
               <Switch state={isDark} iconOn="ph-bold ph-sun" iconOff="ph-bold ph-moon" label="Theme"
                 onFuncOn={() => { flipTheme(); setIsDark(true); }}
                 onFuncOff={() => { flipTheme(); setIsDark(false); }} />

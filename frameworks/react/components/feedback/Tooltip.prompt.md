@@ -1,7 +1,7 @@
 Brief tooltip over icons/actions.
 
 ```jsx
-<Tooltip content="Roll back to the previous build"><IconButton label="Roll back">…</IconButton></Tooltip>
+<Tooltip content="Roll back to the previous build"><IconButton label="Roll back" icon="ph-bold ph-arrow-counter-clockwise" /></Tooltip>
 ```
 
 The tooltip is a deferred affordance: it waits for the pointer to rest, and does not

@@ -46,6 +46,9 @@ export interface BulkAction {
   destructive?: boolean;
 }
 
+/** The native button behaviour. 'button' does nothing on its own and is the right default outside a form; 'submit' is what a bare <button> silently defaults to inside one, which is the footgun this member exists to make explicit. */
+export type ButtonType = 'button' | 'submit' | 'reset';
+
 /** One entry in a CommandPalette. `hint` is searched but never shown, so a command can be found by a synonym that never appears in its label. */
 export interface Command {
   /** A stable identity for the command, so a host can switch on it rather than on the label. */
@@ -76,6 +79,9 @@ export type DeltaTone = 'neutral' | 'positive' | 'negative';
 
 /** Which way a number moved. Draws the arrow — nothing else. Deliberately separate from whether that movement was good. */
 export type Direction = 'up' | 'down';
+
+/** 'ghost' sits on a surface and shows its hairline border; 'solid' is the filled accent treatment. Danger is not among them — Arena's danger convention is outline, and an icon-only danger control has no room to say what it destroys. */
+export type IconButtonVariant = 'ghost' | 'solid';
 
 /** Both halves of the brand lock-up at once — the mark's slot and the wordmark. A fixed repertoire, not a ratio: sm an application frame, md a signed-out panel, lg the manual's Primary, xl the hero case. */
 export type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
