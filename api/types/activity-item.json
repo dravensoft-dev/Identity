@@ -1,0 +1,19 @@
+{
+  "name": "ActivityItem",
+  "kind": "object",
+  "description": "One event in a feed: someone did something to something, then. Arena draws every field — a consumer cannot place their own markup inside a row.",
+  "fields": {
+    "id": { "form": "primitive", "type": "string",
+            "description": "A stable identity for the row, so a reordered feed does not re-key by index." },
+    "actor": { "form": "primitive", "type": "string", "required": true,
+               "description": "Who. Drawn bold in --bone." },
+    "action": { "form": "primitive", "type": "string", "required": true,
+                "description": "What they did. Drawn in --bone-dim." },
+    "target": { "form": "primitive", "type": "string",
+                "description": "What they did it to. Drawn monospaced in --gold — it is an identifier." },
+    "time": { "form": "primitive", "type": "string",
+              "description": "When. Monospaced --mute, pushed to the trailing edge. Preformatted — ActivityFeed never formats." },
+    "tone": { "form": "enum", "type": "Tone",
+              "description": "Badge's vocabulary, driving the leading dot. Defaults to accent." }
+  }
+}

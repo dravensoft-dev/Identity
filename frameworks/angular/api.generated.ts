@@ -6,6 +6,22 @@
  * tokens.generated.* already carries. scripts/check-api.mjs asserts the
  * committed files match api/types/. See api/README.md for the vocabulary. */
 
+/** One event in a feed: someone did something to something, then. Arena draws every field — a consumer cannot place their own markup inside a row. */
+export interface ActivityItem {
+  /** A stable identity for the row, so a reordered feed does not re-key by index. */
+  id?: string;
+  /** Who. Drawn bold in --bone. */
+  actor: string;
+  /** What they did. Drawn in --bone-dim. */
+  action: string;
+  /** What they did it to. Drawn monospaced in --gold — it is an identifier. */
+  target?: string;
+  /** When. Monospaced --mute, pushed to the trailing edge. Preformatted — ActivityFeed never formats. */
+  time?: string;
+  /** Badge's vocabulary, driving the leading dot. Defaults to accent. */
+  tone?: Tone;
+}
+
 /** The alert's severity — the colour and default icon/role it takes. */
 export type AlertTone = 'info' | 'success' | 'warning' | 'danger' | 'neutral';
 

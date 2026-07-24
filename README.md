@@ -422,9 +422,8 @@ layer on top.
   icon's size, and whether an item is a link or a button. An item with `href` renders an
   anchor; without one, a button.
 - **`ActivityFeed`** (display) — the event feed. It holds the grammar (someone did
-  something to something, then) and the typography each part takes, with `renderItem`
-  as the escape hatch for the event that does not fit — the same shape `Table` gives
-  through `columns[].render`.
+  something to something, then) and the typography each part takes. Arena draws every
+  row; there is no per-item escape hatch — Angular has no binding for one.
 - **`UnauthCard`** (display) — the panel a signed-out screen needs. A frame, not a form:
   it knows nothing about credentials, which is what lets one component serve sign-in,
   "check your inbox", "this link expired" and two-factor entry. It renders `Card`

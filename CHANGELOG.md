@@ -112,8 +112,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`SideNav`** (navigation) — the sidebar's navigation list. An item with `href`
   renders an `<a>`, without one a `<button>`; the active item carries
   `aria-current="page"`.
-- **`ActivityFeed`** (display) — the event feed, with Badge's tone vocabulary and a
-  `renderItem` escape hatch.
+- **`ActivityFeed`** (display) — the event feed, with Badge's tone vocabulary. Arena draws
+  every row.
 - **`UnauthCard`** (display) — the signed-out panel. A frame, not a form; renders `Card`
   internally and does not centre itself. `Card`'s own consumers are unaffected, but
   because `Card` exposes no padding prop, `UnauthCard` reaches the signed-out panel's
@@ -325,6 +325,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and a `[secondaryAction]` slot, replacing its single projected `[action]` slot; `icon`
   narrows from `ReactNode` to a `string`; React loses `style` (R4). React's declared no-`role`
   behaviour (its `roles.element` exception) is left exactly as it was.
+- **`ActivityFeed` under contract — breaking.** New shared type `ActivityItem`. Its `actor`,
+  `action` and `items` all become required — React throws on an absent `items`, Angular uses
+  `input.required`; `target` and `time` narrow from `ReactNode` to `string`; `id` narrows to
+  `string` on both layers, which was `React.Key` on one (R4) and `string | number` on the
+  other (R5); `tone` reuses the existing `Tone` enum rather than declaring its own, the two
+  sets being identical, and Angular's exported `ActivityTone` is deleted. React loses `style`
+  and the `{...rest}` spread (R4) and loses `renderItem` — permitted by R3, since it filled
+  the `<li>` Arena renders rather than replacing it, but removed because Angular has no
+  binding for per-item projection. **A consumer can no longer place their own markup inside
+  one row of a feed Arena renders.**
 - **Nine `@dsCard` declarations corrected to what their pages actually render.** No page's
   content changed. `frameworks/react/ui_kits/console/index.html` no longer declares a
   `@dsCard` at all — it is an example app with its own scroll area, not a specimen card.
@@ -573,12 +583,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   fixed full-viewport scrim, draws one over the entire viewport. Binding the input
   avoids it. A host binding of `'[attr.title]': 'null'` would fix it for good, and must
   then be applied to all nine at once. Documented in `frameworks/angular/README.md`.
-- **`ActivityFeed`'s `renderItem` escape hatch has no Angular analogue.** React's
-  row-replacement prop has no signal-input equivalent; the Angular answer is content
-  projection or a structural directive, and choosing between them is a design question
-  this change raises rather than settles. A consumer needing a different row composes
-  the slots from the exported `activityFeedStyles`.
-
 ### Notes
 
 - **`tokens/src/` is the only source of truth for component design, and no layer is the

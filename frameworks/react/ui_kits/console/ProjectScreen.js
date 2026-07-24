@@ -34,10 +34,10 @@ const DEPLOY_COLUMNS = [
   }, "Details") }
 ];
 const ACTIVITY = [
-  { id: 1, actor: "ana@", action: "approved the release", target: "build #4821", time: "2h ago" },
-  { id: 2, actor: "CI", action: "deployed to production", target: "build #4821", time: "2h ago" },
-  { id: 3, actor: "diego@", action: "opened incident", target: "checkout latency", time: "3h ago" },
-  { id: 4, actor: "nora@", action: "merged", target: "PR #338 · session cache", time: "5h ago" }
+  { id: "1", actor: "ana@", action: "approved the release", target: "build #4821", time: "2h ago" },
+  { id: "2", actor: "CI", action: "deployed to production", target: "build #4821", time: "2h ago" },
+  { id: "3", actor: "diego@", action: "opened incident", target: "checkout latency", time: "3h ago" },
+  { id: "4", actor: "nora@", action: "merged", target: "PR #338 · session cache", time: "5h ago" }
 ];
 export function ProjectScreen({ onNav, project, onToast }) {
   const p = project || { name: "Customer portal", client: "Aurora Bank", tags: ["React", "Node", "AWS"] };

@@ -189,11 +189,11 @@ item, because a component-level slot cannot vary across a list. So `BulkAction.i
 `Command.icon`, `ActivityItem`'s text fields and `OnboardingStep.body` are all primitives, and
 Arena draws them; a per-item icon is a Phosphor class name, the same answer the convention
 above gives for a single one. The consequence is stated rather than hidden: a consumer cannot
-place their own markup inside one row of a list Arena renders. This convention also removes
-`ActivityFeed.renderItem`, which still exists in React as this is written and goes when
-`ActivityFeed` itself is brought under contract — and it goes **not** because it breaks R3.
-Measured against the source, it fills the `<li>` Arena renders rather than replacing it,
-exactly as `TableColumn.render` fills a `<td>`, so R3 permits it. What it has no answer for is Angular: per-item projection needs a
+place their own markup inside one row of a list Arena renders. This convention also removed
+`ActivityFeed.renderItem` when `ActivityFeed` itself was brought under contract — and it went
+**not** because it broke R3. Measured against the source, it filled the `<li>` Arena renders
+rather than replacing it, exactly as `TableColumn.render` fills a `<td>`, so R3 permitted it.
+What it had no answer for is Angular: per-item projection needs a
 structural directive and `ngTemplateOutlet`, a binding no row of the table above covers and no
 reader function reads, and landing that machinery for one member was judged the wrong trade.
 
