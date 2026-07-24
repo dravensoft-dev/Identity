@@ -531,8 +531,19 @@ rendered output writes one.
 
 ## What Plan B3 measured about the three charts, for 8B4
 
-Plan B3 did not touch `BarChart`, `LineChart` or `DoughnutChart` — they are 8B4's subjects, split
-out for the reasons Plan 8B3's own Appendix A records — but closing B3 out re-verified five facts
+> **Resolved by Plan 8B4 (2026-07-24).** All five findings below are the pre-migration state and
+> are recorded as history. `valueFormatter` is now `valueSuffix`; `CatSlot` is deleted rather than
+> aliased; `LineChartProps`' heritage is flattened; `chart-data-table.test.ts` gained a
+> `valueSuffix` pin and needed no NG0950 rework, while `host-class-binding.test.ts` needed it for
+> all thirteen of its chart tests — the reverse of what that plan expected.
+
+Plan B3 did not touch `BarChart`, `LineChart` or `DoughnutChart` — they were 8B4's subjects, split
+out because they are not three similar components but **one reshape applied three times**: they
+shared `valueFormatter → valueSuffix`, they shared `CatSlot`, and `LineChart.d.ts` and
+`DoughnutChart.d.ts` both re-exported types from `BarChart.d.ts`, so migrating one half-migrated
+the others; they are also the framework layer's declared styling exception, so the manifest, recipe
+and specimen work that dominated every other B3 task did not apply to them at all — but closing B3
+out re-verified five facts
 about them against the tree at `HEAD`, so 8B4 opens with measurements rather than rediscovery:
 
 - **`valueFormatter` is declared in all three components in both layers**
@@ -727,6 +738,26 @@ comparison and a comparison needs a baseline that is not stale.
 | **Plan B1** (2026-07-23) | **885 across 74 files** | 26 across 5 files |
 | **Plan B2** (2026-07-24) | **910 across 79 files** | 26 across 5 files |
 | **Plan B3** (2026-07-24) | **932 across 82 files** | 26 across 5 files |
+| **Plan B4** (2026-07-24) | **950 across 85 files** | 26 across 5 files |
+
+Plan B4 put the last three components of Plan B under contract — BarChart, LineChart and
+DoughnutChart — taking `check:api` from 18 contracts across 35 layer implementations to **21 across
+41**. That **completes Plan B**: 3 components from Plan A plus 18 from Plan B, all twenty-one
+contracted. It added one shared enum (`SeriesTone`, four values, replacing React's local union and
+deleting Angular's `ArenaChartTone`) and declared **no object type at all** — the first batch with
+none, because all three charts are pure data-in components whose members are primitives, arrays of
+primitives and one enum. The net gain over B3 is 18 tests and 3 files in the merged process,
+isolated DOM process unchanged at 26/5: `frameworks/react/test/` gained 17 tests across 3 new files
+(`bar-chart.test.jsx` +5, `line-chart.test.jsx` +6, `doughnut-chart.test.jsx` +6 — React had no
+suite for any of the three before this plan), and Angular gained 1, folded into the existing
+`chart-data-table.test.ts` (4 → 5 tests) as the `valueSuffix` pin on the one suite that holds a
+chart's behaviour contract. `scripts/` gained **none** — no reader change was needed, because
+`classify()`'s refusal of an inbound function that returns a value was already shipped by Plan B0
+and Task 3b's depth-aware `input.required<T, TransformT>()` extension was untouched. **Unlike B3's
+row, the delta reads correctly straight off this table's two adjacent rows** (950 − 932 = 18,
+85 − 82 = 3) and reconciles exactly with the per-file accounting (17 + 1 + 0 = 18): the branch's
+own measured baseline at `0205cfc` was 932 across 82, matching the B3 row. The 2-test undercount
+this table's **B2** row carries is untouched and still out of scope.
 
 Plan B3 put five more components under contract — UnauthCard, BulkActionBar, CommandPalette,
 ActivityFeed and Onboarding — taking `check:api` from 13 contracts across 25 layer implementations

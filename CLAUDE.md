@@ -542,15 +542,19 @@ scheduled for deletion the same week.
   `frameworks/angular/test/chart-data-table.test.ts` proves the three verifiable
   parts of that pattern against a real render — the `<table>` exists, it is
   visually hidden rather than absent, and its cells pair each category with its
-  plotted value. It cannot prove the fourth. With no `seriesLabel`, `bar-chart.ts`
-  emits the constant `Bar chart`; `line-chart.ts` falls back the same way, and
-  `doughnut-chart.ts` is worse — its `aria-label="Doughnut chart"` is a literal with
-  no caller-supplied path at all. Each satisfies the requirement mechanically while
-  telling a screen-reader user
-  nothing — a page with two bar charts on it announces both identically. No
-  assertion separates a present name from a useful one; that is human judgement,
-  and the suite pins the fallback rather than faking a verdict on it. The React
-  charts do the same thing and are not covered by a suite at all.
+  plotted value. It cannot prove the fourth. All three charts now have a
+  consumer-supplied name path — `seriesLabel`, which `DoughnutChart` gained when the
+  charts came under the API contract, so the earlier worst case of a literal with no
+  caller path at all is closed — and all three still fall back to a name that is only
+  their type when none is given: `bar-chart.ts` emits the constant `Bar chart`,
+  `line-chart.ts` and `doughnut-chart.ts` the same. **The debt that remains is the
+  harder half: a name that is *present* is never checked for being *useful*.** A
+  fallback satisfies the requirement mechanically while telling a screen-reader user
+  nothing — a page with two bar charts on it announces both identically — and a
+  `seriesLabel` of `"Chart"` would satisfy it just as mechanically. No assertion
+  separates a present name from a useful one; that is human judgement, and the suite
+  pins the fallback rather than faking a verdict on it. The React charts do the same
+  thing and are not covered by a suite at all.
 
 - **Every claim the delegated declarations make about Angular Material is unpinned.**
   `frameworks/angular/behaviour-delegated.json` asserts what Material's controls do —
@@ -582,7 +586,7 @@ scheduled for deletion the same week.
   `Table.render` in plan C is where R3 first matters, and it will matter with no
   gate behind it. Two more gaps, neither an authoring rule and both closeable in
   principle: **`default` is documented in the contract format and read by nothing** —
-  all three shipped contracts carry one, but `spec.default` is referenced nowhere in
+  most shipped contracts carry one, but `spec.default` is referenced nowhere in
   `scripts/`, so a contract's stated default can disagree with both layers' real
   defaults with nothing to say so. Left unimplemented on purpose: React's default lives
   in a `.jsx` destructuring pattern the gate never reads (the next point), so the
