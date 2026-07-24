@@ -28,6 +28,20 @@ export interface BulkAction {
   destructive?: boolean;
 }
 
+/** One entry in a CommandPalette. `hint` is searched but never shown, so a command can be found by a synonym that never appears in its label. */
+export interface Command {
+  /** A stable identity for the command, so a host can switch on it rather than on the label. */
+  id: string;
+  /** What the command is called, and the primary text searched. */
+  label: string;
+  /** Searched but never shown — a synonym that finds the command. */
+  hint?: string;
+  /** A Phosphor class name for the leading glyph Arena draws. */
+  icon?: string;
+  /** The keystroke shown at the row's trailing edge, monospaced. Display only — the palette does not bind it. */
+  shortcut?: string;
+}
+
 /** One entry in a breadcrumb trail. `href` is omitted for the current page, which is never rendered as a link. */
 export interface Crumb {
   /** What the crumb reads. */

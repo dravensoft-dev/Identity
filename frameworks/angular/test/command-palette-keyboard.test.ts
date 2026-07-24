@@ -8,14 +8,19 @@
  * same confirmed reason `confirm-dialog-focus-trap.test.ts` documents -- and
  * the two ways `open` cannot be set fail DIFFERENTLY, which is the part that
  * bites: `[open]="true"` THROWS NG0303, while `componentRef.setInput('open',
- * true)` logs NG0303 and then silently NO-OPS, leaving `open` on its default.
- * A throw announces itself; a silent no-op lets a suite pass vacuously against
- * a default it never changed. Both stem from the same cause -- only `ngtsc`
- * (never run here) discovers a class's `input()` fields into `ɵcmp.inputs`.
- * Since `open` can never become `true` here, no TestBed-based test can
- * render an actually-open palette; `filterCommands`, `nextActiveIndex` and
- * `scrollRowIntoView` are exported precisely so they stay testable despite
- * that.
+ * true)` logs NG0303 and then silently NO-OPS. `open` became
+ * `input.required<boolean>()` under the API contract
+ * (`api/components/CommandPalette.json`), so a silent no-op now leaves it
+ * genuinely unset rather than sitting on a default value -- the next read of
+ * `open()` during change detection throws NG0950 instead of quietly passing
+ * against a stale default. A throw announces itself either way; the point
+ * that matters here is unchanged: no binding path reliably renders an
+ * actually-open palette under this harness. Both failure modes stem from the
+ * same cause -- only `ngtsc` (never run here) discovers a class's `input()`
+ * fields into `ɵcmp.inputs`. Since `open` can never become `true` here, no
+ * TestBed-based test can render an actually-open palette; `filterCommands`,
+ * `nextActiveIndex` and `scrollRowIntoView` are exported precisely so they
+ * stay testable despite that.
  *
  * `scrollRowIntoView` needs `document.createElement`, so this file asks for
  * the directory's shared happy-dom global (`ensureDom()`, testbed-env.ts).
@@ -33,7 +38,7 @@ ensureDom();
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { ArenaCommand } from '../primitives/command-palette/command-palette';
+import type { Command } from '../api.generated';
 import {
   activeOptionId,
   filterCommands,
@@ -42,7 +47,7 @@ import {
   scrollRowIntoView,
 } from '../primitives/command-palette/command-palette';
 
-const COMMANDS: ArenaCommand[] = [
+const COMMANDS: Command[] = [
   { id: 'deploy', label: 'Deploy to production', hint: 'client portal', shortcut: '⌘D' },
   { id: 'logs', label: 'View build logs', hint: 'build 4821' },
   { id: 'invite', label: 'Invite teammate', hint: 'members settings' },

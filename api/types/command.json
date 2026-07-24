@@ -1,0 +1,17 @@
+{
+  "name": "Command",
+  "kind": "object",
+  "description": "One entry in a CommandPalette. `hint` is searched but never shown, so a command can be found by a synonym that never appears in its label.",
+  "fields": {
+    "id": { "form": "primitive", "type": "string", "required": true,
+            "description": "A stable identity for the command, so a host can switch on it rather than on the label." },
+    "label": { "form": "primitive", "type": "string", "required": true,
+               "description": "What the command is called, and the primary text searched." },
+    "hint": { "form": "primitive", "type": "string",
+              "description": "Searched but never shown — a synonym that finds the command." },
+    "icon": { "form": "primitive", "type": "string",
+              "description": "A Phosphor class name for the leading glyph Arena draws." },
+    "shortcut": { "form": "primitive", "type": "string",
+                  "description": "The keystroke shown at the row's trailing edge, monospaced. Display only — the palette does not bind it." }
+  }
+}

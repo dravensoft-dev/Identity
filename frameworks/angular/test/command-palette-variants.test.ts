@@ -24,7 +24,12 @@ test('open=false hides the root overlay; open=true renders it as the fixed, top-
   assert.ok(!open.includes('hidden'));
 });
 
-test('the closed default keeps the root hidden -- open defaults to false, matching the component\'s own default input', () => {
+/* `open` became `input.required<boolean>()` under the API contract
+ * (`api/components/CommandPalette.json`), so the component itself no longer
+ * defaults it -- only the recipe's own `tv()` variant does. This asserts the
+ * recipe alone: calling `commandPaletteStyles()` with no argument resolves
+ * the same classes as passing `{ open: false }` explicitly. */
+test('the recipe\'s own unset-argument default resolves the same classes as an explicit open: false', () => {
   assert.equal(commandPaletteStyles().root(), commandPaletteStyles({ open: false }).root());
 });
 

@@ -2,7 +2,11 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useState, useEffect, useRef } from "react";
-export function CommandPalette({ open, onClose, commands = [], placeholder = "Search for an action or project…" }) {
+export function CommandPalette({ open, commands, placeholder = "Search for an action or project…", onClose, onRun }) {
+  if (open == null)
+    throw new Error("CommandPalette: `open` is required");
+  if (commands == null)
+    throw new Error("CommandPalette: `commands` is required");
   const [q, setQ] = useState("");
   const [i, setI] = useState(0);
   const inputRef = useRef(null);
@@ -21,7 +25,7 @@ export function CommandPalette({ open, onClose, commands = [], placeholder = "Se
     return null;
   const run = (c) => {
     onClose && onClose();
-    c && c.onRun && c.onRun();
+    c && onRun && onRun(c);
   };
   const onKey = (e) => {
     if (e.key === "ArrowDown") {
@@ -76,7 +80,7 @@ export function CommandPalette({ open, onClose, commands = [], placeholder = "Se
   }, filtered.length === 0 && React.createElement("div", {
     style: { padding: "calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 3)", fontFamily: "var(--font-body)", fontSize: "var(--fs-md)", color: "var(--mute)" }
   }, 'No results for "', q, '".'), filtered.map((c, idx) => React.createElement("button", {
-    key: c.id || c.label,
+    key: c.id,
     onMouseEnter: () => setI(idx),
     onClick: () => run(c),
     style: {
@@ -94,7 +98,10 @@ export function CommandPalette({ open, onClose, commands = [], placeholder = "Se
     }
   }, c.icon && React.createElement("span", {
     style: { fontSize: "var(--icon-lg)", display: "inline-flex" }
-  }, c.icon), React.createElement("span", {
+  }, React.createElement("i", {
+    className: c.icon,
+    "aria-hidden": "true"
+  })), React.createElement("span", {
     style: { flex: 1, fontFamily: "var(--font-body)", fontSize: "var(--dz-text)", fontWeight: idx === i ? "var(--fw-semibold)" : "var(--fw-medium)" }
   }, c.label), c.shortcut && React.createElement("span", {
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-xs)", color: "var(--mute)" }
