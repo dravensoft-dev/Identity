@@ -33,6 +33,20 @@ test('a slot with no variant contribution is still returned', () => {
   assert.ok('dot' in classesFor(tag, { tone: 'danger' }));
 });
 
-test('compoundVariants are refused rather than silently dropped', () => {
-  assert.throws(() => classesFor({ ...tag, compoundVariants: [] }), /compoundVariants/);
+test('a compoundVariant applies only when every variant it names matches', () => {
+  const withCompound = { ...tag, compoundVariants: [{ tone: 'danger', class: { root: 'ring-2' } }] };
+  assert.ok(classesFor(withCompound, { tone: 'danger' }).root.includes('ring-2'), 'applies when the condition matches');
+  assert.ok(!classesFor(withCompound, { tone: 'primary' }).root.includes('ring-2'), 'does not apply when it does not');
+});
+
+test('a compoundVariant matches the defaulted variant value, not only a chosen one', () => {
+  // tag's default tone is neutral, so a bare classesFor() must satisfy the condition.
+  const withCompound = { ...tag, compoundVariants: [{ tone: 'neutral', class: { root: 'ring-2' } }] };
+  assert.ok(classesFor(withCompound).root.includes('ring-2'), 'the default value satisfies the condition');
+});
+
+test('a compoundVariant is appended after the single-variant slots', () => {
+  const withCompound = { ...tag, compoundVariants: [{ tone: 'danger', class: { root: 'ring-2' } }] };
+  const { root } = classesFor(withCompound, { tone: 'danger' });
+  assert.ok(root.indexOf('border-error') < root.indexOf('ring-2'), 'the compound class follows the variant class');
 });
