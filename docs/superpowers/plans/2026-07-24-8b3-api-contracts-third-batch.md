@@ -1108,6 +1108,168 @@ Append the Task 3 line to `.superpowers/sdd/progress.md`.
 
 ---
 
+## Task 3b: Teach the reader `input.required<T, TransformT>()`
+
+**Added mid-execution, after Task 3 measured the problem.** This is gate work, not component
+work, and it is the only task in this plan that changes `scripts/`.
+
+**Why.** Task 3 made Angular's `open` required and discovered that `input.required` and
+`booleanAttribute` are mutually exclusive under the current reader: `classMember`'s regex
+(`api-surface.mjs:333`) captures everything between `<` and `>` as the type, so
+`input.required<boolean, unknown>({ transform: booleanAttribute })` yields the string
+`"boolean, unknown"`, which `classify()` throws on. The implementer therefore shipped
+`open = input.required<boolean>()` with **no coercion**, and `<arena-command-palette open>` — the
+bare-attribute form — stopped meaning `true`.
+
+**Why that is a defect and not a trade.** Verified against `angular.dev/api/core/input`: the
+signature is `input.required<T, TransformT>(opts)`, where **`T` is what the signal returns** and
+`TransformT` is what the binding *accepts*. The contract declares `type: "boolean"`, which is `T`.
+So reading the first generic is reading exactly the type the contract governs — not a shortcut.
+`api/README.md` is explicit that the contract governs the member surface "and not the syntax by
+which a platform expresses it", and the tree already agrees: `Alert.dismissible`,
+`Tag.removable`, `ConfirmDialog.open`, `ConfirmDialog.destructive` and `LineChart.area` all carry
+`booleanAttribute` today, are all already under contract from B1/B2, and all pass `check:api`
+green through the reader's `bare` branch. Dropping the transform is what *creates* a divergence:
+React's `<CommandPalette open />` is JSX sugar for `open={true}`, so without the transform the
+bare-attribute form works in one layer and not the other — and `check:api` cannot see it.
+
+**Files:**
+- Modify: `scripts/lib/api-surface.mjs` (`classMember`)
+- Modify: `scripts/api-surface.test.mjs`
+- Modify: `frameworks/angular/primitives/command-palette/command-palette.ts`
+- Modify: `frameworks/angular/primitives/command-palette/command-palette.prompt.md`
+
+**Interfaces:**
+- Produces: a reader that accepts the two-generic form, which **Task 5 depends on** —
+  `onboarding.ts:98` is `open = input(false, { transform: booleanAttribute })` and hits the
+  identical wall the moment Task 5 makes `open` required.
+
+- [ ] **Step 1: Write the failing reader tests**
+
+In `scripts/api-surface.test.mjs`, beside the existing `classMember`/`angularSurface` cases:
+
+```js
+test('a required input with a transform reads its FIRST generic, which is the member type', () => {
+  const { members } = angularSurface(
+    'export class X {\n  readonly open = input.required<boolean, unknown>({ transform: booleanAttribute });\n}',
+    'X',
+  );
+  assert.deepEqual(members, [{ name: 'open', required: true, form: 'primitive', type: 'boolean' }]);
+});
+
+test('a required input with a transform and NO generics declares no type and is refused', () => {
+  assert.throws(
+    () => angularSurface(
+      'export class X {\n  readonly open = input.required({ transform: booleanAttribute });\n}',
+      'X',
+    ),
+    /UnrecognisedShape|unreadable/,
+  );
+});
+```
+
+The second test is as important as the first. `angular.dev` shows
+`input.required({transform: booleanAttribute})` as idiomatic, and the reader must keep **refusing**
+it: it declares no type at all, and this module's standing rule is to fail loudly rather than
+infer one — the same rule `literalType` applies to `input(arg)` with no inferable type.
+
+- [ ] **Step 2: Run them and watch the first fail**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test scripts/api-surface.test.mjs
+```
+
+Expected: the first new test FAILS with an `UnrecognisedShape` naming `boolean, unknown`; the
+second already passes (for the wrong reason — the initialiser matches neither branch — which is
+fine, it is pinning behaviour that must survive).
+
+- [ ] **Step 3: Split the generic list in `classMember`**
+
+In `scripts/lib/api-surface.mjs`, inside the `if (generic)` branch, the captured `type` is a
+generic *list*, not one annotation. Classify only its first entry, using the module's own
+depth-aware splitter so a generic argument carrying its own comma (`Record<string, number>`) is
+not cut in half:
+
+```js
+    return { name, required: Boolean(required), ...classify(splitTopLevel(type, ',')[0]) };
+```
+
+Write the reason on the line above it, in this module's register — it explains *why* the first
+entry is the right one, which a reader six months from now cannot recover from the code:
+
+```js
+    /* Angular's signature is input.required<T, TransformT>(opts): T is what the signal
+     * RETURNS and TransformT is what the binding ACCEPTS. The contract governs the member's
+     * declared type, which is T, so only the first generic is classified. Splitting depth-
+     * aware rather than on the first comma keeps a generic argument that carries its own
+     * comma (Record<string, number>) intact. A single-generic list splits to one entry, so
+     * this is a no-op for every declaration in the tree that has no transform. */
+```
+
+Leave the `output` path above it untouched — an `output<T>()` takes one generic and has no
+transform form.
+
+- [ ] **Step 4: Run the reader tests and the gate**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test scripts/api-surface.test.mjs && bun run check:api
+```
+
+Expected: all reader tests PASS, and `check:api` still reports **16 contracts across 31 layer
+implementations** — this step changes no contract and no component, so the number must not move.
+
+- [ ] **Step 5: Restore the transform on CommandPalette**
+
+In `frameworks/angular/primitives/command-palette/command-palette.ts`, restore the coercion that
+Task 3 had to drop, and re-add `booleanAttribute` to the `@angular/core` import if it was removed:
+
+```ts
+  readonly open = input.required<boolean, unknown>({ transform: booleanAttribute });
+```
+
+`booleanAttribute` is `(value: unknown) => boolean`, so `unknown` is the correct `TransformT`.
+
+- [ ] **Step 6: Prove it compiles and the gate still holds**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun run check:angular && bun run check:api && bun run test:angular
+```
+
+`check:angular` runs `ngc --strictTemplates` and is the authority that the two-generic form really
+typechecks — this step is the reason it is in the list rather than the usual per-task set.
+Expected: PASS, `check:api` still 16/31, Angular tests still passing.
+
+- [ ] **Step 7: Restate the prose**
+
+`command-palette.prompt.md` regains the sentence its siblings carry — that a bare `open` and
+`[open]="true"` both mean true, thanks to the `booleanAttribute` transform. Copy the wording from
+`frameworks/angular/primitives/alert/alert.prompt.md:26` or
+`frameworks/angular/primitives/confirm-dialog/confirm-dialog.prompt.md:28` rather than inventing a
+third phrasing.
+
+- [ ] **Step 8: Commit**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+git add -A
+git commit -m "fix(api): teach the reader input.required<T, TransformT>()
+
+Task 3 found that input.required and booleanAttribute were mutually exclusive
+under the reader: the generic capture returned \"boolean, unknown\", which
+classify() throws on, so making a boolean member required silently cost its
+bare-attribute coercion. Per angular.dev/api/core/input, T is what the signal
+returns and TransformT is what the binding accepts, so the contract's declared
+type is the first generic. Restores CommandPalette's transform and unblocks
+Onboarding, which has the identical shape.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
+```
+
+---
+
 ## Task 4: ActivityFeed
 
 One member in the contract, five reshapes behind it. This is where the batch stops being
