@@ -7,8 +7,16 @@ slice's percentage in the hole. The numbers are also a real table for anyone who
 the ring.
 
 ```html
-<arena-doughnut-chart [labels]="regions" [values]="revenue" [valueFormatter]="currency" />
+<arena-doughnut-chart [labels]="regions" [values]="revenue" seriesLabel="Revenue" valueSuffix=" €" />
 ```
+
+`valueSuffix` is appended verbatim to the legend value and to the numbers table — write the
+space yourself. It appends and does not format: no rounding, no thousands separator, no
+currency. Format the numbers before binding them.
+
+`seriesLabel` names the chart for a screen reader, titles the numbers table and names its
+value column; without it the chart announces as "Doughnut chart", which identifies the
+chart type and not the chart.
 
 `slots` overrides the ramp order, for when a category must keep the same colour it has in a
 sibling chart:
@@ -31,6 +39,9 @@ measured.
   slice repeats slot 8 rather than silently claiming two categories are one — fold the tail
   into "Other" instead.
 - Don't use it for change over time. That is `arena-line-chart`.
+- Don't omit `labels` or `values`. Both are required inputs — Angular throws NG0950 on the
+  first read rather than drawing an empty ring, and React throws from its render for the
+  same reason.
 - Don't pass more `labels` than `values`. A slice is drawn per value and takes the label at
   its own index, so a surplus label is silently dropped rather than given a legend row with
   no slice behind it.

@@ -40,7 +40,7 @@ function Demo() {
   }, React.createElement(DoughnutChart, {
     labels: ["Web", "API", "Worker", "Static"],
     values: [420, 310, 140, 90],
-    valueFormatter: (v) => v + " rps"
+    valueSuffix: " rps"
   }))), React.createElement("div", {
     className: "sub"
   }, "Meaning — opt-in, only when the series IS a state"), React.createElement("div", {

@@ -397,6 +397,22 @@ function createLineChartHost() {
 })
 class DoughnutChartHost {}
 
+/* `arena-doughnut-chart`'s required `labels`/`values`, driven the same way
+ * createBarChartHost() drives the bar chart's -- see its comment for why a
+ * template binding and a literal attribute both fail under this JIT harness.
+ * Empty arrays on purpose: four of these five tests assert host box,
+ * style-object binding and the fallback accessible name, and the fifth asserts
+ * that NO data draws NO slice, which needs the empty array to be the real,
+ * driven value rather than an untouched default. */
+function createDoughnutChartHost() {
+  const fixture = TestBed.createComponent(DoughnutChartHost);
+  const instance = fixture.debugElement.query(By.directive(DoughnutChart)).componentInstance as unknown as Record<string, unknown>;
+  instance['labels'] = () => [];
+  instance['values'] = () => [];
+  fixture.detectChanges();
+  return fixture;
+}
+
 /* `arena-app-logo` is the first primitive in this layer with a `required`
  * signal input (`name`). Every other component's optional signal inputs are
  * undrivable through a TestBed template binding (NG0303) or a literal
@@ -1477,11 +1493,16 @@ test('arena-line-chart: the picture carries an accessible name and the numbers c
 /* The third and last hand-written chart. Same shape as the two blocks above, with one
  * real difference in what is reachable: a bar chart and a line chart both draw a value
  * axis from `ticks()` regardless of their data, so a `<line>` and a `<text>` render with
- * default inputs and their token styles can be read off the real DOM. A doughnut has no
- * axis -- with the default empty `values` there is no slice and no centre label, and this
- * harness cannot drive `values` (see the header). So the `<path>`'s `strokeWidth:
- * 'var(--bw-strong)'` and the centre label's `fontSize: 'var(--dz-text-lg)'` are NOT
- * render-provable here, and nothing below pretends otherwise. What covers them instead:
+ * empty inputs and their token styles can be read off the real DOM. A doughnut has no
+ * axis -- with an empty `values` there is no slice and no centre label. `labels` and
+ * `values` became required signal inputs under the API contract
+ * (`api/components/DoughnutChart.json`), so all five tests below drive them through
+ * `createDoughnutChartHost()`'s `By.directive` bypass rather than through a template
+ * binding or a literal attribute, both of which this harness silently drops (see the
+ * header); the bypass supplies EMPTY arrays deliberately, keeping these five about the
+ * no-data render. So the `<path>`'s `strokeWidth: 'var(--bw-strong)'` and the centre
+ * label's `fontSize: 'var(--dz-text-lg)'` are NOT render-provable here, and nothing
+ * below pretends otherwise. What covers them instead:
  * `check:dimensions` reads both as themselves BECAUSE they are camelCase object keys
  * rather than the brief's `stroke-width="2"` / `font-size="16"` attributes, which that
  * gate cannot see at all (its attribute lookbehind excludes `-`, and `font-size` reduces
@@ -1493,8 +1514,7 @@ test('arena-line-chart: the picture carries an accessible name and the numbers c
  * what proves the object-to-DOM path works at all on this component. */
 
 test('arena-doughnut-chart: the host is the flex row itself, so the box it measures is the box it lays out', async () => {
-  const fixture = TestBed.createComponent(DoughnutChartHost);
-  fixture.detectChanges();
+  const fixture = createDoughnutChartHost();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-doughnut-chart') as HTMLElement;
   // `containerWidth()` observes this element. The task brief wrapped the whole chart in
@@ -1514,8 +1534,7 @@ test('arena-doughnut-chart: the host is the flex row itself, so the box it measu
 });
 
 test('arena-doughnut-chart: the numbers table is bound as a style object, not stringified into the attribute', async () => {
-  const fixture = TestBed.createComponent(DoughnutChartHost);
-  fixture.detectChanges();
+  const fixture = createDoughnutChartHost();
   await fixture.whenStable();
   const table = fixture.nativeElement.querySelector('arena-doughnut-chart table') as HTMLElement;
   assert.ok(table, 'the visually-hidden numbers table did not render');
@@ -1535,8 +1554,7 @@ test('arena-doughnut-chart: the numbers table is bound as a style object, not st
 });
 
 test('arena-doughnut-chart: the style objects that render without data reach the DOM as real declarations', async () => {
-  const fixture = TestBed.createComponent(DoughnutChartHost);
-  fixture.detectChanges();
+  const fixture = createDoughnutChartHost();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-doughnut-chart') as HTMLElement;
   // The ring's box must not be squeezed by the legend below the width its geometry was
@@ -1553,22 +1571,23 @@ test('arena-doughnut-chart: the style objects that render without data reach the
 });
 
 test('arena-doughnut-chart: the picture carries an accessible name and the numbers carry a caption', async () => {
-  const fixture = TestBed.createComponent(DoughnutChartHost);
-  fixture.detectChanges();
+  const fixture = createDoughnutChartHost();
   await fixture.whenStable();
   const svg = fixture.nativeElement.querySelector('arena-doughnut-chart svg') as SVGElement;
   assert.equal(svg.getAttribute('role'), 'img');
-  // Unlike the other two charts this name is static: a doughnut has no `seriesLabel`,
-  // because its series ARE its slices and they are named by the legend. A role="img"
-  // with no name announces as an unlabeled graphic.
+  // No seriesLabel is set on the fixture, so this is the FALLBACK name rather than a
+  // constant: the doughnut gained a `seriesLabel` under the API contract
+  // (`api/components/DoughnutChart.json`), and `name()` reads
+  // `<seriesLabel> — doughnut chart` when one is given. Pinning the fallback is
+  // deliberate -- a role="img" with no name announces as an unlabeled graphic, so the
+  // unnamed case is the one that must never regress to empty.
   assert.equal(svg.getAttribute('aria-label'), 'Doughnut chart');
   const caption = fixture.nativeElement.querySelector('arena-doughnut-chart table caption') as HTMLElement;
   assert.equal(caption.textContent?.trim(), 'Doughnut chart');
 });
 
 test('arena-doughnut-chart: with no data it draws no slice at all, rather than an empty ring', async () => {
-  const fixture = TestBed.createComponent(DoughnutChartHost);
-  fixture.detectChanges();
+  const fixture = createDoughnutChartHost();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-doughnut-chart') as HTMLElement;
   // `@if (segment.path)` is the gate: a zero-width slice yields '' and must not reach
