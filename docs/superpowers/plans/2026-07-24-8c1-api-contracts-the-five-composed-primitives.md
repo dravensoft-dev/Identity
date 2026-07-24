@@ -228,7 +228,16 @@ measurement or the lesson that produced it.
     no per-task review could have made**. This batch's specific cross-task risk is named: five
     components each independently decide how to render an icon, how to name a default slot, and which
     native attributes survive, and only a whole-branch pass can see whether the five answers agree.
-24. **No Angular component work exists in this plan, and a task that finds itself editing one has
+24. **A commit message containing a backtick is written with a quoted here-doc, never with
+    `git commit -m "…"`.** Inside a double-quoted shell string a backtick opens command substitution:
+    the shell runs what is between the backticks and splices its output in. This bit Task 1 of this
+    plan — a message reading ``both `content` and children`` committed as *"both  and children"*,
+    silently, with only a stray `content: command not found` on stderr to say so. The commit still
+    succeeds, so nothing fails and the damage is only visible by reading the message back. Use
+    `git commit -q -F - <<'MSG' … MSG` — the quoted delimiter disables every expansion — and verify
+    with `git log -1 --format=%B`. The commit messages written out in this plan happen to contain no
+    backtick; one added while executing must follow this.
+25. **No Angular component work exists in this plan, and a task that finds itself editing one has
     gone wrong.** The only Angular file that changes is the generated
     `frameworks/angular/api.generated.ts`. `bun run check:angular` still runs per task, because
     `frameworks/angular/index.ts` re-exports `api.generated.ts` and `tsconfig.check.json` pulls it
@@ -272,7 +281,12 @@ Modified, per component:
 | Console | `frameworks/react/ui_kits/console/*.jsx` that call it (measured per task) |
 
 Modified in Task 1: `api/README.md`.
-Modified in Task 7: `components-divergences.md` (re-read, likely unchanged — see the task).
+Modified in **Task 1b** — added after Task 1's audit settled D5 as an eighth form: `api/README.md`
+again, `scripts/lib/api-surface.mjs`, `scripts/api-surface.test.mjs`, `scripts/check-api.mjs`,
+`scripts/check-api.test.mjs`, `CLAUDE.md` and the spec. That task contracts nothing and holds
+`check:api` at 21/41.
+Modified in Task 7: `components-divergences.md` (re-read, likely unchanged — see the task), and
+`frameworks/react/components/display/StatCard.d.ts` (one dead import line).
 Modified in Task 8: `docs/superpowers/specs/2026-07-23-8-api-contracts-design.md`, `CHANGELOG.md`,
 `CLAUDE.md`, `README.md` if any task deferred it. **Deleted in Task 8:**
 `docs/superpowers/plans/2026-07-24-8b4-api-contracts-the-three-charts.md`.
@@ -605,15 +619,10 @@ Add them under the existing `## Conventions the audits settled` heading, in that
 a stated rule, the reason that decided it, and the consequence stated rather than hidden. Follow the
 shape of the two conventions already there. Do **not** restate anything already in that section.
 
-D5 has two answers that make this step bigger than a documentation edit, and both **stop and report
-before writing anything**:
-
-- **Reshape B (an eighth form)** changes `api/README.md`'s *"The vocabulary: seven forms"* table, and
-  `scripts/lib/api-surface.mjs` plus `scripts/api-surface.test.mjs` gain the new form. That is a
-  larger piece of work than this task and probably its own task in this plan.
-- **Reshape C (`Table` leaves Plan C)** changes the spec's Plan C subject list and this plan's own
-  Appendix A, and means a later plan inherits `Table` alongside `Calendar`. Record it in the ledger
-  and let Task 8 carry it into the spec; do not edit the spec from here.
+**D5 came out as reshape B — an eighth form — and it is implemented in Task 1b, not here.** This
+step's edit is the conventions prose only. Do not touch the vocabulary table, `api-surface.mjs` or
+`check-api.mjs` from this task; Task 1b owns all of that and its own tests, and it runs immediately
+after.
 
 ```bash
 cd /home/juan/Dravensoft/Identity
@@ -634,6 +643,270 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 
 Expected: `check-api: 21 contract(s) hold across 41 layer implementation(s)` — unchanged, because
 this commit contracts nothing.
+
+---
+
+## Task 1b: the eighth form
+
+**Files:**
+- Modify: `api/README.md` (the vocabulary table, R1, and the gate section)
+- Modify: `scripts/lib/api-surface.mjs`
+- Modify: `scripts/api-surface.test.mjs`
+- Modify: `scripts/check-api.mjs`
+- Modify: `scripts/check-api.test.mjs`
+- Modify: `CLAUDE.md` and `docs/superpowers/specs/2026-07-23-8-api-contracts-design.md` (the
+  "seven forms" phrasing)
+
+**Interfaces:**
+- Consumes: Task 1's decision D5.
+- Produces: the form `consumerData`, readable by `reactSurface()` and accepted by `check:api`, plus
+  two mechanical guards. **Contracts nothing** — `check:api` stays at **21/41** across this whole
+  task, which is the assertion its gate step makes.
+
+> **Why now rather than in C5.** The gap exists with or without `Table`. `api/README.md` says a member
+> is *"exactly one of seven forms, and nothing else"*, which is false today; and its own worked example
+> for a parameterised slot names a type `TableRow` that cannot be declared and that
+> `check-api.mjs:163-166` would reject. Landing the form here means C2, C3 and C4 write fourteen
+> contracts against a vocabulary that is complete.
+>
+> **The scope is much smaller than "support generics", and that was measured.** `TableColumn<T>`
+> throws today, but the generic **dissolves on its own**: `TableColumn.render` is one of the two R1
+> violations the spec names, and once `render` leaves the object and becomes a parameterised slot of
+> the component, `TableColumn` is an ordinary predefined object with no type parameter. What is left
+> needing the form is `rows` and `Calendar`'s `meta` — and both are spelled
+> `Record<string, unknown>`, which is the shape R4 already names by name. So the reader needs **two
+> edits**, not a type-parameter parser.
+
+- [ ] **Step 1: Write the failing reader tests**
+
+Append to `scripts/api-surface.test.mjs`:
+
+```js
+/* The eighth form. api/README.md's own worked example for a parameterised slot
+ * names a row type that cannot be declared -- a declared type is an object of
+ * primitives/enums (R1) or an enum, and Arena does not know a consumer row's
+ * fields. Table.jsx:28 states what the form actually is: `row[c.key]` indexes
+ * the record by a key the CONSUMER named. R4 already names
+ * Record<string, unknown> as none of the seven; this is the form that receives
+ * it rather than leaving it unreadable. */
+test('classify reads Record<string, unknown> as consumer data rather than throwing', () => {
+  assert.deepEqual(classify('Record<string, unknown>'), { form: 'consumerData' });
+});
+
+test('classify reads an array of consumer data, which is how a row list is spelled', () => {
+  assert.deepEqual(classify('Record<string, unknown>[]'), { form: 'array', of: 'consumerData' });
+});
+
+/* The form is narrow on purpose: it is the recognised Record shape and nothing
+ * else. An unreadable annotation must still throw, or the form becomes the
+ * escape hatch R4 exists to close. */
+test('classify still refuses an unreadable annotation rather than calling it consumer data', () => {
+  assert.throws(() => classify('Record<string, Widget>'), /unreadable type annotation/);
+  assert.throws(() => classify('TableColumn<T>'), /unreadable type annotation/);
+});
+```
+
+- [ ] **Step 2: Run them and watch them fail**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test scripts/api-surface.test.mjs
+```
+
+Expected: the first two FAIL with `UnrecognisedShape: unreadable type annotation: Record<string, unknown>`
+and `unreadable array element type`. The third PASSES already — it pins behaviour that must survive.
+
+- [ ] **Step 3: Make them pass, with two edits to `classify()`**
+
+In `scripts/lib/api-surface.mjs`, immediately before the final
+`throw new UnrecognisedShape(\`unreadable type annotation: ${ts}\`);` at line ~147:
+
+```js
+  /* The eighth form. A record whose keys the CONSUMER names: Arena routes it
+   * and never inspects it, which is neither "Arena draws it" (an object) nor
+   * "the consumer draws it" (a slot). Recognised by exactly this spelling --
+   * Record<string, Widget> stays unreadable, because a record of a KNOWN type
+   * is a predefined object and must be declared as one. */
+  if (ts.replace(/\s+/g, ' ') === 'Record<string, unknown>') return { form: 'consumerData' };
+```
+
+And in the array branch (line ~128), admit it as an element:
+
+```js
+    if (inner.form === 'consumerData') return { form: 'array', of: 'consumerData' };
+    if (inner.form !== 'primitive' && inner.form !== 'named') {
+      throw new UnrecognisedShape(`unreadable array element type: ${ts}`);
+    }
+```
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test scripts/api-surface.test.mjs
+```
+
+Expected: all PASS.
+
+- [ ] **Step 4: Write the failing gate tests**
+
+Append to `scripts/check-api.test.mjs`, following the shapes already in that file:
+
+```js
+/* R1 extended. An object is pure data with known fields, so consumer data --
+ * whose fields are by construction unknown -- cannot be one of them. This is
+ * what deletes Calendar's `meta`: it is a field of the CalendarEvent object,
+ * and after this rule it cannot live there at all. */
+test('validateTypes rejects consumer data inside a predefined object', () => {
+  const problems = validateTypes([
+    { name: 'Row', kind: 'object', fields: { meta: { form: 'consumerData' } } },
+  ]);
+  assert.ok(problems.some((p) => /Row\.meta/.test(p) && /consumer data/i.test(p)));
+});
+
+/* A consumer-data member Arena can never surface is dead API: Arena holds data
+ * with no route back out. The route is a slot parameter or an event payload. */
+test('validateContract rejects a consumer-data member with no consumer', () => {
+  const problems = validateContract(
+    { component: 'X', api: { rows: { form: 'array', of: 'consumerData' } } },
+    new Map(),
+  );
+  assert.ok(problems.some((p) => /rows/.test(p) && /no.*consumer/i.test(p)));
+});
+
+test('validateContract accepts consumer data routed back out through a slot parameter', () => {
+  const problems = validateContract(
+    { component: 'X', api: {
+      rows: { form: 'array', of: 'consumerData' },
+      cell: { form: 'slot', params: { row: 'consumerData' } },
+    } },
+    new Map(),
+  );
+  assert.deepEqual(problems, []);
+});
+```
+
+- [ ] **Step 5: Run them and watch them fail, then implement**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test scripts/check-api.test.mjs
+```
+
+Expected: all three FAIL — the first two because nothing implements the rules, the third because
+`FORMS` does not contain `consumerData` and `params` rejects it as an undeclared type.
+
+Then, in `scripts/check-api.mjs`:
+
+- add `'consumerData'` to `FORMS`;
+- in `validateContract`'s array branch, skip the declared-type check when `spec.of === 'consumerData'`
+  (today `array` with a non-primitive `of` demands a declared object);
+- in the slot-`params` loop (line ~163), `continue` for `type === 'consumerData'` as it already does
+  for a primitive;
+- in `validateTypes`' object-field loop, reject `spec.form === 'consumerData'` with a message naming
+  the type and field;
+- add the consumer rule: after the member loop, for every member whose form is `consumerData` or
+  whose `of` is `consumerData`, require at least one other member that is a slot with a
+  `consumerData` param or an event with a `consumerData` payload, and report the member by name when
+  there is none.
+
+Update the `form "${spec.form}" is none of the seven` message, which is now wrong by one.
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test scripts/check-api.test.mjs
+bun test scripts/
+```
+
+Expected: all PASS, and no previously-passing script test regresses.
+
+- [ ] **Step 6: Update `api/README.md`**
+
+Four edits, and the fourth is the one that keeps the layer honest:
+
+1. The vocabulary table gains a row — **consumer data**: *a homogeneous list, or a single record,
+   whose element type the contract does not describe*. The heading and the sentence *"exactly one of
+   seven forms, and nothing else"* become eight.
+2. **R1 gains its extension**: an object's field may not be consumer data, because an object is pure
+   data with known fields.
+3. **The contract-format section** shows the spelling — `{"form": "array", "of": "consumerData"}` and
+   `"params": { "row": "consumerData" }` — and states that nothing is declared in `api/types/` for
+   it, so the directory does not fill with fieldless types. **Fix the existing `"cell"` example at
+   line ~227**, which names a `TableRow` that cannot exist.
+4. **The "What the gate asserts, and what it cannot" section** records exactly what is mechanical
+   here — the R1 extension and the must-have-a-consumer rule — and states plainly that everything
+   else about the form is an authoring rule with the same status as R2 and R3. Say why the form is a
+   deliberate blind spot: the value of this layer is that a member's type is knowable, and this one
+   is not, so content derived from it enters the DOM through a slot and is outside what
+   `check:compliance` can judge.
+
+- [ ] **Step 7: Update `CLAUDE.md` and the spec**
+
+Both say "seven forms". Change the count and add one clause naming what the eighth is for. Per
+Global Constraint 22, do not restate anything derived; the vocabulary itself is not a derived figure
+and belongs in both.
+
+```bash
+cd /home/juan/Dravensoft/Identity
+grep -rn "seven forms" --include='*.md' . | grep -v node_modules
+```
+
+Read every hit and fix each. Report the list.
+
+- [ ] **Step 8: Run the gates**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun run check:api
+bun run check:angular
+bun test scripts/
+```
+
+Expected: `check-api: 21 contract(s) hold across 41 layer implementation(s)` — **unchanged**, because
+this task contracts nothing. If the pair moved, something contracted a component by accident; stop
+and report.
+
+- [ ] **Step 9: Commit**
+
+Per Global Constraint 24, a here-doc:
+
+```bash
+cd /home/juan/Dravensoft/Identity
+git add -A
+git commit -q -F - <<'MSG'
+feat(api)!: an eighth form -- consumer data
+
+A record whose keys the consumer names: Arena routes it and never inspects it,
+which is neither "Arena draws it" (an object) nor "the consumer draws it" (a
+slot). Table.jsx:28 -- row[c.key] -- is the shape stated exactly.
+
+The layer needed this to be honest rather than to be new. api/README.md said a
+member is "exactly one of seven forms, and nothing else", which was false:
+Table.rows is a member and was none of them. And the README's own worked
+example for a parameterised slot named a TableRow type that cannot be declared
+-- a declared type is an object of primitives/enums (R1) or an enum, and Arena
+does not know a consumer row's fields -- so check-api.mjs would have rejected
+its own documentation.
+
+Two mechanical guards keep it from becoming the escape hatch R4 closed: it is
+forbidden inside a predefined object (extending R1), and a consumer-data member
+must have a consumer -- a slot parameter or an event payload -- or it is data
+Arena can never surface. Everything else about the form is an authoring rule,
+with the same status R2 and R3 carry, and api/README.md says so.
+
+The reader needed two edits rather than a type-parameter parser: TableColumn's
+generic dissolves on its own once render leaves the object per R1.
+
+Contracts nothing; check:api stays at 21/41.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+MSG
+git log -1 --format=%B | head -3
+```
+
+- [ ] **Step 10: Record and report**
+
+Append `## Task 1b: complete` to the ledger: the measured `check:api` pair (unchanged at 21/41), the
+script test delta, the list of files that said "seven forms", and whether the consumer rule found
+anything unexpected. Report and stop for review.
 
 ---
 
@@ -1026,7 +1299,7 @@ Expected: **FAIL**, itemised — the heritage clause reported as the R4 `{...res
 Replace `frameworks/react/components/display/Badge.d.ts` entirely with:
 
 ```ts
-import type { ReactNode } from 'react';
+import * as React from 'react';
 import type { Tone } from '../../api.generated';
 
 /** Status label (mono uppercase, short). Taxonomy of `tone` (H4):
@@ -1036,7 +1309,7 @@ import type { Tone } from '../../api.generated';
  *    they don't represent status. `neutral` = no semantic weight (draft, count). */
 export interface BadgeProps {
   /** The label text. Short — a badge is a chip, not a sentence. */
-  children?: ReactNode;
+  children?: React.ReactNode;
   tone?: Tone;
   /** Draws a filled dot in the tone colour before the label. */
   dot?: boolean;
@@ -1044,9 +1317,13 @@ export interface BadgeProps {
 export function Badge(props: BadgeProps): JSX.Element;
 ```
 
-Note the import shape: `import type { ReactNode } from 'react'` rather than
-`import * as React from 'react'`. A `children` slot needs the node type and nothing else, and the
-namespace import is what carried `React.CSSProperties` in.
+**The import shape is the established idiom, corrected by Task 1's audit.** An earlier draft of this
+plan proposed `import type { ReactNode } from 'react'`. Measured across all 21 contracted components:
+`import * as React from 'react'` is present in exactly the 10 whose files use `React.ReactNode` for a
+slot, and absent from the 10 that declare none. `ChartCard.d.ts` is the precedent for a `content`
+slot — `children?: React.ReactNode;` with the namespace import retained. Follow it; a second idiom
+here would buy nothing. (`Spinner`, in Task 2, still drops the import entirely, which is what the 10
+slotless files do.)
 
 - [ ] **Step 5: Migrate the `.jsx`**
 
@@ -1265,22 +1542,25 @@ Expected: **FAIL**, itemised — the heritage clause as the R4 escape plus *"doe
 Replace `frameworks/react/components/display/Card.d.ts` entirely with:
 
 ```ts
-import type { ReactNode } from 'react';
+import * as React from 'react';
 
 /** Surface container. Hairline border; `floating` adds shadow; `accent` crimson border.
  * @startingPoint section="Display" subtitle="Surface card with header" viewport="700x220" */
 export interface CardProps {
   /** The card's body, below the optional header. */
-  children?: ReactNode;
+  children?: React.ReactNode;
   title?: string;
   eyebrow?: string;
   /** Right-aligned in the header, beside the title. */
-  action?: ReactNode;
+  action?: React.ReactNode;
   floating?: boolean;
   accent?: boolean;
 }
 export function Card(props: CardProps): JSX.Element;
 ```
+
+Note `import * as React from 'react'` is **retained** here — Task 3's step of the same name explains
+why, and `Card` has two slots rather than one.
 
 In `frameworks/react/components/display/Card.jsx`, change **only** the signature at line 2 and the
 root `<div>`'s style object at line 7. The header block and the body `<div>` stay byte-identical.
@@ -1496,11 +1776,33 @@ Create `api/components/IconButton.json`:
                   "description": "Blocks activation and dims the control." },
     "type": { "form": "enum", "type": "ButtonType", "default": "button",
               "description": "Native button behaviour. Defaults to 'button' so an icon button inside a form does not submit it by accident." },
+    "name": { "form": "primitive", "type": "string",
+              "description": "Submitted with the form, when the button submits one." },
+    "value": { "form": "primitive", "type": "string",
+               "description": "The value submitted under `name`." },
+    "autoFocus": { "form": "primitive", "type": "boolean", "default": false,
+                   "description": "Focused on mount." },
+    "form": { "form": "primitive", "type": "string",
+              "description": "The id of the form this button belongs to, when it is not a descendant of it." },
     "click": { "form": "event",
                "description": "The button was activated, by pointer or by keyboard." }
   }
 }
 ```
+
+> **D1's tail, and this task's own blocking question — it is asked HERE, not in Task 6.** `IconButton`
+> and `Button` are the same element and take the **same** element-specific set under D1, so the two
+> contracts must not diverge on it, and this task runs first. D1 admits eleven `<button>` attributes
+> plus `click`; nine are written above. The remaining **`formAction`, `formEncType`, `formMethod`,
+> `formNoValidate` and `formTarget`** are the form-owner overrides, and two are **closed sets** —
+> `formMethod` is `get`/`post`/`dialog`, `formEncType` is three MIME strings — so under the vocabulary
+> each is an **enum**, meaning two more `api/types/` files and two more types in both generated
+> modules, for members no call site in this tree uses. **Present that cost in Step 1 and let the
+> maintainer confirm or cut the five.** Everything written in this task and in Task 6 assumes the
+> nine-member reading; if the five are kept, both contracts and both `.d.ts` files gain them, plus the
+> two enums. This is not a re-litigation of D1 — the rule is settled — it is the one place where
+> applying it mechanically has a price worth naming before it is paid. **Task 6 inherits the answer
+> and does not re-ask.**
 
 ```bash
 cd /home/juan/Dravensoft/Identity
@@ -1531,6 +1833,14 @@ export interface IconButtonProps {
   disabled?: boolean;
   /** Defaults to `'button'` so an icon button inside a form does not submit it. */
   type?: ButtonType;
+  /** Submitted with the form, when the button submits one. */
+  name?: string;
+  /** The value submitted under `name`. */
+  value?: string;
+  /** Focused on mount. */
+  autoFocus?: boolean;
+  /** The `id` of the form this button belongs to, when it is not a descendant of it. */
+  form?: string;
   /** The button was activated, by pointer or by keyboard. */
   onClick?: () => void;
 }
@@ -1544,7 +1854,10 @@ In `frameworks/react/components/forms/IconButton.jsx`:
 The signature becomes — note `children` is gone and `icon`, `type` and `onClick` are in:
 
 ```jsx
-export function IconButton({ icon, label, size = 'md', variant = 'ghost', showLabel = false, disabled = false, type = 'button', onClick }) {
+export function IconButton({
+  icon, label, size = 'md', variant = 'ghost', showLabel = false, disabled = false,
+  type = 'button', name, value, autoFocus = false, form, onClick,
+}) {
   if (!icon) throw new Error('IconButton: `icon` is required');
   if (!label) throw new Error('IconButton: `label` is required');
 ```
@@ -1555,7 +1868,8 @@ contract, and the established idiom is `EmptyState.jsx:4`.
 The `<button>` gains `type` and `onClick` and loses `{...rest}`; its style object loses `...style`:
 
 ```jsx
-    <button type={type} onClick={onClick} aria-label={label} title={showLabel ? undefined : label} disabled={disabled}
+    <button type={type} name={name} value={value} autoFocus={autoFocus} form={form} onClick={onClick}
+      aria-label={label} title={showLabel ? undefined : label} disabled={disabled}
 ```
 
 and the style object ends `transition: 'background var(--dur-fast) var(--ease-out)' }}>`.
@@ -1815,11 +2129,23 @@ Create `api/components/Button.json`:
                   "description": "Blocks activation and dims the control. Implied by loading." },
     "type": { "form": "enum", "type": "ButtonType", "default": "button",
               "description": "Native button behaviour. Defaults to 'button' so a button inside a form does not submit it by accident." },
+    "name": { "form": "primitive", "type": "string",
+              "description": "Submitted with the form, when the button submits one." },
+    "value": { "form": "primitive", "type": "string",
+               "description": "The value submitted under `name`." },
+    "autoFocus": { "form": "primitive", "type": "boolean", "default": false,
+                   "description": "Focused on mount." },
+    "form": { "form": "primitive", "type": "string",
+              "description": "The id of the form this button belongs to, when it is not a descendant of it." },
     "click": { "form": "event",
                "description": "The button was activated, by pointer or by keyboard." }
   }
 }
 ```
+
+Written to the nine-member reading of D1. If Step 1's blocking question keeps the five `form*`
+overrides, add them here too, with `formMethod` and `formEncType` as `enum` members naming two new
+`api/types/` files.
 
 ```bash
 cd /home/juan/Dravensoft/Identity
@@ -1836,7 +2162,7 @@ per inherited member, and a **form mismatch** on `icon` and `iconRight`, which t
 Replace `frameworks/react/components/forms/Button.d.ts` entirely with:
 
 ```ts
-import type { ReactNode } from 'react';
+import * as React from 'react';
 import type { ButtonType, ButtonVariant, ControlSize } from '../../api.generated';
 
 /**
@@ -1846,7 +2172,7 @@ import type { ButtonType, ButtonVariant, ControlSize } from '../../api.generated
  */
 export interface ButtonProps {
   /** The button's label. Sits between the two icons when both are given. */
-  children?: ReactNode;
+  children?: React.ReactNode;
   variant?: ButtonVariant;
   size?: ControlSize;
   /** Phosphor class name drawn before the label, e.g. `'ph-bold ph-plus'`. */
@@ -1860,11 +2186,26 @@ export interface ButtonProps {
   disabled?: boolean;
   /** Defaults to `'button'` so a button inside a form does not submit it. */
   type?: ButtonType;
+  /** Submitted with the form, when the button submits one. */
+  name?: string;
+  /** The value submitted under `name`. */
+  value?: string;
+  /** Focused on mount. */
+  autoFocus?: boolean;
+  /** The `id` of the form this button belongs to, when it is not a descendant of it. */
+  form?: string;
   /** The button was activated, by pointer or by keyboard. */
   onClick?: () => void;
 }
 export function Button(props: ButtonProps): JSX.Element;
 ```
+
+> **D1's tail was settled in Task 5, not here.** `Button` and `IconButton` are the same element and
+> take the same element-specific set, so Task 5 asked the maintainer once whether the five `form*`
+> overrides are kept — and, if kept, whether `formMethod` and `formEncType` become the two `api/types/`
+> enums the vocabulary demands of a closed set. **Read the answer out of the ledger and apply it; do
+> not re-ask.** The `.d.ts` above is written to the nine-member reading Task 5 also assumes; if the
+> five were kept, both contracts and both `.d.ts` files carry them.
 
 - [ ] **Step 4: Migrate the `.jsx`**
 
@@ -1873,7 +2214,8 @@ In `frameworks/react/components/forms/Button.jsx`, the signature at lines 32–3
 ```jsx
 export function Button({
   children, variant = 'primary', size = 'md', icon, iconRight,
-  disabled = false, loading = false, full = false, type = 'button', onClick,
+  disabled = false, loading = false, full = false,
+  type = 'button', name, value, autoFocus = false, form, onClick,
 }) {
 ```
 
@@ -1883,6 +2225,10 @@ so the object's last entry is the `transition` line and the tag closes `}}>` wit
 ```jsx
     <button
       type={type}
+      name={name}
+      value={value}
+      autoFocus={autoFocus}
+      form={form}
       onClick={onClick}
       disabled={disabled || loading}
 ```
@@ -2132,6 +2478,14 @@ done
 A hit in a **contracted** component is a defect this task fixes. A hit in an **uncontracted** one —
 `Input`, `Select`, `Checkbox`, `Textarea`, `SideNav` all still carry a heritage clause — is expected
 and belongs to C2 and C3. Say which is which in the ledger rather than fixing what is not yours.
+
+**One such defect is already known and is this task's to fix.** `StatCard.d.ts:1` carries
+`import * as React from 'react'` and the file uses no `React.` member at all — a dead import left
+when 8B1 turned `StatCard`'s `icon` from a slot into a string. Task 1's audit found it by measuring
+the import idiom across all 21 contracted components: the namespace import is present in exactly the
+10 whose files declare a slot, absent from the 10 that do not, and `StatCard` is the lone exception.
+Delete the line. It is one of the contracted components, so it is in scope here rather than in a
+later batch.
 
 - [ ] **Step 4: Commit if anything changed**
 
