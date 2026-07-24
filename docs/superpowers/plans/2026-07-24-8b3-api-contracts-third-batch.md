@@ -1554,6 +1554,15 @@ Append the Task 4 line to `.superpowers/sdd/progress.md`.
 
 ## Task 5: Onboarding
 
+> **DECIDED BY THE MAINTAINER (2026-07-24): Reshape A′.** The member is a predefined object
+> `OnboardingAnchor { left, bottom }` **and it is renamed from `anchorRect` to `anchor`** in both
+> layers. Wherever the steps below still write `anchorRect` as the member name, read `anchor`.
+> Measured rename sites, all of them: `Onboarding.d.ts:13`; `Onboarding.jsx:6,7,18,28,29`;
+> `onboarding.ts:31,101,124,133`; `onboarding.prompt.md:10,18` (its template example writes
+> `[anchorRect]=`). React's own `Onboarding.prompt.md` does **not** mention it, and
+> **`onboarding.card.entry.jsx` does not anchor at all**, so the demo costs nothing. `open` and
+> `steps` both become required.
+
 Last, because it carries the batch's one genuinely open question. `anchorRect` breaks **two**
 rules at once on React and one on Angular, and no precedent in Plans A, B0, B1 or B2 answers it.
 
@@ -1668,8 +1677,8 @@ Create `api/components/Onboarding.json`:
                "description": "The tour, in order. An empty tour renders nothing." },
     "index": { "form": "primitive", "type": "number", "default": 0,
                "description": "Which step is current. The host owns it and answers next/back." },
-    "anchorRect": { "form": "object", "type": "OnboardingAnchor",
-                    "description": "Where to attach the coachmark. Absent floats it bottom-right." },
+    "anchor": { "form": "object", "type": "OnboardingAnchor",
+                "description": "Where to attach the coachmark, as the two viewport coordinates it positions from. Absent floats it bottom-right." },
     "next": { "form": "event",
               "description": "Next was activated on a step that is not the last." },
     "back": { "form": "event",
@@ -1709,7 +1718,7 @@ export interface OnboardingProps {
   index?: number;
   /** Where to attach the coachmark. Absent floats it bottom-right.
    *  A DOMRect is structurally assignable, so getBoundingClientRect() passes directly. */
-  anchorRect?: OnboardingAnchor;
+  anchor?: OnboardingAnchor;
   /** Next was activated on a step that is not the last. */
   onNext?: () => void;
   /** Back was activated on a step that is not the first. */
@@ -1730,14 +1739,14 @@ In `frameworks/react/components/feedback/Onboarding.jsx` the *logic* does not ch
 Line 6 — the doc comment stops naming a `DOMRect`:
 
 ```jsx
- * `anchorRect` (optional) anchors the callout next to an element by its left and bottom
+ * `anchor` (optional) anchors the callout next to an element by its left and bottom
  * viewport coordinates; a DOMRect satisfies it. Without it the coachmark floats bottom-right. */
 ```
 
 Line 8 — if `steps` stays required, add its guard beside the existing early return:
 
 ```jsx
-export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onDone, anchorRect }) {
+export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onDone, anchor }) {
   if (steps == null) throw new Error('Onboarding: `steps` is required');
   if (!open || !steps.length) return null;
 ```
@@ -1757,7 +1766,7 @@ In `frameworks/angular/primitives/onboarding/onboarding.ts`:
    ```bash
    grep -rn "ArenaOnboardingStep" frameworks/ --include=*.ts --include=*.html
    ```
-2. `anchorRect = input<DOMRect>()` → `anchorRect = input<OnboardingAnchor>()`. Then check every
+2. `anchorRect = input<DOMRect>()` → `anchor = input<OnboardingAnchor>()`, renaming every `this.anchorRect()` read. Then check every
    field the positioning logic reads off it:
 
    ```bash
@@ -1805,7 +1814,7 @@ test('a step draws its eyebrow, title and body as text, and names the dialog', (
 
 test('an anchor of two plain numbers positions the coachmark', () => {
   const html = renderToStaticMarkup(
-    <Onboarding open steps={[{ title: 'One' }]} anchorRect={{ left: 40, bottom: 120 }} />,
+    <Onboarding open steps={[{ title: 'One' }]} anchor={{ left: 40, bottom: 120 }} />,
   );
   assert.ok(html.includes('position:fixed'), 'the anchored branch renders a fixed-position coachmark');
 });
@@ -1813,7 +1822,7 @@ test('an anchor of two plain numbers positions the coachmark', () => {
 
 - [ ] **Step 10: Restate the member prose, run the tests and the gates**
 
-Both `prompt.md`s: neither may describe `anchorRect` as a `DOMRect`; both state that a
+Both `prompt.md`s: neither may describe `anchor` as a `DOMRect`; both state that a
 `getBoundingClientRect()` result still satisfies it. React's drops any JSX `body` example.
 
 ```bash
@@ -1836,8 +1845,8 @@ git add -A
 git commit -m "feat(api): bring Onboarding under the API contract
 
 Eight members: open, steps (array of the new OnboardingStep type), index,
-anchorRect (the new OnboardingAnchor object), and the next/back/skip/done
-events. anchorRect stops being a DOMRect union — a platform type (R4) in a
+anchor (the new OnboardingAnchor object, renamed from anchorRect), and the
+next/back/skip/done events. It stops being a DOMRect union — a platform type (R4) in a
 union between forms (R5) — and becomes a two-field object naming exactly the
 left and bottom coordinates the component reads; a DOMRect stays structurally
 assignable, so no call site changes. OnboardingStep.body narrows to a string.
@@ -1886,7 +1895,7 @@ Known-false-as-of-this-branch, to check by reading each hit:
   unconditional-Clear rationale. Under Task 2's Reshape A the divergence no longer exists.
 - **CommandPalette's entry**, whatever part of it is API.
 - **ActivityFeed's `renderItem`**, if the file records it as a React-only capability.
-- **Onboarding's `anchorRect`**, if the file records the `DOMRect` shape.
+- **Onboarding's `anchorRect`**, if the file records the `DOMRect` shape (the member is now `anchor`).
 
 - [ ] **Step 2: Apply the rule, entry by entry**
 
