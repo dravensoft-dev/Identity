@@ -4,16 +4,17 @@ import { resolveColors, niceMax, ticks, srOnly, PAD, CHART_HEIGHT } from './char
 import { chartPointR, chartPointRHover } from '../../tokens.generated.js';
 
 export function LineChart({
-  labels = [], values = [], seriesLabel, slot, tone, area = false,
-  valueFormatter, style, ...rest
+  labels, values, seriesLabel, slot, tone, area = false, valueSuffix,
 }) {
+  if (!labels) throw new Error('LineChart: `labels` is required');
+  if (!values) throw new Error('LineChart: `values` is required');
   const [ref, measured] = useContainerWidth();
   const [hover, setHover] = useState(null);
 
   const width = measured ?? 600;
   const height = CHART_HEIGHT;
   const n = values.length;
-  const fmt = valueFormatter || ((v) => String(v));
+  const fmt = (v) => `${v}${valueSuffix ?? ''}`;
   // A line is one series, so one color — resolveColors still owns the
   // identity/meaning collision rule.
   const color = resolveColors({ slot, tone, count: 1 })[0];
@@ -43,7 +44,7 @@ export function LineChart({
   };
 
   return (
-    <div ref={ref} style={{ position: 'relative', width: '100%', height, ...style }} {...rest}>
+    <div ref={ref} style={{ position: 'relative', width: '100%', height }}>
       <svg width="100%" height={height} role="img" aria-label={name} style={{ display: 'block', overflow: 'visible' }}>
         {ticks(max).map((t, i) => (
           <g key={i}>
@@ -72,9 +73,13 @@ export function LineChart({
             fill={color} stroke="var(--surface-card)" style={{ strokeWidth: 'var(--bw-strong)' }} />
         ))}
 
-        {labels.map((l, i) => (
+        {/* Point axis — one label per point, taken by index. The point is the
+            thing being labelled, so a label with no value at its index is
+            dropped rather than drawn over empty plot, and a point with no label
+            renders an empty string. */}
+        {values.map((_, i) => (
           <text key={i} x={xOf(i)} y={height - 8} textAnchor="middle"
-            fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{l}</text>
+            fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{labels[i] ?? ''}</text>
         ))}
 
         {/* One overlay owns the pointer: per-point hit targets would leave dead

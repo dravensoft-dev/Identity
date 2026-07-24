@@ -12,9 +12,7 @@
 import {
   chartHeight, chartPadTop, chartPadRight, chartPadBottom, chartPadLeft, catSlots,
 } from '../tokens.generated';
-
-/** A series that IS a state rather than an identity. */
-export type ArenaChartTone = 'success' | 'warning' | 'danger' | 'info';
+import type { SeriesTone } from '../api.generated';
 
 /** How many identity slots the categorical ramp defines. Assigned in order,
  *  never cycled. Derived from the ramp itself, so adding a slot needs no edit here. */
@@ -50,7 +48,7 @@ export function catColor(slot: number): string {
   return `var(--color-cat-${n})`;
 }
 
-const TONE_VARS: Record<ArenaChartTone, string> = {
+const TONE_VARS: Record<SeriesTone, string> = {
   success: 'var(--success)',
   warning: 'var(--warning)',
   danger: 'var(--danger)',
@@ -59,7 +57,7 @@ const TONE_VARS: Record<ArenaChartTone, string> = {
 
 /** Semantic colour, for when a series IS a state.
  *  @param tone the state the series reports @returns the matching token reference */
-export function toneColor(tone: ArenaChartTone): string {
+export function toneColor(tone: SeriesTone): string {
   return TONE_VARS[tone];
 }
 
@@ -81,7 +79,7 @@ function warnOnce(message: string): void {
 export function resolveColors(options: {
   slot?: number;
   slots?: number[];
-  tone?: ArenaChartTone;
+  tone?: SeriesTone;
   count: number;
 }): string[] {
   const { slot, slots, tone, count } = options;

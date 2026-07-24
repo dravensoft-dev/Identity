@@ -34,13 +34,14 @@ function Demo() {
     seriesLabel: "p95",
     slot: 5,
     area: true,
-    valueFormatter: (v) => v + " ms"
+    valueSuffix: " ms"
   })), React.createElement(ChartCard, {
     title: "Traffic share"
   }, React.createElement(DoughnutChart, {
     labels: ["Web", "API", "Worker", "Static"],
     values: [420, 310, 140, 90],
-    valueFormatter: (v) => v + " rps"
+    seriesLabel: "Traffic",
+    valueSuffix: " rps"
   }))), React.createElement("div", {
     className: "sub"
   }, "Meaning — opt-in, only when the series IS a state"), React.createElement("div", {
@@ -60,7 +61,7 @@ function Demo() {
     tone: "danger",
     seriesLabel: "Error rate",
     area: true,
-    valueFormatter: (v) => v + "%"
+    valueSuffix: "%"
   }))));
 }
 createRoot(document.getElementById("root")).render(React.createElement(Demo, null));

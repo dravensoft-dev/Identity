@@ -348,6 +348,25 @@ class UnauthCardWithoutProjectionHost {}
 })
 class BarChartHost {}
 
+/* `arena-bar-chart`'s `labels` and `values` are required signal inputs, which
+ * this JIT harness cannot drive through a template binding (NG0303) or a
+ * literal attribute (a silent no-op). Query the real child `BarChart` instance
+ * via `By.directive` and overwrite both fields before the first
+ * `detectChanges()`, the same bypass createBreadcrumbsHost() and
+ * createBulkActionBarHost() already use. The values are deliberately EMPTY
+ * arrays: these four tests assert host box, style-object binding and the
+ * fallback accessible name, all of which render with no data at all (`ticks`
+ * always yields five grid lines), so driving real data here would test
+ * something else. */
+function createBarChartHost() {
+  const fixture = TestBed.createComponent(BarChartHost);
+  const instance = fixture.debugElement.query(By.directive(BarChart)).componentInstance as unknown as Record<string, unknown>;
+  instance['labels'] = () => [];
+  instance['values'] = () => [];
+  fixture.detectChanges();
+  return fixture;
+}
+
 @Component({
   standalone: true,
   imports: [LineChart],
@@ -356,6 +375,20 @@ class BarChartHost {}
 })
 class LineChartHost {}
 
+/* `arena-line-chart`'s required `labels`/`values`, driven the same way
+ * createBarChartHost() drives the bar chart's -- see its comment for why a
+ * template binding and a literal attribute both fail under this JIT harness.
+ * Empty arrays on purpose: these four tests assert host box, style-object
+ * binding and the fallback accessible name, none of which needs data. */
+function createLineChartHost() {
+  const fixture = TestBed.createComponent(LineChartHost);
+  const instance = fixture.debugElement.query(By.directive(LineChart)).componentInstance as unknown as Record<string, unknown>;
+  instance['labels'] = () => [];
+  instance['values'] = () => [];
+  fixture.detectChanges();
+  return fixture;
+}
+
 @Component({
   standalone: true,
   imports: [DoughnutChart],
@@ -363,6 +396,22 @@ class LineChartHost {}
   template: `<arena-doughnut-chart />`,
 })
 class DoughnutChartHost {}
+
+/* `arena-doughnut-chart`'s required `labels`/`values`, driven the same way
+ * createBarChartHost() drives the bar chart's -- see its comment for why a
+ * template binding and a literal attribute both fail under this JIT harness.
+ * Empty arrays on purpose: four of these five tests assert host box,
+ * style-object binding and the fallback accessible name, and the fifth asserts
+ * that NO data draws NO slice, which needs the empty array to be the real,
+ * driven value rather than an untouched default. */
+function createDoughnutChartHost() {
+  const fixture = TestBed.createComponent(DoughnutChartHost);
+  const instance = fixture.debugElement.query(By.directive(DoughnutChart)).componentInstance as unknown as Record<string, unknown>;
+  instance['labels'] = () => [];
+  instance['values'] = () => [];
+  fixture.detectChanges();
+  return fixture;
+}
 
 /* `arena-app-logo` is the first primitive in this layer with a `required`
  * signal input (`name`). Every other component's optional signal inputs are
@@ -1294,16 +1343,20 @@ test('every Angular primitive\'s root slot carries a display utility, so host-bi
   }
 });
 
-/* The three tests below are the manifest guard's counterpart for a primitive
- * that has no manifest to guard. They render with DEFAULT inputs only -- no
- * `[values]` binding and no literal attribute, both of which this harness
- * silently drops (see the header) -- so everything asserted here is reachable
- * without ever driving a signal input. The geometry that does need inputs is
- * asserted as plain functions in bar-chart-geometry.test.ts instead. */
+/* The four tests below are the manifest guard's counterpart for a primitive
+ * that has no manifest to guard. `labels` and `values` became required signal
+ * inputs under the API contract (`api/components/BarChart.json`), so they are
+ * driven through `createBarChartHost()`'s `By.directive` bypass rather than
+ * through a template binding or a literal attribute, both of which this
+ * harness silently drops (see the header). The bypass supplies EMPTY arrays:
+ * everything asserted here -- the host box, the style-object binding, the
+ * token-valued SVG presentation styles and the fallback accessible name --
+ * renders with no data at all, because `ticks` always yields five grid lines.
+ * The geometry that does need real data is asserted as plain functions in
+ * bar-chart-geometry.test.ts instead. */
 
 test('arena-bar-chart: the host is a block-level box, so the width it measures is a real content width', async () => {
-  const fixture = TestBed.createComponent(BarChartHost);
-  fixture.detectChanges();
+  const fixture = createBarChartHost();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-bar-chart') as HTMLElement;
   // `containerWidth()` observes this element. An unknown element defaults to
@@ -1319,8 +1372,7 @@ test('arena-bar-chart: the host is a block-level box, so the width it measures i
 });
 
 test('arena-bar-chart: the numbers table is bound as a style object, not stringified into the attribute', async () => {
-  const fixture = TestBed.createComponent(BarChartHost);
-  fixture.detectChanges();
+  const fixture = createBarChartHost();
   await fixture.whenStable();
   const table = fixture.nativeElement.querySelector('arena-bar-chart table') as HTMLElement;
   assert.ok(table, 'the visually-hidden numbers table did not render');
@@ -1340,8 +1392,7 @@ test('arena-bar-chart: the numbers table is bound as a style object, not stringi
 });
 
 test('arena-bar-chart: the SVG presentation styles reach the DOM as tokens, not as literals', async () => {
-  const fixture = TestBed.createComponent(BarChartHost);
-  fixture.detectChanges();
+  const fixture = createBarChartHost();
   await fixture.whenStable();
   // The charts are the layer's declared styling exception, so this is the one
   // place a token has to survive a camelCase style object, Angular's style
@@ -1356,8 +1407,7 @@ test('arena-bar-chart: the SVG presentation styles reach the DOM as tokens, not 
 });
 
 test('arena-bar-chart: the picture carries an accessible name and the numbers carry a caption', async () => {
-  const fixture = TestBed.createComponent(BarChartHost);
-  fixture.detectChanges();
+  const fixture = createBarChartHost();
   await fixture.whenStable();
   const svg = fixture.nativeElement.querySelector('arena-bar-chart svg') as SVGElement;
   assert.equal(svg.getAttribute('role'), 'img');
@@ -1368,16 +1418,19 @@ test('arena-bar-chart: the picture carries an accessible name and the numbers ca
   assert.equal(caption.textContent?.trim(), 'Bar chart');
 });
 
-/* The same four assertions, ported to the second hand-written chart. They render
- * with DEFAULT inputs only, for the reason the bar-chart block above states: an
- * empty `values` still draws the value axis (`ticks` always yields five) and still
- * renders the numbers table, so all of this is reachable without ever driving a
- * signal input. `line-chart-geometry.test.ts` carries the geometry that does need
- * inputs, as plain functions. */
+/* The same four assertions, ported to the second hand-written chart. `labels` and
+ * `values` became required signal inputs under the API contract
+ * (`api/components/LineChart.json`), so they are driven through
+ * `createLineChartHost()`'s `By.directive` bypass rather than through a template
+ * binding or a literal attribute, both of which this harness silently drops (see
+ * the header). The bypass supplies EMPTY arrays, and everything asserted here
+ * still renders: an empty `values` draws the value axis anyway (`ticks` always
+ * yields five) and still renders the numbers table.
+ * `line-chart-geometry.test.ts` carries the geometry that does need real data, as
+ * plain functions. */
 
 test('arena-line-chart: the host is a block-level box, so the width it measures is a real content width', async () => {
-  const fixture = TestBed.createComponent(LineChartHost);
-  fixture.detectChanges();
+  const fixture = createLineChartHost();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-line-chart') as HTMLElement;
   // `containerWidth()` observes this element. An unknown element defaults to
@@ -1392,8 +1445,7 @@ test('arena-line-chart: the host is a block-level box, so the width it measures 
 });
 
 test('arena-line-chart: the numbers table is bound as a style object, not stringified into the attribute', async () => {
-  const fixture = TestBed.createComponent(LineChartHost);
-  fixture.detectChanges();
+  const fixture = createLineChartHost();
   await fixture.whenStable();
   const table = fixture.nativeElement.querySelector('arena-line-chart table') as HTMLElement;
   assert.ok(table, 'the visually-hidden numbers table did not render');
@@ -1413,8 +1465,7 @@ test('arena-line-chart: the numbers table is bound as a style object, not string
 });
 
 test('arena-line-chart: the SVG presentation styles reach the DOM as tokens, not as literals', async () => {
-  const fixture = TestBed.createComponent(LineChartHost);
-  fixture.detectChanges();
+  const fixture = createLineChartHost();
   await fixture.whenStable();
   // The brief wrote these as raw SVG attributes (`stroke-width="1"`,
   // `font-size="10"`), which check-dimension-literals.mjs cannot judge at all --
@@ -1428,8 +1479,7 @@ test('arena-line-chart: the SVG presentation styles reach the DOM as tokens, not
 });
 
 test('arena-line-chart: the picture carries an accessible name and the numbers carry a caption', async () => {
-  const fixture = TestBed.createComponent(LineChartHost);
-  fixture.detectChanges();
+  const fixture = createLineChartHost();
   await fixture.whenStable();
   const svg = fixture.nativeElement.querySelector('arena-line-chart svg') as SVGElement;
   assert.equal(svg.getAttribute('role'), 'img');
@@ -1443,11 +1493,16 @@ test('arena-line-chart: the picture carries an accessible name and the numbers c
 /* The third and last hand-written chart. Same shape as the two blocks above, with one
  * real difference in what is reachable: a bar chart and a line chart both draw a value
  * axis from `ticks()` regardless of their data, so a `<line>` and a `<text>` render with
- * default inputs and their token styles can be read off the real DOM. A doughnut has no
- * axis -- with the default empty `values` there is no slice and no centre label, and this
- * harness cannot drive `values` (see the header). So the `<path>`'s `strokeWidth:
- * 'var(--bw-strong)'` and the centre label's `fontSize: 'var(--dz-text-lg)'` are NOT
- * render-provable here, and nothing below pretends otherwise. What covers them instead:
+ * empty inputs and their token styles can be read off the real DOM. A doughnut has no
+ * axis -- with an empty `values` there is no slice and no centre label. `labels` and
+ * `values` became required signal inputs under the API contract
+ * (`api/components/DoughnutChart.json`), so all five tests below drive them through
+ * `createDoughnutChartHost()`'s `By.directive` bypass rather than through a template
+ * binding or a literal attribute, both of which this harness silently drops (see the
+ * header); the bypass supplies EMPTY arrays deliberately, keeping these five about the
+ * no-data render. So the `<path>`'s `strokeWidth: 'var(--bw-strong)'` and the centre
+ * label's `fontSize: 'var(--dz-text-lg)'` are NOT render-provable here, and nothing
+ * below pretends otherwise. What covers them instead:
  * `check:dimensions` reads both as themselves BECAUSE they are camelCase object keys
  * rather than the brief's `stroke-width="2"` / `font-size="16"` attributes, which that
  * gate cannot see at all (its attribute lookbehind excludes `-`, and `font-size` reduces
@@ -1459,8 +1514,7 @@ test('arena-line-chart: the picture carries an accessible name and the numbers c
  * what proves the object-to-DOM path works at all on this component. */
 
 test('arena-doughnut-chart: the host is the flex row itself, so the box it measures is the box it lays out', async () => {
-  const fixture = TestBed.createComponent(DoughnutChartHost);
-  fixture.detectChanges();
+  const fixture = createDoughnutChartHost();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-doughnut-chart') as HTMLElement;
   // `containerWidth()` observes this element. The task brief wrapped the whole chart in
@@ -1480,8 +1534,7 @@ test('arena-doughnut-chart: the host is the flex row itself, so the box it measu
 });
 
 test('arena-doughnut-chart: the numbers table is bound as a style object, not stringified into the attribute', async () => {
-  const fixture = TestBed.createComponent(DoughnutChartHost);
-  fixture.detectChanges();
+  const fixture = createDoughnutChartHost();
   await fixture.whenStable();
   const table = fixture.nativeElement.querySelector('arena-doughnut-chart table') as HTMLElement;
   assert.ok(table, 'the visually-hidden numbers table did not render');
@@ -1501,8 +1554,7 @@ test('arena-doughnut-chart: the numbers table is bound as a style object, not st
 });
 
 test('arena-doughnut-chart: the style objects that render without data reach the DOM as real declarations', async () => {
-  const fixture = TestBed.createComponent(DoughnutChartHost);
-  fixture.detectChanges();
+  const fixture = createDoughnutChartHost();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-doughnut-chart') as HTMLElement;
   // The ring's box must not be squeezed by the legend below the width its geometry was
@@ -1519,22 +1571,23 @@ test('arena-doughnut-chart: the style objects that render without data reach the
 });
 
 test('arena-doughnut-chart: the picture carries an accessible name and the numbers carry a caption', async () => {
-  const fixture = TestBed.createComponent(DoughnutChartHost);
-  fixture.detectChanges();
+  const fixture = createDoughnutChartHost();
   await fixture.whenStable();
   const svg = fixture.nativeElement.querySelector('arena-doughnut-chart svg') as SVGElement;
   assert.equal(svg.getAttribute('role'), 'img');
-  // Unlike the other two charts this name is static: a doughnut has no `seriesLabel`,
-  // because its series ARE its slices and they are named by the legend. A role="img"
-  // with no name announces as an unlabeled graphic.
+  // No seriesLabel is set on the fixture, so this is the FALLBACK name rather than a
+  // constant: the doughnut gained a `seriesLabel` under the API contract
+  // (`api/components/DoughnutChart.json`), and `name()` reads
+  // `<seriesLabel> — doughnut chart` when one is given. Pinning the fallback is
+  // deliberate -- a role="img" with no name announces as an unlabeled graphic, so the
+  // unnamed case is the one that must never regress to empty.
   assert.equal(svg.getAttribute('aria-label'), 'Doughnut chart');
   const caption = fixture.nativeElement.querySelector('arena-doughnut-chart table caption') as HTMLElement;
   assert.equal(caption.textContent?.trim(), 'Doughnut chart');
 });
 
 test('arena-doughnut-chart: with no data it draws no slice at all, rather than an empty ring', async () => {
-  const fixture = TestBed.createComponent(DoughnutChartHost);
-  fixture.detectChanges();
+  const fixture = createDoughnutChartHost();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-doughnut-chart') as HTMLElement;
   // `@if (segment.path)` is the gate: a zero-width slice yields '' and must not reach

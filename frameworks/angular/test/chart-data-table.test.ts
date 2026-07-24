@@ -30,6 +30,7 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { BarChart } from '../primitives/bar-chart/bar-chart';
+import { DoughnutChart } from '../primitives/doughnut-chart/doughnut-chart';
 import { assertPattern, ANGULAR_PRIMITIVES } from './compliance';
 const BINDING = join(ANGULAR_PRIMITIVES, 'bar-chart/bar-chart.behaviour.json');
 
@@ -163,3 +164,83 @@ test('arena-bar-chart with no seriesLabel still names itself, though only by typ
   }
 });
 
+/* `valueSuffix` replaced `valueFormatter` when the charts came under the API
+ * contract: an inbound function that RETURNS a value is none of the seven forms
+ * (api/README.md), so the unit is data the chart appends rather than a callback
+ * it calls. The requirement this pins is `alternative.table`'s -- the hidden
+ * table must carry the numbers a sighted reader sees, and a sighted reader sees
+ * "12 ms", not "12". A suffix that reached the axis and the tooltip but not the
+ * table would leave the two disagreeing, which is exactly the failure the
+ * pairing assertion above exists to catch -- so BOTH sides are asserted here,
+ * the axis ticks the sighted reader sees and the table cells they do not.
+ *
+ * The two ticks named are 12.5 and 37.5, and the choice is deliberate: niceMax
+ * rounds max(VALUES) = 30 UP to 50, so ticks() yields 0, 12.5, 25, 37.5, 50 and
+ * NEITHER of the two is a member of VALUES. A tick assertion naming 30 would
+ * also be satisfied by the table's own `<td>30 ms</td>`, so it would pass
+ * against a component that suffixed the table and left the axis bare. */
+test('arena-bar-chart appends valueSuffix to the axis ticks and to the accessible table alike', () => {
+  const fixture = TestBed.createComponent(BarChart);
+  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
+  instance['labels'] = () => LABELS;
+  instance['values'] = () => VALUES;
+  instance['seriesLabel'] = () => SERIES;
+  instance['valueSuffix'] = () => ' ms';
+  fixture.detectChanges();
+  try {
+    const host = fixture.nativeElement as Element;
+
+    // The picture: the value axis carries the unit.
+    const svgText = [...host.querySelectorAll('svg text')].map((t) => (t.textContent ?? '').trim());
+    assert.ok(svgText.includes('12.5 ms'), `the axis tick lost the suffix: ${JSON.stringify(svgText)}`);
+    assert.ok(svgText.includes('37.5 ms'), `the axis tick lost the suffix: ${JSON.stringify(svgText)}`);
+
+    // The alternative: the same numbers, with the same unit.
+    const table = host.querySelector('table') as HTMLTableElement;
+    const pairs = [...table.querySelectorAll('tbody tr')]
+      .map((row) => [...row.querySelectorAll('th, td')].map((c) => (c.textContent ?? '').trim()));
+    assert.deepEqual(pairs, LABELS.map((label, i) => [label, `${VALUES[i]} ms`]));
+  } finally {
+    fixture.destroy();
+  }
+});
+
+/* `seriesLabel` is the one member the API-contract batch ADDED rather than
+ * reshaped, and D7 approved it precisely because `doughnut-chart.ts` used to
+ * emit the literal `aria-label="Doughnut chart"` with no caller-supplied path at
+ * ALL -- the worst case of the aria-label debt CLAUDE.md records. Three template
+ * sites now read the input: the graphic's accessible name, the table caption and
+ * the value column header.
+ *
+ * The fallback alone cannot pin any of that. `host-class-binding.test.ts`
+ * asserts the unnamed case, and the pre-migration literal satisfied it just as
+ * well -- so reverting all three bindings would have left the whole Angular
+ * suite green, and `check:api` green with it, since the gate reads declared
+ * inputs and never the template. This is the NAMED case, which only a real
+ * caller-supplied value can satisfy.
+ *
+ * The separator is U+2014 EM —, copied from the component rather than
+ * retyped: an en dash here would fail with a diff nobody can see. */
+test('arena-doughnut-chart takes its accessible name, caption and value column from seriesLabel', () => {
+  const fixture = TestBed.createComponent(DoughnutChart);
+  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
+  instance['labels'] = () => LABELS;
+  instance['values'] = () => VALUES;
+  instance['seriesLabel'] = () => SERIES;
+  fixture.detectChanges();
+  try {
+    const host = fixture.nativeElement as Element;
+
+    const graphic = host.querySelector('[role="img"]') as Element;
+    assert.equal(graphic.getAttribute('aria-label'), `${SERIES} — doughnut chart`);
+
+    const table = host.querySelector('table') as HTMLTableElement;
+    assert.equal((table.querySelector('caption')?.textContent ?? '').trim(), `${SERIES} — doughnut chart`);
+
+    // The value column takes the series name; with no seriesLabel it reads 'Value'.
+    const headers = [...table.querySelectorAll('thead th')].map((c) => (c.textContent ?? '').trim());
+    assert.deepEqual(headers, ['Category', SERIES]);
+  } finally {
+    fixture.destroy();
+  }
+});

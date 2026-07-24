@@ -6,22 +6,24 @@ import { useContainerWidth } from "../../use-container-width.js";
 import { resolveColors, niceMax, ticks, srOnly, PAD, CHART_HEIGHT } from "./chart-internals.js";
 import { chartPointR, chartPointRHover } from "../../tokens.generated.js";
 export function LineChart({
-  labels = [],
-  values = [],
+  labels,
+  values,
   seriesLabel,
   slot,
   tone,
   area = false,
-  valueFormatter,
-  style,
-  ...rest
+  valueSuffix
 }) {
+  if (!labels)
+    throw new Error("LineChart: `labels` is required");
+  if (!values)
+    throw new Error("LineChart: `values` is required");
   const [ref, measured] = useContainerWidth();
   const [hover, setHover] = useState(null);
   const width = measured ?? 600;
   const height = CHART_HEIGHT;
   const n = values.length;
-  const fmt = valueFormatter || ((v) => String(v));
+  const fmt = (v) => `${v}${valueSuffix ?? ""}`;
   const color = resolveColors({ slot, tone, count: 1 })[0];
   const max = niceMax(Math.max(0, ...values));
   const iw = Math.max(1, width - PAD.l - PAD.r);
@@ -45,8 +47,7 @@ export function LineChart({
   };
   return React.createElement("div", {
     ref,
-    style: { position: "relative", width: "100%", height, ...style },
-    ...rest
+    style: { position: "relative", width: "100%", height }
   }, React.createElement("svg", {
     width: "100%",
     height,
@@ -104,7 +105,7 @@ export function LineChart({
     fill: color,
     stroke: "var(--surface-card)",
     style: { strokeWidth: "var(--bw-strong)" }
-  })), labels.map((l, i) => React.createElement("text", {
+  })), values.map((_, i) => React.createElement("text", {
     key: i,
     x: xOf(i),
     y: height - 8,
@@ -112,7 +113,7 @@ export function LineChart({
     fill: "var(--text-muted)",
     fontFamily: "var(--font-body)",
     style: { fontSize: "var(--fs-xs)" }
-  }, l)), React.createElement("rect", {
+  }, labels[i] ?? "")), React.createElement("rect", {
     x: PAD.l,
     y: PAD.t,
     width: iw,

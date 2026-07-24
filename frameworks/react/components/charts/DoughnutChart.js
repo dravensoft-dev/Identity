@@ -5,13 +5,17 @@ import React, { useState } from "react";
 import { useContainerWidth } from "../../use-container-width.js";
 import { resolveColors, arcPath, srOnly, CHART_HEIGHT } from "./chart-internals.js";
 import { chartLegendMin, chartLegendMax, chartLegendGap } from "../../tokens.generated.js";
-export function DoughnutChart({ labels = [], values = [], slots, valueFormatter, style, ...rest }) {
+export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix }) {
+  if (!labels)
+    throw new Error("DoughnutChart: `labels` is required");
+  if (!values)
+    throw new Error("DoughnutChart: `values` is required");
   const [ref, measured] = useContainerWidth();
   const [hover, setHover] = useState(null);
   const width = measured ?? 600;
   const height = CHART_HEIGHT;
   const n = values.length;
-  const fmt = valueFormatter || ((v) => String(v));
+  const fmt = (v) => `${v}${valueSuffix ?? ""}`;
   const colors = resolveColors({ slots: slots ?? Array.from({ length: n }, (_, i) => i + 1), count: n });
   const total = values.reduce((a, b) => a + Math.max(0, b), 0);
   const legendW = Math.min(chartLegendMax, Math.max(chartLegendMin, width * 0.34));
@@ -20,6 +24,7 @@ export function DoughnutChart({ labels = [], values = [], slots, valueFormatter,
   const cy = height / 2;
   const rOuter = Math.max(1, Math.min(plotW, height) / 2 - 8);
   const rInner = rOuter * 0.62;
+  const name = seriesLabel ? `${seriesLabel} — doughnut chart` : "Doughnut chart";
   let angle = -Math.PI / 2;
   const segments = values.map((v, i) => {
     const share = total > 0 ? Math.max(0, v) / total : 0;
@@ -30,13 +35,12 @@ export function DoughnutChart({ labels = [], values = [], slots, valueFormatter,
   });
   return React.createElement("div", {
     ref,
-    style: { position: "relative", width: "100%", height, display: "flex", gap: "var(--chart-legend-gap)", ...style },
-    ...rest
+    style: { position: "relative", width: "100%", height, display: "flex", gap: "var(--chart-legend-gap)" }
   }, React.createElement("svg", {
     width: plotW,
     height,
     role: "img",
-    "aria-label": "Doughnut chart",
+    "aria-label": name,
     onMouseLeave: () => setHover(null),
     style: { display: "block", flexShrink: 0 }
   }, segments.map(({ i, a0, a1 }) => a1 > a0 && React.createElement("path", {
@@ -57,7 +61,7 @@ export function DoughnutChart({ labels = [], values = [], slots, valueFormatter,
     style: { fontSize: "var(--dz-text-lg)" }
   }, Math.round(segments[hover].share * 100), "%")), React.createElement("div", {
     style: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: "calc(var(--sp-1) * 1.5)", overflow: "auto" }
-  }, labels.map((l, i) => React.createElement("div", {
+  }, values.map((_, i) => React.createElement("div", {
     key: i,
     onMouseEnter: () => setHover(i),
     onMouseLeave: () => setHover(null),
@@ -76,11 +80,11 @@ export function DoughnutChart({ labels = [], values = [], slots, valueFormatter,
       textOverflow: "ellipsis",
       whiteSpace: "nowrap"
     }
-  }, l), React.createElement("span", {
+  }, labels[i] ?? ""), React.createElement("span", {
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-sm)", color: "var(--mute)" }
   }, fmt(values[i]))))), React.createElement("table", {
     style: srOnly
-  }, React.createElement("caption", null, "Doughnut chart"), React.createElement("thead", null, React.createElement("tr", null, React.createElement("th", null, "Category"), React.createElement("th", null, "Value"))), React.createElement("tbody", null, values.map((v, i) => React.createElement("tr", {
+  }, React.createElement("caption", null, name), React.createElement("thead", null, React.createElement("tr", null, React.createElement("th", null, "Category"), React.createElement("th", null, seriesLabel || "Value"))), React.createElement("tbody", null, values.map((v, i) => React.createElement("tr", {
     key: i
   }, React.createElement("th", {
     scope: "row"

@@ -4,16 +4,17 @@ import { resolveColors, niceMax, ticks, barPath, srOnly, PAD, CHART_HEIGHT } fro
 import { chartBarGap, chartBarRadius } from '../../tokens.generated.js';
 
 export function BarChart({
-  labels = [], values = [], seriesLabel, slot, slots, tone,
-  valueFormatter, style, ...rest
+  labels, values, seriesLabel, slot, slots, tone, valueSuffix,
 }) {
+  if (!labels) throw new Error('BarChart: `labels` is required');
+  if (!values) throw new Error('BarChart: `values` is required');
   const [ref, measured] = useContainerWidth();
   const [hover, setHover] = useState(null);
 
   const width = measured ?? 600;              // wide first paint, then measured
   const height = CHART_HEIGHT;
   const n = values.length;
-  const fmt = valueFormatter || ((v) => String(v));
+  const fmt = (v) => `${v}${valueSuffix ?? ''}`;
   const colors = resolveColors({ slot, slots, tone, count: n });
 
   const max = niceMax(Math.max(0, ...values));
@@ -27,7 +28,7 @@ export function BarChart({
   const name = seriesLabel ? `${seriesLabel} — bar chart` : 'Bar chart';
 
   return (
-    <div ref={ref} style={{ position: 'relative', width: '100%', height, ...style }} {...rest}>
+    <div ref={ref} style={{ position: 'relative', width: '100%', height }}>
       <svg width="100%" height={height} role="img" aria-label={name}
         onMouseLeave={() => setHover(null)} style={{ display: 'block', overflow: 'visible' }}>
         {/* grid + value axis */}
@@ -58,10 +59,13 @@ export function BarChart({
           );
         })}
 
-        {/* category axis */}
-        {labels.map((l, i) => (
+        {/* Category axis — one label per bar, taken by index. The bar is the
+            thing being labelled, so a label with no value at its index is
+            dropped rather than drawn over empty plot, and a bar with no label
+            renders an empty string. */}
+        {values.map((_, i) => (
           <text key={i} x={PAD.l + i * step + step / 2} y={height - 8} textAnchor="middle"
-            fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{l}</text>
+            fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{labels[i] ?? ''}</text>
         ))}
       </svg>
 

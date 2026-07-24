@@ -200,7 +200,7 @@ export function doughnutRadii(plotWidth: number, height: number): { outer: numbe
     '[style.height.px]': 'height',
   },
   template: `
-    <svg [attr.width]="plotWidth()" [attr.height]="height" role="img" aria-label="Doughnut chart"
+    <svg [attr.width]="plotWidth()" [attr.height]="height" role="img" [attr.aria-label]="name()"
          [style]="svgStyle" (mouseleave)="hover.set(null)">
       @for (segment of segments(); track segment.index) {
         @if (segment.path) {
@@ -229,8 +229,8 @@ export function doughnutRadii(plotWidth: number, height: number): { outer: numbe
     </div>
 
     <table [style]="srOnly">
-      <caption>Doughnut chart</caption>
-      <thead><tr><th>Category</th><th>Value</th></tr></thead>
+      <caption>{{ name() }}</caption>
+      <thead><tr><th>Category</th><th>{{ seriesLabel() ?? 'Value' }}</th></tr></thead>
       <tbody>
         @for (segment of segments(); track segment.index) {
           <tr><th scope="row">{{ segment.label }}</th><td>{{ segment.formatted }}</td></tr>
@@ -240,10 +240,11 @@ export function doughnutRadii(plotWidth: number, height: number): { outer: numbe
   `,
 })
 export class DoughnutChart {
-  readonly labels = input<string[]>([]);
-  readonly values = input<number[]>([]);
+  readonly labels = input.required<string[]>();
+  readonly values = input.required<number[]>();
+  readonly seriesLabel = input<string>();
   readonly slots = input<number[]>();
-  readonly valueFormatter = input<(value: number) => string>((value) => String(value));
+  readonly valueSuffix = input<string>();
 
   protected readonly height = CHART_HEIGHT;
   protected readonly srOnly = SR_ONLY;
@@ -258,9 +259,23 @@ export class DoughnutChart {
   protected readonly dimOpacity = DIM_OPACITY;
   protected readonly hover = signal<number | null>(null);
 
+  /** The unit appended to every number this chart draws — the legend value and the
+   *  accessible table alike, and never the centre label, which is a percentage
+   *  rather than a value. Appended verbatim: the caller owns the leading space.
+   *  `private`, so the reader never sees it as a member. */
+  private readonly suffix = computed(() => this.valueSuffix() ?? '');
+
   private readonly measured = containerWidth();
   /** Wide first paint, then measured — the narrow branch never flashes. */
   private readonly width = computed(() => this.measured() ?? ASSUMED_WIDTH);
+
+  /** The chart's accessible name, and the numbers table's caption. A name when one is
+   *  given, the chart type alone when none is — the same rule bar-chart.ts and
+   *  line-chart.ts follow. `protected`, so the reader never sees it as a member. */
+  protected readonly name = computed(() => {
+    const series = this.seriesLabel();
+    return series ? `${series} — doughnut chart` : 'Doughnut chart';
+  });
 
   protected readonly plotWidth = computed(() => doughnutPlotWidth(this.width()));
   protected readonly centreX = computed(() => this.plotWidth() / 2);
@@ -274,7 +289,7 @@ export class DoughnutChart {
       slots: this.slots() ?? values.map((_, index) => index + 1),
       count: values.length,
     });
-    const format = this.valueFormatter();
+    const suffix = this.suffix();
     const centreX = this.centreX();
     const centreY = this.centreY();
     const { outer, inner } = doughnutRadii(this.plotWidth(), this.height);
@@ -282,7 +297,7 @@ export class DoughnutChart {
       ...slice,
       color: colors[slice.index],
       label: this.labels()[slice.index] ?? '',
-      formatted: format(values[slice.index]),
+      formatted: `${values[slice.index]}${suffix}`,
       path: slice.to > slice.from ? arcPath(centreX, centreY, outer, inner, slice.from, slice.to) : '',
     }));
   });

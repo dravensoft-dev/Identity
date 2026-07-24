@@ -647,26 +647,6 @@ the `.ts` port is scanned, so the exemption is explicit rather than accidental.
 **Converges:** no. Each layer uses its own framework's style-binding idiom, and neither
 is wrong. Recorded because the five chart primitives all consume `SR_ONLY` unchanged.
 
-### BarChart — the category axis is drawn per bar, not per label
-
-**React:** `BarChart.jsx` draws the value axis, the bars and the tooltip from `values`, but the
-category axis from `labels` — `{labels.map((l, i) => <text x={PAD.l + i * step + step / 2} ...>)}`.
-With more labels than values that renders a label under empty space, positioned by a `step`
-computed from a different array's length; with fewer, the surplus bars go unlabelled either way.
-
-**Angular:** `arena-bar-chart` draws the category axis from the same `bars()` collection the marks
-come from, taking each bar's label as `labels()[index] ?? ''`. A label with no bar is dropped; a
-bar with no label renders an empty string.
-
-**Why:** the two arrays are one dataset, and the bar is the thing being labelled. Drawing a label
-at a column position that no column occupies is not a considered behaviour — it is what falls out
-of iterating the wrong array, and it puts text under blank plot. Identical output whenever the
-arrays are the same length, which is every correct call. `bar-chart.prompt.md` states the rule
-under Don't.
-
-**Converges:** yes — React should iterate its bars. **Open debt on the React layer**, low priority
-(it only shows on mismatched input).
-
 ### BarChart — the charts are the layer's styling exception, and they state it in objects
 
 **React:** `BarChart.jsx` writes every style as a JSX inline style object — `style={{ strokeWidth:
@@ -701,9 +681,6 @@ carries a named `EXEMPT` entry for. Angular's binding syntax puts it outside all
 scanners, so it needs no exemption — but it is unexempted because it is unseen, not because it is
 tokenized. `check:dimensions` is clean on this component for real reasons everywhere else.
 
-**Not ported:** React's `style` prop and `{...rest}` spread, for the reason the host-binding
-section at the top of this document gives — in Angular a consumer writes those directly on the host.
-
 **Converges:** no on the idiom; each layer states the same token values in its own form.
 
 ### LineChart — the crosshair measures against the SVG, not against the overlay rect
@@ -723,49 +700,8 @@ explicitly out of the question. The nearest-point search itself is extracted as
 `nearestPointIndex()` and pinned in `line-chart-geometry.test.ts`; the coordinate origin it is fed
 is the part that cannot be unit-tested here, because it needs a real layout box.
 
-**Converges:** yes — React should measure the SVG. **Open debt on the React layer**, and unlike the
-label-axis entry above this one is visible on every correct call, not only on mismatched input.
-
-### LineChart — the point axis is drawn per point, not per label
-
-**React:** `LineChart.jsx` draws the value axis, the line, the markers and the tooltip from
-`values`, but the point labels from `labels` — `{labels.map((l, i) => <text x={xOf(i)} ...>)}`.
-With more labels than values that renders a label under empty plot, positioned by an `xOf` whose
-spacing was computed from a different array's length.
-
-**Angular:** `arena-line-chart` draws the labels from the same `points()` collection the markers
-come from, taking each point's label as `labels()[index] ?? ''`.
-
-**Why:** identical to the BarChart entry above, and for the same reason — the two arrays are one
-dataset and the point is the thing being labelled. Identical output whenever the arrays are the
-same length, which is every correct call. `line-chart.prompt.md` states the rule under Don't.
-
-**Converges:** yes — React should iterate its points. **Open debt on the React layer**, low
-priority.
-
-### DoughnutChart — the legend is drawn per slice, not per label
-
-**React:** `DoughnutChart.jsx` computes its slices from `values` and draws the ring, the centre
-label and the numbers table from them — but the legend from `labels`, `{labels.map((l, i) => ...
-{fmt(values[i])})}`. With more labels than values that renders a legend row whose swatch has **no
-background at all** — `colors` has length `values.length`, so `colors[i]` is `undefined` — beside a
-value of the literal string `undefined`; with fewer, a real
-slice has no legend row at all, which on this chart is worse than on the other two because the
-legend is the only place a slice is ever named.
-
-**Angular:** `arena-doughnut-chart` draws the legend from the same `segments()` collection the arcs
-come from, taking each slice's label as `labels()[index] ?? ''`. A label with no slice is dropped;
-a slice with no label renders an empty string beside its swatch.
-
-**Why:** identical to the BarChart and LineChart entries above, and for the same reason — the two
-arrays are one dataset and the slice is the thing being named. Identical output whenever the arrays
-are the same length, which is every correct call. The task brief also iterated the slices here, so
-this is the third slice in a row where the brief silently corrected React without saying so; it is
-written down now. `doughnut-chart.prompt.md` states the rule under Don't.
-
-**Converges:** yes — React should iterate its slices. **Open debt on the React layer**, and on this
-component it is a touch worse than on its siblings, since `fmt(undefined)` prints a visible
-`undefined` in the legend rather than merely misplacing a label.
+**Converges:** yes — React should measure the SVG. **Open debt on the React layer**, and it is
+visible on every correct call, not only on mismatched input.
 
 ### DoughnutChart — the host IS the flex row, where React wraps one inside
 
@@ -794,9 +730,6 @@ are the same distance expressed twice — once as the token derivation `calc(var
 CSS lays out, and once as the number the SVG's own user-unit width has to account for. They move
 together, and both this component and React's carry the pair.
 
-**Not ported:** React's `style` prop and `{...rest}` spread, for the reason the host-binding
-section at the top of this document gives — in Angular a consumer writes those directly on the host.
-
 **Converges:** no. Each layer expresses the same box in its own idiom, and neither is wrong.
 
 ### DoughnutChart — the legend is keyboard-reachable in Angular, not yet in React
@@ -819,8 +752,7 @@ on the React side, and it is recorded rather than left silent because the two la
 differ in an accessibility affordance.
 
 **Converges:** yes — React should get the same `tabindex`/`role`/`aria-label` treatment its legend
-column lacks today. **Open debt on the React layer**, the same shape as the per-slice-legend entry
-above.
+column lacks today. **Open debt on the React layer**.
 
 ### AppLogo — React guards against a missing `mark` or `name`; Angular has no counterpart, and needs none
 

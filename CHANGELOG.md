@@ -269,7 +269,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`StatCard`'s slot is revised to a string in both layers, and the empty-wrapper divergence Plan A
   recorded is deleted), and a per-item field inside an array of predefined objects is a primitive
   for the same reason. Two limits the contract reader could not see are closed: `classify()` now
-  refuses an inbound function that returns a value — the shape the charts' `valueFormatter` has,
+  refuses an inbound function that returns a value — the shape the charts' `valueFormatter` had,
   which it previously misread as an event a contract could have declared — and a token-derived
   closed numeric set (the charts' ramp slot) is documented as a bare `number` rather than a
   hand-copied enum. Separately, `check:compliance`'s `COVERED` record is re-keyed by
@@ -377,6 +377,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   needs to change, only its prop/input name. `OnboardingStep.body` narrows from `ReactNode` to
   `string` (Angular already declared it so), and Angular's exported `ArenaOnboardingStep`
   interface is deleted in favour of the shared `OnboardingStep` type.
+- **The three SVG charts share one reshape, applied three times — breaking.**
+  `valueFormatter` is **deleted from `BarChart`, `LineChart` and `DoughnutChart` in both
+  layers** and replaced by `valueSuffix`, a plain string appended verbatim to every number
+  the chart draws: an inbound function that *returns* a value is none of the seven forms
+  (`api/README.md`), so a unit is data the chart appends rather than a callback it calls.
+  **The capability loss is real and has no replacement:** a suffix cannot round, cannot
+  insert a thousands separator and cannot format a currency, so a consumer passing
+  `(v) => v.toLocaleString()` must format the numbers before passing them. Concatenation is
+  raw — Arena never inserts a separator, so the caller writes the space themselves
+  (`valueSuffix=" ms"`, but `valueSuffix="%"`). React's `CatSlot = 1 | … | 8` is **deleted
+  outright** rather than aliased (R5; the ramp's bound is derived from the palette, not
+  authored in a contract): `slot` and `slots` are a bare `number` and `number[]` on all
+  three, and an existing `import type { CatSlot } from '.../BarChart'` stops resolving —
+  `Calendar.d.ts`'s own local `CatSlot` is a separate declaration and is untouched.
+  `SeriesTone` becomes a shared contract enum in `api.generated` (`success`, `warning`,
+  `danger`, `info`) and Angular's exported `ArenaChartTone` is deleted in its favour.
+  `labels` and `values` become **required in both layers** on all three, settling a
+  pre-existing divergence in which React already required them and Angular defaulted to
+  `[]`: Angular now throws NG0950 on the first read and React throws from its render, so a
+  chart with no data fails loudly instead of drawing an empty box. React loses `style` and
+  the `{...rest}` spread on all three (R4).
+- **`BarChart` under contract — breaking.** Members: `labels`, `values` (required arrays),
+  `seriesLabel`, `slot`, `slots`, `tone` and `valueSuffix`. It is the only chart carrying
+  both `slot` and `slots`. Its accessible table now carries the suffixed numbers a sighted
+  reader sees, pinned in `chart-data-table.test.ts`, the one suite holding a chart's
+  behaviour contract.
+- **`LineChart` under contract — breaking.** `LineChartProps` no longer extends
+  `Omit<BarChartProps, 'slots'>`; its seven members are declared flat, because `check:api`
+  reports *any* heritage clause as the `{...rest}` R4 escape. The member set is unchanged by
+  the flattening — `labels`, `values` (required), `seriesLabel`, `slot`, `tone`, `area` and
+  `valueSuffix`, with still no `slots`, a line being one series. Angular keeps `area`'s
+  `booleanAttribute` transform, which the contract governs the member of and not the syntax.
+- **`DoughnutChart` under contract — breaking, and it GAINS a member.** `seriesLabel` is
+  new: supplied, it names the chart's `aria-label`, its table caption and its value column
+  header; absent, all three fall back exactly as before (`Doughnut chart`, and a bare
+  `Value` header). Before this it had no consumer-supplied name path at all. Members:
+  `labels`, `values` (required), `seriesLabel`, `slots` and `valueSuffix` — deliberately no
+  `tone` and no `slot`, a slice being a category by definition. Its `valueSuffix` reaches
+  the legend value and the table and **not** the centre label, which draws a percentage
+  rather than a value.
 - **Nine `@dsCard` declarations corrected to what their pages actually render.** No page's
   content changed. `frameworks/react/ui_kits/console/index.html` no longer declares a
   `@dsCard` at all — it is an example app with its own scroll area, not a specimen card.
@@ -455,6 +495,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The three React charts drew their labels from `labels` rather than from the marks, so a
+  label with no value at its index was rendered anyway.** `BarChart`'s category axis,
+  `LineChart`'s point axis and `DoughnutChart`'s legend each iterated `labels`; all three now
+  iterate `values` and take `labels[i]`, which is what the Angular primitives already did
+  (`labels()[index] ?? ''`) and what all three API contracts state: *"A label with no value at
+  its index is dropped."* Visible output changes only on mismatched input, which was exactly
+  where it was wrong: a surplus label used to be drawn at a column position no mark occupies,
+  spaced by a step computed from the other array's length, and on the doughnut it produced a
+  legend row with **no swatch colour at all** (`colors[i]` was `undefined`) beside the literal
+  string `undefined`. A mark with no label now renders an empty label rather than nothing.
+  The three `components-divergences.md` entries recording this are deleted, because the
+  divergence no longer exists, and the React `prompt.md`s gain the `labels`/`values` Don't
+  bullet their Angular counterparts already carried.
 - **`Radio.behaviour.json` claimed full compliance against `radiogroup` while `Radio.jsx`
   renders `<div role="radiogroup">` with no `aria-label` and no `aria-labelledby` at
   all** — a stricter gap than `Breadcrumbs` and `Pagination` already except (a

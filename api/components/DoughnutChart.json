@@ -1,0 +1,16 @@
+{
+  "component": "DoughnutChart",
+  "description": "Parts of one whole, as a ring with a legend beside it. Identity only — a slice is a category by definition, so there is no tone. Dependency-free SVG with a visually-hidden table of the same numbers.",
+  "api": {
+    "labels": { "form": "array", "of": "string", "required": true,
+                "description": "One label per slice, in the same order as `values`. A label with no value at its index is dropped." },
+    "values": { "form": "array", "of": "number", "required": true,
+                "description": "The parts, which are read as shares of their own total. A negative value floors at zero; a total of zero paints nothing." },
+    "seriesLabel": { "form": "primitive", "type": "string",
+                     "description": "Names the chart for the accessible name, the table caption and its value column. Absent falls back to the chart type alone." },
+    "slots": { "form": "array", "of": "number",
+               "description": "Per-slice identity override, one ramp slot each. Absent assigns 1..N in order, which is the rule rather than a starting point." },
+    "valueSuffix": { "form": "primitive", "type": "string",
+                     "description": "Appended verbatim to every number the chart draws — the legend value and the accessible table. Not the centre label, which is a percentage rather than a value." }
+  }
+}

@@ -55,10 +55,10 @@ outbound, and it returns nothing. A member the component *calls* and whose resul
 formatter, a label producer — has no form here, and `classify()` in
 `scripts/lib/api-surface.mjs` refuses one rather than reading it as an event with the parameter
 as its payload. Where such a member exists it is replaced by data the component renders itself: the charts'
-`valueFormatter` becomes `valueSuffix`, a primitive Arena appends to every number it draws —
-the axis tick, the tooltip and the accessible data table alike. That replacement lands when
-the charts are brought under contract; the reader's refusal lands now, so no contract can
-declare the old shape in the meantime.
+`valueFormatter` became `valueSuffix`, a primitive Arena appends to every number it draws —
+the axis tick, the tooltip and the accessible data table alike. That replacement landed when
+the three charts were brought under contract; the reader's refusal shipped first, so no
+contract could declare the old shape in the meantime.
 
 **The word `prop` does not appear in a contract.** It is React's vocabulary, and a neutral
 contract that used it would already have chosen a layer. A contract declares *members*;
