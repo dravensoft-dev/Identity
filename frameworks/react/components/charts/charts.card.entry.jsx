@@ -18,7 +18,7 @@ function Demo(){return (<div>
       <LineChart labels={days} values={[120,138,131,142,180,164,150]} seriesLabel="p95" slot={5} area valueSuffix=" ms" />
     </ChartCard>
     <ChartCard title="Traffic share">
-      <DoughnutChart labels={['Web','API','Worker','Static']} values={[420,310,140,90]} valueSuffix=" rps" />
+      <DoughnutChart labels={['Web','API','Worker','Static']} values={[420,310,140,90]} seriesLabel="Traffic" valueSuffix=" rps" />
     </ChartCard>
   </div>
   <div className="sub">Meaning — opt-in, only when the series IS a state</div>

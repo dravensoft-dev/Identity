@@ -40,6 +40,7 @@ function Demo() {
   }, React.createElement(DoughnutChart, {
     labels: ["Web", "API", "Worker", "Static"],
     values: [420, 310, 140, 90],
+    seriesLabel: "Traffic",
     valueSuffix: " rps"
   }))), React.createElement("div", {
     className: "sub"
