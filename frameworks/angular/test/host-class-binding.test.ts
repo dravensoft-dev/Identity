@@ -601,9 +601,9 @@ test('arena-activity-feed: the host stays bare and unstyled -- the recipe classe
  * pure function has no way to exercise. */
 test('arena-activity-feed: the first <li> carries no divider and every later one does, in a real render', () => {
   const fixture = renderActivityFeed([
-    { id: 1, actor: 'Marta', action: 'deployed', tone: 'success' },
-    { id: 2, actor: 'Ivan', action: 'opened an incident', tone: 'danger' },
-    { id: 3, actor: 'Rae', action: 'approved the rollback' },
+    { id: '1', actor: 'Marta', action: 'deployed', tone: 'success' },
+    { id: '2', actor: 'Ivan', action: 'opened an incident', tone: 'danger' },
+    { id: '3', actor: 'Rae', action: 'approved the rollback' },
   ]);
   fixture.detectChanges();
   const rows = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('li'));
@@ -628,7 +628,7 @@ test('arena-activity-feed: the first <li> carries no divider and every later one
  * Angular template -- but worth proving rather than assuming). */
 test('arena-activity-feed: actor, action and target compose with exactly one space between them, and time is absent when unset', () => {
   const fixture = renderActivityFeed([
-    { id: 1, actor: 'Marta', action: 'deployed', target: 'billing@2.4.1' },
+    { id: '1', actor: 'Marta', action: 'deployed', target: 'billing@2.4.1' },
   ]);
   fixture.detectChanges();
   const li = (fixture.nativeElement as HTMLElement).querySelector('li') as HTMLElement;
@@ -647,7 +647,7 @@ test('arena-activity-feed: actor, action and target compose with exactly one spa
 });
 
 test('arena-activity-feed: an item with neither target nor time renders only the dot and the actor/action text', () => {
-  const fixture = renderActivityFeed([{ id: 1, actor: 'Rae', action: 'approved the rollback' }]);
+  const fixture = renderActivityFeed([{ id: '1', actor: 'Rae', action: 'approved the rollback' }]);
   fixture.detectChanges();
   const li = (fixture.nativeElement as HTMLElement).querySelector('li') as HTMLElement;
   assert.equal(li.querySelectorAll('span').length, 2, 'dot and text spans only -- no target, no time');
