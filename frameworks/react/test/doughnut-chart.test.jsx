@@ -34,6 +34,12 @@ test('DoughnutChart does not append valueSuffix to anything that is not a plotte
   assert.equal((html.match(/ rps/g) ?? []).length, 6);
 });
 
+test('DoughnutChart with no valueSuffix draws bare numbers, so the suffix is genuinely optional', () => {
+  const html = renderToStaticMarkup(<DoughnutChart labels={LABELS} values={VALUES} />);
+  for (const v of VALUES) assert.match(html, new RegExp(`<td>${v}</td>`));
+  assert.doesNotMatch(html, /undefined/, 'an absent suffix must not render the string "undefined"');
+});
+
 test('DoughnutChart names itself from seriesLabel, and falls back to the type when none is given', () => {
   const named = renderToStaticMarkup(
     <DoughnutChart labels={LABELS} values={VALUES} seriesLabel="Traffic" />
