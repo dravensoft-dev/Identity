@@ -335,6 +335,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the `<li>` Arena renders rather than replacing it, but removed because Angular has no
   binding for per-item projection. **A consumer can no longer place their own markup inside
   one row of a feed Arena renders.**
+- **`Onboarding` under contract — breaking.** New shared types `OnboardingStep` and
+  `OnboardingAnchor`. `open` and `steps` both become **required** (React throws, Angular uses
+  `input.required`, preserving the `booleanAttribute` coercion on `open`). The anchor member
+  drops the `DOMRect | { left: number; bottom: number }` union — a platform type (R4) inside a
+  union between forms (R5) — and is renamed `anchorRect` → `anchor`, typed as the new
+  `OnboardingAnchor { left: number; bottom: number }` object; a `DOMRect` stays structurally
+  assignable, so `getBoundingClientRect()` still passes directly and no call site's *value*
+  needs to change, only its prop/input name. `OnboardingStep.body` narrows from `ReactNode` to
+  `string` (Angular already declared it so).
 - **Nine `@dsCard` declarations corrected to what their pages actually render.** No page's
   content changed. `frameworks/react/ui_kits/console/index.html` no longer declares a
   `@dsCard` at all — it is an example app with its own scroll area, not a specimen card.

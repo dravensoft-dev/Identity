@@ -3,8 +3,10 @@ import { onboardingWidth, sp3, sp4 } from '../../tokens.generated.js';
 
 /** Guided onboarding (H10). Step-by-step coachmark: presents features within the product
  * with progress, "Skip", and "Next". Controlled: the host keeps `index`.
- * `anchorRect` (optional, a DOMRect) anchors the callout next to an element; without it floats bottom-right. */
-export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip, onDone, anchorRect }) {
+ * `anchor` (optional) anchors the callout next to an element by its left and bottom
+ * viewport coordinates; a DOMRect satisfies it. Without it the coachmark floats bottom-right. */
+export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onDone, anchor }) {
+  if (steps == null) throw new Error('Onboarding: `steps` is required');
   if (!open || !steps.length) return null;
   const step = steps[index] || {};
   const last = index === steps.length - 1;
@@ -15,7 +17,7 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
   const EDGE = sp4;
 
   let pos = { position: 'fixed', right: 'calc(var(--sp-1) * 6)', bottom: 'calc(var(--sp-1) * 6)', zIndex: 'var(--z-onboarding)' };
-  if (anchorRect) {
+  if (anchor) {
     // Two plain numbers remain here, both arithmetic on a DOMRect and on
     // window.innerHeight:
     //   220 -- a floor estimate of the popover's own height, so a callout
@@ -25,8 +27,8 @@ export function Onboarding({ open, steps = [], index = 0, onNext, onBack, onSkip
     //   900 -- the assumed viewport height before mount, where there is no
     //          window to measure. Not a design value; the charts make the
     //          same assumption about width.
-    const top = Math.min(anchorRect.bottom + sp3, (typeof window !== 'undefined' ? window.innerHeight : 900) - 220);
-    let left = anchorRect.left;
+    const top = Math.min(anchor.bottom + sp3, (typeof window !== 'undefined' ? window.innerHeight : 900) - 220);
+    let left = anchor.left;
     if (typeof window !== 'undefined') left = Math.min(left, window.innerWidth - W - EDGE);
     pos = { position: 'fixed', top, left: Math.max(EDGE, left), zIndex: 'var(--z-onboarding)' };
   }

@@ -75,6 +75,24 @@ export type Direction = 'up' | 'down';
 /** Both halves of the brand lock-up at once — the mark's slot and the wordmark. A fixed repertoire, not a ratio: sm an application frame, md a signed-out panel, lg the manual's Primary, xl the hero case. */
 export type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
 
+/** Where the coachmark attaches: the two viewport coordinates it positions from. A DOMRect is structurally assignable to it, so a consumer passes getBoundingClientRect() directly. Declared as its own object rather than taken as a DOMRect because a platform type is none of the seven forms (R4), and because these are the only two fields Onboarding reads. */
+export interface OnboardingAnchor {
+  /** The anchored element's left edge, in viewport pixels. Clamped inside the viewport before use. */
+  left: number;
+  /** The anchored element's bottom edge, in viewport pixels. The coachmark sits below it. */
+  bottom: number;
+}
+
+/** One step of a guided tour. All three fields are optional so a step can carry only the ones it needs; Arena renders each conditionally. */
+export interface OnboardingStep {
+  /** Mono crimson microlabel above the title. */
+  eyebrow?: string;
+  /** The step's headline, and the coachmark's accessible name. */
+  title?: string;
+  /** A sentence or two explaining the feature this step presents. */
+  body?: string;
+}
+
 /** Whether a component's parts lay out side by side or stacked — which axis it runs along. */
 export type Orientation = 'horizontal' | 'vertical';
 

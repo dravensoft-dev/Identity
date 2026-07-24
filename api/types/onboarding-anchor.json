@@ -1,0 +1,11 @@
+{
+  "name": "OnboardingAnchor",
+  "kind": "object",
+  "description": "Where the coachmark attaches: the two viewport coordinates it positions from. A DOMRect is structurally assignable to it, so a consumer passes getBoundingClientRect() directly. Declared as its own object rather than taken as a DOMRect because a platform type is none of the seven forms (R4), and because these are the only two fields Onboarding reads.",
+  "fields": {
+    "left": { "form": "primitive", "type": "number", "required": true,
+              "description": "The anchored element's left edge, in viewport pixels. Clamped inside the viewport before use." },
+    "bottom": { "form": "primitive", "type": "number", "required": true,
+                "description": "The anchored element's bottom edge, in viewport pixels. The coachmark sits below it." }
+  }
+}
