@@ -2479,6 +2479,13 @@ A hit in a **contracted** component is a defect this task fixes. A hit in an **u
 `Input`, `Select`, `Checkbox`, `Textarea`, `SideNav` all still carry a heritage clause — is expected
 and belongs to C2 and C3. Say which is which in the ledger rather than fixing what is not yours.
 
+**A second is `frameworks/angular/test/chart-data-table.test.ts:168`**, a comment reading *"an
+inbound function that RETURNS a value is none of the seven forms"*. Task 1b made the count wrong.
+Task 1b deferred it citing Global Constraint 25 — **that reading was too literal and is corrected
+here**: constraint 25 forbids Angular *component* work, and a comment in a test suite is neither a
+component nor a recipe. It is one word, it is factually wrong, and it belongs to this sweep. Change
+"seven" to "eight" and change nothing else in that file.
+
 **One such defect is already known and is this task's to fix.** `StatCard.d.ts:1` carries
 `import * as React from 'react'` and the file uses no `React.` member at all — a dead import left
 when 8B1 turned `StatCard`'s `icon` from a slot into a string. Task 1's audit found it by measuring
@@ -2572,6 +2579,15 @@ Add entries under `## [Unreleased]` — never under the last version, per `CLAUD
 One entry per contracted component plus one for the shared decisions, in the file's existing voice.
 Note the breaking changes explicitly: `Button.icon`/`iconRight` and `IconButton`'s child icon now
 take Phosphor class names, and all five components stop accepting `style` and arbitrary attributes.
+
+**And fix two stale statements this file already carries, both under `[Unreleased]` and both found by
+Task 1b's review.** `CHANGELOG.md:14` describes the API layer as *"A member is one of seven forms —
+primitive, enum, predefined object, array of primitives, array of predefined objects, slot, event"*:
+the count is wrong **and the enumeration is missing consumer data**, so fix both halves rather than
+the number alone. `CHANGELOG.md:383` says *"an inbound function that returns a value is none of the
+seven forms"* — one word. Neither is optional: this file ships, and both entries are in the release
+that will carry the eighth form. **Task 1b is a `feat(api)!` with no changelog entry at all today**
+— write one.
 
 - [ ] **Step 4: Update `CLAUDE.md`**
 
