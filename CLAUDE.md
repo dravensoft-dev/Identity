@@ -595,6 +595,15 @@ scheduled for deletion the same week.
   that claim against real source on one layer and against a hand-written declaration on
   the other.
 
+- **Three Angular primitives import a contract type with a value import, and nothing
+  checks it.** The convention is `import type { X } from '../../api.generated'` in both
+  layers — every declaration in `api.generated.ts` is an `export type`, so a value import
+  is a type-only import written without `type`. `avatar.ts`, `alert.ts` and `page-head.ts`
+  each write the bare form instead. It compiles and nothing has ever broken because of it;
+  it is recorded because it is a live inconsistency no gate can see, and because it was
+  previously written down **only inside plan 8B3**, which was deleted when that plan was
+  executed. That is the exact failure mode this section's preamble names.
+
 ### Where the rest of the debt lives
 
 Each of these is a record with its own stale-entry rule: an entry that no longer
