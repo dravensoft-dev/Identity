@@ -60,6 +60,9 @@ export interface Command {
   shortcut?: string;
 }
 
+/** The three-step size scale shared by Arena's controls. Heights come from the density tokens, so a control inside .arena-compact re-densifies with the rows around it. */
+export type ControlSize = 'sm' | 'md' | 'lg';
+
 /** One entry in a breadcrumb trail. `href` is omitted for the current page, which is never rendered as a link. */
 export interface Crumb {
   /** What the crumb reads. */
@@ -106,6 +109,9 @@ export type SeriesTone = 'success' | 'warning' | 'danger' | 'info';
 
 /** The shape the placeholder reserves: a single text line, a stack of lines, a block, or a circle. */
 export type SkeletonVariant = 'text' | 'line' | 'block' | 'circle';
+
+/** Colour for an indeterminate wait. 'accent' on a page surface, 'on-accent' inside a filled button. There is deliberately no success/warning/danger: a wait has no state to report, and a spinner tinted --danger would read as a failure that has not happened. */
+export type SpinnerTone = 'accent' | 'gold' | 'neutral' | 'on-accent';
 
 /** How a metric moved. Preformatted — StatCard never formats. The pill's colour says whether the change was GOOD, not which way it points, which is why direction and tone are separate fields. */
 export interface StatDelta {

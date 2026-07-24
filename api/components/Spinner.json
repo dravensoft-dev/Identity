@@ -1,0 +1,12 @@
+{
+  "component": "Spinner",
+  "description": "Indeterminate wait indicator. For a measurable process use ProgressBar instead.",
+  "api": {
+    "size": { "form": "enum", "type": "ControlSize", "default": "md",
+              "description": "Diameter. 'sm' is --icon-sm exactly, so a spinner at that size sits inline with control text." },
+    "tone": { "form": "enum", "type": "SpinnerTone", "default": "accent",
+              "description": "Colour of the ring. 'on-accent' inside a filled button; 'accent' on a page surface." },
+    "label": { "form": "primitive", "type": "string", "default": "Loading",
+               "description": "Accessible name, announced by the status role. Say what is loading when you can." }
+  }
+}

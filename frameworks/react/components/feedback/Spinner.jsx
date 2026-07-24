@@ -39,12 +39,12 @@ const TONES = {
   'on-accent': 'var(--on-accent)',
 };
 
-export function Spinner({ size = 'md', tone = 'accent', label = 'Loading', style, ...rest }) {
+export function Spinner({ size = 'md', tone = 'accent', label = 'Loading' }) {
   useSpinKeyframes();
   const d = SIZES[size] || SIZES.md;
   const color = TONES[tone] || TONES.accent;
   return (
-    <span role="status" aria-label={label} style={{ display: 'inline-flex', color, ...style }} {...rest}>
+    <span role="status" aria-label={label} style={{ display: 'inline-flex', color }}>
       <span className="arena-spinner" aria-hidden="true" style={{
         width: d, height: d, boxSizing: 'border-box',
         border: 'var(--bw-strong) solid currentColor', borderTopColor: 'transparent',

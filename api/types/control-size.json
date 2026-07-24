@@ -1,0 +1,6 @@
+{
+  "name": "ControlSize",
+  "kind": "enum",
+  "description": "The three-step size scale shared by Arena's controls. Heights come from the density tokens, so a control inside .arena-compact re-densifies with the rows around it.",
+  "values": ["sm", "md", "lg"]
+}
