@@ -77,7 +77,7 @@ export type Direction = 'up' | 'down';
 /** Both halves of the brand lock-up at once — the mark's slot and the wordmark. A fixed repertoire, not a ratio: sm an application frame, md a signed-out panel, lg the manual's Primary, xl the hero case. */
 export type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
 
-/** Where the coachmark attaches: the two viewport coordinates it positions from. A DOMRect is structurally assignable to it, so a consumer passes getBoundingClientRect() directly. Declared as its own object rather than taken as a DOMRect because a platform type is none of the seven forms (R4), and because these are the only two fields Onboarding reads. */
+/** Where the coachmark attaches: the two viewport coordinates it positions from. A DOMRect is structurally assignable to it, so a consumer passes getBoundingClientRect() directly. Declared as its own object rather than taken as a DOMRect because a platform type is none of the eight forms (R4), and because these are the only two fields Onboarding reads. */
 export interface OnboardingAnchor {
   /** The anchored element's left edge, in viewport pixels. Clamped inside the viewport before use. */
   left: number;

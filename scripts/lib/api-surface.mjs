@@ -41,6 +41,11 @@ export class UnrecognisedShape extends Error {
 
 const PRIMITIVES = new Set(['string', 'number', 'boolean']);
 
+/** The one spelling the eighth form recognises, whitespace-insensitive and
+ *  nothing more. Narrow on purpose: a form that admitted any record would
+ *  re-legalise the escape R4 exists to close. */
+const isConsumerData = (ts) => ts.trim().replace(/\s+/g, ' ') === 'Record<string, unknown>';
+
 /** R4's named list, plus the two catch-alls it names by shape. These are
  *  RECOGNISED on purpose: the reader knows exactly what each one is, and it is
  *  simply not in the vocabulary -- so it is reported as a rule violation rather
@@ -69,6 +74,26 @@ export function classify(raw) {
 
   if (ts === 'React.ReactNode' || ts === 'ReactNode') return { form: 'slot' };
   if (PRIMITIVES.has(ts)) return { form: 'primitive', type: ts };
+
+  /* The eighth form. A record whose keys the CONSUMER names: Arena routes it
+   * and never inspects it, which is neither "Arena draws it" (an object) nor
+   * "the consumer draws it" (a slot). Recognised by exactly this spelling --
+   * Record<string, Widget> falls through to the platform branch below and stays
+   * an R4 violation, because a record of a KNOWN type is a predefined object
+   * and must be declared as one.
+   *
+   * BOTH tests sit here, before the platform branch, and the second one is why:
+   * that branch's `startsWith('Record<')` catches `Record<string, unknown>[]`
+   * whole, so the array form would never reach the array branch further down
+   * and a check placed there alone would be dead code for this spelling.
+   * `Array<Record<string, unknown>>` does not start with `Record<`, so it does
+   * reach the array branch and is admitted there instead -- both spellings are
+   * live, and each is covered by its own case in the tests. */
+  if (isConsumerData(ts)) return { form: 'consumerData' };
+  if (ts.endsWith('[]') && isConsumerData(ts.slice(0, -2))) {
+    return { form: 'array', of: 'consumerData' };
+  }
+
   if (PLATFORM_TYPES.includes(ts) || ts.startsWith('Record<') || /^React\./.test(ts)) {
     return { form: 'platform', type: ts };
   }
@@ -90,30 +115,42 @@ export function classify(raw) {
   const arrow = /^\(([\s\S]*)\)\s*=>\s*([\s\S]+)$/.exec(ts);
   if (arrow) {
     /* An arrow is an EVENT only if it returns void. `event` is the vocabulary's
-     * one outbound form -- a name plus a payload -- and the six inbound forms
+     * one outbound form -- a name plus a payload -- and the seven inbound forms
      * are all data; an inbound function that RETURNS a value is none of the
-     * seven. Judging the arrow by its parameter alone read
+     * eight. Judging the arrow by its parameter alone read
      * `(value: number) => string` as an event with payload `number`, which
      * would have let a contract declare a formatter, both layers agree with it,
      * and check:api call it green. The return type is right there in the
      * declaration, so this is one of the few vocabulary edges the reader can
-     * actually hold. See api/README.md, "The vocabulary: seven forms". */
+     * actually hold. See api/README.md, "The vocabulary: eight forms". */
     const returns = arrow[2].trim();
     if (returns !== 'void') {
       throw new UnrecognisedShape(
-        `an inbound function that returns "${returns}" is none of the seven forms — `
+        `an inbound function that returns "${returns}" is none of the eight forms — `
         + `only an event (returning void) is a function member: ${ts}`,
       );
     }
     const params = arrow[1].trim();
     if (!params) return { form: 'event', payload: null };
-    if (params.includes(',')) {
+    /* Depth-aware, not `params.includes(',')`: the comma inside a generic
+     * argument list is not a parameter separator, and reading it as one made
+     * `(row: Record<string, unknown>) => void` -- the eighth form's own event
+     * payload -- unreadable, so one of the two routes consumer data is allowed
+     * out through could never be spelled in React at all. A GENUINE second
+     * parameter still throws, which is the whole point of the guard:
+     * SideNav.onNav's `(id: string, event: React.MouseEvent) => void` splits to
+     * two here exactly as it did before. */
+    if (splitTopLevel(params, ',').length > 1) {
       throw new UnrecognisedShape(`an event takes one payload, and this declares more than one parameter: ${ts}`);
     }
     const colon = params.indexOf(':');
     if (colon === -1) throw new UnrecognisedShape(`event parameter has no type annotation: ${ts}`);
     const inner = classify(params.slice(colon + 1));
     if (inner.form === 'platform') return { form: 'event', payload: inner.type, platformPayload: true };
+    /* Consumer data carries no `type` -- there is nothing declared to name it
+     * with -- so the payload is spelled by FORM name, exactly as an array's
+     * `of` is, and exactly as the contract spells it. */
+    if (inner.form === 'consumerData') return { form: 'event', payload: 'consumerData' };
     if (inner.form !== 'named' && inner.form !== 'primitive') {
       throw new UnrecognisedShape(`unreadable event payload: ${ts}`);
     }
@@ -129,6 +166,11 @@ export function classify(raw) {
      * `(string | TabItem)[]` explicitly, so it must surface as a union rather
      * than as an unreadable shape the message cannot explain. */
     if (inner.form === 'union') return inner;
+    /* A homogeneous list of consumer data -- Table's `rows` -- is the shape the
+     * eighth form was added for, so the array branch admits it as an element
+     * type. `of: 'consumerData'` is a form name where the other two branches
+     * carry a type name, which the contract spells the same way. */
+    if (inner.form === 'consumerData') return { form: 'array', of: 'consumerData' };
     if (inner.form !== 'primitive' && inner.form !== 'named') {
       throw new UnrecognisedShape(`unreadable array element type: ${ts}`);
     }
@@ -336,6 +378,10 @@ function classMember(name, initialiser) {
     if (kind === 'output') {
       const inner = type.trim() === 'void' ? { payload: null } : classify(type);
       if (inner.form === 'platform') return { name, form: 'event', required: false, payload: inner.type, platformPayload: true };
+      /* Consumer data carries no `type`, so `inner.type ?? null` below would
+       * report the payload as NONE and no contract could ever match it. Spelled
+       * by form name instead, the same as React's arrow branch above. */
+      if (inner.form === 'consumerData') return { name, form: 'event', required: false, payload: 'consumerData' };
       return { name, form: 'event', required: false, payload: inner.type ?? null };
     }
     /* Angular's signature is input.required<T, TransformT>(opts): T is what the signal

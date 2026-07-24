@@ -147,11 +147,21 @@ the component stays exactly as broken.
 
 **Arena's third contract is the API, and it lives at `api/`.** `api/components/<Name>.json`
 states, once and neutrally, the members that component's API presents; every layer
-implementing it implements exactly those members. A member is one of **seven forms** —
+implementing it implements exactly those members. A member is one of **eight forms** —
 primitive, enum, predefined object, array of primitives, array of predefined objects,
-slot, event — and five derived rules govern them (R1 an object is pure data, R2 who draws
-decides data versus slot, R3 a parameterised slot fills and never replaces, R4 no platform
-types and no escapes, R5 no unions between forms). `api/README.md` is the normative
+consumer data, slot, event — and five derived rules govern them (R1 an object is pure data
+with known fields, R2 who draws decides data versus slot, R3 a parameterised slot fills and
+never replaces, R4 no platform types and no escapes, R5 no unions between forms).
+**Consumer data is the eighth and the one the contract deliberately does not describe**: a
+record whose keys the *consumer* names — `Table`'s rows, `Calendar`'s per-event `meta` —
+which Arena routes and never inspects. It exists because the vocabulary said *seven* and
+was false; `Table.rows` was a member and was none of them. It is exactly one spelling,
+`Record<string, unknown>`, and a record of a *known* type stays an R4 violation, because a
+form admitting any record would re-legalise the escape R4 closed. Two things about it are
+mechanical — it may not be a field of a predefined object, and a member taking it in must
+declare a route back out (a slot parameter or an event payload) or it is data Arena can
+never surface — and everything else is an authoring rule with R2 and R3's status.
+`api/README.md` is the normative
 statement and the first thing a new platform target reads, the way `tokens/src/TYPE-MAP.md`
 is for the token layer. Shared objects and enums are declared once in `api/types/` and
 emitted **per layer** by `bun run build:api` into the committed

@@ -150,7 +150,7 @@ test('an array of the wrong element type fails', () => {
 });
 
 /* 3b — required-ness. The contract governs a member's required-ness too, for
- * the four inbound non-slot forms; `slot` and `event` are carved out below. */
+ * the five inbound non-slot forms; `slot` and `event` are carved out below. */
 
 test('a contract member required: true implemented as optional by a layer is reported', () => {
   const problems = compareSurface(
@@ -450,7 +450,7 @@ test('a contract naming a type nobody declared fails', () => {
   assert.ok(problems.some((p) => /Widget/.test(p)));
 });
 
-test('a contract member with a form outside the six encoded values fails', () => {
+test('a contract member with a form outside the seven encoded values fails', () => {
   const problems = validateContract(
     { component: 'X', api: { thing: { form: 'callback' } } }, TYPES,
   );
@@ -477,4 +477,49 @@ test('the committed generated modules are what api/types/ generates', () => {
 test('a member shape the reader cannot read throws rather than reporting no members', () => {
   const src = 'export interface XProps { weird: { [k: string]: unknown }; }';
   assert.throws(() => reactSurface(src, 'XProps'), UnrecognisedShape);
+});
+
+/* the eighth form — consumer data */
+
+/* R1 extended. An object is pure data with known fields, so consumer data --
+ * whose fields are by construction unknown -- cannot be one of them. This is
+ * what deletes Calendar's `meta`: it is a field of the CalendarEvent object,
+ * and after this rule it cannot live there at all. */
+test('validateTypes rejects consumer data inside a predefined object', () => {
+  const problems = validateTypes([
+    { name: 'Row', kind: 'object', fields: { meta: { form: 'consumerData' } } },
+  ]);
+  assert.ok(problems.some((p) => /Row\.meta/.test(p) && /consumer data/i.test(p)));
+});
+
+/* A consumer-data member Arena can never surface is dead API: Arena holds data
+ * with no route back out. The route is a slot parameter or an event payload. */
+test('validateContract rejects a consumer-data member with no consumer', () => {
+  const problems = validateContract(
+    { component: 'X', api: { rows: { form: 'array', of: 'consumerData' } } },
+    new Map(),
+  );
+  assert.ok(problems.some((p) => /rows/.test(p) && /no.*consumer/i.test(p)));
+});
+
+test('validateContract accepts consumer data routed back out through a slot parameter', () => {
+  const problems = validateContract(
+    { component: 'X', api: {
+      rows: { form: 'array', of: 'consumerData' },
+      cell: { form: 'slot', params: { row: 'consumerData' } },
+    } },
+    new Map(),
+  );
+  assert.deepEqual(problems, []);
+});
+
+test('validateContract accepts consumer data routed back out through an event payload', () => {
+  const problems = validateContract(
+    { component: 'X', api: {
+      rows: { form: 'array', of: 'consumerData' },
+      select: { form: 'event', payload: 'consumerData' },
+    } },
+    new Map(),
+  );
+  assert.deepEqual(problems, []);
 });
