@@ -62,7 +62,9 @@ function Demo() {
     ]
   })), React.createElement("div", {
     className: "sub"
-  }, "PageHead"), React.createElement(PageHead, {
+  }, "PageHead"), React.createElement("div", {
+    style: { marginBottom: "var(--sp-4)" }
+  }, React.createElement(PageHead, {
     title: "Client Portal",
     subtitle: "Last published 2 h ago · build #4821",
     actions: React.createElement(React.Fragment, null, React.createElement(Button, {
@@ -72,7 +74,7 @@ function Demo() {
       variant: "primary",
       size: "sm"
     }, "Deploy"))
-  }), React.createElement("div", {
+  })), React.createElement("div", {
     className: "sub"
   }, "BulkActionBar — destructive stays outline, never filled"), React.createElement("div", {
     className: "row"

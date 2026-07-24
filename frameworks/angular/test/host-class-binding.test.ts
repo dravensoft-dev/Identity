@@ -293,6 +293,24 @@ class ErrorStateWithoutActionHost {}
 })
 class PageHeadWithoutActionsHost {}
 
+/* `title` became `input.required<string>()` (`api/components/PageHead.json`) --
+ * the same NG0950 hazard `arena-app-logo`'s `name` and `arena-breadcrumbs`'s
+ * `items` already hit under this JIT-only harness (see this file's header
+ * comment). `PageHeadWithoutActionsHost`'s template above supplies no `title`
+ * binding at all -- kept exactly as it was (it still carries the
+ * `consumer-class` the root-classes test needs), so the required input is
+ * routed around the same way `createBreadcrumbsHost` does: query the real
+ * child `PageHead` instance via `By.directive` before the first
+ * `detectChanges()`, and overwrite its `title` field with a plain function.
+ * The title text itself is irrelevant to every assertion below -- only the
+ * class/DOM shape is checked. */
+function createPageHeadWithoutActionsFixture() {
+  const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+  const instance = fixture.debugElement.query(By.directive(PageHead)).componentInstance as unknown as Record<string, unknown>;
+  instance['title'] = () => 'Portal';
+  return fixture;
+}
+
 @Component({
   standalone: true,
   imports: [UnauthCard],
@@ -1047,7 +1065,7 @@ const BP_SM = '480px';
 test('arena-page-head: the root recipe classes land on the host element itself', async () => {
   document.documentElement.style.setProperty('--bp-sm', BP_SM);
   try {
-    const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+    const fixture = createPageHeadWithoutActionsFixture();
     fixture.detectChanges();
     await fixture.whenStable();
     const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
@@ -1062,7 +1080,7 @@ test('arena-page-head: the root recipe classes land on the host element itself',
 test('arena-page-head: an unmeasured width renders the WIDE layout, so the narrow branch never flashes on first paint', async () => {
   document.documentElement.style.setProperty('--bp-sm', BP_SM);
   try {
-    const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+    const fixture = createPageHeadWithoutActionsFixture();
     fixture.detectChanges();
     await fixture.whenStable();
     const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
@@ -1090,7 +1108,7 @@ test('arena-page-head: an unmeasured width renders the WIDE layout, so the narro
 test('arena-page-head: the actions wrapper is absent from the DOM when no [actions] content is projected', async () => {
   document.documentElement.style.setProperty('--bp-sm', BP_SM);
   try {
-    const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+    const fixture = createPageHeadWithoutActionsFixture();
     fixture.detectChanges();
     await fixture.whenStable();
     const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
@@ -1119,7 +1137,7 @@ test('arena-page-head: a platform with no ResizeObserver still renders, on the w
   const saved = globals.ResizeObserver;
   delete globals.ResizeObserver;
   try {
-    const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
+    const fixture = createPageHeadWithoutActionsFixture();
     fixture.detectChanges();
     await fixture.whenStable();
     const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;

@@ -2,7 +2,7 @@
 export default {
   "component": "PageHead",
   "slots": {
-    "root": "flex justify-between gap-4 mb-5",
+    "root": "flex justify-between gap-4",
     "titles": "min-w-0",
     "title": "font-display font-extrabold text-h1 leading-snug tracking-tight text-base-content m-0",
     "subtitle": "font-body text-sm text-base-content/62 leading-body mt-0.5 mb-0",
@@ -15,12 +15,33 @@ export default {
         "actions": "w-full"
       },
       "false": {
-        "root": "flex-row items-start",
+        "root": "flex-row",
         "actions": "w-auto"
       }
+    },
+    "align": {
+      "start": {},
+      "center": {}
     }
   },
+  "compoundVariants": [
+    {
+      "narrow": false,
+      "align": "start",
+      "class": {
+        "root": "items-start"
+      }
+    },
+    {
+      "narrow": false,
+      "align": "center",
+      "class": {
+        "root": "items-center"
+      }
+    }
+  ],
   "defaultVariants": {
-    "narrow": false
+    "narrow": false,
+    "align": "start"
   }
 } as const;

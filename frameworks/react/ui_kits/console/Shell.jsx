@@ -64,7 +64,7 @@ export function Shell({ active = 'dashboard', onNav, title, actions, children })
       </aside>
       <main style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <header style={{ padding: 'calc(var(--sp-1) * 5) calc(var(--sp-1) * 8)', borderBottom: 'var(--bw) solid var(--color-base-300)' }}>
-          <PageHead title={title} style={{ marginBottom: 0, alignItems: 'center' }}
+          <PageHead title={title} align="center"
             actions={<>
               {actions}
               <IconButton label="Search"><Icon name="search" /></IconButton>

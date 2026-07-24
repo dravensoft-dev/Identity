@@ -35,6 +35,9 @@ export type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
 /** Whether a component's parts lay out side by side or stacked — which axis it runs along. */
 export type Orientation = 'horizontal' | 'vertical';
 
+/** How the actions block aligns against the title in PageHead's wide layout. */
+export type PageHeadAlign = 'start' | 'center';
+
 /** The shape the placeholder reserves: a single text line, a stack of lines, a block, or a circle. */
 export type SkeletonVariant = 'text' | 'line' | 'block' | 'circle';
 

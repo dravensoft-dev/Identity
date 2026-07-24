@@ -4,13 +4,18 @@ head inside a narrow panel stacks there too, on any screen. Actions are projecte
 they are real `mat-button`s wearing Arena.
 
 ```html
-<arena-page-head title="Deployments" subtitle="Everything shipped in the last 30 days">
+<arena-page-head title="Deployments" subtitle="Everything shipped in the last 30 days" align="center">
   <div actions>
     <button mat-stroked-button>Export</button>
     <button mat-flat-button>New deployment</button>
   </div>
 </arena-page-head>
 ```
+
+`title` is required — a page head with no title is a bug, not a state. `align` (default
+`start`) governs only the wide layout's cross-axis alignment of the actions block against
+the title; below `--bp-sm` the row always stacks and `align` has no effect. `arena-page-head`
+applies no outer bottom margin — the parent composes that spacing.
 
 Import `ArenaActions` from `frameworks/angular/primitives/projection-markers` (or the
 primitives barrel) alongside `PageHead` in the host component's `imports` —
