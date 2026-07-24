@@ -117,6 +117,23 @@ each names the measurement that produced it.
     spreading `...rest` but still merged `...style` must fail.
     `style={{ color: '#ff00ff' }}` is safe for `check:dimensions`: `color` is not in that gate's
     `PROPS` set (`scripts/check-dimension-literals.mjs:69-80`).
+
+    **How to prove it is not vacuous — corrected in Task 2, where the first attempt did not work.**
+    An earlier draft of this constraint said "restore both escapes and watch the test fail on both
+    assertions". That is **not observable**: `node:assert` throws on the first failing assertion, so
+    one run exercises exactly one. And restoring `{...rest}` *alone* also fails the **style**
+    assertion, because with `style` no longer destructured it falls into `rest` and is spread onto
+    the root anyway. The two regressions must therefore be induced **separately and
+    asymmetrically**, one run each:
+
+    1. `style` destructured **and merged** into the root's style object, no `{...rest}` — Global
+       Constraint 17's own named case. Expect a failure on *"a consumer style reached the rendered
+       root"*.
+    2. `style` destructured and **not** merged, `{...rest}` spread onto the root. Expect a failure
+       on *"a consumer attribute reached the rendered root"*.
+
+    Then restore and confirm the file is **byte-identical** (`sha256sum` before and after, not a
+    visual check) and the suite is green again.
 18. **A test title states exactly what the body asserts.** Three of Plan 8B3's five plan-supplied
     tests were its weak point. **The worked test code in this plan is a starting point, not a
     verified artifact** — run it, and if it does not discriminate, fix the test rather than
@@ -1333,8 +1350,11 @@ cd /home/juan/Dravensoft/Identity
 bun test frameworks/react/test/line-chart.test.jsx
 ```
 
-Expected: 6 pass. Then temporarily restore `style` and `...rest` to `LineChart.jsx`, re-run,
-confirm the last test fails **on both assertions**, restore byte-identically, re-run to green.
+Expected: 6 pass. Then run the R4 non-vacuity proof **as Global Constraint 17 describes it** — two
+separate, asymmetric regressions to `LineChart.jsx`, one run each (merge `style` without
+`{...rest}`; then spread `{...rest}` without merging `style`), because one combined run can only
+ever exercise the first assertion and restoring `{...rest}` alone trips the style assertion too.
+Restore, confirm byte-identical by `sha256sum`, re-run to green.
 
 - [ ] **Step 10: Update the demo and rebuild**
 
@@ -1751,8 +1771,11 @@ bun test frameworks/react/test/doughnut-chart.test.jsx
 
 Expected: 6 pass. The em-dash in the `aria-label` assertions is the same character the component
 writes (`—`, U+2014) — if those two assertions fail, check the character before changing the
-component. Then run the R4 non-vacuity proof: restore `style` and `...rest`, watch the last test
-fail on both assertions, restore byte-identically, re-run to green.
+component. Then run the R4 non-vacuity proof **as Global Constraint 17 describes it** — two
+separate, asymmetric regressions to `DoughnutChart.jsx`, one run each (merge `style` without
+`{...rest}`; then spread `{...rest}` without merging `style`), because one combined run can only
+ever exercise the first assertion and restoring `{...rest}` alone trips the style assertion too.
+Restore, confirm byte-identical by `sha256sum`, re-run to green.
 
 - [ ] **Step 10: Update the demo and rebuild**
 
