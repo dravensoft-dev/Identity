@@ -101,7 +101,7 @@ export function activeOptionId(uid: string, active: number, rowCount: number): s
  *  command, Enter to run it, Escape to leave, or hover a row to select it --
  *  a palette that needs the mouse is not a palette. Fully controlled: the
  *  host owns `open` and reacts to `closed`/`run` the same way it reacts to
- *  `arena-confirm-dialog`'s `cancelled`/`confirmed`. Running a command does
+ *  `arena-confirm-dialog`'s `cancel`/`confirm`. Running a command does
  *  not close the palette by itself here, unlike React's
  *  `CommandPalette.jsx`, which calls `onClose` unconditionally before
  *  invoking a command -- see `components-divergences.md`.

@@ -1,0 +1,26 @@
+{
+  "component": "ConfirmDialog",
+  "description": "Confirmation of a high-consequence action. Never closes on click-outside. `requireText` locks the confirm button until a word is typed.",
+  "api": {
+    "open": { "form": "primitive", "type": "boolean", "default": false,
+              "description": "Whether the dialog is shown. Closed when absent." },
+    "title": { "form": "primitive", "type": "string",
+               "description": "The dialog heading. Absent leaves the eyebrow as the name." },
+    "eyebrow": { "form": "primitive", "type": "string", "default": "Confirm",
+                 "description": "Small uppercase label above the title." },
+    "content": { "form": "slot",
+                 "description": "The dialog body — the question and any detail." },
+    "confirmLabel": { "form": "primitive", "type": "string", "default": "Confirm",
+                      "description": "The confirm button's label." },
+    "cancelLabel": { "form": "primitive", "type": "string", "default": "Cancel",
+                     "description": "The cancel button's label." },
+    "destructive": { "form": "primitive", "type": "boolean", "default": false,
+                     "description": "Gives the confirm button Arena's only filled danger surface." },
+    "requireText": { "form": "primitive", "type": "string",
+                     "description": "Locks the confirm button until this exact word is typed." },
+    "cancel": { "form": "event",
+                "description": "The dialog was dismissed — Cancel, or Escape." },
+    "confirm": { "form": "event",
+                 "description": "The action was confirmed." }
+  }
+}

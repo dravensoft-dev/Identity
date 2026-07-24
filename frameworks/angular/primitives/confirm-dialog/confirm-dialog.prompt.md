@@ -10,7 +10,7 @@ recipe.
                       title="Delete project Ardennes?"
                       eyebrow="Irreversible" confirmLabel="Delete project"
                       requireText="Ardennes"
-                      (cancelled)="confirming.set(false)" (confirmed)="destroy()">
+                      (cancel)="confirming.set(false)" (confirm)="destroy()">
   Every deployment, log and artifact under this project is removed. This cannot be
   undone.
 </arena-confirm-dialog>

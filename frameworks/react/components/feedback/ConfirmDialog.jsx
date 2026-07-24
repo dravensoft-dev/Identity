@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Button } from '../forms/Button.jsx';
 /** Confirmation of high-consequence actions. Does NOT close on click-outside (avoids losses).
  * `requireText` forces typing a word to enable the destructive action. */
-export function ConfirmDialog({ open, onCancel, onConfirm, title, eyebrow = 'Confirm', children,
-  confirmLabel = 'Confirm', cancelLabel = 'Cancel', destructive = false, requireText, width = 'calc(var(--sp-1) * 115)' }) {
+export function ConfirmDialog({ open = false, onCancel, onConfirm, title, eyebrow = 'Confirm', children,
+  confirmLabel = 'Confirm', cancelLabel = 'Cancel', destructive = false, requireText }) {
   const [typed, setTyped] = useState('');
   if (!open) return null;
   const locked = requireText ? typed.trim() !== requireText : false;
@@ -11,7 +11,7 @@ export function ConfirmDialog({ open, onCancel, onConfirm, title, eyebrow = 'Con
     <div style={{ position: 'fixed', inset: 0, zIndex: 'var(--z-modal-nested)', display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: 'var(--scrim)', backdropFilter: 'blur(var(--scrim-blur))', WebkitBackdropFilter: 'blur(var(--scrim-blur))' }}>
       <div role="alertdialog" aria-modal="true"
-        style={{ width, maxWidth: '92vw', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)',
+        style={{ width: 'calc(var(--sp-1) * 115)', maxWidth: '92vw', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)',
           borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', overflow: 'hidden' }}>
         <div style={{ padding: 'calc(var(--sp-1) * 5.5) calc(var(--sp-1) * 6) 0' }}>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: destructive ? 'var(--danger)' : 'var(--crimson)', marginBottom: 'calc(var(--sp-1) * 2)' }}>{eyebrow}</div>

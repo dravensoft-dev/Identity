@@ -4,7 +4,7 @@
 import React, { useState } from "react";
 import { Button } from "../forms/Button.js";
 export function ConfirmDialog({
-  open,
+  open = false,
   onCancel,
   onConfirm,
   title,
@@ -13,8 +13,7 @@ export function ConfirmDialog({
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
   destructive = false,
-  requireText,
-  width = "calc(var(--sp-1) * 115)"
+  requireText
 }) {
   const [typed, setTyped] = useState("");
   if (!open)
@@ -36,7 +35,7 @@ export function ConfirmDialog({
     role: "alertdialog",
     "aria-modal": "true",
     style: {
-      width,
+      width: "calc(var(--sp-1) * 115)",
       maxWidth: "92vw",
       background: "var(--surface-card)",
       border: "var(--bw) solid var(--line-strong)",

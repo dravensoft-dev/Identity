@@ -92,8 +92,8 @@ export function isConfirmLocked(required: string | undefined, typed: string): bo
           }
         </div>
         <div [class]="styles().foot()">
-          <button type="button" [class]="styles().cancel()" (click)="cancelled.emit()">{{ cancelLabel() }}</button>
-          <button type="button" [class]="styles().confirm()" [disabled]="locked()" (click)="confirmed.emit()">{{ confirmLabel() }}</button>
+          <button type="button" [class]="styles().cancel()" (click)="cancel.emit()">{{ cancelLabel() }}</button>
+          <button type="button" [class]="styles().confirm()" [disabled]="locked()" (click)="confirm.emit()">{{ confirmLabel() }}</button>
         </div>
       </div>
     }
@@ -107,8 +107,8 @@ export class ConfirmDialog {
   readonly cancelLabel = input('Cancel');
   readonly destructive = input(false, { transform: booleanAttribute });
   readonly requireText = input<string>();
-  readonly cancelled = output<void>();
-  readonly confirmed = output<void>();
+  readonly cancel = output<void>();
+  readonly confirm = output<void>();
 
   private readonly doc = inject(DOCUMENT);
   private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
@@ -150,7 +150,7 @@ export class ConfirmDialog {
     if (!this.open()) return;
     if (event.key === 'Escape') {
       event.preventDefault();
-      this.cancelled.emit();
+      this.cancel.emit();
       return;
     }
     if (event.key === 'Tab') {

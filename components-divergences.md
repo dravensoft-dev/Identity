@@ -441,18 +441,6 @@ Duotone icon on the coachmark was flagged as worth double-checking. If a future 
 wants one, `ph-sparkle` duotone with the crimson accent on the primary layer is the
 existing registry answer.
 
-### ConfirmDialog — no `width` prop in Angular
-
-**React:** `ConfirmDialog.jsx` takes a `width` prop, defaulting to `calc(var(--sp-1) * 115)`.
-**Angular:** the panel width is fixed at the same value (`w-115`), with no input to override it.
-
-**Why:** the plan's brief omitted the prop. The fixed value is the same token derivation React
-defaults to, so nothing renders differently until a consumer wants a different width.
-
-**Converges:** yes, when a consumer needs it. Low priority.
-
----
-
 ### BulkActionBar — a destructive action is bordered and hovers in `--danger-soft`, React only recolors the text
 
 **React:** `BulkActionBar.jsx`'s destructive action changes only the text color
