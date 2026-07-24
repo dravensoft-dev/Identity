@@ -625,15 +625,18 @@ count written here, which would drift.
   Plan 7c deferred the migration to a plan 7d rather than folding it in, on the
   spec's own instruction to sequence it last — the compliance suites change which
   exceptions are true, and migrating prose into entries that are about to move
-  wastes the work. Two findings for whoever writes 7d, derived from the file and
-  not recalled: it is **1127 lines**, not the 1119 the spec states (7b's preamble
-  note moved it), and the structural/per-component seam is at the
-  `## Per-component divergences` heading on **line 329**, which matches the spec's
-  "roughly the first 300 lines". But the spec's three-way split has a **fourth
-  bucket it does not name**: of the ~790 per-component lines, only about a third
-  are behaviour that migrates into `exceptions` (~11 sections); ~5 are API and
-  belong to plan 8; and **~9 are per-component *rendering* divergences** — BarChart's
-  per-bar category axis, DoughnutChart's per-slice legend, `chart-internals`' units,
+  wastes the work. One finding for whoever writes 7d, derived from the file and
+  not recalled: the structural/per-component seam is the
+  `## Per-component divergences` heading, and everything below it is the migration
+  subject. **Measure the file rather than trusting a figure written here** — an
+  earlier revision of this entry recorded a line count and a seam line number, and
+  plan 8B4 found both stale, having drifted every time a batch retired an entry.
+  That is this section's own rule about counts, which this entry had broken.
+  The spec's three-way split has a **fourth
+  bucket it does not name**: of the per-component sections, only about a third
+  are behaviour that migrates into `exceptions`; a few are API and
+  belong to plan 8; and several are per-component *rendering* divergences —
+  `chart-internals`' units,
   UnauthCard's hand-duplicated panel classes, SideNav being described three times —
   which are neither behaviour nor API and have no destination in the spec's scheme.
   They stay as prose alongside the structural half. Three bindings cite this
