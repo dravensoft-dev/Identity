@@ -253,14 +253,16 @@ component needing footer buttons styles them itself from its own manifest.
 `Button.manifest.json` defines — the gap, the transition, and the hover shadow — or it ships a
 control with no feedback. This was missed once on `ConfirmDialog` and corrected.
 
-**`ErrorState` names this directly:** React's `ErrorState.jsx` takes three props for its footer —
-`onRetry`, `retryLabel` and `secondaryAction` — where `EmptyState.jsx` takes one (`action`, a
-rendered node). Angular's `arena-error-state` collapses all three into the single projected
-`[action]` slot the same way `arena-empty-state` collapses its one, so a consumer wires the
-retry button, its label, and any secondary action itself as projected content rather than through
-component inputs.
+**`ErrorState` was a divergence here and no longer is.** Under the API contract
+(`api/components/ErrorState.json`) both layers draw the retry the same way: React's
+`ErrorState.jsx` draws it from `retryLabel`/`onRetry`, and `arena-error-state` draws its own
+`<button>` styled by its manifest's `retry` slot — exactly the pattern this section describes —
+projecting only a `[secondaryAction]` slot beside it. The former divergence (React drew a button
+from data while Angular collapsed the retry, its label and any secondary action into one projected
+`[action]` slot) is settled by the contract, so it is no longer recorded as one.
 
-**Converges:** no, by design.
+**Converges:** n/a — the contract makes both layers draw the retry identically; only the
+secondary action is projected, on each.
 
 ---
 
@@ -604,21 +606,22 @@ handler that forgets to close the palette leaves it open after running.
 `Onboarding`. Low priority for React, since React's self-closing behaviour is also
 defensible on its own.
 
-### PageHead — behaviour matches React; only the `style`/`...rest` prop has no counterpart
+### PageHead — behaviour matches React; the measurement helper is shared
 
-**React:** `PageHead.jsx` takes `title`, `subtitle`, `actions`, plus `style` and a
-`{...rest}` spread, and gates the actions wrapper on `{actions && ...}`.
+**React:** `PageHead.jsx` takes a required `title`, `subtitle`, `actions` and an `align`
+enum, and gates the actions wrapper on `{actions && ...}`.
 
-**Angular:** `arena-page-head` takes `title` and `subtitle` as signal inputs and projects
-`[actions]`, gating that wrapper on `contentChild(ArenaActions)` — the same gate,
-reached the only way an `ng-content` slot can report whether anything was projected. The
-responsive branch is identical in substance: both measure the component's own box, both
-compare against `--bp-sm` read off the document root, and both render the wide layout
-while the width is still `null` so the narrow branch never flashes. React's `style` and
-`{...rest}` have no input to mirror them, and need none: in Angular a consumer writes
-`style="..."` or any attribute directly on `<arena-page-head>`, which is the host — the
-same element the recipe's `root` classes are bound to, and Angular composes a static
-attribute with a `[class]` binding rather than clobbering it.
+**Angular:** `arena-page-head` takes a required `title`, `subtitle` and an `align` enum as
+signal inputs and projects `[actions]`, gating that wrapper on `contentChild(ArenaActions)` —
+the same gate, reached the only way an `ng-content` slot can report whether anything was
+projected. The responsive branch is identical in substance: both measure the component's own
+box, both compare against `--bp-sm` read off the document root, and both render the wide layout
+while the width is still `null` so the narrow branch never flashes. Both layers are under the API
+contract (`api/components/PageHead.json`) with no API divergence: `title` (required), `subtitle`,
+`actions` and `align` are the same members in each — the `style`/`{...rest}` escape that once
+lived only on the React side was removed when the component was brought under contract, its
+alignment intent re-expressed as the shared `align` enum and its bottom margin dropped so the
+parent composes the spacing.
 
 **Worth knowing:** the measurement helper is shared, not private to this component.
 `frameworks/angular/primitives/container-size.ts` exports `containerWidth()` and
@@ -716,8 +719,8 @@ carries a named `EXEMPT` entry for. Angular's binding syntax puts it outside all
 scanners, so it needs no exemption — but it is unexempted because it is unseen, not because it is
 tokenized. `check:dimensions` is clean on this component for real reasons everywhere else.
 
-**Not ported:** React's `style` prop and `{...rest}` spread, for the reason PageHead's entry above
-already gives — in Angular a consumer writes those directly on the host.
+**Not ported:** React's `style` prop and `{...rest}` spread, for the reason the host-binding
+section at the top of this document gives — in Angular a consumer writes those directly on the host.
 
 **Converges:** no on the idiom; each layer states the same token values in its own form.
 
@@ -809,8 +812,8 @@ are the same distance expressed twice — once as the token derivation `calc(var
 CSS lays out, and once as the number the SVG's own user-unit width has to account for. They move
 together, and both this component and React's carry the pair.
 
-**Not ported:** React's `style` prop and `{...rest}` spread, for the reason PageHead's entry above
-already gives — in Angular a consumer writes those directly on the host.
+**Not ported:** React's `style` prop and `{...rest}` spread, for the reason the host-binding
+section at the top of this document gives — in Angular a consumer writes those directly on the host.
 
 **Converges:** no. Each layer expresses the same box in its own idiom, and neither is wrong.
 
