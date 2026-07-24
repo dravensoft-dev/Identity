@@ -30,6 +30,7 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { BarChart } from '../primitives/bar-chart/bar-chart';
+import { DoughnutChart } from '../primitives/doughnut-chart/doughnut-chart';
 import { assertPattern, ANGULAR_PRIMITIVES } from './compliance';
 const BINDING = join(ANGULAR_PRIMITIVES, 'bar-chart/bar-chart.behaviour.json');
 
@@ -204,3 +205,42 @@ test('arena-bar-chart appends valueSuffix to the axis ticks and to the accessibl
   }
 });
 
+/* `seriesLabel` is the one member the API-contract batch ADDED rather than
+ * reshaped, and D7 approved it precisely because `doughnut-chart.ts` used to
+ * emit the literal `aria-label="Doughnut chart"` with no caller-supplied path at
+ * ALL -- the worst case of the aria-label debt CLAUDE.md records. Three template
+ * sites now read the input: the graphic's accessible name, the table caption and
+ * the value column header.
+ *
+ * The fallback alone cannot pin any of that. `host-class-binding.test.ts`
+ * asserts the unnamed case, and the pre-migration literal satisfied it just as
+ * well -- so reverting all three bindings would have left the whole Angular
+ * suite green, and `check:api` green with it, since the gate reads declared
+ * inputs and never the template. This is the NAMED case, which only a real
+ * caller-supplied value can satisfy.
+ *
+ * The separator is U+2014 EM —, copied from the component rather than
+ * retyped: an en dash here would fail with a diff nobody can see. */
+test('arena-doughnut-chart takes its accessible name, caption and value column from seriesLabel', () => {
+  const fixture = TestBed.createComponent(DoughnutChart);
+  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
+  instance['labels'] = () => LABELS;
+  instance['values'] = () => VALUES;
+  instance['seriesLabel'] = () => SERIES;
+  fixture.detectChanges();
+  try {
+    const host = fixture.nativeElement as Element;
+
+    const graphic = host.querySelector('[role="img"]') as Element;
+    assert.equal(graphic.getAttribute('aria-label'), `${SERIES} — doughnut chart`);
+
+    const table = host.querySelector('table') as HTMLTableElement;
+    assert.equal((table.querySelector('caption')?.textContent ?? '').trim(), `${SERIES} — doughnut chart`);
+
+    // The value column takes the series name; with no seriesLabel it reads 'Value'.
+    const headers = [...table.querySelectorAll('thead th')].map((c) => (c.textContent ?? '').trim());
+    assert.deepEqual(headers, ['Category', SERIES]);
+  } finally {
+    fixture.destroy();
+  }
+});
