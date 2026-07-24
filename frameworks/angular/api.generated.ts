@@ -36,6 +36,8 @@ export type AvatarStatus = 'online' | 'busy' | 'away' | 'offline';
 
 /** One action a BulkActionBar offers for the current selection. A destructive action stays outline in --error — transparent at rest, the soft --danger-soft tint only on hover — never the filled danger surface, which is ConfirmDialog's alone. */
 export interface BulkAction {
+  /** A stable identity for the action, so a host can switch on it rather than on the label. */
+  id: string;
   /** The button's text. */
   label: string;
   /** A Phosphor class name for the leading glyph Arena draws. */

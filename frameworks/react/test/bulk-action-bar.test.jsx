@@ -6,7 +6,7 @@ import { BulkActionBar } from '../components/navigation/BulkActionBar.jsx';
 
 test('an action renders its icon as a Phosphor class and its label as text', () => {
   const html = renderToStaticMarkup(
-    <BulkActionBar count={3} actions={[{ label: 'Archive', icon: 'ph-bold ph-archive' }]} />,
+    <BulkActionBar count={3} actions={[{ id: 'archive', label: 'Archive', icon: 'ph-bold ph-archive' }]} />,
   );
   assert.ok(html.includes('class="ph-bold ph-archive"'), 'the icon is drawn from the class name');
   assert.ok(html.includes('Archive'), 'the label is rendered');

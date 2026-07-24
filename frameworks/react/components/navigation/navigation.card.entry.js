@@ -85,9 +85,9 @@ function Demo() {
     onClear: () => setSel(0),
     onRun: () => {},
     actions: [
-      { label: "Re-run", icon: "ph-bold ph-arrow-clockwise" },
-      { label: "Archive", icon: "ph-bold ph-archive" },
-      { label: "Delete", icon: "ph-bold ph-trash", destructive: true }
+      { id: "rerun", label: "Re-run", icon: "ph-bold ph-arrow-clockwise" },
+      { id: "archive", label: "Archive", icon: "ph-bold ph-archive" },
+      { id: "delete", label: "Delete", icon: "ph-bold ph-trash", destructive: true }
     ]
   }), sel === 0 && React.createElement("button", {
     onClick: () => setSel(3),

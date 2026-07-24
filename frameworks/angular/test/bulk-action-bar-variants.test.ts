@@ -86,7 +86,7 @@ test('the Clear output was renamed from `cleared` to `clear`, per the API contra
 
 test('classesFor still resolves a destructive action\'s classes to the same recipe output after the BulkAction retype', () => {
   const instance = constructBulkActionBar();
-  const viaMethod = instance.classesFor({ label: 'Delete', destructive: true }).action();
+  const viaMethod = instance.classesFor({ id: 'delete', label: 'Delete', destructive: true }).action();
   const viaRecipe = bulkActionBarStyles({ destructive: true }).action();
   assert.equal(viaMethod, viaRecipe);
 });

@@ -9,9 +9,9 @@ sibling `bulk-action-bar.variants.ts` recipe.
 ```html
 <arena-bulk-action-bar [count]="selected().length" noun="deployments"
                        [actions]="[
-                         { label: 'Re-run', icon: 'ph-bold ph-arrow-clockwise' },
-                         { label: 'Archive', icon: 'ph-bold ph-archive' },
-                         { label: 'Delete', icon: 'ph-bold ph-trash', destructive: true }
+                         { id: 'rerun', label: 'Re-run', icon: 'ph-bold ph-arrow-clockwise' },
+                         { id: 'archive', label: 'Archive', icon: 'ph-bold ph-archive' },
+                         { id: 'delete', label: 'Delete', icon: 'ph-bold ph-trash', destructive: true }
                        ]"
                        (run)="apply($event)" (clear)="selected.set([])" />
 ```

@@ -1,11 +1,11 @@
-Bulk actions (H7). Appears when there's a selection and operates on the set. Combine it with `ConfirmDialog` for destructive actions. `actions` is an array of `{ label, icon?, destructive? }`, where `icon` is a Phosphor class name Arena draws — never a node. Activating one fires `onRun` with the action; there is no per-action `onClick`.
+Bulk actions (H7). Appears when there's a selection and operates on the set. Combine it with `ConfirmDialog` for destructive actions. `actions` is an array of `{ id, label, icon?, destructive? }`, where `id` is a stable identity so a host can switch on it rather than on the label, and `icon` is a Phosphor class name Arena draws — never a node. Activating one fires `onRun` with the action; there is no per-action `onClick`.
 
 ```jsx
 <BulkActionBar count={selected.length} noun="deployments" onRun={(action) => run(action)} onClear={() => setSelected([])}
   actions={[
-    { label: 'Retry', icon: 'ph-bold ph-arrow-clockwise' },
-    { label: 'Archive', icon: 'ph-bold ph-archive' },
-    { label: 'Delete', icon: 'ph-bold ph-trash', destructive: true },
+    { id: 'retry', label: 'Retry', icon: 'ph-bold ph-arrow-clockwise' },
+    { id: 'archive', label: 'Archive', icon: 'ph-bold ph-archive' },
+    { id: 'delete', label: 'Delete', icon: 'ph-bold ph-trash', destructive: true },
   ]} />
 ```
 

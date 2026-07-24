@@ -28,10 +28,10 @@ function bar(count, noun, actions) {
 
 mountSpecimen({ sections: [
   section('With a destructive action', [bar(12, 'deployments', [
-    { label: 'Re-run', icon: 'ph-bold ph-arrow-clockwise' },
-    { label: 'Archive', icon: 'ph-bold ph-archive' },
-    { label: 'Delete', icon: 'ph-bold ph-trash', destructive: true },
+    { id: 'rerun', label: 'Re-run', icon: 'ph-bold ph-arrow-clockwise' },
+    { id: 'archive', label: 'Archive', icon: 'ph-bold ph-archive' },
+    { id: 'delete', label: 'Delete', icon: 'ph-bold ph-trash', destructive: true },
   ])], { stack: true }),
-  section('Single selection', [bar(1, 'project', [{ label: 'Export', icon: 'ph-bold ph-download-simple' }])], { stack: true }),
+  section('Single selection', [bar(1, 'project', [{ id: 'export', label: 'Export', icon: 'ph-bold ph-download-simple' }])], { stack: true }),
 ]});
 </script></body></html>
