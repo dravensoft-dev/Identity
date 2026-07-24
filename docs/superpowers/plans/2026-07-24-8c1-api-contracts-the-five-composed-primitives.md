@@ -2492,9 +2492,9 @@ and belongs to C2 and C3. Say which is which in the ledger rather than fixing wh
 
 **A second is `frameworks/angular/test/chart-data-table.test.ts:168`**, a comment reading *"an
 inbound function that RETURNS a value is none of the seven forms"*. Task 1b made the count wrong.
-Task 1b deferred it citing Global Constraint 25 — **that reading was too literal and is corrected
-here**: constraint 25 forbids Angular *component* work, and a comment in a test suite is neither a
-component nor a recipe. It is one word, it is factually wrong, and it belongs to this sweep. Change
+Task 1b deferred it citing the no-Angular-work constraint (numbered 25 when Task 1b ran, **27**
+today) — **that reading was too literal and is corrected here**: that constraint forbids Angular
+*component* work, and a comment in a test suite is neither a component nor a recipe. It is one word, it is factually wrong, and it belongs to this sweep. Change
 "seven" to "eight" and change nothing else in that file.
 
 **One such defect is already known and is this task's to fix.** `StatCard.d.ts:1` carries
