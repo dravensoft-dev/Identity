@@ -237,7 +237,18 @@ measurement or the lesson that produced it.
     `git commit -q -F - <<'MSG' … MSG` — the quoted delimiter disables every expansion — and verify
     with `git log -1 --format=%B`. The commit messages written out in this plan happen to contain no
     backtick; one added while executing must follow this.
-25. **No Angular component work exists in this plan, and a task that finds itself editing one has
+25. **A task opens by checking the tree is clean, and folds in what it finds rather than redoing it.**
+    Task 2 opened on a tree carrying both `api/types/*.json` untracked and both `api.generated.*`
+    modified — an earlier attempt at the same task had been interrupted after its Step 2 and left its
+    output behind. The right handling is what it did: verify the leftovers byte-for-byte against what
+    the plan's step specifies, confirm `check:api` has not moved, and fold them into the task's own
+    commit. Blindly re-running the step would have been harmless here and will not always be. Run
+    `git status --short` first, every task.
+26. **Re-measure a line number before trusting one written here.** This plan's Task 2 cited the
+    signature at line 45 and the root element at 48; they were at **42** and **47**. Line numbers
+    drift with every edit to a file and none of them is load-bearing — the surrounding code quoted in
+    each step is what identifies the site. The same applies to every `sed -n` range in this document.
+27. **No Angular component work exists in this plan, and a task that finds itself editing one has
     gone wrong.** The only Angular file that changes is the generated
     `frameworks/angular/api.generated.ts`. `bun run check:angular` still runs per task, because
     `frameworks/angular/index.ts` re-exports `api.generated.ts` and `tsconfig.check.json` pulls it
