@@ -419,9 +419,12 @@ test('a class with no template literal at all (templateUrl, or no @Component) ha
  * names a row type that cannot be declared -- a declared type is an object of
  * primitives/enums (R1) or an enum, and Arena does not know a consumer row's
  * fields. Table.jsx:28 states what the form actually is: `row[c.key]` indexes
- * the record by a key the CONSUMER named. R4 already names
- * Record<string, unknown> as none of the seven; this is the form that receives
- * it rather than leaving it unreadable. */
+ * the record by a key the CONSUMER named. R4 used to name
+ * Record<string, unknown> among its escapes and no longer does: this form is
+ * where that one exact spelling went, and Record<string, Widget> -- a record of
+ * a KNOWN type, which is a predefined object -- stayed behind as an R4
+ * violation. The promotion is one spelling wide, and the test below it pins
+ * exactly that. */
 test('classify reads Record<string, unknown> as consumer data rather than as a platform type', () => {
   assert.deepEqual(classify('Record<string, unknown>'), { form: 'consumerData' });
 });
