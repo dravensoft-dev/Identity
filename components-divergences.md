@@ -701,9 +701,6 @@ carries a named `EXEMPT` entry for. Angular's binding syntax puts it outside all
 scanners, so it needs no exemption — but it is unexempted because it is unseen, not because it is
 tokenized. `check:dimensions` is clean on this component for real reasons everywhere else.
 
-**Not ported:** React's `style` prop and `{...rest}` spread, for the reason the host-binding
-section at the top of this document gives — in Angular a consumer writes those directly on the host.
-
 **Converges:** no on the idiom; each layer states the same token values in its own form.
 
 ### LineChart — the crosshair measures against the SVG, not against the overlay rect
@@ -793,9 +790,6 @@ primitives in `NO_MANIFEST` and asserts the rendered host's `display`, `position
 are the same distance expressed twice — once as the token derivation `calc(var(--sp-1) * 4)` that
 CSS lays out, and once as the number the SVG's own user-unit width has to account for. They move
 together, and both this component and React's carry the pair.
-
-**Not ported:** React's `style` prop and `{...rest}` spread, for the reason the host-binding
-section at the top of this document gives — in Angular a consumer writes those directly on the host.
 
 **Converges:** no. Each layer expresses the same box in its own idiom, and neither is wrong.
 
