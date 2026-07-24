@@ -1,7 +1,10 @@
 {
   "component": "Tag",
-  "pattern": "none",
-  "reason": "arena-tag renders only a tone dot (a plain <span>, no role) and projected content -- there is no output, no button, and no onRemove-equivalent input anywhere in the file. A user can look at the tag but has no way to remove it. React's Tag.jsx conditionally renders a real <button> for removal when its `onRemove` prop is passed; Angular's tag carries no removable variant at all, so this is a real capability gap, not an equivalent implementation with different DOM.",
-  "divergesFrom": "button",
-  "exceptions": []
+  "pattern": "button",
+  "exceptions": [
+    { "requirement": "roles.element",
+      "reason": "The <button> only renders when removable() is true (@if (removable()) { <button>...</button> }). Without it -- the common case -- arena-tag is a plain tone dot and projected content, no button, no role and no interactivity at all, and this whole pattern does not apply; it would bind none instead. This binding, and every exception in it including the one below, describes arena-tag only in the shape it takes when removable is set." },
+    { "requirement": "states.disabled",
+      "reason": "The remove button has no disabled concept at all -- aria-disabled is never set, and there is no input to make removal unavailable while still visible. It is either rendered (fully enabled) or not rendered at all." }
+  ]
 }

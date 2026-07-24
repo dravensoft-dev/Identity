@@ -15,8 +15,15 @@ function Demo(){return (<div>
     <Badge tone="info">v2.4</Badge>
     <Badge>Draft</Badge>
   </div>
-  <div className="sub">Tag</div>
-  <div className="row"><Tag>TypeScript</Tag><Tag>PostgreSQL</Tag><Tag onRemove={()=>{}}>React</Tag></div>
+  <div className="sub">Tag — tones and dismiss</div>
+  <div className="row">
+    <Tag>Neutral</Tag>
+    <Tag tone="primary">Primary</Tag>
+    <Tag tone="success">Success</Tag>
+    <Tag tone="warning">Warning</Tag>
+    <Tag tone="danger">Danger</Tag>
+    <Tag removable onRemove={()=>{}}>React</Tag>
+  </div>
   <div className="sub">Card</div>
   <div className="row" style={{alignItems:'stretch'}}>
     <Card eyebrow="Delivery" title="Client Portal" action={<Badge tone="success" dot>Deployed</Badge>} style={{width:'calc(var(--sp-1) * 75)'}}>

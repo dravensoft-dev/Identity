@@ -1,6 +1,11 @@
 import * as React from 'react';
-/** Chip for filters, technologies, tags. `onRemove` shows the dismiss ×. */
-export interface TagProps extends React.HTMLAttributes<HTMLSpanElement> {
+import type { TagTone } from '../../api.generated';
+/** A pill for filters, technologies and statuses. `tone` sets the emphasis
+ *  colour; an `onRemove` listener adds the dismiss ×. */
+export interface TagProps {
+  children?: React.ReactNode;
+  tone?: TagTone;
+  removable?: boolean;
   onRemove?: () => void;
 }
 export function Tag(props: TagProps): JSX.Element;

@@ -2,7 +2,23 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-export function Tag({ children, onRemove, style, ...rest }) {
+const TONES = {
+  neutral: "var(--bone-dim)",
+  primary: "var(--color-primary)",
+  success: "var(--color-success)",
+  warning: "var(--color-warning)",
+  danger: "var(--color-error)"
+};
+const BORDERS = {
+  neutral: "var(--color-base-300)",
+  primary: "var(--color-primary)",
+  success: "var(--color-success)",
+  warning: "var(--color-warning)",
+  danger: "var(--color-error)"
+};
+export function Tag({ children, tone = "neutral", removable = false, onRemove }) {
+  const color = TONES[tone] || TONES.neutral;
+  const border = BORDERS[tone] || BORDERS.neutral;
   return React.createElement("span", {
     style: {
       display: "inline-flex",
@@ -10,15 +26,16 @@ export function Tag({ children, onRemove, style, ...rest }) {
       gap: "calc(var(--sp-1) * 1.5)",
       padding: "calc(var(--sp-1) * 1) calc(var(--sp-1) * 2.5)",
       background: "var(--panel)",
-      color: "var(--bone-dim)",
-      border: "var(--bw) solid var(--color-base-300)",
+      color,
+      border: "var(--bw) solid " + border,
       borderRadius: "var(--r-sm)",
       fontFamily: "var(--font-body)",
-      fontSize: "var(--dz-text-md)",
-      ...style
-    },
-    ...rest
-  }, children, onRemove && React.createElement("button", {
+      fontSize: "var(--dz-text-md)"
+    }
+  }, React.createElement("span", {
+    "aria-hidden": "true",
+    style: { display: "inline-block", flexShrink: 0, width: "calc(var(--sp-1) * 1.5)", height: "calc(var(--sp-1) * 1.5)", borderRadius: "50%", background: "currentColor" }
+  }), children, removable && React.createElement("button", {
     onClick: onRemove,
     "aria-label": "Remove",
     style: { display: "inline-flex", alignItems: "center", background: "none", border: "none", color: "var(--mute)", cursor: "pointer", padding: 0, fontSize: "var(--icon-sm)", lineHeight: "var(--dz-lh)" }

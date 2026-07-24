@@ -1,0 +1,14 @@
+{
+  "component": "Tag",
+  "description": "A pill for filters, technologies and statuses. Optional tone, optional dismiss.",
+  "api": {
+    "content": { "form": "slot",
+                 "description": "The tag's label." },
+    "tone": { "form": "enum", "type": "TagTone", "default": "neutral",
+              "description": "The tag's emphasis colour." },
+    "removable": { "form": "primitive", "type": "boolean", "default": false,
+                   "description": "Whether the dismiss × is shown. Both layers gate the × on this — Angular cannot detect a `remove` listener the way React detects an `onRemove` prop, the same limitation the single-icon convention settled, so removability is a detectable input rather than inferred from the event." },
+    "remove": { "form": "event",
+                "description": "The dismiss × was activated." }
+  }
+}

@@ -28,9 +28,18 @@ function Demo() {
     tone: "info"
   }, "v2.4"), React.createElement(Badge, null, "Draft")), React.createElement("div", {
     className: "sub"
-  }, "Tag"), React.createElement("div", {
+  }, "Tag — tones and dismiss"), React.createElement("div", {
     className: "row"
-  }, React.createElement(Tag, null, "TypeScript"), React.createElement(Tag, null, "PostgreSQL"), React.createElement(Tag, {
+  }, React.createElement(Tag, null, "Neutral"), React.createElement(Tag, {
+    tone: "primary"
+  }, "Primary"), React.createElement(Tag, {
+    tone: "success"
+  }, "Success"), React.createElement(Tag, {
+    tone: "warning"
+  }, "Warning"), React.createElement(Tag, {
+    tone: "danger"
+  }, "Danger"), React.createElement(Tag, {
+    removable: true,
     onRemove: () => {}
   }, "React")), React.createElement("div", {
     className: "sub"

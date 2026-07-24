@@ -3,7 +3,8 @@ export default {
   "component": "Tag",
   "slots": {
     "root": "inline-flex items-center gap-1.5 rounded-pill border-[length:var(--bw)] px-2 py-0.5 text-ctl-xs font-semibold",
-    "dot": "size-1.5 rounded-pill bg-current"
+    "dot": "size-1.5 rounded-pill bg-current",
+    "close": "inline-flex items-center bg-transparent border-none cursor-pointer p-0 text-base-content/62 text-[length:var(--icon-sm)] leading-ctl"
   },
   "variants": {
     "tone": {

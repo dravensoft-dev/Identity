@@ -1,0 +1,6 @@
+{
+  "name": "TagTone",
+  "kind": "enum",
+  "description": "The tag's emphasis colour, per the Badge/Tag tone taxonomy.",
+  "values": ["neutral", "primary", "success", "warning", "danger"]
+}
