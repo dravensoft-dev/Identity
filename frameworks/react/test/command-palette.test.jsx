@@ -14,6 +14,7 @@ test('an open palette draws each command with its icon class, label and shortcut
   );
   assert.ok(html.includes('class="ph-bold ph-plus"'), 'the icon is drawn from the class name');
   assert.ok(html.includes('New project'), 'the label is rendered');
+  assert.ok(html.includes('>N<'), 'the shortcut is rendered at the row\'s trailing edge');
   assert.ok(html.includes('role="dialog"'), 'the combobox binding\'s dialog element is intact');
 });
 
