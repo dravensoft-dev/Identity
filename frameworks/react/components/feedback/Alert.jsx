@@ -7,27 +7,28 @@ const TONES = {
   neutral: { color: 'var(--line-strong)', soft: 'var(--panel)',    icon: 'ph-fill ph-note' },
 };
 /** Persistent message embedded in the page (not ephemeral). Unlike Toast, it stays
- * until the condition is resolved. Use `tone` for severity; `action` adds an action
- * link; `onClose` makes it dismissible (single Phosphor ph-x close icon). */
-export function Alert({ tone = 'info', title, children, icon, action, onClose, style }) {
+ * until the condition is resolved. Use `tone` for severity; `actionLabel` +
+ * `onAction` add an inline action; `dismissible` shows the × (single Phosphor
+ * ph-x close icon) and `onClose` handles it. */
+export function Alert({ tone = 'info', title, children, icon, actionLabel, onAction, dismissible, onClose }) {
   const t = TONES[tone] || TONES.info;
   return (
     <div role={tone === 'danger' ? 'alert' : 'status'}
       style={{ display: 'flex', gap: 'calc(var(--sp-1) * 3)', alignItems: 'flex-start', padding: 'calc(var(--sp-1) * 3.5) calc(var(--sp-1) * 4)',
-        background: t.soft, border: 'var(--bw) solid ' + t.color, borderRadius: 'var(--r-md)', ...style }}>
+        background: t.soft, border: 'var(--bw) solid ' + t.color, borderRadius: 'var(--r-md)' }}>
       <i className={icon || t.icon} style={{ color: t.color, fontSize: 'var(--icon-lg)', lineHeight: 'var(--dz-lh)', flexShrink: 0, marginTop: 0 }} />
       <div style={{ flex: 1 }}>
         {title && <div style={{ fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--dz-text)', color: 'var(--bone)' }}>{title}</div>}
         {children && <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--fs-sm)', color: 'var(--bone-dim)', lineHeight: 'var(--lh-body)', marginTop: title ? 'var(--sp-1)' : 0 }}>{children}</div>}
-        {action && (
-          <button onClick={action.onClick}
+        {actionLabel && (
+          <button onClick={onAction}
             style={{ marginTop: 'calc(var(--sp-1) * 2.5)', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
               fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--ls-uppercase-status)', textTransform: 'uppercase', color: t.color }}>
-            {action.label}
+            {actionLabel}
           </button>
         )}
       </div>
-      {onClose && (
+      {dismissible && (
         <button onClick={onClose} aria-label="Dismiss"
           style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 'none', color: 'var(--mute)', cursor: 'pointer', fontSize: 'var(--icon-md)', lineHeight: 'var(--dz-lh)' }}>
           <i className="ph-bold ph-x" />

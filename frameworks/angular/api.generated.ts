@@ -6,6 +6,9 @@
  * tokens.generated.* already carries. scripts/check-api.mjs asserts the
  * committed files match api/types/. See api/README.md for the vocabulary. */
 
+/** The alert's severity — the colour and default icon/role it takes. */
+export type AlertTone = 'info' | 'success' | 'warning' | 'danger' | 'neutral';
+
 /** Circle for a person, rounded for a team or organisation. */
 export type AvatarShape = 'circle' | 'rounded';
 

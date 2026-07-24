@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, output } from '@angular/core';
 import { alertStyles } from './alert.variants';
+import { AlertTone } from '../../api.generated';
 
-type Tone = 'info' | 'success' | 'warning' | 'danger' | 'neutral';
-
-const TONE_ICONS: Record<Tone, string> = {
+const TONE_ICONS: Record<AlertTone, string> = {
   info: 'ph-fill ph-info',
   success: 'ph-fill ph-check-circle',
   warning: 'ph-fill ph-warning',
@@ -37,20 +36,20 @@ const TONE_ICONS: Record<Tone, string> = {
       }
     </div>
     @if (dismissible()) {
-      <button type="button" [class]="styles().close()" aria-label="Dismiss" (click)="closed.emit()">
+      <button type="button" [class]="styles().close()" aria-label="Dismiss" (click)="close.emit()">
         <i class="ph-bold ph-x" aria-hidden="true"></i>
       </button>
     }
   `,
 })
 export class Alert {
-  readonly tone = input<Tone>('info');
+  readonly tone = input<AlertTone>('info');
   readonly title = input<string>();
   readonly icon = input<string>();
   readonly actionLabel = input<string>();
   readonly dismissible = input(false, { transform: booleanAttribute });
   readonly action = output<void>();
-  readonly closed = output<void>();
+  readonly close = output<void>();
 
   protected readonly styles = computed(() => alertStyles({ tone: this.tone(), titled: !!this.title() }));
   protected readonly toneIcon = computed(() => TONE_ICONS[this.tone()]);

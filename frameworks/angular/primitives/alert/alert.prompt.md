@@ -10,7 +10,7 @@ the sibling `alert.variants.ts` recipe.
 </arena-alert>
 
 <arena-alert tone="danger" title="Sync failed" actionLabel="Retry" [dismissible]="true"
-             (action)="retry()" (closed)="hide()">
+             (action)="retry()" (close)="hide()">
   Three records could not be written.
 </arena-alert>
 ```

@@ -46,7 +46,7 @@ import { Alert } from '../primitives/alert/alert';
 import { assertPattern, ANGULAR_PRIMITIVES } from './compliance';
 const BINDING = join(ANGULAR_PRIMITIVES, 'alert/alert.behaviour.json');
 
-/** Every tone `alert.ts`'s own `Tone` union admits. `info` is the default. */
+/** Every tone `alert.ts`'s own `AlertTone` (from api.generated) admits. `info` is the default. */
 const TONES = ['info', 'success', 'warning', 'danger', 'neutral'] as const;
 
 function renderAlert(tone: (typeof TONES)[number]) {
@@ -168,7 +168,7 @@ test('arena-alert survives every timer its own render schedules, fired early -- 
     fixture!.detectChanges();
 
     // Still here, role intact, dismiss control intact. An alert goes away when the
-    // consumer acts on `closed`, never on its own clock.
+    // consumer acts on `close`, never on its own clock.
     assert.equal(host.getAttribute('role'), 'alert', 'the alert must still be a live region after every timer has fired');
     assert.ok(
       host.querySelector('button[aria-label="Dismiss"]'),

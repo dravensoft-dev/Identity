@@ -16,10 +16,12 @@ function Demo() {
   }, "build #4821 in production."), React.createElement(Alert, {
     tone: "warning",
     title: "Staging environment",
-    action: { label: "Go to production", onClick: () => {} }
+    actionLabel: "Go to production",
+    onAction: () => {}
   }, "Changes here don't affect real users."), React.createElement(Alert, {
     tone: "danger",
     title: "Certificate expired",
+    dismissible: true,
     onClose: () => {}
   }, "Renew the TLS within 48 h to avoid outages."));
 }

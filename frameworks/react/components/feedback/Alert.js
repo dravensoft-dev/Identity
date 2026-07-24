@@ -9,7 +9,7 @@ const TONES = {
   danger: { color: "var(--danger)", soft: "var(--danger-soft)", icon: "ph-fill ph-warning-octagon" },
   neutral: { color: "var(--line-strong)", soft: "var(--panel)", icon: "ph-fill ph-note" }
 };
-export function Alert({ tone = "info", title, children, icon, action, onClose, style }) {
+export function Alert({ tone = "info", title, children, icon, actionLabel, onAction, dismissible, onClose }) {
   const t = TONES[tone] || TONES.info;
   return React.createElement("div", {
     role: tone === "danger" ? "alert" : "status",
@@ -20,8 +20,7 @@ export function Alert({ tone = "info", title, children, icon, action, onClose, s
       padding: "calc(var(--sp-1) * 3.5) calc(var(--sp-1) * 4)",
       background: t.soft,
       border: "var(--bw) solid " + t.color,
-      borderRadius: "var(--r-md)",
-      ...style
+      borderRadius: "var(--r-md)"
     }
   }, React.createElement("i", {
     className: icon || t.icon,
@@ -32,8 +31,8 @@ export function Alert({ tone = "info", title, children, icon, action, onClose, s
     style: { fontFamily: "var(--font-body)", fontWeight: "var(--fw-semibold)", fontSize: "var(--dz-text)", color: "var(--bone)" }
   }, title), children && React.createElement("div", {
     style: { fontFamily: "var(--font-body)", fontSize: "var(--fs-sm)", color: "var(--bone-dim)", lineHeight: "var(--lh-body)", marginTop: title ? "var(--sp-1)" : 0 }
-  }, children), action && React.createElement("button", {
-    onClick: action.onClick,
+  }, children), actionLabel && React.createElement("button", {
+    onClick: onAction,
     style: {
       marginTop: "calc(var(--sp-1) * 2.5)",
       background: "none",
@@ -47,7 +46,7 @@ export function Alert({ tone = "info", title, children, icon, action, onClose, s
       textTransform: "uppercase",
       color: t.color
     }
-  }, action.label)), onClose && React.createElement("button", {
+  }, actionLabel)), dismissible && React.createElement("button", {
     onClick: onClose,
     "aria-label": "Dismiss",
     style: { display: "inline-flex", alignItems: "center", background: "none", border: "none", color: "var(--mute)", cursor: "pointer", fontSize: "var(--icon-md)", lineHeight: "var(--dz-lh)" }
