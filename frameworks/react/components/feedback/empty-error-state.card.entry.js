@@ -18,19 +18,19 @@ function Demo() {
     title: "No projects yet",
     message: "Create your first project to start deploying.",
     action: React.createElement(Button, null, "New project")
-  })), React.createElement(ErrorState, {
-    style: { flex: "1 1 0", minWidth: 0, boxSizing: "border-box" },
-    icon: React.createElement("i", {
-      className: "ph-fill ph-warning-octagon"
-    }),
+  })), React.createElement("div", {
+    style: { flex: "1 1 0", minWidth: 0, boxSizing: "border-box" }
+  }, React.createElement(ErrorState, {
+    icon: "ph-fill ph-warning-octagon",
     title: "Couldn't load the panel",
     message: "No connection to the metrics service.",
     code: "ERR_UPSTREAM_504",
+    retryLabel: "Retry",
     onRetry: () => {},
     secondaryAction: React.createElement(Button, {
       variant: "secondary"
     }, "View logs")
-  })), React.createElement("div", {
+  }))), React.createElement("div", {
     className: "sub"
   }, "EmptyState invites the first action · ErrorState retries and exposes the code"));
 }

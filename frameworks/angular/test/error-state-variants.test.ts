@@ -27,8 +27,15 @@ test('the actions slot carries the spacing React\'s marginTop applies above the 
 
 test('every slot resolves with no variant argument -- icon, title, message and code are free text, never enumerable classes', () => {
   const styles = errorStateStyles();
-  for (const slot of ['root', 'icon', 'title', 'message', 'code', 'actions'] as const) {
+  for (const slot of ['root', 'icon', 'title', 'message', 'code', 'actions', 'retry'] as const) {
     assert.equal(typeof styles[slot](), 'string');
     assert.ok(styles[slot]().length > 0, `${slot} resolved to an empty class string`);
   }
+});
+
+test('the retry slot carries the same primary-button classes as ConfirmDialog\'s non-destructive confirm button -- Arena draws this button under the contract', () => {
+  const retry = errorStateStyles().retry();
+  assert.match(retry, /\bbg-primary\b/);
+  assert.match(retry, /\btext-primary-content\b/);
+  assert.match(retry, /\bborder-primary\b/);
 });

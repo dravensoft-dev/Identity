@@ -3,7 +3,7 @@
  * for the full rationale. */
 import React from "react";
 import { Button } from "../forms/Button.js";
-export function ErrorState({ icon, title = "Something went wrong", message, code, onRetry, retryLabel = "Retry", secondaryAction, style }) {
+export function ErrorState({ icon, title = "Something went wrong", message, code, retryLabel, onRetry, secondaryAction }) {
   return React.createElement("div", {
     style: {
       display: "flex",
@@ -14,12 +14,14 @@ export function ErrorState({ icon, title = "Something went wrong", message, code
       padding: "calc(var(--sp-1) * 14) calc(var(--sp-1) * 8)",
       border: "var(--bw) solid var(--danger)",
       borderRadius: "var(--r-lg)",
-      background: "var(--danger-soft)",
-      ...style
+      background: "var(--danger-soft)"
     }
   }, icon && React.createElement("div", {
     style: { fontSize: "var(--icon-xl)", color: "var(--danger)", lineHeight: "var(--dz-lh)" }
-  }, icon), React.createElement("div", {
+  }, React.createElement("i", {
+    className: icon,
+    "aria-hidden": "true"
+  })), React.createElement("div", {
     style: { fontFamily: "var(--font-display)", fontWeight: "var(--fw-extrabold)", fontSize: "var(--fs-h4)", color: "var(--bone)" }
   }, title), message && React.createElement("div", {
     style: { fontFamily: "var(--font-body)", fontSize: "var(--fs-md)", color: "var(--bone-dim)", maxWidth: "46ch", lineHeight: "var(--lh-body)" }
@@ -27,7 +29,7 @@ export function ErrorState({ icon, title = "Something went wrong", message, code
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-sm)", color: "var(--mute)", background: "color-mix(in oklab, var(--color-base-100) 30%, transparent)", padding: "calc(var(--sp-1) * 1) calc(var(--sp-1) * 2.5)", borderRadius: "var(--r-xs)" }
   }, code), React.createElement("div", {
     style: { display: "flex", gap: "calc(var(--sp-1) * 2.5)", marginTop: "calc(var(--sp-1) * 1.5)" }
-  }, onRetry && React.createElement(Button, {
+  }, retryLabel && React.createElement(Button, {
     variant: "primary",
     onClick: onRetry
   }, retryLabel), secondaryAction));

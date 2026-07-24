@@ -1011,27 +1011,59 @@ test('arena-error-state: the root recipe classes land on the host element itself
   assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
 });
 
-/* Same fix, same toolchain limitation as arena-empty-state's action wrapper
- * above (see that test's header comment for the full reasoning): the
- * positive case cannot be TestBed-rendered here because `contentChild` needs
- * ngtsc's initializer-API transform, which this JIT-only harness never runs.
- * `bun run check:angular` is the real authority that the query and the `@if`
- * gate typecheck. The negative case below is real coverage of the same
- * reported bug's exact repro, ported to `arena-error-state`'s own actions
- * slot, gated on the same shared marker directive `arena-empty-state` uses,
- * `ArenaAction` (`../primitives/projection-markers`). */
-test('arena-error-state: the actions wrapper is absent from the DOM when no [action] content is projected', async () => {
+/* Under the contract (`api/components/ErrorState.json`, Reshape A) Arena draws its own
+ * retry `<button>` from `retryLabel`/`retry`; the projected `[secondaryAction]` slot
+ * (`ArenaSecondaryAction`) is only for what a consumer adds beside it. The actions
+ * wrapper is now gated on `retryLabel() || secondaryAction()` rather than a single
+ * projected `[action]`. The positive half of that gate -- `secondaryAction()`, a
+ * `contentChild` query -- still cannot be TestBed-rendered here for the same toolchain
+ * reason as `arena-empty-state`'s action wrapper above: `contentChild` needs ngtsc's
+ * initializer-API transform, which this JIT-only harness never runs. `bun run
+ * check:angular` is the real authority that the query and the `@if` gate typecheck.
+ * `ErrorStateWithoutActionHost` supplies neither `retryLabel` nor a projected
+ * `[secondaryAction]`, so the wrapper stays absent -- this is the negative case, real
+ * coverage of the same reported bug's exact repro, ported to `arena-error-state`'s own
+ * actions slot. The positive half of `retryLabel` -- a signal input, not a content query
+ * -- IS directly provable, and the test below does exactly that. */
+test('arena-error-state: the actions wrapper is absent from the DOM when neither retryLabel nor [secondaryAction] content is projected', async () => {
   const fixture = TestBed.createComponent(ErrorStateWithoutActionHost);
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-error-state') as HTMLElement;
-  assert.equal(host.querySelector('button'), null, 'no action was projected, so no action markup should exist at all');
+  assert.equal(host.querySelector('button'), null, 'neither retryLabel nor a secondary action was supplied, so no action markup should exist at all');
   const actionsClass = errorStateStyles().actions().split(/\s+/)[0];
   assert.equal(
     host.querySelector(`:scope > .${actionsClass}`),
     null,
-    'the actions wrapper div must not render when the actions slot is empty',
+    'the actions wrapper div must not render when both retryLabel and secondaryAction are absent',
   );
+});
+
+/* Arena draws the retry button itself now -- the positive proof that a `retryLabel`
+ * signal input renders a real `<button>` carrying the manifest's `retry` slot classes.
+ * `retryLabel` is a signal input (`input<string>()`), so -- same JIT-harness limitation
+ * as `PageHead`'s `title` (`createPageHeadWithoutActionsFixture` above) -- it cannot be
+ * driven through a template binding or `setInput()`; the instance field is overwritten
+ * directly, before the first `detectChanges()`, so the template's first read of
+ * `retryLabel()` already sees the overwritten value rather than the default `undefined`. */
+function createErrorStateWithRetryFixture() {
+  const fixture = TestBed.createComponent(ErrorStateWithoutActionHost);
+  const instance = fixture.debugElement.query(By.directive(ErrorState)).componentInstance as unknown as Record<string, unknown>;
+  instance['retryLabel'] = () => 'Retry';
+  return fixture;
+}
+
+test('arena-error-state: retryLabel draws a real retry button carrying the manifest\'s retry slot classes', async () => {
+  const fixture = createErrorStateWithRetryFixture();
+  fixture.detectChanges();
+  await fixture.whenStable();
+  const host = fixture.nativeElement.querySelector('arena-error-state') as HTMLElement;
+  const button = host.querySelector('button');
+  assert.notEqual(button, null, 'retryLabel was supplied, so a retry button must render');
+  assert.equal(button!.textContent, 'Retry');
+  const retryClass = errorStateStyles().retry().split(/\s+/)[0];
+  assert.ok(button!.classList.contains(retryClass), `retry button is missing recipe class "${retryClass}"`);
+  fixture.destroy();
 });
 
 /* `arena-page-head` is the layer's first consumer of `container-size.ts`, and
