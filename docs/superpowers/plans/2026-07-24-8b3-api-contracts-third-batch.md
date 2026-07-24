@@ -151,6 +151,13 @@ layers' test suites, both layers' `*.prompt.md`, the group's `*.card.html` demo 
 - Produces: a fresh B3 ledger every later task appends to, and a verified `13 / 25` baseline
   every later task's climb is measured against.
 
+> **`.superpowers/` is git-ignored scratch** — the root `.gitignore:37` ignores the whole
+> directory, `progress.md` is untracked, and plan 8B2 committed none of its own ledger. So this
+> task uses plain `mv`, not `git mv` (which fails with *"not under version control"*), and it
+> **produces no commit**. Every later task's `git add -A` likewise picks up its source changes and
+> silently leaves the ledger behind, which is correct and is what B2 did. Do not try to force the
+> ledger into a commit.
+
 - [ ] **Step 1: Archive B2's ledger**
 
 `.superpowers/sdd/progress.md` currently holds Plan 8B2 in full (its six tasks, its final
@@ -158,7 +165,14 @@ whole-branch review, and its maintainer decisions). It must be preserved, not ov
 
 ```bash
 cd /home/juan/Dravensoft/Identity
-git mv .superpowers/sdd/progress.md .superpowers/sdd/progress-8b2-archived.md
+mv .superpowers/sdd/progress.md .superpowers/sdd/progress-8b2-archived.md
+```
+
+Verify both the archive and the absence:
+
+```bash
+ls -l .superpowers/sdd/progress-8b2-archived.md
+test ! -e .superpowers/sdd/progress.md && echo "progress.md cleared, ready for Step 2"
 ```
 
 - [ ] **Step 2: Open the B3 ledger**
@@ -170,7 +184,7 @@ Create `.superpowers/sdd/progress.md` with exactly this content:
 
 Plan: docs/superpowers/plans/2026-07-24-8b3-api-contracts-third-batch.md
 Branch: api-contracts-8b3
-Base commit before Task 1: 2ab6d52 (branch tip at start; == main after B2 + the executed-plan deletion)
+Base commit before Task 1: aba49b1 (the commit recording this plan; main + the executed-plan deletion + the plan)
 (Plan 8B2's ledger is archived beside this one as progress-8b2-archived.md.)
 
 Subjects, mechanical→hard, one document: UnauthCard, BulkActionBar, CommandPalette, ActivityFeed,
@@ -206,15 +220,22 @@ Write the exact line under `## Pre-flight` in the new `progress.md`. **If the nu
 stop and report it** — every later task's climb is measured against this pair, and a plan whose
 baseline is wrong reports a false gain.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 4: Confirm the tree is untouched — this task produces no commit**
+
+Both files are git-ignored scratch, so nothing is staged and nothing is committed. Prove it:
 
 ```bash
 cd /home/juan/Dravensoft/Identity
-git add .superpowers/sdd/progress.md .superpowers/sdd/progress-8b2-archived.md
-git commit -m "docs(sdd): archive the 8B2 ledger, open the 8B3 one
-
-Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
+git status --short
+git log --oneline -1
 ```
+
+Expected: `git status --short` prints **nothing** (the two ledger files are ignored, and no
+tracked file was touched), and `git log --oneline -1` still shows the plan commit
+`aba49b1 docs(api): record Plan B3 — five more contracts, check:api 18/35`.
+
+**If `git status --short` shows any tracked file, stop and report it** — this task must not modify
+source, and anything staged here would land in Task 1's commit under Task 1's message.
 
 ---
 
