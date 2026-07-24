@@ -325,6 +325,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and a `[secondaryAction]` slot, replacing its single projected `[action]` slot; `icon`
   narrows from `ReactNode` to a `string`; React loses `style` (R4). React's declared no-`role`
   behaviour (its `roles.element` exception) is left exactly as it was.
+- **`UnauthCard` under contract — breaking.** `eyebrow` and `title` narrow from `ReactNode` to
+  primitive `string` — Arena draws both entirely, the microlabel with its own letter-spacing and
+  the title in the display font. `brand`, `content` and `footer` stay slots. React loses `style`
+  and the `{...rest}`/`React.HTMLAttributes` spread (R4). No required-ness changes — all five
+  members stay optional in both layers — and Angular needed no change at all.
+- **`BulkActionBar` under contract — breaking.** New shared type `BulkAction` (`label` required,
+  `icon?`, `destructive?`). `BulkAction.onClick` leaves the object for the component event
+  `run(BulkAction)` (R1) — **per-item `onClick` handlers no longer work**; `icon` narrows from
+  `ReactNode` to a Phosphor class-name `string` Arena draws. `count` and `actions` both become
+  **required** (React throws, Angular `input.required`). A new `clearable` primitive (default
+  `true`) gates the Clear control in both layers, so React keeps its ability to hide it. React
+  loses `style` (R4). Angular's `cleared` output is renamed `clear`, and its local
+  `ArenaBulkAction` interface is deleted in favour of the shared `BulkAction` type.
+- **`CommandPalette` under contract — breaking.** New shared type `Command` (`id`/`label`
+  required, `hint?`/`icon?`/`shortcut?`). `Command.onRun` leaves the object for the component
+  event `run(Command)` (R1); `icon` narrows from `ReactNode` to a Phosphor class-name `string`.
+  `open` and `commands` both become **required** (React throws, Angular `input.required`).
+  Angular's `closed` output is renamed `close`, and its local `ArenaCommand` interface is deleted
+  in favour of the shared `Command` type. CommandPalette carried no `style`/`{...rest}` escape —
+  the only component in the batch already clean of R4.
+- **The contract reader now classifies `input.required<T, TransformT>()` depth-aware.**
+  `scripts/lib/api-surface.mjs` previously fed the whole `<T, TransformT>` generic list to
+  `classify()` as one string and threw on any two-argument form, forcing an Angular
+  `input.required` member with a bare-attribute coercion (`booleanAttribute`) to drop the
+  transform to type-check at all. The reader now reads the *first* generic — what the signal
+  returns — matching `angular.dev`'s own contract for the pair, and still refuses the
+  no-generic `input.required({transform})` form, which declares no type. `CommandPalette.open`
+  and `Onboarding.open` both keep `booleanAttribute` coercion on a required input as a result;
+  no contract's declared type changed. Internal to the reader — no component's `api/` file
+  changed.
 - **`ActivityFeed` under contract — breaking.** New shared type `ActivityItem`. Its `actor`,
   `action` and `items` all become required — React throws on an absent `items`, Angular uses
   `input.required`; `target` and `time` narrow from `ReactNode` to `string`; `id` narrows to

@@ -117,6 +117,15 @@ predefined object takes their place.
 > Violating today: `style` on 20 React components, plus `ActivityFeed.id`,
 > `Calendar.meta`, `Onboarding.anchorRect`, `Input.type`, `SideNav.onNav`'s event
 > parameter, and `Table.getRowKey`'s return.
+>
+> **`ActivityFeed.id` and `Onboarding.anchorRect` are resolved as of Plan 8B3** — this is a
+> historical record of the pre-migration state, not a live claim, for either. `ActivityFeed.id`
+> (was `React.Key`, an R4 escape) narrowed to primitive `string` and stayed optional when Task 4
+> brought `ActivityFeed` under contract. `Onboarding.anchorRect` (was `DOMRect`, an R4 escape) was
+> replaced by the predefined object `OnboardingAnchor { left: number; bottom: number }` **and
+> renamed to `anchor`** when Task 5 brought `Onboarding` under contract — the maintainer's Reshape
+> A′, since the member no longer names a `Rect`. `Calendar.meta`, `Input.type`, `SideNav.onNav`'s
+> event parameter and `Table.getRowKey`'s return are all still open; none is a Plan B subject.
 
 The `style`/`{...rest}` removal is not a capability loss Angular has not already
 absorbed: `components-divergences.md:681` and `:989` record it as deliberately not
@@ -520,6 +529,45 @@ React defect (`StatCard`'s empty delta pill) and shipped it with a render test o
 is DOM-free `renderToStaticMarkup` and costs a few lines; a migration that changes
 rendered output writes one.
 
+## What Plan B3 measured about the three charts, for 8B4
+
+Plan B3 did not touch `BarChart`, `LineChart` or `DoughnutChart` — they are 8B4's subjects, split
+out for the reasons Plan 8B3's own Appendix A records — but closing B3 out re-verified five facts
+about them against the tree at `HEAD`, so 8B4 opens with measurements rather than rediscovery:
+
+- **`valueFormatter` is declared in all three components in both layers**
+  (`bar-chart.ts:186`, `line-chart.ts:212`, `doughnut-chart.ts:246`, and each React `.d.ts`) as an
+  inbound function returning `string`. `classify()` in `scripts/lib/api-surface.mjs` **throws**
+  `UnrecognisedShape` on exactly that shape — an inbound function that *returns* a value is none of
+  the seven forms — so no chart contract can be written until it becomes `valueSuffix`, per
+  `api/README.md`.
+- **React's `CatSlot = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8` reaches `classify()`'s union branch** with
+  unquoted parts and is returned as `{ form: 'union' }` — an R5 violation. It becomes a bare
+  `number`, per `api/README.md`'s worked example. **Open for 8B4's audit:** `LineChart.d.ts`
+  re-exports both `CatSlot` and `SeriesTone` from `./BarChart`, and `DoughnutChart.d.ts` re-exports
+  `CatSlot` alone, so whether the *name* survives as a back-compat alias is a decision, not a
+  mechanical step.
+- **`LineChartProps extends Omit<BarChartProps, 'slots'>` must be flattened.**
+  `scripts/check-api.mjs:412` reports *any* heritage clause as the `{...rest}` R4 escape, with no
+  special case for `Omit`. This is source work, not gate work — no reader change is needed.
+- **Of the three charts 8B4 will contract, `BarChart:angular` is the only one already in
+  `COVERED`** (`scripts/check-compliance.mjs:79`, `chart-data-table.test.ts`) — `LineChart` and
+  `DoughnutChart` have no compliance suite at all. Re-verified against `HEAD`: `COVERED` holds six
+  entries total (`Dialog:react`, `ConfirmDialog:react`, `Menu:react`, `Skeleton:react`,
+  `Alert:angular`, `BarChart:angular`); none of B3's five components (`UnauthCard`,
+  `BulkActionBar`, `CommandPalette`, `ActivityFeed`, `Onboarding`) is in it. `chart-data-table.test.ts`
+  asserts the accessible table pairs each category with its plotted value, which is the text
+  `valueSuffix` changes — so all of 8B4's firm-contract risk is concentrated in that one suite.
+- The three charts are the layer's declared styling exception: no manifest, no `.variants.ts`,
+  token-valued camelCase `[style]` objects. They are reviewed against React's `charts.card.html`
+  rather than a specimen of their own, so `check:tailwind`, `check:states` and `check:coverage`
+  have nothing to say about them.
+
+None of the five concerns the reader's handling of `input.required<T, TransformT>()` — Task 3b's
+mid-plan extension of `scripts/lib/api-surface.mjs` to classify that shape depth-aware — so
+re-verifying against `HEAD` after 3b landed changed none of the wording above; it is recorded here
+because it was checked, not assumed.
+
 # Plan C — the twenty-two React-only components
 
 **Objective.** Define the contract for every component that exists in React alone, and
@@ -678,6 +726,31 @@ comparison and a comparison needs a baseline that is not stale.
 | **Plan B0** (2026-07-23) | **863 across 68 files** | 26 across 5 files |
 | **Plan B1** (2026-07-23) | **885 across 74 files** | 26 across 5 files |
 | **Plan B2** (2026-07-24) | **910 across 79 files** | 26 across 5 files |
+| **Plan B3** (2026-07-24) | **930 across 82 files** | 26 across 5 files |
+
+Plan B3 put five more components under contract — UnauthCard, BulkActionBar, CommandPalette,
+ActivityFeed and Onboarding — taking `check:api` from 13 contracts across 25 layer implementations
+to **18 across 35**. It added five new shared types (`BulkAction`, `Command`, `ActivityItem`,
+`OnboardingStep`, `OnboardingAnchor`) and reused one existing enum (`Tone`, for `ActivityItem.tone`)
+rather than declaring a sixth. The net gain over B2 is 20 tests and 3 files in the merged process,
+isolated DOM process unchanged at 26/5: `frameworks/react/test/` gained 14 tests across 3 new files
+(`bulk-action-bar.test.jsx` +4, `command-palette.test.jsx` +3, `onboarding.test.jsx` +3) plus
+assertions folded into the two components that already had a suite (`unauth-card.test.jsx` +2,
+`activity-feed.test.jsx` +2 net — one deleted `renderItem` test against three added); Angular gained
+2, folded entirely into Task 2's existing `bulk-action-bar-variants.test.ts` and
+`host-class-binding.test.ts` rework, no new file (Tasks 3, 4 and 5 each held Angular's count exactly
+at 334, confirmed unmoved). `scripts/` gained 2 more than any earlier batch — Task 3b's pair in
+`scripts/api-surface.test.mjs`, proving the reader now classifies `input.required<T, TransformT>()`
+depth-aware and still refuses the no-generic `input.required({transform})` form — the one addition
+in this plan that touched no component. 14 + 2 + 2 = 18 tests as measured against the tree's actual
+state at this plan's own starting commit (`f52ae89`): re-measuring that commit directly gives 912
+across 79 files in the merged process, not the 910 this table's B2 row records — a 2-test
+undercount that predates this plan (it is already present at `787b2d0`, the commit the B2 row was
+written from, with no test file changed between there and the B2 merge) and is left uncorrected
+here as out of this plan's scope. Reading the delta off this table's two adjacent rows (930 − 910 =
+20, 82 − 79 = 3) therefore overstates the tests this plan itself added by 2; the components-and-type
+accounting above is the one that reconciles exactly (14 + 2 + 2 = 18) against the real starting
+count.
 
 Plan B2 put five more components under contract — ChartCard, EmptyState, PageHead, Alert and
 ErrorState — taking `check:api` from 8 contracts across 15 layer implementations to **13 across
