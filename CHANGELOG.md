@@ -277,6 +277,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   covered in the other. **Breaking for an Angular consumer:** an element projected into an
   `EmptyState`, `ErrorState`, `ChartCard` or `PageHead` action slot now carries `action` /
   `actions`; the old `arena-`prefixed attribute is inert and its content silently fails to project.
+- **`Avatar` under contract — breaking.** React loses `style` (R4); `size`, `shape` and
+  `status` narrow to the named enums `AvatarSize`, `AvatarShape` and `AvatarStatus`. No
+  behaviour changes in either layer.
+- **`Skeleton` under contract — breaking.** `width`, `height` and `radius` narrow to
+  `string` on both layers (were `number | string`, an R5 union the contract format
+  cannot express); React loses `style` (R4); `variant` narrows to the `SkeletonVariant`
+  enum. Angular *gains* per-instance `width`/`height`/`radius` inputs, which it lacked
+  before — a change of capability, not a reduction.
+- **`Switch` redesigned and put under contract — breaking, React-only.** It is now
+  controlled: `state` (boolean) replaces `checked`, and `onChange` is gone in favour of
+  the paired `onFuncOn`/`onFuncOff` events. `confirm` is kept, but `onRequestChange` is
+  now payload-less. `label` narrows to `string`, and the `{...rest}`/`InputHTMLAttributes`
+  escape is removed (R4). New: `iconOn`/`iconOff` (a Phosphor class-name string per
+  state), `orientation` (the shared `Orientation` enum) and `size` (`SwitchSize`,
+  `sm`..`2xl`). Every existing `<Switch>` consumer needs updating.
+- **`ConfirmDialog` under contract — breaking.** React drops `width`. The cancel/confirm
+  events unify to `cancel`/`confirm` across both layers — Angular's `cancelled`/
+  `confirmed` outputs are renamed to match. `open` becomes optional, defaulting to
+  `false`.
+- **`Tag` under contract, and the two layers converge to one component — breaking.**
+  React gains `tone` (with the tone dot both layers now draw) and `removable`; Angular
+  gains `removable` plus the `remove` dismiss `×` it lacked. React's
+  `React.HTMLAttributes` `{...rest}` escape is removed (R4). `tone` is the new `TagTone`
+  enum. The behaviour bindings, which previously declared a cross-layer divergence, now
+  agree, and that entry in `components-divergences.md` is deleted.
 - **Nine `@dsCard` declarations corrected to what their pages actually render.** No page's
   content changed. `frameworks/react/ui_kits/console/index.html` no longer declares a
   `@dsCard` at all — it is an example app with its own scroll area, not a specimen card.

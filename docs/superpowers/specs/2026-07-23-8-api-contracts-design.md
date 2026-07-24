@@ -676,6 +676,12 @@ comparison and a comparison needs a baseline that is not stale.
 | suspension (2026-07-23, before Plan A) | 763 across 63 files | 26 across 5 files |
 | **Plan A** (2026-07-23) | **856 across 68 files** | 26 across 5 files |
 | **Plan B0** (2026-07-23) | **863 across 68 files** | 26 across 5 files |
+| **Plan B1** (2026-07-23) | **885 across 74 files** | 26 across 5 files |
+
+Plan B1 put five components under contract — Avatar, Skeleton, ConfirmDialog, Tag, and a
+redesigned Switch — introduced the required-runtime convention and 6 new enums/types, and
+deleted ThemeToggle outright; the net gain over B0 is 22 tests and 6 files, after subtracting
+ThemeToggle's own suite.
 
 Plan B0 added 7 tests and no file: 3 in `frameworks/react/test/stat-card.test.jsx` and
 `frameworks/angular/test/host-class-binding.test.ts` (StatCard's icon revised to a string, its
