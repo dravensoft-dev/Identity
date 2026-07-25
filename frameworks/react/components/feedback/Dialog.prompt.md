@@ -17,8 +17,11 @@ not an absence.
 (`width="calc(var(--sp-1) * 200)"`), never a bare `520`. The panel is capped at
 `92vw` regardless, so a wide dialog still fits a narrow viewport.
 
-The dialog dismisses three ways, and all three go through `onClose`: **Escape**,
-a click on the backdrop, and whatever the consumer puts in `footer`. Opening
+Arena dismisses the dialog two ways, and both report through `onClose`: **Escape**
+and a click on the backdrop. A third path is yours rather than Arena's — a button
+in `footer` wired to the same handler — and it is worth naming only so the count
+is not mistaken: `close` is one event with two sources inside the component, which
+is what `api/components/Dialog.json` declares. Opening
 moves focus to the first focusable element inside the panel; closing returns it
 to whatever had focus before, so a keyboard user lands back on the control that
 opened the dialog. Tab and Shift+Tab wrap at the panel's edges rather than

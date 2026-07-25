@@ -10,9 +10,12 @@ export type { SideNavItem };
 /** The sidebar's navigation list — the list alone, not the frame around it.
  * @startingPoint section="Navigation" subtitle="Sidebar navigation list" viewport="700x460" */
 export interface SideNavProps {
-  /** The destinations, in order. */
+  /** The destinations, in order. Required, and guarded at runtime against
+   *  ABSENCE only: an empty array is a caller saying "no destinations right
+   *  now" and renders an empty landmark, which is legal. */
   items: SideNavItem[];
-  /** The `id` of the current destination. Marks it `aria-current="page"`. */
+  /** The `id` of the current destination. Marks it `aria-current="page"`, and
+   *  no item is marked when it names none of them. */
   active?: string;
   /** Names the landmark. Required, and guarded rather than defaulted: the
    *  navigation pattern asks each landmark on a page for a unique name, and a

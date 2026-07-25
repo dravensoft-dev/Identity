@@ -57,8 +57,12 @@ neither is the source of this rule, and a new host-bound primitive owes no entry
 during the creation pass whether or not it also matches an input. So an input named after
 a native attribute leaves the native attribute behind — `<arena-page-head title="X">`
 puts a real `title` on the host and the browser draws a tooltip over the whole header.
-Binding the input (`[title]="…"`) avoids it. React does not have the problem because it
-destructures the prop out before spreading `...rest`.
+Binding the input (`[title]="…"`) avoids it. React does not have the problem, though the
+reason changed under it: it used to be that a React component destructured the named prop
+out before spreading `...rest`, and as of plan 8C4 a migrated component **has no spread at
+all** — R4 removed the last of them from `Dialog`, `Menu`, `Pagination` and `SideNav`. The
+conclusion holds either way; only components not yet under contract still rely on the
+destructure-first reason.
 
 **Nine primitives are affected, not the five an earlier version of this entry listed** —
 every host-bound primitive taking a `title` or `name` input:

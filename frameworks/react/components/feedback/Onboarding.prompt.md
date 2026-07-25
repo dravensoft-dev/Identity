@@ -7,7 +7,7 @@ const [step, setStep] = useState(0);
   onBack={() => setStep((s) => s - 1)}
   onSkip={endTour} onDone={endTour}
   steps={[
-    { eyebrow: 'Welcome', title: 'Your first deployment', body: 'From here you'll deploy and roll back with one click.' },
+    { eyebrow: 'Welcome', title: 'Your first deployment', body: 'From here you will deploy and roll back with one click.' },
     { title: 'Command palette', body: 'Press ⌘K to run any action without the mouse.' },
     { title: 'All set', body: 'You can reopen this guide from Help anytime.' },
   ]} />
