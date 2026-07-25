@@ -12,6 +12,10 @@
              "description": "ISO datetime the event ends." },
     "colorId": { "form": "enum", "type": "CatSlot",
                  "description": "Identity colour. Give the same entity the same slot everywhere and it keeps its colour across views." },
+    "actionsEnabled": { "form": "primitive", "type": "boolean", "default": false,
+                        "description": "Whether the chip shows its action button. A boolean rather than \"is the actions slot filled?\", for the reason Alert.dismissible and Toast.dismissible already record: Angular cannot detect whether an ng-content was filled, so gating the drawing on that is a divergence waiting to happen." },
+    "actions": { "form": "slot",
+                 "description": "The action panel's content, revealed by the chip's action button. Rendered only while the panel is open, so a consumer's own controls never sit permanently in the grid's Tab sequence." },
     "click": { "form": "event",
                "description": "The chip was activated. No payload: the consumer wrote this element, so they already hold the event this is about." }
   }

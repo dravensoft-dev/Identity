@@ -20,6 +20,13 @@ export interface CalendarEventProps {
   /** Identity colour. Give the same entity the same slot everywhere and it keeps
    *  its colour across views. */
   colorId?: CatSlot;
+  /** Whether the chip shows its action button. A boolean rather than "is
+   *  `actions` filled?", because Angular cannot detect a filled `<ng-content>`
+   *  and gating the drawing on that is a divergence waiting to happen. */
+  actionsEnabled?: boolean;
+  /** The action panel's content, revealed by the chip's action button. Rendered
+   *  only while the panel is open. */
+  actions?: React.ReactNode;
   /** The chip was activated. No payload: you wrote this element, so you already
    *  hold the event this is about. */
   onClick?: () => void;

@@ -1,4 +1,5 @@
 import React from 'react';
+import { IconButton } from '../forms/IconButton.jsx';
 
 /** One event on a `Calendar`'s schedule. Write one per event as a child of
  * `Calendar`; it never stands alone, because everything about WHERE it goes is
@@ -21,7 +22,7 @@ import React from 'react';
  * intersects it and Escape steps back out. A chip that swallowed its ref would
  * take that route away silently. */
 export const CalendarEvent = React.forwardRef(function CalendarEvent({
-  id, title, start, end, colorId, onClick,
+  id, title, start, end, colorId, onClick, actionsEnabled = false, actions,
   box, color, timeLabel, dateLabel, showTime, tabIndex,
 }, ref) {
   /* Required-ness governs runtime, not only the declaration (api/README.md).
@@ -33,16 +34,35 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
   if (!start) throw new Error('CalendarEvent: `start` is required');
   if (!end) throw new Error('CalendarEvent: `end` is required');
 
-  const Tag = onClick ? 'button' : 'div';
+  /* A kebab inside the chip means the chip itself cannot be the <button>:
+     nesting one button in another is invalid HTML and the browser restructures
+     it silently. With actions, the chip is a <div> and the BODY becomes the
+     button; without them, nothing about the markup changes at all, so every
+     chip in the tree today renders byte-identically. */
+  const hasPanel = actionsEnabled && Boolean(actions);
+  const Tag = onClick && !hasPanel ? 'button' : 'div';
+
+  /* The chip's own body, hoisted so the branch below can place it in two
+     different parents without duplicating it. */
+  const body = (
+    <>
+      <span style={{ fontSize: 'var(--dz-text-sm)', fontWeight: 'var(--fw-semibold)', color: 'var(--text-strong)',
+        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</span>
+      {showTime && (
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', color: 'var(--mute)' }}>{timeLabel}</span>
+      )}
+    </>
+  );
+
   return (
-    <Tag type={onClick ? 'button' : undefined}
-      /* Out of the page Tab sequence: the grid is ONE roving stop, and Calendar
-         injects the -1 that keeps it that way. */
-      tabIndex={tabIndex}
-      /* The day column underneath carries its own click handler, so an
-         activation that bubbled would report a date as well as an event. */
-      onClick={onClick ? (e) => { e.stopPropagation(); onClick(); } : undefined}
-      aria-label={onClick ? `${title}, ${dateLabel}, ${timeLabel}` : undefined}
+    <Tag ref={ref}
+      /* Without a kebab the chip IS the button and nothing about this element
+         changes. With one, every interactive attribute moves down to the body
+         and the chip becomes an inert positioned box. */
+      type={onClick && !hasPanel ? 'button' : undefined}
+      tabIndex={hasPanel ? undefined : tabIndex}
+      onClick={onClick && !hasPanel ? (e) => { e.stopPropagation(); onClick(); } : undefined}
+      aria-label={onClick && !hasPanel ? `${title}, ${dateLabel}, ${timeLabel}` : undefined}
       style={{ position: 'absolute', ...box,
         display: 'flex', flexDirection: 'column', gap: 0, overflow: 'hidden',
         textAlign: 'left', padding: 'calc(var(--sp-1) * 1) calc(var(--sp-1) * 1.5)',
@@ -50,11 +70,24 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
         borderLeft: `var(--bw-strong) solid ${color}`, borderTop: 'none', borderRight: 'none', borderBottom: 'none',
         borderRadius: 'var(--r-sm)', cursor: onClick ? 'pointer' : 'default',
         font: 'inherit' }}>
-      <span style={{ fontSize: 'var(--dz-text-sm)', fontWeight: 'var(--fw-semibold)', color: 'var(--text-strong)',
-        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</span>
-      {showTime && (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', color: 'var(--mute)' }}>{timeLabel}</span>
-      )}
+      {hasPanel ? (
+        <>
+          {onClick ? (
+            <button type="button" tabIndex={tabIndex}
+              onClick={(e) => { e.stopPropagation(); onClick(); }}
+              aria-label={`${title}, ${dateLabel}, ${timeLabel}`}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 0,
+                background: 'none', border: 'none', padding: 0, margin: 0,
+                font: 'inherit', color: 'inherit', textAlign: 'left', cursor: 'pointer' }}>
+              {body}
+            </button>
+          ) : body}
+          <span style={{ position: 'absolute', top: 0, right: 0 }}>
+            <IconButton icon="ph-bold ph-dots-three-vertical" label="Actions" size="sm"
+              tabStop={false} onClick={() => {}} />
+          </span>
+        </>
+      ) : body}
     </Tag>
   );
 });

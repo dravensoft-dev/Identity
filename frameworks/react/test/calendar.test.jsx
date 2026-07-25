@@ -191,3 +191,75 @@ test('an event colours its chip from colorId, not from the old slot field', () =
   );
   assert.ok(!stale.includes(two), 'the old `slot` field still picks a ramp colour -- the rename did not land');
 });
+
+/* A grid is ONE tab stop. This assertion opened the deleted grid-keyboard suite
+ * and it needs no DOM: the cursor initialises to {day: 0, hour: 0}, so a static
+ * render carries exactly one cell with tabindex="0". It is a property of the
+ * markup, not of behaviour.
+ *
+ * It matters more than it looks. Calendar's binding claims "exceptions": []
+ * with no render suite behind it, by the grid rule, and a control that leaked
+ * into the Tab sequence would falsify that claim silently. This is the guard. */
+test('a Calendar renders exactly one tab stop, kebab or no kebab', () => {
+  const plain = renderToStaticMarkup(
+    <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">
+      <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z" />
+    </Calendar>,
+  );
+  assert.equal((plain.match(/tabindex="0"/g) || []).length, 1, 'a Calendar is not one tab stop');
+
+  const withKebab = renderToStaticMarkup(
+    <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">
+      <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z"
+        actionsEnabled actions={<button type="button">Delete</button>} />
+    </Calendar>,
+  );
+  assert.equal((withKebab.match(/tabindex="0"/g) || []).length, 1,
+    'the kebab added a second tab stop inside the grid -- focus.roving is now false');
+});
+
+test('the kebab renders only when actionsEnabled, and never as a tab stop', () => {
+  const off = renderToStaticMarkup(
+    <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">
+      <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z" />
+    </Calendar>,
+  );
+  assert.doesNotMatch(off, /ph-dots-three/, 'a chip that did not ask for actions drew a kebab');
+
+  const on = renderToStaticMarkup(
+    <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">
+      <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z"
+        actionsEnabled actions={<button type="button">Delete</button>} />
+    </Calendar>,
+  );
+  assert.match(on, /ph-dots-three/, 'actionsEnabled drew no kebab');
+  assert.match(on, /aria-label="Actions"[^>]*tabindex="-1"|tabindex="-1"[^>]*aria-label="Actions"/,
+    'the kebab is not out of the Tab sequence');
+});
+
+/* The slot is closed by default, so the consumer's markup is not in the tree at
+ * all. That is what keeps their buttons -- which Arena cannot reach to silence,
+ * because it is their markup -- from being permanent tab stops in the grid. */
+test('the action panel content is absent while the panel is closed', () => {
+  const html = renderToStaticMarkup(
+    <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">
+      <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z"
+        actionsEnabled actions={<button type="button">Delete</button>} />
+    </Calendar>,
+  );
+  assert.doesNotMatch(html, /Delete/, 'the panel rendered its content while closed');
+});
+
+/* Nested <button> is invalid HTML and browsers restructure it silently, which
+ * is the kind of defect that only shows up as "the click handler stopped
+ * firing" months later. */
+test('a chip carrying a kebab is not a button inside a button', () => {
+  const html = renderToStaticMarkup(
+    <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">
+      <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z"
+        onClick={() => {}} actionsEnabled actions={<button type="button">Delete</button>} />
+    </Calendar>,
+  );
+  assert.doesNotMatch(html, /<button[^>]*>(?:(?!<\/button>)[\s\S])*<button/,
+    'a kebab was nested inside the chip button -- invalid HTML');
+});

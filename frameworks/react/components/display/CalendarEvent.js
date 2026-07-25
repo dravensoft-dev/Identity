@@ -2,6 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
+import { IconButton } from "../forms/IconButton.js";
 export const CalendarEvent = React.forwardRef(function CalendarEvent({
   id,
   title,
@@ -9,6 +10,8 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
   end,
   colorId,
   onClick,
+  actionsEnabled = false,
+  actions,
   box,
   color,
   timeLabel,
@@ -24,15 +27,29 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
     throw new Error("CalendarEvent: `start` is required");
   if (!end)
     throw new Error("CalendarEvent: `end` is required");
-  const Tag = onClick ? "button" : "div";
+  const hasPanel = actionsEnabled && Boolean(actions);
+  const Tag = onClick && !hasPanel ? "button" : "div";
+  const body = React.createElement(React.Fragment, null, React.createElement("span", {
+    style: {
+      fontSize: "var(--dz-text-sm)",
+      fontWeight: "var(--fw-semibold)",
+      color: "var(--text-strong)",
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis"
+    }
+  }, title), showTime && React.createElement("span", {
+    style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-2xs)", color: "var(--mute)" }
+  }, timeLabel));
   return React.createElement(Tag, {
-    type: onClick ? "button" : undefined,
-    tabIndex,
-    onClick: onClick ? (e) => {
+    ref,
+    type: onClick && !hasPanel ? "button" : undefined,
+    tabIndex: hasPanel ? undefined : tabIndex,
+    onClick: onClick && !hasPanel ? (e) => {
       e.stopPropagation();
       onClick();
     } : undefined,
-    "aria-label": onClick ? `${title}, ${dateLabel}, ${timeLabel}` : undefined,
+    "aria-label": onClick && !hasPanel ? `${title}, ${dateLabel}, ${timeLabel}` : undefined,
     style: {
       position: "absolute",
       ...box,
@@ -51,16 +68,35 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
       cursor: onClick ? "pointer" : "default",
       font: "inherit"
     }
-  }, React.createElement("span", {
+  }, hasPanel ? React.createElement(React.Fragment, null, onClick ? React.createElement("button", {
+    type: "button",
+    tabIndex,
+    onClick: (e) => {
+      e.stopPropagation();
+      onClick();
+    },
+    "aria-label": `${title}, ${dateLabel}, ${timeLabel}`,
     style: {
-      fontSize: "var(--dz-text-sm)",
-      fontWeight: "var(--fw-semibold)",
-      color: "var(--text-strong)",
-      whiteSpace: "nowrap",
-      overflow: "hidden",
-      textOverflow: "ellipsis"
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-start",
+      gap: 0,
+      background: "none",
+      border: "none",
+      padding: 0,
+      margin: 0,
+      font: "inherit",
+      color: "inherit",
+      textAlign: "left",
+      cursor: "pointer"
     }
-  }, title), showTime && React.createElement("span", {
-    style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-2xs)", color: "var(--mute)" }
-  }, timeLabel));
+  }, body) : body, React.createElement("span", {
+    style: { position: "absolute", top: 0, right: 0 }
+  }, React.createElement(IconButton, {
+    icon: "ph-bold ph-dots-three-vertical",
+    label: "Actions",
+    size: "sm",
+    tabStop: false,
+    onClick: () => {}
+  }))) : body);
 });
