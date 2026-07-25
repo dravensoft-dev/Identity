@@ -8,7 +8,7 @@ Progress bar (H1). Gives visible status to measurable processes outside the spla
 
 `progressPercentage` is 0–100, clamped and rounded — it is not a form control's `value`,
 which is what that name means everywhere else in this library. `showPercentage` (default
-`true`) hides the number beside the label; it is drawn in determinate mode only.
+`true`) shows the number beside the label; it is drawn in determinate mode only.
 
 **Do**
 - Use *determinate* mode whenever a real percentage exists; it communicates remaining time.
