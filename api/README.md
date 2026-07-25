@@ -103,11 +103,25 @@ vocabulary absorbs once. Two mechanical guards keep it narrow, and both are enfo
 }
 ```
 
-**A return of `React.ReactNode` is not a `functionInput`.** `(item: T) => React.ReactNode` is
-React's spelling of a **parameterised slot** (R3): it fills the interior of an element Arena
-renders rather than producing a value Arena consumes. The reader does not model that shape and
-throws on it, deliberately — absorbing a render prop into the ninth form would classify a slot as
-data and close a door `Table.render` needs left open.
+**A return of `React.ReactNode` is not a `functionInput`, and it is not a member at all.**
+`(item: T) => React.ReactNode` is React's spelling of a **parameterised slot** (R3): it fills the
+interior of an element Arena renders rather than producing a value Arena consumes. The reader
+throws on it, and that throw is an **enforcement, not a gap** — the per-item convention below
+removes such a member rather than modelling it, so no contract should ever declare one and the
+reader is right to refuse every one it meets.
+
+> **Corrected on 2026-07-24, plan 8C3.** This paragraph used to end *"…would classify a slot as
+> data and close a door `Table.render` needs left open"*, which contradicted the per-item
+> convention stated further down — the one that had already **removed** `ActivityFeed.renderItem`
+> and that names `TableColumn.render` as the same case. Two passages of this document asserted
+> opposite futures for the same member. The convention wins, because its reason is the stronger
+> one and is not about R3 at all: **per-item projection has no Angular answer** short of a
+> structural directive and `ngTemplateOutlet`, which no row of the binding table covers and no
+> reader function reads. `Calendar.renderEvent` and `TableColumn.render` were removed under it, and
+> the plan that was going to teach the reader R3 was deleted instead — **a reader for a shape no
+> contract may declare is speculative work**, which this layer refuses on principle. Should a
+> member ever genuinely need a parameterised slot, the reader change is small and the throw's
+> message is where to start.
 
 Angular's implementation of a `functionInput` is Plan D's problem and is recorded as debt there:
 Angular's signal idiom discourages a function input, and the contract's modelled signature is what
@@ -257,6 +271,17 @@ rather than replacing it, exactly as `TableColumn.render` fills a `<td>`, so R3 
 What it had no answer for is Angular: per-item projection needs a
 structural directive and `ngTemplateOutlet`, a binding no row of the table above covers and no
 reader function reads, and landing that machinery for one member was judged the wrong trade.
+
+**Plan 8C3 applied the same convention to `Calendar.renderEvent` and `TableColumn.render`, and
+`Table`'s cost is the highest this convention has charged.** Measured before the removal, the
+three `render` functions in the tree drew a `Badge` in a status cell — at both call sites — and a
+`Button` in an actions cell. Those are the two commonest things anyone puts in a table cell, and
+Arena's own Delivery Console used both. So the consequence stated above for a feed row — *a
+consumer cannot place their own markup inside one row Arena renders* — reads mildly there and
+sharply here: **a status column now needs a member Arena draws from, and an actions column has no
+expression in the contract at all.** That is a real capability loss with a real user, recorded
+rather than discovered, and it is the price of one convention holding across the library instead
+of `Table` becoming the exception that reintroduces per-item projection for everyone.
 
 **Flattening a platform heritage clause enumerates the element, not the platform.** R4 removes
 `extends React.ButtonHTMLAttributes<HTMLButtonElement>` and its siblings, and the question that

@@ -6,15 +6,19 @@
 
 **Goal:** Pay the four Known debt entries plan 8C2 recorded, give `Calendar` and `Table` the keyboard
 navigation their `grid` bindings have excepted since the behaviour layer was built, teach the reader
-the **parameterised slot (R3)**, and bring seven more components under the API capability contract —
+the **per-item renderer convention** (which removes two members rather than modelling them), and
+bring seven more components under the API capability contract —
 `check:api` from **32 contracts / 52 layer implementations to 39 / 59**.
 
 **Architecture:** Three phases that must run in order, because each unblocks the next. **Phase A**
 (Tasks 2–5) pays the debts; three of the four are small and one — proving at runtime that the six
 form controls' events actually fire — needs a new DOM suite. **Phase B** (Task 6) is the batch's
-structural event, the way `consumerData` was 8C1's and `functionInput` was 8C2's: the reader learns
-that an inbound function returning a **node** is a parameterised slot, which it has thrown on by name
-since 8C2 and which `Calendar.renderEvent` and `TableColumn.render` both need. **Phase C** (Tasks
+structural event, the way `consumerData` was 8C1's and `functionInput` was 8C2's — teaching the
+reader that an inbound function returning a **node** is a parameterised slot, which it has thrown on
+by name since 8C2. **It is not.** Measuring `api/README.md` during Task 2 showed the document
+already REMOVES such members, by an older convention, in a passage contradicting the one that
+implied R3 support was coming. Phase B shrank to settling that contradiction, both renderers are
+removed instead of modelled, and this plan's structural task is the thing it deleted. **Phase C** (Tasks
 7–13) migrates the seven, with `Calendar` and `Table` each taking two tasks — keyboard navigation
 first, then the contract — so the contract task works on settled markup.
 
@@ -23,8 +27,8 @@ token-valued styles and no CSS classes. Angular 22 is untouched except regenerat
 reader fix that Plan D consumes.
 
 **Spec:** `docs/superpowers/specs/2026-07-23-8-api-contracts-design.md` — *Plan C*. **Normative
-vocabulary:** `api/README.md` (nine forms; this plan adds no tenth — R3 is a rule the vocabulary
-already states and the reader could not yet read).
+vocabulary:** `api/README.md` (nine forms; this plan adds no tenth, and — after the correction made
+during Task 2 — teaches the reader no new shape either).
 
 **Branch:** `api-contracts-8c3`, cut from `main` at `7e922e8` (the 8C2 merge).
 
@@ -161,8 +165,9 @@ substance because each was earned; 30–36 are new to this plan.
    **37/57** (Task 9) → **38/58** (Task 11) → **39/59** (Task 13). Record the measured pair in
    `.superpowers/sdd/progress.md` at the end of every task.
 4. **`check:api` carries no exception map.** An API divergence is a defect.
-5. **`api/README.md` is the normative vocabulary.** Task 6 makes an existing rule (R3) machine-read;
-   it adds no tenth form and must not read as though it does.
+5. **`api/README.md` is the normative vocabulary, and this plan found it contradicting itself.**
+   Task 2 corrected two passages asserting opposite futures for a per-item renderer. Task 6 makes
+   the reader's refusal state the surviving rule; it adds no form and teaches no shape.
 6. **The other two contracts are firm.** Bringing a component under the API contract may not weaken,
    remove or contradict its behaviour binding or the tokens it renders from. **Tasks 10 and 12 are
    the deliberate exception**: they *strengthen* a binding by retiring exceptions the implementation
@@ -234,7 +239,7 @@ substance because each was earned; 30–36 are new to this plan.
     to six controls by 8C2, and it governs `Table.onRowClick` and `Calendar.onEventClick` here.
 29. **`functionInput` is legal ONLY in a contract declaring `"kind": "input"`.** None of this
     batch's seven is a data-entry control, so **none may carry one** — which is exactly why
-    `renderEvent` and `render` need R3 (Task 6) and cannot be smuggled through the ninth form.
+    `renderEvent` and `render` are REMOVED rather than smuggled through the ninth form (Task 6).
 30. **React's SSR does not emit attributes in source order, and camelCases some of them.** Measured
     across 8C2: `checked=""` lands after `style`; `maxLength` and `autoComplete` emit camelCase while
     `readonly`/`disabled`/`required` lowercase. Never assume adjacency in a regex — use `[^>]*` or
@@ -263,51 +268,43 @@ substance because each was earned; 30–36 are new to this plan.
 
 ---
 
-## The parameterised slot, stated once
+## The per-item renderer, stated once
 
-`api/README.md` already states R3: **a parameterised slot fills and never replaces.** What has never
-existed is a reader that can *see* one. Since 8C2's Task 1b, `classify()` throws on a function
-returning a node, by name:
+**A per-item renderer is not a member, and `Calendar.renderEvent` and `TableColumn.render` are
+removed rather than modelled.** This reverses what this plan originally said. The reversal is the
+plan's own correction, made during Task 2 and recorded here rather than quietly applied.
 
-```
-a function returning a node is a parameterised slot (R3), not a functionInput,
-and the reader does not model that shape yet: (event: CalendarEvent) => React.ReactNode
-```
+`api/README.md` had **two passages asserting opposite futures for the same member**. Beside the
+ninth form it said the reader throws on `(item: T) => React.ReactNode` deliberately, because
+absorbing a render prop into `functionInput` would *"close a door `Table.render` needs left open"* —
+written in plan 8C2, and reading as though R3 support was coming. Further down, older and far better
+argued, the per-item convention said a field inside a predefined object is never a node, and that
+this convention **already removed `ActivityFeed.renderItem`** — naming `TableColumn.render` as the
+same case in the same sentence.
 
-That message was written for this task. Task 6 makes the reader classify the shape instead of
-throwing, and the gate check it.
+**The convention wins, and its reason is not R3 at all.** `renderItem` did not go because it broke
+R3; measured against the source it filled the `<li>` Arena renders, exactly as `TableColumn.render`
+fills a `<td>`, so R3 permitted it. It went because **per-item projection has no Angular answer**
+short of a structural directive and `ngTemplateOutlet` — a binding no row of the binding table covers
+and no reader function reads. That reason applies identically to `renderEvent` and to `render`, and
+Plan D would meet it head-on.
 
-**It is not a tenth form.** `slot` is the form; a parameterised slot is a `slot` that declares
-`params`. The contract shape already exists and is already validated —
-`validateContract`'s parameter loop has always run for any member carrying `params`, and
-`api/README.md`'s own worked example for a parameterised slot is what motivated the eighth form.
-What is new is only that React's spelling of one can now be read:
+**So the task that was going to teach the reader R3 is deleted.** Verified before deleting it: **no
+shipped contract declares a parameterised slot** — the only `"params"` anywhere in `api/components/`
+is `Input.validate`'s, and that is a `functionInput`. With both would-be consumers removed, a reader
+for that shape has none, and this layer refuses speculative machinery on principle (the `debounce`
+precedent). The reader's throw stops being *"does not model that shape yet"* and becomes an
+**enforcement**: no contract may declare such a member, so refusing every one is correct.
 
-```json
-"renderEvent": {
-  "form": "slot",
-  "params": { "event": "CalendarEvent" },
-  "description": "Replaces the event body. The chip, its position and its identity colour stay Arena's."
-}
-```
+**The cost is the highest this convention has charged, and Task 13 must not discover it.** Measured
+in the tree before removal, the three `render` functions drew a `Badge` in a status cell — at both
+call sites — and a `Button` in an actions cell. Those are the two commonest things anyone puts in a
+table cell, and the Delivery Console uses both. A status column now needs a member Arena draws from,
+and **an actions column has no expression in the contract at all**. `renderEvent` costs nothing by
+comparison: no call site passes it.
 
-Three guards keep it honest, all mechanical:
-
-- **A slot's params resolve against `api/types/` exactly as they do today** — a primitive, the
-  `consumerData` form name, or a declared type. That loop already exists; Task 6 changes nothing
-  about it.
-- **The return must be a node.** `React.ReactNode` / `ReactNode` only. A function returning a value
-  is a `functionInput` (ninth form, `kind: "input"` contracts only) and a function returning `void`
-  is an `event`. All three branches stay distinct, and Task 6 ships a test for each.
-- **`compareSurface` compares a slot's params** between contract and layer, the way Task 1b's C5
-  made it compare a `functionInput`'s signature. Without it a layer declaring
-  `(row: string) => ReactNode` would satisfy a contract declaring `params: {row: "consumerData"}` on
-  form alone.
-
-**What R3 itself — "fills, never replaces" — still is not:** a fact about the rendered tree, which
-no gate reads. `check:compliance` is the only layer that sees a rendered tree and it does not read
-contracts. R3 stays an authoring rule with R2's status, and Task 6 must not claim otherwise in
-`api/README.md`.
+**What still is not checked.** R3 itself — fills rather than replaces — remains an authoring rule
+with R2's status. Nothing in this plan changes that, and nothing should read as though it does.
 
 ---
 
@@ -371,7 +368,9 @@ Base commit: 7e922e8 (main; the 8C2 merge)
 
 Three phases, in order.
   A (Tasks 2-5): pay 8C2's four Known debt entries. check:api unchanged at 32/52.
-  B (Task 6):    the parameterised slot (R3) becomes readable. Contracts nothing.
+  B (Task 6):    the per-item renderer convention, made enforceable. Contracts nothing.
+                 (It was going to teach the reader R3; measuring api/README.md showed the
+                  convention already removes such members, so both renderers go instead.)
   C (Tasks 7-13): seven contracts, 32/52 -> 39/59. Calendar and Table take two tasks each,
                   keyboard navigation first and the contract second.
 
@@ -451,19 +450,26 @@ Confirm against *What this plan measured*. Any deviation is the audit's finding.
   reshape is unverified today. Cost: `frameworks/react/test-dom/` registers a DOM process-wide and is
   a separate `bun test` process; the isolated count moves off 26/5 for the first time since the
   suspension, and the spec's running-count table must say so.
-- **EE — R3 becomes readable (Task 6), and it is NOT a tenth form.** `slot` with `params`.
-  `Calendar.renderEvent` and `TableColumn.render` are the two consumers. Cost: R3's own claim — fills
-  rather than replaces — stays unenforced, because only `check:compliance` sees a rendered tree and
-  it does not read contracts.
+- **EE — SUPERSEDED during Task 2, and the supersession is the plan's own correction.** It read
+  *"R3 becomes readable"*, naming `Calendar.renderEvent` and `TableColumn.render` as its two
+  consumers. Reading `api/README.md` far enough showed the document already **removed** such members
+  by a convention older and better argued than the sentence implying R3 support was coming — two
+  passages asserting opposite futures for one member. Both renderers are removed; Task 6 shrinks
+  from teaching the reader a shape to making its refusal state the rule. Cost, and it is the highest
+  this convention has charged: a status column needs a member Arena draws from, and an actions column
+  has no expression in the contract at all. R3's own claim stays unenforced either way.
 - **EF — `Toast.action` is decomposed the way `Alert`'s already is.** `ToastAction { label; onClick }`
   becomes `actionLabel` (primitive string) + `action` (event). `ToastAction` leaves the `.d.ts`
   entirely, so Constraint 9 gives it no re-export. Cost: `index.entry.jsx` passes an object today and
   is rewritten; a consumer holding a `ToastAction` value loses the type.
 - **EG — `CalendarEvent.meta` cannot stay a field.** Consumer data may not be a field of a predefined
   object — a mechanical guard, not a preference. Two ways out, and the audit RECOMMENDS the first:
-  **(1)** drop `meta` from `CalendarEvent` and let `renderEvent`'s parameter carry the whole consumer
-  object, which is what `meta` was for; **(2)** make `CalendarEvent` itself consumer data, losing
+  **(1)** drop `meta` from `CalendarEvent`; **(2)** make `CalendarEvent` itself consumer data, losing
   every declared field. (1) keeps `id`/`title`/`start`/`end`/`slot` declared and honest.
+  **The route argument died with `renderEvent`**: `meta` existed so a consumer's own object could
+  reach a custom renderer, and with that member removed by the per-item convention it has no consumer
+  at all — which makes (1) a plain deletion rather than a redirection. Task 1 measured the in-tree
+  cost as nil: `meta` appears only in `Calendar.jsx`'s own doc comment and no call site passes it.
 - **EH — the two option unions are resolved to object arrays.** `Tabs.tabs` and
   `SegmentedControl.options` are `(string | X)[]`, which R5 forbids. The bare-string arm goes, exactly
   as `Select.options` did in 8C2. Cost: all three call sites rewrite; **no call site in the tree uses
@@ -921,179 +927,75 @@ the render are proved for the first time.
 
 ---
 
-## Task 6: The parameterised slot (R3) becomes readable
+## Task 6: The per-item renderer convention, made enforceable
 
-**Files:** modify `scripts/lib/api-surface.mjs`, `scripts/api-surface.test.mjs`,
-`scripts/check-api.mjs`, `scripts/check-api.test.mjs`, `api/README.md`, `CLAUDE.md`, the spec.
+**Files:** modify `api/README.md` (corrected ahead of this task — verify rather than redo),
+`scripts/lib/api-surface.mjs` (the throw's message), `scripts/api-surface.test.mjs`, `CLAUDE.md`.
 
-**Interfaces:** consumes EE. **Contracts nothing** — `check:api` stays **32/52**. Produces the shape
-Tasks 11 and 13 depend on. Read *The parameterised slot, stated once* above before starting.
+**Interfaces:** contracts nothing; `check:api` stays **32/52**. Produces the settled rule Tasks 11
+and 13 apply. Read *The per-item renderer, stated once* above before starting.
 
-- [ ] **Step 1: Write the failing reader tests**
+> **This task replaces the one that was going to teach the reader R3.** That task was deleted when
+> `api/README.md` was found to assert two opposite futures for the same member; the section above
+> carries the reasoning and the measured cost. What remains is small: make the reader's message say
+> what the rule actually is, and make `CLAUDE.md` agree.
 
-Append to `scripts/api-surface.test.mjs`:
+- [ ] **Step 1: Verify the documentation is already correct**
 
-```js
-/* R3's shape, finally readable. A function returning a NODE is a parameterised
- * slot: the consumer draws the interior of an element Arena still renders and
- * positions. It is not the ninth form -- a functionInput returns a VALUE Arena
- * consumes -- and it is not an event, which returns void. All three arrow
- * branches stay distinct and each has its own test here. `slot` is the form;
- * `params` is what makes it parameterised. There is no tenth form. */
-test('a function returning a node is a parameterised slot', () => {
-  assert.deepEqual(classify('(event: CalendarEvent) => React.ReactNode'),
-    { form: 'slot', params: { event: 'CalendarEvent' } });
-});
+`api/README.md` was corrected during Task 2. Read both passages and confirm they now agree:
 
-test('a parameterised slot reads every parameter, in order', () => {
-  assert.deepEqual(classify('(value: string, row: Record<string, unknown>) => React.ReactNode'),
-    { form: 'slot', params: { value: 'string', row: 'consumerData' } });
-});
-
-test('a zero-parameter node function is a plain slot with no params', () => {
-  assert.deepEqual(classify('() => ReactNode'), { form: 'slot', params: {} });
-});
-
-/* The three arrow branches, pinned side by side so a future change to one is
- * seen against the other two. */
-test('a void arrow is an event, a value arrow is a functionInput, a node arrow is a slot', () => {
-  assert.equal(classify('(v: string) => void').form, 'event');
-  assert.equal(classify('(v: string) => string').form, 'functionInput');
-  assert.equal(classify('(v: string) => React.ReactNode').form, 'slot');
-});
+```bash
+cd /home/juan/Dravensoft/Identity
+grep -n "not a member at all" -A 16 api/README.md
+grep -n "highest this convention has charged" -B 4 -A 12 api/README.md
 ```
 
-- [ ] **Step 2: Run them and watch them fail**
+If either is missing or still contradicts the other, fix it here. Do not restate the cost a third
+time — two statements of it is already one more than this repo usually allows itself.
+
+- [ ] **Step 2: Rewrite the failing test first**
+
+`scripts/api-surface.test.mjs` asserts the throw's message matches `/parameterised slot/i` and
+`/R3/`. That message is about to stop saying *"the reader does not model that shape yet"*, because
+"yet" is now false: no contract may declare such a member, so the refusal is permanent. Find the test
+with `grep -n 'parameterised slot' scripts/api-surface.test.mjs`, rewrite its assertion and its
+comment to pin the **enforcement** rather than the gap, then run it and watch it fail:
 
 ```bash
 cd /home/juan/Dravensoft/Identity
 bun test scripts/api-surface.test.mjs
 ```
 
-Expected: the first three FAIL with `a function returning a node is a parameterised slot (R3) … the
-reader does not model that shape yet`; the fourth fails on its third assertion only.
+- [ ] **Step 3: Rewrite the message**
 
-- [ ] **Step 3: Classify it**
+In `scripts/lib/api-surface.mjs`, the arrow branch's node-return throw. The message must name the
+convention rather than the reader's limitation — something the shape of:
 
-In `scripts/lib/api-surface.mjs`, `classify()`'s arrow branch, replace the R3 throw with
-classification. The parameter reading is the same depth-aware split the `functionInput` branch uses —
-**factor it into one local helper rather than writing it twice**, because two copies of the parameter
-reader is two places for `Record<string, unknown>`'s comma to be mis-split again:
-
-```js
-      /* R3, readable at last. A node return makes this a parameterised slot --
-       * the form is `slot`, and `params` is what parameterises it. Deliberately
-       * NOT a tenth form and not the ninth: a functionInput returns a value Arena
-       * consumes, this returns markup Arena places. api/README.md states R3
-       * itself -- that such a slot FILLS rather than replaces -- and nothing here
-       * can check that: it is a fact about the rendered tree, which only
-       * check:compliance sees, and that gate does not read contracts. */
-      if (retType.form === 'slot') return { form: 'slot', params: readParams(arrow[1], ts) };
+```
+a function returning a node is a per-item renderer, and a per-item renderer is not a member:
+the convention that removed ActivityFeed.renderItem removes it too (api/README.md). It IS a
+parameterised slot and R3 permits it -- Angular is what does not, because per-item projection
+needs ngTemplateOutlet, which no binding-table row covers and no reader function reads.
 ```
 
-placed **before** the `functionInput` branch's primitive/enum/named check, since a node return must
-not fall into it.
-
-- [ ] **Step 4: Run, then write the failing gate tests**
+**Keep `R3` in it**, because the rule it is *not* violating is worth naming: a reader of this message
+must not conclude R3 was the reason.
 
 ```bash
 cd /home/juan/Dravensoft/Identity
 bun test scripts/api-surface.test.mjs
-```
-
-Expected: all PASS.
-
-Append to `scripts/check-api.test.mjs`:
-
-```js
-/* A parameterised slot's params are compared between contract and layer, not
- * matched on form alone. Without this a layer declaring (row: string) =>
- * ReactNode would satisfy a contract declaring params {row: consumerData}: both
- * are slots, and the comparison would stop there. This is the same hole plan
- * 8C2 closed for a functionInput's modelled signature. */
-test('compareSurface reports a parameterised slot whose params disagree', () => {
-  const problems = compareSurface(
-    { component: 'X', api: { render: { form: 'slot', params: { row: 'consumerData' } } } },
-    [{ name: 'render', required: false, form: 'slot', params: { row: 'string' } }],
-    'react',
-  );
-  assert.ok(problems.some((p) => /render/.test(p) && /row/.test(p)));
-});
-
-test('compareSurface accepts a parameterised slot whose params agree', () => {
-  const problems = compareSurface(
-    { component: 'X', api: { render: { form: 'slot', params: { row: 'consumerData' } } } },
-    [{ name: 'render', required: false, form: 'slot', params: { row: 'consumerData' } }],
-    'react',
-  );
-  assert.deepEqual(problems, []);
-});
-
-/* A plain slot has no params on either side and must stay comparable -- every
- * contracted slot in the tree today is this shape. */
-test('compareSurface still accepts a plain slot with no params on either side', () => {
-  const problems = compareSurface(
-    { component: 'X', api: { content: { form: 'slot' } } },
-    [{ name: 'children', required: false, form: 'slot' }],
-    'react',
-  );
-  assert.deepEqual(problems, []);
-});
-```
-
-- [ ] **Step 5: Compare the params in the gate**
-
-```bash
-cd /home/juan/Dravensoft/Identity
-bun test scripts/check-api.test.mjs
-```
-
-Expected: the first FAILS, the other two PASS.
-
-In `scripts/check-api.mjs`, `compareSurface`, add a params comparison for `spec.form === 'slot'`
-mirroring the `functionInput` block Task 1b's C5 added — key set in **both** directions and type per
-key. Reuse that block's shape; if the two end up identical, factor them into one helper and say so.
-
-```bash
-cd /home/juan/Dravensoft/Identity
-bun test scripts/check-api.test.mjs
 bun test scripts/
-bun run check:api        # MUST still read 32 … across 52
+bun run check:api        # MUST still read 32 ... across 52
 ```
 
-Expected: all PASS; no earlier script test regresses. **`check:api` staying at 32/52 is the proof
-this contracts nothing** — if it moves, a shipped contract was being mis-read before and that is a
-finding to report, not to absorb.
+- [ ] **Step 4: `CLAUDE.md`**
 
-- [ ] **Step 6: `api/README.md`, `CLAUDE.md`, the spec**
+Its API paragraph and its Known debt both describe R2/R3 as unchecked authoring rules, which stays
+true. Add one clause recording that a per-item renderer is not a member and that the reader enforces
+that — and **do not** write that R3 became checkable, because it did not.
 
-`api/README.md`: state the readable shape under the `slot` form — a `slot` with `params`, its React
-spelling `(x: T) => React.ReactNode`, the three-way arrow distinction (void → event, value →
-functionInput, node → slot), and, plainly, **that R3's own claim is not checked**: fills-not-replaces
-is a fact about the rendered tree, `check:compliance` is the only gate that sees one, and it does not
-read contracts. Update the *What the gate asserts* section: the params comparison is mechanical, R3
-itself is not.
-
-`CLAUDE.md`: in the API paragraph, that a parameterised slot is now readable and what remains
-unchecked. **The "R2 and R3 are not machine-checkable and nothing checks them" sentence in Known debt
-is now half wrong** — R3's *shape* is read and its params compared; R3's *rule* still is not. Rewrite
-it to say exactly that rather than deleting it.
-
-The spec: a `> **Added by Plan 8C3, Task 6 — the parameterised slot.**` blockquote in the style of the
-eighth- and ninth-form ones.
-
-- [ ] **Step 7: Gates and commit**
-
-```bash
-cd /home/juan/Dravensoft/Identity
-bun run check:api
-bun run check:angular
-bun test scripts/
-git diff --stat -- '*.behaviour.json'   # empty
-```
-
-Commit (here-doc). The message states that this is **not a tenth form**, what the three arrow branches
-now are, that the params are compared in both directions, and what R3 still does not check.
+- [ ] **Step 5: Commit** (here-doc), stating that the plan deleted its own structural task, why the
+  contradiction resolved the way it did, and that the throw is now an enforcement rather than a gap.
 
 ---
 
@@ -1559,9 +1461,11 @@ why, and that `check:api` is untouched because this is behaviour work.
 
 **Interfaces:** consumes EE, EG and Task 6's R3. Produces `CatSlot`, `CalendarEvent`. **+1/+1 → 38/58.**
 
-- [ ] **Step 1: Confirm and STOP.** Report the contract; confirm `renderEvent` is a **parameterised
-  slot** and not the ninth form (Constraint 29 — `Calendar` is not a data-entry control and may not
-  carry a `functionInput`); confirm `meta` leaves `CalendarEvent` per EG; confirm `CatSlot` is the
+- [ ] **Step 1: Confirm and STOP.** Report the contract; confirm `renderEvent` is **REMOVED** under
+  the per-item convention — not modelled as a parameterised slot and not smuggled through the ninth
+  form (Constraint 29 — `Calendar` is not a data-entry control); confirm `meta` leaves
+  `CalendarEvent` per EG, and that with `renderEvent` gone it has no consumer left at all; confirm
+  `CatSlot` is the
   directory's **first numeric enum** (Constraint 36).
 
 - [ ] **Step 2: The two types**
@@ -1655,7 +1559,6 @@ Read the emitted `CatSlot` and confirm it is unquoted.
     "eventClick": { "form": "event", "payload": "CalendarEvent", "description": "An event chip was activated; carries the event." },
     "dateClick": { "form": "event", "payload": "string", "description": "A day header or column background was activated; carries the ISO date." },
     "rangeChange": { "form": "event", "payload": "string", "description": "The anchor moved via prev/Today/next; carries the new ISO date. A date rather than a delta, because Today is not a delta." },
-    "renderEvent": { "form": "slot", "params": { "event": "CalendarEvent" }, "description": "Fills the event body. The chip, its position and its identity colour stay Arena's." },
     "actions": { "form": "slot", "description": "Right-aligned in the toolbar, beside the range title." }
   }
 }
@@ -1666,37 +1569,42 @@ inline union `'week' | 'day'` in the `.d.ts` is an R5-adjacent shape the batch i
 else and must not survive here.
 
 - [ ] **Step 4: Migrate the quartet.** Constraint 9: `Calendar.d.ts` exported `CatSlot` **and**
-  `CalendarEvent` locally, so both keep a re-export. `renderEvent` stays
-  `(event: CalendarEvent) => React.ReactNode` in the `.d.ts` — Task 6's reader classifies it. Drop
+  `CalendarEvent` locally, so both keep a re-export. **`renderEvent` leaves the `.d.ts` and the
+  `.jsx`** — delete the parameter, the destructuring and the branch that calls it, so the default
+  chip body is the only body. Drop
   `style`. Rename the three handlers to `onEventClick`/`onDateClick`/`onRangeChange`, which the binding
   table already produces from `eventClick`/`dateClick`/`rangeChange` — verify with `bindingName()`
   rather than assuming.
 
-- [ ] **Step 5: `CalendarEvent.meta` at the call site.** `calendar.card.entry.jsx` may pass `meta`
-  today; if it does, the consumer object it carried now reaches `renderEvent` directly. Read the file
-  and report what actually changed.
+- [ ] **Step 5: The two removals at the call site.** `calendar.card.entry.jsx` passes neither
+  `renderEvent` nor `meta` today — Task 1 measured `meta` as appearing only in `Calendar.jsx`'s own
+  doc comment, and no call site passes a custom renderer. **Verify both claims yourself** and report
+  what you found; if either is wrong, the removal has an in-tree cost this plan did not price.
 
 - [ ] **Step 6: Suite, the R4 proofs (induced `{...rest}`), prompt, README, gates, commit.**
 
-The suite must include the R3 proof, which is this task's headline:
+The suite must prove the REMOVAL rather than the shape — the inverse of what this plan originally
+asked for, and this task's headline:
 
 ```jsx
-/* renderEvent is a parameterised slot: it FILLS the chip's body. R3 says it
- * never replaces, and no gate checks that -- so this assertion is the only place
- * the claim is tested at all. The chip's own positioning and identity colour must
- * survive a custom body. */
-test('renderEvent fills the chip body and leaves the chip Arena drew', () => {
+/* renderEvent is gone, removed by the per-item convention that had already
+ * removed ActivityFeed.renderItem -- not because it broke R3 (it filled the chip
+ * rather than replacing it, which R3 permits) but because per-item projection has
+ * no Angular answer short of ngTemplateOutlet. The chip body is Arena's alone
+ * now, so the assertion is that the default body renders and a stray renderEvent
+ * reaches nothing. A removal nothing asserts is a removal that can come back:
+ * check:api reads the .d.ts and would stay green if the .jsx kept honouring it. */
+test('the chip body is Arena own, and a consumer renderer reaches nothing', () => {
   const html = renderToStaticMarkup(
     <Calendar events={EVENTS} timeZone="UTC" anchorDate="2026-07-20"
       renderEvent={(e) => <em>{e.title.toUpperCase()}</em>} />,
   );
-  assert.match(html, /<em>STANDUP<\/em>/, 'the custom body did not render');
-  assert.match(html, /var\(--cat-1\)/, 'the chip lost its identity colour — renderEvent replaced rather than filled');
+  assert.match(html, /Standup/, 'the default chip body did not render');
+  assert.doesNotMatch(html, /<em>/, 'a consumer renderer still reaches the chip -- renderEvent is not gone');
+  assert.doesNotMatch(html, /STANDUP/, 'the consumer renderer ran');
 });
 ```
 
-Verify the colour custom property that actually appears (`catColor()` in `chart-internals.js` decides
-it) before pinning that second assertion.
 
 Expected: `check-api: 38 … across 58`; behaviour diff **empty** (Task 10 already moved it). 37/57 → 38/58.
 
@@ -1779,11 +1687,25 @@ batch.**
 
 > **Table needs four fixes, in this order, and the first three are invisible until the one before it
 > lands.** (1) the `<T>` generic is erased — `TableColumn<T>` throws `unreadable type annotation` and
-> nothing else in the file is even reached; (2) `TableColumn.render` is a parameterised slot (Task 6);
-> (3) `getRowKey` returns `React.Key`, an R4 platform type; (4) `onRowClick` is
-> `(row: T, i: number) => void`, and an event takes **one** payload.
+> nothing else in the file is even reached; (2) `TableColumn.render` is **removed** under the
+> per-item convention (Task 6); (3) `getRowKey` returns `React.Key`, an R4 platform type;
+> (4) `onRowClick` is `(row: T, i: number) => void`, and an event takes **one** payload.
 
-- [ ] **Step 1: Confirm and STOP.** Report all four, plus the two member decisions they force:
+- [ ] **Step 1: Confirm and STOP.** Report all four, and **lead the report with the cost**, because
+  this is where the batch's largest capability loss lands and the maintainer must see it priced
+  before it ships rather than after:
+
+  > **Removing `TableColumn.render` removes the badge from every status cell and the button from
+  > every actions cell.** Measured in the tree: `ProjectScreen.jsx` uses it twice — once for
+  > `<Badge tone dot>` and once for `<Button variant="ghost" size="sm">Details</Button>` — and
+  > `table-avatar.card.entry.jsx` once more for a `Badge`. Those are the two commonest things anyone
+  > puts in a table cell, and the Delivery Console uses both. A status column now needs a member
+  > Arena draws from, and **an actions column has no expression in the contract at all**. The
+  > decision is settled — the convention that removed `ActivityFeed.renderItem`, whose reason is
+  > Angular rather than R3 — and the maintainer confirmed it. Confirm it once more here, because the
+  > earlier confirmation was given before this cost had been measured.
+
+  Two member decisions the four fixes force:
 
   - **`getRowKey` — recommend removing it entirely.** Its return is a platform type; narrowing it to
     `string` keeps a member whose only job is to compute React's reconciliation key, which is a React
@@ -1797,11 +1719,11 @@ batch.**
   Also confirm whether Task 12 added an `aria-label`-bearing member and, if so, that it is contracted
   here.
 
-- [ ] **Step 2: `TableColumn`, non-generic**
+- [ ] **Step 2: `TableColumn`, non-generic and with no renderer**
 
 ```json
 { "name": "TableColumn", "kind": "object",
-  "description": "One column of a Table. `render` fills the cell; the cell, its padding and its alignment stay Arena's.",
+  "description": "One column of a Table. Arena draws every cell: a column says which field it reads and how the value is set, never what markup goes in it.",
   "fields": {
     "key": { "form": "primitive", "type": "string", "required": true, "description": "Which field of the row this column reads." },
     "header": { "form": "primitive", "type": "string", "required": true, "description": "The column's label." },
@@ -1812,23 +1734,26 @@ batch.**
   } }
 ```
 
-**`render` is NOT a field here.** A predefined object is pure data with known fields (R1), and a slot
-is not data — the same reason `ToastAction`'s `onClick` had to be decomposed in Task 8. `render`
-therefore cannot ride inside `TableColumn`, and this is the batch's hardest design problem.
-**Two ways out; present both in Step 1 and let the maintainer choose:**
+**`render` is absent, and its absence is the point.** R1 makes a predefined object pure data with
+known fields, so a renderer could never have been a field of one — the same reason `ToastAction`'s
+`onClick` is decomposed in Task 8. This plan once offered two ways to keep per-column rendering
+anyway; **both are withdrawn**, because the per-item convention removes the member rather than
+relocating it. **Do not reintroduce it as a `cell` slot on `Table` itself** — that is the same shape
+one level up, and it would make `Table` the exception that reopens per-item projection for the whole
+library.
 
-  - **(A) A single parameterised slot on `Table` itself**, `cell`, taking the column key and the row:
-    `{"form": "slot", "params": {"columnKey": "string", "row": "consumerData"}}`. One renderer switching
-    on the key replaces N per-column renderers. The `.jsx` and both call sites restructure.
-  - **(B) Keep per-column renderers and accept `TableColumn` cannot be a predefined object**, making
-    `columns` an array of `consumerData` — which loses every declared field and makes the contract say
-    almost nothing about a column. **Not recommended:** it trades a real R1 violation for a real loss
-    of description, and the eighth form exists for records Arena does not inspect, which a column is
-    not.
+`width` also narrows from `number | string` to `string` — a union between two primitives is still a
+union (R5). `CellAlign` (`left center right`) and `TableCellLayout` (`row block`) are two more new
+enums; write them.
 
-  `width` also narrows from `number | string` to `string` — a union between two primitives is still a
-  union (R5). `CellAlign` (`left center right`) and `TableCellLayout` (`row block`) are two more new
-  enums; write them.
+- [ ] **Step 2a: Rewrite the three call sites BEFORE writing the contract**, because until they stop
+  passing `render` the demos draw nothing where a badge and a button used to be, and a later step
+  would be judging a broken page. For each, decide and record what replaces it: a status column
+  becomes a value Arena draws (the row already carries the status string; `mono` and `align` are the
+  only levers a column has left), and the actions column has **no contracted expression at all** —
+  say plainly in the report what the Console's Details button became, because that is the loss made
+  concrete and Task 15's CHANGELOG must name it.
+
 
 - [ ] **Step 3: The contract**, reflecting Step 1's decisions:
 
@@ -1860,8 +1785,10 @@ routes back out the gate requires (a contract taking consumer data in with no ro
 
 - [ ] **Step 6: Suite, R4 proofs, prompt, README, gates, commit.**
 
-The suite must prove R3 for whichever renderer shape won, exactly as Task 11's does: a custom cell
-body renders **and** the cell keeps Arena's padding and alignment.
+The suite must prove the REMOVAL, exactly as Task 11's does for `renderEvent`: a column carrying a
+`render` function reaches nothing and the cell draws the row's own value instead. A removal nothing
+asserts is a removal that can come back — `check:api` reads the `.d.ts` and would stay green if the
+`.jsx` quietly kept honouring it.
 
 Expected: `check-api: 39 … across 59`; behaviour diff empty. 38/58 → 39/59. **This completes the seven
 migrations of batch 8C3.**
@@ -1966,9 +1893,11 @@ git rm docs/superpowers/plans/2026-07-24-8c2-api-contracts-the-six-form-controls
 - **It does not teach the binding schema to scope an exception to a variant**, which `Table`'s two
   layouts need and `Skeleton` already proves is missing. Task 12 works around it the way `Skeleton`'s
   suite does — by asserting against one variant — and the limit stays open.
-- **It does not make R3's own claim checkable.** Task 6 makes the shape readable and compares the
-  params; whether a parameterised slot fills rather than replaces is a fact about the rendered tree,
-  and the only gate that sees one does not read contracts.
+- **It does not make R3's own claim checkable, and it no longer teaches the reader R3 at all.**
+  Whether a parameterised slot fills rather than replaces is a fact about the rendered tree, and the
+  only gate that sees one does not read contracts. Task 6 shrank to making the reader's refusal state
+  the per-item convention; should a member ever genuinely need a parameterised slot, that throw is
+  where the work starts.
 - **It does not close the `check:api`-reads-the-`.d.ts` hole.** Restoring `{...rest}` to any migrated
   `.jsx` would still leave the gate green; the per-component R4 suites are the only guard, which is
   why Constraint 17 insists both runs are induced separately.
