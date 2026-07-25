@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Calendar } from '../../components/display/Calendar.jsx';
+import { CalendarEvent } from '../../components/display/CalendarEvent.jsx';
 import { Button } from '../../components/forms/Button.jsx';
 
 /* Built around the real current week so the "now" line and today's column are
@@ -43,11 +44,14 @@ function Demo(){
       {picked && <> · picked: {picked}</>}
     </div>
     <Calendar
-      events={events}
-      onEventClick={(e) => setPicked(e.title)}
       actions={<Button size="sm" variant="secondary" icon="ph-bold ph-plus">New event</Button>}
       dayEnd="18:00"
-    />
+    >
+      {events.map((e) => (
+        <CalendarEvent key={e.id} id={e.id} title={e.title} start={e.start} end={e.end}
+          colorId={e.colorId} onClick={() => setPicked(e.title)} />
+      ))}
+    </Calendar>
   </div>);
 }
 createRoot(document.getElementById('root')).render(<Demo/>);

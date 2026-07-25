@@ -3,14 +3,23 @@ import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Calendar } from '../components/display/Calendar.jsx';
+import { CalendarEvent } from '../components/display/CalendarEvent.jsx';
 
-/* WHAT THIS DIRECTORY CAN SHOW, AND WHY CALENDAR IS SPLIT ACROSS TWO OF THEM.
+/* WHAT THIS DIRECTORY CAN SHOW, AND WHAT NOW GOES UNSHOWN.
  *
  * This suite renders with renderToStaticMarkup and has no DOM, by design. So it
- * owns what a static render settles: the chip body, the two required-ness guards,
- * and the two R4 escapes. It asserts nothing about focus, keys or the roving tab
- * stop -- `frameworks/react/test-dom/grid-keyboard.test.jsx` owns those against a
- * real DOM and keeps owning them.
+ * owns what a static render settles: the chip body, the required-ness guards on
+ * both components, and the R4 escapes on both roots. It asserts nothing about
+ * focus, keys or the roving tab stop.
+ *
+ * NOTHING ELSE DOES EITHER, AND THAT IS THE SHARPEST GAP THIS REPO CARRIES.
+ * `frameworks/react/test-dom/grid-keyboard.test.jsx` owned the roving tab stop, the
+ * four-edge clamp, Home/End and Enter/Escape into an event chip; it was deleted with
+ * the rest of that directory for its RAM cost. Calendar.behaviour.json retired all
+ * eight of its `grid` exceptions when the navigation shipped, so the binding now
+ * claims FULL compliance with the pattern and no test anywhere checks the claim.
+ * Keyboard navigation is verified by hand: serve the tree with `bun run demos`, open
+ * calendar.card.html and drive the grid from the keyboard. See CLAUDE.md's Known debt.
  *
  * `view="week"` is passed everywhere below. Without a DOM the container measures
  * null, which is already the wide branch, but pinning it keeps these assertions
@@ -21,8 +30,14 @@ const EVENTS = [
   { id: 'b', title: 'Review', start: '2026-07-21T14:00:00Z', end: '2026-07-21T15:00:00Z', colorId: 2 },
 ];
 
-const render = (extra) => renderToStaticMarkup(
-  <Calendar events={EVENTS} timeZone="UTC" anchorDate="2026-07-20" view="week" {...extra} />,
+/* The events are the CONTENT slot now: one <CalendarEvent> per event, whose
+ * props are what Calendar reads. `eventExtra` goes on every chip, `calendarExtra`
+ * on the Calendar itself -- the two are separate because the R4 tests below
+ * assert about the CALENDAR's root and must not be able to reach it through a
+ * chip by accident. */
+const chips = (eventExtra) => EVENTS.map((e) => <CalendarEvent key={e.id} {...e} {...eventExtra} />);
+const render = (calendarExtra, eventExtra) => renderToStaticMarkup(
+  <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week" {...calendarExtra}>{chips(eventExtra)}</Calendar>,
 );
 
 /* renderEvent is gone, removed by the per-item convention that had already
@@ -40,15 +55,34 @@ test('the chip body is Arena own, and a consumer renderer reaches nothing', () =
   assert.doesNotMatch(html, /STANDUP/, 'the consumer renderer ran');
 });
 
-/* Required-ness governs runtime, not only the declaration (api/README.md).
- * `events` had a masking `= []` before the contract, which drew an empty grid
- * where a caller had made a mistake. There is no sensible default for it. */
-test('a missing events list throws rather than drawing an empty schedule', () => {
-  assert.throws(
-    () => renderToStaticMarkup(<Calendar timeZone="UTC" anchorDate="2026-07-20" view="week" />),
-    /Calendar: `events` is required/,
-    'a Calendar with no events rendered instead of failing hard',
-  );
+/* The throw is GONE, and its absence is the assertion. `events` was a required
+ * array member and failed hard when omitted, which was right while omitting it
+ * meant a caller had forgotten their data. As the content slot it means
+ * something else entirely: a week with nothing booked in it. There is no member
+ * left to be missing, so an empty Calendar renders an empty grid -- with its
+ * hours, its day columns and its cells all present, which is what makes it an
+ * empty SCHEDULE rather than an empty box. */
+test('a Calendar with no children renders an empty schedule rather than throwing', () => {
+  const html = renderToStaticMarkup(<Calendar timeZone="UTC" anchorDate="2026-07-20" view="week" />);
+  assert.match(html, /role="grid"/, 'an eventless Calendar drew no grid at all');
+  assert.match(html, /role="gridcell"/, 'an eventless Calendar drew no hour cells');
+  assert.doesNotMatch(html, /Standup/, 'the fixture leaked an event into a Calendar with no children');
+});
+
+/* Required-ness governs runtime, and it moved down a layer with the members:
+ * CalendarEvent owns id/title/start/end now, and each is required. Asserted
+ * against the WHOLE quartet in one test rather than four, because they are one
+ * guard idiom; the message names which one, so a failure still says. */
+test('a CalendarEvent missing a required member throws', () => {
+  const full = { id: 'a', title: 'Standup', start: '2026-07-20T09:00:00Z', end: '2026-07-20T09:30:00Z' };
+  for (const missing of ['id', 'title', 'start', 'end']) {
+    const props = { ...full, [missing]: undefined };
+    assert.throws(
+      () => renderToStaticMarkup(<CalendarEvent {...props} />),
+      new RegExp(`CalendarEvent: \\\`${missing}\\\` is required`),
+      `a CalendarEvent with no ${missing} rendered instead of failing hard`,
+    );
+  }
 });
 
 /* `timeZone` is deliberately NOT required, and this pair is the argument.
@@ -83,10 +117,10 @@ test('an omitted timeZone resolves to the reader own zone, exactly', () => {
   };
   try {
     const implicit = renderToStaticMarkup(
-      <Calendar events={EVENTS} anchorDate="2026-07-20" view="week" />,
+      <Calendar anchorDate="2026-07-20" view="week">{chips()}</Calendar>,
     );
     const explicit = renderToStaticMarkup(
-      <Calendar events={EVENTS} timeZone="Asia/Tokyo" anchorDate="2026-07-20" view="week" />,
+      <Calendar timeZone="Asia/Tokyo" anchorDate="2026-07-20" view="week">{chips()}</Calendar>,
     );
     assert.equal(implicit, explicit, 'the default is not the reader resolved zone');
     assert.match(implicit, /18:00/, 'the default did not shift the 09:00Z event into the stubbed zone');
@@ -100,10 +134,10 @@ test('an omitted timeZone resolves to the reader own zone, exactly', () => {
  * earliest event, so the two renders start their grids nine hours apart. */
 test('an explicit timeZone still decides the wall clock', () => {
   const utc = renderToStaticMarkup(
-    <Calendar events={EVENTS} timeZone="UTC" anchorDate="2026-07-20" view="week" />,
+    <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">{chips()}</Calendar>,
   );
   const tokyo = renderToStaticMarkup(
-    <Calendar events={EVENTS} timeZone="Asia/Tokyo" anchorDate="2026-07-20" view="week" />,
+    <Calendar timeZone="Asia/Tokyo" anchorDate="2026-07-20" view="week">{chips()}</Calendar>,
   );
   assert.match(utc, /09:00/, 'the UTC render does not start at the event hour');
   assert.match(tokyo, /18:00/, 'the Tokyo render did not shift the event by nine hours');
@@ -124,6 +158,21 @@ test('Calendar drops a consumer attribute -- no {...rest} spread reaches the roo
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- a {...rest} escape is back');
 });
 
+/* CalendarEvent is a NEW root a consumer writes directly, so it is a new place
+ * for both escapes to appear. It has never carried either; these two exist so
+ * that stays true, since check:api reads the .d.ts and a spread restored to the
+ * .jsx alone would leave the gate green. The chips are the escape's carrier
+ * here, not the Calendar, so `render`'s second argument is what they use. */
+test('CalendarEvent drops a consumer style object -- no ...style escape on the chip', () => {
+  const html = render({}, { style: { color: '#ff00ff' } });
+  assert.doesNotMatch(html, /#ff00ff/, 'a consumer style reached the chip -- an R4 escape opened');
+});
+
+test('CalendarEvent drops a consumer attribute -- no {...rest} spread on the chip', () => {
+  const html = render({}, { 'data-stray': 'x' });
+  assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the chip -- a {...rest} escape opened');
+});
+
 /* The one CalendarEvent field this migration renamed. `slot` became `colorId`
  * when the type moved to api/types/, and a component still reading the old name
  * would draw every chip in ramp slot 1 -- silently, since catColor clamps. Slot 2
@@ -133,8 +182,9 @@ test('an event colours its chip from colorId, not from the old slot field', () =
   const two = 'var(--color-cat-2)';
   assert.ok(html.includes(two), 'the second event did not take its ramp colour from colorId');
   const stale = renderToStaticMarkup(
-    <Calendar events={[{ id: 'c', title: 'Stale', start: '2026-07-20T09:00:00Z', end: '2026-07-20T10:00:00Z', slot: 2 }]}
-      timeZone="UTC" anchorDate="2026-07-20" view="week" />,
+    <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">
+      <CalendarEvent id="c" title="Stale" start="2026-07-20T09:00:00Z" end="2026-07-20T10:00:00Z" slot={2} />
+    </Calendar>,
   );
   assert.ok(!stale.includes(two), 'the old `slot` field still picks a ramp colour -- the rename did not land');
 });

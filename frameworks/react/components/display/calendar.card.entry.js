@@ -4,6 +4,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { Calendar } from "../../components/display/Calendar.js";
+import { CalendarEvent } from "../../components/display/CalendarEvent.js";
 import { Button } from "../../components/forms/Button.js";
 const now = new Date;
 const monday = new Date(now);
@@ -35,14 +36,20 @@ function Demo() {
   return React.createElement("div", null, React.createElement("div", {
     className: "sub"
   }, "Wednesday shows three overlapping events sharing the width · Sunday is hidden until something lands on it", picked && React.createElement(React.Fragment, null, " · picked: ", picked)), React.createElement(Calendar, {
-    events,
-    onEventClick: (e) => setPicked(e.title),
     actions: React.createElement(Button, {
       size: "sm",
       variant: "secondary",
       icon: "ph-bold ph-plus"
     }, "New event"),
     dayEnd: "18:00"
-  }));
+  }, events.map((e) => React.createElement(CalendarEvent, {
+    key: e.id,
+    id: e.id,
+    title: e.title,
+    start: e.start,
+    end: e.end,
+    colorId: e.colorId,
+    onClick: () => setPicked(e.title)
+  }))));
 }
 createRoot(document.getElementById("root")).render(React.createElement(Demo, null));

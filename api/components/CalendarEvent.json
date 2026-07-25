@@ -1,8 +1,7 @@
 {
-  "name": "CalendarEvent",
-  "kind": "object",
-  "description": "One event on the schedule. Times are ISO datetimes read in the calendar's timeZone, never the reader's.",
-  "fields": {
+  "component": "CalendarEvent",
+  "description": "One event on a Calendar's schedule. Times are ISO datetimes read in the calendar's timeZone, never the reader's. Calendar draws the chip; the consumer writes one of these per event and Calendar injects where it goes.",
+  "api": {
     "id": { "form": "primitive", "type": "string", "required": true,
             "description": "Stable identity, so a host can switch on it rather than on the title." },
     "title": { "form": "primitive", "type": "string", "required": true,
@@ -12,6 +11,8 @@
     "end": { "form": "primitive", "type": "string", "required": true,
              "description": "ISO datetime the event ends." },
     "colorId": { "form": "enum", "type": "CatSlot",
-                 "description": "Identity colour. Give the same entity the same slot everywhere and it keeps its colour across views." }
+                 "description": "Identity colour. Give the same entity the same slot everywhere and it keeps its colour across views." },
+    "click": { "form": "event",
+               "description": "The chip was activated. No payload: the consumer wrote this element, so they already hold the event this is about." }
   }
 }

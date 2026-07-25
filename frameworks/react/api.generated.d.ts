@@ -52,20 +52,6 @@ export type ButtonType = 'button' | 'submit' | 'reset';
 /** Primary for the one main action in a view; secondary for neutral actions; ghost for tertiary ones; danger for destructive ones. Danger is outline and never filled — Arena's only filled danger surface is the final confirmation inside ConfirmDialog. */
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
-/** One event on the schedule. Times are ISO datetimes read in the calendar's timeZone, never the reader's. */
-export interface CalendarEvent {
-  /** Stable identity, so a host can switch on it rather than on the title. */
-  id: string;
-  /** What the chip reads. */
-  title: string;
-  /** ISO datetime the event begins. */
-  start: string;
-  /** ISO datetime the event ends. */
-  end: string;
-  /** Identity colour. Give the same entity the same slot everywhere and it keeps its colour across views. */
-  colorId?: CatSlot;
-}
-
 /** How much of the schedule is on screen at once: a whole week of columns, or one day. Omitted on the component, it is derived from the container width rather than chosen. */
 export type CalendarView = 'week' | 'day';
 

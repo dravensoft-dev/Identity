@@ -21,7 +21,7 @@ import {
 } from "./calendar-internals.js";
 const GUTTER = "calc(var(--sp-1) * 14)";
 export function Calendar({
-  events,
+  children,
   timeZone,
   anchorDate,
   view,
@@ -29,13 +29,10 @@ export function Calendar({
   dayEnd = "23:00",
   weekStartsOn = 1,
   hideEmptyWeekend = true,
-  onEventClick,
   onDateClick,
   onRangeChange,
   actions
 }) {
-  if (events == null)
-    throw new Error("Calendar: `events` is required");
   const zone = timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [ref, width] = useContainerWidth();
   const [anchor, setAnchor] = useState(() => anchorDate || todayIso(zone));
@@ -50,6 +47,9 @@ export function Calendar({
   }, []);
   const narrow = width !== null && width < readBreakpoint("md");
   const activeView = view || (narrow ? "day" : "week");
+  const kids = useMemo(() => React.Children.toArray(children).filter(React.isValidElement), [children]);
+  const events = useMemo(() => kids.map((k) => k.props), [kids]);
+  const elementOf = useMemo(() => new Map(kids.map((k) => [k.props, k])), [kids]);
   const placed = useMemo(() => placeEvents(events, zone), [events, zone]);
   const days = useMemo(() => {
     if (activeView === "day")
@@ -285,11 +285,7 @@ export function Calendar({
     const top = y(p.startMin);
     const rawH = y(p.endMin) - top;
     const h = `max(calc(var(--sp-1) * 4.5), ${rawH}px)`;
-    const time = `${formatHM(p.startMin)} – ${formatHM(p.endMin)}`;
-    const Tag = onEventClick ? "button" : "div";
-    return React.createElement(Tag, {
-      key: p.ev.id,
-      type: onEventClick ? "button" : undefined,
+    return React.cloneElement(elementOf.get(p.ev), {
       ref: (node) => {
         if (node)
           eventRefs.current.set(p.ev.id, node);
@@ -297,44 +293,17 @@ export function Calendar({
           eventRefs.current.delete(p.ev.id);
       },
       tabIndex: -1,
-      onClick: onEventClick ? (e) => {
-        e.stopPropagation();
-        onEventClick(p.ev);
-      } : undefined,
-      "aria-label": onEventClick ? `${p.ev.title}, ${formatDate(d, { weekday: "long", day: "numeric", month: "long" })}, ${time}` : undefined,
-      style: {
-        position: "absolute",
+      box: {
         top,
         height: h,
         left: `calc(${p.col / p.cols * 100}% + calc(var(--sp-1) * 0.5))`,
-        width: `calc(${1 / p.cols * 100}% - var(--sp-1))`,
-        display: "flex",
-        flexDirection: "column",
-        gap: 0,
-        overflow: "hidden",
-        textAlign: "left",
-        padding: "calc(var(--sp-1) * 1) calc(var(--sp-1) * 1.5)",
-        background: `color-mix(in oklab, ${color} 16%, var(--surface-card))`,
-        borderLeft: `var(--bw-strong) solid ${color}`,
-        borderTop: "none",
-        borderRight: "none",
-        borderBottom: "none",
-        borderRadius: "var(--r-sm)",
-        cursor: onEventClick ? "pointer" : "default",
-        font: "inherit"
-      }
-    }, React.createElement("span", {
-      style: {
-        fontSize: "var(--dz-text-sm)",
-        fontWeight: "var(--fw-semibold)",
-        color: "var(--text-strong)",
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis"
-      }
-    }, p.ev.title), rawH >= 32 && React.createElement("span", {
-      style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-2xs)", color: "var(--mute)" }
-    }, time));
+        width: `calc(${1 / p.cols * 100}% - var(--sp-1))`
+      },
+      color,
+      timeLabel: `${formatHM(p.startMin)} – ${formatHM(p.endMin)}`,
+      dateLabel: formatDate(d, { weekday: "long", day: "numeric", month: "long" }),
+      showTime: rawH >= 32
+    });
   }))), showNow && React.createElement("div", {
     "aria-hidden": "true",
     style: {
