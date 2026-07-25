@@ -286,6 +286,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   resolves implicit ARIA roles and reports honestly — with a third return value —
   when a requirement is a behaviour no single element can decide.
 - Tests for `Tooltip`'s pointer-intent timer, recorded as untested debt since plan 7a.
+- **`tabStop` on `Button` and `IconButton`.** It is the second global attribute the API
+  contract admits as a member, after `id` — both pass the same test: the flatten's own
+  justification for leaving global attributes off the member list is that a consumer
+  writes them on the host directly, and `tabStop` fails that test the way `id` does,
+  for a different reason each. `id` fails it where a component generates the value
+  itself; `tabStop` fails it here because there is no host to write it on at all —
+  `IconButton` is React-only, delegated to `matIconButton` on the Angular side, with
+  no `arena-icon-button` primitive — and because, wherever a host does exist,
+  `tabindex="-1"` written on it lands on the custom element rather than on the
+  descendant that is actually focusable. Setting `tabStop={false}` writes
+  `tabindex="-1"` and leaves the control programmatically focusable, for a button
+  living inside a composite that manages its own focus — a grid's roving tab stop, a
+  menu. **A positive tab order is deliberately not expressible**: the member is
+  `boolean`, not a number, so a consumer cannot reorder the page's Tab sequence
+  through it, only opt a control out of it.
+- **`CalendarEvent.actionsEnabled` and `CalendarEvent.actions`.** A chip can now carry
+  an action button that reveals a consumer-authored panel — `actionsEnabled` gates
+  whether the button draws at all (a boolean, not "is the slot filled?", for the same
+  reason `Alert.dismissible` and `Toast.dismissible` already record: Angular cannot
+  detect whether an `ng-content` was filled), and `actions` is the panel's content,
+  rendered only while the panel is open. Both default closed, which is what keeps
+  `Calendar`'s schedule at **one** page-level tab stop with the panel present: the
+  kebab and the panel's own controls are reachable only from inside the grid's
+  existing Enter/Escape path, never as stops of their own. **The keyboard path this
+  depends on — kebab reachability, that activating it opens the panel, that the first
+  Escape closes the panel and returns focus to the chip while a second Escape returns
+  it to the hour cell, and that the schedule still measures as one tab stop with a
+  panel open — has not been driven by hand.** No agent in this plan operated a
+  keyboard in a browser; `Calendar` binds the `grid` pattern, so by the rule `bun run
+  test:react-dom` adopted this cycle it is verified by a person on
+  `calendar.card.html`, never by a render suite. The five-point checklist is written
+  into `CalendarEvent.prompt.md`'s "Verifying the panel by hand" section and the pass
+  is owed to the maintainer.
 
 ### Changed
 
