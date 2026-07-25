@@ -8,6 +8,7 @@ import { SegmentedControl } from "../../components/navigation/SegmentedControl.j
 import { PageHead } from "../../components/navigation/PageHead.js";
 import { Breadcrumbs } from "../../components/navigation/Breadcrumbs.js";
 import { SideNav } from "../../components/navigation/SideNav.js";
+import { SideNavItem } from "../../components/navigation/SideNavItem.js";
 import { BulkActionBar } from "../../components/navigation/BulkActionBar.js";
 import { Button } from "../../components/forms/Button.js";
 function Demo() {
@@ -46,13 +47,22 @@ function Demo() {
     style: { width: "var(--layout-sidebar)", marginBottom: "var(--sp-4)" }
   }, React.createElement(SideNav, {
     ariaLabel: "Primary",
-    active: "deploys",
-    items: [
-      { id: "dashboard", icon: "ph-bold ph-squares-four", label: "Projects", href: "#projects" },
-      { id: "deploys", icon: "ph-bold ph-rocket-launch", label: "Deployments", href: "#deploys" },
-      { id: "settings", icon: "ph-bold ph-gear-six", label: "Settings" }
-    ]
-  })), React.createElement("div", {
+    active: "deploys"
+  }, React.createElement(SideNavItem, {
+    id: "dashboard",
+    icon: "ph-bold ph-squares-four",
+    label: "Projects",
+    href: "#projects"
+  }), React.createElement(SideNavItem, {
+    id: "deploys",
+    icon: "ph-bold ph-rocket-launch",
+    label: "Deployments",
+    href: "#deploys"
+  }), React.createElement(SideNavItem, {
+    id: "settings",
+    icon: "ph-bold ph-gear-six",
+    label: "Settings"
+  }))), React.createElement("div", {
     className: "sub"
   }, "PageHead"), React.createElement("div", {
     style: { marginBottom: "var(--sp-4)" }

@@ -5,6 +5,7 @@ import { SegmentedControl } from '../../components/navigation/SegmentedControl.j
 import { PageHead } from '../../components/navigation/PageHead.jsx';
 import { Breadcrumbs } from '../../components/navigation/Breadcrumbs.jsx';
 import { SideNav } from '../../components/navigation/SideNav.jsx';
+import { SideNavItem } from '../../components/navigation/SideNavItem.jsx';
 import { BulkActionBar } from '../../components/navigation/BulkActionBar.jsx';
 import { Button } from '../../components/forms/Button.jsx';
 function Demo(){const[v,setV]=React.useState('Overview');const[range,setRange]=React.useState('7d');const[sel,setSel]=React.useState(3);return(<div>
@@ -24,12 +25,11 @@ function Demo(){const[v,setV]=React.useState('Overview');const[range,setRange]=R
       under R4, so the wrapper is a plain block and the nav — itself a flex
       container, so block-level in normal flow — fills it with no member at all. */}
   <div style={{width:'var(--layout-sidebar)',marginBottom:'var(--sp-4)'}}>
-    <SideNav ariaLabel="Primary" active="deploys"
-      items={[
-        {id:'dashboard',icon:'ph-bold ph-squares-four',label:'Projects',href:'#projects'},
-        {id:'deploys',icon:'ph-bold ph-rocket-launch',label:'Deployments',href:'#deploys'},
-        {id:'settings',icon:'ph-bold ph-gear-six',label:'Settings'},
-      ]} />
+    <SideNav ariaLabel="Primary" active="deploys">
+      <SideNavItem id="dashboard" icon="ph-bold ph-squares-four" label="Projects" href="#projects"/>
+      <SideNavItem id="deploys" icon="ph-bold ph-rocket-launch" label="Deployments" href="#deploys"/>
+      <SideNavItem id="settings" icon="ph-bold ph-gear-six" label="Settings"/>
+    </SideNav>
   </div>
   <div className="sub">PageHead</div>
   <div style={{marginBottom:'var(--sp-4)'}}>
