@@ -609,7 +609,12 @@ manifests and demos that follow, and run the gates.
 
 An entry whose entire content is an API divergence is **deleted**, not migrated — the
 contract replaces it, and the divergence no longer exists to record. Entries covering
-rendering or behaviour stay. Three bindings cite that document as supporting evidence
-(`command-palette.behaviour.json`, the `SideNav` delegated entry, and
-`frameworks/angular/primitives/onboarding/onboarding.ts`); a change deleting a cited
-section must redirect the citation in the same change.
+rendering or behaviour stay. A change deleting a cited section must redirect the citation
+in the same change — so **measure the citing set rather than trusting a list written here**,
+which has already gone stale once: `grep -rn "components-divergences" --include='*.json'
+--include='*.ts' --include='*.md' --include='*.jsx' . | grep -v node_modules`, then keep only
+the hits that quote a section by name. Those are the ones a deletion breaks; a citation naming
+the file alone survives any edit to it. The distinction is not academic —
+`frameworks/angular/primitives/onboarding/onboarding.ts` was listed here as a citer to protect
+and names no section at all, while `frameworks/angular/test/host-class-binding.test.ts` and
+`frameworks/tailwind/README.md` quote one each and were not listed.
