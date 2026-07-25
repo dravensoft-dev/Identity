@@ -12,7 +12,6 @@ Interactive recreation of an internal Dravensoft product: the console where the 
 - `Shell.jsx` — base layout (navigation sidebar + topbar) reused by the dashboard and project screens.
 - `DashboardScreen.jsx` — metrics and project grid.
 - `ProjectScreen.jsx` — detail view with tabs, deployment table, activity, and settings.
-- `Icon.jsx` — wrapper around **Phosphor Icons** (webfont); `weight` bold by default, fill for active state. Requires the `@phosphor-icons/web` stylesheets loaded in the host page.
 
 ## Arena components used
 Button, IconButton, Input, Switch, Card, Badge, Tag, Tabs, Dialog, Toast, AppLogo.
