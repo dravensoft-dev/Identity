@@ -1,0 +1,1933 @@
+# Plan 8C3 — 8C2's four debts, Calendar and Table keyboard navigation, and seven contracts
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development
+> (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use
+> checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Pay the four Known debt entries plan 8C2 recorded, give `Calendar` and `Table` the keyboard
+navigation their `grid` bindings have excepted since the behaviour layer was built, teach the reader
+the **parameterised slot (R3)**, and bring seven more components under the API capability contract —
+`check:api` from **32 contracts / 52 layer implementations to 39 / 59**.
+
+**Architecture:** Three phases that must run in order, because each unblocks the next. **Phase A**
+(Tasks 2–5) pays the debts; three of the four are small and one — proving at runtime that the six
+form controls' events actually fire — needs a new DOM suite. **Phase B** (Task 6) is the batch's
+structural event, the way `consumerData` was 8C1's and `functionInput` was 8C2's: the reader learns
+that an inbound function returning a **node** is a parameterised slot, which it has thrown on by name
+since 8C2 and which `Calendar.renderEvent` and `TableColumn.render` both need. **Phase C** (Tasks
+7–13) migrates the seven, with `Calendar` and `Table` each taking two tasks — keyboard navigation
+first, then the contract — so the contract task works on settled markup.
+
+**Tech Stack:** Bun (build, test, gates), plain-node-portable `scripts/`, React 18 with inline
+token-valued styles and no CSS classes. Angular 22 is untouched except regenerated output and one
+reader fix that Plan D consumes.
+
+**Spec:** `docs/superpowers/specs/2026-07-23-8-api-contracts-design.md` — *Plan C*. **Normative
+vocabulary:** `api/README.md` (nine forms; this plan adds no tenth — R3 is a rule the vocabulary
+already states and the reader could not yet read).
+
+**Branch:** `api-contracts-8c3`, cut from `main` at `7e922e8` (the 8C2 merge).
+
+> **This plan is large on purpose and its phase boundaries are real split points.** If it needs to
+> become three plans, cut after Task 5 and after Task 6; each phase leaves the tree green, every gate
+> passing, and `check:api` at a stated pair. Do not cut inside a phase.
+
+---
+
+## What this plan measured
+
+Every figure was measured against `HEAD` (`7e922e8`) on 2026-07-24 while writing this plan. Line
+numbers are **not** load-bearing (Constraint 27); the quoted code identifies the site.
+
+### The baseline
+
+- **`check:api` reads `32 contract(s) hold across 52 layer implementation(s)`.**
+- **Merged process 1048 tests across 94 files; isolated DOM process 26 across 5.**
+- **Plan C's subject set is TWENTY-TWO, not twenty-one.** 43 React components under
+  `frameworks/react/components/` (excluding `*.card.entry.jsx`); 20 have a matching directory under
+  `frameworks/angular/primitives/`; the remaining 23 are exactly the key set of
+  `frameworks/angular/behaviour-delegated.json`; minus `Switch`, contracted before Plan C began. The
+  stale *twenty-one* was true when written and went stale **inside 8C2**, which split `Radio.jsx`
+  into two quartets and thereby created a new React component and a new delegated entry in one
+  change. Corrected in `CLAUDE.md` and the spec on this branch before this plan was written.
+- **Eleven of the twenty-two remain uncontracted:** `Calendar`, `Table`, `Dialog`, `ProgressBar`,
+  `Toast`, `Tooltip`, `Menu`, `Pagination`, `SegmentedControl`, `SideNav`, `Tabs`. This plan takes
+  **seven**; `Dialog`, `Menu`, `Pagination` and `SideNav` are C4's.
+
+### The seven subjects, probed through `reactSurface()`
+
+Five read cleanly today. Two throw, **for different reasons, and that difference sets the order**:
+
+| Component | `reactSurface()` | R4 escapes |
+|---|---|---|
+| `Tabs` | reads; `tabs` is a **union** `string \| TabItem` (R5) | `style` |
+| `SegmentedControl` | reads; `options` is a **union** `string \| SegmentOption` (R5) | `style` **and `{...rest}`** |
+| `ProgressBar` | reads; `label` is a slot | `style` |
+| `Toast` | reads; `action` is `named: ToastAction` | `style` |
+| `Tooltip` | reads; `content` and `children` both required slots | `style` |
+| `Calendar` | **THROWS** on `renderEvent` | `style` |
+| `Table` | **THROWS** on `TableColumn<T>`, never reaching `render` | `style` |
+
+- **No component in this batch has a heritage clause.** `grep -n 'extends' ` across all seven `.d.ts`
+  returns nothing. Unlike 8C1 and 8C2 there is **no D1 flatten to do here** — the only R4 escapes are
+  the seven `style` members and `SegmentedControl`'s lone `{...rest}`.
+- **`Calendar` throws with the message Task 1b wrote for exactly this moment:**
+  `a function returning a node is a parameterised slot (R3), not a functionInput, and the reader does
+  not model that shape yet: (event: CalendarEvent) => React.ReactNode`.
+- **`Table` throws earlier, at the generic:** `unreadable type annotation: TableColumn<T>`. Erasing
+  the generic does **not** rescue `render` — probed, it then throws the same R3 message. Table needs
+  three fixes in order: erase the generic, then R3, then two members the earlier failures mask.
+- **Two members are masked behind Table's generic and only appear once it is gone.**
+  `getRowKey?: (row: T, i: number) => React.Key` classifies as `{form:'platform', type:'React.Key'}`
+  (an R4 violation the gate can name — the platform-return check fires before parameter count is ever
+  examined), and `onRowClick?: (row: T, i: number) => void` throws
+  `an event takes one payload, and this declares more than one parameter`.
+- **`CatSlot` is a NUMERIC literal union** (`1 | 2 | … | 8`). `classify()`'s enum branch requires
+  string literals (`/^'[^']*'$/`), so an inline numeric union reads as `union`, never `enum` — but
+  `CatSlot` is a **named** type in the `.d.ts`, so it reads as `{form:'named'}` and resolves against
+  `api/types/` normally. `validateTypes` requires only a non-empty `values` array, not strings. A
+  numeric enum is therefore legal and has no precedent among the current `api/types/` files.
+- **`CalendarEvent.meta` is `Record<string, unknown>`, and consumer data MAY NOT be a field of a
+  predefined object.** That is one of the eighth form's two mechanical guards (`api/README.md`;
+  `validateTypes` enforces it). `CalendarEvent` cannot carry `meta` as declared — Task 1 decides.
+
+### The precedents that settle three of this batch's design questions
+
+- **`Alert` already solved the object-carrying-a-callback shape.** `Alert.d.ts` has
+  `actionLabel?: string; onAction?: () => void;` and `api/components/Alert.json` declares
+  `actionLabel` (primitive) + `action` (event). `Toast`'s `ToastAction { label; onClick }` takes the
+  same decomposition. **This is not a new decision; it is an existing one applied.**
+- **`AlertTone` shows a component gets its OWN tone enum** rather than reusing `Tone` when its value
+  set differs. `Tone` is `neutral accent gold success warning danger info`; `AlertTone` is
+  `info success warning danger neutral`. `ProgressBar`'s and `Toast`'s tone sets differ from both.
+- **`ControlSize` already exists** as `sm md lg`. `ProgressBar.size` is exactly that set and reuses
+  it. `SegmentedControl.size` is `sm md` — a different set, needing its own enum.
+
+### Call sites
+
+- **No call site anywhere passes a `TabItem` or a `SegmentOption` object.** All three sites pass bare
+  string arrays (`navigation.card.entry.jsx` ×2, `ProjectScreen.jsx`). The R5 union's object arm is
+  unexercised in the tree, though both `.jsx` files handle it.
+- **`ProjectScreen.jsx` is the only call site passing `style`** to any of the seven —
+  `style={{ marginBottom: 'calc(var(--sp-1) * 5.5)' }}` on `Tabs`, a real layout dependency. It takes
+  the wrapping-`<div>` treatment 8C2's F2 established.
+- `Toast`'s `action` is passed as an object at `frameworks/react/ui_kits/console/index.entry.jsx`
+  (`action={t.action}`) and as `onClose={()=>{}}` in `feedback.card.entry.jsx`.
+- `Table`'s two call sites (`ProjectScreen.jsx`, `table-avatar.card.entry.jsx`) both pass `columns`
+  arrays carrying `render` functions, and both pass `getRowKey`.
+
+### Suites and bindings
+
+- **Six of the seven have no React suite at all.** Only `Tooltip` does
+  (`frameworks/react/test-dom/tooltip-timer.test.jsx`).
+- `Calendar` and `Table` each bind `grid` with **all eight** requirements excepted. `Tabs` binds
+  `tabs` with **all eight** excepted — the same total-exception shape, and this plan does **not** fix
+  it (Appendix A).
+- `SegmentedControl` binds `radiogroup` with **zero** exceptions.
+- `COVERED` in `scripts/check-compliance.mjs` holds six entries; `Calendar` and `Table` are in none.
+
+### The four debts, re-measured
+
+1. **`id`.** Neither `Input.jsx` nor `Textarea.jsx` accepts `id` today; both derive it from `label`
+   alone. **Correction to the debt entry's framing:** `id` was never a *declared member* of either
+   contract — `Input` reached it through its heritage clause and `Textarea` only ever had it as an
+   undocumented `.jsx` parameter. Restoring it is **adding a new member**, not reinstating one.
+2. **Angular `functionInput`.** Already better than the debt entry says: `angularSurface()` on
+   `readonly validate = input<(value: string) => string>()` **already returns**
+   `{form:'functionInput', params:{value:'string'}, returns:'string'}`. What fails is the optional
+   spelling `input<((value: string) => string) | undefined>()`, and it fails on a **greedy-regex
+   mis-parse**, not a rule: `classify()`'s arrow pattern is tested before its union branch, so it
+   backtracks and captures the return as `string) | undefined`, giving
+   `unreadable type annotation: string)`.
+3. **Enum event payload.** `validateContract` sends any non-primitive, non-`consumerData` payload to
+   `declared(payload, 'object')`. Verified by probe: `string`/`number`/`boolean`/`consumerData`/a
+   declared object are accepted; `LogoSize` is rejected as *"an enum, used where an object belongs"*.
+4. **DA unverified at runtime.** `frameworks/react/test/` renders with `renderToStaticMarkup` and has
+   no DOM. `frameworks/react/test-dom/` does, and holds `harness.jsx` plus six suites.
+
+---
+
+## Global Constraints
+
+Every task's requirements implicitly include this section. 1–29 are 8C2's, carried forward in
+substance because each was earned; 30–36 are new to this plan.
+
+1. **English only.** All code, comments, docs, contract `description`s and UI copy are English.
+   Conversation with the maintainer is Spanish; the repo is not.
+2. **Task 1 is a single blocking audit and it STOPS.** Tasks 2–13 each open with a per-component
+   confirmation that also blocks but must not re-litigate a Task 1 decision.
+3. **`check:api` climbs and never drops:** 32/52 → (Tasks 2–6 contract nothing except Task 2's two
+   added members, which change no count) → **34/54** (Task 7, +2) → **36/56** (Task 8, +2) →
+   **37/57** (Task 9) → **38/58** (Task 11) → **39/59** (Task 13). Record the measured pair in
+   `.superpowers/sdd/progress.md` at the end of every task.
+4. **`check:api` carries no exception map.** An API divergence is a defect.
+5. **`api/README.md` is the normative vocabulary.** Task 6 makes an existing rule (R3) machine-read;
+   it adds no tenth form and must not read as though it does.
+6. **The other two contracts are firm.** Bringing a component under the API contract may not weaken,
+   remove or contradict its behaviour binding or the tokens it renders from. **Tasks 10 and 12 are
+   the deliberate exception**: they *strengthen* a binding by retiring exceptions the implementation
+   has stopped needing. Verify per task with `git diff --stat -- '*.behaviour.json'` — empty
+   everywhere except Tasks 10 and 12, and there only in the retiring direction.
+7. **The binding table is mechanical** (`bindingName()` in `scripts/check-api.mjs`): a
+   primitive/enum/object/array/functionInput member `x` is a React prop `x`; the slot named `content`
+   is React's `children`; a slot named `x` is a node-valued prop `x`; an event named `x` is a
+   function prop `onX`.
+8. **Required-ness is contracted** for the inbound non-slot forms and governs runtime: a required
+   member fails hard when absent. Idiom: `if (!x) throw new Error('C: \`x\` is required');`
+   (`frameworks/react/components/feedback/EmptyState.jsx`). Use `== null` for a boolean or a number,
+   bare truthiness for a string — both idioms are in the tree; match the neighbouring components.
+9. **`react/.d.ts` re-export rule.** A migrated `.d.ts` re-exports **exactly** the named types the
+   pre-migration file declared and exported locally — no more, no less. Measured for this batch:
+   `Tabs`→`TabItem`, `SegmentedControl`→`SegmentOption`, `Toast`→`ToastAction` (but see Task 8 — it
+   is decomposed away, so there is nothing to re-export), `Calendar`→`CatSlot` and `CalendarEvent`,
+   `Table`→`TableColumn`. `ProgressBar` and `Tooltip` declare none. Verify each file rather than
+   trusting this sentence.
+10. **A contract type is imported with `import type`**, specifier `'../../api.generated'` from
+    `frameworks/react/components/<group>/`.
+11. **Any `.jsx`/`.entry.jsx` edit is followed by `bun run build:demos`, and the regenerated `.js`
+    sibling is committed in the same commit.** Verified with `bun run check:demos`. `build:demos`
+    covers `frameworks/react/ui_kits/console/`, and the Console uses `Tabs`, `Table` and `Toast`.
+12. **`bun run check` runs exactly ONCE**, in Task 15. Individual gates run per task.
+13. **Do not merge and do not push.** The branch stays local until the maintainer asks.
+14. **`export CHROME_PATH=/usr/bin/chromium` before `bun run check`.** Without it `check:cards` SKIPs
+    and the run reports INCOMPLETE, which reads as a failure of the change and is not.
+15. **Test the layer you changed.** Six of the seven have no React suite; each migration writes one.
+16. **A task that removes an R4 escape ships a test proving the escape is gone, and it must
+    DISCRIMINATE.** `check:api` reads the `.d.ts` and never opens the `.jsx`, so a test is the only
+    regression guard.
+17. **The R4 non-vacuity proof needs TWO SEPARATE RUNS, induced asymmetrically:** (1) `style`
+    destructured AND merged into the root style object, no `{...rest}` → the STYLE assertion fails;
+    (2) `style` destructured and NOT merged, `{...rest}` spread on the root → the ATTRIBUTE assertion
+    fails. `sha256sum` before, byte-identical after. Assert on `color` (not in `check:dimensions`'
+    `PROPS` set) and on attribute NAMES, never on a length — that gate walks test directories too.
+    **Six of the seven carry no `{...rest}`**, so for those the second run is induced by ADDING one;
+    say so in the report rather than skipping the run.
+18. **A test title states exactly what the body asserts, and this plan's worked test code is a
+    starting point, not a verified artifact.** Run it; if it does not discriminate, fix the test.
+19. **`README.md` is the normative design specification and moves in the same change as the
+    component.** Find its prose with `grep -n '<Component>' README.md` and report the check either
+    way. `Tabs` and `SegmentedControl` have real prose there (the *Navigate vs. filter* paragraph) —
+    expect to touch it, unlike 8C1 and 8C2 where nothing moved.
+20. **A member `description` lives in the contract only.** Restate it in the `.d.ts` JSDoc and the
+    `.prompt.md`; nothing holds the three in step, so leave no layer's prose describing a removed
+    member.
+21. **A citation sweep uses a broad `--include`**: all of `*.ts *.tsx *.js *.jsx *.json *.md *.html`.
+    Read every hit.
+22. **Do not write a derived figure into a normative document.** Counts belong in this plan and the
+    ledger; `CLAUDE.md` and the spec get the *method of measuring*. This is not decoration — the
+    *twenty-one* this plan corrects is what that rule exists to prevent.
+23. **Budget the final whole-branch review as real work.** This batch's specific cross-task risk:
+    seven components each independently decide how a tone enum is named, whether a size enum is
+    shared, and how an option list is shaped.
+24. **No Angular component work exists in this plan.** The Angular files that change are the
+    generated `api.generated.ts` and, in Task 4, nothing at all — that task changes only
+    `scripts/lib/api-surface.mjs`. `check:angular` still runs per task.
+25. **A commit message containing a backtick is written with a quoted here-doc, never
+    `git commit -m "…"`.** A backtick in a double-quoted shell string opens command substitution and
+    is silently spliced away. Use `git commit -q -F - <<'MSG' … MSG`, verify `git log -1 --format=%B`.
+    **`git merge` does NOT accept `-F -`** — it cannot read a message from stdin; write the message
+    to a file and pass the path. This cost one failed command in 8C2.
+26. **A task opens by checking the tree is clean** (`git status --short`) and folds in what it finds
+    rather than redoing it, verifying leftovers against the plan's steps first.
+27. **Line numbers in this plan are not load-bearing** — the quoted code identifies the site.
+28. **An event payload is a VALUE, never a platform event type.** Settled by `Breadcrumbs`, applied
+    to six controls by 8C2, and it governs `Table.onRowClick` and `Calendar.onEventClick` here.
+29. **`functionInput` is legal ONLY in a contract declaring `"kind": "input"`.** None of this
+    batch's seven is a data-entry control, so **none may carry one** — which is exactly why
+    `renderEvent` and `render` need R3 (Task 6) and cannot be smuggled through the ninth form.
+30. **React's SSR does not emit attributes in source order, and camelCases some of them.** Measured
+    across 8C2: `checked=""` lands after `style`; `maxLength` and `autoComplete` emit camelCase while
+    `readonly`/`disabled`/`required` lowercase. Never assume adjacency in a regex — use `[^>]*` or
+    assert each attribute independently, and **probe the real render before writing the regex**.
+31. **Tasks 10 and 12 change rendered DOM, so they re-run `check:cards` reasoning by hand.** They may
+    not run the full sweep (Constraint 12), but a task adding `role`, `tabIndex` and a focus ring to
+    a grid must state in its report whether any demo card's content box could have grown.
+32. **A retired exception is deleted, never softened.** Tasks 10 and 12 remove an exception only when
+    the rendered DOM satisfies the requirement; a requirement that is *partly* met keeps its
+    exception with a reason that says which part. `comparePattern` has no vocabulary for "true in one
+    variant", and this plan does not add one (Appendix A).
+33. **`Table` has TWO layouts and the `grid` pattern governs one of them.** The wide layout is a real
+    `<table>`; below `--bp-md` it is one card per row, which is a list and not a grid. Task 12's
+    keyboard work targets the wide layout; the narrow layout keeps an exception naming the variant.
+    This is the same "a binding cannot scope an exception to a variant" limit `Skeleton` already
+    proves, and Task 12 must not pretend otherwise.
+34. **A compliance suite's `behavioural` map is trusted, not re-derived.** `comparePattern` returns
+    `null` for requirements no single element can decide (`focus.*`, `keyboard.*`); a suite must name
+    each in `behavioural` and prove it by acting on the tree. `assertPattern` throws if one is
+    silently skipped. A suite declaring a wrong verdict pins a false claim.
+35. **Do not widen a gate outside the task that owns the widening.** Tasks 3 and 6 widen; every other
+    task that finds a gate rejecting something it believes correct **STOPS and reports**.
+36. **A numeric enum is legal in `api/types/` and has no precedent.** `validateTypes` requires only a
+    non-empty `values` array. `CatSlot` would be the first. Task 11 must state, in its commit
+    message, that it is establishing the precedent.
+
+---
+
+## The parameterised slot, stated once
+
+`api/README.md` already states R3: **a parameterised slot fills and never replaces.** What has never
+existed is a reader that can *see* one. Since 8C2's Task 1b, `classify()` throws on a function
+returning a node, by name:
+
+```
+a function returning a node is a parameterised slot (R3), not a functionInput,
+and the reader does not model that shape yet: (event: CalendarEvent) => React.ReactNode
+```
+
+That message was written for this task. Task 6 makes the reader classify the shape instead of
+throwing, and the gate check it.
+
+**It is not a tenth form.** `slot` is the form; a parameterised slot is a `slot` that declares
+`params`. The contract shape already exists and is already validated —
+`validateContract`'s parameter loop has always run for any member carrying `params`, and
+`api/README.md`'s own worked example for a parameterised slot is what motivated the eighth form.
+What is new is only that React's spelling of one can now be read:
+
+```json
+"renderEvent": {
+  "form": "slot",
+  "params": { "event": "CalendarEvent" },
+  "description": "Replaces the event body. The chip, its position and its identity colour stay Arena's."
+}
+```
+
+Three guards keep it honest, all mechanical:
+
+- **A slot's params resolve against `api/types/` exactly as they do today** — a primitive, the
+  `consumerData` form name, or a declared type. That loop already exists; Task 6 changes nothing
+  about it.
+- **The return must be a node.** `React.ReactNode` / `ReactNode` only. A function returning a value
+  is a `functionInput` (ninth form, `kind: "input"` contracts only) and a function returning `void`
+  is an `event`. All three branches stay distinct, and Task 6 ships a test for each.
+- **`compareSurface` compares a slot's params** between contract and layer, the way Task 1b's C5
+  made it compare a `functionInput`'s signature. Without it a layer declaring
+  `(row: string) => ReactNode` would satisfy a contract declaring `params: {row: "consumerData"}` on
+  form alone.
+
+**What R3 itself — "fills, never replaces" — still is not:** a fact about the rendered tree, which
+no gate reads. `check:compliance` is the only layer that sees a rendered tree and it does not read
+contracts. R3 stays an authoring rule with R2's status, and Task 6 must not claim otherwise in
+`api/README.md`.
+
+---
+
+## File Structure
+
+Created by this plan:
+
+| Path | Responsibility |
+|---|---|
+| `frameworks/react/test-dom/form-control-events.test.jsx` | Task 5 — proves the six controls' events fire with values |
+| `api/types/tab-item.json` | `TabItem` object — `{value, label}` |
+| `api/types/segment-option.json` | `SegmentOption` object — `{value, label}` |
+| `api/types/segmented-control-size.json` | `SegmentedControlSize` enum — `sm md` |
+| `api/types/progress-tone.json` | `ProgressTone` enum |
+| `api/types/toast-tone.json` | `ToastTone` enum |
+| `api/types/cat-slot.json` | `CatSlot` enum — the first NUMERIC enum in the directory |
+| `api/types/calendar-event.json` | `CalendarEvent` object |
+| `api/types/calendar-view.json` | `CalendarView` enum — `week day` |
+| `api/types/table-column.json` | `TableColumn` object |
+| `api/types/cell-align.json` | `CellAlign` enum — `left center right` |
+| `api/types/table-cell-layout.json` | `TableCellLayout` enum — `row block` |
+| `api/components/{Tabs,SegmentedControl,ProgressBar,Toast,Tooltip,Calendar,Table}.json` | Tasks 7–13 |
+| `frameworks/react/test/{tabs,segmented-control,progress-bar,toast,tooltip,calendar,table}.test.jsx` | render proofs |
+| `frameworks/react/test-dom/grid-keyboard.test.jsx` | Tasks 10 and 12 — the shared compliance suite |
+
+Modified structurally: `scripts/lib/api-surface.mjs` (Tasks 4 and 6), `scripts/api-surface.test.mjs`,
+`scripts/check-api.mjs` (Tasks 3 and 6), `scripts/check-api.test.mjs`, `scripts/check-compliance.mjs`
+(`COVERED`, Tasks 10 and 12), `api/README.md`, `CLAUDE.md`, the spec.
+
+Regenerated: `frameworks/react/api.generated.d.ts`, `frameworks/angular/api.generated.ts`, the `.js`
+sibling of every `.jsx` touched.
+
+---
+
+## Task 0: Pre-flight
+
+**Files:** archive `.superpowers/sdd/progress.md` → `progress-8c2-archived.md`; create a fresh
+`progress.md`. `.superpowers/` is git-ignored — plain `mv`, **no commit**.
+
+- [ ] **Step 1: Archive 8C2's ledger**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+mv .superpowers/sdd/progress.md .superpowers/sdd/progress-8c2-archived.md
+wc -l .superpowers/sdd/progress-8c2-archived.md
+test ! -e .superpowers/sdd/progress.md && echo "cleared, ready for the C3 ledger"
+```
+
+- [ ] **Step 2: Open the C3 ledger**
+
+Create `.superpowers/sdd/progress.md`:
+
+```markdown
+# Plan 8C3 — the four debts, Calendar/Table keyboard navigation, seven contracts
+
+Plan: docs/superpowers/plans/2026-07-24-8c3-debt-paydown-keyboard-navigation-and-seven-contracts.md
+Branch: api-contracts-8c3
+Base commit: 7e922e8 (main; the 8C2 merge)
+(8C2's ledger is archived beside this one as progress-8c2-archived.md.)
+
+Three phases, in order.
+  A (Tasks 2-5): pay 8C2's four Known debt entries. check:api unchanged at 32/52.
+  B (Task 6):    the parameterised slot (R3) becomes readable. Contracts nothing.
+  C (Tasks 7-13): seven contracts, 32/52 -> 39/59. Calendar and Table take two tasks each,
+                  keyboard navigation first and the contract second.
+
+## Pre-flight
+
+(fill from Step 3)
+
+## Progress
+
+## Maintainer decisions taken
+```
+
+- [ ] **Step 3: Measure the baseline and stop**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+git status --short
+git log --oneline -1
+bun run check:api
+bun test scripts frameworks/react/test/ frameworks/angular/test 2>&1 | tail -3
+bun test frameworks/react/test-dom 2>&1 | tail -3
+```
+
+Expected: clean; `check-api: 32 … across 52`; 1048/94 merged; 26/5 isolated. **If `check:api` is not
+32/52, stop and report.** Fill the ledger's Pre-flight. No commit.
+
+---
+
+## Task 1: The cross-cutting blocking audit
+
+**Files:** none — writes only the ledger's `## Maintainer decisions taken`.
+
+**Interfaces:** produces decisions EA–EH that Tasks 2–13 implement without re-opening.
+
+- [ ] **Step 1: Re-measure**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+cat > /tmp/probe-c3.mjs <<'EOF'
+import { readFileSync } from 'node:fs';
+import { reactSurface } from '/home/juan/Dravensoft/Identity/scripts/lib/api-surface.mjs';
+for (const [p, sym] of [
+  ['navigation/Tabs','TabsProps'], ['navigation/SegmentedControl','SegmentedControlProps'],
+  ['feedback/ProgressBar','ProgressBarProps'], ['feedback/Toast','ToastProps'],
+  ['feedback/Tooltip','TooltipProps'], ['display/Calendar','CalendarProps'],
+  ['display/Table','TableProps'],
+]) {
+  const src = readFileSync(`/home/juan/Dravensoft/Identity/frameworks/react/components/${p}.d.ts`,'utf8');
+  try { console.log(sym, JSON.stringify(reactSurface(src, sym))); }
+  catch (e) { console.log(sym, 'THREW', e.name + ':', e.message); }
+}
+EOF
+bun /tmp/probe-c3.mjs; rm /tmp/probe-c3.mjs
+```
+
+Confirm against *What this plan measured*. Any deviation is the audit's finding.
+
+- [ ] **Step 2: Present EA–EH and STOP**
+
+- **EA — `id` becomes a real contracted member on `Input` and `Textarea`.** It is not a
+  reinstatement: `id` was never a declared member of either contract. D1 was right that
+  `className`, `dir`, `tabIndex` and ARIA are not members; `id` is different because the component
+  **already generates one** to wire its own `htmlFor`, so a host that needs to point an external
+  `<label>`, an `aria-describedby` or a form library at the field has no path at all. The generated
+  value stays the fallback: `id || (label ? … : undefined)`. Cost: D1's "no global attribute is a
+  member" reads as a rule with one exception, and the exception must be stated in `api/README.md`
+  rather than left as a special case a reader discovers.
+- **EB — the enum event payload is admitted.** `validateContract` resolves a payload as primitive,
+  `consumerData`, declared object **or declared enum**. Cost: none measurable — no contract declares
+  one today; this is the reader/gate gap Task 2 of 8C2 closed one type-kind short of.
+- **EC — the Angular `functionInput` spelling is the BARE arrow, and the reader is fixed to accept
+  the optional one too.** `input<(value: string) => string>()` already classifies. Plan D writes that
+  spelling; the `| undefined` variant is fixed in `classify()` because a greedy regex, not a rule,
+  rejects it. Cost: the fix strips a trailing `| null`/`| undefined` before the arrow test, which
+  changes how *every* nullable annotation is read — Task 4 must prove nothing else moved.
+- **ED — the six form controls get a DOM suite proving their events fire with values.** DA's whole
+  reshape is unverified today. Cost: `frameworks/react/test-dom/` registers a DOM process-wide and is
+  a separate `bun test` process; the isolated count moves off 26/5 for the first time since the
+  suspension, and the spec's running-count table must say so.
+- **EE — R3 becomes readable (Task 6), and it is NOT a tenth form.** `slot` with `params`.
+  `Calendar.renderEvent` and `TableColumn.render` are the two consumers. Cost: R3's own claim — fills
+  rather than replaces — stays unenforced, because only `check:compliance` sees a rendered tree and
+  it does not read contracts.
+- **EF — `Toast.action` is decomposed the way `Alert`'s already is.** `ToastAction { label; onClick }`
+  becomes `actionLabel` (primitive string) + `action` (event). `ToastAction` leaves the `.d.ts`
+  entirely, so Constraint 9 gives it no re-export. Cost: `index.entry.jsx` passes an object today and
+  is rewritten; a consumer holding a `ToastAction` value loses the type.
+- **EG — `CalendarEvent.meta` cannot stay a field.** Consumer data may not be a field of a predefined
+  object — a mechanical guard, not a preference. Two ways out, and the audit RECOMMENDS the first:
+  **(1)** drop `meta` from `CalendarEvent` and let `renderEvent`'s parameter carry the whole consumer
+  object, which is what `meta` was for; **(2)** make `CalendarEvent` itself consumer data, losing
+  every declared field. (1) keeps `id`/`title`/`start`/`end`/`slot` declared and honest.
+- **EH — the two option unions are resolved to object arrays.** `Tabs.tabs` and
+  `SegmentedControl.options` are `(string | X)[]`, which R5 forbids. The bare-string arm goes, exactly
+  as `Select.options` did in 8C2. Cost: all three call sites rewrite; **no call site in the tree uses
+  the object arm today**, so the ergonomic loss is real and unmeasured by any test.
+
+- [ ] **Step 3: Record and stop.** Write `## Maintainer decisions taken` with EA–EH. No commit.
+
+---
+
+## Task 2: Debt 1 — `id` becomes a member of `Input` and `Textarea`
+
+**Files:** modify `api/components/Input.json`, `api/components/Textarea.json`,
+`frameworks/react/components/forms/Input.{d.ts,jsx,prompt.md}`,
+`frameworks/react/components/forms/Textarea.{d.ts,jsx,prompt.md}`, `api/README.md`,
+`frameworks/react/test/{input,textarea}.test.jsx`; regenerate the `.js` siblings.
+
+**Interfaces:** consumes EA. `check:api` stays **32/52** — this adds a member to two existing
+contracts, not a contract.
+
+- [ ] **Step 1: Confirm and STOP.** Report that `id` is a NEW member on both, not a reinstatement,
+  and that the generated value stays the fallback. Must not re-open EA.
+
+- [ ] **Step 2: Write the failing tests**
+
+Append to `frameworks/react/test/input.test.jsx`:
+
+```jsx
+/* id is a contracted member as of plan 8C3, and it is the ONE global attribute
+ * that is. The component still generates one from the label to wire its own
+ * htmlFor; a consumer id overrides that, because a host pointing an external
+ * <label> or an aria-describedby at this field had no path at all otherwise. */
+test('a consumer id overrides the one generated from the label', () => {
+  const html = renderToStaticMarkup(<Input label="Email" id="signup-email" />);
+  assert.match(html, /id="signup-email"/);
+  assert.match(html, /for="signup-email"/);
+  assert.doesNotMatch(html, /in-email/, 'the generated id is still being used despite an explicit one');
+});
+
+test('without a consumer id the label-derived one is still generated', () => {
+  const html = renderToStaticMarkup(<Input label="Email" />);
+  assert.match(html, /id="in-email"/);
+  assert.match(html, /for="in-email"/);
+});
+```
+
+Append the same pair to `frameworks/react/test/textarea.test.jsx`, with `Textarea`, `ta-` and
+`<textarea`.
+
+- [ ] **Step 3: Run them and watch them fail**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test frameworks/react/test/input.test.jsx frameworks/react/test/textarea.test.jsx
+```
+
+Expected: the override tests FAIL (the consumer `id` is dropped); the generated ones PASS.
+
+- [ ] **Step 4: Add the member in all three places, per component**
+
+Contract — add to `api/components/Input.json` and `api/components/Textarea.json`:
+
+```json
+"id": { "form": "primitive", "type": "string",
+        "description": "The control's id, and what the label's `for` points at. Generated from `label` when omitted." }
+```
+
+`.d.ts` — add to `InputProps` and `TextareaProps`:
+
+```ts
+  /** The control's id, and what the label's `for` points at. Generated from `label` when omitted. */
+  id?: string;
+```
+
+`.jsx` — restore `id` to the destructuring and to the fallback expression:
+
+```jsx
+const inputId = id || (label ? 'in-' + label.replace(/\s+/g, '-').toLowerCase() : undefined);
+```
+
+```jsx
+const taId = id || (label ? 'ta-' + label.replace(/\s+/g, '-').toLowerCase() : undefined);
+```
+
+- [ ] **Step 5: Run the tests, then state the exception in `api/README.md`**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test frameworks/react/test/input.test.jsx frameworks/react/test/textarea.test.jsx
+```
+
+Expected: all PASS.
+
+Then, in `api/README.md` where D1 (the heritage flatten) is stated, add that **`id` is the one global
+attribute that is a member**, and why: a component that generates an id to wire its own label leaves
+a host with no way to point an external label, an `aria-describedby` or a form library at the field.
+Write it as a stated exception to D1, not as a silent one.
+
+- [ ] **Step 6: Prompt files, gates, commit**
+
+Update both `.prompt.md`s — each currently says `id` is gone (8C2 wrote that); it now says the
+opposite, and leaving the old sentence is exactly the Constraint 20 failure.
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun run check:api        # MUST still read 32 … across 52
+bun run check:angular
+bun run build:demos && bun run check:demos
+bun run check:dimensions
+git diff --stat -- '*.behaviour.json'   # empty
+```
+
+Commit (here-doc). The message states that `id` is a NEW member rather than a reinstatement, that it
+is the single stated exception to D1, and that `check:api` is unchanged at 32/52.
+
+---
+
+## Task 3: Debt 3 — an event payload may be a declared enum
+
+**Files:** modify `scripts/check-api.mjs`, `scripts/check-api.test.mjs`.
+
+**Interfaces:** consumes EB. Contracts nothing; `check:api` stays **32/52**.
+
+> Today `validateContract` sends any non-primitive, non-`consumerData` payload to
+> `declared(spec.payload, 'object')`. `classify()` reads `(v: SomeEnum) => void` as
+> `{form:'event', payload:'SomeEnum'}` perfectly well, so the reader can produce a payload the
+> contract cannot declare — the same gap 8C2's Task 2 closed for primitives, one type-kind short.
+
+- [ ] **Step 1: Write the failing tests**
+
+Append to `scripts/check-api.test.mjs`:
+
+```js
+/* An event payload resolves as a primitive, consumerData, a declared object OR a
+ * declared enum. The enum arm is the last of the four: plan 8C2 admitted the
+ * first three and stopped one type-kind short, so a contract declaring an enum
+ * payload read as "an enum, used where an object belongs" while classify() read
+ * the arrow without complaint. */
+test('validateContract accepts an event payload naming a declared enum', () => {
+  const problems = validateContract(
+    { component: 'X', api: { pick: { form: 'event', payload: 'LogoSize' } } },
+    new Map([['LogoSize', 'enum']]),
+  );
+  assert.deepEqual(problems, []);
+});
+
+test('validateContract still rejects an event payload naming no declared type', () => {
+  const problems = validateContract(
+    { component: 'X', api: { pick: { form: 'event', payload: 'Nope' } } },
+    new Map([['LogoSize', 'enum']]),
+  );
+  assert.ok(problems.some((p) => /Nope/.test(p)));
+});
+```
+
+- [ ] **Step 2: Run them and watch the first fail**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test scripts/check-api.test.mjs
+```
+
+Expected: the first FAILS with *"is a enum, used where a object belongs"*; the second PASSES.
+
+- [ ] **Step 3: Widen the payload resolution**
+
+In `scripts/check-api.mjs`, `validateContract`, replace the event-payload branch:
+
+```js
+    /* A payload resolves as a primitive, consumerData, a declared object or a
+     * declared ENUM -- all four, because classify() produces all four and a
+     * contract that cannot state what the reader reads is a gap, not a rule.
+     * Plan 8C2 admitted the first three; this is the fourth. `declared()` takes
+     * one kind, so the enum arm is tried first and only a name that is neither
+     * falls through to the object message, which stays the default because an
+     * object payload is by far the commoner case. */
+    if (spec.form === 'event' && spec.payload
+        && !PRIMITIVE_TYPES.has(spec.payload) && spec.payload !== CONSUMER_DATA) {
+      if (typeNames.get(spec.payload) !== 'enum') {
+        problems.push(...[declared(spec.payload, 'object')].filter(Boolean));
+      }
+    }
+```
+
+- [ ] **Step 4: Run, then run every script test**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test scripts/check-api.test.mjs
+bun test scripts/
+bun run check:api        # MUST still read 32 … across 52
+```
+
+Expected: all PASS; no earlier script test regresses.
+
+- [ ] **Step 5: Record it in `api/README.md`** — in *What the gate asserts*, the payload's four legal
+  resolutions, stated as four rather than as "a declared type".
+
+- [ ] **Step 6: Commit** (here-doc), stating that this closes the last arm of the reader/gate payload
+  gap and contracts nothing.
+
+---
+
+## Task 4: Debt 2 — the Angular `functionInput` spelling
+
+**Files:** modify `scripts/lib/api-surface.mjs`, `scripts/api-surface.test.mjs`, `api/README.md`,
+`CLAUDE.md`.
+
+**Interfaces:** consumes EC. Contracts nothing; `check:api` stays **32/52**. Produces the spelling
+Plan D implements.
+
+> **The debt entry overstates the problem, and the audit's re-measurement is the finding.**
+> `angularSurface()` on `readonly validate = input<(value: string) => string>()` ALREADY returns
+> `{form:'functionInput', params:{value:'string'}, returns:'string'}`. What fails is
+> `input<((value: string) => string) | undefined>()`, and it fails because `classify()`'s arrow
+> pattern `/^\(([\s\S]*)\)\s*=>\s*([\s\S]+)$/` is tested before its union branch: it backtracks,
+> matches the inner `)`, and captures the return as `string) | undefined`. Message:
+> `unreadable type annotation: string)`.
+
+- [ ] **Step 1: Write the failing tests**
+
+Append to `scripts/api-surface.test.mjs`:
+
+```js
+/* An optional annotation is the same annotation. `T | undefined` and `T | null`
+ * are TypeScript's way of spelling optionality inline, and Angular's signal
+ * inputs reach for it: `input<((value: string) => string) | undefined>()`. The
+ * arrow branch is tested before the union branch, so a greedy backtrack used to
+ * capture the RETURN as "string) | undefined" and die on it. Stripping a
+ * trailing null/undefined arm first is what makes the two spellings agree. */
+test('a nullable arrow annotation reads as the arrow it wraps', () => {
+  assert.deepEqual(classify('((value: string) => string) | undefined'),
+    { form: 'functionInput', params: { value: 'string' }, returns: 'string' });
+  assert.deepEqual(classify('((v: string) => void) | null'),
+    { form: 'event', payload: 'string' });
+});
+
+/* The strip must not eat a genuine union between two real types -- that is R5's
+ * subject and must keep surfacing as a union, not as its first arm. */
+test('stripping null/undefined does not collapse a genuine union', () => {
+  assert.equal(classify('string | TabItem').form, 'union');
+  assert.equal(classify('string | TabItem | undefined').form, 'union');
+});
+
+/* A bare optional primitive still reads as that primitive, which is what every
+ * existing caller already relies on. */
+test('a nullable primitive still reads as the primitive', () => {
+  assert.deepEqual(classify('string | undefined'), { form: 'primitive', type: 'string' });
+});
+```
+
+- [ ] **Step 2: Run them and watch them fail**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test scripts/api-surface.test.mjs
+```
+
+Expected: the first FAILS with `unreadable type annotation: string)`.
+
+- [ ] **Step 3: Strip the nullable arms before the arrow test**
+
+In `scripts/lib/api-surface.mjs`, `classify()`, immediately after the `readonly ` strip and **before**
+the node/primitive tests, add:
+
+```js
+  /* An optional annotation is the same annotation, and it must be reduced BEFORE
+   * the arrow branch, which is tested before the union branch and backtracks: on
+   * `((v: string) => string) | undefined` the arrow pattern matches the inner `)`
+   * and captures the return as `string) | undefined`, which reads as nothing.
+   * Split at the TOP level only -- `Record<string, unknown> | undefined` must not
+   * be cut at the generic's comma, and a genuine union between two real types
+   * must survive with every arm intact so R5 still sees it. */
+  const arms = splitTopLevel(ts, '|').map((s) => s.trim()).filter(Boolean);
+  if (arms.length > 1) {
+    const real = arms.filter((a) => a !== 'null' && a !== 'undefined');
+    if (real.length === 1 && real.length !== arms.length) return classify(real[0]);
+  }
+```
+
+**This block is a starting point (Constraint 18).** Run the tests; if `splitTopLevel` is not in
+scope at that point in the file, hoist rather than duplicating it. If the existing union branch
+already strips nullables further down, do not add a second strip — fix the ordering instead, and say
+so in the report.
+
+- [ ] **Step 4: Run, and prove nothing else moved**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test scripts/api-surface.test.mjs
+bun test scripts/
+bun run check:api        # MUST still read 32 … across 52
+bun run check:angular
+```
+
+Expected: all PASS. **This change touches how every nullable annotation is read**, so a green
+`bun test scripts/` is the evidence that it did not — report the count, not an impression.
+
+- [ ] **Step 5: Record the spelling**
+
+In `api/README.md`, beside the ninth form, state the Angular spelling a `functionInput` takes —
+`readonly validate = input<(value: string) => string>()`, with the optional form also readable — and
+that required-ness comes from `.required`, not from the `| undefined` arm, so the bare form is
+preferred.
+
+In `CLAUDE.md`'s Known debt, **rewrite** the Plan D `functionInput` entry: the obligation stands, but
+the reader is no longer the obstacle. What Plan D must satisfy is the modelled signature, and the
+spelling that satisfies it is now written down and tested. Do not delete the entry — Angular still
+has no implementation.
+
+- [ ] **Step 6: Commit** (here-doc), stating that the debt entry overstated the problem, what actually
+  failed, and that the reader fix is a parse-order correction rather than a new rule.
+
+---
+
+## Task 5: Debt 4 — the six form controls' events, proved at runtime
+
+**Files:** create `frameworks/react/test-dom/form-control-events.test.jsx`; modify `CLAUDE.md`.
+
+**Interfaces:** consumes ED. Contracts nothing; `check:api` stays **32/52**. **Moves the isolated DOM
+process off 26/5 for the first time since the suspension** — Task 15's spec row must say so.
+
+> 8C2 reshaped every native `onChange` into an event carrying a VALUE and **could not prove any of it
+> fires**: `frameworks/react/test/` renders with `renderToStaticMarkup` and has no DOM. Each of the
+> six suites says so in a header comment rather than faking a verdict. This task is that debt paid,
+> and it is the same shape `tooltip-timer.test.jsx` paid for `Tooltip`'s delay.
+
+- [ ] **Step 1: Read the harness first**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+cat frameworks/react/test-dom/harness.jsx
+sed -n '1,40p' frameworks/react/test-dom/tooltip-timer.test.jsx
+```
+
+`frameworks/react/test-dom/` registers `@happy-dom/global-registrator` **process-wide** and is a
+separate `bun test` process from `frameworks/react/test/`. Use the existing `harness.jsx` mount/unmount
+helpers rather than inventing a second way to mount — two ways to mount is two ways to leak a
+document between files, and this directory shares one document for its whole run.
+
+- [ ] **Step 2: Write the suite**
+
+Create `frameworks/react/test-dom/form-control-events.test.jsx`. **Starting point — run it.**
+
+```jsx
+/* Plan 8C2 turned every form control's native onChange into an event carrying a
+ * VALUE rather than the DOM event -- string for Input, Select, Textarea and
+ * RadioGroup, boolean for Checkbox, and Input.blur likewise. Six suites under
+ * frameworks/react/test/ assert the SHAPE of that and each says, in its own
+ * header, that it cannot assert the event fires: renderToStaticMarkup has no DOM.
+ * This file is that debt paid. It asserts the payload's TYPE as well as its
+ * value, because `e.target.value` and the value itself are both strings and a
+ * test asserting only equality would pass against the defect it exists to catch.
+ * For Checkbox the two are different types, which is why its assertion is the
+ * sharpest of the six. */
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import React from 'react';
+import { mount, unmount } from './harness.jsx';
+import { Input } from '../components/forms/Input.jsx';
+import { Checkbox } from '../components/forms/Checkbox.jsx';
+
+test('Checkbox change hands the consumer a boolean, not an event', () => {
+  const seen = [];
+  const root = mount(<Checkbox label="Notify" checked={false} onChange={(v) => seen.push(v)} />);
+  try {
+    const box = root.querySelector('input[type="checkbox"]');
+    box.checked = true;
+    box.dispatchEvent(new Event('change', { bubbles: true }));
+    assert.equal(seen.length, 1, 'the change handler did not fire');
+    assert.equal(typeof seen[0], 'boolean', 'the payload is not a boolean -- a DOM event is travelling');
+    assert.equal(seen[0], true);
+  } finally { unmount(root); }
+});
+
+test('Input change hands the consumer the string value, not an event', () => {
+  const seen = [];
+  const root = mount(<Input label="Email" value="" onChange={(v) => seen.push(v)} />);
+  try {
+    const field = root.querySelector('input.arena-input');
+    field.value = 'ana@dravensoft.dev';
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+    assert.equal(seen.length, 1, 'the change handler did not fire');
+    assert.equal(typeof seen[0], 'string', 'the payload is not a string -- a DOM event is travelling');
+    assert.equal(seen[0], 'ana@dravensoft.dev');
+  } finally { unmount(root); }
+});
+```
+
+**React binds `onChange` to the DOM `input` event, not `change`** — that is React's own normalisation
+and it is why the two tests above dispatch different event names. Verify which one each control
+actually listens for by dispatching and observing, rather than by assuming; fix the test, not the
+title (Constraint 18).
+
+Add the same shape for `Select` (dispatch `change` on the `<select>`), `Textarea` (dispatch `input`),
+and `RadioGroup` (dispatch `change` on one child radio, asserting the payload is the child's `value`
+string). Add one more for **`Input.blur`**, which is the member no SSR test could reach at all:
+
+```jsx
+test('Input blur hands the consumer the value, and validate runs on it', () => {
+  const seen = [];
+  const root = mount(
+    <Input label="Email" value="nope" validate={(v) => (v.includes('@') ? '' : 'Bad email')}
+      onBlur={(v) => seen.push(v)} />,
+  );
+  try {
+    const field = root.querySelector('input.arena-input');
+    field.dispatchEvent(new Event('blur', { bubbles: true }));
+    assert.deepEqual(seen, ['nope'], 'blur did not carry the value');
+    assert.match(root.textContent, /Bad email/, 'validate did not run on blur');
+  } finally { unmount(root); }
+});
+```
+
+That last assertion is the ninth form's first runtime proof: `validate` is a `functionInput`, and
+until now nothing showed its result reaching the render.
+
+- [ ] **Step 3: Run it**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test frameworks/react/test-dom
+```
+
+Expected: PASS, and the file count rises from 5. **Record the new pair** — it is the first movement
+of the isolated process since the suspension and Task 15 writes it into the spec.
+
+- [ ] **Step 4: Prove the suite discriminates**
+
+For **one** control, induce the defect and watch the right assertion fail: change `Checkbox.jsx`'s
+`onChange(e.target.checked)` back to `onChange(e)`, run, confirm the **`typeof … boolean`** assertion
+fails (not merely the equality one), restore, and `sha256sum` before and after to prove the restore is
+byte-identical. A suite that would pass against `onChange(e)` proves nothing, and equality alone
+would pass for the string controls.
+
+- [ ] **Step 5: Retire the debt entry and commit**
+
+In `CLAUDE.md`'s Known debt, delete the *"DA's whole reshape is unverified at runtime"* entry — a debt
+record that outlives the debt is what that section rejects. **Verify the suite really covers all six
+before deleting**, and if any control is left uncovered, keep the entry and narrow it to name that
+control rather than deleting it wholesale.
+
+Update each of the six `frameworks/react/test/*.test.jsx` header comments: they currently say the
+payload is unverifiable here, which stays true of *that* file but must now point at the DOM suite
+rather than reading as though nothing verifies it.
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test frameworks/react/test-dom
+bun test scripts frameworks/react/test/ frameworks/angular/test 2>&1 | tail -3
+bun run check:compliance
+```
+
+Commit (here-doc), stating both measured pairs and that `Input.blur` and `validate`'s result reaching
+the render are proved for the first time.
+
+---
+
+## Task 6: The parameterised slot (R3) becomes readable
+
+**Files:** modify `scripts/lib/api-surface.mjs`, `scripts/api-surface.test.mjs`,
+`scripts/check-api.mjs`, `scripts/check-api.test.mjs`, `api/README.md`, `CLAUDE.md`, the spec.
+
+**Interfaces:** consumes EE. **Contracts nothing** — `check:api` stays **32/52**. Produces the shape
+Tasks 11 and 13 depend on. Read *The parameterised slot, stated once* above before starting.
+
+- [ ] **Step 1: Write the failing reader tests**
+
+Append to `scripts/api-surface.test.mjs`:
+
+```js
+/* R3's shape, finally readable. A function returning a NODE is a parameterised
+ * slot: the consumer draws the interior of an element Arena still renders and
+ * positions. It is not the ninth form -- a functionInput returns a VALUE Arena
+ * consumes -- and it is not an event, which returns void. All three arrow
+ * branches stay distinct and each has its own test here. `slot` is the form;
+ * `params` is what makes it parameterised. There is no tenth form. */
+test('a function returning a node is a parameterised slot', () => {
+  assert.deepEqual(classify('(event: CalendarEvent) => React.ReactNode'),
+    { form: 'slot', params: { event: 'CalendarEvent' } });
+});
+
+test('a parameterised slot reads every parameter, in order', () => {
+  assert.deepEqual(classify('(value: string, row: Record<string, unknown>) => React.ReactNode'),
+    { form: 'slot', params: { value: 'string', row: 'consumerData' } });
+});
+
+test('a zero-parameter node function is a plain slot with no params', () => {
+  assert.deepEqual(classify('() => ReactNode'), { form: 'slot', params: {} });
+});
+
+/* The three arrow branches, pinned side by side so a future change to one is
+ * seen against the other two. */
+test('a void arrow is an event, a value arrow is a functionInput, a node arrow is a slot', () => {
+  assert.equal(classify('(v: string) => void').form, 'event');
+  assert.equal(classify('(v: string) => string').form, 'functionInput');
+  assert.equal(classify('(v: string) => React.ReactNode').form, 'slot');
+});
+```
+
+- [ ] **Step 2: Run them and watch them fail**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test scripts/api-surface.test.mjs
+```
+
+Expected: the first three FAIL with `a function returning a node is a parameterised slot (R3) … the
+reader does not model that shape yet`; the fourth fails on its third assertion only.
+
+- [ ] **Step 3: Classify it**
+
+In `scripts/lib/api-surface.mjs`, `classify()`'s arrow branch, replace the R3 throw with
+classification. The parameter reading is the same depth-aware split the `functionInput` branch uses —
+**factor it into one local helper rather than writing it twice**, because two copies of the parameter
+reader is two places for `Record<string, unknown>`'s comma to be mis-split again:
+
+```js
+      /* R3, readable at last. A node return makes this a parameterised slot --
+       * the form is `slot`, and `params` is what parameterises it. Deliberately
+       * NOT a tenth form and not the ninth: a functionInput returns a value Arena
+       * consumes, this returns markup Arena places. api/README.md states R3
+       * itself -- that such a slot FILLS rather than replaces -- and nothing here
+       * can check that: it is a fact about the rendered tree, which only
+       * check:compliance sees, and that gate does not read contracts. */
+      if (retType.form === 'slot') return { form: 'slot', params: readParams(arrow[1], ts) };
+```
+
+placed **before** the `functionInput` branch's primitive/enum/named check, since a node return must
+not fall into it.
+
+- [ ] **Step 4: Run, then write the failing gate tests**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test scripts/api-surface.test.mjs
+```
+
+Expected: all PASS.
+
+Append to `scripts/check-api.test.mjs`:
+
+```js
+/* A parameterised slot's params are compared between contract and layer, not
+ * matched on form alone. Without this a layer declaring (row: string) =>
+ * ReactNode would satisfy a contract declaring params {row: consumerData}: both
+ * are slots, and the comparison would stop there. This is the same hole plan
+ * 8C2 closed for a functionInput's modelled signature. */
+test('compareSurface reports a parameterised slot whose params disagree', () => {
+  const problems = compareSurface(
+    { component: 'X', api: { render: { form: 'slot', params: { row: 'consumerData' } } } },
+    [{ name: 'render', required: false, form: 'slot', params: { row: 'string' } }],
+    'react',
+  );
+  assert.ok(problems.some((p) => /render/.test(p) && /row/.test(p)));
+});
+
+test('compareSurface accepts a parameterised slot whose params agree', () => {
+  const problems = compareSurface(
+    { component: 'X', api: { render: { form: 'slot', params: { row: 'consumerData' } } } },
+    [{ name: 'render', required: false, form: 'slot', params: { row: 'consumerData' } }],
+    'react',
+  );
+  assert.deepEqual(problems, []);
+});
+
+/* A plain slot has no params on either side and must stay comparable -- every
+ * contracted slot in the tree today is this shape. */
+test('compareSurface still accepts a plain slot with no params on either side', () => {
+  const problems = compareSurface(
+    { component: 'X', api: { content: { form: 'slot' } } },
+    [{ name: 'children', required: false, form: 'slot' }],
+    'react',
+  );
+  assert.deepEqual(problems, []);
+});
+```
+
+- [ ] **Step 5: Compare the params in the gate**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test scripts/check-api.test.mjs
+```
+
+Expected: the first FAILS, the other two PASS.
+
+In `scripts/check-api.mjs`, `compareSurface`, add a params comparison for `spec.form === 'slot'`
+mirroring the `functionInput` block Task 1b's C5 added — key set in **both** directions and type per
+key. Reuse that block's shape; if the two end up identical, factor them into one helper and say so.
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test scripts/check-api.test.mjs
+bun test scripts/
+bun run check:api        # MUST still read 32 … across 52
+```
+
+Expected: all PASS; no earlier script test regresses. **`check:api` staying at 32/52 is the proof
+this contracts nothing** — if it moves, a shipped contract was being mis-read before and that is a
+finding to report, not to absorb.
+
+- [ ] **Step 6: `api/README.md`, `CLAUDE.md`, the spec**
+
+`api/README.md`: state the readable shape under the `slot` form — a `slot` with `params`, its React
+spelling `(x: T) => React.ReactNode`, the three-way arrow distinction (void → event, value →
+functionInput, node → slot), and, plainly, **that R3's own claim is not checked**: fills-not-replaces
+is a fact about the rendered tree, `check:compliance` is the only gate that sees one, and it does not
+read contracts. Update the *What the gate asserts* section: the params comparison is mechanical, R3
+itself is not.
+
+`CLAUDE.md`: in the API paragraph, that a parameterised slot is now readable and what remains
+unchecked. **The "R2 and R3 are not machine-checkable and nothing checks them" sentence in Known debt
+is now half wrong** — R3's *shape* is read and its params compared; R3's *rule* still is not. Rewrite
+it to say exactly that rather than deleting it.
+
+The spec: a `> **Added by Plan 8C3, Task 6 — the parameterised slot.**` blockquote in the style of the
+eighth- and ninth-form ones.
+
+- [ ] **Step 7: Gates and commit**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun run check:api
+bun run check:angular
+bun test scripts/
+git diff --stat -- '*.behaviour.json'   # empty
+```
+
+Commit (here-doc). The message states that this is **not a tenth form**, what the three arrow branches
+now are, that the params are compared in both directions, and what R3 still does not check.
+
+---
+
+## Task 7: Tabs and SegmentedControl
+
+**Files:** create `api/types/tab-item.json`, `api/types/segment-option.json`,
+`api/types/segmented-control-size.json`, `api/components/{Tabs,SegmentedControl}.json`,
+`frameworks/react/test/{tabs,segmented-control}.test.jsx`; modify both `.d.ts` `.jsx` `.prompt.md`,
+`frameworks/react/components/navigation/navigation.card.entry.jsx`,
+`frameworks/react/ui_kits/console/ProjectScreen.jsx`, `README.md`; regenerate.
+
+**Interfaces:** consumes EH. Produces `TabItem`, `SegmentOption`, `SegmentedControlSize`. **+2/+2 →
+34/54.** These two share a task because they share the union problem and the README paragraph that
+tells them apart.
+
+- [ ] **Step 1: Confirm and STOP.** Report both contracts member-by-member; confirm the bare-string
+  arm leaves both (EH), that `ProjectScreen.jsx`'s `style` on `Tabs` moves to a wrapping `<div>` with
+  the value byte-identical, and that `SegmentedControl` is the only component in the batch also
+  losing a `{...rest}`.
+
+- [ ] **Step 2: Write the three types and regenerate**
+
+```json
+{ "name": "TabItem", "kind": "object",
+  "description": "One tab in a Tabs strip.",
+  "fields": { "value": { "form": "primitive", "type": "string", "required": true,
+                         "description": "What the tab selects, and what `change` carries." },
+              "label": { "form": "primitive", "type": "string", "required": true,
+                         "description": "What the tab reads." } } }
+```
+
+```json
+{ "name": "SegmentOption", "kind": "object",
+  "description": "One option in a SegmentedControl.",
+  "fields": { "value": { "form": "primitive", "type": "string", "required": true,
+                         "description": "What the option selects, and what `change` carries." },
+              "label": { "form": "primitive", "type": "string", "required": true,
+                         "description": "What the option reads. One word — the track stops being compact past that." } } }
+```
+
+```json
+{ "name": "SegmentedControlSize", "kind": "enum",
+  "description": "Compact or default. Both sit below Button on purpose — a filter never outweighs an action. Distinct from ControlSize, which offers a large step this control does not.",
+  "values": ["sm", "md"] }
+```
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun run build:api
+git diff frameworks/react/api.generated.d.ts frameworks/angular/api.generated.ts
+```
+
+Read the **full** diff: three types added, nothing else moved, the two module diffs identical.
+
+- [ ] **Step 3: Write the two contracts**
+
+`api/components/Tabs.json`:
+
+```json
+{
+  "component": "Tabs",
+  "description": "Tab navigation between views. The active tab carries the crimson underline.",
+  "api": {
+    "tabs": { "form": "array", "of": "TabItem", "required": true, "description": "The tabs, in order." },
+    "value": { "form": "primitive", "type": "string", "description": "The selected tab's value. Omit and pass `defaultValue` to let it govern itself." },
+    "defaultValue": { "form": "primitive", "type": "string", "description": "The initially selected value when uncontrolled. Defaults to the first tab." },
+    "change": { "form": "event", "payload": "string", "description": "A different tab was chosen; carries its value." }
+  }
+}
+```
+
+`api/components/SegmentedControl.json`:
+
+```json
+{
+  "component": "SegmentedControl",
+  "description": "A compact inline filter over mutually exclusive options. A real radio group, never a tab list, and it carries no crimson.",
+  "api": {
+    "options": { "form": "array", "of": "SegmentOption", "required": true, "description": "The options, in order. Two to four with one-word labels." },
+    "value": { "form": "primitive", "type": "string", "description": "The selected option's value. Omit and pass `defaultValue` to let it govern itself." },
+    "defaultValue": { "form": "primitive", "type": "string", "description": "The initially selected value when uncontrolled. Defaults to the first option." },
+    "size": { "form": "enum", "type": "SegmentedControlSize", "default": "md", "description": "Compact or default." },
+    "ariaLabel": { "form": "primitive", "type": "string", "required": true, "description": "Names what is being filtered — \"Time range\", not \"Filter\". A radio group with no accessible name is announced unlabelled." },
+    "name": { "form": "primitive", "type": "string", "description": "Shared name for the underlying radios; generated when omitted." },
+    "change": { "form": "event", "payload": "string", "description": "A different option was chosen; carries its value." }
+  }
+}
+```
+
+`ariaLabel` is `required: true` in the contract, so Constraint 8 applies: `SegmentedControl.jsx`
+gains `if (!ariaLabel) throw new Error('SegmentedControl: \`ariaLabel\` is required');`. Confirm it
+does not already have one before adding a second.
+
+- [ ] **Step 4: Migrate both `.d.ts`** — `import type { TabItem } from '../../api.generated';` plus
+  `export type { TabItem };` (Constraint 9 — it was a locally exported type); `tabs: TabItem[]`;
+  `onChange?: (value: string) => void`; drop `style`. Same shape for `SegmentedControl` with
+  `SegmentOption` and `SegmentedControlSize`.
+
+- [ ] **Step 5: Migrate both `.jsx`** — each `map` loses its `typeof t === 'string'` branch;
+  `SegmentedControl` drops `{...rest}`; both drop `...style` from the root. The rendered DOM must not
+  otherwise change.
+
+- [ ] **Step 6: Fix the three call sites**
+
+`navigation.card.entry.jsx`: `tabs={['Overview',…]}` → `tabs={[{value:'Overview',label:'Overview'},…]}`,
+and the same for `options={['24h','7d','30d']}`.
+
+`ProjectScreen.jsx`: the same object rewrite, and the `style={{ marginBottom: … }}` moves to a wrapping
+`<div>` with the value **byte-identical** (8C2's F2 idiom).
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun run build:demos && bun run check:demos
+```
+
+- [ ] **Step 7: Two suites, the R4 proofs, README, gates, commit**
+
+Create `frameworks/react/test/tabs.test.jsx` and `segmented-control.test.jsx`. Each asserts: an item
+renders its `label` as text and its `value` as the selection key **and the two differ** (use
+`{value:'ov', label:'Overview'}` — a same-string fixture cannot discriminate); the active item carries
+its active treatment and only it; the required-member throw fires (`SegmentedControl` only); and the
+two R4 escapes are gone, **as two separate tests**.
+
+Run the two induced R4 regressions per Constraint 17 on each component, `sha256sum` before and after.
+**`Tabs` has no `{...rest}` today**, so its attribute run is induced by adding one.
+
+`README.md`: the *Navigate vs. filter* paragraph names both components. Re-read it — it describes
+shape and accent, not members, so it likely stands; report either way (Constraint 19).
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun run check:api        # MUST read 34 … across 54
+bun run check:angular && bun run check:behaviour && bun run check:dimensions
+bun run check:demos && bun run check:tailwind && bun run check:states
+bun test frameworks/react/test/
+git diff --stat -- '*.behaviour.json'   # empty
+```
+
+Commit (here-doc): the bare-string arm gone from both (R5), `style` and `{...rest}` gone, 32/52 → 34/54.
+
+---
+
+## Task 8: ProgressBar and Toast
+
+**Files:** create `api/types/progress-tone.json`, `api/types/toast-tone.json`,
+`api/components/{ProgressBar,Toast}.json`, `frameworks/react/test/{progress-bar,toast}.test.jsx`;
+modify both quartets, `frameworks/react/components/feedback/feedback.card.entry.jsx`,
+`frameworks/react/ui_kits/console/index.entry.jsx`; regenerate.
+
+**Interfaces:** consumes EF. Produces `ProgressTone`, `ToastTone`. **+2/+2 → 36/56.**
+
+- [ ] **Step 1: Confirm and STOP.** Report both contracts; confirm `ToastAction` is decomposed into
+  `actionLabel` + `action` exactly as `Alert`'s already is (EF), that `ProgressBar.size` reuses the
+  existing `ControlSize` rather than declaring a fourth `sm md lg` enum, and that `ProgressBar.label`
+  stays a slot.
+
+- [ ] **Step 2: Two tone enums**
+
+```json
+{ "name": "ProgressTone", "kind": "enum",
+  "description": "The bar's colour. No neutral and no warning: a progress bar reports work, and work is either running, done or failed.",
+  "values": ["accent", "gold", "success", "danger", "info"] }
+```
+
+```json
+{ "name": "ToastTone", "kind": "enum",
+  "description": "The side bar's colour. Narrower than Tone: a toast reports an outcome, and there is no informational outcome a toast should interrupt for.",
+  "values": ["neutral", "success", "danger", "gold"] }
+```
+
+**Before writing these, check every existing enum's value set** — `AlertTone` is
+`info success warning danger neutral` and neither of these matches it. If one does, reuse it
+(Constraint 23's enum-minimality question).
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun run build:api
+git diff frameworks/react/api.generated.d.ts frameworks/angular/api.generated.ts
+```
+
+- [ ] **Step 3: The two contracts**
+
+`api/components/ProgressBar.json`:
+
+```json
+{
+  "component": "ProgressBar",
+  "description": "Determinate progress by default; indeterminate for a wait with no percentage.",
+  "api": {
+    "value": { "form": "primitive", "type": "number", "default": 0, "description": "0-100. Ignored when `indeterminate`." },
+    "indeterminate": { "form": "primitive", "type": "boolean", "default": false, "description": "A wait with no percentage; the bar animates instead of filling." },
+    "tone": { "form": "enum", "type": "ProgressTone", "default": "accent", "description": "The bar's colour." },
+    "label": { "form": "slot", "description": "The line above the bar." },
+    "showValue": { "form": "primitive", "type": "boolean", "default": true, "description": "Shows the percentage beside the label. Determinate only." },
+    "size": { "form": "enum", "type": "ControlSize", "default": "md", "description": "The bar's thickness." }
+  }
+}
+```
+
+`api/components/Toast.json`:
+
+```json
+{
+  "component": "Toast",
+  "description": "Ephemeral notification with a tone-coloured side bar and one optional action.",
+  "api": {
+    "title": { "form": "primitive", "type": "string", "description": "The bold lead line." },
+    "message": { "form": "primitive", "type": "string", "description": "The body." },
+    "tone": { "form": "enum", "type": "ToastTone", "default": "neutral", "description": "The side bar's colour." },
+    "actionLabel": { "form": "primitive", "type": "string", "description": "The label of the single inline action — Undo, Retry, View logs. Absent renders no action." },
+    "action": { "form": "event", "description": "The inline action was activated." },
+    "persist": { "form": "primitive", "type": "boolean", "default": false, "description": "Disables the host's auto-dismiss. Always use it in an error state." },
+    "close": { "form": "event", "description": "The × was activated." }
+  }
+}
+```
+
+Note `close`, not `onClose`: the contract names the event, the binding table makes it React's
+`onClose` (Constraint 7).
+
+- [ ] **Step 4: Migrate both quartets.** `ToastAction` leaves `Toast.d.ts` entirely, so Constraint 9
+  gives it **no** re-export — verify by reading the pre-migration file rather than trusting this
+  sentence. `Toast.jsx` takes `actionLabel` and `onAction` in place of the `action` object and renders
+  the button from the two; copy the shape from `Alert.jsx`, which already does exactly this.
+
+- [ ] **Step 5: Fix the call sites.** `feedback.card.entry.jsx` (three `ProgressBar`, two `Toast`);
+  `index.entry.jsx` passes `action={t.action}` and must pass `actionLabel` and `onAction` instead —
+  read what `t.action` holds and split it at the source. Then `bun run build:demos && bun run check:demos`.
+
+- [ ] **Step 6: Two suites, the R4 proofs (both components need an induced `{...rest}`), prompts,
+  README, gates, commit.**
+
+Expected: `check-api: 36 … across 56`; behaviour diff empty. 34/54 → 36/56.
+
+---
+
+## Task 9: Tooltip
+
+**Files:** create `api/components/Tooltip.json`, `frameworks/react/test/tooltip.test.jsx`; modify the
+quartet and `feedback.card.entry.jsx`; regenerate.
+
+**Interfaces:** no new type. **+1/+1 → 37/57.**
+
+- [ ] **Step 1: Confirm and STOP.** Report the contract — three members, two of them required slots.
+  Confirm that contracting `Tooltip` **does not** touch its recorded debt: it is still not
+  keyboard-reachable, `focus.never` stays excepted in its binding, and a green `check:api` says
+  nothing about that. Say so explicitly; this component is the clearest case in the batch where a
+  contract could be misread as a clean bill of health.
+
+- [ ] **Step 2: The contract**
+
+```json
+{
+  "component": "Tooltip",
+  "description": "A short label revealed on pointer intent. Bone over dark for contrast. It waits before appearing and before withdrawing, so a pointer crossing a toolbar reveals nothing.",
+  "api": {
+    "content": { "form": "slot", "required": true, "description": "The tooltip's own body." },
+    "target": { "form": "slot", "required": true, "description": "The element the tooltip describes and attaches to." }
+  }
+}
+```
+
+> **The naming decision this task must make and report.** React's `TooltipProps` has `content` AND
+> `children`, and the binding table maps the contract slot named `content` to React's `children`.
+> Both cannot be `content`. The contract above names the wrapped element `target` (→ React prop
+> `target`) and the body `content` (→ React's `children`) — **which inverts the current React
+> spelling**, where `children` is the target and `content` is the body. The alternative is to name the
+> body `body` and keep `target` as `children`. Present both to the maintainer in Step 1 with this
+> paragraph; do not choose alone. Whichever wins, the `.jsx` and all six call sites move.
+
+- [ ] **Step 3: Migrate the quartet, fix `feedback.card.entry.jsx` and the five `<Tooltip>` mounts in
+  `frameworks/react/test-dom/tooltip-timer.test.jsx`.** That suite is a real consumer and its mounts
+  break with the rename — updating it is required, and it must keep asserting exactly what it asserts
+  today about the delays.
+
+- [ ] **Step 4: Suite, R4 proofs (induced `{...rest}`), prompt, README, gates, commit.**
+
+Expected: `check-api: 37 … across 57`; behaviour diff empty; `bun test frameworks/react/test-dom`
+still green. 36/56 → 37/57.
+
+---
+
+## Task 10: Calendar — keyboard navigation and compliance
+
+**Files:** modify `frameworks/react/components/display/Calendar.jsx`,
+`frameworks/react/components/display/Calendar.behaviour.json`, `scripts/check-compliance.mjs`
+(`COVERED`); create `frameworks/react/test-dom/grid-keyboard.test.jsx`; regenerate the `.js` sibling.
+
+**Interfaces:** produces the settled markup Task 11 contracts. **Contracts nothing** — `check:api`
+stays 37/57. **This is the one task besides 12 that may edit a `*.behaviour.json`**, and only to
+retire exceptions the implementation has stopped needing (Constraints 6 and 32).
+
+> `Calendar` binds `grid` with all eight requirements excepted, and `CLAUDE.md` records the pair with
+> `Table` as the clearest evidence the behaviour layer was worth building. This task is that record
+> being paid down. **It is an accessibility implementation, not a contract task** — do not touch
+> `Calendar.d.ts` or write a contract here.
+
+- [ ] **Step 1: Confirm and STOP.** Read `behaviour/patterns/grid.json` and `Calendar.behaviour.json`
+  aloud in the report — all eight requirements and all eight reasons. State which of the eight this
+  task will satisfy and which will keep an exception with a narrowed reason. **A partial implementation
+  is expected and honest; a wholesale exception deletion is not** (Constraint 32).
+
+- [ ] **Step 2: Write the failing compliance suite**
+
+Create `frameworks/react/test-dom/grid-keyboard.test.jsx`. It uses `assertPattern` from
+`./assert-pattern.jsx`, which compares the rendered tree against the binding **in both directions** —
+a requirement met with no exception declared fails, and an exception that is no longer true fails.
+That bidirectionality is why this suite is written before the implementation: it goes red for the
+right reason.
+
+```jsx
+/* Calendar and Table both bind `grid` and both excepted all eight of its
+ * requirements. This suite is the bidirectional half: assertPattern fails a
+ * requirement met with no exception declared AND an exception that has stopped
+ * being true, so the implementation and the binding cannot drift apart.
+ *
+ * Four of the eight are requirements no single element can decide -- focus.roving
+ * and the three keyboard.* -- so comparePattern returns null for them and this
+ * suite must prove each by ACTING on the tree and recording the verdict in
+ * `behavioural`. assertPattern throws if one is silently skipped. A wrong verdict
+ * here pins a false claim exactly as a text scan would have. */
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import React from 'react';
+import { join } from 'node:path';
+import { mount, unmount } from './harness.jsx';
+import { assertPattern, REACT_COMPONENTS } from './assert-pattern.jsx';
+import { Calendar } from '../components/display/Calendar.jsx';
+
+const EVENTS = [
+  { id: 'a', title: 'Standup', start: '2026-07-20T09:00:00Z', end: '2026-07-20T09:30:00Z', slot: 1 },
+  { id: 'b', title: 'Review',  start: '2026-07-21T14:00:00Z', end: '2026-07-21T15:00:00Z', slot: 2 },
+];
+
+test('Calendar exposes one tab stop into the grid and moves focus with the arrows', () => {
+  const root = mount(<Calendar events={EVENTS} timeZone="UTC" anchorDate="2026-07-20" />);
+  try {
+    const grid = root.querySelector('[role="grid"]');
+    assert.ok(grid, 'no role="grid" — the grid pattern has nothing to attach to');
+
+    const stops = root.querySelectorAll('[tabindex="0"]');
+    assert.equal(stops.length, 1, 'a grid is ONE tab stop; found ' + stops.length);
+
+    const first = stops[0];
+    first.focus();
+    first.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    assert.notEqual(root.ownerDocument.activeElement, first, 'ArrowRight did not move focus');
+    assert.equal(root.querySelectorAll('[tabindex="0"]').length, 1, 'the roving stop did not rove — two cells are in the Tab sequence');
+  } finally { unmount(root); }
+});
+
+test('Calendar keeps focus inside the grid at its edges', () => {
+  const root = mount(<Calendar events={EVENTS} timeZone="UTC" anchorDate="2026-07-20" />);
+  try {
+    const cell = root.querySelector('[role="gridcell"][tabindex="0"]');
+    cell.focus();
+    const before = root.ownerDocument.activeElement;
+    for (let i = 0; i < 40; i += 1) {
+      root.ownerDocument.activeElement.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    }
+    assert.ok(root.contains(root.ownerDocument.activeElement), 'focus escaped the grid at its edge');
+    assert.ok(before !== null);
+  } finally { unmount(root); }
+});
+
+test('Calendar agrees with its own behaviour binding, in both directions', () => {
+  const root = mount(<Calendar events={EVENTS} timeZone="UTC" anchorDate="2026-07-20" />);
+  try {
+    assertPattern({
+      root,
+      bindingPath: join(REACT_COMPONENTS, 'display', 'Calendar.behaviour.json'),
+      subjects: { default: root.querySelector('[role="grid"]') },
+      behavioural: {
+        'focus.roving': true,
+        'keyboard.ArrowKeys': true,
+        'keyboard.Home': true,
+        'keyboard.End': true,
+      },
+    });
+  } finally { unmount(root); }
+});
+```
+
+**Every verdict in that `behavioural` map must be earned by a test above it in the same file.** The
+Home/End verdicts are asserted `true` here with no test proving them — **write those two tests, or set
+the verdicts to `false` and keep the exceptions.** A declared verdict with no assertion behind it is
+the precise failure Constraint 34 names.
+
+- [ ] **Step 3: Run it and watch it fail**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test frameworks/react/test-dom/grid-keyboard.test.jsx
+```
+
+Expected: FAIL at `no role="grid"` — the very first assertion.
+
+- [ ] **Step 4: Implement**
+
+In `Calendar.jsx`: put `role="grid"` on the scroll container that holds the day columns and
+`aria-label` on it (the `<section>` already computes a schedule title — move or mirror it so the label
+lands on the grid element, which its own exception says it cannot today). Give each day column
+`role="row"` and each hour cell `role="gridcell"`. Hold the focused cell in state
+(`const [cursor, setCursor] = useState({ day: 0, hour: 0 })`), render `tabIndex={isCursor ? 0 : -1}`
+on each cell, and add one `onKeyDown` on the grid container handling `ArrowLeft`/`ArrowRight`
+(day ±1), `ArrowUp`/`ArrowDown` (hour ±1), `Home`/`End` (first/last cell in the row), each clamped at
+the edges and each calling `preventDefault()`. Move DOM focus in a `useEffect` keyed on `cursor`.
+
+**Two things this must not break.** The event blocks become native `<button>`s when `onEventClick` is
+set, each its own tab stop — that is what `focus.roving`'s exception describes, and a roving grid with
+buttons inside it is a real design question: the APG answer is that the buttons are reachable from
+within the cell, not as page-level tab stops, so they take `tabIndex={-1}`. And the absolutely
+positioned layout must not shift: `role` and `tabIndex` add no box.
+
+- [ ] **Step 5: Run, retire only what is true, register coverage**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test frameworks/react/test-dom/grid-keyboard.test.jsx
+```
+
+Delete from `Calendar.behaviour.json` **only** the exceptions the suite now proves false. For any
+requirement still unmet, rewrite the reason to say what is met and what is not — the current reasons
+say "no keyboard navigation exists at all", which stops being true the moment Step 4 lands, and a
+stale reason is exactly what `assertPattern` exists to catch.
+
+Add to `COVERED` in `scripts/check-compliance.mjs`:
+
+```js
+  'Calendar:react': 'grid-keyboard.test.jsx',
+```
+
+`COVERED` is keyed `<component>:<layer>`; a key without the suffix is rejected.
+
+- [ ] **Step 6: Gates and commit**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun run check:behaviour
+bun run check:compliance
+bun run check:dimensions
+bun run build:demos && bun run check:demos
+bun run check:api        # unchanged, 37 … across 57
+bun test frameworks/react/test-dom
+git diff --stat -- '*.behaviour.json'   # ONE file, exceptions REMOVED
+```
+
+Per Constraint 31, state in the report whether `calendar.card.html`'s content box could have grown —
+`role` and `tabIndex` add no box, but a focus ring drawn with `outline` does not either while one
+drawn with `border` does. Say which you used.
+
+Commit (here-doc): which of the eight requirements are now met, which keep a narrowed exception and
+why, and that `check:api` is untouched because this is behaviour work.
+
+---
+
+## Task 11: Calendar — the API contract
+
+**Files:** create `api/types/cat-slot.json`, `api/types/calendar-event.json`,
+`api/components/Calendar.json`, `frameworks/react/test/calendar.test.jsx`; modify the quartet and
+`frameworks/react/components/display/calendar.card.entry.jsx`; regenerate.
+
+**Interfaces:** consumes EE, EG and Task 6's R3. Produces `CatSlot`, `CalendarEvent`. **+1/+1 → 38/58.**
+
+- [ ] **Step 1: Confirm and STOP.** Report the contract; confirm `renderEvent` is a **parameterised
+  slot** and not the ninth form (Constraint 29 — `Calendar` is not a data-entry control and may not
+  carry a `functionInput`); confirm `meta` leaves `CalendarEvent` per EG; confirm `CatSlot` is the
+  directory's **first numeric enum** (Constraint 36).
+
+- [ ] **Step 2: The two types**
+
+```json
+{ "name": "CatSlot", "kind": "enum",
+  "description": "A slot in the categorical ramp, in fixed order and never cycled. The same eight slots the charts use — identity is one system across Arena, not one per component. Colour here means which thing, never what state.",
+  "values": [1, 2, 3, 4, 5, 6, 7, 8] }
+```
+
+```json
+{ "name": "CalendarEvent", "kind": "object",
+  "description": "One event on the schedule. Times are ISO datetimes read in the calendar's timeZone, never the reader's.",
+  "fields": {
+    "id": { "form": "primitive", "type": "string", "required": true, "description": "Stable identity, so a host can switch on it rather than on the title." },
+    "title": { "form": "primitive", "type": "string", "required": true, "description": "What the chip reads." },
+    "start": { "form": "primitive", "type": "string", "required": true, "description": "ISO datetime the event begins." },
+    "end": { "form": "primitive", "type": "string", "required": true, "description": "ISO datetime the event ends." },
+    "slot": { "form": "enum", "type": "CatSlot", "description": "Identity colour. Give the same entity the same slot everywhere and it keeps its colour across views." }
+  } }
+```
+
+`meta` is **absent** and that is EG: consumer data may not be a field of a predefined object, and
+`renderEvent`'s parameter is the route by which a consumer's own object reaches its own renderer.
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun run build:api
+git diff frameworks/react/api.generated.d.ts frameworks/angular/api.generated.ts
+```
+
+**Read the emitted `CatSlot` carefully** — a numeric enum has never been emitted before, and a
+generator that quotes the values (`'1' | '2'`) would be a defect this task must catch, not inherit.
+
+- [ ] **Step 3: The contract**
+
+```json
+{
+  "component": "Calendar",
+  "description": "Week or day schedule on a time grid. Colour is identity, never state.",
+  "api": {
+    "events": { "form": "array", "of": "CalendarEvent", "required": true, "description": "The events to place." },
+    "timeZone": { "form": "primitive", "type": "string", "required": true, "description": "IANA zone name. Required: a schedule rendered in the reader's zone is wrong by hours, not by style." },
+    "anchorDate": { "form": "primitive", "type": "string", "description": "ISO date the view opens on. Defaults to today in `timeZone`; pass and change it to drive the date yourself." },
+    "view": { "form": "enum", "type": "CalendarView", "description": "Omit to derive from the CONTAINER width: day below --bp-md, else week." },
+    "dayStart": { "form": "primitive", "type": "string", "description": "HH:MM the grid starts at. Defaults to the earliest visible event's hour, floored." },
+    "dayEnd": { "form": "primitive", "type": "string", "default": "23:00", "description": "HH:MM the grid ends at." },
+    "weekStartsOn": { "form": "primitive", "type": "number", "default": 1, "description": "0 = Sunday … 6 = Saturday." },
+    "hideEmptyWeekend": { "form": "primitive", "type": "boolean", "default": true, "description": "Drop Sunday from the week unless an event falls on it." },
+    "eventClick": { "form": "event", "payload": "CalendarEvent", "description": "An event chip was activated; carries the event." },
+    "dateClick": { "form": "event", "payload": "string", "description": "A day header or column background was activated; carries the ISO date." },
+    "rangeChange": { "form": "event", "payload": "string", "description": "The anchor moved via prev/Today/next; carries the new ISO date. A date rather than a delta, because Today is not a delta." },
+    "renderEvent": { "form": "slot", "params": { "event": "CalendarEvent" }, "description": "Fills the event body. The chip, its position and its identity colour stay Arena's." },
+    "actions": { "form": "slot", "description": "Right-aligned in the toolbar, beside the range title." }
+  }
+}
+```
+
+`view` names a `CalendarView` enum (`week day`) — **write `api/types/calendar-view.json` too**; the
+inline union `'week' | 'day'` in the `.d.ts` is an R5-adjacent shape the batch is removing everywhere
+else and must not survive here.
+
+- [ ] **Step 4: Migrate the quartet.** Constraint 9: `Calendar.d.ts` exported `CatSlot` **and**
+  `CalendarEvent` locally, so both keep a re-export. `renderEvent` stays
+  `(event: CalendarEvent) => React.ReactNode` in the `.d.ts` — Task 6's reader classifies it. Drop
+  `style`. Rename the three handlers to `onEventClick`/`onDateClick`/`onRangeChange`, which the binding
+  table already produces from `eventClick`/`dateClick`/`rangeChange` — verify with `bindingName()`
+  rather than assuming.
+
+- [ ] **Step 5: `CalendarEvent.meta` at the call site.** `calendar.card.entry.jsx` may pass `meta`
+  today; if it does, the consumer object it carried now reaches `renderEvent` directly. Read the file
+  and report what actually changed.
+
+- [ ] **Step 6: Suite, the R4 proofs (induced `{...rest}`), prompt, README, gates, commit.**
+
+The suite must include the R3 proof, which is this task's headline:
+
+```jsx
+/* renderEvent is a parameterised slot: it FILLS the chip's body. R3 says it
+ * never replaces, and no gate checks that -- so this assertion is the only place
+ * the claim is tested at all. The chip's own positioning and identity colour must
+ * survive a custom body. */
+test('renderEvent fills the chip body and leaves the chip Arena drew', () => {
+  const html = renderToStaticMarkup(
+    <Calendar events={EVENTS} timeZone="UTC" anchorDate="2026-07-20"
+      renderEvent={(e) => <em>{e.title.toUpperCase()}</em>} />,
+  );
+  assert.match(html, /<em>STANDUP<\/em>/, 'the custom body did not render');
+  assert.match(html, /var\(--cat-1\)/, 'the chip lost its identity colour — renderEvent replaced rather than filled');
+});
+```
+
+Verify the colour custom property that actually appears (`catColor()` in `chart-internals.js` decides
+it) before pinning that second assertion.
+
+Expected: `check-api: 38 … across 58`; behaviour diff **empty** (Task 10 already moved it). 37/57 → 38/58.
+
+---
+
+## Task 12: Table — keyboard navigation and compliance
+
+**Files:** modify `frameworks/react/components/display/Table.jsx`,
+`frameworks/react/components/display/Table.behaviour.json`, `scripts/check-compliance.mjs`
+(`COVERED`), `frameworks/react/test-dom/grid-keyboard.test.jsx`; regenerate the `.js` sibling.
+
+**Interfaces:** produces the settled markup Task 13 contracts. **Contracts nothing** — `check:api`
+stays 38/58.
+
+> **Constraint 33 governs this task.** `Table` has two layouts. The wide one is a real `<table>` and
+> the `grid` pattern is about it. Below `--bp-md` it is one card per row — a list, not a grid — and
+> the binding cannot say "this requirement applies in one variant", which is the limit `Skeleton`
+> already proves and this plan does not fix. The narrow layout keeps an exception whose reason names
+> the variant, and the suite asserts against the wide layout specifically, the way `Skeleton`'s does
+> against `circle`.
+
+- [ ] **Step 1: Confirm and STOP.** Report which of the eight `grid` requirements the wide layout will
+  satisfy, which keep a variant-named exception, and how the suite forces the wide layout (`Table`
+  chooses by measuring its **container**; `useContainerWidth` returns `null` before measurement and
+  `null` means the wide branch, so a bare mount in happy-dom already gets it — verify that rather than
+  assuming, and if it does not hold, pass `responsive={false}`).
+
+- [ ] **Step 2: Extend the suite**
+
+Add `Table` cases to `frameworks/react/test-dom/grid-keyboard.test.jsx` — one file for both, because
+the two share the pattern, the harness and the roving-focus assertions, and splitting them would
+duplicate all three. Mirror Task 10's three tests: one tab stop, arrows move and rove, edges hold,
+plus the bidirectional `assertPattern` call with a `behavioural` map every verdict of which is earned
+above it.
+
+Add one test the `Calendar` half does not need:
+
+```jsx
+/* onRowClick makes a row activatable, and until now a mouse was the only way:
+ * no tabIndex, no role, no key handler. A row that responds to a click and not
+ * to Enter is not a keyboard-operable control, whatever its role says. */
+test('a row with onRowClick activates on Enter as well as on click', () => {
+  const seen = [];
+  const root = mount(<Table columns={COLUMNS} rows={ROWS} onRowClick={(r) => seen.push(r)} />);
+  try {
+    const cell = root.querySelector('[role="gridcell"][tabindex="0"]');
+    cell.focus();
+    cell.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    assert.equal(seen.length, 1, 'Enter did not activate the row');
+  } finally { unmount(root); }
+});
+```
+
+- [ ] **Step 3: Run it and watch it fail**, then implement in `Table.jsx`: `role="grid"` and an
+  `aria-label` on the `<table>` (the binding's `roles.label` exception records that the file has zero
+  `aria-` attributes of any kind — that becomes false here, and a `Table` with no caption needs a name
+  from somewhere; decide whether it comes from a new member and, if so, say so, because **a new member
+  is Task 13's contract and must be reported to the maintainer before this task adds it**).
+  `role="row"` on each `<tr>`, `role="columnheader"` on each `<th>`, `role="gridcell"` on each `<td>`,
+  the same cursor-state roving `tabIndex` Task 10 uses, and an `onKeyDown` handling the arrows plus
+  `Home`/`End` plus `Enter` when `onRowClick` is set.
+
+- [ ] **Step 4: Retire only what is true; add `'Table:react': 'grid-keyboard.test.jsx'` to `COVERED`.**
+
+- [ ] **Step 5: Gates and commit**, same list as Task 10, plus the Constraint 31 statement about
+  `table-avatar.card.html`'s box — that card renders the table twice, once in a 340px container, so
+  the narrow layout is on screen and any change to it is visible.
+
+---
+
+## Task 13: Table — the API contract
+
+**Files:** create `api/types/table-column.json`, `api/components/Table.json`,
+`frameworks/react/test/table.test.jsx`; modify the quartet,
+`frameworks/react/components/display/table-avatar.card.entry.jsx`,
+`frameworks/react/ui_kits/console/ProjectScreen.jsx`; regenerate.
+
+**Interfaces:** consumes Task 6's R3. Produces `TableColumn`. **+1/+1 → 39/59. This completes the
+batch.**
+
+> **Table needs four fixes, in this order, and the first three are invisible until the one before it
+> lands.** (1) the `<T>` generic is erased — `TableColumn<T>` throws `unreadable type annotation` and
+> nothing else in the file is even reached; (2) `TableColumn.render` is a parameterised slot (Task 6);
+> (3) `getRowKey` returns `React.Key`, an R4 platform type; (4) `onRowClick` is
+> `(row: T, i: number) => void`, and an event takes **one** payload.
+
+- [ ] **Step 1: Confirm and STOP.** Report all four, plus the two member decisions they force:
+
+  - **`getRowKey` — recommend removing it entirely.** Its return is a platform type; narrowing it to
+    `string` keeps a member whose only job is to compute React's reconciliation key, which is a React
+    concern and not an API capability. The component already falls back to the row index. If it stays,
+    it is `(row: consumerData) => string`, a `functionInput` — **which `Table` may not carry**
+    (Constraint 29, not a data-entry control). So it is remove, or it is a contract-vocabulary problem
+    with no legal shape. **This is a real decision and it is the maintainer's.**
+  - **`onRowClick` sheds its index.** An event carries one payload; the payload is the row
+    (`consumerData`). A consumer needing the index reads it from the row.
+
+  Also confirm whether Task 12 added an `aria-label`-bearing member and, if so, that it is contracted
+  here.
+
+- [ ] **Step 2: `TableColumn`, non-generic**
+
+```json
+{ "name": "TableColumn", "kind": "object",
+  "description": "One column of a Table. `render` fills the cell; the cell, its padding and its alignment stay Arena's.",
+  "fields": {
+    "key": { "form": "primitive", "type": "string", "required": true, "description": "Which field of the row this column reads." },
+    "header": { "form": "primitive", "type": "string", "required": true, "description": "The column's label." },
+    "align": { "form": "enum", "type": "CellAlign", "default": "left", "description": "How the cell's content aligns." },
+    "width": { "form": "primitive", "type": "string", "description": "A CSS width for the column. Omit to let the table distribute." },
+    "mono": { "form": "primitive", "type": "boolean", "default": false, "description": "Draw the value in the mono face and the gold ink — for identifiers and figures." },
+    "mobileLayout": { "form": "enum", "type": "TableCellLayout", "default": "row", "description": "How the column renders in card mode: a label/value pair, or full width with no label." }
+  } }
+```
+
+**`render` is NOT a field here.** A predefined object is pure data with known fields (R1), and a slot
+is not data — the same reason `ToastAction`'s `onClick` had to be decomposed in Task 8. `render`
+therefore cannot ride inside `TableColumn`, and this is the batch's hardest design problem.
+**Two ways out; present both in Step 1 and let the maintainer choose:**
+
+  - **(A) A single parameterised slot on `Table` itself**, `cell`, taking the column key and the row:
+    `{"form": "slot", "params": {"columnKey": "string", "row": "consumerData"}}`. One renderer switching
+    on the key replaces N per-column renderers. The `.jsx` and both call sites restructure.
+  - **(B) Keep per-column renderers and accept `TableColumn` cannot be a predefined object**, making
+    `columns` an array of `consumerData` — which loses every declared field and makes the contract say
+    almost nothing about a column. **Not recommended:** it trades a real R1 violation for a real loss
+    of description, and the eighth form exists for records Arena does not inspect, which a column is
+    not.
+
+  `width` also narrows from `number | string` to `string` — a union between two primitives is still a
+  union (R5). `CellAlign` (`left center right`) and `TableCellLayout` (`row block`) are two more new
+  enums; write them.
+
+- [ ] **Step 3: The contract**, reflecting Step 1's decisions:
+
+```json
+{
+  "component": "Table",
+  "description": "Data table on the density tokens. Below --bp-md it becomes one card per row, measured on its own container rather than the viewport.",
+  "api": {
+    "columns": { "form": "array", "of": "TableColumn", "required": true, "description": "The columns, in order." },
+    "rows": { "form": "array", "of": "consumerData", "required": true, "description": "The rows. Arena routes each one and never inspects it." },
+    "empty": { "form": "slot", "description": "What shows when there are no rows." },
+    "responsive": { "form": "primitive", "type": "boolean", "default": true, "description": "Card mode below --bp-md. Set false only when the columns are meaningless apart." },
+    "rowClick": { "form": "event", "payload": "consumerData", "description": "A row was activated by click or Enter; carries the row." }
+  }
+}
+```
+
+Plus whichever of Step 2's (A) or (B) won. Note `rows` is `array of consumerData` — the eighth form's
+original motivating case, and `rowClick`'s payload plus the `cell`/`render` slot parameter are the
+routes back out the gate requires (a contract taking consumer data in with no route is rejected).
+
+- [ ] **Step 4: Migrate the quartet.** The `.d.ts` loses `<T = any>` from both interfaces and the
+  function; Constraint 9 keeps `TableColumn`'s re-export (now non-generic — a breaking change for any
+  consumer writing `TableColumn<Deploy>`, and there is none in-tree). Drop `style`.
+
+- [ ] **Step 5: Fix both call sites**, which each pass `columns` arrays carrying `render` and both pass
+  `getRowKey`. `ProjectScreen.jsx` has two `render` functions. Then
+  `bun run build:demos && bun run check:demos` — the Console is covered.
+
+- [ ] **Step 6: Suite, R4 proofs, prompt, README, gates, commit.**
+
+The suite must prove R3 for whichever renderer shape won, exactly as Task 11's does: a custom cell
+body renders **and** the cell keeps Arena's padding and alignment.
+
+Expected: `check-api: 39 … across 59`; behaviour diff empty. 38/58 → 39/59. **This completes the seven
+migrations of batch 8C3.**
+
+---
+
+## Task 14: Divergences and the citation sweep
+
+**Files:** modify `components-divergences.md` (read first).
+
+- [ ] **Step 1: Re-read and classify.** `wc -l components-divergences.md`; find headings naming the
+  seven. Classify each API (delete) / rendering (keep) / behaviour (keep). Task 7 of 8C2 found the
+  form controls appeared only in the box-model table; **this batch is different** — `Table` and
+  `SideNav` have real per-component sections there. Read them.
+
+- [ ] **Step 2: Check citations.** `grep -rn "components-divergences" --include='*.json' --include='*.ts'
+  --include='*.md' --include='*.jsx' . | grep -v node_modules`. Three bindings and one Angular
+  primitive cite it by section name; a deletion that orphans a citation breaks it.
+
+- [ ] **Step 3: Sweep for dead references** (Constraint 21) to every removed or renamed member: the
+  bare-string `tabs`/`options` arms, `ToastAction`, `TableColumn<T>`, `getRowKey`, `onRowClick`'s index
+  parameter, `CalendarEvent.meta`, `React.CSSProperties` on the seven, and `Tooltip`'s renamed slots.
+  A hit in a **contracted** component is this task's to fix; a hit in an **uncontracted** one
+  (`Dialog`, `Menu`, `Pagination`, `SideNav`) is expected — record which is which.
+
+- [ ] **Step 4: Commit only if something changed.** Otherwise record "no change" in the ledger.
+
+---
+
+## Task 15: Close-out
+
+**Files:** modify the spec, `CHANGELOG.md`, `CLAUDE.md`; delete the executed 8C2 plan.
+
+- [ ] **Step 1: Full sweep once**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+export CHROME_PATH=/usr/bin/chromium
+bun run check
+bun test scripts frameworks/react/test/ frameworks/angular/test 2>&1 | tail -3
+bun test frameworks/react/test-dom 2>&1 | tail -3
+```
+
+Expected: all 23 steps PASS. Reconcile both counts against the per-task deltas in the ledger. **The
+isolated DOM process has moved off 26/5** — Tasks 5, 10 and 12 all added to it, and that is the first
+movement since the suspension. If either delta does not reconcile, stop and find out why.
+
+- [ ] **Step 2: Whole-branch review** (Constraint 23). Read `git diff main...HEAD` against: do the
+  seven agree on how a tone enum is named and when a size enum is shared rather than declared?; is
+  every member `description` consistent across contract / `.d.ts` / `.prompt.md`?; is any new enum
+  value-identical to an existing one?; did any suite weaken a title?; does the climb reconcile
+  32 → 34 → 36 → 37 → 38 → 39?; is `functionInput` still only in `Input`?; is every parameterised slot
+  a `slot` with `params` and never the ninth form? Fix findings in their own commits.
+
+- [ ] **Step 3: Spec.** Add the 8C3 running-count row (**both** processes — the isolated one moves for
+  the first time, so the row's second column is no longer `26 across 5`). Add a register paragraph:
+  what was contracted, 32/52 → 39/59, the four debts paid, R3 made readable, and the two components
+  that gained keyboard navigation. Note that Plan C now has four subjects left.
+
+- [ ] **Step 4: CHANGELOG**, under `## [Unreleased]` only. **Added:** the parameterised slot readable;
+  `id` a member of `Input` and `Textarea`; keyboard navigation on `Calendar` and `Table`.
+  **Changed:** the seven contracted, with every breaking change spelled out — the bare-string `tabs`
+  and `options` arms gone; `ToastAction` decomposed to `actionLabel` + `action`; `TableColumn` no
+  longer generic; `getRowKey` gone; `onRowClick` sheds its index; `CalendarEvent.meta` gone;
+  `Tooltip`'s slots renamed; `style` gone from all seven. **Fixed:** the enum event payload; the
+  Angular `functionInput` parse.
+
+- [ ] **Step 5: `CLAUDE.md`.** Record what this batch established. **Retire the debt entries this plan
+  actually paid** — verify each before deleting, and narrow rather than delete any that is only partly
+  paid. `Calendar` and `Table`'s "implement no keyboard navigation at all" entry is the headline one
+  and is almost certainly *narrowed*, not deleted, because Tasks 10 and 12 will not satisfy all eight
+  requirements. Add any new debt: whatever Tasks 10 and 12 left unmet, and the `Tabs` binding's eight
+  untouched exceptions (Appendix A). **Move any debt living only in the 8C2 plan into Known debt
+  before deleting it** — check, do not assume; 8C2's own close-out found none in 8C1's.
+
+- [ ] **Step 6: Delete the executed 8C2 plan**
+
+```bash
+cd /home/juan/Dravensoft/Identity
+git rm docs/superpowers/plans/2026-07-24-8c2-api-contracts-the-six-form-controls.md
+```
+
+- [ ] **Step 7: Commit** (here-doc), append the batch summary to the ledger, report, **do not merge,
+  do not push.**
+
+---
+
+## Appendix A: what this plan deliberately does not do
+
+- **It does not touch Angular.** The seven are React-only until Plan D. Task 4 changes a shared reader
+  and records the spelling Plan D must write; it implements nothing in Angular.
+- **It does not contract the last four Plan C subjects** — `Dialog`, `Menu`, `Pagination`, `SideNav`
+  are C4's.
+- **It does not fix `Tabs`' behaviour binding**, which excepts all eight of the `tabs` pattern's
+  requirements exactly as `Calendar` and `Table` did. Task 7 contracts its API and leaves its
+  accessibility exactly as it was. **This is the plan's sharpest asymmetry** and Task 15 must record
+  it: two of the three total-exception bindings are paid down here and the third is not even
+  mentioned by the tasks that touch its component.
+- **It does not make `Tooltip` keyboard-reachable.** Task 9 contracts it; `focus.never` stays
+  excepted. `CLAUDE.md` already records that when it is fixed the focus path must reveal
+  **immediately** rather than waiting `--delay-open`.
+- **It does not teach the binding schema to scope an exception to a variant**, which `Table`'s two
+  layouts need and `Skeleton` already proves is missing. Task 12 works around it the way `Skeleton`'s
+  suite does — by asserting against one variant — and the limit stays open.
+- **It does not make R3's own claim checkable.** Task 6 makes the shape readable and compares the
+  params; whether a parameterised slot fills rather than replaces is a fact about the rendered tree,
+  and the only gate that sees one does not read contracts.
+- **It does not close the `check:api`-reads-the-`.d.ts` hole.** Restoring `{...rest}` to any migrated
+  `.jsx` would still leave the gate green; the per-component R4 suites are the only guard, which is
+  why Constraint 17 insists both runs are induced separately.
+- **It does not cut a release.**
