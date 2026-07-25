@@ -14,7 +14,7 @@ function Demo(){const[o,setO]=React.useState(false);return(<div>
   </div>
   <div className="sub">Tooltip · Dialog</div>
   <div className="row">
-    <Tooltip content="Roll back to the previous build"><Button variant="secondary">Hover here</Button></Tooltip>
+    <Tooltip label="Roll back to the previous build"><Button variant="secondary">Hover here</Button></Tooltip>
     <Button variant="primary" onClick={()=>setO(true)}>Open dialog</Button>
   </div>
   <div className="sub">ProgressBar</div>

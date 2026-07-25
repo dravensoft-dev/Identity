@@ -15,7 +15,9 @@ function useFadeKeyframes() {
     document.head.appendChild(s);
   }, []);
 }
-export function Tooltip({ children, content, style }) {
+export function Tooltip({ children, label }) {
+  if (!label)
+    throw new Error("Tooltip: `label` is required");
   useFadeKeyframes();
   const [show, setShow] = useState(false);
   const timer = useRef(null);
@@ -29,7 +31,7 @@ export function Tooltip({ children, content, style }) {
       clearTimeout(timer.current);
   }, []);
   return React.createElement("span", {
-    style: { position: "relative", display: "inline-flex", ...style },
+    style: { position: "relative", display: "inline-flex" },
     onMouseEnter: () => schedule(true, delayOpen),
     onMouseLeave: () => schedule(false, delayClose)
   }, children, show && React.createElement("span", {
@@ -50,5 +52,5 @@ export function Tooltip({ children, content, style }) {
       zIndex: "var(--z-tooltip)",
       animation: "arena-fade var(--dur-fast) var(--ease-out)"
     }
-  }, content));
+  }, label));
 }

@@ -1,0 +1,10 @@
+{
+  "component": "Tooltip",
+  "description": "A short label revealed on pointer intent. Bone over dark for contrast. It waits before appearing and before withdrawing, so a pointer crossing a toolbar reveals nothing.",
+  "api": {
+    "label": { "form": "primitive", "type": "string", "required": true,
+               "description": "The bubble's text. Arena draws the bubble; the consumer names it." },
+    "content": { "form": "slot", "required": true,
+                 "description": "The element the tooltip describes and attaches to." }
+  }
+}

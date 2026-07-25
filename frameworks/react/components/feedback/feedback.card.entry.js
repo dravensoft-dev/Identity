@@ -33,7 +33,7 @@ function Demo() {
   }, "Tooltip · Dialog"), React.createElement("div", {
     className: "row"
   }, React.createElement(Tooltip, {
-    content: "Roll back to the previous build"
+    label: "Roll back to the previous build"
   }, React.createElement(Button, {
     variant: "secondary"
   }, "Hover here")), React.createElement(Button, {
