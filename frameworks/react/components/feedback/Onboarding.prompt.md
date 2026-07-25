@@ -38,3 +38,33 @@ the interior is this check.
 - Don't block critical tasks after the tour: "Skip" must always be available.
 - Give every step a `title` (or at least an `eyebrow`): without one the dialog names itself
   positionally and tells a screen-reader user nothing about what it is showing them.
+
+## Verifying the focus trap by hand
+
+A suite proves the boundary wrap — Arena's own `.focus()` call. It cannot prove the
+**interior**, that Tab from a middle control reaches the next one: that is the
+browser's native sequential focus navigation, which happy-dom does not implement. A
+browser-driven gate stays refused, so this list is the check.
+
+Serve the tree with `bun run demos` and open
+`frameworks/react/components/feedback/onboarding.card.html`.
+
+**Start by pressing Escape.** That card renders with the tour already open, because a
+specimen has to show something, and pressing "Start tour" while `open` is already
+`true` correctly does nothing — the hook keys its effect on `open` changing. Skipping
+this step measures the closed-to-open transition that never happened.
+
+Then, with the tour closed:
+
+1. **Tab to "Start tour" and press Enter.** Focus must land on **Skip**, the first
+   focusable in the coachmark. On the first step there is no Back button, so Skip is
+   genuinely first; on a middle step it is Back.
+2. **Tab once.** Focus moves to **Next**. Native navigation, not Arena's.
+3. **Tab again.** Focus wraps back to Skip.
+4. **Shift+Tab.** Focus wraps from Skip to Next.
+5. **Escape.** The tour closes through `onSkip` — the same channel the Skip button and
+   the scrim click use, and the one Angular's `arena-onboarding` also routes Escape to
+   — and focus returns to "Start tour".
+
+Driving this through CDP: Enter must be `keyDown` with `text: '\r'`; a `rawKeyDown`
+does not activate a button.
