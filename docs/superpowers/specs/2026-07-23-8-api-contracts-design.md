@@ -882,6 +882,41 @@ comparison and a comparison needs a baseline that is not stale.
 | **Plan B3** (2026-07-24) | **932 across 82 files** | 26 across 5 files |
 | **Plan B4** (2026-07-24) | **958 across 85 files** | 26 across 5 files |
 | **Plan 8C1** (2026-07-24) | **991 across 89 files** | 26 across 5 files |
+| **Plan 8C2** (2026-07-24) | **1048 across 94 files** | 26 across 5 files |
+
+Plan 8C2 carried Plan C forward with its second batch: the six form controls (`RadioGroup`, `Radio`,
+`Checkbox`, `Textarea`, `Select`, `Input`), taking `check:api` from 26 contracts across 46 layer
+implementations to **32 across 52**. **Every contract is single-layer for the same reason 8C1's
+were** — Angular delegates all six to Material — so the batch moves the layer count by exactly as
+many contracts as it writes, six and not twelve. Five of the six tasks climb `+1 contract / +1
+layer`; **Task 2 is the batch's only `+2/+2`**, because `Radio.d.ts` declared two components in one
+file and the gate resolves a component by `<Name>.d.ts`, so `RadioGroup` had no surface the reader
+could find until the file was split into two quartets. The net gain over 8C1 is 57 tests and 5 files
+in the merged process, isolated DOM process unchanged at 26/5, and it reconciles exactly against the
+per-task deltas: Task 1b added 14 in `scripts/` (the ninth form's reader and gate tests) with no
+component contracted; then the five migrations added 8 (Task 2 — six render tests in a new
+`radio.test.jsx` plus two gate tests), 7, 9, 6 and 13 — 14 + 43 = 57 — and the five files are the
+five new suites under `frameworks/react/test/` (`radio`, `checkbox`, `textarea`, `select`, `input`).
+**Task 1b is the batch's structural event, not a component**, exactly as 8C1's was: it added a ninth
+form to the vocabulary, `functionInput`, for the one member shape a data-entry control legitimately
+needs and none of the eight could express — `Input.validate` made `reactSurface()` *throw* before it
+existed. It contracts nothing and holds `check:api` at 26/46 across itself, and it lands the form's
+narrowing guard mechanically rather than as prose: a `functionInput` is legal only in a contract
+declaring `"kind": "input"` at top level, and `check:api` fails one that is not. Of the whole repo,
+exactly one contract carries that key and exactly one member is a `functionInput` — `Input` and
+`Input.validate`. The six migrations declared three new types: `SelectOption` (an object), `InputType`
+(an enum, ten values) and `ValidateOn` (an enum, two); every enum value set across `api/types/` is
+unique, so no reuse was missed. **The two decisions that shaped the batch beyond the plan:** a
+native `onChange` becomes an **event carrying the value, never the DOM event** (DA), which extends
+`Breadcrumbs`' settled rule that a platform event type is an R4 violation inside a payload — so
+`change` carries `string` on `RadioGroup`, `Textarea`, `Select` and `Input`, and `boolean` on
+`Checkbox`, `Input.blur` carries the value too, and `React.ChangeEvent` travels nowhere; `Radio`
+declares no `change` at all, because the group owns the value and the plumbing `RadioGroup` injects
+(`name`/`checked`/`onSelect`) is public API in neither contract. And the heritage flatten (DB) cost
+one capability rather than the five `form*` overrides 8C1 paid: **`id` is no longer a member.**
+`Input` and `Textarea` still generate an `id` from the label to wire the label's `htmlFor`, but a
+consumer wanting to supply one lost the path, because it arrived through the heritage clause. It is
+recorded as the batch's one D1 cost, with the same absence of a gate behind it that 8C1's loss has.
 
 Plan 8C1 opened Plan C — the twenty-one React-only components — with its first batch: the five
 primitives other components compose (`Spinner`, `Badge`, `Card`, `IconButton`, `Button`), taking
