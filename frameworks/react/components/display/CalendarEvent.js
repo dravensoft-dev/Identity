@@ -32,6 +32,29 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
   const Tag = onClick && !hasPanel ? "button" : "div";
   const [panelOpen, setPanelOpen] = React.useState(Boolean(defaultPanelOpen));
   const bodyIsButton = Boolean(onClick) && hasPanel;
+  const focusableRef = React.useRef(null);
+  const kebabWrapRef = React.useRef(null);
+  const panelRef = React.useRef(null);
+  const setFocusable = (node) => {
+    focusableRef.current = node;
+    if (typeof ref === "function")
+      ref(node);
+    else if (ref)
+      ref.current = node;
+  };
+  const kebabEl = () => kebabWrapRef.current && kebabWrapRef.current.firstElementChild;
+  const openedByUser = React.useRef(false);
+  React.useEffect(() => {
+    if (!panelOpen || !openedByUser.current)
+      return;
+    openedByUser.current = false;
+    const panel = panelRef.current;
+    if (!panel)
+      return;
+    const first = panel.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (first)
+      first.focus();
+  }, [panelOpen]);
   const body = React.createElement(React.Fragment, null, React.createElement("span", {
     style: {
       fontSize: "var(--dz-text-sm)",
@@ -45,7 +68,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-2xs)", color: "var(--mute)" }
   }, timeLabel));
   return React.createElement(Tag, {
-    ref: bodyIsButton ? undefined : ref,
+    ref: bodyIsButton ? undefined : setFocusable,
     type: onClick && !hasPanel ? "button" : undefined,
     tabIndex: bodyIsButton ? undefined : tabIndex,
     onClick: onClick && !hasPanel ? (e) => {
@@ -57,6 +80,22 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
       if (e.key === "Escape" && panelOpen) {
         e.stopPropagation();
         setPanelOpen(false);
+        const kebab = kebabEl();
+        if (kebab)
+          kebab.focus();
+        return;
+      }
+      const kebab = kebabEl();
+      if (!kebab)
+        return;
+      if (e.key === "ArrowRight" && e.target !== kebab) {
+        e.preventDefault();
+        e.stopPropagation();
+        kebab.focus();
+      } else if (e.key === "ArrowLeft" && e.target === kebab && focusableRef.current) {
+        e.preventDefault();
+        e.stopPropagation();
+        focusableRef.current.focus();
       }
     } : undefined,
     style: {
@@ -79,7 +118,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
     }
   }, hasPanel ? React.createElement(React.Fragment, null, onClick ? React.createElement("button", {
     type: "button",
-    ref,
+    ref: setFocusable,
     tabIndex,
     onClick: (e) => {
       e.stopPropagation();
@@ -100,14 +139,19 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
       cursor: "pointer"
     }
   }, body) : body, React.createElement("span", {
+    ref: kebabWrapRef,
     style: { position: "absolute", top: 0, right: 0 }
   }, React.createElement(IconButton, {
     icon: "ph-bold ph-dots-three-vertical",
     label: "Actions",
     size: "sm",
     tabStop: false,
-    onClick: () => setPanelOpen((o) => !o)
+    onClick: () => {
+      openedByUser.current = !panelOpen;
+      setPanelOpen((o) => !o);
+    }
   }), panelOpen && React.createElement("span", {
+    ref: panelRef,
     style: {
       position: "absolute",
       top: "100%",

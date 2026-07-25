@@ -19,6 +19,8 @@ One event on a `Calendar`'s schedule. It is a child of `Calendar` and nothing el
 
 What "into the chip" means depends on the shape. A chip with no action panel *is* the button, and focus lands on it. A chip with one cannot be — a kebab nested inside a button is invalid HTML — so the chip is a `<div>`, the title and time move into a body `<button>` inside it, and that body is what Enter focuses. The distinction is invisible to a consumer and is written down because getting it wrong was a real defect: the ref `Calendar` focuses has to follow the focusable element, and when it did not, Enter on a paneled chip moved focus nowhere at all.
 
+**The kebab is reachable by keyboard, and by arrows rather than Tab.** With focus on a chip, `ArrowRight` steps to its kebab and `ArrowLeft` steps back. Tab is deliberately not the route: Tab has to *leave* a composite, and a tabbable kebab is precisely what would make `Calendar` stop being the single tab stop its `grid` binding claims. Activating the kebab opens the panel and moves focus into it — landing the user on the button they just pressed would leave them with no way in — and `Escape` closes the panel and returns focus to the kebab rather than letting it fall to the document.
+
 **`actionsEnabled` draws a kebab on the chip; `actions` is what the panel behind it holds.**
 
 ```jsx
@@ -55,19 +57,23 @@ rather than by a render suite — the measured RAM cost of a grid fixture is why
 Serve the tree with `bun run demos`, open
 `frameworks/react/components/display/calendar.card.html`, and check all of:
 
-1. Tab reaches the schedule ONCE. One more Tab leaves it — no chip, kebab or
-   panel button is a stop of its own.
+1. Tab reaches the schedule ONCE, and one more Tab leaves it. No chip and no
+   kebab is a stop of its own. An OPEN panel is the exception and is meant to
+   be: the controls in it are yours, Arena cannot silence markup it does not
+   own, and they exist in the tree only while the panel is open.
 2. From an hour cell, Enter steps into an event chip; Escape steps back out.
    Walk a chip with a panel as well as one without: they are different elements
    and only the browser tells them apart.
 3. On a chip with a panel, clicking the kebab opens the panel below the chip,
    and every control in it is clickable — check a SHORT event, 30 minutes or
-   less, not only a long one. **The kebab has no keyboard route today**: it is
-   out of the Tab sequence by design and nothing inside the chip moves focus to
-   it, so the panel is pointer-only. That is recorded in CLAUDE.md's *Known
-   debt*; this step checks the pointer path and the geometry, not a keyboard
-   one.
-4. Escape with the panel open CLOSES the panel and leaves focus on the chip. A
-   second Escape returns focus to the hour cell.
+   less, not only a long one. The geometry is what this step is for; the
+   keyboard route beside it is pinned by
+   `frameworks/react/test-dom/placement-and-branches.test.jsx`, because
+   `CalendarEvent` binds `button` rather than `grid` and a chip mounted alone
+   costs none of the RAM the grid rule exists to avoid.
+4. Escape with the panel open CLOSES the panel and puts focus back on the
+   kebab — not on the document, which is what would happen if nothing caught
+   the control being unmounted under it. A second Escape returns focus to the
+   hour cell.
 5. Arrow keys still move by day and hour from an hour cell, and clamp at all
    four edges — the first day, the last day, the first hour and the last.

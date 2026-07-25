@@ -566,20 +566,6 @@ scheduled for deletion the same week.
   one suite the grid rule excludes, so its now-exceptionless binding is an unverified
   claim. Both components are inside that rule and both are DOM-tested by hand. See the
   grid-rule entry below.
-- **`CalendarEvent`'s action panel is pointer-only: the kebab has no keyboard
-  route.** Arena draws it `tabStop={false}` so it cannot be a second stop inside a
-  grid that must have one, which is right; what is missing is the other half. Once
-  Enter has stepped focus into a chip, nothing moves focus from the chip body to the
-  kebab — Tab skips it (`tabindex="-1"`) and leaves the grid altogether, measured in
-  Chromium — so a keyboard user can reach the chip and never its actions. The
-  `grid` pattern does not require intra-cell movement, so `Calendar`'s exceptionless
-  binding stays true and no gate is failing; this is a capability gap, not a broken
-  claim. It is the same shape as `Tooltip` being unreachable by keyboard, one entry
-  down. Fixing it means deciding what moves focus into the chip's controls — APG's
-  answer for a cell holding several widgets is Tab within the cell, which would mean
-  `CalendarEvent` intercepting Tab while focus is inside it — and that is a behaviour
-  decision nobody has taken. `CalendarEvent.prompt.md`'s by-hand checklist says
-  plainly that its step 3 checks the pointer path only.
 - **The binding schema cannot express "this pattern applies conditionally".** `Tag`
   renders a real `<button>` only when `onRemove` is passed; without it — the common
   case — it is a plain `<span>` matching no interactive pattern at all. It is bound to

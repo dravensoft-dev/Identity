@@ -68,6 +68,52 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
      on: the body button when there is a panel, the chip root otherwise. */
   const bodyIsButton = Boolean(onClick) && hasPanel;
 
+  /* THE KEYBOARD ROUTE TO THE KEBAB, and why it is arrows rather than Tab.
+     Tab must LEAVE a composite -- that is what makes a grid one tab stop, and
+     `focus.roving` is the requirement Calendar would break by making the kebab
+     tabbable. Arrows are the grid's own vocabulary, and inside a chip they are
+     free: Calendar's onGridKeyDown only acts when the event target carries
+     role="gridcell", and a chip is not one. So ArrowRight steps from the chip
+     to its kebab and ArrowLeft steps back, the same shape APG gives a composite
+     whose cell holds more than one widget.
+
+     `focusableRef` is merged with the forwarded one rather than replacing it:
+     Calendar owns that ref (it is how Enter steps in from an hour cell), and
+     the arrows need to read the same node to step back to it. A ref can arrive
+     as a callback or as an object, so both are handled. */
+  const focusableRef = React.useRef(null);
+  const kebabWrapRef = React.useRef(null);
+  const panelRef = React.useRef(null);
+  const setFocusable = (node) => {
+    focusableRef.current = node;
+    if (typeof ref === 'function') ref(node);
+    else if (ref) ref.current = node;
+  };
+  /* The kebab is an Arena IconButton, which is a plain function component with
+     no forwardRef, so its <button> is reached through the wrapper it already
+     had rather than by widening IconButton's API for one caller. It is that
+     wrapper's first element child by construction -- the panel renders after
+     it. */
+  const kebabEl = () => kebabWrapRef.current && kebabWrapRef.current.firstElementChild;
+
+  /* Opened BY THE USER, not on mount: `defaultPanelOpen` starts a chip open in
+     tests, and focusing on mount would steal focus from whatever the page was
+     doing. The flag is set by the toggle and consumed once. */
+  const openedByUser = React.useRef(false);
+  React.useEffect(() => {
+    if (!panelOpen || !openedByUser.current) return;
+    openedByUser.current = false;
+    const panel = panelRef.current;
+    if (!panel) return;
+    /* Focus lands INSIDE the panel on open, which Arena's own Menu does not do
+       and which CLAUDE.md records as a defect of Menu rather than a convention
+       to copy. Without it a keyboard user opens a panel and is left standing on
+       the button that opened it, with no way in but Tab -- and Tab leaves the
+       grid. */
+    const first = panel.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (first) first.focus();
+  }, [panelOpen]);
+
   /* The chip's own body, hoisted so the branch below can place it in two
      different parents without duplicating it. */
   const body = (
@@ -81,7 +127,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
   );
 
   return (
-    <Tag ref={bodyIsButton ? undefined : ref}
+    <Tag ref={bodyIsButton ? undefined : setFocusable}
       /* Without a kebab the chip IS the button and nothing about this element
          changes. With one AND an onClick, every interactive attribute moves
          down to the body and the chip becomes an inert positioned box. With one
@@ -97,8 +143,27 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
            open panel would jump focus back to the hour cell AND leave the panel
            open behind it, which is the shape of bug that only ever shows up in
            a screen-reader session. stopPropagation is what keeps Calendar's own
-           Escape handler from seeing it. */
-        if (e.key === 'Escape' && panelOpen) { e.stopPropagation(); setPanelOpen(false); }
+           Escape handler from seeing it.
+
+           Focus comes back to the kebab on close, and it has to: by then focus
+           is usually on a control INSIDE the panel, and React is about to
+           unmount it. A focused element that disappears drops focus to <body>,
+           which is out of the grid entirely -- the user would be thrown to the
+           top of the page by pressing Escape. */
+        if (e.key === 'Escape' && panelOpen) {
+          e.stopPropagation();
+          setPanelOpen(false);
+          const kebab = kebabEl();
+          if (kebab) kebab.focus();
+          return;
+        }
+        const kebab = kebabEl();
+        if (!kebab) return;
+        if (e.key === 'ArrowRight' && e.target !== kebab) {
+          e.preventDefault(); e.stopPropagation(); kebab.focus();
+        } else if (e.key === 'ArrowLeft' && e.target === kebab && focusableRef.current) {
+          e.preventDefault(); e.stopPropagation(); focusableRef.current.focus();
+        }
       } : undefined}
       style={{ position: 'absolute', ...box,
         display: 'flex', flexDirection: 'column', gap: 0,
@@ -128,7 +193,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
       {hasPanel ? (
         <>
           {onClick ? (
-            <button type="button" ref={ref} tabIndex={tabIndex}
+            <button type="button" ref={setFocusable} tabIndex={tabIndex}
               onClick={(e) => { e.stopPropagation(); onClick(); }}
               aria-label={`${title}, ${dateLabel}, ${timeLabel}`}
               /* No `align-items` here, so it stays `stretch` and the title span
@@ -143,12 +208,12 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
               {body}
             </button>
           ) : body}
-          <span style={{ position: 'absolute', top: 0, right: 0 }}>
+          <span ref={kebabWrapRef} style={{ position: 'absolute', top: 0, right: 0 }}>
             <IconButton icon="ph-bold ph-dots-three-vertical" label="Actions" size="sm"
               tabStop={false}
-              onClick={() => setPanelOpen((o) => !o)} />
+              onClick={() => { openedByUser.current = !panelOpen; setPanelOpen((o) => !o); }} />
             {panelOpen && (
-              <span style={{ position: 'absolute', top: '100%', right: 0, zIndex: 1,
+              <span ref={panelRef} style={{ position: 'absolute', top: '100%', right: 0, zIndex: 1,
                 display: 'flex', gap: 'var(--sp-2)', padding: 'var(--sp-2)',
                 background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
                 borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)' }}>

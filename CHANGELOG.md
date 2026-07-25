@@ -330,11 +330,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   hard-cut rather than ellipsised. Now measured green on
   `calendar.card.html`: one tab stop in and one out, Enter/Escape into and out of both
   chip shapes, Escape closing the panel before it leaves, arrows clamping at all four
-  edges, and a 30-minute chip's panel fully hit-testable. **What does not pass is the
-  kebab by keyboard** — it is out of the Tab sequence by design and nothing moves
-  focus to it, so the panel is pointer-only; recorded in CLAUDE.md's *Known debt*
-  rather than fixed, because what should move focus there is a behaviour decision
-  nobody has taken. `Calendar` binds the `grid` pattern, so by the rule `bun run
+  edges, and a 30-minute chip's panel fully hit-testable. **The kebab is reachable by
+  keyboard too, and by arrows rather than Tab** — `ArrowRight` from a chip steps to its
+  kebab and `ArrowLeft` steps back. Tab is deliberately not the route: Tab has to leave
+  a composite, and a tabbable kebab is exactly what would stop `Calendar` being the
+  single tab stop its `grid` binding claims. Activating the kebab moves focus INTO the
+  panel, which Arena's own `Menu` does not do and which CLAUDE.md records as a defect
+  of `Menu` rather than a convention to copy; `Escape` closes and returns focus to the
+  kebab rather than dropping it to the document when the focused control unmounts. That
+  route is pinned by a render suite rather than by hand — `CalendarEvent` binds
+  `button`, not `grid`, so a chip mounted alone costs none of the RAM the grid rule
+  exists to avoid — and both halves were then measured in Chromium with real key
+  events. `Calendar` binds the `grid` pattern, so by the rule `bun run
   test:react-dom` adopted this cycle all of that is verified by a person on
   `calendar.card.html`, never by a render suite; the checklist lives in
   `CalendarEvent.prompt.md`'s "Verifying the panel by hand" section.
