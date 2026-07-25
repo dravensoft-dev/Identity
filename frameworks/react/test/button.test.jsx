@@ -62,10 +62,12 @@ test('Button drops a consumer style object and a consumer attribute, each indepe
 /* `tabStop` is the second global attribute Arena admits as a member, after
  * `id`, and it passes the same test api/README.md states for that one: the D1
  * flatten removed the capability, and there is no other surface a host can
- * write it on. An <arena-icon-button> host attribute would land on the custom
- * element, not on the <button> inside it.
+ * write it on. Button's half of that reason is its own: Angular delegates it to
+ * MatButton and there is no arena-button primitive -- behaviour-delegated.json
+ * says Arena "should not grow one" -- so the rule's escape hatch, that a
+ * consumer writes the attribute on the host, has no host to be written on.
  *
- * check:api reads the .d.ts and never opens the .jsx, so these two tests are
+ * check:api reads the .d.ts and never opens the .jsx, so these three tests are
  * the ONLY guard that the attribute is really written. */
 test('tabStop defaults to true and emits no tabindex at all', () => {
   const html = renderToStaticMarkup(<Button>Save</Button>);

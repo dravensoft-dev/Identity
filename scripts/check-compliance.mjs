@@ -35,8 +35,9 @@
  * frameworks/react/test/calendar.test.jsx: a grid is one tab stop, and that
  * count is a property of the markup rather than of behaviour.
  *
- * COVERED IS DELIBERATELY PARTIAL and grows one component at a time -- six of
- * the sixty-four bindings in the tree today. This gate never demands totality: a
+ * COVERED IS DELIBERATELY PARTIAL and grows one component at a time -- run the
+ * gate for the live pair rather than trusting a figure written here, which has
+ * drifted before. This gate never demands totality: a
  * gate that required a suite per binding on day one would have been switched off
  * within a week, and a switched-off gate guards nothing. It asserts only that
  * every claim in COVERED is TRUE, in both directions -- an entry naming a

@@ -62,7 +62,7 @@ test('IconButton drops a consumer style object and a consumer attribute, each in
  * write it on. An <arena-icon-button> host attribute would land on the custom
  * element, not on the <button> inside it.
  *
- * check:api reads the .d.ts and never opens the .jsx, so these two tests are
+ * check:api reads the .d.ts and never opens the .jsx, so these three tests are
  * the ONLY guard that the attribute is really written. */
 test('tabStop defaults to true and emits no tabindex at all', () => {
   const html = renderToStaticMarkup(<IconButton icon="ph-bold ph-plus" label="Add" />);

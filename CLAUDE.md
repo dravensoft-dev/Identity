@@ -246,8 +246,9 @@ because those suites prove those components render correctly server-side.
 `frameworks/react/test-dom/` registers `@happy-dom/global-registrator`, which
 installs globals **process-wide**, and `bun test` shares one process across every
 path a single invocation matches. So a DOM registered in the first directory's
-process would quietly change what its thirty-eight suites prove with nothing
-failing to say so, and it would also reach `frameworks/angular/test`, whose files
+process would quietly change what its suites prove with nothing
+failing to say so — count them with `bun run test:react` rather than trusting a
+figure written here, which drifts with every component that gains a test — and it would also reach `frameworks/angular/test`, whose files
 register a DOM themselves and throw on the second registration. `testStep()` in
 `scripts/check-all.mjs` therefore runs two `bun test` invocations, and
 `check-all.test.mjs` asserts that array by literal value — a change to one is a
@@ -565,6 +566,20 @@ scheduled for deletion the same week.
   one suite the grid rule excludes, so its now-exceptionless binding is an unverified
   claim. Both components are inside that rule and both are DOM-tested by hand. See the
   grid-rule entry below.
+- **`CalendarEvent`'s action panel is pointer-only: the kebab has no keyboard
+  route.** Arena draws it `tabStop={false}` so it cannot be a second stop inside a
+  grid that must have one, which is right; what is missing is the other half. Once
+  Enter has stepped focus into a chip, nothing moves focus from the chip body to the
+  kebab — Tab skips it (`tabindex="-1"`) and leaves the grid altogether, measured in
+  Chromium — so a keyboard user can reach the chip and never its actions. The
+  `grid` pattern does not require intra-cell movement, so `Calendar`'s exceptionless
+  binding stays true and no gate is failing; this is a capability gap, not a broken
+  claim. It is the same shape as `Tooltip` being unreachable by keyboard, one entry
+  down. Fixing it means deciding what moves focus into the chip's controls — APG's
+  answer for a cell holding several widgets is Tab within the cell, which would mean
+  `CalendarEvent` intercepting Tab while focus is inside it — and that is a behaviour
+  decision nobody has taken. `CalendarEvent.prompt.md`'s by-hand checklist says
+  plainly that its step 3 checks the pointer path only.
 - **The binding schema cannot express "this pattern applies conditionally".** `Tag`
   renders a real `<button>` only when `onRemove` is passed; without it — the common
   case — it is a plain `<span>` matching no interactive pattern at all. It is bound to
@@ -682,8 +697,8 @@ scheduled for deletion the same week.
   (`Alert:angular`), and `validateCoverage()` resolves that layer's binding alone; the sibling layer
   is simply uncovered, which the gate is silent about by charter but no longer reports as satisfied.
   A key without a `:layer` suffix is rejected, so the old name-only shape cannot creep back.
-- **Seven exceptions are now only as true as the behavioural verdict a suite
-  declares for them.** `ActivityFeed`'s `posinset`/`busy`, `Tag`'s `disabled`,
+- **Seven exceptions rest on a `behavioural` verdict no suite in either layer
+  declares.** `ActivityFeed`'s `posinset`/`busy`, `Tag`'s `disabled`,
   `Input`'s and `Textarea`'s `readonly`, and Angular `activity-feed`'s
   `posinset`/`busy` are requirements no single element can decide from the DOM, so
   the suite asserts each by acting on the tree and records the verdict in

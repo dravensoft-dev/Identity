@@ -324,8 +324,8 @@ no React types package and runs no `tsc` over `frameworks/react/`, so the enumer
 from the specification and checked by the audit, never resolved by a compiler.
 
 **Two global attributes are members, not one, and both pass the same test.** The rule above
-stands for the rest — `className`, `dir`, ARIA and `data-*` are not members, because in Angular
-a consumer writes those on the host directly — but `id` and `tabStop` each took a capability the
+stands for the rest — `className`, `dir`, `tabIndex`, ARIA and `data-*` are not members, because
+in Angular a consumer writes those on the host directly — but `id` and `tabStop` each took a capability the
 flatten removed rather than take a global attribute the host can write elsewhere, and that is
 what separates them from every other one.
 
@@ -337,15 +337,18 @@ consumer's hands, and taken with it the only path to an external `<label>`, an
 never required. A component that generates no id has no such gap and adds no such member.
 
 `tabStop` is a member on `Button` and `IconButton` because the rule's own justification — a
-consumer writes it on the host directly — does not reach either. `IconButton` has no host to
-reach at all: it is React-only, delegated to `matIconButton` on the Angular side, with no
-`arena-icon-button` primitive. And for a component whose focusable element is a **descendant**
+consumer writes it on the host directly — does not reach either. Neither has a host to reach at
+all: both are React-only, delegated to `matIconButton` and `MatButton` on the Angular side, with
+no `arena-icon-button` and no `arena-button` primitive — and
+`frameworks/angular/behaviour-delegated.json`'s own entry says Arena "should not grow one".
+And for a component whose focusable element is a **descendant**
 of its host rather than the host itself, the justification fails even where a host exists —
 `tabindex="-1"` written on `<arena-icon-button>` would land on the custom element, not on the
 `<button>` inside it, and the button would stay exactly as reachable as before. That makes
-`tabIndex` a member for exactly these two components, and confirms it stays off the list above
-for everyone else, where a component's root is its own focusable element and the host escape
-genuinely applies. The member is a boolean rather than a raw `tabIndex?: number` — `-1` is the
+**`tabStop`** a member for exactly these two components, and confirms that `tabIndex` itself
+stays off the list above for everyone — including these two, whose member is `tabStop` and never
+the attribute. Everywhere else a component's root is its own focusable element and the host
+escape genuinely applies. The member is a boolean rather than a raw `tabIndex?: number` — `-1` is the
 only value the problem needs, and a numeric member would legalise a positive tab order, which
 breaks document order. `true` writes nothing, since a native `<button>` is already reachable;
 `false` writes `tabindex="-1"` and leaves the control programmatically focusable.

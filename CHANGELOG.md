@@ -307,18 +307,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reason `Alert.dismissible` and `Toast.dismissible` already record: Angular cannot
   detect whether an `ng-content` was filled), and `actions` is the panel's content,
   rendered only while the panel is open. Both default closed, which is what keeps
-  `Calendar`'s schedule at **one** page-level tab stop with the panel present: the
-  kebab and the panel's own controls are reachable only from inside the grid's
-  existing Enter/Escape path, never as stops of their own. **The keyboard path this
-  depends on — kebab reachability, that activating it opens the panel, that the first
-  Escape closes the panel and returns focus to the chip while a second Escape returns
-  it to the hour cell, and that the schedule still measures as one tab stop with a
-  panel open — has not been driven by hand.** No agent in this plan operated a
-  keyboard in a browser; `Calendar` binds the `grid` pattern, so by the rule `bun run
-  test:react-dom` adopted this cycle it is verified by a person on
-  `calendar.card.html`, never by a render suite. The five-point checklist is written
-  into `CalendarEvent.prompt.md`'s "Verifying the panel by hand" section and the pass
-  is owed to the maintainer.
+  `Calendar`'s schedule at **one** page-level tab stop with the panel present: neither
+  the kebab nor the panel's own controls is ever a stop of its own. The keyboard path
+  was driven in a real browser before release, and it is worth saying what that found,
+  because two defects were invisible to every other guard. A paneled chip is a `<div>`
+  with the interactive attributes on a body `<button>` inside it, and the ref
+  `Calendar` focuses stayed on the `<div>` — so **Enter on a chip with a panel moved
+  focus nowhere**, while the static one-tab-stop count passed *because of* the defect
+  and happy-dom's `focus()`, which focuses anything, would have passed too. And the
+  chip's own `overflow: hidden` clipped the panel it contains, so on any event under
+  roughly 110 minutes **the panel opened invisible and unclickable**. Both are fixed:
+  the ref follows whichever element carries the roving `tabindex`, and the chip lifts
+  its clip while the panel is open and only then. Now measured green on
+  `calendar.card.html`: one tab stop in and one out, Enter/Escape into and out of both
+  chip shapes, Escape closing the panel before it leaves, arrows clamping at all four
+  edges, and a 30-minute chip's panel fully hit-testable. **What does not pass is the
+  kebab by keyboard** — it is out of the Tab sequence by design and nothing moves
+  focus to it, so the panel is pointer-only; recorded in CLAUDE.md's *Known debt*
+  rather than fixed, because what should move focus there is a behaviour decision
+  nobody has taken. `Calendar` binds the `grid` pattern, so by the rule `bun run
+  test:react-dom` adopted this cycle all of that is verified by a person on
+  `calendar.card.html`, never by a render suite; the checklist lives in
+  `CalendarEvent.prompt.md`'s "Verifying the panel by hand" section.
 
 ### Changed
 
