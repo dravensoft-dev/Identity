@@ -2,9 +2,9 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-export function Checkbox({ checked = false, onChange, label, disabled = false, style, ...rest }) {
+export function Checkbox({ checked = false, onChange, label, disabled = false, required = false, name, value }) {
   return React.createElement("label", {
-    style: { display: "inline-flex", alignItems: "center", gap: "calc(var(--sp-1) * 2.5)", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1, ...style }
+    style: { display: "inline-flex", alignItems: "center", gap: "calc(var(--sp-1) * 2.5)", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1 }
   }, React.createElement("span", {
     style: {
       width: "calc(var(--sp-1) * 5)",
@@ -32,9 +32,11 @@ export function Checkbox({ checked = false, onChange, label, disabled = false, s
   }, label), React.createElement("input", {
     type: "checkbox",
     checked,
-    onChange,
+    name,
+    value,
+    required,
+    onChange: (e) => onChange && onChange(e.target.checked),
     disabled,
-    style: { position: "absolute", opacity: 0, width: 0, height: 0 },
-    ...rest
+    style: { position: "absolute", opacity: 0, width: 0, height: 0 }
   }));
 }

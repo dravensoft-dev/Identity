@@ -43,7 +43,7 @@ function Demo(){
       </div>
       <div className="sub">Checkbox · Switch</div>
       <div className="row">
-        <Checkbox checked={chk} onChange={e=>setChk(e.target.checked)} label="Notify on approval" />
+        <Checkbox checked={chk} onChange={setChk} label="Notify on approval" />
         <Switch state={sw} onFuncOn={()=>setSw(true)} onFuncOff={()=>setSw(false)} label="Automatic deployment" />
       </div>
     </div>

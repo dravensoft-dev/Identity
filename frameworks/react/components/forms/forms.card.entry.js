@@ -100,7 +100,7 @@ function Demo() {
     className: "row"
   }, React.createElement(Checkbox, {
     checked: chk,
-    onChange: (e) => setChk(e.target.checked),
+    onChange: setChk,
     label: "Notify on approval"
   }), React.createElement(Switch, {
     state: sw,
