@@ -323,15 +323,32 @@ component's `.prompt.md` says which. And there is no type to read it off: this r
 no React types package and runs no `tsc` over `frameworks/react/`, so the enumeration is transcribed
 from the specification and checked by the audit, never resolved by a compiler.
 
-**`id` is the one global attribute that is a member, and only where the component generates one.**
-The rule above stands — `className`, `dir`, `tabIndex`, ARIA and `data-*` are not members — but a
-component that *derives* an id from another member and wires its own `<label for>` to it has taken
-that attribute out of the consumer's hands, and taken with it the only path to an external
-`<label>`, an `aria-describedby`, or a form library that needs to address the field by name. That
-is a capability the flatten removed rather than a global attribute the host can write elsewhere,
-which is what separates it from the rest. `Input` and `Textarea` declare it; the generated value
-stays the fallback, so the member is `id?: string` and never required. A component that generates
-no id has no such gap and adds no such member.
+**Two global attributes are members, not one, and both pass the same test.** The rule above
+stands for the rest — `className`, `dir`, ARIA and `data-*` are not members, because in Angular
+a consumer writes those on the host directly — but `id` and `tabStop` each took a capability the
+flatten removed rather than take a global attribute the host can write elsewhere, and that is
+what separates them from every other one.
+
+`id` is a member only where the component generates one. A component that *derives* an id from
+another member and wires its own `<label for>` to it has taken that attribute out of the
+consumer's hands, and taken with it the only path to an external `<label>`, an
+`aria-describedby`, or a form library that needs to address the field by name. `Input` and
+`Textarea` declare it; the generated value stays the fallback, so the member is `id?: string` and
+never required. A component that generates no id has no such gap and adds no such member.
+
+`tabStop` is a member on `Button` and `IconButton` because the rule's own justification — a
+consumer writes it on the host directly — does not reach either. `IconButton` has no host to
+reach at all: it is React-only, delegated to `matIconButton` on the Angular side, with no
+`arena-icon-button` primitive. And for a component whose focusable element is a **descendant**
+of its host rather than the host itself, the justification fails even where a host exists —
+`tabindex="-1"` written on `<arena-icon-button>` would land on the custom element, not on the
+`<button>` inside it, and the button would stay exactly as reachable as before. That makes
+`tabIndex` a member for exactly these two components, and confirms it stays off the list above
+for everyone else, where a component's root is its own focusable element and the host escape
+genuinely applies. The member is a boolean rather than a raw `tabIndex?: number` — `-1` is the
+only value the problem needs, and a numeric member would legalise a positive tab order, which
+breaks document order. `true` writes nothing, since a native `<button>` is already reachable;
+`false` writes `tabindex="-1"` and leaves the control programmatically focusable.
 
 **A tooltip's bubble is a primitive, not a slot.** The same R2 reasoning the single-icon convention
 uses: Arena draws the bubble, the consumer names the text. It also resolves a collision the binding
