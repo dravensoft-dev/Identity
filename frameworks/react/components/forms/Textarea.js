@@ -11,15 +11,15 @@ export function Textarea({
   maxLength,
   counter = false,
   disabled = false,
+  readOnly = false,
   autoResize = false,
-  style,
-  id,
+  placeholder,
+  name,
   value,
-  onChange,
-  ...rest
+  onChange
 }) {
   const [focus, setFocus] = useState(false);
-  const taId = id || (label ? "ta-" + label.replace(/\s+/g, "-").toLowerCase() : undefined);
+  const taId = label ? "ta-" + label.replace(/\s+/g, "-").toLowerCase() : undefined;
   const borderColor = error ? "var(--danger)" : focus ? "var(--gold)" : "var(--color-base-300)";
   const ring = error ? "0 0 0 var(--focus-width) var(--danger-soft)" : focus ? "0 0 0 var(--focus-width) var(--gold-soft)" : "none";
   const len = typeof value === "string" ? value.length : 0;
@@ -30,7 +30,7 @@ export function Textarea({
     }
   };
   return React.createElement("div", {
-    style: { display: "flex", flexDirection: "column", gap: "calc(var(--sp-1) * 1.5)", ...style }
+    style: { display: "flex", flexDirection: "column", gap: "calc(var(--sp-1) * 1.5)" }
   }, label && React.createElement("label", {
     htmlFor: taId,
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-xs)", letterSpacing: "var(--ls-field-label)", textTransform: "uppercase", color: "var(--mute)" }
@@ -42,13 +42,16 @@ export function Textarea({
     maxLength,
     disabled,
     required,
+    readOnly,
+    placeholder,
+    name,
     "aria-invalid": !!error,
     value,
     onFocus: () => setFocus(true),
     onBlur: () => setFocus(false),
     onChange: (e) => {
       grow(e);
-      onChange && onChange(e);
+      onChange && onChange(e.target.value);
     },
     style: {
       width: "100%",
@@ -65,8 +68,7 @@ export function Textarea({
       outline: "none",
       opacity: disabled ? 0.5 : 1,
       transition: "border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)"
-    },
-    ...rest
+    }
   }), React.createElement("div", {
     style: { display: "flex", justifyContent: "space-between", gap: "calc(var(--sp-1) * 3)" }
   }, error ? React.createElement("span", {

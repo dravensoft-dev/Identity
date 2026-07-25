@@ -38,7 +38,7 @@ function Demo() {
     maxLength: 280,
     counter: true,
     value: notes,
-    onChange: (e) => setNotes(e.target.value),
+    onChange: setNotes,
     hint: "Attached to the delivery log."
   })));
 }

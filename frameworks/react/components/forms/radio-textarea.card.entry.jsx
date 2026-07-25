@@ -18,7 +18,7 @@ function Demo(){
       </div>
       <div style={{width:'calc(var(--sp-1) * 80)'}}>
         <Textarea label="Deployment notes" rows={5} maxLength={280} counter
-          value={notes} onChange={e=>setNotes(e.target.value)}
+          value={notes} onChange={setNotes}
           hint="Attached to the delivery log." />
       </div>
     </div>
