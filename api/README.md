@@ -483,6 +483,20 @@ enum), R4 by the reader recognising platform types by name and reporting them, R
 member carrying exactly one `form` and by the reader classifying a mixed union as a union
 rather than as any single form.
 
+**An event's `payload` resolves as one of exactly four things, and stating it as four
+rather than as "a declared type" is the point.** `validateContract` accepts a payload that
+is (1) a primitive type name — `"string"`, `"number"`, `"boolean"`; (2) the form name
+`"consumerData"`; (3) the name of an **object** `api/types/` declares; or (4) the name of an
+**enum** `api/types/` declares. Anything else is reported — a name `api/types/` does not
+declare at all, and an object name used where the fourth arm does not apply. The four exist
+because `classify()` produces all four from a real signature: it reduces
+`(v: string) => void`, `(v: Crumb) => void` and `(v: LogoSize) => void` alike, so a contract
+that could state only some of them was a gap between what the reader reads and what the
+contract can say, not a rule the contract was enforcing. Arms 1–3 were admitted when the six
+form controls' `change` needed to carry a value; the enum arm followed, because an enum
+payload had read as *"an enum, used where an object belongs"* while the reader read the
+arrow without complaint.
+
 ### What is mechanical about the ninth form
 
 All three of its guarantees are, which is what separates it from R2 and R3 and from the eighth
