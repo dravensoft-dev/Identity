@@ -1,0 +1,14 @@
+{
+  "component": "SideNav",
+  "description": "The sidebar's navigation list -- the list alone, not the frame around it.",
+  "api": {
+    "items": { "form": "array", "of": "SideNavItem", "required": true,
+               "description": "The destinations, in order. Required, and guarded at runtime: a navigation landmark with no destinations is a landmark over nothing." },
+    "active": { "form": "primitive", "type": "string",
+                "description": "The `id` of the current destination. Marks that item aria-current=\"page\", and no item is marked when it names none of them." },
+    "ariaLabel": { "form": "primitive", "type": "string", "required": true,
+                   "description": "Names this navigation landmark. Required, and guarded at runtime rather than defaulted: the navigation pattern asks each landmark on a page for a UNIQUE name, and a constant default satisfies the existence half while two sidebars on one page stay indistinguishable -- which is the defect Pagination.behaviour.json's roles.label exception records for the sibling component. Nothing can derive it either; what a nav is FOR is editorial. Say what it navigates -- \"Primary\", \"Project settings\" -- the Table.label and SegmentedControl.ariaLabel shape." },
+    "nav": { "form": "event", "payload": "SideNavItem",
+             "description": "An item was activated, carrying that item alone. The native MouseEvent is not forwarded, so a listener cannot call preventDefault() on the anchor's own navigation -- ctrl-click, middle-click and open-in-new-tab still work for a consumer who wires nothing; intercepting a plain click to substitute SPA routing belongs at the router (routerLink, Link), not here." }
+  }
+}

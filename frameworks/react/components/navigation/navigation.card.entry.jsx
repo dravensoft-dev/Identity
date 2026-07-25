@@ -19,12 +19,16 @@ function Demo(){const[v,setV]=React.useState('Overview');const[range,setRange]=R
     <Breadcrumbs items={[{label:'Projects',href:'#'},{label:'Client Portal',href:'#'},{label:'Deployments'}]} />
   </div>
   <div className="sub">SideNav — anchors navigate, the active item is aria-current</div>
-  <div className="row" style={{width:'var(--layout-sidebar)'}}>
-    <SideNav ariaLabel="Primary" active="deploys" style={{width:'100%'}}
+  {/* Not `.row`: that class is a flex container, where the nav sized to its own
+      content and needed a width of its own to fill the sidebar. `style` is gone
+      under R4, so the wrapper is a plain block and the nav — itself a flex
+      container, so block-level in normal flow — fills it with no member at all. */}
+  <div style={{width:'var(--layout-sidebar)',marginBottom:'var(--sp-4)'}}>
+    <SideNav ariaLabel="Primary" active="deploys"
       items={[
-        {id:'dashboard',icon:<i className="ph-bold ph-squares-four"/>,label:'Projects',href:'#projects'},
-        {id:'deploys',icon:<i className="ph-bold ph-rocket-launch"/>,label:'Deployments',href:'#deploys'},
-        {id:'settings',icon:<i className="ph-bold ph-gear-six"/>,label:'Settings'},
+        {id:'dashboard',icon:'ph-bold ph-squares-four',label:'Projects',href:'#projects'},
+        {id:'deploys',icon:'ph-bold ph-rocket-launch',label:'Deployments',href:'#deploys'},
+        {id:'settings',icon:'ph-bold ph-gear-six',label:'Settings'},
       ]} />
   </div>
   <div className="sub">PageHead</div>

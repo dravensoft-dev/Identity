@@ -6,26 +6,13 @@ import { AppLogo } from "../../components/brand/AppLogo.js";
 import { Avatar } from "../../components/display/Avatar.js";
 import { IconButton } from "../../components/forms/IconButton.js";
 import { Switch } from "../../components/forms/Switch.js";
-import { Icon } from "./Icon.js";
 import { PageHead } from "../../components/navigation/PageHead.js";
 import { SideNav } from "../../components/navigation/SideNav.js";
 const NAV = [
-  { id: "dashboard", icon: React.createElement(Icon, {
-    name: "grid",
-    size: "var(--icon-lg)"
-  }), label: "Projects", href: "#projects" },
-  { id: "deploys", icon: React.createElement(Icon, {
-    name: "rocket",
-    size: "var(--icon-lg)"
-  }), label: "Deployments", href: "#deploys" },
-  { id: "activity", icon: React.createElement(Icon, {
-    name: "activity",
-    size: "var(--icon-lg)"
-  }), label: "Activity", href: "#activity" },
-  { id: "settings", icon: React.createElement(Icon, {
-    name: "settings",
-    size: "var(--icon-lg)"
-  }), label: "Settings", href: "#settings" }
+  { id: "dashboard", icon: "ph-bold ph-squares-four", label: "Projects", href: "#projects" },
+  { id: "deploys", icon: "ph-bold ph-rocket-launch", label: "Deployments", href: "#deploys" },
+  { id: "activity", icon: "ph-bold ph-pulse", label: "Activity", href: "#activity" },
+  { id: "settings", icon: "ph-bold ph-gear-six", label: "Settings", href: "#settings" }
 ];
 const THEME_STORAGE_KEY = "draven-theme";
 const isDarkNow = () => typeof document !== "undefined" && !document.documentElement.classList.contains("arena-light");
@@ -66,11 +53,7 @@ export function Shell({ active = "dashboard", onNav, title, actions, children })
     ariaLabel: "Primary",
     items: NAV,
     active,
-    onNav: (id, event) => {
-      event.preventDefault();
-      if (onNav)
-        onNav(id);
-    }
+    onNav: (item) => onNav?.(item.id)
   }), React.createElement("div", {
     style: { marginTop: "auto", display: "flex", alignItems: "center", gap: "calc(var(--sp-1) * 2.5)", padding: "calc(var(--sp-1) * 3) calc(var(--sp-1) * 2) 0", borderTop: "var(--bw) solid var(--color-base-300)" }
   }, React.createElement(Avatar, {

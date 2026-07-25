@@ -171,6 +171,18 @@ export interface SelectOption {
 /** For a series that IS a state (error rate, pass/fail) rather than an identity. A chart carries identity or meaning, never both — passing tone alongside slot/slots warns in development and tone wins. */
 export type SeriesTone = 'success' | 'warning' | 'danger' | 'info';
 
+/** One destination in a SideNav. `href` is what decides which element the item renders, so it is the field to read first. */
+export interface SideNavItem {
+  /** Identifies the destination. `active` names one of these, and the item whose `id` matches is the one marked aria-current="page". */
+  id: string;
+  /** What the item reads. */
+  label: string;
+  /** A Phosphor class name drawn before the label -- Arena draws the <i>, the consumer names the glyph. */
+  icon?: string;
+  /** Present => the item renders an <a>; absent => a <button>. A control that navigates must be a link -- openable in a new tab, address copyable, announced as a link. An item that only changes local state is a button. */
+  href?: string;
+}
+
 /** The shape the placeholder reserves: a single text line, a stack of lines, a block, or a circle. */
 export type SkeletonVariant = 'text' | 'line' | 'block' | 'circle';
 

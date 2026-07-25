@@ -2,16 +2,19 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-export function SideNav({ items = [], active, onNav, ariaLabel = "Primary", style, ...rest }) {
+export function SideNav({ items, active, ariaLabel, onNav }) {
+  if (items == null)
+    throw new Error("SideNav: `items` is required");
+  if (ariaLabel == null)
+    throw new Error("SideNav: `ariaLabel` is required");
   return React.createElement("nav", {
     "aria-label": ariaLabel,
-    style: { display: "flex", flexDirection: "column", gap: "var(--sp-1)", ...style },
-    ...rest
+    style: { display: "flex", flexDirection: "column", gap: "var(--sp-1)" }
   }, items.map((item) => {
     const on = item.id === active;
     const shared = {
       "aria-current": on ? "page" : undefined,
-      onClick: (event) => onNav && onNav(item.id, event),
+      onClick: () => onNav && onNav(item),
       style: {
         display: "flex",
         alignItems: "center",
@@ -29,14 +32,19 @@ export function SideNav({ items = [], active, onNav, ariaLabel = "Primary", styl
         fontWeight: on ? "var(--fw-semibold)" : "var(--fw-medium)"
       }
     };
+    const glyph = item.icon ? React.createElement("i", {
+      className: item.icon,
+      "aria-hidden": "true",
+      style: { fontSize: "var(--icon-lg)", display: "inline-flex" }
+    }) : null;
     return item.href ? React.createElement("a", {
       key: item.id,
       href: item.href,
       ...shared
-    }, item.icon, item.label) : React.createElement("button", {
+    }, glyph, item.label) : React.createElement("button", {
       key: item.id,
       type: "button",
       ...shared
-    }, item.icon, item.label);
+    }, glyph, item.label);
   }));
 }
