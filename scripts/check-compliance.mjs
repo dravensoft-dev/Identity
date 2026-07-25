@@ -50,9 +50,12 @@
  * WHAT A GREEN RUN DOES NOT SAY, stated plainly because three other files in
  * this repo had to learn to say it: that any covered component is accessible. A
  * suite can assert that all four of a component's declared exceptions are still
- * true, pass, and leave the component exactly as broken as it was -- Table
- * implements no keyboard navigation at all and would pass a suite written
- * against its binding today. A green run is a claim about the honesty
+ * true, pass, and leave the component exactly as broken as it was -- Tabs
+ * declares an exception against every one of the `tabs` pattern's eight
+ * requirements (no role=tablist, no role=tab, no aria-selected, no roving tab
+ * stop, no arrow keys, no panel wiring at all) and would pass a suite written
+ * against its binding today, because every one of those exceptions is true.
+ * A green run is a claim about the honesty
  * of the declarations. It is never an accessibility claim, exactly as
  * check:behaviour's own header says of coverage.
  */
