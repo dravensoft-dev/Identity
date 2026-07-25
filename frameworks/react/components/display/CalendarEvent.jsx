@@ -23,7 +23,7 @@ import { IconButton } from '../forms/IconButton.jsx';
  * take that route away silently. */
 export const CalendarEvent = React.forwardRef(function CalendarEvent({
   id, title, start, end, colorId, onClick, actionsEnabled = false, actions,
-  box, color, timeLabel, dateLabel, showTime, tabIndex,
+  box, color, timeLabel, dateLabel, showTime, tabIndex, defaultPanelOpen,
 }, ref) {
   /* Required-ness governs runtime, not only the declaration (api/README.md).
      Inside a Calendar an event with an unreadable start/end is dropped with a
@@ -41,6 +41,13 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
      chip in the tree today renders byte-identically. */
   const hasPanel = actionsEnabled && Boolean(actions);
   const Tag = onClick && !hasPanel ? 'button' : 'div';
+
+  /* `defaultPanelOpen` is a TEST SEAM and deliberately not a contract member:
+     renderToStaticMarkup cannot click, and the alternative was leaving the open
+     branch unasserted entirely. It is not in CalendarEvent.d.ts and not in the
+     contract, so check:api never sees it -- the same status as the props
+     Calendar injects. */
+  const [panelOpen, setPanelOpen] = React.useState(Boolean(defaultPanelOpen));
 
   /* The chip's own body, hoisted so the branch below can place it in two
      different parents without duplicating it. */
@@ -63,6 +70,14 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
       tabIndex={hasPanel ? undefined : tabIndex}
       onClick={onClick && !hasPanel ? (e) => { e.stopPropagation(); onClick(); } : undefined}
       aria-label={onClick && !hasPanel ? `${title}, ${dateLabel}, ${timeLabel}` : undefined}
+      onKeyDown={hasPanel ? (e) => {
+        /* Closing takes priority over leaving. Without this, Escape inside an
+           open panel would jump focus back to the hour cell AND leave the panel
+           open behind it, which is the shape of bug that only ever shows up in
+           a screen-reader session. stopPropagation is what keeps Calendar's own
+           Escape handler from seeing it. */
+        if (e.key === 'Escape' && panelOpen) { e.stopPropagation(); setPanelOpen(false); }
+      } : undefined}
       style={{ position: 'absolute', ...box,
         display: 'flex', flexDirection: 'column', gap: 0, overflow: 'hidden',
         textAlign: 'left', padding: 'calc(var(--sp-1) * 1) calc(var(--sp-1) * 1.5)',
@@ -84,7 +99,16 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
           ) : body}
           <span style={{ position: 'absolute', top: 0, right: 0 }}>
             <IconButton icon="ph-bold ph-dots-three-vertical" label="Actions" size="sm"
-              tabStop={false} onClick={() => {}} />
+              tabStop={false}
+              onClick={() => setPanelOpen((o) => !o)} />
+            {panelOpen && (
+              <span style={{ position: 'absolute', top: '100%', right: 0, zIndex: 1,
+                display: 'flex', gap: 'var(--sp-2)', padding: 'var(--sp-2)',
+                background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
+                borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)' }}>
+                {actions}
+              </span>
+            )}
           </span>
         </>
       ) : body}

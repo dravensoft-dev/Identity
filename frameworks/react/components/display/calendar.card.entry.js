@@ -49,7 +49,15 @@ function Demo() {
     start: e.start,
     end: e.end,
     colorId: e.colorId,
-    onClick: () => setPicked(e.title)
+    onClick: () => setPicked(e.title),
+    ...e.id === "m1" || e.id === "m7" ? {
+      actionsEnabled: true,
+      actions: React.createElement(Button, {
+        size: "sm",
+        variant: "ghost",
+        icon: "ph-bold ph-trash"
+      }, "Delete")
+    } : null
   }))));
 }
 createRoot(document.getElementById("root")).render(React.createElement(Demo, null));

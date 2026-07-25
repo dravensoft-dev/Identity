@@ -27,3 +27,20 @@ One event on a `Calendar`'s schedule. It is a child of `Calendar` and nothing el
 - Don't render one outside a `Calendar`. It has no position of its own and no useful meaning without the grid around it.
 - Don't reach past `colorId: 8`. There are eight ramp slots and they never cycle; a ninth entity wrapping to slot 1 claims two different things are the same thing.
 - Don't reach for `style` or `className`. It takes neither, the same as every other Arena component under the API contract.
+
+## Verifying the panel by hand
+
+`Calendar` binds the `grid` pattern, so by Arena's rule it is DOM-tested by hand
+rather than by a render suite — the measured RAM cost of a grid fixture is why.
+Serve the tree with `bun run demos`, open
+`frameworks/react/components/display/calendar.card.html`, and check all of:
+
+1. Tab reaches the schedule ONCE. One more Tab leaves it — no chip, kebab or
+   panel button is a stop of its own.
+2. From an hour cell, Enter steps into an event chip; Escape steps back out.
+3. On a chip with a panel, the kebab is reachable and activating it opens the
+   panel below the chip.
+4. Escape with the panel open CLOSES the panel and leaves focus on the chip. A
+   second Escape returns focus to the hour cell.
+5. Arrow keys still move by day and hour from an hour cell, and clamp at all
+   four edges.

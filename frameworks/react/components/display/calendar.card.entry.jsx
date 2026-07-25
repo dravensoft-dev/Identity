@@ -47,9 +47,18 @@ function Demo(){
       actions={<Button size="sm" variant="secondary" icon="ph-bold ph-plus">New event</Button>}
       dayEnd="18:00"
     >
+      {/* Two of the fourteen carry an action panel, so the card shows both
+          shapes side by side: a plain chip and one with a kebab. The kebab
+          sits inside the chip, which is absolutely positioned, so it cannot
+          grow the card's content box; the open panel overflows the chip
+          deliberately and is not part of layout either. */}
       {events.map((e) => (
         <CalendarEvent key={e.id} id={e.id} title={e.title} start={e.start} end={e.end}
-          colorId={e.colorId} onClick={() => setPicked(e.title)} />
+          colorId={e.colorId} onClick={() => setPicked(e.title)}
+          {...(e.id === 'm1' || e.id === 'm7' ? {
+            actionsEnabled: true,
+            actions: <Button size="sm" variant="ghost" icon="ph-bold ph-trash">Delete</Button>,
+          } : null)} />
       ))}
     </Calendar>
   </div>);

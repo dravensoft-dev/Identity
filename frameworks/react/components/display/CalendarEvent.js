@@ -17,7 +17,8 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
   timeLabel,
   dateLabel,
   showTime,
-  tabIndex
+  tabIndex,
+  defaultPanelOpen
 }, ref) {
   if (!id)
     throw new Error("CalendarEvent: `id` is required");
@@ -29,6 +30,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
     throw new Error("CalendarEvent: `end` is required");
   const hasPanel = actionsEnabled && Boolean(actions);
   const Tag = onClick && !hasPanel ? "button" : "div";
+  const [panelOpen, setPanelOpen] = React.useState(Boolean(defaultPanelOpen));
   const body = React.createElement(React.Fragment, null, React.createElement("span", {
     style: {
       fontSize: "var(--dz-text-sm)",
@@ -50,6 +52,12 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
       onClick();
     } : undefined,
     "aria-label": onClick && !hasPanel ? `${title}, ${dateLabel}, ${timeLabel}` : undefined,
+    onKeyDown: hasPanel ? (e) => {
+      if (e.key === "Escape" && panelOpen) {
+        e.stopPropagation();
+        setPanelOpen(false);
+      }
+    } : undefined,
     style: {
       position: "absolute",
       ...box,
@@ -97,6 +105,20 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
     label: "Actions",
     size: "sm",
     tabStop: false,
-    onClick: () => {}
-  }))) : body);
+    onClick: () => setPanelOpen((o) => !o)
+  }), panelOpen && React.createElement("span", {
+    style: {
+      position: "absolute",
+      top: "100%",
+      right: 0,
+      zIndex: 1,
+      display: "flex",
+      gap: "var(--sp-2)",
+      padding: "var(--sp-2)",
+      background: "var(--surface-card)",
+      border: "var(--bw) solid var(--color-base-300)",
+      borderRadius: "var(--r-sm)",
+      boxShadow: "var(--shadow-2)"
+    }
+  }, actions))) : body);
 });

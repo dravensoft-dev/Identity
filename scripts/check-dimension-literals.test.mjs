@@ -375,6 +375,23 @@ test('the SR_ONLY object shape produces exactly the raws those keys are cut from
   assert.deepEqual(hits.map((h) => `${h.prop}:${h.raw}`), ["width:'1px'", "height:'1px'", "margin:'-1px'"]);
 });
 
+// --- Local stacking: a zIndex scoped to one positioned container ----------
+// `zIndex` is governed like any other dimension, but a `1` inside a container
+// that establishes its own stacking context is not a position in Arena's
+// global z order -- it orders two siblings against each other and nothing
+// else. Calendar's own is the original; CalendarEvent's action panel is the
+// second, lifting the panel over the chip it hangs beneath. Both carry the
+// same reason, and neither could read a `--z-*` token without claiming a
+// place in an ordering it takes no part in.
+
+test('EXEMPT records both local-stacking zIndex literals, by name', () => {
+  assert.ok(EXEMPT.has('frameworks/react/components/display/Calendar.jsx:zIndex:1'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/CalendarEvent.jsx:zIndex:1'));
+  // Both share one reason, because they are one case in two places.
+  assert.equal(EXEMPT.get('frameworks/react/components/display/CalendarEvent.jsx:zIndex:1'),
+    EXEMPT.get('frameworks/react/components/display/Calendar.jsx:zIndex:1'));
+});
+
 // --- Fix pass 1: a stale exemption must fail, not pass silently ---------
 // EXEMPT is only honest if an entry naming a site that stopped producing a
 // violation is loud about it -- otherwise a real regression can hide

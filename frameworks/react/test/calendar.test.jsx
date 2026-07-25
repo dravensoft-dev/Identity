@@ -263,3 +263,18 @@ test('a chip carrying a kebab is not a button inside a button', () => {
   assert.doesNotMatch(html, /<button[^>]*>(?:(?!<\/button>)[\s\S])*<button/,
     'a kebab was nested inside the chip button -- invalid HTML');
 });
+
+/* Rendered on its own rather than inside a Calendar: `open` is internal state
+ * and renderToStaticMarkup cannot click. What this pins is the branch -- that
+ * an open panel puts the consumer's markup in the tree and a closed one does
+ * not -- which is the half that decides whether the grid keeps one tab stop.
+ * That the button OPENS it is verified by hand, by the grid rule. */
+test('CalendarEvent renders its panel content when the panel is open', () => {
+  const html = renderToStaticMarkup(
+    <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z"
+      actionsEnabled actions={<button type="button">Delete</button>}
+      box={{}} color="var(--color-cat-1)" timeLabel="09:00 – 09:30" dateLabel="Monday 20 July"
+      defaultPanelOpen />,
+  );
+  assert.match(html, /Delete/, 'an open panel did not render its content');
+});
