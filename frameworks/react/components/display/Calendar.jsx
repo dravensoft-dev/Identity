@@ -29,15 +29,25 @@ export function Calendar({
   dayStart, dayEnd = '23:00', weekStartsOn = 1, hideEmptyWeekend = true,
   onEventClick, onDateClick, onRangeChange, actions,
 }) {
-  /* Both are contracted required, and required governs runtime: a missing one
-     fails here rather than being masked. `timeZone` in particular had a silent
-     `|| 'UTC'` fallback, which produced the exact defect the member's own
-     description names -- a schedule read in the wrong zone, wrong by hours and
-     announcing nothing. The guard precedes every use, including the useState
-     initializer that resolves today in the zone. */
+  /* `events` is contracted required, and required governs runtime: a missing one
+     fails here rather than being masked by an `= []` that drew an empty grid. */
   if (events == null) throw new Error('Calendar: `events` is required');
-  if (!timeZone) throw new Error('Calendar: `timeZone` is required');
-  const zone = timeZone;
+
+  /* `timeZone` is NOT required, and the difference from the fallback this
+     replaced is the whole argument. The old default was the literal 'UTC',
+     which is arbitrary and wrong for almost every reader -- exactly the defect
+     this member's description names. The reader's own resolved zone is not a
+     guess: it is right whenever the schedule belongs to the person looking at
+     it, which is the common case, and every consumer was writing this same line
+     at the call site to get it. Pass the member when the calendar has a zone of
+     its OWN that differs -- a Madrid timetable read from Tokyo -- which is a
+     product decision whose owner knows they have it.
+
+     SSR: this resolves to the SERVER's zone when rendered there and the
+     client's on hydration, so a server-rendered calendar must pass `timeZone`
+     explicitly. Same shape as useContainerWidth's null-on-server rule, and said
+     again in the prompt. */
+  const zone = timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [ref, width] = useContainerWidth();
   const [anchor, setAnchor] = useState(() => anchorDate || todayIso(zone));
 

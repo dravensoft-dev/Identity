@@ -4,8 +4,10 @@ import { Calendar } from '../../components/display/Calendar.jsx';
 import { Button } from '../../components/forms/Button.jsx';
 
 /* Built around the real current week so the "now" line and today's column are
-   always in shot. The zone is the viewer's, so the times read as written. */
-const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+   always in shot. `timeZone` is deliberately NOT passed: omitted, it resolves to
+   the viewer's own zone, which is what this demo wants and what the common case
+   wants. This card used to compute that zone by hand at the call site, which is
+   the line that argued the member should not be required. */
 const now = new Date();
 const monday = new Date(now);
 monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
@@ -41,7 +43,6 @@ function Demo(){
       {picked && <> · picked: {picked}</>}
     </div>
     <Calendar
-      timeZone={zone}
       events={events}
       onEventClick={(e) => setPicked(e.title)}
       actions={<Button size="sm" variant="secondary" icon="ph-bold ph-plus">New event</Button>}

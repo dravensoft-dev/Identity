@@ -36,9 +36,7 @@ export function Calendar({
 }) {
   if (events == null)
     throw new Error("Calendar: `events` is required");
-  if (!timeZone)
-    throw new Error("Calendar: `timeZone` is required");
-  const zone = timeZone;
+  const zone = timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [ref, width] = useContainerWidth();
   const [anchor, setAnchor] = useState(() => anchorDate || todayIso(zone));
   useEffect(() => {

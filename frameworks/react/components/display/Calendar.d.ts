@@ -10,9 +10,11 @@ export type { CalendarEvent, CatSlot };
 export interface CalendarProps {
   /** The events to place. */
   events: CalendarEvent[];
-  /** IANA zone name, e.g. 'Europe/Madrid'. Required: a schedule rendered in the
-   *  reader's zone rather than the calendar's is wrong by hours, not by style. */
-  timeZone: string;
+  /** IANA zone name, e.g. 'Europe/Madrid'. Defaults to the reader's own resolved
+   *  zone. Pass it when the calendar has a zone of its own that differs — a
+   *  Madrid timetable read from Tokyo — and when server-rendering, where the
+   *  reader's zone is not knowable and the server's would be used instead. */
+  timeZone?: string;
   /** ISO date the view opens on. Defaults to today in `timeZone`. The component
    *  keeps the anchor internally so the toolbar works unwired; pass this and
    *  change it to drive the date yourself. */

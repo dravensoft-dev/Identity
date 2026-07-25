@@ -1,6 +1,10 @@
 Week or day schedule on a time grid: a toolbar, one column per day, events positioned by their wall-clock span. Use it for an agenda someone reads against the clock — bookings, classes, shifts. It is not a date picker (use `Input type="date"`) and not a month planner (Arena ships no month grid).
 
-`events` and `timeZone` are required, and both **throw** when absent rather than rendering. `timeZone` is an IANA name: events carry ISO datetimes and are read *in that zone*, not the reader's — a class at 09:00 in Madrid stays at 09:00 for a student loading the page from Lima. There used to be a `'UTC'` fallback here, and it produced exactly the defect the requirement exists to prevent, silently.
+`events` is required and **throws** when absent rather than drawing an empty grid.
+
+`timeZone` is optional and defaults to the reader's own resolved zone, which is right whenever the schedule belongs to whoever is looking at it. **Pass it when the calendar has a zone of its own**: a class at 09:00 in Madrid must stay at 09:00 for a student loading the page from Lima, and only an explicit `timeZone="Europe/Madrid"` says so. Events carry ISO datetimes and are read in that zone.
+
+Two things this default is not. It is not the old `'UTC'` fallback — that one was arbitrary, wrong for almost every reader, and produced silently the very defect the member exists to prevent. And it is **not safe under server rendering**: on a server it resolves to the *server's* zone and then to the client's on hydration, so a server-rendered calendar must pass `timeZone` explicitly. Same shape as `useContainerWidth` reporting `null` before it has measured.
 
 Copy `components/charts/chart-internals.js` and `use-container-width.js` alongside it: `Calendar` reads the categorical ramp through the same `catColor` the charts use, and measures its container to pick the view.
 

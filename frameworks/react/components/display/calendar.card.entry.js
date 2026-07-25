@@ -5,7 +5,6 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { Calendar } from "../../components/display/Calendar.js";
 import { Button } from "../../components/forms/Button.js";
-const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const now = new Date;
 const monday = new Date(now);
 monday.setDate(now.getDate() - (now.getDay() + 6) % 7);
@@ -36,7 +35,6 @@ function Demo() {
   return React.createElement("div", null, React.createElement("div", {
     className: "sub"
   }, "Wednesday shows three overlapping events sharing the width · Sunday is hidden until something lands on it", picked && React.createElement(React.Fragment, null, " · picked: ", picked)), React.createElement(Calendar, {
-    timeZone: zone,
     events,
     onEventClick: (e) => setPicked(e.title),
     actions: React.createElement(Button, {

@@ -40,11 +40,9 @@ test('the chip body is Arena own, and a consumer renderer reaches nothing', () =
   assert.doesNotMatch(html, /STANDUP/, 'the consumer renderer ran');
 });
 
-/* Required-ness governs runtime, not only the declaration (api/README.md). Both
- * of these had a masking default before the contract: `events = []` drew an empty
- * grid, and `timeZone || 'UTC'` produced the exact defect that member's own
- * description names -- a schedule read in the wrong zone, wrong by hours, and
- * announcing nothing. */
+/* Required-ness governs runtime, not only the declaration (api/README.md).
+ * `events` had a masking `= []` before the contract, which drew an empty grid
+ * where a caller had made a mistake. There is no sensible default for it. */
 test('a missing events list throws rather than drawing an empty schedule', () => {
   assert.throws(
     () => renderToStaticMarkup(<Calendar timeZone="UTC" anchorDate="2026-07-20" view="week" />),
@@ -53,12 +51,63 @@ test('a missing events list throws rather than drawing an empty schedule', () =>
   );
 });
 
-test('a missing timeZone throws rather than silently falling back to UTC', () => {
-  assert.throws(
-    () => renderToStaticMarkup(<Calendar events={EVENTS} anchorDate="2026-07-20" view="week" />),
-    /Calendar: `timeZone` is required/,
-    'a Calendar with no timeZone rendered instead of failing hard -- the UTC fallback is back',
+/* `timeZone` is deliberately NOT required, and this pair is the argument.
+ *
+ * The default it replaced was the literal 'UTC' -- arbitrary, and wrong for
+ * almost every reader. The reader's own RESOLVED zone is a different kind of
+ * value: right whenever the schedule belongs to whoever is looking at it, which
+ * is the common case, and every consumer was writing that same line at the call
+ * site to obtain it.
+ *
+ * THE RESOLVED ZONE MUST BE STUBBED, and the reason is worth writing down because
+ * the obvious test is vacuous and looks fine. `bun test` runs with the resolved
+ * zone forced to UTC -- measured: inside the runner
+ * `Intl.DateTimeFormat().resolvedOptions().timeZone` is 'UTC' with TZ unset,
+ * while the same expression in a plain `bun` process reports the machine's real
+ * zone. So a test comparing "omitted" against "passed resolvedOptions()"
+ * compares UTC with UTC and passes just as happily against the literal 'UTC'
+ * fallback this replaced. It was written that way first and proved to pass with
+ * the old fallback restored, which is the only reason this comment exists.
+ *
+ * Stubbing the ZERO-ARGUMENT call alone keeps it surgical: that form is used
+ * only by the component's default, while calendar-internals always constructs
+ * its formatters with arguments and so still gets the real ones. */
+test('an omitted timeZone resolves to the reader own zone, exactly', () => {
+  const Real = Intl.DateTimeFormat;
+  Intl.DateTimeFormat = function (...args) {
+    const inst = new Real(...args);
+    if (args.length === 0) {
+      return { resolvedOptions: () => ({ ...inst.resolvedOptions(), timeZone: 'Asia/Tokyo' }) };
+    }
+    return inst;
+  };
+  try {
+    const implicit = renderToStaticMarkup(
+      <Calendar events={EVENTS} anchorDate="2026-07-20" view="week" />,
+    );
+    const explicit = renderToStaticMarkup(
+      <Calendar events={EVENTS} timeZone="Asia/Tokyo" anchorDate="2026-07-20" view="week" />,
+    );
+    assert.equal(implicit, explicit, 'the default is not the reader resolved zone');
+    assert.match(implicit, /18:00/, 'the default did not shift the 09:00Z event into the stubbed zone');
+  } finally {
+    Intl.DateTimeFormat = Real;
+  }
+});
+
+/* And the member still governs when passed, or the default would be the only
+ * behaviour there is. 09:00Z is 18:00 in Tokyo, and dayStart follows the
+ * earliest event, so the two renders start their grids nine hours apart. */
+test('an explicit timeZone still decides the wall clock', () => {
+  const utc = renderToStaticMarkup(
+    <Calendar events={EVENTS} timeZone="UTC" anchorDate="2026-07-20" view="week" />,
   );
+  const tokyo = renderToStaticMarkup(
+    <Calendar events={EVENTS} timeZone="Asia/Tokyo" anchorDate="2026-07-20" view="week" />,
+  );
+  assert.match(utc, /09:00/, 'the UTC render does not start at the event hour');
+  assert.match(tokyo, /18:00/, 'the Tokyo render did not shift the event by nine hours');
+  assert.doesNotMatch(tokyo, /09:00/, 'the Tokyo render still shows the UTC hour -- timeZone was ignored');
 });
 
 /* R4: asserted in two separate tests -- node:assert aborts on the first failure, so
