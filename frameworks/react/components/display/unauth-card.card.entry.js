@@ -9,6 +9,7 @@ import { Input } from "../../components/forms/Input.js";
 import { Button } from "../../components/forms/Button.js";
 function Demo() {
   const [email, setEmail] = React.useState("ana@dravensoft.dev");
+  const [password, setPassword] = React.useState("dravensoft");
   return React.createElement("div", {
     style: { minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }
   }, React.createElement(UnauthCard, {
@@ -29,11 +30,12 @@ function Demo() {
   }, React.createElement(Input, {
     label: "Email",
     value: email,
-    onChange: (e) => setEmail(e.target.value)
+    onChange: setEmail
   }), React.createElement(Input, {
     label: "Password",
     type: "password",
-    defaultValue: "dravensoft"
+    value: password,
+    onChange: setPassword
   }), React.createElement(Button, {
     variant: "primary",
     full: true

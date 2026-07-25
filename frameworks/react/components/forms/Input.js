@@ -22,21 +22,28 @@ export function Input({
   required = false,
   validate,
   validateOn = "blur",
+  type = "text",
   icon,
   prefix,
+  value,
   disabled = false,
-  style,
-  id,
-  className,
+  readOnly = false,
+  placeholder,
+  name,
+  autoComplete,
+  min,
+  max,
+  step,
+  maxLength,
+  pattern,
   onChange,
-  onBlur,
-  ...rest
+  onBlur
 }) {
   usePickerIndicator();
   const [focus, setFocus] = useState(false);
   const [localErr, setLocalErr] = useState(null);
   const [touched, setTouched] = useState(false);
-  const inputId = id || (label ? "in-" + label.replace(/\s+/g, "-").toLowerCase() : undefined);
+  const inputId = label ? "in-" + label.replace(/\s+/g, "-").toLowerCase() : undefined;
   const shownError = error != null ? error : touched ? localErr : null;
   const isValid = !shownError && (valid || touched && validate && localErr === null);
   const runValidate = (v) => {
@@ -44,7 +51,7 @@ export function Input({
       setLocalErr(validate(v) || null);
   };
   const handleChange = (e) => {
-    onChange && onChange(e);
+    onChange && onChange(e.target.value);
     if (validateOn === "change") {
       setTouched(true);
       runValidate(e.target.value);
@@ -54,12 +61,12 @@ export function Input({
     setFocus(false);
     setTouched(true);
     runValidate(e.target.value);
-    onBlur && onBlur(e);
+    onBlur && onBlur(e.target.value);
   };
   const borderColor = shownError ? "var(--danger)" : focus ? "var(--gold)" : isValid ? "var(--success)" : "var(--color-base-300)";
   const ring = shownError ? "0 0 0 var(--focus-width) var(--danger-soft)" : focus ? "0 0 0 var(--focus-width) var(--gold-soft)" : isValid ? "0 0 0 var(--focus-width) var(--success-soft)" : "none";
   return React.createElement("div", {
-    style: { display: "flex", flexDirection: "column", gap: "calc(var(--sp-1) * 1.5)", ...style }
+    style: { display: "flex", flexDirection: "column", gap: "calc(var(--sp-1) * 1.5)" }
   }, label && React.createElement("label", {
     htmlFor: inputId,
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-xs)", letterSpacing: "var(--ls-field-label)", textTransform: "uppercase", color: "var(--mute)" }
@@ -80,16 +87,29 @@ export function Input({
       opacity: disabled ? 0.5 : 1,
       transition: "border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)"
     }
-  }, icon && React.createElement("span", {
-    style: { color: "var(--mute)", display: "inline-flex" }
-  }, icon), prefix && React.createElement("span", {
+  }, icon && React.createElement("i", {
+    className: icon,
+    "aria-hidden": "true",
+    style: { color: "var(--mute)" }
+  }), prefix && React.createElement("span", {
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-md)", color: "var(--mute)" }
   }, prefix), React.createElement("input", {
     id: inputId,
+    type,
+    value,
     disabled,
+    readOnly,
     required,
     "aria-invalid": !!shownError,
-    className: ["arena-input", className].filter(Boolean).join(" "),
+    className: "arena-input",
+    placeholder,
+    name,
+    autoComplete,
+    min,
+    max,
+    step,
+    maxLength,
+    pattern,
     onFocus: () => setFocus(true),
     onBlur: handleBlur,
     onChange: handleChange,
@@ -102,8 +122,7 @@ export function Input({
       color: "var(--bone)",
       fontFamily: "var(--font-body)",
       fontSize: "var(--dz-text)"
-    },
-    ...rest
+    }
   }), shownError && React.createElement("i", {
     className: "ph-fill ph-warning-circle",
     style: { color: "var(--danger)", fontSize: "var(--icon-md)" }

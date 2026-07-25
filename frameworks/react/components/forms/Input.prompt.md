@@ -2,12 +2,20 @@ Text field with validation (H5). Focus = gold ring, error = crimson with icon, v
 
 ```jsx
 <Input label="Repository" required prefix="git@" placeholder="org/project" />
-<Input label="Email" validateOn="change"
+<Input label="Email" validateOn="change" value={email} onChange={setEmail}
   validate={(v) => /.+@.+\..+/.test(v) ? null : 'Invalid email format'} />
-<Input label="Slug" valid defaultValue="customer-portal" hint="Available" />
+<Input label="Slug" valid value={slug} onChange={setSlug} hint="Available" />
 ```
 
 Rules: validates on `blur` by default; use `validateOn="change"` only for live feedback (passwords, availability). Mark required fields with `required`.
+
+`validate` is the **ninth form**, a `functionInput`: the consumer hands Arena a function it calls on the field's value and whose result it uses. It takes the value as a string and returns the error message, or nothing when the value is valid. It is the only inbound function in the library, and it is legal only because `Input` is a data-entry control.
+
+`onChange` and `onBlur` carry the **value as a string**, not the `ChangeEvent`/`FocusEvent` — a platform event type is an R4 violation inside a payload, so the event does not travel. Read the value directly (`onChange={setEmail}`); there is no `e.target` and no `preventDefault()`.
+
+`icon` is a **Phosphor class name Arena draws** (`icon="ph-bold ph-magnifying-glass"`), not a node you pass in; Arena renders the `<i>` and hides it from assistive tech. `prefix` is likewise **static text Arena draws** before the value (`prefix="git@"`).
+
+The members are `label`, `hint`, `error`, `valid`, `required`, `validate`, `validateOn`, `type`, `icon`, `prefix`, `value`, `disabled`, `readOnly`, `placeholder`, `name`, `autoComplete`, `min`, `max`, `step`, `maxLength` and `pattern`, plus `onChange` and `onBlur`. That is the whole API: the `InputHTMLAttributes` heritage clause and the `{...rest}` spread are gone, so global attributes — `className`, `dir`, `tabIndex`, ARIA and `data-*` — no longer reach the `<input>`, and neither does a consumer `style` object. **`id` is gone with them**: the component still generates one from `label` to wire the label's `htmlFor`, but a consumer can no longer supply their own. **`defaultValue` is gone too** — the contract is about a controlled value, so give the field `value` and an `onChange`.
 
 ### Dates and times
 
@@ -19,10 +27,13 @@ Use the native types. Arena deliberately ships **no `DatePicker` and no `TimePic
 <Input label="Cutover" type="datetime-local" error="Pick a date in the future" />
 ```
 
+`type` is the `InputType` enum: `text`, `email`, `password`, `search`, `tel`, `url`, `number`, `date`, `time`, `datetime-local`. `checkbox` and `radio` are not among them — those are `Checkbox` and `Radio`, their own components.
+
 **Do**
 - Use `type="date"` / `"time"` / `"datetime-local"`. Label, focus ring, error and valid states all work on them.
-- Set `min` / `max` (they pass through) so the browser does the range validation for free.
+- Set `min` / `max` (they are members) so the browser does the range validation for free.
 
 **Don't**
 - Don't build a custom calendar popover to replace it. That is a deliberate non-goal: a custom picker is a large accessibility surface to re-earn, and the native one already has it.
 - Don't fake a date field with `type="text"` and a mask. It loses the picker, the mobile keyboard and the locale.
+- Don't reach for a wrapper attribute or an inline `style` to size the field — wrap it in a container you control instead.

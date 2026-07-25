@@ -9,6 +9,7 @@ import { Switch } from '../../components/forms/Switch.jsx';
 function Demo(){
   const [chk,setChk]=React.useState(true);
   const [sw,setSw]=React.useState(true);
+  const [email,setEmail]=React.useState('hello@');
   return (
     <div>
       <div className="sub">Button — variants</div>
@@ -30,18 +31,30 @@ function Demo(){
       </div>
       <div className="sub">Input · Select</div>
       <div className="row" style={{alignItems:'flex-start'}}>
-        <Input label="Repository" prefix="git@" placeholder="org/project" style={{width:'calc(var(--sp-1) * 55)'}} />
-        <Input label="Email" error="Invalid format" defaultValue="hello@" style={{width:'calc(var(--sp-1) * 50)'}} />
+        <div style={{width:'calc(var(--sp-1) * 55)'}}>
+          <Input label="Repository" prefix="git@" placeholder="org/project" />
+        </div>
+        <div style={{width:'calc(var(--sp-1) * 50)'}}>
+          <Input label="Email" error="Invalid format" value={email} onChange={setEmail} />
+        </div>
         <div style={{width:'calc(var(--sp-1) * 45)'}}>
           <Select label="Environment" options={[{value:'Production',label:'Production'},{value:'Staging',label:'Staging'},{value:'QA',label:'QA'}]} />
         </div>
       </div>
       <div className="sub">Input — native date and time</div>
       <div className="row" style={{alignItems:'flex-start'}}>
-        <Input label="Deploy date" type="date" required style={{width:'calc(var(--sp-1) * 50)'}} />
-        <Input label="Window start" type="time" hint="Local time" style={{width:'calc(var(--sp-1) * 50)'}} />
-        <Input label="Cutover" type="datetime-local" style={{width:'calc(var(--sp-1) * 60)'}} />
-        <Input label="Deadline" type="date" error="Pick a date in the future" style={{width:'calc(var(--sp-1) * 50)'}} />
+        <div style={{width:'calc(var(--sp-1) * 50)'}}>
+          <Input label="Deploy date" type="date" required />
+        </div>
+        <div style={{width:'calc(var(--sp-1) * 50)'}}>
+          <Input label="Window start" type="time" hint="Local time" />
+        </div>
+        <div style={{width:'calc(var(--sp-1) * 60)'}}>
+          <Input label="Cutover" type="datetime-local" />
+        </div>
+        <div style={{width:'calc(var(--sp-1) * 50)'}}>
+          <Input label="Deadline" type="date" error="Pick a date in the future" />
+        </div>
       </div>
       <div className="sub">Checkbox · Switch</div>
       <div className="row">

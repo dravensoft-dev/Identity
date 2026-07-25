@@ -86,6 +86,9 @@ export type Direction = 'up' | 'down';
 /** 'ghost' sits on a surface and shows its hairline border; 'solid' is the filled accent treatment. Danger is not among them — Arena's danger convention is outline, and an icon-only danger control has no room to say what it destroys. */
 export type IconButtonVariant = 'ghost' | 'solid';
 
+/** The native input types Arena styles. Date/time use the native control -- Arena ships no DatePicker. */
+export type InputType = 'text' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'number' | 'date' | 'time' | 'datetime-local';
+
 /** Both halves of the brand lock-up at once — the mark's slot and the wordmark. A fixed repertoire, not a ratio: sm an application frame, md a signed-out panel, lg the manual's Primary, xl the hero case. */
 export type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -148,3 +151,6 @@ export type TagTone = 'neutral' | 'primary' | 'success' | 'warning' | 'danger';
 
 /** What state a value IS in right now, as against how it moved. Badge's vocabulary, so one set of tone names covers the system rather than a second set that is nearly the same. */
 export type Tone = 'neutral' | 'accent' | 'gold' | 'success' | 'warning' | 'danger' | 'info';
+
+/** When Input runs `validate`: on blur, or on every change. */
+export type ValidateOn = 'blur' | 'change';
