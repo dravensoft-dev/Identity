@@ -855,9 +855,20 @@ rejected, not an oversight to fix later.
 **React:** `SideNav.jsx` renders a `<nav>` with direct `<a>`/`<button>` children and owns its
 full appearance — geometry included: `px-3 py-2.5` and `gap-3` per item.
 
-**Tailwind:** `SideNav.manifest.json` mirrors `SideNav.jsx` property for property, geometry
-and all. Plan 5b added it so a consumer on neither React nor Material has something to build
-against.
+**Tailwind:** `SideNav.manifest.json` was added by plan 5b so a consumer on neither React nor
+Material has something to build against, and it mirrored `SideNav.jsx` property for property,
+geometry and all. **It no longer does, and plan 8C4 is what changed that.** Under the
+single-icon convention Arena now draws the glyph itself — `<i className={item.icon}
+aria-hidden="true">` with its own `fontSize: var(--icon-lg)` and `display: inline-flex` —
+where the item's icon used to be a consumer-supplied node that Arena never styled. The manifest
+declares two slots, `root` and `item`, and describes no icon at all, so the component now styles
+an element the manifest does not know exists.
+
+That is a real gap rather than a divergence with a reason, and it is the manifest-versus-component
+drift CLAUDE.md already records as unclosed: `check:tailwind` proves every class in a manifest
+resolves to a token, and **nothing proves a manifest still matches the component it was derived
+from.** `check:states` is the one narrow slice that is machine-checked, and it is silent here
+because this is a missing slot rather than an unimplemented state.
 
 **Angular:** there is no `arena-side-nav` primitive. The Angular path is the Material bridge —
 `arena-material.css`'s `.arena-side-nav` rules dressing `mat-nav-list` — because `mat-nav-list`
@@ -869,16 +880,20 @@ row height are `mat-list-item`'s Material defaults, not React's and not the mani
 bridge also uniquely sets `--mat-list-list-item-focus-label-text-color: var(--crimson)`, a focus
 affordance neither of the other two has.
 
-Neither difference is a defect in any of the three. The manifest is right to mirror React
-(that is its contract), and it would be wrong to invent the focus colour — `check:states`
-exists precisely to catch a state a manifest asserts that its source does not implement. The
-bridge is deliberately partial: it dresses what Material renders rather than re-specifying
-Material's layout, which is the whole reason SideNav stays a bridge.
+**The React-versus-Angular difference is not a defect in either.** It would be wrong for the
+bridge to invent the focus colour's counterpart in React — `check:states` exists precisely to
+catch a state a manifest asserts that its source does not implement — and the bridge is
+deliberately partial: it dresses what Material renders rather than re-specifying Material's
+layout, which is the whole reason SideNav stays a bridge.
 
-**Converges:** the colours already do. The geometry does not and should not — reconciling it
-would mean overriding Material's own list metrics from the bridge, which is exactly the
-duplication the bridge exists to avoid. Recorded so that a reader comparing the three does not
-mistake the gap for drift.
+**The manifest's gap IS a defect**, and it is the one thing in this entry that should be fixed
+rather than recorded. The manifest's contract is to mirror React; it stopped doing so when the
+component took ownership of the icon, and it owes an `icon` slot.
+
+**Converges:** the colours already do, and the manifest should. The geometry does not and should
+not — reconciling that would mean overriding Material's own list metrics from the bridge, which
+is exactly the duplication the bridge exists to avoid. Recorded so that a reader comparing the
+three does not mistake the Material gap for drift, nor the manifest gap for a decision.
 
 ## How to add an entry
 
