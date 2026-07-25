@@ -515,24 +515,27 @@ scheduled for deletion the same week.
   does a pattern express an optional requirement?" was answered by pushing anything
   per-component into the binding rather than the pattern, and a whole pattern applying
   only sometimes is the same problem one level up, still open.
-- **`frameworks/react/test-dom/harness.jsx` registers its DOM too late, and every suite
-  in that directory works around it without saying so.** ES module imports are hoisted —
-  all of them evaluate before any body statement — so `react-dom/client` initialises while
-  `document` is still undefined, `canUseDOM` comes out false, and React latches
-  `isInputEventSupported = false`. It then uses its legacy change detection, which watches a
-  field on `focusin` and re-reads it on `keydown`/`keyup` instead of listening for `input`.
-  **Measured, not inferred:** dispatching `input` on a plain React-controlled `<input>` in
-  this harness fires the handler **zero** times and surfaces a swallowed
-  `TypeError: null is not an object (evaluating 'inst.tag')` from `getInstIfValueChanged`'s
-  null watcher. The consequences a suite must know: a text field's change is driven by focus
-  plus `keyup`, `onBlur` is `focusout`, and a value must be written through the **prototype's**
-  `value` setter or React's instance-level tracker concludes nothing changed. The harness's own
-  header asserted the opposite until plan 8C3 measured it. Fixing it means registering happy-dom
-  before `react-dom` is evaluated — a separate module imported first, or a dynamic import — and
-  it would touch every suite in the directory, which is why the task that found it recorded the
-  fact rather than folding in the change. **This is not cosmetic:** it silently changes which
-  events a DOM suite can use, and a suite written against the real browser's semantics would
-  fail here for a reason nothing in the failure names.
+- **React uses its legacy change detection inside `frameworks/react/test-dom/`, every suite
+  there works around it, and the CAUSE IS NOT KNOWN.** What is measured, repeatedly:
+  dispatching `input` on a React-controlled `<input>` fires `onChange` **zero** times, and so
+  does dispatching `change`; focus followed by `keyup` **does** fire it, which is React's legacy
+  polyfill path; `onBlur` is `focusout` (React 17 moved it to the bubbling pair); a value must be
+  written through the **prototype's** `value` setter or React's instance-level tracker concludes
+  nothing changed; and a swallowed `TypeError: null is not an object (evaluating 'inst.tag')`
+  surfaces from `getInstIfValueChanged`'s null watcher. **One plausible cause was tested and
+  falsified — do not retry it.** The obvious hypothesis is import ordering: ES imports are
+  hoisted, so `react-dom/client` would initialise while `document` is undefined and
+  `isInputEventSupported` would latch false. Registering happy-dom from a separate module
+  imported *before* `react-dom/client` — verified by logging that `document` is a real object at
+  that point — changes nothing; `input` still reaches React zero times. `'oninput' in document`
+  is true here and `document.documentMode` is undefined, so React's own feature test should pass.
+  Plan 8C3 first wrote the falsified hypothesis into this entry as though it were measured, then
+  corrected it; the correction is the useful part, because a reader who trusted the first version
+  would attempt a fix that demonstrably does not work. **This is not cosmetic:** it silently
+  changes which events a DOM suite may use, and a suite written against real browser semantics
+  fails here for a reason nothing in the failure names. Whoever closes it should instrument
+  react-dom's `canUseDOM` and `isInputEventSupported` directly, and budget rewriting all six tests
+  in `form-control-events.test.jsx`, which are written against the legacy semantics.
 
 - **A behaviour text scan was designed, built, measured and rejected — do not
   re-propose it without reading this.** Plan 7c's spec proposed a static scan of

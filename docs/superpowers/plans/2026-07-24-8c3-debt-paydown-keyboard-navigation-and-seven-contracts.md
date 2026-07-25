@@ -256,15 +256,16 @@ substance because each was earned; 30–36 are new to this plan.
     keyboard work targets the wide layout; the narrow layout keeps an exception naming the variant.
     This is the same "a binding cannot scope an exception to a variant" limit `Skeleton` already
     proves, and Task 12 must not pretend otherwise.
-34a. **The DOM harness registers its document too late, and Tasks 10 and 12 must plan around it.**
-    Measured in Task 5: ES import hoisting evaluates `react-dom/client` before
-    `GlobalRegistrator.register()` runs, so React latches `isInputEventSupported = false` and uses
-    its legacy change detection. In `frameworks/react/test-dom/`, a dispatched `input` reaches
-    React **zero** times; a text field's change needs focus plus `keyup`, `onBlur` is `focusout`,
-    and a value must be written through the PROTOTYPE's `value` setter. `keydown` is unaffected,
-    so arrow-key navigation dispatches normally — but any focus assertion must use the bubbling
-    pair. Recorded in `harness.jsx`'s header and in `CLAUDE.md`'s Known debt; **do not fix it
-    inside a keyboard task**, it touches every suite in the directory.
+34a. **React uses its LEGACY change detection in `frameworks/react/test-dom/`, and Tasks 10 and 12
+    must plan around it.** Measured in Task 5: a dispatched `input` reaches React **zero** times
+    and so does `change`; a text field's change needs focus plus `keyup`; `onBlur` is `focusout`;
+    a value must be written through the PROTOTYPE's `value` setter. **`keydown` is unaffected**, so
+    arrow-key navigation dispatches normally — but any focus assertion must use the bubbling pair.
+    **The cause is NOT known, and the obvious hypothesis was tested and falsified**: registering
+    happy-dom from a separate module imported before `react-dom/client` does not change the
+    behaviour, so import ordering is not it. See `harness.jsx`'s header and `CLAUDE.md`'s Known
+    debt for what was ruled out. **Do not attempt a fix inside a keyboard task** — the mechanism is
+    open and closing it rewrites all six tests in `form-control-events.test.jsx`.
 
 34. **A compliance suite's `behavioural` map is trusted, not re-derived.** `comparePattern` returns
     `null` for requirements no single element can decide (`focus.*`, `keyboard.*`); a suite must name

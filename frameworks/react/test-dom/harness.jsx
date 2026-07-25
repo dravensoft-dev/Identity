@@ -13,28 +13,37 @@
  * unregistered here: this directory is its own `bun test` process and the
  * process exiting is the teardown.
  *
- * BUT IT DOES NOT RUN EARLY ENOUGH, and every suite in this directory pays for
- * it. ES module imports are hoisted: ALL of them evaluate before ANY body
- * statement, so `react-dom/client` below initialises while `document` is still
- * undefined. React computes `canUseDOM === false`, latches
- * `isInputEventSupported = false`, and falls back to its legacy change
- * detection — which watches a field on `focusin` and re-reads it on
- * `keydown`/`keyup` rather than listening for `input`. Measured, not inferred:
- * dispatching `input` on a plain React-controlled `<input>` here fires the
- * handler ZERO times, and surfaces a swallowed
- * `TypeError: null is not an object (evaluating 'inst.tag')` from
- * getInstIfValueChanged's null watcher.
+ * REACT USES ITS LEGACY CHANGE DETECTION IN HERE, and every suite pays for it.
+ * This is the observed behaviour, measured repeatedly:
  *
- * So, in this directory: a text field's change is driven by focus + `keyup`,
- * `onBlur` is `focusout` (React 17 moved it to the bubbling pair), and a value
- * must be written through the PROTOTYPE's `value` setter or React's
- * instance-level tracker concludes nothing changed. form-control-events.test.jsx
- * documents each at its call site.
+ *   - dispatching `input` on a React-controlled `<input>` fires `onChange`
+ *     ZERO times. So does dispatching `change`.
+ *   - focus followed by `keyup` DOES fire it — which is React's legacy polyfill
+ *     path, the one that watches a field on `focusin` and re-reads it on
+ *     `keydown`/`keyup` instead of listening for `input`.
+ *   - `onBlur` is `focusout`; React 17 moved it onto the bubbling pair.
+ *   - a value must be written through the PROTOTYPE's `value` setter, or
+ *     React's instance-level tracker concludes nothing changed.
+ *   - a swallowed `TypeError: null is not an object (evaluating 'inst.tag')`
+ *     surfaces from getInstIfValueChanged's null watcher, which is that same
+ *     legacy path running with no watched element.
  *
- * Fixing it means registering happy-dom before react-dom is evaluated — a
- * separate module imported first, or a dynamic import here — and it would touch
- * every suite in this directory, so it was left alone rather than folded into
- * the task that found it (plan 8C3, Task 5). See CLAUDE.md's Known debt. */
+ * WHY is NOT established, and one plausible explanation has been TESTED AND
+ * FALSIFIED — do not retry it. The obvious hypothesis is import ordering: ES
+ * imports are hoisted, so `react-dom/client` below would initialise while
+ * `document` is undefined, `canUseDOM` would be false and
+ * `isInputEventSupported` would latch false. That was measured and it is NOT
+ * the cause: registering happy-dom from a separate module imported BEFORE
+ * `react-dom/client` puts a real `document` in place first — verified by
+ * logging at both points — and `input` still reaches React zero times.
+ * `'oninput' in document` is true here and `document.documentMode` is
+ * undefined, so React's own feature test should pass. The mechanism is open.
+ *
+ * Whoever picks this up: start by instrumenting react-dom's `canUseDOM` and
+ * `isInputEventSupported` directly rather than reasoning about module order,
+ * and note the fix would touch every suite in this directory — the six tests in
+ * form-control-events.test.jsx are written against the legacy semantics and
+ * would all need rewriting. See CLAUDE.md's Known debt. (plan 8C3, Task 5) */
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 
 if (!globalThis.document) GlobalRegistrator.register();
