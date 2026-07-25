@@ -64,10 +64,12 @@ export function isConfirmLocked(required: string | undefined, typed: string): bo
  *  open and is restored to whatever held it beforehand on close; Tab/Shift+Tab
  *  cycle within the panel rather than escaping to the page behind it; Escape
  *  reports dismissal the same way the Cancel button does. `ConfirmDialog.jsx`
- *  does all of this too as of plan 8C4, so this component is no longer the only
- *  accessible half of the pair -- `components-divergences.md`'s "ConfirmDialog --
- *  Angular is accessible, React is not yet" section predates that change and is
- *  the divergence sweep's to settle, not this file's. */
+ *  does all of this too as of plan 8C4, through `use-dialog-modal.js`, a port of
+ *  this layer's own `focus-trap.ts`. So this component is no longer the only
+ *  accessible half of the pair, and `components-divergences.md`'s entry has been
+ *  renarrowed to what actually still differs -- see its "ConfirmDialog -- the
+ *  require-text input loses its focus ring in React" section, which is now the
+ *  whole of the divergence. */
 @Component({
   selector: 'arena-confirm-dialog',
   standalone: true,

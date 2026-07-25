@@ -270,44 +270,49 @@ secondary action is projected, on each.
 
 ## Per-component divergences
 
-### ConfirmDialog — Angular is accessible, React is not yet
+### ConfirmDialog — the require-text input loses its focus ring in React
 
-**React:** `role="alertdialog"` with no accessible name (no `aria-labelledby` pointing at the
-title), `aria-modal="true"` asserted with no focus trap and no `inert` on the background, and
-`outline-none` on the require-text input with no focus ring substituted.
+> **The accessibility half of this entry is closed, and plan 8C4 closed it.** This section used to
+> be titled *"ConfirmDialog — Angular is accessible, React is not yet"* and recorded that React
+> asserted `aria-modal="true"` over a free-roaming focus, with no accessible name, no trap, no
+> restore and no Escape. All of that is now met in both layers:
+> `frameworks/react/use-dialog-modal.js` is a deliberate port of
+> `frameworks/angular/primitives/focus-trap.ts`, `ConfirmDialog.title` is required and guarded in
+> both layers with `aria-labelledby` pointing at it, and `ConfirmDialog.behaviour.json` retains a
+> single exception — `roles.element`, which is `role="alertdialog"` and which **both** layers
+> declare, so it is a shared deviation from the pattern rather than a divergence between layers.
+> What is left of the entry is one real difference and one shared limit.
 
-**Angular:** the panel carries `aria-labelledby`, wired to the title when one is set and to the
-eyebrow otherwise, so the dialog always has an accessible name even when a consumer omits
-`title` — and `aria-describedby`, wired to the body. Both ids are unique per instance (a
-module-level counter, not a hardcoded string), so two dialogs on one page never collide. Focus
-moves into the panel's first focusable element on open and is restored to whatever held it
-beforehand on close; Tab/Shift+Tab cycle within the panel instead of escaping to the page behind
-it; Escape reports dismissal through the same `cancel` output the Cancel button uses. The
-require-text input keeps `outline-none` but substitutes a token-derived visible ring
-(`focus-visible:ring-[length:var(--focus-width)] focus-visible:ring-error` in
-`ConfirmDialog.manifest.json`) rather than removing focus indication outright. There is still no
-`inert` on the background — the keyboard trap alone is what keeps focus from escaping, so a
-pointer-driven assistive technology that does not go through Tab is not covered by this fix.
+**React:** the require-text `<input>` carries `outline: 'none'` in its inline style object and
+substitutes nothing, so a keyboard user typing the confirmation word gets no focus indication at
+all — on the one control that gates Arena's only filled danger surface.
 
-**Why:** a modal that cannot be operated from a keyboard and does not announce itself is not
-shippable, and the `outline-none` contradicts README's own normative rule ("Focus: `--error`
-ring"). Mirroring the gaps would have propagated them into a second layer.
+**Angular:** the same control keeps `outline-none` but substitutes a token-derived visible ring,
+`focus-visible:ring-[length:var(--focus-width)] focus-visible:ring-error` in
+`ConfirmDialog.manifest.json`, rather than removing focus indication outright.
 
-**Tested how:** `frameworks/angular/test/confirm-dialog-focus-trap.test.ts` asserts the trap's
-mechanics — `focusableElements`, `focusFirstFocusable`, `trapTabKey`, `handleOpenTransition` (all
-exported from `confirm-dialog.ts`) — against a hand-built, real DOM tree under happy-dom: real
-focus movement, real `document.activeElement`, a genuine open-then-close-then-restore sequence,
-and a same-state re-run that must not steal focus back from a field the user is actively using.
-This is deliberately *not* a TestBed render of `<arena-confirm-dialog open="true">`: probed by
-hand first, both `[open]="true"` template binding and `componentRef.setInput('open', true)` throw
-NG0303 under this repo's test toolchain, because the harness runs `@angular/compiler`'s JIT and
-never `ngtsc` — the same root cause `host-class-binding.test.ts` documents for Skeleton's
-`variant="text"`. Since `open` can never become `true` there, no TestBed-based test can render an
-actually-open dialog; the trap logic was factored into plain DOM functions specifically so it
-stays testable against a real DOM despite that.
+**Why:** `outline: 'none'` with nothing in its place contradicts README's own normative rule
+("Focus: `--error` ring"). Angular fixed it when the primitive was written; React was not touched,
+because plan 8C4 was about the `dialog-modal` pattern and a focus ring is not one of its seven
+requirements — so no gate would have caught this and none does.
 
-**Converges:** yes — React should be brought up to this. **Open debt on the React layer**,
-including the missing `inert`.
+**Converges:** yes — React should substitute the same ring. **Open debt on the React layer**, and
+the only part of this entry that is still open.
+
+**Also still missing, on BOTH layers, and therefore not a divergence:** `inert` on the background.
+The keyboard trap is what keeps focus in; a pointer-driven assistive technology that never goes
+through Tab is not covered by it. This was recorded here when it was half of a divergence; it is
+now a shared limit of both layers and is recorded here only because deleting it would lose it.
+
+**Tested how (Angular):** `frameworks/angular/test/confirm-dialog-focus-trap.test.ts` asserts the
+trap's mechanics — `focusableElements`, `focusFirstFocusable`, `trapTabKey`,
+`handleOpenTransition` — against a hand-built, real DOM tree under happy-dom. It is deliberately
+*not* a TestBed render of `<arena-confirm-dialog open="true">`: probed by hand first, both the
+`[open]="true"` template binding and `componentRef.setInput('open', true)` fail under this repo's
+JIT-only harness — the first throws NG0303, the second logs it and then silently no-ops — so no
+TestBed-based test can render an actually-open dialog. **Tested how (React):**
+`frameworks/react/test-dom/behavioural.test.jsx` and `dialog-modal.test.jsx`, which render the real
+component; `ConfirmDialog:react` is in `check:compliance`'s `COVERED`.
 
 ### ErrorState — Angular announces itself, React is silent
 
@@ -326,16 +331,24 @@ precedent as `Alert.ts`: React's own `Alert.jsx` already sets `role={tone === 'd
 : 'status'}`, and Angular's `Alert.ts` mirrors that exactly — no divergence there, so it is not
 what motivates this one.
 
-**Converges:** yes — React should be brought up to this. **Open debt on the React layer**, the
-same shape as `ConfirmDialog`'s accessibility debt above.
+**Converges:** yes — React should be brought up to this. **Open debt on the React layer.** This
+used to read *"the same shape as `ConfirmDialog`'s accessibility debt above"*; that debt was paid
+by plan 8C4 and the comparison no longer holds. This entry is now the older of the two and stands
+on its own.
 
-### Onboarding — the scrim is dismissible, and Angular always names the dialog
+### Onboarding — the scrim is a sibling in React and the host in Angular
+
+> **The naming half of this entry is closed, and plan 8C4 closed it.** This section used to be
+> titled *"Onboarding — the scrim is dismissible, and Angular always names the dialog"*. React's
+> panel now falls back through `title` → `eyebrow` → `"Step N of M"`, the identical chain Angular
+> computes, so the dialog always has a name in both layers and `Onboarding.behaviour.json` reads
+> `"exceptions": []` on both sides. **The chain was ported rather than the step title being made
+> required**, so `OnboardingStep.title` stays optional and no contract broke. What remains is the
+> structural difference the title now names, which is real and unchanged.
 
 **React:** `Onboarding.jsx` renders the scrim and the panel as two sibling `<div>`s. The
 scrim's `onClick={onSkip}` closes the tour; because the panel is a *sibling*, not a
-descendant, a click inside the panel never reaches that handler. The panel's
-`aria-label={step.title}` is empty whenever a step omits `title` — the dialog then has no
-accessible name at all.
+descendant, a click inside the panel never reaches that handler.
 
 **Angular:** following `ConfirmDialog`'s resolution, `scrim` was renamed to `root` and
 host-bound (`host: { '[class]': 'styles().root()' }`), with `open` driving it between the
@@ -354,74 +367,46 @@ are on one page.
 
 **Why:** the click-to-skip behaviour is real product behaviour worth keeping, but the
 sibling-div structure it was built on cannot survive the mandatory host-binding shape —
-stopping propagation on the panel is what reproduces it under one shared ancestor. The
-missing accessible name is the same category of gap `ConfirmDialog` and `ErrorState`
-already fixed: a dialog with no name announces as unlabeled to a screen reader whenever a
-step happens to omit `title`.
+stopping propagation on the panel is what reproduces it under one shared ancestor.
 
-**Converges:** yes, on both — React should stop nesting the click assumption in sibling
-placement (any refactor toward one wrapper needs the same stopPropagation), and should
-gain the same `title`-falls-back-to-`eyebrow` label. **Open debt on the React layer.**
+**Converges:** partly. The label half is done. What is left is structural: React should stop
+resting the click assumption on sibling placement, because any refactor toward one wrapper needs
+the same `stopPropagation` and nothing today says so. **Open debt on the React layer**, and it is
+a latent hazard rather than a live defect — the two layers behave identically today.
 
-### Onboarding — Angular's modal is a real modal, React's is an assertion
+**One consequence of the ported chain, recorded rather than hidden:** on a step carrying neither
+`title` nor `eyebrow`, the panel's `aria-label` is `"Step N of M"` — byte-identical to the
+`aria-label` already on the progress-dots div inside that same panel, in **both** layers
+(`Onboarding.jsx`, `onboarding.ts`). A screen reader announces the two the same. That is the price
+of a positional fallback and it is pinned by an assertion in
+`frameworks/react/test-dom/onboarding-modal.test.jsx` rather than left to prose.
 
-**React:** `Onboarding.jsx:50` renders `role="dialog" aria-modal="true"` on the panel and
-manages no focus whatsoever — nothing moves focus into the panel when the tour opens,
-nothing restores it when the tour closes, Tab and Shift+Tab walk straight out of the panel
-into the page behind the scrim, and Escape does nothing. A keyboard user therefore has to
-tab the whole page to reach "Next", while `aria-modal="true"` has already told assistive
-technology that the page they are tabbing through is unavailable.
+### Onboarding — the modal contract, RETIRED as a divergence
 
-**Angular:** `arena-onboarding` implements the contract it asserts. Focus moves into the
-panel's first focusable control on open — Back on a middle step, Skip on the first, since
-`@if (index() > 0)` omits Back there — and is restored to whatever held it beforehand on
-close. Tab and Shift+Tab cycle within the panel: Tab from Next wraps to the first control
-rather than reaching anything behind the `fixed inset-0` scrim. Escape reports dismissal
-through the existing `skip` output — the same one the scrim click and the Skip button
-already use — rather than introducing a second close path a host would have to wire
-separately; Escape is how a user leaves a tour, not how they finish it, so it reports
-`skip` even on the last step, where the Skip button itself is not rendered. The panel
-carries `tabindex="-1"` so the trap has a fallback focus target, though the template
-always renders at least the Next button, so the fallback is never reached in practice.
+This section recorded the largest of the three: React asserted `role="dialog" aria-modal="true"`
+and managed no focus whatsoever — nothing moved focus in on open, nothing restored it on close,
+Tab and Shift+Tab walked straight out of the panel into the page behind the scrim, and Escape did
+nothing, while `aria-modal="true"` had already told assistive technology the page behind was
+unavailable. Angular implemented the contract it asserted, through
+`frameworks/angular/primitives/focus-trap.ts`.
 
-None of this is a fourth implementation: it reuses
-`frameworks/angular/primitives/focus-trap.ts` (`handleOpenTransition`, `trapTabKey`)
-unchanged, the module `arena-confirm-dialog`'s fix wave produced and
-`arena-command-palette` already shares. The transition is driven off `visible()`, not
-`open()` — an `open` tour with an empty `steps` array renders no panel, so there is
-nothing to focus into.
+**Plan 8C4 closed it, and closed it by porting rather than by re-solving.**
+`frameworks/react/use-dialog-modal.js` is a deliberate mirror of that Angular module — same
+focusable selector including its per-clause `:not([tabindex="-1"])` guard, same boundary-wrap rule,
+same never-cache rule, same open/close transition — consumed by all three React overlays. Escape
+reports through `onSkip`, which is the output Angular already routes its own Escape to, so the two
+layers agree by construction rather than by coincidence. `Onboarding.behaviour.json` reads
+`"exceptions": []` in both layers and `Onboarding:react` is in `check:compliance`'s `COVERED`.
 
-**Why:** this is the third occurrence on this branch of one defect —
-`aria-modal="true"` asserted over a free-roaming focus — after `ConfirmDialog` and
-`CommandPalette`. The ruling that settled the first two applies unchanged: a trap stops
-focus escaping *outward*, so `tabindex="-1"` on the contents is not a trap, and a modal
-that a keyboard user cannot reach or leave is not shippable. Onboarding predates the
-shared helper, which is why it was missed rather than decided. Mirroring React here
-would have propagated the same gap into a second layer for the third time.
+**What is NOT proven, in either layer, and is the reason this note replaces the section rather than
+deleting it.** A suite can prove the boundary wrap, because that is our own `.focus()` call and
+happy-dom honours it. It cannot prove the interior — that Tab from a *middle* element reaches the
+next one — because that is native sequential focus navigation, which neither layer implements and
+happy-dom does not have. Both layers check the interior in a real browser by hand. A browser-driven
+gate stays refused as this repo's fourth non-portable gate.
 
-**Tested how:** `frameworks/angular/test/onboarding-focus-trap.test.ts` exercises the
-shared helpers against a hand-built DOM tree shaped like Onboarding's panel (the
-non-focusable dots div, then Back / Skip / Next), with a real focusable control appended
-to the page behind the scrim that the trap must never hand focus to — real focus
-movement, real `document.activeElement`, a genuine open-then-close-then-restore sequence,
-a first-step panel with no Back, and a same-state re-run standing in for advancing a step,
-which must not yank focus back to Back. It does **not** render `<arena-onboarding>`
-through TestBed, for the reason `confirm-dialog-focus-trap.test.ts` documents: under this
-repo's JIT-only harness `open` can never become `true`, so `@if (visible())` can never
-render the panel. **What that leaves unproven is that the component's own
-`afterRenderEffect` and `onKeydown` invoke these functions at the right moment** — the
-helpers themselves are proven, the wiring is proven only to the extent that
-`ngc --strictTemplates` (`bun run check:angular`) typechecks it against the real
-`viewChild` and `inject(DOCUMENT)` types. The same limit already applies to
-`ConfirmDialog` and `CommandPalette`.
-
-**Also still missing, on both layers:** `inert` on the background. The keyboard trap is
-what keeps focus in; a pointer-driven assistive technology that never goes through Tab is
-not covered — identical to the caveat `ConfirmDialog`'s entry records.
-
-**Converges:** yes — React should gain focus-in on open, restore on close, a Tab trap and
-Escape-to-skip. **Open debt on the React layer**, the same shape as `ConfirmDialog`'s,
-`ErrorState`'s and `CommandPalette`'s.
+**Also still missing, on both layers:** `inert` on the background — see the `ConfirmDialog` entry
+above, which now carries that shared limit for all three overlays.
 
 ### Onboarding — no icon, on either layer
 
