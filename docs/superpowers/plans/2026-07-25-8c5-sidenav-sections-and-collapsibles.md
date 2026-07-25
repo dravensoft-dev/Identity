@@ -104,6 +104,20 @@ Every task's requirements implicitly include this section.
     `<Name>.behaviour.json` beside its source **and** a new entry in
     `frameworks/angular/behaviour-delegated.json`. `check:behaviour` asserts every component
     declares; 8C2 and 8C3 both learned this by making an item a component.
+17. **A new React component moves a literal count, and the react suite alone cannot see it.**
+    `scripts/behaviour-contracts.test.mjs`'s *"the React inventory finds every component and no demo
+    entry"* asserts `reactComponents('.').length` by literal, with a comment saying to update it in
+    the change that moves it. It stood at **46** before this batch and each of Tasks 2, 3 and 4 moves
+    it by one: **47 → 48 → 49**. **Update it in the same commit as the component**, and verify with
+    the MERGED process (`bun test scripts frameworks/react/test/ frameworks/angular/test`) rather
+    than `bun test frameworks/react/test/`, which does not run `scripts/` and reports green over a
+    red tree. This was found the hard way in Task 2's review.
+18. **The R4 induction must be DISJOINT, and a bare `...rest` is not.** With `style` unnamed in the
+    destructuring it falls into `rest`, so a bare `{...rest}` spread is a strict *superset* of the
+    style escape and correctly fails both tests. That is not the tests failing to be independent.
+    To prove independence, induce (a) `style` alone — the style test alone must fail — and (b)
+    `style` destructured **and discarded** plus `...rest` — the attribute test alone must fail.
+    Never weaken a test to make an induction come out tidy. Established in Task 2.
 
 ---
 
@@ -1012,15 +1026,22 @@ Add `indentStep` to `api/components/SideNav.json`:
 
 - [ ] **Step 9: Regenerate, gate, R4 proof**
 
+**First**, per constraint 17: bump `scripts/behaviour-contracts.test.mjs`'s React inventory count
+from 47 to **48** in this same commit — `SideNavSection` is the component that moves it.
+
 ```bash
 bun run build:api && bun run check:api      # 48 contract(s) ... 68 layer implementation(s)
 bun run check:behaviour
 bun run check:dimensions
-bun test frameworks/react/test/
+bun test scripts frameworks/react/test/ frameworks/angular/test    # the MERGED process, 0 fail
 ```
 
-Then the two-escape induction of Step 14 in Task 2, for `SideNavSection.jsx`, with its own
-`sha256sum` before and `sha256sum -c` after. Each escape must fail exactly one test.
+The merged process is the one that matters here: `bun test frameworks/react/test/` alone does not
+run `scripts/` and reported green over a red tree in Task 2.
+
+Then the R4 induction for `SideNavSection.jsx`, **disjoint per constraint 18** — `style` alone must
+fail the style test alone, then `style` destructured-and-discarded plus `...rest` must fail the
+attribute test alone — with its own `sha256sum` before and `sha256sum -c` after.
 
 - [ ] **Step 10: Commit** (here-doc).
 
@@ -1408,19 +1429,23 @@ Expected: PASS. **Never `bun test frameworks/react/test-dom`** — constraint 12
 
 - [ ] **Step 11: Regenerate and gate**
 
+**First**, per constraint 17: bump `scripts/behaviour-contracts.test.mjs`'s React inventory count
+from 48 to **49** in this same commit — `SideNavCollapsible` is the component that moves it.
+
 ```bash
 bun run build:api && bun run check:api      # 49 contract(s) ... 69 layer implementation(s)
 bun run check:behaviour
 bun run check:compliance                    # 8 of 66
 bun run check:dimensions
-bun test frameworks/react/test/
+bun test scripts frameworks/react/test/ frameworks/angular/test    # the MERGED process, 0 fail
 bun run test:react-dom
 ```
 
-- [ ] **Step 12: R4 proof** for `SideNavCollapsible.jsx`, both escapes, each failing alone, `sha256`
-  identical after restore. **Induce the `{...rest}` one on the region element specifically**, not
-  only on the root — that is what test 8 above exists to catch, and inducing it on the root would
-  leave test 8 green and prove nothing about it.
+- [ ] **Step 12: R4 proof** for `SideNavCollapsible.jsx`, **disjoint per constraint 18** — `style`
+  alone fails the style test alone; `style` destructured-and-discarded plus `...rest` fails the
+  attribute test alone — with `sha256` identical after restore. **Induce the `{...rest}` one on the
+  region element specifically**, not only on the root: that is what test 8 above exists to catch, and
+  inducing it on the root would leave test 8 green and prove nothing about it.
 
 - [ ] **Step 13: Commit** (here-doc). Name in it: the first `disclosure` binding, the four design
   decisions from this task's header, and that `check:compliance` moved to 8 of 66.
