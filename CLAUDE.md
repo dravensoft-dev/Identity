@@ -676,17 +676,28 @@ scheduled for deletion the same week.
   Closing it means deciding `id` is a member and declaring it in both, not re-adding the
   heritage.
 
-- **Plan D owes `functionInput` an Angular implementation, and the contract is what it must
-  satisfy.** `Input.validate` is the repo's only `functionInput` and `Input` the only
-  contract carrying `kind: "input"`, and both exist in React alone, because every contract
-  in Plan C is single-layer. Angular's signal idiom discourages a function input — the
-  reflex is an output plus a validator service, or a `ControlValueAccessor` wired into
-  Angular Forms — but the contract's modelled signature (`params: {value: string}`,
+- **Plan D owes `functionInput` an Angular implementation. The spelling is no longer open;
+  only the implementation is.** `Input.validate` is the repo's only `functionInput` and
+  `Input` the only contract carrying `kind: "input"`, and both exist in React alone, because
+  every contract in Plan C is single-layer. Angular's signal idiom discourages a function
+  input — the reflex is an output plus a validator service, or a `ControlValueAccessor` wired
+  into Angular Forms — but the contract's modelled signature (`params: {value: string}`,
   `returns: string`) is not negotiable at implementation time: `check:api` compares that
   signature between the contract and each layer, so a reshape is a contract change, not an
   implementation choice. That is the whole point of sequencing Plan C ahead of Plan D — the
-  API is settled and normative *before* Angular has an implementation to defend — and it is
-  recorded here rather than resolved, because 8C2 deliberately touched no Angular component.
+  API is settled and normative *before* Angular has an implementation to defend.
+  **8C2 recorded this as more open than it was, and 8C3 measured it.** The reader was never
+  the obstacle: `angularSurface()` has read `readonly validate = input<(value: string) =>
+  string>()` as `{form:'functionInput', params:{value:'string'}, returns:'string'}` since the
+  ninth form landed, and that bare arrow — with required-ness carried by `.required`, never by
+  a `| undefined` arm — is the spelling `api/README.md` now states normatively and
+  `scripts/api-surface.test.mjs` pins. What did fail was the *optional* spelling
+  `input<((value: string) => string) | undefined>()`, and it failed on parse ORDER rather than
+  on any rule: `classify()` tested its arrow pattern before reducing the annotation, backtracked
+  onto the inner `)`, and read the return as `string)`. That is fixed — a nullable annotation is
+  now reduced to the annotation it wraps before any form is tested — so both spellings read
+  identically and Plan D has nothing left to discover about the reader. What remains owed is an
+  Angular `Input` that declares the member; no Angular component was touched, here or in 8C2.
 
 - **An event payload that is a declared ENUM is still rejected, one type-kind short of
   where the gate now reaches.** Task 2 widened `validateContract` so an event's `payload`

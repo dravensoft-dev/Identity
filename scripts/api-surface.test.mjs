@@ -553,3 +553,49 @@ test('classify reads every parameter of a functionInput, and a generic\'s comma 
   assert.deepEqual(classify('(row: Record<string, unknown>) => string'),
     { form: 'functionInput', params: { row: 'consumerData' }, returns: 'string' });
 });
+
+/* An optional annotation is the same annotation. `T | undefined` and `T | null`
+ * are TypeScript's way of spelling optionality inline, and Angular's signal
+ * inputs reach for it: `input<((value: string) => string) | undefined>()`. The
+ * arrow branch is tested before the union branch, so a greedy backtrack used to
+ * capture the RETURN as "string) | undefined" and die on it. Stripping a
+ * trailing null/undefined arm first is what makes the two spellings agree. */
+test('a nullable arrow annotation reads as the arrow it wraps', () => {
+  assert.deepEqual(classify('((value: string) => string) | undefined'),
+    { form: 'functionInput', params: { value: 'string' }, returns: 'string' });
+  assert.deepEqual(classify('((v: string) => void) | null'),
+    { form: 'event', payload: 'string' });
+});
+
+/* The strip must not eat a genuine union between two real types -- that is R5's
+ * subject and must keep surfacing as a union, not as its first arm. */
+test('stripping null/undefined does not collapse a genuine union', () => {
+  assert.equal(classify('string | TabItem').form, 'union');
+  assert.equal(classify('string | TabItem | undefined').form, 'union');
+});
+
+/* A bare optional primitive still reads as that primitive, which is what every
+ * existing caller already relies on. */
+test('a nullable primitive still reads as the primitive', () => {
+  assert.deepEqual(classify('string | undefined'), { form: 'primitive', type: 'string' });
+});
+
+/* The reduction rejoins the REAL arms instead of keeping the first, and this is
+ * the case that forces it. An inline literal union with a nullable arm is still
+ * that enum: keeping one arm would read `'sm' | 'md' | undefined` as the single
+ * value `'sm'`, and refusing to reduce at all would report a union -- an R5
+ * violation -- for an annotation that declares no union between forms at all. */
+test('an inline enum with a nullable arm is still that enum, with every value it declares', () => {
+  assert.deepEqual(classify("'sm' | 'md' | undefined"),
+    { form: 'enum', values: ['sm', 'md'] });
+});
+
+/* The unwrap moved ahead of the arrow branch, so it had to become balance-aware:
+ * the naive `startsWith('(') && endsWith(')')` test it replaces would slice
+ * `(a) | (b)` into `a) | (b` and read a union of two shapes that are not there.
+ * Neither arm here is a form the vocabulary admits, so the verdict is a union
+ * either way -- what this pins is that the ARMS survive intact. */
+test('a union of two parenthesised arms is not mistaken for one wrapped annotation', () => {
+  assert.deepEqual(classify('(DOMRect) | (HTMLElement)'),
+    { form: 'union', parts: ['(DOMRect)', '(HTMLElement)'] });
+});

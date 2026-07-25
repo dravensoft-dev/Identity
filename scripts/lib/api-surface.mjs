@@ -57,6 +57,24 @@ export const PLATFORM_TYPES = [
   'DOMRect', 'MouseEvent', 'Event', 'HTMLElement', 'unknown', 'any', 'object',
 ];
 
+/** True when the paren opening `ts` is closed by its LAST character -- that is,
+ *  when the whole annotation is wrapped rather than merely beginning and ending
+ *  with a paren. A counter rather than `braceBody`, which throws on an
+ *  unbalanced fragment: an annotation the reader cannot balance is unreadable,
+ *  and it must reach the throw at the END of `classify` carrying its own text,
+ *  not die here with a message about brackets. */
+function wrapsWhole(ts) {
+  let depth = 0;
+  for (let i = 0; i < ts.length; i += 1) {
+    if (ts[i] === '(') depth += 1;
+    else if (ts[i] === ')') {
+      depth -= 1;
+      if (depth === 0) return i === ts.length - 1;
+    }
+  }
+  return false;
+}
+
 /** One TypeScript type annotation, as one of the reader's outcomes.
  *  `form: 'named'` is not a verdict -- it is "an identifier I read but cannot
  *  resolve on my own"; the gate resolves it against api/types/ into an enum or
@@ -71,6 +89,39 @@ export function classify(raw) {
    * test rather than left to make the array branch's trailing-`[]` check
    * fail on a leading word it never expected. */
   if (ts.startsWith('readonly ')) return classify(ts.slice('readonly '.length));
+
+  /* An optional annotation is the same annotation, and it must be reduced BEFORE
+   * the arrow branch, which is tested before the union branch and BACKTRACKS: on
+   * `((v: string) => string) | undefined` the arrow pattern `^\(...\)\s*=>...`
+   * matches the INNER `)` and captures the return as `string) | undefined`,
+   * which reads as nothing -- `unreadable type annotation: string)`. Nullability
+   * is not one of the forms; the arrow branch's own return reduction has said so
+   * since the ninth form landed, and this says it one level up.
+   *
+   * Split at the TOP level only -- `Record<string, unknown> | undefined` must not
+   * be cut at the generic's comma -- and put the REAL arms back TOGETHER rather
+   * than keeping the first: a genuine union between two real types must survive
+   * with every arm intact so R5 still sees it (`string | TabItem | undefined` is
+   * a union, not a `string`), and `'sm' | 'md' | undefined` must stay the enum it
+   * is rather than degrade to either. Reducing to a single arm would have done
+   * neither. Termination is by construction: the branch is taken only when an arm
+   * was removed, so the recursive annotation is strictly shorter. */
+  const arms = splitTopLevel(ts, '|').map((s) => s.trim()).filter(Boolean);
+  if (arms.length > 1) {
+    const real = arms.filter((a) => a !== 'null' && a !== 'undefined');
+    if (real.length > 0 && real.length !== arms.length) return classify(real.join(' | '));
+  }
+
+  /* Parens that wrap the WHOLE annotation say nothing about its shape, and this
+   * unwrap has to happen HERE -- before the arrow branch -- rather than after it,
+   * where it used to sit and where it was unreachable for the shape that needs it
+   * most. `((value: string) => string) | undefined` reduces to
+   * `((value: string) => string)` above, and the arrow pattern then backtracks
+   * onto the inner `)` exactly as it did before the reduction, so a strip alone
+   * fixes nothing. Balance-aware, unlike the naive `startsWith('(') &&
+   * endsWith(')')` test it replaces: `(a) | (b)` is not a wrapped annotation and
+   * slicing its ends would produce `a) | (b`. */
+  if (ts.startsWith('(') && ts.endsWith(')') && wrapsWhole(ts)) return classify(ts.slice(1, -1));
 
   if (ts === 'React.ReactNode' || ts === 'ReactNode') return { form: 'slot' };
   if (PRIMITIVES.has(ts)) return { form: 'primitive', type: ts };
@@ -204,9 +255,7 @@ export function classify(raw) {
     return { form: 'event', payload: inner.type };
   }
 
-  if (ts.startsWith('(') && ts.endsWith(')')) return classify(ts.slice(1, -1));
-
-  const array = /^([\s\S]+)\[\]$/.exec(ts) ?? /^Array<([\s\S]+)>$/.exec(ts);
+  const array =/^([\s\S]+)\[\]$/.exec(ts) ?? /^Array<([\s\S]+)>$/.exec(ts);
   if (array) {
     const inner = classify(array[1].trim());
     /* An array of a union is the union's problem, not the array's -- R5 names

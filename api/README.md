@@ -123,9 +123,23 @@ reader is right to refuse every one it meets.
 > member ever genuinely need a parameterised slot, the reader change is small and the throw's
 > message is where to start.
 
-Angular's implementation of a `functionInput` is Plan D's problem and is recorded as debt there:
-Angular's signal idiom discourages a function input, and the contract's modelled signature is what
-Plan D must satisfy.
+**Angular's spelling of a `functionInput` is the bare arrow**, and the reader has read it since the
+form landed:
+
+```ts
+readonly validate = input<(value: string) => string>();
+```
+
+The optional spelling — `input<((value: string) => string) | undefined>()` — is readable too, since
+a nullable annotation is the same annotation. Prefer the bare form regardless: **required-ness is
+carried by `.required`, never by a `| undefined` arm.** A member the contract marks required is
+`input.required<(value: string) => string>()`; one it does not is the bare `input<…>()`, whose value
+is already `undefined` until the consumer supplies one, so the arm adds a second way to say what the
+call already says.
+
+Angular's *implementation* of a `functionInput` remains Plan D's problem: no Angular primitive
+declares one today, and the signal idiom discourages a function input. What Plan D must satisfy is
+the contract's modelled signature, in the spelling above.
 
 **The word `prop` does not appear in a contract.** It is React's vocabulary, and a neutral
 contract that used it would already have chosen a layer. A contract declares *members*;
