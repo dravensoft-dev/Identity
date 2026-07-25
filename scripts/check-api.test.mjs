@@ -450,7 +450,7 @@ test('a contract naming a type nobody declared fails', () => {
   assert.ok(problems.some((p) => /Widget/.test(p)));
 });
 
-test('a contract member with a form outside the seven encoded values fails', () => {
+test('a contract member with a form outside the eight encoded values fails', () => {
   const problems = validateContract(
     { component: 'X', api: { thing: { form: 'callback' } } }, TYPES,
   );
@@ -522,4 +522,131 @@ test('validateContract accepts consumer data routed back out through an event pa
     new Map(),
   );
   assert.deepEqual(problems, []);
+});
+
+/* the ninth form — functionInput */
+
+/* functionInput is legal only in a contract that declares itself an input
+ * control. The mark is checkable, so "input controls only" is enforced rather
+ * than merely written down -- the maintainer's decision, made mechanical. */
+test('validateContract accepts a functionInput in a kind:input contract', () => {
+  const problems = validateContract(
+    { component: 'Input', kind: 'input',
+      api: { validate: { form: 'functionInput', params: { value: 'string' }, returns: 'string' } } },
+    new Map(),
+  );
+  assert.deepEqual(problems, []);
+});
+
+test('validateContract rejects a functionInput outside a kind:input contract', () => {
+  const problems = validateContract(
+    { component: 'X',
+      api: { fmt: { form: 'functionInput', params: { value: 'number' }, returns: 'string' } } },
+    new Map(),
+  );
+  assert.ok(problems.some((p) => /fmt/.test(p) && /kind.*input/i.test(p)));
+});
+
+/* R4 inside the signature: a param or return naming a type api/types/ does not
+ * declare is reported, exactly as an object member's enum type is. BOTH halves
+ * are pinned -- the parameter loop was already there (it runs for any member
+ * carrying `params`), the return check was not, so a test on the parameter
+ * alone would have shipped the return check unproven. */
+test('validateContract checks a functionInput signature type against api/types', () => {
+  const problems = validateContract(
+    { component: 'Input', kind: 'input',
+      api: { validate: { form: 'functionInput', params: { value: 'Nope' }, returns: 'string' } } },
+    new Map(),
+  );
+  assert.ok(problems.some((p) => /Nope/.test(p)));
+  assert.ok(problems.some((p) => /functionInput parameter/.test(p)));
+});
+
+test('validateContract checks a functionInput RETURN type against api/types too', () => {
+  const problems = validateContract(
+    { component: 'Input', kind: 'input',
+      api: { validate: { form: 'functionInput', params: { value: 'string' }, returns: 'Nope' } } },
+    new Map(),
+  );
+  assert.ok(problems.some((p) => /Nope/.test(p) && /return/i.test(p)));
+
+  const missing = validateContract(
+    { component: 'Input', kind: 'input', api: { validate: { form: 'functionInput', params: {} } } },
+    new Map(),
+  );
+  assert.ok(missing.some((p) => /validate/.test(p) && /returns/.test(p)));
+});
+
+/* The signature is COMPARED, not only declared. A layer whose validator takes a
+ * number where the contract says string implements a different member; without
+ * this, a functionInput matched on form alone and the modelled signature was
+ * documented and read by nothing -- the hole `default` still has. */
+test('a functionInput whose layer parameter type differs from the contract is reported', () => {
+  const contract = {
+    component: 'Input', kind: 'input',
+    api: { validate: { form: 'functionInput', params: { value: 'string' }, returns: 'string' } },
+  };
+  const problems = compareSurface(
+    contract,
+    [{ name: 'validate', form: 'functionInput', params: { value: 'number' }, returns: 'string', required: false }],
+    'react',
+  );
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /validate/);
+  assert.match(problems[0], /value/);
+  assert.match(problems[0], /number/);
+  assert.match(problems[0], /string/);
+});
+
+test('a functionInput whose layer return differs from the contract is reported', () => {
+  const contract = {
+    component: 'Input', kind: 'input',
+    api: { validate: { form: 'functionInput', params: { value: 'string' }, returns: 'string' } },
+  };
+  const problems = compareSurface(
+    contract,
+    [{ name: 'validate', form: 'functionInput', params: { value: 'string' }, returns: 'boolean', required: false }],
+    'react',
+  );
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /validate/);
+  assert.match(problems[0], /boolean/);
+  assert.match(problems[0], /string/);
+});
+
+test('a functionInput matching the contract exactly reports nothing, and binds to a prop of the same name', () => {
+  const contract = {
+    component: 'Input', kind: 'input',
+    api: { validate: { form: 'functionInput', params: { value: 'string' }, returns: 'string' } },
+  };
+  assert.deepEqual(
+    compareSurface(
+      contract,
+      [{ name: 'validate', form: 'functionInput', params: { value: 'string' }, returns: 'string', required: false }],
+      'react',
+    ),
+    [],
+  );
+  /* No binding-table row changes: a functionInput is neither a slot nor an
+   * event, so bindingName returns the member's own name in both layers. */
+  assert.equal(bindingName('validate', 'functionInput', 'react'), 'validate');
+  assert.equal(bindingName('validate', 'functionInput', 'angular'), 'validate');
+});
+
+/* Required-ness is contracted for the SIX inbound non-slot forms now: a
+ * functionInput is inbound data-shaped API like the other five, and both
+ * platforms can express whether a consumer must supply it. */
+test('a functionInput required by the contract and optional in the layer is reported', () => {
+  const contract = {
+    component: 'Input', kind: 'input',
+    api: { validate: { form: 'functionInput', params: { value: 'string' }, returns: 'string', required: true } },
+  };
+  const problems = compareSurface(
+    contract,
+    [{ name: 'validate', form: 'functionInput', params: { value: 'string' }, returns: 'string', required: false }],
+    'react',
+  );
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /required/);
+  assert.match(problems[0], /optional/);
 });

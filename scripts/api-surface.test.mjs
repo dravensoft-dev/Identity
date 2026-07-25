@@ -36,16 +36,31 @@ test('a function type is an event, and its single parameter is the payload', () 
   assert.deepEqual(classify('() => void'), { form: 'event', payload: null });
 });
 
-test('an inbound function that RETURNS a value is refused -- no form in the vocabulary is one', () => {
-  /* `event` is the only outbound form and it is a name plus a payload; the seven
-   * inbound forms are all data. A formatter -- `(value: number) => string`, which
-   * BarChart, LineChart, DoughnutChart and ThemeToggle all declared before plan
-   * 8B0 -- is inbound AND returns, so it is none of the eight. Before this rule
-   * classify() read it as an event with payload `number`, which would have let a
-   * contract declare it, both layers match it, and check:api report it green. */
-  assert.throws(() => classify('(value: number) => string'), UnrecognisedShape);
-  assert.throws(() => classify('(isDark: boolean) => string'), UnrecognisedShape);
-  assert.throws(() => classify('() => string'), UnrecognisedShape);
+test('an inbound function that RETURNS a value is the ninth form -- the refusal now holds only outside an input control', () => {
+  /* HISTORY, and it is why the rule existed. `event` is the only outbound form
+   * and it is a name plus a payload; the inbound forms were all data. A
+   * formatter -- `(value: number) => string`, which BarChart, LineChart,
+   * DoughnutChart and ThemeToggle all declared before plan 8B0 -- is inbound
+   * AND returns, so it was none of the eight, and classify() refused it: read
+   * as an event with payload `number` it would have let a contract declare a
+   * formatter, both layers match it, and check:api report it green. The charts'
+   * `valueFormatter` became `valueSuffix` for exactly that reason.
+   *
+   * The ninth form reverses the refusal for DATA-ENTRY CONTROLS ONLY. What
+   * changed is where the refusal lives, not that it was dropped: classify()
+   * reads the shape and the GATE holds the restriction -- a functionInput is
+   * legal only in a contract carrying "kind": "input", so a chart declaring a
+   * formatter still fails, now with a message naming the rule instead of a
+   * reader that could not read it. */
+  assert.deepEqual(classify('(value: number) => string'),
+    { form: 'functionInput', params: { value: 'number' }, returns: 'string' });
+  assert.deepEqual(classify('(isDark: boolean) => string'),
+    { form: 'functionInput', params: { isDark: 'boolean' }, returns: 'string' });
+  /* A zero-parameter inbound function is the same form with an empty signature.
+   * Nothing about the arrow says whether it belongs to an input control, which
+   * is the whole reason that judgement sits in the gate and not here. */
+  assert.deepEqual(classify('() => string'),
+    { form: 'functionInput', params: {}, returns: 'string' });
 });
 
 test('an event still reads as an event -- the rule is the return type, not the arrow', () => {
@@ -482,4 +497,59 @@ test('a genuine second event parameter is still refused after the generic-comma 
     /more than one parameter/,
   );
   assert.throws(() => classify('(a: string, b: string) => void'), /more than one parameter/);
+});
+
+/* The ninth form. A data-entry control's inbound function -- validate, parse,
+ * format -- returns a value, so it is neither an event (outbound, void) nor a
+ * datum. The layer refused it everywhere until this form; it is legal only in
+ * an input control, which check-api enforces, not classify. The signature is
+ * modelled: params and return are type names, R4 holds inside. */
+test('classify reads an inbound function that returns a value as a functionInput', () => {
+  assert.deepEqual(classify('(value: string) => string'),
+    { form: 'functionInput', params: { value: 'string' }, returns: 'string' });
+});
+
+test('classify reduces a nullable return to the non-null type', () => {
+  assert.deepEqual(classify('(value: string) => string | null | undefined'),
+    { form: 'functionInput', params: { value: 'string' }, returns: 'string' });
+});
+
+/* R4 holds inside the signature: a platform return is still a violation, so it
+ * surfaces as platform rather than being smuggled in as a functionInput -- the
+ * gate then reports it by name, exactly as it does for a platform member. */
+test('classify surfaces a functionInput whose return is a platform type as platform, not as the ninth form', () => {
+  assert.deepEqual(classify('(value: string) => React.MouseEvent'),
+    { form: 'platform', type: 'React.MouseEvent' });
+});
+
+/* THE BOUNDARY, and it is deliberate. `(item: T) => React.ReactNode` is React's
+ * spelling of a PARAMETERISED SLOT (R3 -- a slot that fills the interior of an
+ * element Arena renders), not of a function whose RESULT Arena consumes as a
+ * value. The reader does not model that shape yet, and it must keep throwing:
+ * silently absorbing a render prop into functionInput would classify a slot as
+ * data and close the door Table.render needs left open. */
+test('classify throws on a function returning a node -- that is a parameterised slot (R3), not a functionInput', () => {
+  assert.throws(() => classify('(item: string) => React.ReactNode'), (err) => {
+    assert.ok(err instanceof UnrecognisedShape);
+    assert.match(err.message, /parameterised slot/i);
+    assert.match(err.message, /R3/);
+    return true;
+  });
+});
+
+/* A void arrow is still an event -- the ninth form did not change that half. */
+test('a void arrow is still an event, not a functionInput', () => {
+  assert.deepEqual(classify('(v: string) => void'), { form: 'event', payload: 'string' });
+});
+
+/* A functionInput's parameter list is split depth-aware, the same way the event
+ * branch's own guard is: the comma inside a generic is not a separator. Unlike
+ * an event, a functionInput may take more than one parameter -- an event carries
+ * exactly one payload, but a validator reading its value alongside something
+ * else is a signature, and the contract models the whole of it. */
+test('classify reads every parameter of a functionInput, and a generic\'s comma is not a separator', () => {
+  assert.deepEqual(classify('(value: string, other: number) => boolean'),
+    { form: 'functionInput', params: { value: 'string', other: 'number' }, returns: 'boolean' });
+  assert.deepEqual(classify('(row: Record<string, unknown>) => string'),
+    { form: 'functionInput', params: { row: 'consumerData' }, returns: 'string' });
 });

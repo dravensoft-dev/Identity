@@ -32,9 +32,9 @@ requirement. The member stays because the behaviour contract is firm. An API dec
 only if every behaviour binding it touches — and every design token it renders from — remains
 exactly as true afterward as before.
 
-## The vocabulary: eight forms
+## The vocabulary: nine forms
 
-A member of any Arena component's API is exactly one of eight forms, and nothing else.
+A member of any Arena component's API is exactly one of nine forms, and nothing else.
 
 | Form | What it is |
 |---|---|
@@ -44,10 +44,11 @@ A member of any Arena component's API is exactly one of eight forms, and nothing
 | **array of primitives** | a homogeneous list of one primitive type |
 | **array of predefined objects** | a homogeneous list of one predefined object |
 | **consumer data** | a homogeneous list, or a single record, whose element type the contract does not describe |
+| **functionInput** | a function the consumer supplies, which the component calls and whose result it uses; **input controls only** |
 | **slot** | a space the consumer fills; may declare parameters the component lends it |
 | **event** | an outbound member: a name plus a declared payload |
 
-Seven of the eight are inbound; **event** is the only outbound one. The two array forms are
+Eight of the nine are inbound; **event** is the only outbound one. The two array forms are
 encoded as one `form: "array"` discriminated by `of`, which is a representation choice and
 not a narrowing of the vocabulary.
 
@@ -65,15 +66,52 @@ hold it in place — it may not be a field of a predefined object (R1 below), an
 takes it in must also declare a route back out. Everything else about it is an authoring rule,
 with the same status R2 and R3 carry.
 
-**An inbound function is none of the eight.** `event` is the only function-shaped member, it is
-outbound, and it returns nothing. A member the component *calls* and whose result it uses — a
-formatter, a label producer — has no form here, and `classify()` in
-`scripts/lib/api-surface.mjs` refuses one rather than reading it as an event with the parameter
-as its payload. Where such a member exists it is replaced by data the component renders itself: the charts'
-`valueFormatter` became `valueSuffix`, a primitive Arena appends to every number it draws —
-the axis tick, the tooltip and the accessible data table alike. That replacement landed when
-the three charts were brought under contract; the reader's refusal shipped first, so no
+**An inbound function is none of the eight — and `functionInput` is the ninth, for data-entry
+controls only.** `event` is the only *outbound* function-shaped member, and it returns nothing. A
+member the component *calls* and whose result it uses — a validator, a parser — is inbound and
+returns a value, so it was none of the eight, and `classify()` in `scripts/lib/api-surface.mjs`
+refused one rather than reading it as an event with the parameter as its payload. Where such a
+member existed outside a data-entry control it was replaced by data the component renders itself:
+the charts' `valueFormatter` became `valueSuffix`, a primitive Arena appends to every number it
+draws — the axis tick, the tooltip and the accessible data table alike. That replacement landed
+when the three charts were brought under contract; the reader's refusal shipped first, so no
 contract could declare the old shape in the meantime.
+
+**The ninth form deliberately reverses that refusal, and only for data-entry controls.** A field
+that validates or parses its own value genuinely needs a function it can call, and no other form
+expresses one: an event is outbound and returns nothing, and a datum cannot decide anything about a
+value it has never seen. Forcing every future input — `NumberField`, `Combobox`, `PasswordField` —
+to re-derive whether its inbound function is an event, a datum, or simply deleted is work the
+vocabulary absorbs once. Two mechanical guards keep it narrow, and both are enforced by
+`check:api` rather than left as authoring rules with R2 and R3's status:
+
+- **It is legal only in a contract declaring `"kind": "input"`** at top level. A `functionInput`
+  member anywhere else fails the gate, by name. A chart declaring a formatter still fails, exactly
+  as it did before this form existed.
+- **Its signature is modelled, not free TypeScript.** A `functionInput` declares `params` (a map of
+  parameter name → type name) and `returns` (a type name), each a primitive or a type `api/types/`
+  declares. **R4 holds inside the signature**: no `React.*` type in a parameter or in the return,
+  and the reader surfaces one as a platform type so the gate reports the rule. The reader reduces
+  a `string | null | undefined` return to `string` — the message, or none.
+
+```json
+"validate": {
+  "form": "functionInput",
+  "params": { "value": "string" },
+  "returns": "string",
+  "description": "Called on the field's value; returns the error message, or empty for valid."
+}
+```
+
+**A return of `React.ReactNode` is not a `functionInput`.** `(item: T) => React.ReactNode` is
+React's spelling of a **parameterised slot** (R3): it fills the interior of an element Arena
+renders rather than producing a value Arena consumes. The reader does not model that shape and
+throws on it, deliberately — absorbing a render prop into the ninth form would classify a slot as
+data and close a door `Table.render` needs left open.
+
+Angular's implementation of a `functionInput` is Plan D's problem and is recorded as debt there:
+Angular's signal idiom discourages a function input, and the contract's modelled signature is what
+Plan D must satisfy.
 
 **The word `prop` does not appear in a contract.** It is React's vocabulary, and a neutral
 contract that used it would already have chosen a layer. A contract declares *members*;
@@ -101,7 +139,9 @@ substitute the element that carries the behaviour contract.
 
 **R4 — No platform types and no escapes.** `React.CSSProperties`, the `{...rest}` spread,
 `React.Key`, `DOMRect`, `React.MouseEvent` and `React.HTMLInputTypeAttribute` are none of the
-eight forms. An Arena enum or an Arena predefined object takes their place. `Record<string,
+nine forms. An Arena enum or an Arena predefined object takes their place, and the rule reaches
+*inside* a `functionInput`'s signature too: neither a parameter nor the return may name one.
+`Record<string,
 unknown>` was on this list and has left it — it is **consumer data** now, the eighth form, and
 that is a promotion of one exact spelling and nothing wider: `Record<string, Widget>` is a
 record of a known type, which is a predefined object, and it is still an R4 violation.
@@ -125,8 +165,8 @@ identical members, idiomatic binding.
 `required` is not only wording for a missing-member message — the contract's `required`
 value is compared against each layer's, and a layer that implements a member as more or
 less required than the contract says is reported like any other divergence. This holds
-for the five inbound non-slot forms: **primitive**, **enum**, **object**, **array** and
-**consumer data**.
+for the six inbound non-slot forms: **primitive**, **enum**, **object**, **array**,
+**consumer data** and **functionInput**.
 
 It does not hold for **slot** or **event**, and that is a statement about what the two
 platforms can express, not an exception written to excuse a divergence. A **slot's**
@@ -158,7 +198,7 @@ written down here and implemented in `bindingName()` in `scripts/check-api.mjs`.
 
 | Contract member | React binds it as | Angular binds it as |
 |---|---|---|
-| primitive, enum, object, array | a prop of the same name | `input()` of the same name |
+| primitive, enum, object, array, consumer data, functionInput | a prop of the same name | `input()` of the same name |
 | slot named `content` | `children` | a bare `<ng-content />` |
 | slot named `x` | a node-valued prop `x` | `<ng-content select="[x]" />` |
 | event named `x` | a function prop `onX` | `output()` named `x` |
@@ -277,16 +317,24 @@ strings is rewritten, and that is the price.
 }
 ```
 
-`form` takes seven values — `primitive`, `enum`, `object`, `array`, `consumerData`, `slot`,
-`event` — and `array` is discriminated by `of`: a primitive type name (`"string"`) makes it an
-array of primitives, a declared type name (`"Crumb"`) makes it an array of predefined objects,
-and the form name `"consumerData"` makes it a list of consumer data.
+`form` takes eight values — `primitive`, `enum`, `object`, `array`, `consumerData`,
+`functionInput`, `slot`, `event` — and `array` is discriminated by `of`: a primitive type name
+(`"string"`) makes it an array of primitives, a declared type name (`"Crumb"`) makes it an array
+of predefined objects, and the form name `"consumerData"` makes it a list of consumer data.
 
 A slot declares its parameters, or none:
 
 ```json
 "mark":  { "form": "slot" },
 "cell":  { "form": "slot", "params": { "value": "string", "row": "consumerData" } }
+```
+
+A `functionInput` declares its whole signature, and the contract carrying it declares
+`"kind": "input"` at top level, or the gate rejects the member:
+
+```json
+{ "component": "Input", "kind": "input",
+  "api": { "validate": { "form": "functionInput", "params": { "value": "string" }, "returns": "string" } } }
 ```
 
 **Consumer data is spelled by form name in every position, because there is nothing to
@@ -399,6 +447,29 @@ R1, R4 and R5 *are* asserted: R1 by the type schema (a field may only be a primi
 enum), R4 by the reader recognising platform types by name and reporting them, R5 by a
 member carrying exactly one `form` and by the reader classifying a mixed union as a union
 rather than as any single form.
+
+### What is mechanical about the ninth form
+
+All three of its guarantees are, which is what separates it from R2 and R3 and from the eighth
+form's authoring rules:
+
+- **The `kind: "input"` guard.** `validateContract` rejects a `functionInput` in a contract that
+  does not declare itself an input control, naming the member. "Input controls only" is a checked
+  restriction, not a convention.
+- **The signature's types.** Every name in `params` and the `returns` name must be a primitive or
+  a type `api/types/` declares, resolved exactly as an object member's enum type is — so **R4
+  holds inside the signature**, and a `functionInput` with no `returns` at all is reported rather
+  than admitted as half a model.
+- **The signature is compared, not only declared.** `compareSurface` matches each layer's
+  parameter map and return against the contract's, key by key and in both directions. A layer
+  whose validator takes a `number` where the contract says `string` is a divergence like any
+  other; matching on form alone would have made the modelled signature documentation that nothing
+  reads — the hole `default` still has, one paragraph above.
+
+What stays outside: the reader refuses a return of `React.ReactNode` rather than classifying it,
+because that shape is a **parameterised slot (R3)** and not a value the component consumes. So a
+render prop cannot reach a contract through this form, and R3's own unverifiability is not widened
+by it.
 
 ### What is mechanical about consumer data, and what is not
 

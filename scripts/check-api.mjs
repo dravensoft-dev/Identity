@@ -8,14 +8,18 @@
  *   1. COVERAGE.        Every contract names a component at least one layer
  *                       implements. The contract's existence IS the coverage
  *                       claim, so no separate record can go stale against it.
- *   2. FORM.            No member uses anything outside the eight forms.
+ *   2. FORM.            No member uses anything outside the nine forms, and the
+ *                       ninth -- functionInput -- only in a contract declaring
+ *                       `"kind": "input"`, with its modelled signature's own
+ *                       types resolved the same way any other type name is.
  *   3. AGREEMENT.       Every implementing layer declares exactly the contract's
  *                       members, same name, same form, same required-ness. An
  *                       OPTIONAL member is still a declared member: `required:
  *                       false` governs whether a CONSUMER must supply it, never
  *                       whether a LAYER must offer it. Required-ness itself is
- *                       compared only for the five inbound non-slot forms
- *                       (primitive, enum, object, array, consumerData) -- a
+ *                       compared only for the six inbound non-slot forms
+ *                       (primitive, enum, object, array, consumerData,
+ *                       functionInput) -- a
  *                       slot's and an event's required-ness is not comparable
  *                       across layers,
  *                       because neither platform pair can express it: Angular's
@@ -70,13 +74,16 @@ import { reactSurface, angularSurface, UnrecognisedShape } from './lib/api-surfa
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** The seven encoded `form` values, covering the vocabulary's eight forms:
+/** The eight encoded `form` values, covering the vocabulary's nine forms:
  *  `array` covers both array forms, discriminated by `of` -- a representation
  *  choice, not a narrowing of the vocabulary. `consumerData` is the eighth
  *  form, and it is the only one whose `of`/`params`/`payload` position carries
  *  a FORM name where the others carry a declared TYPE name, because there is
- *  nothing to declare: the contract does not describe the element at all. */
-const FORMS = new Set(['primitive', 'enum', 'object', 'array', 'slot', 'event', 'consumerData']);
+ *  nothing to declare: the contract does not describe the element at all.
+ *  `functionInput` is the ninth, and the only one this gate restricts by
+ *  CONTRACT rather than by member: it is legal only where the contract declares
+ *  `"kind": "input"` -- see validateContract below. */
+const FORMS = new Set(['primitive', 'enum', 'object', 'array', 'slot', 'event', 'consumerData', 'functionInput']);
 const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);
 
 /** React groups, the same list check-behaviour.mjs walks. */
@@ -172,7 +179,7 @@ export function validateContract(contract, typeNames) {
   const routes = [];
   for (const [member, spec] of Object.entries(contract.api ?? {})) {
     if (!FORMS.has(spec.form)) {
-      problems.push(`${where}.${member}: form "${spec.form}" is none of the eight — see api/README.md`);
+      problems.push(`${where}.${member}: form "${spec.form}" is none of the nine — see api/README.md`);
       continue;
     }
     if (spec.form === 'primitive' && !PRIMITIVE_TYPES.has(spec.type)) {
@@ -186,9 +193,43 @@ export function validateContract(contract, typeNames) {
     if (spec.form === 'event' && spec.payload && spec.payload !== CONSUMER_DATA) {
       problems.push(...[declared(spec.payload, 'object')].filter(Boolean));
     }
+    /* The parameter loop runs for ANY member carrying `params` -- a slot's and,
+     * since the ninth form, a functionInput's, which is why the message names
+     * which one it is reading rather than calling every parameter a slot's. */
+    const paramOf = spec.form === 'functionInput' ? 'functionInput parameter' : 'slot parameter';
     for (const [param, type] of Object.entries(spec.params ?? {})) {
       if (PRIMITIVE_TYPES.has(type) || type === CONSUMER_DATA) continue;
-      if (!typeNames.has(type)) problems.push(`${where}.${member}: slot parameter "${param}" names undeclared type "${type}"`);
+      if (!typeNames.has(type)) problems.push(`${where}.${member}: ${paramOf} "${param}" names undeclared type "${type}"`);
+    }
+
+    /* The ninth form, and both of its mechanical guards.
+     *
+     * The first is the CONTRACT-level one: a functionInput is legal only in a
+     * data-entry control, and the contract says so by carrying `"kind":
+     * "input"` at top level. That makes the maintainer's restriction checkable
+     * rather than a prose convention with R2 and R3's status -- a chart
+     * declaring a formatter fails here, by name.
+     *
+     * The second is the signature. A functionInput models its own signature --
+     * `params` (name -> type) and `returns` -- and R4 holds INSIDE it: every
+     * type named there is a primitive or a type api/types/ declares, so no
+     * platform type can enter through a parameter or a return. The parameters
+     * are checked by the loop above; the return is checked here. A functionInput
+     * with no `returns` at all is not modelled: an inbound function whose result
+     * the component uses must say what that result is, or the form is
+     * indistinguishable from an event. */
+    if (spec.form === 'functionInput') {
+      if (contract.kind !== 'input') {
+        problems.push(
+          `${where}.${member}: a functionInput is legal only in a contract with "kind": "input" — `
+          + `the ninth form is for data-entry controls (api/README.md)`,
+        );
+      }
+      if (spec.returns === undefined) {
+        problems.push(`${where}.${member}: a functionInput declares no "returns" — its signature is modelled, not free TypeScript`);
+      } else if (!PRIMITIVE_TYPES.has(spec.returns) && !typeNames.has(spec.returns)) {
+        problems.push(`${where}.${member}: functionInput return names undeclared type "${spec.returns}"`);
+      }
     }
 
     if (spec.form === CONSUMER_DATA || (spec.form === 'array' && spec.of === CONSUMER_DATA)) held.push(member);
@@ -266,7 +307,7 @@ export function compareSurface(contract, members, layer, types = new Map()) {
       rawSeen.add(m.name);
     }
     if (m.form === 'platform') {
-      problems.push(`${where}.${m.name}: "${m.type}" is a platform type and none of the eight forms — R4`);
+      problems.push(`${where}.${m.name}: "${m.type}" is a platform type and none of the nine forms — R4`);
       continue;
     }
     if (m.form === 'union') {
@@ -328,7 +369,7 @@ export function compareSurface(contract, members, layer, types = new Map()) {
      * form is wrong reports that, not a second problem about the same
      * defect. */
     if (spec.form === 'primitive' || spec.form === 'enum' || spec.form === 'object'
-      || spec.form === 'array' || spec.form === 'consumerData') {
+      || spec.form === 'array' || spec.form === 'consumerData' || spec.form === 'functionInput') {
       const contractRequired = Boolean(spec.required);
       const layerRequired = Boolean(m.required);
       if (contractRequired !== layerRequired) {
@@ -343,6 +384,29 @@ export function compareSurface(contract, members, layer, types = new Map()) {
     }
     if (spec.form === 'event' && (m.payload ?? null) !== (spec.payload ?? null)) {
       problems.push(`${where}.${m.name}: payload ${m.payload ?? 'none'}, contract says ${spec.payload ?? 'none'}`);
+    }
+    /* The ninth form's signature is COMPARED, not merely declared. The whole
+     * claim the form makes is that its signature is modelled; matching on FORM
+     * alone would let a layer take a number where the contract says string and
+     * call that agreement, which is exactly the hole `default` still has --
+     * documented in the contract format and read by nothing. Compared key by
+     * key in both directions, and the return alongside it. */
+    if (spec.form === 'functionInput') {
+      const layerParams = m.params ?? {};
+      const contractParams = spec.params ?? {};
+      const names = new Set([...Object.keys(contractParams), ...Object.keys(layerParams)]);
+      for (const param of names) {
+        if (!(param in contractParams)) {
+          problems.push(`${where}.${m.name}: declares parameter "${param}: ${layerParams[param]}", which the contract's signature does not name`);
+        } else if (!(param in layerParams)) {
+          problems.push(`${where}.${m.name}: does not declare parameter "${param}" (contract says ${contractParams[param]})`);
+        } else if (layerParams[param] !== contractParams[param]) {
+          problems.push(`${where}.${m.name}: parameter "${param}" is ${layerParams[param]}, contract says ${contractParams[param]}`);
+        }
+      }
+      if ((m.returns ?? null) !== (spec.returns ?? null)) {
+        problems.push(`${where}.${m.name}: returns ${m.returns ?? 'nothing'}, contract says ${spec.returns ?? 'nothing'}`);
+      }
     }
     if ((spec.form === 'enum' || spec.form === 'object') && m.type && m.type !== spec.type) {
       problems.push(`${where}.${m.name}: typed ${m.type}, contract says ${spec.type}`);
@@ -457,7 +521,7 @@ function main() {
         continue;
       }
       for (const base of surface.heritage ?? []) {
-        problems.push(`${layer}/${contract.component}: extends "${base}" — the {...rest} escape is none of the eight forms, R4`);
+        problems.push(`${layer}/${contract.component}: extends "${base}" — the {...rest} escape is none of the nine forms, R4`);
       }
       problems.push(...compareSurface(contract, surface.members, layer, typesByName));
     }

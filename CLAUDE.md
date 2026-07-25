@@ -147,9 +147,9 @@ the component stays exactly as broken.
 
 **Arena's third contract is the API, and it lives at `api/`.** `api/components/<Name>.json`
 states, once and neutrally, the members that component's API presents; every layer
-implementing it implements exactly those members. A member is one of **eight forms** —
+implementing it implements exactly those members. A member is one of **nine forms** —
 primitive, enum, predefined object, array of primitives, array of predefined objects,
-consumer data, slot, event — and five derived rules govern them (R1 an object is pure data
+consumer data, functionInput, slot, event — and five derived rules govern them (R1 an object is pure data
 with known fields, R2 who draws decides data versus slot, R3 a parameterised slot fills and
 never replaces, R4 no platform types and no escapes, R5 no unions between forms).
 **Consumer data is the eighth and the one the contract deliberately does not describe**: a
@@ -161,6 +161,17 @@ form admitting any record would re-legalise the escape R4 closed. Two things abo
 mechanical — it may not be a field of a predefined object, and a member taking it in must
 declare a route back out (a slot parameter or an event payload) or it is data Arena can
 never surface — and everything else is an authoring rule with R2 and R3's status.
+**`functionInput` is the ninth, and the narrowest**: a function the consumer supplies, which
+the component calls on its value and whose result it uses — a validator, a parser. It exists
+for data-entry controls and nothing else, and that is machine-checked rather than written
+down: `check:api` rejects one in any contract not declaring `"kind": "input"` at top level.
+Its signature is modelled (`params` name → type, `returns`), R4 holds inside it, and the gate
+compares the signature between the contract and each layer. It deliberately reverses the
+refusal the layer carried until now — an inbound function that returns a value was none of
+the eight, which is why the charts' `valueFormatter` became `valueSuffix` — and it reverses
+it for input controls alone; a chart declaring a formatter still fails. A return of
+`React.ReactNode` is **not** one: that is a parameterised slot (R3), and the reader throws on
+it rather than admitting a render prop through this form.
 `api/README.md` is the normative
 statement and the first thing a new platform target reads, the way `tokens/src/TYPE-MAP.md`
 is for the token layer. Shared objects and enums are declared once in `api/types/` and

@@ -48,9 +48,9 @@ capability contract**. One neutral contract per component, stating the members t
 component's API presents. Every layer implementing that component implements exactly
 those members. An API divergence stops being a recorded difference and becomes a defect.
 
-### The vocabulary: eight forms
+### The vocabulary: nine forms
 
-A member of any Arena component's API is exactly one of eight forms, and nothing else:
+A member of any Arena component's API is exactly one of nine forms, and nothing else:
 
 | Form | What it is |
 |---|---|
@@ -60,10 +60,11 @@ A member of any Arena component's API is exactly one of eight forms, and nothing
 | **array of primitives** | a homogeneous list of one primitive type |
 | **array of predefined objects** | a homogeneous list of one predefined object |
 | **consumer data** | a homogeneous list, or a single record, whose element type the contract does not describe |
+| **functionInput** | a function the consumer supplies, which the component calls and whose result it uses; **input controls only** |
 | **slot** | a space the consumer fills; may declare parameters the component lends it |
 | **event** | an outbound member: a name plus a declared payload |
 
-Seven of the eight are inbound; **event** is the only outbound one. Arrays are one encoded
+Eight of the nine are inbound; **event** is the only outbound one. Arrays are one encoded
 form discriminated by what they hold (see *Contract format*), which is a representation
 choice and not a narrowing of the vocabulary.
 
@@ -78,6 +79,19 @@ choice and not a narrowing of the vocabulary.
 > extension below, and the rule that a member taking it in must declare a route back out
 > (a slot parameter or an event payload) — and everything else is an authoring rule with
 > R2 and R3's status. `api/README.md` is the normative statement of all of it.
+
+> **Added by Plan 8C2, Task 1b — the ninth form.** **`functionInput`**: a function the
+> consumer supplies, which the component calls on its value and whose result it uses — a
+> validator, a parser. It is neither an event (outbound, returning nothing) nor a datum,
+> and the layer refused the shape everywhere until now: an inbound function that returns a
+> value was none of the eight, which is why the charts' `valueFormatter` became
+> `valueSuffix`. This **deliberately reverses that refusal for data-entry controls only**.
+> Two guards keep it narrow and both are mechanical, not authoring rules: it is legal only
+> in a contract declaring `"kind": "input"` at top level, and its signature is modelled —
+> `params` (name → type) and `returns`, each a primitive or a declared type, with R4
+> holding inside — and compared against every layer's. A return of `React.ReactNode` is
+> **not** one: that is a parameterised slot (R3), and the reader throws rather than
+> admitting a render prop through this form. `api/README.md` is the normative statement.
 
 The word **prop** does not appear in a contract. It is React's vocabulary, and a neutral
 contract that used it would already have chosen a layer. A contract declares *members*;
@@ -124,7 +138,8 @@ substitute the element that carries the behaviour contract.
 
 **R4 — No platform types and no escapes.** `React.CSSProperties`, the `{...rest}` spread,
 `React.Key`, `DOMRect`, `React.MouseEvent` and `React.HTMLInputTypeAttribute` are none of
-the eight forms. An Arena enum or an Arena predefined object takes their place.
+the nine forms. An Arena enum or an Arena predefined object takes their place, and the rule
+reaches inside a `functionInput`'s modelled signature too (Plan 8C2, Task 1b).
 
 > **Re-measured after Plan 8C1, Task 1b.** `Record<string, unknown>` was on that list and
 > has left it: it is **consumer data**, the eighth form. That is a promotion of one exact
@@ -170,7 +185,7 @@ identical members, idiomatic binding.
 
 ```
 api/
-  README.md                    the normative vocabulary: eight forms, R1-R5
+  README.md                    the normative vocabulary: nine forms, R1-R5
   types/
     crumb.json                 predefined objects and enums, neutral and shared
     tone.json
@@ -259,7 +274,7 @@ reopened.
    least one layer. The contract's existence *is* the coverage claim, so no separate
    record can go stale against it. A contract naming a component no layer implements
    fails.
-2. **Form.** No member uses anything outside the eight forms. Read from React's `.d.ts`
+2. **Form.** No member uses anything outside the nine forms. Read from React's `.d.ts`
    and from Angular's `input()` / `output()` / `model()` declarations.
 3. **Agreement.** Every layer implementing a contracted component declares exactly the
    contract's members — same name, same form. Not fewer, not more. An **optional** member
@@ -336,7 +351,7 @@ five work.
 
 ## A.1 — `api/README.md`
 
-The normative statement of the eight forms and R1-R5, written the way
+The normative statement of the nine forms and R1-R5, written the way
 `tokens/src/TYPE-MAP.md` states the DTCG type table: the first thing a new platform
 target reads. `CLAUDE.md` gains an *Architecture* paragraph pointing at it, in the same
 register as the behaviour-contract paragraphs.
@@ -362,9 +377,9 @@ there too.
 ## A.4 — The three demonstration components
 
 Three rather than two, because two leave one of the vocabulary's forms unexercised by the
-gate on the day it ships. Together these cover six of the eight forms and all five rules —
-six of seven when they were chosen; the eighth form landed later, in Plan 8C1's Task 1b,
-and no demonstration component exercises it.
+gate on the day it ships. Together these cover six of the nine forms and all five rules —
+six of seven when they were chosen; the eighth form landed later, in Plan 8C1's Task 1b, and
+the ninth in Plan 8C2's, and no demonstration component exercises either.
 
 **`AppLogo`** — exercises **slot**, **enum**, **primitive**, and R4.
 Its `mark` is a slot in both layers already, differently expressed, and the contract
@@ -600,6 +615,13 @@ about them against the tree at `HEAD`, so 8B4 opens with measurements rather tha
   `UnrecognisedShape` on exactly that shape — an inbound function that *returns* a value is none of
   the eight forms — so no chart contract can be written until it becomes `valueSuffix`, per
   `api/README.md`.
+
+  > **Re-measured after Plan 8C2, Task 1b — the ninth form.** `classify()` no longer throws on
+  > that shape: an inbound function that returns a value is a **`functionInput`** now. The
+  > verdict for the charts is unchanged, and the reason moved rather than weakened — a
+  > `functionInput` is legal only in a contract declaring `"kind": "input"`, which a chart is
+  > not, so `check:api` rejects a chart formatter by name instead of the reader refusing to
+  > read it. `valueSuffix` stands.
 - **React's `CatSlot = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8` reaches `classify()`'s union branch** with
   unquoted parts and is returned as `{ form: 'union' }` — an R5 violation. It becomes a bare
   `number`, per `api/README.md`'s worked example. **Open for 8B4's audit:** `LineChart.d.ts`
@@ -663,6 +685,14 @@ rendered tree — does not read contracts.
 > formatter, and it may well be an event plus a `error` primitive rather than a suffix — but
 > the *rule* is settled and the audit does not have to re-derive it.
 >
+> **Superseded in part by Plan 8C2, Task 1b — the ninth form.** The prediction that
+> `Input.validate` "is a genuinely different problem from a number formatter" is what the ninth
+> form settled: `functionInput` exists for exactly this member, and `Input.validate` keeps its
+> shape under a contract carrying `"kind": "input"`, with the signature modelled rather than
+> deleted. `Calendar.renderEvent` does **not** move with it: a return of `React.ReactNode` is a
+> parameterised slot (R3), which the reader still throws on, so that half of this measurement
+> stands exactly as written.
+>
 > Two more facts for Plan C, measured at the same time:
 >
 > - **`Calendar.d.ts:5` declares its own local `CatSlot = 1 | … | 8`**, importing nothing from
@@ -701,7 +731,7 @@ can check the answer**, and one of the two may require extending the reader:
   leaves the payload (R4) and the item alone travels. Applying that answer here makes the
   member readable with no reader change; deciding otherwise means changing the convention,
   which is a change to `api/README.md`, not to `SideNav`.
-- **`Table.d.ts`** — a generic `TableColumn<T>`. Generics are outside the eight forms
+- **`Table.d.ts`** — a generic `TableColumn<T>`. Generics are outside the nine forms
   entirely, and no form in the vocabulary expresses one. This is the harder of the two:
   it is not a member that violates a rule, it is a shape the vocabulary has no word for.
 
