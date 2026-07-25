@@ -311,7 +311,8 @@ specification defines for that element**: they change what the control is or doe
 omitted them would be describing a narrower control than the one Arena ships. Global attributes,
 ARIA attributes and the generic DOM handlers are not members — in Angular a consumer writes those on
 the host directly, which is the same reason `style` and the `{...rest}` spread were deliberately not
-ported (`components-divergences.md:681`, `:989`). So `<button>` contributes `type`, `disabled`,
+ported (`components-divergences.md`, "An Angular primitive host-binds its root; a React component
+renders a wrapper", which states it once for every host-bound primitive). So `<button>` contributes `type`, `disabled`,
 `name`, `value`, `autoFocus` and the six `form*` overrides, plus a `click` event; `<span>` and
 `<div>` contribute nothing at all, and flattening a component built on one of those adds no member
 beyond the `content` slot it already accepted through `children`.
