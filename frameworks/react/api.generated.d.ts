@@ -116,6 +116,9 @@ export type Orientation = 'horizontal' | 'vertical';
 /** How the actions block aligns against the title in PageHead's wide layout. */
 export type PageHeadAlign = 'start' | 'center';
 
+/** The bar's colour. No neutral and no warning: a progress bar reports work, and work is either running, done or failed. */
+export type ProgressTone = 'accent' | 'gold' | 'success' | 'danger' | 'info';
+
 /** One option in a SegmentedControl. */
 export interface SegmentOption {
   /** What the option selects, and what `change` carries. */
@@ -167,6 +170,9 @@ export interface TabItem {
 
 /** The tag's emphasis colour, per the Badge/Tag tone taxonomy. */
 export type TagTone = 'neutral' | 'primary' | 'success' | 'warning' | 'danger';
+
+/** The side bar's colour. Narrower than Tone: a toast reports an outcome, and there is no informational outcome a toast should interrupt for. */
+export type ToastTone = 'neutral' | 'success' | 'danger' | 'gold';
 
 /** What state a value IS in right now, as against how it moved. Badge's vocabulary, so one set of tone names covers the system rather than a second set that is nearly the same. */
 export type Tone = 'neutral' | 'accent' | 'gold' | 'success' | 'warning' | 'danger' | 'info';

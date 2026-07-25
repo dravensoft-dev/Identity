@@ -16,10 +16,13 @@ function App(){
     setToasts((ts) => [...ts, { ...t, id }]);
     /* A toast carrying a button asks the reader to DECIDE, not only to read, and
      * gets longer for it (WCAG 2.2.1). `persist` overrides both and never
-     * auto-dismisses -- mandatory in critical states, per README H1. */
+     * auto-dismisses -- mandatory in critical states, per README H1.
+     * The test is `actionLabel`, because that is what makes Toast render a button:
+     * `onAction` is an event handler and a toast can carry one with no label and
+     * no button, which would buy the longer clock for a toast nobody can act on. */
     if (t.persist) return;
     setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)),
-      t.action ? dismissActionable : dismissDefault);
+      t.actionLabel ? dismissActionable : dismissDefault);
   };
 
   const nav = (id) => {
@@ -35,7 +38,7 @@ function App(){
       onToast={() => {
         pushToast({ tone: 'success', title: 'Deployment in progress', message: 'build #4822 → production' });
         pushToast({ tone: 'neutral', title: 'Previous build still serving traffic', message: 'build #4821 → production',
-          action: { label: 'Undo', onClick: () => {} } });
+          actionLabel: 'Undo', onAction: () => {} });
       }} />;
   } else {
     view = <DashboardScreen onNav={nav}
@@ -47,7 +50,8 @@ function App(){
       {view}
       <div className="toast-wrap">
         {toasts.map((t) => (
-          <Toast key={t.id} tone={t.tone} title={t.title} message={t.message} persist={t.persist} action={t.action}
+          <Toast key={t.id} tone={t.tone} title={t.title} message={t.message} persist={t.persist}
+            actionLabel={t.actionLabel} onAction={t.onAction} dismissible
             onClose={() => setToasts((ts) => ts.filter((x) => x.id !== t.id))} />
         ))}
       </div>

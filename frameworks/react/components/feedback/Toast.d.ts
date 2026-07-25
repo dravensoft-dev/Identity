@@ -1,12 +1,22 @@
 import * as React from 'react';
-/** Ephemeral notification. Side bar colored by tone. `action` = button (Undo / Retry / View logs). */
-export interface ToastAction { label: string; onClick: () => void; }
+import type { ToastTone } from '../../api.generated';
+/** Ephemeral notification. Side bar colored by tone; `actionLabel` + `onAction` add a button (Undo / Retry / View logs). */
 export interface ToastProps {
-  title?: string; message?: string;
-  tone?: 'neutral' | 'success' | 'danger' | 'gold';
-  action?: ToastAction;
-  /** Disables the host's auto-dismiss (H1). Always use it in critical/error states. */
+  /** The bold lead line. */
+  title?: string;
+  /** The body. */
+  message?: string;
+  /** The side bar's colour, and whether the toast announces assertively. */
+  tone?: ToastTone;
+  /** The label of the single inline action — Undo, Retry, View logs. Absent renders no action. */
+  actionLabel?: string;
+  /** The inline action was activated. */
+  onAction?: () => void;
+  /** Disables the host's auto-dismiss and shows the Pinned marker (H1). Mandatory in an error state. */
   persist?: boolean;
-  onClose?: () => void; style?: React.CSSProperties;
+  /** Whether the × is shown. Both layers gate the × on this — Angular cannot detect a `close` listener. */
+  dismissible?: boolean;
+  /** The × was activated. */
+  onClose?: () => void;
 }
 export function Toast(props: ToastProps): JSX.Element;

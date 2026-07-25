@@ -15,25 +15,25 @@ function useIndeterminate() {
   }, []);
 }
 const TONES = { accent: "var(--crimson)", gold: "var(--gold)", success: "var(--success)", danger: "var(--danger)", info: "var(--info)" };
-export function ProgressBar({ value = 0, indeterminate = false, tone = "accent", label, showValue = true, size = "md", style }) {
+export function ProgressBar({ progressPercentage = 0, indeterminate = false, tone = "accent", label, showPercentage = true, size = "md" }) {
   useIndeterminate();
   const color = TONES[tone] || TONES.accent;
   const h = size === "sm" ? "var(--sp-1)" : size === "lg" ? "calc(var(--sp-1) * 2.5)" : "calc(var(--sp-1) * 1.5)";
-  const pct = Math.max(0, Math.min(100, Math.round(value)));
+  const pct = Math.max(0, Math.min(100, Math.round(progressPercentage)));
   return React.createElement("div", {
-    style: { width: "100%", ...style }
-  }, (label || showValue && !indeterminate) && React.createElement("div", {
+    style: { width: "100%" }
+  }, (label || showPercentage && !indeterminate) && React.createElement("div", {
     style: { display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: "calc(var(--sp-1) * 2)", gap: "calc(var(--sp-1) * 3)" }
   }, label && React.createElement("span", {
     style: { fontFamily: "var(--font-body)", fontSize: "var(--dz-text-md)", color: "var(--bone-dim)" }
-  }, label), showValue && !indeterminate && React.createElement("span", {
+  }, label), showPercentage && !indeterminate && React.createElement("span", {
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-sm)", color: "var(--mute)" }
   }, pct, "%")), React.createElement("div", {
     role: "progressbar",
     "aria-valuenow": indeterminate ? undefined : pct,
     "aria-valuemin": 0,
     "aria-valuemax": 100,
-    "aria-label": typeof label === "string" ? label : "Progress",
+    "aria-label": label || "Progress",
     className: indeterminate ? "arena-prog-ind" : undefined,
     style: { position: "relative", height: h, borderRadius: "var(--r-pill)", background: "var(--color-base-300)", overflow: "hidden", color }
   }, !indeterminate && React.createElement("span", {
