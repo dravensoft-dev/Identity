@@ -19,6 +19,8 @@ Copy `components/charts/chart-internals.js` and `use-container-width.js` alongsi
 
 The anchor is internal, so prev/Today/next work with nothing wired. `onRangeChange` reports the new anchor date — take it as the cue to refetch. Pass `anchorDate` only when you want to drive the date yourself; it wins whenever it changes.
 
+**Keyboard.** The schedule is one tab stop, not one per event. Tab lands on a single hour cell; a *row is a day*, so Left/Right move a day and Up/Down move an hour, Home/End jump to the first/last hour of the focused day, and focus clamps at every edge. Enter steps into the first event overlapping the focused hour, Escape steps back out to the cell.
+
 State goes on a non-chromatic channel, because color is spoken for:
 
 ```jsx

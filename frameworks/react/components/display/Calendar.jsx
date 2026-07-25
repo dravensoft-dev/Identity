@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useContainerWidth, readBreakpoint } from '../../use-container-width.js';
 import { catColor } from '../charts/chart-internals.js';
 import { calendarHourH } from '../../tokens.generated.js';
@@ -72,12 +72,121 @@ export function Calendar({
   const hours = [];
   for (let m = Math.ceil(startMin / 60) * 60; m <= endMin; m += 60) hours.push(m);
 
+  /* One focusable cell per hour slot: from this hour line to the next, and from
+     the last line to the day's close. A slot with no height is not a cell -- it
+     would be a tab stop with no target. Derived from `hours` rather than
+     re-counted, so the cells and the lines can never disagree. */
+  const slots = hours
+    .map((m, i) => ({ start: m, end: i + 1 < hours.length ? hours[i + 1] : endMin }))
+    .filter((s) => s.end > s.start);
+
   const today = todayIso(zone);
   const nowMin = useMemo(() => nowMinutes(zone), [zone, tick]);
   const showNow = days.includes(today) && nowMin >= startMin && nowMin <= endMin;
 
   const step = activeView === 'day' ? 1 : 7;
   const goto = (iso) => { setAnchor(iso); onRangeChange && onRangeChange(iso); };
+
+  /* ------------------------------------------------------------------ *
+   * Keyboard navigation of the grid.
+   *
+   * THE GRID IS TRANSPOSED, and the next reader will assume otherwise: a
+   * role="row" here is a DAY COLUMN, and the cells inside it are that day's
+   * hour slots. The DOM is column-major because every event block is
+   * absolutely positioned inside its own day, and re-laying it out row-major
+   * would move the layout. grid.json prescribes no orientation, so the
+   * mapping is chosen to keep the eye and the ARIA row agreeing where they
+   * can: ArrowLeft/ArrowRight follow the VISUAL direction and therefore
+   * cross rows (day -+1), while ArrowUp/ArrowDown and Home/End stay inside
+   * the focused row (hour -+1, first hour, last hour). Every handled key
+   * clamps at the edge, so focus never leaves the grid.
+   * ------------------------------------------------------------------ */
+  const gridRef = useRef(null);
+  /** ev.id -> the rendered event block, so Enter can reach into a cell without
+   *  a selector. A ref map rather than a querySelector: an id is consumer data
+   *  and may hold anything a CSS selector would have to escape. */
+  const eventRefs = useRef(new Map());
+  const [gridFocused, setGridFocused] = useState(false);
+  const [cursor, setCursor] = useState({ day: 0, hour: 0 });
+
+  /* The week changes under the cursor -- the range moves, hideEmptyWeekend
+     gains or drops Sunday, dayStart follows the earliest event -- so it is
+     clamped at render rather than trusted. */
+  const curDay = Math.min(Math.max(cursor.day, 0), Math.max(days.length - 1, 0));
+  const curHour = Math.min(Math.max(cursor.hour, 0), Math.max(slots.length - 1, 0));
+
+  /* Move DOM focus only when the grid ALREADY holds it. On mount
+     document.activeElement is <body>, so a calendar on a page steals nothing;
+     once a cell has been focused the roving stop follows the cursor. */
+  useEffect(() => {
+    const g = gridRef.current;
+    if (!g) return;
+    const active = g.ownerDocument.activeElement;
+    if (!active || !g.contains(active)) return;
+    const cell = g.querySelector('[role="gridcell"][tabindex="0"]');
+    if (cell && cell !== active) cell.focus();
+  }, [curDay, curHour]);
+
+  const focusCursorCell = () => {
+    const cell = gridRef.current && gridRef.current.querySelector('[role="gridcell"][tabindex="0"]');
+    if (cell) cell.focus();
+  };
+
+  const isEventNode = (node) => {
+    for (const n of eventRefs.current.values()) if (n === node) return true;
+    return false;
+  };
+
+  const onGridKeyDown = (e) => {
+    const t = e.target;
+    if (!t || typeof t.getAttribute !== 'function') return;
+
+    /* Cells and event blocks are siblings inside the day column, so a block's
+       keydown never bubbles through a cell and the two guards cannot overlap. */
+    if (t.getAttribute('role') === 'gridcell') {
+      let day = curDay;
+      let hour = curHour;
+      if (e.key === 'ArrowLeft') day = Math.max(0, day - 1);
+      else if (e.key === 'ArrowRight') day = Math.min(days.length - 1, day + 1);
+      else if (e.key === 'ArrowUp') hour = Math.max(0, hour - 1);
+      else if (e.key === 'ArrowDown') hour = Math.min(slots.length - 1, hour + 1);
+      /* Home and End stay INSIDE the focused row, which here is one day: they are
+         the first and last hour of that day, never the first day of the week.
+         grid.json says "the current row" for both, and resetting the day as well
+         would move focus -- convincingly, and to the wrong cell. */
+      else if (e.key === 'Home') hour = 0;
+      else if (e.key === 'End') hour = slots.length - 1;
+      else if (e.key === 'Enter') {
+        /* The event blocks left the page Tab sequence when the grid became one
+           roving stop, and removing them outright would be a net loss for a
+           keyboard user who could activate an event before. APG's answer is
+           that they stay reachable from WITHIN the cell: Enter steps in to the
+           first event whose time range intersects this slot, Escape steps back
+           out. A slot with nothing in it keeps focus where it is. */
+        e.preventDefault();
+        const s = slots[curHour];
+        const hit = s && (byDay[curDay] || []).find((p) => p.startMin < s.end && p.endMin > s.start);
+        const node = hit && eventRefs.current.get(hit.ev.id);
+        if (node) node.focus();
+        return;
+      } else return;
+      /* preventDefault whether or not the cursor moves: the key was handled, and
+         letting it through would scroll the box under a cursor that just refused
+         to move. */
+      e.preventDefault();
+      /* Bail out when the clamp landed where the cursor already was. A fresh
+         object always fails Object.is, so without this an arrow held down at an
+         edge re-renders the whole grid once per repeat to move nothing -- and
+         every one of those renders rebuilds a cell per hour per day. */
+      if (day !== curDay || hour !== curHour) setCursor({ day, hour });
+      return;
+    }
+
+    if (e.key === 'Escape' && isEventNode(t)) {
+      e.preventDefault();
+      focusCursorCell();
+    }
+  };
 
   const label = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-column-header)', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 'var(--fw-bold)' };
   const navBtn = (dir) => (
@@ -138,17 +247,54 @@ export function Calendar({
             ))}
           </div>
 
-          <div style={{ flex: 1, minWidth: 0, display: 'flex', position: 'relative' }}>
+          {/* The grid is THIS element and not the scroll box or the <section>:
+              its only children that are not aria-hidden are the day columns, so
+              grid > row is direct and the hour-label gutter stays outside the
+              grid entirely. The <section> keeps its own aria-label -- taking it
+              away would demote a named region landmark to a generic element --
+              and the grid carries a name of its own for roles.label to attach
+              to. */}
+          <div ref={gridRef} role="grid" aria-label={`Schedule grid, ${rangeTitle(days)}`}
+            onKeyDown={onGridKeyDown}
+            onFocus={() => setGridFocused(true)}
+            onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setGridFocused(false); }}
+            style={{ flex: 1, minWidth: 0, display: 'flex', position: 'relative' }}>
             {hours.map((m) => (
               <div key={m} aria-hidden="true" style={{ position: 'absolute', top: y(m), left: 0, right: 0,
                 borderTop: 'var(--bw) solid var(--color-base-300)', pointerEvents: 'none' }} />
             ))}
 
             {days.map((d, di) => (
-              <div key={d} onClick={onDateClick ? () => onDateClick(d) : undefined}
+              <div key={d} role="row"
+                aria-label={formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' })}
+                onClick={onDateClick ? () => onDateClick(d) : undefined}
                 style={{ flex: 1, minWidth: 0, position: 'relative',
                   borderLeft: di === 0 ? 'none' : 'var(--bw) solid var(--color-base-300)',
                   cursor: onDateClick ? 'pointer' : 'default' }}>
+
+                {/* The hour cells come BEFORE the event blocks in DOM order, so
+                    the blocks keep painting above them and keep receiving their
+                    own clicks. The cells add no box: they are absolutely
+                    positioned and transparent, and the focus ring is drawn
+                    INSET -- an outward ring would be clipped by the scroll box
+                    at the grid's edges and would overlap its neighbours. */}
+                {slots.map((s, si) => {
+                  const isCursor = di === curDay && si === curHour;
+                  return (
+                    <div key={s.start} role="gridcell" aria-label={formatHM(s.start)}
+                      tabIndex={isCursor ? 0 : -1}
+                      /* A cell reached by pointer or by the Escape route takes the
+                         cursor with it; the same guard as the key handler, because
+                         the effect below focuses the cursor cell and its focus event
+                         would otherwise re-render the grid a second time per move. */
+                      onFocus={() => { if (di !== curDay || si !== curHour) setCursor({ day: di, hour: si }); }}
+                      style={{ position: 'absolute', top: y(s.start), left: 0, right: 0,
+                        height: y(s.end) - y(s.start), outline: 'none',
+                        boxShadow: isCursor && gridFocused
+                          ? 'inset 0 0 0 var(--focus-width) var(--focus-ring)' : undefined }} />
+                  );
+                })}
+
                 {byDay[di].map((p) => {
                   const color = catColor(p.ev.slot ?? 1);
                   const top = y(p.startMin);
@@ -165,6 +311,14 @@ export function Calendar({
                   const Tag = onEventClick ? 'button' : 'div';
                   return (
                     <Tag key={p.ev.id} type={onEventClick ? 'button' : undefined}
+                      ref={(node) => {
+                        if (node) eventRefs.current.set(p.ev.id, node);
+                        else eventRefs.current.delete(p.ev.id);
+                      }}
+                      /* Out of the page Tab sequence: the grid is ONE roving
+                         stop. Enter from the cell that intersects this event
+                         reaches it, Escape returns. */
+                      tabIndex={-1}
                       onClick={onEventClick ? (e) => { e.stopPropagation(); onEventClick(p.ev); } : undefined}
                       aria-label={onEventClick ? `${p.ev.title}, ${formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' })}, ${time}` : undefined}
                       style={{ position: 'absolute', top, height: h,

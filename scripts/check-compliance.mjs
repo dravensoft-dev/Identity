@@ -75,6 +75,7 @@ export const COVERED = {
   'ConfirmDialog:react': 'dialog-modal.test.jsx',
   'Menu:react': 'placement-and-branches.test.jsx',
   'Skeleton:react': 'placement-and-branches.test.jsx',
+  'Calendar:react': 'grid-keyboard.test.jsx',
   'Alert:angular': 'alert-role-tones.test.ts',
   'BarChart:angular': 'chart-data-table.test.ts',
 };
