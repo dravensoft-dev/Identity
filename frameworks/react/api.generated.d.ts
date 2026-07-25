@@ -113,6 +113,12 @@ export type Orientation = 'horizontal' | 'vertical';
 /** How the actions block aligns against the title in PageHead's wide layout. */
 export type PageHeadAlign = 'start' | 'center';
 
+/** One option in a Select. */
+export interface SelectOption {
+  value: string;
+  label: string;
+}
+
 /** For a series that IS a state (error rate, pass/fail) rather than an identity. A chart carries identity or meaning, never both — passing tone alongside slot/slots warns in development and tone wins. */
 export type SeriesTone = 'success' | 'warning' | 'danger' | 'info';
 

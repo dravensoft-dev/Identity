@@ -32,7 +32,9 @@ function Demo(){
       <div className="row" style={{alignItems:'flex-start'}}>
         <Input label="Repository" prefix="git@" placeholder="org/project" style={{width:'calc(var(--sp-1) * 55)'}} />
         <Input label="Email" error="Invalid format" defaultValue="hello@" style={{width:'calc(var(--sp-1) * 50)'}} />
-        <Select label="Environment" options={['Production','Staging','QA']} style={{width:'calc(var(--sp-1) * 45)'}} />
+        <div style={{width:'calc(var(--sp-1) * 45)'}}>
+          <Select label="Environment" options={[{value:'Production',label:'Production'},{value:'Staging',label:'Staging'},{value:'QA',label:'QA'}]} />
+        </div>
       </div>
       <div className="sub">Input — native date and time</div>
       <div className="row" style={{alignItems:'flex-start'}}>

@@ -2,18 +2,21 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useState } from "react";
-export function Select({ label, options = [], value, onChange, disabled = false, style, ...rest }) {
+export function Select({ label, options = [], value, onChange, disabled = false, required = false, name, multiple = false }) {
   const [focus, setFocus] = useState(false);
   return React.createElement("div", {
-    style: { display: "flex", flexDirection: "column", gap: "calc(var(--sp-1) * 1.5)", ...style }
+    style: { display: "flex", flexDirection: "column", gap: "calc(var(--sp-1) * 1.5)" }
   }, label && React.createElement("label", {
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-xs)", letterSpacing: "var(--ls-field-label)", textTransform: "uppercase", color: "var(--mute)" }
   }, label), React.createElement("div", {
     style: { position: "relative" }
   }, React.createElement("select", {
     value,
-    onChange,
+    onChange: (e) => onChange && onChange(e.target.value),
     disabled,
+    required,
+    name,
+    multiple,
     onFocus: () => setFocus(true),
     onBlur: () => setFocus(false),
     style: {
@@ -31,12 +34,8 @@ export function Select({ label, options = [], value, onChange, disabled = false,
       boxShadow: focus ? "0 0 0 var(--focus-width) var(--gold-soft)" : "none",
       opacity: disabled ? 0.5 : 1,
       transition: "border-color var(--dur-fast) var(--ease-out)"
-    },
-    ...rest
-  }, options.map((o) => typeof o === "string" ? React.createElement("option", {
-    key: o,
-    value: o
-  }, o) : React.createElement("option", {
+    }
+  }, options.map((o) => React.createElement("option", {
     key: o.value,
     value: o.value
   }, o.label))), React.createElement("span", {

@@ -66,11 +66,12 @@ function Demo() {
     error: "Invalid format",
     defaultValue: "hello@",
     style: { width: "calc(var(--sp-1) * 50)" }
-  }), React.createElement(Select, {
-    label: "Environment",
-    options: ["Production", "Staging", "QA"],
+  }), React.createElement("div", {
     style: { width: "calc(var(--sp-1) * 45)" }
-  })), React.createElement("div", {
+  }, React.createElement(Select, {
+    label: "Environment",
+    options: [{ value: "Production", label: "Production" }, { value: "Staging", label: "Staging" }, { value: "QA", label: "QA" }]
+  }))), React.createElement("div", {
     className: "sub"
   }, "Input — native date and time"), React.createElement("div", {
     className: "row",

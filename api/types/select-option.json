@@ -1,0 +1,9 @@
+{
+  "name": "SelectOption",
+  "kind": "object",
+  "description": "One option in a Select.",
+  "fields": {
+    "value": { "form": "primitive", "type": "string", "required": true },
+    "label": { "form": "primitive", "type": "string", "required": true }
+  }
+}
