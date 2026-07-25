@@ -102,14 +102,23 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
       } : undefined}
       style={{ position: 'absolute', ...box,
         display: 'flex', flexDirection: 'column', gap: 0,
-        /* The clip is what ellipsises a long title, and it is also what ate the
-           open panel: the chip is the containing block for both the kebab and
-           the panel, and a panel is taller than any chip under about 110
-           minutes -- measured, on a 30-minute chip the Delete button's centre
-           returned the background. The title's own span carries
-           nowrap/hidden/ellipsis, so the truncation survives the clip being
-           lifted; lifting it only while the panel is OPEN keeps every other
-           chip, panelled or not, rendering exactly as before. */
+        /* The clip is what ate the open panel: the chip is the containing block
+           for both the kebab and the panel, and a panel is taller than any chip
+           under about 110 minutes -- measured, on a 30-minute chip the Delete
+           button's centre returned the background. So it is lifted while the
+           panel is OPEN, which leaves every other chip, panelled or not,
+           rendering exactly as before.
+
+           A CORRECTION, because the first version of this comment and the commit
+           that carried it both said the wrong thing: the title's own
+           nowrap/hidden/ellipsis does NOT survive the clip being lifted on its
+           own. It only survives because the body button below no longer sets
+           `align-items: flex-start`. Under flex-start the span is sized to its
+           content, and with nowrap its min-content width IS the full text width,
+           so its own overflow never engages and the chip's clip was doing the
+           whole job -- measured at 56px of title spilling into the neighbouring
+           day column the moment the panel opened. Stretch is what makes the span
+           narrower than its text, and therefore what makes the ellipsis real. */
         overflow: panelOpen ? 'visible' : 'hidden',
         textAlign: 'left', padding: 'calc(var(--sp-1) * 1) calc(var(--sp-1) * 1.5)',
         background: `color-mix(in oklab, ${color} 16%, var(--surface-card))`,
@@ -122,7 +131,13 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
             <button type="button" ref={ref} tabIndex={tabIndex}
               onClick={(e) => { e.stopPropagation(); onClick(); }}
               aria-label={`${title}, ${dateLabel}, ${timeLabel}`}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 0,
+              /* No `align-items` here, so it stays `stretch` and the title span
+                 is as wide as this button rather than as wide as its own text.
+                 That is what lets the span's own text-overflow ellipsis engage,
+                 which the chip's clip was silently doing for it before -- and it
+                 also fixes the older defect that a title in a panelled chip was
+                 hard-cut rather than ellipsised, clip or no clip. */
+              style={{ display: 'flex', flexDirection: 'column', gap: 0,
                 background: 'none', border: 'none', padding: 0, margin: 0,
                 font: 'inherit', color: 'inherit', textAlign: 'left', cursor: 'pointer' }}>
               {body}

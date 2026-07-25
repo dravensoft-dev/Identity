@@ -89,7 +89,6 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
     style: {
       display: "flex",
       flexDirection: "column",
-      alignItems: "flex-start",
       gap: 0,
       background: "none",
       border: "none",

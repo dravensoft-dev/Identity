@@ -318,7 +318,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   chip's own `overflow: hidden` clipped the panel it contains, so on any event under
   roughly 110 minutes **the panel opened invisible and unclickable**. Both are fixed:
   the ref follows whichever element carries the roving `tabindex`, and the chip lifts
-  its clip while the panel is open and only then. Now measured green on
+  its clip while the panel is open and only then. Lifting the clip cost one more fix
+  and the first attempt got its reason wrong, which is worth recording rather than
+  quietly correcting: the clip was said to be safe to lift because the title's own
+  `nowrap`/`hidden`/`ellipsis` would keep truncating without it. It would not have.
+  The body button set `align-items: flex-start`, which sizes the title span to its own
+  text, so its ellipsis never engaged and the clip had been doing the whole job —
+  measured at 56px of title spilling into the neighbouring day column the moment the
+  panel opened, hit-testing included. Dropping that one property is what makes the
+  truncation real, and it also fixes the older defect that a paneled chip's title was
+  hard-cut rather than ellipsised. Now measured green on
   `calendar.card.html`: one tab stop in and one out, Enter/Escape into and out of both
   chip shapes, Escape closing the panel before it leaves, arrows clamping at all four
   edges, and a 30-minute chip's panel fully hit-testable. **What does not pass is the
