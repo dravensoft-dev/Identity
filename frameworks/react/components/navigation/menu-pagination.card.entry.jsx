@@ -27,7 +27,7 @@ function Demo(){
           ]} />
       </div>
       <div className="sub" style={{marginBottom:'var(--sp-3)'}}>Pagination</div>
-      <Pagination page={p} pageCount={12} onChange={setP} />
+      <Pagination page={p} pageCount={12} ariaLabel="Deployments" onChange={setP} />
     </div>
   );
 }

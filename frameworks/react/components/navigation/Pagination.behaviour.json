@@ -2,6 +2,6 @@
   "pattern": "navigation",
   "exceptions": [
     { "requirement": "roles.label",
-      "reason": "aria-label is the hardcoded string \"Pagination\" with no prop to override it. Two Pagination instances on one page -- e.g. two paginated tables in the same dashboard, a routine layout -- carry the identical label and are not distinguishable as separate landmarks." }
+      "reason": "aria-label reads `ariaLabel`, a member of api/components/Pagination.json, which defaults to the constant \"Pagination\" -- met when the caller supplies a name, unmet when they don't. The member is optional rather than required so existing call sites keep working, so the constant is what two Pagination instances on one page still get by default -- e.g. two paginated tables in the same dashboard, a routine layout -- and two landmarks carrying the identical name are not distinguishable. The exception is narrowed by the member, not retired by it: a caller who omits it lands in exactly the state this recorded before the member existed." }
   ]
 }

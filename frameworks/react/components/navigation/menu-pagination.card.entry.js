@@ -45,6 +45,7 @@ function Demo() {
   }, "Pagination"), React.createElement(Pagination, {
     page: p,
     pageCount: 12,
+    ariaLabel: "Deployments",
     onChange: setP
   }));
 }
