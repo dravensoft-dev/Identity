@@ -162,8 +162,9 @@ substance because each was earned; 30–36 are new to this plan.
    confirmation that also blocks but must not re-litigate a Task 1 decision.
 3. **`check:api` climbs and never drops:** 32/52 → (Tasks 2–6 contract nothing except Task 2's two
    added members, which change no count) → **34/54** (Task 7, +2) → **36/56** (Task 8, +2) →
-   **37/57** (Task 9) → **38/58** (Task 11) → **39/59** (Task 13). Record the measured pair in
-   `.superpowers/sdd/progress.md` at the end of every task.
+   **37/57** (Task 9) → **38/58** (Task 11) → **39/59** (Task 11b) → **40/60** (Task 13). Record the
+   measured pair in `.superpowers/sdd/progress.md` at the end of every task. Task 11b was added
+   during execution and is what moved Task 13's figure by one.
 4. **`check:api` carries no exception map.** An API divergence is a defect.
 5. **`api/README.md` is the normative vocabulary, and this plan found it contradicting itself.**
    Task 2 corrected two passages asserting opposite futures for a per-item renderer. Task 6 makes
@@ -1621,6 +1622,75 @@ test('the chip body is Arena own, and a consumer renderer reaches nothing', () =
 
 
 Expected: `check-api: 38 … across 58`; behaviour diff **empty** (Task 10 already moved it). 37/57 → 38/58.
+
+---
+
+## Task 11b: `CalendarEvent` becomes a component, and gains an action panel
+
+**Added during execution, 2026-07-25, on the maintainer's proposal.** Task 11 shipped `CalendarEvent`
+as a predefined object in `api/types/`. This task moves it to `api/components/` and gives it the
+per-event administrative panel Task 11 could not express. **+1/+1 -> 39/59**, which pushes Task 13
+to 40/60; Constraint 3's ladder is amended accordingly.
+
+**Why it is a task and not an amendment to Task 11.** The maintainer asked for a per-event action
+panel — a group of buttons, top-right of the chip, acting on that event. Three shapes were examined
+and the third was taken:
+
+1. **A slot as a FIELD of the `CalendarEvent` object — refused twice over.** `validateTypes` in
+   `scripts/check-api.mjs` accepts only `primitive` and `enum` as a field of a predefined object, so
+   R1 rejects it with its own message and `check:api` carries no exception map. Independently, a
+   per-event slot IS per-item projection, which the convention removed from `ActivityFeed.renderItem`
+   and `Calendar.renderEvent` — and the reason is neither R1 nor R3 but that **Angular has no answer
+   short of a structural directive and `ngTemplateOutlet`**.
+2. **Arena draws the buttons from declared data.** Legal today only with the action set at COMPONENT
+   level, because an array cannot be a field of an object either — which loses the per-event
+   variation that was the point. Widening R1's *nesting* rule was proposed and **not taken**; it is
+   recorded below as a live question rather than dismissed.
+3. **`CalendarEvent` becomes a component.** Taken. It needs **no gate change at all**: a component
+   may declare a slot, and per-item projection stops applying because the consumer instantiates
+   `<CalendarEvent>` once per event instead of handing `Calendar` a render function.
+
+**The precedent is exact, contracted, and from this same plan cycle.** `api/components/RadioGroup.json`
+declares `"content": {"form": "slot", "description": "The Radios. RadioGroup injects each one's
+selected state."}`; `RadioGroup.jsx` reads `child.props.value` and `cloneElement`s `name`, `checked`
+and `onSelect` into each child; and `Radio.json` declares only `value`/`label`/`hint`/`disabled`, so
+**the injected props are deliberately not contract members**. That is the shape `Calendar` needs in
+order to inject position and colour into each `CalendarEvent`. Angular already uses the same pattern:
+`error-state`, `page-head`, `empty-state`, `unauth-card` and `chart-card` all query `contentChild()`.
+
+**The hazard this task must not create.** If the consumer places real Arena `Button`s inside the chip,
+they are page-level tab stops — and Task 10 retired `focus.roving`, which requires ONE tab stop into
+the grid. Arena cannot set `tabIndex` on markup it does not own. The resolution is the maintainer's
+kebab: an Arena-drawn `IconButton` (`tabIndex={-1}`, reachable through Task 10's Enter step-in) whose
+panel puts the consumer's buttons in the DOM **only while it is open**, with focus managed there.
+A task that ships permanent consumer tab stops inside the grid has silently re-broken a requirement
+that was verified one commit earlier, and `grid-keyboard.test.jsx` must be extended to catch it.
+
+- [ ] **Step 1: Confirm and STOP.** Report the shape, and confirm against the tree — not this
+  document — that `RadioGroup`/`Radio` really is the precedent described, including that the injected
+  props are absent from `Radio.json`.
+- [ ] **Step 2:** delete `api/types/calendar-event.json`; create `api/components/CalendarEvent.json`
+  with `id`, `title`, `start`, `end`, `colorId` (enum `CatSlot`) — migrated unchanged from the type —
+  plus the panel members. `CatSlot` stays a type.
+- [ ] **Step 3:** `Calendar.events` stops being an array member and becomes the `content` slot,
+  exactly as `RadioGroup` does. Every member the plan's Task 11 contracted otherwise stays.
+- [ ] **Step 4:** the `CalendarEvent` quartet — `.jsx`, `.d.ts`, `.prompt.md`, a card entry — plus
+  `CalendarEvent.behaviour.json`, because `check:behaviour` requires **every** component to declare.
+- [ ] **Step 5:** `Calendar` reads `React.Children`, extracts props, and feeds the SAME
+  `placeEvents`/`layoutDay` pipeline. **`calendar-internals.js` must not change** — that is the test
+  that this is a projection change and not a rewrite. Position and colour are injected with
+  `cloneElement`; `forwardRef` is needed so Task 10's `eventRefs` still reaches a DOM node.
+- [ ] **Step 6:** the panel. `eventActionsEnabled`, the Arena-drawn kebab, the slot, focus managed
+  while open. Extend `grid-keyboard.test.jsx` to assert the tab-stop count with a panel present, both
+  closed and open.
+- [ ] **Step 7:** both call sites (`calendar.card.entry.jsx`, `grid-keyboard.test.jsx`), gates, commit.
+
+**Left open deliberately, and worth a decision of its own some day:** whether a field of a predefined
+object may be an **array of a declared object**. R1's stated principle is "no functions, no slots, no
+unknown bags", and an array of a declared object is none of the three, while `form: "array"` with an
+object `of` already works at member level (`Tabs.tabs`, `SegmentedControl.options`). The restriction
+is on NESTING alone and is plausibly an omission rather than a rule. This task routes around it
+rather than answering it, and nothing else in the tree needs it today.
 
 ---
 
