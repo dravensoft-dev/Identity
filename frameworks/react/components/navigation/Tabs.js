@@ -2,7 +2,9 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useState } from "react";
-export function Tabs({ tabs = [], value, defaultValue, onChange }) {
+export function Tabs({ tabs, value, defaultValue, onChange }) {
+  if (tabs == null)
+    throw new Error("Tabs: `tabs` is required");
   const [internal, setInternal] = useState(defaultValue ?? (tabs[0] && tabs[0].value));
   const active = value ?? internal;
   const select = (v) => {

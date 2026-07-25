@@ -139,6 +139,24 @@ test('Table throws when `label` is absent', () => {
   );
 });
 
+/* `columns` is declared required too, and until now it defaulted to `[]` and drew
+ * an empty header row -- rendering with a missing value, which is exactly what
+ * api/README.md's required-ness rule forbids. It guards absence only; an empty
+ * array is a caller saying "no columns right now", the same reading every other
+ * required-array guard in the layer takes. */
+test('Table throws when `columns` is absent', () => {
+  assert.throws(
+    () => renderToStaticMarkup(<Table label="Recent builds" responsive={false}>{body()}</Table>),
+    /Table: `columns` is required/,
+  );
+});
+
+test('an empty columns array renders rather than throwing', () => {
+  assert.doesNotThrow(
+    () => renderToStaticMarkup(<Table columns={[]} label="Recent builds" responsive={false}>{body()}</Table>),
+  );
+});
+
 /* THIS IS WHAT MAKES THE SURVIVING focus.roving EXCEPTION VERIFIABLE rather than
  * merely asserted in prose. A cell whose content the consumer draws -- an actions
  * column's Button, which both in-tree call sites draw today -- is a page-level tab

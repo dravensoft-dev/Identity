@@ -21,9 +21,10 @@ const SIZES = {
 };
 
 export function SegmentedControl({
-  options = [], value, defaultValue, onChange,
+  options, value, defaultValue, onChange,
   size = 'md', ariaLabel, name,
 }) {
+  if (options == null) throw new Error('SegmentedControl: `options` is required');
   if (!ariaLabel) throw new Error('SegmentedControl: `ariaLabel` is required');
   const [internal, setInternal] = useState(defaultValue ?? (options[0] && options[0].value));
   const [focus, setFocus] = useState(false);

@@ -7,7 +7,7 @@ const SIZES = {
   md: { height: "calc(var(--sp-1) * 8.5)", padding: "0 calc(var(--sp-1) * 3.5)", fontSize: "var(--dz-text-md)" }
 };
 export function SegmentedControl({
-  options = [],
+  options,
   value,
   defaultValue,
   onChange,
@@ -15,6 +15,8 @@ export function SegmentedControl({
   ariaLabel,
   name
 }) {
+  if (options == null)
+    throw new Error("SegmentedControl: `options` is required");
   if (!ariaLabel)
     throw new Error("SegmentedControl: `ariaLabel` is required");
   const [internal, setInternal] = useState(defaultValue ?? (options[0] && options[0].value));

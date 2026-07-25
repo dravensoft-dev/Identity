@@ -56,3 +56,19 @@ test('Tabs drops a consumer attribute -- no {...rest} spread reaches the root', 
   );
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- a {...rest} escape is back');
 });
+
+/* `tabs` is declared required in the contract, and api/README.md's required-ness
+ * rule says the implementation fails hard rather than rendering with a missing
+ * value. Before this it defaulted to `[]` and `<Tabs />` drew an empty bar. It
+ * guards absence only -- an empty array is a caller saying "no tabs right now",
+ * which every other required-array guard in the layer accepts. */
+test('tabs is required and its absence throws', () => {
+  assert.throws(
+    () => renderToStaticMarkup(<Tabs />),
+    /Tabs: `tabs` is required/,
+  );
+});
+
+test('an empty tabs array renders rather than throwing', () => {
+  assert.doesNotThrow(() => renderToStaticMarkup(<Tabs tabs={[]} />));
+});

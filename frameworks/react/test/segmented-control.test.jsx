@@ -45,6 +45,23 @@ test('value selects the option whose `value` matches, and only it is checked and
     'more than one radio was checked');
 });
 
+/* `options` is declared required in the contract, and api/README.md's
+ * required-ness rule says the implementation fails hard rather than rendering
+ * with a missing value. It guards absence only -- an empty array is a caller
+ * saying "no options right now", which every other required-array guard in the
+ * layer accepts. */
+test('options is required and its absence throws', () => {
+  assert.throws(
+    () => renderToStaticMarkup(<SegmentedControl ariaLabel="Time range" />),
+    /SegmentedControl: `options` is required/,
+  );
+});
+
+test('an empty options array renders rather than throwing', () => {
+  const html = renderToStaticMarkup(<SegmentedControl ariaLabel="Time range" options={[]} />);
+  assert.match(html, /role="radiogroup"/);
+});
+
 test('ariaLabel is required and its absence throws', () => {
   assert.throws(
     () => renderToStaticMarkup(<SegmentedControl options={[{ value: 'ov', label: 'Overview' }]} />),

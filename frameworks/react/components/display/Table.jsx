@@ -27,8 +27,9 @@ import { HEADER_LABEL, CELL_BASE } from './TableCell.jsx';
  * Below --bp-md the table becomes one card per row. The threshold is measured on
  * the CONTAINER, not the viewport: a table inside a narrow card should go
  * card-mode on a wide monitor, and a viewport query gets that wrong. */
-export function Table({ columns = [], children, empty = 'No data.', responsive = true, label }) {
+export function Table({ columns, children, empty = 'No data.', responsive = true, label }) {
   if (!label) throw new Error('Table: `label` is required');
+  if (columns == null) throw new Error('Table: `columns` is required');
   const [ref, width] = useContainerWidth();
   // null width → the wide layout. First paint is never the narrow branch.
   const narrow = responsive && width !== null && width < readBreakpoint('md');

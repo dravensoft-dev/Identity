@@ -4,9 +4,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useContainerWidth, readBreakpoint } from "../../use-container-width.js";
 import { HEADER_LABEL, CELL_BASE } from "./TableCell.js";
-export function Table({ columns = [], children, empty = "No data.", responsive = true, label }) {
+export function Table({ columns, children, empty = "No data.", responsive = true, label }) {
   if (!label)
     throw new Error("Table: `label` is required");
+  if (columns == null)
+    throw new Error("Table: `columns` is required");
   const [ref, width] = useContainerWidth();
   const narrow = responsive && width !== null && width < readBreakpoint("md");
   const rowEls = React.Children.toArray(children);
