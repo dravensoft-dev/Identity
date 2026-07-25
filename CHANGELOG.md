@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The `dialog-modal` pattern is met in React, for the first time, by all three overlays.**
+  `frameworks/react/use-dialog-modal.js` is a shared hook and a deliberate PORT of the Angular
+  layer's already-shipped `frameworks/angular/primitives/focus-trap.ts` — the same focusable
+  selector including its per-clause `:not([tabindex="-1"])` guard, the same boundary-wrap rule, the
+  same never-cache-the-focusables rule, the same open/close transition. `Dialog`, `ConfirmDialog`
+  and `Onboarding` all consume it. Escape always reports through the component's OWN dismissal
+  channel — `onClose`, `onCancel`, `onSkip` — so no new member appears anywhere.
+- **A written by-hand checklist for the focus trap's interior**, in each of the three components'
+  `.prompt.md`. A suite can prove the boundary wrap, because that is Arena's own `.focus()` call and
+  happy-dom honours it; it cannot prove that Tab from a control in the MIDDLE reaches the next one,
+  because that is the browser's native sequential focus navigation. All three were driven in real
+  headless Chromium through CDP and every step passed. No gate was added: a browser-driven gate
+  stays refused as this repository's fourth non-portable one, and the interior is a person's job
+  against a list, the same arrangement the grid rule uses.
+- `Onboarding:react` joins `check:compliance`'s `COVERED` with a new suite, taking coverage from
+  6 of 66 bindings to **7 of 66**.
+
 - **A ninth API form: `functionInput`.** A function the consumer supplies, which the component calls
   on its own value and whose *result* it uses — a validator, a parser. It is neither an event
   (outbound, returning nothing) nor a datum, and the contract layer refused the shape everywhere
@@ -395,6 +412,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Plan C is complete: `Dialog`, `Menu`, `Pagination` and `SideNav` come under contract**, taking
+  `check:api` from 42 contracts across 62 layer implementations to **46 across 66**. All four are
+  single-layer, because Angular delegates each to Material. There is no fifth batch — the subject
+  set is exhausted.
+- **BREAKING — `Menu` loses its per-item `onClick`.** It becomes `Menu.select`, one event carrying
+  the whole `MenuItem`, on R1's own rule that a field which is a function becomes an event of the
+  component carrying the object in its payload. `MenuItem` declares no `id`: `{ divider: true }` and
+  `{ header: '…' }` are legitimate entries carrying neither label nor id, and a required `id` would
+  have forced a meaningless one onto every divider. Rewrite each item's handler into one `onSelect`.
+- **BREAKING — `SideNav.onNav` is replaced by `nav`, carrying the whole `SideNavItem`.** The old
+  signature took `(id, event)`, and an event carries exactly one payload while `React.MouseEvent` is
+  a platform type, so the shape could not be contracted at all. **`preventDefault()` is no longer
+  reachable from the handler**: an item with `href` still renders a real anchor, so ctrl-click,
+  middle-click and open-in-new-tab keep working for a consumer who wires nothing, but intercepting a
+  plain click to substitute routing belongs at the router. This is the `Breadcrumbs` resolution
+  applied a second time.
+- **BREAKING — node-valued item fields become strings.** `MenuItem.icon`, `SideNavItem.icon` and
+  `SideNavItem.label` were `React.ReactNode` and are now plain strings; an icon is a Phosphor class
+  name that Arena draws. The single-icon convention now reaches every per-item icon in the library.
+- **BREAKING — three accessible names become required and guarded**: `Dialog.title`,
+  `ConfirmDialog.title` and `SideNav.ariaLabel`. Nothing can derive a name for a dialog or a
+  landmark, so each throws rather than defaulting. `ConfirmDialog.title` moved the contract, React
+  and Angular in ONE commit, because `check:api` compares required-ness and a half-moved pair fails
+  it — the first time a Plan C batch has touched an Angular component.
+- **BREAKING — `style` is gone from all four.** `React.CSSProperties` is a platform type and an R4
+  violation; `SideNav` additionally loses `extends React.HTMLAttributes<HTMLElement>`, the batch's
+  only D1 flatten, and with it every global and ARIA attribute the `{...rest}` spread forwarded.
+- `Pagination` gains **`ariaLabel`**, optional and defaulting to `"Pagination"`. Two paginated
+  tables in one dashboard is a routine layout and both landmarks used to carry the identical
+  hardcoded name. Because the default is still a constant, the component's `roles.label` exception
+  is **narrowed rather than retired**: met when the caller supplies a name, unmet when they do not.
+- `Dialog.width` is declared `string`, not `number`. The implementation always produced a CSS
+  string; the `.d.ts` was the surface that was wrong.
+
 - **Ten more components brought under the API contract — breaking, and the widest blast radius in
   the release.** `Tabs`, `SegmentedControl`, `ProgressBar`, `Toast`, `Tooltip`, `Calendar`,
   `CalendarEvent`, `Table`, `TableRow` and `TableCell` now present a neutral contract each;
@@ -676,8 +727,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   three brand exemptions are gone and none replaced them; `PASSTHROUGH` gains `AppLogo`
   beside `Rotor`, so a raw number passed to either still fails.
 - The console reads all four components instead of building them by hand, and its nav
-  items are anchors rather than buttons, whose default navigation the shell suppresses
-  through `onNav`'s event argument.
+  items are anchors rather than buttons. (The shell suppressed their default navigation
+  through `onNav`'s event argument at the time; plan 8C4 removed that argument when
+  `SideNav` came under contract — the items are hash anchors, so the fragment moves and
+  nothing reloads. See this section's own 8C4 entry.)
 - **The dimension gate reaches four kinds of site, not one.** It now judges `boxShadow`
   and `transform`, template-literal interpolations, CSS injected as a string, and SVG
   presentation attributes. Each hole was found by audit while the gate reported the tree
@@ -740,6 +793,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   as the real count, not the one hoped for.
 
 ### Fixed
+
+- **Eleven of the twelve `dialog-modal` exceptions across the three React overlays are retired**, each
+  with proof above it in the same change — the proof being an assertion that used to say the
+  opposite. `Dialog` and `Onboarding` end with none at all. The twelfth, `ConfirmDialog`'s
+  `roles.element`, **stays on purpose**: `role="alertdialog"` is arguably more correct for a
+  destructive confirmation, and **both** layers declare it, which makes it a shared deviation from
+  the pattern rather than a divergence between layers.
+- **`Onboarding` names itself on every step.** Its accessible name falls back through `title` to
+  `eyebrow` to a positional `"Step N of M"` — the identical chain Angular's `arena-onboarding`
+  already computed. The chain was PORTED rather than `OnboardingStep.title` being made required, so
+  no shipped two-layer contract broke and the two layers now agree by construction.
+- **`SideNav` accepted a blank accessible name.** Its guard read `ariaLabel == null`, so
+  `ariaLabel=""` rendered `<nav aria-label="">` — a landmark with no name, arriving through a value
+  that is present — and did not throw. Every sibling accessible-name guard in the layer uses a falsy
+  check; `SideNav` was the sole outlier.
 
 - **`Table` stole focus from a control a consumer drew in a cell, and every one cost two Tab
   presses.** React's `onFocus` is `focusin`, which **bubbles**, so focusing a `<button>` inside a
@@ -894,6 +962,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The Delivery Console honours `persist`.** It ignored the prop entirely, so a toast marked "does not auto-dismiss" was dismissed anyway after 4.2 seconds.
 
 ### Removed
+
+- **`frameworks/react/ui_kits/console/Icon.jsx`**, dead the moment `SideNavItem.icon` became a
+  Phosphor class-name string that Arena draws: `Shell.jsx` was its only consumer. Deleted outright
+  with its compiled sibling and its `README.md` line, rather than left as a tombstone.
 
 - **`frameworks/react/test-dom/grid-keyboard.test.jsx` is gone, and a rule now keeps its
   kind out.** The whole directory was deleted mid-cycle for its RAM cost and restored, so

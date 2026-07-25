@@ -692,8 +692,14 @@ export function scanAttributes(rawText) {
  *  free, and that is the point. `stalePassthrough()` is EXEMPT's own
  *  discipline applied here: a renamed component or prop must fail loudly,
  *  not match nothing in silence. */
+/* `Icon` was the second entry until plan 8C4 deleted
+ * frameworks/react/ui_kits/console/Icon.jsx: the single-icon convention made a
+ * per-item icon a Phosphor class-name string that the component itself draws, so
+ * Shell dropped the last import and the component had no consumers left. Its
+ * entry then matched nothing, and stalePassthrough() failed the build — which is
+ * this map's own discipline working, and the reason the entry is gone rather
+ * than quietly kept. */
 const PASSTHROUGH = new Map([
-  ['Icon', { prop: 'size', governs: 'fontSize' }],
   ['AppLogo', { prop: 'size', governs: 'width' }],
 ]);
 

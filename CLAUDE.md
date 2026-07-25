@@ -443,6 +443,33 @@ raw hex in a component. After any `tokens/src/` edit: rebuild, then run
 colours are structured sRGB objects, dimensions and durations are `{value,unit}` objects,
 and letter spacing is a `number` carrying an `em` render hint in `$extensions`.
 
+**The two layers solve the modal focus contract with the same code, and that was
+deliberate rather than convergent.** `frameworks/react/use-dialog-modal.js` is a PORT of
+`frameworks/angular/primitives/focus-trap.ts`, not a second design — the same focusable
+selector (every natively-focusable clause carrying its own `:not([tabindex="-1"])`,
+because a selector list is OR'd and `button:not([disabled])` alone would pull a real
+`<button tabindex="-1">` back into the tab order), the same boundary-wrap rule, the same
+never-cache-the-focusables rule, the same open/close transition. `Dialog`, `ConfirmDialog`
+and `Onboarding` all consume it, and Escape always reports through the component's **own**
+dismissal channel — `onClose`, `onCancel`, `onSkip` — so meeting the pattern added no
+member anywhere. **`CLAUDE.md`'s rule that a component is self-contained is about CSS
+classes, not about JS helpers**; `use-container-width.js` settled that reading before this
+and `use-dialog-modal.js` sits beside it. The React module is one shape wider than the
+Angular one it mirrors: Angular handles Tab only and keeps Escape in each component's own
+`onKeydown`, where React folds Escape into the handler the hook returns.
+
+**What a suite can prove about a focus trap, and what it cannot.** The boundary wrap —
+Shift+Tab from the first focusable landing on the last, Tab from the last landing on the
+first, a panel with nothing focusable consuming the key — is Arena's own `.focus()` call,
+and happy-dom honours `.focus()`, so it is asserted for real. The **interior**, that Tab
+from a control in the middle reaches the next one, is the browser's native sequential
+focus navigation, which neither layer implements and happy-dom does not have; a test
+asserting it would pass identically against a perfect trap and against none. So the
+interior is checked by a person in real Chromium against a written checklist in each
+component's `.prompt.md`. **No browser-driven gate**: `dialog-modal.test.jsx`'s header
+refuses one as this repository's fourth non-portable gate, and that refusal stands — the
+arrangement is the same one the grid rule uses.
+
 **Components carry no CSS classes.** Each `frameworks/react/components/**/*.jsx` renders with inline `style` objects reading the custom properties (`background: 'var(--crimson)'`), and handles hover/active/focus with local `useState`. There is no `.btn` class to target; theming happens entirely through token values. Keep new components self-contained the same way — `Button.jsx` is the reference shape.
 
 **The one exception: a `<style>` tag injected once**, for what an inline style genuinely cannot express — `@keyframes` (`ProgressBar`, `Spinner`, `Skeleton`, `Button`, `Dialog`, `Menu`, `Tooltip`) and vendor pseudo-elements (`Input`'s `::-webkit-calendar-picker-indicator`, which is invisible on the dark surface otherwise). The pattern is always the same, and every one of them follows it: a module-level `let injected = false` guard, a `useEffect`, `document.head.appendChild`. Never a `<style>` rendered inside the component's own markup — that ships one tag per instance and leaks the CSS into the element's `textContent`.
@@ -710,9 +737,12 @@ scheduled for deletion the same week.
   the consumer a **value** rather than the DOM event — the DOM-free suites assert
   only the *shape* of that and say so in their own headers); `Tooltip`'s
   single-timer rule, cancel-on-transition and unmount cleanup; the stale-exception
-  rule in behavioural form, where `behavioural.test.jsx` pins four live defects of
+  rule in behavioural form, where `behavioural.test.jsx` pinned four live defects of
   `Dialog`/`ConfirmDialog` — no Escape, no focus on open, no restore on close — by
-  asserting they are *still broken*; `Menu`'s misplaced `aria-haspopup` and
+  asserting they were *still broken*, **and where plan 8C4 then INVERTED every one of
+  those assertions in the change that fixed the defects**, which is the mechanism
+  working end to end rather than an exception quietly outliving its subject; `Menu`'s
+  misplaced `aria-haspopup` and
   `Skeleton`'s `circle` branch, the two mistakes the rejected text scan got
   backwards; and the failure path of the compliance wrapper on the React side, four
   tests that write deliberately false bindings to a temp file and prove STALE
@@ -920,6 +950,62 @@ scheduled for deletion the same week.
   tabpanel is the hard half, because `Tabs` renders no panel and offers no `id`/
   `aria-controls` wiring for a consumer to connect one, so fixing it is an API change and
   not only a keyboard one.
+
+
+- **`check:api` does not compare a `primitive` member's `type`, and nothing anywhere said
+  so.** Probed in five directions against a finished tree: it CATCHES a required-ness
+  change, a renamed event, a changed `form` (`primitive` -> `slot`) and an event's changed
+  `payload` type. It does NOT catch a `.d.ts` declaring `width?: number` against a contract
+  saying `string`, nor a contract saying `boolean` against a layer saying `string` — both
+  runs stay green. The gate validates that a contract's `type` IS a primitive
+  (`check-api.mjs:185-186`) and compares name, form, required-ness and payload, which is
+  exactly what its own header claims at line 16. So the gate is honest and the limit is
+  simply unrecorded — until now. **It matters concretely**: plan 8C4's `Dialog.width` fix,
+  from a `number` the `.d.ts` declared to the `string` the implementation always produced,
+  has no gate behind it, and reverting the `.d.ts` alone leaves `check:api` green. Same
+  class as the recorded `spec.default` gap and the recorded fact that React's checked
+  surface is its `.d.ts` and never its `.jsx`. Closing it means teaching `compareSurface`
+  to compare the primitive type; nothing else needs to move.
+
+- **`Onboarding`'s accessible name is positional when a step carries no editorial text, and
+  it collides with its own progress dots.** The chain is `title ?? eyebrow ?? "Step N of M"`
+  in BOTH layers as of 8C4 — React ported Angular's rather than `OnboardingStep.title` being
+  made required, which would have broken a shipped two-layer contract. The price: on a step
+  with neither `title` nor `eyebrow`, the panel's `aria-label` is byte-identical to the
+  `aria-label` already on the progress-dots div **inside that same panel**, so a screen
+  reader announces the two the same. This is the shape the charts' `aria-label` entry already
+  records — a name that is present, satisfies `roles.label` mechanically, and tells a
+  screen-reader user nothing — and it is why `Table.label` and `SegmentedControl.ariaLabel`
+  were guarded rather than defaulted. It ships knowingly, and
+  `frameworks/react/test-dom/onboarding-modal.test.jsx` asserts the collision rather than
+  papering over it.
+
+- **`SideNav`'s D1 flatten dropped every forwarded attribute and no gate stands behind the
+  loss.** `extends React.HTMLAttributes<HTMLElement>` and the `{...rest}` spread are gone, so
+  every global and ARIA attribute a consumer used to be able to forward is unreachable. This
+  is the same unguarded-loss shape 8C1-8C3 each recorded, and it is unguarded for the same
+  reason: `check:api` reads the `.d.ts` and never opens the `.jsx`, so a restored spread
+  would leave it green. **This batch narrowed the hole for its own four**, though: `Dialog`,
+  `Menu`, `Pagination` and `SideNav` each carry two dedicated regression tests, one per
+  escape, so a restored spread now goes red in a suite even while the gate stays green. The
+  general problem is untouched for every component the four do not cover.
+
+- **`Menu.trigger` is the repo's THIRD required slot, and it landed on the unguarded side of
+  a question nothing has decided.** `AppLogo.mark` is guarded, `Tooltip.content` deliberately
+  is not — the contradiction already recorded above — and `Menu.trigger` now joins the second
+  camp without a note in its contract, its `.d.ts`, its `.prompt.md` or its commit. Defensible
+  on the `Tooltip` precedent, since `compareSurface` excludes slots from required-ness
+  comparison precisely because Angular's `<ng-content>` cannot express mandatory. Recorded
+  because a third instance makes the silence a pattern rather than an oversight.
+
+- **`ConfirmDialog.open` is the one modal of four that is neither required nor guarded.**
+  `Dialog`, `Onboarding` and `CommandPalette` all declare `open` `required: true` and throw on
+  absence; `ConfirmDialog.json` declares `default: false` and its implementation destructures
+  `open = false` with no guard. 8C4 rewrote the `title` member on the adjacent line and left
+  this alone. Defensible — `false` is a sensible default for a dialog and the other three have
+  none — but nothing anywhere records it as a decision, and `Dialog.jsx`'s own guard comment
+  names `CommandPalette` and `Onboarding` as its precedent while pointedly omitting its nearest
+  sibling.
 
 ### Where the rest of the debt lives
 

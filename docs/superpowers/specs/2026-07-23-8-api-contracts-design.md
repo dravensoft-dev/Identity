@@ -888,6 +888,7 @@ comparison and a comparison needs a baseline that is not stale.
 | **Plan 8C1** (2026-07-24) | **991 across 89 files** | 26 across 5 files |
 | **Plan 8C2** (2026-07-24) | **1048 across 94 files** | 26 across 5 files |
 | **Plan 8C3** (2026-07-25) | **1145 across 101 files** | **36 across 6 files** |
+| **Plan 8C4** (2026-07-25) | **1175 across 104 files** | **64 across 9 files** |
 
 Plan 8C3 carried Plan C forward with its third batch: `Tabs`, `SegmentedControl`, `ProgressBar`,
 `Toast`, `Tooltip`, `Calendar`, `CalendarEvent`, `Table`, `TableRow` and `TableCell` — ten
@@ -911,6 +912,38 @@ cell, `Table` became a **compound component**, and `TableRow` and `TableCell` ar
 components with delegated Angular entries of their own. Both moves rest on one property — per-item
 projection stops applying the moment the consumer instantiates one element per item instead of
 handing Arena a render function — and neither needed the vocabulary widened.
+
+**Plan 8C4 finished Plan C.** `Dialog`, `Menu`, `Pagination` and `SideNav` were the four subjects
+left, and the ladder reconciles one contract and one layer per commit: 42 → **43** (`b4b8a9c`,
+`Dialog`) → **44** (`d2c9748`, `Menu`) → **45** (`ae8fcaf`, `Pagination`) → **46** (`7640db2`,
+`SideNav`). All four are single-layer for the reason every Plan C batch has been: Angular delegates
+each to Material. **`check:api` now stands at 46 contracts across 66 layer implementations, and
+there is no fifth batch** — the set is exhausted, which is the first time that sentence has been
+true since Plan A.
+
+Two of the four needed a decision the plan could not make for itself, and both went to a shape the
+plan had not listed. `Menu`'s per-item `onClick` and `SideNav`'s two-parameter `onNav` are the same
+problem at two sizes, and `api/README.md` had already answered it twice — R1's *"a field that is a
+function becomes an event of the component, carrying the object in its payload"* and the event
+section's *"the platform event leaves the payload and the item alone travels"*, with
+`Breadcrumbs.navigate` shipping as `"payload": "Crumb"`. So `Menu.select` and `SideNav.nav` each
+carry the whole item rather than an id, and `MenuItem` needs no `id` at all — which matters,
+because `{ divider: true }` and `{ header: '…' }` are legitimate entries carrying neither label nor
+id, and a required `id` would have forced a meaningless one onto every divider.
+
+**The batch's other half is not an API story and is the larger one.** `Dialog`, `ConfirmDialog` and
+`Onboarding` met the `dialog-modal` pattern in React for the first time, through
+`frameworks/react/use-dialog-modal.js` — a deliberate port of the Angular layer's own
+`focus-trap.ts` rather than a second design. Eleven of the twelve exceptions those three carried are
+retired; the twelfth, `ConfirmDialog`'s `roles.element`, stays because `role="alertdialog"` is
+arguably more correct for a destructive confirmation and **both** layers declare it, making it a
+shared deviation from the pattern rather than a divergence between layers. `check:compliance` moved
+6 of 66 → 7 of 66, and three sections of `components-divergences.md` were retired or renarrowed
+because the gaps they recorded closed.
+
+The isolated DOM process nearly doubled, 36 across 6 files → **64 across 9**, which is the cost of
+that half and was accepted in advance: `dialog-modal` cannot be verified without a DOM, and none of
+the three components binds `grid`, so the standing hand-test rule did not exclude them.
 
 **Plan C's subject set moved again, under this batch, and it is now twenty-FIVE.** Re-measured by the
 method above: 46 `.jsx` under `frameworks/react/components/` (excluding `*.card.entry.jsx`), 20 with
