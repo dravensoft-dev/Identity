@@ -28,6 +28,11 @@ export function Dialog({ open, onClose, title, eyebrow, children, footer, width 
    * a name for a dialog -- its subject is editorial -- so it is guarded rather
    * than defaulted, the Table.label / SegmentedControl.ariaLabel shape. */
   if (!title) throw new Error('Dialog: `title` is required');
+  /* `open` is required too, and `== null` rather than `!open`: `false` is the
+   * closed state a host legitimately passes, so only absence is the defect.
+   * This is api/README.md's runtime half of required-ness, and the shape
+   * CommandPalette and Onboarding already use for the same member. */
+  if (open == null) throw new Error('Dialog: `open` is required');
   usePopKeyframes();
   /* EVERY hook below runs BEFORE the `if (!open)` early return. useDialogModal
    * calls useEffect and useRef of its own, so hoisting it under the return would

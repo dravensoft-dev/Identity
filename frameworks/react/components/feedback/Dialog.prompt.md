@@ -9,7 +9,13 @@ Modal for confirmations and short forms. Overlay with blur.
 
 `title` is **required** and throws when missing. It is what names the dialog for
 assistive technology — the panel's `aria-labelledby` points at it — and nothing
-can derive a name for a dialog, because its subject is editorial.
+can derive a name for a dialog, because its subject is editorial. `open` is
+required too and throws when absent; `open={false}` is the closed state and is
+not an absence.
+
+`width` is a **CSS string**, not a number — pass a token expression
+(`width="calc(var(--sp-1) * 200)"`), never a bare `520`. The panel is capped at
+`92vw` regardless, so a wide dialog still fits a narrow viewport.
 
 The dialog dismisses three ways, and all three go through `onClose`: **Escape**,
 a click on the backdrop, and whatever the consumer puts in `footer`. Opening

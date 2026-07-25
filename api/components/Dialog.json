@@ -1,0 +1,13 @@
+{
+  "component": "Dialog",
+  "description": "Modal dialog over a blurred scrim. Takes the whole interaction until dismissed.",
+  "api": {
+    "open": { "form": "primitive", "type": "boolean", "required": true, "description": "Whether the dialog is shown. The host owns it." },
+    "title": { "form": "primitive", "type": "string", "required": true, "description": "Names the dialog for assistive technology and heads it visually. Required: aria-labelledby points at it, and a modal with no name is worse than none at all." },
+    "eyebrow": { "form": "primitive", "type": "string", "description": "A short kicker above the title." },
+    "width": { "form": "primitive", "type": "string", "description": "A CSS width for the panel. Omit for the default." },
+    "content": { "form": "slot", "description": "The dialog's body." },
+    "footer": { "form": "slot", "description": "The action row, right-aligned." },
+    "close": { "form": "event", "description": "The dialog was dismissed -- by Escape or by a scrim click. No payload." }
+  }
+}

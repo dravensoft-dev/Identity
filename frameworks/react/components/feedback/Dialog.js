@@ -18,6 +18,8 @@ function usePopKeyframes() {
 export function Dialog({ open, onClose, title, eyebrow, children, footer, width = "calc(var(--sp-1) * 120)" }) {
   if (!title)
     throw new Error("Dialog: `title` is required");
+  if (open == null)
+    throw new Error("Dialog: `open` is required");
   usePopKeyframes();
   const panelRef = useRef(null);
   const onKeyDown = useDialogModal({ open, panelRef, onDismiss: onClose });
