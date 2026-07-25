@@ -110,8 +110,10 @@ load-bearing: an exception names exactly one requirement, so one entry cannot ex
 whole clause.
 
 Every component declares, in **every** layer, beside its own source — React at
-`<Name>.behaviour.json`, Angular at `<name>.behaviour.json`, and the twenty-two
-controls Material provides or lacks, in `frameworks/angular/behaviour-delegated.json`.
+`<Name>.behaviour.json`, Angular at `<name>.behaviour.json`, and the controls Material
+provides or lacks, in `frameworks/angular/behaviour-delegated.json` — **count that file's
+keys rather than trusting a figure here**; it read *twenty-two* until plan 8C2 split
+`Radio.jsx` in two and added a twenty-third in the same change.
 **Delegation is a state, not an absence**: Angular has a tooltip, it is `matTooltip`,
 and a declaration reading "absent" would be false for it — Calendar is the one entry
 in that file where "absent" is true, and it binds the `absent` pattern precisely so
@@ -484,7 +486,7 @@ scheduled for deletion the same week.
   is correct for `debounce`-style speculation, when it is not: Angular has no
   `Tooltip`, `Toast` or `Pagination` **primitive**, but it provides all three
   through Angular Material, dressed by `arena-material.css` — the same
-  "Material provides the control" bucket 21 of the 39 Tailwind manifests
+  "Material provides the control" bucket most Tailwind manifests
   belong to (`Tooltip.manifest.json`, `Toast.manifest.json` and
   `Pagination.manifest.json` all exist). `check:script-tokens` cannot see
   this — its orphan rule is "imported by at least one layer," and it is
@@ -543,9 +545,12 @@ scheduled for deletion the same week.
   question, *"How does a pattern express an optional requirement?"*, is this.
   `comparePattern`'s stale-exception message has no vocabulary for "true in one
   variant" either — it offers only "delete it or name a subject".
-- **Compliance coverage is 6 of 62 bindings and nothing schedules the rest.**
+- **Compliance coverage is a small fraction of the bindings and nothing schedules the
+  rest.** `bun run check:compliance` prints the live pair; do not trust a figure written
+  here, which has drifted once already — every batch that adds a component adds a binding
+  and moves the denominator without touching this line.
   `COVERED` guards the accuracy of what it claims, never the completeness of it, so
-  the 56 uncovered bindings — including every one of `Table`'s and `Calendar`'s
+  the uncovered bindings — including every one of `Table`'s and `Calendar`'s
   eight exceptions, the components with no keyboard navigation at all — remain
   exactly as unverified as they were before this gate existed. The gate was built
   that way on purpose: one demanding 47 suites on day one would have been switched

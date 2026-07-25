@@ -806,9 +806,13 @@ Plan D should repair behaviour rather than port a contract that is known to be d
 strong side of it.** `check:api` reads Angular's surface from the real `<name>.ts`
 component, not from a declaration file — the asymmetry that weakens it on the React side
 is an advantage here. A CDK-built primitive either declares the contract's members or it
-does not, and no `.d.ts` stands between the two. So each of the twenty-two arrives with a
-machine-checked API the day it is written, which is the opposite of how the existing
-twenty-one arrived.
+does not, and no `.d.ts` stands between the two. So each one Plan D writes arrives with a
+machine-checked API the day it is written, which is the opposite of how the existing ones
+arrived. **Both counts that stood here — *twenty-two* for Plan D's primitives and
+*twenty-one* for the components already in the tree — were measured stale on 2026-07-24
+and replaced by the method rather than by corrected numbers**; see the re-measurement
+blockquote under *The running count*. Plan D's set is the key set of
+`frameworks/angular/behaviour-delegated.json`; the existing set is that, minus `Switch`.
 
 Three things to carry in:
 
@@ -922,9 +926,12 @@ recorded as the batch's one D1 cost, with the same absence of a gate behind it t
 > The figure below was true when written and went stale inside 8C2 itself: splitting `Radio.jsx`
 > into two quartets made `RadioGroup` a new React component AND a new `behaviour-delegated.json`
 > entry in the same change, moving the set from twenty-one to twenty-two with no prose changing.
-> The other uses of *twenty-one* and *twenty-two* in this document — Plan D's CDK primitives at
-> the "Three things to carry in" section, and `frameworks/tailwind/README.md`'s manifest tally —
-> are the same drift or a different subject entirely; measure before citing either. The command:
+> **Measured since, and now settled:** Plan D's CDK-primitive tally at *"What Plan A changes about
+> how Plan D is verified"* was the SAME drift and has been replaced by the method there.
+> `frameworks/tailwind/README.md`'s tally is a **different subject** — it counts manifests, not
+> components, and the `Radio` split added no manifest, so it did not drift. `CLAUDE.md` carried
+> three more instances of this same class and all three were corrected in the same change. The
+> command: 
 > every `.jsx` under `frameworks/react/components/` (excluding `*.card.entry.jsx`) with no matching
 > directory under `frameworks/angular/primitives/`, minus `Switch`, which was contracted before
 > Plan C began. The paragraphs below are left as the record of what 8C1 stated at the time.

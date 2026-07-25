@@ -334,8 +334,9 @@ Created by this plan:
 | `frameworks/react/test-dom/grid-keyboard.test.jsx` | Tasks 10 and 12 — the shared compliance suite |
 
 Modified structurally: `scripts/lib/api-surface.mjs` (Tasks 4 and 6), `scripts/api-surface.test.mjs`,
-`scripts/check-api.mjs` (Tasks 3 and 6), `scripts/check-api.test.mjs`, `scripts/check-compliance.mjs`
-(`COVERED`, Tasks 10 and 12), `api/README.md`, `CLAUDE.md`, the spec.
+`scripts/check-api.mjs` (Tasks 3 and 6), `scripts/check-api.test.mjs`, `scripts/build-api-types.mjs`
+and `scripts/build-api-types.test.mjs` (Task 11 Step 2a — the numeric-enum emitter),
+`scripts/check-compliance.mjs` (`COVERED`, Tasks 10 and 12), `api/README.md`, `CLAUDE.md`, the spec.
 
 Regenerated: `frameworks/react/api.generated.d.ts`, `frameworks/angular/api.generated.ts`, the `.js`
 sibling of every `.jsx` touched.
@@ -1586,14 +1587,55 @@ why, and that `check:api` is untouched because this is behaviour work.
 `meta` is **absent** and that is EG: consumer data may not be a field of a predefined object, and
 `renderEvent`'s parameter is the route by which a consumer's own object reaches its own renderer.
 
+**The emitter cannot do this today, and that is measured, not suspected.**
+`renderApiModule()` in `scripts/build-api-types.mjs` quotes **every** enum value
+unconditionally — `type.values.map((v) => `'${v}'`)` — so `CatSlot` would emit
+`export type CatSlot = '1' | '2' | … | '8';`, a union of *strings*. The React `.d.ts` says
+`1 | 2 | … | 8`, so `check:api` would then report a values mismatch, and a reader trusting the
+generated module would be told the slot is a string. **Fix the emitter before writing the type**,
+as a step of its own with its own test:
+
+- [ ] **Step 2a: Teach the emitter numeric enum values**
+
+Write the failing test first, in `scripts/build-api-types.test.mjs`:
+
+```js
+/* An enum's values are rendered as TypeScript literals, and a NUMBER is not a
+ * string. Every enum in api/types/ was a string set until CatSlot, so the
+ * emitter quoted unconditionally and nothing noticed. A quoted numeric set is
+ * worse than a build error: it emits a union of strings that compiles, and the
+ * layer's own `1 | 2 | 3` then disagrees with it in a way only check:api sees. */
+test('renderApiModule emits a numeric enum unquoted', () => {
+  const out = renderApiModule([{ name: 'CatSlot', kind: 'enum', description: 'x', values: [1, 2, 3] }]);
+  assert.match(out, /export type CatSlot = 1 \| 2 \| 3;/);
+});
+
+test('renderApiModule still quotes a string enum', () => {
+  const out = renderApiModule([{ name: 'Dir', kind: 'enum', description: 'x', values: ['up', 'down'] }]);
+  assert.match(out, /export type Dir = 'up' \| 'down';/);
+});
+```
+
+Run it, watch the first fail, then make the literal depend on the value's type — a number renders
+bare, anything else quotes. Run `bun run build:api` afterwards and confirm the **existing** modules
+are byte-unchanged: every enum shipped today is a string set, so a correct fix moves nothing.
+
+```bash
+cd /home/juan/Dravensoft/Identity
+bun test scripts/build-api-types.test.mjs
+bun run build:api
+git diff --stat frameworks/react/api.generated.d.ts frameworks/angular/api.generated.ts   # EMPTY before CatSlot exists
+```
+
+Only then write `cat-slot.json` and regenerate:
+
 ```bash
 cd /home/juan/Dravensoft/Identity
 bun run build:api
 git diff frameworks/react/api.generated.d.ts frameworks/angular/api.generated.ts
 ```
 
-**Read the emitted `CatSlot` carefully** — a numeric enum has never been emitted before, and a
-generator that quotes the values (`'1' | '2'`) would be a defect this task must catch, not inherit.
+Read the emitted `CatSlot` and confirm it is unquoted.
 
 - [ ] **Step 3: The contract**
 
