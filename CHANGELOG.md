@@ -700,25 +700,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- **`frameworks/react/test-dom/` is gone, and with it every DOM-rendered test of the React
-  layer.** The directory — a harness, a compliance wrapper and seven suites, forty tests —
-  cost more RAM to run than this repo's development loop will pay. **DOM behaviour on the
-  React side is now checked by eye**: `bun run demos` and operate the component on its
-  `*.card.html` page. This is a deliberate trade, not an oversight, and what it costs is
-  itemised in CLAUDE.md's *Known debt* rather than left to be rediscovered. The headline
-  losses: `Calendar`'s keyboard navigation had its only proof deleted in the same breath
-  as its binding retiring all eight `grid` exceptions, so that binding now claims full
-  compliance untested; the six form controls' value-carrying events are no longer proved
-  to *fire* at all (the SSR suites assert their shape and say so themselves); `Tooltip`'s
-  cancel-and-reschedule timer rule is unpinned; and the four live `Dialog`/`ConfirmDialog`
-  defects that were pinned as *still broken* can now be fixed without anything reporting
-  the matching exception as stale. Five React entries left `COVERED` in
-  `scripts/check-compliance.mjs`, whose `SUITE_DIRS` is down to the Angular directory;
-  `testStep()` in `scripts/check-all.mjs` is back to one `bun test` invocation and
-  `package.json` lost `test:react-dom`. The evaluator survives untouched —
-  `scripts/lib/behaviour-compliance.mjs` keeps its unit tests in
-  `scripts/behaviour-compliance.test.mjs` — so only its application to React trees is
-  gone, and the deleted files are recoverable from git rather than needing a rewrite.
+- **`frameworks/react/test-dom/grid-keyboard.test.jsx` is gone, and a rule now keeps its
+  kind out.** The whole directory was deleted mid-cycle for its RAM cost and restored, so
+  the net change from the last release is one suite and one rule: **a component whose
+  behaviour binding names the `grid` pattern is DOM-tested by hand** — `bun run demos`,
+  then operate the component on its own `*.card.html` page. The rule is tied to the
+  binding rather than to a judgement about what looks like a grid, so it is a grep rather
+  than an argument, and a component that becomes a grid later inherits it without anyone
+  remembering. Today it selects exactly `Calendar` and `Table`.
+
+  It is a measurement, not a preference: the grid suite alone peaked at 164 MiB while the
+  other six suites together peaked at 109. Its fixture is 84 cells per mount, mounted
+  eight times, with 160 key events dispatched through `act()` — it cost more than
+  everything else in the directory combined. **What is no longer proved:** `Calendar`'s
+  roving tab stop, its four-edge clamp, Home/End within a day column, and Enter/Escape
+  into and out of an event chip. Its binding retired all eight `grid` exceptions when
+  that navigation shipped, so it claims full compliance with nothing rendering it, and
+  `Calendar:react` is the one React entry that did not return to `COVERED` in
+  `scripts/check-compliance.mjs` — by decision rather than by accident.
+  `check:compliance` reports 6 of 64 bindings.
+
+  Everything else in the directory is back and green: the harness, the `--preload`, the
+  compliance wrapper and six suites — the form controls' value-carrying events proved to
+  *fire* by dispatching real ones, `Tooltip`'s cancel-and-reschedule timer rule, the four
+  live `Dialog`/`ConfirmDialog` defects pinned as *still broken*, `Menu`'s misplaced
+  `aria-haspopup`, `Skeleton`'s `circle` branch, and the compliance wrapper's four
+  failure paths. `package.json` carries `test:react-dom` again, `testStep()` in
+  `scripts/check-all.mjs` is back to two `bun test` invocations, and `SUITE_DIRS` reads
+  both layers. What the rule costs is itemised in CLAUDE.md's *Known debt*.
 - **`Rotor` is gone from every layer — breaking.** The Rotor is Dravensoft's **brand
   mark, not an Arena component**: a primitive whose only job is to render one company's
   identity does not belong in a design system that ships MIT, and the products that

@@ -6,12 +6,11 @@ import { Checkbox } from '../components/forms/Checkbox.jsx';
 
 /* This directory renders with renderToStaticMarkup and has no DOM, so no test here
  * fires a change. The `change` event's payload -- the new checked state as a boolean --
- * is therefore NOT verified by this suite, AND IT IS NOT VERIFIED ANYWHERE ELSE
- * EITHER. It was, by frameworks/react/test-dom/form-control-events.test.jsx, which
- * clicked the real checkbox and asserted the payload was a boolean before asserting
- * what it equalled; that directory was deleted for its RAM cost and React's DOM
- * behaviour is now checked by eye against the demo page. See CLAUDE.md's Known debt.
- * What IS verified here is the half SSR can see:
+ * is therefore NOT verified by this suite; it is verified where a DOM exists, in
+ * frameworks/react/test-dom/form-control-events.test.jsx, which clicks the real
+ * checkbox and asserts the payload is a boolean before asserting what it equals --
+ * the sharpest of the six, because a DOM event and a boolean are unmistakably
+ * different things. What IS verified here is the half SSR can see:
  * that `checked` reaches the native input and drives the drawn box, and that the
  * native members the flattened heritage clause kept (name, value, required) are
  * forwarded explicitly now that {...rest} is gone. */

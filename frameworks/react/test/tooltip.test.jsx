@@ -11,13 +11,9 @@ import { Tooltip } from '../components/feedback/Tooltip.jsx';
  * renderToStaticMarkup and has no DOM, so a static render shows the TRIGGER and
  * never the bubble. Nothing below asserts the bubble's text, its role="tooltip",
  * or either delay; that would be asserting something false about a static render.
- * `frameworks/react/test-dom/tooltip-timer.test.jsx` owned the reveal -- it drove
- * real mouseover/mouseout against a real DOM and pinned the cancel-and-reschedule
- * rule around --delay-open and --delay-close -- and that directory was deleted for
- * its RAM cost, of which this suite was the most expensive file (real wall-clock
- * waits, ~2s). SO THE REVEAL AND BOTH DELAYS ARE NOW UNVERIFIED, and are checked by
- * eye: `bun run demos`, then hover the trigger on tooltip.card.html and watch that
- * crossing out before the delay cancels rather than queues. See CLAUDE.md's Known debt.
+ * `frameworks/react/test-dom/tooltip-timer.test.jsx` owns the reveal and keeps
+ * owning it -- it drives real mouseover/mouseout against a real DOM and pins the
+ * cancel-and-reschedule rule around --delay-open and --delay-close.
  *
  * What IS verifiable statically is exactly what this migration changed:
  *

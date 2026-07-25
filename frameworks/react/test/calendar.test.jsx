@@ -14,8 +14,11 @@ import { CalendarEvent } from '../components/display/CalendarEvent.jsx';
  *
  * NOTHING ELSE DOES EITHER, AND THAT IS THE SHARPEST GAP THIS REPO CARRIES.
  * `frameworks/react/test-dom/grid-keyboard.test.jsx` owned the roving tab stop, the
- * four-edge clamp, Home/End and Enter/Escape into an event chip; it was deleted with
- * the rest of that directory for its RAM cost. Calendar.behaviour.json retired all
+ * four-edge clamp, Home/End and Enter/Escape into an event chip. That directory was
+ * deleted for its RAM cost and restored; this one suite was not, and stays out under
+ * a standing rule -- a component whose behaviour binding names the `grid` pattern is
+ * DOM-tested by hand, because this suite alone cost more RAM than the other six
+ * combined. Calendar.behaviour.json retired all
  * eight of its `grid` exceptions when the navigation shipped, so the binding now
  * claims FULL compliance with the pattern and no test anywhere checks the claim.
  * Keyboard navigation is verified by hand: serve the tree with `bun run demos`, open

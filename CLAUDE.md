@@ -8,13 +8,16 @@ Arena — Dravensoft's design system. It is **not a published npm package**, but
 have a **dev-only, private `package.json`** at the root: the token layer is built from
 DTCG JSON by Style Dictionary, and the build and check scripts are tested with
 `bun test`, as is each framework layer from its own test directory
-(`bun run test:scripts` / `test:react` / `test:angular`, or `bun run test` for all
-three). They run in **one `bun test` process**: `test` is `bun test scripts
-frameworks/react/test/ frameworks/angular/test`. It was two until
-`frameworks/react/test-dom/` was deleted — that directory registered a DOM
-process-wide and could not share a process with the DOM-free suites. **No suite in
-this repo renders React into a DOM any more**, and what that costs is recorded under
-*Known debt*. **A test under `scripts/` may not import a framework layer's `.ts` or `.jsx`**,
+(`bun run test:scripts` / `test:react` / `test:react-dom` / `test:angular`, or
+`bun run test` for all four). Those four run in **two `bun test` processes**, not one:
+`test` is `bun test scripts frameworks/react/test/ frameworks/angular/test && bun test
+--preload ./frameworks/react/test-dom/preload.js frameworks/react/test-dom`, because
+`frameworks/react/test-dom/` registers a DOM globally and must not share a process with
+the DOM-free suites (see the two-React-test-directories note under *Architecture*).
+That directory was deleted once, for its RAM cost, and restored minus the one suite
+that carried the cost: **a component whose behaviour binding names the `grid` pattern
+is DOM-tested by hand**, and what that rule costs is recorded under *Known debt*.
+**A test under `scripts/` may not import a framework layer's `.ts` or `.jsx`**,
 because `scripts/` is the one suite `check-all.mjs` also runs under plain node, and those
 files use the extensionless imports their own toolchains expect and node does not resolve.
 A property worth asserting against a real recipe or component is asserted from that
@@ -128,23 +131,25 @@ it declares**: a component can bind `dialog-modal` and trap no focus. A green ru
 coverage claim, never an accessibility one.
 
 **And now something does check whether a component behaves as it declares — by
-rendering it, in the Angular layer alone.** `check:compliance` is the coverage
-record; the verification itself lives in render suites (`frameworks/angular/test/`
-— **there is no React render suite any more**, see *Known debt*)
+rendering it, in both layers, with one component-shaped hole.** `check:compliance`
+is the coverage record; the verification itself lives in render suites
+(`frameworks/react/test-dom/`, `frameworks/angular/test/`)
 that assert, per requirement of a component's bound pattern, that the rendered DOM
 either meets it with no exception declared, or fails it with one declared. That
 single bidirectional statement is the stale-exception rule the layer was modelled
-on and did not have: **an exception can finally expire.** The shared evaluator is
+on and did not have: **an exception can finally expire.** The hole is by rule and
+not by omission — **a component whose binding names the `grid` pattern is DOM-tested
+by hand**, so `Calendar` and `Table` are outside the suites and outside `COVERED`;
+the rule, the measurement behind it and its price are stated in
+`check-compliance.mjs`'s own header and under *Known debt*. The shared evaluator is
 `scripts/lib/behaviour-compliance.mjs`, DOM-generic on purpose — it touches only
-`tagName`, `getAttribute` and `hasAttribute`, because it is consumed from two
-runtimes, one of them plain node in its own test, which has no DOM. **It is still
-shared even though only one layer consumes it now**: `scripts/behaviour-compliance.test.mjs`
-exercises it against stub elements, so the rule survived the React suites that used
-to be its second consumer. It returns a
+`tagName`, `getAttribute` and `hasAttribute`, because it is consumed from three
+runtimes, one of them plain node in its own test, which has no DOM. It returns a
 third value, `null`, for requirements no single element can decide (`focus.*`,
 `keyboard.*`, `content.noAutoDismiss`, `alternative.table`); a suite must name
 each of those in its `behavioural` map and assert it by acting on the tree, and
-the layer's wrapper (`frameworks/angular/test/compliance.ts`) throws if one is
+each layer's wrapper (`frameworks/react/test-dom/assert-pattern.jsx`,
+`frameworks/angular/test/compliance.ts`) throws if one is
 silently skipped. **Coverage is partial by design
 and grows one component at a time** — `COVERED` in `scripts/check-compliance.mjs`
 is the record, with the same bidirectional staleness rule `EXEMPT` carries; the
@@ -234,37 +239,48 @@ with no gate behind the loss — `check:api` reads the `.d.ts`, and a restored s
 `.jsx` would leave it green. That is the same limit already recorded two paragraphs down for
 every migrated React component; Plan C widens its reach, it does not close it.
 
-**React has one test directory, and it has no DOM.**
+**React has two test directories, they must not merge, and the second one has a
+rule about what it may hold.**
 `frameworks/react/test/` asserts on `renderToStaticMarkup` — no DOM, by design,
-because those suites prove those components render correctly server-side. There
-was a second, `frameworks/react/test-dom/`, which rendered into happy-dom; it was
-deleted for its RAM cost and **React's DOM behaviour is now verified by eye
-against the demo pages** (see *Known debt*, which lists what stopped being
-machine-checked). Two consequences for anyone tempted to bring a DOM back into
-this directory: `@happy-dom/global-registrator` installs globals **process-wide**
-and `bun test` shares one process across every path a single invocation matches,
-so a DOM registered here would also reach `frameworks/angular/test`, whose files
-register it themselves and throw on the second registration — and it would
-quietly change what these suites prove, with nothing failing to say so. A DOM for
-React needs its own `bun test` invocation, which is what `testStep()` in
-`scripts/check-all.mjs` used to carry and no longer does; `check-all.test.mjs`
-asserts that array by literal value, so restoring the step means editing both.
+because those suites prove those components render correctly server-side.
+`frameworks/react/test-dom/` registers `@happy-dom/global-registrator`, which
+installs globals **process-wide**, and `bun test` shares one process across every
+path a single invocation matches. So a DOM registered in the first directory's
+process would quietly change what its thirty-eight suites prove with nothing
+failing to say so, and it would also reach `frameworks/angular/test`, whose files
+register a DOM themselves and throw on the second registration. `testStep()` in
+`scripts/check-all.mjs` therefore runs two `bun test` invocations, and
+`check-all.test.mjs` asserts that array by literal value — a change to one is a
+change to both.
 
-**Any future React DOM harness must install its DOM through `bun test --preload`,
-and that is not a convenience.** react-dom
+**The rule the second directory carries: a component whose behaviour binding names
+the `grid` pattern is DOM-tested by hand**, with `bun run demos` and the
+component's own `*.card.html` page. It is tied to the binding rather than to a
+judgement about what looks like a grid, so it is a grep rather than an argument,
+and so a component that becomes a grid later inherits it without anyone
+remembering; today it selects exactly `Calendar` and `Table`. The whole directory
+was deleted once for its RAM cost and restored minus the one suite that carried
+that cost — `grid-keyboard.test.jsx` alone peaked at 164 MiB against 109 MiB for
+the other six together, because its fixture is 84 cells per mount, eight mounts,
+and 160 key events through `act()`. The directory was never the problem; the grid
+was. What that costs is under *Known debt*, and it is a real cost, not a
+formality.
+
+**`frameworks/react/test-dom/` must be run through `--preload
+./frameworks/react/test-dom/preload.js`, and that is not a convenience.** react-dom
 decides **once, at its own module evaluation**, whether the browser supports the
 `input` event: `canUseDOM` gates the block computing `isInputEventSupported`, and if a
 DOM is not already installed the flag latches false and React falls back to its legacy
 change-detection polyfill, under which a dispatched `input` or `change` reaches an
-`onChange` handler **zero** times, silently. Registering happy-dom from a harness
-module's own body is too late (ES imports evaluate first) and — measured, so do not
-retry it —
+`onChange` handler **zero** times, silently. Registering happy-dom from `harness.jsx`'s
+module body is too late (ES imports evaluate first) and — measured, so do not retry it —
 so is registering it from a **separate ES module imported ahead of `react-dom/client`**:
 bun evaluates `react-dom` before that module anyway. Only a preload is early enough.
-This cost a day to find and is written down here rather than only in the deleted
-`preload.js`, so the next person to want a React DOM does not rediscover it. A
-harness must **throw** when `document` is missing rather than installing a fallback,
-because a fallback would silently run its suites under the legacy semantics. The
+This cost a day to find, so it is written down here as well as in `preload.js`, and it
+survived the directory's deletion and restore unchanged. All
+three invocation sites pass it (`test:react-dom`, `test`, and `testStep()`), and
+`harness.jsx` **throws** when `document` is missing rather than installing a fallback,
+because a fallback would silently run those suites under the legacy semantics. The
 preload must never be applied to `frameworks/react/test/`, for the reason in the
 paragraph above.
 
@@ -545,8 +561,10 @@ scheduled for deletion the same week.
   was invisible before the contract layer, which is the clearest evidence that layer
   was worth building. `Calendar` was in the same state and is not any more — it gained
   a roving-tabstop grid and retired all eight of its exceptions — but **the suite that
-  proved it was deleted with `frameworks/react/test-dom/`**, so its now-exceptionless
-  binding is an unverified claim. See the render-suite entry below.
+  proved it is gone and is not coming back**, because `grid-keyboard.test.jsx` is the
+  one suite the grid rule excludes, so its now-exceptionless binding is an unverified
+  claim. Both components are inside that rule and both are DOM-tested by hand. See the
+  grid-rule entry below.
 - **The binding schema cannot express "this pattern applies conditionally".** `Tag`
   renders a real `<button>` only when `onRemove` is passed; without it — the common
   case — it is a plain `<span>` matching no interactive pattern at all. It is bound to
@@ -574,10 +592,11 @@ scheduled for deletion the same week.
   same shape), or *semantic completeness* (`Menu`'s Enter opens the menu but never
   moves focus). A rendered DOM resolves all three at once, which is why the render
   suites absorbed the stale-exception check instead of sharing it with a scan.
-  **This is still the reason not to re-propose a scan**, even now that React has no
-  render suite to be the expensive tier above it: a scan's measured error rate is
-  what it is regardless of what else exists, and a 51% false-unmet rate would be
-  worse than the manual check that replaced the suites.
+  **This is still the reason not to re-propose a scan**, including as the cheap tier
+  beneath the grid rule, where a scan looks superficially attractive because the hand
+  check it would supplement is not machine-checked at all: a scan's measured error rate
+  is what it is regardless of what sits above or below it, and a 51% false-unmet rate
+  is worse than an honest hole.
 - **A binding cannot scope an exception to a variant, and `Skeleton` is the proof.**
   `Skeleton`'s `roles.element` and `live.politeness` exceptions are true of the
   `circle` variant and false of `block`, `line` and `text`. The compliance suite
@@ -589,66 +608,73 @@ scheduled for deletion the same week.
   question, *"How does a pattern express an optional requirement?"*, is this.
   `comparePattern`'s stale-exception message has no vocabulary for "true in one
   variant" either — it offers only "delete it or name a subject".
-- **The React DOM render suites were deleted, and React's DOM behaviour is now
-  checked by eye.** `frameworks/react/test-dom/` — a harness plus seven suites,
-  forty tests — was removed because running it costs more RAM than this repo's
-  development loop will pay. **The replacement is manual: serve the tree with
-  `bun run demos` and operate the component on its `*.card.html` page.** That is a
-  deliberate trade and not an oversight, so the price is itemised here rather than
-  left to be rediscovered. What stopped being machine-checked, all of it
-  previously green:
-  - **`Calendar`'s keyboard navigation.** `grid-keyboard.test.jsx` was the only
-    proof of the roving tab stop, the four-edge clamp, Home/End within a day
-    column, and Enter/Escape into and out of an event chip. The binding retired
-    all eight `grid` exceptions in the same batch, so it now claims **full**
-    compliance with nothing testing it — the worst combination on this list, and
-    the reason `Calendar:react` had to leave `COVERED`.
-  - **That the six form controls' events fire at all.** `form-control-events.test.jsx`
-    proved `Input`, `Textarea`, `Select`, `Checkbox` and `RadioGroup` hand the
-    consumer a **value** rather than the DOM event, by dispatching real events.
-    The six suites under `frameworks/react/test/` assert the *shape* of that and
-    say in their own headers that they cannot assert it *fires*.
-  - **`Tooltip`'s single-timer rule.** Cancel-on-transition and the unmount
-    cleanup, the one genuinely new behaviour plan 7a shipped.
-  - **The stale-exception rule in behavioural form.** `behavioural.test.jsx`
-    pinned four live defects of `Dialog`/`ConfirmDialog` — no Escape, no focus on
-    open, no restore on close — by asserting they are *still broken*. Fix one now
-    and nothing turns red to say the matching exception has gone stale.
-  - **`Menu`'s misplaced `aria-haspopup` and `Skeleton`'s `circle` branch** — the
-    two mistakes the rejected text scan got backwards, and the reason a rendered
-    DOM was chosen over a scan in the first place.
-  - **The failure path of the compliance wrapper on the React side**: four tests
-    that wrote deliberately false bindings to a temp file and proved STALE
-    EXCEPTION, OVERCLAIM, "no subject element" and "not declared behavioural"
-    actually fire.
+- **A grid component's DOM behaviour is checked by eye, and that is a rule with a
+  price.** `frameworks/react/test-dom/` was deleted whole for its RAM cost and
+  restored minus one suite, so the standing rule is narrow: **a component whose
+  behaviour binding names the `grid` pattern is DOM-tested by hand — serve the tree
+  with `bun run demos` and operate the component on its `*.card.html` page.** It is
+  tied to the binding rather than to a judgement about what looks like a grid, so it
+  is a grep rather than an argument, and a component that becomes a grid later
+  inherits it without anyone remembering. Today it selects exactly `Calendar` and
+  `Table`.
 
-  What survived: `scripts/behaviour-compliance.test.mjs` still unit-tests
-  `comparePattern` against stub elements, so the **evaluator** is intact and only
-  its application to React trees is gone; the thirty-two Angular render suites are
-  untouched. Restoring any of this means a new directory, its own `bun test`
-  invocation with a `--preload` (the `canUseDOM` constraint two sections up is why,
-  and it is not negotiable), a second step in `testStep()` plus the literal
-  assertion in `check-all.test.mjs`, and `frameworks/react/test-dom` back in
-  `SUITE_DIRS`. **The files do not need rewriting** —
-  `git log --diff-filter=D -- frameworks/react/test-dom/` names the commit that
-  removed them and `git show <commit>^:<path>` brings any of them back.
+  The rule is a measurement, not a preference: `grid-keyboard.test.jsx` alone peaked
+  at 164 MiB — 194 before its two performance fixes — while the other six suites
+  together peaked at 109 and the whole directory at 171. The grid cost more than
+  everything else combined, because its fixture is 6 days × 14 hour cells = 84 cells
+  per mount, mounted eight times, with 160 key events dispatched through `act()`.
+  Cutting there cuts exactly where the cost is; the directory was never the problem.
+
+  **What the rule costs, and it is one thing rather than a list.** `Calendar`'s
+  keyboard navigation is not machine-checked: `grid-keyboard.test.jsx` was the only
+  proof of the roving tab stop, the four-edge clamp, Home/End within a day column,
+  and Enter/Escape into and out of an event chip, and the binding retired all eight
+  `grid` exceptions in the same batch — so it claims **full** compliance with the
+  `grid` pattern with nothing rendering it, and `Calendar:react` cannot appear in
+  `COVERED`. `Table` is in the same rule and has always been uncovered; its
+  exceptions are what stand unverified there rather than a claim of compliance.
+  What partly guards `Calendar` instead is a **static** tab-stop count in
+  `frameworks/react/test/calendar.test.jsx` — a grid is one tab stop, and that count
+  is a property of the markup rather than of behaviour, so a DOM-free suite can hold
+  it. It catches a second tab stop appearing inside the grid. It does not catch an
+  arrow key that stops moving, and it is the whole of what stands in for a suite.
+
+  **What the restore bought back**, all of it green again and none of it worth
+  re-deriving from scratch if the directory is ever touched: that the six form
+  controls' events *fire* at all (`form-control-events.test.jsx` dispatches real
+  events and proves `Input`, `Textarea`, `Select`, `Checkbox` and `RadioGroup` hand
+  the consumer a **value** rather than the DOM event — the DOM-free suites assert
+  only the *shape* of that and say so in their own headers); `Tooltip`'s
+  single-timer rule, cancel-on-transition and unmount cleanup; the stale-exception
+  rule in behavioural form, where `behavioural.test.jsx` pins four live defects of
+  `Dialog`/`ConfirmDialog` — no Escape, no focus on open, no restore on close — by
+  asserting they are *still broken*; `Menu`'s misplaced `aria-haspopup` and
+  `Skeleton`'s `circle` branch, the two mistakes the rejected text scan got
+  backwards; and the failure path of the compliance wrapper on the React side, four
+  tests that write deliberately false bindings to a temp file and prove STALE
+  EXCEPTION, OVERCLAIM, "no subject element" and "not declared behavioural" actually
+  fire.
+
+  If the grid suite is ever wanted back — which would mean paying the 164 MiB and
+  retiring this rule — it does not need rewriting:
+  `git show edb9f3e^:frameworks/react/test-dom/grid-keyboard.test.jsx` is the file,
+  and it would need `Calendar:react` restored to `COVERED` alongside it.
 - **Compliance coverage is a small fraction of the bindings and nothing schedules the
   rest.** `bun run check:compliance` prints the live pair; do not trust a figure written
   here, which has drifted once already — every batch that adds a component adds a binding
   and moves the denominator without touching this line.
   `COVERED` guards the accuracy of what it claims, never the completeness of it, so
   the uncovered bindings — including every one of `Table`'s exceptions, the component
-  with no keyboard navigation at all, **and now every React binding without
-  exception** — remain
+  with no keyboard navigation at all, **and `Calendar`'s claim of full `grid`
+  compliance, which the grid rule keeps out of a suite permanently** — remain
   exactly as unverified as they were before this gate existed. The gate was built
   that way on purpose: one demanding a suite per binding on day one would have been
   switched
   off. The consequence is that the layer's headline property, *an exception can
-  expire*, currently holds for two Angular components and nothing else.
+  expire*, holds for the handful of components in `COVERED` and nothing else.
   `figure-with-data-table`'s `roles.label` half stays unverifiable regardless — a
   suite can assert an `aria-label` exists, never that it is a good name for the
-  chart. **`COVERED` is keyed by `<component>:<layer>`, not by component name**, and that
-  shape is kept even though every surviving entry is Angular: several components
+  chart. **`COVERED` is keyed by `<component>:<layer>`, not by component name**: several components
   (`ConfirmDialog`, `Skeleton`, `Alert`, `BarChart`) are bound in both layers, and a
   name-only key let a mention of *either* layer's binding satisfy the claim — so `ConfirmDialog`'s
   React suite marked its unverified Angular contract covered, and `Alert`'s Angular suite did the
@@ -665,10 +691,15 @@ scheduled for deletion the same week.
   wrong verdict pins a false claim exactly as a scan would have. And `comparePattern`
   **throws** on an unknown requirement key or a missing `ELEMENT_ROLE` entry — one
   bad key aborts the whole test rather than reporting one problem, so a suite's
-  wrapper (`frameworks/angular/test/compliance.ts`) must expect the throw, not only a
-  returned problem list. **Only the Angular half of that list is still pinned by a
-  suite**: `Input`'s and `Textarea`'s `readonly` verdicts, and `Tag`'s `disabled`, went
-  unverified when the React render suites were deleted.
+  wrapper (`frameworks/react/test-dom/assert-pattern.jsx`,
+  `frameworks/angular/test/compliance.ts`) must expect the throw, not only a
+  returned problem list. **None of those seven is pinned by a suite today, in either
+  layer** — verified by grep: no `behavioural` map in `frameworks/react/test-dom/` or
+  `frameworks/angular/test/` names `posinset`, `busy`, `readonly` or `disabled`. The
+  restore of the React suites did not change that, and the deletion was never what
+  caused it; the only `behavioural` verdicts any suite declares are the
+  `Dialog`/`ConfirmDialog` focus and keyboard keys, `Menu`'s, `Skeleton`'s
+  `focus.unaffected`, `Alert`'s, and the two charts' `alternative.table`.
 - **Angular has no `Calendar`, and nothing has decided whether it should.** React's
   `Calendar` is a day/hour schedule grid with absolutely-positioned event blocks;
   Angular has no equivalent from either an `arena-*` primitive or Angular Material —

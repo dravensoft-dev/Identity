@@ -5,8 +5,8 @@
  * has finished. Exit 1 if any step failed, 0 if all passed.
  *
  * The twenty-one gates in GATES below, plus the test suite: one more step under
- * either runtime -- scripts/ alone under node, scripts/ plus both framework
- * suites under bun (see testStep).
+ * node (scripts/ only), two more under bun (the merged framework suites, and
+ * frameworks/react/test-dom in a process of its own -- see testStep).
  *
  * Three gates can report a third status. check:cards needs a headless
  * browser, and check:vendor and check:demos each need a Bun-only builder
@@ -66,37 +66,50 @@ export const GATES = [
 
 /** The test-suite step(s) for the runtime this process is executing under.
  *  `bun test` has no `node:test` equivalent invocation, so the two runtimes
- *  need different args. Returns an array rather than a single step because
- *  the node path and the bun path do not have to be the same length.
+ *  need different args. Returns an array, not a single step, because under
+ *  bun the DOM harness needs a process of its own -- see below.
  *
- *  Under bun this is ONE `bun test` invocation covering scripts/,
- *  frameworks/react/test/ and frameworks/angular/test. It was two until
- *  frameworks/react/test-dom/ was deleted: that directory registered happy-dom
- *  through a `--preload` and never unregistered it, and several
- *  frameworks/angular/test files call `GlobalRegistrator.register()` of their
- *  own unconditionally, so sharing one process made the first such Angular
- *  file throw "Happy DOM has already been globally registered". With the DOM
- *  harness gone there is nothing left to isolate. Anything that re-introduces
- *  a process-wide DOM registration to the React side must split this back into
- *  two steps -- the collision was reproduced by hand, not theorised.
+ *  Under bun this is two separate `bun test` invocations, not one merged
+ *  call. scripts/, frameworks/react/test/ and frameworks/angular/test run
+ *  together in the first, exactly as before frameworks/react/test-dom
+ *  existed; frameworks/react/test-dom runs alone in the second. They cannot
+ *  be merged: a single `bun test` invocation shares one process (and one
+ *  `globalThis`) across every file it matches, the second invocation's
+ *  `--preload frameworks/react/test-dom/preload.js` registers happy-dom for
+ *  the whole process and is deliberately never paired with an `unregister()`
+ *  (see preload.js's own reasoning), and several frameworks/angular/test
+ *  files call `GlobalRegistrator.register()` of their own, unconditionally.
+ *  Combine the two and the first such Angular file to run after the preload
+ *  throws "Happy DOM has already been globally registered" -- reproduced by
+ *  hand, not assumed.
  *
- *  'frameworks/react/test/' keeps its trailing slash. `bun test` matches a
- *  directory argument as a path *substring*, not a path prefix, so a bare
- *  'frameworks/react/test' would also sweep in any future sibling whose name
- *  merely starts the same way. The slash anchors the match at the directory
- *  boundary and costs nothing.
+ *  The `--preload` is not optional and not a convenience: react-dom decides
+ *  whether `input` is supported at its own module evaluation, so a DOM
+ *  installed any later -- including from a module harness.jsx imports first --
+ *  latches React's legacy change detection, and no dispatched `input` or
+ *  `change` reaches a handler. harness.jsx throws rather than installing a
+ *  fallback DOM, so this argument going missing fails loudly.
+ *
+ *  'frameworks/react/test/' carries a trailing slash for a second, unrelated
+ *  reason: `bun test` matches a directory argument as a path *substring*, not
+ *  a path prefix, so the bare string 'frameworks/react/test' also matches
+ *  every file under the sibling 'frameworks/react/test-dom/' -- silently
+ *  pulling the DOM harness back into the one invocation it must stay out of.
+ *  The trailing slash anchors the match at the directory boundary; also
+ *  reproduced by hand.
  *
  *  Under node, only scripts/ runs, and that asymmetry is deliberate rather
- *  than an oversight -- the framework suites import `.jsx` and `.ts` directly,
- *  which bun transpiles and plain node does not. Keeping the node path alive
- *  for scripts/ is what keeps every GATE runtime-portable; the framework
- *  suites simply are not, and pretending otherwise would mean a build step for
- *  tests.
+ *  than an oversight -- the framework suites (test-dom included) import
+ *  `.jsx` and `.ts` directly, which bun transpiles and plain node does not.
+ *  Keeping the node path alive for scripts/ is what keeps every GATE
+ *  runtime-portable; the framework suites simply are not, and pretending
+ *  otherwise would mean a build step for tests.
  *  @param {{isBun: boolean, testFiles: string[]}} env
  *  @returns {{name: string, args: string[]}[]} */
 export function testStep({ isBun, testFiles }) {
   if (isBun) return [
     { name: 'test (bun test scripts/ + framework suites)', args: ['test', 'scripts', 'frameworks/react/test/', 'frameworks/angular/test'] },
+    { name: 'test (bun test frameworks/react/test-dom, isolated)', args: ['test', '--preload', './frameworks/react/test-dom/preload.js', 'frameworks/react/test-dom'] },
   ];
   return [{ name: 'test (node --test scripts/*.test.mjs)', args: ['--test', ...testFiles] }];
 }
