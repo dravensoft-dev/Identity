@@ -103,7 +103,10 @@ So `focus.trap` **can** be flipped to `true` with real proof — for the half we
 - `frameworks/react/use-dialog-modal.js` — the shared hook. Focus-in on open, boundary-wrapping Tab
   trap, Escape to the component's own dismissal channel, focus restore on close. Four exported
   pure helpers plus one hook, so the helpers are testable without a render.
-- `frameworks/react/test/use-dialog-modal.test.jsx` — DOM-free tests of the pure helpers.
+- `frameworks/react/test-dom/use-dialog-modal.test.jsx` — tests of the pure helpers against
+  hand-built trees. **`test-dom/`, not `test/`**: every assertion reads `document.activeElement`,
+  which the DOM-free directory cannot provide. Task 2's own Files line is the authority here; an
+  earlier revision of this bullet said `test/` and DOM-free, and both were wrong.
 - `frameworks/react/test-dom/onboarding-modal.test.jsx` — `Onboarding`'s compliance suite.
 - `api/components/Dialog.json`, `Menu.json`, `Pagination.json`, `SideNav.json`.
 - `api/types/menu-item.json`, `side-nav-item.json`, `menu-align.json`.
