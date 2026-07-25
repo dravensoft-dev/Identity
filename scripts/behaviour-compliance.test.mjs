@@ -188,6 +188,20 @@ test('no pattern outside LABEL_ACCEPTS_TEXT admits text content', () => {
   }
 });
 
+test('the disclosure pattern is bound to the button role', () => {
+  const pattern = JSON.parse(readFileSync(join(PATTERN_DIR, 'disclosure.json'), 'utf8'));
+  assert.equal(pattern.name, 'disclosure');
+  assert.match(pattern.source, /apg\/patterns\/disclosure/);
+  assert.equal(ELEMENT_ROLE.disclosure, 'button');
+  assert.ok(LABEL_ACCEPTS_TEXT.has('disclosure'),
+    'a disclosure button is named by its own text content');
+  // Every key it requires must already be decidable or behavioural: this pattern
+  // deliberately introduces no new requirement vocabulary.
+  for (const key of Object.keys(pattern.requires)) {
+    assert.ok(DECIDABLE.has(key) || BEHAVIOURAL.has(key), `${key} is in neither set`);
+  }
+});
+
 /* ------------------------------------------------------------------ *
  * evaluate — regressions for the three defects that made correct
  * components report OVERCLAIM.
