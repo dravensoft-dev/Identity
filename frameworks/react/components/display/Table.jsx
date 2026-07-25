@@ -69,6 +69,13 @@ export function Table({
     if (!g) return;
     const active = g.ownerDocument.activeElement;
     if (!active || !g.contains(active)) return;
+    /* Focus is inside a cell's CONTENT rather than on a cell -- a control the
+       consumer drew. Moving the roving stop is ours; taking focus off their
+       control is not. The cursor can move while focus sits there without any
+       help from the focus handler below: the consumer's data changes and the
+       clamp moves it, and the theft would be silent. */
+    const activeRole = active.getAttribute && active.getAttribute('role');
+    if (activeRole !== 'gridcell' && activeRole !== 'columnheader') return;
     const cell = g.querySelector('[role="gridcell"][tabindex="0"], [role="columnheader"][tabindex="0"]');
     if (cell && cell !== active) cell.focus();
   }, [curRow, curCol]);
@@ -124,7 +131,21 @@ export function Table({
     /* A cell reached by pointer takes the cursor with it; the same bail-out as
        the key handler, because the effect above focuses the cursor cell and its
        focus event would otherwise re-render the grid a second time per move. */
-    onFocus: () => { if (ri !== curRow || ci !== curCol) setCursor({ row: ri, col: ci }); },
+    onFocus: (e) => {
+      /* THE CELL OWNS THE CURSOR; ITS CONTENTS DO NOT. React's onFocus is
+         focusin, which BUBBLES, so a control the consumer drew inside this cell
+         fires this handler too. Taking the cursor there moves the roving
+         tabindex onto this cell, and the effect above then pulls focus off the
+         consumer's control and onto the cell. Measured in real Chromium before
+         this guard existed: a Tab aimed at an actions-column <button> landed on
+         the <td>, and only a SECOND Tab reached the button -- which succeeded
+         only because the cursor was by then already there and the bail-out below
+         fired. Calendar gave no precedent and could not have: its event blocks
+         are SIBLINGS of its cells, so a gridcell's onFocus there only ever fires
+         for the cell itself. */
+      if (e.target !== e.currentTarget) return;
+      if (ri !== curRow || ci !== curCol) setCursor({ row: ri, col: ci });
+    },
   });
   const cellRing = (ri, ci) => ({
     outline: 'none',

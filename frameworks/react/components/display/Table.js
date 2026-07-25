@@ -48,6 +48,9 @@ export function Table({
     const active = g.ownerDocument.activeElement;
     if (!active || !g.contains(active))
       return;
+    const activeRole = active.getAttribute && active.getAttribute("role");
+    if (activeRole !== "gridcell" && activeRole !== "columnheader")
+      return;
     const cell = g.querySelector('[role="gridcell"][tabindex="0"], [role="columnheader"][tabindex="0"]');
     if (cell && cell !== active)
       cell.focus();
@@ -87,7 +90,9 @@ export function Table({
   };
   const cellNav = (ri, ci) => ({
     tabIndex: ri === curRow && ci === curCol ? 0 : -1,
-    onFocus: () => {
+    onFocus: (e) => {
+      if (e.target !== e.currentTarget)
+        return;
       if (ri !== curRow || ci !== curCol)
         setCursor({ row: ri, col: ci });
     }

@@ -20,6 +20,17 @@ import { Table } from '../components/display/Table.jsx';
  * eight `grid` requirements with only a person behind the claim. The checklist that
  * person follows is in `Table.prompt.md`, under "Verifying the grid by hand".
  *
+ * ONE DEFECT THIS SUITE SPECIFICALLY CANNOT SEE, named so a green run is not read
+ * as a working keyboard. React's onFocus is `focusin` and BUBBLES, so a control the
+ * consumer drew inside a <td> fired that cell's focus handler, moved the roving
+ * cursor, and the focus effect then took focus off the control and put it on the
+ * cell -- every actions-column button cost TWO Tab presses instead of one. It was
+ * found by driving real Chromium through CDP and is fixed in Table.jsx with a guard
+ * on each side. Nothing here could have caught it: renderToStaticMarkup runs no
+ * effects and dispatches no focus, and `Table` may not have a render suite. The
+ * standing guard is step 2 of "Verifying the grid by hand" in Table.prompt.md, and
+ * no weak assertion was invented here to look covered.
+ *
  * THE NARROW LAYOUT IS UNREACHABLE FROM ANY SUITE IN THIS REPO, so the surviving
  * `focus.roving` exception is checked by reading the source and by that checklist,
  * never by an assertion here. `Table` chooses its layout from a measured CONTAINER

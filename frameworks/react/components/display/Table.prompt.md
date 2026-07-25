@@ -60,14 +60,21 @@ Serve the tree with `bun run demos`, open
    own. Controls YOU drew inside a cell are the exception and are meant to be: they
    are yours, Arena cannot silence markup it does not own, and taking them out of the
    Tab sequence would remove a route a keyboard user has today.
-2. Arrow keys move by cell and clamp at all four edges — the first column, the last
+2. From a cell, Tab reaches an actions-column control in **ONE** press, not two. A
+   second press means the grid pulled focus back onto the cell — which it did, once,
+   and only a real browser showed it: `focusin` bubbles, so a control inside a `<td>`
+   fired that cell's focus handler, moved the roving cursor, and the focus effect
+   took the focus back. Nothing automatic can hold this. `renderToStaticMarkup` runs
+   no effects and dispatches no focus, and a component binding `grid` may not have a
+   render suite, so this step IS the guard.
+3. Arrow keys move by cell and clamp at all four edges — the first column, the last
    column, the header row at the top, the last body row at the bottom. Focus never
    leaves the grid.
-3. `Home` and `End` stay INSIDE the current row: its first and last cell, never the
+4. `Home` and `End` stay INSIDE the current row: its first and last cell, never the
    first row of the table. Walk a middle row, not only the first.
-4. `Enter` activates the row when `onRowClick` is wired, and does nothing on the
+5. `Enter` activates the row when `onRowClick` is wired, and does nothing on the
    header row.
-5. Card mode answers none of it, and it is the surviving exception. That page renders
+6. Card mode answers none of it, and it is the surviving exception. That page renders
    the SAME table twice, the second time in a 340px container, so card mode is
    already on screen — check that a card with `onRowClick` is still mouse-only, and
    that nothing there took a `role`, a `tabindex` or a key handler by accident.
