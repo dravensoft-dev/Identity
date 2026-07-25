@@ -256,6 +256,16 @@ substance because each was earned; 30–36 are new to this plan.
     keyboard work targets the wide layout; the narrow layout keeps an exception naming the variant.
     This is the same "a binding cannot scope an exception to a variant" limit `Skeleton` already
     proves, and Task 12 must not pretend otherwise.
+34a. **The DOM harness registers its document too late, and Tasks 10 and 12 must plan around it.**
+    Measured in Task 5: ES import hoisting evaluates `react-dom/client` before
+    `GlobalRegistrator.register()` runs, so React latches `isInputEventSupported = false` and uses
+    its legacy change detection. In `frameworks/react/test-dom/`, a dispatched `input` reaches
+    React **zero** times; a text field's change needs focus plus `keyup`, `onBlur` is `focusout`,
+    and a value must be written through the PROTOTYPE's `value` setter. `keydown` is unaffected,
+    so arrow-key navigation dispatches normally — but any focus assertion must use the bubbling
+    pair. Recorded in `harness.jsx`'s header and in `CLAUDE.md`'s Known debt; **do not fix it
+    inside a keyboard task**, it touches every suite in the directory.
+
 34. **A compliance suite's `behavioural` map is trusted, not re-derived.** `comparePattern` returns
     `null` for requirements no single element can decide (`focus.*`, `keyboard.*`); a suite must name
     each in `behavioural` and prove it by acting on the tree. `assertPattern` throws if one is

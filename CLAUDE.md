@@ -515,6 +515,25 @@ scheduled for deletion the same week.
   does a pattern express an optional requirement?" was answered by pushing anything
   per-component into the binding rather than the pattern, and a whole pattern applying
   only sometimes is the same problem one level up, still open.
+- **`frameworks/react/test-dom/harness.jsx` registers its DOM too late, and every suite
+  in that directory works around it without saying so.** ES module imports are hoisted —
+  all of them evaluate before any body statement — so `react-dom/client` initialises while
+  `document` is still undefined, `canUseDOM` comes out false, and React latches
+  `isInputEventSupported = false`. It then uses its legacy change detection, which watches a
+  field on `focusin` and re-reads it on `keydown`/`keyup` instead of listening for `input`.
+  **Measured, not inferred:** dispatching `input` on a plain React-controlled `<input>` in
+  this harness fires the handler **zero** times and surfaces a swallowed
+  `TypeError: null is not an object (evaluating 'inst.tag')` from `getInstIfValueChanged`'s
+  null watcher. The consequences a suite must know: a text field's change is driven by focus
+  plus `keyup`, `onBlur` is `focusout`, and a value must be written through the **prototype's**
+  `value` setter or React's instance-level tracker concludes nothing changed. The harness's own
+  header asserted the opposite until plan 8C3 measured it. Fixing it means registering happy-dom
+  before `react-dom` is evaluated — a separate module imported first, or a dynamic import — and
+  it would touch every suite in the directory, which is why the task that found it recorded the
+  fact rather than folding in the change. **This is not cosmetic:** it silently changes which
+  events a DOM suite can use, and a suite written against the real browser's semantics would
+  fail here for a reason nothing in the failure names.
+
 - **A behaviour text scan was designed, built, measured and rejected — do not
   re-propose it without reading this.** Plan 7c's spec proposed a static scan of
   component sources as the cheap tier beneath the render suites. It was

@@ -11,7 +11,30 @@
  * frameworks/angular/test/*.ts does it — a lazy register inside mount() would
  * leave `document` undefined for a suite's top-level code. It is never
  * unregistered here: this directory is its own `bun test` process and the
- * process exiting is the teardown. */
+ * process exiting is the teardown.
+ *
+ * BUT IT DOES NOT RUN EARLY ENOUGH, and every suite in this directory pays for
+ * it. ES module imports are hoisted: ALL of them evaluate before ANY body
+ * statement, so `react-dom/client` below initialises while `document` is still
+ * undefined. React computes `canUseDOM === false`, latches
+ * `isInputEventSupported = false`, and falls back to its legacy change
+ * detection — which watches a field on `focusin` and re-reads it on
+ * `keydown`/`keyup` rather than listening for `input`. Measured, not inferred:
+ * dispatching `input` on a plain React-controlled `<input>` here fires the
+ * handler ZERO times, and surfaces a swallowed
+ * `TypeError: null is not an object (evaluating 'inst.tag')` from
+ * getInstIfValueChanged's null watcher.
+ *
+ * So, in this directory: a text field's change is driven by focus + `keyup`,
+ * `onBlur` is `focusout` (React 17 moved it to the bubbling pair), and a value
+ * must be written through the PROTOTYPE's `value` setter or React's
+ * instance-level tracker concludes nothing changed. form-control-events.test.jsx
+ * documents each at its call site.
+ *
+ * Fixing it means registering happy-dom before react-dom is evaluated — a
+ * separate module imported first, or a dynamic import here — and it would touch
+ * every suite in this directory, so it was left alone rather than folded into
+ * the task that found it (plan 8C3, Task 5). See CLAUDE.md's Known debt. */
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 
 if (!globalThis.document) GlobalRegistrator.register();
