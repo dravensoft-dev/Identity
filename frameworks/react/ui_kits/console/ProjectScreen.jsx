@@ -4,6 +4,8 @@ import { Card } from '../../components/display/Card.jsx';
 import { Badge } from '../../components/display/Badge.jsx';
 import { Tag } from '../../components/display/Tag.jsx';
 import { Table } from '../../components/display/Table.jsx';
+import { TableRow } from '../../components/display/TableRow.jsx';
+import { TableCell } from '../../components/display/TableCell.jsx';
 import { ActivityFeed } from '../../components/display/ActivityFeed.jsx';
 import { Tabs } from '../../components/navigation/Tabs.jsx';
 import { Button } from '../../components/forms/Button.jsx';
@@ -26,17 +28,25 @@ const DEPLOYS = [
  *
  * `mono` is the component's rule for identifiers and numeric data, and it
  * carries --gold: the build number and the duration take it, the author does
- * not — a name is neither a code nor a measurement. */
+ * not — a name is neither a code nor a measurement.
+ *
+ * A COLUMN IS CONFIGURATION ONLY NOW. It used to carry `key` (which field of
+ * the row to read) and `render` (what markup to put in the cell); both are
+ * gone, and the rows below are written as <TableRow>/<TableCell> instead. That
+ * is what keeps the Badge in the status cell and the Details button in the
+ * actions cell: a `render` function was per-item projection, which the library
+ * does not do, but a cell the consumer instantiates is just an element they
+ * wrote. Cells are POSITIONAL — the nth <TableCell> takes the nth column. */
 const DEPLOY_COLUMNS = [
-  { key: 'build', header: 'Build', mono: true, width: 'calc(var(--sp-1) * 24)' },
-  { key: 'env', header: 'Environment' },
-  { key: 'status', header: 'Status', render: (s) => <Badge tone={s[0]} dot>{s[1]}</Badge> },
-  { key: 'author', header: 'Author' },
-  { key: 'dur', header: 'Duration', mono: true },
+  { header: 'Build', mono: true, width: 'calc(var(--sp-1) * 24)' },
+  { header: 'Environment' },
+  { header: 'Status' },
+  { header: 'Author' },
+  { header: 'Duration', mono: true },
   /* No header: the button names itself, and an "ACTIONS" label above it would
      say less than the button does. mobileLayout:'block' drops the label row
      entirely when the table collapses to cards. */
-  { key: 'actions', header: '', mobileLayout: 'block', render: () => <Button variant="ghost" size="sm">Details</Button> },
+  { header: '', mobileLayout: 'block' },
 ];
 const ACTIVITY = [
   { id: '1', actor: 'ana@', action: 'approved the release', target: 'build #4821', time: '2h ago' },
@@ -66,7 +76,20 @@ export function ProjectScreen({ onNav, project, onToast }) {
       </div>
 
       {tab === 'Deployments' && (
-        <Table columns={DEPLOY_COLUMNS} rows={DEPLOYS} label="Deployments" getRowKey={(d) => d.build} />
+        <Table columns={DEPLOY_COLUMNS} label="Deployments">
+          {/* `key` is React's own reconciliation, not an Arena member — the
+              `getRowKey` prop that used to compute it is gone. */}
+          {DEPLOYS.map((d) => (
+            <TableRow key={d.build}>
+              <TableCell>{d.build}</TableCell>
+              <TableCell>{d.env}</TableCell>
+              <TableCell><Badge tone={d.status[0]} dot>{d.status[1]}</Badge></TableCell>
+              <TableCell>{d.author}</TableCell>
+              <TableCell>{d.dur}</TableCell>
+              <TableCell><Button variant="ghost" size="sm">Details</Button></TableCell>
+            </TableRow>
+          ))}
+        </Table>
       )}
 
       {tab === 'Activity' && (

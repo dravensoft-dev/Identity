@@ -1,0 +1,15 @@
+{
+  "pattern": "button",
+  "exceptions": [
+    { "requirement": "roles.element",
+      "reason": "A row is a <tr role=\"row\">, and it never becomes a <button>: a button may not be a child of <tbody>, and the row's own actions cell draws the consumer's real buttons inside it, so nesting one in the other would be invalid HTML the browser restructures silently. The pattern is bound anyway rather than `none` because with `onClick` a row IS activated -- by pointer, and by Enter from the enclosing grid -- and calling that presentational would be the lie Table's own binding refuses. WITHOUT `onClick`, and nothing obliges a consumer to pass it, the row is inert: no cursor, no activation, and this whole pattern does not apply to that shape. That is exactly the limitation CalendarEvent's and Tag's bindings record and CLAUDE.md carries in Known debt -- the schema cannot express 'this pattern applies conditionally', so a reader of the binding alone would think it always holds. This binding describes TableRow only in the shape it takes when `onClick` is set." },
+    { "requirement": "roles.label",
+      "reason": "The row carries no accessible name of its own -- no aria-label, no aria-labelledby, and its text content is its cells' rather than a label for the action. A grid row is named by its cells to a screen reader reading the grid, which is the correct behaviour for a row and is not what this requirement asks for. Nothing in the API can supply one: `label` names the whole table, and TableRow has exactly two members." },
+    { "requirement": "keyboard.Space",
+      "reason": "Space is not handled anywhere. Table's grid handler acts on ArrowKeys, Home, End and Enter only, and the row itself binds no key listener at all -- Space keeps its native meaning of scrolling the page. A real <button> would answer it; this row is not one, per roles.element above." },
+    { "requirement": "keyboard.Enter",
+      "reason": "Enter DOES activate the row, and the exception is about WHERE that lives rather than whether it works: the handler is `onKeyDown` on Table's <table>, which reads the focused cell's role, resolves the cursor row and calls that row element's own `onClick`. It belongs to the enclosing Table's `grid` binding -- keyboard.Enter of the grid pattern -- and a reader resolving THIS binding against the <tr> finds no key handler on it or below it. Recording it as met here would claim a route the row does not own and would survive the grid losing it." },
+    { "requirement": "states.disabled",
+      "reason": "There is no disabled concept: aria-disabled is never set and there is no member that makes a row unactivatable while still drawn. A row is either interactive (`onClick` passed) or inert (`onClick` omitted), and the inert shape is a plain <tr> rather than a disabled control -- which is the roles.element exception above, three requirements over." }
+  ]
+}

@@ -58,6 +58,9 @@ export type CalendarView = 'week' | 'day';
 /** A slot in the categorical ramp, in fixed order and never cycled. The same eight slots the charts use — identity is one system across Arena, not one per component. Colour here means which thing, never what state. */
 export type CatSlot = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
+/** How a Table column's cells align. Checked against every enum already declared here before it was added; PageHeadAlign is the near miss and is a different set — start/center on a flex axis, with no `right`, and a right-aligned column of figures is precisely what this exists for. */
+export type CellAlign = 'left' | 'center' | 'right';
+
 /** One entry in a CommandPalette. `hint` is searched but never shown, so a command can be found by a synonym that never appears in its label. */
 export interface Command {
   /** A stable identity for the command, so a host can switch on it rather than on the label. */
@@ -172,6 +175,23 @@ export interface TabItem {
   value: string;
   /** What the tab reads. */
   label: string;
+}
+
+/** How a Table column's cells render in card mode: `row` is a label/value pair, `block` is full width with no label. Checked against every enum already declared here; nothing carries this pair. SkeletonVariant is the only other declaration containing the value `block`, and it names a shape of placeholder rather than a layout. */
+export type TableCellLayout = 'row' | 'block';
+
+/** One column's configuration. A column says how its cells are headed and set, never what markup goes in them -- the consumer writes a TableCell per cell. */
+export interface TableColumn {
+  /** The column's label, drawn in the header row. */
+  header: string;
+  /** How this column's cells align. */
+  align?: CellAlign;
+  /** A CSS width for the column. Omit to let the table distribute. */
+  width?: string;
+  /** Draw this column's cells in the mono face and the gold ink -- for identifiers and figures. */
+  mono?: boolean;
+  /** How this column renders in card mode: a label/value pair, or full width with no label. */
+  mobileLayout?: TableCellLayout;
 }
 
 /** The tag's emphasis colour, per the Badge/Tag tone taxonomy. */

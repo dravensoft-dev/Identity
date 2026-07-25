@@ -1,9 +1,23 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useContainerWidth, readBreakpoint } from '../../use-container-width.js';
+import { HEADER_LABEL, CELL_BASE } from './TableCell.jsx';
 
-/** Data table. `columns`: [{key, header, align, width, mono, render, mobileLayout}]. `rows`: objects.
- * Reads the density tokens (--dz-*), so inside `.arena-compact` it re-densifies itself.
- * `onRowClick` makes rows interactive.
+/** Data table. A COMPOUND component: `columns` says how each column is headed
+ * and set, and the consumer writes one `<TableRow>` per row with one
+ * `<TableCell>` per cell inside it.
+ *
+ * WHY IT IS COMPOUND, because it used not to be. `TableColumn` carried a
+ * `render` function and Arena called it once per cell — per-item projection, the
+ * shape the convention that removed `ActivityFeed.renderItem` and
+ * `Calendar.renderEvent` forbids, because Angular has no answer for it short of
+ * a structural directive and `ngTemplateOutlet`. Deleting `render` and nothing
+ * else would have deleted the badge from every status cell and the button from
+ * every actions cell. Making the item a component keeps both and needs no new
+ * form in the API vocabulary at all: a cell the consumer instantiates is one
+ * element they wrote, exactly as `CalendarEvent` is.
+ *
+ * Reads the density tokens (--dz-*), so inside `.arena-compact` it re-densifies
+ * itself.
  *
  * `label` names the grid for assistive technology and is REQUIRED. A data table
  * has nothing to derive a name from — Calendar names its grid from the range it
@@ -13,26 +27,16 @@ import { useContainerWidth, readBreakpoint } from '../../use-container-width.js'
  * Below --bp-md the table becomes one card per row. The threshold is measured on
  * the CONTAINER, not the viewport: a table inside a narrow card should go
  * card-mode on a wide monitor, and a viewport query gets that wrong. */
-export function Table({
-  columns = [], rows = [], getRowKey, onRowClick, empty = 'No data.',
-  responsive = true, label, style,
-}) {
+export function Table({ columns = [], children, empty = 'No data.', responsive = true, label }) {
   if (!label) throw new Error('Table: `label` is required');
   const [ref, width] = useContainerWidth();
   // null width → the wide layout. First paint is never the narrow branch.
   const narrow = responsive && width !== null && width < readBreakpoint('md');
 
-  const cellBase = { padding: 'var(--dz-row-py) var(--dz-row-px)', fontSize: 'var(--dz-text)', textAlign: 'left', verticalAlign: 'middle' };
-  const headerLabel = {
-    fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-column-header)',
-    textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 'var(--fw-bold)',
-  };
-  const valueStyle = (c) => ({
-    fontFamily: c.mono ? 'var(--font-mono)' : 'var(--font-body)',
-    color: c.mono ? 'var(--gold)' : 'var(--bone-dim)',
-  });
-  const cellValue = (c, row) => (c.render ? c.render(row[c.key], row) : row[c.key]);
-  const keyOf = (row, ri) => (getRowKey ? getRowKey(row, ri) : ri);
+  /* The rows are the consumer's own elements. `toArray` gives every one of them
+     a key (so cloning below never warns) and drops null/undefined/booleans, so
+     a conditionally-rendered row is absent rather than counted. */
+  const rowEls = React.Children.toArray(children);
 
   /* ------------------------------------------------------------------ *
    * Keyboard navigation of the grid — the WIDE layout only.
@@ -42,21 +46,28 @@ export function Table({
    * that guarantees a tab stop exists at all: a table whose body is empty
    * still has headers, and a grid with no reachable cell is not a grid.
    *
-   * ROW LENGTHS GENUINELY DIFFER, so the grid is modelled rather than assumed
-   * rectangular: the empty state renders ONE <td colSpan={columns.length}>,
-   * and a cursor clamped against `columns.length` there would point at a cell
-   * that does not exist. `rowLens` is the model and the cursor is clamped
-   * against it at render, the way Calendar clamps curDay/curHour, because the
-   * rows change under the cursor whenever the consumer's data does.
+   * ROW LENGTHS GENUINELY DIFFER, and under the compound shape they differ for
+   * a second reason as well as the first. The empty state renders ONE
+   * <td colSpan={columns.length}>; and a consumer's row may carry a different
+   * number of cells than there are columns, because nothing forces them to
+   * match and Arena will not silently invent or drop one. So the grid is
+   * MODELLED rather than assumed rectangular: `rowLens` is that model and the
+   * cursor is clamped against it at render, the way Calendar clamps
+   * curDay/curHour, because the rows change under the cursor whenever the
+   * consumer's markup does.
    * ------------------------------------------------------------------ */
   const gridRef = useRef(null);
   const [gridFocused, setGridFocused] = useState(false);
   const [cursor, setCursor] = useState({ row: 0, col: 0 });
 
-  const rowLens = useMemo(() => [
-    columns.length,
-    ...(rows.length === 0 ? [1] : rows.map(() => columns.length)),
-  ], [columns.length, rows.length]);
+  /* Counted the same way TableRow lays them out -- see its own comment. Built
+     on every render rather than memoised: it is a walk of the children React
+     just handed us, its inputs are those children themselves, and a memo would
+     need a dependency that recomputes the walk to find out whether it changed. */
+  const cellCounts = rowEls.map((row) => (
+    React.isValidElement(row) ? React.Children.toArray(row.props.children).length : 0
+  ));
+  const rowLens = [columns.length, ...(rowEls.length === 0 ? [1] : cellCounts)];
 
   const curRow = Math.min(Math.max(cursor.row, 0), Math.max(rowLens.length - 1, 0));
   const curCol = Math.min(Math.max(cursor.col, 0), Math.max((rowLens[curRow] || 0) - 1, 0));
@@ -72,7 +83,7 @@ export function Table({
     /* Focus is inside a cell's CONTENT rather than on a cell -- a control the
        consumer drew. Moving the roving stop is ours; taking focus off their
        control is not. The cursor can move while focus sits there without any
-       help from the focus handler below: the consumer's data changes and the
+       help from the focus handler below: the consumer's markup changes and the
        clamp moves it, and the theft would be silent. */
     const activeRole = active.getAttribute && active.getAttribute('role');
     if (activeRole !== 'gridcell' && activeRole !== 'columnheader') return;
@@ -85,7 +96,7 @@ export function Table({
     if (!t || typeof t.getAttribute !== 'function') return;
     const role = t.getAttribute('role');
     /* A control the consumer drew inside a cell is NOT a cell, and its keys are
-       its own. Arena reads the role rather than the tag so a consumer's <td>
+       its own. Arena reads the role rather than the tag so a consumer's cell
        content can never be mistaken for the grid's own. */
     if (role !== 'gridcell' && role !== 'columnheader') return;
 
@@ -102,12 +113,15 @@ export function Table({
     else if (e.key === 'Home') col = 0;
     else if (e.key === 'End') col = Math.max((rowLens[row] || 1) - 1, 0);
     else if (e.key === 'Enter') {
-      /* Enter activates the row, and there is NO step-in to add. Calendar needed
-         one because it had silenced its event blocks with tabIndex={-1}; Table
-         silences nothing, so a consumer's cell button stays Tab-reachable and no
-         capability is lost. Row 0 is the header and activates nothing. */
+      /* Enter activates the row by calling the ROW ELEMENT's own `onClick` --
+         the contract's `click` event, bound as React spells it. There is no
+         step-in to add: Calendar needed one because it had silenced its event
+         blocks with tabIndex={-1}; Table silences nothing, so a consumer's cell
+         button stays Tab-reachable and no capability is lost. Row 0 is the
+         header and activates nothing. */
       e.preventDefault();
-      if (onRowClick && curRow > 0 && rows.length > 0) onRowClick(rows[curRow - 1], curRow - 1);
+      const rowEl = curRow > 0 ? rowEls[curRow - 1] : null;
+      if (rowEl && React.isValidElement(rowEl) && rowEl.props.onClick) rowEl.props.onClick();
       return;
     } else return;
 
@@ -123,30 +137,25 @@ export function Table({
     if (row !== curRow || col !== curCol) setCursor({ row, col });
   };
 
-  /* The cursor cell is the grid's one tab stop; every other cell is -1. The ring
-     is an INSET box-shadow: a border would grow the content box, and an outward
-     ring would be clipped by the wrapper's overflow:hidden. */
-  const cellNav = (ri, ci) => ({
-    tabIndex: ri === curRow && ci === curCol ? 0 : -1,
-    /* A cell reached by pointer takes the cursor with it; the same bail-out as
-       the key handler, because the effect above focuses the cursor cell and its
-       focus event would otherwise re-render the grid a second time per move. */
-    onFocus: (e) => {
-      /* THE CELL OWNS THE CURSOR; ITS CONTENTS DO NOT. React's onFocus is
-         focusin, which BUBBLES, so a control the consumer drew inside this cell
-         fires this handler too. Taking the cursor there moves the roving
-         tabindex onto this cell, and the effect above then pulls focus off the
-         consumer's control and onto the cell. Measured in real Chromium before
-         this guard existed: a Tab aimed at an actions-column <button> landed on
-         the <td>, and only a SECOND Tab reached the button -- which succeeded
-         only because the cursor was by then already there and the bail-out below
-         fired. Calendar gave no precedent and could not have: its event blocks
-         are SIBLINGS of its cells, so a gridcell's onFocus there only ever fires
-         for the cell itself. */
-      if (e.target !== e.currentTarget) return;
-      if (ri !== curRow || ci !== curCol) setCursor({ row: ri, col: ci });
-    },
+  /* A cell reached by pointer takes the cursor with it; the bail-out is the
+     same as the key handler's, because the effect above focuses the cursor cell
+     and its focus event would otherwise re-render the grid a second time per
+     move. The `e.target !== e.currentTarget` half of the guard lives in
+     TableCell, on the element that owns the event. */
+  const onCellFocus = (ri, ci) => {
+    if (ri !== curRow || ci !== curCol) setCursor({ row: ri, col: ci });
+  };
+
+  const headerNav = (ci) => ({
+    tabIndex: 0 === curRow && ci === curCol ? 0 : -1,
+    onFocus: (e) => { if (e.target === e.currentTarget) onCellFocus(0, ci); },
   });
+  /* The ring is an INSET box-shadow: a border would grow the content box, and an
+     outward ring would be clipped by the wrapper's overflow:hidden. Returned as a
+     style OBJECT to spread rather than as a bare value, so `boxShadow:` is never
+     followed by a call whose arguments are numbers -- check:dimensions' PROP_COLON
+     scanner reads the first number after a governed property and would report the
+     row index as a bare literal. */
   const cellRing = (ri, ci) => ({
     outline: 'none',
     boxShadow: ri === curRow && ci === curCol && gridFocused
@@ -154,38 +163,17 @@ export function Table({
   });
 
   return (
-    <div ref={ref} style={{ width: '100%', ...style }}>
+    <div ref={ref} style={{ width: '100%' }}>
       {narrow ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 4)' }}>
-          {rows.length === 0 && (
+          {rowEls.length === 0 && (
             <div style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
               borderRadius: 'var(--r-lg)', padding: 'calc(var(--sp-1) * 8) calc(var(--sp-1) * 4)', textAlign: 'center',
               color: 'var(--mute)', fontSize: 'var(--dz-text)' }}>{empty}</div>
           )}
-          {rows.map((row, ri) => (
-            <div key={keyOf(row, ri)}
-              onClick={onRowClick ? () => onRowClick(row, ri) : undefined}
-              style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
-                borderRadius: 'var(--r-lg)', padding: 'var(--dz-row-px)',
-                display: 'flex', flexDirection: 'column', gap: 'var(--dz-stack)',
-                cursor: onRowClick ? 'pointer' : 'default' }}>
-              {columns.map((c) => c.mobileLayout === 'block' ? (
-                /* Full width, no label — for the actions column, whose buttons
-                   name themselves and would look absurd beside an "ACTIONS" tag. */
-                <div key={c.key} style={{ width: '100%', display: 'flex', justifyContent: 'flex-end',
-                  gap: 'calc(var(--sp-1) * 2)', borderTop: 'var(--bw) solid var(--color-base-300)', paddingTop: 'calc(var(--sp-1) * 2)' }}>
-                  {cellValue(c, row)}
-                </div>
-              ) : (
-                <div key={c.key} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 'calc(var(--sp-1) * 3)' }}>
-                  <span style={headerLabel}>{c.header}</span>
-                  <span style={{ ...valueStyle(c), minWidth: 0, textAlign: 'right', fontSize: 'var(--dz-text)' }}>
-                    {cellValue(c, row)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ))}
+          {rowEls.map((row, ri) => (React.isValidElement(row)
+            ? React.cloneElement(row, { rowIndex: ri + 1, columns, layout: 'card' })
+            : row))}
         </div>
       ) : (
         <div style={{ border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)',
@@ -201,35 +189,32 @@ export function Table({
             <thead>
               <tr role="row" style={{ background: 'var(--panel)' }}>
                 {columns.map((c, ci) => (
-                  <th key={c.key} role="columnheader" {...cellNav(0, ci)}
-                    style={{ ...cellBase, ...headerLabel, textAlign: c.align || 'left',
+                  <th key={ci} role="columnheader" {...headerNav(ci)}
+                    style={{ ...CELL_BASE, ...HEADER_LABEL, textAlign: c.align || 'left',
                       width: c.width, borderBottom: 'var(--bw) solid var(--color-base-300)',
                       ...cellRing(0, ci) }}>{c.header}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {rows.length === 0 && (
-                <tr role="row"><td role="gridcell" colSpan={columns.length} {...cellNav(1, 0)}
-                  style={{ ...cellBase, textAlign: 'center', color: 'var(--mute)',
-                    padding: 'calc(var(--sp-1) * 8) calc(var(--sp-1) * 4)', ...cellRing(1, 0) }}>{empty}</td></tr>
+              {rowEls.length === 0 && (
+                <tr role="row"><td role="gridcell" colSpan={columns.length}
+                  tabIndex={curRow === 1 && curCol === 0 ? 0 : -1}
+                  onFocus={(e) => { if (e.target === e.currentTarget) onCellFocus(1, 0); }}
+                  style={{ ...CELL_BASE, textAlign: 'center', color: 'var(--mute)',
+                    padding: 'calc(var(--sp-1) * 8) calc(var(--sp-1) * 4)',
+                    ...cellRing(1, 0) }}>{empty}</td></tr>
               )}
-              {rows.map((row, ri) => (
-                <tr key={keyOf(row, ri)} role="row"
-                  onClick={onRowClick ? () => onRowClick(row, ri) : undefined}
-                  style={{ borderTop: ri === 0 ? 'none' : 'var(--bw) solid var(--color-base-300)',
-                    cursor: onRowClick ? 'pointer' : 'default',
-                    transition: 'background var(--dur-fast) var(--ease-out)' }}
-                  onMouseEnter={onRowClick ? (e) => (e.currentTarget.style.background = 'var(--panel)') : undefined}
-                  onMouseLeave={onRowClick ? (e) => (e.currentTarget.style.background = 'transparent') : undefined}>
-                  {columns.map((c, ci) => (
-                    <td key={c.key} role="gridcell" {...cellNav(ri + 1, ci)}
-                      style={{ ...cellBase, ...valueStyle(c), textAlign: c.align || 'left', ...cellRing(ri + 1, ci) }}>
-                      {cellValue(c, row)}
-                    </td>
-                  ))}
-                </tr>
-              ))}
+              {rowEls.map((row, ri) => (React.isValidElement(row)
+                ? React.cloneElement(row, {
+                  rowIndex: ri + 1,
+                  columns,
+                  layout: 'table',
+                  cursorCol: curRow === ri + 1 ? curCol : null,
+                  gridFocused,
+                  onCellFocus,
+                })
+                : row))}
             </tbody>
           </table>
         </div>

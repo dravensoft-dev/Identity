@@ -155,12 +155,16 @@ test('an angular binding that names its counterpart is valid', () => {
  * moves is the point of it, unlike a number written into prose that goes stale
  * in silence. It moves by one whenever a component is added -- 43 -> 44 when
  * `CalendarEvent` became a component of its own rather than a predefined
- * object. Update it with the change that moves it. */
+ * object, and 44 -> 46 when `Table` became a compound component and grew
+ * `TableRow` and `TableCell` in one change. Update it with the change that
+ * moves it. */
 test('the React inventory finds every component and no demo entry', () => {
   const found = reactComponents('.');
-  assert.equal(found.length, 44);
+  assert.equal(found.length, 46);
   assert.ok(found.includes('Dialog'));
   assert.ok(found.includes('CalendarEvent'));
+  assert.ok(found.includes('TableRow'));
+  assert.ok(found.includes('TableCell'));
   assert.ok(!found.some((c) => c.endsWith('.card.entry')));
 });
 

@@ -1,0 +1,16 @@
+{
+  "component": "Table",
+  "description": "Data table on the density tokens. Table draws the header row from `columns`, owns the grid and its keyboard, and injects into each row where it sits; the consumer writes one TableRow per row and one TableCell per cell, so a cell's content is a value or one of Arena's own components rather than something returned from a per-item render function. Below --bp-md it becomes one card per row, measured on its own container rather than the viewport.",
+  "api": {
+    "label": { "form": "primitive", "type": "string", "required": true,
+               "description": "Names the grid for assistive technology. Required, and guarded at runtime: nothing can derive it — Calendar names its grid from the range it is showing, and a data table's subject is editorial. Say what the rows are, never \"Table\"." },
+    "columns": { "form": "array", "of": "TableColumn", "required": true,
+                 "description": "The columns, in order. A column heads and sets its cells; it never says what goes in them." },
+    "content": { "form": "slot",
+                 "description": "The rows. One TableRow per row; Table injects where each row sits, the columns its cells are set against, and how the keyboard reaches them." },
+    "empty": { "form": "slot",
+               "description": "What shows when no row is written." },
+    "responsive": { "form": "primitive", "type": "boolean", "default": true,
+                    "description": "Card mode below --bp-md. Set false only when the columns are meaningless apart." }
+  }
+}

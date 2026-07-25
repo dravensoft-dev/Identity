@@ -1,0 +1,17 @@
+{
+  "name": "TableColumn",
+  "kind": "object",
+  "description": "One column's configuration. A column says how its cells are headed and set, never what markup goes in them -- the consumer writes a TableCell per cell.",
+  "fields": {
+    "header": { "form": "primitive", "type": "string", "required": true,
+                "description": "The column's label, drawn in the header row." },
+    "align": { "form": "enum", "type": "CellAlign", "default": "left",
+               "description": "How this column's cells align." },
+    "width": { "form": "primitive", "type": "string",
+               "description": "A CSS width for the column. Omit to let the table distribute." },
+    "mono": { "form": "primitive", "type": "boolean", "default": false,
+              "description": "Draw this column's cells in the mono face and the gold ink -- for identifiers and figures." },
+    "mobileLayout": { "form": "enum", "type": "TableCellLayout", "default": "row",
+                      "description": "How this column renders in card mode: a label/value pair, or full width with no label." }
+  }
+}
