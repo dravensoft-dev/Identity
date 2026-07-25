@@ -1,17 +1,20 @@
 /* The Angular layer's binding to comparePattern(): path constants, the two file
- * reads, and throwing on the result. The React wrapper at
- * frameworks/react/test-dom/assert-pattern.jsx is its mirror, and the comparison
- * itself is in neither of them -- it lives in
- * scripts/lib/behaviour-compliance.mjs, shared by both, because two copies of
- * this rule would be two places for it to drift and it is the layer's only real
- * guarantee.
+ * reads, and throwing on the result. It is now the ONLY such wrapper -- its mirror
+ * at frameworks/react/test-dom/assert-pattern.jsx was deleted with that whole
+ * directory, so no React binding is verified against a rendered tree any more and
+ * React's DOM behaviour is checked by eye against the demo pages (CLAUDE.md's Known
+ * debt has the full price). The comparison itself is still not here: it lives in
+ * scripts/lib/behaviour-compliance.mjs, which stays a shared module with its own
+ * unit tests in scripts/behaviour-compliance.test.mjs rather than being folded in,
+ * because it is the layer's only real guarantee and a second copy would be a second
+ * place for it to drift the day a React suite returns.
  *
- * Only three things genuinely differ between the two wrappers, and all three are
- * here: where this layer's bindings live, the TypeScript typing, and the default
- * subject. An Angular primitive host-binds its root (`host: { '[class]':
+ * Three things differed between the two wrappers, and all three are here: where
+ * this layer's bindings live, the TypeScript typing, and the default subject. An
+ * Angular primitive host-binds its root (`host: { '[class]':
  * 'styles().root()' }`), so the host element IS the styled and measured root --
- * the fixture's `nativeElement` itself, not its first element child, which is
- * what React's container-mounted tree makes the right default there.
+ * the fixture's `nativeElement` itself, not its first element child, which was
+ * what React's container-mounted tree made the right default there.
  *
  * The shared evaluator is DOM-generic, which is what makes Angular's three ways
  * of authoring an attribute -- a template literal, `[attr.role]`, and a host

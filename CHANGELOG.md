@@ -700,6 +700,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **`frameworks/react/test-dom/` is gone, and with it every DOM-rendered test of the React
+  layer.** The directory — a harness, a compliance wrapper and seven suites, forty tests —
+  cost more RAM to run than this repo's development loop will pay. **DOM behaviour on the
+  React side is now checked by eye**: `bun run demos` and operate the component on its
+  `*.card.html` page. This is a deliberate trade, not an oversight, and what it costs is
+  itemised in CLAUDE.md's *Known debt* rather than left to be rediscovered. The headline
+  losses: `Calendar`'s keyboard navigation had its only proof deleted in the same breath
+  as its binding retiring all eight `grid` exceptions, so that binding now claims full
+  compliance untested; the six form controls' value-carrying events are no longer proved
+  to *fire* at all (the SSR suites assert their shape and say so themselves); `Tooltip`'s
+  cancel-and-reschedule timer rule is unpinned; and the four live `Dialog`/`ConfirmDialog`
+  defects that were pinned as *still broken* can now be fixed without anything reporting
+  the matching exception as stale. Five React entries left `COVERED` in
+  `scripts/check-compliance.mjs`, whose `SUITE_DIRS` is down to the Angular directory;
+  `testStep()` in `scripts/check-all.mjs` is back to one `bun test` invocation and
+  `package.json` lost `test:react-dom`. The evaluator survives untouched —
+  `scripts/lib/behaviour-compliance.mjs` keeps its unit tests in
+  `scripts/behaviour-compliance.test.mjs` — so only its application to React trees is
+  gone, and the deleted files are recoverable from git rather than needing a rewrite.
 - **`Rotor` is gone from every layer — breaking.** The Rotor is Dravensoft's **brand
   mark, not an Arena component**: a primitive whose only job is to render one company's
   identity does not belong in a design system that ships MIT, and the products that

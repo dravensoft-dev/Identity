@@ -1,19 +1,25 @@
 /* check:compliance — which behaviour bindings are verified by a render suite,
  * and is that record still true.
  *
- * The suites themselves (frameworks/react/test-dom/, frameworks/angular/test/)
- * do the verifying: each asserts, per requirement, that the rendered DOM either
- * meets it with no exception declared or fails it with one declared. This gate
- * does not re-do that, and could not -- it is runtime-portable, reads JSON and
- * filesystem paths only, and never imports a framework layer's .ts or .jsx. What
- * it guards is the *record* of which bindings are covered, because without one
- * the coverage silently rots: a component gains a binding and no suite, and
- * `bun run check` stays green while nobody notices.
+ * The suites themselves (frameworks/angular/test/) do the verifying: each
+ * asserts, per requirement, that the rendered DOM either meets it with no
+ * exception declared or fails it with one declared. This gate does not re-do
+ * that, and could not -- it is runtime-portable, reads JSON and filesystem paths
+ * only, and never imports a framework layer's .ts or .jsx. What it guards is the
+ * *record* of which bindings are covered, because without one the coverage
+ * silently rots: a component gains a binding and no suite, and `bun run check`
+ * stays green while nobody notices.
  *
- * COVERED IS DELIBERATELY PARTIAL and grows one component at a time -- six of
- * the sixty-four bindings in the tree today. This gate never demands totality: a
- * gate that required forty-seven suites on day one would have been switched off
- * within a week, and a switched-off gate guards nothing. It asserts only that
+ * THE REACT LAYER HAS NO RENDER SUITE. frameworks/react/test-dom/ was deleted
+ * for its RAM cost and React's DOM behaviour is now checked by eye against the
+ * demo pages. So this gate covers Angular bindings only; every React binding is
+ * uncovered, including the ones that were covered until that deletion.
+ *
+ * COVERED IS DELIBERATELY PARTIAL and grows one component at a time -- run the
+ * gate for the live pair rather than trusting a figure written here, which has
+ * drifted before. This gate never demands totality: a gate that required a suite
+ * per binding on day one would have been switched off within a week, and a
+ * switched-off gate guards nothing. It asserts only that
  * every claim in COVERED is TRUE, in both directions -- an entry naming a
  * binding that no longer exists fails, and an entry whose suite no longer reads
  * that binding fails. That bidirectional staleness rule is the property
@@ -24,10 +30,10 @@
  * WHAT A GREEN RUN DOES NOT SAY, stated plainly because three other files in
  * this repo had to learn to say it: that any covered component is accessible. A
  * suite can assert that all four of a component's declared exceptions are still
- * true, pass, and leave the component exactly as broken as it was -- Calendar
- * and Table implement no keyboard navigation at all and would pass a suite
- * written against their bindings today. A green run is a claim about the honesty
- * of the declarations. It is never an accessibility claim, exactly as
+ * true, pass, and leave the component exactly as broken as it was -- Table
+ * implements no keyboard navigation at all and would pass a suite written
+ * against its binding today. A green run is a claim about the honesty of the
+ * declarations. It is never an accessibility claim, exactly as
  * check:behaviour's own header says of coverage.
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
@@ -38,9 +44,14 @@ import { reactComponents, angularPrimitives, loadBinding } from './lib/behaviour
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..');
 
-/** The suite directories this gate reads. */
+/** The suite directories this gate reads.
+ *
+ *  ONE ENTRY, AND IT USED TO BE TWO. frameworks/react/test-dom/ was deleted, so
+ *  no React binding is verified by a render suite any more and the React half of
+ *  COVERED went with it -- see COVERED's own note. Re-add the directory here the
+ *  day a React render suite exists again; until then a React entry in COVERED
+ *  cannot resolve to a file and this gate rejects it, which is correct. */
 export const SUITE_DIRS = [
-  join(repoRoot, 'frameworks', 'react', 'test-dom'),
   join(repoRoot, 'frameworks', 'angular', 'test'),
 ];
 
@@ -68,14 +79,22 @@ export const SUITE_DIRS = [
  *
  * Add an entry when you add a suite. Removing or renaming a suite without
  * removing its entry fails this gate, which is the point.
+ *
+ * EVERY REMAINING ENTRY IS ANGULAR, AND THAT IS A LOSS, NOT A DESIGN. Five
+ * React entries lived here -- `Dialog`, `ConfirmDialog`, `Menu`, `Skeleton` and
+ * `Calendar` -- verified by `dialog-modal.test.jsx`,
+ * `placement-and-branches.test.jsx` and `grid-keyboard.test.jsx` under
+ * `frameworks/react/test-dom/`. That directory was deleted because running it
+ * costs more RAM than this repo's development loop will pay, and the DOM
+ * behaviour it covered is now checked BY EYE, by serving the demo pages
+ * (`bun run demos`) and operating the component. So for the React layer the
+ * property this whole gate exists to provide -- an exception can expire -- no
+ * longer holds: a React binding's exceptions can silently stop being true and
+ * nothing here notices. The gate is still honest about what it claims, because
+ * it now claims two things instead of seven; it is simply claiming much less.
  * @type {Record<string, string>}
  */
 export const COVERED = {
-  'Dialog:react': 'dialog-modal.test.jsx',
-  'ConfirmDialog:react': 'dialog-modal.test.jsx',
-  'Menu:react': 'placement-and-branches.test.jsx',
-  'Skeleton:react': 'placement-and-branches.test.jsx',
-  'Calendar:react': 'grid-keyboard.test.jsx',
   'Alert:angular': 'alert-role-tones.test.ts',
   'BarChart:angular': 'chart-data-table.test.ts',
 };
