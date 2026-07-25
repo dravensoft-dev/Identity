@@ -18,7 +18,8 @@ function useFadeKeyframes() {
   }, []);
 }
 
-export function Tooltip({ children, content, style }) {
+export function Tooltip({ children, label }) {
+  if (!label) throw new Error('Tooltip: `label` is required');
   useFadeKeyframes();
   const [show, setShow] = useState(false);
   /* One timer, cleared on every transition. Two timers would race: leaving and
@@ -33,7 +34,7 @@ export function Tooltip({ children, content, style }) {
   };
   useEffect(() => () => { if (timer.current !== null) clearTimeout(timer.current); }, []);
   return (
-    <span style={{ position: 'relative', display: 'inline-flex', ...style }}
+    <span style={{ position: 'relative', display: 'inline-flex' }}
       onMouseEnter={() => schedule(true, delayOpen)} onMouseLeave={() => schedule(false, delayClose)}>
       {children}
       {show && (
@@ -41,7 +42,7 @@ export function Tooltip({ children, content, style }) {
           whiteSpace: 'nowrap', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)', background: 'var(--bone)', color: 'var(--ink)',
           fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', zIndex: 'var(--z-tooltip)',
           animation: 'arena-fade var(--dur-fast) var(--ease-out)' }}>
-          {content}
+          {label}
         </span>
       )}
     </span>

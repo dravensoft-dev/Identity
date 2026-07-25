@@ -1,0 +1,6 @@
+{
+  "name": "SegmentedControlSize",
+  "kind": "enum",
+  "description": "Compact or default. Both sit below Button on purpose — a filter never outweighs an action. Distinct from ControlSize, which offers a large step this control does not.",
+  "values": ["sm", "md"]
+}

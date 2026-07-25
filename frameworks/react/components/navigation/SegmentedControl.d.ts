@@ -1,26 +1,22 @@
-import * as React from 'react';
-
-/** A compact inline filter over mutually exclusive options: an enclosed track
- *  with a neutral raised thumb on the selected one. It is a real radio group
- *  (hidden native inputs under `role="radiogroup"`), not a tab list — Tabs
- *  navigates between views, this filters within one. Carries no crimson. */
-export interface SegmentOption { value: string; label: string; }
+import type { SegmentOption, SegmentedControlSize } from '../../api.generated';
+/** A compact inline filter over mutually exclusive options. A real radio group,
+ *  never a tab list, and it carries no crimson. */
+export type { SegmentOption };
 export interface SegmentedControlProps {
-  /** @startingPoint Two to four options with one-word labels. Past that the
-   *  track stops being compact and the choice belongs in a Select. */
-  options: (string | SegmentOption)[];
-  /** Controlled selection. Omit and pass `defaultValue` to let it govern itself. */
+  /** @startingPoint The options, in order. Two to four with one-word labels. */
+  options: SegmentOption[];
+  /** The selected option's value. Omit and pass `defaultValue` to let it govern itself. */
   value?: string;
+  /** The initially selected value when uncontrolled. Defaults to the first option. */
   defaultValue?: string;
-  onChange?: (value: string) => void;
-  /** Compact (28px) or default (34px). Both sit below Button, on purpose. */
-  size?: 'sm' | 'md';
-  /** Required: a radio group with no accessible name is announced as an
-   *  unlabelled group. Name what is being filtered — "Time range", not "Filter". */
+  /** Compact or default. */
+  size?: SegmentedControlSize;
+  /** Names what is being filtered — "Time range", not "Filter". A radio group with
+   *  no accessible name is announced unlabelled. */
   ariaLabel: string;
-  /** Shared `name` for the underlying radios. Generated when omitted; pass one
-   *  only when the control lives in a real form. */
+  /** Shared name for the underlying radios; generated when omitted. */
   name?: string;
-  style?: React.CSSProperties;
+  /** A different option was chosen; carries its value. */
+  onChange?: (value: string) => void;
 }
 export function SegmentedControl(props: SegmentedControlProps): JSX.Element;

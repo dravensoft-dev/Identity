@@ -3,6 +3,8 @@
   "description": "Multi-line text field with validation and an optional counter.",
   "api": {
     "label": { "form": "primitive", "type": "string", "description": "Field label; the counter and error sit under the field." },
+    "id": { "form": "primitive", "type": "string",
+            "description": "The control's id, and what the label's `for` points at. Generated from `label` when omitted." },
     "hint": { "form": "primitive", "type": "string", "description": "A line of help under the field." },
     "error": { "form": "primitive", "type": "string", "description": "Error message; turns the border crimson and shows below." },
     "required": { "form": "primitive", "type": "boolean", "default": false, "description": "Marks the label and the control required." },

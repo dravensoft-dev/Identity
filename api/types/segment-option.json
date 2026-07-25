@@ -1,0 +1,11 @@
+{
+  "name": "SegmentOption",
+  "kind": "object",
+  "description": "One option in a SegmentedControl.",
+  "fields": {
+    "value": { "form": "primitive", "type": "string", "required": true,
+               "description": "What the option selects, and what `change` carries." },
+    "label": { "form": "primitive", "type": "string", "required": true,
+               "description": "What the option reads. One word — the track stops being compact past that." }
+  }
+}

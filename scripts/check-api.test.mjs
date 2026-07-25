@@ -669,3 +669,24 @@ test('a functionInput required by the contract and optional in the layer is repo
   assert.match(problems[0], /required/);
   assert.match(problems[0], /optional/);
 });
+
+/* An event payload resolves as a primitive, consumerData, a declared object OR a
+ * declared enum. The enum arm is the last of the four: plan 8C2 admitted the
+ * first three and stopped one type-kind short, so a contract declaring an enum
+ * payload read as "an enum, used where an object belongs" while classify() read
+ * the arrow without complaint. */
+test('validateContract accepts an event payload naming a declared enum', () => {
+  const problems = validateContract(
+    { component: 'X', api: { pick: { form: 'event', payload: 'LogoSize' } } },
+    new Map([['LogoSize', 'enum']]),
+  );
+  assert.deepEqual(problems, []);
+});
+
+test('validateContract still rejects an event payload naming no declared type', () => {
+  const problems = validateContract(
+    { component: 'X', api: { pick: { form: 'event', payload: 'Nope' } } },
+    new Map([['LogoSize', 'enum']]),
+  );
+  assert.ok(problems.some((p) => /Nope/.test(p)));
+});

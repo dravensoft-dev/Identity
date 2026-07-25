@@ -1,7 +1,9 @@
 A compact inline filter over mutually exclusive options — a scope, a range, a density. An enclosed track with a neutral raised thumb on the selected option. It is a real radio group under the hood, so the keyboard works the way a radio group works: one tab stop, arrows move and select.
 
 ```jsx
-<SegmentedControl ariaLabel="Time range" options={['24h', '7d', '30d']} value={range} onChange={setRange} />
+<SegmentedControl ariaLabel="Time range"
+  options={[{ value: '24h', label: '24h' }, { value: '7d', label: '7d' }, { value: '30d', label: '30d' }]}
+  value={range} onChange={setRange} />
 ```
 
 ```jsx
@@ -19,3 +21,5 @@ A compact inline filter over mutually exclusive options — a scope, a range, a 
 - Don't reach for it as a form field. It is a filter; for a mutually exclusive answer inside a form, with labels that need room to breathe, use `RadioGroup`.
 - Don't grow it past four options or give it sentence-long labels — the track stops being compact and the choice belongs in a `Select`.
 - Don't add an accent to the selected segment to make it "pop". The raised thumb is the signal; crimson here competes with the view's primary action.
+- Don't pass bare strings as options — that form is gone. An option is an object with a `value` and a `label`, so the key `onChange` carries can stay stable while the label is translated.
+- Don't reach for `style` or a stray global attribute. It takes neither; wrap it in a `<div>` that owns the layout.

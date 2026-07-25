@@ -17,13 +17,17 @@ test('check:material runs last, after check:angular, the other Angular-layer gat
 test('testStep runs every suite under bun, with the DOM harness isolated in its own process', () => {
   // Not one merged invocation: `bun test` shares a process (and a globalThis)
   // across every file a single call matches, and frameworks/react/test-dom's
-  // harness registers happy-dom without ever unregistering it -- fine alone,
+  // preload registers happy-dom without ever unregistering it -- fine alone,
   // fatal combined with frameworks/angular/test, whose own files register it
   // too. Two steps is what keeps that combination from ever happening.
+  //
+  // The --preload is load-bearing, not cosmetic: react-dom latches its legacy
+  // change detection unless a DOM exists before it evaluates, and nothing later
+  // than a preload is early enough. harness.jsx throws when it is missing.
   const steps = testStep({ isBun: true, testFiles: ['a.test.mjs', 'b.test.mjs'] });
   assert.deepEqual(steps.map((s) => s.args), [
     ['test', 'scripts', 'frameworks/react/test/', 'frameworks/angular/test'],
-    ['test', 'frameworks/react/test-dom'],
+    ['test', '--preload', './frameworks/react/test-dom/preload.js', 'frameworks/react/test-dom'],
   ]);
 });
 

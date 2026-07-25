@@ -101,7 +101,7 @@ function trigger(container) {
 }
 
 test('the tooltip does not reveal before --delay-open elapses', async () => {
-  const container = mount(<Tooltip content="Details"><button type="button">Hover</button></Tooltip>);
+  const container = mount(<Tooltip label="Details"><button type="button">Hover</button></Tooltip>);
   hover(trigger(container), 'mouseover');
   await wait(delayOpen - MARGIN);
   assert.ok(!container.textContent.includes('Details'), 'still hidden partway through the delay');
@@ -109,7 +109,7 @@ test('the tooltip does not reveal before --delay-open elapses', async () => {
 });
 
 test('the tooltip reveals once --delay-open has elapsed', async () => {
-  const container = mount(<Tooltip content="Details"><button type="button">Hover</button></Tooltip>);
+  const container = mount(<Tooltip label="Details"><button type="button">Hover</button></Tooltip>);
   hover(trigger(container), 'mouseover');
   await wait(delayOpen + MARGIN);
   assert.ok(container.textContent.includes('Details'), 'revealed after the delay');
@@ -117,7 +117,7 @@ test('the tooltip reveals once --delay-open has elapsed', async () => {
 });
 
 test('crossing out before the delay cancels the reveal rather than queueing it', async () => {
-  const container = mount(<Tooltip content="Details"><button type="button">Hover</button></Tooltip>);
+  const container = mount(<Tooltip label="Details"><button type="button">Hover</button></Tooltip>);
   hover(trigger(container), 'mouseover');
   await wait(Math.floor(delayOpen / 2));
   assert.ok(!container.textContent.includes('Details'), 'precondition: the reveal is still pending, not already done');
@@ -164,7 +164,7 @@ test('re-entering during the close grace period clears the pending close timer r
    * `mouseout` schedules exactly one close timer; the re-entry must pass THAT id
    * to clearTimeout. No timing margin, no deferred-commit hazard, and it is the
    * same instrumentation the unmount test below already relies on. */
-  const container = mount(<Tooltip content="Details"><button type="button">Hover</button></Tooltip>);
+  const container = mount(<Tooltip label="Details"><button type="button">Hover</button></Tooltip>);
   hover(trigger(container), 'mouseover');
   await wait(delayOpen + MARGIN);
   assert.ok(container.textContent.includes('Details'), 'precondition: shown');
@@ -203,7 +203,7 @@ test('unmounting while a reveal is pending clears the timer instead of firing in
    * on mouseover and asserts that exact id is passed to clearTimeout during
    * unmount, which is the useEffect cleanup and nothing else. */
   await recordingTimers(async ({ scheduled, cleared }) => {
-    const container = mount(<Tooltip content="Details"><button type="button">Hover</button></Tooltip>);
+    const container = mount(<Tooltip label="Details"><button type="button">Hover</button></Tooltip>);
     scheduled.length = 0;              // ignore anything mounting itself scheduled
     hover(trigger(container), 'mouseover');
     assert.ok(scheduled.length > 0, 'precondition: the pointer scheduled a reveal timer');

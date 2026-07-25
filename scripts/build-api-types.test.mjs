@@ -11,6 +11,21 @@ test('an enum renders as a string-literal union', () => {
   assert.match(out, /export type Direction = 'up' \| 'down';/);
 });
 
+/* An enum's values are rendered as TypeScript literals, and a NUMBER is not a
+ * string. Every enum in api/types/ was a string set until CatSlot, so the
+ * emitter quoted unconditionally and nothing noticed. A quoted numeric set is
+ * worse than a build error: it emits a union of strings that compiles, and the
+ * layer's own `1 | 2 | 3` then disagrees with it in a way only check:api sees. */
+test('renderApiModule emits a numeric enum unquoted', () => {
+  const out = renderApiModule([{ name: 'CatSlot', kind: 'enum', description: 'x', values: [1, 2, 3] }]);
+  assert.match(out, /export type CatSlot = 1 \| 2 \| 3;/);
+});
+
+test('renderApiModule still quotes a string enum', () => {
+  const out = renderApiModule([{ name: 'Dir', kind: 'enum', description: 'x', values: ['up', 'down'] }]);
+  assert.match(out, /export type Dir = 'up' \| 'down';/);
+});
+
 test('an object renders as an interface, with optional fields marked optional', () => {
   const out = renderApiModule([{
     name: 'Crumb', kind: 'object',

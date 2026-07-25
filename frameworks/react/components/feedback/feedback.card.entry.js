@@ -20,18 +20,20 @@ function Demo() {
     tone: "success",
     title: "Deployment completed",
     message: "build #4821 in production",
+    dismissible: true,
     onClose: () => {}
   }), React.createElement(Toast, {
     tone: "danger",
     title: "Pipeline failed",
     message: "e2e tests in checkout",
+    dismissible: true,
     onClose: () => {}
   })), React.createElement("div", {
     className: "sub"
   }, "Tooltip · Dialog"), React.createElement("div", {
     className: "row"
   }, React.createElement(Tooltip, {
-    content: "Roll back to the previous build"
+    label: "Roll back to the previous build"
   }, React.createElement(Button, {
     variant: "secondary"
   }, "Hover here")), React.createElement(Button, {
@@ -44,11 +46,11 @@ function Demo() {
     style: { flexDirection: "column", alignItems: "stretch", gap: "calc(var(--sp-1) * 3.5)" }
   }, React.createElement(ProgressBar, {
     label: "Deploying build #4821",
-    value: 64
+    progressPercentage: 64
   }), React.createElement(ProgressBar, {
     tone: "success",
     label: "Published",
-    value: 100
+    progressPercentage: 100
   }), React.createElement(ProgressBar, {
     indeterminate: true,
     label: "Connecting…"

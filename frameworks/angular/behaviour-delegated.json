@@ -12,7 +12,11 @@
   },
   "Calendar": {
     "pattern": "absent",
-    "reason": "This is the one entry in this file that is genuinely absent, not delegated -- pattern \"absent\", not \"none\", because Angular has no such component at all, not a rendered-but-inert one. Arena's Calendar is a day/hour schedule grid with absolutely-positioned event blocks -- a scheduling view, not a date picker. Angular Material's calendar surface (mat-calendar, the view inside MatDatepicker) is a month/date-selection grid: a different widget solving a different problem, with no day/hour axis and no event blocks. There is no real Material control this delegates to, and arena-material.css dresses none. Whether Angular should gain a schedule view is a separate, open question this entry does not answer: it records that React has one and Angular does not, not a decision that Angular never will. Nothing has decided either way. Recorded in CLAUDE.md's Known debt."
+    "reason": "This entry and CalendarEvent below are the only two in this file that are genuinely absent rather than delegated -- pattern \"absent\", not \"none\", because Angular has no such component at all, not a rendered-but-inert one. Arena's Calendar is a day/hour schedule grid with absolutely-positioned event blocks -- a scheduling view, not a date picker. Angular Material's calendar surface (mat-calendar, the view inside MatDatepicker) is a month/date-selection grid: a different widget solving a different problem, with no day/hour axis and no event blocks. There is no real Material control this delegates to, and arena-material.css dresses none. Whether Angular should gain a schedule view is a separate, open question this entry does not answer: it records that React has one and Angular does not, not a decision that Angular never will. Nothing has decided either way. Recorded in CLAUDE.md's Known debt."
+  },
+  "CalendarEvent": {
+    "pattern": "absent",
+    "reason": "Absent for the same reason Calendar is, one level down: a CalendarEvent is a chip inside Arena's schedule grid, and Angular has no schedule grid for one to live in. It is not delegated -- Material has no per-event chip because it has no day/hour view, and arena-material.css dresses none. This entry exists because CalendarEvent became a React component in plan 8C3 (it had been a predefined object in api/types/), and every React component declares for every layer. It records the same open question Calendar's entry does and answers it no further: if Angular ever gains a schedule view, this is the second component that decision creates."
   },
   "Card": {
     "pattern": "none",
@@ -161,6 +165,40 @@
       }
     ],
     "reason": "MatTable provides the row/column definition machinery (matColumnDef, mat-header-row, mat-row) and a real data-bound table, rather than a bespoke Arena re-implementation of table layout. The bridge dresses its background and row hairline colour, and gives the header cell the mono uppercase micro-label treatment. Arena has no arena-table primitive and should not grow one."
+  },
+  "TableCell": {
+    "pattern": "none",
+    "delegatedTo": "Angular Material MatTable (mat-cell / matCellDef, mat-header-cell / matHeaderCellDef)",
+    "dressedBy": "frameworks/angular/theme/arena-material.css",
+    "reason": "React's Table became a compound component to keep a Badge in a status cell and a Button in an actions cell without per-item projection, and TableCell is the leaf that shape needs. Angular needs no counterpart primitive: MatTable already gives the consumer a per-cell template (matCellDef), so the same content is written inline in the column definition and no arena-table-cell would add anything. Like React's own TableCell it carries no interactive affordance of its own -- a control inside a Material cell comes from the consumer's template. The bridge dresses the HEADER cell specifically, with the mono uppercase micro-label treatment (.mat-mdc-header-cell); it adds no rule to a data cell.",
+    "exceptions": []
+  },
+  "TableRow": {
+    "pattern": "button",
+    "delegatedTo": "Angular Material MatTable (mat-row / matRowDef, mat-header-row / matHeaderRowDef)",
+    "reason": "React's Table became a compound component and TableRow is the row that shape needs; Angular needs no counterpart primitive, because MatTable's own row definitions already produce the rows and a consumer wiring row activation writes (click) on matRowDef's row. The pattern is bound rather than `none` for the same reason React's own TableRow binds it -- a row a consumer has made activatable is not presentational -- and every one of its requirements is unmet here, exactly as React's are, so the whole list below mirrors that binding rather than claiming Material closes any of it. The row's hairline colour is set from a custom property on the table host (--mat-table-row-item-outline-color on .mat-mdc-table), not by any rule targeting the row, so no dressedBy is claimed for it.",
+    "exceptions": [
+      {
+        "requirement": "roles.element",
+        "reason": "A mat-row renders a <tr> (or a role=\"row\" element in the flex table), never a <button> -- Material offers no activatable-row control at all. A consumer who wants one binds (click) on the row, which is exactly React's `onClick` and exactly as far from a button element. Mirrors React's own roles.element exception, including its conditional-pattern limit: without a (click) the row is inert and the pattern does not apply to that shape."
+      },
+      {
+        "requirement": "roles.label",
+        "reason": "Material gives the row no accessible name of its own -- no aria-label and no aria-labelledby -- and nothing in this delegation supplies one. A row is named by its cells to a screen reader reading the table, which is correct for a row and is not what this requirement asks for. Mirrors React's own exception."
+      },
+      {
+        "requirement": "keyboard.Space",
+        "reason": "Angular Material's own accessibility docs are explicit that MatTable adds no keyboard input handling, with either the table or the grid role. Space is unhandled on a row and keeps its native page-scroll meaning. This is the same claim the Table entry above records for ArrowKeys/Home/End, one element down."
+      },
+      {
+        "requirement": "keyboard.Enter",
+        "reason": "Unmet, and MORE unmet than React's, which is why the reason differs from its counterpart there rather than mirroring it. React's Enter activation exists and merely lives in the enclosing grid's handler; Material supplies no keyboard handling of the table at all, so there is no Enter route to a row from anywhere -- a consumer's (click) on a row is reachable by pointer only."
+      },
+      {
+        "requirement": "states.disabled",
+        "reason": "There is no disabled concept for a Material table row: aria-disabled is never set and MatTable exposes no member that makes a row unactivatable while still drawn. Mirrors React's own exception."
+      }
+    ]
   },
   "Tabs": {
     "pattern": "tabs",

@@ -30,6 +30,11 @@ export interface ButtonProps {
   autoFocus?: boolean;
   /** The `id` of the form this button belongs to, when it is not a descendant of it. */
   form?: string;
+  /** Whether the control is reached from the page's Tab sequence. Set `false`
+   *  inside a composite that manages its own focus — a grid with a roving tab
+   *  stop, a menu — where reaching it by Tab would be a second way in. The
+   *  control stays programmatically focusable. */
+  tabStop?: boolean;
   /** The button was activated, by pointer or by keyboard. */
   onClick?: () => void;
 }

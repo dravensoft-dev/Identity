@@ -190,20 +190,29 @@ export function validateContract(contract, typeNames) {
     if (spec.form === 'array' && !PRIMITIVE_TYPES.has(spec.of) && spec.of !== CONSUMER_DATA) {
       problems.push(...[declared(spec.of, 'object')].filter(Boolean));
     }
-    /* An event payload resolves exactly the way an array's `of` does one line
-     * above: a primitive type name, the consumer-data form name, or a declared
-     * OBJECT. It used to admit only the third, which made a payload of "string"
-     * unstateable -- while `classify()` had always READ one, reducing
+    /* A payload resolves as a primitive, consumerData, a declared object or a
+     * declared ENUM -- all four, because classify() produces all four and a
+     * contract that cannot state what the reader reads is a gap, not a rule.
+     * It once admitted only the declared object, which made a payload of
+     * "string" unstateable -- while `classify()` had always READ one, reducing
      * `(value: string) => void` to {form:'event', payload:'string'}. So the
      * reader could produce a payload the contract could not declare, and the
      * form-4 comparison below would then have matched them. The form controls
      * are where that gap became load-bearing: every one of them turns a native
      * onChange into an event carrying the VALUE (a platform event type is an R4
      * violation inside a payload -- Breadcrumbs settled that), and a value is a
-     * primitive, not an object. Widening here is what lets an event say so. */
+     * primitive, not an object. Plan 8C2 widened it to the first three and
+     * stopped one type-kind short: `(v: SomeEnum) => void` reads as
+     * {payload:'SomeEnum'} just as cleanly, and the contract declaring it read
+     * as "an enum, used where an object belongs". This is that fourth arm.
+     * `declared()` takes one kind, so the enum arm is tried first and only a
+     * name that is neither falls through to the object message, which stays the
+     * default because an object payload is by far the commoner case. */
     if (spec.form === 'event' && spec.payload
         && !PRIMITIVE_TYPES.has(spec.payload) && spec.payload !== CONSUMER_DATA) {
-      problems.push(...[declared(spec.payload, 'object')].filter(Boolean));
+      if (typeNames.get(spec.payload) !== 'enum') {
+        problems.push(...[declared(spec.payload, 'object')].filter(Boolean));
+      }
     }
     /* The parameter loop runs for ANY member carrying `params` -- a slot's and,
      * since the ninth form, a functionInput's, which is why the message names

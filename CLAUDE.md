@@ -11,9 +11,13 @@ DTCG JSON by Style Dictionary, and the build and check scripts are tested with
 (`bun run test:scripts` / `test:react` / `test:react-dom` / `test:angular`, or
 `bun run test` for all four). Those four run in **two `bun test` processes**, not one:
 `test` is `bun test scripts frameworks/react/test/ frameworks/angular/test && bun test
-frameworks/react/test-dom`, because `frameworks/react/test-dom/` registers a DOM
-globally and must not share a process with the DOM-free suites (see the two-React-test-directories
-note under *Architecture*). **A test under `scripts/` may not import a framework layer's `.ts` or `.jsx`**,
+--preload ./frameworks/react/test-dom/preload.js frameworks/react/test-dom`, because
+`frameworks/react/test-dom/` registers a DOM globally and must not share a process with
+the DOM-free suites (see the two-React-test-directories note under *Architecture*).
+That directory was deleted once, for its RAM cost, and restored minus the one suite
+that carried the cost: **a component whose behaviour binding names the `grid` pattern
+is DOM-tested by hand**, and what that rule costs is recorded under *Known debt*.
+**A test under `scripts/` may not import a framework layer's `.ts` or `.jsx`**,
 because `scripts/` is the one suite `check-all.mjs` also runs under plain node, and those
 files use the extensionless imports their own toolchains expect and node does not resolve.
 A property worth asserting against a real recipe or component is asserted from that
@@ -85,6 +89,14 @@ asserts the modules match the source and the CSS and that no flag is orphaned;
 `bun run check:duplicate-constants` fails a numeric constant declared in both
 layers, which is how chart geometry drifted before this existed.
 
+**That gate now also reaches across into the API layer, for exactly one type.**
+`api/types/cat-slot.json` declares `CatSlot` as the literal set `1 | … | 8`, and the 8
+is not authored there — it is the count of `--color-cat-*` slots in
+`tokens/src/palette.dark.json`, reaching the layers as the derived `catSlots` constant.
+`catSlotEnumProblems()` in `scripts/check-script-tokens.mjs` asserts the set is exactly
+`1..catSlots` **in order**, so a ninth colour in the ramp fails the build until the
+contract type follows. It is deliberately that one named case and not a mechanism.
+
 **Behaviour has values, and they are tokens like any other.** `tokens/src/behaviour.json`
 holds `delay` (pointer intent), `dismiss` (how long a transient notice lives) and
 `limit` (quantity invariants). All are script-readable, because their consumers are
@@ -110,8 +122,10 @@ load-bearing: an exception names exactly one requirement, so one entry cannot ex
 whole clause.
 
 Every component declares, in **every** layer, beside its own source — React at
-`<Name>.behaviour.json`, Angular at `<name>.behaviour.json`, and the twenty-two
-controls Material provides or lacks, in `frameworks/angular/behaviour-delegated.json`.
+`<Name>.behaviour.json`, Angular at `<name>.behaviour.json`, and the controls Material
+provides or lacks, in `frameworks/angular/behaviour-delegated.json` — **count that file's
+keys rather than trusting a figure here**; it read *twenty-two* until plan 8C2 split
+`Radio.jsx` in two and added a twenty-third in the same change.
 **Delegation is a state, not an absence**: Angular has a tooltip, it is `matTooltip`,
 and a declaration reading "absent" would be false for it — Calendar is the one entry
 in that file where "absent" is true, and it binds the `absent` pattern precisely so
@@ -125,19 +139,26 @@ it declares**: a component can bind `dialog-modal` and trap no focus. A green ru
 coverage claim, never an accessibility one.
 
 **And now something does check whether a component behaves as it declares — by
-rendering it.** `check:compliance` is the coverage record; the verification itself
-lives in render suites (`frameworks/react/test-dom/`, `frameworks/angular/test/`)
+rendering it, in both layers, with one component-shaped hole.** `check:compliance`
+is the coverage record; the verification itself lives in render suites
+(`frameworks/react/test-dom/`, `frameworks/angular/test/`)
 that assert, per requirement of a component's bound pattern, that the rendered DOM
 either meets it with no exception declared, or fails it with one declared. That
 single bidirectional statement is the stale-exception rule the layer was modelled
-on and did not have: **an exception can finally expire.** The shared evaluator is
+on and did not have: **an exception can finally expire.** The hole is by rule and
+not by omission — **a component whose binding names the `grid` pattern is DOM-tested
+by hand**, so `Calendar` and `Table` are outside the suites and outside `COVERED`;
+the rule, the measurement behind it and its price are stated in
+`check-compliance.mjs`'s own header and under *Known debt*. The shared evaluator is
 `scripts/lib/behaviour-compliance.mjs`, DOM-generic on purpose — it touches only
 `tagName`, `getAttribute` and `hasAttribute`, because it is consumed from three
-runtimes including plain node in its own test, which has no DOM. It returns a
+runtimes, one of them plain node in its own test, which has no DOM. It returns a
 third value, `null`, for requirements no single element can decide (`focus.*`,
 `keyboard.*`, `content.noAutoDismiss`, `alternative.table`); a suite must name
 each of those in its `behavioural` map and assert it by acting on the tree, and
-`assertPattern` throws if one is silently skipped. **Coverage is partial by design
+each layer's wrapper (`frameworks/react/test-dom/assert-pattern.jsx`,
+`frameworks/angular/test/compliance.ts`) throws if one is
+silently skipped. **Coverage is partial by design
 and grows one component at a time** — `COVERED` in `scripts/check-compliance.mjs`
 is the record, with the same bidirectional staleness rule `EXEMPT` carries; the
 gate never demands totality, only that every claim in the record is true. A green
@@ -153,9 +174,16 @@ consumer data, functionInput, slot, event — and five derived rules govern them
 with known fields, R2 who draws decides data versus slot, R3 a parameterised slot fills and
 never replaces, R4 no platform types and no escapes, R5 no unions between forms).
 **Consumer data is the eighth and the one the contract deliberately does not describe**: a
-record whose keys the *consumer* names — `Table`'s rows, `Calendar`'s per-event `meta` —
-which Arena routes and never inspects. It exists because the vocabulary said *seven* and
-was false; `Table.rows` was a member and was none of them. It is exactly one spelling,
+record whose keys the *consumer* names, which Arena routes and never inspects. It exists
+because the vocabulary said *seven* and was false; `Table.rows` was a member and was none
+of them. **Both members that motivated it have since been removed** — `Table.rows` when
+`Table` became a compound component, `CalendarEvent.meta` under the per-item renderer
+convention — so `grep -rn consumerData api/components/` is **empty** and the form has zero
+live instances in any shipped contract. That is a fact about the vocabulary and **not** a
+reason to retire the form: the next reader will wonder, and the answer is that the form is
+what a contract must reach for the moment a member is a record whose keys the consumer
+names, and that nothing else in the nine can express one. Its guards are what stopped both
+of those members being modelled badly rather than removed. It is exactly one spelling,
 `Record<string, unknown>`, and a record of a *known* type stays an R4 violation, because a
 form admitting any record would re-legalise the escape R4 closed. Two things about it are
 mechanical — it may not be a field of a predefined object, and a member taking it in must
@@ -170,8 +198,15 @@ compares the signature between the contract and each layer. It deliberately reve
 refusal the layer carried until now — an inbound function that returns a value was none of
 the eight, which is why the charts' `valueFormatter` became `valueSuffix` — and it reverses
 it for input controls alone; a chart declaring a formatter still fails. A return of
-`React.ReactNode` is **not** one: that is a parameterised slot (R3), and the reader throws on
-it rather than admitting a render prop through this form.
+`React.ReactNode` is **not** one, and the reader's refusal of it is an **enforcement rather
+than a gap**: a per-item renderer is not a member at all. R3 is not the reason — R3 permits
+the shape, since it fills the cell or row Arena renders rather than replacing it. The reason
+is Angular, which has no answer for per-item projection short of a structural directive and
+`ngTemplateOutlet`, a binding no row of the table covers and no reader function reads. That
+convention removed `ActivityFeed.renderItem`, then `Calendar.renderEvent` and
+`TableColumn.render`, so no contract may declare such a member and refusing every one the
+reader meets is correct rather than provisional. **This checks a form, not R3** — `api/README.md`
+carries the rule and the capability it costs.
 `api/README.md` is the normative
 statement and the first thing a new platform target reads, the way `tokens/src/TYPE-MAP.md`
 is for the token layer. Shared objects and enums are declared once in `api/types/` and
@@ -187,16 +222,63 @@ contract that forbids divergence has nowhere for a second opinion to live, and
 component at a time, the same charter `COVERED` carries in `check-compliance.mjs`: a green
 run is a claim about the contracted components and says nothing about the rest — and,
 being orthogonal to behaviour, it says nothing about what any of them *does* either.
-Plan C's first batch brought the five composed primitives under contract and its second
+Plan C's first batch brought the five composed primitives under contract, its second
 brought the six form controls (`RadioGroup`, `Radio`, `Checkbox`, `Textarea`, `Select`,
 `Input`) — the batch that needed the ninth form, since `Input.validate` made the reader
-throw before it existed. **To know what is contracted, run `bun run check:api` and read
+throw before it existed — and its third brought `Tabs`, `SegmentedControl`, `ProgressBar`,
+`Toast`, `Tooltip`, `Calendar`, `CalendarEvent`, `Table`, `TableRow` and `TableCell`.
+**To know what is contracted, run `bun run check:api` and read
 the contract/layer pair it prints, or list `api/components/`** — a count written here
 would drift the first time a batch lands, which is why none is.
 
+**When a consumer needs their own content inside ONE item of something Arena draws, make
+the item a component.** That is the batch-three answer to the per-item renderer convention
+above, and it needed no gate change and no tenth form: per-item projection stops applying
+the moment the consumer instantiates one element per item instead of handing Arena a render
+function, so Angular's missing `ngTemplateOutlet` binding stops being the obstacle.
+`RadioGroup`/`Radio` was the contracted precedent, and `Calendar`/`CalendarEvent` and
+`Table`/`TableRow`/`TableCell` now follow it. The parent owns **where** an item goes — the
+placement, the grid, the keyboard — and the item owns **what** it looks like; the parent
+reads its children's props and injects the rest with `cloneElement`, and **none of the
+injected props is a member of any contract**, exactly as `Radio.json` declares none of the
+`name`/`checked`/`onSelect` `RadioGroup` injects. `Table` is the reach of it: a cell's
+content is a value or one of Arena's own components — a `Badge` for a status, a `Button`
+for an action — which is what `TableColumn.render` used to buy and what removing it would
+otherwise have cost. The price is that the compound shape is breaking at every call site,
+and for `Table` it was the widest breaking change in the batch.
+
+`Table.label` is the pattern for a member that only a human can supply: it names the grid
+for assistive technology, it is `required: true`, and it is **guarded at runtime** rather
+than defaulted. A constant fallback was rejected on the charts' own evidence — a name that
+is present but only says what the component *is* satisfies `roles.label` mechanically while
+telling a screen-reader user nothing — and nothing can derive it, because a data table's
+subject is editorial. `SegmentedControl.ariaLabel` is the same shape.
+
+**`api/README.md`'s *"a closed set of values is not always an enum"* rule now carries a
+condition, and the condition is a gate rather than a judgement.** A closed set that merely
+restates a value the token layer already derives may be an enum **only while something
+machine-checks the restatement** — otherwise the contract hand-copies a derived N and
+becomes exactly the stale-assertion surface this layer exists to remove. `CatSlot` is the
+one type in `api/types/` that does this, `check:script-tokens` is what ties it back to the
+`--color-cat-*` ramp (see the script-readable section above), and the assertion is written
+as that single named case: **a second such type would need its own tie before it may be an
+enum at all.**
+
 **Plan C's contracts are single-layer, and that is a property of the plan, not a gap.**
-The twenty-one components Plan C brings under contract exist in React alone — they are
-exactly the controls Angular delegates to Material — so each contract governs one layer
+The components Plan C brings under contract exist in React alone — they are
+exactly the controls Angular delegates to Material, so **count them rather than trusting a
+figure**: every `.jsx` under `frameworks/react/components/` with no matching directory under
+`frameworks/angular/primitives/`, which is also exactly the key set of
+`frameworks/angular/behaviour-delegated.json`, minus `Switch`, which was contracted before Plan C
+began. A count written here would drift, and has, twice: it read *twenty-one*, which was true when
+written and went stale the moment plan 8C2 split `Radio.jsx` into two quartets — `RadioGroup`
+became a new React component and a new delegated entry in the same change, moving the set to
+twenty-two without a word of prose changing — and plan 8C3 did the identical thing three more
+times, since `CalendarEvent`, `TableRow` and `TableCell` are each a new React component and a new
+delegated entry. **A batch that makes an item a component enlarges its own subject set while
+contracting it**, which is why the method above is the only thing here worth trusting. That is
+this file's own rule about derived figures,
+broken twice by this very paragraph — so each contract governs one layer
 and `check:api` moves by one contract and one layer per component, not the `+1/+2` a
 shared component moves. Their APIs are settled and normative *before* Angular has an
 implementation to defend, which is the whole point of sequencing Plan C ahead of Plan D
@@ -211,15 +293,51 @@ with no gate behind the loss — `check:api` reads the `.d.ts`, and a restored s
 `.jsx` would leave it green. That is the same limit already recorded two paragraphs down for
 every migrated React component; Plan C widens its reach, it does not close it.
 
-**React has two test directories and they must not merge.**
+**React has two test directories, they must not merge, and the second one has a
+rule about what it may hold.**
 `frameworks/react/test/` asserts on `renderToStaticMarkup` — no DOM, by design,
 because those suites prove those components render correctly server-side.
 `frameworks/react/test-dom/` registers `@happy-dom/global-registrator`, which
-installs globals **process-wide**, and `bun test <dir>` is one process per
-directory. Putting a DOM in the first directory's process would quietly change
-what its six suites prove and nothing would fail to say so. `testStep()` in
-`scripts/check-all.mjs` lists all three framework directories, and
-`check-all.test.mjs` asserts that array by literal value.
+installs globals **process-wide**, and `bun test` shares one process across every
+path a single invocation matches. So a DOM registered in the first directory's
+process would quietly change what its suites prove with nothing
+failing to say so — count them with `bun run test:react` rather than trusting a
+figure written here, which drifts with every component that gains a test — and it would also reach `frameworks/angular/test`, whose files
+register a DOM themselves and throw on the second registration. `testStep()` in
+`scripts/check-all.mjs` therefore runs two `bun test` invocations, and
+`check-all.test.mjs` asserts that array by literal value — a change to one is a
+change to both.
+
+**The rule the second directory carries: a component whose behaviour binding names
+the `grid` pattern is DOM-tested by hand**, with `bun run demos` and the
+component's own `*.card.html` page. It is tied to the binding rather than to a
+judgement about what looks like a grid, so it is a grep rather than an argument,
+and so a component that becomes a grid later inherits it without anyone
+remembering; today it selects exactly `Calendar` and `Table`. The whole directory
+was deleted once for its RAM cost and restored minus the one suite that carried
+that cost — `grid-keyboard.test.jsx` alone peaked at 164 MiB against 109 MiB for
+the other six together, because its fixture is 84 cells per mount, eight mounts,
+and 160 key events through `act()`. The directory was never the problem; the grid
+was. What that costs is under *Known debt*, and it is a real cost, not a
+formality.
+
+**`frameworks/react/test-dom/` must be run through `--preload
+./frameworks/react/test-dom/preload.js`, and that is not a convenience.** react-dom
+decides **once, at its own module evaluation**, whether the browser supports the
+`input` event: `canUseDOM` gates the block computing `isInputEventSupported`, and if a
+DOM is not already installed the flag latches false and React falls back to its legacy
+change-detection polyfill, under which a dispatched `input` or `change` reaches an
+`onChange` handler **zero** times, silently. Registering happy-dom from `harness.jsx`'s
+module body is too late (ES imports evaluate first) and — measured, so do not retry it —
+so is registering it from a **separate ES module imported ahead of `react-dom/client`**:
+bun evaluates `react-dom` before that module anyway. Only a preload is early enough.
+This cost a day to find, so it is written down here as well as in `preload.js`, and it
+survived the directory's deletion and restore unchanged. All
+three invocation sites pass it (`test:react-dom`, `test`, and `testStep()`), and
+`harness.jsx` **throws** when `document` is missing rather than installing a fallback,
+because a fallback would silently run those suites under the legacy semantics. The
+preload must never be applied to `frameworks/react/test/`, for the reason in the
+paragraph above.
 
 **A dimension in a framework layer is a token or a derivation of tokens. A bare
 literal is a bug.** This is machine-checked: `bun run check:dimensions` scans
@@ -476,7 +594,7 @@ scheduled for deletion the same week.
   is correct for `debounce`-style speculation, when it is not: Angular has no
   `Tooltip`, `Toast` or `Pagination` **primitive**, but it provides all three
   through Angular Material, dressed by `arena-material.css` — the same
-  "Material provides the control" bucket 21 of the 39 Tailwind manifests
+  "Material provides the control" bucket most Tailwind manifests
   belong to (`Tooltip.manifest.json`, `Toast.manifest.json` and
   `Pagination.manifest.json` all exist). `check:script-tokens` cannot see
   this — its orphan rule is "imported by at least one layer," and it is
@@ -491,12 +609,24 @@ scheduled for deletion the same week.
   `duration` to either value at all. The seams a future pass would bind these
   through are `MAT_TOOLTIP_DEFAULT_OPTIONS` (`showDelay`, `hideDelay`) and
   `MatSnackBarConfig.duration` — neither is wired today.
-- **`Calendar` and `Table` implement no keyboard navigation at all** — zero `role=`,
-  zero `tabIndex`, zero key handling, in components that render interactive data. Both
-  bind `grid` with an exception per unmet requirement rather than `none`, because
-  "presentational" would be a lie: they are not simple, they are unimplemented. This
-  was invisible before the contract layer, which is the clearest evidence that layer
-  was worth building.
+- **Both grid components now navigate by keyboard, and neither claim has a suite behind
+  it.** `Table` and `Calendar` each bound `grid` with an exception on **all eight**
+  requirements — zero `role=`, zero `tabIndex`, zero key handling, in components that
+  render interactive data. That was invisible before the contract layer, which is the
+  clearest evidence that layer was worth building. Both are fixed: `Calendar` retired all
+  eight, and `Table` retired seven, keeping **one** — `focus.roving`, and it is true of
+  **card mode only**. Below `--bp-md` the table is one card per row — a list, not a grid,
+  where the rest of the pattern is *vacuous* rather than unmet — and a card whose
+  `TableRow` carries a `click` has no keyboard route at all. The obvious fix is invalid
+  ARIA (`tabIndex={0}` plus `role="button"` cannot go on a card that also contains the
+  consumer's own buttons, which is exactly what a `mobileLayout: 'block'` column draws
+  inside it), which is why it is recorded rather than done — and the binding cannot scope
+  a requirement to a variant, the same limit `Skeleton` proves, so it reads as
+  unconditional and is not. **What stays true of both is the verification, not the
+  behaviour**: `grid-keyboard.test.jsx` is the one suite the grid rule excludes, so
+  neither component can appear in `COVERED`, both are DOM-tested by hand, and
+  `Calendar`'s now-exceptionless binding and `Table`'s surviving exception are alike
+  unverified claims. See the grid-rule entry below.
 - **The binding schema cannot express "this pattern applies conditionally".** `Tag`
   renders a real `<button>` only when `onRemove` is passed; without it — the common
   case — it is a plain `<span>` matching no interactive pattern at all. It is bound to
@@ -524,6 +654,11 @@ scheduled for deletion the same week.
   same shape), or *semantic completeness* (`Menu`'s Enter opens the menu but never
   moves focus). A rendered DOM resolves all three at once, which is why the render
   suites absorbed the stale-exception check instead of sharing it with a scan.
+  **This is still the reason not to re-propose a scan**, including as the cheap tier
+  beneath the grid rule, where a scan looks superficially attractive because the hand
+  check it would supplement is not machine-checked at all: a scan's measured error rate
+  is what it is regardless of what sits above or below it, and a 51% false-unmet rate
+  is worse than an honest hole.
 - **A binding cannot scope an exception to a variant, and `Skeleton` is the proof.**
   `Skeleton`'s `roles.element` and `live.politeness` exceptions are true of the
   `circle` variant and false of `block`, `line` and `text`. The compliance suite
@@ -535,26 +670,84 @@ scheduled for deletion the same week.
   question, *"How does a pattern express an optional requirement?"*, is this.
   `comparePattern`'s stale-exception message has no vocabulary for "true in one
   variant" either — it offers only "delete it or name a subject".
-- **Compliance coverage is 6 of 62 bindings and nothing schedules the rest.**
+- **A grid component's DOM behaviour is checked by eye, and that is a rule with a
+  price.** `frameworks/react/test-dom/` was deleted whole for its RAM cost and
+  restored minus one suite, so the standing rule is narrow: **a component whose
+  behaviour binding names the `grid` pattern is DOM-tested by hand — serve the tree
+  with `bun run demos` and operate the component on its `*.card.html` page.** It is
+  tied to the binding rather than to a judgement about what looks like a grid, so it
+  is a grep rather than an argument, and a component that becomes a grid later
+  inherits it without anyone remembering. Today it selects exactly `Calendar` and
+  `Table`.
+
+  The rule is a measurement, not a preference: `grid-keyboard.test.jsx` alone peaked
+  at 164 MiB — 194 before its two performance fixes — while the other six suites
+  together peaked at 109 and the whole directory at 171. The grid cost more than
+  everything else combined, because its fixture is 6 days × 14 hour cells = 84 cells
+  per mount, mounted eight times, with 160 key events dispatched through `act()`.
+  Cutting there cuts exactly where the cost is; the directory was never the problem.
+
+  **What the rule costs, and it is one thing rather than a list.** `Calendar`'s
+  keyboard navigation is not machine-checked: `grid-keyboard.test.jsx` was the only
+  proof of the roving tab stop, the four-edge clamp, Home/End within a day column,
+  and Enter/Escape into and out of an event chip, and the binding retired all eight
+  `grid` exceptions in the same batch — so it claims **full** compliance with the
+  `grid` pattern with nothing rendering it, and `Calendar:react` cannot appear in
+  `COVERED`. `Table` is in the same rule and has always been uncovered; what stands
+  unverified there is its **one** surviving exception — `focus.roving`, true of card mode
+  alone — plus the seven requirements it now claims to meet, so it is a claim of
+  near-compliance rather than of nothing.
+  What partly guards `Calendar` instead is a **static** tab-stop count in
+  `frameworks/react/test/calendar.test.jsx` — a grid is one tab stop, and that count
+  is a property of the markup rather than of behaviour, so a DOM-free suite can hold
+  it. It catches a second tab stop appearing inside the grid. It does not catch an
+  arrow key that stops moving, and it is the whole of what stands in for a suite.
+
+  **What the restore bought back**, all of it green again and none of it worth
+  re-deriving from scratch if the directory is ever touched: that the six form
+  controls' events *fire* at all (`form-control-events.test.jsx` dispatches real
+  events and proves `Input`, `Textarea`, `Select`, `Checkbox` and `RadioGroup` hand
+  the consumer a **value** rather than the DOM event — the DOM-free suites assert
+  only the *shape* of that and say so in their own headers); `Tooltip`'s
+  single-timer rule, cancel-on-transition and unmount cleanup; the stale-exception
+  rule in behavioural form, where `behavioural.test.jsx` pins four live defects of
+  `Dialog`/`ConfirmDialog` — no Escape, no focus on open, no restore on close — by
+  asserting they are *still broken*; `Menu`'s misplaced `aria-haspopup` and
+  `Skeleton`'s `circle` branch, the two mistakes the rejected text scan got
+  backwards; and the failure path of the compliance wrapper on the React side, four
+  tests that write deliberately false bindings to a temp file and prove STALE
+  EXCEPTION, OVERCLAIM, "no subject element" and "not declared behavioural" actually
+  fire.
+
+  If the grid suite is ever wanted back — which would mean paying the 164 MiB and
+  retiring this rule — it does not need rewriting:
+  `git show edb9f3e^:frameworks/react/test-dom/grid-keyboard.test.jsx` is the file,
+  and it would need `Calendar:react` restored to `COVERED` alongside it.
+- **Compliance coverage is a small fraction of the bindings and nothing schedules the
+  rest.** `bun run check:compliance` prints the live pair; do not trust a figure written
+  here, which has drifted once already — every batch that adds a component adds a binding
+  and moves the denominator without touching this line.
   `COVERED` guards the accuracy of what it claims, never the completeness of it, so
-  the 56 uncovered bindings — including every one of `Table`'s and `Calendar`'s
-  eight exceptions, the components with no keyboard navigation at all — remain
+  the uncovered bindings — including `Table`'s seven newly-met `grid` requirements and
+  its one surviving `focus.roving` exception, **and `Calendar`'s claim of full `grid`
+  compliance, which the grid rule keeps out of a suite permanently** — remain
   exactly as unverified as they were before this gate existed. The gate was built
-  that way on purpose: one demanding 47 suites on day one would have been switched
+  that way on purpose: one demanding a suite per binding on day one would have been
+  switched
   off. The consequence is that the layer's headline property, *an exception can
-  expire*, currently holds for six components and not for the rest.
+  expire*, holds for the handful of components in `COVERED` and nothing else.
   `figure-with-data-table`'s `roles.label` half stays unverifiable regardless — a
   suite can assert an `aria-label` exists, never that it is a good name for the
-  chart. **`COVERED` is keyed by `<component>:<layer>`, not by component name**, because four of the six
-  entries (`ConfirmDialog`, `Skeleton`, `Alert`, `BarChart`) are bound in both layers, and a
+  chart. **`COVERED` is keyed by `<component>:<layer>`, not by component name**: several components
+  (`ConfirmDialog`, `Skeleton`, `Alert`, `BarChart`) are bound in both layers, and a
   name-only key let a mention of *either* layer's binding satisfy the claim — so `ConfirmDialog`'s
   React suite marked its unverified Angular contract covered, and `Alert`'s Angular suite did the
-  same to its React one. Each entry now names the one layer its suite verifies (`ConfirmDialog:react`,
-  `Alert:angular`), and `validateCoverage()` resolves that layer's binding alone; the sibling layer
+  same to its React one. Each entry names the one layer its suite verifies
+  (`Alert:angular`), and `validateCoverage()` resolves that layer's binding alone; the sibling layer
   is simply uncovered, which the gate is silent about by charter but no longer reports as satisfied.
   A key without a `:layer` suffix is rejected, so the old name-only shape cannot creep back.
-- **Seven exceptions are now only as true as the behavioural verdict a suite
-  declares for them.** `ActivityFeed`'s `posinset`/`busy`, `Tag`'s `disabled`,
+- **Seven exceptions rest on a `behavioural` verdict no suite in either layer
+  declares.** `ActivityFeed`'s `posinset`/`busy`, `Tag`'s `disabled`,
   `Input`'s and `Textarea`'s `readonly`, and Angular `activity-feed`'s
   `posinset`/`busy` are requirements no single element can decide from the DOM, so
   the suite asserts each by acting on the tree and records the verdict in
@@ -562,7 +755,15 @@ scheduled for deletion the same week.
   wrong verdict pins a false claim exactly as a scan would have. And `comparePattern`
   **throws** on an unknown requirement key or a missing `ELEMENT_ROLE` entry — one
   bad key aborts the whole test rather than reporting one problem, so a suite's
-  wrapper (`assertPattern`) must expect the throw, not only a returned problem list.
+  wrapper (`frameworks/react/test-dom/assert-pattern.jsx`,
+  `frameworks/angular/test/compliance.ts`) must expect the throw, not only a
+  returned problem list. **None of those seven is pinned by a suite today, in either
+  layer** — verified by grep: no `behavioural` map in `frameworks/react/test-dom/` or
+  `frameworks/angular/test/` names `posinset`, `busy`, `readonly` or `disabled`. The
+  restore of the React suites did not change that, and the deletion was never what
+  caused it; the only `behavioural` verdicts any suite declares are the
+  `Dialog`/`ConfirmDialog` focus and keyboard keys, `Menu`'s, `Skeleton`'s
+  `focus.unaffected`, `Alert`'s, and the two charts' `alternative.table`.
 - **Angular has no `Calendar`, and nothing has decided whether it should.** React's
   `Calendar` is a day/hour schedule grid with absolutely-positioned event blocks;
   Angular has no equivalent from either an `arena-*` primitive or Angular Material —
@@ -619,8 +820,14 @@ scheduled for deletion the same week.
   rendered tree; `check:compliance` is the only layer that can see a rendered tree,
   and it does not read contracts. Both are authoring rules the audit protocol
   applies, which means they are exactly as strong as the audit that applied them.
-  `Table.render` in plan C is where R3 first matters, and it will matter with no
-  gate behind it. Two more gaps, neither an authoring rule and both closeable in
+  `TableColumn.render` was named here as the member where R3 would first matter; it never
+  did, because the per-item convention removed it rather than modelling it, and the
+  reader refuses that shape on the convention's authority and not R3's. **No shipped
+  contract declares a parameterised slot** — verify with `grep -rn '"params"'
+  api/components/`, whose only hit is `Input.validate`'s `functionInput` — so R3 is
+  today unchecked and also unexercised. That is not a mitigation: the moment a
+  contract does declare one, the rule is exactly as unverifiable as this entry says.
+  Two more gaps, neither an authoring rule and both closeable in
   principle: **`default` is documented in the contract format and read by nothing** —
   most shipped contracts carry one, but `spec.default` is referenced nowhere in
   `scripts/`, so a contract's stated default can disagree with both layers' real
@@ -646,58 +853,73 @@ scheduled for deletion the same week.
   previously written down **only inside plan 8B3**, which was deleted when that plan was
   executed. That is the exact failure mode this section's preamble names.
 
-- **An explicit `id` is no longer reachable on `Input` or `Textarea`, and no gate would
-  notice it coming back.** Both components generate an `id` from their `label` to wire the
-  label's `htmlFor`, and that generated id was *overridable* before Plan C's second batch
-  because `id` arrived through the heritage clause (`InputHTMLAttributes`,
-  `TextareaHTMLAttributes`). The D1 flatten cut the heritage down to the element-specific
-  set, and `id` — a global attribute, like `className`, `dir`, `tabIndex`, ARIA and
-  `data-*` — is a member of neither contract, so the path is gone. It matters wherever a
-  host needs a stable, known id to point something at the control from outside: an external
-  `<label for>`, an `aria-describedby` on a sibling, or a form library that addresses fields
-  by id. **There is no gate behind the loss** — `check:api` reads the `.d.ts` and never
-  opens the `.jsx`, so restoring `id` to the implementation alone would leave the gate
-  green, exactly as a restored `{...rest}` spread would. This is the same shape as the
-  `form*`/`{...rest}` loss recorded above for Plan C's first batch, one batch on: the
-  capability was reachable, undocumented, and is now gone with only prose holding the fact.
-  Closing it means deciding `id` is a member and declaring it in both, not re-adding the
-  heritage.
-
-- **Plan D owes `functionInput` an Angular implementation, and the contract is what it must
-  satisfy.** `Input.validate` is the repo's only `functionInput` and `Input` the only
-  contract carrying `kind: "input"`, and both exist in React alone, because every contract
-  in Plan C is single-layer. Angular's signal idiom discourages a function input — the
-  reflex is an output plus a validator service, or a `ControlValueAccessor` wired into
-  Angular Forms — but the contract's modelled signature (`params: {value: string}`,
+- **Plan D owes `functionInput` an Angular implementation. The spelling is no longer open;
+  only the implementation is.** `Input.validate` is the repo's only `functionInput` and
+  `Input` the only contract carrying `kind: "input"`, and both exist in React alone, because
+  every contract in Plan C is single-layer. Angular's signal idiom discourages a function
+  input — the reflex is an output plus a validator service, or a `ControlValueAccessor` wired
+  into Angular Forms — but the contract's modelled signature (`params: {value: string}`,
   `returns: string`) is not negotiable at implementation time: `check:api` compares that
   signature between the contract and each layer, so a reshape is a contract change, not an
   implementation choice. That is the whole point of sequencing Plan C ahead of Plan D — the
-  API is settled and normative *before* Angular has an implementation to defend — and it is
-  recorded here rather than resolved, because 8C2 deliberately touched no Angular component.
+  API is settled and normative *before* Angular has an implementation to defend.
+  **8C2 recorded this as more open than it was, and 8C3 measured it.** The reader was never
+  the obstacle: `angularSurface()` has read `readonly validate = input<(value: string) =>
+  string>()` as `{form:'functionInput', params:{value:'string'}, returns:'string'}` since the
+  ninth form landed, and that bare arrow — with required-ness carried by `.required`, never by
+  a `| undefined` arm — is the spelling `api/README.md` now states normatively and
+  `scripts/api-surface.test.mjs` pins. What did fail was the *optional* spelling
+  `input<((value: string) => string) | undefined>()`, and it failed on parse ORDER rather than
+  on any rule: `classify()` tested its arrow pattern before reducing the annotation, backtracked
+  onto the inner `)`, and read the return as `string)`. That is fixed — a nullable annotation is
+  now reduced to the annotation it wraps before any form is tested — so both spellings read
+  identically and Plan D has nothing left to discover about the reader. What remains owed is an
+  Angular `Input` that declares the member; no Angular component was touched, here or in 8C2.
 
-- **An event payload that is a declared ENUM is still rejected, one type-kind short of
-  where the gate now reaches.** Task 2 widened `validateContract` so an event's `payload`
-  resolves the way an array's `of` does — a primitive, `consumerData`, or a declared
-  object — because `classify()` had always read `(value: string) => void` as
-  `{form:'event', payload:'string'}` while no contract could declare that payload. The same
-  gap remains one kind over: any payload that is neither a primitive nor `consumerData` is
-  still handed to `declared(payload, 'object')`, so a contract writing `payload: "SomeEnum"`
-  fails with *"an enum, used where an object belongs"* even though the reader classifies the
-  layer's arrow perfectly well. **No contract needs it today** — every payload in this batch
-  is `string` or `boolean` — so it was left alone rather than widened speculatively in the
-  middle of a batch. Closing it is one clause beside the one Task 2 added.
+- **`ControlSize`'s description is inaccurate for two of its four consumers, and the
+  reuse is still correct.** `api/types/control-size.json` says *"Heights come from the
+  density tokens, so a control inside `.arena-compact` re-densifies with the rows around
+  it."* True of `Button` and `IconButton`. False of `ProgressBar`, whose thickness is
+  `--sp-1`, `calc(var(--sp-1) * 1.5)` and `calc(var(--sp-1) * 2.5)`, and of `Spinner`,
+  whose diameters are `--icon-sm`, `--sp-5` and `--sp-8`. `.arena-compact` redefines only
+  the `--dz-*` family (`tokens/spacing.css`), so neither re-densifies. **The shared enum is
+  the right one either way** — both implement all three steps, and the alternative is a
+  fourth `sm md lg` enum with an identical value set, which is exactly the duplication the
+  enum-reuse rule exists to prevent. Only the description is wrong, and a description is
+  what a new platform target reads first.
 
-- **DA's whole reshape is unverified at runtime.** All six form controls now hand their
-  consumer a value rather than a DOM event — `change` carrying `string` or `boolean`,
-  `Input.blur` carrying the value — and **not one of the six suites can prove it fires.**
-  `frameworks/react/test/` renders with `renderToStaticMarkup` and has no DOM by design, so
-  it can dispatch neither a change nor a blur; each suite says so in a header comment rather
-  than faking a verdict, and `Input`'s validate-on-blur path — the only consumer of the
-  ninth form in the repo — is unverified for exactly the same reason. So the contracts
-  assert the SHAPE of these events and nothing asserts they fire, let alone that they carry
-  what they say. This is Plan E territory, the same place `Tooltip`'s timer sat before
-  `tooltip-timer.test.jsx` paid it: a DOM suite under `frameworks/react/test-dom/` is what
-  closes it, and moving these assertions into the DOM-free directory is not an option.
+- **`Table.empty`'s real default is stated in none of its three surfaces.**
+  `Table.jsx` destructures `empty = 'No data.'`; the contract, the `.d.ts` and the
+  `.prompt.md` all describe the member and none of them names the string. Pre-existing —
+  inherited from before `Table` was contracted, not introduced by contracting it — and
+  related to the already-recorded fact that `spec.default` is documented in the contract
+  format and read by no gate, so nothing would have caught the omission or would catch the
+  three surfaces disagreeing once one of them is filled in.
+
+- **The two required slots in the repo are treated oppositely at runtime, and only one of
+  the two treatments has a stated reason.** `Tooltip.content` deliberately takes **no**
+  guard: `compareSurface` excludes slots from required-ness comparison, because Angular's
+  `<ng-content>` cannot express mandatory, so a `children` guard would enforce in React
+  something the contract can never hold Angular to. `AppLogo.mark` is the only other
+  required slot and **is** guarded — `if (!mark || !name) throw`. Both cannot be right. If
+  the `Tooltip` reasoning holds, `AppLogo` is now wrong and its guard is a React-only
+  invariant the contract does not carry; if `AppLogo` is right, the rule is that a required
+  slot is enforced per layer and `Tooltip` owes a guard. Nothing decides it, and no gate
+  can: the exclusion in `compareSurface` is what makes both pass.
+
+- **`Tabs` is the third total-exception `grid`-class binding and nothing in this batch
+  touched it.** `Tabs.behaviour.json` excepts **all eight** requirements of the `tabs`
+  pattern — no `role="tablist"`, no `role="tab"`, no tabpanel rendered at all, no
+  `aria-controls`, no `aria-selected`, no roving tab stop, no `ArrowLeft`, no `ArrowRight`
+  and no `onKeyDown` handler whatsoever. `Calendar` and `Table` were in exactly this state
+  and were paid down in this batch; `Tabs` had its API contracted in the same batch by a
+  task that says in its own commit message that contracting an API is orthogonal to
+  accessibility. **That asymmetry is deliberate and is the sharpest one the batch carries.**
+  Unlike the two grids, `Tabs` binds `tabs` rather than `grid`, so it is *not* inside the
+  hand-check rule and a render suite could hold it the day it is fixed — the missing
+  tabpanel is the hard half, because `Tabs` renders no panel and offers no `id`/
+  `aria-controls` wiring for a consumer to connect one, so fixing it is an API change and
+  not only a keyboard one.
 
 ### Where the rest of the debt lives
 
@@ -728,11 +950,18 @@ count written here, which would drift.
   `chart-internals`' units,
   UnauthCard's hand-duplicated panel classes, SideNav being described three times —
   which are neither behaviour nor API and have no destination in the spec's scheme.
-  They stay as prose alongside the structural half. Three bindings cite this
-  document as supporting evidence (`command-palette.behaviour.json`, the `SideNav`
-  delegated entry, and `frameworks/angular/primitives/onboarding/onboarding.ts`);
-  a migration that deletes a cited section without redirecting the citation breaks
-  it, and 7c did not touch them.
+  They stay as prose alongside the structural half. A migration that deletes a cited
+  section without redirecting the citation breaks it, so **measure the citing set
+  rather than trusting a list written here** — a list of it was carried in this file
+  and in `api/README.md`, and both were wrong in **both** directions:
+  `frameworks/angular/primitives/onboarding/onboarding.ts` was named as a citer to
+  protect and names no section at all, while
+  `frameworks/angular/test/host-class-binding.test.ts` and
+  `frameworks/tailwind/README.md` quote one each and were listed by neither. The
+  command: `grep -rn "components-divergences" --include='*.json' --include='*.ts'
+  --include='*.md' --include='*.jsx' . | grep -v node_modules`, then keep only the
+  hits that quote a section **by name**. Those are the ones a deletion breaks; a
+  citation naming the file alone survives any edit to it. 7c touched none of them.
 - **`scripts/check-dimension-literals.mjs`** — `EXEMPT` (a literal that is the
   true value at its site: a runtime data-to-pixel projection, a stacking context
   scoped to one container, the visually-hidden idiom) and `PASSTHROUGH`. Its two

@@ -1,0 +1,18 @@
+{
+  "component": "ProgressBar",
+  "description": "Determinate progress by default; indeterminate for a wait with no percentage.",
+  "api": {
+    "progressPercentage": { "form": "primitive", "type": "number", "default": 0,
+                            "description": "How far along, 0-100. Clamped and rounded. Ignored when `indeterminate`." },
+    "indeterminate": { "form": "primitive", "type": "boolean", "default": false,
+                       "description": "A wait with no percentage; the bar sweeps instead of filling." },
+    "tone": { "form": "enum", "type": "ProgressTone", "default": "accent",
+              "description": "The bar's colour." },
+    "label": { "form": "primitive", "type": "string",
+               "description": "Names what is progressing. Drawn above the bar, and it is the bar's accessible name." },
+    "showPercentage": { "form": "primitive", "type": "boolean", "default": true,
+                        "description": "Shows the percentage beside the label. Determinate only." },
+    "size": { "form": "enum", "type": "ControlSize", "default": "md",
+              "description": "The bar's thickness." }
+  }
+}

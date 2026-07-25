@@ -10,9 +10,35 @@
  * the coverage silently rots: a component gains a binding and no suite, and
  * `bun run check` stays green while nobody notices.
  *
- * COVERED IS DELIBERATELY PARTIAL and grows one component at a time -- six of
- * the sixty-four bindings in the tree today. This gate never demands totality: a
- * gate that required forty-seven suites on day one would have been switched off
+ * THE REACT LAYER HAS RENDER SUITES AGAIN, WITH ONE COMPONENT-SHAPED HOLE.
+ * frameworks/react/test-dom/ was deleted and restored; what did not come back
+ * is grid-keyboard.test.jsx, and the rule that keeps it out is stated here
+ * because this is the gate that can see its consequence:
+ *
+ *   A component whose behaviour binding names the `grid` pattern is
+ *   DOM-tested BY HAND -- `bun run demos`, then operate the component on its
+ *   own *.card.html page.
+ *
+ * The rule is tied to the BINDING rather than to a judgement about what looks
+ * like a grid, so it is a grep rather than an argument, and so a component that
+ * becomes a grid later inherits it without anyone remembering. Today it selects
+ * exactly Calendar and Table.
+ *
+ * It exists because of a measurement, not a preference. grid-keyboard.test.jsx
+ * alone peaked at 164 MiB while the other six suites together peaked at 109 --
+ * the grid cost more than everything else combined, because its fixture is 84
+ * cells per mount, eight mounts, and 160 key events dispatched through act().
+ *
+ * The price is that Calendar's binding claims "exceptions": [] -- full
+ * compliance with the grid pattern -- with no suite behind it, and cannot be
+ * listed in COVERED. What guards it instead is a STATIC assertion in
+ * frameworks/react/test/calendar.test.jsx: a grid is one tab stop, and that
+ * count is a property of the markup rather than of behaviour.
+ *
+ * COVERED IS DELIBERATELY PARTIAL and grows one component at a time -- run the
+ * gate for the live pair rather than trusting a figure written here, which has
+ * drifted before. This gate never demands totality: a
+ * gate that required a suite per binding on day one would have been switched off
  * within a week, and a switched-off gate guards nothing. It asserts only that
  * every claim in COVERED is TRUE, in both directions -- an entry naming a
  * binding that no longer exists fails, and an entry whose suite no longer reads
@@ -24,9 +50,12 @@
  * WHAT A GREEN RUN DOES NOT SAY, stated plainly because three other files in
  * this repo had to learn to say it: that any covered component is accessible. A
  * suite can assert that all four of a component's declared exceptions are still
- * true, pass, and leave the component exactly as broken as it was -- Calendar
- * and Table implement no keyboard navigation at all and would pass a suite
- * written against their bindings today. A green run is a claim about the honesty
+ * true, pass, and leave the component exactly as broken as it was -- Tabs
+ * declares an exception against every one of the `tabs` pattern's eight
+ * requirements (no role=tablist, no role=tab, no aria-selected, no roving tab
+ * stop, no arrow keys, no panel wiring at all) and would pass a suite written
+ * against its binding today, because every one of those exceptions is true.
+ * A green run is a claim about the honesty
  * of the declarations. It is never an accessibility claim, exactly as
  * check:behaviour's own header says of coverage.
  */

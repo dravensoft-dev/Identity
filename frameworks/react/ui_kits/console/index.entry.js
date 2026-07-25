@@ -17,7 +17,7 @@ function App() {
     setToasts((ts) => [...ts, { ...t, id }]);
     if (t.persist)
       return;
-    setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)), t.action ? dismissActionable : dismissDefault);
+    setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)), t.actionLabel ? dismissActionable : dismissDefault);
   };
   const nav = (id) => {
     if (id === "dashboard") {
@@ -41,7 +41,8 @@ function App() {
           tone: "neutral",
           title: "Previous build still serving traffic",
           message: "build #4821 → production",
-          action: { label: "Undo", onClick: () => {} }
+          actionLabel: "Undo",
+          onAction: () => {}
         });
       }
     });
@@ -62,7 +63,9 @@ function App() {
     title: t.title,
     message: t.message,
     persist: t.persist,
-    action: t.action,
+    actionLabel: t.actionLabel,
+    onAction: t.onAction,
+    dismissible: true,
     onClose: () => setToasts((ts) => ts.filter((x) => x.id !== t.id))
   }))));
 }

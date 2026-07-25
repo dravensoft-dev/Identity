@@ -74,13 +74,21 @@ export const GATES = [
  *  together in the first, exactly as before frameworks/react/test-dom
  *  existed; frameworks/react/test-dom runs alone in the second. They cannot
  *  be merged: a single `bun test` invocation shares one process (and one
- *  `globalThis`) across every file it matches, harness.jsx's
- *  `GlobalRegistrator.register()` is deliberately never paired with an
- *  `unregister()` (see harness.jsx's own reasoning), and several
- *  frameworks/angular/test files call `GlobalRegistrator.register()` of
- *  their own, unconditionally. Combine the two and the first such Angular
- *  file to run after harness.jsx throws "Happy DOM has already been globally
- *  registered" -- reproduced by hand, not assumed.
+ *  `globalThis`) across every file it matches, the second invocation's
+ *  `--preload frameworks/react/test-dom/preload.js` registers happy-dom for
+ *  the whole process and is deliberately never paired with an `unregister()`
+ *  (see preload.js's own reasoning), and several frameworks/angular/test
+ *  files call `GlobalRegistrator.register()` of their own, unconditionally.
+ *  Combine the two and the first such Angular file to run after the preload
+ *  throws "Happy DOM has already been globally registered" -- reproduced by
+ *  hand, not assumed.
+ *
+ *  The `--preload` is not optional and not a convenience: react-dom decides
+ *  whether `input` is supported at its own module evaluation, so a DOM
+ *  installed any later -- including from a module harness.jsx imports first --
+ *  latches React's legacy change detection, and no dispatched `input` or
+ *  `change` reaches a handler. harness.jsx throws rather than installing a
+ *  fallback DOM, so this argument going missing fails loudly.
  *
  *  'frameworks/react/test/' carries a trailing slash for a second, unrelated
  *  reason: `bun test` matches a directory argument as a path *substring*, not
@@ -101,7 +109,7 @@ export const GATES = [
 export function testStep({ isBun, testFiles }) {
   if (isBun) return [
     { name: 'test (bun test scripts/ + framework suites)', args: ['test', 'scripts', 'frameworks/react/test/', 'frameworks/angular/test'] },
-    { name: 'test (bun test frameworks/react/test-dom, isolated)', args: ['test', 'frameworks/react/test-dom'] },
+    { name: 'test (bun test frameworks/react/test-dom, isolated)', args: ['test', '--preload', './frameworks/react/test-dom/preload.js', 'frameworks/react/test-dom'] },
   ];
   return [{ name: 'test (node --test scripts/*.test.mjs)', args: ['--test', ...testFiles] }];
 }

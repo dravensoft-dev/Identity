@@ -1,6 +1,8 @@
 /* Asserts the committed frameworks/<layer>/tokens.generated.* are what
- * tokens/src/ generates, that each export agrees with its CSS counterpart, and
- * that no token is flagged script-readable without anything importing it.
+ * tokens/src/ generates, that each export agrees with its CSS counterpart, that
+ * no token is flagged script-readable without anything importing it, and that
+ * `CatSlot` — the one contract type restating a token-derived bound — still
+ * matches the ramp it restates.
  *
  * The generated modules are committed (the plugin is served from the release
  * tag and the copy-in kit reads them directly), so a stale committed file is a
@@ -37,6 +39,32 @@ export function importedNames(source) {
     }
   }
   return names;
+}
+
+/** The one contract type that restates a token-derived bound, checked here and
+ *  nowhere else.
+ *
+ *  `api/types/cat-slot.json` declares `CatSlot` as the literal set 1..8, and
+ *  that 8 is not authored there: it is the count of `--color-cat-*` slots in
+ *  `tokens/src/palette.dark.json`, which reaches JS as the derived `catSlots`
+ *  export in the modules this gate already builds. `api/README.md`'s "A closed
+ *  set of values is not always an enum" passage permits that copy to exist only
+ *  because this assertion ties it back to the palette — add a ninth colour to
+ *  the ramp and the contract type must follow or the gate fails.
+ *
+ *  This is deliberately the single named case and not a mechanism: `CatSlot` is
+ *  today the only type in `api/types/` whose values restate something the token
+ *  layer derives, and nothing here generalises to a second one. If a second ever
+ *  appears, that is the moment to decide whether a mechanism is worth building —
+ *  do not read this as one that already exists.
+ *
+ *  @param {number} catSlots @param {unknown} values @returns {string[]} */
+export function catSlotEnumProblems(catSlots, values) {
+  const expected = Array.from({ length: catSlots }, (_, i) => i + 1);
+  const actual = Array.isArray(values) ? values : [];
+  const matches = actual.length === expected.length && expected.every((v, i) => actual[i] === v);
+  if (matches) return [];
+  return [`api/types/cat-slot.json: CatSlot is [${actual.join(', ')}], but the --color-cat-* ramp in tokens/src/palette.dark.json has ${catSlots} slot(s), so it must be [${expected.join(', ')}] — the contract type restates the ramp and has to follow it`];
 }
 
 const SCAN_EXT = new Set(['.js', '.jsx', '.ts', '.tsx']);
@@ -112,12 +140,29 @@ async function main() {
     }
   }
 
+  /* 4. The one contract type that restates a token-derived bound. See
+   * catSlotEnumProblems above for why this lives in this gate. The count is
+   * read from the freshly built module rather than the committed one, so this
+   * is an assertion against tokens/src/ even when step 1 is already failing. */
+  const [, freshModule] = built.entries().next().value;
+  const catSlots = Number(/^export const catSlots = (\d+);$/m.exec(freshModule)?.[1]);
+  if (!Number.isInteger(catSlots)) {
+    problems.push('catSlots: the generated module no longer exports a numeric catSlots — CatSlot cannot be checked against the ramp');
+  } else {
+    try {
+      const catSlot = JSON.parse(readFileSync(join(root, 'api/types/cat-slot.json'), 'utf8'));
+      problems.push(...catSlotEnumProblems(catSlots, catSlot.values));
+    } catch (err) {
+      problems.push(`api/types/cat-slot.json: unreadable (${err.message}) — CatSlot restates the --color-cat-* ramp and must exist`);
+    }
+  }
+
   if (problems.length) {
     console.error(`check-script-tokens: ${problems.length} problem(s)\n`);
     for (const p of problems) console.error(`  ${p}`);
     process.exit(1);
   }
-  console.log(`check-script-tokens: ${flagged.length} script-readable token(s) in sync across ${SCRIPT_TARGETS.length} layer(s)`);
+  console.log(`check-script-tokens: ${flagged.length} script-readable token(s) in sync across ${SCRIPT_TARGETS.length} layer(s); CatSlot matches the ${catSlots}-slot ramp`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) await main();

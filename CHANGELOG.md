@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   admitting one through this form. `api/README.md` is the normative statement.
 
 - **An eighth API form: consumer data.** The vocabulary's *"exactly one of seven forms, and nothing
-  else"* was already false — `Table.rows` is a member and was none of them — and `api/README.md`'s
+  else"* was already false — `Table.rows` was a member and was none of them — and `api/README.md`'s
   own worked example for a parameterised slot named a `TableRow` type that cannot be declared, so the
   gate would have rejected its own documentation. `consumerData` is a record whose keys the *consumer*
   names, which Arena routes and never inspects: neither "Arena draws it" (an object) nor "the consumer
@@ -32,8 +32,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   type stays a predefined object and an R4 violation — and two mechanical guards hold it narrow: it
   may not be a field of a predefined object (extending R1), and a member that takes it in must declare
   a route back out (a slot parameter or an event payload) or it is data Arena can never surface.
-  `Record<string, unknown>` leaves R4's escape list in the same change. No component declares it yet;
-  `Table` and `Calendar` (Plan C's later batches) are the members it was built for.
+  `Record<string, unknown>` leaves R4's escape list in the same change. **No component declares it,
+  and by the end of this release neither of the two members it was built for exists**: `Table.rows`
+  went when `Table` became a compound component, and `CalendarEvent.meta` went with the per-item
+  renderer. `grep -rn consumerData api/components/` is empty. That is a fact about the vocabulary and
+  not a reason to retire the form — the eighth form is what a contract must reach for the moment a
+  member is a record whose keys the consumer names, and nothing else can express one.
 
 - **A third contract: the API capability contract.** `api/components/<Name>.json` states,
   once and neutrally, the members a component's API presents; every layer implementing it
@@ -286,8 +290,176 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   resolves implicit ARIA roles and reports honestly — with a third return value —
   when a requirement is a behaviour no single element can decide.
 - Tests for `Tooltip`'s pointer-intent timer, recorded as untested debt since plan 7a.
+- **`tabStop` on `Button` and `IconButton`.** It is the second global attribute the API
+  contract admits as a member, after `id` — both pass the same test: the flatten's own
+  justification for leaving global attributes off the member list is that a consumer
+  writes them on the host directly, and `tabStop` fails that test the way `id` does,
+  for a different reason each. `id` fails it where a component generates the value
+  itself; `tabStop` fails it here because there is no host to write it on at all —
+  `IconButton` is React-only, delegated to `matIconButton` on the Angular side, with
+  no `arena-icon-button` primitive — and because, wherever a host does exist,
+  `tabindex="-1"` written on it lands on the custom element rather than on the
+  descendant that is actually focusable. Setting `tabStop={false}` writes
+  `tabindex="-1"` and leaves the control programmatically focusable, for a button
+  living inside a composite that manages its own focus — a grid's roving tab stop, a
+  menu. **A positive tab order is deliberately not expressible**: the member is
+  `boolean`, not a number, so a consumer cannot reorder the page's Tab sequence
+  through it, only opt a control out of it.
+- **`CalendarEvent.actionsEnabled` and `CalendarEvent.actions`.** A chip can now carry
+  an action button that reveals a consumer-authored panel — `actionsEnabled` gates
+  whether the button draws at all (a boolean, not "is the slot filled?", for the same
+  reason `Alert.dismissible` and `Toast.dismissible` already record: Angular cannot
+  detect whether an `ng-content` was filled), and `actions` is the panel's content,
+  rendered only while the panel is open. Both default closed, which is what keeps
+  `Calendar`'s schedule at **one** page-level tab stop with the panel present: neither
+  the kebab nor the panel's own controls is ever a stop of its own. The keyboard path
+  was driven in a real browser before release, and it is worth saying what that found,
+  because two defects were invisible to every other guard. A paneled chip is a `<div>`
+  with the interactive attributes on a body `<button>` inside it, and the ref
+  `Calendar` focuses stayed on the `<div>` — so **Enter on a chip with a panel moved
+  focus nowhere**, while the static one-tab-stop count passed *because of* the defect
+  and happy-dom's `focus()`, which focuses anything, would have passed too. And the
+  chip's own `overflow: hidden` clipped the panel it contains, so on any event under
+  roughly 110 minutes **the panel opened invisible and unclickable**. Both are fixed:
+  the ref follows whichever element carries the roving `tabindex`, and the chip lifts
+  its clip while the panel is open and only then. Lifting the clip cost one more fix
+  and the first attempt got its reason wrong, which is worth recording rather than
+  quietly correcting: the clip was said to be safe to lift because the title's own
+  `nowrap`/`hidden`/`ellipsis` would keep truncating without it. It would not have.
+  The body button set `align-items: flex-start`, which sizes the title span to its own
+  text, so its ellipsis never engaged and the clip had been doing the whole job —
+  measured at 56px of title spilling into the neighbouring day column the moment the
+  panel opened, hit-testing included. Dropping that one property is what makes the
+  truncation real, and it also fixes the older defect that a paneled chip's title was
+  hard-cut rather than ellipsised. Now measured green on
+  `calendar.card.html`: one tab stop in and one out, Enter/Escape into and out of both
+  chip shapes, Escape closing the panel before it leaves, arrows clamping at all four
+  edges, and a 30-minute chip's panel fully hit-testable. **The kebab is reachable by
+  keyboard too, and by arrows rather than Tab** — `ArrowRight` from a chip steps to its
+  kebab and `ArrowLeft` steps back. Tab is deliberately not the route: Tab has to leave
+  a composite, and a tabbable kebab is exactly what would stop `Calendar` being the
+  single tab stop its `grid` binding claims. Activating the kebab moves focus INTO the
+  panel, which Arena's own `Menu` does not do and which CLAUDE.md records as a defect
+  of `Menu` rather than a convention to copy; `Escape` closes and returns focus to the
+  kebab rather than dropping it to the document when the focused control unmounts. That
+  route is pinned by a render suite rather than by hand — `CalendarEvent` binds
+  `button`, not `grid`, so a chip mounted alone costs none of the RAM the grid rule
+  exists to avoid — and both halves were then measured in Chromium with real key
+  events. `Calendar` binds the `grid` pattern, so by the rule `bun run
+  test:react-dom` adopted this cycle all of that is verified by a person on
+  `calendar.card.html`, never by a render suite; the checklist lives in
+  `CalendarEvent.prompt.md`'s "Verifying the panel by hand" section.
+- **`id` is a member of `Input` and `Textarea` again.** It was reachable through the heritage clause,
+  the D1 flatten cut it, and the loss was recorded as debt rather than fixed. It is now declared in
+  both contracts and both `.d.ts` files: an explicitly supplied `id` wins over the one the component
+  generates from its `label`, which is what a host needs when something outside the control must point
+  at it — an external `<label for>`, an `aria-describedby` on a sibling, a form library addressing
+  fields by id. It is the first global attribute the contract admits as a member, and it earns that
+  by the one test the flatten's own justification implies: a consumer writes a global attribute on the
+  host, and here the component writes the value itself, so there is no host to write it on.
+- **Keyboard navigation on `Calendar`.** The schedule is a real `grid`: one roving tab stop, arrows
+  moving one cell and clamping at all four edges, `Home`/`End` within a day column, and
+  `Enter`/`Escape` into and out of an event chip. All eight of its `grid` exceptions retire, so its
+  binding claims full compliance — with nothing rendering it, because the grid rule keeps it out of a
+  render suite. That is recorded as debt in `CLAUDE.md` rather than papered over.
+- **Keyboard navigation on `Table`.** `role="grid"` on the `<table>`, `row`/`columnheader`/`gridcell`
+  on its parts, an `aria-label` from the new required `label` member, arrows clamping at all four
+  edges and `Home`/`End` staying inside the current row. The header row is row 0 of the navigable
+  grid, as APG prescribes, and the grid is modelled rather than assumed rectangular — a row may carry
+  fewer cells than there are columns, and the empty state is one cell spanning the width. Seven of the
+  eight exceptions retire; `focus.roving` stays, true of card mode alone.
+- **Three new React components: `CalendarEvent`, `TableRow` and `TableCell`.** Each is a full quartet
+  with a contract of its own, and each exists for the same reason: making the item a component is what
+  lets a consumer put their own content — a panel, a `Badge`, a `Button` — inside one item of
+  something Arena draws, without per-item projection, which has no Angular answer short of
+  `ngTemplateOutlet`. The consumer instantiates one element per item; Arena injects placement, colour
+  and keyboard order into it, and none of those injected props is a member of any contract — the same
+  shape `RadioGroup` and `Radio` already contract.
+- **`check:script-tokens` ties `CatSlot` back to the `--color-cat-*` ramp.** `api/types/cat-slot.json`
+  declares the categorical slot as the literal set `1 | … | 8`, and that 8 is not authored there: it
+  is the count of `--color-cat-*` slots in `tokens/src/palette.dark.json`. The gate asserts the set is
+  exactly `1..catSlots` **in order**, so a ninth colour in the ramp fails the build until the contract
+  type follows. This is what makes the enum legitimate rather than a hand-copied literal — the
+  objection to modelling a token-derived closed set as an enum was that nothing tied the copy back to
+  the palette, and now something does. `api/README.md`'s rule carries the condition: a closed set that
+  restates a token-derived value may be an enum **only** while something machine-checks the
+  restatement. `CatSlot` is the one type in `api/types/` doing it, and the assertion is written as that
+  single named case rather than as a mechanism.
+- **The per-item renderer refusal now reads as an enforcement rather than a gap.** The contract
+  reader threw on an inbound function returning a node with a message saying it "does not model that
+  shape yet". *Yet* was false: no contract may declare such a member, because the convention that
+  removed `ActivityFeed.renderItem` removes it too. The message now names the convention, and keeps
+  `R3` in it precisely so a reader does not conclude R3 was the reason — R3 permits the shape, since a
+  per-item renderer fills the cell or row Arena draws rather than replacing it. Angular is what does
+  not permit it.
 
 ### Changed
+
+- **Ten more components brought under the API contract — breaking, and the widest blast radius in
+  the release.** `Tabs`, `SegmentedControl`, `ProgressBar`, `Toast`, `Tooltip`, `Calendar`,
+  `CalendarEvent`, `Table`, `TableRow` and `TableCell` now present a neutral contract each;
+  `check:api` reads 42 contracts across 62 layer implementations. Every one is single-layer, in two
+  halves: Angular delegates six of them to Material, and has no `Calendar` at all. **`style` is gone
+  from all ten** (R4), along with `SegmentedControl`'s `{...rest}` spread — the only one in the batch,
+  and with it every global and ARIA attribute that spread used to forward. Per component:
+
+  - **`Tabs` and `SegmentedControl` lose their bare-string arms.** `Tabs.tabs` takes only `TabItem`
+    objects and `SegmentedControl.options` only `SegmentOption` objects; `(string | X)[]` is a union
+    between two forms, which R5 forbids. No call site in the tree passed the object arm, so the loss
+    falls on every existing caller — write `{ value: x, label: x }`. `SegmentedControl.ariaLabel`
+    becomes **required** and throws when absent; it had no guard before, and a radio group with no
+    accessible name rendered silently unlabelled. New types `TabItem`, `SegmentOption`,
+    `SegmentedControlSize`.
+  - **`ProgressBar` renames two members and narrows a third.** `value` → `progressPercentage`
+    (`value` everywhere else in this library means a form control's value, and a progress bar is not
+    one) and `showValue` → `showPercentage` follows from it. `label` stops being a slot and becomes a
+    primitive `string`, which removes a **degraded accessible name**: the component read
+    `typeof label === 'string' ? label : 'Progress'`, so a node-valued label silently named the bar
+    `Progress`. `ProgressBar` now has no slot at all. New enum `ProgressTone`; `size` reuses
+    `ControlSize`.
+  - **`Toast` decomposes `ToastAction`, and gains a `dismissible` whose absence is quiet.**
+    `ToastAction { label, onClick }` splits into `actionLabel` (primitive) + an `action` event (R1: a
+    callback is not data), the shape `Alert` settled first. The `×` used to be gated on `onClose`
+    being passed — a listener Angular cannot detect, so never a contract — and is now gated on the new
+    `dismissible`, default `false`. **A consumer passing only `onClose` stops seeing the `×`, with
+    nothing failing to say so.** New enum `ToastTone`.
+  - **`Tooltip`'s two members swap roles.** Arena draws the bubble and the consumer names it, so the
+    bubble is the primitive `label` (required, a `string`) and the **trigger** keeps the default slot
+    (contract member `content`, React's `children`) — the element genuinely projected is the one that
+    gets it. React's old `content` prop was the bubble and a node; markup inside a tooltip stops being
+    possible. All six in-tree call sites already passed a plain string.
+  - **`Calendar.events` becomes the `content` slot, and `renderEvent` is removed.** The consumer
+    writes one `<CalendarEvent>` per event and `Calendar` injects placement, colour, time labels and
+    keyboard order into it; none of those is a contract member. `renderEvent` goes under the per-item
+    renderer convention, not R3 — and the cost is real and unreplaced: with the chip body Arena's
+    alone, a consumer can no longer mark an event cancelled or tentative at all. `CalendarEvent.meta`
+    is removed for the same convention (and could not have been a field of a predefined object in any
+    case, R1). `eventClick` is replaced by `CalendarEvent`'s own **payload-free** `click`: the
+    consumer wrote the element, so they already hold the event it is about. The per-event identity
+    colour is renamed **`slot` → `colorId`**, and with `renderEvent` gone the non-chromatic channel
+    2.1.0 offered for state — a strikethrough, a dashed border — is unreachable; what is left is the
+    `title` text and leaving the event out. New types `CalendarView` and `CatSlot`, the first numeric
+    enum in `api/types/`.
+  - **`Calendar.timeZone` is now optional and defaults to the reader's resolved zone.** Every consumer
+    of the common case was writing `Intl.DateTimeFormat().resolvedOptions().timeZone` by hand, and a
+    line every consumer writes belongs in the component. This is not the arbitrary `|| 'UTC'` fallback
+    it replaces — the reader's own zone is right whenever the schedule belongs to whoever is looking at
+    it. **It is not safe under server rendering**: it resolves to the server's zone there and the
+    client's on hydration, so a server-rendered calendar must pass the member.
+  - **`Table` becomes a compound component — the widest-blast-radius change in the batch.** `rows` is
+    **gone entirely**; the consumer writes one `<TableRow>` per row and one `<TableCell>` per cell, so
+    a cell's content is a value or one of Arena's own components. `TableColumn` is no longer generic
+    and is reduced to configuration — `key` and `render` are both gone, and `width` narrows from
+    `number | string` to `string` (R5). `getRowKey` is **removed**: under the compound shape the
+    consumer writes `key` on their own `<TableRow>`, which is React's reconciliation and no member of
+    any contract. `onRowClick` is not reshaped but **replaced**, by `TableRow`'s payload-free `click`.
+    And **`label` is a new REQUIRED member**, guarded at runtime — it names the grid for assistive
+    technology, nothing can derive it, and a constant fallback was rejected as exactly the "present but
+    never checked for usefulness" debt the charts already carry. New enums `CellAlign` and
+    `TableCellLayout`.
+  - **`Tabs.tabs`, `SegmentedControl.options` and `Table.columns` now throw when absent.** All three
+    are `required: true` in their contracts and all three defaulted to `[]`, rendering an empty control
+    where a caller had made a mistake. Required-ness governs runtime, not only the declared surface.
 
 - **Six form controls brought under the API contract — breaking.** `RadioGroup`, `Radio`, `Checkbox`,
   `Textarea`, `Select` and `Input` now present a neutral contract each; `check:api` reads 32 contracts
@@ -569,6 +741,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`Table` stole focus from a control a consumer drew in a cell, and every one cost two Tab
+  presses.** React's `onFocus` is `focusin`, which **bubbles**, so focusing a `<button>` inside a
+  `<td>` fired that cell's own focus handler, moved the grid's cursor, and the focus effect then
+  called `cell.focus()` and took focus straight back off the consumer's control. A three-row table
+  with an actions column was `2N + 1` tab stops rather than `1 + N` — worse than its own binding
+  admits. Found by driving **real Chromium** through the repo's harness with CDP key events, which is
+  the grid rule's hand-check paying for itself the first time it was applied: `renderToStaticMarkup`
+  runs no effects and dispatches no focus, and a component binding `grid` may not have a render
+  suite. **No static assertion could have caught it, and none was invented afterwards to look
+  covered.**
+- **An event `payload` that names a declared enum is accepted.** `classify()` had always read
+  `(value: string) => void` as `{form:'event', payload:'string'}`, but the contract could resolve a
+  payload only as an object, so `"payload": "SomeEnum"` failed with *"an enum, used where an object
+  belongs"* while the reader classified the layer's arrow perfectly well. A payload now resolves the
+  way an array's `of` does — a primitive, `consumerData`, a declared object, or a declared enum.
+- **The optional Angular `functionInput` spelling parses.** `input<((value: string) => string) |
+  undefined>()` failed, and it failed on parse **order** rather than on any rule: `classify()` tested
+  its arrow pattern before reducing the annotation, backtracked onto the inner `)`, and read the
+  return type as `string)`. A nullable annotation is now reduced to the annotation it wraps before any
+  form is tested, so the bare and optional spellings read identically. Plan D has nothing left to
+  discover about the reader; what it still owes is an Angular `Input` that declares the member.
+- **`ProgressBar.prompt.md` had its `showPercentage` sentence inverted**, telling consumers the flag
+  hides the number when it shows it.
 - **The three React charts drew their labels from `labels` rather than from the marks, so a
   label with no value at its index was rendered anyway.** `BarChart`'s category axis,
   `LineChart`'s point axis and `DoughnutChart`'s legend each iterated `labels`; all three now
@@ -700,6 +895,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **`frameworks/react/test-dom/grid-keyboard.test.jsx` is gone, and a rule now keeps its
+  kind out.** The whole directory was deleted mid-cycle for its RAM cost and restored, so
+  the net change from the last release is one suite and one rule: **a component whose
+  behaviour binding names the `grid` pattern is DOM-tested by hand** — `bun run demos`,
+  then operate the component on its own `*.card.html` page. The rule is tied to the
+  binding rather than to a judgement about what looks like a grid, so it is a grep rather
+  than an argument, and a component that becomes a grid later inherits it without anyone
+  remembering. Today it selects exactly `Calendar` and `Table`.
+
+  It is a measurement, not a preference: the grid suite alone peaked at 164 MiB while the
+  other six suites together peaked at 109. Its fixture is 84 cells per mount, mounted
+  eight times, with 160 key events dispatched through `act()` — it cost more than
+  everything else in the directory combined. **What is no longer proved:** `Calendar`'s
+  roving tab stop, its four-edge clamp, Home/End within a day column, and Enter/Escape
+  into and out of an event chip. Its binding retired all eight `grid` exceptions when
+  that navigation shipped, so it claims full compliance with nothing rendering it, and
+  `Calendar:react` is the one React entry that did not return to `COVERED` in
+  `scripts/check-compliance.mjs` — by decision rather than by accident.
+  `check:compliance` reports 6 of 66 bindings.
+
+  Everything else in the directory is back and green: the harness, the `--preload`, the
+  compliance wrapper and six suites — the form controls' value-carrying events proved to
+  *fire* by dispatching real ones, `Tooltip`'s cancel-and-reschedule timer rule, the four
+  live `Dialog`/`ConfirmDialog` defects pinned as *still broken*, `Menu`'s misplaced
+  `aria-haspopup`, `Skeleton`'s `circle` branch, and the compliance wrapper's four
+  failure paths. `package.json` carries `test:react-dom` again, `testStep()` in
+  `scripts/check-all.mjs` is back to two `bun test` invocations, and `SUITE_DIRS` reads
+  both layers. What the rule costs is itemised in CLAUDE.md's *Known debt*.
 - **`Rotor` is gone from every layer — breaking.** The Rotor is Dravensoft's **brand
   mark, not an Arena component**: a primitive whose only job is to render one company's
   identity does not belong in a design system that ships MIT, and the products that

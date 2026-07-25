@@ -1,0 +1,5 @@
+{
+  "pattern": "none",
+  "reason": "TableCell draws a cell box -- the padding, the alignment and the mono/gold treatment its column asks for, or in card mode a label/value pair or a full-width block -- and projects whatever the consumer put in it. It manages no state and owns no interactive element of its own: any Badge, Button or link inside comes from `children`, caller-supplied content, not from TableCell itself. What it DOES carry is not its own affordance either: role=\"gridcell\", the roving `tabIndex` and the focus ring belong to the enclosing Table's `grid` binding and are injected by it, which is why they are absent from this contract's members as well as from this pattern.",
+  "exceptions": []
+}

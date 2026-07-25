@@ -1,0 +1,6 @@
+{
+  "name": "CalendarView",
+  "kind": "enum",
+  "description": "How much of the schedule is on screen at once: a whole week of columns, or one day. Omitted on the component, it is derived from the container width rather than chosen.",
+  "values": ["week", "day"]
+}

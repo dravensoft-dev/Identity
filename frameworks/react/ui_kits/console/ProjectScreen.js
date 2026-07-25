@@ -7,6 +7,8 @@ import { Card } from "../../components/display/Card.js";
 import { Badge } from "../../components/display/Badge.js";
 import { Tag } from "../../components/display/Tag.js";
 import { Table } from "../../components/display/Table.js";
+import { TableRow } from "../../components/display/TableRow.js";
+import { TableCell } from "../../components/display/TableCell.js";
 import { ActivityFeed } from "../../components/display/ActivityFeed.js";
 import { Tabs } from "../../components/navigation/Tabs.js";
 import { Button } from "../../components/forms/Button.js";
@@ -19,18 +21,12 @@ const DEPLOYS = [
   { build: "#4815", env: "QA", status: ["danger", "Failed"], author: "diego@", dur: "1m 08s" }
 ];
 const DEPLOY_COLUMNS = [
-  { key: "build", header: "Build", mono: true, width: "calc(var(--sp-1) * 24)" },
-  { key: "env", header: "Environment" },
-  { key: "status", header: "Status", render: (s) => React.createElement(Badge, {
-    tone: s[0],
-    dot: true
-  }, s[1]) },
-  { key: "author", header: "Author" },
-  { key: "dur", header: "Duration", mono: true },
-  { key: "actions", header: "", mobileLayout: "block", render: () => React.createElement(Button, {
-    variant: "ghost",
-    size: "sm"
-  }, "Details") }
+  { header: "Build", mono: true, width: "calc(var(--sp-1) * 24)" },
+  { header: "Environment" },
+  { header: "Status" },
+  { header: "Author" },
+  { header: "Duration", mono: true },
+  { header: "", mobileLayout: "block" }
 ];
 const ACTIVITY = [
   { id: "1", actor: "ana@", action: "approved the release", target: "build #4821", time: "2h ago" },
@@ -66,16 +62,24 @@ export function ProjectScreen({ onNav, project, onToast }) {
     dot: true
   }, "Deployed"), (p.tags || []).map((t) => React.createElement(Tag, {
     key: t
-  }, t))), React.createElement(Tabs, {
-    tabs: ["Overview", "Deployments", "Activity", "Settings"],
-    value: tab,
-    onChange: setTab,
+  }, t))), React.createElement("div", {
     style: { marginBottom: "calc(var(--sp-1) * 5.5)" }
-  }), tab === "Deployments" && React.createElement(Table, {
+  }, React.createElement(Tabs, {
+    tabs: [{ value: "Overview", label: "Overview" }, { value: "Deployments", label: "Deployments" }, { value: "Activity", label: "Activity" }, { value: "Settings", label: "Settings" }],
+    value: tab,
+    onChange: setTab
+  })), tab === "Deployments" && React.createElement(Table, {
     columns: DEPLOY_COLUMNS,
-    rows: DEPLOYS,
-    getRowKey: (d) => d.build
-  }), tab === "Activity" && React.createElement(Card, null, React.createElement(ActivityFeed, {
+    label: "Deployments"
+  }, DEPLOYS.map((d) => React.createElement(TableRow, {
+    key: d.build
+  }, React.createElement(TableCell, null, d.build), React.createElement(TableCell, null, d.env), React.createElement(TableCell, null, React.createElement(Badge, {
+    tone: d.status[0],
+    dot: true
+  }, d.status[1])), React.createElement(TableCell, null, d.author), React.createElement(TableCell, null, d.dur), React.createElement(TableCell, null, React.createElement(Button, {
+    variant: "ghost",
+    size: "sm"
+  }, "Details"))))), tab === "Activity" && React.createElement(Card, null, React.createElement(ActivityFeed, {
     items: ACTIVITY
   })), tab === "Overview" && React.createElement("div", {
     style: { display: "grid", gridTemplateColumns: "2fr 1fr", gap: "calc(var(--sp-1) * 4)" }

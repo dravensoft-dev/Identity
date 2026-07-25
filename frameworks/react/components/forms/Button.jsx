@@ -32,7 +32,7 @@ const SIZES = {
 export function Button({
   children, variant = 'primary', size = 'md', icon, iconRight,
   disabled = false, loading = false, full = false,
-  type = 'button', name, value, autoFocus = false, form, onClick,
+  type = 'button', name, value, autoFocus = false, form, onClick, tabStop = true,
 }) {
   useSpinKeyframes();
   const [hover, setHover] = useState(false);
@@ -68,6 +68,10 @@ export function Button({
       autoFocus={autoFocus}
       form={form}
       onClick={onClick}
+      /* undefined rather than 0: a native <button> is already reachable, and an
+         explicit tabindex="0" would be an attribute that means nothing and that
+         every assertion about this markup would have to step around. */
+      tabIndex={tabStop ? undefined : -1}
       disabled={disabled || loading}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => { setHover(false); setActive(false); }}

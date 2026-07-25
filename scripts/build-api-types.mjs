@@ -73,6 +73,17 @@ export function fieldType(field) {
   throw new Error(`fieldType: form "${field.form}" is not allowed inside a predefined object — R1, an object is pure data`);
 }
 
+/** One enum value as a TypeScript literal. The quoting depends on the value's
+ *  TYPE, not on the position: a number is a numeric literal and quoting it
+ *  would emit a union of strings that compiles and is wrong. Every enum in
+ *  api/types/ was a string set until `CatSlot`, so this quoted unconditionally
+ *  and nothing noticed -- the failure would not have been a build error but a
+ *  generated `'1' | '2'` disagreeing with the layer's own `1 | 2`, visible only
+ *  to check:api. */
+export function enumLiteral(value) {
+  return typeof value === 'number' ? String(value) : `'${value}'`;
+}
+
 /** @param {Array<object>} types @returns {string} the module body */
 export function renderApiModule(types) {
   const out = [HEADER];
@@ -80,7 +91,7 @@ export function renderApiModule(types) {
     out.push('');
     if (type.description) out.push(docComment(type.description));
     if (type.kind === 'enum') {
-      out.push(`export type ${type.name} = ${type.values.map((v) => `'${v}'`).join(' | ')};`);
+      out.push(`export type ${type.name} = ${type.values.map(enumLiteral).join(' | ')};`);
       continue;
     }
     if (type.kind !== 'object') {

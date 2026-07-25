@@ -806,9 +806,13 @@ Plan D should repair behaviour rather than port a contract that is known to be d
 strong side of it.** `check:api` reads Angular's surface from the real `<name>.ts`
 component, not from a declaration file — the asymmetry that weakens it on the React side
 is an advantage here. A CDK-built primitive either declares the contract's members or it
-does not, and no `.d.ts` stands between the two. So each of the twenty-two arrives with a
-machine-checked API the day it is written, which is the opposite of how the existing
-twenty-one arrived.
+does not, and no `.d.ts` stands between the two. So each one Plan D writes arrives with a
+machine-checked API the day it is written, which is the opposite of how the existing ones
+arrived. **Both counts that stood here — *twenty-two* for Plan D's primitives and
+*twenty-one* for the components already in the tree — were measured stale on 2026-07-24
+and replaced by the method rather than by corrected numbers**; see the re-measurement
+blockquote under *The running count*. Plan D's set is the key set of
+`frameworks/angular/behaviour-delegated.json`; the existing set is that, minus `Switch`.
 
 Three things to carry in:
 
@@ -883,6 +887,71 @@ comparison and a comparison needs a baseline that is not stale.
 | **Plan B4** (2026-07-24) | **958 across 85 files** | 26 across 5 files |
 | **Plan 8C1** (2026-07-24) | **991 across 89 files** | 26 across 5 files |
 | **Plan 8C2** (2026-07-24) | **1048 across 94 files** | 26 across 5 files |
+| **Plan 8C3** (2026-07-25) | **1145 across 101 files** | **36 across 6 files** |
+
+Plan 8C3 carried Plan C forward with its third batch: `Tabs`, `SegmentedControl`, `ProgressBar`,
+`Toast`, `Tooltip`, `Calendar`, `CalendarEvent`, `Table`, `TableRow` and `TableCell` — ten
+components, taking `check:api` from 32 contracts across 52 layer implementations to **42 across 62**.
+**Every contract is single-layer for the same reason 8C1's and 8C2's were**, though the reason has
+two halves here: Angular delegates `Tabs`, `SegmentedControl`, `ProgressBar`, `Toast`, `Tooltip` and
+`Table` to Material, and has no equivalent of `Calendar` at all — `behaviour-delegated.json` binds
+that one to pattern `absent`. So the batch moves the layer count by exactly as many contracts as it
+writes, ten and not twenty.
+
+**It did not climb by one per task, and two tasks are why.** The ladder reconciles per commit:
+32 → **34** (`f612827`, `Tabs` and `SegmentedControl` in one commit) → **36** (`fd8c7b1`,
+`ProgressBar` and `Toast`) → **37** (`add3a80`, `Tooltip`) → **38** (`82a72de`, `Calendar`) → **39**
+(`81a5ec2`, **Task 11b**) → **42** (`6ab8d7e`, **Task 13, +3**). Task 11b is a contract the plan
+never scheduled: `CalendarEvent` had shipped as a predefined object in `api/types/`, the maintainer
+then asked for a per-event action panel, and a slot may not be a field of a predefined object (R1) —
+so the item became a **component**, which needed no gate change and no tenth form. Task 13 landed as
+**three** contracts by applying that same answer to `Table`: rather than lose `TableColumn.render`
+under the per-item convention and with it the `Badge` in a status cell and the `Button` in an actions
+cell, `Table` became a **compound component**, and `TableRow` and `TableCell` are two new React
+components with delegated Angular entries of their own. Both moves rest on one property — per-item
+projection stops applying the moment the consumer instantiates one element per item instead of
+handing Arena a render function — and neither needed the vocabulary widened.
+
+**Plan C's subject set moved again, under this batch, and it is now twenty-FIVE.** Re-measured by the
+method above: 46 `.jsx` under `frameworks/react/components/` (excluding `*.card.entry.jsx`), 20 with
+a matching directory under `frameworks/angular/primitives/`, leaving 26 — exactly the key set of
+`frameworks/angular/behaviour-delegated.json` — minus `Switch`, contracted before Plan C began. The
+three additions are `CalendarEvent`, `TableRow` and `TableCell`, each a new React component and a new
+delegated entry in the same change, the identical drift `RadioGroup` caused inside 8C2. **Twenty-one
+of the twenty-five are now contracted; four remain** — `Dialog`, `Menu`, `Pagination`, `SideNav` —
+and they are C4's.
+
+**Phase A paid the four Known debt entries 8C2 recorded**, and only one of the four was a rule
+change: `id` becomes a member of `Input` and `Textarea`, restoring the path the D1 heritage flatten
+had cut; `check:api` resolves an event `payload` that names a declared **enum**, one type-kind short
+of where Task 2 had left it; the reader's *optional* `functionInput` spelling
+(`input<((value: string) => string) | undefined>()`) parses, which had failed on parse **order**
+rather than on any rule, so Plan D has nothing left to discover about the reader; and the six form
+controls' value-carrying events are proved to **fire** by a DOM suite dispatching real events, where
+the DOM-free suites had only ever asserted their shape. **Phase B was the batch's structural event
+and it removed a member rather than adding a form** — measuring `api/README.md` showed the document
+already refuses a per-item renderer by an older convention, so the reader's throw now states that
+convention as an *enforcement* rather than as a gap, and `Calendar.renderEvent` and
+`TableColumn.render` are removed rather than modelled. R3 is not the reason and the message says so.
+
+**Two components gained keyboard navigation, and their bindings moved in opposite ways.** `Calendar`
+retired all eight `grid` exceptions — a roving tab stop, a four-edge clamp, Home/End within a day
+column, Enter/Escape into and out of an event chip, and an arrow route to the chip's kebab — and
+`Table` retired **seven** of its eight, keeping one, `focus.roving`, true of card mode alone. Both
+are inside the grid rule, so both are DOM-tested by hand and neither can enter `COVERED`;
+`check:compliance` reads **6 of 66**. The hand check paid for itself on its first application: driving
+real Chromium found that a control a consumer draws in a cell cost **two** Tab presses, because
+React's `onFocus` is `focusin` and bubbles — a defect no static assertion in this repo could have
+seen.
+
+**The isolated DOM process moves for the first time since the suspension, and it does not reconcile
+against this plan's tasks.** It read `26 across 5` on every row above; it now reads `36 across 6`,
+and the movement is a round trip rather than an addition — `frameworks/react/test-dom/` was deleted
+whole for its RAM cost (`edb9f3e`) and then restored **minus** `grid-keyboard.test.jsx`, under the
+rule that a component whose behaviour binding names the `grid` pattern is DOM-tested by hand — plus
+the suite pinning `CalendarEvent`'s keyboard route, which a chip mounted alone can hold because it
+binds `button` and not `grid`. Neither is a task in this plan. Reconcile that column against those
+two events, never against Tasks 5, 10 and 12.
 
 Plan 8C2 carried Plan C forward with its second batch: the six form controls (`RadioGroup`, `Radio`,
 `Checkbox`, `Textarea`, `Select`, `Input`), taking `check:api` from 26 contracts across 46 layer
@@ -917,6 +986,20 @@ one capability rather than the five `form*` overrides 8C1 paid: **`id` is no lon
 `Input` and `Textarea` still generate an `id` from the label to wire the label's `htmlFor`, but a
 consumer wanting to supply one lost the path, because it arrived through the heritage clause. It is
 recorded as the batch's one D1 cost, with the same absence of a gate behind it that 8C1's loss has.
+
+> **Re-measured after Plan 8C2 (2026-07-24): Plan C's subject set is twenty-TWO, not twenty-one.**
+> The figure below was true when written and went stale inside 8C2 itself: splitting `Radio.jsx`
+> into two quartets made `RadioGroup` a new React component AND a new `behaviour-delegated.json`
+> entry in the same change, moving the set from twenty-one to twenty-two with no prose changing.
+> **Measured since, and now settled:** Plan D's CDK-primitive tally at *"What Plan A changes about
+> how Plan D is verified"* was the SAME drift and has been replaced by the method there.
+> `frameworks/tailwind/README.md`'s tally is a **different subject** — it counts manifests, not
+> components, and the `Radio` split added no manifest, so it did not drift. `CLAUDE.md` carried
+> three more instances of this same class and all three were corrected in the same change. The
+> command: 
+> every `.jsx` under `frameworks/react/components/` (excluding `*.card.entry.jsx`) with no matching
+> directory under `frameworks/angular/primitives/`, minus `Switch`, which was contracted before
+> Plan C began. The paragraphs below are left as the record of what 8C1 stated at the time.
 
 Plan 8C1 opened Plan C — the twenty-one React-only components — with its first batch: the five
 primitives other components compose (`Spinner`, `Badge`, `Card`, `IconButton`, `Button`), taking

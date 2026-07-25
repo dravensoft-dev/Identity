@@ -15,7 +15,8 @@ export function IconButton({
   value,
   autoFocus = false,
   form,
-  onClick
+  onClick,
+  tabStop = true
 }) {
   if (!icon)
     throw new Error("IconButton: `icon` is required");
@@ -32,6 +33,7 @@ export function IconButton({
     autoFocus,
     form,
     onClick,
+    tabIndex: tabStop ? undefined : -1,
     "aria-label": label,
     title: showLabel ? undefined : label,
     disabled,

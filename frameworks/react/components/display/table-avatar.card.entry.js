@@ -4,6 +4,8 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { Table } from "../../components/display/Table.js";
+import { TableRow } from "../../components/display/TableRow.js";
+import { TableCell } from "../../components/display/TableCell.js";
 import { Avatar } from "../../components/display/Avatar.js";
 import { Badge } from "../../components/display/Badge.js";
 function Demo() {
@@ -13,14 +15,18 @@ function Demo() {
     { build: "#4819", project: "Internal Dashboard", status: "ok", p95: "96 ms" }
   ];
   const columns = [
-    { key: "build", header: "Build", mono: true, width: "calc(var(--sp-1) * 22.5)" },
-    { key: "project", header: "Project" },
-    { key: "status", header: "Status", render: (v) => React.createElement(Badge, {
-      tone: v === "ok" ? "success" : "danger",
-      dot: true
-    }, v === "ok" ? "Deployed" : "Down") },
-    { key: "p95", header: "p95", align: "right", mono: true }
+    { header: "Build", mono: true, width: "calc(var(--sp-1) * 22.5)" },
+    { header: "Project" },
+    { header: "Status" },
+    { header: "p95", align: "right", mono: true }
   ];
+  const body = (onClick) => rows.map((r) => React.createElement(TableRow, {
+    key: r.build,
+    onClick
+  }, React.createElement(TableCell, null, r.build), React.createElement(TableCell, null, r.project), React.createElement(TableCell, null, React.createElement(Badge, {
+    tone: r.status === "ok" ? "success" : "danger",
+    dot: true
+  }, r.status === "ok" ? "Deployed" : "Down")), React.createElement(TableCell, null, r.p95)));
   return React.createElement("div", null, React.createElement("div", {
     className: "sub",
     style: { marginBottom: "var(--sp-3)" }
@@ -46,17 +52,15 @@ function Demo() {
     style: { marginBottom: "var(--sp-3)" }
   }, "Table — with Badge in a cell"), React.createElement(Table, {
     columns,
-    rows,
-    getRowKey: (r) => r.build,
-    onRowClick: () => {}
-  }), React.createElement("div", {
+    label: "Recent builds"
+  }, body(() => {})), React.createElement("div", {
     className: "sub",
     style: { marginTop: "var(--sp-5)", marginBottom: "var(--sp-3)" }
   }, "Card mode — the SAME table in a 340px container"), React.createElement("div", {
     style: { width: "calc(var(--sp-1) * 85)", border: "var(--bw) dashed var(--border-strong)", borderRadius: "var(--r-lg)", padding: "var(--sp-3)" }
   }, React.createElement(Table, {
     columns,
-    rows
-  })));
+    label: "Recent builds, card mode"
+  }, body(() => {}))));
 }
 createRoot(document.getElementById("root")).render(React.createElement(Demo, null));

@@ -166,9 +166,34 @@ export function defaultDayStart(placements, fallback = 8 * 60) {
 }
 
 /* Dates reaching the formatters are already resolved to the target zone, so
- * they are formatted as UTC — re-applying the zone would shift them twice. */
-const fmt = (opts) => new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', ...opts });
-export const formatDate = (isoDate, opts) => fmt(opts).format(asUtcDate(isoDate));
+ * they are formatted as UTC — re-applying the zone would shift them twice.
+ *
+ * Cached per option shape, the way partsFormatter above is cached per zone, and
+ * for a sharper reason than tidiness: an Intl.DateTimeFormat is not a plain
+ * object. Each one holds an ICU formatter in NATIVE memory, which the collector
+ * reclaims only when it reclaims the JS wrapper — so allocating them in a render
+ * path shows up as resident memory long after the values are dead, while the JS
+ * heap still looks small. Calendar calls this around two dozen times per render
+ * (both day-header lines, every row's accessible name, every event's, and
+ * rangeTitle three times over) and re-renders on every arrow key of its grid
+ * cursor, which turned one keypress into two dozen native allocations.
+ *
+ * The key is the option literal. Every call site passes a fixed one, so the map
+ * holds one entry per shape the component actually asks for and never grows with
+ * the data. Two sites spelling the same options in a different order get two
+ * entries, which costs one formatter and stays correct. */
+const dateFormatters = new Map();
+function dateFormatter(opts) {
+  const key = JSON.stringify(opts ?? {});
+  let f = dateFormatters.get(key);
+  if (!f) {
+    f = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', ...opts });
+    dateFormatters.set(key, f);
+  }
+  return f;
+}
+
+export const formatDate = (isoDate, opts) => dateFormatter(opts).format(asUtcDate(isoDate));
 
 /** "Fri, 17 Jul 2026" · "13 – 19 Jul 2026" · "29 Jun – 5 Jul 2026" · across a year
  *  boundary, both years. The month and year are printed once when the range

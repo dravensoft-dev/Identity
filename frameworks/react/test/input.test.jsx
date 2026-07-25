@@ -8,9 +8,11 @@ import { Input } from '../components/forms/Input.jsx';
  * fires a change or a blur. Two things are therefore NOT verified by this suite:
  * the `change` and `blur` payloads -- the value as a string, which is the whole of
  * decision DA -- and the validate-on-blur path, since `validate` runs only once the
- * field has been touched and nothing here can touch it. Both need a real DOM and are
- * Plan E territory; no grep of the source stands in for a render assertion, so they
- * are simply absent rather than faked.
+ * field has been touched and nothing here can touch it. Both need a real DOM; no grep
+ * of the source stands in for a render assertion, so they are simply absent here
+ * rather than faked. Both are now verified where a DOM exists:
+ * frameworks/react/test-dom/form-control-events.test.jsx dispatches a real input
+ * event and a real blur and asserts each payload's TYPE before its value.
  *
  * What IS verified is the half SSR can see: that `validate` is accepted and shows
  * nothing before interaction, that the flattened natives reach the control now that
@@ -111,4 +113,21 @@ test('Input drops a consumer style object -- the ...style escape is gone', () =>
 test('Input drops a consumer attribute -- the {...rest} escape is gone', () => {
   const html = renderToStaticMarkup(<Input label="A" data-stray="x" />);
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered input -- the {...rest} escape is back');
+});
+
+/* id is a contracted member as of plan 8C3, and it is the ONE global attribute
+ * that is. The component still generates one from the label to wire its own
+ * htmlFor; a consumer id overrides that, because a host pointing an external
+ * <label> or an aria-describedby at this field had no path at all otherwise. */
+test('a consumer id overrides the one generated from the label', () => {
+  const html = renderToStaticMarkup(<Input label="Email" id="signup-email" />);
+  assert.match(html, /id="signup-email"/);
+  assert.match(html, /for="signup-email"/);
+  assert.doesNotMatch(html, /in-email/, 'the generated id is still being used despite an explicit one');
+});
+
+test('without a consumer id the label-derived one is still generated', () => {
+  const html = renderToStaticMarkup(<Input label="Email" />);
+  assert.match(html, /id="in-email"/);
+  assert.match(html, /for="in-email"/);
 });

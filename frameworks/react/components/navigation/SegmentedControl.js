@@ -7,17 +7,19 @@ const SIZES = {
   md: { height: "calc(var(--sp-1) * 8.5)", padding: "0 calc(var(--sp-1) * 3.5)", fontSize: "var(--dz-text-md)" }
 };
 export function SegmentedControl({
-  options = [],
+  options,
   value,
   defaultValue,
   onChange,
   size = "md",
   ariaLabel,
-  name,
-  style,
-  ...rest
+  name
 }) {
-  const [internal, setInternal] = useState(defaultValue ?? (options[0] && (options[0].value ?? options[0])));
+  if (options == null)
+    throw new Error("SegmentedControl: `options` is required");
+  if (!ariaLabel)
+    throw new Error("SegmentedControl: `ariaLabel` is required");
+  const [internal, setInternal] = useState(defaultValue ?? (options[0] && options[0].value));
   const [focus, setFocus] = useState(false);
   const [hover, setHover] = useState(null);
   const [autoName] = useState(() => "sc-" + Math.random().toString(36).slice(2, 7));
@@ -40,13 +42,11 @@ export function SegmentedControl({
       border: "var(--bw) solid " + (focus ? "var(--gold)" : "var(--color-base-300)"),
       borderRadius: "var(--r-sm)",
       boxShadow: focus ? "0 0 0 var(--focus-width) var(--gold-soft)" : "none",
-      transition: "border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)",
-      ...style
-    },
-    ...rest
+      transition: "border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)"
+    }
   }, options.map((o) => {
-    const v = o.value ?? o;
-    const label = o.label ?? o;
+    const v = o.value;
+    const label = o.label;
     const on = v === selected;
     return React.createElement("label", {
       key: v,

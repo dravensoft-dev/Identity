@@ -3,6 +3,8 @@ import type { InputType, ValidateOn } from '../../api.generated';
 export interface InputProps {
   /** Field label above the control. */
   label?: string;
+  /** The control's id, and what the label's `for` points at. Generated from `label` when omitted. */
+  id?: string;
   /** A line of help under the field. */
   hint?: string;
   /** Controlled error message; wins over `validate`. */

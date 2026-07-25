@@ -6,7 +6,10 @@ import { Textarea } from '../components/forms/Textarea.jsx';
 
 /* This directory renders with renderToStaticMarkup and has no DOM, so no test here
  * fires a change. The `change` event's payload -- the new text as a string -- is
- * therefore NOT verified by this suite; what is verified is the half SSR can see:
+ * therefore NOT verified by this suite; it is verified where a DOM exists, in
+ * frameworks/react/test-dom/form-control-events.test.jsx, which dispatches a real
+ * input event and asserts the payload's TYPE before its value. What IS verified here is
+ * the half SSR can see:
  * that the native members the flattened heritage clause kept (placeholder, name,
  * readOnly, rows, maxLength, disabled, required, value) are forwarded explicitly now
  * that {...rest} is gone, that the counter is gated on maxLength, and that the label
@@ -73,4 +76,21 @@ test('Textarea drops a consumer style object -- the ...style escape is gone', ()
 test('Textarea drops a consumer attribute -- the {...rest} escape is gone', () => {
   const html = renderToStaticMarkup(<Textarea label="A" data-stray="x" />);
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered textarea -- the {...rest} escape is back');
+});
+
+/* id is a contracted member as of plan 8C3, and it is the ONE global attribute
+ * that is. The component still generates one from the label to wire its own
+ * htmlFor; a consumer id overrides that, because a host pointing an external
+ * <label> or an aria-describedby at this field had no path at all otherwise. */
+test('a consumer id overrides the one generated from the label', () => {
+  const html = renderToStaticMarkup(<Textarea label="Email" id="signup-email" />);
+  assert.match(html, /<textarea id="signup-email"/);
+  assert.match(html, /for="signup-email"/);
+  assert.doesNotMatch(html, /ta-email/, 'the generated id is still being used despite an explicit one');
+});
+
+test('without a consumer id the label-derived one is still generated', () => {
+  const html = renderToStaticMarkup(<Textarea label="Email" />);
+  assert.match(html, /<textarea id="ta-email"/);
+  assert.match(html, /for="ta-email"/);
 });

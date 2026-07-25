@@ -1,0 +1,11 @@
+{
+  "name": "TabItem",
+  "kind": "object",
+  "description": "One tab in a Tabs strip.",
+  "fields": {
+    "value": { "form": "primitive", "type": "string", "required": true,
+               "description": "What the tab selects, and what `change` carries." },
+    "label": { "form": "primitive", "type": "string", "required": true,
+               "description": "What the tab reads." }
+  }
+}

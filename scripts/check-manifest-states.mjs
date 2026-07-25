@@ -63,6 +63,16 @@ const REACT_COMPONENTS_DIR = join(repoRoot, 'frameworks/react/components');
  *  `resolveDefaultSource`. */
 export const SOURCE_OVERRIDES = new Map([
   ['Tag', ['frameworks/angular/primitives/tag/tag.ts']],
+  /* Table is a COMPOUND component: the manifest's `rowInteractive` slot mirrors
+     a row, and a row is `TableRow.jsx`, not `Table.jsx`. The naive same-name
+     search finds only `Table.jsx` -- which owns the grid, the header and the
+     keyboard and implements no hover at all -- and would report the row hover as
+     invented. Both files are listed because the manifest covers both: `Table`'s
+     own slots (the wrapper, the header cell) and the row's. */
+  ['Table', [
+    'frameworks/react/components/display/Table.jsx',
+    'frameworks/react/components/display/TableRow.jsx',
+  ]],
 ]);
 
 /** A specific `<Component>:<slot>:<family>` this crude, single-file scan

@@ -52,6 +52,15 @@ export type ButtonType = 'button' | 'submit' | 'reset';
 /** Primary for the one main action in a view; secondary for neutral actions; ghost for tertiary ones; danger for destructive ones. Danger is outline and never filled — Arena's only filled danger surface is the final confirmation inside ConfirmDialog. */
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
+/** How much of the schedule is on screen at once: a whole week of columns, or one day. Omitted on the component, it is derived from the container width rather than chosen. */
+export type CalendarView = 'week' | 'day';
+
+/** A slot in the categorical ramp, in fixed order and never cycled. Colour here means which thing, never what state. The same ramp the charts use — identity is one system across Arena, not one per component — but typed as an enum only here: BarChart.slot, BarChart.slots, LineChart.slot and DoughnutChart.slots still declare a bare number, which their runtime clamp (catColor()) makes safe rather than correct, and narrowing them is an open contract change and not a fact this type states. The bound is not authored here either: it is the count of --color-cat-* slots in tokens/src/palette.dark.json, and check:script-tokens fails if this set stops matching it. */
+export type CatSlot = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+/** How a Table column's cells align. Checked against every enum already declared here before it was added; PageHeadAlign is the near miss and is a different set — start/center on a flex axis, with no `right`, and a right-aligned column of figures is precisely what this exists for. */
+export type CellAlign = 'left' | 'center' | 'right';
+
 /** One entry in a CommandPalette. `hint` is searched but never shown, so a command can be found by a synonym that never appears in its label. */
 export interface Command {
   /** A stable identity for the command, so a host can switch on it rather than on the label. */
@@ -116,6 +125,20 @@ export type Orientation = 'horizontal' | 'vertical';
 /** How the actions block aligns against the title in PageHead's wide layout. */
 export type PageHeadAlign = 'start' | 'center';
 
+/** The bar's colour. No neutral and no warning: a progress bar reports work, and work is either running, done or failed. */
+export type ProgressTone = 'accent' | 'gold' | 'success' | 'danger' | 'info';
+
+/** One option in a SegmentedControl. */
+export interface SegmentOption {
+  /** What the option selects, and what `change` carries. */
+  value: string;
+  /** What the option reads. One word — the track stops being compact past that. */
+  label: string;
+}
+
+/** Compact or default. Both sit below Button on purpose — a filter never outweighs an action. Distinct from ControlSize, which offers a large step this control does not. */
+export type SegmentedControlSize = 'sm' | 'md';
+
 /** One option in a Select. */
 export interface SelectOption {
   /** What the option submits, and what Select's `value` is matched against. */
@@ -146,8 +169,36 @@ export interface StatDelta {
 /** The switch's overall size, from a dense sm to a prominent 2xl. */
 export type SwitchSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 
+/** One tab in a Tabs strip. */
+export interface TabItem {
+  /** What the tab selects, and what `change` carries. */
+  value: string;
+  /** What the tab reads. */
+  label: string;
+}
+
+/** How a Table column's cells render in card mode: `row` is a label/value pair, `block` is full width with no label. Checked against every enum already declared here; nothing carries this pair. SkeletonVariant is the only other declaration containing the value `block`, and it names a shape of placeholder rather than a layout. */
+export type TableCellLayout = 'row' | 'block';
+
+/** One column's configuration. A column says how its cells are headed and set, never what markup goes in them -- the consumer writes a TableCell per cell. */
+export interface TableColumn {
+  /** The column's label, drawn in the header row. */
+  header: string;
+  /** How this column's cells align. */
+  align?: CellAlign;
+  /** A CSS width for the column. Omit to let the table distribute. */
+  width?: string;
+  /** Draw this column's cells in the mono face and the gold ink -- for identifiers and figures. */
+  mono?: boolean;
+  /** How this column renders in card mode: a label/value pair, or full width with no label. */
+  mobileLayout?: TableCellLayout;
+}
+
 /** The tag's emphasis colour, per the Badge/Tag tone taxonomy. */
 export type TagTone = 'neutral' | 'primary' | 'success' | 'warning' | 'danger';
+
+/** The side bar's colour. Narrower than Tone: a toast reports an outcome, and there is no informational outcome a toast should interrupt for. */
+export type ToastTone = 'neutral' | 'success' | 'danger' | 'gold';
 
 /** What state a value IS in right now, as against how it moved. Badge's vocabulary, so one set of tone names covers the system rather than a second set that is nearly the same. */
 export type Tone = 'neutral' | 'accent' | 'gold' | 'success' | 'warning' | 'danger' | 'info';

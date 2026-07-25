@@ -7,18 +7,23 @@
  * frameworks/react/vendor/*.js is built from them, and happy-dom because the
  * Angular harness needs it. Nothing new is installed.
  *
- * GlobalRegistrator.register() runs at import time, exactly as
- * frameworks/angular/test/*.ts does it — a lazy register inside mount() would
- * leave `document` undefined for a suite's top-level code. It is never
- * unregistered here: this directory is its own `bun test` process and the
- * process exiting is the teardown. */
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
-
-if (!globalThis.document) GlobalRegistrator.register();
-
-// act warns without this set, since React 18 has no other way to tell it is
-// running under a test renderer rather than a real browser event loop.
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+ * THE DOM IS NOT REGISTERED HERE. It is installed by ./preload.js, which every
+ * invocation of this directory passes as `bun test --preload`; read that file for
+ * why an import cannot do the job. Registering from this module's body would put
+ * the DOM in place AFTER react-dom had already evaluated, which latches React's
+ * legacy change detection and stops `input` and `change` from ever reaching a
+ * handler. So this module asserts the DOM is there rather than installing one as
+ * a fallback: a fallback would run those suites under the legacy semantics with
+ * nothing announcing it, which is exactly the failure that cost a day to find.
+ * The DOM is never unregistered — this directory is its own `bun test` process
+ * and the process exiting is the teardown. */
+if (!globalThis.document) {
+  throw new Error(
+    'frameworks/react/test-dom needs its DOM installed before react-dom is evaluated. '
+    + 'Run this directory as `bun test --preload ./frameworks/react/test-dom/preload.js '
+    + 'frameworks/react/test-dom` (or `bun run test:react-dom`).',
+  );
+}
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';

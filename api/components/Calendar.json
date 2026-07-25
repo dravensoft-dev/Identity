@@ -1,0 +1,28 @@
+{
+  "component": "Calendar",
+  "description": "Week or day schedule on a time grid. Colour is identity, never state.",
+  "api": {
+    "content": { "form": "slot",
+                 "description": "One CalendarEvent per event. Calendar reads each one's start, end and colorId and injects where the chip goes, what colour it takes and how the keyboard reaches it; the chip itself is CalendarEvent's." },
+    "timeZone": { "form": "primitive", "type": "string",
+                  "description": "IANA zone name. Defaults to the reader's own resolved zone, which is right whenever the schedule belongs to the person looking at it. Pass it when the calendar has a zone of its own that differs — a Madrid timetable read from Tokyo — and when server-rendering, where the reader's zone is not knowable." },
+    "anchorDate": { "form": "primitive", "type": "string",
+                    "description": "ISO date the view opens on. Defaults to today in `timeZone`; pass and change it to drive the date yourself." },
+    "view": { "form": "enum", "type": "CalendarView",
+              "description": "Omit to derive from the CONTAINER width: day below --bp-md, else week." },
+    "dayStart": { "form": "primitive", "type": "string",
+                  "description": "HH:MM the grid starts at. Defaults to the earliest visible event's hour, floored." },
+    "dayEnd": { "form": "primitive", "type": "string", "default": "23:00",
+                "description": "HH:MM the grid ends at." },
+    "weekStartsOn": { "form": "primitive", "type": "number", "default": 1,
+                      "description": "0 = Sunday … 6 = Saturday." },
+    "hideEmptyWeekend": { "form": "primitive", "type": "boolean", "default": true,
+                          "description": "Drop Sunday from the week unless an event falls on it." },
+    "dateClick": { "form": "event", "payload": "string",
+                   "description": "A day header or column background was activated; carries the ISO date." },
+    "rangeChange": { "form": "event", "payload": "string",
+                     "description": "The anchor moved via prev/Today/next; carries the new ISO date. A date rather than a delta, because Today is not a delta." },
+    "actions": { "form": "slot",
+                 "description": "Right-aligned in the toolbar, beside the range title." }
+  }
+}

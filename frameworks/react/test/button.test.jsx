@@ -58,3 +58,28 @@ test('Button drops a consumer style object and a consumer attribute, each indepe
   assert.doesNotMatch(html, /#ff00ff/, 'a consumer style reached the rendered root -- the R4 escape is back');
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- the {...rest} escape is back');
 });
+
+/* `tabStop` is the second global attribute Arena admits as a member, after
+ * `id`, and it passes the same test api/README.md states for that one: the D1
+ * flatten removed the capability, and there is no other surface a host can
+ * write it on. Button's half of that reason is its own: Angular delegates it to
+ * MatButton and there is no arena-button primitive -- behaviour-delegated.json
+ * says Arena "should not grow one" -- so the rule's escape hatch, that a
+ * consumer writes the attribute on the host, has no host to be written on.
+ *
+ * check:api reads the .d.ts and never opens the .jsx, so these three tests are
+ * the ONLY guard that the attribute is really written. */
+test('tabStop defaults to true and emits no tabindex at all', () => {
+  const html = renderToStaticMarkup(<Button>Save</Button>);
+  assert.doesNotMatch(html, /tabindex/i, 'a default Button wrote a tabindex it does not need');
+});
+
+test('tabStop={false} takes the control out of the page Tab sequence', () => {
+  const html = renderToStaticMarkup(<Button tabStop={false}>Save</Button>);
+  assert.match(html, /tabindex="-1"/, 'tabStop={false} did not write tabindex="-1"');
+});
+
+test('tabStop is not forwarded to the DOM as an unknown attribute', () => {
+  const html = renderToStaticMarkup(<Button tabStop={false}>Save</Button>);
+  assert.doesNotMatch(html, /tabstop/i, 'the tabStop prop leaked into the markup');
+});
