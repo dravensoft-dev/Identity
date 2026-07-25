@@ -4,33 +4,43 @@
  * acting on a real tree, so that map no longer rests on the author's reading of
  * the source.
  *
- * focus.trap is deliberately absent from this file, and NOTHING ELSE PROVES IT
- * EITHER. happy-dom does not implement sequential focus navigation -- pressing
- * Tab does not move document.activeElement -- so "Tab cycles inside the trap and
- * cannot escape" is unreachable by render, and a test that dispatched a Tab
- * keydown and asserted focus had not moved would pass against a component with a
- * perfect trap and against one with none. A browser-driven gate would be this
- * repo's fourth non-portable gate and is refused.
+ * focus.trap used to be absent from this file, with a note saying nothing else
+ * proved it either. HALF OF THAT IS NOW WRONG, and the half matters:
  *
- * So focus.trap: false is established by READING THE SOURCE -- there is no
- * focus-trap implementation anywhere in frameworks/react/ -- and it is the one
- * verdict in the BEHAVIOURAL map that still rests on the author's word. That is
- * a real gap, stated rather than papered over.
+ *   THE BOUNDARY IS OURS AND IS PROVED HERE. Shift+Tab on the first focusable
+ *     landing on the last, and Tab on the last landing on the first, are
+ *     `.focus()` calls made by our own handler in
+ *     frameworks/react/use-dialog-modal.js. happy-dom honours .focus(), so both
+ *     are real assertions about real behaviour, and both are below.
  *
- * It is NOT covered by frameworks/angular/test/confirm-dialog-focus-trap.test.ts
- * or command-palette-focus-trap.test.ts. An earlier version of this comment
- * claimed it was. Those suites test the ANGULAR layer -- they import
- * ../primitives/focus-trap, which React does not use -- and they assert the trap
- * WORKS, the opposite polarity to the claim here that React has no trap at all.
- * Neither fact bears on this verdict. Do not re-add the citation.
+ *   THE INTERIOR IS THE BROWSER'S AND IS STILL NOT PROVABLE. That Tab from a
+ *     MIDDLE element reaches the next one is native sequential focus
+ *     navigation. We do not implement it -- the trap leaves a middle element
+ *     alone on purpose -- and happy-dom does not implement it either, so a test
+ *     asserting where focus landed there would pass identically against a
+ *     perfect trap and against none. That half is checked in Chromium by hand
+ *     and recorded as a written checklist. A BROWSER-DRIVEN GATE IS STILL
+ *     REFUSED: it would be this repo's fourth non-portable gate.
+ *
+ * DO NOT CITE frameworks/angular/test/confirm-dialog-focus-trap.test.ts or
+ * command-palette-focus-trap.test.ts as evidence for the React verdict. An
+ * earlier version of this comment did. Those suites test the ANGULAR layer --
+ * they import ../primitives/focus-trap, which React does not use. React's trap
+ * is proved by React's own assertions or it is not proved. Do not re-add the
+ * citation.
  *
  * ---------------------------------------------------------------------------
  * READ THIS BEFORE "FIXING" ANY TEST IN THIS FILE.
  *
- * Every assertion below asserts that a DEFECT IS STILL PRESENT. `Dialog` does
- * not close on Escape, and this file asserts exactly that: assert.equal(closed,
- * false). That is not a test of a bug, and it is not an endorsement of one. It
- * is the stale-exception rule in its behavioural form.
+ * Some assertions below assert that a DEFECT IS STILL PRESENT -- every
+ * `ConfirmDialog` one does. That is not a test of a bug, and it is not an
+ * endorsement of one. It is the stale-exception rule in its behavioural form.
+ *
+ * The `Dialog` assertions used to be the same shape and are not any more: plan
+ * 8C4 fixed all four defects and inverted all four assertions in the same
+ * change, and each carries a comment naming what it used to pin. That is the
+ * mechanism working, not the mechanism being abandoned -- the exception expired
+ * because an assertion that used to say the opposite went red first.
  *
  * The contract layer's whole premise is that a *.behaviour.json exception is a
  * claim about the code, and a claim nothing checks rots silently. The
@@ -40,13 +50,14 @@
  * dialog-modal.test.jsx, where a stale exception throws STALE EXCEPTION.
  * Behaviour-shaped requirements could not, because no snapshot decides them --
  * so they are pinned here instead, and this file is the only thing standing
- * between those four exceptions and silent rot.
+ * between ConfirmDialog's four exceptions and silent rot.
  *
- * The value of these tests is realised on the day the defect is fixed. Someone
- * gives Dialog an Escape handler; this suite goes red; they read this comment,
- * delete the keyboard.Escape exception from Dialog.behaviour.json, and invert
- * the assertion to assert.equal(closed, true). The record stays true, and the
- * contract layer never claims a defect that has been fixed.
+ * The value of these tests is realised on the day the defect is fixed, and that
+ * day has now happened once. Someone gave Dialog an Escape handler; this suite
+ * went red; they read this comment, deleted the keyboard.Escape exception from
+ * Dialog.behaviour.json, and inverted the assertion to
+ * assert.equal(closed, true). The record stays true, and the contract layer
+ * never claims a defect that has been fixed. Do exactly that for ConfirmDialog.
  *
  * So: if a test here fails, the correct response is to update the binding and
  * the assertion together. Deleting the test "because it asserts something
@@ -64,10 +75,15 @@ afterEach(cleanup);
 /** Dispatch a real keydown on an element and let React flush. Dispatched on the
  *  dialog element itself and allowed to bubble, so it reaches a handler bound
  *  anywhere from the dialog up to document -- a component that listened on
- *  document rather than on its own node would still be caught. */
-function press(el, key) {
+ *  document rather than on its own node would still be caught.
+ *
+ *  `init` carries the modifier flags: the trap distinguishes Tab from Shift+Tab
+ *  and reads `shiftKey` off the event, which a bare `{ key, bubbles }` would
+ *  leave `false` and make the wrap test pass in the wrong direction. It defaults
+ *  to `{}` so every call site written before it keeps its exact behaviour. */
+function press(el, key, init = {}) {
   act(() => {
-    el.dispatchEvent(new window.KeyboardEvent('keydown', { key, bubbles: true }));
+    el.dispatchEvent(new window.KeyboardEvent('keydown', { key, bubbles: true, ...init }));
   });
 }
 
@@ -78,26 +94,41 @@ function click(el) {
   });
 }
 
-test('Dialog does not close on Escape -- its keyboard.Escape exception is still true', () => {
+test('Dialog closes on Escape -- keyboard.Escape is met', () => {
+  /* This test asserted the opposite until plan 8C4: `assert.equal(closed, false)`,
+   * pinning a real defect so it could not be fixed silently without the binding
+   * following. The exception is retired in that same change, which is the whole
+   * mechanism -- see this file's header. */
   let closed = false;
   const container = mount(
     <Dialog open onClose={() => { closed = true; }} title="t"><p>b</p></Dialog>,
   );
   press(container.querySelector('[role="dialog"]'), 'Escape');
-  /* The exception reads: "No keydown listener anywhere. The only dismissal path
-   * is a mouse click on the backdrop." The second half is asserted too, because
-   * a test proving only that Escape does nothing would also pass against a
-   * component with no dismissal path at all -- and the reason claims one
-   * exists. */
-  assert.equal(closed, false);
-  click(container.firstElementChild);
-  assert.equal(closed, true, 'the backdrop click the exception names as the only dismissal path must still work');
+  assert.equal(closed, true, 'Escape did not reach the dialog\'s own dismissal channel');
 });
 
-test('Dialog moves focus nowhere on open -- its focus.onOpen exception is still true', () => {
-  /* Focus a real element first. Without this activeElement is already body and
-   * "focus did not move" would be indistinguishable from "focus moved to body",
-   * so the test would pass for the wrong reason. */
+test('Dialog closes on a backdrop click too -- the mouse path Escape joins rather than replaces', () => {
+  /* Split out of the Escape test when that one inverted. The backdrop click used
+   * to be asserted there as the second half of the exception's reason ("the only
+   * dismissal path is a mouse click on the backdrop"). That sentence is gone, but
+   * the behaviour it described is not, and nothing else covers it. */
+  let closed = false;
+  const container = mount(
+    <Dialog open onClose={() => { closed = true; }} title="t"><p>b</p></Dialog>,
+  );
+  click(container.firstElementChild);
+  assert.equal(closed, true, 'the backdrop click must still dismiss');
+});
+
+test('Dialog moves focus to the first focusable inside the panel on open -- focus.onOpen is met', () => {
+  /* This test asserted the opposite until plan 8C4: that activeElement was still
+   * the invoker and the dialog's first focusable had NOT received focus, pinning
+   * the focus.onOpen exception so it could not rot. The exception is retired in
+   * that same change.
+   *
+   * Focus a real element first. Without this activeElement is already body and
+   * "focus moved into the panel" would be indistinguishable from "focus was never
+   * anywhere else", so the test would pass for a weaker reason than it claims. */
   const invoker = document.createElement('button');
   document.body.appendChild(invoker);
   invoker.focus();
@@ -106,10 +137,10 @@ test('Dialog moves focus nowhere on open -- its focus.onOpen exception is still 
   const container = mount(
     <Dialog open onClose={() => {}} title="t"><button type="button">Inside</button></Dialog>,
   );
-  assert.equal(document.activeElement, invoker, 'focus stayed on the invoker, outside the modal');
-  assert.notEqual(
-    container.querySelector('button'),
+  assert.notEqual(document.activeElement, invoker, 'focus stayed on the invoker, outside the modal');
+  assert.equal(
     document.activeElement,
+    container.querySelector('button'),
     'the dialog\'s first focusable descendant did not receive focus',
   );
   invoker.remove();
@@ -144,7 +175,13 @@ function DialogHarness() {
   );
 }
 
-test('Dialog does not restore focus to the invoker on close -- its focus.onClose exception is still true', () => {
+test('Dialog restores focus to the invoker on close -- focus.onClose is met', () => {
+  /* This test asserted the opposite until plan 8C4: that focus fell to body and
+   * was NOT restored to the invoker, pinning the focus.onClose exception so it
+   * could not rot. The exception is retired in that same change.
+   *
+   * The harness starting CLOSED is what makes the assertion mean anything, and
+   * that was already true before the inversion -- see the comment above it. */
   const container = mount(<DialogHarness />);
   const invoker = container.querySelector('[data-role="invoker"]');
   invoker.focus();
@@ -153,28 +190,65 @@ test('Dialog does not restore focus to the invoker on close -- its focus.onClose
 
   /* Open by clicking the focused invoker, not by mounting open. This is the
    * only ordering under which the invoker is what a capture-on-open
-   * implementation would record; see the harness comment above. */
+   * implementation records; see the harness comment above. */
   click(invoker);
   assert.notEqual(container.querySelector('[role="dialog"]'), null, 'precondition: the click opened the dialog');
-  assert.equal(document.activeElement, invoker, 'precondition: the invoker still holds focus at the moment of opening');
 
-  /* Move focus inside the dialog by hand. The component never does this itself
-   * (that is the focus.onOpen exception, asserted above), but focus.onClose is
-   * about what happens when focus is *inside* and the dialog goes away -- so
-   * the precondition has to be established manually to reach the requirement
-   * this test is about at all. */
+  /* Focus is moved inside by the component itself now. It used to be moved here
+   * by hand, because focus.onClose is about what happens when focus is *inside*
+   * and the dialog goes away, and focus.onOpen was excepted so the precondition
+   * had to be faked. It no longer does, and asserting it here is what proves the
+   * two requirements compose rather than each being true in isolation. */
   const inside = container.querySelector('[data-role="inside"]');
-  act(() => { inside.focus(); });
-  assert.equal(document.activeElement, inside, 'precondition: focus is inside the dialog');
+  assert.equal(document.activeElement, inside, 'precondition: opening put focus inside the dialog');
 
   click(container.querySelector('[role="dialog"]').parentElement);
   assert.equal(container.querySelector('[role="dialog"]'), null, 'precondition: the dialog really closed');
 
-  /* Nothing stored the invoker and nothing restores it. The focused element was
-   * removed from the document, so focus falls to body -- the browser default,
-   * which is precisely the absence of a restore. */
-  assert.notEqual(document.activeElement, invoker, 'focus was NOT restored to the invoker');
-  assert.equal(document.activeElement, document.body, 'focus fell to body, the no-restore default');
+  assert.equal(document.activeElement, invoker, 'focus was not restored to the invoker that opened the dialog');
+});
+
+/* The fourth Dialog requirement, and the only one with no assertion here before
+ * plan 8C4 -- focus.trap rested on a reading of the source, which this file's
+ * header and dialog-modal.test.jsx's both admitted at length.
+ *
+ * Only HALF of it is provable here, and the half is exact: a boundary wrap is
+ * OUR OWN .focus() call, which happy-dom honours, so Shift+Tab landing on the
+ * last focusable is a real assertion about real behaviour. The interior -- that
+ * Tab from a middle element reaches the next one -- is native sequential focus
+ * navigation, which happy-dom does not implement and we do not implement either.
+ * That half is checked in Chromium by hand. */
+test('Dialog wraps Shift+Tab from the first focusable to the last -- focus.trap is met at the boundary', () => {
+  const container = mount(
+    <Dialog open onClose={() => {}} title="Delete project"
+      footer={<><button type="button">Cancel</button><button type="button">Delete</button></>}
+    ><p>Body</p></Dialog>,
+  );
+  const panel = container.querySelector('[role="dialog"]');
+  const buttons = panel.querySelectorAll('button');
+  assert.equal(buttons.length, 2, 'precondition: the panel has exactly the two footer buttons');
+  const first = buttons[0];
+  const last = buttons[buttons.length - 1];
+  first.focus();
+  assert.equal(document.activeElement, first, 'precondition: the first focusable holds focus');
+  press(first, 'Tab', { shiftKey: true });
+  assert.equal(document.activeElement, last, 'Shift+Tab at the first boundary did not wrap to the last');
+});
+
+test('Dialog wraps Tab from the last focusable to the first -- the other boundary', () => {
+  const container = mount(
+    <Dialog open onClose={() => {}} title="Delete project"
+      footer={<><button type="button">Cancel</button><button type="button">Delete</button></>}
+    ><p>Body</p></Dialog>,
+  );
+  const panel = container.querySelector('[role="dialog"]');
+  const buttons = panel.querySelectorAll('button');
+  const first = buttons[0];
+  const last = buttons[buttons.length - 1];
+  last.focus();
+  assert.equal(document.activeElement, last, 'precondition: the last focusable holds focus');
+  press(last, 'Tab');
+  assert.equal(document.activeElement, first, 'Tab at the last boundary did not wrap to the first');
 });
 
 test('ConfirmDialog does not close on Escape either -- its exception is still true', () => {
