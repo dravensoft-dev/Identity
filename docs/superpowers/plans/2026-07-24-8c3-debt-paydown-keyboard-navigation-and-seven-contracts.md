@@ -1694,14 +1694,95 @@ rather than answering it, and nothing else in the tree needs it today.
 
 ---
 
+## What changed under this plan while it was being executed
+
+**Read this before Task 12.** Three things landed between Task 11b and here that the tasks below
+were written without, and two of them invalidate steps as written. Dated 2026-07-25.
+
+### 1. A component that binds `grid` is DOM-tested BY HAND — and `Table` is one
+
+`frameworks/react/test-dom/` was deleted for its RAM cost and then restored **minus its grid suite**,
+under a standing rule adopted in its own spec and plan
+(`docs/superpowers/specs/2026-07-25-tabstop-and-the-grid-testing-rule-design.md`):
+
+> A component whose behaviour binding names the `grid` pattern is DOM-tested by hand — `bun run
+> demos`, then operate the component on its own `*.card.html` page.
+
+The rule is tied to the binding rather than to a judgement about what looks like a grid, so `Table`
+inherits it with nobody having to remember. The measurement behind it: `grid-keyboard.test.jsx` alone
+peaked at **164 MiB** while the other six suites together peaked at **109** — the grid cost more than
+everything else combined, because its fixture was 84 cells per mount, eight mounts, 160 dispatched
+keys.
+
+**What this voids in Task 12:** its Step 2 extends `grid-keyboard.test.jsx`, which no longer exists
+and must not come back; its Step 4 registers `'Table:react'` in `COVERED`, which the rule forbids.
+Both are rewritten below.
+
+**What replaces them, and it is not nothing.** Two precedents came out of `Calendar`'s half and
+Task 12 should use both:
+
+- **The static tab-stop count.** `grid-keyboard.test.jsx` opened with "a grid is ONE tab stop", and
+  that assertion needs no DOM at all: a roving cursor initialises to a known cell, so a static render
+  carries exactly one `tabindex="0"`. It now lives in `frameworks/react/test/calendar.test.jsx` and
+  is the only automatic guard `Calendar`'s exceptionless binding has. `Table` gets the same.
+- **A non-grid sub-component may still have a render suite.** `CalendarEvent` binds `button`, not
+  `grid`, so its keyboard route is pinned in
+  `frameworks/react/test-dom/placement-and-branches.test.jsx` — a chip mounted alone costs none of
+  the RAM the rule exists to avoid. The rule excludes grids, not everything near one. `Table` has no
+  such sub-component today, which is worth stating in the report rather than leaving implicit.
+
+**One warning carried from `Calendar`, because it cost two Critical defects there.** The static
+tab-stop count is satisfied by a control that has NO `tabindex` at all — removing one makes the count
+*more* correct while making the control unreachable. And happy-dom's `focus()` focuses non-focusable
+elements, so a render suite would not have caught that either. If `Table` gains any focusable element
+that is not a cell, assert its `tagName` and its `tabindex` rather than calling `focus()` and
+believing `activeElement`.
+
+### 2. `check:api` is at 39/59, not 37/57
+
+Task 11b — `CalendarEvent` became a component and `Calendar.events` became the `content` slot — added
+a contract this plan did not originally schedule. Constraint 3's ladder is already amended. **Task 12
+contracts nothing and holds at 39/59; Task 13 is +1/+1 to 40/60.**
+
+### 3. `Button` has a `tabStop` member, and Task 13 is about to remove its only consumer
+
+`tabStop` was added to `Button` and `IconButton`: a boolean that writes `tabindex="-1"`, and only the
+second global HTML attribute Arena admits as a contract member after `id`. Its spec names **this
+plan's Task 12** as the reason `Button` has it at all:
+
+> `Table`'s actions column draws `Button`s; it is what the removed `TableColumn.render` drew at its
+> call site. The moment `Table` is a grid with a roving stop, a `Button` inside a row is exactly this
+> case.
+
+**That claim and Task 13 contradict each other, and the contradiction is live.** Task 13 removes
+`TableColumn.render` under the per-item convention, and its own Step 1 says an actions column then
+has "no expression in the contract at all" — so after this batch no `Button` sits inside a `Table`
+cell and `Button.tabStop` has no in-tree consumer whatsoever. One of three things has to be true, and
+it is the maintainer's call:
+
+- **`Table` gains a contracted way to put Arena's own controls in a cell**, and Task 11b established
+  the shape: make the item a component. `RadioGroup`/`Radio` and now `Calendar`/`CalendarEvent` are
+  two shipped precedents for a parent whose items are a sibling component projected as a slot. It
+  needs no gate change, because a component may declare a slot and per-item projection stops applying
+  the moment the consumer instantiates one element per item.
+- **`Button.tabStop` stays with no consumer**, and the `tabStop` spec's justification is corrected to
+  say so rather than naming a task that removed it.
+- **The actions column is out of scope**, and both facts are recorded as they are.
+
+**Task 13's Step 1 must lead with this**, beside the cost it already leads with.
+
+---
+
 ## Task 12: Table — keyboard navigation and compliance
 
 **Files:** modify `frameworks/react/components/display/Table.jsx`,
-`frameworks/react/components/display/Table.behaviour.json`, `scripts/check-compliance.mjs`
-(`COVERED`), `frameworks/react/test-dom/grid-keyboard.test.jsx`; regenerate the `.js` sibling.
+`frameworks/react/components/display/Table.behaviour.json`,
+`frameworks/react/components/display/Table.prompt.md` (the by-hand checklist);
+create `frameworks/react/test/table.test.jsx` (the DOM-FREE suite); regenerate the `.js` sibling.
+**`scripts/check-compliance.mjs` is NOT in this list any more** — see *What changed under this plan*.
 
 **Interfaces:** produces the settled markup Task 13 contracts. **Contracts nothing** — `check:api`
-stays 38/58.
+stays **39/59**.
 
 > **Constraint 33 governs this task.** `Table` has two layouts. The wide one is a real `<table>` and
 > the `grid` pattern is about it. Below `--bp-md` it is one card per row — a list, not a grid — and
@@ -1716,31 +1797,41 @@ stays 38/58.
   `null` means the wide branch, so a bare mount in happy-dom already gets it — verify that rather than
   assuming, and if it does not hold, pass `responsive={false}`).
 
-- [ ] **Step 2: Extend the suite**
+- [ ] **Step 2: Write what a STATIC render can prove**
 
-Add `Table` cases to `frameworks/react/test-dom/grid-keyboard.test.jsx` — one file for both, because
-the two share the pattern, the harness and the roving-focus assertions, and splitting them would
-duplicate all three. Mirror Task 10's three tests: one tab stop, arrows move and rove, edges hold,
-plus the bidirectional `assertPattern` call with a `behavioural` map every verdict of which is earned
-above it.
+`Table` binds `grid`, so it gets no render suite: the rule in *What changed under this plan* is
+absolute and `COVERED` cannot list it. What is left is a DOM-free suite plus a person, and the split
+is not arbitrary — `frameworks/react/test/table.test.jsx` takes everything that is a property of the
+MARKUP, the checklist takes everything that is a property of BEHAVIOUR.
 
-Add one test the `Calendar` half does not need:
+Static, and therefore automatic:
 
 ```jsx
-/* onRowClick makes a row activatable, and until now a mouse was the only way:
- * no tabIndex, no role, no key handler. A row that responds to a click and not
- * to Enter is not a keyboard-operable control, whatever its role says. */
-test('a row with onRowClick activates on Enter as well as on click', () => {
-  const seen = [];
-  const root = mount(<Table columns={COLUMNS} rows={ROWS} onRowClick={(r) => seen.push(r)} />);
-  try {
-    const cell = root.querySelector('[role="gridcell"][tabindex="0"]');
-    cell.focus();
-    cell.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-    assert.equal(seen.length, 1, 'Enter did not activate the row');
-  } finally { unmount(root); }
+/* A grid is ONE tab stop, and that count needs no DOM: the cursor initialises to
+ * a known cell, so a static render carries exactly one tabindex="0". This is the
+ * assertion recovered from the deleted grid-keyboard suite, and for Table as for
+ * Calendar it is the ONLY automatic guard behind a binding that claims the grid
+ * pattern. Assert it on the WIDE layout, which is what the pattern is about. */
+test('a Table renders exactly one tab stop', () => {
+  const html = renderToStaticMarkup(<Table columns={COLUMNS} rows={ROWS} responsive={false} />);
+  assert.equal((html.match(/tabindex="0"/g) || []).length, 1, 'a Table is not one tab stop');
 });
 ```
+
+Plus, in the same file: `role="grid"` is present and carries a name; every `<th>` is a
+`columnheader` and every `<td>` a `gridcell`; and the narrow layout renders no `role="grid"` at all,
+which is what makes Step 4's variant-scoped exception verifiable rather than merely asserted in prose.
+
+**Do not call `assertPattern` here.** It lives in `frameworks/react/test-dom/assert-pattern.jsx` and
+needs a rendered tree; a DOM-free suite cannot use it, and `Table` may not have a DOM suite.
+
+- [ ] **Step 2a: Write the by-hand checklist into `Table.prompt.md`**
+
+Model it on `CalendarEvent.prompt.md`'s "Verifying the panel by hand" section, which exists and is
+the house shape. Name at minimum: Tab reaches the table once and one more Tab leaves it; arrows move
+by cell and clamp at all four edges; Home/End within a row; Enter activates a row when `rowClick` is
+wired; and the narrow layout, which is a list and must answer none of it. **A rule that says "tested
+by hand" and produces no written checklist is a rule that says "not tested".**
 
 - [ ] **Step 3: Run it and watch it fail**, then implement in `Table.jsx`: `role="grid"` and an
   `aria-label` on the `<table>` (the binding's `roles.label` exception records that the file has zero
@@ -1751,7 +1842,13 @@ test('a row with onRowClick activates on Enter as well as on click', () => {
   the same cursor-state roving `tabIndex` Task 10 uses, and an `onKeyDown` handling the arrows plus
   `Home`/`End` plus `Enter` when `onRowClick` is set.
 
-- [ ] **Step 4: Retire only what is true; add `'Table:react': 'grid-keyboard.test.jsx'` to `COVERED`.**
+- [ ] **Step 4: Retire only what is true. Do NOT touch `COVERED`.**
+
+Delete from `Table.behaviour.json` only the exceptions the wide layout now satisfies; a requirement
+met in one layout and not the other keeps its exception with a reason NAMING THE VARIANT (Constraint
+33). `'Table:react'` cannot be registered — `check:compliance` requires a suite in a directory
+`Table` is barred from — so its binding, like `Calendar`'s, will claim what only a person has
+checked. Say that plainly in the report, and expect `check:compliance` to stay at **6 of 64**.
 
 - [ ] **Step 5: Gates and commit**, same list as Task 10, plus the Constraint 31 statement about
   `table-avatar.card.html`'s box — that card renders the table twice, once in a 340px container, so
@@ -1766,8 +1863,9 @@ test('a row with onRowClick activates on Enter as well as on click', () => {
 `frameworks/react/components/display/table-avatar.card.entry.jsx`,
 `frameworks/react/ui_kits/console/ProjectScreen.jsx`; regenerate.
 
-**Interfaces:** consumes Task 6's R3. Produces `TableColumn`. **+1/+1 → 39/59. This completes the
-batch.**
+**Interfaces:** consumes Task 6's R3. Produces `TableColumn`. **+1/+1 → 40/60. This completes the
+batch.** (39/59, not 38/58, is the starting pair — Task 11b added a contract this plan did not
+originally schedule.)
 
 > **Table needs four fixes, in this order, and the first three are invisible until the one before it
 > lands.** (1) the `<T>` generic is erased — `TableColumn<T>` throws `unreadable type annotation` and
@@ -1775,7 +1873,10 @@ batch.**
 > per-item convention (Task 6); (3) `getRowKey` returns `React.Key`, an R4 platform type;
 > (4) `onRowClick` is `(row: T, i: number) => void`, and an event takes **one** payload.
 
-- [ ] **Step 1: Confirm and STOP.** Report all four, and **lead the report with the cost**, because
+- [ ] **Step 1: Confirm and STOP.** Report all four; **lead with the two things the maintainer must
+  decide before anything is written** — the cost below, and the `Button.tabStop` contradiction set out
+  in *What changed under this plan*, item 3, which this task is what makes live. Lead with the cost
+  because
   this is where the batch's largest capability loss lands and the maintainer must see it priced
   before it ships rather than after:
 
@@ -1874,8 +1975,8 @@ The suite must prove the REMOVAL, exactly as Task 11's does for `renderEvent`: a
 asserts is a removal that can come back — `check:api` reads the `.d.ts` and would stay green if the
 `.jsx` quietly kept honouring it.
 
-Expected: `check-api: 39 … across 59`; behaviour diff empty. 38/58 → 39/59. **This completes the seven
-migrations of batch 8C3.**
+Expected: `check-api: 40 … across 60`; behaviour diff empty. 39/59 → 40/60. **This completes the seven
+migrations of batch 8C3** — eight contracts in all, once Task 11b's `CalendarEvent` is counted.
 
 ---
 
@@ -1895,6 +1996,11 @@ migrations of batch 8C3.**
 - [ ] **Step 3: Sweep for dead references** (Constraint 21) to every removed or renamed member: the
   bare-string `tabs`/`options` arms, `ToastAction`, `TableColumn<T>`, `getRowKey`, `onRowClick`'s index
   parameter, `CalendarEvent.meta`, `React.CSSProperties` on the seven, and `Tooltip`'s renamed slots.
+  **Add everything Task 11b moved, which this list predates:** `Calendar.events` (an array member
+  that became the `content` slot, so every `events={...}` in prose is now wrong), `Calendar.eventClick`
+  and its `onEventClick` binding (removed — `CalendarEvent.click` replaced it, with no payload), and
+  `renderEvent`. Also sweep for `Calendar` prose asserting a required `timeZone`: it is optional now
+  and defaults to the reader's resolved zone.
   A hit in a **contracted** component is this task's to fix; a hit in an **uncontracted** one
   (`Dialog`, `Menu`, `Pagination`, `SideNav`) is expected — record which is which.
 
@@ -1913,26 +2019,38 @@ cd /home/juan/Dravensoft/Identity
 export CHROME_PATH=/usr/bin/chromium
 bun run check
 bun test scripts frameworks/react/test/ frameworks/angular/test 2>&1 | tail -3
-bun test frameworks/react/test-dom 2>&1 | tail -3
+bun run test:react-dom 2>&1 | tail -3   # NOT `bun test <dir>` — it needs the --preload
 ```
 
-Expected: all 23 steps PASS. Reconcile both counts against the per-task deltas in the ledger. **The
-isolated DOM process has moved off 26/5** — Tasks 5, 10 and 12 all added to it, and that is the first
-movement since the suspension. If either delta does not reconcile, stop and find out why.
+Expected: all 23 steps PASS. Reconcile both counts against the per-task deltas in the ledger.
+
+**The isolated DOM process no longer reconciles against this plan's deltas alone, and that is
+expected rather than a defect.** It was deleted outright and then restored minus its grid suite,
+under the rule in *What changed under this plan* — so its count reflects that round trip plus
+`CalendarEvent`'s keyboard route, none of which is a task in this plan. Reconcile it against the
+ledger's own entries for those, not against Tasks 5/10/12. Task 10's `grid-keyboard.test.jsx` is
+GONE and Task 12 adds nothing to that directory; if either appears there, something has re-broken the
+rule. If a delta does not reconcile, stop and find out why.
 
 - [ ] **Step 2: Whole-branch review** (Constraint 23). Read `git diff main...HEAD` against: do the
   seven agree on how a tone enum is named and when a size enum is shared rather than declared?; is
   every member `description` consistent across contract / `.d.ts` / `.prompt.md`?; is any new enum
   value-identical to an existing one?; did any suite weaken a title?; does the climb reconcile
-  32 → 34 → 36 → 37 → 38 → 39?; is `functionInput` still only in `Input`?; is every parameterised slot
+  32 → 34 → 36 → 37 → 38 → 39 (Task 11b) → 40?; is `functionInput` still only in `Input`?; is every parameterised slot
   a `slot` with `params` and never the ninth form? Fix findings in their own commits.
 
 - [ ] **Step 3: Spec.** Add the 8C3 running-count row (**both** processes — the isolated one moves for
   the first time, so the row's second column is no longer `26 across 5`). Add a register paragraph:
-  what was contracted, 32/52 → 39/59, the four debts paid, R3 made readable, and the two components
+  what was contracted, 32/52 → 40/60 (39/59 of it by Task 12, since Task 11b added one this
+  plan did not schedule), the four debts paid, R3 made readable, and the two components
   that gained keyboard navigation. Note that Plan C now has four subjects left.
 
-- [ ] **Step 4: CHANGELOG**, under `## [Unreleased]` only. **Added:** the parameterised slot readable;
+- [ ] **Step 4: CHANGELOG**, under `## [Unreleased]` only. **Read what is already there first** —
+  several of this batch's changes were written into it as they landed (`tabStop`, `CalendarEvent`'s
+  action panel, the DOM-suite round trip and the grid rule), so this step is completing a record
+  rather than starting one, and a duplicated entry is worse than a missing one. Two known-stale
+  lines the ledger carries for this step: `CHANGELOG.md`'s 1.x entry still says a Calendar event's
+  state goes on a non-chromatic channel *via `renderEvent`*, and that member no longer exists. **Added:** the parameterised slot readable;
   `id` a member of `Input` and `Textarea`; keyboard navigation on `Calendar` and `Table`.
   **Changed:** the seven contracted, with every breaking change spelled out — the bare-string `tabs`
   and `options` arms gone; `ToastAction` decomposed to `actionLabel` + `action`; `TableColumn` no
@@ -1942,9 +2060,13 @@ movement since the suspension. If either delta does not reconcile, stop and find
 
 - [ ] **Step 5: `CLAUDE.md`.** Record what this batch established. **Retire the debt entries this plan
   actually paid** — verify each before deleting, and narrow rather than delete any that is only partly
-  paid. `Calendar` and `Table`'s "implement no keyboard navigation at all" entry is the headline one
-  and is almost certainly *narrowed*, not deleted, because Tasks 10 and 12 will not satisfy all eight
-  requirements. Add any new debt: whatever Tasks 10 and 12 left unmet, and the `Tabs` binding's eight
+  paid. `Calendar`'s half of the "implement no keyboard navigation at all" entry has already been rewritten
+  — Task 10 satisfied all eight requirements and the entry now records the opposite problem, that its
+  exceptionless binding has no suite behind it. What is left for this step is `Table`'s half, narrowed
+  to whatever Task 12 leaves unmet. **Also owed here, from the ledger:** `CLAUDE.md` still names
+  `Calendar`'s per-event `meta` as one of the two cases that motivated consumer data, and that member
+  is gone — `Table`'s rows remain the case that named the form, so drop the `meta` half rather than
+  rewriting the paragraph, exactly as `api/README.md` was fixed in Task 11. Add any new debt: whatever Tasks 10 and 12 left unmet, and the `Tabs` binding's eight
   untouched exceptions (Appendix A). **Move any debt living only in the 8C2 plan into Known debt
   before deleting it** — check, do not assume; 8C2's own close-out found none in 8C1's.
 
