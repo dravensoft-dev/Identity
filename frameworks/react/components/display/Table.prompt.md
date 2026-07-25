@@ -2,6 +2,7 @@ Data table for dense surfaces. Headers in mono/uppercase, rows separated by hair
 
 ```jsx
 <Table
+  label="Recent deployments"
   columns={[
     { key:'build', header:'Build', mono:true },
     { key:'project', header:'Project' },
@@ -12,6 +13,7 @@ Data table for dense surfaces. Headers in mono/uppercase, rows separated by hair
 ```
 
 **Do / Don't**
+- `label` is required and names the grid for a screen reader. Say what the rows *are* — "Recent deployments", "Team members" — never "Table". There is nothing to derive it from, which is why it throws when omitted rather than falling back.
 - Numeric data and codes in `mono` columns with `align:'right'`.
 - Statuses with `Badge`, not loose text.
 - Don't use it for layout; it's for real tabular data.
@@ -26,6 +28,7 @@ Each column picks its card-mode layout with `mobileLayout`:
 
 ```jsx
 <Table
+  label="Active projects"
   columns={[
     { key: 'name', header: 'Project' },
     { key: 'build', header: 'Build', mono: true },
@@ -35,3 +38,36 @@ Each column picks its card-mode layout with `mobileLayout`:
   rows={rows}
 />
 ```
+
+### Keyboard
+
+The wide layout is a `role="grid"` with **one** tab stop. Tab reaches the grid, arrows move by cell — the header row is row 0 and is navigable, as APG prescribes — `Home` and `End` go to the first and last cell of the **current row**, and `Enter` activates the row when `onRowClick` is wired. There is no step-in: a control you drew inside a cell keeps its own place in the page Tab sequence, so nothing you own is silenced.
+
+Card mode answers none of this. A card is a list item, and a list is traversed with Tab — but a card with `onRowClick` has no keyboard route at all, which is the one exception `Table.behaviour.json` still carries.
+
+## Verifying the grid by hand
+
+`Table` binds the `grid` pattern, so by Arena's rule it is DOM-tested by hand rather
+than by a render suite — the measured RAM cost of a grid fixture is why. What is
+automatic is in `frameworks/react/test/table.test.jsx` and covers the markup only:
+the roles, the name, the `label` guard, and the tab-stop count. Everything below is
+behaviour and only a person checks it.
+
+Serve the tree with `bun run demos`, open
+`frameworks/react/components/display/table-avatar.card.html`, and check all of:
+
+1. Tab reaches the table ONCE, and one more Tab leaves it. No cell is a stop of its
+   own. Controls YOU drew inside a cell are the exception and are meant to be: they
+   are yours, Arena cannot silence markup it does not own, and taking them out of the
+   Tab sequence would remove a route a keyboard user has today.
+2. Arrow keys move by cell and clamp at all four edges — the first column, the last
+   column, the header row at the top, the last body row at the bottom. Focus never
+   leaves the grid.
+3. `Home` and `End` stay INSIDE the current row: its first and last cell, never the
+   first row of the table. Walk a middle row, not only the first.
+4. `Enter` activates the row when `onRowClick` is wired, and does nothing on the
+   header row.
+5. Card mode answers none of it, and it is the surviving exception. That page renders
+   the SAME table twice, the second time in a 340px container, so card mode is
+   already on screen — check that a card with `onRowClick` is still mouse-only, and
+   that nothing there took a `role`, a `tabindex` or a key handler by accident.

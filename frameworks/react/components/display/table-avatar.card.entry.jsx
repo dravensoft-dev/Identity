@@ -25,11 +25,11 @@ function Demo(){
         <Avatar name="QA Bot" size="sm" status="offline" />
       </div>
       <div className="sub" style={{marginBottom:'var(--sp-3)'}}>Table — with Badge in a cell</div>
-      <Table columns={columns} rows={rows} getRowKey={r=>r.build} onRowClick={()=>{}} />
+      <Table columns={columns} rows={rows} label="Recent builds" getRowKey={r=>r.build} onRowClick={()=>{}} />
       <div className="sub" style={{marginTop:'var(--sp-5)',marginBottom:'var(--sp-3)'}}>Card mode — the SAME table in a 340px container</div>
       <div style={{width:'calc(var(--sp-1) * 85)',border:'var(--bw) dashed var(--border-strong)',borderRadius:'var(--r-lg)',padding:'var(--sp-3)'}}>
         {/* same columns/rows as above — the container is narrow, the viewport is not */}
-        <Table columns={columns} rows={rows} />
+        <Table columns={columns} rows={rows} label="Recent builds, card mode" />
       </div>
     </div>
   );

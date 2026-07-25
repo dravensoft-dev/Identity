@@ -66,7 +66,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
       </div>
 
       {tab === 'Deployments' && (
-        <Table columns={DEPLOY_COLUMNS} rows={DEPLOYS} getRowKey={(d) => d.build} />
+        <Table columns={DEPLOY_COLUMNS} rows={DEPLOYS} label="Deployments" getRowKey={(d) => d.build} />
       )}
 
       {tab === 'Activity' && (

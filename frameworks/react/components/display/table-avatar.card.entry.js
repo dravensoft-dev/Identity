@@ -47,6 +47,7 @@ function Demo() {
   }, "Table — with Badge in a cell"), React.createElement(Table, {
     columns,
     rows,
+    label: "Recent builds",
     getRowKey: (r) => r.build,
     onRowClick: () => {}
   }), React.createElement("div", {
@@ -56,7 +57,8 @@ function Demo() {
     style: { width: "calc(var(--sp-1) * 85)", border: "var(--bw) dashed var(--border-strong)", borderRadius: "var(--r-lg)", padding: "var(--sp-3)" }
   }, React.createElement(Table, {
     columns,
-    rows
+    rows,
+    label: "Recent builds, card mode"
   })));
 }
 createRoot(document.getElementById("root")).render(React.createElement(Demo, null));

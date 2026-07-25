@@ -75,6 +75,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
   })), tab === "Deployments" && React.createElement(Table, {
     columns: DEPLOY_COLUMNS,
     rows: DEPLOYS,
+    label: "Deployments",
     getRowKey: (d) => d.build
   }), tab === "Activity" && React.createElement(Card, null, React.createElement(ActivityFeed, {
     items: ACTIVITY
