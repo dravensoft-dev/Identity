@@ -115,7 +115,9 @@ export type PageHeadAlign = 'start' | 'center';
 
 /** One option in a Select. */
 export interface SelectOption {
+  /** What the option submits, and what Select's `value` is matched against. */
   value: string;
+  /** What the option reads. Free to differ from the value. */
   label: string;
 }
 
