@@ -2,18 +2,18 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useState } from "react";
-export function Tabs({ tabs = [], value, defaultValue, onChange, style }) {
-  const [internal, setInternal] = useState(defaultValue ?? (tabs[0] && (tabs[0].value ?? tabs[0])));
+export function Tabs({ tabs = [], value, defaultValue, onChange }) {
+  const [internal, setInternal] = useState(defaultValue ?? (tabs[0] && tabs[0].value));
   const active = value ?? internal;
   const select = (v) => {
     setInternal(v);
     onChange && onChange(v);
   };
   return React.createElement("div", {
-    style: { display: "flex", gap: "calc(var(--sp-1) * 1)", borderBottom: "var(--bw) solid var(--color-base-300)", ...style }
+    style: { display: "flex", gap: "calc(var(--sp-1) * 1)", borderBottom: "var(--bw) solid var(--color-base-300)" }
   }, tabs.map((t) => {
-    const v = t.value ?? t;
-    const label = t.label ?? t;
+    const v = t.value;
+    const label = t.label;
     const on = v === active;
     return React.createElement("button", {
       key: v,

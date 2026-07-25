@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-export function Tabs({ tabs = [], value, defaultValue, onChange, style }) {
-  const [internal, setInternal] = useState(defaultValue ?? (tabs[0] && (tabs[0].value ?? tabs[0])));
+export function Tabs({ tabs = [], value, defaultValue, onChange }) {
+  const [internal, setInternal] = useState(defaultValue ?? (tabs[0] && tabs[0].value));
   const active = value ?? internal;
   const select = (v) => { setInternal(v); onChange && onChange(v); };
   return (
-    <div style={{ display: 'flex', gap: 'calc(var(--sp-1) * 1)', borderBottom: 'var(--bw) solid var(--color-base-300)', ...style }}>
+    <div style={{ display: 'flex', gap: 'calc(var(--sp-1) * 1)', borderBottom: 'var(--bw) solid var(--color-base-300)' }}>
       {tabs.map((t) => {
-        const v = t.value ?? t; const label = t.label ?? t; const on = v === active;
+        const v = t.value; const label = t.label; const on = v === active;
         return (
           <button key={v} onClick={() => select(v)}
             style={{ position: 'relative', padding: 'calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 4)', background: 'none', border: 'none', cursor: 'pointer',

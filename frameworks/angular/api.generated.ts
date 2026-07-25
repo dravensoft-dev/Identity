@@ -116,6 +116,17 @@ export type Orientation = 'horizontal' | 'vertical';
 /** How the actions block aligns against the title in PageHead's wide layout. */
 export type PageHeadAlign = 'start' | 'center';
 
+/** One option in a SegmentedControl. */
+export interface SegmentOption {
+  /** What the option selects, and what `change` carries. */
+  value: string;
+  /** What the option reads. One word — the track stops being compact past that. */
+  label: string;
+}
+
+/** Compact or default. Both sit below Button on purpose — a filter never outweighs an action. Distinct from ControlSize, which offers a large step this control does not. */
+export type SegmentedControlSize = 'sm' | 'md';
+
 /** One option in a Select. */
 export interface SelectOption {
   /** What the option submits, and what Select's `value` is matched against. */
@@ -145,6 +156,14 @@ export interface StatDelta {
 
 /** The switch's overall size, from a dense sm to a prominent 2xl. */
 export type SwitchSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+
+/** One tab in a Tabs strip. */
+export interface TabItem {
+  /** What the tab selects, and what `change` carries. */
+  value: string;
+  /** What the tab reads. */
+  label: string;
+}
 
 /** The tag's emphasis colour, per the Badge/Tag tone taxonomy. */
 export type TagTone = 'neutral' | 'primary' | 'success' | 'warning' | 'danger';

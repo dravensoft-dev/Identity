@@ -61,7 +61,9 @@ export function ProjectScreen({ onNav, project, onToast }) {
         <Badge tone="success" dot>Deployed</Badge>
         {(p.tags || []).map((t) => <Tag key={t}>{t}</Tag>)}
       </div>
-      <Tabs tabs={['Overview', 'Deployments', 'Activity', 'Settings']} value={tab} onChange={setTab} style={{ marginBottom: 'calc(var(--sp-1) * 5.5)' }} />
+      <div style={{ marginBottom: 'calc(var(--sp-1) * 5.5)' }}>
+        <Tabs tabs={[{ value: 'Overview', label: 'Overview' }, { value: 'Deployments', label: 'Deployments' }, { value: 'Activity', label: 'Activity' }, { value: 'Settings', label: 'Settings' }]} value={tab} onChange={setTab} />
+      </div>
 
       {tab === 'Deployments' && (
         <Table columns={DEPLOY_COLUMNS} rows={DEPLOYS} getRowKey={(d) => d.build} />

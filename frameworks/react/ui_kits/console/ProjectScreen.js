@@ -66,12 +66,13 @@ export function ProjectScreen({ onNav, project, onToast }) {
     dot: true
   }, "Deployed"), (p.tags || []).map((t) => React.createElement(Tag, {
     key: t
-  }, t))), React.createElement(Tabs, {
-    tabs: ["Overview", "Deployments", "Activity", "Settings"],
-    value: tab,
-    onChange: setTab,
+  }, t))), React.createElement("div", {
     style: { marginBottom: "calc(var(--sp-1) * 5.5)" }
-  }), tab === "Deployments" && React.createElement(Table, {
+  }, React.createElement(Tabs, {
+    tabs: [{ value: "Overview", label: "Overview" }, { value: "Deployments", label: "Deployments" }, { value: "Activity", label: "Activity" }, { value: "Settings", label: "Settings" }],
+    value: tab,
+    onChange: setTab
+  })), tab === "Deployments" && React.createElement(Table, {
     columns: DEPLOY_COLUMNS,
     rows: DEPLOYS,
     getRowKey: (d) => d.build

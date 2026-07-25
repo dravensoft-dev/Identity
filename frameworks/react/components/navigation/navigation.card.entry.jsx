@@ -8,10 +8,10 @@ import { SideNav } from '../../components/navigation/SideNav.jsx';
 import { BulkActionBar } from '../../components/navigation/BulkActionBar.jsx';
 import { Button } from '../../components/forms/Button.jsx';
 function Demo(){const[v,setV]=React.useState('Overview');const[range,setRange]=React.useState('7d');const[sel,setSel]=React.useState(3);return(<div>
-  <Tabs tabs={['Overview','Deployments','Activity','Settings']} value={v} onChange={setV}/>
+  <Tabs tabs={[{value:'Overview',label:'Overview'},{value:'Deployments',label:'Deployments'},{value:'Activity',label:'Activity'},{value:'Settings',label:'Settings'}]} value={v} onChange={setV}/>
   <div className="row" style={{marginTop:'calc(var(--sp-1) * 3.5)'}}>
     <div className="sub">SegmentedControl — filters inside the tab, never navigates</div>
-    <SegmentedControl ariaLabel="Time range" options={['24h','7d','30d']} value={range} onChange={setRange}/>
+    <SegmentedControl ariaLabel="Time range" options={[{value:'24h',label:'24h'},{value:'7d',label:'7d'},{value:'30d',label:'30d'}]} value={range} onChange={setRange}/>
     <span style={{color:'var(--mute)',fontFamily:'var(--font-mono)',fontSize:'var(--dz-text-sm)'}}>Active view: <span style={{color:'var(--gold)'}}>{v}</span> · Range: <span style={{color:'var(--gold)'}}>{range}</span></span>
   </div>
   <div className="sub">Breadcrumbs — the last item is the current location</div>
