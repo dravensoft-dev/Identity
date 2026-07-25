@@ -4,6 +4,8 @@
   "description": "Text field with validation. Focus is a gold ring; error crimson; valid green with a check.",
   "api": {
     "label": { "form": "primitive", "type": "string", "description": "Field label above the control." },
+    "id": { "form": "primitive", "type": "string",
+            "description": "The control's id, and what the label's `for` points at. Generated from `label` when omitted." },
     "hint": { "form": "primitive", "type": "string", "description": "A line of help under the field." },
     "error": { "form": "primitive", "type": "string", "description": "Controlled error message; wins over `validate`." },
     "valid": { "form": "primitive", "type": "boolean", "default": false, "description": "Force the valid (green check) state." },

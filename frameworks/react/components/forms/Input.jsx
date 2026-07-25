@@ -28,7 +28,7 @@ function usePickerIndicator() {
 }
 
 export function Input({
-  label, hint, error, valid = false, required = false,
+  label, id, hint, error, valid = false, required = false,
   validate, validateOn = 'blur', type = 'text',
   icon, prefix, value, disabled = false, readOnly = false,
   placeholder, name, autoComplete, min, max, step, maxLength, pattern,
@@ -38,7 +38,7 @@ export function Input({
   const [focus, setFocus] = useState(false);
   const [localErr, setLocalErr] = useState(null);
   const [touched, setTouched] = useState(false);
-  const inputId = label ? 'in-' + label.replace(/\s+/g, '-').toLowerCase() : undefined;
+  const inputId = id || (label ? 'in-' + label.replace(/\s+/g, '-').toLowerCase() : undefined);
 
   const shownError = error != null ? error : (touched ? localErr : null);
   const isValid = !shownError && (valid || (touched && validate && localErr === null));

@@ -2,6 +2,8 @@
 export interface TextareaProps {
   /** Field label; the counter and error sit under the field. */
   label?: string;
+  /** The control's id, and what the label's `for` points at. Generated from `label` when omitted. */
+  id?: string;
   /** A line of help under the field. */
   hint?: string;
   /** Error message; turns the border crimson and shows below. */

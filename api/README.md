@@ -277,6 +277,16 @@ component's `.prompt.md` says which. And there is no type to read it off: this r
 no React types package and runs no `tsc` over `frameworks/react/`, so the enumeration is transcribed
 from the specification and checked by the audit, never resolved by a compiler.
 
+**`id` is the one global attribute that is a member, and only where the component generates one.**
+The rule above stands — `className`, `dir`, `tabIndex`, ARIA and `data-*` are not members — but a
+component that *derives* an id from another member and wires its own `<label for>` to it has taken
+that attribute out of the consumer's hands, and taken with it the only path to an external
+`<label>`, an `aria-describedby`, or a form library that needs to address the field by name. That
+is a capability the flatten removed rather than a global attribute the host can write elsewhere,
+which is what separates it from the rest. `Input` and `Textarea` declare it; the generated value
+stays the fallback, so the member is `id?: string` and never required. A component that generates
+no id has no such gap and adds no such member.
+
 **A tooltip's bubble is a primitive, not a slot.** The same R2 reasoning the single-icon convention
 uses: Arena draws the bubble, the consumer names the text. It also resolves a collision the binding
 table creates — a component that declares both a `content` member and children has two candidates for

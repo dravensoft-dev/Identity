@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 /** Multi-line text field. Same states as Input (neutral, gold focus, crimson error).
  * `autoResize` grows with the content; `counter` with `maxLength` shows the count. */
 export function Textarea({
-  label, hint, error, required = false, rows = 4, maxLength, counter = false,
+  label, id, hint, error, required = false, rows = 4, maxLength, counter = false,
   disabled = false, readOnly = false, autoResize = false, placeholder, name, value, onChange,
 }) {
   const [focus, setFocus] = useState(false);
-  const taId = label ? 'ta-' + label.replace(/\s+/g, '-').toLowerCase() : undefined;
+  const taId = id || (label ? 'ta-' + label.replace(/\s+/g, '-').toLowerCase() : undefined);
   const borderColor = error ? 'var(--danger)' : focus ? 'var(--gold)' : 'var(--color-base-300)';
   const ring = error ? '0 0 0 var(--focus-width) var(--danger-soft)' : focus ? '0 0 0 var(--focus-width) var(--gold-soft)' : 'none';
   const len = typeof value === 'string' ? value.length : 0;

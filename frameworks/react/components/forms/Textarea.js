@@ -4,6 +4,7 @@
 import React, { useState } from "react";
 export function Textarea({
   label,
+  id,
   hint,
   error,
   required = false,
@@ -19,7 +20,7 @@ export function Textarea({
   onChange
 }) {
   const [focus, setFocus] = useState(false);
-  const taId = label ? "ta-" + label.replace(/\s+/g, "-").toLowerCase() : undefined;
+  const taId = id || (label ? "ta-" + label.replace(/\s+/g, "-").toLowerCase() : undefined);
   const borderColor = error ? "var(--danger)" : focus ? "var(--gold)" : "var(--color-base-300)";
   const ring = error ? "0 0 0 var(--focus-width) var(--danger-soft)" : focus ? "0 0 0 var(--focus-width) var(--gold-soft)" : "none";
   const len = typeof value === "string" ? value.length : 0;

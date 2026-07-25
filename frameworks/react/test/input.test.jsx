@@ -112,3 +112,20 @@ test('Input drops a consumer attribute -- the {...rest} escape is gone', () => {
   const html = renderToStaticMarkup(<Input label="A" data-stray="x" />);
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered input -- the {...rest} escape is back');
 });
+
+/* id is a contracted member as of plan 8C3, and it is the ONE global attribute
+ * that is. The component still generates one from the label to wire its own
+ * htmlFor; a consumer id overrides that, because a host pointing an external
+ * <label> or an aria-describedby at this field had no path at all otherwise. */
+test('a consumer id overrides the one generated from the label', () => {
+  const html = renderToStaticMarkup(<Input label="Email" id="signup-email" />);
+  assert.match(html, /id="signup-email"/);
+  assert.match(html, /for="signup-email"/);
+  assert.doesNotMatch(html, /in-email/, 'the generated id is still being used despite an explicit one');
+});
+
+test('without a consumer id the label-derived one is still generated', () => {
+  const html = renderToStaticMarkup(<Input label="Email" />);
+  assert.match(html, /id="in-email"/);
+  assert.match(html, /for="in-email"/);
+});
