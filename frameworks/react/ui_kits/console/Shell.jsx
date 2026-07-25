@@ -3,15 +3,18 @@ import { AppLogo } from '../../components/brand/AppLogo.jsx';
 import { Avatar } from '../../components/display/Avatar.jsx';
 import { IconButton } from '../../components/forms/IconButton.jsx';
 import { Switch } from '../../components/forms/Switch.jsx';
-import { Icon } from './Icon.jsx';
 import { PageHead } from '../../components/navigation/PageHead.jsx';
 import { SideNav } from '../../components/navigation/SideNav.jsx';
 
+/* Phosphor class names rather than <Icon> elements: a SideNavItem's `icon` is a
+ * string Arena draws, per the single-icon convention. Each was the class the
+ * console's own Icon component produced from its short name, at the size Arena
+ * now draws every one of them. */
 const NAV = [
-  { id: 'dashboard', icon: <Icon name="grid" size="var(--icon-lg)" />, label: 'Projects', href: '#projects' },
-  { id: 'deploys', icon: <Icon name="rocket" size="var(--icon-lg)" />, label: 'Deployments', href: '#deploys' },
-  { id: 'activity', icon: <Icon name="activity" size="var(--icon-lg)" />, label: 'Activity', href: '#activity' },
-  { id: 'settings', icon: <Icon name="settings" size="var(--icon-lg)" />, label: 'Settings', href: '#settings' },
+  { id: 'dashboard', icon: 'ph-bold ph-squares-four', label: 'Projects', href: '#projects' },
+  { id: 'deploys', icon: 'ph-bold ph-rocket-launch', label: 'Deployments', href: '#deploys' },
+  { id: 'activity', icon: 'ph-bold ph-pulse', label: 'Activity', href: '#activity' },
+  { id: 'settings', icon: 'ph-bold ph-gear-six', label: 'Settings', href: '#settings' },
 ];
 
 /* Owns no theme state of its own: the truth is the `arena-light` class on
@@ -50,11 +53,14 @@ export function Shell({ active = 'dashboard', onNav, title, actions, children })
         <div style={{ display: 'flex', padding: '0 calc(var(--sp-1) * 2) calc(var(--sp-1) * 5.5)' }}>
           <AppLogo size="sm" mark={<img src="../../../../assets/rotor-crimson.svg" alt="" />} name="Draven" dim="soft" />
         </div>
-        {/* The console is one page, so the anchors' default navigation is
-            suppressed here and the screen switch happens in place. The items keep
-            their href: openable in a new tab, announced as links. */}
+        {/* `onNav` carries the item and no DOM event, so the anchor's own
+            navigation is no longer suppressible from here -- and does not need
+            to be: every href is a hash anchor, so the browser moves the fragment
+            and never reloads, while the screen switch still happens in place off
+            the reported item. The items keep their href either way: openable in
+            a new tab, announced as links. */}
         <SideNav ariaLabel="Primary" items={NAV} active={active}
-          onNav={(id, event) => { event.preventDefault(); if (onNav) onNav(id); }} />
+          onNav={(item) => onNav?.(item.id)} />
         {/* No bottom padding: the aside already ends in its own, and doubling
             them left the avatar sitting on a band of empty space. */}
         <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2.5)', padding: 'calc(var(--sp-1) * 3) calc(var(--sp-1) * 2) 0', borderTop: 'var(--bw) solid var(--color-base-300)' }}>

@@ -41,7 +41,9 @@ import type { OnboardingAnchor, OnboardingStep } from '../../api.generated';
  *  focus contract through the shared
  *  `frameworks/angular/primitives/focus-trap.ts`
  *  (`handleOpenTransition`, `trapTabKey`) rather than a second
- *  implementation. React's `Onboarding.jsx` has none of it -- see
+ *  implementation. React's `Onboarding.jsx` had none of it until plan 8C4, which
+ *  gave it `use-dialog-modal.js` -- a port of this same module, consumed by all
+ *  three React overlays. The divergence that recorded the gap is retired; see
  *  `components-divergences.md`. */
 @Component({
   selector: 'arena-onboarding',
@@ -104,10 +106,17 @@ export class Onboarding {
   protected readonly step = computed<OnboardingStep>(() => this.steps()[this.index()] ?? {});
   protected readonly last = computed(() => this.index() === this.steps().length - 1);
 
-  /** The dialog's accessible name. Falls back through `title` to `eyebrow`
-   *  to a generic step count rather than React's bare `step.title`, which
-   *  renders `role="dialog"` with no name at all on a step that omits
-   *  `title` -- see `components-divergences.md`. */
+  /** The dialog's accessible name. Falls back through `title` to `eyebrow` to a
+   *  generic step count, so a step that omits `title` still names the dialog.
+   *  This chain was this layer's alone until plan 8C4, when `Onboarding.jsx`
+   *  ported it verbatim rather than `OnboardingStep.title` being made required --
+   *  which would have broken a shipped two-layer contract to buy the same result.
+   *  The two layers now agree by construction; keep them that way.
+   *
+   *  Known and accepted: on a step with neither `title` nor `eyebrow`, this
+   *  produces the same string as the progress dots' own `aria-label` below, so a
+   *  screen reader announces the two identically. A positional name is a floor,
+   *  not a substitute for one the caller writes. */
   protected readonly label = computed(() => {
     const current = this.step();
     return current.title ?? current.eyebrow ?? `Step ${this.index() + 1} of ${this.steps().length}`;

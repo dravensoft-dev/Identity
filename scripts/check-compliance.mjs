@@ -79,8 +79,8 @@ export const SUITE_DIRS = [
  *
  * Keyed by the Pascal-case COMPONENT name and the layer the suite actually
  * renders, joined by a `:`. A bare component-name key used to let a mention of
- * EITHER layer's binding file satisfy the claim, which was a real defect: four
- * of these six components (`ConfirmDialog`, `Skeleton`, `Alert`, `BarChart`)
+ * EITHER layer's binding file satisfy the claim, which was a real defect: several
+ * of the components below (`ConfirmDialog`, `Skeleton`, `Alert`, `BarChart`)
  * are bound in both layers, so a suite covering one layer was silently marking
  * the OTHER layer's contract "covered" too, with no suite ever touching it.
  * `ConfirmDialog`'s React suite was marking its Angular contract covered, and
@@ -102,6 +102,7 @@ export const SUITE_DIRS = [
 export const COVERED = {
   'Dialog:react': 'dialog-modal.test.jsx',
   'ConfirmDialog:react': 'dialog-modal.test.jsx',
+  'Onboarding:react': 'onboarding-modal.test.jsx',
   'Menu:react': 'placement-and-branches.test.jsx',
   'Skeleton:react': 'placement-and-branches.test.jsx',
   'Alert:angular': 'alert-role-tones.test.ts',

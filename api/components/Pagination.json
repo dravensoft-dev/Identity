@@ -1,0 +1,14 @@
+{
+  "component": "Pagination",
+  "description": "Page selector for a paged list. Renders a windowed range, never every page.",
+  "api": {
+    "page": { "form": "primitive", "type": "number", "required": true,
+              "description": "The current page, 1-based." },
+    "pageCount": { "form": "primitive", "type": "number", "required": true,
+                   "description": "How many pages there are. Required, and guarded at runtime: a Pagination with no page count renders a window over nothing." },
+    "ariaLabel": { "form": "primitive", "type": "string", "default": "Pagination",
+                   "description": "Names this navigation landmark. Two paginated tables in one dashboard is a routine layout, and until this member existed both carried the identical hardcoded name and were not distinguishable — Pagination.behaviour.json's roles.label exception is what recorded that. Say what is being paged — \"Deployments\", not \"Pages\". Optional so the existing call sites keep working, which means the constant default still stands wherever a caller omits it and the exception is narrowed rather than retired." },
+    "change": { "form": "event", "payload": "number",
+                "description": "A page was chosen; carries the new 1-based page. Never fires for the current page, nor for a page outside 1..pageCount." }
+  }
+}

@@ -3,7 +3,11 @@
  * for the full rationale. */
 import React from "react";
 import { pageWindow } from "./pagination-window.js";
-export function Pagination({ page = 1, pageCount = 1, onChange, style }) {
+export function Pagination({ page, pageCount, ariaLabel = "Pagination", onChange }) {
+  if (page == null)
+    throw new Error("Pagination: `page` is required");
+  if (pageCount == null)
+    throw new Error("Pagination: `pageCount` is required");
   const go = (p) => {
     if (p >= 1 && p <= pageCount && p !== page)
       onChange && onChange(p);
@@ -30,8 +34,8 @@ export function Pagination({ page = 1, pageCount = 1, onChange, style }) {
     className: dir < 0 ? "ph-bold ph-caret-left" : "ph-bold ph-caret-right"
   }));
   return React.createElement("nav", {
-    "aria-label": "Pagination",
-    style: { display: "inline-flex", alignItems: "center", gap: "calc(var(--sp-1) * 1.5)", ...style }
+    "aria-label": ariaLabel,
+    style: { display: "inline-flex", alignItems: "center", gap: "calc(var(--sp-1) * 1.5)" }
   }, nav(-1, page <= 1), pageWindow(page, pageCount).map((p, i) => p === "…" ? React.createElement("span", {
     key: "e" + i,
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-md)", color: "var(--mute)", padding: "0 calc(var(--sp-1) * 1)" }

@@ -43,22 +43,14 @@ function Demo() {
   })), React.createElement("div", {
     className: "sub"
   }, "SideNav — anchors navigate, the active item is aria-current"), React.createElement("div", {
-    className: "row",
-    style: { width: "var(--layout-sidebar)" }
+    style: { width: "var(--layout-sidebar)", marginBottom: "var(--sp-4)" }
   }, React.createElement(SideNav, {
     ariaLabel: "Primary",
     active: "deploys",
-    style: { width: "100%" },
     items: [
-      { id: "dashboard", icon: React.createElement("i", {
-        className: "ph-bold ph-squares-four"
-      }), label: "Projects", href: "#projects" },
-      { id: "deploys", icon: React.createElement("i", {
-        className: "ph-bold ph-rocket-launch"
-      }), label: "Deployments", href: "#deploys" },
-      { id: "settings", icon: React.createElement("i", {
-        className: "ph-bold ph-gear-six"
-      }), label: "Settings" }
+      { id: "dashboard", icon: "ph-bold ph-squares-four", label: "Projects", href: "#projects" },
+      { id: "deploys", icon: "ph-bold ph-rocket-launch", label: "Deployments", href: "#deploys" },
+      { id: "settings", icon: "ph-bold ph-gear-six", label: "Settings" }
     ]
   })), React.createElement("div", {
     className: "sub"

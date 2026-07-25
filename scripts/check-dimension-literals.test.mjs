@@ -172,12 +172,15 @@ test('a default parameter whose name is itself a governed CSS property is a viol
 });
 
 test('a default parameter on a named passthrough component resolves through the alias', () => {
-  // Icon's own prop is called `size`, not `fontSize` -- PASSTHROUGH is what
-  // tells the gate the two are the same value one line away.
-  const src = "function Icon({ name, size = 18, weight = 'bold' }) {\n  return null;\n}";
+  // AppLogo's own prop is called `size`, not `width` -- PASSTHROUGH is what
+  // tells the gate the two are the same value one line away. This fixture used
+  // the console's `Icon` (size -> fontSize) until plan 8C4 deleted that
+  // component and its map entry with it; AppLogo is the surviving entry and
+  // exercises the identical path.
+  const src = "function AppLogo({ mark, size = 18, dim = 'soft' }) {\n  return null;\n}";
   const found = scanDefaultsAndCallSites(src);
   assert.deepEqual(found.map((f) => ({ prop: f.prop, raw: f.raw })), [
-    { prop: 'fontSize', raw: '18' },
+    { prop: 'width', raw: '18' },
   ]);
 });
 
@@ -200,14 +203,14 @@ test('a plain variable assignment outside a parameter list is never in scope', (
 });
 
 // --- Form C: component props at the call site ---------------------------
-// `<Icon size={16} />` renders a dimension at the call site; PASSTHROUGH is
+// `<AppLogo size={16} />` renders a dimension at the call site; PASSTHROUGH is
 // the same named, hand-curated registry form B reads, applied to JSX
 // attributes instead of a default value.
 
 test('a JSX call site overriding a registered passthrough prop with a bare number is a violation', () => {
-  const found = scanDefaultsAndCallSites('<Icon name="plus" size={16} />');
+  const found = scanDefaultsAndCallSites('<AppLogo name="Draven" size={16} />');
   assert.deepEqual(found.map((f) => ({ prop: f.prop, raw: f.raw })), [
-    { prop: 'fontSize', raw: '16' },
+    { prop: 'width', raw: '16' },
   ]);
 });
 
@@ -572,16 +575,23 @@ test('the real boundary: a nested call behind a variable is not caught, the exac
 
 // --- Fix pass 2, finding 4: PASSTHROUGH staleness -------------------------
 
+/* These assert against PASSTHROUGH's REAL contents, which is why they are here:
+ * the map is hand-curated and a change to it is a change to this file. It held
+ * two entries until plan 8C4 deleted the console's `Icon` component, whose entry
+ * then matched nothing and failed the build — `stalePassthrough` catching its own
+ * map, which is exactly what it is for. One entry remains. */
 test('a PASSTHROUGH entry with a match is not stale', () => {
-  assert.deepEqual(stalePassthrough(new Set(['Icon', 'AppLogo'])), []);
+  assert.deepEqual(stalePassthrough(new Set(['AppLogo'])), []);
 });
 
-test('a renamed PASSTHROUGH component fails as stale', () => {
-  assert.deepEqual(stalePassthrough(new Set(['AppLogo'])), ['Icon']);
+test('a PASSTHROUGH entry matching nothing in the tree fails as stale', () => {
+  assert.deepEqual(stalePassthrough(new Set()), ['AppLogo']);
 });
 
-test('every PASSTHROUGH entry is stale when nothing in the tree matches', () => {
-  assert.deepEqual(stalePassthrough(new Set()), ['Icon', 'AppLogo']);
+/* A component present in the tree but absent from the map is NOT stale — the map
+ * is an allowlist of passthrough props, not a census of components. */
+test('a component the map does not name is not reported', () => {
+  assert.deepEqual(stalePassthrough(new Set(['AppLogo', 'Button', 'Tag'])), []);
 });
 
 // --- Regression: comments must never corrupt the balanced-text scan ------

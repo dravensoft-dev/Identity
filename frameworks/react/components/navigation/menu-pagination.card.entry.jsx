@@ -11,21 +11,23 @@ function Demo(){
       <div className="sub" style={{marginBottom:'var(--sp-3)'}}>Menu — actions / overflow</div>
       <div className="row" style={{alignItems:'center'}}>
         <Menu trigger={<Button variant="secondary" iconRight="ph-bold ph-caret-down">Actions</Button>}
+          onSelect={()=>{}}
           items={[
             {header:'Deployment'},
-            {label:'View logs',icon:<i className="ph-bold ph-scroll"/>,onClick:()=>{}},
-            {label:'Duplicate',icon:<i className="ph-bold ph-copy"/>,shortcut:'⌘D',onClick:()=>{}},
+            {label:'View logs',icon:'ph-bold ph-scroll'},
+            {label:'Duplicate',icon:'ph-bold ph-copy',shortcut:'⌘D'},
             {divider:true},
-            {label:'Delete',icon:<i className="ph-bold ph-trash"/>,destructive:true,onClick:()=>{}},
+            {label:'Delete',icon:'ph-bold ph-trash',destructive:true},
           ]} />
         <Menu align="end" trigger={<IconButton label="More options" icon="ph-bold ph-dots-three-vertical" />}
+          onSelect={()=>{}}
           items={[
-            {label:'Rename',icon:<i className="ph-bold ph-pencil-simple"/>,onClick:()=>{}},
-            {label:'Archive',icon:<i className="ph-bold ph-archive"/>,onClick:()=>{}},
+            {label:'Rename',icon:'ph-bold ph-pencil-simple'},
+            {label:'Archive',icon:'ph-bold ph-archive'},
           ]} />
       </div>
       <div className="sub" style={{marginBottom:'var(--sp-3)'}}>Pagination</div>
-      <Pagination page={p} pageCount={12} onChange={setP} />
+      <Pagination page={p} pageCount={12} ariaLabel="Deployments" onChange={setP} />
     </div>
   );
 }
