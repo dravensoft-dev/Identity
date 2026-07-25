@@ -711,18 +711,6 @@ scheduled for deletion the same week.
   is `string` or `boolean` — so it was left alone rather than widened speculatively in the
   middle of a batch. Closing it is one clause beside the one Task 2 added.
 
-- **DA's whole reshape is unverified at runtime.** All six form controls now hand their
-  consumer a value rather than a DOM event — `change` carrying `string` or `boolean`,
-  `Input.blur` carrying the value — and **not one of the six suites can prove it fires.**
-  `frameworks/react/test/` renders with `renderToStaticMarkup` and has no DOM by design, so
-  it can dispatch neither a change nor a blur; each suite says so in a header comment rather
-  than faking a verdict, and `Input`'s validate-on-blur path — the only consumer of the
-  ninth form in the repo — is unverified for exactly the same reason. So the contracts
-  assert the SHAPE of these events and nothing asserts they fire, let alone that they carry
-  what they say. This is Plan E territory, the same place `Tooltip`'s timer sat before
-  `tooltip-timer.test.jsx` paid it: a DOM suite under `frameworks/react/test-dom/` is what
-  closes it, and moving these assertions into the DOM-free directory is not an option.
-
 ### Where the rest of the debt lives
 
 Each of these is a record with its own stale-entry rule: an entry that no longer
