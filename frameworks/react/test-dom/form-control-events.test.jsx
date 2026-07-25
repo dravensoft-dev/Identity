@@ -15,39 +15,29 @@
  * test itself, that `e.target.value` is not an acceptable stand-in for the value.
  *
  * ---------------------------------------------------------------------------
- * WHICH DOM EVENT ACTUALLY REACHES REACT HERE, AND WHY IT IS NOT THE OBVIOUS ONE.
+ * WHICH DOM EVENT DRIVES EACH CONTROL.
  *
- * Measured against this harness before these tests were written; do not replace
- * any of it with the event you would expect in a browser.
+ * These are real browser semantics -- ./preload.js installs the DOM before
+ * react-dom evaluates, so React runs its normal event path rather than the legacy
+ * change-detection polyfill it falls back to when it believes `input` is
+ * unsupported. Each row below was measured against this harness.
  *
- *   Checkbox    element.click()                       -> onChange
- *   RadioGroup  element.click() on a child radio       -> onChange
- *   Select      dispatch 'change' (bubbles)            -> onChange
- *   Input       focus, then set the value through the
- *   Textarea    native setter, then dispatch 'keyup'   -> onChange
- *   Input blur  dispatch 'focusout' (bubbles)          -> onBlur
+ *   Input       set the value through the native setter,
+ *   Textarea    then dispatch 'input' (bubbles)          -> onChange
+ *   Select      set the value, then dispatch 'change'    -> onChange
+ *   Checkbox    element.click()                          -> onChange
+ *   RadioGroup  element.click() on a child radio         -> onChange
+ *   Input blur  element.focus(), then element.blur()     -> onBlur
  *
- * Three of those need explaining.
+ * Two of those are worth explaining, and neither is a workaround.
  *
- * (1) onBlur is 'focusout', not 'blur'. React 17 moved onFocus/onBlur onto the
- * bubbling focusin/focusout pair so they can be delegated at the root container.
- * A literal 'blur' does not bubble, never reaches the container, and a test
- * written that way passes by asserting that nothing happened after nothing
- * happened -- the same trap tooltip-timer.test.jsx records for mouseenter.
+ * (1) Checkbox and radio are driven by 'click', not 'change'. That is React's
+ * own choice in every browser, not something about this harness:
+ * shouldUseClickEvent() in react-dom routes an <input type="checkbox"|"radio">
+ * through getTargetInstForClickEvent, so a dispatched 'change' on one is
+ * ignored outright. click() is also what a user does to a checkbox.
  *
- * (2) A text control does NOT respond to a dispatched 'input'. React decides
- * once, at react-dom module-evaluation time, whether the browser supports the
- * input event; when it decides no, it falls back to a polyfill that starts
- * watching a field on focusin and re-reads its value on keydown/keyup. In this
- * harness it decides no -- harness.jsx registers happy-dom's globals in its
- * module BODY, and ES module imports are evaluated before any body statement, so
- * react-dom initialises while `document` is still undefined and latches the
- * fallback. Hence focus-then-keyup, which is also what a real keystroke looks
- * like. If the harness ever registers the DOM before react-dom loads, a plain
- * 'input' will start working and this route will keep working too, because a
- * keyup after a value change is a genuine change either way.
- *
- * (3) The value must be written through the prototype's own setter, not through
+ * (2) The value must be written through the prototype's own setter, not through
  * `el.value = x`. React installs a value tracker as an own property of the node
  * and skips an event whose value it believes it already knows; assigning through
  * that tracker updates its bookkeeping, so React concludes nothing changed and
@@ -68,19 +58,18 @@ afterEach(cleanup);
 
 /** Write a value the way a keystroke does: through the element prototype's own
  *  setter, leaving React's instance-level value tracker stale so React agrees
- *  something changed. See note (3) in this file's header. */
+ *  something changed. See note (2) in this file's header. */
 function setNativeValue(el, next) {
   const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set;
   setter.call(el, next);
 }
 
-/** Type into a text-like control: focus it so React begins watching it, change
- *  its value, then release a key. See note (2) in this file's header. */
+/** Type into a text-like control: change its value and emit the `input` event a
+ *  browser emits for a keystroke. */
 function typeInto(el, next) {
-  act(() => { el.focus(); });
   act(() => {
     setNativeValue(el, next);
-    el.dispatchEvent(new Event('keyup', { bubbles: true }));
+    el.dispatchEvent(new Event('input', { bubbles: true }));
   });
 }
 
@@ -110,7 +99,8 @@ test('Input blur hands the consumer the value, and validate runs on it', () => {
       onBlur={(v) => seen.push(v)} />,
   );
   const field = root.querySelector('input.arena-input');
-  act(() => { field.dispatchEvent(new Event('focusout', { bubbles: true })); });
+  act(() => { field.focus(); });
+  act(() => { field.blur(); });
   assert.equal(seen.length, 1, 'the blur handler did not fire');
   assert.equal(typeof seen[0], 'string', 'the payload is not a string -- a DOM event is travelling');
   assert.deepEqual(seen, ['nope'], 'blur did not carry the value');

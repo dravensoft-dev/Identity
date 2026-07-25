@@ -231,6 +231,22 @@ what its six suites prove and nothing would fail to say so. `testStep()` in
 `scripts/check-all.mjs` lists all three framework directories, and
 `check-all.test.mjs` asserts that array by literal value.
 
+**`frameworks/react/test-dom/` must be run through `--preload
+./frameworks/react/test-dom/preload.js`, and that is not a convenience.** react-dom
+decides **once, at its own module evaluation**, whether the browser supports the
+`input` event: `canUseDOM` gates the block computing `isInputEventSupported`, and if a
+DOM is not already installed the flag latches false and React falls back to its legacy
+change-detection polyfill, under which a dispatched `input` or `change` reaches an
+`onChange` handler **zero** times, silently. Registering happy-dom from `harness.jsx`'s
+module body is too late (ES imports evaluate first) and — measured, so do not retry it —
+so is registering it from a **separate ES module imported ahead of `react-dom/client`**:
+bun evaluates `react-dom` before that module anyway. Only a preload is early enough. All
+three invocation sites pass it (`test:react-dom`, `test`, and `testStep()`), and
+`harness.jsx` **throws** when `document` is missing rather than installing a fallback,
+because a fallback would silently run those suites under the legacy semantics. The
+preload must never be applied to `frameworks/react/test/`, for the reason in the
+paragraph above.
+
 **A dimension in a framework layer is a token or a derivation of tokens. A bare
 literal is a bug.** This is machine-checked: `bun run check:dimensions` scans
 `frameworks/` for literals in the properties the token layer governs and fails on
@@ -515,28 +531,6 @@ scheduled for deletion the same week.
   does a pattern express an optional requirement?" was answered by pushing anything
   per-component into the binding rather than the pattern, and a whole pattern applying
   only sometimes is the same problem one level up, still open.
-- **React uses its legacy change detection inside `frameworks/react/test-dom/`, every suite
-  there works around it, and the CAUSE IS NOT KNOWN.** What is measured, repeatedly:
-  dispatching `input` on a React-controlled `<input>` fires `onChange` **zero** times, and so
-  does dispatching `change`; focus followed by `keyup` **does** fire it, which is React's legacy
-  polyfill path; `onBlur` is `focusout` (React 17 moved it to the bubbling pair); a value must be
-  written through the **prototype's** `value` setter or React's instance-level tracker concludes
-  nothing changed; and a swallowed `TypeError: null is not an object (evaluating 'inst.tag')`
-  surfaces from `getInstIfValueChanged`'s null watcher. **One plausible cause was tested and
-  falsified — do not retry it.** The obvious hypothesis is import ordering: ES imports are
-  hoisted, so `react-dom/client` would initialise while `document` is undefined and
-  `isInputEventSupported` would latch false. Registering happy-dom from a separate module
-  imported *before* `react-dom/client` — verified by logging that `document` is a real object at
-  that point — changes nothing; `input` still reaches React zero times. `'oninput' in document`
-  is true here and `document.documentMode` is undefined, so React's own feature test should pass.
-  Plan 8C3 first wrote the falsified hypothesis into this entry as though it were measured, then
-  corrected it; the correction is the useful part, because a reader who trusted the first version
-  would attempt a fix that demonstrably does not work. **This is not cosmetic:** it silently
-  changes which events a DOM suite may use, and a suite written against real browser semantics
-  fails here for a reason nothing in the failure names. Whoever closes it should instrument
-  react-dom's `canUseDOM` and `isInputEventSupported` directly, and budget rewriting all six tests
-  in `form-control-events.test.jsx`, which are written against the legacy semantics.
-
 - **A behaviour text scan was designed, built, measured and rejected — do not
   re-propose it without reading this.** Plan 7c's spec proposed a static scan of
   component sources as the cheap tier beneath the render suites. It was

@@ -256,16 +256,19 @@ substance because each was earned; 30–36 are new to this plan.
     keyboard work targets the wide layout; the narrow layout keeps an exception naming the variant.
     This is the same "a binding cannot scope an exception to a variant" limit `Skeleton` already
     proves, and Task 12 must not pretend otherwise.
-34a. **React uses its LEGACY change detection in `frameworks/react/test-dom/`, and Tasks 10 and 12
-    must plan around it.** Measured in Task 5: a dispatched `input` reaches React **zero** times
-    and so does `change`; a text field's change needs focus plus `keyup`; `onBlur` is `focusout`;
-    a value must be written through the PROTOTYPE's `value` setter. **`keydown` is unaffected**, so
-    arrow-key navigation dispatches normally — but any focus assertion must use the bubbling pair.
-    **The cause is NOT known, and the obvious hypothesis was tested and falsified**: registering
-    happy-dom from a separate module imported before `react-dom/client` does not change the
-    behaviour, so import ordering is not it. See `harness.jsx`'s header and `CLAUDE.md`'s Known
-    debt for what was ruled out. **Do not attempt a fix inside a keyboard task** — the mechanism is
-    open and closing it rewrites all six tests in `form-control-events.test.jsx`.
+34a. **`frameworks/react/test-dom/` now runs under real browser event semantics, and a suite must
+    be run through the preloaded invocation.** This supersedes the original constraint, which told
+    Tasks 10 and 12 to plan around React's legacy change detection and said the cause was unknown.
+    **The cause was module ordering after all** — settled by instrumenting react-dom's `canUseDOM`
+    directly: bun evaluates `react-dom` before a test module's body *and* before an ES module
+    imported ahead of it, so `isInputEventSupported` latched false. `bun test --preload
+    ./frameworks/react/test-dom/preload.js` installs the DOM early enough; all three invocation
+    sites pass it, and `harness.jsx` throws if it is missing. So: a dispatched `input` drives
+    `Input`/`Textarea`, `change` drives `Select`, `click()` drives checkbox and radio (React's own
+    `shouldUseClickEvent`, true in every browser), `focus()`/`blur()` drives `onBlur`, and
+    `keydown` is unaffected as before. A value still must be written through the PROTOTYPE's
+    `value` setter — that is React's value tracker, not the harness. The six tests in
+    `form-control-events.test.jsx` were rewritten accordingly.
 
 34. **A compliance suite's `behavioural` map is trusted, not re-derived.** `comparePattern` returns
     `null` for requirements no single element can decide (`focus.*`, `keyboard.*`); a suite must name

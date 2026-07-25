@@ -11,8 +11,8 @@ import { Input } from '../components/forms/Input.jsx';
  * field has been touched and nothing here can touch it. Both need a real DOM; no grep
  * of the source stands in for a render assertion, so they are simply absent here
  * rather than faked. Both are now verified where a DOM exists:
- * frameworks/react/test-dom/form-control-events.test.jsx dispatches a real keyup and
- * a real focusout and asserts each payload's TYPE before its value.
+ * frameworks/react/test-dom/form-control-events.test.jsx dispatches a real input
+ * event and a real blur and asserts each payload's TYPE before its value.
  *
  * What IS verified is the half SSR can see: that `validate` is accepted and shows
  * nothing before interaction, that the flattened natives reach the control now that
