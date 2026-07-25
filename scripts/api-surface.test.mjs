@@ -522,17 +522,28 @@ test('classify surfaces a functionInput whose return is a platform type as platf
     { form: 'platform', type: 'React.MouseEvent' });
 });
 
-/* THE BOUNDARY, and it is deliberate. `(item: T) => React.ReactNode` is React's
- * spelling of a PARAMETERISED SLOT (R3 -- a slot that fills the interior of an
- * element Arena renders), not of a function whose RESULT Arena consumes as a
- * value. The reader does not model that shape yet, and it must keep throwing:
- * silently absorbing a render prop into functionInput would classify a slot as
- * data and close the door Table.render needs left open. */
+/* THE BOUNDARY, and it is an ENFORCEMENT rather than a gap. `(item: T) =>
+ * React.ReactNode` is React's spelling of a PARAMETERISED SLOT (R3 -- a slot
+ * that fills the interior of an element Arena renders), not of a function whose
+ * RESULT Arena consumes as a value. R3 is NOT why the reader refuses it: R3
+ * permits it, because it fills rather than replaces. It is refused because a
+ * per-item renderer is not a member at all -- the convention that removed
+ * `ActivityFeed.renderItem` removed `Calendar.renderEvent` and
+ * `TableColumn.render` under the same reason, which is Angular: per-item
+ * projection needs a structural directive and `ngTemplateOutlet`, a binding no
+ * row of the binding table covers and no reader function reads. So no contract
+ * may declare such a member, and refusing every one the reader meets is correct
+ * rather than provisional. The message must keep saying so: an edit that
+ * quietly reverts it to "not modelled yet" describes a future that was decided
+ * against, and the third assertion below is what fails when someone tries. */
 test('classify throws on a function returning a node -- that is a parameterised slot (R3), not a functionInput', () => {
   assert.throws(() => classify('(item: string) => React.ReactNode'), (err) => {
     assert.ok(err instanceof UnrecognisedShape);
     assert.match(err.message, /parameterised slot/i);
     assert.match(err.message, /R3/);
+    /* The refusal names its actual reason -- the convention, or the Angular
+     * fact behind it -- never the reader's own limitation. */
+    assert.match(err.message, /renderItem|ngTemplateOutlet/);
     return true;
   });
 });

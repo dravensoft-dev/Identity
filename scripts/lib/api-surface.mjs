@@ -195,15 +195,24 @@ export function classify(raw) {
        * BOUNDARY worth naming: an arrow returning a node is React's spelling of
        * a PARAMETERISED SLOT (R3), which fills the interior of an element Arena
        * renders. It is not a function whose result Arena consumes as a value,
-       * and absorbing it here would classify a slot as data. The reader does
-       * not model that shape yet; Table.render is where it will matter. */
+       * and absorbing it here would classify a slot as data. That refusal is an
+       * ENFORCEMENT, not a gap, and R3 is not its reason -- R3 permits the
+       * shape. A per-item renderer is simply not a member: the convention that
+       * removed ActivityFeed.renderItem removed Calendar.renderEvent and
+       * TableColumn.render too, because per-item projection has no Angular
+       * answer short of a structural directive and ngTemplateOutlet, which no
+       * binding-table row covers and no reader function reads. No contract may
+       * declare such a member, so refusing every one is correct rather than
+       * provisional -- see api/README.md. */
       const nonNull = returns.split('|').map((s) => s.trim()).filter((s) => s !== 'null' && s !== 'undefined');
       const retType = nonNull.length === 1 ? classify(nonNull[0]) : { form: 'union' };
       if (retType.form === 'platform') return retType;
       if (retType.form === 'slot') {
         throw new UnrecognisedShape(
-          `a function returning a node is a parameterised slot (R3), not a functionInput, `
-          + `and the reader does not model that shape yet: ${ts}`,
+          `a function returning a node is a per-item renderer, and a per-item renderer is not a member: `
+          + `the convention that removed ActivityFeed.renderItem removes it too (api/README.md). `
+          + `It IS a parameterised slot and R3 permits it -- Angular is what does not, because per-item `
+          + `projection needs ngTemplateOutlet, which no binding-table row covers and no reader function reads: ${ts}`,
         );
       }
       if (retType.form !== 'primitive' && retType.form !== 'named' && retType.form !== 'enum') {

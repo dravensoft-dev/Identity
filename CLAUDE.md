@@ -172,8 +172,15 @@ compares the signature between the contract and each layer. It deliberately reve
 refusal the layer carried until now — an inbound function that returns a value was none of
 the eight, which is why the charts' `valueFormatter` became `valueSuffix` — and it reverses
 it for input controls alone; a chart declaring a formatter still fails. A return of
-`React.ReactNode` is **not** one: that is a parameterised slot (R3), and the reader throws on
-it rather than admitting a render prop through this form.
+`React.ReactNode` is **not** one, and the reader's refusal of it is an **enforcement rather
+than a gap**: a per-item renderer is not a member at all. R3 is not the reason — R3 permits
+the shape, since it fills the cell or row Arena renders rather than replacing it. The reason
+is Angular, which has no answer for per-item projection short of a structural directive and
+`ngTemplateOutlet`, a binding no row of the table covers and no reader function reads. That
+convention removed `ActivityFeed.renderItem`, then `Calendar.renderEvent` and
+`TableColumn.render`, so no contract may declare such a member and refusing every one the
+reader meets is correct rather than provisional. **This checks a form, not R3** — `api/README.md`
+carries the rule and the capability it costs.
 `api/README.md` is the normative
 statement and the first thing a new platform target reads, the way `tokens/src/TYPE-MAP.md`
 is for the token layer. Shared objects and enums are declared once in `api/types/` and
@@ -648,8 +655,14 @@ scheduled for deletion the same week.
   rendered tree; `check:compliance` is the only layer that can see a rendered tree,
   and it does not read contracts. Both are authoring rules the audit protocol
   applies, which means they are exactly as strong as the audit that applied them.
-  `Table.render` in plan C is where R3 first matters, and it will matter with no
-  gate behind it. Two more gaps, neither an authoring rule and both closeable in
+  `Table.render` was named here as the member where R3 would first matter; it never
+  did, because the per-item convention removed it rather than modelling it, and the
+  reader refuses that shape on the convention's authority and not R3's. **No shipped
+  contract declares a parameterised slot** — verify with `grep -rn '"params"'
+  api/components/`, whose only hit is `Input.validate`'s `functionInput` — so R3 is
+  today unchecked and also unexercised. That is not a mitigation: the moment a
+  contract does declare one, the rule is exactly as unverifiable as this entry says.
+  Two more gaps, neither an authoring rule and both closeable in
   principle: **`default` is documented in the contract format and read by nothing** —
   most shipped contracts carry one, but `spec.default` is referenced nowhere in
   `scripts/`, so a contract's stated default can disagree with both layers' real
