@@ -5,7 +5,7 @@ The card a chart sits on: an uppercase muted microlabel, optional actions on the
   <BarChart labels={['Mon','Tue','Wed','Thu','Fri']} values={[12,19,9,22,17]} seriesLabel="Deploys" />
 </ChartCard>
 
-<ChartCard title="p95 latency" actions={<Select size="sm" options={ranges} />}>
+<ChartCard title="p95 latency" actions={<Select options={ranges} value={range} onChange={setRange} />}>
   <LineChart labels={days} values={latency} seriesLabel="ms" slot={5} area />
 </ChartCard>
 ```
