@@ -115,9 +115,11 @@ So `focus.trap` **can** be flipped to `true` with real proof — for the half we
 - `frameworks/react/test-dom/behavioural.test.jsx` — the seven pinned assertions invert.
 - `frameworks/react/test-dom/dialog-modal.test.jsx` — the `BEHAVIOURAL` map and its long header.
 - `scripts/check-compliance.mjs` — `COVERED` gains `Onboarding:react`.
-- `api/components/ConfirmDialog.json`, `api/types/onboarding-step.json` — required-ness only.
-- `frameworks/angular/primitives/confirm-dialog/confirm-dialog.ts` and, if Task 1 decides so,
-  `onboarding/onboarding.ts` — a required signal input.
+- `api/components/ConfirmDialog.json` — required-ness only. **`api/types/onboarding-step.json` does
+  NOT move**: Task 1's Decision 1 kept `OnboardingStep.title` optional.
+- `frameworks/angular/primitives/confirm-dialog/confirm-dialog.ts` — a required signal input.
+  **`onboarding/onboarding.ts` does NOT move either**, for the same decision: it is the layer React
+  is being brought into line with, not the one that changes.
 - `frameworks/react/components/navigation/Menu.jsx`, `Pagination.jsx`, `SideNav.jsx` + quartets.
 
 ---
@@ -179,6 +181,33 @@ gaining a required `id`. Confirm that, or name a different one.
 
 Also report: `Dialog.d.ts` declares `width?: number` while `Dialog.jsx` defaults it to the string
 `'calc(var(--sp-1) * 120)'`. The contract must declare `string`, and the `.d.ts` is what is wrong.
+
+### The three decisions, as taken (2026-07-25)
+
+Recorded here because Tasks 5, 7, 9 and 11 read them. **All three went to a shape this plan did not
+list**, and in each case the shape taken is the one `api/README.md` or the Angular layer had already
+settled. The full reasoning and the measurements behind them are in `.superpowers/sdd/progress.md`.
+
+**Decision 1 — React mirrors Angular's fallback chain; `OnboardingStep.title` stays optional.**
+`Onboarding.jsx`'s accessible name becomes `step.title ?? step.eyebrow ?? "Step N of M"`, which is
+what `frameworks/angular/primitives/onboarding/onboarding.ts:111-113` already computes and why
+Angular's own `onboarding.behaviour.json` declares `"exceptions": []` today. So no contract breaks,
+no second Angular component moves, `roles.label` retires with the other four, and `Onboarding` ends
+this batch exceptionless in **both** layers. The cost — a derived name is not an editorial one, which
+is exactly why `Table.label` and `SegmentedControl.ariaLabel` were guarded rather than defaulted —
+is accepted on the grounds that `Step 1 of 3` is positional rather than a restatement of the
+component's type, and is recorded as debt in Task 11.
+
+**Decision 2 — `nav` carries the whole `SideNavItem`.** The `Breadcrumbs` precedent, which
+`api/README.md` states twice: R1's *"a field that is a function becomes an event of the component,
+carrying the object in its payload"*, and the event section's *"the platform event leaves the payload
+and the item alone travels"*. `href` stays and the `<a>`/`<button>` branch is untouched, so
+open-in-new-tab and middle-click keep working; what goes is `preventDefault()`.
+
+**Decision 3 — `select` carries the whole `MenuItem`, and `MenuItem` declares no `id`.** Same rule,
+same precedent. It also avoids a problem the id-based shape would have created: `{ divider: true }`
+and `{ header: 'Deployment' }` are legitimate entries of `items` today carrying neither label nor id,
+and a required `id` would have forced a meaningless one onto every divider and header.
 
 ---
 
@@ -555,6 +584,20 @@ dismissal it already knows how to report, and no new member appears.
   omitted `title` now must pass one. Run `bun run check:angular` — `ngc --strictTemplates` is the
   authority that a required input is actually satisfied at every binding site.
 
+  **Measured in Task 1, so do not go hunting: there is exactly ONE call site and it is a
+  `.prompt.md`.** No test renders `<arena-confirm-dialog>` at all —
+  `confirm-dialog-focus-trap.test.ts:11-18` records why (this harness runs JIT, so a template binding
+  throws NG0303 and `setInput()` silently no-ops), and `confirm-dialog-variants.test.ts` exercises
+  only `confirmDialogStyles()`. So there is no fixture to fix.
+
+  **And the one call site uses the hazardous spelling.** `confirm-dialog.prompt.md` writes
+  `title="Delete project Ardennes?"` as a static attribute, which is precisely the unfixed defect
+  `components-divergences.md:68-73` records: `confirm-dialog`'s host is the fixed full-viewport
+  scrim, so a `title` attribute on it paints a browser tooltip **over the entire viewport** for as
+  long as the dialog is open. Making the input required makes that spelling more likely, not less.
+  Change the prompt to `[title]="…"` and say so in the commit. The proper fix — `'[attr.title]':
+  'null'` applied to all nine affected primitives at once — stays out of scope and stays recorded.
+
 - [ ] **Step 5: Retire the five exceptions** from `ConfirmDialog.behaviour.json`. **`roles.element`
   STAYS** — `role="alertdialog"` is deliberate, arguably more correct for a destructive
   confirmation, and the Angular primitive makes the same choice, so the layers agree. Retiring it
@@ -580,8 +623,8 @@ one commit, and that `roles.element` stays and why.
 
 **Files:** modify `Onboarding.jsx`, its `.behaviour.json`/`.prompt.md`; create
 `frameworks/react/test-dom/onboarding-modal.test.jsx`; modify `scripts/check-compliance.mjs`
-(`COVERED`); possibly `api/types/onboarding-step.json` and `onboarding/onboarding.ts` per Task 1's
-Decision 1. Regenerate.
+(`COVERED`). Regenerate. **Neither `api/types/onboarding-step.json` nor `onboarding/onboarding.ts`
+moves** — Task 1's Decision 1 settled that, and this task is single-layer as a result.
 
 **Interfaces:** consumes Task 2's hook. **`check:compliance` 6 of 66 → 7 of 66.**
 
@@ -618,10 +661,23 @@ coincidence. `Onboarding` keeps `aria-label` rather than moving to `aria-labelle
 from the *current step's* title and changes as the tour advances, which an id reference cannot follow
 without re-pointing on every step.
 
-- [ ] **Step 3: Apply Task 1's Decision 1** for `roles.label`. If the step title became required,
-  retire `roles.label` and move `api/types/onboarding-step.json` and `arena-onboarding` in this same
-  commit, exactly as Task 4 moved `ConfirmDialog`'s pair. If it did not, keep `roles.label` with a
-  reason naming the untitled-step case, and record the third instance of the variant limit.
+- [ ] **Step 3: Apply Task 1's Decision 1** — **the fallback chain, and `roles.label` retires.**
+  `Onboarding.jsx`'s `aria-label` stops being the bare `step.title` and becomes
+  `step.title ?? step.eyebrow ?? <template literal: Step {index+1} of {steps.length}>`, a direct port of
+  `frameworks/angular/primitives/onboarding/onboarding.ts:111-113`. **Read that computed and its doc
+  comment first** — it names React's bare `step.title` as the defect and cites
+  `components-divergences.md`, so this is React being brought into line with a decision the Angular
+  layer already made and already ships with `check:behaviour` green.
+
+  `roles.label` then retires with the other four, leaving `"exceptions": []`, and `Onboarding` ends
+  this batch exceptionless in **both** layers. **No contract changes**: `OnboardingStep.title` stays
+  optional, `arena-onboarding` is untouched, and the variant limit gains no third instance.
+
+  The `.prompt.md` must say what the fallback is and that a caller who wants a useful name still
+  supplies a step `title` — a positional name is a floor, not a substitute. Task 11 records the cost
+  as debt: `Table.label` and `SegmentedControl.ariaLabel` were guarded rather than defaulted to
+  refuse exactly this shape, and the ground for accepting it here is that `Step 1 of 3` is positional
+  rather than a restatement of what the component is.
 
 - [ ] **Step 4: Register the coverage**
 
@@ -682,8 +738,21 @@ modify the quartet and call sites; regenerate. **+1/+1 → 44/64.**
 - [ ] **Step 1: Apply Task 1's Decision 3.** `MenuItemDef` cannot keep `onClick` (R1: a field is a
   primitive or an enum) and cannot keep `icon?: React.ReactNode` (R1, and the single-icon convention
   makes an icon a Phosphor class-name string Arena draws). Write `MenuItem` with the fields the
-  decision settled — at minimum `id` (required string), `label`, `icon`, `shortcut`, `destructive`,
-  `disabled`, `divider`, `header` — and `Menu.select` as an event carrying the activated `id`.
+  decision settled: `label`, `icon`, `shortcut`, `destructive`, `disabled`, `divider`, `header` —
+  every one of them optional, exactly as today minus `onClick` — and **`Menu.select` as an event
+  whose payload is `MenuItem`, the whole item.**
+
+  **`MenuItem` declares NO `id`.** That is the decision, and its reason is measured rather than
+  stylistic: `{ divider: true }` and `{ header: 'Deployment' }` are legitimate entries of `items`
+  today — see `menu-pagination.card.entry.jsx` and `Menu.card.html` — and carry neither label nor id,
+  so a required `id` would force a meaningless one onto every divider and header. Carrying the object
+  is also what R1 states literally (*"a field that is a function becomes an event of the component,
+  carrying the object in its payload"*) and what `Breadcrumbs.navigate` already ships as
+  `"payload": "Crumb"`.
+
+  `Menu.jsx`'s `run` reports `onSelect?.(it)` in place of `it.onClick && it.onClick()`. Measured
+  before deciding: no call site closes over state an item-based handler cannot reach, and no two
+  labels collide inside one menu, so rewriting the call sites is mechanical.
 
 - [ ] **Step 2: `MenuAlign`** — `start`, `end`. **Compare it against every existing type in
   `api/types/` before adding it**, the way `SegmentedControlSize` was compared against all
@@ -744,7 +813,24 @@ and call sites; regenerate. **+1/+1 → 46/66. This completes Plan C.**
   survive: present ⇒ an `<a>`, absent ⇒ a `<button>`.
 
 - [ ] **Step 3: The contract**, with `ariaLabel` required and guarded, `items` a required array of
-  `SideNavItem`, `active` a string, and `nav` the event Decision 2 settled. `style` drops (R4).
+  `SideNavItem`, `active` a string, and `nav` declared **`"payload": "SideNavItem"`** — the whole
+  item, per Task 1's Decision 2. `style` drops (R4).
+
+  **`href` stays and the `<a>`/`<button>` branch is untouched**, so ctrl-click, middle-click and
+  open-in-new-tab keep working for a consumer who wires nothing. What goes is `preventDefault()`, and
+  the loss is recorded in `SideNav.prompt.md` modelled word-for-word on `Breadcrumbs.prompt.md` —
+  including its Don't line. **`SideNav.prompt.md` currently argues the OPPOSITE** (*"`onNav` receives
+  the click event as its second argument for exactly this case"*) and must be rewritten, not appended
+  to. So must `SideNavProps`' own `onNav` doc comment, which makes the same argument.
+
+  Two call sites move: `ui_kits/console/Shell.jsx` loses its `event.preventDefault()` and becomes
+  `onNav={(item) => onNav?.(item.id)}` — its four NAV entries are `#hash` anchors, so the browser's
+  own navigation changes the fragment and does **not** reload, and the console keeps working — and
+  `frameworks/react/test/side-nav.test.jsx:35-59`, whose two tests exist precisely to pin the second
+  argument and are inverted to assert the item alone travels. Note also that making `ariaLabel`
+  required removes `SideNav.jsx`'s `ariaLabel = 'Primary'` default and therefore breaks **seven**
+  render sites in that same suite (lines 13, 19, 29, 40, 55, 59, 64); both production callers already
+  pass one. The doc comment's own argument is that the default *is* the defect.
 
 - [ ] **Step 4: Migrate, fix call sites, suite, R4 proofs, gates, commit.**
   Expected: `check-api: 46 contract(s) hold across 66 layer implementation(s)`. **Plan C is
@@ -823,14 +909,25 @@ Step 2 fixes postdated its sweep, and a close-out claiming 23/23 has to claim it
   carries 972 lines from plans B through 8C3, so this completes a record rather than starting one.
   **Do not rewrite any released section.** A release is frozen the moment it is cut, because the
   plugin is served from the tag. Breaking changes to spell out: `Dialog.title`, `ConfirmDialog.title`
-  and `SideNav.ariaLabel` required; `MenuItemDef.onClick` replaced by `Menu.select`; `SideNav.onNav`
-  reshaped; node-valued `icon`/`label` now strings; `style` gone from the four.
+  and `SideNav.ariaLabel` required; `MenuItemDef.onClick` replaced by `Menu.select`, whose payload is
+  the whole `MenuItem`; `SideNav.onNav` replaced by `nav`, whose payload is the whole `SideNavItem`,
+  with `preventDefault()` no longer reachable from the handler; node-valued `icon`/`label` now
+  strings; `style` gone from the four. **No step-title change** — Decision 1 kept
+  `OnboardingStep.title` optional, so nothing about `Onboarding`'s contract is breaking; what it
+  gained is a fallback accessible name.
+
+  Also correct `CHANGELOG.md:680`, which cites *"`onNav`'s event argument"* and is now false. It sits
+  inside `[Unreleased]` (which spans lines 7–1002; the first versioned heading is `## [4.0.0]` at
+  1003), so it is editable and this rule is not violated by fixing it.
 
 - [ ] **Step 6: CLAUDE.md.** Record the shared hook and that React and Angular now solve the modal
   focus contract the same way. **Retire the debt entries this batch actually paid — verify each
   before deleting.** The `dialog-modal` half of the accessibility debt is the obvious one. Add new
-  debt: whatever `roles.label` decision Task 1 took, the D1 flatten's unguarded loss, and the fact
-  that the trap's interior is checked by a person.
+  debt: **`Onboarding`'s fallback accessible name is a positional one, not an editorial one** — the
+  shape `Table.label` and `SegmentedControl.ariaLabel` were guarded rather than defaulted to refuse,
+  now shipped deliberately in both layers and unfalsifiable by any suite, exactly as the charts'
+  `aria-label` debt already records; the D1 flatten's unguarded loss; and the fact that the trap's
+  interior is checked by a person.
 
 - [ ] **Step 7: Delete the two executed plans**
 
