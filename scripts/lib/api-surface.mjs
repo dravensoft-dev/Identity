@@ -115,20 +115,67 @@ export function classify(raw) {
   const arrow = /^\(([\s\S]*)\)\s*=>\s*([\s\S]+)$/.exec(ts);
   if (arrow) {
     /* An arrow is an EVENT only if it returns void. `event` is the vocabulary's
-     * one outbound form -- a name plus a payload -- and the seven inbound forms
-     * are all data; an inbound function that RETURNS a value is none of the
-     * eight. Judging the arrow by its parameter alone read
+     * one outbound form -- a name plus a payload -- and the inbound forms are
+     * otherwise all data. Judging the arrow by its parameter alone read
      * `(value: number) => string` as an event with payload `number`, which
      * would have let a contract declare a formatter, both layers agree with it,
      * and check:api call it green. The return type is right there in the
      * declaration, so this is one of the few vocabulary edges the reader can
-     * actually hold. See api/README.md, "The vocabulary: eight forms". */
+     * actually hold. See api/README.md, "The vocabulary: nine forms". */
     const returns = arrow[2].trim();
     if (returns !== 'void') {
-      throw new UnrecognisedShape(
-        `an inbound function that returns "${returns}" is none of the eight forms — `
-        + `only an event (returning void) is a function member: ${ts}`,
-      );
+      /* The NINTH form. An inbound function that returns a value is a
+       * functionInput -- the consumer hands the component a function it calls
+       * on its value and whose result it uses. It is legal only in a
+       * data-entry control, and that restriction lives in check-api (the
+       * contract's `"kind": "input"`), not here: nothing about the arrow says
+       * which component it belongs to, so classify() reads the SHAPE and the
+       * gate holds the rule.
+       *
+       * The signature is modelled rather than carried as free text. The return
+       * is reduced to its non-null member (`string | null | undefined` is the
+       * message, or none) and classified, so R4 still catches a platform
+       * return; the parameters are classified the same way, and split
+       * depth-aware because the comma inside a generic is not a separator.
+       * Unlike an event, a functionInput may declare more than one parameter:
+       * an event carries exactly one payload, a signature is whatever it is.
+       *
+       * A shape the reader cannot model still throws -- and one of those is a
+       * BOUNDARY worth naming: an arrow returning a node is React's spelling of
+       * a PARAMETERISED SLOT (R3), which fills the interior of an element Arena
+       * renders. It is not a function whose result Arena consumes as a value,
+       * and absorbing it here would classify a slot as data. The reader does
+       * not model that shape yet; Table.render is where it will matter. */
+      const nonNull = returns.split('|').map((s) => s.trim()).filter((s) => s !== 'null' && s !== 'undefined');
+      const retType = nonNull.length === 1 ? classify(nonNull[0]) : { form: 'union' };
+      if (retType.form === 'platform') return retType;
+      if (retType.form === 'slot') {
+        throw new UnrecognisedShape(
+          `a function returning a node is a parameterised slot (R3), not a functionInput, `
+          + `and the reader does not model that shape yet: ${ts}`,
+        );
+      }
+      if (retType.form !== 'primitive' && retType.form !== 'named' && retType.form !== 'enum') {
+        throw new UnrecognisedShape(`a functionInput return must be a primitive, enum or named type: ${ts}`);
+      }
+      const params = {};
+      for (const part of splitTopLevel(arrow[1], ',').map((s) => s.trim()).filter(Boolean)) {
+        const colon = part.indexOf(':');
+        if (colon === -1) throw new UnrecognisedShape(`functionInput parameter has no type: ${ts}`);
+        const pType = classify(part.slice(colon + 1));
+        if (pType.form === 'platform') return pType;
+        if (pType.form === 'slot') {
+          throw new UnrecognisedShape(`a functionInput parameter may not be a node: ${ts}`);
+        }
+        /* A parameter is spelled the way every other position spells its
+         * subject: by declared TYPE name where there is one, and by FORM name
+         * for consumer data, which has nothing to declare. An inline literal
+         * union has neither, so its own text stands in -- no contract can name
+         * it, which is the correct outcome: an enum belongs in api/types/. */
+        params[part.slice(0, colon).trim()] = pType.type
+          ?? (pType.form === 'consumerData' ? 'consumerData' : part.slice(colon + 1).trim());
+      }
+      return { form: 'functionInput', params, returns: retType.type ?? nonNull[0].trim() };
     }
     const params = arrow[1].trim();
     if (!params) return { form: 'event', payload: null };

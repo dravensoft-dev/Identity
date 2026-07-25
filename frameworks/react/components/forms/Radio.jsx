@@ -1,22 +1,11 @@
 import React from 'react';
-/** Single selection. `RadioGroup` governs the value; each `Radio` is an option.
- * Selected = crimson dot inside the ring. Use Radio when the options are
- * mutually exclusive and it's good to see them all; for many options, use Select. */
-export function RadioGroup({ value, onChange, name, children, style, ...rest }) {
-  const gname = name || 'rg-' + Math.random().toString(36).slice(2, 7);
-  const items = React.Children.map(children, (child) =>
-    React.isValidElement(child)
-      ? React.cloneElement(child, { name: gname, checked: child.props.value === value, onSelect: onChange })
-      : child);
+/** One option inside a RadioGroup. Selected = crimson dot inside the ring.
+ * `name`, `checked` and `onSelect` are injected by `RadioGroup` and are not
+ * part of Radio's public API. */
+export function Radio({ value, label, hint, name, checked = false, onSelect, disabled = false }) {
+  if (!value) throw new Error('Radio: `value` is required');
   return (
-    <div role="radiogroup" style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 3)', ...style }} {...rest}>
-      {items}
-    </div>
-  );
-}
-export function Radio({ value, label, hint, name, checked = false, onSelect, disabled = false, style, ...rest }) {
-  return (
-    <label style={{ display: 'inline-flex', alignItems: 'flex-start', gap: 'calc(var(--sp-1) * 2.5)', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.5 : 1, ...style }}>
+    <label style={{ display: 'inline-flex', alignItems: 'flex-start', gap: 'calc(var(--sp-1) * 2.5)', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.5 : 1 }}>
       <span style={{ width: 'calc(var(--sp-1) * 5)', height: 'calc(var(--sp-1) * 5)', borderRadius: '50%', flexShrink: 0, marginTop: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         background: 'var(--surface-input)', border: 'var(--bw) solid ' + (checked ? 'var(--crimson)' : 'var(--line-strong)'),
         transition: 'border-color var(--dur-fast) var(--ease-out)' }}>
@@ -27,7 +16,7 @@ export function Radio({ value, label, hint, name, checked = false, onSelect, dis
         {hint && <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)', lineHeight: 'var(--lh-body)' }}>{hint}</span>}
       </span>
       <input type="radio" name={name} value={value} checked={checked} disabled={disabled}
-        onChange={() => onSelect && onSelect(value)} style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }} {...rest} />
+        onChange={() => onSelect && onSelect(value)} style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }} />
     </label>
   );
 }

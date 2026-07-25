@@ -165,9 +165,13 @@ test('arena-bar-chart with no seriesLabel still names itself, though only by typ
 });
 
 /* `valueSuffix` replaced `valueFormatter` when the charts came under the API
- * contract: an inbound function that RETURNS a value is none of the eight forms
- * (api/README.md), so the unit is data the chart appends rather than a callback
- * it calls. The requirement this pins is `alternative.table`'s -- the hidden
+ * contract: an inbound function that RETURNS a value was none of the eight
+ * forms, so the unit is data the chart appends rather than a callback it calls.
+ * The ninth form, `functionInput`, later admitted that shape for DATA-ENTRY
+ * CONTROLS ONLY, and a chart is not one -- `check:api` rejects a functionInput
+ * in any contract without `"kind": "input"` (api/README.md), so this verdict is
+ * unchanged and now has a rule behind it rather than a reader that could not
+ * read the shape. The requirement this pins is `alternative.table`'s -- the hidden
  * table must carry the numbers a sighted reader sees, and a sighted reader sees
  * "12 ms", not "12". A suffix that reached the axis and the tooltip but not the
  * table would leave the two disagreeing, which is exactly the failure the

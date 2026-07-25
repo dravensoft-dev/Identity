@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **A ninth API form: `functionInput`.** A function the consumer supplies, which the component calls
+  on its own value and whose *result* it uses — a validator, a parser. It is neither an event
+  (outbound, returning nothing) nor a datum, and the contract layer refused the shape everywhere
+  until now: `classify()` threw on an inbound function that returned a value, which is why the
+  charts' `valueFormatter` became `valueSuffix`. This **deliberately reverses that refusal, and only
+  for data-entry controls**. Two guards keep it narrow and both are mechanical rather than authoring
+  rules: it is legal only in a contract declaring `"kind": "input"` at top level, and `check:api`
+  **fails** a `functionInput` member in a contract without that key; and its signature is modelled —
+  `params` (name → type) and `returns`, each a primitive or a declared type, with R4 holding inside —
+  and the gate compares that signature between the contract and every layer, so a layer widening a
+  parameter or changing a return type is a divergence like any other. The boundary is the one that
+  keeps this from becoming a render prop: **a function returning `React.ReactNode` is not a
+  `functionInput`, it is a parameterised slot (R3)**, and the reader throws on it rather than
+  admitting one through this form. `api/README.md` is the normative statement.
+
 - **An eighth API form: consumer data.** The vocabulary's *"exactly one of seven forms, and nothing
   else"* was already false — `Table.rows` is a member and was none of them — and `api/README.md`'s
   own worked example for a parameterised slot named a `TableRow` type that cannot be declared, so the
@@ -23,9 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **A third contract: the API capability contract.** `api/components/<Name>.json` states,
   once and neutrally, the members a component's API presents; every layer implementing it
   implements exactly those members, and an API divergence becomes a defect rather than a
-  recorded difference. A member is one of eight forms — primitive, enum, predefined object,
-  array of primitives, array of predefined objects, consumer data, slot, event — governed by
-  five derived
+  recorded difference. A member is one of nine forms — primitive, enum, predefined object,
+  array of primitives, array of predefined objects, consumer data, functionInput, slot, event —
+  governed by five derived
   rules, all normatively stated in `api/README.md`, which also carries the per-layer binding
   table (a `content` slot is React's `children`; an event `navigate` is React's `onNavigate`).
   Shared objects and enums are declared once in `api/types/` and emitted per layer by
@@ -274,6 +289,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Six form controls brought under the API contract — breaking.** `RadioGroup`, `Radio`, `Checkbox`,
+  `Textarea`, `Select` and `Input` now present a neutral contract each; `check:api` reads 32 contracts
+  across 52 layer implementations. Every one is single-layer — Angular delegates all six to Material —
+  so the contract governs React alone until each gains an Arena primitive. **`onChange` is gone from
+  all six, replaced by a `change` event that carries the VALUE and never the DOM event**: `string` on
+  `RadioGroup`, `Textarea`, `Select` and `Input`, `boolean` on `Checkbox`, and `Input`'s `onBlur`
+  likewise becomes a `blur` event carrying the value. A platform event type is an R4 violation inside
+  a payload, the rule `Breadcrumbs` settled, so `React.ChangeEvent` travels nowhere — every call site
+  reading `e.target.value` takes the value directly, and no consumer can `preventDefault()` a change
+  any more. **`Radio` and `RadioGroup` are now two quartets and two contracts**, split out of the
+  single `Radio.d.ts` that declared both; `Radio` declares no `change` at all, because the group owns
+  the value, and the plumbing `RadioGroup` injects (`name`/`checked`/`onSelect`) is public API in
+  neither. **`Select.options` are now `SelectOption` objects** (`{ value, label }`) and the bare-string
+  convenience form is **gone** — it read as a union between two forms, which R5 forbids. **On `Input`:**
+  `validate` is the repo's only `functionInput` (`Input` is the only contract carrying `kind: "input"`),
+  `type` narrows to the new `InputType` enum (ten values; `checkbox`/`radio` are their own components,
+  and `file`/`range`/`color`/`hidden`/`submit` are out), `validateOn` narrows to the new `ValidateOn`
+  enum, and `icon` and `prefix` are now plain strings Arena draws — a Phosphor class name and a literal
+  affix — rather than nodes. **`Input.className` is gone** — it was the one control declaring it
+  outright, and the component keeps its internal `arena-input` class — and `defaultValue` goes with
+  the heritage on every control that had one. The heritage clause is flattened per component to the element-specific set,
+  which costs one capability worth naming: **an explicit `id` is no longer reachable on `Input` or
+  `Textarea`.** Both still generate one from the label to wire the label's `htmlFor`, but a consumer
+  wanting to supply their own lost the path it arrived by. Global attributes (`id`, `className`, `dir`,
+  `tabIndex`, ARIA, `data-*`) are members of none of the six.
+
 - **Five composed primitives brought under the API contract — breaking.** `Spinner`, `Badge`, `Card`,
   `IconButton` and `Button` now present a neutral contract each; `check:api` reads 26 contracts across
   46 layer implementations. Every one is single-layer — Angular delegates all five to Material — so
@@ -410,8 +451,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The three SVG charts share one reshape, applied three times — breaking.**
   `valueFormatter` is **deleted from `BarChart`, `LineChart` and `DoughnutChart` in both
   layers** and replaced by `valueSuffix`, a plain string appended verbatim to every number
-  the chart draws: an inbound function that *returns* a value is none of the eight forms
-  (`api/README.md`), so a unit is data the chart appends rather than a callback it calls.
+  the chart draws: an inbound function that *returns* a value was none of the forms the
+  vocabulary had (`api/README.md`), so a unit is data the chart appends rather than a callback
+  it calls. The ninth form added later in this same release does **not** reopen this — a
+  `functionInput` is legal only in a contract declaring `"kind": "input"`, and a chart is not
+  an input control.
   **The capability loss is real and has no replacement:** a suffix cannot round, cannot
   insert a thousands separator and cannot format a currency, so a consumer passing
   `(v) => v.toLocaleString()` must format the numbers before passing them. Concatenation is

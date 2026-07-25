@@ -147,9 +147,9 @@ the component stays exactly as broken.
 
 **Arena's third contract is the API, and it lives at `api/`.** `api/components/<Name>.json`
 states, once and neutrally, the members that component's API presents; every layer
-implementing it implements exactly those members. A member is one of **eight forms** —
+implementing it implements exactly those members. A member is one of **nine forms** —
 primitive, enum, predefined object, array of primitives, array of predefined objects,
-consumer data, slot, event — and five derived rules govern them (R1 an object is pure data
+consumer data, functionInput, slot, event — and five derived rules govern them (R1 an object is pure data
 with known fields, R2 who draws decides data versus slot, R3 a parameterised slot fills and
 never replaces, R4 no platform types and no escapes, R5 no unions between forms).
 **Consumer data is the eighth and the one the contract deliberately does not describe**: a
@@ -161,6 +161,17 @@ form admitting any record would re-legalise the escape R4 closed. Two things abo
 mechanical — it may not be a field of a predefined object, and a member taking it in must
 declare a route back out (a slot parameter or an event payload) or it is data Arena can
 never surface — and everything else is an authoring rule with R2 and R3's status.
+**`functionInput` is the ninth, and the narrowest**: a function the consumer supplies, which
+the component calls on its value and whose result it uses — a validator, a parser. It exists
+for data-entry controls and nothing else, and that is machine-checked rather than written
+down: `check:api` rejects one in any contract not declaring `"kind": "input"` at top level.
+Its signature is modelled (`params` name → type, `returns`), R4 holds inside it, and the gate
+compares the signature between the contract and each layer. It deliberately reverses the
+refusal the layer carried until now — an inbound function that returns a value was none of
+the eight, which is why the charts' `valueFormatter` became `valueSuffix` — and it reverses
+it for input controls alone; a chart declaring a formatter still fails. A return of
+`React.ReactNode` is **not** one: that is a parameterised slot (R3), and the reader throws on
+it rather than admitting a render prop through this form.
 `api/README.md` is the normative
 statement and the first thing a new platform target reads, the way `tokens/src/TYPE-MAP.md`
 is for the token layer. Shared objects and enums are declared once in `api/types/` and
@@ -176,6 +187,12 @@ contract that forbids divergence has nowhere for a second opinion to live, and
 component at a time, the same charter `COVERED` carries in `check-compliance.mjs`: a green
 run is a claim about the contracted components and says nothing about the rest — and,
 being orthogonal to behaviour, it says nothing about what any of them *does* either.
+Plan C's first batch brought the five composed primitives under contract and its second
+brought the six form controls (`RadioGroup`, `Radio`, `Checkbox`, `Textarea`, `Select`,
+`Input`) — the batch that needed the ninth form, since `Input.validate` made the reader
+throw before it existed. **To know what is contracted, run `bun run check:api` and read
+the contract/layer pair it prints, or list `api/components/`** — a count written here
+would drift the first time a batch lands, which is why none is.
 
 **Plan C's contracts are single-layer, and that is a property of the plan, not a gap.**
 The twenty-one components Plan C brings under contract exist in React alone — they are
@@ -628,6 +645,59 @@ scheduled for deletion the same week.
   it is recorded because it is a live inconsistency no gate can see, and because it was
   previously written down **only inside plan 8B3**, which was deleted when that plan was
   executed. That is the exact failure mode this section's preamble names.
+
+- **An explicit `id` is no longer reachable on `Input` or `Textarea`, and no gate would
+  notice it coming back.** Both components generate an `id` from their `label` to wire the
+  label's `htmlFor`, and that generated id was *overridable* before Plan C's second batch
+  because `id` arrived through the heritage clause (`InputHTMLAttributes`,
+  `TextareaHTMLAttributes`). The D1 flatten cut the heritage down to the element-specific
+  set, and `id` — a global attribute, like `className`, `dir`, `tabIndex`, ARIA and
+  `data-*` — is a member of neither contract, so the path is gone. It matters wherever a
+  host needs a stable, known id to point something at the control from outside: an external
+  `<label for>`, an `aria-describedby` on a sibling, or a form library that addresses fields
+  by id. **There is no gate behind the loss** — `check:api` reads the `.d.ts` and never
+  opens the `.jsx`, so restoring `id` to the implementation alone would leave the gate
+  green, exactly as a restored `{...rest}` spread would. This is the same shape as the
+  `form*`/`{...rest}` loss recorded above for Plan C's first batch, one batch on: the
+  capability was reachable, undocumented, and is now gone with only prose holding the fact.
+  Closing it means deciding `id` is a member and declaring it in both, not re-adding the
+  heritage.
+
+- **Plan D owes `functionInput` an Angular implementation, and the contract is what it must
+  satisfy.** `Input.validate` is the repo's only `functionInput` and `Input` the only
+  contract carrying `kind: "input"`, and both exist in React alone, because every contract
+  in Plan C is single-layer. Angular's signal idiom discourages a function input — the
+  reflex is an output plus a validator service, or a `ControlValueAccessor` wired into
+  Angular Forms — but the contract's modelled signature (`params: {value: string}`,
+  `returns: string`) is not negotiable at implementation time: `check:api` compares that
+  signature between the contract and each layer, so a reshape is a contract change, not an
+  implementation choice. That is the whole point of sequencing Plan C ahead of Plan D — the
+  API is settled and normative *before* Angular has an implementation to defend — and it is
+  recorded here rather than resolved, because 8C2 deliberately touched no Angular component.
+
+- **An event payload that is a declared ENUM is still rejected, one type-kind short of
+  where the gate now reaches.** Task 2 widened `validateContract` so an event's `payload`
+  resolves the way an array's `of` does — a primitive, `consumerData`, or a declared
+  object — because `classify()` had always read `(value: string) => void` as
+  `{form:'event', payload:'string'}` while no contract could declare that payload. The same
+  gap remains one kind over: any payload that is neither a primitive nor `consumerData` is
+  still handed to `declared(payload, 'object')`, so a contract writing `payload: "SomeEnum"`
+  fails with *"an enum, used where an object belongs"* even though the reader classifies the
+  layer's arrow perfectly well. **No contract needs it today** — every payload in this batch
+  is `string` or `boolean` — so it was left alone rather than widened speculatively in the
+  middle of a batch. Closing it is one clause beside the one Task 2 added.
+
+- **DA's whole reshape is unverified at runtime.** All six form controls now hand their
+  consumer a value rather than a DOM event — `change` carrying `string` or `boolean`,
+  `Input.blur` carrying the value — and **not one of the six suites can prove it fires.**
+  `frameworks/react/test/` renders with `renderToStaticMarkup` and has no DOM by design, so
+  it can dispatch neither a change nor a blur; each suite says so in a header comment rather
+  than faking a verdict, and `Input`'s validate-on-blur path — the only consumer of the
+  ninth form in the repo — is unverified for exactly the same reason. So the contracts
+  assert the SHAPE of these events and nothing asserts they fire, let alone that they carry
+  what they say. This is Plan E territory, the same place `Tooltip`'s timer sat before
+  `tooltip-timer.test.jsx` paid it: a DOM suite under `frameworks/react/test-dom/` is what
+  closes it, and moving these assertions into the DOM-free directory is not an option.
 
 ### Where the rest of the debt lives
 

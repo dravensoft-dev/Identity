@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { RadioGroup, Radio } from '../../components/forms/Radio.jsx';
+import { RadioGroup } from '../../components/forms/RadioGroup.jsx';
+import { Radio } from '../../components/forms/Radio.jsx';
 import { Textarea } from '../../components/forms/Textarea.jsx';
 function Demo(){
   const [env,setEnv]=React.useState('staging');
@@ -17,7 +18,7 @@ function Demo(){
       </div>
       <div style={{width:'calc(var(--sp-1) * 80)'}}>
         <Textarea label="Deployment notes" rows={5} maxLength={280} counter
-          value={notes} onChange={e=>setNotes(e.target.value)}
+          value={notes} onChange={setNotes}
           hint="Attached to the delivery log." />
       </div>
     </div>

@@ -12,6 +12,7 @@ import { Switch } from "../../components/forms/Switch.js";
 function Demo() {
   const [chk, setChk] = React.useState(true);
   const [sw, setSw] = React.useState(true);
+  const [email, setEmail] = React.useState("hello@");
   return React.createElement("div", null, React.createElement("div", {
     className: "sub"
   }, "Button — variants"), React.createElement("div", {
@@ -56,51 +57,59 @@ function Demo() {
   }, "Input · Select"), React.createElement("div", {
     className: "row",
     style: { alignItems: "flex-start" }
+  }, React.createElement("div", {
+    style: { width: "calc(var(--sp-1) * 55)" }
   }, React.createElement(Input, {
     label: "Repository",
     prefix: "git@",
-    placeholder: "org/project",
-    style: { width: "calc(var(--sp-1) * 55)" }
-  }), React.createElement(Input, {
+    placeholder: "org/project"
+  })), React.createElement("div", {
+    style: { width: "calc(var(--sp-1) * 50)" }
+  }, React.createElement(Input, {
     label: "Email",
     error: "Invalid format",
-    defaultValue: "hello@",
-    style: { width: "calc(var(--sp-1) * 50)" }
-  }), React.createElement(Select, {
-    label: "Environment",
-    options: ["Production", "Staging", "QA"],
-    style: { width: "calc(var(--sp-1) * 45)" }
+    value: email,
+    onChange: setEmail
   })), React.createElement("div", {
+    style: { width: "calc(var(--sp-1) * 45)" }
+  }, React.createElement(Select, {
+    label: "Environment",
+    options: [{ value: "Production", label: "Production" }, { value: "Staging", label: "Staging" }, { value: "QA", label: "QA" }]
+  }))), React.createElement("div", {
     className: "sub"
   }, "Input — native date and time"), React.createElement("div", {
     className: "row",
     style: { alignItems: "flex-start" }
+  }, React.createElement("div", {
+    style: { width: "calc(var(--sp-1) * 50)" }
   }, React.createElement(Input, {
     label: "Deploy date",
     type: "date",
-    required: true,
+    required: true
+  })), React.createElement("div", {
     style: { width: "calc(var(--sp-1) * 50)" }
-  }), React.createElement(Input, {
+  }, React.createElement(Input, {
     label: "Window start",
     type: "time",
-    hint: "Local time",
-    style: { width: "calc(var(--sp-1) * 50)" }
-  }), React.createElement(Input, {
-    label: "Cutover",
-    type: "datetime-local",
+    hint: "Local time"
+  })), React.createElement("div", {
     style: { width: "calc(var(--sp-1) * 60)" }
-  }), React.createElement(Input, {
+  }, React.createElement(Input, {
+    label: "Cutover",
+    type: "datetime-local"
+  })), React.createElement("div", {
+    style: { width: "calc(var(--sp-1) * 50)" }
+  }, React.createElement(Input, {
     label: "Deadline",
     type: "date",
-    error: "Pick a date in the future",
-    style: { width: "calc(var(--sp-1) * 50)" }
-  })), React.createElement("div", {
+    error: "Pick a date in the future"
+  }))), React.createElement("div", {
     className: "sub"
   }, "Checkbox · Switch"), React.createElement("div", {
     className: "row"
   }, React.createElement(Checkbox, {
     checked: chk,
-    onChange: (e) => setChk(e.target.checked),
+    onChange: setChk,
     label: "Notify on approval"
   }), React.createElement(Switch, {
     state: sw,

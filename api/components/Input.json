@@ -1,0 +1,31 @@
+{
+  "component": "Input",
+  "kind": "input",
+  "description": "Text field with validation. Focus is a gold ring; error crimson; valid green with a check.",
+  "api": {
+    "label": { "form": "primitive", "type": "string", "description": "Field label above the control." },
+    "hint": { "form": "primitive", "type": "string", "description": "A line of help under the field." },
+    "error": { "form": "primitive", "type": "string", "description": "Controlled error message; wins over `validate`." },
+    "valid": { "form": "primitive", "type": "boolean", "default": false, "description": "Force the valid (green check) state." },
+    "required": { "form": "primitive", "type": "boolean", "default": false, "description": "Marks the label and the control required." },
+    "validate": { "form": "functionInput", "params": { "value": "string" }, "returns": "string",
+                  "description": "Called on the value; returns the error message, or empty for valid." },
+    "validateOn": { "form": "enum", "type": "ValidateOn", "default": "blur", "description": "When `validate` runs." },
+    "type": { "form": "enum", "type": "InputType", "default": "text", "description": "Native input type." },
+    "icon": { "form": "primitive", "type": "string", "description": "Phosphor class name drawn at the field's start." },
+    "prefix": { "form": "primitive", "type": "string", "description": "Static text Arena draws before the value, e.g. `git@`." },
+    "value": { "form": "primitive", "type": "string", "description": "The controlled text." },
+    "disabled": { "form": "primitive", "type": "boolean", "default": false, "description": "Blocks editing and dims it." },
+    "readOnly": { "form": "primitive", "type": "boolean", "default": false, "description": "Shows the value but blocks editing." },
+    "placeholder": { "form": "primitive", "type": "string", "description": "Shown when empty." },
+    "name": { "form": "primitive", "type": "string", "description": "Submitted with the form." },
+    "autoComplete": { "form": "primitive", "type": "string", "description": "The browser autofill hint." },
+    "min": { "form": "primitive", "type": "string", "description": "Minimum, for number/date types." },
+    "max": { "form": "primitive", "type": "string", "description": "Maximum, for number/date types." },
+    "step": { "form": "primitive", "type": "string", "description": "Step, for number/date types." },
+    "maxLength": { "form": "primitive", "type": "number", "description": "Caps the length." },
+    "pattern": { "form": "primitive", "type": "string", "description": "A regex the value must match." },
+    "change": { "form": "event", "payload": "string", "description": "Edited; carries the new value." },
+    "blur": { "form": "event", "payload": "string", "description": "Left the field; carries the value." }
+  }
+}

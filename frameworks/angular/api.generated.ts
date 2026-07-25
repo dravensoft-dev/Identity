@@ -86,10 +86,13 @@ export type Direction = 'up' | 'down';
 /** 'ghost' sits on a surface and shows its hairline border; 'solid' is the filled accent treatment. Danger is not among them — Arena's danger convention is outline, and an icon-only danger control has no room to say what it destroys. */
 export type IconButtonVariant = 'ghost' | 'solid';
 
+/** The native input types Arena styles. Date/time use the native control -- Arena ships no DatePicker. */
+export type InputType = 'text' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'number' | 'date' | 'time' | 'datetime-local';
+
 /** Both halves of the brand lock-up at once — the mark's slot and the wordmark. A fixed repertoire, not a ratio: sm an application frame, md a signed-out panel, lg the manual's Primary, xl the hero case. */
 export type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
 
-/** Where the coachmark attaches: the two viewport coordinates it positions from. A DOMRect is structurally assignable to it, so a consumer passes getBoundingClientRect() directly. Declared as its own object rather than taken as a DOMRect because a platform type is none of the eight forms (R4), and because these are the only two fields Onboarding reads. */
+/** Where the coachmark attaches: the two viewport coordinates it positions from. A DOMRect is structurally assignable to it, so a consumer passes getBoundingClientRect() directly. Declared as its own object rather than taken as a DOMRect because a platform type is none of the nine forms (R4), and because these are the only two fields Onboarding reads. */
 export interface OnboardingAnchor {
   /** The anchored element's left edge, in viewport pixels. Clamped inside the viewport before use. */
   left: number;
@@ -112,6 +115,14 @@ export type Orientation = 'horizontal' | 'vertical';
 
 /** How the actions block aligns against the title in PageHead's wide layout. */
 export type PageHeadAlign = 'start' | 'center';
+
+/** One option in a Select. */
+export interface SelectOption {
+  /** What the option submits, and what Select's `value` is matched against. */
+  value: string;
+  /** What the option reads. Free to differ from the value. */
+  label: string;
+}
 
 /** For a series that IS a state (error rate, pass/fail) rather than an identity. A chart carries identity or meaning, never both — passing tone alongside slot/slots warns in development and tone wins. */
 export type SeriesTone = 'success' | 'warning' | 'danger' | 'info';
@@ -140,3 +151,6 @@ export type TagTone = 'neutral' | 'primary' | 'success' | 'warning' | 'danger';
 
 /** What state a value IS in right now, as against how it moved. Badge's vocabulary, so one set of tone names covers the system rather than a second set that is nearly the same. */
 export type Tone = 'neutral' | 'accent' | 'gold' | 'success' | 'warning' | 'danger' | 'info';
+
+/** When Input runs `validate`: on blur, or on every change. */
+export type ValidateOn = 'blur' | 'change';

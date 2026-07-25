@@ -6,6 +6,7 @@ import { UnauthCard } from '../../components/display/UnauthCard.jsx';
 
 export function LoginScreen({ onLogin }) {
   const [email, setEmail] = useState('ana@dravensoft.dev');
+  const [password, setPassword] = useState('dravensoft');
   return (
     <div style={{ minHeight: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: 'var(--bg)', padding: 'calc(var(--sp-1) * 6)' }}>
@@ -15,8 +16,8 @@ export function LoginScreen({ onLogin }) {
         title="Welcome back"
         footer="Forgot your password?">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 4)' }}>
-          <Input label="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <Input label="Password" type="password" defaultValue="dravensoft" />
+          <Input label="Email" value={email} onChange={setEmail} />
+          <Input label="Password" type="password" value={password} onChange={setPassword} />
           <Button variant="primary" full onClick={onLogin}>Sign in</Button>
         </div>
       </UnauthCard>

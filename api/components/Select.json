@@ -1,0 +1,14 @@
+{
+  "component": "Select",
+  "description": "Styled native dropdown selector.",
+  "api": {
+    "label": { "form": "primitive", "type": "string", "description": "Field label above the control." },
+    "options": { "form": "array", "of": "SelectOption", "description": "The choices, drawn as native options." },
+    "value": { "form": "primitive", "type": "string", "description": "The selected option's value." },
+    "disabled": { "form": "primitive", "type": "boolean", "default": false, "description": "Blocks the control and dims it." },
+    "required": { "form": "primitive", "type": "boolean", "default": false, "description": "Must have a value for the form to submit." },
+    "name": { "form": "primitive", "type": "string", "description": "Submitted with the form." },
+    "multiple": { "form": "primitive", "type": "boolean", "default": false, "description": "Allow multiple selection." },
+    "change": { "form": "event", "payload": "string", "description": "A different option was chosen; carries its value." }
+  }
+}

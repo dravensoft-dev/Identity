@@ -1,0 +1,20 @@
+{
+  "component": "Textarea",
+  "description": "Multi-line text field with validation and an optional counter.",
+  "api": {
+    "label": { "form": "primitive", "type": "string", "description": "Field label; the counter and error sit under the field." },
+    "hint": { "form": "primitive", "type": "string", "description": "A line of help under the field." },
+    "error": { "form": "primitive", "type": "string", "description": "Error message; turns the border crimson and shows below." },
+    "required": { "form": "primitive", "type": "boolean", "default": false, "description": "Marks the label and the control required." },
+    "counter": { "form": "primitive", "type": "boolean", "default": false, "description": "Shows a live length/maxLength count." },
+    "autoResize": { "form": "primitive", "type": "boolean", "default": false, "description": "Grows with the content instead of scrolling." },
+    "value": { "form": "primitive", "type": "string", "description": "The controlled text." },
+    "disabled": { "form": "primitive", "type": "boolean", "default": false, "description": "Blocks editing and dims it." },
+    "readOnly": { "form": "primitive", "type": "boolean", "default": false, "description": "Shows the value but blocks editing." },
+    "placeholder": { "form": "primitive", "type": "string", "description": "Shown when empty." },
+    "name": { "form": "primitive", "type": "string", "description": "Submitted with the form." },
+    "maxLength": { "form": "primitive", "type": "number", "description": "Caps the length; feeds the counter." },
+    "rows": { "form": "primitive", "type": "number", "default": 4, "description": "Initial visible rows." },
+    "change": { "form": "event", "payload": "string", "description": "Edited; carries the new text." }
+  }
+}

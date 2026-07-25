@@ -2,18 +2,11 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-export function RadioGroup({ value, onChange, name, children, style, ...rest }) {
-  const gname = name || "rg-" + Math.random().toString(36).slice(2, 7);
-  const items = React.Children.map(children, (child) => React.isValidElement(child) ? React.cloneElement(child, { name: gname, checked: child.props.value === value, onSelect: onChange }) : child);
-  return React.createElement("div", {
-    role: "radiogroup",
-    style: { display: "flex", flexDirection: "column", gap: "calc(var(--sp-1) * 3)", ...style },
-    ...rest
-  }, items);
-}
-export function Radio({ value, label, hint, name, checked = false, onSelect, disabled = false, style, ...rest }) {
+export function Radio({ value, label, hint, name, checked = false, onSelect, disabled = false }) {
+  if (!value)
+    throw new Error("Radio: `value` is required");
   return React.createElement("label", {
-    style: { display: "inline-flex", alignItems: "flex-start", gap: "calc(var(--sp-1) * 2.5)", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1, ...style }
+    style: { display: "inline-flex", alignItems: "flex-start", gap: "calc(var(--sp-1) * 2.5)", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1 }
   }, React.createElement("span", {
     style: {
       width: "calc(var(--sp-1) * 5)",
@@ -43,7 +36,6 @@ export function Radio({ value, label, hint, name, checked = false, onSelect, dis
     checked,
     disabled,
     onChange: () => onSelect && onSelect(value),
-    style: { position: "absolute", opacity: 0, width: 0, height: 0 },
-    ...rest
+    style: { position: "absolute", opacity: 0, width: 0, height: 0 }
   }));
 }

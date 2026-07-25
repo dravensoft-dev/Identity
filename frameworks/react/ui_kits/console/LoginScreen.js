@@ -8,6 +8,7 @@ import { AppLogo } from "../../components/brand/AppLogo.js";
 import { UnauthCard } from "../../components/display/UnauthCard.js";
 export function LoginScreen({ onLogin }) {
   const [email, setEmail] = useState("ana@dravensoft.dev");
+  const [password, setPassword] = useState("dravensoft");
   return React.createElement("div", {
     style: {
       minHeight: "100%",
@@ -35,11 +36,12 @@ export function LoginScreen({ onLogin }) {
   }, React.createElement(Input, {
     label: "Email",
     value: email,
-    onChange: (e) => setEmail(e.target.value)
+    onChange: setEmail
   }), React.createElement(Input, {
     label: "Password",
     type: "password",
-    defaultValue: "dravensoft"
+    value: password,
+    onChange: setPassword
   }), React.createElement(Button, {
     variant: "primary",
     full: true,

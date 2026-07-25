@@ -1,0 +1,6 @@
+{
+  "name": "InputType",
+  "kind": "enum",
+  "description": "The native input types Arena styles. Date/time use the native control -- Arena ships no DatePicker.",
+  "values": ["text", "email", "password", "search", "tel", "url", "number", "date", "time", "datetime-local"]
+}
