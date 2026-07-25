@@ -162,9 +162,12 @@ substance because each was earned; 30–36 are new to this plan.
    confirmation that also blocks but must not re-litigate a Task 1 decision.
 3. **`check:api` climbs and never drops:** 32/52 → (Tasks 2–6 contract nothing except Task 2's two
    added members, which change no count) → **34/54** (Task 7, +2) → **36/56** (Task 8, +2) →
-   **37/57** (Task 9) → **38/58** (Task 11) → **39/59** (Task 11b) → **40/60** (Task 13). Record the
-   measured pair in `.superpowers/sdd/progress.md` at the end of every task. Task 11b was added
-   during execution and is what moved Task 13's figure by one.
+   **37/57** (Task 9) → **38/58** (Task 11) → **39/59** (Task 11b) → **42/62** (Task 13, +3). Record
+   the measured pair in `.superpowers/sdd/progress.md` at the end of every task. Task 11b was added
+   during execution and is what moved Task 13's starting figure by one; Task 13 then landed as
+   THREE contracts rather than one — `Table`, `TableRow`, `TableCell` — because the maintainer chose
+   the compound shape over the capability loss its Step 1 asks them to confirm. See Task 13's
+   superseded note.
 4. **`check:api` carries no exception map.** An API divergence is a defect.
 5. **`api/README.md` is the normative vocabulary, and this plan found it contradicting itself.**
    Task 2 corrected two passages asserting opposite futures for a per-item renderer. Task 6 makes
@@ -1858,6 +1861,48 @@ checked. Say that plainly in the report, and expect `check:compliance` to stay a
 
 ## Task 13: Table — the API contract
 
+> **SUPERSEDED, AND EXECUTED DIFFERENTLY. Read this before the steps below.** Dated 2026-07-25,
+> shipped as commits `6ab8d7e` + `5f0ebea`. The steps that follow are kept for the four fixes they
+> diagnose, which were all real; what changed is the answer to the largest of them.
+>
+> The maintainer refused the loss this task's Step 1 asks them to confirm — *"an actions column has
+> no expression in the contract at all"* — and chose the shape **Task 11b** established for
+> `Calendar`/`CalendarEvent` instead: **make the item a component.** `Table` is now a compound
+> component. The consumer writes one `<TableRow>` per row and one `<TableCell>` per cell, and a
+> cell's content may be a value **or one of Arena's own components**. Per-item projection stops
+> applying for the same reason it stopped for `CalendarEvent` — the consumer instantiates one
+> element per item rather than handing Arena a render function — so this needed **no gate change and
+> no new form**. `Badge` and `Button` stay in their cells; the Console's Details button was never
+> deleted.
+>
+> What that changes against the steps below:
+> - **Three contracts, not one: `Table`, `TableRow`, `TableCell`. The ladder is +3/+3 → 42/62**,
+>   not +1/+1 → 40/60. Task 15's register must say so.
+> - **`TableColumn` keeps only configuration** — `header`, `align`, `width`, `mono`, `mobileLayout`.
+>   Step 2's `key` is gone as well as its `render`: a column no longer reads a field of a row object,
+>   because there is no row object.
+> - **`rows` is gone entirely**, so Step 3's `"rows": {"form": "array", "of": "consumerData"}` was
+>   never written, and `Table` takes no consumer data at all.
+> - **`getRowKey` is removed rather than kept.** The maintainer had answered `functionInput`, before
+>   the compound shape was chosen; under it the consumer writes `key` on their own `<TableRow>`,
+>   which is React's reconciliation and no member of any contract. Keeping it would have needed
+>   `Table` to declare `"kind": "input"` — false — or `check:api`'s rule widened.
+> - **`onRowClick` does not shed its index; it is replaced.** Row activation is `TableRow`'s `click`,
+>   with **no payload**, for the reason `CalendarEvent.click` already records: the consumer wrote the
+>   element, so they hold the row in a closure.
+> - **`check:compliance` reads 6 of 66, not 6 of 64.** `TableRow` and `TableCell` are React
+>   components, so they declare, and the denominator counts declarations. Nothing entered `COVERED`;
+>   `Table` is still barred from a render suite by the grid rule.
+> - Two gates needed a line each and both were the right kind of break: `check:states`'
+>   `SOURCE_OVERRIDES` (the row hover moved to `TableRow.jsx`) and `behaviour-contracts.test.mjs`'
+>   literal React inventory count, 44 → 46.
+>
+> Verified in real Chromium after the rewrite, since the whole DOM changed: one tab stop, all four
+> edges clamping, `Home`/`End` inside the row, `Enter` firing the row's own `click`, a control in a
+> cell reachable in ONE Tab press in both directions, a row carrying **fewer cells than there are
+> columns** clamping against what is really there, and the Delivery Console rendering four `Details`
+> buttons inside cells with no page errors.
+
 **Files:** create `api/types/table-column.json`, `api/components/Table.json`,
 `frameworks/react/test/table.test.jsx`; modify the quartet,
 `frameworks/react/components/display/table-avatar.card.entry.jsx`,
@@ -1994,8 +2039,10 @@ migrations of batch 8C3** — eight contracts in all, once Task 11b's `CalendarE
   primitive cite it by section name; a deletion that orphans a citation breaks it.
 
 - [ ] **Step 3: Sweep for dead references** (Constraint 21) to every removed or renamed member: the
-  bare-string `tabs`/`options` arms, `ToastAction`, `TableColumn<T>`, `getRowKey`, `onRowClick`'s index
-  parameter, `CalendarEvent.meta`, `React.CSSProperties` on the seven, and `Tooltip`'s renamed slots.
+  bare-string `tabs`/`options` arms, `ToastAction`, `TableColumn<T>`, `TableColumn.key`,
+  `TableColumn.render`, `Table.rows`, `getRowKey`, `onRowClick` (removed outright, not narrowed —
+  see Task 13's superseded note), `CalendarEvent.meta`, `React.CSSProperties` on the seven, and
+  `Tooltip`'s renamed slots.
   **Add everything Task 11b moved, which this list predates:** `Calendar.events` (an array member
   that became the `content` slot, so every `events={...}` in prose is now wrong), `Calendar.eventClick`
   and its `onEventClick` binding (removed — `CalendarEvent.click` replaced it, with no payload), and
@@ -2041,9 +2088,12 @@ rule. If a delta does not reconcile, stop and find out why.
 
 - [ ] **Step 3: Spec.** Add the 8C3 running-count row (**both** processes — the isolated one moves for
   the first time, so the row's second column is no longer `26 across 5`). Add a register paragraph:
-  what was contracted, 32/52 → 40/60 (39/59 of it by Task 12, since Task 11b added one this
-  plan did not schedule), the four debts paid, R3 made readable, and the two components
-  that gained keyboard navigation. Note that Plan C now has four subjects left.
+  what was contracted, **32/52 → 42/62** (39/59 of it by Task 12, since Task 11b added one this
+  plan did not schedule, and Task 13 landing as three contracts rather than one — see its superseded
+  note), the four debts paid, R3 made readable, and the two components
+  that gained keyboard navigation. Recount Plan C's remaining subjects rather than trusting a figure
+  here: `TableRow` and `TableCell` are two new React components with delegated Angular entries, so
+  the subject set moved under this very sentence.
 
 - [ ] **Step 4: CHANGELOG**, under `## [Unreleased]` only. **Read what is already there first** —
   several of this batch's changes were written into it as they landed (`tabStop`, `CalendarEvent`'s
@@ -2054,7 +2104,9 @@ rule. If a delta does not reconcile, stop and find out why.
   `id` a member of `Input` and `Textarea`; keyboard navigation on `Calendar` and `Table`.
   **Changed:** the seven contracted, with every breaking change spelled out — the bare-string `tabs`
   and `options` arms gone; `ToastAction` decomposed to `actionLabel` + `action`; `TableColumn` no
-  longer generic; `getRowKey` gone; `onRowClick` sheds its index; `CalendarEvent.meta` gone;
+  longer generic and reduced to configuration (`key` and `render` gone); `Table.rows` gone and the
+  rows written as `TableRow`/`TableCell` children; `getRowKey` gone; `onRowClick` replaced by
+  `TableRow`'s payload-free `click`; `Table.label` a new REQUIRED member; `CalendarEvent.meta` gone;
   `Tooltip`'s slots renamed; `style` gone from all seven. **Fixed:** the enum event payload; the
   Angular `functionInput` parse.
 
