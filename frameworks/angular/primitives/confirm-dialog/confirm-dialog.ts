@@ -56,14 +56,18 @@ export function isConfirmLocked(required: string | undefined, typed: string): bo
  *  outline. `requireText` locks the confirm button until the typed value
  *  matches it exactly.
  *
- *  Accessible by construction, not by mirroring React: the panel carries a
- *  computed `aria-labelledby` (the title when set, the eyebrow otherwise, so
- *  the dialog always has a name) and an `aria-describedby` on the body. Focus
- *  moves into the panel's first focusable element on open and is restored to
- *  whatever held it beforehand on close; Tab/Shift+Tab cycle within the panel
- *  rather than escaping to the page behind it; Escape reports dismissal the
- *  same way the Cancel button does. See `components-divergences.md` at the
- *  repo root for why this diverges from `ConfirmDialog.jsx`. */
+ *  Accessible by construction: the panel's `aria-labelledby` names the title,
+ *  which is why `title` is a required input -- the fallback to the eyebrow that
+ *  used to stand in for a missing one is gone, because an eyebrow reading
+ *  "Confirm" names the component rather than its subject. The body carries an
+ *  `aria-describedby`. Focus moves into the panel's first focusable element on
+ *  open and is restored to whatever held it beforehand on close; Tab/Shift+Tab
+ *  cycle within the panel rather than escaping to the page behind it; Escape
+ *  reports dismissal the same way the Cancel button does. `ConfirmDialog.jsx`
+ *  does all of this too as of plan 8C4, so this component is no longer the only
+ *  accessible half of the pair -- `components-divergences.md`'s "ConfirmDialog --
+ *  Angular is accessible, React is not yet" section predates that change and is
+ *  the divergence sweep's to settle, not this file's. */
 @Component({
   selector: 'arena-confirm-dialog',
   standalone: true,
@@ -75,12 +79,10 @@ export function isConfirmLocked(required: string | undefined, typed: string): bo
   template: `
     @if (open()) {
       <div #panel [class]="styles().panel()" role="alertdialog" aria-modal="true" tabindex="-1"
-           [attr.aria-labelledby]="labelId()" [attr.aria-describedby]="descId">
+           [attr.aria-labelledby]="titleId" [attr.aria-describedby]="descId">
         <div [class]="styles().head()">
-          <div [id]="eyebrowId" [class]="styles().eyebrow()">{{ eyebrow() }}</div>
-          @if (title(); as heading) {
-            <div [id]="titleId" [class]="styles().title()">{{ heading }}</div>
-          }
+          <div [class]="styles().eyebrow()">{{ eyebrow() }}</div>
+          <div [id]="titleId" [class]="styles().title()">{{ title() }}</div>
         </div>
         <div [id]="descId" [class]="styles().body()">
           <ng-content />
@@ -101,7 +103,12 @@ export function isConfirmLocked(required: string | undefined, typed: string): bo
 })
 export class ConfirmDialog {
   readonly open = input(false, { transform: booleanAttribute });
-  readonly title = input<string>();
+  /** Required: the panel's aria-labelledby points at it, and nothing can derive a
+   *  name for a confirmation because its subject is editorial. Bind it, never write
+   *  it as a static attribute -- this component's host is the fixed full-viewport
+   *  scrim, so a literal `title="..."` paints a browser tooltip over the whole
+   *  viewport for as long as the dialog is open. See components-divergences.md. */
+  readonly title = input.required<string>();
   readonly eyebrow = input('Confirm');
   readonly confirmLabel = input('Confirm');
   readonly cancelLabel = input('Cancel');
@@ -114,10 +121,19 @@ export class ConfirmDialog {
   private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
 
   private readonly uid = `arena-confirm-dialog-${nextId++}`;
-  protected readonly eyebrowId = `${this.uid}-eyebrow`;
   protected readonly titleId = `${this.uid}-title`;
   protected readonly descId = `${this.uid}-body`;
-  protected readonly labelId = computed(() => (this.title() ? this.titleId : this.eyebrowId));
+  /* THREE THINGS DIED WITH plan 8C4's required `title`, and each was dead code a
+   * reader would have read as evidence that `title` was still optional:
+   *   - `labelId`, which was
+   *     `computed(() => this.title() ? this.titleId : this.eyebrowId)`. Its else
+   *     arm became unreachable, so the template's aria-labelledby names `titleId`
+   *     directly and the computed is gone rather than kept as a constant.
+   *   - `eyebrowId`, which existed ONLY to be that else arm's target. Its `[id]`
+   *     binding left the template with it, rather than staying as a generated id
+   *     nothing in the tree references.
+   *   - the template's `@if (title(); as heading)`, always true. The title div is
+   *     unconditional now. */
 
   protected readonly typed = signal('');
   protected readonly locked = computed(() => isConfirmLocked(this.requireText(), this.typed()));

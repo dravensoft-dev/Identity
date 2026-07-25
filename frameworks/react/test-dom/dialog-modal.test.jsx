@@ -4,10 +4,12 @@
  * requirement is met in the rendered DOM and the binding declares no exception,
  * or it is not met and the binding declares one. That single statement is the
  * stale-exception rule — the property check-dimension-literals.mjs's EXEMPT has
- * and the contract layer did not. It has now been paid out once: plan 8C4 gave
+ * and the contract layer did not. It has now been paid out twice: plan 8C4 gave
  * Dialog an aria-labelledby, a focus trap, focus restore and Escape, and this
- * suite went red on all five exceptions until Dialog.behaviour.json followed.
- * An exception really can expire, and this is the file where it does.
+ * suite went red on all five exceptions until Dialog.behaviour.json followed;
+ * one task later ConfirmDialog got the same four through the same hook, and this
+ * suite went red on roles.label until its binding followed too. An exception
+ * really can expire, and this is the file where it does.
  *
  * The four requirements no DOM snapshot can decide (focus.onOpen, focus.onClose,
  * focus.trap, keyboard.Escape) are declared `behavioural` here, and the verdict
@@ -27,10 +29,11 @@ import { ConfirmDialog } from '../components/feedback/ConfirmDialog.jsx';
 afterEach(cleanup);
 
 /* THE MAP USED TO BE ONE, SHARED BY BOTH COMPONENTS. It is now two, one per
- * component, because plan 8C4 made Dialog meet all four of these and left
- * ConfirmDialog exactly as it was. A single map that had to be true of both is
- * what would have forced those into one commit; splitting it is what lets each
- * component's verdicts move on the day its own defects are fixed.
+ * component, because plan 8C4 made Dialog meet all four of these while
+ * ConfirmDialog still met none. A single map that had to be true of both is what
+ * would have forced those into one commit; splitting it is what let each
+ * component's verdicts move on the day its own defects were fixed, one task
+ * apart.
  *
  * `true` means "this requirement IS met", `false` means it is not, and every
  * verdict in both maps is established by acting on a real tree in
@@ -48,7 +51,9 @@ afterEach(cleanup);
  *     in frameworks/react/use-dialog-modal.js. happy-dom honours .focus(), so
  *     these are real assertions about real behaviour, and behavioural.test.jsx
  *     makes both of them — "Dialog wraps Shift+Tab from the first focusable to
- *     the last" and its Tab twin. That is why Dialog's verdict below is true.
+ *     the last" and its Tab twin — and then makes both again for ConfirmDialog.
+ *     That is why both verdicts below are true, and neither was flipped without
+ *     its own pair.
  *
  *   THE INTERIOR IS THE BROWSER'S AND IS NOT PROVABLE. That Tab from a MIDDLE
  *     element reaches the next one is native sequential focus navigation. We do
@@ -76,11 +81,21 @@ const DIALOG_BEHAVIOURAL = {
   'focus.onOpen': true, 'focus.onClose': true, 'focus.trap': true, 'keyboard.Escape': true,
 };
 
-/* ConfirmDialog's four are still false, and still true as claims: its
- * .behaviour.json excepts all four and behavioural.test.jsx still pins every one
- * of them as a live defect. Plan 8C4's next task is what moves them. */
+/* ConfirmDialog's four are now true as well, and each verdict is established the
+ * same way Dialog's is: by acting on a real tree in behavioural.test.jsx. Plan
+ * 8C4's Task 4 moved them, one task after Dialog, through the same shared hook --
+ * which is exactly what splitting this map made possible.
+ *
+ * focus.trap included, and it did not get a free ride: the two boundary wraps are
+ * asserted for ConfirmDialog specifically ("wraps Shift+Tab from the first
+ * focusable to the last" and its Tab twin), because flipping a verdict with
+ * nothing under it pins a claim no suite checks.
+ *
+ * The two maps stay separate even though their values are identical again today.
+ * They were split precisely because a shared one forces two components into one
+ * commit, and re-merging them would re-impose that the day either regresses. */
 const CONFIRM_DIALOG_BEHAVIOURAL = {
-  'focus.onOpen': false, 'focus.onClose': false, 'focus.trap': false, 'keyboard.Escape': false,
+  'focus.onOpen': true, 'focus.onClose': true, 'focus.trap': true, 'keyboard.Escape': true,
 };
 
 /* A FIXTURE, NOT A CLAIM ABOUT ANY COMPONENT. The failure-path tests below feed
