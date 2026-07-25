@@ -324,7 +324,7 @@ Eight slots for colouring N arbitrary entities — chart series, calendar events
 
 The ramp is one system with one entry point: `catColor(slot)` in `frameworks/react/components/charts/chart-internals.js`. `Calendar` reads it from there rather than keeping its own copy — two clamps over one ramp is how a ramp stops being a ramp.
 
-Where a component has no `tone` escape hatch, **state goes on a non-chromatic channel**: a `Calendar` event marks itself cancelled with a strikethrough or a dashed border, never by turning `--danger`. An entity painted a status color while its neighbours carry identity colors makes the palette mean two things at once, and the reader cannot tell which.
+Where a component has no `tone` escape hatch, **state goes on a non-chromatic channel** — never by turning an identity-coloured entity `--danger`. An entity painted a status color while its neighbours carry identity colors makes the palette mean two things at once, and the reader cannot tell which. `Calendar` is the strict case: it draws every event chip itself, so a consumer has no chromatic channel *and* no non-chromatic one, and a cancelled class says so in its title or does not appear on the schedule. That is a real capability the API contract removed, and `Calendar.prompt.md` records it.
 
 | Slot | Name | Hue | Dark | Light |
 |---|---|---|---|---|

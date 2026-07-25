@@ -55,9 +55,10 @@ not a narrowing of the vocabulary.
 **Consumer data is the one form whose contents the contract deliberately does not state.** It is
 a record whose keys the *consumer* names: Arena routes it and never inspects it, which is neither
 "Arena draws it" (an object) nor "the consumer draws it" (a slot). `Table`'s rows are the case
-that named it — `row[c.key]` indexes the record by a key the consumer chose — and `Calendar`'s
-per-event `meta` bag is the other. It exists because the sentence above used to say *seven*, and
-was false: `Table.rows` is a member and was none of them.
+that named it — `row[c.key]` indexes the record by a key the consumer chose. It exists because
+the sentence above used to say *seven*, and was false: `Table.rows` is a member and was none of
+them. (`Calendar`'s per-event `meta` bag was named here as the second case and is not one: it
+was deleted rather than reshaped — see R1.)
 
 The form is **narrow on purpose**, and that narrowness is what stops it being the escape R4
 closes. It is exactly one spelling, `Record<string, unknown>`; a record of a *known* type is a
@@ -152,8 +153,14 @@ inside it. A field that is a function becomes an **event of the component**, car
 object in its payload; a field that is a node becomes a **slot of the component**, or a
 primitive if Arena draws it. **And no consumer data inside it either** — an object states its
 fields, and consumer data is by construction a record whose fields are unknown, so a declared
-type cannot carry an undescribed bag. `Calendar`'s per-event `meta` is what this deletes: it
-does not become a field of `CalendarEvent`, it becomes a member of the component.
+type cannot carry an undescribed bag. `Calendar`'s per-event `meta` is what this deletes, and
+**it became nothing at all.** This sentence used to predict it would "become a member of the
+component"; that was false the moment the per-item convention removed `renderEvent`, because
+`renderEvent`'s parameter was the only route by which a consumer's own record ever came back
+out, and the other mechanical guard on the eighth form is that a consumer-data member must have
+a consumer. With no route out it is dead API, so `CalendarEvent` declares `id`, `title`,
+`start`, `end` and `colorId`, and the bag is gone from the contract entirely. What a consumer
+loses with it is recorded in `Calendar.prompt.md`, not hidden.
 
 **R2 — Who draws decides data versus slot.** If Arena draws the content — knows its
 fields and owns its markup — it is an object or an array of objects. If the consumer draws

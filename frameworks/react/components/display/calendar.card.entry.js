@@ -16,20 +16,20 @@ const at = (day, h, m) => {
   return d.toISOString();
 };
 const events = [
-  { id: "s1", title: "Standup", start: at(0, 9, 0), end: at(0, 9, 30), slot: 1 },
-  { id: "m1", title: "Client review — Northwind", start: at(0, 10, 0), end: at(0, 11, 30), slot: 2 },
-  { id: "m2", title: "Design critique", start: at(0, 11, 0), end: at(0, 12, 0), slot: 3 },
-  { id: "s2", title: "Standup", start: at(1, 9, 0), end: at(1, 9, 30), slot: 1 },
-  { id: "m3", title: "Migration planning", start: at(1, 13, 0), end: at(1, 14, 30), slot: 4 },
-  { id: "s3", title: "Standup", start: at(2, 9, 0), end: at(2, 9, 30), slot: 1 },
-  { id: "m4", title: "Onsite — Acme", start: at(2, 10, 0), end: at(2, 12, 0), slot: 5 },
-  { id: "m5", title: "Security sync", start: at(2, 10, 30), end: at(2, 11, 0), slot: 6 },
-  { id: "m6", title: "Retro", start: at(2, 11, 30), end: at(2, 12, 30), slot: 7 },
-  { id: "s4", title: "Standup", start: at(3, 9, 0), end: at(3, 9, 30), slot: 1 },
-  { id: "m7", title: "Release window", start: at(3, 15, 0), end: at(3, 16, 30), slot: 8 },
-  { id: "s5", title: "Standup", start: at(4, 9, 0), end: at(4, 9, 30), slot: 1 },
-  { id: "m8", title: "Demo day", start: at(4, 12, 0), end: at(4, 13, 0), slot: 2 },
-  { id: "m9", title: "On-call handover", start: at(5, 11, 0), end: at(5, 12, 0), slot: 3 }
+  { id: "s1", title: "Standup", start: at(0, 9, 0), end: at(0, 9, 30), colorId: 1 },
+  { id: "m1", title: "Client review — Northwind", start: at(0, 10, 0), end: at(0, 11, 30), colorId: 2 },
+  { id: "m2", title: "Design critique", start: at(0, 11, 0), end: at(0, 12, 0), colorId: 3 },
+  { id: "s2", title: "Standup", start: at(1, 9, 0), end: at(1, 9, 30), colorId: 1 },
+  { id: "m3", title: "Migration planning", start: at(1, 13, 0), end: at(1, 14, 30), colorId: 4 },
+  { id: "s3", title: "Standup", start: at(2, 9, 0), end: at(2, 9, 30), colorId: 1 },
+  { id: "m4", title: "Onsite — Acme", start: at(2, 10, 0), end: at(2, 12, 0), colorId: 5 },
+  { id: "m5", title: "Security sync", start: at(2, 10, 30), end: at(2, 11, 0), colorId: 6 },
+  { id: "m6", title: "Retro", start: at(2, 11, 30), end: at(2, 12, 30), colorId: 7 },
+  { id: "s4", title: "Standup", start: at(3, 9, 0), end: at(3, 9, 30), colorId: 1 },
+  { id: "m7", title: "Release window", start: at(3, 15, 0), end: at(3, 16, 30), colorId: 8 },
+  { id: "s5", title: "Standup", start: at(4, 9, 0), end: at(4, 9, 30), colorId: 1 },
+  { id: "m8", title: "Demo day", start: at(4, 12, 0), end: at(4, 13, 0), colorId: 2 },
+  { id: "m9", title: "On-call handover", start: at(5, 11, 0), end: at(5, 12, 0), colorId: 3 }
 ];
 function Demo() {
   const [picked, setPicked] = React.useState(null);

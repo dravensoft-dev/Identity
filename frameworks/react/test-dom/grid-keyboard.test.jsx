@@ -44,8 +44,8 @@ afterEach(cleanup);
  * ISO strings. Sunday 26 carries no event, so hideEmptyWeekend drops it and the
  * week is SIX columns: Mon 20 .. Sat 25. */
 const EVENTS = [
-  { id: 'a', title: 'Standup', start: '2026-07-20T09:00:00Z', end: '2026-07-20T09:30:00Z', slot: 1 },
-  { id: 'b', title: 'Review', start: '2026-07-21T14:00:00Z', end: '2026-07-21T15:00:00Z', slot: 2 },
+  { id: 'a', title: 'Standup', start: '2026-07-20T09:00:00Z', end: '2026-07-20T09:30:00Z', colorId: 1 },
+  { id: 'b', title: 'Review', start: '2026-07-21T14:00:00Z', end: '2026-07-21T15:00:00Z', colorId: 2 },
 ];
 
 const DAYS = 6;

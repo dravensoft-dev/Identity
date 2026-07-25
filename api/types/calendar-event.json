@@ -1,0 +1,17 @@
+{
+  "name": "CalendarEvent",
+  "kind": "object",
+  "description": "One event on the schedule. Times are ISO datetimes read in the calendar's timeZone, never the reader's.",
+  "fields": {
+    "id": { "form": "primitive", "type": "string", "required": true,
+            "description": "Stable identity, so a host can switch on it rather than on the title." },
+    "title": { "form": "primitive", "type": "string", "required": true,
+               "description": "What the chip reads." },
+    "start": { "form": "primitive", "type": "string", "required": true,
+               "description": "ISO datetime the event begins." },
+    "end": { "form": "primitive", "type": "string", "required": true,
+             "description": "ISO datetime the event ends." },
+    "colorId": { "form": "enum", "type": "CatSlot",
+                 "description": "Identity colour. Give the same entity the same slot everywhere and it keeps its colour across views." }
+  }
+}

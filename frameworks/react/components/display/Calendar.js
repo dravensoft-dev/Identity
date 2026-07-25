@@ -21,7 +21,7 @@ import {
 } from "./calendar-internals.js";
 const GUTTER = "calc(var(--sp-1) * 14)";
 export function Calendar({
-  events = [],
+  events,
   timeZone,
   anchorDate,
   view,
@@ -32,11 +32,13 @@ export function Calendar({
   onEventClick,
   onDateClick,
   onRangeChange,
-  renderEvent,
-  actions,
-  style
+  actions
 }) {
-  const zone = timeZone || "UTC";
+  if (events == null)
+    throw new Error("Calendar: `events` is required");
+  if (!timeZone)
+    throw new Error("Calendar: `timeZone` is required");
+  const zone = timeZone;
   const [ref, width] = useContainerWidth();
   const [anchor, setAnchor] = useState(() => anchorDate || todayIso(zone));
   useEffect(() => {
@@ -169,7 +171,7 @@ export function Calendar({
   return React.createElement("section", {
     ref,
     "aria-label": `Schedule, ${rangeTitle(days)}`,
-    style: { display: "flex", flexDirection: "column", width: "100%", fontFamily: "var(--font-body)", ...style }
+    style: { display: "flex", flexDirection: "column", width: "100%", fontFamily: "var(--font-body)" }
   }, React.createElement("div", {
     style: { display: "flex", alignItems: "center", gap: "calc(var(--sp-1) * 2)", marginBottom: "calc(var(--sp-1) * 3)", flexWrap: "wrap" }
   }, navBtn(-1), React.createElement("button", {
@@ -281,7 +283,7 @@ export function Calendar({
       }
     });
   }), byDay[di].map((p) => {
-    const color = catColor(p.ev.slot ?? 1);
+    const color = catColor(p.ev.colorId ?? 1);
     const top = y(p.startMin);
     const rawH = y(p.endMin) - top;
     const h = `max(calc(var(--sp-1) * 4.5), ${rawH}px)`;
@@ -323,7 +325,7 @@ export function Calendar({
         cursor: onEventClick ? "pointer" : "default",
         font: "inherit"
       }
-    }, renderEvent ? renderEvent(p.ev) : React.createElement(React.Fragment, null, React.createElement("span", {
+    }, React.createElement("span", {
       style: {
         fontSize: "var(--dz-text-sm)",
         fontWeight: "var(--fw-semibold)",
@@ -334,7 +336,7 @@ export function Calendar({
       }
     }, p.ev.title), rawH >= 32 && React.createElement("span", {
       style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-2xs)", color: "var(--mute)" }
-    }, time)));
+    }, time));
   }))), showNow && React.createElement("div", {
     "aria-hidden": "true",
     style: {

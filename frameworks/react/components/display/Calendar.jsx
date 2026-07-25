@@ -9,7 +9,7 @@ import {
 
 const GUTTER = 'calc(var(--sp-1) * 14)';
 
-/** Week/day schedule on a time grid. `events`: [{id, title, start, end, slot, meta}]
+/** Week/day schedule on a time grid. `events`: [{id, title, start, end, colorId}]
  * with `start`/`end` as ISO datetimes; `timeZone` is an IANA name and is required —
  * a schedule rendered in the reader's zone instead of the calendar's is not off by
  * a style, it is off by hours.
@@ -18,16 +18,26 @@ const GUTTER = 'calc(var(--sp-1) * 14)';
  * CONTAINER, not the viewport, for the reason Table gives: a calendar in a narrow
  * column should go day-mode on a wide monitor.
  *
- * Color is identity, never state: `slot` picks the categorical ramp, in order. To
- * mark an event cancelled or tentative, use `renderEvent` and a non-chromatic
- * channel — a strikethrough, a dashed border. Painting one event --danger while its
- * neighbours carry identity colors makes the palette mean two things at once. */
+ * Color is identity, never state: `colorId` picks the categorical ramp, in order.
+ * Arena draws the whole chip, so there is no per-event channel a consumer can mark
+ * "cancelled" or "tentative" on — carry that in the title, or keep such events out
+ * of the schedule. Painting one event --danger while its neighbours carry identity
+ * colors would make the palette mean two things at once, which is why the ramp is
+ * the only colour a consumer chooses here. */
 export function Calendar({
-  events = [], timeZone, anchorDate, view,
+  events, timeZone, anchorDate, view,
   dayStart, dayEnd = '23:00', weekStartsOn = 1, hideEmptyWeekend = true,
-  onEventClick, onDateClick, onRangeChange, renderEvent, actions, style,
+  onEventClick, onDateClick, onRangeChange, actions,
 }) {
-  const zone = timeZone || 'UTC';
+  /* Both are contracted required, and required governs runtime: a missing one
+     fails here rather than being masked. `timeZone` in particular had a silent
+     `|| 'UTC'` fallback, which produced the exact defect the member's own
+     description names -- a schedule read in the wrong zone, wrong by hours and
+     announcing nothing. The guard precedes every use, including the useState
+     initializer that resolves today in the zone. */
+  if (events == null) throw new Error('Calendar: `events` is required');
+  if (!timeZone) throw new Error('Calendar: `timeZone` is required');
+  const zone = timeZone;
   const [ref, width] = useContainerWidth();
   const [anchor, setAnchor] = useState(() => anchorDate || todayIso(zone));
 
@@ -201,7 +211,7 @@ export function Calendar({
 
   return (
     <section ref={ref} aria-label={`Schedule, ${rangeTitle(days)}`}
-      style={{ display: 'flex', flexDirection: 'column', width: '100%', fontFamily: 'var(--font-body)', ...style }}>
+      style={{ display: 'flex', flexDirection: 'column', width: '100%', fontFamily: 'var(--font-body)' }}>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', marginBottom: 'calc(var(--sp-1) * 3)', flexWrap: 'wrap' }}>
         {navBtn(-1)}
@@ -296,7 +306,7 @@ export function Calendar({
                 })}
 
                 {byDay[di].map((p) => {
-                  const color = catColor(p.ev.slot ?? 1);
+                  const color = catColor(p.ev.colorId ?? 1);
                   const top = y(p.startMin);
                   const rawH = y(p.endMin) - top;
                   // 18px floor (sp-1 * 4.5) so a 5-minute event still has to
@@ -330,14 +340,13 @@ export function Calendar({
                         borderLeft: `var(--bw-strong) solid ${color}`, borderTop: 'none', borderRight: 'none', borderBottom: 'none',
                         borderRadius: 'var(--r-sm)', cursor: onEventClick ? 'pointer' : 'default',
                         font: 'inherit' }}>
-                      {renderEvent ? renderEvent(p.ev) : (
-                        <>
-                          <span style={{ fontSize: 'var(--dz-text-sm)', fontWeight: 'var(--fw-semibold)', color: 'var(--text-strong)',
-                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.ev.title}</span>
-                          {rawH >= 32 && (
-                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', color: 'var(--mute)' }}>{time}</span>
-                          )}
-                        </>
+                      {/* The chip body is Arena's alone: there is no per-event
+                          renderer, because per-item projection has no Angular
+                          answer short of a structural directive. */}
+                      <span style={{ fontSize: 'var(--dz-text-sm)', fontWeight: 'var(--fw-semibold)', color: 'var(--text-strong)',
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.ev.title}</span>
+                      {rawH >= 32 && (
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', color: 'var(--mute)' }}>{time}</span>
                       )}
                     </Tag>
                   );

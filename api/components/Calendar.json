@@ -1,0 +1,30 @@
+{
+  "component": "Calendar",
+  "description": "Week or day schedule on a time grid. Colour is identity, never state.",
+  "api": {
+    "events": { "form": "array", "of": "CalendarEvent", "required": true,
+                "description": "The events to place." },
+    "timeZone": { "form": "primitive", "type": "string", "required": true,
+                  "description": "IANA zone name. Required: a schedule rendered in the reader's zone is wrong by hours, not by style." },
+    "anchorDate": { "form": "primitive", "type": "string",
+                    "description": "ISO date the view opens on. Defaults to today in `timeZone`; pass and change it to drive the date yourself." },
+    "view": { "form": "enum", "type": "CalendarView",
+              "description": "Omit to derive from the CONTAINER width: day below --bp-md, else week." },
+    "dayStart": { "form": "primitive", "type": "string",
+                  "description": "HH:MM the grid starts at. Defaults to the earliest visible event's hour, floored." },
+    "dayEnd": { "form": "primitive", "type": "string", "default": "23:00",
+                "description": "HH:MM the grid ends at." },
+    "weekStartsOn": { "form": "primitive", "type": "number", "default": 1,
+                      "description": "0 = Sunday … 6 = Saturday." },
+    "hideEmptyWeekend": { "form": "primitive", "type": "boolean", "default": true,
+                          "description": "Drop Sunday from the week unless an event falls on it." },
+    "eventClick": { "form": "event", "payload": "CalendarEvent",
+                    "description": "An event chip was activated; carries the event." },
+    "dateClick": { "form": "event", "payload": "string",
+                   "description": "A day header or column background was activated; carries the ISO date." },
+    "rangeChange": { "form": "event", "payload": "string",
+                     "description": "The anchor moved via prev/Today/next; carries the new ISO date. A date rather than a delta, because Today is not a delta." },
+    "actions": { "form": "slot",
+                 "description": "Right-aligned in the toolbar, beside the range title." }
+  }
+}

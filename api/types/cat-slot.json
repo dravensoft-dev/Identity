@@ -1,0 +1,6 @@
+{
+  "name": "CatSlot",
+  "kind": "enum",
+  "description": "A slot in the categorical ramp, in fixed order and never cycled. The same eight slots the charts use — identity is one system across Arena, not one per component. Colour here means which thing, never what state.",
+  "values": [1, 2, 3, 4, 5, 6, 7, 8]
+}
