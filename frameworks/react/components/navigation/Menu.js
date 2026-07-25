@@ -14,7 +14,9 @@ function useMenuKeyframes() {
     document.head.appendChild(s);
   }, []);
 }
-export function Menu({ trigger, items = [], align = "start", style }) {
+export function Menu({ trigger, items, align = "start", onSelect }) {
+  if (items == null)
+    throw new Error("Menu: `items` is required");
   useMenuKeyframes();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -40,11 +42,11 @@ export function Menu({ trigger, items = [], align = "start", style }) {
     if (it.disabled)
       return;
     setOpen(false);
-    it.onClick && it.onClick();
+    onSelect && onSelect(it);
   };
   return React.createElement("div", {
     ref,
-    style: { position: "relative", display: "inline-flex", ...style }
+    style: { position: "relative", display: "inline-flex" }
   }, React.createElement("span", {
     onClick: () => setOpen((v) => !v),
     "aria-haspopup": "menu",
@@ -75,14 +77,14 @@ export function Menu({ trigger, items = [], align = "start", style }) {
         key: i,
         style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-2xs)", letterSpacing: "var(--ls-field-label)", textTransform: "uppercase", color: "var(--mute)", padding: "calc(var(--sp-1) * 2) calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 1)" }
       }, it.header);
-    return React.createElement(MenuItem, {
+    return React.createElement(MenuRow, {
       key: i,
       item: it,
       onRun: () => run(it)
     });
   })));
 }
-function MenuItem({ item, onRun }) {
+function MenuRow({ item, onRun }) {
   const [hover, setHover] = useState(false);
   const color = item.destructive ? "var(--danger)" : "var(--bone-dim)";
   const bg = hover && !item.disabled ? item.destructive ? "var(--danger-soft)" : "var(--crimson-soft)" : "transparent";
@@ -108,9 +110,11 @@ function MenuItem({ item, onRun }) {
       fontFamily: "var(--font-body)",
       fontSize: "var(--fs-md)"
     }
-  }, item.icon && React.createElement("span", {
+  }, item.icon && React.createElement("i", {
+    className: item.icon,
+    "aria-hidden": "true",
     style: { fontSize: "var(--icon-md)", display: "inline-flex" }
-  }, item.icon), React.createElement("span", {
+  }), React.createElement("span", {
     style: { flex: 1 }
   }, item.label), item.shortcut && React.createElement("span", {
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-xs)", color: "var(--mute)" }

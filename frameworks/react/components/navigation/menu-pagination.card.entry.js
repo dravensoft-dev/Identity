@@ -20,18 +20,13 @@ function Demo() {
       variant: "secondary",
       iconRight: "ph-bold ph-caret-down"
     }, "Actions"),
+    onSelect: () => {},
     items: [
       { header: "Deployment" },
-      { label: "View logs", icon: React.createElement("i", {
-        className: "ph-bold ph-scroll"
-      }), onClick: () => {} },
-      { label: "Duplicate", icon: React.createElement("i", {
-        className: "ph-bold ph-copy"
-      }), shortcut: "⌘D", onClick: () => {} },
+      { label: "View logs", icon: "ph-bold ph-scroll" },
+      { label: "Duplicate", icon: "ph-bold ph-copy", shortcut: "⌘D" },
       { divider: true },
-      { label: "Delete", icon: React.createElement("i", {
-        className: "ph-bold ph-trash"
-      }), destructive: true, onClick: () => {} }
+      { label: "Delete", icon: "ph-bold ph-trash", destructive: true }
     ]
   }), React.createElement(Menu, {
     align: "end",
@@ -39,13 +34,10 @@ function Demo() {
       label: "More options",
       icon: "ph-bold ph-dots-three-vertical"
     }),
+    onSelect: () => {},
     items: [
-      { label: "Rename", icon: React.createElement("i", {
-        className: "ph-bold ph-pencil-simple"
-      }), onClick: () => {} },
-      { label: "Archive", icon: React.createElement("i", {
-        className: "ph-bold ph-archive"
-      }), onClick: () => {} }
+      { label: "Rename", icon: "ph-bold ph-pencil-simple" },
+      { label: "Archive", icon: "ph-bold ph-archive" }
     ]
   })), React.createElement("div", {
     className: "sub",

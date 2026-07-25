@@ -2,15 +2,33 @@ Actions menu on a trigger (overflow "⋮", more actions, context). Don't confuse
 
 ```jsx
 <Menu align="end" trigger={<IconButton label="More options" icon="ph-bold ph-dots-three-vertical" />}
+  onSelect={(item) => run(item.label)}
   items={[
-    { label:'View logs', icon:<i className="ph-bold ph-scroll"/>, onClick:openLogs },
-    { label:'Duplicate', icon:<i className="ph-bold ph-copy"/>, onClick:dup, shortcut:'⌘D' },
+    { header:'Deployment' },
+    { label:'View logs', icon:'ph-bold ph-scroll' },
+    { label:'Duplicate', icon:'ph-bold ph-copy', shortcut:'⌘D' },
     { divider:true },
-    { label:'Delete', icon:<i className="ph-bold ph-trash"/>, destructive:true, onClick:del },
+    { label:'Delete', icon:'ph-bold ph-trash', destructive:true },
   ]} />
 ```
+
+An entry has no `onClick` of its own. Activating one reports `onSelect(item)` --
+the whole item, not a key into the list -- so the handler switches on whatever
+field it finds useful, usually `label`. There is deliberately no `id`:
+`{ divider:true }` and `{ header:'Text' }` are legitimate entries carrying neither
+a label nor anything to identify, and a required `id` would force a meaningless
+one onto every rule and every group heading. A `disabled` entry reports nothing,
+and a divider or a header cannot be activated at all.
+
+`icon` is a **Phosphor class-name string**, never markup: Arena draws the `<i>`
+and the caller names the glyph. What that costs is the general price of the
+single-icon convention -- an entry can no longer carry a consumer's own markup,
+so a row with an avatar, a coloured dot or a two-line body has no expression
+here. `items` is required and throws when absent; an empty array is a caller
+saying "no entries right now" and renders.
 
 **Do / Don't**
 - The trigger must have an accessible name (use `IconButton label`).
 - Destructive actions go last and are marked `destructive`.
 - To choose a value from a form, use `Select`, not a Menu.
+- Don't reach for a per-entry callback -- there is none. Read `onSelect`'s item.

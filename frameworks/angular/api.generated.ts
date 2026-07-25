@@ -101,6 +101,27 @@ export type InputType = 'text' | 'email' | 'password' | 'search' | 'tel' | 'url'
 /** Both halves of the brand lock-up at once — the mark's slot and the wordmark. A fixed repertoire, not a ratio: sm an application frame, md a signed-out panel, lg the manual's Primary, xl the hero case. */
 export type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
 
+/** Which edge of the trigger the dropdown panel lines its own edge up with. Checked against every enum already declared here before it was added; nothing carries this pair. PageHeadAlign is the near miss and is a different set -- start/center on a flex axis, with no `end`, where a panel hanging off a trigger has two edges to anchor to and no centre. */
+export type MenuAlign = 'start' | 'end';
+
+/** One entry in a Menu, and it is one of three shapes: an entry carrying `divider` draws a hairline rule, one carrying `header` draws a group label, and every other entry draws an activatable row. Every field is optional because of that -- no field is common to all three -- and there is no `id`, because a divider and a header have nothing to identify and `select` carries the whole item rather than a key into the list. */
+export interface MenuItem {
+  /** What the row reads. */
+  label?: string;
+  /** A Phosphor class name drawn before the label -- Arena draws the <i>, the consumer names the glyph. */
+  icon?: string;
+  /** The keyboard hint drawn right-aligned in the mono face. Display only: Menu binds no key for it. */
+  shortcut?: string;
+  /** Draws the row in the danger ink. Destructive entries go last. */
+  destructive?: boolean;
+  /** The row is drawn muted and reports no `select`. */
+  disabled?: boolean;
+  /** Draws a hairline rule in place of a row. Carries no other field. */
+  divider?: boolean;
+  /** Draws a group label in place of a row. Carries no other field. */
+  header?: string;
+}
+
 /** Where the coachmark attaches: the two viewport coordinates it positions from. A DOMRect is structurally assignable to it, so a consumer passes getBoundingClientRect() directly. Declared as its own object rather than taken as a DOMRect because a platform type is none of the nine forms (R4), and because these are the only two fields Onboarding reads. */
 export interface OnboardingAnchor {
   /** The anchored element's left edge, in viewport pixels. Clamped inside the viewport before use. */
