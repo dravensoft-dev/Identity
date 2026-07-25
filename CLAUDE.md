@@ -195,8 +195,16 @@ the contract/layer pair it prints, or list `api/components/`** — a count writt
 would drift the first time a batch lands, which is why none is.
 
 **Plan C's contracts are single-layer, and that is a property of the plan, not a gap.**
-The twenty-one components Plan C brings under contract exist in React alone — they are
-exactly the controls Angular delegates to Material — so each contract governs one layer
+The components Plan C brings under contract exist in React alone — they are
+exactly the controls Angular delegates to Material, so **count them rather than trusting a
+figure**: every `.jsx` under `frameworks/react/components/` with no matching directory under
+`frameworks/angular/primitives/`, which is also exactly the key set of
+`frameworks/angular/behaviour-delegated.json`, minus `Switch`, which was contracted before Plan C
+began. A count written here would drift, and did: it read *twenty-one*, which was true when
+written and went stale the moment plan 8C2 split `Radio.jsx` into two quartets — `RadioGroup`
+became a new React component and a new delegated entry in the same change, moving the set to
+twenty-two without a word of prose changing. That is this file's own rule about derived figures,
+broken by this very paragraph — so each contract governs one layer
 and `check:api` moves by one contract and one layer per component, not the `+1/+2` a
 shared component moves. Their APIs are settled and normative *before* Angular has an
 implementation to defend, which is the whole point of sequencing Plan C ahead of Plan D

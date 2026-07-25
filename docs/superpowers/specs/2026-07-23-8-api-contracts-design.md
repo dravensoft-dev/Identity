@@ -918,6 +918,17 @@ one capability rather than the five `form*` overrides 8C1 paid: **`id` is no lon
 consumer wanting to supply one lost the path, because it arrived through the heritage clause. It is
 recorded as the batch's one D1 cost, with the same absence of a gate behind it that 8C1's loss has.
 
+> **Re-measured after Plan 8C2 (2026-07-24): Plan C's subject set is twenty-TWO, not twenty-one.**
+> The figure below was true when written and went stale inside 8C2 itself: splitting `Radio.jsx`
+> into two quartets made `RadioGroup` a new React component AND a new `behaviour-delegated.json`
+> entry in the same change, moving the set from twenty-one to twenty-two with no prose changing.
+> The other uses of *twenty-one* and *twenty-two* in this document — Plan D's CDK primitives at
+> the "Three things to carry in" section, and `frameworks/tailwind/README.md`'s manifest tally —
+> are the same drift or a different subject entirely; measure before citing either. The command:
+> every `.jsx` under `frameworks/react/components/` (excluding `*.card.entry.jsx`) with no matching
+> directory under `frameworks/angular/primitives/`, minus `Switch`, which was contracted before
+> Plan C began. The paragraphs below are left as the record of what 8C1 stated at the time.
+
 Plan 8C1 opened Plan C — the twenty-one React-only components — with its first batch: the five
 primitives other components compose (`Spinner`, `Badge`, `Card`, `IconButton`, `Button`), taking
 `check:api` from 21 contracts across 41 layer implementations to **26 across 46**. **Every contract
