@@ -264,6 +264,40 @@ test('a chip carrying a kebab is not a button inside a button', () => {
     'a kebab was nested inside the chip button -- invalid HTML');
 });
 
+/* THE DEFECT THIS EXISTS FOR: a paneled chip shipped with `tabindex` on
+ * NEITHER the chip root nor anything Calendar could focus, so Enter from the
+ * hour cell called focus() on a plain <div> and moved focus nowhere. It went
+ * unnoticed by everything -- the one-tab-stop count above PASSED BECAUSE OF the
+ * bug, and happy-dom focuses non-focusable elements, so the deleted grid suite
+ * would not have caught it either. Only a real browser did.
+ *
+ * What a static render can still settle is the structure that makes the route
+ * possible: a paneled chip must carry a focusable descendant, and the roving
+ * `tabindex="-1"` Calendar injects must land on a real <button> rather than on
+ * a bare box. That is asserted here.
+ *
+ * WHAT IT CANNOT SETTLE, said plainly: refs do not attach under
+ * renderToStaticMarkup, so nothing here proves the ref Calendar holds points at
+ * THIS button rather than at the chip root, and nothing here proves focus()
+ * moves. Both are on the by-hand checklist in CalendarEvent.prompt.md, by the
+ * grid rule. */
+test('a paneled chip carries a focusable body for Enter to land on', () => {
+  const html = renderToStaticMarkup(
+    <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">
+      <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z"
+        onClick={() => {}} actionsEnabled actions={<button type="button">Delete</button>} />
+    </Calendar>,
+  );
+  /* The body button is the one carrying the chip's accessible name; the kebab
+     carries "Actions". Naming it is what keeps this from passing on the kebab,
+     which is focusable too but is not where Enter should land. */
+  assert.match(
+    html,
+    /<button[^>]*aria-label="Standup,[^"]*"[^>]*tabindex="-1"|<button[^>]*tabindex="-1"[^>]*aria-label="Standup,[^"]*"/,
+    'a paneled chip has no focusable body -- Enter from the hour cell lands on nothing',
+  );
+});
+
 /* Rendered on its own rather than inside a Calendar: `open` is internal state
  * and renderToStaticMarkup cannot click. What this pins is the branch -- that
  * an open panel puts the consumer's markup in the tree and a closed one does
@@ -277,4 +311,26 @@ test('CalendarEvent renders its panel content when the panel is open', () => {
       defaultPanelOpen />,
   );
   assert.match(html, /Delete/, 'an open panel did not render its content');
+});
+
+/* The chip is the containing block for its own panel, so its `overflow: hidden`
+ * -- the clip that ellipsises a long title -- also CLIPPED THE PANEL. Measured
+ * in a browser on a 30-minute chip: the panel's bottom sat 43px below the
+ * chip's, and elementFromPoint at the Delete button returned the background.
+ * The clip is therefore lifted while the panel is open and only then, so no
+ * other chip's rendering moves. The title's own span keeps
+ * nowrap/hidden/ellipsis either way, which is why the truncation survives. */
+test('the chip lifts its clip while the panel is open, and only then', () => {
+  const chip = (extra) => renderToStaticMarkup(
+    <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z"
+      actionsEnabled actions={<button type="button">Delete</button>}
+      box={{}} color="var(--color-cat-1)" timeLabel="09:00 – 09:30" dateLabel="Monday 20 July"
+      {...extra} />,
+  );
+  assert.match(chip({ defaultPanelOpen: true }), /overflow:visible/,
+    'the open panel is still clipped by the chip');
+  assert.match(chip({}), /overflow:hidden/,
+    'a closed chip stopped clipping -- a long title no longer ellipsises');
+  assert.match(chip({}), /text-overflow:ellipsis/,
+    'the title span lost the ellipsis the chip clip was standing in for');
 });

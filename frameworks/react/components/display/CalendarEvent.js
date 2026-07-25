@@ -28,9 +28,10 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
     throw new Error("CalendarEvent: `start` is required");
   if (!end)
     throw new Error("CalendarEvent: `end` is required");
-  const hasPanel = actionsEnabled && Boolean(actions);
+  const hasPanel = actionsEnabled;
   const Tag = onClick && !hasPanel ? "button" : "div";
   const [panelOpen, setPanelOpen] = React.useState(Boolean(defaultPanelOpen));
+  const bodyIsButton = Boolean(onClick) && hasPanel;
   const body = React.createElement(React.Fragment, null, React.createElement("span", {
     style: {
       fontSize: "var(--dz-text-sm)",
@@ -44,9 +45,9 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-2xs)", color: "var(--mute)" }
   }, timeLabel));
   return React.createElement(Tag, {
-    ref,
+    ref: bodyIsButton ? undefined : ref,
     type: onClick && !hasPanel ? "button" : undefined,
-    tabIndex: hasPanel ? undefined : tabIndex,
+    tabIndex: bodyIsButton ? undefined : tabIndex,
     onClick: onClick && !hasPanel ? (e) => {
       e.stopPropagation();
       onClick();
@@ -64,7 +65,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
       display: "flex",
       flexDirection: "column",
       gap: 0,
-      overflow: "hidden",
+      overflow: panelOpen ? "visible" : "hidden",
       textAlign: "left",
       padding: "calc(var(--sp-1) * 1) calc(var(--sp-1) * 1.5)",
       background: `color-mix(in oklab, ${color} 16%, var(--surface-card))`,
@@ -78,6 +79,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
     }
   }, hasPanel ? React.createElement(React.Fragment, null, onClick ? React.createElement("button", {
     type: "button",
+    ref,
     tabIndex,
     onClick: (e) => {
       e.stopPropagation();

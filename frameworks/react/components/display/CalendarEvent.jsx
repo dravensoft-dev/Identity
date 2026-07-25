@@ -38,8 +38,17 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
      nesting one button in another is invalid HTML and the browser restructures
      it silently. With actions, the chip is a <div> and the BODY becomes the
      button; without them, nothing about the markup changes at all, so every
-     chip in the tree today renders byte-identically. */
-  const hasPanel = actionsEnabled && Boolean(actions);
+     chip in the tree today renders byte-identically.
+
+     THE MEMBER ALONE DECIDES, and `Boolean(actions)` is deliberately not part
+     of it. The contract's own description of `actionsEnabled` says why: it is a
+     boolean rather than "is the actions slot filled?" because Angular cannot
+     detect whether an <ng-content> was filled, so a React that drew the kebab
+     only when the slot happened to be filled would be a divergence the member
+     exists to make impossible. `actionsEnabled` with an empty slot draws a
+     kebab over an empty panel in both layers, which is a consumer mistake both
+     layers make visible in the same way. */
+  const hasPanel = actionsEnabled;
   const Tag = onClick && !hasPanel ? 'button' : 'div';
 
   /* `defaultPanelOpen` is a TEST SEAM and deliberately not a contract member:
@@ -48,6 +57,16 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
      contract, so check:api never sees it -- the same status as the props
      Calendar injects. */
   const [panelOpen, setPanelOpen] = React.useState(Boolean(defaultPanelOpen));
+
+  /* THE REF FOLLOWS THE FOCUSABLE ELEMENT, and getting this wrong is invisible
+     to every test in the tree. `Calendar` keeps ev.id -> this ref and calls
+     node.focus() on it when Enter steps in from an hour cell; a <div> with no
+     tabindex is not focusable, so pointing the ref at the chip root of a
+     paneled chip made Enter a silent no-op in a real browser -- and happy-dom's
+     focus() focuses anything, so a render suite would not have caught it
+     either. Whichever element carries `tabIndex` is the element the ref goes
+     on: the body button when there is a panel, the chip root otherwise. */
+  const bodyIsButton = Boolean(onClick) && hasPanel;
 
   /* The chip's own body, hoisted so the branch below can place it in two
      different parents without duplicating it. */
@@ -62,12 +81,15 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
   );
 
   return (
-    <Tag ref={ref}
+    <Tag ref={bodyIsButton ? undefined : ref}
       /* Without a kebab the chip IS the button and nothing about this element
-         changes. With one, every interactive attribute moves down to the body
-         and the chip becomes an inert positioned box. */
+         changes. With one AND an onClick, every interactive attribute moves
+         down to the body and the chip becomes an inert positioned box. With one
+         and no onClick there is no body button to move them to, so the root
+         keeps `tabIndex` and stays the programmatically focusable element --
+         which is what Escape out of the chip needs. */
       type={onClick && !hasPanel ? 'button' : undefined}
-      tabIndex={hasPanel ? undefined : tabIndex}
+      tabIndex={bodyIsButton ? undefined : tabIndex}
       onClick={onClick && !hasPanel ? (e) => { e.stopPropagation(); onClick(); } : undefined}
       aria-label={onClick && !hasPanel ? `${title}, ${dateLabel}, ${timeLabel}` : undefined}
       onKeyDown={hasPanel ? (e) => {
@@ -79,7 +101,16 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
         if (e.key === 'Escape' && panelOpen) { e.stopPropagation(); setPanelOpen(false); }
       } : undefined}
       style={{ position: 'absolute', ...box,
-        display: 'flex', flexDirection: 'column', gap: 0, overflow: 'hidden',
+        display: 'flex', flexDirection: 'column', gap: 0,
+        /* The clip is what ellipsises a long title, and it is also what ate the
+           open panel: the chip is the containing block for both the kebab and
+           the panel, and a panel is taller than any chip under about 110
+           minutes -- measured, on a 30-minute chip the Delete button's centre
+           returned the background. The title's own span carries
+           nowrap/hidden/ellipsis, so the truncation survives the clip being
+           lifted; lifting it only while the panel is OPEN keeps every other
+           chip, panelled or not, rendering exactly as before. */
+        overflow: panelOpen ? 'visible' : 'hidden',
         textAlign: 'left', padding: 'calc(var(--sp-1) * 1) calc(var(--sp-1) * 1.5)',
         background: `color-mix(in oklab, ${color} 16%, var(--surface-card))`,
         borderLeft: `var(--bw-strong) solid ${color}`, borderTop: 'none', borderRight: 'none', borderBottom: 'none',
@@ -88,7 +119,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
       {hasPanel ? (
         <>
           {onClick ? (
-            <button type="button" tabIndex={tabIndex}
+            <button type="button" ref={ref} tabIndex={tabIndex}
               onClick={(e) => { e.stopPropagation(); onClick(); }}
               aria-label={`${title}, ${dateLabel}, ${timeLabel}`}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 0,
