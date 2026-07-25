@@ -1,7 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cssCounterpart, importedNames } from './check-script-tokens.mjs';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { cssCounterpart, importedNames, catSlotEnumProblems } from './check-script-tokens.mjs';
 import { buildScriptModules } from './build-tokens.mjs';
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 test('cssCounterpart strips the unit from a px declaration', () => {
   assert.equal(cssCounterpart('280px'), 280);
@@ -48,4 +53,36 @@ test('catSlots is derived from the ramp and equals its slot count', async () => 
   const modules = await buildScriptModules();
   const body = modules.get('frameworks/react/tokens.generated.js');
   assert.match(body, /^export const catSlots = 8;$/m);
+});
+
+/* CatSlot is the only contract type restating a token-derived bound, and this
+ * assertion is the tie back to the palette that api/README.md's "A closed set of
+ * values is not always an enum" passage requires of it. */
+test('catSlotEnumProblems accepts 1..N in order', () => {
+  assert.deepEqual(catSlotEnumProblems(8, [1, 2, 3, 4, 5, 6, 7, 8]), []);
+});
+
+test('catSlotEnumProblems rejects a set the ramp has outgrown', () => {
+  const [problem] = catSlotEnumProblems(9, [1, 2, 3, 4, 5, 6, 7, 8]);
+  assert.match(problem, /has 9 slot\(s\)/);
+});
+
+test('catSlotEnumProblems rejects a set longer than the ramp', () => {
+  assert.equal(catSlotEnumProblems(8, [1, 2, 3, 4, 5, 6, 7, 8, 9]).length, 1);
+});
+
+test('catSlotEnumProblems rejects the right values out of order', () => {
+  assert.equal(catSlotEnumProblems(3, [1, 3, 2]).length, 1);
+});
+
+test('catSlotEnumProblems rejects a non-array', () => {
+  assert.equal(catSlotEnumProblems(8, undefined).length, 1);
+});
+
+test('the committed CatSlot matches the ramp the tokens are built from', async () => {
+  const modules = await buildScriptModules();
+  const body = modules.get('frameworks/react/tokens.generated.js');
+  const catSlots = Number(/^export const catSlots = (\d+);$/m.exec(body)[1]);
+  const catSlot = JSON.parse(readFileSync(join(root, 'api/types/cat-slot.json'), 'utf8'));
+  assert.deepEqual(catSlotEnumProblems(catSlots, catSlot.values), []);
 });

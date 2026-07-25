@@ -445,18 +445,33 @@ Declared once, in `api/types/`, one file per type:
   "values": ["neutral", "accent", "gold", "success", "warning", "danger", "info"] }
 ```
 
-**A closed set of values is not always an enum.** The charts' categorical ramp slot is the
-case that decided the rule: it is a bounded 1..N, but it is declared a bare `number` on both
-layers, not an `api/types/` enum. The bound N lives in exactly one authoritative place —
-`tokens/src/palette.dark.json`'s `--color-cat-*` ramp — and reaches the components as the
-derived `catSlots` constant in `tokens.generated.*`; `catColor()`'s `Math.min(CAT_SLOTS, …)`
-clamp already enforces it at runtime in both layers, and it re-derives itself the day the ramp
-gains or loses a colour. Modelling it as an enum would hand-copy that derived N into a contract
-as a literal set with nothing tying the copy back to the palette — a stale-assertion surface of
-exactly the kind this layer exists to remove, and the generator emits enum values quoted, so a
-numeric set would not even render. An enum is right when the closed set is authored in the
-contract and owned by it — `Tone` above — and wrong when it merely restates a value the token
-layer already derives.
+**A closed set of values is not always an enum.** An enum is right when the closed set is
+authored in the contract and owned by it — `Tone` above — and it is not automatically right
+when the set merely restates a value the token layer already derives. The charts' categorical
+ramp slot is the case that decided that rule and then tested it. It is a bounded 1..N whose
+bound lives in exactly one authoritative place — `tokens/src/palette.dark.json`'s
+`--color-cat-*` ramp — reaching the components as the derived `catSlots` constant in
+`tokens.generated.*`, where `catColor()`'s `Math.min(CAT_SLOTS, …)` clamp enforces it at
+runtime on both layers and re-derives itself the day the ramp gains or loses a colour. The
+objection to modelling it as an enum was that doing so hand-copies that derived N into a
+contract as a literal set with **nothing tying the copy back to the palette** — a
+stale-assertion surface of exactly the kind this layer exists to remove.
+
+**It is an enum today, and what made that legitimate is a gate rather than a change of mind.**
+`api/types/cat-slot.json` declares `CatSlot = 1 | … | 8`, and `check:script-tokens`
+(`catSlotEnumProblems()` in `scripts/check-script-tokens.mjs`) asserts that set is exactly
+1..`catSlots` in order — add a ninth colour to the ramp and the gate fails until the contract
+type follows. The copy is tied back to the palette, so the objection no longer holds. The
+second half of it fell to a build change in the same batch: `enumLiteral()` in
+`build-api-types.mjs` now renders a numeric set unquoted, where the generator used to quote
+every value and a numeric enum would not have rendered at all.
+
+So the rule survives with its test attached: a closed set that restates a token-derived value
+may be an enum **only** while something machine-checks the restatement. `CatSlot` is the only
+type in `api/types/` that does this, and the assertion is written as that one named case
+rather than as a mechanism — a second such type would need its own tie, and deciding whether
+a general mechanism is worth building is that batch's problem, not a facility already waiting
+for it.
 
 A `description` on a type or on one of its fields is carried into the generated modules
 as a doc comment — `build-api-types.mjs` reads `api/types/` only. Group-level prose is
