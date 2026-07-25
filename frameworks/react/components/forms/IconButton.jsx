@@ -7,7 +7,7 @@ const SZ = { sm: 'var(--dz-ctl-h-sm)', md: 'var(--dz-ctl-h)', lg: 'var(--dz-ctl-
  * on touch or keyboard surfaces. */
 export function IconButton({
   icon, label, size = 'md', variant = 'ghost', showLabel = false, disabled = false,
-  type = 'button', name, value, autoFocus = false, form, onClick,
+  type = 'button', name, value, autoFocus = false, form, onClick, tabStop = true,
 }) {
   if (!icon) throw new Error('IconButton: `icon` is required');
   if (!label) throw new Error('IconButton: `label` is required');
@@ -19,6 +19,10 @@ export function IconButton({
   const color = variant === 'solid' ? 'var(--on-accent)' : 'var(--bone-dim)';
   return (
     <button type={type} name={name} value={value} autoFocus={autoFocus} form={form} onClick={onClick}
+      /* undefined rather than 0: a native <button> is already reachable, and an
+         explicit tabindex="0" would be an attribute that means nothing and that
+         every assertion about this markup would have to step around. */
+      tabIndex={tabStop ? undefined : -1}
       aria-label={label} title={showLabel ? undefined : label} disabled={disabled}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       style={{ height: d, width: showLabel ? 'auto' : d, minWidth: d, padding: showLabel ? '0 calc(var(--sp-1) * 3.5) 0 var(--sp-3)' : 0,

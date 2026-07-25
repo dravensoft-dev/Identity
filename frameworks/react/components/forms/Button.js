@@ -33,7 +33,8 @@ export function Button({
   value,
   autoFocus = false,
   form,
-  onClick
+  onClick,
+  tabStop = true
 }) {
   useSpinKeyframes();
   const [hover, setHover] = useState(false);
@@ -73,6 +74,7 @@ export function Button({
     autoFocus,
     form,
     onClick,
+    tabIndex: tabStop ? undefined : -1,
     disabled: disabled || loading,
     onMouseEnter: () => setHover(true),
     onMouseLeave: () => {
