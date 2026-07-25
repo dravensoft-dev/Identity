@@ -7,15 +7,23 @@ import React from 'react';
 export function SideNav({ items, active, ariaLabel, onNav }) {
   /* Both are required in api/components/SideNav.json, and api/README.md's
    * required-ness rule says the implementation fails hard rather than rendering
-   * with a missing value. Absence only — `== null` rather than `!items`, on
-   * Dialog.jsx's precedent for `open` and Pagination.jsx's for `page` — because
-   * an empty array is a caller saying "no destinations right now" and not an
-   * omission. `ariaLabel` is guarded rather than defaulted because the constant
-   * default was itself the defect: the navigation pattern asks each landmark on
-   * a page for a UNIQUE name, two sidebars sharing one are indistinguishable,
-   * and nothing can derive what a nav is for. */
+   * with a missing value. THE TWO GUARDS USE DIFFERENT CHECKS ON PURPOSE.
+   *
+   * `items` is absence-only — `== null` rather than `!items`, on Dialog.jsx's
+   * precedent for `open` and Pagination.jsx's for `page` — because an empty
+   * array is a caller saying "no destinations right now" and not an omission.
+   *
+   * `ariaLabel` is falsy — `!ariaLabel`, matching Table.jsx's `label`,
+   * SegmentedControl's `ariaLabel`, Tooltip's and CalendarEvent's — because
+   * `ariaLabel=""` renders `<nav aria-label="">`, which is a landmark with NO
+   * accessible name: exactly the defect the guard exists to prevent, arriving
+   * through a value that is present. An accessible name is guarded rather than
+   * defaulted because the constant default was itself the defect: the
+   * navigation pattern asks each landmark on a page for a UNIQUE name, two
+   * sidebars sharing one are indistinguishable, and nothing can derive what a
+   * nav is for. */
   if (items == null) throw new Error('SideNav: `items` is required');
-  if (ariaLabel == null) throw new Error('SideNav: `ariaLabel` is required');
+  if (!ariaLabel) throw new Error('SideNav: `ariaLabel` is required');
   return (
     <nav aria-label={ariaLabel}
       style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-1)' }}>

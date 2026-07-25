@@ -126,6 +126,29 @@ test('ariaLabel is required and its absence throws', () => {
   );
 });
 
+/* An EMPTY STRING is the case that matters, and it is not the same case as
+ * absence. `ariaLabel=""` renders `<nav aria-label="">`, a landmark with no
+ * accessible name -- precisely the defect the guard exists to prevent, arriving
+ * through a value that is present. The guard read `== null` until plan 8C4's
+ * close-out review, which let this through; every sibling accessible-name guard
+ * in the layer (Table's `label`, Tooltip's, CalendarEvent's, and this batch's own
+ * Dialog and ConfirmDialog `title`) uses a falsy check for exactly this reason. */
+test('an empty ariaLabel throws too -- a present-but-blank name is the defect, not just an absent one', () => {
+  assert.throws(
+    () => renderToStaticMarkup(<SideNav items={ITEMS} ariaLabel="" />),
+    /SideNav: `ariaLabel` is required/,
+  );
+});
+
+/* The counterpart, and the reason the two guards differ: an empty ARRAY is
+ * legal. It is a caller saying "no destinations right now", which renders an
+ * empty landmark rather than throwing. */
+test('an empty items array renders an empty landmark rather than throwing', () => {
+  const html = renderToStaticMarkup(<SideNav items={[]} ariaLabel="Primary" />);
+  assert.match(html, /<nav[^>]*aria-label="Primary"/);
+  assert.doesNotMatch(html, /<a|<button/);
+});
+
 test('the item text re-densifies with the control scale', () => {
   const html = renderToStaticMarkup(<SideNav items={ITEMS} ariaLabel="Primary" />);
   assert.match(html, /var\(--dz-text\)/);

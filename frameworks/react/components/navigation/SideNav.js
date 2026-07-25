@@ -5,7 +5,7 @@ import React from "react";
 export function SideNav({ items, active, ariaLabel, onNav }) {
   if (items == null)
     throw new Error("SideNav: `items` is required");
-  if (ariaLabel == null)
+  if (!ariaLabel)
     throw new Error("SideNav: `ariaLabel` is required");
   return React.createElement("nav", {
     "aria-label": ariaLabel,

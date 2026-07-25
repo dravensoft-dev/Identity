@@ -3,7 +3,7 @@
   "description": "The sidebar's navigation list -- the list alone, not the frame around it.",
   "api": {
     "items": { "form": "array", "of": "SideNavItem", "required": true,
-               "description": "The destinations, in order. Required, and guarded at runtime: a navigation landmark with no destinations is a landmark over nothing." },
+               "description": "The destinations, in order. Required, and guarded at runtime against ABSENCE only: an empty array is a caller saying \"no destinations right now\" and renders an empty landmark, which is legal. Omitting the member entirely is the omission that throws." },
     "active": { "form": "primitive", "type": "string",
                 "description": "The `id` of the current destination. Marks that item aria-current=\"page\", and no item is marked when it names none of them." },
     "ariaLabel": { "form": "primitive", "type": "string", "required": true,
