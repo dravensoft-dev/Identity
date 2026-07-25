@@ -1,14 +1,14 @@
-Single selection among options that are all visible at once. `RadioGroup` holds the value; each `Radio` declares its `value`.
+One option inside a `RadioGroup`. Selected shows a crimson dot inside the ring. `value` is required and matched against the group's; `label` names the option and `hint` adds a line of help under it.
 
 ```jsx
 <RadioGroup value={env} onChange={setEnv}>
   <Radio value="prod" label="Production" hint="Real users — requires approval" />
   <Radio value="staging" label="Staging" />
-  <Radio value="qa" label="QA" />
+  <Radio value="qa" label="QA" disabled />
 </RadioGroup>
 ```
 
 **Do / Don't**
-- Use Radio when it helps to see all the options (2–5) and they're mutually exclusive.
-- For more than ~6 options or limited space, use `Select`.
+- Always render a Radio inside a `RadioGroup` — the group injects the shared name and the selected state, so a standalone Radio is never selected and never groups.
 - To toggle a single thing on/off, use `Switch` or `Checkbox`, not a standalone Radio.
+- Don't pass `style` or stray DOM attributes. Radio declares `value`, `label`, `hint` and `disabled`, and renders nothing else — to lay options out differently, style the container you put the group in.

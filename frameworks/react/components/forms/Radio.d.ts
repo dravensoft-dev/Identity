@@ -1,11 +1,12 @@
-import * as React from 'react';
-/** Single-selection group. Controls the value and distributes state to the child Radios. */
-export interface RadioGroupProps {
-  value?: string; onChange?: (value: string) => void; name?: string;
-  children?: React.ReactNode; style?: React.CSSProperties;
-}
+/** One option inside a RadioGroup. Selected = crimson dot inside the ring. */
 export interface RadioProps {
-  value: string; label?: string; hint?: string; disabled?: boolean; style?: React.CSSProperties;
+  /** This option's value, matched against the group's. */
+  value: string;
+  /** The option's label. */
+  label?: string;
+  /** A line of help under the label. */
+  hint?: string;
+  /** Blocks selection and dims the option. */
+  disabled?: boolean;
 }
-export function RadioGroup(props: RadioGroupProps): JSX.Element;
 export function Radio(props: RadioProps): JSX.Element;

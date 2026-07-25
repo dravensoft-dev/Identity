@@ -3,7 +3,8 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { RadioGroup, Radio } from "../../components/forms/Radio.js";
+import { RadioGroup } from "../../components/forms/RadioGroup.js";
+import { Radio } from "../../components/forms/Radio.js";
 import { Textarea } from "../../components/forms/Textarea.js";
 function Demo() {
   const [env, setEnv] = React.useState("staging");

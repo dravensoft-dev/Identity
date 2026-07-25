@@ -457,6 +457,25 @@ test('a contract member with a form outside the eight encoded values fails', () 
   assert.ok(problems.some((p) => /callback/.test(p)));
 });
 
+/* An event payload resolves like an array's `of`: primitive, consumerData, or
+ * a declared object. The first of those three was refused until the form
+ * controls needed it -- their `change` carries the VALUE, which is a primitive.
+ * The reader had always produced that shape; only the contract could not say it. */
+
+test('validateContract accepts an event payload that is a primitive type name', () => {
+  const problems = validateContract(
+    { component: 'X', api: { change: { form: 'event', payload: 'string' } } }, TYPES,
+  );
+  assert.deepEqual(problems, []);
+});
+
+test('an event payload naming an undeclared, non-primitive type still fails', () => {
+  const problems = validateContract(
+    { component: 'X', api: { change: { form: 'event', payload: 'Widget' } } }, TYPES,
+  );
+  assert.ok(problems.some((p) => /Widget/.test(p)));
+});
+
 test('an enum member must name a declared enum, not a declared object', () => {
   const problems = validateContract(
     { component: 'X', api: { tone: { form: 'enum', type: 'Crumb' } } }, TYPES,

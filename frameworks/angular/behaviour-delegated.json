@@ -73,6 +73,11 @@
     "delegatedTo": "Angular Material MatRadioGroup (mat-radio-button)",
     "reason": "MatRadioGroup already provides the group/radio role pair, roving focus onto the checked (or first) button, and arrow-key selection. arena-material.css does not dress it -- no .mat-mdc-radio-button rule exists in the bridge today -- so its colours are Material's own defaults, not Arena's tokens."
   },
+  "RadioGroup": {
+    "pattern": "radiogroup",
+    "delegatedTo": "Angular Material MatRadioGroup (mat-radio-button)",
+    "reason": "A verbatim copy of the Radio entry above, and deliberately so: React's Radio.jsx held both components until the API contract split it into two quartets, and this gate keys React components by .jsx basename, so RadioGroup became a second name needing a declaration in every layer. Angular delegates both halves to the one Material control -- MatRadioGroup IS the group and mat-radio-button IS the option, so the same delegation is true of each. Copying is the honest move: it is the same claim written twice, never a weakened one. If Material's radio behaviour is ever re-verified, both entries move together."
+  },
   "SegmentedControl": {
     "pattern": "radiogroup",
     "delegatedTo": "Angular Material MatButtonToggleGroup (mat-button-toggle)",

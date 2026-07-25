@@ -1,0 +1,10 @@
+{
+  "component": "RadioGroup",
+  "description": "Single-selection group. Governs the value and distributes it to its child Radios.",
+  "api": {
+    "content": { "form": "slot", "description": "The Radios. RadioGroup injects each one's selected state." },
+    "value": { "form": "primitive", "type": "string", "description": "The selected option's value." },
+    "name": { "form": "primitive", "type": "string", "description": "Shared name for the underlying radios; generated when omitted." },
+    "change": { "form": "event", "payload": "string", "description": "A different option was chosen; carries its value." }
+  }
+}
