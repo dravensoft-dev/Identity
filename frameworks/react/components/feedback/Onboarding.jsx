@@ -1,16 +1,47 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { onboardingWidth, sp3, sp4 } from '../../tokens.generated.js';
+import { useDialogModal } from '../../use-dialog-modal.js';
 
 /** Guided onboarding (H10). Step-by-step coachmark: presents features within the product
  * with progress, "Skip", and "Next". Controlled: the host keeps `index`.
  * `anchor` (optional) anchors the callout next to an element by its left and bottom
- * viewport coordinates; a DOMRect satisfies it. Without it the coachmark floats bottom-right. */
+ * viewport coordinates; a DOMRect satisfies it. Without it the coachmark floats bottom-right.
+ *
+ * Escape dismisses, and it reports through `onSkip` -- the component's own
+ * dismissal channel, which is what Angular's arena-onboarding already routes its
+ * Escape to, so no new member appears in either layer. The scrim's click stays:
+ * Escape joins the mouse path rather than replacing it. */
 export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onDone, anchor }) {
   if (open == null) throw new Error('Onboarding: `open` is required');
   if (steps == null) throw new Error('Onboarding: `steps` is required');
+  /* EVERY hook below runs BEFORE the `if (!open || !steps.length)` early return.
+   * useDialogModal calls useEffect and useRef of its own, so hoisting it under
+   * the return would change the hook count on the render where `open` flips and
+   * crash React. The two guards above it throw rather than render, so they are
+   * not a conditional path. */
+  const panelRef = useRef(null);
+  const onKeyDown = useDialogModal({ open, panelRef, onDismiss: onSkip });
   if (!open || !steps.length) return null;
   const step = steps[index] || {};
   const last = index === steps.length - 1;
+  /* The coachmark's accessible name, and a direct port of the `label` computed in
+   * frameworks/angular/primitives/onboarding/onboarding.ts -- which named React's
+   * bare `step.title` as the defect and shipped the fix first. `OnboardingStep.title`
+   * is optional in a contract both layers share, so React omitted the attribute
+   * entirely on an untitled step and rendered role="dialog" with no name at all.
+   *
+   * Guarding the title the way Dialog and ConfirmDialog do would have been a
+   * breaking change to that shipped two-layer contract and would have moved
+   * arena-onboarding too; adopting Angular's chain instead makes the two layers
+   * agree by construction rather than by coincidence.
+   *
+   * The last arm is a floor, not a substitute: "Step 2 of 3" is positional, it
+   * says nothing about the subject, and it is byte-for-byte the aria-label the
+   * progress dots below already carry. That collision ships in Angular today and
+   * is mirrored rather than dodged -- a different third arm would cost the
+   * agreement that is the whole reason `title` stayed optional. A caller who
+   * wants a useful name supplies a step title. */
+  const label = step.title ?? step.eyebrow ?? `Step ${index + 1} of ${steps.length}`;
   // The popover's own geometry, from tokens/src/. These were plain constants
   // because Math.min/Math.max need real numbers; they are still real numbers,
   // but authored once in tokens/src/ instead of here and in Angular's copy.
@@ -41,7 +72,8 @@ export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onD
         * relationship is expressed as a derivation at the point of use rather
         * than a second token. */}
       <div onClick={onSkip} style={{ position: 'fixed', inset: 0, zIndex: 'calc(var(--z-onboarding) - 10)', background: 'var(--scrim)' }} />
-      <div role="dialog" aria-modal="true" aria-label={step.title}
+      <div role="dialog" aria-modal="true" aria-label={label}
+        ref={panelRef} tabIndex={-1} onKeyDown={onKeyDown}
         style={{ ...pos, width: 'var(--onboarding-width)', maxWidth: '92vw', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)',
           borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', padding: 'calc(var(--sp-1) * 5)' }}>
         {step.eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 'calc(var(--sp-1) * 2)' }}>{step.eyebrow}</div>}
