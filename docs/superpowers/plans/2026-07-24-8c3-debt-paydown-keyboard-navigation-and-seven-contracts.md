@@ -2031,8 +2031,13 @@ migrations of batch 8C3** — eight contracts in all, once Task 11b's `CalendarE
 
 - [ ] **Step 1: Re-read and classify.** `wc -l components-divergences.md`; find headings naming the
   seven. Classify each API (delete) / rendering (keep) / behaviour (keep). Task 7 of 8C2 found the
-  form controls appeared only in the box-model table; **this batch is different** — `Table` and
-  `SideNav` have real per-component sections there. Read them.
+  form controls appeared only in the box-model table; **this batch is no different, and the
+  expectation written here was wrong.** It predicted real per-component sections for `Table` and
+  `SideNav`. `SideNav` has one (line 868). **`Table` has none and never had one** — verified by grep
+  over every `###` heading and every body mention, 2026-07-25. So nothing in that file went false
+  when Task 13 removed `rows`, `getRowKey`, `onRowClick` and `TableColumn`'s `key` and `render`.
+  The only mentions of anything this batch contracted are three box-model rows and their arithmetic
+  (`Toast`, `SegmentedControl`), which are rendering and stay.
 
 - [ ] **Step 2: Check citations.** `grep -rn "components-divergences" --include='*.json' --include='*.ts'
   --include='*.md' --include='*.jsx' . | grep -v node_modules`. Three bindings and one Angular
@@ -2083,7 +2088,8 @@ rule. If a delta does not reconcile, stop and find out why.
   seven agree on how a tone enum is named and when a size enum is shared rather than declared?; is
   every member `description` consistent across contract / `.d.ts` / `.prompt.md`?; is any new enum
   value-identical to an existing one?; did any suite weaken a title?; does the climb reconcile
-  32 → 34 → 36 → 37 → 38 → 39 (Task 11b) → 40?; is `functionInput` still only in `Input`?; is every parameterised slot
+  32 → 34 → 36 → 37 → 38 → 39 (Task 11b) → **42** (Task 13, +3 — see its superseded note)?; is
+  `functionInput` still only in `Input`?; is every parameterised slot
   a `slot` with `params` and never the ninth form? Fix findings in their own commits.
 
 - [ ] **Step 3: Spec.** Add the 8C3 running-count row (**both** processes — the isolated one moves for
@@ -2115,10 +2121,33 @@ rule. If a delta does not reconcile, stop and find out why.
   paid. `Calendar`'s half of the "implement no keyboard navigation at all" entry has already been rewritten
   — Task 10 satisfied all eight requirements and the entry now records the opposite problem, that its
   exceptionless binding has no suite behind it. What is left for this step is `Table`'s half, narrowed
-  to whatever Task 12 leaves unmet. **Also owed here, from the ledger:** `CLAUDE.md` still names
-  `Calendar`'s per-event `meta` as one of the two cases that motivated consumer data, and that member
-  is gone — `Table`'s rows remain the case that named the form, so drop the `meta` half rather than
-  rewriting the paragraph, exactly as `api/README.md` was fixed in Task 11. Add any new debt: whatever Tasks 10 and 12 left unmet, and the `Tabs` binding's eight
+  to whatever Task 12 leaves unmet — which is **one** exception, `focus.roving`, true of card mode
+  only. Task 14's sweep measured the stale sites and this is the list; none of it is fixed yet:
+
+  - **L169–171, and this instruction was itself stale.** It read "drop the `meta` half, because
+    `Table`'s rows remain the case that named the form". `Table.rows` is gone too, and
+    `grep -rn consumerData api/components/` is now **empty**: the eighth form has **zero live
+    instances** in any shipped contract. The paragraph cannot be repaired by dropping half of it —
+    say what is true, that the form exists for a case both of whose motivating members were since
+    removed, which is a fact about the vocabulary and not a reason to retire it.
+  - **L558–564 and L668–669** — both still say `Table` "implements no keyboard navigation at all —
+    zero `role=`, zero `tabIndex`, zero key handling" and "every one of `Table`'s exceptions".
+    Task 12 made both false. Step 5 named only the first site.
+  - **L635** — "its exceptions are what stand unverified there": one exception now, not several.
+  - **L760** — names the member as `Table.render`; it was `TableColumn.render`. Cosmetic.
+  - **L874** — a word-for-word copy of the citer enumeration `api/README.md` had, which Task 14
+    proved wrong in both directions and replaced with the grep that produces it. Same fix here.
+  - In `CHANGELOG.md`, and **the two are not the same kind of problem**: **L27** is under
+    `## [Unreleased]` and says "`Table.rows` **is** a member" in the present tense — that section is
+    still being written and the sentence is simply wrong now, so fix it. **L1046 is under
+    `## [2.1.0] — 2026-07-17`, a RELEASED version**, and says `timeZone` "is required", which was
+    true of the tree 2.1.0 shipped. **Do not rewrite it.** A release is frozen the moment it is cut,
+    because the plugin is served from the tag — editing it describes a tree nobody has, which is this
+    repo's own rule. The change belongs under `[Unreleased]` as a *Changed* line instead. The same
+    distinction applies to Step 4's `renderEvent` note, which names a 1.x entry: record the removal
+    under `[Unreleased]`, do not amend 1.x.
+
+  Add any new debt: whatever Tasks 10 and 12 left unmet, and the `Tabs` binding's eight
   untouched exceptions (Appendix A). **Move any debt living only in the 8C2 plan into Known debt
   before deleting it** — check, do not assume; 8C2's own close-out found none in 8C1's.
 
