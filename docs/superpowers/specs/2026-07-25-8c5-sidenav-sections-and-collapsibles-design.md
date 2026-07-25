@@ -1,8 +1,11 @@
 # SideNav — sections, collapsible groups, and the compound migration
 
-Design, 2026-07-25. **Not yet scheduled.** The `-pending-1` suffix marks a spec that is written
-but unexecuted: this repository deletes a spec once its plan has run (`24f250b`), so an
-unsuffixed spec sitting in this directory would read as work in flight. This one is not.
+Design, 2026-07-25. **Scheduled as batch 8C5**, plan at
+`docs/superpowers/plans/2026-07-25-8c5-sidenav-sections-and-collapsibles.md`. This file was written
+one batch ahead of its plan and carried a `-pending-1` suffix while it had none, because this
+repository deletes a spec once its plan has run (`24f250b`) and an unsuffixed spec sitting in this
+directory reads as work in flight. It now is, so the suffix is gone and the name follows the batch
+convention the other executed specs use.
 
 Cut against the tree at `7640db2` — the commit that brought `SideNav` under contract and
 completed Plan C. **This spec breaks that contract**, which is stated first rather than
