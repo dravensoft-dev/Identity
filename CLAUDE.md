@@ -1052,20 +1052,49 @@ scheduled for deletion the same week.
   is still unverifiable in happy-dom, same as the rest of this repo's focus claims, and is
   a by-hand check against `Tabs.prompt.md` rather than a gate.
 
-  **And the suite that backs it could not see the defect the binding's own wording names.**
-  A requirement in `ATTRIBUTE_FOR` is evaluated as `el.getAttribute(attr) !== null` — pure
-  presence, on the ONE subject element the suite hands it. So `roles.controls`, whose text
-  is *"**each** tab has aria-controls referencing its tabpanel"*, was satisfied by a strip
-  in which N−1 tabs referenced ids nothing rendered: the attribute was present, the suite
-  passed it the first tab, and the fixture made the first tab the selected one. Nothing in
-  the evaluator can resolve an IDREF — it touches only `tagName`, `getAttribute`,
-  `hasAttribute` and `textContent`, deliberately, because it runs in three runtimes one of
-  which has no DOM — and nothing makes a suite hand it more than one subject per
-  requirement. Two consequences worth carrying: a requirement quantified over *each* of
-  something is only ever checked on the one element a suite chooses, and **an IDREF is
-  never resolved anywhere in the compliance layer**. `Tabs` is fixed and its suite now
-  resolves every `aria-controls` by hand; every other binding with an IDREF requirement is
-  exactly as unchecked as it was.
+  **And the suite that backs it could not see the defect the binding's own wording names,
+  which is what batch 8C7 was for.** A requirement in `ATTRIBUTE_FOR` used to be evaluated as
+  `el.getAttribute(attr) !== null` — pure presence, on the ONE subject element the suite hands
+  it. So `roles.controls`, whose text is *"**each** tab has aria-controls referencing its
+  tabpanel"*, was satisfied by a strip in which N−1 tabs referenced ids nothing rendered: the
+  attribute was present, the suite passed it the first tab, and the fixture made the first tab
+  the selected one. Both halves of that are now closed, and closed differently, because they
+  failed for different reasons. **A reference is resolved rather than counted** — `IDREF` names
+  the requirement keys whose attribute is a reference, and each is looked up through a
+  `resolveId` the *caller* injects, because the evaluator still touches only `tagName`,
+  `getAttribute`, `hasAttribute` and `textContent` and still runs in three runtimes one of
+  which has no DOM. Resolution had to arrive from outside rather than be done in place, so
+  each layer's wrapper builds the resolver from the render root itself and a suite cannot
+  forget to pass one; a requirement in `IDREF` evaluated with no resolver **throws**, since
+  degrading to the old presence check would report a dangling reference as met, which is the
+  whole defect the parameter exists to catch. **And *each* is quantified rather than sampled** —
+  a subject may be an array, every element in it must meet the requirement, and a quantified
+  requirement handed a single element throws as well. `tabs.test.jsx` hands over every tab
+  instead of resolving its `aria-controls` by hand.
+
+  What none of that buys, and none of it is scheduled. **A resolved reference is not proof it
+  landed on the RIGHT element.** A pattern states its requirement as prose written for a human,
+  and the schema has no way to say what *kind* of element a reference must reach — so an
+  `aria-controls` resolving to a `<span>` that is not the tabpanel passes exactly as the real
+  one does. Closing that is a change to the pattern schema, which this batch deliberately was
+  not. **The quantified set is hand-curated, and nothing proves it complete.** Deriving it from
+  the word "each" was considered and rejected: the prose says "false on the **rest**" just as
+  readily, so a scan finds fewer requirements than a reader does, and deriving it would rebuild
+  the false-negative class the evaluator's header already rejected once. Its suite therefore
+  proves only that every entry names a real requirement and that a quantified requirement is
+  decidable per element — never that a requirement quantified in prose has an entry. One nobody
+  curated is still checked on the one element a suite chooses, exactly as before. **And two
+  requirements that do quantify are excluded for stated reasons rather than closed**:
+  `feed:states.posinset` is behavioural, its prose carrying a "when", so there is no
+  per-element verdict to quantify over at all; and `navigation:roles.label` quantifies over the
+  navigation landmarks on a *page*, and only when more than one exists, which a component suite
+  cannot render without faking a second landmark to satisfy a rule that is not a claim about
+  the component. Both are listed in `NOT_QUANTIFIED` rather than merely absent, so the next
+  reader meets the decision instead of the silence.
+
+  All of this reaches a binding only through a suite that renders it, so a binding outside
+  `COVERED` gains nothing from any of it — see the coverage entry above, which is where that
+  hole is recorded.
 
 
 - **`check:api` now compares a `primitive` member's `type`, and two prior live examples of
