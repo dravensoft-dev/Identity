@@ -1062,8 +1062,13 @@ scheduled for deletion the same week.
   failed for different reasons. **A reference is resolved rather than counted** — `IDREF` names
   the reference-carrying requirement keys **among those that reach `ATTRIBUTE_FOR`**, which is
   the one branch of `evaluate()` that consults it, and it is **derived** from `IDREF_ATTRIBUTES`
-  rather than hand-written beside it, which is what stops the two lists of one fact disagreeing —
-  they did, and 8C8 is what changed it. `roles.label` has a reference form and takes a different
+  rather than hand-written beside it, which is what stops the set drifting out of scope again.
+  Be exact about what went wrong before, because the obvious reading is not it: 8C7 had exactly
+  **one** hand-written list, three requirement keys, and nothing anywhere disagreed with it. Its
+  defect was **reach** — a list of requirement KEYS cannot name `aria-labelledby` at all, since
+  `roles.label` carries no `ATTRIBUTE_FOR` entry — plus one strictness rule applied to all three
+  keys on a justification belonging to one. Keying the map by ATTRIBUTE is what fixes both.
+  `roles.label` has a reference form and takes a different
   route entirely; 8C7 left that unresolved and 8C8 closed it, which is that batch's own entry
   below. Each key `IDREF` does name is looked up through a
   `resolveId` the *caller* injects, because the evaluator still touches only `tagName`,
@@ -1149,8 +1154,11 @@ scheduled for deletion the same week.
   Deleting `id={titleId}` from `Dialog.jsx` leaves a dangling `aria-labelledby` on a dialog with
   no accessible name of any kind. That tree used to report **98 pass / 0 fail** under
   `bun run test:react-dom` — and `dialog-modal.test.jsx` alone **6 pass / 0 fail** — which is why
-  this entry existed. It now reports **97 pass / 1 fail**, with `roles.label: OVERCLAIM — the
-  binding declares no exception, but the rendered DOM does not meet it.` The tree was restored
+  this entry existed. It now reports **one new failure** against that same tree, carrying
+  `roles.label: OVERCLAIM — the
+  binding declares no exception, but the rendered DOM does not meet it.` The message is the
+  durable half of that contrast; a post-batch total is not, since it moves the next time any
+  DOM suite gains a test. The tree was restored
   and verified with `sha256sum -c`. `Dialog:react` and `ConfirmDialog:react` are the covered
   bindings this reaches: both bind `dialog-modal`, whose `roles.label` prose is "aria-labelledby
   or aria-label" — text content does not count, since `dialog-modal` is not in

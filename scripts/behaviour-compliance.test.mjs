@@ -159,6 +159,19 @@ test('roleOf refuses region to a section whose aria-labelledby dangles', () => {
   assert.equal(roleOf(el('section', { 'aria-labelledby': 'h1' }), () => el('h2')), 'region');
 });
 
+/* And roleOf inherits the throw, which is the reach worth pinning: every key
+   routed through roleOf() can raise it, and two of those branches --
+   states.checked and live.politeness -- read as entirely unrelated to naming, so
+   a caller has no reason to expect a naming error from them. The two roleOf
+   tests above both return before the throw: one supplies a resolver, the other
+   uses a section with no aria-labelledby at all. */
+test('a section named only by aria-labelledby THROWS through roleOf with no resolver', () => {
+  assert.throws(
+    () => roleOf(el('section', { 'aria-labelledby': 'x' })),
+    /aria-labelledby.*resolveId/s,
+  );
+});
+
 test('evaluate decides roles.label by resolving, not by counting', () => {
   const d = el('div', { 'aria-labelledby': 'gone' });
   assert.equal(evaluate(d, 'roles.label', 'aria-labelledby or aria-label', 'dialog-modal', () => null), false);
@@ -728,7 +741,10 @@ test('a reference attribute holding only whitespace names nothing', () => {
   assert.equal(evaluate(tab, 'roles.controls', 'x', 'tabs', () => el('div')), false);
 });
 
-test('IDREF is derived from IDREF_ATTRIBUTES and still names the ATTRIBUTE_FOR reference keys', () => {
+/* Membership only. This would pass identically against a hand-written set, so it
+   pins WHAT IDREF holds and says nothing about where it comes from; the two
+   IDREF_ATTRIBUTES staleness tests below are what hold the derivation honest. */
+test('IDREF holds exactly the reference keys that reach ATTRIBUTE_FOR', () => {
   assert.deepEqual(
     [...IDREF].sort(),
     ['roles.activedescendant', 'roles.controls', 'roles.describedby'],

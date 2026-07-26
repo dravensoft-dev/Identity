@@ -276,10 +276,18 @@ function referenceResolves(attr, raw, resolveId) {
 }
 
 /** The requirement keys whose ATTRIBUTE_FOR attribute is a reference. DERIVED
- *  from IDREF_ATTRIBUTES rather than written beside it: two hand-written lists of
- *  one fact can disagree, and this one did -- its own docstring used to carry a
- *  paragraph recording that aria-labelledby was governed nowhere, which is what
- *  this batch closed.
+ *  from IDREF_ATTRIBUTES rather than written beside it, so this set cannot drift
+ *  out of scope again.
+ *
+ *  Be exact about what "again" means, because the obvious reading is wrong.
+ *  Before 8C8 there was exactly ONE hand-written list here -- three requirement
+ *  keys, with nothing anywhere to disagree with it. What it got wrong was REACH,
+ *  not agreement: a list of requirement KEYS can never name aria-labelledby at
+ *  all, because roles.label carries no ATTRIBUTE_FOR entry and never reaches the
+ *  branch that reads this set. It also held one strictness rule for all three
+ *  keys, on a justification belonging to one of them. Deriving from a map keyed
+ *  by ATTRIBUTE fixes both at once: strictness lives with the attribute that
+ *  earns it, and an attribute no requirement key can name is still governed.
  *  @type {Set<string>} */
 export const IDREF = new Set(
   Object.entries(ATTRIBUTE_FOR)
@@ -364,18 +372,35 @@ export const BEHAVIOURAL = new Set([
  *    an OVERCLAIM message so a reader sees what was asked for; never parsed.
  *  @param {string} patternName the owning pattern's name, which is what selects
  *    the semantics for roles.element and roles.label
- *  @param {(id: string) => object | null} [resolveId] required when `key` is in
- *    IDREF — looks an id up in the rendered tree and returns the element it
- *    names, or null when nothing carries it. Each wrapper builds one scoped to
- *    its own render; this file never has the tree to resolve one itself.
+ *  @param {(id: string) => object | null} [resolveId] looks an id up in the
+ *    rendered tree and returns the element it names, or null when nothing
+ *    carries it. Each wrapper builds one scoped to its own render; this file
+ *    never has the tree to resolve one itself.
+ *
+ *    TWO DISJOINT cases owe one, and reading only the first is how a caller ends
+ *    up with a throw instead of a verdict. It is required when `key` is in
+ *    IDREF; and, separately, when `key` is `roles.label` and the subject's only
+ *    remaining naming route is aria-labelledby. Most of the patterns declaring
+ *    roles.label carry no ATTRIBUTE_FOR reference requirement whatsoever —
+ *    dialog-modal, the pattern behind the covered Dialog and ConfirmDialog
+ *    bindings, is one of them — so IDREF is empty for them and a caller
+ *    consulting it alone concludes, wrongly, that no resolver is owed. Measure
+ *    the overlap rather than trusting a figure: compare
+ *    `grep -l '"roles.label"' behaviour/patterns/*.json` against those files
+ *    also matching `"roles\.(controls|describedby|activedescendant)"`.
  *  @returns {true | false | null} null = undecidable from this element alone
  *  @throws {Error} on a key in neither DECIDABLE nor BEHAVIOURAL, on a
  *    roles.element requirement whose pattern has no ELEMENT_ROLE entry, on an
- *    IDREF requirement given no resolveId, and on a roles.label requirement
- *    whose deciding route is aria-labelledby and no resolveId was given. All
- *    four are programming errors — a typo in a pattern file, a map left
- *    un-extended, or a caller that forgot to thread the resolver — not verdicts
- *    about a component, so none may be returned as one. */
+ *    IDREF requirement given no resolveId, on a roles.label requirement
+ *    whose deciding route is aria-labelledby and no resolveId was given, and —
+ *    the path easiest to miss — on ANY key routed through roleOf() whose subject
+ *    is a <section> named only by aria-labelledby, since a section exposes
+ *    role=region only when named. That last one reaches roles.element, every
+ *    ROLE_NAMED_BY_KEY key, states.checked and live.politeness; the final two
+ *    read as entirely unrelated to naming, which is exactly why it is written
+ *    down. All of them are programming errors — a typo in a pattern file, a map
+ *    left un-extended, or a caller that forgot to thread the resolver — not
+ *    verdicts about a component, so none may be returned as one. */
 export function evaluate(el, key, value, patternName, resolveId) {
   if (key === 'roles.element') {
     const wanted = ELEMENT_ROLE[patternName];
@@ -541,13 +566,23 @@ export const NOT_QUANTIFIED = new Map([
  *   this layer exists to remove.
  * @param {(id: string) => object | null} [o.resolveId] looks an id up in the SAME
  *   rendered tree `subjects`/`fallback` came from and returns the element it names, or
- *   null when nothing carries it. Required whenever the pattern carries an IDREF
- *   requirement (see the IDREF set) — evaluate() throws rather than degrading to a
- *   presence check when one is owed and missing.
+ *   null when nothing carries it. TWO DISJOINT cases require one, and a suite that
+ *   reads only the first gets a throw where it expected a verdict. It is required
+ *   whenever the pattern carries an IDREF requirement (see the IDREF set); and,
+ *   separately, whenever the pattern requires `roles.label` and the subject is named by
+ *   aria-labelledby — most of the patterns declaring roles.label carry no
+ *   ATTRIBUTE_FOR reference requirement at all, `dialog-modal` among them, so IDREF is
+ *   empty for them while a resolver is still owed. evaluate() throws in both rather
+ *   than degrading to a presence check, which would report a dangling reference as met.
+ *   The simplest correct habit is to pass one always: a resolver is consulted only
+ *   where it can change the answer.
  * @returns {string[]} one message per problem, empty when clean
  * @throws {Error} whatever evaluate() throws — an unrecognised requirement key, a
- *   roles.element requirement on a pattern with no ELEMENT_ROLE entry, or an IDREF
- *   requirement given no resolveId. All are programming errors rather than verdicts, so
+ *   roles.element requirement on a pattern with no ELEMENT_ROLE entry, an IDREF
+ *   requirement given no resolveId, a roles.label requirement whose deciding route is
+ *   aria-labelledby with no resolveId, or any requirement routed through roleOf() whose
+ *   subject is a <section> named only by aria-labelledby with no resolveId. All are
+ *   programming errors rather than verdicts, so
  *   they are not returned as problems. In a render suite that means the whole test
  *   aborts instead of reporting this component's problems beside the others; that is
  *   intended, but callers should know it can happen.
