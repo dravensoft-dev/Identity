@@ -3,7 +3,7 @@
   "description": "A row of tabs and the one panel they switch between. Write one `Tab` per view; Tabs renders the tablist, the panel, and the keyboard.",
   "api": {
     "content": { "form": "slot",
-                 "description": "The tabs. Tabs injects each one's selected state, the ids wiring it to the panel, and the handler that reports the choice." },
+                 "description": "The tabs. Tabs injects each one's selected state, which one is the strip's tab stop, the ids wiring it to its panel, and the handler that reports the choice. EVERY tab's content mounts: one panel per tab is rendered and the inactive ones are hidden, because each tab's aria-controls must reference a tabpanel that exists. So a panel's side effects run immediately rather than on first selection." },
     "value": { "form": "primitive", "type": "string",
                "description": "The selected tab's value. Omit and pass `defaultValue` to let it govern itself." },
     "defaultValue": { "form": "primitive", "type": "string",

@@ -13,8 +13,10 @@ export interface TabProps {
   /** What the tab reads. Required, and guarded the same way -- it is the tab's
    *  whole accessible name. */
   label: string;
-  /** What the panel shows while this tab is selected. `Tabs` places it in the one
-   *  tabpanel it renders; this component never draws it.
+  /** What the panel shows while this tab is selected. `Tabs` places it in the
+   *  tabpanel it renders for this tab -- one per tab, all but the selected one
+   *  hidden -- and this component never draws it. It MOUNTS whether or not the
+   *  tab is selected, so keep a cost you only want to pay on selection out of it.
    *  @startingPoint the view this tab switches to. */
   children?: React.ReactNode;
 }

@@ -6,6 +6,7 @@ export function Tab({
   value,
   label,
   selected = false,
+  tabStop = false,
   tabId,
   panelId,
   onSelect
@@ -21,7 +22,7 @@ export function Tab({
     id: tabId,
     "aria-selected": selected,
     "aria-controls": panelId,
-    tabIndex: selected ? 0 : -1,
+    tabIndex: tabStop ? 0 : -1,
     onClick: () => onSelect && onSelect(value),
     onFocus: () => setFocus(true),
     onBlur: () => setFocus(false),

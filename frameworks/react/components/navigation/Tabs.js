@@ -8,6 +8,7 @@ export function Tabs({ children, value, defaultValue, onChange }) {
   const [internal, setInternal] = useState(defaultValue ?? (items[0] && items[0].props.value));
   const active = value ?? internal;
   const at = items.findIndex((c) => c.props.value === active);
+  const stop = at === -1 ? 0 : at;
   const listRef = useRef(null);
   const select = (v) => {
     setInternal(v);
@@ -18,10 +19,10 @@ export function Tabs({ children, value, defaultValue, onChange }) {
   const onKeyDown = (e) => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight")
       return;
-    if (at === -1)
+    if (items.length === 0)
       return;
     e.preventDefault();
-    const next = (at + (e.key === "ArrowRight" ? 1 : -1) + items.length) % items.length;
+    const next = (stop + (e.key === "ArrowRight" ? 1 : -1) + items.length) % items.length;
     select(items[next].props.value);
     const buttons = listRef.current ? listRef.current.querySelectorAll('[role="tab"]') : [];
     if (buttons[next])
@@ -38,14 +39,17 @@ export function Tabs({ children, value, defaultValue, onChange }) {
     }
   }, items.map((child, i) => React.cloneElement(child, {
     selected: i === at,
+    tabStop: i === stop,
     tabId: tabId(i),
     panelId: panelId(i),
     onSelect: select
-  }))), at !== -1 && React.createElement("div", {
+  }))), items.map((child, i) => React.createElement("div", {
+    key: i,
     role: "tabpanel",
-    tabIndex: 0,
-    id: panelId(at),
-    "aria-labelledby": tabId(at),
-    style: { paddingBlockStart: "calc(var(--sp-1) * 5.5)" }
-  }, items[at].props.children));
+    tabIndex: i === at ? 0 : -1,
+    id: panelId(i),
+    "aria-labelledby": tabId(i),
+    hidden: i !== at,
+    style: { paddingBlockStart: "calc(var(--sp-1) * 5.5)", display: i === at ? "block" : "none" }
+  }, child.props.children)));
 }

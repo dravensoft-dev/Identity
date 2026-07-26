@@ -29,7 +29,22 @@ export function Tabs({ children, value, defaultValue, onChange }) {
   const items = React.Children.toArray(children).filter(React.isValidElement);
   const [internal, setInternal] = useState(defaultValue ?? (items[0] && items[0].props.value));
   const active = value ?? internal;
+  /* SELECTION and the ROVING TAB STOP are two different things, and conflating
+   * them made the widget keyboard-dead. `at` is the selection and may be -1: a
+   * controlled `value` naming no child (a stale route param, an async swap) and
+   * the uncontrolled case where the tabs arrive AFTER mount -- useState's
+   * initialiser latched `undefined` on a first render that had no children --
+   * both reach it. Nothing may invent a selection there: a controlled component
+   * may not select what the consumer did not ask for, and a panel may not appear
+   * for a tab that is not active.
+   *
+   * `stop` is the other concept and is never -1. Exactly one tab must stay in the
+   * page's tab sequence whatever the selection is, or there is no way in at all
+   * -- deriving tabIndex from `selected` alone put EVERY tab at -1 in both cases
+   * above. It is also the origin the arrow keys move from, so the strip stays
+   * operable from the one tab a user can reach. */
   const at = items.findIndex((c) => c.props.value === active);
+  const stop = at === -1 ? 0 : at;
   const listRef = useRef(null);
   const select = (v) => { setInternal(v); onChange && onChange(v); };
   /* The ids are keyed by INDEX rather than by `value`, because a value is the
@@ -45,9 +60,11 @@ export function Tabs({ children, value, defaultValue, onChange }) {
    * forwardRef to satisfy a test would be the tail wagging the dog. */
   const onKeyDown = (e) => {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-    if (at === -1) return;
+    /* The empty strip is the only case with nowhere to move -- and it is a guard
+       against `% 0`, not a stance. An unmatched selection moves from `stop`. */
+    if (items.length === 0) return;
     e.preventDefault();
-    const next = (at + (e.key === 'ArrowRight' ? 1 : -1) + items.length) % items.length;
+    const next = (stop + (e.key === 'ArrowRight' ? 1 : -1) + items.length) % items.length;
     select(items[next].props.value);
     const buttons = listRef.current ? listRef.current.querySelectorAll('[role="tab"]') : [];
     if (buttons[next]) buttons[next].focus();
@@ -62,21 +79,39 @@ export function Tabs({ children, value, defaultValue, onChange }) {
         }}>
         {items.map((child, i) => React.cloneElement(child, {
           selected: i === at,
+          /* Passed rather than inferred from `selected`, because the two differ
+             the moment nothing is selected -- which is the whole fix. */
+          tabStop: i === stop,
           tabId: tabId(i),
           panelId: panelId(i),
           onSelect: select,
         }))}
       </div>
-      {/* No active tab means no panel -- never a panel whose aria-labelledby
-          points at a tab that does not exist. A dangling label is worse than an
-          absent one. */}
-      {at !== -1 && (
-        <div role="tabpanel" tabIndex={0}
-          id={panelId(at)} aria-labelledby={tabId(at)}
-          style={{ paddingBlockStart: 'calc(var(--sp-1) * 5.5)' }}>
-          {items[at].props.children}
+      {/* ONE PANEL PER TAB, the inactive ones hidden rather than absent, because
+          the pattern requires EACH tab to have an aria-controls referencing its
+          tabpanel -- and a reference to an id nothing renders is not a reference.
+          Rendering only the selected tab's panel emitted the exact mirror of the
+          dangling aria-labelledby this component already refuses.
+
+          `hidden` AND display, never one of them -- the rule SideNavCollapsible's
+          region states: an inline display beats [hidden]'s UA display:none, so
+          the two must agree or a consumer stylesheet can pull a hidden panel back
+          into view.
+
+          The hidden panels leave the tab sequence explicitly rather than only by
+          `hidden`, so the widget carries one tab stop in the strip and one in the
+          panel region whatever a stylesheet does to the rest.
+
+          THE PRICE, and it is a real behaviour change: every tab's children now
+          MOUNT, so a panel's side effects run immediately rather than on first
+          selection. Tabs.prompt.md and the contract both say so. */}
+      {items.map((child, i) => (
+        <div key={i} role="tabpanel" tabIndex={i === at ? 0 : -1}
+          id={panelId(i)} aria-labelledby={tabId(i)} hidden={i !== at}
+          style={{ paddingBlockStart: 'calc(var(--sp-1) * 5.5)', display: i === at ? 'block' : 'none' }}>
+          {child.props.children}
         </div>
-      )}
+      ))}
     </>
   );
 }

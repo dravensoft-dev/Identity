@@ -11,6 +11,10 @@
  *     reachable by Tab is checked by a person against Tabs.prompt.md's checklist.
  *   - a keydown of Enter or Space on a native <button> does NOT synthesise a click
  *     here. No test below depends on one; a tab is activated by click and by arrow.
+ *
+ * Every tab has a panel, and the inactive ones are HIDDEN rather than absent, so
+ * that every tab's aria-controls resolves. `panelOf` therefore means "the panel
+ * without `hidden`" and never "the first panel".
  */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -32,7 +36,12 @@ const three = (props = {}) => (
 );
 
 const tabsOf = (root) => [...root.querySelectorAll('[role="tab"]')];
-const panelOf = (root) => root.querySelector('[role="tabpanel"]');
+/* Every tab has a panel and the inactive ones are HIDDEN rather than absent, so
+   "the panel" is the one panel without `hidden` -- never simply the first. */
+const panelsOf = (root) => [...root.querySelectorAll('[role="tabpanel"]')];
+const panelOf = (root) => panelsOf(root).find((p) => !p.hasAttribute('hidden'));
+const stopsOf = (root) => tabsOf(root).filter((t) => t.getAttribute('tabindex') === '0');
+const selectedOf = (root) => tabsOf(root).filter((t) => t.getAttribute('aria-selected') === 'true');
 const arrow = (root, key) => act(() => {
   root.querySelector('[role="tablist"]')
     .dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
@@ -66,11 +75,77 @@ test('change reported exactly one value per selection', () => {
    half -- that Tab from the strip leaves it -- is the browser's, not ours. */
 test('exactly one tab is in the tab sequence, before and after a move', () => {
   const root = mount(three());
-  const stops = () => tabsOf(root).filter((t) => t.getAttribute('tabindex') === '0');
-  assert.equal(stops().length, 1);
+  assert.equal(stopsOf(root).length, 1);
   arrow(root, 'ArrowRight');
-  assert.equal(stops().length, 1, 'a second tab stop appeared inside the tablist');
-  assert.equal(stops()[0].textContent, 'Deployments');
+  assert.equal(stopsOf(root).length, 1, 'a second tab stop appeared inside the tablist');
+  assert.equal(stopsOf(root)[0].textContent, 'Deployments');
+});
+
+/* THE MIS-INITIALISED STRIP, in the DOM. The DOM-free suite pins the structure
+ * -- one tab stop, nothing selected; what only a real event can show is that the
+ * strip still WORKS: an arrow moves from that stop and reports a value. A
+ * controlled `value` naming no child is the reachable route (a stale route
+ * param, an async swap), and it stays controlled, so what the arrow changes is
+ * the consumer's business and the assertion is on `change` and on focus. */
+test('a value naming no tab is still operable: an arrow moves from the tab stop', () => {
+  const seen = [];
+  const root = mount(
+    <Tabs value="nope" onChange={(v) => seen.push(v)}>
+      <Tab value="ov" label="Overview"><p>overview body</p></Tab>
+      <Tab value="dp" label="Deployments"><p>deployments body</p></Tab>
+    </Tabs>,
+  );
+  assert.equal(selectedOf(root).length, 0, 'a tab was selected that the consumer did not ask for');
+  assert.equal(stopsOf(root).length, 1, 'the strip has no tab stop -- it cannot be reached by keyboard');
+  assert.equal(panelOf(root), undefined, 'a panel is shown for a tab that is not selected');
+  arrow(root, 'ArrowRight');
+  assert.deepEqual(seen, ['dp'], 'an arrow key reported nothing -- the strip is keyboard-dead');
+  assert.equal(document.activeElement, tabsOf(root)[1], 'the arrow did not move focus');
+});
+
+/* The uncontrolled half of the same defect, and the commonest way to meet it:
+ * useState's initialiser runs once, on a first render that had no children to
+ * take a first value from, so `internal` latches undefined and stays there when
+ * the tabs arrive. This is the {cond && <Tab/>} idiom, one render later. */
+test('tabs that arrive after mount are still operable, though nothing is selected', () => {
+  let reveal;
+  function Late() {
+    const [ready, setReady] = React.useState(false);
+    reveal = () => setReady(true);
+    return (
+      <Tabs>
+        {ready && <Tab value="ov" label="Overview"><p>overview body</p></Tab>}
+        {ready && <Tab value="dp" label="Deployments"><p>deployments body</p></Tab>}
+      </Tabs>
+    );
+  }
+  const root = mount(<Late />);
+  assert.equal(tabsOf(root).length, 0);
+  act(() => { reveal(); });
+  assert.equal(tabsOf(root).length, 2, 'the late tabs never rendered');
+  assert.equal(selectedOf(root).length, 0, 'a tab was selected with no value naming it');
+  assert.equal(stopsOf(root).length, 1,
+    'a strip whose tabs arrived late has no tab stop -- it cannot be reached by keyboard');
+  arrow(root, 'ArrowRight');
+  assert.equal(tabsOf(root)[1].getAttribute('aria-selected'), 'true',
+    'an arrow key did not select -- the strip is keyboard-dead');
+});
+
+/* roles.controls, the half the evaluator cannot hold: it checks the attribute is
+ * PRESENT on the one element the suite hands it. That every one of them RESOLVES
+ * is this. */
+test('every tab controls a panel that exists, not only the selected one', () => {
+  const root = mount(three());
+  const ids = new Set(panelsOf(root).map((p) => p.getAttribute('id')));
+  assert.equal(ids.size, 3, 'a panel per tab must exist, or the unselected tabs\' aria-controls dangle');
+  for (const tab of tabsOf(root)) {
+    const ref = tab.getAttribute('aria-controls');
+    assert.ok(ref && ids.has(ref), `tab "${tab.textContent}" controls "${ref}", which nothing renders`);
+    assert.equal(root.querySelector(`#${ref}`).getAttribute('aria-labelledby'), tab.getAttribute('id'),
+      'a panel is labelled by a tab other than the one that controls it');
+  }
+  assert.equal(panelsOf(root).filter((p) => !p.hasAttribute('hidden')).length, 1,
+    'exactly one panel is visible -- the rest are hidden, not absent');
 });
 
 test('ArrowRight moves selection and focus to the next tab', () => {

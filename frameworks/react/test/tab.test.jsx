@@ -37,12 +37,27 @@ test('aria-selected is true when selected and false when not', () => {
   assert.match(renderToStaticMarkup(<Tab value="ov" label="Overview" />), /aria-selected="false"/);
 });
 
-/* focus.roving: exactly one tab stop in the strip. The selected tab holds it; the
- * rest are reachable by arrow key only. This is the structural half, which SSR can
- * hold; that it MOVES with the selection is asserted in the DOM suite. */
-test('the selected tab holds the tab stop and an unselected one is removed from it', () => {
-  assert.match(renderToStaticMarkup(<Tab value="ov" label="Overview" selected />), /tabindex="0"/);
+/* focus.roving: exactly one tab stop in the strip, and WHICH tab holds it is
+ * `Tabs`' decision, injected as `tabStop` rather than derived here from
+ * `selected`. The two coincide in the ordinary case and part company whenever the
+ * active value names no tab -- and deriving one from the other put every tab at
+ * -1 there, which is a widget with no keyboard route into it at all. This is the
+ * structural half, which SSR can hold; that the stop MOVES is in the DOM suite. */
+test('the tab stop is the injected one, not an inference from `selected`', () => {
+  assert.match(renderToStaticMarkup(<Tab value="ov" label="Overview" selected tabStop />), /tabindex="0"/);
   assert.match(renderToStaticMarkup(<Tab value="ov" label="Overview" />), /tabindex="-1"/);
+});
+
+test('a tab can hold the stop without being selected, and be selected without holding it', () => {
+  /* The first is what a strip whose active value names no tab renders, and it is
+     the case the widget cannot be operated without. The second is unreachable
+     from Tabs today and is asserted so the two stay genuinely independent. */
+  const stopOnly = renderToStaticMarkup(<Tab value="ov" label="Overview" tabStop />);
+  assert.match(stopOnly, /tabindex="0"/);
+  assert.match(stopOnly, /aria-selected="false"/);
+  const selectedOnly = renderToStaticMarkup(<Tab value="ov" label="Overview" selected />);
+  assert.match(selectedOnly, /tabindex="-1"/);
+  assert.match(selectedOnly, /aria-selected="true"/);
 });
 
 test('value is required and its absence throws', () => {

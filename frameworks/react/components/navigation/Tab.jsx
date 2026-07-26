@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 
 /** One tab in a `Tabs` strip, and the panel it shows. `Tab` draws the BUTTON;
- *  its `children` are the panel's content, which `Tabs` places in the one
- *  tabpanel it renders beside the tablist. That split is forced by the markup:
- *  a tabpanel may not sit inside a tablist, so the item cannot render its own.
+ *  its `children` are the panel's content, which `Tabs` places in the tabpanel it
+ *  renders for this tab beside the tablist -- one per tab, all but the selected
+ *  one hidden. That split is forced by the markup: a tabpanel may not sit inside
+ *  a tablist, so the item cannot render its own.
  *
  *  Everything about WHERE the tab sits -- whether it is selected, the ids that
  *  wire it to its panel, and the handler that reports the choice -- is injected
@@ -11,7 +12,7 @@ import React, { useState } from 'react';
  *  as `RadioProps` omits what `RadioGroup` gives each `Radio`. */
 export function Tab({
   value, label,
-  selected = false, tabId, panelId, onSelect,
+  selected = false, tabStop = false, tabId, panelId, onSelect,
 }) {
   /* Falsy rather than absence-only, the operator decision every guard in the
    * navigation group carries: `label` is this tab's whole accessible name and
@@ -23,9 +24,12 @@ export function Tab({
   return (
     <button type="button" role="tab" id={tabId}
       aria-selected={selected} aria-controls={panelId}
-      /* focus.roving: the selected tab is the strip's one tab stop; the rest are
-         reachable by ArrowLeft/ArrowRight, which Tabs owns. */
-      tabIndex={selected ? 0 : -1}
+      /* focus.roving: exactly one tab is the strip's tab stop; the rest are
+         reachable by ArrowLeft/ArrowRight, which Tabs owns. WHICH one is Tabs'
+         decision and is injected, not derived from `selected` here: the two
+         differ whenever the active value names no tab, and deriving it left
+         every tab at -1 -- a widget with no keyboard route into it at all. */
+      tabIndex={tabStop ? 0 : -1}
       onClick={() => onSelect && onSelect(value)}
       onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
       style={{

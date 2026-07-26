@@ -4,8 +4,12 @@ import * as React from 'react';
  *  view, as siblings or in an array -- never wrapped in a fragment or in a
  *  component of your own, which `React.Children.toArray` cannot see through. */
 export interface TabsProps {
-  /** The tabs. `Tabs` injects each one's selected state, the ids wiring it to the
-   *  panel, and the handler that reports the choice.
+  /** The tabs. `Tabs` injects each one's selected state, which one is the strip's
+   *  tab stop, the ids wiring it to its panel, and the handler that reports the
+   *  choice. EVERY tab's content mounts: one panel per tab is rendered and the
+   *  inactive ones are hidden, so that each tab's `aria-controls` references a
+   *  tabpanel that exists. A panel's side effects therefore run immediately
+   *  rather than on first selection.
    *  @startingPoint one `<Tab value label>` per view, its children being what that
    *  view shows. */
   children?: React.ReactNode;
