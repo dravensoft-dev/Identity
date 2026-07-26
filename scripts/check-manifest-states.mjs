@@ -90,6 +90,12 @@ export const SOURCE_OVERRIDES = new Map([
     'frameworks/react/components/navigation/SideNavSection.jsx',
     'frameworks/react/components/navigation/SideNavCollapsible.jsx',
   ]],
+  /* Tabs is a COMPOUND component: the manifest's `tab` slot mirrors a tab, and a
+     tab is `Tab.jsx`, not `Tabs.jsx` -- which owns the strip, the panel and the
+     keyboard and implements no focus state of its own. The naive same-name search
+     finds only the parent and would report the tab's focus ring as invented. */
+  ['Tabs', ['frameworks/react/components/navigation/Tabs.jsx',
+            'frameworks/react/components/navigation/Tab.jsx']],
 ]);
 
 /** A specific `<Component>:<slot>:<family>` this crude, single-file scan

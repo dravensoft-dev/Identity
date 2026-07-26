@@ -1,10 +1,23 @@
-Section tabs. The active one has a crimson underline.
+A row of tabs and the one panel they switch between. The active tab has a crimson underline.
 
 ```jsx
-<Tabs tabs={[{ value: 'overview', label: 'Overview' }, { value: 'deployments', label: 'Deployments' }, { value: 'activity', label: 'Activity' }]}
-  onChange={setView} />
+<Tabs defaultValue="overview" onChange={setView}>
+  <Tab value="overview" label="Overview"><ServiceHealth /></Tab>
+  <Tab value="deployments" label="Deployments"><DeployTable /></Tab>
+</Tabs>
 ```
 
 **Do / Don't**
-- Do give every tab a `value` and a `label`. The bare-string form is gone — a tab is an object, so the key `onChange` carries can stay stable while the label is translated.
-- Don't reach for `style` to space the strip. It takes no `style`; wrap it in a `<div>` that owns the margin.
+- Do write one `<Tab>` per view, with that view as its children. The `tabs` array is gone, and so is
+  the `TabItem` type it used — a tab is a component now, so its panel can be your own markup.
+- Do write tabs as siblings or in an array. Don't wrap them in a fragment or a component of your
+  own: `React.Children.toArray` cannot see through either, so nothing would be injected and the
+  strip would render inert.
+- Don't render your own panel, and don't switch on the value yourself. Arena renders exactly one
+  tabpanel, wired to the selected tab; a second one is a panel no tab controls.
+- Don't reach for `style` to space the strip. It takes none — the panel already carries the gap
+  below the underline.
+
+**Checked by hand, because a suite cannot hold it:** happy-dom has no sequential focus navigation,
+so nothing asserts that Tab from a tab reaches the panel rather than the next tab. Serve the tree
+with `bun run demos`, open `navigation.card.html`, and check it in a real browser.

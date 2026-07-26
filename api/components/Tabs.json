@@ -1,10 +1,14 @@
 {
   "component": "Tabs",
-  "description": "Tab navigation between views. The active tab carries the crimson underline.",
+  "description": "A row of tabs and the one panel they switch between. Write one `Tab` per view; Tabs renders the tablist, the panel, and the keyboard.",
   "api": {
-    "tabs": { "form": "array", "of": "TabItem", "required": true, "description": "The tabs, in order." },
-    "value": { "form": "primitive", "type": "string", "description": "The selected tab's value. Omit and pass `defaultValue` to let it govern itself." },
-    "defaultValue": { "form": "primitive", "type": "string", "description": "The initially selected value when uncontrolled. Defaults to the first tab." },
-    "change": { "form": "event", "payload": "string", "description": "A different tab was chosen; carries its value." }
+    "content": { "form": "slot",
+                 "description": "The tabs. Tabs injects each one's selected state, the ids wiring it to the panel, and the handler that reports the choice." },
+    "value": { "form": "primitive", "type": "string",
+               "description": "The selected tab's value. Omit and pass `defaultValue` to let it govern itself." },
+    "defaultValue": { "form": "primitive", "type": "string",
+                      "description": "The initially selected value when uncontrolled. Defaults to the first tab." },
+    "change": { "form": "event", "payload": "string",
+                "description": "A different tab was chosen; carries its value." }
   }
 }

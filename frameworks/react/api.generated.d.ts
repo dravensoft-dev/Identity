@@ -190,14 +190,6 @@ export interface StatDelta {
 /** The switch's overall size, from a dense sm to a prominent 2xl. */
 export type SwitchSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 
-/** One tab in a Tabs strip. */
-export interface TabItem {
-  /** What the tab selects, and what `change` carries. */
-  value: string;
-  /** What the tab reads. */
-  label: string;
-}
-
 /** How a Table column's cells render in card mode: `row` is a label/value pair, `block` is full width with no label. Checked against every enum already declared here; nothing carries this pair. SkeletonVariant is the only other declaration containing the value `block`, and it names a shape of placeholder rather than a layout. */
 export type TableCellLayout = 'row' | 'block';
 
