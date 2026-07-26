@@ -589,6 +589,14 @@ render, and it could never have been afforded at one run per commit.
 - **No gradients** on any surface (the sole exception is `Skeleton`'s neutral shimmer). Depth comes from the `base-100`→`base-200`→`base-300` surface scale, the hairline border, and the warm shadow.
 - **No emoji**, in product or docs.
 - **Danger is outline, never filled** — transparent background, border and content in `--error`/`--danger`. The only filled danger surface in the whole system is the final irreversible confirmation inside `ConfirmDialog`. See `guidelines/components-danger.html`.
+- **A commit message containing a backtick is written with a quoted here-doc**, never
+  `git commit -m "…"`. A backtick inside a double-quoted shell string opens command
+  substitution and is silently spliced away — the message lands with the name it was
+  quoting missing, and nothing errors. Use `git commit -q -F - <<'MSG' … MSG` and verify
+  with `git log -1 --format=%B`. **`git merge` does not accept `-F -`** — use
+  `--no-commit`, then commit. This lived only in each plan's Global Constraints, which are
+  deleted once the plan is executed, so it was re-derived by every batch; it is here now
+  for the reason the *Known debt* preamble gives.
 - **A release moves four things, and the tag is one of them.** The version string lives in `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` and the README header; log the change in `CHANGELOG.md`; and because the plugin is served **from the tag** (`marketplace.json` → `source.ref`), that ref must name the release tag and the tag must exist on the release commit. Do all of it in the release commit, then tag it: the tag then contains a `marketplace.json` that points at the tag itself.
 - **Anything landing on `main` after a tag goes under `## [Unreleased]`**, and a release is cut by renaming that heading to the version. Filing it under the last version instead describes a tree nobody has — the plugin is served from the tag, so the release is frozen the moment it is cut. This has been got wrong twice; `check-release.mjs` reads the first *versioned* entry, so `[Unreleased]` on top is expected and never a failure.
 - **Forgetting the `ref` fails silently**, which is why it is machine-checked rather than written down and hoped for. The marketplace would advertise the new version while Claude Code keeps fetching the old tag, reads the *old* `plugin.json` there, and resolves the old version. The manifest's version always wins over the marketplace entry's, so the update is never offered and nothing errors. Verify with `bun scripts/check-release.mjs` — it reads the version from `plugin.json` (the authority) and asserts the marketplace entry, the README header, the CHANGELOG's top entry, `source.ref` and the tag all agree, and above all that **the `plugin.json` at the pinned tag hands out the version being advertised**. Run it before publishing; a release that skips it is the one that ships nothing.
