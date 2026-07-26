@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { SideNav } from '../components/navigation/SideNav.jsx';
 import { SideNavItem } from '../components/navigation/SideNavItem.jsx';
+import { indentFor } from '../components/navigation/side-nav-inject.jsx';
 
 /* One SSR suite is enough for this pair, and that is a fact about them rather
  * than a shortcut. Menu needed two files -- an SSR one and a DOM one -- because
@@ -71,6 +72,7 @@ test('onNav carries the activated id alone, and no DOM event reaches the handler
   assert.equal(seen[0][0], 'dashboard', 'the payload is not the activated id');
 
   button.props.onClick(event);
+  assert.equal(seen[1].length, 1, 'a second argument reached the handler -- the DOM event is back');
   assert.equal(seen[1][0], 'settings');
 });
 
@@ -150,6 +152,31 @@ test('a SideNav with no children renders an empty landmark rather than throwing'
 test('the item text re-densifies with the control scale', () => {
   const html = renderToStaticMarkup(<SideNav ariaLabel="Primary">{TREE}</SideNav>);
   assert.match(html, /var\(--dz-text\)/);
+});
+
+/* indentFor() PRODUCES a governed dimension, and check:dimensions cannot judge
+ * it. The gate keys on governed property SITES -- `prop: value`, an attribute,
+ * a traced local -- and a value returned from a function is at no such site; the
+ * call site `paddingInlineStart: indentFor(indentStep, depth)` is a call
+ * expression, which the gate's own dataflow rule explicitly cannot trace back to
+ * a declaration. Renaming this module to .jsx put the FILE under the gate (a
+ * bare literal written at a governed property inside it now fails, which was not
+ * true while it was .js), but the return value stays outside what any gate can
+ * see. So it is asserted here instead: this is the only thing standing between
+ * `indentFor` and a bare '12px'. Both branches, because depth 0 takes the early
+ * one and every nested level takes the other. */
+test('indentFor returns token arithmetic at every depth, never a bare length', () => {
+  assert.equal(indentFor(3, 0), 'calc(var(--sp-1) * 3)');
+  assert.equal(indentFor(3, 1), 'calc(var(--sp-1) * 3 + var(--sp-1) * 3)');
+  assert.equal(indentFor(3, 2), 'calc(var(--sp-1) * 3 + var(--sp-1) * 6)');
+  /* The real assertion is the one that survives a rewrite of the arithmetic:
+     whatever indentFor returns, every length in it comes from a token, so the
+     indent re-densifies inside .arena-compact along with everything else. */
+  for (const depth of [0, 1, 2, 5]) {
+    const out = indentFor(3, depth);
+    assert.match(out, /var\(--sp-1\)/, 'the indent stopped reading a token');
+    assert.doesNotMatch(out, /\d+(px|rem|em)\b/, `indentFor(3, ${depth}) emitted a bare length: ${out}`);
+  }
 });
 
 test('SideNavItem: `id` is required and a blank one throws too', () => {

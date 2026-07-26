@@ -155,16 +155,22 @@ test('an angular binding that names its counterpart is valid', () => {
  * moves is the point of it, unlike a number written into prose that goes stale
  * in silence. It moves by one whenever a component is added -- 43 -> 44 when
  * `CalendarEvent` became a component of its own rather than a predefined
- * object, and 44 -> 46 when `Table` became a compound component and grew
- * `TableRow` and `TableCell` in one change. Update it with the change that
- * moves it. */
+ * object, 44 -> 46 when `Table` became a compound component and grew
+ * `TableRow` and `TableCell` in one change, and 46 -> 47 when `SideNav` became
+ * one and grew `SideNavItem`. Update it with the change that moves it. */
 test('the React inventory finds every component and no demo entry', () => {
   const found = reactComponents('.');
-  assert.equal(found.length, 46);
+  assert.equal(found.length, 47);
   assert.ok(found.includes('Dialog'));
   assert.ok(found.includes('CalendarEvent'));
   assert.ok(found.includes('TableRow'));
   assert.ok(found.includes('TableCell'));
+  assert.ok(found.includes('SideNavItem'));
+  /* A kebab-case sibling is a helper module, not a component. `side-nav-inject`
+   * is the first one spelled `.jsx` (it must be, to stay inside
+   * check:dimensions' EXTENSIONS), and without the case filter it was reported
+   * as a component and check:behaviour demanded a binding for it. */
+  assert.ok(!found.includes('side-nav-inject'));
   assert.ok(!found.some((c) => c.endsWith('.card.entry')));
 });
 

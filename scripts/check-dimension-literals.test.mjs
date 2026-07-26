@@ -163,6 +163,29 @@ test('a ternary nested inside a string concatenation still resolves its branches
 // `function Icon({ size = 18 })` -- a destructured default uses `=`, not
 // `:`, so DECL never sees it at all.
 
+/* The logical sides are governed, and this is the regression that made them so.
+ * `padding-left` was governed and `padding-inline-start` -- the same property in
+ * the other writing-mode spelling -- was not, so a component that split a
+ * governed `padding` shorthand into logical sides moved its own geometry out of
+ * this gate's reach without changing a value. SideNavItem did exactly that in
+ * plan 8C5. Each spelling below is asserted rather than a representative one,
+ * because the omission was itself a half-filled enumeration. */
+test('a bare literal at a LOGICAL padding or margin side is a violation, like its physical twin', () => {
+  for (const prop of [
+    'paddingInlineStart', 'paddingInlineEnd', 'paddingBlockStart', 'paddingBlockEnd',
+    'marginInline', 'marginBlock',
+    'marginInlineStart', 'marginInlineEnd', 'marginBlockStart', 'marginBlockEnd',
+  ]) {
+    assert.deepEqual(
+      scanText(`const s = { ${prop}: '12px' };`).map((f) => ({ prop: f.prop, raw: f.raw })),
+      [{ prop, raw: "'12px'" }],
+      `${prop} is not governed — a bare literal at it passes the gate`,
+    );
+    // And the token form still passes, so the rule is "not a token", not "not a literal".
+    assert.deepEqual(scanText(`const s = { ${prop}: 'var(--sp-3)' };`), []);
+  }
+});
+
 test('a default parameter whose name is itself a governed CSS property is a violation', () => {
   const src = "function Dialog({ open, title, width = 480 }) {\n  return null;\n}";
   const found = scanDefaultsAndCallSites(src);

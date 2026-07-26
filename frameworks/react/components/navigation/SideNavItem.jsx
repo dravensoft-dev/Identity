@@ -1,5 +1,5 @@
 import React from 'react';
-import { indentFor } from './side-nav-inject.js';
+import { indentFor } from './side-nav-inject.jsx';
 
 /** One destination in a SideNav. `href` decides which element it renders, so it
  *  is the field to read first: present => an <a>, absent => a <button>.

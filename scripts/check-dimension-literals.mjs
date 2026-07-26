@@ -70,7 +70,21 @@ const PROPS = new Set([
   'fontSize', 'lineHeight', 'letterSpacing', 'fontWeight',
   'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
   'paddingInline', 'paddingBlock',
+  /* The LOGICAL sides, added by plan 8C5. The physical four and the two logical
+   * AXES were already here; the four logical SIDES were not, so `padding-inline-
+   * start` was ungoverned while `padding-left` was governed -- the same property
+   * under the other writing-mode spelling. That was not theoretical: 8C5 split
+   * SideNavItem's governed `padding` shorthand into paddingBlock (governed) plus
+   * paddingInlineEnd and paddingInlineStart (both ungoverned at the time), and a
+   * bare '12px' at either passed this gate. The margin siblings join for the same
+   * reason rather than for symmetry alone: marginInline/marginBlock were missing
+   * too, so the whole logical family is enumerated here now and none of it is one
+   * spelling away from invisible. Verified against the tree when added: the only
+   * sites in frameworks/ using any of them are SideNavItem's own two. */
+  'paddingInlineStart', 'paddingInlineEnd', 'paddingBlockStart', 'paddingBlockEnd',
   'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
+  'marginInline', 'marginBlock',
+  'marginInlineStart', 'marginInlineEnd', 'marginBlockStart', 'marginBlockEnd',
   'gap', 'rowGap', 'columnGap',
   'border', 'borderTop', 'borderRight', 'borderBottom', 'borderLeft',
   'borderWidth', 'borderRadius',

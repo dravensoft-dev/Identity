@@ -1,5 +1,5 @@
 import React from 'react';
-import { injectInto } from './side-nav-inject.js';
+import { injectInto } from './side-nav-inject.jsx';
 
 /** The sidebar's navigation list -- the list alone, not the frame around it.
  *  See the Non-goals in the source spec for why there is no AppShell.
