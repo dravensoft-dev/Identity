@@ -14,3 +14,22 @@ appear for a pointer merely passing over it.
 
 **Don't** wrap a control whose only label is its tooltip. It is unreadable for
 `--delay-open`, and it is unreachable by keyboard at all.
+
+**Do** hand `Tooltip` a single element that accepts props — that is where
+`aria-describedby` lands, added only while the bubble is shown.
+
+```jsx
+<Tooltip label="Roll back to the previous build"><IconButton label="Roll back" icon="ph-bold ph-arrow-counter-clockwise" /></Tooltip>
+```
+
+**Don't** wrap the trigger in a fragment or in a component that swallows its
+props. The tooltip still shows on hover or focus, but the description never
+reaches anyone.
+
+```jsx
+<Tooltip label="Roll back to the previous build">
+  <>
+    <IconButton label="Roll back" icon="ph-bold ph-arrow-counter-clockwise" />
+  </>
+</Tooltip>
+```

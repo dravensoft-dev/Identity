@@ -654,13 +654,6 @@ scheduled for deletion the same week.
   the recorded rationale for the other chart exclusions — *a multiplier that
   derives one dimension from another is not itself a design value* — does not
   cover either of them, so a reader applying it reaches the opposite conclusion.
-- **`Tooltip` is not keyboard-reachable, and now it also waits.** It has
-  `onMouseEnter`/`onMouseLeave` and no `onFocus`/`onBlur`, so a keyboard user
-  never sees it at all. Plan 7a added a pointer-intent delay and did not fix
-  this — deliberately, because it is contract work rather than a value. When it
-  is fixed, **the focus path must reveal immediately**: routing focus through
-  `--delay-open` would make a control that is already hard to reach also feel
-  broken. The token's own `$description` says so.
 - **Two behaviour families were proposed and not shipped**, and the reasons
   should be re-read before anyone adds them. `debounce` is speculative:
   `CommandPalette` filters a local array synchronously and `ResizeObserver`
