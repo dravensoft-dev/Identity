@@ -9,7 +9,7 @@ import { injectInto } from './side-nav-inject.jsx';
  *  its direct children and injects where each sits, which id is active and the
  *  handler that reports `nav`. None of what it injects is a member of any
  *  contract -- the Table/TableRow shape, one size down. */
-export function SideNav({ children, active, ariaLabel, onNav }) {
+export function SideNav({ children, active, ariaLabel, indentStep = 3, onNav }) {
   /* Falsy, not absence-only: `ariaLabel=""` renders <nav aria-label="">, a
    * landmark with NO accessible name -- exactly the defect the guard exists to
    * prevent, arriving through a value that is present. An accessible name is
@@ -21,7 +21,7 @@ export function SideNav({ children, active, ariaLabel, onNav }) {
   return (
     <nav aria-label={ariaLabel}
       style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-1)' }}>
-      {injectInto(children, { depth: 0, activeId: active, indentStep: 3, onActivate: onNav })}
+      {injectInto(children, { depth: 0, activeId: active, indentStep, onActivate: onNav })}
     </nav>
   );
 }

@@ -28,6 +28,13 @@ export interface SideNavProps {
    *  navigation pattern asks each landmark on a page for a unique name, and a
    *  constant default gives two navs the same one. Say what it navigates. */
   ariaLabel: string;
+  /** How far each nesting level indents, as a multiplier of `--sp-1` rather than
+   *  a length: the row at depth N is padded
+   *  `calc(var(--sp-1) * 3 + var(--sp-1) * indentStep * N)`. A CSS string is not
+   *  accepted here -- a caller-supplied `"1.5rem"` is neither a token nor a
+   *  derivation of one, so it would stop re-densifying inside `.arena-compact`.
+   *  @default 3 */
+  indentStep?: number;
   /** An item was activated; carries its `id` alone. There is no item datum to
    *  carry under the compound shape — you wrote the element, so you already hold
    *  everything on it. The click event is not forwarded either, so the anchor's

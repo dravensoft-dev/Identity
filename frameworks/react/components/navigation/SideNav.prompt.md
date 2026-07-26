@@ -26,6 +26,22 @@ item takes `--crimson-soft` behind `--crimson` text at `--fw-semibold`; the rest
 transparent, `--mute`, `--fw-medium`. Both read `--dz-text`, so the nav re-densifies
 inside `.arena-compact`.
 
+Group related items with `<SideNavSection label="Workspace">…</SideNavSection>`. Each
+nesting level indents one step deeper, and `indentStep` (default `3`) is the multiplier of
+`--sp-1` that step applies -- a caller can only widen or narrow the multiplier, never
+supply a length of their own, so the indent keeps re-densifying inside `.arena-compact` no
+matter how far it is nested.
+
+```jsx
+<SideNav ariaLabel="Primary" active={route} onNav={(id) => setRoute(id)}>
+  <SideNavItem id="dashboard" icon="ph-bold ph-squares-four" label="Projects" href="/projects" />
+  <SideNavSection label="Workspace">
+    <SideNavItem id="deploys" icon="ph-bold ph-rocket-launch" label="Deployments" href="/deploys" />
+    <SideNavItem id="settings" icon="ph-bold ph-gear-six" label="Settings" />
+  </SideNavSection>
+</SideNav>
+```
+
 ## Do / Don't
 
 - **Do** give every destination an `href`, even in a single-page app. It is what lets
@@ -44,3 +60,6 @@ inside `.arena-compact`.
 - **Don't** use it for tabs. `SideNav` navigates between destinations; `Tabs` changes
   the view within one, and `SegmentedControl` filters within that.
 - **Don't** wrap it in your own `<nav>`. It renders one.
+- **Don't** pass `indentStep` a length string. It is a multiplier of `--sp-1`, never a CSS
+  length -- a value like `"1.5rem"` is neither a token nor a derivation of one, and it
+  would stop re-densifying inside `.arena-compact` with no gate to catch it.

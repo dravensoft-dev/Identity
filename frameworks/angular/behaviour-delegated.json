@@ -112,6 +112,12 @@
     "reason": "React's SideNav became a compound component so that sections and nested groups are expressible at all, and SideNavItem is the leaf that shape needs; Angular needs no counterpart primitive, because mat-nav-list's list item is the same anchor-or-button leaf and the consumer writes one per destination inside the list exactly as they now write one SideNavItem per destination in React. The pattern is `none` for the same reason React's own binding is: which element an item renders is decided per item, so no single interactive pattern always applies to it, and what the rendered element does carry comes from the platform and from the enclosing list's `navigation` binding -- which the SideNav entry above records and this one does not restate. What the bridge dresses at the ITEM level is checkable by selector rather than asserted in general: `.arena-side-nav.mat-mdc-nav-list` sets the item label's font, size, weight and colour and the active indicator's shape, and `.arena-side-nav .mdc-list-item--activated` sets the active item's indicator colour, label colour and label weight. Nothing here claims what Material version those hosts belong to; that gap is the one CLAUDE.md's Known debt records for every delegated entry, and this entry inherits it rather than closing it.",
     "exceptions": []
   },
+  "SideNavSection": {
+    "pattern": "none",
+    "delegatedTo": "Angular Material mat-nav-list's own <div mat-subheader> grouping",
+    "reason": "mat-nav-list groups items with the matSubheader directive applied to a heading element Material renders inside the list; the consumer writes one per group inside the list exactly as they now write one SideNavSection per group in React. It carries no interactive affordance of its own -- every control inside it is the list's own item, matching pattern `none` for the same reason React's own binding is. arena-material.css has no rule for the subheader host class today, so it renders in Material's own colours, not Arena's tokens -- no dressedBy is claimed, the same honesty the TableCell entry uses for its data cells.",
+    "exceptions": []
+  },
   "Spinner": {
     "pattern": "status",
     "delegatedTo": "Angular Material MatProgressSpinner",
