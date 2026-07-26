@@ -1034,6 +1034,21 @@ scheduled for deletion the same week.
   is still unverifiable in happy-dom, same as the rest of this repo's focus claims, and is
   a by-hand check against `Tabs.prompt.md` rather than a gate.
 
+  **And the suite that backs it could not see the defect the binding's own wording names.**
+  A requirement in `ATTRIBUTE_FOR` is evaluated as `el.getAttribute(attr) !== null` — pure
+  presence, on the ONE subject element the suite hands it. So `roles.controls`, whose text
+  is *"**each** tab has aria-controls referencing its tabpanel"*, was satisfied by a strip
+  in which N−1 tabs referenced ids nothing rendered: the attribute was present, the suite
+  passed it the first tab, and the fixture made the first tab the selected one. Nothing in
+  the evaluator can resolve an IDREF — it touches only `tagName`, `getAttribute`,
+  `hasAttribute` and `textContent`, deliberately, because it runs in three runtimes one of
+  which has no DOM — and nothing makes a suite hand it more than one subject per
+  requirement. Two consequences worth carrying: a requirement quantified over *each* of
+  something is only ever checked on the one element a suite chooses, and **an IDREF is
+  never resolved anywhere in the compliance layer**. `Tabs` is fixed and its suite now
+  resolves every `aria-controls` by hand; every other binding with an IDREF requirement is
+  exactly as unchecked as it was.
+
 
 - **`check:api` now compares a `primitive` member's `type`, and two prior live examples of
   the gap are guarded because of it.** The entry used to read "does not compare" — probed in

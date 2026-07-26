@@ -181,7 +181,7 @@ unknown>` was on this list and has left it — it is **consumer data** now, the 
 that is a promotion of one exact spelling and nothing wider: `Record<string, Widget>` is a
 record of a known type, which is a predefined object, and it is still an R4 violation.
 
-**R5 — No unions between forms.** A member is one form. `(string | TabItem)[]` picks one.
+**R5 — No unions between forms.** A member is one form. `(string | SegmentOption)[]` picks one.
 
 ## What the contract governs, and what it does not
 

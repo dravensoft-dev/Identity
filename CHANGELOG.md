@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`Tooltip` gains a focus path, a description and an Escape, and retires all three of its
+  behaviour exceptions.** It was pointer-only, so a keyboard user never saw it at all. A focus now
+  reveals it and a blur withdraws it, both **immediately** — the delays are pointer intent, and
+  routing focus through `--delay-open` would make a control that is already hard to reach also feel
+  broken, which the token's own `$description` says. The trigger carries `aria-describedby` naming
+  the bubble while it is up, **merged** with any description of the consumer's own rather than
+  replacing it: the attribute is a space-separated id list, so an input keeps its password rules and
+  gains the bubble beside them. **Escape dismisses it from anywhere**, whether a pointer or a focus
+  revealed it — the key is listened for on the document, because a hover leaves focus wherever it
+  already was and a handler on the trigger never sees it. That last one is WCAG 1.4.13 (content on
+  hover or focus must be dismissible) and not only a pattern requirement. `Tooltip:react` and
+  `Tabs:react` both join `check:compliance`'s `COVERED`, taking coverage to **10 of 70 bindings**.
 - **`SideNav` becomes a compound component, and gains named sections and nested collapsible
   groups.** Three new React components — `SideNavItem`, `SideNavSection` and `SideNavCollapsible` —
   each with its own contract, taking `check:api` from 46 contracts across 66 layer implementations
@@ -448,6 +460,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   not permit it.
 
 ### Changed
+
+- **BREAKING — `Tabs.tabs` is gone; `Tabs` is a compound component. Every call site breaks.**
+  Where you passed an array of `TabItem`, you now write one `<Tab value label>` per view, its
+  children being what that view shows. The **`TabItem` type is deleted** from `api/types/` and from
+  both generated modules, so an import of it fails rather than resolving to something stale.
+  `Tabs` injects each tab's selected state, which one holds the strip's tab stop, the ids wiring it
+  to its panel and the handler that reports the choice — **none of which is a member of any
+  contract**, exactly as `Radio` declares none of what `RadioGroup` gives it. This is the fifth
+  compound family, and it buys what an array could not: a panel that is your own markup rather than
+  a string. It carries the idiom's limit too — **a wrapper component of your own, or a fragment,
+  between `Tabs` and its tabs breaks the chain**, because `React.Children.toArray` sees through
+  neither. Write tabs as siblings or in an array.
+
+  With it, **every `tabs` exception retires**: a real `role="tablist"`, `role="tab"` and
+  `role="tabpanel"`, `aria-selected`, `aria-controls`, a roving tab stop and ArrowLeft/ArrowRight
+  with automatic activation. `Tabs` had excepted **all eight** requirements of the pattern it bound.
+
+- **BREAKING (behaviour) — every tab's content now mounts.** `Tabs` renders one tabpanel per tab
+  and hides the inactive ones, where it used to render only the selected tab's. The pattern requires
+  *each* tab to have an `aria-controls` referencing its tabpanel, and a reference to an id nothing
+  renders is not a reference — on a three-tab strip, two of the three dangled. The price is that a
+  panel's side effects run on mount rather than on first selection, so a cost you only want to pay
+  on selection — a fetch, a chart that measures itself, a subscription — belongs outside the
+  `<Tab>`'s children or behind the value you already have from `onChange`. `Tabs.prompt.md` and the
+  contract's `content` description both say so.
+
+- **`Tabs` separates the selection from the roving tab stop**, which fixes a widget that could not
+  be reached by keyboard at all whenever the active value named no tab — a controlled `value` from a
+  stale route param or an async swap, and the uncontrolled case where the tabs arrive after mount.
+  Every tab went to `tabindex="-1"` and nothing put one back. Nothing is selected in that state,
+  because a controlled component may not select what the consumer did not ask for and a panel may
+  not appear for a tab that is not active; but exactly one tab stays in the page's tab sequence and
+  the arrows still move from it.
 
 - **BREAKING — `SideNav.items` is gone; `SideNav` is a compound component. Every call site
   breaks.** Where you passed an array, you now write one `<SideNavItem>` per destination as a
