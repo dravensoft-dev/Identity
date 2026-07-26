@@ -12,8 +12,9 @@ and attaches to.
 The tooltip is a deferred affordance: it waits for the pointer to rest, and does not
 appear for a pointer merely passing over it.
 
-**Don't** wrap a control whose only label is its tooltip. It is unreadable for
-`--delay-open`, and it is unreachable by keyboard at all.
+**Don't** wrap a control whose only label is its tooltip. A bubble that only
+appears on hover or focus, and only after `--delay-open` for a pointer, is a
+poor substitute for a name on the control itself.
 
 **Do** hand `Tooltip` a single element that accepts props — that is where
 `aria-describedby` lands, added only while the bubble is shown.
@@ -22,9 +23,9 @@ appear for a pointer merely passing over it.
 <Tooltip label="Roll back to the previous build"><IconButton label="Roll back" icon="ph-bold ph-arrow-counter-clockwise" /></Tooltip>
 ```
 
-**Don't** wrap the trigger in a fragment or in a component that swallows its
-props. The tooltip still shows on hover or focus, but the description never
-reaches anyone.
+**Don't** wrap the trigger in a fragment, hand it a bare string, or wrap it in
+a component that swallows its props. The tooltip still shows on hover or
+focus, but the description never reaches anyone.
 
 ```jsx
 <Tooltip label="Roll back to the previous build">

@@ -754,6 +754,26 @@ scheduled for deletion the same week.
   question, *"How does a pattern express an optional requirement?"*, is this.
   `comparePattern`'s stale-exception message has no vocabulary for "true in one
   variant" either — it offers only "delete it or name a subject".
+- **`Tooltip.behaviour.json` claims `roles.describedby` unconditionally, and the
+  implementation only meets it for some children.** `aria-describedby` is added
+  by `cloneElement` onto the consumer's own child, which only works when that
+  child is a single element that accepts and forwards props. A reader of the
+  clean `"exceptions": []` would conclude the requirement always holds, and it
+  does not: a bare string or other non-element child leaves `React.isValidElement`
+  false, so the prop is never added and nothing warns; a component that ignores
+  the prop drops it just as silently; and a **fragment is the trap** —
+  `React.isValidElement` is true for a fragment, so the clone succeeds, but a
+  fragment renders its own children and ignores every other prop, so the
+  attribute never reaches the DOM with nothing announcing the loss. Today the
+  only place a consumer is warned is `Tooltip.prompt.md`'s Do/Don't, and nothing
+  machine-checks it: the compliance suite renders a prop-accepting child by
+  construction, so it proves the good case and can never exercise the bad ones.
+  This is the same open question already recorded above for `Tag`'s `button`
+  pattern and for `Skeleton`'s variant-scoped exceptions — a binding cannot
+  express "this requirement holds only for some inputs" — one more instance
+  rather than a new one. Where a count of instances is wanted, grep the pattern
+  bindings for a per-child or per-variant caveat rather than trusting an ordinal
+  here.
 - **A grid component's DOM behaviour is checked by eye, and that is a rule with a
   price.** `frameworks/react/test-dom/` was deleted whole for its RAM cost and
   restored minus one suite, so the standing rule is narrow: **a component whose
