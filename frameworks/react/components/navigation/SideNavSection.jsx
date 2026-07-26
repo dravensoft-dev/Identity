@@ -22,7 +22,16 @@ export function SideNavSection({
   depth = 0, activeId, indentStep = 3, onActivate,
 }) {
   if (!label) throw new Error('SideNavSection: `label` is required');
-  if (React.Children.count(children) === 0) {
+  /* toArray().length, never Children.count(): count() counts a bare `false` as one
+   * child, and the conditional-render idiom -- {isAdmin && <SideNavItem …/>} --
+   * writes exactly that when the condition is false. The render path below goes
+   * through injectInto, which is toArray() under the hood (see side-nav-inject.jsx),
+   * so a guard using count() would pass with "one child" while the actual render
+   * drops it and produces the very childless group this guard exists to refuse --
+   * the guard and the thing it guards would count two different things. Every other
+   * child-count site in this layer already uses toArray().length for this reason:
+   * Table.jsx, TableRow.jsx, Calendar.jsx, and injectInto itself. */
+  if (React.Children.toArray(children).length === 0) {
     throw new Error('SideNavSection: a section with no children is not a legal shape');
   }
   const labelId = useId();

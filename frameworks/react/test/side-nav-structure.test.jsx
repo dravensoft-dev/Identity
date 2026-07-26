@@ -43,6 +43,14 @@ test('a section with no children throws -- a childless section is not a legal sh
   );
 });
 
+test('a section whose only child is a false conditional throws too -- count() counts false, toArray() does not', () => {
+  assert.throws(
+    () => renderToStaticMarkup(
+      <SideNav ariaLabel="Primary"><SideNavSection label="Admin">{false && <SideNavItem id="a" label="A" />}</SideNavSection></SideNav>),
+    /SideNavSection: a section with no children is not a legal shape/,
+  );
+});
+
 test('SideNavSection: `label` is required and a blank one throws too', () => {
   const one = <SideNavItem id="a" label="A" />;
   assert.throws(() => renderToStaticMarkup(<SideNavSection>{one}</SideNavSection>),

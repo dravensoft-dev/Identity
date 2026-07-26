@@ -13,7 +13,7 @@ export function SideNavSection({
 }) {
   if (!label)
     throw new Error("SideNavSection: `label` is required");
-  if (React.Children.count(children) === 0) {
+  if (React.Children.toArray(children).length === 0) {
     throw new Error("SideNavSection: a section with no children is not a legal shape");
   }
   const labelId = useId();
