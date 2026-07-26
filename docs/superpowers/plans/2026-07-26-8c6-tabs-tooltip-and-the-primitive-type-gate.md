@@ -240,8 +240,10 @@ test('a primitive member typed differently in the layer is a problem', () => {
     [{ name: 'separator', required: false, form: 'primitive', type: 'number' }],
     'react',
   );
+  /* `where` is `${layer}/${contract.component}` -- read it off compareSurface
+     rather than guessing, which an earlier draft of this step got wrong. */
   assert.deepEqual(problems, [
-    'Breadcrumbs(react).separator: typed number, contract says string',
+    'react/Breadcrumbs.separator: typed number, contract says string',
   ]);
 });
 
