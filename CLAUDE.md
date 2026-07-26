@@ -771,9 +771,12 @@ scheduled for deletion the same week.
   This is the same open question already recorded above for `Tag`'s `button`
   pattern and for `Skeleton`'s variant-scoped exceptions — a binding cannot
   express "this requirement holds only for some inputs" — one more instance
-  rather than a new one. Where a count of instances is wanted, grep the pattern
-  bindings for a per-child or per-variant caveat rather than trusting an ordinal
-  here.
+  rather than a new one. There is no grep for the set of instances, because a
+  requirement holding only for some inputs is a property of the implementation,
+  not a string in the binding — that absence is exactly why the schema cannot
+  express it. `Tag`, `Skeleton` and this entry are recorded here case by case
+  instead, and finding the next one means reading a component's implementation
+  against its binding, not searching for a phrase.
 - **A grid component's DOM behaviour is checked by eye, and that is a rule with a
   price.** `frameworks/react/test-dom/` was deleted whole for its RAM cost and
   restored minus one suite, so the standing rule is narrow: **a component whose
