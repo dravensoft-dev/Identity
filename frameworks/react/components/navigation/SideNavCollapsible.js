@@ -2,7 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useEffect, useState } from "react";
-import { injectInto, indentFor } from "./side-nav-inject.js";
+import { injectInto, COLUMN, rowStyle, rowGlyph } from "./side-nav-inject.js";
 import { SideNavItem } from "./SideNavItem.js";
 export function subtreeHasItem(children, id) {
   if (!id)
@@ -47,36 +47,22 @@ export function SideNavCollapsible({
     if (onToggle)
       onToggle(next);
   };
-  const glyph = icon ? React.createElement("i", {
-    className: icon,
-    "aria-hidden": "true",
-    style: { fontSize: "var(--icon-lg)", display: "inline-flex" }
-  }) : null;
+  const glyph = rowGlyph(icon);
   return React.createElement("div", {
-    style: { display: "flex", flexDirection: "column", gap: "var(--sp-1)" }
+    style: COLUMN
   }, React.createElement("button", {
     id: triggerId,
     type: "button",
     "aria-expanded": expanded,
     "aria-controls": regionId,
     onClick: press,
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: "calc(var(--sp-1) * 3)",
-      paddingBlock: "calc(var(--sp-1) * 2.5)",
-      paddingInlineEnd: "calc(var(--sp-1) * 3)",
-      paddingInlineStart: indentFor(indentStep, depth),
-      borderRadius: "var(--r-sm)",
+    style: rowStyle({
+      indentStep,
+      depth,
       background: "transparent",
       color: "var(--mute)",
-      border: "none",
-      cursor: "pointer",
-      textAlign: "left",
-      fontFamily: "var(--font-body)",
-      fontSize: "var(--dz-text)",
       fontWeight: "var(--fw-medium)"
-    }
+    })
   }, glyph, React.createElement("span", {
     style: { flex: 1 }
   }, label), React.createElement("i", {
@@ -88,6 +74,6 @@ export function SideNavCollapsible({
     role: "group",
     "aria-labelledby": triggerId,
     hidden: !expanded,
-    style: { display: expanded ? "flex" : "none", flexDirection: "column", gap: "var(--sp-1)" }
+    style: { ...COLUMN, display: expanded ? "flex" : "none" }
   }, injectInto(children, { depth: depth + 1, activeId, indentStep, onActivate })));
 }

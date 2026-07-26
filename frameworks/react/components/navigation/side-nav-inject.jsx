@@ -1,7 +1,8 @@
 import React from 'react';
 
-/* THE .jsx EXTENSION IS LOAD-BEARING, and this file contains no JSX -- so do
- * not "tidy" it back to .js. `check:dimensions` scans EXTENSIONS = ['.jsx',
+/* THE .jsx EXTENSION IS LOAD-BEARING for a reason that has nothing to do with the
+ * one <i> below -- so do not "tidy" it back to .js even after deleting that.
+ * `check:dimensions` scans EXTENSIONS = ['.jsx',
  * '.ts', '.tsx'] and deliberately never opens a .js, so `indentFor()` below --
  * which PRODUCES a governed padding-inline-start value -- would sit outside the
  * gate entirely under the other extension. Nothing else would catch it either:
@@ -56,4 +57,69 @@ export function indentFor(indentStep, depth) {
   return steps === 0
     ? 'calc(var(--sp-1) * 3)'
     : `calc(var(--sp-1) * 3 + var(--sp-1) * ${steps})`;
+}
+
+/* WHAT FOLLOWS IS SHARED FIGURE, NOT SHARED CONVENIENCE, and it is the
+ * TableCell.jsx idiom -- that file exports CELL_BASE and HEADER_LABEL for
+ * Table.jsx to import back, because the leaf is what draws a cell. Same here one
+ * size down: an ITEM row and a COLLAPSIBLE TRIGGER sit adjacent in one list and
+ * must be indistinguishable, and until this extraction they were twelve
+ * byte-identical declarations written twice, in files three different agents
+ * wrote. Nothing coupled them: check:dimensions judges each site on its own, and
+ * the Tailwind manifest duplicates the same string across its `item` and
+ * `trigger` slots. Each component still makes its OWN decisions -- the item's
+ * active-state ink, the collapsible's constant ink -- and passes them in.
+ *
+ * These stay inside a .jsx file so the gate keeps seeing them: every value below
+ * sits at a governed property SITE in a scanned file, so a bare '12px' written
+ * here fails check:dimensions exactly as it would at the call site. That is not
+ * true of `indentFor`'s RETURN value, which is why side-nav.test.jsx asserts on
+ * it directly; nothing about this extraction moved geometry out from under the
+ * gate. */
+
+/** The vertical stack every level of the nav lays out in -- the root <nav>, a
+ *  section's group and a collapsible's region and wrapper. Four sites, one
+ *  figure. A caller that must vary the display (the region, which collapses)
+ *  spreads this and overrides that one key; the spread keeps `display` in its
+ *  original position, so the serialized declaration order does not move. */
+export const COLUMN = { display: 'flex', flexDirection: 'column', gap: 'var(--sp-1)' };
+
+/** The geometry of ONE ROW of the nav, at `depth`, with its ink handed in.
+ *
+ *  `background`, `color`, `fontWeight` and `textDecoration` are PARAMETERS rather
+ *  than values because they are the two components' own decisions: the item reads
+ *  them off its active state, the trigger holds them constant. They are taken in
+ *  rather than merged over afterwards so the returned object keeps ONE key order,
+ *  the order both components already rendered -- a spread would move ink after
+ *  type and rewrite every style attribute in the layer for no reason.
+ *  `textDecoration` is undefined for the trigger, which React omits: a <button>
+ *  never had the declaration and still does not.
+ *
+ *  @param {{indentStep: number, depth: number, background: string, color: string,
+ *           fontWeight: string, textDecoration?: string}} ink */
+export function rowStyle({ indentStep, depth, background, color, fontWeight, textDecoration }) {
+  return {
+    display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)',
+    paddingBlock: 'calc(var(--sp-1) * 2.5)',
+    paddingInlineEnd: 'calc(var(--sp-1) * 3)',
+    paddingInlineStart: indentFor(indentStep, depth),
+    borderRadius: 'var(--r-sm)',
+    background, color,
+    border: 'none', cursor: 'pointer', textAlign: 'left', textDecoration,
+    fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)',
+    fontWeight,
+  };
+}
+
+/** The glyph a row draws before its label, or nothing when no icon was named.
+ *
+ *  The single-icon convention: Arena draws the <i>, the consumer names the class.
+ *  A collapsible's CARET is not this -- it is Arena's own, it reports state rather
+ *  than identity, and it is drawn at --icon-md beside the label's end.
+ *
+ *  @param {string} [icon] @returns {React.ReactElement|null} */
+export function rowGlyph(icon) {
+  return icon
+    ? <i className={icon} aria-hidden="true" style={{ fontSize: 'var(--icon-lg)', display: 'inline-flex' }} />
+    : null;
 }

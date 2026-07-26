@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { injectInto, indentFor } from './side-nav-inject.jsx';
+import { injectInto, COLUMN, rowStyle, rowGlyph } from './side-nav-inject.jsx';
 import { SideNavItem } from './SideNavItem.jsx';
 
 /** Whether `id` names a SideNavItem anywhere in this subtree.
@@ -79,23 +79,21 @@ export function SideNavCollapsible({
     if (onToggle) onToggle(next);
   };
 
-  const glyph = icon
-    ? <i className={icon} aria-hidden="true" style={{ fontSize: 'var(--icon-lg)', display: 'inline-flex' }} />
-    : null;
+  const glyph = rowGlyph(icon);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-1)' }}>
+    <div style={COLUMN}>
+      {/* THE TRIGGER IS A ROW, and it draws the same one a SideNavItem draws --
+          they sit adjacent in one list and a reader must not be able to tell the
+          geometry apart. `rowStyle` is that single figure (side-nav-inject.jsx);
+          what this component decides for itself is only the ink, which is
+          constant here where the item's tracks its active state. */}
       <button id={triggerId} type="button" aria-expanded={expanded} aria-controls={regionId}
         onClick={press}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)',
-          paddingBlock: 'calc(var(--sp-1) * 2.5)',
-          paddingInlineEnd: 'calc(var(--sp-1) * 3)',
-          paddingInlineStart: indentFor(indentStep, depth),
-          borderRadius: 'var(--r-sm)', background: 'transparent', color: 'var(--mute)',
-          border: 'none', cursor: 'pointer', textAlign: 'left',
-          fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', fontWeight: 'var(--fw-medium)',
-        }}>
+        style={rowStyle({
+          indentStep, depth,
+          background: 'transparent', color: 'var(--mute)', fontWeight: 'var(--fw-medium)',
+        })}>
         {glyph}
         <span style={{ flex: 1 }}>{label}</span>
         <i className={expanded ? 'ph-bold ph-caret-down' : 'ph-bold ph-caret-right'}
@@ -104,7 +102,7 @@ export function SideNavCollapsible({
       {/* `hidden` AND display, never one of them -- an inline display:flex beats
           [hidden]'s UA display:none, and hidden alone would lose the column. */}
       <div id={regionId} role="group" aria-labelledby={triggerId} hidden={!expanded}
-        style={{ display: expanded ? 'flex' : 'none', flexDirection: 'column', gap: 'var(--sp-1)' }}>
+        style={{ ...COLUMN, display: expanded ? 'flex' : 'none' }}>
         {injectInto(children, { depth: depth + 1, activeId, indentStep, onActivate })}
       </div>
     </div>

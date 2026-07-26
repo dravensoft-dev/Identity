@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import { injectInto, indentFor } from './side-nav-inject.jsx';
+import { injectInto, indentFor, COLUMN } from './side-nav-inject.jsx';
 
 /** A named group of navigation items. It WRAPS -- it never replaces what a
  *  consumer wrote -- and its accessible name is the same heading a sighted user
@@ -36,8 +36,7 @@ export function SideNavSection({
   }
   const labelId = useId();
   return (
-    <div role="group" aria-labelledby={labelId}
-      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-1)' }}>
+    <div role="group" aria-labelledby={labelId} style={COLUMN}>
       <div id={labelId} style={{
         paddingInlineStart: indentFor(indentStep, depth),
         paddingBlock: 'calc(var(--sp-1) * 1.5)',

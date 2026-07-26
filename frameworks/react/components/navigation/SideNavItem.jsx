@@ -1,5 +1,5 @@
 import React from 'react';
-import { indentFor } from './side-nav-inject.jsx';
+import { rowStyle, rowGlyph } from './side-nav-inject.jsx';
 
 /** One destination in a SideNav. `href` decides which element it renders, so it
  *  is the field to read first: present => an <a>, absent => a <button>.
@@ -23,30 +23,29 @@ export function SideNavItem({
   if (!label) throw new Error('SideNavItem: `label` is required');
   const on = id === activeId;
   /* One style object for both elements: an anchor and a button must be
-   * indistinguishable here, and two copies of this would drift. The padding is
-   * split into block/inline rather than the old shorthand because the inline
-   * start is where the indent lands. */
+   * indistinguishable here, and two copies of this would drift. `rowStyle` is why
+   * that now holds ACROSS components too -- a collapsible's trigger sits in the
+   * same list and draws the same row, and it reads the same figure from
+   * side-nav-inject.jsx rather than a second copy of it. The active-state ink
+   * below stays here: it is this component's decision, not shared geometry. The
+   * padding is split into block/inline rather than the old shorthand because the
+   * inline start is where the indent lands. */
   const shared = {
     'aria-current': on ? 'page' : undefined,
     onClick: () => onActivate && onActivate(id),
-    style: {
-      display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)',
-      paddingBlock: 'calc(var(--sp-1) * 2.5)',
-      paddingInlineEnd: 'calc(var(--sp-1) * 3)',
-      paddingInlineStart: indentFor(indentStep, depth),
-      borderRadius: 'var(--r-sm)',
+    style: rowStyle({
+      indentStep, depth,
       background: on ? 'var(--crimson-soft)' : 'transparent',
       color: on ? 'var(--crimson)' : 'var(--mute)',
-      border: 'none', cursor: 'pointer', textAlign: 'left', textDecoration: 'none',
-      fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)',
+      /* An <a> and a <button> must be indistinguishable, and only one of them
+         underlines itself. The trigger passes nothing here for the same reason. */
+      textDecoration: 'none',
       fontWeight: on ? 'var(--fw-semibold)' : 'var(--fw-medium)',
-    },
+    }),
   };
   /* Arena draws the glyph and the consumer names it -- the single-icon
    * convention, unchanged by this migration. */
-  const glyph = icon
-    ? <i className={icon} aria-hidden="true" style={{ fontSize: 'var(--icon-lg)', display: 'inline-flex' }} />
-    : null;
+  const glyph = rowGlyph(icon);
   return href
     ? <a href={href} {...shared}>{glyph}{label}</a>
     : <button type="button" {...shared}>{glyph}{label}</button>;

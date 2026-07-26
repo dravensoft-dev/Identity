@@ -2,7 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-import { indentFor } from "./side-nav-inject.js";
+import { rowStyle, rowGlyph } from "./side-nav-inject.js";
 export function SideNavItem({
   id,
   label,
@@ -21,30 +21,16 @@ export function SideNavItem({
   const shared = {
     "aria-current": on ? "page" : undefined,
     onClick: () => onActivate && onActivate(id),
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: "calc(var(--sp-1) * 3)",
-      paddingBlock: "calc(var(--sp-1) * 2.5)",
-      paddingInlineEnd: "calc(var(--sp-1) * 3)",
-      paddingInlineStart: indentFor(indentStep, depth),
-      borderRadius: "var(--r-sm)",
+    style: rowStyle({
+      indentStep,
+      depth,
       background: on ? "var(--crimson-soft)" : "transparent",
       color: on ? "var(--crimson)" : "var(--mute)",
-      border: "none",
-      cursor: "pointer",
-      textAlign: "left",
       textDecoration: "none",
-      fontFamily: "var(--font-body)",
-      fontSize: "var(--dz-text)",
       fontWeight: on ? "var(--fw-semibold)" : "var(--fw-medium)"
-    }
+    })
   };
-  const glyph = icon ? React.createElement("i", {
-    className: icon,
-    "aria-hidden": "true",
-    style: { fontSize: "var(--icon-lg)", display: "inline-flex" }
-  }) : null;
+  const glyph = rowGlyph(icon);
   return href ? React.createElement("a", {
     href,
     ...shared

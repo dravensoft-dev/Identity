@@ -2,12 +2,12 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-import { injectInto } from "./side-nav-inject.js";
+import { injectInto, COLUMN } from "./side-nav-inject.js";
 export function SideNav({ children, active, ariaLabel, indentStep = 3, onNav }) {
   if (!ariaLabel)
     throw new Error("SideNav: `ariaLabel` is required");
   return React.createElement("nav", {
     "aria-label": ariaLabel,
-    style: { display: "flex", flexDirection: "column", gap: "var(--sp-1)" }
+    style: COLUMN
   }, injectInto(children, { depth: 0, activeId: active, indentStep, onActivate: onNav }));
 }

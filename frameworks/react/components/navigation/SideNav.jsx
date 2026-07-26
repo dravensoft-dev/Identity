@@ -1,5 +1,5 @@
 import React from 'react';
-import { injectInto } from './side-nav-inject.jsx';
+import { injectInto, COLUMN } from './side-nav-inject.jsx';
 
 /** The sidebar's navigation list -- the list alone, not the frame around it.
  *  See the Non-goals in the source spec for why there is no AppShell.
@@ -19,8 +19,7 @@ export function SideNav({ children, active, ariaLabel, indentStep = 3, onNav }) 
    * what a nav is for. */
   if (!ariaLabel) throw new Error('SideNav: `ariaLabel` is required');
   return (
-    <nav aria-label={ariaLabel}
-      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-1)' }}>
+    <nav aria-label={ariaLabel} style={COLUMN}>
       {injectInto(children, { depth: 0, activeId: active, indentStep, onActivate: onNav })}
     </nav>
   );

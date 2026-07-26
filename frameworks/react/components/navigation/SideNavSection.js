@@ -2,7 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useId } from "react";
-import { injectInto, indentFor } from "./side-nav-inject.js";
+import { injectInto, indentFor, COLUMN } from "./side-nav-inject.js";
 export function SideNavSection({
   label,
   children,
@@ -20,7 +20,7 @@ export function SideNavSection({
   return React.createElement("div", {
     role: "group",
     "aria-labelledby": labelId,
-    style: { display: "flex", flexDirection: "column", gap: "var(--sp-1)" }
+    style: COLUMN
   }, React.createElement("div", {
     id: labelId,
     style: {
