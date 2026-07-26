@@ -254,6 +254,24 @@ for an action — which is what `TableColumn.render` used to buy and what removi
 otherwise have cost. The price is that the compound shape is breaking at every call site,
 and for `Table` it was the widest breaking change in the batch.
 
+**A compound parent's content slot is OPTIONAL, and the one exception is a named group.**
+Measure it rather than trusting this — `grep -rn '"form": "slot"' api/components/` and read the
+`required` flags — but as written, every compound ROOT declares its children optional and guards
+nothing (`RadioGroup`, `SideNav`, `Table`, `Calendar`, `Tabs`), and so does a container that
+merely nests (`SideNavCollapsible`). Only `SideNavSection` requires and guards, and the
+distinction is not stylistic: a section renders a **heading naming the group**, so a childless one
+renders a label for nothing, which is the defect its guard exists to refuse. A root promises
+nothing that an empty render would break. This rule was settled twice, in opposite directions:
+`Tabs` was first specified as required-and-guarded on `SideNavSection`'s precedent, and measuring
+the family reversed it — a root is not a group. `Tabs` also carried a documented, tested stance
+that an empty collection is a caller saying "no tabs right now", which reversing would have made
+this batch decide something it was not asked to.
+**What a root must still not do is ship an invalid degenerate render**: with no children `Tabs`
+draws an empty tablist and **no** tabpanel, because a panel whose `aria-labelledby` points at a
+tab that does not exist is worse than an absent one. Optional is not the same as unconsidered.
+This is separate from — and does not resolve — the recorded contradiction over whether a slot
+declared **required** is then guarded at runtime, which is still two and two.
+
 **The idiom now reaches a third family, and that one is RECURSIVE.** `SideNav` sheds its
 `items` array for `SideNavItem`, `SideNavSection` and `SideNavCollapsible`, and nesting is
 arbitrary — a section inside a collapsible inside a section, to any depth — with **no React
