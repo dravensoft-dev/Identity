@@ -42,6 +42,27 @@ matter how far it is nested.
 </SideNav>
 ```
 
+Hide a group behind a toggle with
+`<SideNavCollapsible id="deploys" label="Deployments">…</SideNavCollapsible>`. It is a real
+`<button>` carrying `aria-expanded` and an `aria-controls` naming the region under it -- the
+`disclosure` pattern, deliberately not a treeview -- and it **opens itself when the subtree
+it holds contains `active`**, on the first render and on every later route change into it.
+That saves you computing `defaultExpanded` from the route, and `onToggle` stays silent for
+it, because the automatic expansion is Arena's decision rather than the user's. See
+`SideNavCollapsible.prompt.md`.
+
+```jsx
+<SideNav ariaLabel="Primary" active={route} onNav={(id) => setRoute(id)}>
+  <SideNavItem id="dashboard" icon="ph-bold ph-squares-four" label="Projects" href="/projects" />
+  <SideNavSection label="Workspace">
+    <SideNavCollapsible id="deploys" icon="ph-bold ph-rocket-launch" label="Deployments">
+      <SideNavItem id="prod" label="Production" href="/deploys/prod" />
+      <SideNavItem id="staging" label="Staging" href="/deploys/staging" />
+    </SideNavCollapsible>
+  </SideNavSection>
+</SideNav>
+```
+
 ## Do / Don't
 
 - **Do** give every destination an `href`, even in a single-page app. It is what lets

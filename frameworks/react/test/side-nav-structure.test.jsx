@@ -5,6 +5,7 @@ import React from 'react';
 import { SideNav } from '../components/navigation/SideNav.jsx';
 import { SideNavItem } from '../components/navigation/SideNavItem.jsx';
 import { SideNavSection } from '../components/navigation/SideNavSection.jsx';
+import { SideNavCollapsible } from '../components/navigation/SideNavCollapsible.jsx';
 
 const section = (extra = {}) => (
   <SideNav ariaLabel="Primary" active="prod" {...extra}>
@@ -68,5 +69,83 @@ test('SideNavSection drops a consumer style object', () => {
 test('SideNavSection drops a consumer attribute -- no {...rest} spread reaches the root', () => {
   const html = renderToStaticMarkup(
     <SideNavSection label="W" data-stray="x"><SideNavItem id="a" label="A" /></SideNavSection>);
+  assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root');
+});
+
+const nested = (props = {}) => (
+  <SideNav ariaLabel="Primary" {...props}>
+    <SideNavSection label="Workspace">
+      <SideNavCollapsible id="deploys" label="Deployments" icon="ph-bold ph-rocket-launch">
+        <SideNavItem id="prod" label="Production" href="#prod" />
+      </SideNavCollapsible>
+    </SideNavSection>
+  </SideNav>
+);
+
+test('the trigger is a native button wired to the region it controls', () => {
+  const html = renderToStaticMarkup(nested());
+  assert.match(html, /<button [^>]*type="button"/);
+  assert.match(html, /aria-expanded="false"/);
+  assert.match(html, /aria-controls="deploys-region"/);
+  assert.match(html, /id="deploys-region"/);
+  assert.match(html, /id="deploys-trigger"/);
+});
+
+/* The region exists while collapsed -- see decision (a). And `hidden` alone is
+   not enough, because an inline display:flex would beat it -- decision (b). */
+test('a collapsed region is rendered, hidden, and not merely display:none', () => {
+  const html = renderToStaticMarkup(nested());
+  assert.match(html, /id="deploys-region"[^>]*hidden/);
+  assert.match(html, /id="deploys-region"[^>]*display:\s*none/);
+});
+
+test('defaultExpanded opens it on the first pass', () => {
+  const html = renderToStaticMarkup(
+    <SideNav ariaLabel="Primary">
+      <SideNavCollapsible id="d" label="D" defaultExpanded>
+        <SideNavItem id="p" label="P" href="#p" />
+      </SideNavCollapsible>
+    </SideNav>);
+  assert.match(html, /aria-expanded="true"/);
+  assert.doesNotMatch(html, /id="d-region"[^>]*hidden/);
+});
+
+/* Decision (d), the half a DOM suite cannot reach: an active id inside the
+   subtree must open the group in the SERVER pass, or the active destination is
+   missing from the markup a crawler and a no-JS reader see. */
+test('a subtree holding the active id renders expanded with no effect having run', () => {
+  const html = renderToStaticMarkup(nested({ active: 'prod' }));
+  assert.match(html, /aria-expanded="true"/);
+  assert.match(html, /aria-current="page"/);
+});
+
+test('nesting compounds the indent: an item inside a section inside a collapsible sits at depth 2', () => {
+  const html = renderToStaticMarkup(nested({ active: 'prod' }));
+  assert.match(html, /padding-inline-start:\s*calc\(var\(--sp-1\) \* 3 \+ var\(--sp-1\) \* 6\)/);
+});
+
+test('SideNavCollapsible: `id` and `label` are required, blank included', () => {
+  const kid = <SideNavItem id="a" label="A" />;
+  assert.throws(() => renderToStaticMarkup(<SideNavCollapsible label="D">{kid}</SideNavCollapsible>),
+    /SideNavCollapsible: `id` is required/);
+  assert.throws(() => renderToStaticMarkup(<SideNavCollapsible id="" label="D">{kid}</SideNavCollapsible>),
+    /SideNavCollapsible: `id` is required/);
+  assert.throws(() => renderToStaticMarkup(<SideNavCollapsible id="d">{kid}</SideNavCollapsible>),
+    /SideNavCollapsible: `label` is required/);
+  assert.throws(() => renderToStaticMarkup(<SideNavCollapsible id="d" label="">{kid}</SideNavCollapsible>),
+    /SideNavCollapsible: `label` is required/);
+});
+
+test('SideNavCollapsible drops a consumer style object', () => {
+  const html = renderToStaticMarkup(
+    <SideNavCollapsible id="d" label="D" style={{ color: '#ff00ff' }}>
+      <SideNavItem id="a" label="A" /></SideNavCollapsible>);
+  assert.doesNotMatch(html, /#ff00ff/, 'a consumer style reached the rendered root -- the R4 escape is back');
+});
+
+test('SideNavCollapsible drops a consumer attribute -- no {...rest} spread reaches the root', () => {
+  const html = renderToStaticMarkup(
+    <SideNavCollapsible id="d" label="D" data-stray="x">
+      <SideNavItem id="a" label="A" /></SideNavCollapsible>);
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root');
 });

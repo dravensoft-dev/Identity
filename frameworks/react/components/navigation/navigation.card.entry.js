@@ -9,6 +9,8 @@ import { PageHead } from "../../components/navigation/PageHead.js";
 import { Breadcrumbs } from "../../components/navigation/Breadcrumbs.js";
 import { SideNav } from "../../components/navigation/SideNav.js";
 import { SideNavItem } from "../../components/navigation/SideNavItem.js";
+import { SideNavSection } from "../../components/navigation/SideNavSection.js";
+import { SideNavCollapsible } from "../../components/navigation/SideNavCollapsible.js";
 import { BulkActionBar } from "../../components/navigation/BulkActionBar.js";
 import { Button } from "../../components/forms/Button.js";
 function Demo() {
@@ -43,26 +45,35 @@ function Demo() {
     items: [{ label: "Projects", href: "#" }, { label: "Client Portal", href: "#" }, { label: "Deployments" }]
   })), React.createElement("div", {
     className: "sub"
-  }, "SideNav — anchors navigate, the active item is aria-current"), React.createElement("div", {
+  }, "SideNav — sections group, collapsibles disclose, the active item is aria-current"), React.createElement("div", {
     style: { width: "var(--layout-sidebar)", marginBottom: "var(--sp-4)" }
   }, React.createElement(SideNav, {
     ariaLabel: "Primary",
-    active: "deploys"
+    active: "prod"
   }, React.createElement(SideNavItem, {
     id: "dashboard",
     icon: "ph-bold ph-squares-four",
     label: "Projects",
     href: "#projects"
-  }), React.createElement(SideNavItem, {
+  }), React.createElement(SideNavSection, {
+    label: "Workspace"
+  }, React.createElement(SideNavCollapsible, {
     id: "deploys",
     icon: "ph-bold ph-rocket-launch",
-    label: "Deployments",
-    href: "#deploys"
+    label: "Deployments"
+  }, React.createElement(SideNavItem, {
+    id: "prod",
+    label: "Production",
+    href: "#prod"
   }), React.createElement(SideNavItem, {
+    id: "staging",
+    label: "Staging",
+    href: "#staging"
+  })), React.createElement(SideNavItem, {
     id: "settings",
     icon: "ph-bold ph-gear-six",
     label: "Settings"
-  }))), React.createElement("div", {
+  })))), React.createElement("div", {
     className: "sub"
   }, "PageHead"), React.createElement("div", {
     style: { marginBottom: "var(--sp-4)" }

@@ -105,6 +105,7 @@ export const COVERED = {
   'Onboarding:react': 'onboarding-modal.test.jsx',
   'Menu:react': 'placement-and-branches.test.jsx',
   'Skeleton:react': 'placement-and-branches.test.jsx',
+  'SideNavCollapsible:react': 'side-nav-disclosure.test.jsx',
   'Alert:angular': 'alert-role-tones.test.ts',
   'BarChart:angular': 'chart-data-table.test.ts',
 };
