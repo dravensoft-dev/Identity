@@ -52,10 +52,21 @@ export function SideNavCollapsible({
   const [expanded, setExpanded] = useState(defaultExpanded || holdsActive);
   useEffect(() => { if (holdsActive) setExpanded(true); }, [holdsActive]);
 
-  /* Derived from the required `id` rather than from useId(): a useId value cannot
-   * be addressed from outside, and api/README.md's rule about when `id` is a
-   * member is precisely that a component generating one takes the consumer's only
-   * path to that element away. SideNavSection has no such need and uses useId. */
+  /* Derived from the required `id` rather than from useId(). The pattern needs two
+   * ids that resolve -- the trigger's aria-controls names the region, the region's
+   * aria-labelledby names the trigger -- and neither wiring is conditional, so
+   * there is no shape where the id goes unused. A useId value would satisfy both
+   * of those and be unaddressable from outside, which is the secondary reason;
+   * the first is simply that a group is a thing the consumer names.
+   *
+   * NOT the api/README.md `id`-member rule, which points the other way: that rule
+   * is about a component that GENERATES an id and thereby takes the consumer's
+   * only path to the element away, and its remedy is an OPTIONAL `id?: string`
+   * with the generated value as fallback (the Input/Textarea shape). This
+   * component generates nothing, so that rule's premise does not hold here and it
+   * is not the authority for a required member. SideNavSection is the sibling
+   * case -- its label id is internal, nothing outside needs to name it, so it uses
+   * useId and declares no member at all. */
   const regionId = `${id}-region`;
   const triggerId = `${id}-trigger`;
 

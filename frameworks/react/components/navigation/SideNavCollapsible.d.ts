@@ -15,11 +15,15 @@ import * as React from 'react';
  *  `name`/`checked`/`onSelect` `RadioGroup` injects.
  * @startingPoint section="Navigation" subtitle="Sidebar navigation list" viewport="700x460" */
 export interface SideNavCollapsibleProps {
-  /** Identifies the group. Arena derives the trigger's id (`${id}-trigger`) and
-   *  the region's (`${id}-region`) from it, so a consumer can address either from
-   *  outside -- an `aria-describedby`, a deep link, a test hook. Required, and
-   *  guarded at runtime against a blank value as well as an absent one: a
-   *  generated id would take that path away. */
+  /** Identifies the group. The disclosure wiring needs two ids that resolve -- the
+   *  trigger's `aria-controls` names the region, the region's `aria-labelledby`
+   *  names the trigger -- and Arena derives both from this, as `${id}-trigger` and
+   *  `${id}-region`. Neither wiring is conditional, so the id is required rather
+   *  than optional; a group is a thing you name anyway. Guarded at runtime against
+   *  a blank value as well as an absent one, because a blank one yields the shared
+   *  pair `-trigger`/`-region`. Being able to address either element from outside
+   *  -- an `aria-describedby`, a deep link, a test hook -- follows from the
+   *  derivation rather than motivating it. */
   id: string;
   /** What the trigger reads, and the accessible name of both the trigger and the
    *  region it controls. Required and guarded. */

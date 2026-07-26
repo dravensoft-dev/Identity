@@ -22,10 +22,14 @@ leave a "hidden" region on screen. Enter and Space work because the trigger is a
 `<button type="button">` and nothing here intercepts either key.
 
 `id` is required, and it is what both DOM ids are derived from: the trigger is
-`${id}-trigger` and the region is `${id}-region`. That is why the id is yours to supply
-rather than generated -- a `useId()` value cannot be addressed from outside, so nothing
-of yours could point an `aria-describedby`, a deep link or a test hook at either element.
-`SideNavSection` has no such need and does generate its own.
+`${id}-trigger` and the region is `${id}-region`. Two attributes have to name elements
+that exist -- the trigger's `aria-controls` and the region's `aria-labelledby` -- and
+neither is conditional, so there is no shape of this component in which the id goes
+unused. A group is a thing you name anyway. A side benefit of deriving both from your
+value rather than generating them: you can point an `aria-describedby`, a deep link or a
+test hook at either element, which a `useId()` value would make impossible.
+`SideNavSection` needs none of this -- its heading id is internal -- so it generates its
+own and declares no `id` at all.
 
 ## The group opens itself around the active destination
 
@@ -43,6 +47,14 @@ Two consequences worth holding on to:
 - **You can still collapse it.** The state is the component's own, not derived from the
   route, so a group holding the active item shuts when you press its trigger and stays
   shut until the active destination moves into it again.
+- **And it stays shut while the active destination moves *within* it.** The auto-expand
+  fires on the group coming to hold the active item -- a transition -- not on it holding
+  one. So if you collapse a group and the route then moves from one item inside it to
+  another inside the same group, nothing has changed about whether the group holds the
+  active destination, the group does not reopen, and the current item is hidden inside a
+  shut group until the route leaves and returns. That is the price of letting you collapse
+  a group holding the active item at all: a rule that reopened it on every route change
+  would take that away.
 
 ## Do / Don't
 
