@@ -524,6 +524,18 @@ Inject **as little as the job needs**. Prefer keyframes alone and leave the `ani
 
 **Every component is a quartet.** `X.jsx` (implementation), `X.d.ts` (types, with a `@startingPoint` doc comment), `X.prompt.md` (usage, examples, Do/Don't per README's H10 rule), and an entry in the group's `*.card.html` demo. Adding a component means adding all four.
 
+**A new React component also moves a literal count outside its own layer, and the React
+suite alone cannot see it move.** `scripts/behaviour-contracts.test.mjs`'s *"the React
+inventory finds every component and no demo entry"* asserts `reactComponents('.').length`
+by literal value, with a comment naming every change that has moved it; a new component
+under `frameworks/react/components/` moves it by one and the assertion must be updated **in
+the same commit**. **Verify with the merged process** — `bun test scripts
+frameworks/react/test/ frameworks/angular/test` — because `bun test frameworks/react/test/`
+never matches `scripts/`, so it reports green over a tree whose test run is red. This is a
+different hazard from the two-invocation rule above, which is about a DOM registered
+process-wide: this one is about a path a narrowed invocation simply never matched. It cost
+plan 8C5 a red commit that a task report called green.
+
 The Angular layer's quartet is the analogue: `<name>.ts` (standalone `OnPush` component, `arena-` selector, signal I/O, no component `styles`), `<name>.variants.ts` (a `tailwind-variants` recipe built with `frameworks/tailwind/tv.ts`), `<name>.prompt.md`, and a barrel export. Dark-first (`.arena-light`), danger stays outline, Phosphor icons. The three SVG charts are the one exception and have no `<name>.variants.ts` — see the charts note below.
 
 **A host-bound root is the Angular layer's default, and it has one carve-out.** A primitive binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than rendering a wrapper div, so the host is the flex item its parent lays out and — where the component measures itself — the measured element is the styled element. One primitive correctly does **not**: `activity-feed`, whose root must be a real `<ul>` with `<li>` rows. The rule targets elements that exist only to carry styling; when the root must be a specific semantic or interactive element, keep it. **A host-bound root must carry a display utility** — `<arena-x>` is an unknown element defaulting to `display:inline`, where width and height do not apply, so a root slot without one renders a zero-area host. That is machine-guarded by a manifest-driven assertion in `frameworks/angular/test/host-class-binding.test.ts`.
@@ -1051,6 +1063,18 @@ scheduled for deletion the same week.
   `Menu`, `Pagination` and `SideNav` each carry two dedicated regression tests, one per
   escape, so a restored spread now goes red in a suite even while the gate stays green. The
   general problem is untouched for every component the four do not cover.
+
+  **Those pairs are worth only what their induction proves, and the induction must be
+  DISJOINT.** With `style` unnamed in the destructuring it falls into `rest`, so a bare
+  `{...rest}` spread is a strict *superset* of the style escape and correctly fails **both**
+  tests at once. That is the escapes overlapping, not the tests failing to be independent —
+  and reading it as the latter is how a pair gets weakened until it proves nothing. Proving
+  independence takes two separate inductions: **(a)** `style` alone, where the style test
+  alone must fail, and **(b)** `style` destructured **and discarded** plus `...rest`, where
+  the attribute test alone must fail. Never weaken a test to make an induction come out
+  tidy. Established in plan 8C5 and re-measured against `SideNavItem` before this was
+  written here: (a) failed `SideNavItem drops a consumer style object` and nothing else,
+  (b) failed `SideNavItem drops a consumer attribute` and nothing else.
 
 - **`Menu.trigger` is the repo's THIRD required slot, and it landed on the unguarded side of
   a question nothing has decided.** `AppLogo.mark` is guarded, `Tooltip.content` deliberately
