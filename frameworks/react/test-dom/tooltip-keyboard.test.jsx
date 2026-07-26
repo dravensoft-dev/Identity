@@ -8,6 +8,14 @@
  * control that is already hard to reach also feel broken. That is asserted here
  * without any timer at all: if focus scheduled a timeout, the bubble would not
  * exist on the line after the event.
+ *
+ * ONE test below does wait out a real --delay-open, because Escape's whole point
+ * is the POINTER-revealed bubble and a pointer cannot reveal one any faster. That
+ * makes this file a second contributor to the known, pre-existing "update to
+ * Tooltip was not wrapped in act(...)" warning tooltip-timer.test.jsx's header
+ * documents at length: it is a warning, the run stays green, and the instruction
+ * there stands -- do not chase it by widening MARGIN, and do not add a fake-timer
+ * dependency to this repository to make it go away.
  */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
