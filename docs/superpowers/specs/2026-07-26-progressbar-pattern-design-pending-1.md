@@ -1,6 +1,11 @@
 # The pattern that was missing, and the conditional requirement that already had an answer
 
-**Status:** design, approved 2026-07-26. Batch 8C9.
+**Status:** design, approved 2026-07-26 — **written, not scheduled.** Deferred in favour of
+resolving the conditionality question this spec's §2 deliberately leaves open, because `Skeleton`
+and `Tag` were judged the more valuable subject. Nothing here is withdrawn: the batch stands as
+designed and is ready to plan whenever it is picked up. Note one dependency in that order, though —
+if conditionality gains a way to be *declared* rather than pushed into `BEHAVIOURAL`, §2 should be
+re-read before this is planned, since it may then have a second correct answer.
 
 ## The problem
 
