@@ -186,7 +186,7 @@ export function isFocusable(el) {
  *
  *  Several keys were removed from this map and moved to BEHAVIOURAL, because
  *  their prose is conditional and presence is the wrong question — see that set. */
-const ATTRIBUTE_FOR = {
+export const ATTRIBUTE_FOR = {
   'roles.aria-modal': 'aria-modal',
   'roles.haspopup': 'aria-haspopup',
   'roles.expanded': 'aria-expanded',
@@ -196,27 +196,68 @@ const ATTRIBUTE_FOR = {
   'states.selected': 'aria-selected',
 };
 
-/** The requirement keys whose attribute is a REFERENCE rather than a value. For
- *  these, presence is not the claim: `aria-controls="panel-9"` with no element
- *  called panel-9 is a broken reference that reads as met to a presence check.
- *  8C6 shipped exactly that -- `Tabs` carried one `aria-controls` per tab and
- *  rendered one panel, so N-1 references pointed at nothing and `roles.controls`
- *  passed.
+/** The reference attributes this file resolves, and HOW STRICT each one is.
  *
- *  Resolution needs the tree, and this file may not have it (see the header: it
- *  runs under plain node in its own suite), so the caller injects `resolveId`.
+ *  Strictness belongs to the ATTRIBUTE rather than to the requirement key, for
+ *  two reasons. It is a fact about what the attribute MEANS: aria-labelledby
+ *  concatenates the text of everything it names into one accessible name, so an
+ *  id that resolves to nothing truncates that name in silence, where
+ *  aria-describedby merely contributes one description among several. And it is
+ *  the only place aria-labelledby can be governed at all -- roles.label has no
+ *  ATTRIBUTE_FOR entry and never reaches the branch that reads this.
  *
- *  SCOPE, and it is narrower than the name suggests. This set is complete only
- *  for the keys that reach ATTRIBUTE_FOR, because that is the one branch of
- *  evaluate() that consults it. `roles.label` also has a reference form --
- *  `aria-labelledby` -- and never passes through here at all: it is decided by
- *  hasAccessibleName(), which reads the attribute for presence and stops. So a
- *  dangling `aria-labelledby` on an element with no other name reads as met.
- *  Adding `roles.label` to this set does not fix that, because the requirement is
- *  satisfied by three alternatives and only one of them is a reference; the fix is
- *  a conditional resolve inside hasAccessibleName. Recorded under *Known debt* in
- *  CLAUDE.md rather than done here. */
-export const IDREF = new Set(['roles.controls', 'roles.describedby', 'roles.activedescendant']);
+ *  `some` is the exception and carries the reason; `every` is the rule. 8C7
+ *  applied `some` to all three keys it knew about on a justification that belongs
+ *  to exactly one of them, so aria-controls spent a batch holding a concession
+ *  earned by aria-describedby.
+ *
+ *  Same staleness discipline as QUANTIFIED and EXEMPT: an entry naming an
+ *  attribute no branch of this file consults fails the suite rather than rotting.
+ *  @type {Map<string, {match: 'every' | 'some', reason: string}>} */
+export const IDREF_ATTRIBUTES = new Map([
+  ['aria-labelledby', {
+    match: 'every',
+    reason: "the attribute concatenates the text of every element it names into ONE accessible name, so an id resolving to nothing truncates that name in silence rather than removing it.",
+  }],
+  ['aria-controls', {
+    match: 'every',
+    reason: "every aria-controls in either layer is a single id Arena generates itself, so nothing legitimately points outside the rendered tree and a looser rule protects nobody.",
+  }],
+  ['aria-activedescendant', {
+    match: 'every',
+    reason: "a single IDREF by specification rather than a list, so every and some agree -- every is the honest spelling of a rule with one id to judge.",
+  }],
+  ['aria-describedby', {
+    match: 'some',
+    reason: "the one exception: Tooltip merges the consumer's own description with Arena's bubble id, and the consumer's may name an element outside the component's rendered tree, so demanding that every id resolve would fail a correct component.",
+  }],
+]);
+
+/** Whether a space-separated IDREF list satisfies its attribute's rule. The ONE
+ *  place either branch decides that, so IDREF_ATTRIBUTES is the authority rather
+ *  than a table two call sites happen to agree with. */
+function referenceResolves(attr, raw, resolveId) {
+  const ids = raw.split(/\s+/).filter(Boolean);
+  /* An attribute holding only whitespace names nothing, and `every` over an empty
+   * list is vacuously TRUE -- so without this the emptiest possible reference
+   * would report as met, which is the shape of failure this file exists to refuse. */
+  if (!ids.length) return false;
+  return IDREF_ATTRIBUTES.get(attr).match === 'every'
+    ? ids.every((id) => resolveId(id) != null)
+    : ids.some((id) => resolveId(id) != null);
+}
+
+/** The requirement keys whose ATTRIBUTE_FOR attribute is a reference. DERIVED
+ *  from IDREF_ATTRIBUTES rather than written beside it: two hand-written lists of
+ *  one fact can disagree, and this one did -- its own docstring used to carry a
+ *  paragraph recording that aria-labelledby was governed nowhere, which is what
+ *  this batch closed.
+ *  @type {Set<string>} */
+export const IDREF = new Set(
+  Object.entries(ATTRIBUTE_FOR)
+    .filter(([, attr]) => IDREF_ATTRIBUTES.has(attr))
+    .map(([key]) => key),
+);
 
 /** Requirement keys naming a role the element itself must expose. `roles.element`
  *  is excluded because its required role comes from ELEMENT_ROLE, keyed by the
@@ -332,12 +373,7 @@ export function evaluate(el, key, value, patternName, resolveId) {
         'which is the defect this parameter exists to catch.',
       );
     }
-    /* A space-separated list, and ONE resolving id is the claim. aria-describedby
-     * legitimately carries the consumer's own description alongside ours, and that
-     * one may name an element outside the component's rendered tree -- demanding
-     * that every id resolve would fail a correct component. */
-    const ids = raw.split(/\s+/).filter(Boolean);
-    return ids.some((id) => resolveId(id) != null);
+    return referenceResolves(attr, raw, resolveId);
   }
 
   const wanted = ROLE_NAMED_BY_KEY[key];

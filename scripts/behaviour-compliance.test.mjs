@@ -18,7 +18,7 @@ import { join, dirname, basename, extname } from 'node:path';
 import {
   roleOf, hasAccessibleName, isFocusable, evaluate,
   DECIDABLE, BEHAVIOURAL, ELEMENT_ROLE, LABEL_ACCEPTS_TEXT, comparePattern,
-  QUANTIFIED, NOT_QUANTIFIED,
+  QUANTIFIED, NOT_QUANTIFIED, IDREF, IDREF_ATTRIBUTES, ATTRIBUTE_FOR,
 } from './lib/behaviour-compliance.mjs';
 
 const PATTERN_DIR = join(dirname(dirname(fileURLToPath(import.meta.url))), 'behaviour', 'patterns');
@@ -629,6 +629,53 @@ test('an IDREF requirement with no resolver THROWS rather than falling back', ()
 test('a non-IDREF attribute requirement still needs no resolver', () => {
   const t = el('button', { 'aria-selected': 'false' });
   assert.equal(evaluate(t, 'states.selected', 'x', 'tabs'), true);
+});
+
+/* Strictness is a fact about the ATTRIBUTE. 8C7 applied `some` to all three keys
+   it knew about, on a justification that belongs to exactly one of them. */
+test('an aria-controls list is met only when EVERY id resolves', () => {
+  const tab = el('button', { 'aria-controls': 'panel-1 panel-2' });
+  const both = (id) => (id === 'panel-1' || id === 'panel-2' ? el('div') : null);
+  const onlyOne = (id) => (id === 'panel-1' ? el('div') : null);
+  assert.equal(evaluate(tab, 'roles.controls', 'x', 'tabs', both), true);
+  assert.equal(evaluate(tab, 'roles.controls', 'x', 'tabs', onlyOne), false);
+});
+
+test('aria-describedby keeps the one-resolving-id rule, and keeps its reason', () => {
+  const trigger = el('button', { 'aria-describedby': 'consumer-hint tooltip-1' });
+  const resolve = (id) => (id === 'tooltip-1' ? el('span') : null);
+  assert.equal(evaluate(trigger, 'roles.describedby', 'x', 'tooltip', resolve), true);
+  assert.equal(IDREF_ATTRIBUTES.get('aria-describedby').match, 'some');
+});
+
+/* `every` over an empty list is vacuously TRUE, which would report the emptiest
+   possible reference as met -- the exact shape of failure this file refuses. */
+test('a reference attribute holding only whitespace names nothing', () => {
+  const tab = el('button', { 'aria-controls': '   ' });
+  assert.equal(evaluate(tab, 'roles.controls', 'x', 'tabs', () => el('div')), false);
+});
+
+test('IDREF is derived from IDREF_ATTRIBUTES and still names the ATTRIBUTE_FOR reference keys', () => {
+  assert.deepEqual(
+    [...IDREF].sort(),
+    ['roles.activedescendant', 'roles.controls', 'roles.describedby'],
+  );
+});
+
+/* The staleness discipline QUANTIFIED and EXEMPT carry: an entry naming an
+   attribute no branch of this file reads fails the suite rather than rotting. */
+test('every IDREF_ATTRIBUTES entry names an attribute the evaluator actually consults', () => {
+  const consulted = new Set([...Object.values(ATTRIBUTE_FOR), 'aria-labelledby']);
+  for (const attr of IDREF_ATTRIBUTES.keys()) {
+    assert.ok(consulted.has(attr), `${attr}: no branch of the evaluator reads it`);
+  }
+});
+
+test('every IDREF_ATTRIBUTES entry declares a match rule and a reason', () => {
+  for (const [attr, spec] of IDREF_ATTRIBUTES) {
+    assert.ok(['every', 'some'].includes(spec.match), `${attr}: match must be "every" or "some"`);
+    assert.ok(typeof spec.reason === 'string' && spec.reason.length > 20, `${attr}: no reason on file`);
+  }
 });
 
 test('comparePattern reports a dangling reference as an OVERCLAIM', () => {
