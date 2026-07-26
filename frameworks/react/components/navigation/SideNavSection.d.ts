@@ -8,8 +8,7 @@ import * as React from 'react';
  *  active, the indent step and the handler that reports `nav` -- is injected by
  *  `SideNav` (or by the section or collapsible it is nested inside) and is
  *  deliberately absent from this interface, exactly as `RadioProps` omits the
- *  `name`/`checked`/`onSelect` `RadioGroup` injects.
- * @startingPoint section="Navigation" subtitle="Sidebar navigation list" viewport="700x460" */
+ *  `name`/`checked`/`onSelect` `RadioGroup` injects. */
 export interface SideNavSectionProps {
   /** Names the group, both on screen and to assistive technology. Required, and
    *  guarded at runtime against a blank value as well as an absent one. */

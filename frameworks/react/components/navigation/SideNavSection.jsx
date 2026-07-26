@@ -7,10 +7,14 @@ import { injectInto, indentFor, COLUMN } from './side-nav-inject.jsx';
  *
  *  A SECTION ALWAYS HAS CHILDREN, and that is a guard rather than a convention.
  *  Allowing a childless one would give the component two shapes that a single
- *  behaviour binding cannot describe -- the fifth instance of the "true in one
- *  variant, false in the other" limit Tag, Skeleton, Table and Pagination already
- *  carry, and which has no fix. What IS optional is having sections at all: loose
- *  items at the root are legal and may sit beside them.
+ *  behaviour binding cannot describe -- the same "true in one variant, false in
+ *  the other" limit Tag, Skeleton, Table and Pagination already carry, and which
+ *  has no fix. NO ORDINAL HERE, deliberately: this comment shipped saying "the
+ *  fifth instance" while its own batch-mate SideNavItem.behaviour.json said "the
+ *  fourth", which is why CLAUDE.md's Known debt now carries the record and a
+ *  command that counts rather than a number anyone maintains by hand. What IS
+ *  optional is having sections at all: loose items at the root are legal and may
+ *  sit beside them.
  *
  *  useId rather than a derived id: the section declares no `id` member, and this
  *  wiring is internal -- nothing outside needs to address the heading. That is the
@@ -21,6 +25,12 @@ export function SideNavSection({
   label, children,
   depth = 0, activeId, indentStep = 3, onActivate,
 }) {
+  /* Falsy rather than absence-only, the same operator decision SideNav's,
+   * SideNavItem's and SideNavCollapsible's guards carry: `label` is the whole
+   * accessible name of the group this component renders, so `label=""` leaves a
+   * role="group" whose aria-labelledby resolves to an empty heading -- the defect
+   * the guard exists to prevent, arriving through a value that is present, which
+   * `== null` would let through. */
   if (!label) throw new Error('SideNavSection: `label` is required');
   /* toArray().length, never Children.count(): count() counts a bare `false` as one
    * child, and the conditional-render idiom -- {isAdmin && <SideNavItem …/>} --

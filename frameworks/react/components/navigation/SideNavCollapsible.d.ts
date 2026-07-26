@@ -12,8 +12,7 @@ import * as React from 'react';
  *  active, the indent step and the handler that reports `nav` -- is injected by
  *  `SideNav` (or by the section or collapsible it is nested inside) and is
  *  deliberately absent from this interface, exactly as `RadioProps` omits the
- *  `name`/`checked`/`onSelect` `RadioGroup` injects.
- * @startingPoint section="Navigation" subtitle="Sidebar navigation list" viewport="700x460" */
+ *  `name`/`checked`/`onSelect` `RadioGroup` injects. */
 export interface SideNavCollapsibleProps {
   /** Identifies the group. The disclosure wiring needs two ids that resolve -- the
    *  trigger's `aria-controls` names the region, the region's `aria-labelledby`

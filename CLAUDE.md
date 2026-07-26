@@ -1104,11 +1104,14 @@ scheduled for deletion the same week.
   `Skeleton`, `Table` and `Pagination` already carry, and the spec's own open question — *"How
   does a pattern express an optional requirement?"* — is still open at both levels, the whole
   pattern and the single requirement. **Count the `none` bindings rather than writing an ordinal**
-  (`grep -rl '"pattern": "none"' frameworks/ | wc -l`): 8C5 added two in one change, and this
+  — `grep -rho '"pattern": "none"' --include='*.json' frameworks/ | wc -l`, and the `-o` is the
+  point: `grep -rl` counts FILES, and `frameworks/angular/behaviour-delegated.json` holds several
+  `none` entries at once, so the file count is not the binding count and the measurement written
+  here to replace a stale ordinal was itself wrong. 8C5 added two in one change, and this
   file has now had three separate prose ordinals about this limit go stale, one of them inside
   the batch that wrote it — `SideNavItem.behaviour.json` shipped saying "the fourth component to
   meet it" while its own batch-mate `SideNavSection.jsx` counted five, and the close-out review
-  replaced the ordinal with a pointer here.
+  replaced both ordinals with a pointer here.
 
 - **Plan D inherits an open question about `SideNav`, registered here so it is not inherited
   silently.** `frameworks/angular/behaviour-delegated.json`'s `SideNav` entry claims Material

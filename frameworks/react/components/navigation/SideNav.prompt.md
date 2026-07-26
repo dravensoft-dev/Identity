@@ -3,7 +3,7 @@ around it (brand, user footer, content area) stays the product's to compose.
 
 A **compound** component. You write one `<SideNavItem>` per destination; `SideNav`
 walks its direct children and injects where each sits, which `id` is active and the
-handler that reports `onNav`. None of what it injects is a member of any contract —
+handler that reports `nav`. None of what it injects is a member of any contract —
 the same shape as `Table`/`TableRow` and `RadioGroup`/`Radio`, one size down.
 
 ```jsx

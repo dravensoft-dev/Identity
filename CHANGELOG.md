@@ -15,8 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   delegates `SideNav` to Material's `mat-nav-list`. **This is Plan C's fifth batch, and the entry
   further down that says there is no fifth batch was true when written**: a batch that turns an
   item into a component enlarges its own subject set while contracting it, which has now happened
-  in three consecutive plans. Plan C's subject set is twenty-eight and all twenty-eight are
-  contracted — measure it rather than trusting that sentence.
+  in three consecutive plans. **With this batch every component in Plan C's subject set is
+  contracted** — no count is written here, because the set grows whenever a batch turns an item
+  into a component, and this entry freezes at the next tag while the tree does not. Measure the
+  set the way CLAUDE.md says to: every `.jsx` under `frameworks/react/components/` with no
+  matching directory under `frameworks/angular/primitives/`.
 - **`SideNavSection`** groups items under a name. It renders a labelled `role="group"` whose
   accessible name is the same heading a sighted user reads, so the grouping the eye sees is the
   grouping a screen reader announces. Having sections at all is optional — loose items at the root
