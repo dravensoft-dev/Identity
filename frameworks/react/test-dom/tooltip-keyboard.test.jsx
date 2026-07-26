@@ -16,8 +16,18 @@ import { join } from 'node:path';
 import { mount, cleanup, act } from './harness.jsx';
 import { assertPattern, REACT_COMPONENTS } from './assert-pattern.jsx';
 import { Tooltip } from '../components/feedback/Tooltip.jsx';
+import { delayOpen } from '../tokens.generated.js';
 
 afterEach(cleanup);
+
+/** Margin either side of a delay boundary, the same figure and the same reason
+ *  tooltip-timer.test.jsx gives: large enough that ordinary timer jitter cannot
+ *  cross it, small enough that the one test needing it stays cheap. */
+const MARGIN = 120;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+/** Wait real wall-clock time inside act(), so the timer's state update is
+ *  flushed before the assertion reads the DOM. */
+const wait = (ms) => act(async () => { await sleep(ms); });
 
 const one = () => (
   <Tooltip label="Rebuilds the index">
@@ -38,6 +48,20 @@ const press = (root, key) => {
   act(() => { trigger(root).dispatchEvent(ev); });
   return ev;
 };
+/** A keydown whose target is OUTSIDE the Tooltip's wrapper entirely. `document.body`
+ *  is not a descendant of the wrapper, so no handler the wrapper carries can see
+ *  this event -- only a document-level listener can. */
+const pressElsewhere = (key) => {
+  const ev = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+  act(() => { document.body.dispatchEvent(ev); });
+  return ev;
+};
+/** React 18 synthesises onMouseEnter from a delegated `mouseover`; a literal
+ *  `mouseenter` is a silent no-op. tooltip-timer.test.jsx's header has the whole
+ *  measurement. The handlers sit on the wrapper span, not on the child. */
+const hover = (root) => act(() => {
+  root.firstElementChild.dispatchEvent(new window.MouseEvent('mouseover', { bubbles: true }));
+});
 
 test('focus reveals the tooltip immediately, with no delay to wait out', () => {
   const root = mount(one());
@@ -71,6 +95,58 @@ test('Escape dismisses it', () => {
   focusIn(root);
   press(root, 'Escape');
   assert.equal(bubble(root), null);
+});
+
+/* THE POINTER-REVEALED TOOLTIP, and it is a WCAG 1.4.13 requirement rather than
+ * only a pattern one: content shown on hover must be dismissible without moving
+ * the pointer. A hover leaves focus wherever it already was -- anywhere on the
+ * page -- so a keydown handler on the wrapper never sees the Escape, and the
+ * listener has to be on the document for the whole time the bubble is up. */
+test('Escape dismisses a hover-revealed tooltip when the keydown lands outside the wrapper', async () => {
+  const root = mount(one());
+  hover(root);
+  await wait(delayOpen + MARGIN);
+  assert.notEqual(bubble(root), null, 'the hover never revealed it -- the test proves nothing');
+  pressElsewhere('Escape');
+  assert.equal(bubble(root), null,
+    'a hover-revealed tooltip could not be dismissed from outside its wrapper');
+});
+
+test('the document listener is gone once the tooltip is hidden', () => {
+  const root = mount(one());
+  focusIn(root);
+  press(root, 'Escape');
+  assert.equal(bubble(root), null);
+  /* Nothing to assert on but the absence of a throw and of a re-render: a
+     listener left behind would call setShow on every keystroke in the app. */
+  pressElsewhere('Escape');
+  assert.equal(bubble(root), null);
+});
+
+/* aria-describedby is a SPACE-SEPARATED ID LIST, which is the whole point of the
+ * attribute. Overwriting it takes the consumer's own description away silently
+ * and permanently -- an input loses its password rules for a screen-reader user
+ * and nothing anywhere says so. */
+test('a consumer\'s own aria-describedby survives while the tooltip is hidden', () => {
+  const root = mount(
+    <Tooltip label="Rebuilds the index">
+      <button type="button" aria-describedby="password-rules">Reindex</button>
+    </Tooltip>,
+  );
+  assert.equal(trigger(root).getAttribute('aria-describedby'), 'password-rules',
+    'the consumer\'s own description was destroyed by a tooltip that is not even showing');
+});
+
+test('a consumer\'s own aria-describedby survives while the tooltip is shown, beside the bubble', () => {
+  const root = mount(
+    <Tooltip label="Rebuilds the index">
+      <button type="button" aria-describedby="password-rules">Reindex</button>
+    </Tooltip>,
+  );
+  focusIn(root);
+  const ids = (trigger(root).getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean);
+  assert.ok(ids.includes('password-rules'), 'the consumer\'s own description was overwritten by the bubble');
+  assert.ok(ids.includes(bubble(root).getAttribute('id')), 'the bubble does not describe the trigger');
 });
 
 test('a key Tooltip does not handle is left alone', () => {

@@ -38,21 +38,44 @@ export function Tooltip({ children, label }) {
    * so a focus arriving inside a close grace period is not undone by it. */
   const now = (next) => { clear(); setShow(next); };
   useEffect(() => () => clear(), []);
+  /* ESCAPE IS LISTENED FOR ON THE DOCUMENT, and a handler on the wrapper is not a
+   * substitute. A wrapper's onKeyDown only sees keydowns whose target is inside
+   * it -- true of a FOCUS reveal and false of a POINTER one, which leaves focus
+   * wherever it already was, so a hover-revealed tooltip was undismissable from
+   * the keyboard. That is a WCAG 1.4.13 failure (content on hover must be
+   * dismissible) and not only a gap in the `tooltip` pattern.
+   *
+   * Bound only while the bubble is up, and torn down when it hides and on
+   * unmount, so nothing listens for the whole life of a page full of triggers.
+   * The document guard keeps the server pass untouched. */
+  useEffect(() => {
+    if (!show || typeof document === 'undefined') return undefined;
+    const onEscape = (e) => { if (e.key === 'Escape') now(false); };
+    document.addEventListener('keydown', onEscape);
+    return () => document.removeEventListener('keydown', onEscape);
+  }, [show]);
   /* aria-describedby is added to the CONSUMER's element, so it requires an element
    * that accepts props -- the same one-hop cloneElement limit the compound families
    * carry. A fragment or a component that swallows its props breaks the wiring, and
    * Tooltip.prompt.md says so. It is added only while the bubble exists: an IDREF
-   * pointing at nothing is worse than no IDREF at all. */
+   * pointing at nothing is worse than no IDREF at all.
+   *
+   * MERGED, never overwritten. The attribute is a space-separated ID LIST, which
+   * is the whole point of it -- a trigger may already be described by something of
+   * the consumer's, an input's password rules being the ordinary case, and
+   * cloneElement assigning over that took it away silently and permanently, in the
+   * hidden state as well as the shown one. */
+  const own = React.isValidElement(children) ? children.props['aria-describedby'] : undefined;
+  const describedBy = show ? [own, bubbleId].filter(Boolean).join(' ') : own;
   const described = React.isValidElement(children)
-    ? React.cloneElement(children, { 'aria-describedby': show ? bubbleId : undefined })
+    ? React.cloneElement(children, { 'aria-describedby': describedBy })
     : children;
   return (
     <span style={{ position: 'relative', display: 'inline-flex' }}
       onMouseEnter={() => schedule(true, delayOpen)}
       onMouseLeave={() => schedule(false, delayClose)}
       onFocus={() => now(true)}
-      onBlur={() => now(false)}
-      onKeyDown={(e) => { if (e.key === 'Escape') now(false); }}>
+      onBlur={() => now(false)}>
       {described}
       {show && (
         <span role="tooltip" id={bubbleId} style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%) translateY(calc(var(--sp-2) * -1))',

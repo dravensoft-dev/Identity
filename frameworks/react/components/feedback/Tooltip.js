@@ -37,17 +37,25 @@ export function Tooltip({ children, label }) {
     setShow(next);
   };
   useEffect(() => () => clear(), []);
-  const described = React.isValidElement(children) ? React.cloneElement(children, { "aria-describedby": show ? bubbleId : undefined }) : children;
+  useEffect(() => {
+    if (!show || typeof document === "undefined")
+      return;
+    const onEscape = (e) => {
+      if (e.key === "Escape")
+        now(false);
+    };
+    document.addEventListener("keydown", onEscape);
+    return () => document.removeEventListener("keydown", onEscape);
+  }, [show]);
+  const own = React.isValidElement(children) ? children.props["aria-describedby"] : undefined;
+  const describedBy = show ? [own, bubbleId].filter(Boolean).join(" ") : own;
+  const described = React.isValidElement(children) ? React.cloneElement(children, { "aria-describedby": describedBy }) : children;
   return React.createElement("span", {
     style: { position: "relative", display: "inline-flex" },
     onMouseEnter: () => schedule(true, delayOpen),
     onMouseLeave: () => schedule(false, delayClose),
     onFocus: () => now(true),
-    onBlur: () => now(false),
-    onKeyDown: (e) => {
-      if (e.key === "Escape")
-        now(false);
-    }
+    onBlur: () => now(false)
   }, described, show && React.createElement("span", {
     role: "tooltip",
     id: bubbleId,
