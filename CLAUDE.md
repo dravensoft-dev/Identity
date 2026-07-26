@@ -1061,9 +1061,11 @@ scheduled for deletion the same week.
   the selected one. Both halves of that are now closed, and closed differently, because they
   failed for different reasons. **A reference is resolved rather than counted** — `IDREF` names
   the reference-carrying requirement keys **among those that reach `ATTRIBUTE_FOR`**, which is
-  the one branch of `evaluate()` that consults it; `roles.label` has a reference form and takes
-  a different route entirely, which is a live hole recorded under *Known debt* below. Each key
-  it does name is looked up through a
+  the one branch of `evaluate()` that consults it, and it is **derived** from `IDREF_ATTRIBUTES`
+  rather than hand-written beside it, which is what stops the two lists of one fact disagreeing —
+  they did, and 8C8 is what changed it. `roles.label` has a reference form and takes a different
+  route entirely; 8C7 left that unresolved and 8C8 closed it, which is that batch's own entry
+  below. Each key `IDREF` does name is looked up through a
   `resolveId` the *caller* injects, because the evaluator still touches only `tagName`,
   `getAttribute`, `hasAttribute` and `textContent` and still runs in three runtimes one of
   which has no DOM. Resolution had to arrive from outside rather than be done in place, so
@@ -1086,13 +1088,18 @@ scheduled for deletion the same week.
   and the schema has no way to say what *kind* of element a reference must reach — so an
   `aria-controls` resolving to a `<span>` that is not the tabpanel passes exactly as the real
   one does. Closing that is a change to the pattern schema, which this batch deliberately was
-  not. **And an IDREF holding a LIST is met when ONE of its ids resolves**, so a dangling id
-  sitting beside a resolving one passes — the same family as the sentence above, one step
-  further out. That is deliberate and the alternative is worse: `aria-describedby` legitimately
-  carries the consumer's own description alongside Arena's, and that id may name an element
-  outside the component's rendered tree, so demanding that every id resolve would fail a
-  correct component. The cost is that within Arena's own wiring a typo'd second id is
-  invisible. **The quantified set is hand-curated, and nothing proves it complete.** Deriving it from
+  not. **And `aria-describedby` holding a LIST is met when ONE of its ids resolves**, so a
+  dangling id sitting beside a resolving one passes — the same family as the sentence above, one
+  step further out. 8C7 wrote that as a blanket rule over every reference; 8C8 narrowed it to the
+  one attribute that earns it, because the justification only ever belonged to that one:
+  `aria-describedby` legitimately carries the consumer's own description alongside Arena's, and
+  that id may name an element outside the component's rendered tree, so demanding that every id
+  resolve would fail a correct component. Every other reference attribute now requires that
+  **every** id resolve — read `IDREF_ATTRIBUTES` in `scripts/lib/behaviour-compliance.mjs` for
+  the live set, since strictness is a property of the attribute rather than of the requirement
+  key, and each entry carries its own reason. The cost survives, scoped to where it is earned:
+  within Arena's own `aria-describedby` wiring a typo'd second id is invisible.
+  **The quantified set is hand-curated, and nothing proves it complete.** Deriving it from
   the word "each" was considered and rejected: the prose says "false on the **rest**" just as
   readily, so a scan finds fewer requirements than a reader does, and deriving it would rebuild
   the false-negative class the evaluator's header already rejected once. Its suite therefore
@@ -1120,40 +1127,58 @@ scheduled for deletion the same week.
   `COVERED` gains nothing from any of it — see the coverage entry above, which is where that
   hole is recorded.
 
-- **`roles.label` has a reference form and nothing resolves it, so `aria-labelledby` is still
-  checked for presence alone.** 8C7 made an IDREF resolve rather than merely exist, and it
-  reached `roles.controls`, `roles.describedby` and `roles.activedescendant` — every key that
-  goes through `ATTRIBUTE_FOR`. `roles.label` never goes through it. It is decided by
-  `hasAccessibleName()` in `scripts/lib/behaviour-compliance.mjs`, which returns `true` the
-  moment `aria-label` **or** `aria-labelledby` is non-empty and stops there. `aria-labelledby`
-  is a reference exactly as `aria-controls` is, and this is the same defect 8C7 exists to
-  close, one requirement key over. It is not marginal: most of the patterns declare
-  `roles.label` — count them with `grep -l '"roles.label"' behaviour/patterns/*.json | wc -l`
-  against `ls behaviour/patterns/*.json | wc -l`.
-
-  **The exposure is live on covered bindings, and nothing is broken today.** `Dialog:react` and
-  `ConfirmDialog:react` both bind `dialog-modal`, whose `roles.label` prose is "aria-labelledby
-  or aria-label" — text content does not count, since `dialog-modal` is not in
-  `LABEL_ACCEPTS_TEXT` — and both name themselves with `aria-labelledby` alone. Both resolve as
-  shipped. So does `SideNavSection`, which is not covered. `Onboarding:react` binds the same
-  pattern and is *not* exposed, because it names itself with `aria-label`, a value rather than a
-  reference.
+- **`roles.label` resolves its reference now, and what stays open is the CONTENT at the far end
+  of it.** This entry recorded the opposite until batch 8C8: `roles.label` never reaches the
+  `ATTRIBUTE_FOR` branch 8C7 taught to resolve, and `hasAccessibleName()` returned `true` the
+  moment `aria-label` **or** `aria-labelledby` was non-empty, so a dangling `aria-labelledby`
+  read as a name. That is closed. `hasAccessibleName(el, acceptsText, resolveId)` in
+  `scripts/lib/behaviour-compliance.mjs` now asks whether there is a NAME rather than whether
+  there is an attribute, through three ordered alternative routes: `aria-label`; then the
+  element's own text, but only where the pattern is in `LABEL_ACCEPTS_TEXT`; then
+  `aria-labelledby`, which names the element only when **every** id resolves. A dangling
+  `aria-labelledby` with no other route left now means unnamed. When `aria-labelledby` is the
+  deciding route and no resolver was supplied it **throws**, for the reason the same throw
+  carries in the `ATTRIBUTE_FOR` branch: a presence-only fallback would report a dangling
+  reference as met, which is the defect the parameter exists to catch. `roleOf(el, resolveId)`
+  takes the resolver too, because a `<section>` exposes `role="region"` only when it is named, so
+  a labelledby resolving to nothing takes the role with it. The reach is not marginal — most of
+  the patterns declare `roles.label`; count them with `grep -l '"roles.label"'
+  behaviour/patterns/*.json | wc -l` against `ls behaviour/patterns/*.json | wc -l`.
 
   **The induction, because a check nobody has watched fail is a check nobody knows works.**
   Deleting `id={titleId}` from `Dialog.jsx` leaves a dangling `aria-labelledby` on a dialog with
-  no accessible name of any kind, and `bun test --preload ./frameworks/react/test-dom/preload.js
-  frameworks/react/test-dom/dialog-modal.test.jsx` reports **6 pass / 0 fail**. That is the whole
-  reason this entry is credible rather than speculative.
+  no accessible name of any kind. That tree used to report **98 pass / 0 fail** under
+  `bun run test:react-dom` — and `dialog-modal.test.jsx` alone **6 pass / 0 fail** — which is why
+  this entry existed. It now reports **97 pass / 1 fail**, with `roles.label: OVERCLAIM — the
+  binding declares no exception, but the rendered DOM does not meet it.` The tree was restored
+  and verified with `sha256sum -c`. `Dialog:react` and `ConfirmDialog:react` are the covered
+  bindings this reaches: both bind `dialog-modal`, whose `roles.label` prose is "aria-labelledby
+  or aria-label" — text content does not count, since `dialog-modal` is not in
+  `LABEL_ACCEPTS_TEXT` — and both name themselves with `aria-labelledby` alone. `SideNavSection`
+  does too and is not covered. `Onboarding:react` binds the same pattern and never was exposed,
+  because it names itself with `aria-label`, a value rather than a reference.
 
-  **Why it was recorded instead of fixed, and what a fix has to move.** `roles.label` cannot
-  simply join `IDREF`: it is satisfied by three alternatives — text content, `aria-label`,
-  `aria-labelledby` — and only the third is a reference, so the set's all-or-nothing semantics
-  do not fit it. A real fix is four changes at once: a *conditional* resolve inside
-  `hasAccessibleName` that fires only on the `aria-labelledby` arm, threading `resolveId` into
-  that call and therefore into `roleOf()`, which calls it for an unnamed `<section>`, and
-  scoping the no-resolver throw the way 8C7 already had to for `ATTRIBUTE_FOR` — a presence-only
-  fallback would report a dangling reference as met, which is the defect the throw exists to
-  refuse. That is a batch, not a line.
+  **What stays open is the other end of the reference: a resolved `aria-labelledby` may name an
+  EMPTY element.** The id resolves, so the name reports as present, while the element it names
+  carries no text and the real accessible name is the empty string. Not hypothetical —
+  `SideNavSection.jsx` guards exactly this by hand, and its comment on the guard names it:
+  *"`label` is the whole accessible name of the group this component renders, so `label=""`
+  leaves a role="group" whose aria-labelledby resolves to an empty heading -- the defect the
+  guard exists to prevent, arriving through a value that is present, which `== null` would let
+  through."* **Requiring text at the target was considered and rejected**, and the rejection with
+  its reason is the record here rather than the gap alone: `textContent` cannot see a name that
+  legitimately comes from an image's `alt` or from a nested `aria-label`, so the check would
+  report correct components as unnamed — a false OVERCLAIM against a component that is right,
+  which is the class of mistake this evaluator's own header records refusing once already, and
+  whose cheapest silencer is a fabricated exception written into a binding. It belongs to the
+  family the record has carried since before this layer
+  existed: a name that is **present** is never checked for being **useful**, which is the charts'
+  `aria-label` entry above, and the reason `Table.label` and `SegmentedControl.ariaLabel` are
+  guarded rather than defaulted. Its sibling limit — that a resolved reference is no proof it
+  landed on the RIGHT element, because a pattern cannot say what *kind* of element a reference
+  must reach — is recorded in the 8C7 entry above and is untouched by this batch. And all of it
+  reaches a binding only through a suite that renders it, so a binding outside `COVERED` gains
+  nothing from any of it.
 
 - **`check:api` now compares a `primitive` member's `type`, and two prior live examples of
   the gap are guarded because of it.** The entry used to read "does not compare" — probed in
