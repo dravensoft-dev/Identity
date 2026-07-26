@@ -38,6 +38,28 @@ export const PATTERN_DIR = join(REPO, 'behaviour', 'patterns');
  *  @type {Map<string, object> | null} */
 let patternCache = null;
 
+/** Resolve an id WITHIN the rendered tree, which is what an IDREF requirement
+ *  claims -- resolving against the whole document would also find a container a
+ *  previous test left behind, and would pass in a page where the id belongs to
+ *  something else entirely.
+ *
+ *  It walks `[id]` and compares in JavaScript rather than building `#${id}`,
+ *  because an id is legal in HTML in shapes that are a SyntaxError inside a CSS
+ *  selector -- the colons `useId()` returns are the case this repo already paid
+ *  for. A test tree is small enough that the walk costs nothing worth a bug.
+ *
+ *  `root` itself is searched as well as its descendants: querySelectorAll does
+ *  not include the element it is called on, and an id can sit on the root. */
+function resolverFor(root) {
+  return (id) => {
+    if (root.getAttribute && root.getAttribute('id') === id) return root;
+    for (const el of root.querySelectorAll('[id]')) {
+      if (el.getAttribute('id') === id) return el;
+    }
+    return null;
+  };
+}
+
 /**
  * Assert a rendered tree against its behaviour binding, in both directions.
  * Throws with every disagreement listed, not just the first.
@@ -84,6 +106,7 @@ export function assertPattern({ root, bindingPath, subjects = {}, behavioural = 
     subjects: perRequirement,
     fallback,
     behavioural,
+    resolveId: resolverFor(root),
   });
 
   if (problems.length) {

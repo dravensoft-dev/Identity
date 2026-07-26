@@ -82,6 +82,29 @@ export interface AssertPatternOptions {
   behavioural?: Record<string, boolean>;
 }
 
+/** Resolve an id WITHIN the rendered tree, which is what an IDREF requirement
+ *  claims -- resolving against the whole document would also find a fixture an
+ *  earlier test left behind, since this directory shares one document across
+ *  its whole run (see testbed-env.ts).
+ *
+ *  It walks `[id]` and compares in JavaScript rather than building `#${id}`;
+ *  a test tree is small enough that the walk costs nothing worth a bug.
+ *
+ *  `root` itself is searched as well as its descendants, and here that is not
+ *  optional: this wrapper's default subject IS the host (`root` is the
+ *  fixture's `nativeElement`, not a container's first child the way React's
+ *  is), so an id can sit on `root` itself rather than only ever appearing
+ *  among its descendants. */
+function resolverFor(root: Element): (id: string) => Element | null {
+  return (id: string) => {
+    if (root.getAttribute && root.getAttribute('id') === id) return root;
+    for (const el of Array.from(root.querySelectorAll('[id]'))) {
+      if (el.getAttribute('id') === id) return el;
+    }
+    return null;
+  };
+}
+
 /**
  * Assert a rendered Angular tree against its behaviour binding, in both
  * directions. Throws with every disagreement listed, not just the first.
@@ -105,6 +128,7 @@ export function assertPattern({ root, bindingPath, subjects = {}, behavioural = 
     subjects: perRequirement,
     fallback,
     behavioural,
+    resolveId: resolverFor(root),
   });
 
   if (problems.length) {
