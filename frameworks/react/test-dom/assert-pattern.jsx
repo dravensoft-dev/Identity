@@ -67,8 +67,15 @@ function resolverFor(root) {
  * @param {object} o
  * @param {HTMLElement} o.root the mounted container
  * @param {string} o.bindingPath absolute path to the component's *.behaviour.json
- * @param {Record<string, Element | null>} [o.subjects] requirement key -> the element
- *   that must carry it. The key `default` sets the element used for every
+ * @param {Record<string, Element | Element[] | null>} [o.subjects] requirement key ->
+ *   the element that must carry it, or -- for a requirement in QUANTIFIED -- every
+ *   element it is about. The array form is not a convenience: a requirement whose
+ *   prose quantifies over each of something THROWS when handed one element, because
+ *   answering for a collection from its first member is the defect batch 8C7 exists
+ *   to close. Note what it does not buy — the check reaches exactly the elements the
+ *   suite's own selector collected, so one that renders without the attribute the
+ *   selector keys on leaves the collection silently.
+ *   The key `default` sets the element used for every
  *   requirement not named individually. The absence of the key and a `null` value
  *   under it are different claims and must stay different: omit `default`
  *   entirely to get the container's first element child as fallback; pass

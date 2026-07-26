@@ -706,6 +706,24 @@ test('a quantified requirement given ONE element throws', () => {
   );
 });
 
+/* Same throw, different state, and the message must not conflate them:
+   Array.isArray(null) is false, so a `default` selector that matched nothing used
+   to be reported as "a single element" and sent its author hunting for a second
+   element they had none of. */
+test('a quantified requirement given a NULL subject says so, not "a single element"', () => {
+  assert.throws(
+    () => comparePattern({
+      pattern: { name: 'tabs', requires: { 'states.selected': 'x' } },
+      binding: { pattern: 'tabs', exceptions: [] },
+      subjects: { 'states.selected': null },
+      resolveId: () => el('div'),
+    }),
+    (e) => /quantified.*array/s.test(e.message)
+      && /subject is null/.test(e.message)
+      && !/single element/.test(e.message),
+  );
+});
+
 test('an unquantified requirement given one element is still fine', () => {
   const problems = comparePattern({
     pattern: { name: 'disclosure', requires: { 'roles.expanded': 'aria-expanded' } },

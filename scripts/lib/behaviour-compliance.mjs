@@ -204,7 +204,18 @@ const ATTRIBUTE_FOR = {
  *  passed.
  *
  *  Resolution needs the tree, and this file may not have it (see the header: it
- *  runs under plain node in its own suite), so the caller injects `resolveId`. */
+ *  runs under plain node in its own suite), so the caller injects `resolveId`.
+ *
+ *  SCOPE, and it is narrower than the name suggests. This set is complete only
+ *  for the keys that reach ATTRIBUTE_FOR, because that is the one branch of
+ *  evaluate() that consults it. `roles.label` also has a reference form --
+ *  `aria-labelledby` -- and never passes through here at all: it is decided by
+ *  hasAccessibleName(), which reads the attribute for presence and stops. So a
+ *  dangling `aria-labelledby` on an element with no other name reads as met.
+ *  Adding `roles.label` to this set does not fix that, because the requirement is
+ *  satisfied by three alternatives and only one of them is a reference; the fix is
+ *  a conditional resolve inside hasAccessibleName. Recorded under *Known debt* in
+ *  CLAUDE.md rather than done here. */
 export const IDREF = new Set(['roles.controls', 'roles.describedby', 'roles.activedescendant']);
 
 /** Requirement keys naming a role the element itself must expose. `roles.element`
@@ -368,14 +379,25 @@ export function evaluate(el, key, value, patternName, resolveId) {
  *  must hand over a collection and one element is not an answer. Keyed
  *  `pattern:requirement`.
  *
- *  HAND-CURATED, NEVER DERIVED. A scan for the word "each" finds four
- *  requirements; reading the prose finds at least five, because
- *  tabs:states.selected says "false on the REST". Deriving this would rebuild the
+ *  HAND-CURATED, NEVER DERIVED. A scan for the word "each" finds fewer
+ *  requirements than a reader does: the prose says "false on the REST" and "one
+ *  per unit of content" just as readily. Deriving this would rebuild the
  *  false-negative class this file's header already rejected once. Semantics key
- *  off the requirement KEY and the PATTERN NAME, never off the human prose. */
+ *  off the requirement KEY and the PATTERN NAME, never off the human prose.
+ *
+ *  What quantifying buys is bounded by the SELECTOR the suite builds its
+ *  collection with. A tab rendered without `role="tab"` leaves a
+ *  `querySelectorAll('[role="tab"]')` collection silently, taking its dangling
+ *  reference with it, and every element that remains still passes. This rule
+ *  makes "the first element answered for the collection" impossible; it cannot
+ *  make a suite's selector match the elements the pattern is about. */
 export const QUANTIFIED = new Map([
+  ['feed:roles.article',
+    'one article per unit of content, so a feed whose third row lost its role is unmet however correct the first row is. Decidable per element through ROLE_NAMED_BY_KEY, and quantified over elements the component renders itself -- which is what separates it from the two entries in NOT_QUANTIFIED below.'],
   ['listbox:states.selected',
     'aria-selected is true on each selected option and false on the rest, so one option cannot answer for the list.'],
+  ['radiogroup:states.checked',
+    'true on the checked button and false on the rest -- verbatim the idiom that quantifies tabs:states.selected, one requirement key over.'],
   ['tabs:roles.controls',
     'each tab references its own tabpanel; checking only the selected one is exactly the defect 8C6 shipped.'],
   ['tabs:states.selected',
@@ -442,7 +464,10 @@ export const NOT_QUANTIFIED = new Map([
  * @param {object} o
  * @param {{name: string, requires: Record<string, unknown>}} o.pattern
  * @param {{pattern: string, exceptions?: {requirement: string, reason: string}[]}} o.binding
- * @param {Record<string, object|null>} [o.subjects] requirement key -> the element that must carry it
+ * @param {Record<string, object|object[]|null>} [o.subjects] requirement key -> the
+ *   element that must carry it, or an ARRAY of every element the requirement is
+ *   about. A requirement in QUANTIFIED demands the array and throws on one element;
+ *   every other requirement accepts either.
  * @param {object|null} [o.fallback] the element used for any requirement not named in `subjects`
  * @param {Record<string, boolean>} [o.behavioural] requirement key -> the verdict the
  *   caller's own behavioural test established, for requirements that must be asserted
@@ -481,9 +506,16 @@ export function comparePattern({
     const subject = key in subjects ? subjects[key] : fallback;
     const quantified = QUANTIFIED.has(`${pattern.name}:${key}`);
     if (quantified && !Array.isArray(subject)) {
+      // The remedy is the same either way, but the state is not: `null` is a
+      // selector that matched nothing, and telling that author their subject is
+      // "a single element" sends them looking for a second one they already have
+      // none of.
+      const got = subject == null
+        ? 'its subject is null -- a selector matched nothing, or none was passed'
+        : 'its subject is a single element';
       throw new Error(
         `comparePattern: "${key}" of pattern "${pattern.name}" is quantified over every matching ` +
-        'element, but its subject is a single element. Pass an array -- checking one is the ' +
+        `element, but ${got}. Pass an array -- checking one is the ` +
         `defect this rule exists to catch.\n      reason on file: ${QUANTIFIED.get(`${pattern.name}:${key}`)}`,
       );
     }

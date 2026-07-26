@@ -1060,7 +1060,10 @@ scheduled for deletion the same week.
   attribute was present, the suite passed it the first tab, and the fixture made the first tab
   the selected one. Both halves of that are now closed, and closed differently, because they
   failed for different reasons. **A reference is resolved rather than counted** — `IDREF` names
-  the requirement keys whose attribute is a reference, and each is looked up through a
+  the reference-carrying requirement keys **among those that reach `ATTRIBUTE_FOR`**, which is
+  the one branch of `evaluate()` that consults it; `roles.label` has a reference form and takes
+  a different route entirely, which is a live hole recorded under *Known debt* below. Each key
+  it does name is looked up through a
   `resolveId` the *caller* injects, because the evaluator still touches only `tagName`,
   `getAttribute`, `hasAttribute` and `textContent` and still runs in three runtimes one of
   which has no DOM. Resolution had to arrive from outside rather than be done in place, so
@@ -1083,25 +1086,74 @@ scheduled for deletion the same week.
   and the schema has no way to say what *kind* of element a reference must reach — so an
   `aria-controls` resolving to a `<span>` that is not the tabpanel passes exactly as the real
   one does. Closing that is a change to the pattern schema, which this batch deliberately was
-  not. **The quantified set is hand-curated, and nothing proves it complete.** Deriving it from
+  not. **And an IDREF holding a LIST is met when ONE of its ids resolves**, so a dangling id
+  sitting beside a resolving one passes — the same family as the sentence above, one step
+  further out. That is deliberate and the alternative is worse: `aria-describedby` legitimately
+  carries the consumer's own description alongside Arena's, and that id may name an element
+  outside the component's rendered tree, so demanding that every id resolve would fail a
+  correct component. The cost is that within Arena's own wiring a typo'd second id is
+  invisible. **The quantified set is hand-curated, and nothing proves it complete.** Deriving it from
   the word "each" was considered and rejected: the prose says "false on the **rest**" just as
   readily, so a scan finds fewer requirements than a reader does, and deriving it would rebuild
   the false-negative class the evaluator's header already rejected once. Its suite therefore
   proves only that every entry names a real requirement and that a quantified requirement is
   decidable per element — never that a requirement quantified in prose has an entry. One nobody
-  curated is still checked on the one element a suite chooses, exactly as before. **And two
-  requirements that do quantify are excluded for stated reasons rather than closed**:
-  `feed:states.posinset` is behavioural, its prose carrying a "when", so there is no
-  per-element verdict to quantify over at all; and `navigation:roles.label` quantifies over the
-  navigation landmarks on a *page*, and only when more than one exists, which a component suite
-  cannot render without faking a second landmark to satisfy a rule that is not a claim about
-  the component. Both are listed in `NOT_QUANTIFIED` rather than merely absent, so the next
-  reader meets the decision instead of the silence.
+  curated is still checked on the one element a suite chooses, exactly as before, and 8C7's own
+  close-out review found two the batch had missed — `radiogroup:states.checked` and
+  `feed:roles.article` — which is the curation gap demonstrating itself one review after being
+  written down. **And some requirements that do quantify are excluded for stated reasons
+  rather than closed**: read `NOT_QUANTIFIED` for the live set and its reasons, which are
+  listed rather than merely absent so the next reader meets the decision instead of the
+  silence. As written they are the two shapes worth knowing — a requirement that is
+  *behavioural*, its prose carrying a "when", so there is no per-element verdict to quantify
+  over at all; and one that quantifies over a *page* rather than over what the component
+  renders, which a component suite cannot satisfy without faking a second landmark.
+  **What quantifying buys is bounded by the selector that builds the collection**, and that
+  boundary is the mechanism's real edge rather than a defect in it. `tabs.test.jsx` passes
+  `querySelectorAll('[role="tab"]')`, so a tab rendered *without* `role="tab"` leaves the
+  collection silently and takes its dangling `aria-controls` with it, while every element that
+  remains still passes. Not live — `Tabs.jsx` renders the role uniformly — but the rule makes
+  "the first element answered for the collection" impossible and can never make a suite's
+  selector match the elements a pattern is about.
 
   All of this reaches a binding only through a suite that renders it, so a binding outside
   `COVERED` gains nothing from any of it — see the coverage entry above, which is where that
   hole is recorded.
 
+- **`roles.label` has a reference form and nothing resolves it, so `aria-labelledby` is still
+  checked for presence alone.** 8C7 made an IDREF resolve rather than merely exist, and it
+  reached `roles.controls`, `roles.describedby` and `roles.activedescendant` — every key that
+  goes through `ATTRIBUTE_FOR`. `roles.label` never goes through it. It is decided by
+  `hasAccessibleName()` in `scripts/lib/behaviour-compliance.mjs`, which returns `true` the
+  moment `aria-label` **or** `aria-labelledby` is non-empty and stops there. `aria-labelledby`
+  is a reference exactly as `aria-controls` is, and this is the same defect 8C7 exists to
+  close, one requirement key over. It is not marginal: most of the patterns declare
+  `roles.label` — count them with `grep -l '"roles.label"' behaviour/patterns/*.json | wc -l`
+  against `ls behaviour/patterns/*.json | wc -l`.
+
+  **The exposure is live on covered bindings, and nothing is broken today.** `Dialog:react` and
+  `ConfirmDialog:react` both bind `dialog-modal`, whose `roles.label` prose is "aria-labelledby
+  or aria-label" — text content does not count, since `dialog-modal` is not in
+  `LABEL_ACCEPTS_TEXT` — and both name themselves with `aria-labelledby` alone. Both resolve as
+  shipped. So does `SideNavSection`, which is not covered. `Onboarding:react` binds the same
+  pattern and is *not* exposed, because it names itself with `aria-label`, a value rather than a
+  reference.
+
+  **The induction, because a check nobody has watched fail is a check nobody knows works.**
+  Deleting `id={titleId}` from `Dialog.jsx` leaves a dangling `aria-labelledby` on a dialog with
+  no accessible name of any kind, and `bun test --preload ./frameworks/react/test-dom/preload.js
+  frameworks/react/test-dom/dialog-modal.test.jsx` reports **6 pass / 0 fail**. That is the whole
+  reason this entry is credible rather than speculative.
+
+  **Why it was recorded instead of fixed, and what a fix has to move.** `roles.label` cannot
+  simply join `IDREF`: it is satisfied by three alternatives — text content, `aria-label`,
+  `aria-labelledby` — and only the third is a reference, so the set's all-or-nothing semantics
+  do not fit it. A real fix is four changes at once: a *conditional* resolve inside
+  `hasAccessibleName` that fires only on the `aria-labelledby` arm, threading `resolveId` into
+  that call and therefore into `roleOf()`, which calls it for an unnamed `<section>`, and
+  scoping the no-resolver throw the way 8C7 already had to for `ATTRIBUTE_FOR` — a presence-only
+  fallback would report a dangling reference as met, which is the defect the throw exists to
+  refuse. That is a batch, not a line.
 
 - **`check:api` now compares a `primitive` member's `type`, and two prior live examples of
   the gap are guarded because of it.** The entry used to read "does not compare" — probed in
@@ -1235,17 +1287,6 @@ scheduled for deletion the same week.
   records no Material version for any of its claims (`@angular/material` 22.0.5 at the time), and
   `check:behaviour` never re-checks a claim about a third-party library — so these reasons can
   quietly become false while the whole suite stays green.
-
-- **`check:dimensions`' `PROPS` widening left a residual gap, and the gate's header does not flag
-  it.** 8C5 found that `padding-inline-start` was **ungoverned** while `padding-left` was governed,
-  and walked straight through the hole with its own split of a `padding` shorthand into logical
-  sides. The fix added the four logical padding sides and the logical margin family. **Logical
-  BORDER and INSET sides are still ungoverned** — `borderInlineStart`, `borderBlockEnd`,
-  `insetInlineStart`, `insetBlock` and the rest. There are zero uses today, so this is not a live
-  violation; it is a live *hole*, and the next component to reach for a logical border width will
-  find no gate there. Worth knowing that the gate's header documents its SVG kebab-case blind spot
-  and says nothing about this one, so a reader who trusts the header will not learn it. Closing it
-  means adding the two families to `PROPS`; nothing else needs to move.
 
 - **`SideNavCollapsible.id` is required, and the alternative was never properly weighed.** The
   contract originally justified required-ness by citing `api/README.md`'s `id`-member rule, which
