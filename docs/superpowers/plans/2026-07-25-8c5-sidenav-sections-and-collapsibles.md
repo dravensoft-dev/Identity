@@ -969,7 +969,14 @@ export function SideNavSection({
   depth = 0, activeId, indentStep = 3, onActivate,
 }) {
   if (!label) throw new Error('SideNavSection: `label` is required');
-  if (React.Children.count(children) === 0) {
+  /* `toArray().length`, NEVER `Children.count()`. count() counts `false` as a
+   * child and toArray() drops it, so the common conditional-render idiom --
+   * `{isAdmin && <SideNavItem …/>}` with isAdmin false -- would pass a count()
+   * guard and then render a heading with zero items, which is the very shape
+   * this refuses. The render path below counts through injectInto's toArray, so
+   * the guard must count the same way. Every other child count in
+   * frameworks/react/components/ already does. */
+  if (React.Children.toArray(children).length === 0) {
     throw new Error('SideNavSection: a section with no children is not a legal shape');
   }
   const labelId = useId();
