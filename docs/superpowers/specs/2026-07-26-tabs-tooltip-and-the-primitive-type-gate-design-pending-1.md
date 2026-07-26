@@ -175,26 +175,45 @@ This is deliberately the shape `SideNavCollapsible.id` did not take. That member
 is recorded in Known debt as measured against the wrong alternative, and this batch does not
 reopen it — but where a new component can derive its ids, it derives them.
 
-### The `content` slot, and a contradiction this does not resolve
+### The `content` slot: optional and unguarded, which reverses this spec's first answer
 
-`Tabs` gains a `content` slot for its `Tab` children. The repo splits two-and-two on whether a
-required slot is guarded at runtime — `AppLogo.mark` and `SideNavSection.content` are, and
-`Tooltip.content` and `Menu.trigger` are not, with `compareSurface` excluding slots from
-required-ness comparison so that both camps pass.
+`Tabs` gains a `content` slot for its `Tab` children. This spec first proposed declaring it
+required and guarding it, on `SideNavSection.content`'s precedent. **Measuring the tree reversed
+that**, and the measurement is the reason rather than the preference:
 
-**Decision: declared required and guarded**, following the most recent precedent
-(`SideNavSection.content`, which 8C5's close-out review corrected into exactly this shape) rather
-than the older `RadioGroup.content`, which is optional and unguarded. A `Tabs` with no tabs
-renders an empty tablist and a panel labelled by nothing; that is the defect, not a caller saying
-"no tabs right now".
+| component | role in its family | `content` required? | children guarded? |
+|---|---|---|---|
+| `SideNav` | compound **root** | no | **no guard at all** |
+| `SideNavCollapsible` | container | no | no |
+| `SideNavSection` | **named group** | yes | yes, throws on zero children |
 
-The guard counts with **`React.Children.toArray(children).length`, never `count()`** — CLAUDE.md
-carries the reason and 8C5 shipped the bug: `count()` counts a bare `false` that the render path
-drops, so `{isAdmin && <Tab …/>}` with a false condition walks straight through a `count()` guard
-into the empty render the guard exists to refuse.
+`Tabs` is a root, not a named group. The distinction is not cosmetic: a section renders a heading
+naming a group, so a childless one renders a *label for nothing* — which is the defect its guard
+exists to refuse. A root renders no such promise.
 
-This settles the batch's own case and **decides nothing about the four-way split**, which stays
-open and stays recorded.
+`Tabs`' own current behaviour agrees and is pinned by a test that states the reason:
+`frameworks/react/test/tabs.test.jsx` asserts *"an empty tabs array renders rather than throwing"*,
+because an empty collection is a caller saying "no tabs right now". Reversing a documented,
+tested stance as a side effect of an accessibility batch would be scope the batch was not given.
+
+**Decision: `content` is optional and there is no children guard.** The existing `tabs`-absence
+guard leaves with the member it guarded.
+
+**But the degenerate render must still be valid ARIA, and today's shape would not be.** With no
+children there is no active tab, so `Tabs` must render **no tabpanel at all** rather than a panel
+whose `aria-labelledby` points at a tab that does not exist. A dangling `aria-labelledby` is worse
+than an absent one, and an accessibility batch may not ship it. The empty case therefore renders an
+empty tablist and nothing else.
+
+Everywhere children are counted — deciding whether there is an active tab, and resolving
+`defaultValue` to the first tab's `value` — the count is
+**`React.Children.toArray(children).length`, never `count()`**. CLAUDE.md carries the reason and
+8C5 shipped the bug: `count()` counts a bare `false` that the render path drops, so
+`{isAdmin && <Tab …/>}` with a false condition would make `Tabs` believe it has a tab it will
+never render.
+
+This settles nothing about the four-way required-slot split, which stays open and stays recorded —
+`Tabs` simply does not join it.
 
 ### Keyboard, and what "retired" means here
 
@@ -323,9 +342,10 @@ For `Tabs` that is `focus.roving`, `keyboard.ArrowLeft` and `keyboard.ArrowRight
 - A keydown on a native `<button>` does **not** synthesise a click. Nothing in either suite may
   depend on it.
 
-`Tabs`'s DOM-free suite keeps its place: shape, guards, the `content` guard counting with
-`toArray().length`, and **two R4 tests per new component** — one for `style`, one for a stray
-attribute, in separate bodies because `node:assert` aborts on the first failure. When inducing them
+`Tabs`'s DOM-free suite keeps its place: shape, the surviving guards, the degenerate empty render
+(an empty tablist and **no** tabpanel, so no `aria-labelledby` dangles), and **two R4 tests per new
+component** — one for `style`, one for a stray attribute, in separate bodies because `node:assert`
+aborts on the first failure. When inducing them
 to prove they work, the induction must be **disjoint**: a bare `{...rest}` swallows `style` and
 correctly fails both, which is the escapes overlapping rather than the tests failing to be
 independent. CLAUDE.md carries the two-step recipe.
