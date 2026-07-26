@@ -1035,30 +1035,28 @@ scheduled for deletion the same week.
   a by-hand check against `Tabs.prompt.md` rather than a gate.
 
 
-- **`check:api` does not compare a `primitive` member's `type`, and nothing anywhere said
-  so.** Probed in five directions against a finished tree: it CATCHES a required-ness
-  change, a renamed event, a changed `form` (`primitive` -> `slot`) and an event's changed
-  `payload` type. It does NOT catch a `.d.ts` declaring `width?: number` against a contract
-  saying `string`, nor a contract saying `boolean` against a layer saying `string` — both
-  runs stay green. The gate validates that a contract's `type` IS a primitive
-  (`check-api.mjs:185-186`) and compares name, form, required-ness and payload, which is
-  exactly what its own header claims at line 16. So the gate is honest and the limit is
-  simply unrecorded — until now. **It matters concretely**: plan 8C4's `Dialog.width` fix,
-  from a `number` the `.d.ts` declared to the `string` the implementation always produced,
-  has no gate behind it, and reverting the `.d.ts` alone leaves `check:api` green. Same
-  class as the recorded `spec.default` gap and the recorded fact that React's checked
-  surface is its `.d.ts` and never its `.jsx`. Closing it means teaching `compareSurface`
-  to compare the primitive type; nothing else needs to move.
-  **8C5 added a second live example, and it is the sharper of the two.** `SideNav.indentStep`
-  is `"type": "number"` in the contract and `indentStep?: number` in the `.d.ts`, and the
-  contract's own description spends four lines explaining why a **string** was rejected — a
-  caller-supplied `"1.5rem"` is neither a token nor a derivation of one, so it stops
-  re-densifying inside `.arena-compact`, and `check:dimensions` cannot catch it because that
-  gate scans source and not the values a caller passes in. So the contract states a reasoned
-  type refusal, `check:dimensions` explicitly cannot enforce it, and `check:api` does not
-  compare the type at all: **changing either surface to `string` leaves the whole sweep
-  green.** `Dialog.width` showed the gap; `indentStep` shows it swallowing a decision the
-  contract argued for at length.
+- **`check:api` now compares a `primitive` member's `type`, and two prior live examples of
+  the gap are guarded because of it.** The entry used to read "does not compare" — probed in
+  five directions against a finished tree, the gate caught a required-ness change, a renamed
+  event, a changed `form` and an event's changed `payload` type, but let a `.d.ts` declaring
+  `width?: number` against a contract saying `string` stay green. Batch 8C6 closed exactly
+  that: `compareSurface` (`check-api.mjs`) now checks `spec.form === 'primitive' && m.type !==
+  spec.type`, so both of the cases this entry cited by name are caught if they regress.
+  `Dialog.width` — a `number` the `.d.ts` once declared against the `string` the implementation
+  always produced — would now fail the gate instead of reverting silently. `SideNav.indentStep`
+  is the sharper of the two: its contract spends four lines arguing that a caller-supplied
+  `"1.5rem"` string is neither a token nor a derivation of one, so it stops re-densifying inside
+  `.arena-compact`, and `check:dimensions` cannot catch it because that gate scans source and not
+  the values a caller passes in — the type comparison was the only mechanism that could ever
+  have enforced that refusal, and now it does. It is the clearest case in the repo for why the
+  clause was worth adding.
+  **What the entry recorded alongside the type gap is untouched by this fix and still true.**
+  `spec.default` is documented in the contract format and read by nothing — no gate compares a
+  contract's stated default against either layer's real one. And React's checked surface is
+  still its `.d.ts`, never its `.jsx`: `check-api.mjs` reads the declaration file and never opens
+  the implementation, so a `.d.ts` that agrees with the contract passes regardless of what the
+  `.jsx` actually does — the same class of gap the `{...rest}`-spread loss elsewhere in this
+  section depends on.
 
 - **`Onboarding`'s accessible name is positional when a step carries no editorial text, and
   it collides with its own progress dots.** The chain is `title ?? eyebrow ?? "Step N of M"`
