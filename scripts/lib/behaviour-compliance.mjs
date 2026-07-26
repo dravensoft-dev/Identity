@@ -128,11 +128,13 @@ export const ELEMENT_ROLE = {
  *  its accessible name: "text content, aria-labelledby, or aria-label".
  *
  *  This is a whitelist rather than a blanket rule, and the blanket rule is the
- *  bug it prevents. dialog-modal's roles.label says "aria-labelledby or
- *  aria-label" and means it — Dialog's exception records that its title carries
- *  no id and the dialog element carries neither attribute. If text content were
- *  credited everywhere, that true exception would be reported STALE and deleted,
- *  and a real accessibility defect would leave the debt record.
+ *  bug it prevents. radiogroup's roles.label says nothing about text content,
+ *  and RadioGroup.behaviour.json's own exception records exactly that: the group
+ *  div carries no aria-label and no aria-labelledby at all, so it has no
+ *  accessible name of any kind — even though its options render plenty of text.
+ *  If text content were credited everywhere, that true exception would be
+ *  reported STALE and deleted, and a real accessibility defect would leave the
+ *  debt record.
  *
  *  Asserted against the real pattern files: every name here must have a
  *  roles.label value that actually mentions text content.
@@ -140,8 +142,12 @@ export const ELEMENT_ROLE = {
 export const LABEL_ACCEPTS_TEXT = new Set(['button', 'checkbox', 'disclosure', 'switch']);
 
 /** The element's ARIA role: explicit if authored, else implicit, else null.
- *  @param {{tagName: string, getAttribute: (n: string) => string | null}} el */
-export function roleOf(el) {
+ *  @param {{tagName: string, getAttribute: (n: string) => string | null}} el
+ *  @param {(id: string) => object | null} [resolveId] threaded to
+ *    hasAccessibleName for the one case that needs it: a <section> exposes
+ *    role="region" only when it is named, so a labelledby resolving to nothing
+ *    takes the role with it. */
+export function roleOf(el, resolveId) {
   const explicit = el.getAttribute('role');
   if (explicit) return explicit.trim().split(/\s+/)[0];
   const tag = el.tagName.toUpperCase();
@@ -151,23 +157,45 @@ export function roleOf(el) {
   }
   // A <section> is only a region when it is named; unnamed it exposes no role.
   // Text content never names a section, hence the explicit `false`.
-  if (tag === 'SECTION') return hasAccessibleName(el, false) ? 'region' : null;
+  if (tag === 'SECTION') return hasAccessibleName(el, false, resolveId) ? 'region' : null;
   return IMPLICIT_ROLE[tag] ?? null;
 }
 
 /** Whether the element carries an accessible name.
  *
+ *  Three routes satisfy the requirement and they are ALTERNATIVES, so the answer
+ *  is a disjunction and the order below is free. What the order buys is that
+ *  `resolveId` is consulted only where it can change the answer -- a button
+ *  carrying both its own text and an aria-labelledby never needs one. It also
+ *  matches the real name computation: an aria-labelledby resolving to nothing
+ *  falls through to the next route rather than nulling the name.
+ *
  *  `acceptsText` decides whether the element's own text content counts, and the
  *  caller must pass it deliberately — it defaults to false, the stricter answer,
  *  so a new call site cannot accidentally widen the rule. Only the patterns in
- *  LABEL_ACCEPTS_TEXT say text content is enough; see that map for why crediting
- *  it everywhere would wrongly retire Dialog's true exception.
+ *  LABEL_ACCEPTS_TEXT say text content is enough.
  *  @param {{getAttribute: (n: string) => string | null, textContent?: string | null}} el
- *  @param {boolean} [acceptsText] */
-export function hasAccessibleName(el, acceptsText = false) {
-  if (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby')) return true;
-  if (!acceptsText) return false;
-  return Boolean((el.textContent ?? '').trim());
+ *  @param {boolean} [acceptsText]
+ *  @param {(id: string) => object | null} [resolveId] required when the element's
+ *    ONLY remaining route is aria-labelledby — see the throw below.
+ *  @throws {Error} when aria-labelledby is the deciding route and no resolver was
+ *    supplied. Counting the attribute instead would report a dangling reference
+ *    as a name, which is the defect this parameter exists to catch. */
+export function hasAccessibleName(el, acceptsText = false, resolveId) {
+  if (el.getAttribute('aria-label')) return true;
+  if (acceptsText && (el.textContent ?? '').trim()) return true;
+  const raw = el.getAttribute('aria-labelledby');
+  if (!raw) return false;
+  if (typeof resolveId !== 'function') {
+    throw new Error(
+      'hasAccessibleName: this element is named only by aria-labelledby and no resolveId was ' +
+      'supplied, so whether it has a name cannot be decided. Pass resolveId to comparePattern -- ' +
+      'each wrapper builds one scoped to the rendered tree. Counting the attribute instead would ' +
+      'report a dangling reference as a name, and a dialog whose title carried no id would read ' +
+      'as fully compliant while having no accessible name at all.',
+    );
+  }
+  return referenceResolves('aria-labelledby', raw, resolveId);
 }
 
 /** Whether the element can take keyboard focus. Not a claim about focus *order*
@@ -186,7 +214,7 @@ export function isFocusable(el) {
  *
  *  Several keys were removed from this map and moved to BEHAVIOURAL, because
  *  their prose is conditional and presence is the wrong question — see that set. */
-const ATTRIBUTE_FOR = {
+export const ATTRIBUTE_FOR = {
   'roles.aria-modal': 'aria-modal',
   'roles.haspopup': 'aria-haspopup',
   'roles.expanded': 'aria-expanded',
@@ -196,27 +224,76 @@ const ATTRIBUTE_FOR = {
   'states.selected': 'aria-selected',
 };
 
-/** The requirement keys whose attribute is a REFERENCE rather than a value. For
- *  these, presence is not the claim: `aria-controls="panel-9"` with no element
- *  called panel-9 is a broken reference that reads as met to a presence check.
- *  8C6 shipped exactly that -- `Tabs` carried one `aria-controls` per tab and
- *  rendered one panel, so N-1 references pointed at nothing and `roles.controls`
- *  passed.
+/** The reference attributes this file resolves, and HOW STRICT each one is.
  *
- *  Resolution needs the tree, and this file may not have it (see the header: it
- *  runs under plain node in its own suite), so the caller injects `resolveId`.
+ *  Strictness belongs to the ATTRIBUTE rather than to the requirement key, for
+ *  two reasons. It is a fact about what the attribute MEANS: aria-labelledby
+ *  concatenates the text of everything it names into one accessible name, so an
+ *  id that resolves to nothing truncates that name in silence, where
+ *  aria-describedby merely contributes one description among several. And it is
+ *  the only place aria-labelledby can be governed at all -- roles.label has no
+ *  ATTRIBUTE_FOR entry and never reaches the branch that reads this.
  *
- *  SCOPE, and it is narrower than the name suggests. This set is complete only
- *  for the keys that reach ATTRIBUTE_FOR, because that is the one branch of
- *  evaluate() that consults it. `roles.label` also has a reference form --
- *  `aria-labelledby` -- and never passes through here at all: it is decided by
- *  hasAccessibleName(), which reads the attribute for presence and stops. So a
- *  dangling `aria-labelledby` on an element with no other name reads as met.
- *  Adding `roles.label` to this set does not fix that, because the requirement is
- *  satisfied by three alternatives and only one of them is a reference; the fix is
- *  a conditional resolve inside hasAccessibleName. Recorded under *Known debt* in
- *  CLAUDE.md rather than done here. */
-export const IDREF = new Set(['roles.controls', 'roles.describedby', 'roles.activedescendant']);
+ *  `some` is the exception and carries the reason; `every` is the rule. 8C7
+ *  applied `some` to all three keys it knew about on a justification that belongs
+ *  to exactly one of them, so aria-controls spent a batch holding a concession
+ *  earned by aria-describedby.
+ *
+ *  Same staleness discipline as QUANTIFIED and EXEMPT: an entry naming an
+ *  attribute no branch of this file consults fails the suite rather than rotting.
+ *  @type {Map<string, {match: 'every' | 'some', reason: string}>} */
+export const IDREF_ATTRIBUTES = new Map([
+  ['aria-labelledby', {
+    match: 'every',
+    reason: "the attribute concatenates the text of every element it names into ONE accessible name, so an id resolving to nothing truncates that name in silence rather than removing it.",
+  }],
+  ['aria-controls', {
+    match: 'every',
+    reason: "every aria-controls in either layer is a single id Arena generates itself, so nothing legitimately points outside the rendered tree and a looser rule protects nobody.",
+  }],
+  ['aria-activedescendant', {
+    match: 'every',
+    reason: "a single IDREF by specification rather than a list, so every and some agree -- every is the honest spelling of a rule with one id to judge.",
+  }],
+  ['aria-describedby', {
+    match: 'some',
+    reason: "the one exception: Tooltip merges the consumer's own description with Arena's bubble id, and the consumer's may name an element outside the component's rendered tree, so demanding that every id resolve would fail a correct component.",
+  }],
+]);
+
+/** Whether a space-separated IDREF list satisfies its attribute's rule. The ONE
+ *  place either branch decides that, so IDREF_ATTRIBUTES is the authority rather
+ *  than a table two call sites happen to agree with. */
+function referenceResolves(attr, raw, resolveId) {
+  const ids = raw.split(/\s+/).filter(Boolean);
+  /* An attribute holding only whitespace names nothing, and `every` over an empty
+   * list is vacuously TRUE -- so without this the emptiest possible reference
+   * would report as met, which is the shape of failure this file exists to refuse. */
+  if (!ids.length) return false;
+  return IDREF_ATTRIBUTES.get(attr).match === 'every'
+    ? ids.every((id) => resolveId(id) != null)
+    : ids.some((id) => resolveId(id) != null);
+}
+
+/** The requirement keys whose ATTRIBUTE_FOR attribute is a reference. DERIVED
+ *  from IDREF_ATTRIBUTES rather than written beside it, so this set cannot drift
+ *  out of scope again.
+ *
+ *  Be exact about what "again" means, because the obvious reading is wrong.
+ *  Before 8C8 there was exactly ONE hand-written list here -- three requirement
+ *  keys, with nothing anywhere to disagree with it. What it got wrong was REACH,
+ *  not agreement: a list of requirement KEYS can never name aria-labelledby at
+ *  all, because roles.label carries no ATTRIBUTE_FOR entry and never reaches the
+ *  branch that reads this set. It also held one strictness rule for all three
+ *  keys, on a justification belonging to one of them. Deriving from a map keyed
+ *  by ATTRIBUTE fixes both at once: strictness lives with the attribute that
+ *  earns it, and an attribute no requirement key can name is still governed.
+ *  @type {Set<string>} */
+export const IDREF = new Set(
+  Object.entries(ATTRIBUTE_FOR)
+    .filter(([, attr]) => IDREF_ATTRIBUTES.has(attr))
+    .map(([key]) => key),
+);
 
 /** Requirement keys naming a role the element itself must expose. `roles.element`
  *  is excluded because its required role comes from ELEMENT_ROLE, keyed by the
@@ -295,17 +372,35 @@ export const BEHAVIOURAL = new Set([
  *    an OVERCLAIM message so a reader sees what was asked for; never parsed.
  *  @param {string} patternName the owning pattern's name, which is what selects
  *    the semantics for roles.element and roles.label
- *  @param {(id: string) => object | null} [resolveId] required when `key` is in
- *    IDREF — looks an id up in the rendered tree and returns the element it
- *    names, or null when nothing carries it. Each wrapper builds one scoped to
- *    its own render; this file never has the tree to resolve one itself.
+ *  @param {(id: string) => object | null} [resolveId] looks an id up in the
+ *    rendered tree and returns the element it names, or null when nothing
+ *    carries it. Each wrapper builds one scoped to its own render; this file
+ *    never has the tree to resolve one itself.
+ *
+ *    TWO DISJOINT cases owe one, and reading only the first is how a caller ends
+ *    up with a throw instead of a verdict. It is required when `key` is in
+ *    IDREF; and, separately, when `key` is `roles.label` and the subject's only
+ *    remaining naming route is aria-labelledby. Most of the patterns declaring
+ *    roles.label carry no ATTRIBUTE_FOR reference requirement whatsoever —
+ *    dialog-modal, the pattern behind the covered Dialog and ConfirmDialog
+ *    bindings, is one of them — so IDREF is empty for them and a caller
+ *    consulting it alone concludes, wrongly, that no resolver is owed. Measure
+ *    the overlap rather than trusting a figure: compare
+ *    `grep -l '"roles.label"' behaviour/patterns/*.json` against those files
+ *    also matching `"roles\.(controls|describedby|activedescendant)"`.
  *  @returns {true | false | null} null = undecidable from this element alone
  *  @throws {Error} on a key in neither DECIDABLE nor BEHAVIOURAL, on a
- *    roles.element requirement whose pattern has no ELEMENT_ROLE entry, and on
- *    an IDREF requirement given no resolveId. All three are programming errors —
- *    a typo in a pattern file, a map left un-extended, or a caller that forgot to
- *    thread the resolver — not verdicts about a component, so none may be
- *    returned as one. */
+ *    roles.element requirement whose pattern has no ELEMENT_ROLE entry, on an
+ *    IDREF requirement given no resolveId, on a roles.label requirement
+ *    whose deciding route is aria-labelledby and no resolveId was given, and —
+ *    the path easiest to miss — on ANY key routed through roleOf() whose subject
+ *    is a <section> named only by aria-labelledby, since a section exposes
+ *    role=region only when named. That last one reaches roles.element, every
+ *    ROLE_NAMED_BY_KEY key, states.checked and live.politeness; the final two
+ *    read as entirely unrelated to naming, which is exactly why it is written
+ *    down. All of them are programming errors — a typo in a pattern file, a map
+ *    left un-extended, or a caller that forgot to thread the resolver — not
+ *    verdicts about a component, so none may be returned as one. */
 export function evaluate(el, key, value, patternName, resolveId) {
   if (key === 'roles.element') {
     const wanted = ELEMENT_ROLE[patternName];
@@ -315,9 +410,9 @@ export function evaluate(el, key, value, patternName, resolveId) {
         'Add one in scripts/lib/behaviour-compliance.mjs naming the role that pattern requires.',
       );
     }
-    return roleOf(el) === wanted;
+    return roleOf(el, resolveId) === wanted;
   }
-  if (key === 'roles.label') return hasAccessibleName(el, LABEL_ACCEPTS_TEXT.has(patternName));
+  if (key === 'roles.label') return hasAccessibleName(el, LABEL_ACCEPTS_TEXT.has(patternName), resolveId);
 
   const attr = ATTRIBUTE_FOR[key];
   if (attr) {
@@ -332,17 +427,12 @@ export function evaluate(el, key, value, patternName, resolveId) {
         'which is the defect this parameter exists to catch.',
       );
     }
-    /* A space-separated list, and ONE resolving id is the claim. aria-describedby
-     * legitimately carries the consumer's own description alongside ours, and that
-     * one may name an element outside the component's rendered tree -- demanding
-     * that every id resolve would fail a correct component. */
-    const ids = raw.split(/\s+/).filter(Boolean);
-    return ids.some((id) => resolveId(id) != null);
+    return referenceResolves(attr, raw, resolveId);
   }
 
   const wanted = ROLE_NAMED_BY_KEY[key];
   if (wanted) {
-    const actual = roleOf(el);
+    const actual = roleOf(el, resolveId);
     return Array.isArray(wanted) ? wanted.includes(actual) : actual === wanted;
   }
 
@@ -352,7 +442,7 @@ export function evaluate(el, key, value, patternName, resolveId) {
     // implicit-semantics principle to roles and withheld it from states, which is
     // the same defect in a different place.
     if (el.getAttribute('aria-checked') !== null) return true;
-    const role = roleOf(el);
+    const role = roleOf(el, resolveId);
     return el.tagName.toUpperCase() === 'INPUT' && (role === 'checkbox' || role === 'radio');
   }
   if (key === 'states.multiline') {
@@ -362,7 +452,7 @@ export function evaluate(el, key, value, patternName, resolveId) {
     // role=status and role=alert carry an implicit live region; an explicit
     // aria-live satisfies it directly.
     if (el.getAttribute('aria-live') !== null) return true;
-    return ['status', 'alert', 'log'].includes(roleOf(el));
+    return ['status', 'alert', 'log'].includes(roleOf(el, resolveId));
   }
 
   if (BEHAVIOURAL.has(key)) return null;
@@ -476,13 +566,23 @@ export const NOT_QUANTIFIED = new Map([
  *   this layer exists to remove.
  * @param {(id: string) => object | null} [o.resolveId] looks an id up in the SAME
  *   rendered tree `subjects`/`fallback` came from and returns the element it names, or
- *   null when nothing carries it. Required whenever the pattern carries an IDREF
- *   requirement (see the IDREF set) — evaluate() throws rather than degrading to a
- *   presence check when one is owed and missing.
+ *   null when nothing carries it. TWO DISJOINT cases require one, and a suite that
+ *   reads only the first gets a throw where it expected a verdict. It is required
+ *   whenever the pattern carries an IDREF requirement (see the IDREF set); and,
+ *   separately, whenever the pattern requires `roles.label` and the subject is named by
+ *   aria-labelledby — most of the patterns declaring roles.label carry no
+ *   ATTRIBUTE_FOR reference requirement at all, `dialog-modal` among them, so IDREF is
+ *   empty for them while a resolver is still owed. evaluate() throws in both rather
+ *   than degrading to a presence check, which would report a dangling reference as met.
+ *   The simplest correct habit is to pass one always: a resolver is consulted only
+ *   where it can change the answer.
  * @returns {string[]} one message per problem, empty when clean
  * @throws {Error} whatever evaluate() throws — an unrecognised requirement key, a
- *   roles.element requirement on a pattern with no ELEMENT_ROLE entry, or an IDREF
- *   requirement given no resolveId. All are programming errors rather than verdicts, so
+ *   roles.element requirement on a pattern with no ELEMENT_ROLE entry, an IDREF
+ *   requirement given no resolveId, a roles.label requirement whose deciding route is
+ *   aria-labelledby with no resolveId, or any requirement routed through roleOf() whose
+ *   subject is a <section> named only by aria-labelledby with no resolveId. All are
+ *   programming errors rather than verdicts, so
  *   they are not returned as problems. In a render suite that means the whole test
  *   aborts instead of reporting this component's problems beside the others; that is
  *   intended, but callers should know it can happen.

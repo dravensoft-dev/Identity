@@ -18,7 +18,7 @@ import { join, dirname, basename, extname } from 'node:path';
 import {
   roleOf, hasAccessibleName, isFocusable, evaluate,
   DECIDABLE, BEHAVIOURAL, ELEMENT_ROLE, LABEL_ACCEPTS_TEXT, comparePattern,
-  QUANTIFIED, NOT_QUANTIFIED,
+  QUANTIFIED, NOT_QUANTIFIED, IDREF, IDREF_ATTRIBUTES, ATTRIBUTE_FOR,
 } from './lib/behaviour-compliance.mjs';
 
 const PATTERN_DIR = join(dirname(dirname(fileURLToPath(import.meta.url))), 'behaviour', 'patterns');
@@ -80,9 +80,11 @@ test('roleOf returns null for an element with no role of any kind', () => {
   assert.equal(roleOf(el('span')), null);
 });
 
-test('hasAccessibleName accepts either ARIA naming attribute', () => {
+test('hasAccessibleName accepts aria-label, and returns false with no naming route', () => {
+  // The aria-labelledby half of this test used to sit here too, asserting the OLD
+  // presence-only semantics -- it now resolves rather than merely existing, and
+  // moves into its own tests below.
   assert.equal(hasAccessibleName(el('div', { 'aria-label': 'Loading' })), true);
-  assert.equal(hasAccessibleName(el('div', { 'aria-labelledby': 'x1' })), true);
   assert.equal(hasAccessibleName(el('div')), false);
 });
 
@@ -90,6 +92,90 @@ test('hasAccessibleName credits text content only when asked to', () => {
   assert.equal(hasAccessibleName(el('button', {}, 'Save'), true), true);
   assert.equal(hasAccessibleName(el('button', {}, 'Save')), false, 'strict by default');
   assert.equal(hasAccessibleName(el('button', {}, '   '), true), false, 'whitespace is not a name');
+});
+
+/* aria-labelledby must RESOLVE, not merely be present -- the commonest reference
+ * of all, and the one 8C7 left ungoverned because roles.label never reaches
+ * ATTRIBUTE_FOR. Deleting id={titleId} from Dialog.jsx used to leave a dangling
+ * reference on a dialog with no accessible name at all, and dialog-modal.test.jsx
+ * still reported 6 pass / 0 fail. These tests close that. */
+
+test('aria-label alone names the element without consulting the resolver', () => {
+  let asked = false;
+  const resolve = () => { asked = true; return null; };
+  assert.equal(hasAccessibleName(el('div', { 'aria-label': 'Schedule' }), false, resolve), true);
+  assert.equal(asked, false, 'the resolver was consulted for an element aria-label already named');
+});
+
+test('a resolving aria-labelledby names the element', () => {
+  assert.equal(hasAccessibleName(el('div', { 'aria-labelledby': 'title-1' }), false, () => el('h2')), true);
+});
+
+test('a dangling aria-labelledby does NOT name the element', () => {
+  assert.equal(hasAccessibleName(el('div', { 'aria-labelledby': 'gone' }), false, () => null), false);
+});
+
+/* aria-labelledby concatenates, so EVERY id must resolve -- unlike
+   aria-describedby, whose rule and reason live in IDREF_ATTRIBUTES. */
+test('every id in an aria-labelledby list must resolve', () => {
+  const d = el('div', { 'aria-labelledby': 'a b' });
+  const onlyA = (id) => (id === 'a' ? el('span') : null);
+  assert.equal(hasAccessibleName(d, false, onlyA), false);
+  assert.equal(hasAccessibleName(d, false, () => el('span')), true);
+});
+
+/* The three routes are ALTERNATIVES, so a dangling reference falls through to
+   the next one rather than nulling the name -- which is also what a real
+   accessible-name computation does. The resolver is never consulted here,
+   because text answered first, and that is what the order is for. */
+test('text content still names an element whose aria-labelledby dangles', () => {
+  let asked = false;
+  const b = el('button', { 'aria-labelledby': 'gone' }, 'Save');
+  assert.equal(hasAccessibleName(b, true, () => { asked = true; return null; }), true);
+  assert.equal(asked, false);
+});
+
+test('text content does not rescue a pattern that does not admit it', () => {
+  const d = el('div', { 'aria-labelledby': 'gone' }, 'Delete project');
+  assert.equal(hasAccessibleName(d, false, () => null), false);
+});
+
+test('an aria-labelledby with no resolver THROWS rather than counting the attribute', () => {
+  assert.throws(
+    () => hasAccessibleName(el('div', { 'aria-labelledby': 'x' })),
+    /aria-labelledby.*resolveId/s,
+  );
+});
+
+test('an element with no naming route at all needs no resolver', () => {
+  assert.equal(hasAccessibleName(el('div')), false);
+  assert.equal(hasAccessibleName(el('button', {}, 'Save'), true), true);
+});
+
+/* roleOf asks the same question for a <section>: unnamed, it exposes no role at
+   all, so a labelledby that resolves to nothing must take the role with it. */
+test('roleOf refuses region to a section whose aria-labelledby dangles', () => {
+  assert.equal(roleOf(el('section', { 'aria-labelledby': 'gone' }), () => null), null);
+  assert.equal(roleOf(el('section', { 'aria-labelledby': 'h1' }), () => el('h2')), 'region');
+});
+
+/* And roleOf inherits the throw, which is the reach worth pinning: every key
+   routed through roleOf() can raise it, and two of those branches --
+   states.checked and live.politeness -- read as entirely unrelated to naming, so
+   a caller has no reason to expect a naming error from them. The two roleOf
+   tests above both return before the throw: one supplies a resolver, the other
+   uses a section with no aria-labelledby at all. */
+test('a section named only by aria-labelledby THROWS through roleOf with no resolver', () => {
+  assert.throws(
+    () => roleOf(el('section', { 'aria-labelledby': 'x' })),
+    /aria-labelledby.*resolveId/s,
+  );
+});
+
+test('evaluate decides roles.label by resolving, not by counting', () => {
+  const d = el('div', { 'aria-labelledby': 'gone' });
+  assert.equal(evaluate(d, 'roles.label', 'aria-labelledby or aria-label', 'dialog-modal', () => null), false);
+  assert.equal(evaluate(d, 'roles.label', 'aria-labelledby or aria-label', 'dialog-modal', () => el('h2')), true);
 });
 
 test('isFocusable accepts natively focusable elements and explicit tabindex', () => {
@@ -629,6 +715,56 @@ test('an IDREF requirement with no resolver THROWS rather than falling back', ()
 test('a non-IDREF attribute requirement still needs no resolver', () => {
   const t = el('button', { 'aria-selected': 'false' });
   assert.equal(evaluate(t, 'states.selected', 'x', 'tabs'), true);
+});
+
+/* Strictness is a fact about the ATTRIBUTE. 8C7 applied `some` to all three keys
+   it knew about, on a justification that belongs to exactly one of them. */
+test('an aria-controls list is met only when EVERY id resolves', () => {
+  const tab = el('button', { 'aria-controls': 'panel-1 panel-2' });
+  const both = (id) => (id === 'panel-1' || id === 'panel-2' ? el('div') : null);
+  const onlyOne = (id) => (id === 'panel-1' ? el('div') : null);
+  assert.equal(evaluate(tab, 'roles.controls', 'x', 'tabs', both), true);
+  assert.equal(evaluate(tab, 'roles.controls', 'x', 'tabs', onlyOne), false);
+});
+
+test('aria-describedby keeps the one-resolving-id rule, and keeps its reason', () => {
+  const trigger = el('button', { 'aria-describedby': 'consumer-hint tooltip-1' });
+  const resolve = (id) => (id === 'tooltip-1' ? el('span') : null);
+  assert.equal(evaluate(trigger, 'roles.describedby', 'x', 'tooltip', resolve), true);
+  assert.equal(IDREF_ATTRIBUTES.get('aria-describedby').match, 'some');
+});
+
+/* `every` over an empty list is vacuously TRUE, which would report the emptiest
+   possible reference as met -- the exact shape of failure this file refuses. */
+test('a reference attribute holding only whitespace names nothing', () => {
+  const tab = el('button', { 'aria-controls': '   ' });
+  assert.equal(evaluate(tab, 'roles.controls', 'x', 'tabs', () => el('div')), false);
+});
+
+/* Membership only. This would pass identically against a hand-written set, so it
+   pins WHAT IDREF holds and says nothing about where it comes from; the two
+   IDREF_ATTRIBUTES staleness tests below are what hold the derivation honest. */
+test('IDREF holds exactly the reference keys that reach ATTRIBUTE_FOR', () => {
+  assert.deepEqual(
+    [...IDREF].sort(),
+    ['roles.activedescendant', 'roles.controls', 'roles.describedby'],
+  );
+});
+
+/* The staleness discipline QUANTIFIED and EXEMPT carry: an entry naming an
+   attribute no branch of this file reads fails the suite rather than rotting. */
+test('every IDREF_ATTRIBUTES entry names an attribute the evaluator actually consults', () => {
+  const consulted = new Set([...Object.values(ATTRIBUTE_FOR), 'aria-labelledby']);
+  for (const attr of IDREF_ATTRIBUTES.keys()) {
+    assert.ok(consulted.has(attr), `${attr}: no branch of the evaluator reads it`);
+  }
+});
+
+test('every IDREF_ATTRIBUTES entry declares a match rule and a reason', () => {
+  for (const [attr, spec] of IDREF_ATTRIBUTES) {
+    assert.ok(['every', 'some'].includes(spec.match), `${attr}: match must be "every" or "some"`);
+    assert.ok(typeof spec.reason === 'string' && spec.reason.length > 20, `${attr}: no reason on file`);
+  }
 });
 
 test('comparePattern reports a dangling reference as an OVERCLAIM', () => {
