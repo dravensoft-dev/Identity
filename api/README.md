@@ -181,7 +181,7 @@ unknown>` was on this list and has left it — it is **consumer data** now, the 
 that is a promotion of one exact spelling and nothing wider: `Record<string, Widget>` is a
 record of a known type, which is a predefined object, and it is still an R4 violation.
 
-**R5 — No unions between forms.** A member is one form. `(string | TabItem)[]` picks one.
+**R5 — No unions between forms.** A member is one form. `(string | SegmentOption)[]` picks one.
 
 ## What the contract governs, and what it does not
 
@@ -262,6 +262,14 @@ import keeps resolving, and it is mechanical — read the pre-migration file, re
 whatever it named, nothing it did not. Angular has no equivalent question: a
 component's own file imports straight from `../../api.generated` and there is no
 prior local declaration to preserve.
+
+**One deliberate exception: the rule drops when the migrated name stops being a
+type at all.** `SideNav.d.ts` used to re-export `SideNavItem`, a predefined object
+type; plan 8C5 turned `SideNavItem` into a component of the same name in the same
+directory, and a file cannot both import a type called `SideNavItem` and export a
+component called `SideNavItem` — one name cannot mean both. `SideNav.d.ts` drops
+the re-export rather than resolve the collision, and the comment at that call site
+is the only other place this is recorded.
 
 ## Conventions the audits settled
 

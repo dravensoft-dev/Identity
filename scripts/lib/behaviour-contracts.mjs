@@ -124,13 +124,27 @@ export function crossLayerAgrees(a, b) {
 }
 
 /** Every React component, by exported name. A `*.card.entry.jsx` is a demo page's
- *  composition script, not a component, and has no contract. */
+ *  composition script, not a component, and has no contract.
+ *
+ *  A COMPONENT FILE IS PascalCase, and a kebab-case sibling is a helper module.
+ *  That was always true of this tree and was relied on without being stated: the
+ *  `.card.entry.` clause above is one instance of it, and every helper beside a
+ *  component (`pagination-window`, `chart-internals`, `use-dialog-modal`) simply
+ *  happened to be spelled `.js`, so this walk never met one. Plan 8C5 produced
+ *  the first kebab-case `.jsx` -- `side-nav-inject.jsx`, which is `.jsx` rather
+ *  than `.js` on purpose, because check-dimension-literals.mjs scans `.jsx` and
+ *  deliberately never opens a `.js` (see that file's own header). Without this
+ *  clause the walk reported it as a component named `side-nav-inject` and
+ *  check:behaviour demanded a behaviour binding for a module that renders
+ *  nothing. Keying on the case is the rule the tree already followed rather than
+ *  a new exception for one file. */
 export function reactComponents(root) {
   const base = join(root, 'frameworks/react/components');
   const out = [];
   for (const group of readdirSync(base)) {
     for (const file of readdirSync(join(base, group))) {
       if (extname(file) !== '.jsx' || file.includes('.card.entry.')) continue;
+      if (!/^[A-Z]/.test(file)) continue;
       out.push(basename(file, '.jsx'));
     }
   }

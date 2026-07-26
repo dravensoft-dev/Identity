@@ -1,0 +1,4 @@
+{
+  "pattern": "none",
+  "reason": "Every requirement that applies to a tab is a clause of the `tabs` pattern, and that pattern is bound on `Tabs` -- the component that renders the tablist, renders the tabpanel, owns the roving tab stop and handles ArrowLeft/ArrowRight. Binding `tabs` here would claim a tablist and a tabpanel this component does not render, and binding `button` would describe an element whose role is `tab` rather than `button`. This is the SideNavItem shape: the binding schema cannot say 'this pattern applies to me only as part of my parent', which is the same unresolved question Tag, Skeleton, Table and Pagination already carry, recorded in CLAUDE.md's Known debt."
+}

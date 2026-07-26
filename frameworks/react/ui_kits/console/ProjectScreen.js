@@ -11,6 +11,7 @@ import { TableRow } from "../../components/display/TableRow.js";
 import { TableCell } from "../../components/display/TableCell.js";
 import { ActivityFeed } from "../../components/display/ActivityFeed.js";
 import { Tabs } from "../../components/navigation/Tabs.js";
+import { Tab } from "../../components/navigation/Tab.js";
 import { Button } from "../../components/forms/Button.js";
 import { Switch } from "../../components/forms/Switch.js";
 import { Dialog } from "../../components/feedback/Dialog.js";
@@ -62,26 +63,13 @@ export function ProjectScreen({ onNav, project, onToast }) {
     dot: true
   }, "Deployed"), (p.tags || []).map((t) => React.createElement(Tag, {
     key: t
-  }, t))), React.createElement("div", {
-    style: { marginBottom: "calc(var(--sp-1) * 5.5)" }
-  }, React.createElement(Tabs, {
-    tabs: [{ value: "Overview", label: "Overview" }, { value: "Deployments", label: "Deployments" }, { value: "Activity", label: "Activity" }, { value: "Settings", label: "Settings" }],
+  }, t))), React.createElement(Tabs, {
     value: tab,
     onChange: setTab
-  })), tab === "Deployments" && React.createElement(Table, {
-    columns: DEPLOY_COLUMNS,
-    label: "Deployments"
-  }, DEPLOYS.map((d) => React.createElement(TableRow, {
-    key: d.build
-  }, React.createElement(TableCell, null, d.build), React.createElement(TableCell, null, d.env), React.createElement(TableCell, null, React.createElement(Badge, {
-    tone: d.status[0],
-    dot: true
-  }, d.status[1])), React.createElement(TableCell, null, d.author), React.createElement(TableCell, null, d.dur), React.createElement(TableCell, null, React.createElement(Button, {
-    variant: "ghost",
-    size: "sm"
-  }, "Details"))))), tab === "Activity" && React.createElement(Card, null, React.createElement(ActivityFeed, {
-    items: ACTIVITY
-  })), tab === "Overview" && React.createElement("div", {
+  }, React.createElement(Tab, {
+    value: "Overview",
+    label: "Overview"
+  }, React.createElement("div", {
     style: { display: "grid", gridTemplateColumns: "2fr 1fr", gap: "calc(var(--sp-1) * 4)" }
   }, React.createElement(Card, {
     eyebrow: "Status",
@@ -101,7 +89,29 @@ export function ProjectScreen({ onNav, project, onToast }) {
     style: { fontSize: "var(--dz-text)", color: "var(--bone-dim)", lineHeight: "var(--lh-body)" }
   }, "Release 2.5 — SEPA gateway."), React.createElement("div", {
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-sm)", color: "var(--gold)", marginTop: "calc(var(--sp-1) * 2.5)" }
-  }, "in 6 days"))), tab === "Settings" && React.createElement("div", {
+  }, "in 6 days")))), React.createElement(Tab, {
+    value: "Deployments",
+    label: "Deployments"
+  }, React.createElement(Table, {
+    columns: DEPLOY_COLUMNS,
+    label: "Deployments"
+  }, DEPLOYS.map((d) => React.createElement(TableRow, {
+    key: d.build
+  }, React.createElement(TableCell, null, d.build), React.createElement(TableCell, null, d.env), React.createElement(TableCell, null, React.createElement(Badge, {
+    tone: d.status[0],
+    dot: true
+  }, d.status[1])), React.createElement(TableCell, null, d.author), React.createElement(TableCell, null, d.dur), React.createElement(TableCell, null, React.createElement(Button, {
+    variant: "ghost",
+    size: "sm"
+  }, "Details")))))), React.createElement(Tab, {
+    value: "Activity",
+    label: "Activity"
+  }, React.createElement(Card, null, React.createElement(ActivityFeed, {
+    items: ACTIVITY
+  }))), React.createElement(Tab, {
+    value: "Settings",
+    label: "Settings"
+  }, React.createElement("div", {
     style: { maxWidth: "calc(var(--sp-1) * 130)" }
   }, React.createElement(Card, {
     title: "Automation"
@@ -118,7 +128,7 @@ export function ProjectScreen({ onNav, project, onToast }) {
   }), React.createElement(Switch, {
     state: true,
     label: "Require 2 approvals for production"
-  })))), React.createElement(Dialog, {
+  })))))), React.createElement(Dialog, {
     open,
     onClose: () => setOpen(false),
     eyebrow: "Confirm",

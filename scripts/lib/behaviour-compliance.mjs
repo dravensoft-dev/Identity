@@ -113,6 +113,7 @@ export const ELEMENT_ROLE = {
   checkbox: 'checkbox',
   combobox: 'combobox',
   'dialog-modal': 'dialog',
+  disclosure: 'button',      // the button IS the widget; the region it controls carries no role
   listbox: 'listbox',
   'menu-button': 'button',   // the trigger is a button; the popup it owns is the menu
   navigation: 'navigation',
@@ -136,7 +137,7 @@ export const ELEMENT_ROLE = {
  *  Asserted against the real pattern files: every name here must have a
  *  roles.label value that actually mentions text content.
  *  @type {Set<string>} */
-export const LABEL_ACCEPTS_TEXT = new Set(['button', 'checkbox', 'switch']);
+export const LABEL_ACCEPTS_TEXT = new Set(['button', 'checkbox', 'disclosure', 'switch']);
 
 /** The element's ARIA role: explicit if authored, else implicit, else null.
  *  @param {{tagName: string, getAttribute: (n: string) => string | null}} el */

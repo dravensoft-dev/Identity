@@ -2,49 +2,12 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-export function SideNav({ items, active, ariaLabel, onNav }) {
-  if (items == null)
-    throw new Error("SideNav: `items` is required");
+import { injectInto, COLUMN } from "./side-nav-inject.js";
+export function SideNav({ children, active, ariaLabel, indentStep = 3, onNav }) {
   if (!ariaLabel)
     throw new Error("SideNav: `ariaLabel` is required");
   return React.createElement("nav", {
     "aria-label": ariaLabel,
-    style: { display: "flex", flexDirection: "column", gap: "var(--sp-1)" }
-  }, items.map((item) => {
-    const on = item.id === active;
-    const shared = {
-      "aria-current": on ? "page" : undefined,
-      onClick: () => onNav && onNav(item),
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: "calc(var(--sp-1) * 3)",
-        padding: "calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 3)",
-        borderRadius: "var(--r-sm)",
-        background: on ? "var(--crimson-soft)" : "transparent",
-        color: on ? "var(--crimson)" : "var(--mute)",
-        border: "none",
-        cursor: "pointer",
-        textAlign: "left",
-        textDecoration: "none",
-        fontFamily: "var(--font-body)",
-        fontSize: "var(--dz-text)",
-        fontWeight: on ? "var(--fw-semibold)" : "var(--fw-medium)"
-      }
-    };
-    const glyph = item.icon ? React.createElement("i", {
-      className: item.icon,
-      "aria-hidden": "true",
-      style: { fontSize: "var(--icon-lg)", display: "inline-flex" }
-    }) : null;
-    return item.href ? React.createElement("a", {
-      key: item.id,
-      href: item.href,
-      ...shared
-    }, glyph, item.label) : React.createElement("button", {
-      key: item.id,
-      type: "button",
-      ...shared
-    }, glyph, item.label);
-  }));
+    style: COLUMN
+  }, injectInto(children, { depth: 0, activeId: active, indentStep, onActivate: onNav }));
 }

@@ -856,23 +856,53 @@ rejected, not an oversight to fix later.
 
 ### SideNav is described three times, and only the colours agree
 
-**React:** `SideNav.jsx` renders a `<nav>` with direct `<a>`/`<button>` children and owns its
-full appearance — geometry included: `px-3 py-2.5` and `gap-3` per item.
+**React:** `SideNav.jsx` renders a `<nav>` and nothing else. It is a **compound component**, and
+the geometry lives in the children rather than in it: `SideNavItem.jsx` owns a row entirely —
+`gap: calc(var(--sp-1) * 3)`, `paddingBlock: calc(var(--sp-1) * 2.5)`,
+`paddingInlineEnd: calc(var(--sp-1) * 3)`, and the glyph Arena draws at `--icon-lg`;
+`SideNavSection.jsx` owns the `role="group"` column and the mono uppercase heading that names it;
+`SideNavCollapsible.jsx` owns the disclosure `<button>`, its caret at `--icon-md`, and the region
+the button controls. A reader who opens `SideNav.jsx` looking for a padding or a gap will not find
+one there — that is the file attribution this entry got wrong until now, and it was wrong for the
+values as well as for the shape.
 
 **Tailwind:** `SideNav.manifest.json` was added by plan 5b so a consumer on neither React nor
 Material has something to build against, and it mirrored `SideNav.jsx` property for property,
-geometry and all. **It no longer does, and plan 8C4 is what changed that.** Under the
-single-icon convention Arena now draws the glyph itself — `<i className={item.icon}
-aria-hidden="true">` with its own `fontSize: var(--icon-lg)` and `display: inline-flex` —
-where the item's icon used to be a consumer-supplied node that Arena never styled. The manifest
-declares two slots, `root` and `item`, and describes no icon at all, so the component now styles
-an element the manifest does not know exists.
+geometry and all. It fell behind twice. Plan 8C4 took ownership of the glyph under the single-icon
+convention — `<i className={icon} aria-hidden="true">` with its own `fontSize: var(--icon-lg)` and
+`display: inline-flex`, where the icon used to be a consumer-supplied node Arena never styled — and
+the manifest, declaring only `root` and `item`, described no icon at all. Then this batch made the
+component compound, adding a section group, a section heading, a disclosure trigger, a caret and a
+controlled region, none of which the manifest knew existed.
 
-That is a real gap rather than a divergence with a reason, and it is the manifest-versus-component
-drift CLAUDE.md already records as unclosed: `check:tailwind` proves every class in a manifest
-resolves to a token, and **nothing proves a manifest still matches the component it was derived
-from.** `check:states` is the one narrow slice that is machine-checked, and it is silent here
-because this is a missing slot rather than an unimplemented state.
+**Both debts are paid here.** What was owed was an `icon` slot and then, one batch later, a slot for
+every element the compound tree added; this batch pays the whole of it. The manifest now declares
+nine slots: `root`, `item` and the `active` variant unchanged, plus `icon` (`--icon-lg`), `section`,
+`sectionLabel` (`font-mono`, `--dz-text-xs`, `--ls-badge`, uppercase, `--mute`), `trigger`,
+`triggerLabel`, `caret` (`--icon-md`) and `region`. `SideNav.card.html` renders every one of them
+through `classesFor()`, the collapsible in both states — the collapsed region by the `hidden`
+attribute alone, since the preflight's `[hidden] { display: none !important }` outranks the
+`region` slot's `flex`, which is this layer's counterpart to React setting both `hidden` and an
+inline `display: none`.
+
+**What the manifest deliberately does not carry is the per-row indent, and it is the one thing it
+cannot.** `indentFor()` returns `calc(var(--sp-1) * 3 + var(--sp-1) * N)` where `N` is
+`indentStep × depth`, computed per row at render time; a static utility cannot hold a runtime
+multiplier, so no slot claims one. Every slot carries the depth-0 inline start instead (`item`'s
+`px-3`, `sectionLabel`'s `ps-3`), and a consumer on the raw-`className` path supplies the deeper
+rows' padding themselves. No new slot combines an explicit size with a border or a padding, so this
+batch adds no row to the border-box table above.
+
+None of that is machine-checked, and the reason this entry keeps having to say so is the
+manifest-versus-component drift CLAUDE.md records as unclosed: `check:tailwind` proves every class
+in a manifest resolves to a token, and **nothing proves a manifest still matches the component it
+was derived from.** `check:states` is the one narrow slice that is, and this batch corrected where
+it reads: `SideNav` now has a `SOURCE_OVERRIDES` entry in `scripts/check-manifest-states.mjs`
+naming all four `.jsx` files, the same reason `Table`'s entry names `Table.jsx` and `TableRow.jsx`
+— the naive same-name search resolves `SideNav.jsx`, which renders only the `root` slot, so a
+future hover on `item` or `trigger` would have been scanned against a file that can never
+implement one. The gate is silent today either way: no slot carries a state modifier, because none
+of the four components implements a hover or a focus state.
 
 **Angular:** there is no `arena-side-nav` primitive. The Angular path is the Material bridge —
 `arena-material.css`'s `.arena-side-nav` rules dressing `mat-nav-list` — because `mat-nav-list`
@@ -890,14 +920,29 @@ catch a state a manifest asserts that its source does not implement — and the 
 deliberately partial: it dresses what Material renders rather than re-specifying Material's
 layout, which is the whole reason SideNav stays a bridge.
 
-**The manifest's gap IS a defect**, and it is the one thing in this entry that should be fixed
-rather than recorded. The manifest's contract is to mirror React; it stopped doing so when the
-component took ownership of the icon, and it owes an `icon` slot.
+**What is newly true of the Angular half: `mat-nav-list` is a flat list of links, and that is all
+it is.** It provides no named section group and no nested disclosure, so the two shapes this batch
+added to React have no counterpart inside the control the bridge dresses. Angular's declarations
+reach *outside* `mat-nav-list` for both — `frameworks/angular/behaviour-delegated.json` delegates
+`SideNavSection` to the `matSubheader` directive and `SideNavCollapsible` to `MatExpansionPanel` —
+and both of those entries state honestly that `arena-material.css` has no rule for their host
+classes, so a subheader or an expansion panel used in an Arena sidebar renders in Material's own
+colours, surface and typography rather than Arena's tokens. The single `.arena-side-nav` bridge
+that dresses the list does not reach either of them.
 
-**Converges:** the colours already do, and the manifest should. The geometry does not and should
-not — reconciling that would mean overriding Material's own list metrics from the bridge, which
-is exactly the duplication the bridge exists to avoid. Recorded so that a reader comparing the
-three does not mistake the Material gap for drift, nor the manifest gap for a decision.
+**That is a question this batch registers and does not answer.** Whether Angular should gain an
+`arena-side-nav` primitive covering the whole compound shape, or the bridge should grow rules for
+the two undressed hosts, or the delegated claim should simply be narrowed to what `mat-nav-list`
+really provides, is Plan D's decision — it is a decision about what the Angular layer *is*, not a
+divergence to record, and nothing here commits it either way.
+
+**Converges:** the colours already do, and the manifest now does — the debt this entry recorded as
+the one thing to fix rather than record is paid, less the runtime indent, which is named above as
+unmirrorable rather than outstanding. The geometry does not converge and should not — reconciling
+that would mean overriding Material's own list metrics from the bridge, which is exactly the
+duplication the bridge exists to avoid. The section and disclosure shapes are open, and open at
+Plan D's level rather than this entry's. Recorded so that a reader comparing the three does not
+mistake the Material gap for drift.
 
 ## How to add an entry
 

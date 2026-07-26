@@ -6,14 +6,18 @@ import { Tooltip } from '../components/feedback/Tooltip.jsx';
 
 /* WHAT SSR CAN AND CANNOT SHOW HERE, because for this component the gap is wide.
  *
- * The bubble is revealed on POINTER INTENT -- Tooltip mounts with `show` false and
- * only a mouseover plus --delay-open flips it. This directory renders with
- * renderToStaticMarkup and has no DOM, so a static render shows the TRIGGER and
- * never the bubble. Nothing below asserts the bubble's text, its role="tooltip",
- * or either delay; that would be asserting something false about a static render.
- * `frameworks/react/test-dom/tooltip-timer.test.jsx` owns the reveal and keeps
- * owning it -- it drives real mouseover/mouseout against a real DOM and pins the
- * cancel-and-reschedule rule around --delay-open and --delay-close.
+ * Tooltip mounts with `show` false, and TWO different things flip it: a mouseover
+ * plus --delay-open, and a focus, which reveals IMMEDIATELY because the delays are
+ * pointer intent and a keyboard user has already paid to reach the control. Both
+ * need an event and a DOM. This directory renders with renderToStaticMarkup and
+ * has neither, so a static render shows the TRIGGER and never the bubble. Nothing
+ * below asserts the bubble's text, its role="tooltip", or either delay; that would
+ * be asserting something false about a static render.
+ * `frameworks/react/test-dom/tooltip-timer.test.jsx` owns the pointer reveal and
+ * keeps owning it -- it drives real mouseover/mouseout against a real DOM and pins
+ * the cancel-and-reschedule rule around --delay-open and --delay-close --
+ * and `tooltip-keyboard.test.jsx` owns the focus path, the merged
+ * aria-describedby and Escape.
  *
  * What IS verifiable statically is exactly what this migration changed:
  *

@@ -149,6 +149,33 @@ test('an array of the wrong element type fails', () => {
   assert.ok(compareSurface(CONTRACT, members, 'angular').some((p) => /items/.test(p)));
 });
 
+/* A primitive member's TYPE was the last unguarded type position in the whole
+ * contract layer: the gate compared name, form, required-ness and an event's
+ * payload, validated that a contract's primitive type IS a primitive, and never
+ * compared the two. `Dialog.width` (a .d.ts saying number against a contract
+ * saying string) and `SideNav.indentStep` (whose contract argues at length for
+ * why a string is wrong) are the two live examples the debt record names; both
+ * agree today, and both would have gone unnoticed if they had not. */
+test('a primitive member typed differently in the layer is a problem', () => {
+  const problems = compareSurface(
+    { component: 'Breadcrumbs', api: { separator: { form: 'primitive', type: 'string' } } },
+    [{ name: 'separator', required: false, form: 'primitive', type: 'number' }],
+    'react',
+  );
+  assert.deepEqual(problems, [
+    'react/Breadcrumbs.separator: typed number, contract says string',
+  ]);
+});
+
+test('a primitive member typed the same in both is not a problem', () => {
+  const problems = compareSurface(
+    { component: 'Breadcrumbs', api: { separator: { form: 'primitive', type: 'string' } } },
+    [{ name: 'separator', required: false, form: 'primitive', type: 'string' }],
+    'react',
+  );
+  assert.deepEqual(problems, []);
+});
+
 /* 3b — required-ness. The contract governs a member's required-ness too, for
  * the five inbound non-slot forms; `slot` and `event` are carved out below. */
 

@@ -8,12 +8,7 @@ import { IconButton } from "../../components/forms/IconButton.js";
 import { Switch } from "../../components/forms/Switch.js";
 import { PageHead } from "../../components/navigation/PageHead.js";
 import { SideNav } from "../../components/navigation/SideNav.js";
-const NAV = [
-  { id: "dashboard", icon: "ph-bold ph-squares-four", label: "Projects", href: "#projects" },
-  { id: "deploys", icon: "ph-bold ph-rocket-launch", label: "Deployments", href: "#deploys" },
-  { id: "activity", icon: "ph-bold ph-pulse", label: "Activity", href: "#activity" },
-  { id: "settings", icon: "ph-bold ph-gear-six", label: "Settings", href: "#settings" }
-];
+import { SideNavItem } from "../../components/navigation/SideNavItem.js";
 const THEME_STORAGE_KEY = "draven-theme";
 const isDarkNow = () => typeof document !== "undefined" && !document.documentElement.classList.contains("arena-light");
 function flipTheme() {
@@ -51,10 +46,29 @@ export function Shell({ active = "dashboard", onNav, title, actions, children })
     dim: "soft"
   })), React.createElement(SideNav, {
     ariaLabel: "Primary",
-    items: NAV,
     active,
-    onNav: (item) => onNav?.(item.id)
-  }), React.createElement("div", {
+    onNav: (id) => onNav?.(id)
+  }, React.createElement(SideNavItem, {
+    id: "dashboard",
+    icon: "ph-bold ph-squares-four",
+    label: "Projects",
+    href: "#projects"
+  }), React.createElement(SideNavItem, {
+    id: "deploys",
+    icon: "ph-bold ph-rocket-launch",
+    label: "Deployments",
+    href: "#deploys"
+  }), React.createElement(SideNavItem, {
+    id: "activity",
+    icon: "ph-bold ph-pulse",
+    label: "Activity",
+    href: "#activity"
+  }), React.createElement(SideNavItem, {
+    id: "settings",
+    icon: "ph-bold ph-gear-six",
+    label: "Settings",
+    href: "#settings"
+  })), React.createElement("div", {
     style: { marginTop: "auto", display: "flex", alignItems: "center", gap: "calc(var(--sp-1) * 2.5)", padding: "calc(var(--sp-1) * 3) calc(var(--sp-1) * 2) 0", borderTop: "var(--bw) solid var(--color-base-300)" }
   }, React.createElement(Avatar, {
     name: "Ana Torres",

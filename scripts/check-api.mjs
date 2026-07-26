@@ -13,7 +13,8 @@
  *                       `"kind": "input"`, with its modelled signature's own
  *                       types resolved the same way any other type name is.
  *   3. AGREEMENT.       Every implementing layer declares exactly the contract's
- *                       members, same name, same form, same required-ness. An
+ *                       members, same name, same form, same required-ness, same
+ *                       type for a primitive. An
  *                       OPTIONAL member is still a declared member: `required:
  *                       false` governs whether a CONSUMER must supply it, never
  *                       whether a LAYER must offer it. Required-ness itself is
@@ -430,6 +431,18 @@ export function compareSurface(contract, members, layer, types = new Map()) {
       }
     }
     if ((spec.form === 'enum' || spec.form === 'object') && m.type && m.type !== spec.type) {
+      problems.push(`${where}.${m.name}: typed ${m.type}, contract says ${spec.type}`);
+    }
+    /* The last unguarded type position. It can only run when both sides are
+     * already `primitive`, because the form mismatch above `continue`s; and
+     * neither side can be undefined, because validateContract() asserts a
+     * contract primitive's type is one of string|number|boolean and classify()
+     * returns a type for exactly those three. So this needs no normalisation
+     * and no exception map -- which matters, because this is the one gate in
+     * the repo that deliberately has none. It is a pure ratchet: measured
+     * against the finished tree it flags nothing that exists today (238
+     * contract/layer primitive pairs, 0 mismatches), and forbids the next one. */
+    if (spec.form === 'primitive' && m.type !== spec.type) {
       problems.push(`${where}.${m.name}: typed ${m.type}, contract says ${spec.type}`);
     }
     /* An INLINE literal union (`'sm' | 'md'`) classifies as {form:'enum',
