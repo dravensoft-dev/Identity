@@ -76,6 +76,24 @@ test('onNav carries the activated id alone, and no DOM event reaches the handler
   assert.equal(seen[1][0], 'settings');
 });
 
+/* THE GUARD THIS PINS IS ONE `&&`, and nothing else in the repo holds it.
+   `onNav` is optional -- a read-only nav, or one whose anchors do the navigating
+   natively, wires nothing -- so `onActivate` arrives undefined at every item and
+   `onActivate && onActivate(id)` is the whole reason a click on one does not
+   throw. The pre-migration suite asserted exactly this and the rewrite dropped
+   it; both surviving click tests above pass an `onNav`, and the DOM suite never
+   clicks an item, so deleting the `&&` left every gate and every suite green
+   while every click in a handler-less nav threw a TypeError. Both elements,
+   because the anchor and the button carry the same handler by different routes. */
+test('an item in a nav that wired no onNav still clicks rather than throwing', () => {
+  const bare = SideNav({ children: TREE, ariaLabel: 'Primary' });
+  const [anchor, button] = bare.props.children.map((el) => SideNavItem(el.props));
+  assert.doesNotThrow(() => anchor.props.onClick({}),
+    'clicking an item in a nav with no onNav threw -- SideNavItem lost its `onActivate &&` guard');
+  assert.doesNotThrow(() => button.props.onClick({}),
+    'clicking an item in a nav with no onNav threw -- SideNavItem lost its `onActivate &&` guard');
+});
+
 test('the anchor keeps its native navigation: nothing in the click path suppresses it', () => {
   const tree = SideNav({ children: TREE, ariaLabel: 'Primary', onNav: () => {} });
   const anchor = SideNavItem(tree.props.children[0].props);
