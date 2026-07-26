@@ -73,6 +73,23 @@ export const SOURCE_OVERRIDES = new Map([
     'frameworks/react/components/display/Table.jsx',
     'frameworks/react/components/display/TableRow.jsx',
   ]],
+  /* SideNav is a COMPOUND component too, and the naive search is wrong here in a
+     sharper way than it is for Table: `SideNav.jsx` renders the <nav> and nothing
+     else, so of the manifest's nine slots it accounts for exactly one (`root`).
+     Every slot a hover or focus modifier could plausibly land on -- `item`,
+     `trigger`, `icon`, `caret` -- is rendered by one of the other three files. No
+     slot carries a state modifier today, so this entry changes no verdict; it is
+     here because the mapping is already wrong, not in anticipation of one. Without
+     it, the first `hover:` added to `item` alongside a real `onMouseEnter` in
+     SideNavItem.jsx would be scanned against a file that cannot implement it and
+     reported as invented -- a false failure on a correct change, and the exact
+     inverse of the defect this gate exists to catch. */
+  ['SideNav', [
+    'frameworks/react/components/navigation/SideNav.jsx',
+    'frameworks/react/components/navigation/SideNavItem.jsx',
+    'frameworks/react/components/navigation/SideNavSection.jsx',
+    'frameworks/react/components/navigation/SideNavCollapsible.jsx',
+  ]],
 ]);
 
 /** A specific `<Component>:<slot>:<family>` this crude, single-file scan

@@ -3,7 +3,14 @@ export default {
   "component": "SideNav",
   "slots": {
     "root": "flex flex-col gap-1",
-    "item": "flex items-center gap-3 px-3 py-2.5 rounded-sm border-none cursor-pointer text-left no-underline font-body text-ctl"
+    "item": "flex items-center gap-3 px-3 py-2.5 rounded-sm border-none cursor-pointer text-left no-underline font-body text-ctl",
+    "icon": "inline-flex text-[length:var(--icon-lg)]",
+    "section": "flex flex-col gap-1",
+    "sectionLabel": "ps-3 py-1.5 font-mono text-ctl-xs tracking-badge uppercase text-base-content/62",
+    "trigger": "flex items-center gap-3 px-3 py-2.5 rounded-sm border-none cursor-pointer text-left font-body text-ctl bg-transparent text-base-content/62 font-medium",
+    "triggerLabel": "flex-1",
+    "caret": "inline-flex text-[length:var(--icon-md)]",
+    "region": "flex flex-col gap-1"
   },
   "variants": {
     "active": {
