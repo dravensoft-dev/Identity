@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Tabs } from '../../components/navigation/Tabs.jsx';
+import { Tab } from '../../components/navigation/Tab.jsx';
 import { SegmentedControl } from '../../components/navigation/SegmentedControl.jsx';
 import { PageHead } from '../../components/navigation/PageHead.jsx';
 import { Breadcrumbs } from '../../components/navigation/Breadcrumbs.jsx';
@@ -11,7 +12,20 @@ import { SideNavCollapsible } from '../../components/navigation/SideNavCollapsib
 import { BulkActionBar } from '../../components/navigation/BulkActionBar.jsx';
 import { Button } from '../../components/forms/Button.jsx';
 function Demo(){const[v,setV]=React.useState('Overview');const[range,setRange]=React.useState('7d');const[sel,setSel]=React.useState(3);return(<div>
-  <Tabs tabs={[{value:'Overview',label:'Overview'},{value:'Deployments',label:'Deployments'},{value:'Activity',label:'Activity'},{value:'Settings',label:'Settings'}]} value={v} onChange={setV}/>
+  <Tabs value={v} onChange={setV}>
+    <Tab value="Overview" label="Overview">
+      <div style={{color:'var(--bone-dim)',fontSize:'var(--dz-text)',lineHeight:'var(--lh-body)'}}>Uptime 99.98% · p95 186 ms · 0 open incidents.</div>
+    </Tab>
+    <Tab value="Deployments" label="Deployments">
+      <div style={{fontFamily:'var(--font-mono)',fontSize:'var(--dz-text-sm)',color:'var(--mute)'}}>#4821 → Production · CI · main · 3m 41s</div>
+    </Tab>
+    <Tab value="Activity" label="Activity">
+      <div style={{color:'var(--bone-dim)',fontSize:'var(--dz-text)',lineHeight:'var(--lh-body)'}}>ana@ approved the release · 2h ago</div>
+    </Tab>
+    <Tab value="Settings" label="Settings">
+      <div style={{color:'var(--bone-dim)',fontSize:'var(--dz-text)',lineHeight:'var(--lh-body)'}}>Auto-deploy on approval — enabled.</div>
+    </Tab>
+  </Tabs>
   <div className="row" style={{marginTop:'calc(var(--sp-1) * 3.5)'}}>
     <div className="sub">SegmentedControl — filters inside the tab, never navigates</div>
     <SegmentedControl ariaLabel="Time range" options={[{value:'24h',label:'24h'},{value:'7d',label:'7d'},{value:'30d',label:'30d'}]} value={range} onChange={setRange}/>

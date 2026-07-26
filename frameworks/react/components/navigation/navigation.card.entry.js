@@ -4,6 +4,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { Tabs } from "../../components/navigation/Tabs.js";
+import { Tab } from "../../components/navigation/Tab.js";
 import { SegmentedControl } from "../../components/navigation/SegmentedControl.js";
 import { PageHead } from "../../components/navigation/PageHead.js";
 import { Breadcrumbs } from "../../components/navigation/Breadcrumbs.js";
@@ -18,10 +19,29 @@ function Demo() {
   const [range, setRange] = React.useState("7d");
   const [sel, setSel] = React.useState(3);
   return React.createElement("div", null, React.createElement(Tabs, {
-    tabs: [{ value: "Overview", label: "Overview" }, { value: "Deployments", label: "Deployments" }, { value: "Activity", label: "Activity" }, { value: "Settings", label: "Settings" }],
     value: v,
     onChange: setV
-  }), React.createElement("div", {
+  }, React.createElement(Tab, {
+    value: "Overview",
+    label: "Overview"
+  }, React.createElement("div", {
+    style: { color: "var(--bone-dim)", fontSize: "var(--dz-text)", lineHeight: "var(--lh-body)" }
+  }, "Uptime 99.98% · p95 186 ms · 0 open incidents.")), React.createElement(Tab, {
+    value: "Deployments",
+    label: "Deployments"
+  }, React.createElement("div", {
+    style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-sm)", color: "var(--mute)" }
+  }, "#4821 → Production · CI · main · 3m 41s")), React.createElement(Tab, {
+    value: "Activity",
+    label: "Activity"
+  }, React.createElement("div", {
+    style: { color: "var(--bone-dim)", fontSize: "var(--dz-text)", lineHeight: "var(--lh-body)" }
+  }, "ana@ approved the release · 2h ago")), React.createElement(Tab, {
+    value: "Settings",
+    label: "Settings"
+  }, React.createElement("div", {
+    style: { color: "var(--bone-dim)", fontSize: "var(--dz-text)", lineHeight: "var(--lh-body)" }
+  }, "Auto-deploy on approval — enabled."))), React.createElement("div", {
     className: "row",
     style: { marginTop: "calc(var(--sp-1) * 3.5)" }
   }, React.createElement("div", {
