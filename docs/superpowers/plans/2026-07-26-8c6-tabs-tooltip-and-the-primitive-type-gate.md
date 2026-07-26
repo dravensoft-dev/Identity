@@ -50,7 +50,15 @@ Every task's requirements implicitly include this section.
 10. **Two R4 tests per component, in separate bodies** — one for a consumer `style`, one for a
     stray attribute — because `node:assert` aborts on the first failure. When inducing them, the
     induction must be **disjoint**: see CLAUDE.md, which carries the two-step recipe.
-11. **happy-dom bounds what a suite may claim.** Our own `.focus()` moves `document.activeElement`
+11. **Generated output is committed, so the generator runs in the same task that moves its
+    input.** A new or changed component `.jsx` needs `bun run build:demos` (its compiled `.js`
+    sibling is committed and `check:demos` fails on drift or a missing one); a changed
+    `*.manifest.json` needs `bun run build:tailwind` (`frameworks/tailwind/utilities.css` and the
+    `.manifest.ts` are committed, and `bun test scripts` catches the staleness); a changed
+    contract or `api/types/` file needs `bun run build:api`. This constraint is written here
+    because the per-task steps below name only the third: Tasks 3 and 4 each hit one of the other
+    two during execution, and neither had a step for it.
+12. **happy-dom bounds what a suite may claim.** Our own `.focus()` moves `document.activeElement`
     and may be asserted; a claim that **Tab** moved focus may never be, because happy-dom has no
     sequential focus navigation. A keydown on a native `<button>` does not synthesise a click.
 
