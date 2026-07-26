@@ -112,8 +112,15 @@ what got built.
 
 **Behaviour also has contracts, and they are not tokens.** `behaviour/patterns/*.json`
 states what a kind of component must do — roles, keys, focus, dismissal — one file per
-pattern, each citing the source it was adopted from. Fifteen cite the WAI-ARIA APG page
-they were adopted from; two, `status` and `textbox`, cite the ARIA 1.2 role reference
+pattern, each citing the source it was adopted from. **Most cite the WAI-ARIA APG page
+they were adopted from — count them rather than trusting a figure here, which moves
+whenever a batch adds a pattern** (`ls behaviour/patterns/ | wc -l` for the total, and
+`grep -l 'apg/' behaviour/patterns/*.json | wc -l` for the APG-derived share; note
+`navigation` cites an APG *practices* page rather than a *patterns* one, so a grep on
+`apg/patterns` alone undercounts by one). This paragraph read *fifteen* until plan 8C5
+added `disclosure`, the first new pattern since the layer was built. The exceptions to
+APG are the interesting part and are stable: two, `status` and `textbox`, cite the ARIA
+1.2 role reference
 instead because APG has no pattern page for either role; `figure-with-data-table` is
 Arena's own and cites WCAG instead, because APG has no chart pattern; `none` and
 `absent` cite nothing, because there is nothing to adopt from when the claim is that no
@@ -246,6 +253,39 @@ content is a value or one of Arena's own components — a `Badge` for a status, 
 for an action — which is what `TableColumn.render` used to buy and what removing it would
 otherwise have cost. The price is that the compound shape is breaking at every call site,
 and for `Table` it was the widest breaking change in the batch.
+
+**The idiom now reaches a third family, and that one is RECURSIVE.** `SideNav` sheds its
+`items` array for `SideNavItem`, `SideNavSection` and `SideNavCollapsible`, and nesting is
+arbitrary — a section inside a collapsible inside a section, to any depth — with **no React
+context anywhere**. What makes that work is one rule applied uniformly: injection is
+**direct children only, one hop**, and a section or a collapsible re-injects into its own
+children with `depth + 1`. Every level does the same single hop, so depth accumulates
+without anything having to know the whole tree. The shared helper is
+`frameworks/react/components/navigation/side-nav-inject.jsx`, and **its `.jsx` extension is
+load-bearing rather than cosmetic**: `check:dimensions` scans `.jsx`/`.ts`/`.tsx` and
+deliberately never opens a `.js`, and the helper's `indentFor()` produces a governed
+`padding-inline-start`, so under `.js` it would sit outside the gate entirely — it shipped
+that way for exactly one commit and could have returned a bare `'12px'` with every gate
+green. It is also the first `.jsx` under `frameworks/react/components/` that is **not a
+component**, which is worth knowing because the documented way to measure Plan C's subject
+set counts `.jsx` files and therefore now over-counts by one; cross-check against
+`frameworks/angular/behaviour-delegated.json`'s key set, which holds only real components.
+
+The recursion inherits the family's limit rather than escaping it: **a consumer's own
+wrapper component between two levels breaks the chain, and so does a fragment.**
+`React.Children.toArray` flattens a nested array and does *not* flatten a `<>…</>`, so a
+fragment arrives as one opaque child that `cloneElement` decorates uselessly. Write items as
+siblings or in an array, never wrapped. This is the same limit `Table` and `RadioGroup`
+carry; the fragment half is easy to miss because the array half works.
+
+**And a guard must count what the render path counts.** `React.Children.count()` counts a
+bare `false` as one child where `toArray()` drops it — so a `count()`-based "this must not be
+empty" guard passes the commonest conditional-render idiom, `{isAdmin && <SideNavItem …/>}`
+with the condition false, straight through to a render that produces exactly the empty thing
+the guard exists to refuse. The guard and the thing it guards would be counting two different
+collections. This shipped in 8C5 and was caught in review; `SideNavSection.jsx` was the only
+`count()` site in the layer, and every other child-counting site (`Table.jsx`, `TableRow.jsx`,
+`Calendar.jsx`, `injectInto` itself) already used `toArray().length`. Use `toArray().length`.
 
 `Table.label` is the pattern for a member that only a human can supply: it names the grid
 for assistive technology, it is `required: true`, and it is **guarded at runtime** rather
@@ -411,8 +451,12 @@ anywhere — no `onMouseEnter`/`onMouseLeave`, no `onFocus`/`onBlur`, no `useSta
 hover/focus tracking, no `:hover`/`:focus` in an injected style string. It exists because
 this exact shape shipped twice on one branch — `Tabs`, then `Pagination` one batch after
 the first was fixed and written down — and prose alone did not stop the second
-occurrence. It resolves the manifest-to-component mapping itself for the same two
-exceptions named above (`Tag` against `tag.ts`, via a `SOURCE_OVERRIDES` map) and carries
+occurrence. It resolves the manifest-to-component mapping itself through a
+`SOURCE_OVERRIDES` map — `Tag` against `tag.ts`, and a compound component against **every**
+`.jsx` its manifest mirrors, since a naive same-name search finds only the parent, which
+typically renders the root slot and nothing else (`Table` against `Table.jsx`+`TableRow.jsx`,
+`SideNav` against all four of its). **Read the map rather than a count written here**, which
+went from two entries to three in plan 8C5 — and carries
 a `check-dimension-literals.mjs`-shaped `EXEMPT` map, keyed `<Component>:<slot>:<family>`
 with a reason each, for a handful of hits that are real but that a whole-file text scan
 cannot resolve on its own — a state delegated to a composed child component
@@ -966,6 +1010,16 @@ scheduled for deletion the same week.
   class as the recorded `spec.default` gap and the recorded fact that React's checked
   surface is its `.d.ts` and never its `.jsx`. Closing it means teaching `compareSurface`
   to compare the primitive type; nothing else needs to move.
+  **8C5 added a second live example, and it is the sharper of the two.** `SideNav.indentStep`
+  is `"type": "number"` in the contract and `indentStep?: number` in the `.d.ts`, and the
+  contract's own description spends four lines explaining why a **string** was rejected — a
+  caller-supplied `"1.5rem"` is neither a token nor a derivation of one, so it stops
+  re-densifying inside `.arena-compact`, and `check:dimensions` cannot catch it because that
+  gate scans source and not the values a caller passes in. So the contract states a reasoned
+  type refusal, `check:dimensions` explicitly cannot enforce it, and `check:api` does not
+  compare the type at all: **changing either surface to `string` leaves the whole sweep
+  green.** `Dialog.width` showed the gap; `indentStep` shows it swallowing a decision the
+  contract argued for at length.
 
 - **`Onboarding`'s accessible name is positional when a step carries no editorial text, and
   it collides with its own progress dots.** The chain is `title ?? eyebrow ?? "Step N of M"`
@@ -997,6 +1051,15 @@ scheduled for deletion the same week.
   on the `Tooltip` precedent, since `compareSurface` excludes slots from required-ness
   comparison precisely because Angular's `<ng-content>` cannot express mandatory. Recorded
   because a third instance makes the silence a pattern rather than an oversight.
+  **8C5 added a fourth, `SideNavSection.content`, and it went to the guarded camp** — a
+  childless section throws — which makes the split two-and-two and settles nothing. It shipped
+  declared *optional* in both the contract and the `.d.ts` while the implementation enforced it,
+  and 8C5's close-out review corrected that to match `AppLogo.mark`, the one prior precedent for
+  a slot both declared required and enforced. Note what the correction proves: **no gate saw
+  either the understatement or the fix**, because `compareSurface` excludes slots from
+  required-ness comparison, which is the same exclusion that lets both camps pass. **Count the
+  required slots (`grep -rn '"form": "slot", "required": true' api/components/`) rather than
+  trusting an ordinal here** — this entry's own "THIRD" went stale in one batch.
 
 - **`ConfirmDialog.open` is the one modal of four that is neither required nor guarded.**
   `Dialog`, `Onboarding` and `CommandPalette` all declare `open` `required: true` and throw on
@@ -1006,6 +1069,81 @@ scheduled for deletion the same week.
   none — but nothing anywhere records it as a decision, and `Dialog.jsx`'s own guard comment
   names `CommandPalette` and `Onboarding` as its precedent while pointedly omitting its nearest
   sibling.
+
+- **`SideNavCollapsible` is a stack of independent disclosures and is deliberately NOT a
+  treeview. What that costs a screen-reader user is real.** With arbitrary nesting the rendered
+  structure looks exactly like a tree, and APG's treeview would demand `aria-level` on every
+  node, a roving tab stop and four-direction arrow navigation. None of it is designed, none of
+  it is bound, and the refusal lives in `behaviour/patterns/disclosure.json`'s **own
+  description** rather than only in the binding — so every future component binding this pattern
+  inherits the refusal and a reader of any one binding meets it. The concrete cost: in a deeply
+  nested sidebar a screen-reader user is told a group is expanded and is told nothing about how
+  deep it sits, how many siblings it has, or which of them they are on — `aria-level`,
+  `aria-setsize` and `aria-posinset` are all absent — and reaching an item four levels down
+  means Tab through every trigger and every visible link above it, because there are no arrow
+  keys. This is a **deliberate trade, not an oversight**: what shipped is what a nav landmark
+  full of links actually is, and production sidebars ship it. But it is a trade with a loser,
+  and the loser should not have to be rediscovered by whoever next reads the clean
+  `"exceptions": []` on that binding and concludes the component is fully accessible. It is
+  fully *compliant with the pattern it chose*. Choosing that pattern is the debt.
+
+- **`SideNavItem` binds `none` with a prose reason, because the binding schema still cannot say
+  "this pattern applies only when `href` is absent".** An item renders an `<a>` with `href` and a
+  `<button>` without, so no single interactive pattern always applies. Binding `button` with an
+  exception — what `Tag` does — would leave a reader of the binding alone believing the pattern
+  always holds, so `none` plus prose was chosen as the less-false of two false options; the
+  reason string carries what the schema cannot. This is the same unresolved question `Tag`,
+  `Skeleton`, `Table` and `Pagination` already carry, and the spec's own open question — *"How
+  does a pattern express an optional requirement?"* — is still open at both levels, the whole
+  pattern and the single requirement. **Count the `none` bindings rather than writing an ordinal**
+  (`grep -rl '"pattern": "none"' frameworks/ | wc -l`): 8C5 added two in one change, and this
+  file has now had three separate prose ordinals about this limit go stale, one of them inside
+  the batch that wrote it — `SideNavItem.behaviour.json` shipped saying "the fourth component to
+  meet it" while its own batch-mate `SideNavSection.jsx` counted five, and the close-out review
+  replaced the ordinal with a pointer here.
+
+- **Plan D inherits an open question about `SideNav`, registered here so it is not inherited
+  silently.** `frameworks/angular/behaviour-delegated.json`'s `SideNav` entry claims Material
+  provides this control — its reason says `mat-nav-list` "already provides the anchor-or-button
+  distinction, the active state and the keyboard behaviour". **That is defensible for a flat list
+  of links and questionable now**: `mat-nav-list` provides no named section group and no nested
+  disclosure group, which is most of what 8C5 added. The two resolutions are Plan D's to choose,
+  not this batch's to pre-empt — an `arena-side-nav` primitive that stops delegating, or a
+  narrowed delegated claim admitting Material covers the flat case only. `components-divergences.md`'s
+  rewritten SideNav entry states the same thing; **keep the two consistent**, since nothing checks
+  that they agree. Two adjacent facts a Plan D reader should have with this: the delegated file
+  records no Material version for any of its claims (`@angular/material` 22.0.5 at the time), and
+  `check:behaviour` never re-checks a claim about a third-party library — so these reasons can
+  quietly become false while the whole suite stays green.
+
+- **`check:dimensions`' `PROPS` widening left a residual gap, and the gate's header does not flag
+  it.** 8C5 found that `padding-inline-start` was **ungoverned** while `padding-left` was governed,
+  and walked straight through the hole with its own split of a `padding` shorthand into logical
+  sides. The fix added the four logical padding sides and the logical margin family. **Logical
+  BORDER and INSET sides are still ungoverned** — `borderInlineStart`, `borderBlockEnd`,
+  `insetInlineStart`, `insetBlock` and the rest. There are zero uses today, so this is not a live
+  violation; it is a live *hole*, and the next component to reach for a logical border width will
+  find no gate there. Worth knowing that the gate's header documents its SVG kebab-case blind spot
+  and says nothing about this one, so a reader who trusts the header will not learn it. Closing it
+  means adding the two families to `PROPS`; nothing else needs to move.
+
+- **`SideNavCollapsible.id` is required, and the alternative was never properly weighed.** The
+  contract originally justified required-ness by citing `api/README.md`'s `id`-member rule, which
+  says the *opposite*: that rule is about a component that **generates** an id and thereby takes
+  away the consumer's only path to the element, and its remedy is an **optional** `id?: string`
+  with the generated value as fallback — never a required member. The false citation was removed
+  in review and the real reason put in its place: Arena derives `${id}-trigger` and `${id}-region`,
+  the trigger's `aria-controls` and the region's `aria-labelledby` must both resolve, and neither
+  wiring is conditional. **But the reviewer's point survives the correction and is recorded rather
+  than lost.** Required-ness was measured against the wrong alternative — "a bare `useId()` with no
+  member at all", which is indeed worse — instead of against "an **optional** member with a `useId`
+  fallback", which gives everything a required id gives (both wirings resolve; a consumer who wants
+  to address the elements can) **without forcing every consumer to invent a name for a group nothing
+  else addresses**. That is the `Input`/`Textarea` shape, and it is what the rule the contract
+  wrongly cited actually prescribes. `id` is also **not in the `toggle` payload**, so a consumer with
+  several collapsibles wiring one handler cannot tell which fired without closing over the id they
+  were forced to supply. **`id` stays required — that is the approved spec's decision and 8C5 did not
+  reopen it.** The question is recorded, not the answer.
 
 ### Where the rest of the debt lives
 
