@@ -158,11 +158,12 @@ test('an angular binding that names its counterpart is valid', () => {
  * object, 44 -> 46 when `Table` became a compound component and grew
  * `TableRow` and `TableCell` in one change, 46 -> 47 when `SideNav` became
  * one and grew `SideNavItem`, 47 -> 48 when `SideNavSection` gave it its
- * first named group, and 48 -> 49 when `SideNavCollapsible` gave it its first
- * `disclosure`. Update it with the change that moves it. */
+ * first named group, 48 -> 49 when `SideNavCollapsible` gave it its first
+ * `disclosure`, and 49 -> 50 when `Tabs` became a compound component and grew
+ * `Tab`. Update it with the change that moves it. */
 test('the React inventory finds every component and no demo entry', () => {
   const found = reactComponents('.');
-  assert.equal(found.length, 49);
+  assert.equal(found.length, 50);
   assert.ok(found.includes('Dialog'));
   assert.ok(found.includes('CalendarEvent'));
   assert.ok(found.includes('TableRow'));

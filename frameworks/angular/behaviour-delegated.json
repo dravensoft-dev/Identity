@@ -145,6 +145,11 @@
     "delegatedTo": "Angular Material MatSlideToggle",
     "reason": "MatSlideToggle already renders role=\"switch\", label association and Space-to-toggle. arena-material.css does not dress it -- no .mat-mdc-slide-toggle rule exists in the bridge today -- so its colours are Material's own defaults, not Arena's tokens."
   },
+  "Tab": {
+    "pattern": "none",
+    "delegatedTo": "Angular Material MatTabGroup's own <mat-tab>",
+    "reason": "React's Tabs became a compound component so that a tabpanel is rendered at all, and Tab is the leaf that shape needs; Angular needs no counterpart primitive, because <mat-tab> is the same leaf -- the consumer writes one per view inside <mat-tab-group> exactly as they now write one Tab per view inside Tabs. The pattern is `none` for the same reason React's own binding is: every requirement that applies to a tab is a clause of the `tabs` pattern, which the enclosing group binds. Verified against @angular/material 22.0.5."
+  },
   "Table": {
     "pattern": "grid",
     "delegatedTo": "Angular Material MatTable",
