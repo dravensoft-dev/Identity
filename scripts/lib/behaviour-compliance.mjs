@@ -196,6 +196,17 @@ const ATTRIBUTE_FOR = {
   'states.selected': 'aria-selected',
 };
 
+/** The requirement keys whose attribute is a REFERENCE rather than a value. For
+ *  these, presence is not the claim: `aria-controls="panel-9"` with no element
+ *  called panel-9 is a broken reference that reads as met to a presence check.
+ *  8C6 shipped exactly that -- `Tabs` carried one `aria-controls` per tab and
+ *  rendered one panel, so N-1 references pointed at nothing and `roles.controls`
+ *  passed.
+ *
+ *  Resolution needs the tree, and this file may not have it (see the header: it
+ *  runs under plain node in its own suite), so the caller injects `resolveId`. */
+export const IDREF = new Set(['roles.controls', 'roles.describedby', 'roles.activedescendant']);
+
 /** Requirement keys naming a role the element itself must expose. `roles.element`
  *  is excluded because its required role comes from ELEMENT_ROLE, keyed by the
  *  pattern, not from the key. */
@@ -273,12 +284,18 @@ export const BEHAVIOURAL = new Set([
  *    an OVERCLAIM message so a reader sees what was asked for; never parsed.
  *  @param {string} patternName the owning pattern's name, which is what selects
  *    the semantics for roles.element and roles.label
+ *  @param {(id: string) => object | null} [resolveId] required when `key` is in
+ *    IDREF — looks an id up in the rendered tree and returns the element it
+ *    names, or null when nothing carries it. Each wrapper builds one scoped to
+ *    its own render; this file never has the tree to resolve one itself.
  *  @returns {true | false | null} null = undecidable from this element alone
- *  @throws {Error} on a key in neither DECIDABLE nor BEHAVIOURAL, and on a
- *    roles.element requirement whose pattern has no ELEMENT_ROLE entry. Both are
- *    programming errors — a typo in a pattern file, or a map left un-extended —
- *    not verdicts about a component, so neither may be returned as one. */
-export function evaluate(el, key, value, patternName) {
+ *  @throws {Error} on a key in neither DECIDABLE nor BEHAVIOURAL, on a
+ *    roles.element requirement whose pattern has no ELEMENT_ROLE entry, and on
+ *    an IDREF requirement given no resolveId. All three are programming errors —
+ *    a typo in a pattern file, a map left un-extended, or a caller that forgot to
+ *    thread the resolver — not verdicts about a component, so none may be
+ *    returned as one. */
+export function evaluate(el, key, value, patternName, resolveId) {
   if (key === 'roles.element') {
     const wanted = ELEMENT_ROLE[patternName];
     if (!wanted) {
@@ -292,7 +309,25 @@ export function evaluate(el, key, value, patternName) {
   if (key === 'roles.label') return hasAccessibleName(el, LABEL_ACCEPTS_TEXT.has(patternName));
 
   const attr = ATTRIBUTE_FOR[key];
-  if (attr) return el.getAttribute(attr) !== null;
+  if (attr) {
+    const raw = el.getAttribute(attr);
+    if (raw === null) return false;
+    if (!IDREF.has(key)) return true;
+    if (typeof resolveId !== 'function') {
+      throw new Error(
+        `evaluate: requirement "${key}" carries an IDREF and no resolveId was supplied. ` +
+        'Pass resolveId to comparePattern -- each wrapper builds one scoped to the rendered ' +
+        'tree. Falling back to a presence check would report a dangling reference as met, ' +
+        'which is the defect this parameter exists to catch.',
+      );
+    }
+    /* A space-separated list, and ONE resolving id is the claim. aria-describedby
+     * legitimately carries the consumer's own description alongside ours, and that
+     * one may name an element outside the component's rendered tree -- demanding
+     * that every id resolve would fail a correct component. */
+    const ids = raw.split(/\s+/).filter(Boolean);
+    return ids.some((id) => resolveId(id) != null);
+  }
 
   const wanted = ROLE_NAMED_BY_KEY[key];
   if (wanted) {
@@ -385,15 +420,22 @@ export function evaluate(el, key, value, patternName) {
  *   by acting on the tree rather than by reading it. Every undecidable requirement must
  *   appear as a key or this reports it — silence about an unverifiable claim is what
  *   this layer exists to remove.
+ * @param {(id: string) => object | null} [o.resolveId] looks an id up in the SAME
+ *   rendered tree `subjects`/`fallback` came from and returns the element it names, or
+ *   null when nothing carries it. Required whenever the pattern carries an IDREF
+ *   requirement (see the IDREF set) — evaluate() throws rather than degrading to a
+ *   presence check when one is owed and missing.
  * @returns {string[]} one message per problem, empty when clean
- * @throws {Error} whatever evaluate() throws — an unrecognised requirement key, or a
- *   roles.element requirement on a pattern with no ELEMENT_ROLE entry. Both are
- *   programming errors rather than verdicts, so they are not returned as problems.
- *   In a render suite that means the whole test aborts instead of reporting this
- *   component's problems beside the others; that is intended, but callers should
- *   know it can happen.
+ * @throws {Error} whatever evaluate() throws — an unrecognised requirement key, a
+ *   roles.element requirement on a pattern with no ELEMENT_ROLE entry, or an IDREF
+ *   requirement given no resolveId. All are programming errors rather than verdicts, so
+ *   they are not returned as problems. In a render suite that means the whole test
+ *   aborts instead of reporting this component's problems beside the others; that is
+ *   intended, but callers should know it can happen.
  */
-export function comparePattern({ pattern, binding, subjects = {}, fallback = null, behavioural = {} }) {
+export function comparePattern({
+  pattern, binding, subjects = {}, fallback = null, behavioural = {}, resolveId,
+}) {
   const excepted = new Map((binding.exceptions ?? []).map((e) => [e.requirement, e.reason]));
   const declared = new Map(Object.entries(behavioural));
   const used = new Set();
@@ -413,7 +455,7 @@ export function comparePattern({ pattern, binding, subjects = {}, fallback = nul
       problems.push(`${key}: no subject element — nothing was rendered, or the selector matched nothing.`);
       continue;
     }
-    const domVerdict = evaluate(el, key, value, pattern.name);
+    const domVerdict = evaluate(el, key, value, pattern.name, resolveId);
 
     // Where the verdict comes from decides the wording, never the rule.
     let verdict = domVerdict;
