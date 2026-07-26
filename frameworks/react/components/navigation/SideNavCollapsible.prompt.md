@@ -31,6 +31,14 @@ test hook at either element, which a `useId()` value would make impossible.
 `SideNavSection` needs none of this -- its heading id is internal -- so it generates its
 own and declares no `id` at all.
 
+`icon` is optional and is a Phosphor class name Arena draws, never markup you pass -- the
+single-icon convention, the same one `SideNavItem.icon` follows. **The expand/collapse
+caret is not this member**: Arena draws that one itself from the expanded state, so `icon`
+is the group's own glyph and setting it never replaces the caret.
+
+`defaultExpanded` **defaults to `false`** -- a collapsible starts shut unless you say
+otherwise, or unless it holds the active destination, which the next section covers.
+
 ## The group opens itself around the active destination
 
 **This is implicit behaviour, and it is stated here rather than left to be discovered.**

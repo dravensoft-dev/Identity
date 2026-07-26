@@ -18,8 +18,9 @@ export interface SideNavSectionProps {
    *  or a nested `<SideNavSection>`/`<SideNavCollapsible>`, written as siblings or
    *  in an array -- never wrapped in a fragment or in a component of your own,
    *  which `React.Children.toArray` cannot see through. A section with no
-   *  children is not a legal shape and throws. */
-  children?: React.ReactNode;
+   *  children is not a legal shape and throws -- which is why this is required
+   *  rather than optional, the `AppLogo.mark` shape. */
+  children: React.ReactNode;
 }
 
 export function SideNavSection(props: SideNavSectionProps): JSX.Element;
