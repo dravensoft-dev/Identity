@@ -1001,19 +1001,22 @@ scheduled for deletion the same week.
   slot is enforced per layer and `Tooltip` owes a guard. Nothing decides it, and no gate
   can: the exclusion in `compareSurface` is what makes both pass.
 
-- **`Tabs` is the third total-exception `grid`-class binding and nothing in this batch
-  touched it.** `Tabs.behaviour.json` excepts **all eight** requirements of the `tabs`
-  pattern — no `role="tablist"`, no `role="tab"`, no tabpanel rendered at all, no
-  `aria-controls`, no `aria-selected`, no roving tab stop, no `ArrowLeft`, no `ArrowRight`
-  and no `onKeyDown` handler whatsoever. `Calendar` and `Table` were in exactly this state
-  and were paid down in this batch; `Tabs` had its API contracted in the same batch by a
-  task that says in its own commit message that contracting an API is orthogonal to
-  accessibility. **That asymmetry is deliberate and is the sharpest one the batch carries.**
-  Unlike the two grids, `Tabs` binds `tabs` rather than `grid`, so it is *not* inside the
-  hand-check rule and a render suite could hold it the day it is fixed — the missing
-  tabpanel is the hard half, because `Tabs` renders no panel and offers no `id`/
-  `aria-controls` wiring for a consumer to connect one, so fixing it is an API change and
-  not only a keyboard one.
+- **`Tabs`'s total-exception `tabs` binding was paid down, and what that cost is worth
+  recording.** The prior entry here named a deliberate asymmetry: `Calendar` and `Table`
+  had their `grid` exceptions retired while `Tabs` sat untouched, because the component
+  that contracted its API in the same batch said in its own commit message that
+  contracting an API is orthogonal to accessibility. That asymmetry is now resolved rather
+  than merely explained — `Tabs.behaviour.json` reads `"exceptions": []` — and resolving it
+  needed an API change, not only a keyboard one: a component that rendered no tabpanel and
+  wired no `id`/`aria-controls` between a tab and its panel could not meet `roles.tabpanel`
+  or `roles.controls` however much arrow-key handling it grew, so the panel and its wiring
+  had to exist before the keyboard behaviour had anything to attach to. Unlike `Calendar`
+  and `Table`, `Tabs` binds `tabs` rather than `grid`, so it was never inside the hand-check
+  rule, and `frameworks/react/test-dom/tabs.test.jsx` now backs the claim with a render
+  suite — `Tabs:react` is in `COVERED`. What the fix did **not** buy: the interior of the
+  roving tab stop (that Tab from elsewhere in the page actually lands on the active tab)
+  is still unverifiable in happy-dom, same as the rest of this repo's focus claims, and is
+  a by-hand check against `Tabs.prompt.md` rather than a gate.
 
 
 - **`check:api` does not compare a `primitive` member's `type`, and nothing anywhere said
