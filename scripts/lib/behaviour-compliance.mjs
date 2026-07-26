@@ -128,11 +128,13 @@ export const ELEMENT_ROLE = {
  *  its accessible name: "text content, aria-labelledby, or aria-label".
  *
  *  This is a whitelist rather than a blanket rule, and the blanket rule is the
- *  bug it prevents. dialog-modal's roles.label says "aria-labelledby or
- *  aria-label" and means it — Dialog's exception records that its title carries
- *  no id and the dialog element carries neither attribute. If text content were
- *  credited everywhere, that true exception would be reported STALE and deleted,
- *  and a real accessibility defect would leave the debt record.
+ *  bug it prevents. radiogroup's roles.label says nothing about text content,
+ *  and RadioGroup.behaviour.json's own exception records exactly that: the group
+ *  div carries no aria-label and no aria-labelledby at all, so it has no
+ *  accessible name of any kind — even though its options render plenty of text.
+ *  If text content were credited everywhere, that true exception would be
+ *  reported STALE and deleted, and a real accessibility defect would leave the
+ *  debt record.
  *
  *  Asserted against the real pattern files: every name here must have a
  *  roles.label value that actually mentions text content.
@@ -140,8 +142,12 @@ export const ELEMENT_ROLE = {
 export const LABEL_ACCEPTS_TEXT = new Set(['button', 'checkbox', 'disclosure', 'switch']);
 
 /** The element's ARIA role: explicit if authored, else implicit, else null.
- *  @param {{tagName: string, getAttribute: (n: string) => string | null}} el */
-export function roleOf(el) {
+ *  @param {{tagName: string, getAttribute: (n: string) => string | null}} el
+ *  @param {(id: string) => object | null} [resolveId] threaded to
+ *    hasAccessibleName for the one case that needs it: a <section> exposes
+ *    role="region" only when it is named, so a labelledby resolving to nothing
+ *    takes the role with it. */
+export function roleOf(el, resolveId) {
   const explicit = el.getAttribute('role');
   if (explicit) return explicit.trim().split(/\s+/)[0];
   const tag = el.tagName.toUpperCase();
@@ -151,23 +157,45 @@ export function roleOf(el) {
   }
   // A <section> is only a region when it is named; unnamed it exposes no role.
   // Text content never names a section, hence the explicit `false`.
-  if (tag === 'SECTION') return hasAccessibleName(el, false) ? 'region' : null;
+  if (tag === 'SECTION') return hasAccessibleName(el, false, resolveId) ? 'region' : null;
   return IMPLICIT_ROLE[tag] ?? null;
 }
 
 /** Whether the element carries an accessible name.
  *
+ *  Three routes satisfy the requirement and they are ALTERNATIVES, so the answer
+ *  is a disjunction and the order below is free. What the order buys is that
+ *  `resolveId` is consulted only where it can change the answer -- a button
+ *  carrying both its own text and an aria-labelledby never needs one. It also
+ *  matches the real name computation: an aria-labelledby resolving to nothing
+ *  falls through to the next route rather than nulling the name.
+ *
  *  `acceptsText` decides whether the element's own text content counts, and the
  *  caller must pass it deliberately — it defaults to false, the stricter answer,
  *  so a new call site cannot accidentally widen the rule. Only the patterns in
- *  LABEL_ACCEPTS_TEXT say text content is enough; see that map for why crediting
- *  it everywhere would wrongly retire Dialog's true exception.
+ *  LABEL_ACCEPTS_TEXT say text content is enough.
  *  @param {{getAttribute: (n: string) => string | null, textContent?: string | null}} el
- *  @param {boolean} [acceptsText] */
-export function hasAccessibleName(el, acceptsText = false) {
-  if (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby')) return true;
-  if (!acceptsText) return false;
-  return Boolean((el.textContent ?? '').trim());
+ *  @param {boolean} [acceptsText]
+ *  @param {(id: string) => object | null} [resolveId] required when the element's
+ *    ONLY remaining route is aria-labelledby — see the throw below.
+ *  @throws {Error} when aria-labelledby is the deciding route and no resolver was
+ *    supplied. Counting the attribute instead would report a dangling reference
+ *    as a name, which is the defect this parameter exists to catch. */
+export function hasAccessibleName(el, acceptsText = false, resolveId) {
+  if (el.getAttribute('aria-label')) return true;
+  if (acceptsText && (el.textContent ?? '').trim()) return true;
+  const raw = el.getAttribute('aria-labelledby');
+  if (!raw) return false;
+  if (typeof resolveId !== 'function') {
+    throw new Error(
+      'hasAccessibleName: this element is named only by aria-labelledby and no resolveId was ' +
+      'supplied, so whether it has a name cannot be decided. Pass resolveId to comparePattern -- ' +
+      'each wrapper builds one scoped to the rendered tree. Counting the attribute instead would ' +
+      'report a dangling reference as a name, and a dialog whose title carried no id would read ' +
+      'as fully compliant while having no accessible name at all.',
+    );
+  }
+  return referenceResolves('aria-labelledby', raw, resolveId);
 }
 
 /** Whether the element can take keyboard focus. Not a claim about focus *order*
@@ -342,11 +370,12 @@ export const BEHAVIOURAL = new Set([
  *    its own render; this file never has the tree to resolve one itself.
  *  @returns {true | false | null} null = undecidable from this element alone
  *  @throws {Error} on a key in neither DECIDABLE nor BEHAVIOURAL, on a
- *    roles.element requirement whose pattern has no ELEMENT_ROLE entry, and on
- *    an IDREF requirement given no resolveId. All three are programming errors —
- *    a typo in a pattern file, a map left un-extended, or a caller that forgot to
- *    thread the resolver — not verdicts about a component, so none may be
- *    returned as one. */
+ *    roles.element requirement whose pattern has no ELEMENT_ROLE entry, on an
+ *    IDREF requirement given no resolveId, and on a roles.label requirement
+ *    whose deciding route is aria-labelledby and no resolveId was given. All
+ *    four are programming errors — a typo in a pattern file, a map left
+ *    un-extended, or a caller that forgot to thread the resolver — not verdicts
+ *    about a component, so none may be returned as one. */
 export function evaluate(el, key, value, patternName, resolveId) {
   if (key === 'roles.element') {
     const wanted = ELEMENT_ROLE[patternName];
@@ -356,9 +385,9 @@ export function evaluate(el, key, value, patternName, resolveId) {
         'Add one in scripts/lib/behaviour-compliance.mjs naming the role that pattern requires.',
       );
     }
-    return roleOf(el) === wanted;
+    return roleOf(el, resolveId) === wanted;
   }
-  if (key === 'roles.label') return hasAccessibleName(el, LABEL_ACCEPTS_TEXT.has(patternName));
+  if (key === 'roles.label') return hasAccessibleName(el, LABEL_ACCEPTS_TEXT.has(patternName), resolveId);
 
   const attr = ATTRIBUTE_FOR[key];
   if (attr) {
@@ -378,7 +407,7 @@ export function evaluate(el, key, value, patternName, resolveId) {
 
   const wanted = ROLE_NAMED_BY_KEY[key];
   if (wanted) {
-    const actual = roleOf(el);
+    const actual = roleOf(el, resolveId);
     return Array.isArray(wanted) ? wanted.includes(actual) : actual === wanted;
   }
 
@@ -388,7 +417,7 @@ export function evaluate(el, key, value, patternName, resolveId) {
     // implicit-semantics principle to roles and withheld it from states, which is
     // the same defect in a different place.
     if (el.getAttribute('aria-checked') !== null) return true;
-    const role = roleOf(el);
+    const role = roleOf(el, resolveId);
     return el.tagName.toUpperCase() === 'INPUT' && (role === 'checkbox' || role === 'radio');
   }
   if (key === 'states.multiline') {
@@ -398,7 +427,7 @@ export function evaluate(el, key, value, patternName, resolveId) {
     // role=status and role=alert carry an implicit live region; an explicit
     // aria-live satisfies it directly.
     if (el.getAttribute('aria-live') !== null) return true;
-    return ['status', 'alert', 'log'].includes(roleOf(el));
+    return ['status', 'alert', 'log'].includes(roleOf(el, resolveId));
   }
 
   if (BEHAVIOURAL.has(key)) return null;

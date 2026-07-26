@@ -80,9 +80,11 @@ test('roleOf returns null for an element with no role of any kind', () => {
   assert.equal(roleOf(el('span')), null);
 });
 
-test('hasAccessibleName accepts either ARIA naming attribute', () => {
+test('hasAccessibleName accepts aria-label, and returns false with no naming route', () => {
+  // The aria-labelledby half of this test used to sit here too, asserting the OLD
+  // presence-only semantics -- it now resolves rather than merely existing, and
+  // moves into its own tests below.
   assert.equal(hasAccessibleName(el('div', { 'aria-label': 'Loading' })), true);
-  assert.equal(hasAccessibleName(el('div', { 'aria-labelledby': 'x1' })), true);
   assert.equal(hasAccessibleName(el('div')), false);
 });
 
@@ -90,6 +92,77 @@ test('hasAccessibleName credits text content only when asked to', () => {
   assert.equal(hasAccessibleName(el('button', {}, 'Save'), true), true);
   assert.equal(hasAccessibleName(el('button', {}, 'Save')), false, 'strict by default');
   assert.equal(hasAccessibleName(el('button', {}, '   '), true), false, 'whitespace is not a name');
+});
+
+/* aria-labelledby must RESOLVE, not merely be present -- the commonest reference
+ * of all, and the one 8C7 left ungoverned because roles.label never reaches
+ * ATTRIBUTE_FOR. Deleting id={titleId} from Dialog.jsx used to leave a dangling
+ * reference on a dialog with no accessible name at all, and dialog-modal.test.jsx
+ * still reported 6 pass / 0 fail. These tests close that. */
+
+test('aria-label alone names the element without consulting the resolver', () => {
+  let asked = false;
+  const resolve = () => { asked = true; return null; };
+  assert.equal(hasAccessibleName(el('div', { 'aria-label': 'Schedule' }), false, resolve), true);
+  assert.equal(asked, false, 'the resolver was consulted for an element aria-label already named');
+});
+
+test('a resolving aria-labelledby names the element', () => {
+  assert.equal(hasAccessibleName(el('div', { 'aria-labelledby': 'title-1' }), false, () => el('h2')), true);
+});
+
+test('a dangling aria-labelledby does NOT name the element', () => {
+  assert.equal(hasAccessibleName(el('div', { 'aria-labelledby': 'gone' }), false, () => null), false);
+});
+
+/* aria-labelledby concatenates, so EVERY id must resolve -- unlike
+   aria-describedby, whose rule and reason live in IDREF_ATTRIBUTES. */
+test('every id in an aria-labelledby list must resolve', () => {
+  const d = el('div', { 'aria-labelledby': 'a b' });
+  const onlyA = (id) => (id === 'a' ? el('span') : null);
+  assert.equal(hasAccessibleName(d, false, onlyA), false);
+  assert.equal(hasAccessibleName(d, false, () => el('span')), true);
+});
+
+/* The three routes are ALTERNATIVES, so a dangling reference falls through to
+   the next one rather than nulling the name -- which is also what a real
+   accessible-name computation does. The resolver is never consulted here,
+   because text answered first, and that is what the order is for. */
+test('text content still names an element whose aria-labelledby dangles', () => {
+  let asked = false;
+  const b = el('button', { 'aria-labelledby': 'gone' }, 'Save');
+  assert.equal(hasAccessibleName(b, true, () => { asked = true; return null; }), true);
+  assert.equal(asked, false);
+});
+
+test('text content does not rescue a pattern that does not admit it', () => {
+  const d = el('div', { 'aria-labelledby': 'gone' }, 'Delete project');
+  assert.equal(hasAccessibleName(d, false, () => null), false);
+});
+
+test('an aria-labelledby with no resolver THROWS rather than counting the attribute', () => {
+  assert.throws(
+    () => hasAccessibleName(el('div', { 'aria-labelledby': 'x' })),
+    /aria-labelledby.*resolveId/s,
+  );
+});
+
+test('an element with no naming route at all needs no resolver', () => {
+  assert.equal(hasAccessibleName(el('div')), false);
+  assert.equal(hasAccessibleName(el('button', {}, 'Save'), true), true);
+});
+
+/* roleOf asks the same question for a <section>: unnamed, it exposes no role at
+   all, so a labelledby that resolves to nothing must take the role with it. */
+test('roleOf refuses region to a section whose aria-labelledby dangles', () => {
+  assert.equal(roleOf(el('section', { 'aria-labelledby': 'gone' }), () => null), null);
+  assert.equal(roleOf(el('section', { 'aria-labelledby': 'h1' }), () => el('h2')), 'region');
+});
+
+test('evaluate decides roles.label by resolving, not by counting', () => {
+  const d = el('div', { 'aria-labelledby': 'gone' });
+  assert.equal(evaluate(d, 'roles.label', 'aria-labelledby or aria-label', 'dialog-modal', () => null), false);
+  assert.equal(evaluate(d, 'roles.label', 'aria-labelledby or aria-label', 'dialog-modal', () => el('h2')), true);
 });
 
 test('isFocusable accepts natively focusable elements and explicit tabindex', () => {
