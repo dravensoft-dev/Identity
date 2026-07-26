@@ -908,6 +908,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`Tabs` no longer migrates a tab's typed state into whichever tab happens to land at the same
+  index.** The tablist clones each child with `cloneElement`, which preserves the child's own key;
+  the panel list wrote `key={i}` instead — an index into the array *after* filtering, which shifts
+  the moment an earlier tab drops out. The two lists disagreed about which panel was which tab, so
+  React reused the DOM subtree that used to sit at the shifted index rather than mounting a fresh
+  one, and an uncontrolled `<input>`'s DOM state rode along with the reuse even though every prop on
+  it kept updating correctly. The panel is now keyed by `child.key`, the same key the tablist already
+  uses. Caught with three tabs each holding a distinct typed value, dropping the first, and asserting
+  each survivor's input still held its own text.
 - **Eleven of the twelve `dialog-modal` exceptions across the three React overlays are retired**, each
   with proof above it in the same change — the proof being an assertion that used to say the
   opposite. `Dialog` and `Onboarding` end with none at all. The twelfth, `ConfirmDialog`'s

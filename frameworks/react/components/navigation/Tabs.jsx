@@ -106,7 +106,13 @@ export function Tabs({ children, value, defaultValue, onChange }) {
           MOUNT, so a panel's side effects run immediately rather than on first
           selection. Tabs.prompt.md and the contract both say so. */}
       {items.map((child, i) => (
-        <div key={i} role="tabpanel" tabIndex={i === at ? 0 : -1}
+        /* keyed by the child's OWN key, never `i` -- the tablist's clone above
+           keeps that same key, and toArray() preserves each survivor's ORIGINAL
+           slot when an earlier one drops out (a .map() losing an element, or a
+           {cond && <Tab/>} flipping): the child's key stays put, an index into
+           the filtered array shifts. A shifted `i` made React reuse the wrong
+           subtree, and reused DOM state does not care whose panel it was. */
+        <div key={child.key} role="tabpanel" tabIndex={i === at ? 0 : -1}
           id={panelId(i)} aria-labelledby={tabId(i)} hidden={i !== at}
           style={{ paddingBlockStart: 'calc(var(--sp-1) * 5.5)', display: i === at ? 'block' : 'none' }}>
           {child.props.children}

@@ -183,6 +183,43 @@ test('the selected tab and its panel reference each other in the real DOM', () =
   assert.equal(root.querySelector(`#${panel.getAttribute('id')}`), panel);
 });
 
+/* THE IDENTITY BUG: the tablist clones each child with cloneElement, which
+ * PRESERVES the child's own key, while the panel list used to write `key={i}` --
+ * an index into the array AFTER filtering, which shifts when an earlier tab
+ * drops out. The two lists then disagree about which panel IS which tab, so
+ * React reuses the DOM subtree that sat at the shifted index rather than
+ * mounting a fresh one -- and a subtree's own DOM state (what is typed into an
+ * uncontrolled <input>) rides along with the reuse even though every PROP on it
+ * updates correctly. `data-for` is a prop and always ends up right; the
+ * input's value is DOM state and is exactly what migrates. */
+test('dropping a tab does not migrate a surviving panel\'s typed input into the wrong tab', () => {
+  function IdentityHarness() {
+    const [keys, setKeys] = React.useState(['a', 'b', 'c']);
+    return (
+      <>
+        <button type="button" data-drop onClick={() => setKeys(['b', 'c'])}>drop</button>
+        <Tabs defaultValue="b">
+          {keys.map((k) => <Tab key={k} value={k} label={`Tab ${k}`}><input data-for={k} /></Tab>)}
+        </Tabs>
+      </>
+    );
+  }
+  const root = mount(<IdentityHarness />);
+  /* Every tab's panel is mounted regardless of selection (THE PRICE, above), so
+     every input exists to be typed into even though only one is visible. */
+  act(() => {
+    for (const input of root.querySelectorAll('input[data-for]')) {
+      input.value = `typed-${input.dataset.for}`;
+    }
+  });
+  act(() => { root.querySelector('[data-drop]').click(); });
+
+  const pairs = [...root.querySelectorAll('input[data-for]')]
+    .map((input) => [input.dataset.for, input.value]);
+  assert.deepEqual(pairs, [['b', 'typed-b'], ['c', 'typed-c']],
+    'a surviving panel\'s input held another tab\'s typed value -- the panel list is keyed positionally');
+});
+
 test('the binding is honest: every `tabs` requirement, in both directions', () => {
   const root = mount(three());
   assertPattern({

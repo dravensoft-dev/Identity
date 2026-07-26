@@ -44,7 +44,7 @@ export function Tabs({ children, value, defaultValue, onChange }) {
     panelId: panelId(i),
     onSelect: select
   }))), items.map((child, i) => React.createElement("div", {
-    key: i,
+    key: child.key,
     role: "tabpanel",
     tabIndex: i === at ? 0 : -1,
     id: panelId(i),
