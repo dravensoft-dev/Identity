@@ -131,9 +131,12 @@ test('tabs that arrive after mount are still operable, though nothing is selecte
     'an arrow key did not select -- the strip is keyboard-dead');
 });
 
-/* roles.controls, the half the evaluator cannot hold: it checks the attribute is
- * PRESENT on the one element the suite hands it. That every one of them RESOLVES
- * is this. */
+/* Since 8C7 the evaluator resolves roles.controls, and across every tab rather
+ * than the one the suite hands it, so the dangling-reference half of this no
+ * longer lives only here. What still does: the REVERSE wiring -- each panel
+ * labelled by the tab that controls it -- and that exactly one panel is unhidden
+ * while the rest are hidden rather than absent. Neither is a requirement key, so
+ * no pattern can ask for them. */
 test('every tab controls a panel that exists, not only the selected one', () => {
   const root = mount(three());
   const ids = new Set(panelsOf(root).map((p) => p.getAttribute('id')));

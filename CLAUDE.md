@@ -158,8 +158,8 @@ by hand**, so `Calendar` and `Table` are outside the suites and outside `COVERED
 the rule, the measurement behind it and its price are stated in
 `check-compliance.mjs`'s own header and under *Known debt*. The shared evaluator is
 `scripts/lib/behaviour-compliance.mjs`, DOM-generic on purpose — it touches only
-`tagName`, `getAttribute` and `hasAttribute`, because it is consumed from three
-runtimes, one of them plain node in its own test, which has no DOM. It returns a
+`tagName`, `getAttribute`, `hasAttribute` and `textContent`, because it is consumed
+from three runtimes, one of them plain node in its own test, which has no DOM. It returns a
 third value, `null`, for requirements no single element can decide (`focus.*`,
 `keyboard.*`, `content.noAutoDismiss`, `alternative.table`); a suite must name
 each of those in its `behavioural` map and assert it by acting on the tree, and
@@ -1065,12 +1065,18 @@ scheduled for deletion the same week.
   `getAttribute`, `hasAttribute` and `textContent` and still runs in three runtimes one of
   which has no DOM. Resolution had to arrive from outside rather than be done in place, so
   each layer's wrapper builds the resolver from the render root itself and a suite cannot
-  forget to pass one; a requirement in `IDREF` evaluated with no resolver **throws**, since
-  degrading to the old presence check would report a dangling reference as met, which is the
-  whole defect the parameter exists to catch. **And *each* is quantified rather than sampled** —
-  a subject may be an array, every element in it must meet the requirement, and a quantified
-  requirement handed a single element throws as well. `tabs.test.jsx` hands over every tab
-  instead of resolving its `aria-controls` by hand.
+  forget to pass one; a requirement in `IDREF` that finds its attribute and no resolver
+  **throws**, since degrading to the old presence check would report a dangling reference as
+  met, which is the whole defect the parameter exists to catch. Note the scope: an attribute
+  that is simply *absent* is unmet and returns before the resolver is ever consulted, so the
+  throw is about a reference that exists and cannot be checked, never about a missing one.
+  **And *each* is quantified rather than sampled** — a subject may be an array, every element
+  in it must meet the requirement, and a quantified requirement handed a single element throws
+  as well. `tabs.test.jsx` hands over every tab **as well as** keeping its own hand-resolution
+  test, which the layer does not supersede: that test also asserts the reverse `aria-labelledby`
+  wiring — each panel labelled by the tab that controls it — and that exactly one panel is
+  unhidden while the rest are hidden rather than absent. Neither is a requirement key, so no
+  pattern can ask for either and no evaluator can decide them. Do not delete it as redundant.
 
   What none of that buys, and none of it is scheduled. **A resolved reference is not proof it
   landed on the RIGHT element.** A pattern states its requirement as prose written for a human,
