@@ -364,6 +364,35 @@ export function evaluate(el, key, value, patternName, resolveId) {
   );
 }
 
+/** Requirements whose prose quantifies over EVERY matching element, so a suite
+ *  must hand over a collection and one element is not an answer. Keyed
+ *  `pattern:requirement`.
+ *
+ *  HAND-CURATED, NEVER DERIVED. A scan for the word "each" finds four
+ *  requirements; reading the prose finds at least five, because
+ *  tabs:states.selected says "false on the REST". Deriving this would rebuild the
+ *  false-negative class this file's header already rejected once. Semantics key
+ *  off the requirement KEY and the PATTERN NAME, never off the human prose. */
+export const QUANTIFIED = new Map([
+  ['listbox:states.selected',
+    'aria-selected is true on each selected option and false on the rest, so one option cannot answer for the list.'],
+  ['tabs:roles.controls',
+    'each tab references its own tabpanel; checking only the selected one is exactly the defect 8C6 shipped.'],
+  ['tabs:states.selected',
+    'true on the active tab and false on the rest -- the same quantification listbox states, written as "the rest".'],
+]);
+
+/** Requirements whose prose quantifies but which are deliberately NOT in the map
+ *  above, each with the reason. They are listed rather than merely absent so the
+ *  next reader meets the decision instead of the silence, and so the staleness
+ *  test can prove they still name real requirements. */
+export const NOT_QUANTIFIED = new Map([
+  ['feed:states.posinset',
+    'BEHAVIOURAL rather than decidable: its prose carries a "when" (-1 for setsize when the total is unknown), so a snapshot of one element cannot answer it and evaluate() returns null. There is no per-element verdict to quantify over.'],
+  ['navigation:roles.label',
+    'quantifies over navigation landmarks on a PAGE, and only when more than one exists. A component suite renders one component; requiring a collection would force fixtures to render two landmarks to satisfy a rule that is not a claim about the component.'],
+]);
+
 /**
  * Compare one component's rendered subject elements against its binding, in both
  * directions, and return one message per disagreement.
@@ -449,13 +478,25 @@ export function comparePattern({
   let missedSubject = false;
 
   for (const [key, value] of Object.entries(pattern.requires)) {
-    const el = key in subjects ? subjects[key] : fallback;
-    if (!el) {
+    const subject = key in subjects ? subjects[key] : fallback;
+    const quantified = QUANTIFIED.has(`${pattern.name}:${key}`);
+    if (quantified && !Array.isArray(subject)) {
+      throw new Error(
+        `comparePattern: "${key}" of pattern "${pattern.name}" is quantified over every matching ` +
+        'element, but its subject is a single element. Pass an array -- checking one is the ' +
+        `defect this rule exists to catch.\n      reason on file: ${QUANTIFIED.get(`${pattern.name}:${key}`)}`,
+      );
+    }
+    const els = Array.isArray(subject) ? subject : (subject ? [subject] : []);
+    if (!els.length) {
       missedSubject = true;
       problems.push(`${key}: no subject element — nothing was rendered, or the selector matched nothing.`);
       continue;
     }
-    const domVerdict = evaluate(el, key, value, pattern.name, resolveId);
+    const verdicts = els.map((one) => evaluate(one, key, value, pattern.name, resolveId));
+    /* One undecidable element makes the whole requirement undecidable: a
+       collection cannot be half-behavioural. */
+    const domVerdict = verdicts.includes(null) ? null : verdicts.every(Boolean);
 
     // Where the verdict comes from decides the wording, never the rule.
     let verdict = domVerdict;
@@ -482,8 +523,9 @@ export function comparePattern({
         '      Delete the exception, or name a subject if the exception is about a different element.',
       );
     } else if (!verdict && !hasException) {
+      const scale = els.length > 1 ? ` (${verdicts.filter((v) => v === false).length} of ${els.length} failed)` : '';
       problems.push(
-        `${key}: OVERCLAIM — the binding declares no exception, but ${source} does not meet it.\n` +
+        `${key}: OVERCLAIM${scale} — the binding declares no exception, but ${source} does not meet it.\n` +
         `      pattern requires: ${JSON.stringify(value)}`,
       );
     }

@@ -18,6 +18,7 @@ import { join, dirname, basename, extname } from 'node:path';
 import {
   roleOf, hasAccessibleName, isFocusable, evaluate,
   DECIDABLE, BEHAVIOURAL, ELEMENT_ROLE, LABEL_ACCEPTS_TEXT, comparePattern,
+  QUANTIFIED, NOT_QUANTIFIED,
 } from './lib/behaviour-compliance.mjs';
 
 const PATTERN_DIR = join(dirname(dirname(fileURLToPath(import.meta.url))), 'behaviour', 'patterns');
@@ -660,4 +661,98 @@ test('a resolving reference with an exception declared is a STALE EXCEPTION', ()
   });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /STALE EXCEPTION/);
+});
+
+/* A requirement quantified over "each" must be checked against each. 8C6 shipped
+ * a Tabs strip where checking only the selected tab's aria-controls passed while
+ * N-1 unselected tabs referenced a panel that did not exist -- the same defect
+ * the IDREF tests above close for a single element, one level up: a collection. */
+
+test('an array subject is met only when every element meets it', () => {
+  const ok = el('button', { 'aria-selected': 'false' });
+  const bad = el('button');
+  const p = (subject) => comparePattern({
+    pattern: { name: 'tabs', requires: { 'states.selected': 'true on the active tab, false on the rest' } },
+    binding: { pattern: 'tabs', exceptions: [] },
+    subjects: { 'states.selected': subject },
+    resolveId: () => el('div'),
+  });
+  assert.deepEqual(p([ok, ok, ok]), []);
+  assert.equal(p([ok, bad, ok]).length, 1);
+  assert.match(p([ok, bad, ok])[0], /OVERCLAIM/);
+});
+
+test('the OVERCLAIM says how many of the collection failed', () => {
+  const ok = el('button', { 'aria-selected': 'false' });
+  const bad = el('button');
+  const problems = comparePattern({
+    pattern: { name: 'tabs', requires: { 'states.selected': 'x' } },
+    binding: { pattern: 'tabs', exceptions: [] },
+    subjects: { 'states.selected': [ok, bad, bad] },
+    resolveId: () => el('div'),
+  });
+  assert.match(problems[0], /2 of 3/);
+});
+
+test('a quantified requirement given ONE element throws', () => {
+  assert.throws(
+    () => comparePattern({
+      pattern: { name: 'tabs', requires: { 'states.selected': 'x' } },
+      binding: { pattern: 'tabs', exceptions: [] },
+      subjects: { 'states.selected': el('button', { 'aria-selected': 'true' }) },
+      resolveId: () => el('div'),
+    }),
+    /quantified.*array/s,
+  );
+});
+
+test('an unquantified requirement given one element is still fine', () => {
+  const problems = comparePattern({
+    pattern: { name: 'disclosure', requires: { 'roles.expanded': 'aria-expanded' } },
+    binding: { pattern: 'disclosure', exceptions: [] },
+    subjects: { 'roles.expanded': el('button', { 'aria-expanded': 'false' }) },
+  });
+  assert.deepEqual(problems, []);
+});
+
+test('an empty array reads as a missing subject, not as vacuously met', () => {
+  const problems = comparePattern({
+    pattern: { name: 'tabs', requires: { 'states.selected': 'x' } },
+    binding: { pattern: 'tabs', exceptions: [] },
+    subjects: { 'states.selected': [] },
+    resolveId: () => el('div'),
+  });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /no subject element/);
+});
+
+/* The curated maps carry EXEMPT's discipline: an entry that no longer names a
+   real pattern requirement fails this suite rather than rotting quietly. This
+   suite already reads behaviour/patterns/ once, into PATTERNS (see the top of
+   this file) -- that map is reused here rather than adding a second reader. */
+test('every QUANTIFIED and NOT_QUANTIFIED key names a real pattern requirement', () => {
+  for (const map of [QUANTIFIED, NOT_QUANTIFIED]) {
+    for (const key of map.keys()) {
+      const [name, requirement] = key.split(':');
+      const pattern = PATTERNS.get(name);
+      assert.ok(pattern, `${key}: no pattern file called "${name}"`);
+      assert.ok(requirement in pattern.requires, `${key}: pattern "${name}" declares no "${requirement}"`);
+    }
+  }
+});
+
+test('every QUANTIFIED requirement is decidable per element', () => {
+  for (const key of QUANTIFIED.keys()) {
+    const requirement = key.split(':')[1];
+    assert.ok(DECIDABLE.has(requirement),
+      `${key}: quantifying needs a per-element verdict, and this requirement is behavioural`);
+  }
+});
+
+test('every entry carries a reason', () => {
+  for (const map of [QUANTIFIED, NOT_QUANTIFIED]) {
+    for (const [key, reason] of map) {
+      assert.ok(typeof reason === 'string' && reason.length > 20, `${key}: no reason on file`);
+    }
+  }
 });
