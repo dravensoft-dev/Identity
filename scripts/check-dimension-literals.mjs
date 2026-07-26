@@ -108,6 +108,15 @@ const PROPS = new Set([
   'gap', 'rowGap', 'columnGap',
   'border', 'borderTop', 'borderRight', 'borderBottom', 'borderLeft',
   'borderWidth', 'borderRadius',
+  /* The logical BORDER and INSET sides, added for the reason their padding and
+   * margin counterparts were: a logical spelling was one word away from being
+   * invisible to this gate while its physical twin was governed. Verified against
+   * the tree when added: ZERO sites in frameworks/ use any of them, so this is a
+   * ratchet rather than a fix, and the suite above is what proves it works. */
+  'borderInline', 'borderBlock',
+  'borderInlineStart', 'borderInlineEnd', 'borderBlockStart', 'borderBlockEnd',
+  'insetInline', 'insetBlock',
+  'insetInlineStart', 'insetInlineEnd', 'insetBlockStart', 'insetBlockEnd',
   'width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight',
   'top', 'right', 'bottom', 'left', 'inset', 'zIndex',
   'boxShadow', 'transform', 'strokeWidth',
