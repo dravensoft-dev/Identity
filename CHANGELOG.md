@@ -8,6 +8,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`SideNav` becomes a compound component, and gains named sections and nested collapsible
+  groups.** Three new React components — `SideNavItem`, `SideNavSection` and `SideNavCollapsible` —
+  each with its own contract, taking `check:api` from 46 contracts across 66 layer implementations
+  to **49 across 69**. All three are single-layer, like every Plan C subject, because Angular
+  delegates `SideNav` to Material's `mat-nav-list`. **This is Plan C's fifth batch, and the entry
+  further down that says there is no fifth batch was true when written**: a batch that turns an
+  item into a component enlarges its own subject set while contracting it, which has now happened
+  in three consecutive plans. Plan C's subject set is twenty-eight and all twenty-eight are
+  contracted — measure it rather than trusting that sentence.
+- **`SideNavSection`** groups items under a name. It renders a labelled `role="group"` whose
+  accessible name is the same heading a sighted user reads, so the grouping the eye sees is the
+  grouping a screen reader announces. Having sections at all is optional — loose items at the root
+  are legal and may sit beside them — but a *childless* section throws, because two shapes would be
+  one more thing a single behaviour binding cannot describe.
+- **`SideNavCollapsible`** is a named group that shows and hides its own contents, and it binds
+  **`disclosure`**, a new pattern and `behaviour/patterns/`'s twenty-first. A native
+  `<button type="button">` carries `aria-expanded` and an `aria-controls` naming a region that is
+  always rendered, so the reference never points at nothing. It opens itself when it comes to hold
+  the enclosing `SideNav`'s `active` destination — a transition, not a standing condition, which is
+  what leaves you free to collapse it again — and `onToggle` deliberately does not fire for that,
+  because the automatic expansion is Arena's decision rather than the user's.
+- **Groups nest to any depth**, and `SideNav` gains **`indentStep`** (default `3`) to control the
+  indent. It is a *multiplier of `--sp-1`*, never a CSS length: a caller-supplied `"1.5rem"` would
+  stop re-densifying inside `.arena-compact`, and no gate would catch it. The indent compounds one
+  step per level.
+- `SideNavCollapsible:react` joins `check:compliance`'s `COVERED` behind a binding declaring
+  `"exceptions": []`, taking coverage **7 → 8**. The denominator moved 66 → 69 in the same batch,
+  one binding per new component.
+- **A written by-hand checklist for the disclosure**, in `SideNavCollapsible.prompt.md`. happy-dom
+  synthesises no click from a keydown on a native button and has no sequential focus navigation at
+  all, so no suite can prove that Enter and Space toggle the region or that Tab skips a collapsed
+  one. Both were driven in real headless Chromium through CDP and every step passed. No gate was
+  added — the same refusal the `dialog-modal` checklist below records.
+
 - **The `dialog-modal` pattern is met in React, for the first time, by all three overlays.**
   `frameworks/react/use-dialog-modal.js` is a shared hook and a deliberate PORT of the Angular
   layer's already-shipped `frameworks/angular/primitives/focus-trap.ts` — the same focusable
@@ -412,16 +446,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING — `SideNav.items` is gone; `SideNav` is a compound component. Every call site
+  breaks.** Where you passed an array, you now write one `<SideNavItem>` per destination as a
+  child, optionally grouped by `<SideNavSection>` and `<SideNavCollapsible>`. `SideNav` walks its
+  direct children and injects where each sits, which id is active, the indent step and the handler
+  that reports `nav` — **none of which is a member of any contract**, exactly as `Radio` declares
+  none of what `RadioGroup` gives it. This is the `Table`/`TableRow`/`TableCell` shape one size
+  down, and it buys the thing an array could not: a consumer's own content and structure inside a
+  single group. It carries that idiom's limit too — **a wrapper component of your own, or a
+  fragment, between two levels breaks the chain**, because `React.Children.toArray` sees through
+  neither. Write items as siblings or in an array.
+- **BREAKING — `SideNavItem` is a component, not a type**, and `SideNav.d.ts`'s re-export of the
+  name is **deleted**. This is the first deliberate exception to the rule 8C1–8C4 carried, that a
+  migrated `.d.ts` re-exports whatever the pre-migration file named: the name now belongs to a
+  component in that same directory, and re-exporting a deleted interface under it would resolve the
+  import to the wrong thing rather than fail. `api/README.md` records the exception.
+- **BREAKING — `SideNav.nav` carries a `string` id** where one batch ago it carried the whole
+  `SideNavItem`. **A contract shipped in `7640db2` is broken here with no release between the
+  two**, and the reason is not a change of mind: the object that payload referred to stopped
+  existing. `SideNavItem` is a component now, so there is no item object to hand back, and the id
+  is the only thing that survives the change. Read `nav`'s argument as the activated item's `id`;
+  it is still the case that no DOM event reaches the handler and that `preventDefault()` is not
+  reachable, for the reasons the 8C4 entry below gives.
+- **BREAKING — `SideNavItem.label` and `SideNavItem.id` are guarded with a falsy check**, so a
+  blank value throws as well as an absent one. `label` is the link's whole accessible name and `id`
+  is what `active` matches, so a present-but-blank value *is* the defect. `SideNav.items`' old
+  guard was `== null` for the opposite reason — an empty array is a caller saying "no destinations
+  right now" — and it left with the member.
 - **Plan C is complete: `Dialog`, `Menu`, `Pagination` and `SideNav` come under contract**, taking
   `check:api` from 42 contracts across 62 layer implementations to **46 across 66**. All four are
-  single-layer, because Angular delegates each to Material. There is no fifth batch — the subject
-  set is exhausted.
+  single-layer, because Angular delegates each to Material. *(Both halves of this entry were
+  overtaken by 8C5, below, and are corrected there rather than left standing: the gate is at 49/69,
+  and there was a fifth batch. The subject set was genuinely exhausted when this was written — 8C5
+  enlarged it by making `SideNav`'s items into components.)*
 - **BREAKING — `Menu` loses its per-item `onClick`.** It becomes `Menu.select`, one event carrying
   the whole `MenuItem`, on R1's own rule that a field which is a function becomes an event of the
   component carrying the object in its payload. `MenuItem` declares no `id`: `{ divider: true }` and
   `{ header: '…' }` are legitimate entries carrying neither label nor id, and a required `id` would
   have forced a meaningless one onto every divider. Rewrite each item's handler into one `onSelect`.
-- **BREAKING — `SideNav.onNav` is replaced by `nav`, carrying the whole `SideNavItem`.** The old
+- **BREAKING — `SideNav.onNav` is replaced by `nav`.** *(It carried the whole `SideNavItem` as
+  shipped here; 8C5 changed the payload to a bare `string` id, because `SideNavItem` stopped being
+  a type. See the 8C5 entry below — this is the one contract in the tree broken twice with no
+  release between the two.)* The old
   signature took `(id, event)`, and an event carries exactly one payload while `React.MouseEvent` is
   a platform type, so the shape could not be contracted at all. **`preventDefault()` is no longer
   reachable from the handler**: an item with `href` still renders a real anchor, so ctrl-click,

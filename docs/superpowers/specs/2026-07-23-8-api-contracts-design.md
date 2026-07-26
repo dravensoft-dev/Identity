@@ -889,6 +889,7 @@ comparison and a comparison needs a baseline that is not stale.
 | **Plan 8C2** (2026-07-24) | **1048 across 94 files** | 26 across 5 files |
 | **Plan 8C3** (2026-07-25) | **1145 across 101 files** | **36 across 6 files** |
 | **Plan 8C4** (2026-07-25) | **1175 across 104 files** | **64 across 9 files** |
+| **Plan 8C5** (2026-07-26) | **1199 across 105 files** | **74 across 10 files** |
 
 Plan 8C3 carried Plan C forward with its third batch: `Tabs`, `SegmentedControl`, `ProgressBar`,
 `Toast`, `Tooltip`, `Calendar`, `CalendarEvent`, `Table`, `TableRow` and `TableCell` — ten
@@ -920,6 +921,47 @@ left, and the ladder reconciles one contract and one layer per commit: 42 → **
 each to Material. **`check:api` now stands at 46 contracts across 66 layer implementations, and
 there is no fifth batch** — the set is exhausted, which is the first time that sentence has been
 true since Plan A.
+
+> **Superseded by Plan 8C5 (2026-07-26): there was a fifth batch, and the sentence above was false
+> within a day of being written.** Not because a subject was missed — the set really was exhausted
+> at the moment it was measured — but because **a batch that makes an item a component enlarges its
+> own subject set while contracting it**, and 8C5 did exactly that three times over. `SideNav` shed
+> its `items` array and became a compound component, so `SideNavItem`, `SideNavSection` and
+> `SideNavCollapsible` are each a new React component, a new contract and a new delegated entry in
+> the same change. This is the third consecutive plan to move the denominator this way —
+> `RadioGroup` inside 8C2, then `CalendarEvent`/`TableRow`/`TableCell` inside 8C3 — and the first in
+> which the drift falsified an explicit claim of completion rather than only a count. **"The subject
+> set is exhausted" is not a durable statement about this plan, and no future batch should write it
+> again**; measure the set instead.
+>
+> **Re-measured: Plan C's subject set is twenty-EIGHT, and all twenty-eight are contracted.**
+> `check:api` moved 46/66 → **49/69**, one contract and one layer per feature commit: 46 →
+> **47** (`5848168`, `SideNavItem`) → **48** (`76760eb`, `SideNavSection`) → **49** (`2f1436d`,
+> `SideNavCollapsible`). All three are single-layer for the usual reason, and Appendix B of the
+> 8C5 plan registers the thing that makes that reason weaker here than elsewhere: Angular delegates
+> `SideNav` to `mat-nav-list`, which provides a flat list of links and provides neither a named
+> section group nor a nested disclosure group. Nothing in 8C5 resolves it; it is Plan D's.
+>
+> **The batch's other halves.** `behaviour/patterns/` gained its **twenty-first** pattern,
+> `disclosure`, the first added since the layer was built — and the first whose own description
+> states what it *refuses* rather than only what it requires, because a stack of nested
+> collapsibles resembles a treeview and is deliberately not one. `check:compliance` moved
+> **7 → 8**, with `SideNavCollapsible:react` joining `COVERED` behind a binding carrying
+> `"exceptions": []`; the denominator moved 66 → 69 in the same batch, since a binding is added per
+> component, so *8 of 69* against 8C4's *7 of 66* is one more verified claim against three more
+> unverified ones. That is the charter working as written, not a regression.
+>
+> **One correction to the counting method itself, which this batch broke.** The method stated
+> below — *every `.jsx` under `frameworks/react/components/` with no matching directory under
+> `frameworks/angular/primitives/`* — now returns **twenty-nine**, not twenty-eight, because 8C5
+> introduced `side-nav-inject.jsx`, the first `.jsx` in that tree that is **not a component**: a
+> shared helper with no `.d.ts`, no `.prompt.md`, no behaviour binding and no delegated entry. Its
+> `.jsx` extension is load-bearing and cannot be traded away — `check:dimensions` scans `.jsx` and
+> never `.js`, and the file produces a governed `padding-inline-start` — so the file is correct and
+> the method is the thing that needs the qualifier. The reliable cross-check is the key set of
+> `frameworks/angular/behaviour-delegated.json` (29 today), minus `Switch`; that set contains only
+> real components by construction, and it is the one to trust when the two disagree.
+
 
 Two of the four needed a decision the plan could not make for itself, and both went to a shape the
 plan had not listed. `Menu`'s per-item `onClick` and `SideNav`'s two-parameter `onNav` are the same
