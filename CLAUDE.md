@@ -585,7 +585,7 @@ render, and it could never have been afforded at one run per commit.
 ## Conventions
 
 - **English only.** The repo was fully translated from Spanish; all code, comments, docs, and UI copy stay in English.
-- **Specs and implementation plans live under `docs/superpowers/`** (`specs/`, `plans/`), dated `YYYY-MM-DD-<name>.md`. They are in English like the rest of the repo.
+- **Specs and implementation plans live under `docs/superpowers/`** (`specs/`, `plans/`), dated `YYYY-MM-DD-<name>.md`. They are in English like the rest of the repo. **A spec written ahead of its plan carries a `-pending-N` suffix until that plan exists**, because an unsuffixed spec sitting in `specs/` reads as work in flight; drop the suffix when the plan lands (`89c3d1b` → `ec9d4de` is the worked example). This convention was itself recorded only inside a spec, and was rescued when that spec was deleted.
 - **No gradients** on any surface (the sole exception is `Skeleton`'s neutral shimmer). Depth comes from the `base-100`→`base-200`→`base-300` surface scale, the hairline border, and the warm shadow.
 - **No emoji**, in product or docs.
 - **Danger is outline, never filled** — transparent background, border and content in `--error`/`--danger`. The only filled danger surface in the whole system is the final irreversible confirmation inside `ConfirmDialog`. See `guidelines/components-danger.html`.
