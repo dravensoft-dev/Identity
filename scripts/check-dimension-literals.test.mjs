@@ -186,6 +186,28 @@ test('a bare literal at a LOGICAL padding or margin side is a violation, like it
   }
 });
 
+/* The logical border and inset families were ungoverned while their physical
+ * counterparts were governed -- the same shape as the padding-inline-start hole
+ * plan 8C5 found and walked straight through with its own split of a shorthand.
+ * There were zero uses when this landed, so these tests ARE the proof: without
+ * them a reader cannot tell a governed property from an ungoverned one. */
+test('a bare literal in a logical border side is a violation', () => {
+  const hits = scanText("const s = { borderInlineStart: '2px solid var(--border)' };");
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].prop, 'borderInlineStart');
+});
+
+test('a bare literal in a logical inset side is a violation', () => {
+  const hits = scanText("const s = { insetBlockStart: '12px' };");
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].prop, 'insetBlockStart');
+});
+
+test('a token in a logical side is not a violation', () => {
+  assert.deepEqual(scanText("const s = { borderInlineEnd: 'var(--bw) solid var(--border)' };"), []);
+  assert.deepEqual(scanText("const s = { insetInlineStart: 'calc(var(--sp-1) * 2)' };"), []);
+});
+
 test('a default parameter whose name is itself a governed CSS property is a violation', () => {
   const src = "function Dialog({ open, title, width = 480 }) {\n  return null;\n}";
   const found = scanDefaultsAndCallSites(src);

@@ -18,6 +18,7 @@ import { join, dirname, basename, extname } from 'node:path';
 import {
   roleOf, hasAccessibleName, isFocusable, evaluate,
   DECIDABLE, BEHAVIOURAL, ELEMENT_ROLE, LABEL_ACCEPTS_TEXT, comparePattern,
+  QUANTIFIED, NOT_QUANTIFIED,
 } from './lib/behaviour-compliance.mjs';
 
 const PATTERN_DIR = join(dirname(dirname(fileURLToPath(import.meta.url))), 'behaviour', 'patterns');
@@ -573,4 +574,203 @@ test('comparePattern reports a missing subject once per requirement', () => {
   // and following it deletes a correct declaration.
   for (const p of unreached) assert.match(p, /because a subject element above was missing/);
   assert.equal(problems.length, missing.length + unreached.length);
+});
+
+/* An IDREF requirement must RESOLVE its reference, not merely find the
+ * attribute present. 8C6 shipped exactly the gap these tests close: a Tabs
+ * strip where every unselected tab's aria-controls pointed at an id nothing
+ * rendered, and the presence-only check reported roles.controls met anyway.
+ * These reuse the file's own `el()` stub — it already implements the four
+ * members the evaluator may touch, which is all a resolver test needs. */
+
+test('an IDREF that resolves meets the requirement', () => {
+  const tab = el('button', { 'aria-controls': 'panel-1' });
+  const resolve = (id) => (id === 'panel-1' ? el('div') : null);
+  assert.equal(evaluate(tab, 'roles.controls', 'each tab…', 'tabs', resolve), true);
+});
+
+test('an IDREF that dangles does NOT meet it, though the attribute is present', () => {
+  const tab = el('button', { 'aria-controls': 'panel-9' });
+  const resolve = () => null;
+  assert.equal(evaluate(tab, 'roles.controls', 'each tab…', 'tabs', resolve), false);
+});
+
+test('a missing IDREF attribute is unmet without consulting the resolver', () => {
+  let asked = false;
+  const resolve = () => { asked = true; return null; };
+  assert.equal(evaluate(el('button'), 'roles.controls', 'x', 'tabs', resolve), false);
+  assert.equal(asked, false, 'the resolver was consulted for an absent attribute');
+});
+
+/* aria-describedby holds a SPACE-SEPARATED LIST, and Tooltip merges the
+ * consumer's own description with the bubble's id. A consumer's id may name an
+ * element outside the component's own rendered tree, which is legitimate -- so
+ * the requirement is met when the reference to OUR element lands, not when every
+ * id in the list does. */
+test('one resolving id in a list is enough', () => {
+  const trigger = el('button', { 'aria-describedby': 'consumer-hint tooltip-1' });
+  const resolve = (id) => (id === 'tooltip-1' ? el('span') : null);
+  assert.equal(evaluate(trigger, 'roles.describedby', 'x', 'tooltip', resolve), true);
+});
+
+test('a list where nothing resolves is unmet', () => {
+  const trigger = el('button', { 'aria-describedby': 'a b' });
+  assert.equal(evaluate(trigger, 'roles.describedby', 'x', 'tooltip', () => null), false);
+});
+
+test('an IDREF requirement with no resolver THROWS rather than falling back', () => {
+  const tab = el('button', { 'aria-controls': 'panel-1' });
+  assert.throws(
+    () => evaluate(tab, 'roles.controls', 'x', 'tabs'),
+    /roles\.controls.*resolveId/s,
+  );
+});
+
+test('a non-IDREF attribute requirement still needs no resolver', () => {
+  const t = el('button', { 'aria-selected': 'false' });
+  assert.equal(evaluate(t, 'states.selected', 'x', 'tabs'), true);
+});
+
+test('comparePattern reports a dangling reference as an OVERCLAIM', () => {
+  const problems = comparePattern({
+    pattern: { name: 'disclosure', requires: { 'roles.controls': 'aria-controls on the button' } },
+    binding: { pattern: 'disclosure', exceptions: [] },
+    subjects: { 'roles.controls': el('button', { 'aria-controls': 'gone' }) },
+    resolveId: () => null,
+  });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /roles\.controls: OVERCLAIM/);
+});
+
+test('a dangling reference with an exception declared is not a problem', () => {
+  const problems = comparePattern({
+    pattern: { name: 'disclosure', requires: { 'roles.controls': 'aria-controls on the button' } },
+    binding: { pattern: 'disclosure', exceptions: [{ requirement: 'roles.controls', reason: 'known' }] },
+    subjects: { 'roles.controls': el('button', { 'aria-controls': 'gone' }) },
+    resolveId: () => null,
+  });
+  assert.deepEqual(problems, []);
+});
+
+test('a resolving reference with an exception declared is a STALE EXCEPTION', () => {
+  const problems = comparePattern({
+    pattern: { name: 'disclosure', requires: { 'roles.controls': 'aria-controls on the button' } },
+    binding: { pattern: 'disclosure', exceptions: [{ requirement: 'roles.controls', reason: 'stale' }] },
+    subjects: { 'roles.controls': el('button', { 'aria-controls': 'region-1' }) },
+    resolveId: () => el('div'),
+  });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /STALE EXCEPTION/);
+});
+
+/* A requirement quantified over "each" must be checked against each. 8C6 shipped
+ * a Tabs strip where checking only the selected tab's aria-controls passed while
+ * N-1 unselected tabs referenced a panel that did not exist -- the same defect
+ * the IDREF tests above close for a single element, one level up: a collection. */
+
+test('an array subject is met only when every element meets it', () => {
+  const ok = el('button', { 'aria-selected': 'false' });
+  const bad = el('button');
+  const p = (subject) => comparePattern({
+    pattern: { name: 'tabs', requires: { 'states.selected': 'true on the active tab, false on the rest' } },
+    binding: { pattern: 'tabs', exceptions: [] },
+    subjects: { 'states.selected': subject },
+    resolveId: () => el('div'),
+  });
+  assert.deepEqual(p([ok, ok, ok]), []);
+  assert.equal(p([ok, bad, ok]).length, 1);
+  assert.match(p([ok, bad, ok])[0], /OVERCLAIM/);
+});
+
+test('the OVERCLAIM says how many of the collection failed', () => {
+  const ok = el('button', { 'aria-selected': 'false' });
+  const bad = el('button');
+  const problems = comparePattern({
+    pattern: { name: 'tabs', requires: { 'states.selected': 'x' } },
+    binding: { pattern: 'tabs', exceptions: [] },
+    subjects: { 'states.selected': [ok, bad, bad] },
+    resolveId: () => el('div'),
+  });
+  assert.match(problems[0], /2 of 3/);
+});
+
+test('a quantified requirement given ONE element throws', () => {
+  assert.throws(
+    () => comparePattern({
+      pattern: { name: 'tabs', requires: { 'states.selected': 'x' } },
+      binding: { pattern: 'tabs', exceptions: [] },
+      subjects: { 'states.selected': el('button', { 'aria-selected': 'true' }) },
+      resolveId: () => el('div'),
+    }),
+    /quantified.*array/s,
+  );
+});
+
+/* Same throw, different state, and the message must not conflate them:
+   Array.isArray(null) is false, so a `default` selector that matched nothing used
+   to be reported as "a single element" and sent its author hunting for a second
+   element they had none of. */
+test('a quantified requirement given a NULL subject says so, not "a single element"', () => {
+  assert.throws(
+    () => comparePattern({
+      pattern: { name: 'tabs', requires: { 'states.selected': 'x' } },
+      binding: { pattern: 'tabs', exceptions: [] },
+      subjects: { 'states.selected': null },
+      resolveId: () => el('div'),
+    }),
+    (e) => /quantified.*array/s.test(e.message)
+      && /subject is null/.test(e.message)
+      && !/single element/.test(e.message),
+  );
+});
+
+test('an unquantified requirement given one element is still fine', () => {
+  const problems = comparePattern({
+    pattern: { name: 'disclosure', requires: { 'roles.expanded': 'aria-expanded' } },
+    binding: { pattern: 'disclosure', exceptions: [] },
+    subjects: { 'roles.expanded': el('button', { 'aria-expanded': 'false' }) },
+  });
+  assert.deepEqual(problems, []);
+});
+
+test('an empty array reads as a missing subject, not as vacuously met', () => {
+  const problems = comparePattern({
+    pattern: { name: 'tabs', requires: { 'states.selected': 'x' } },
+    binding: { pattern: 'tabs', exceptions: [] },
+    subjects: { 'states.selected': [] },
+    resolveId: () => el('div'),
+  });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /no subject element/);
+});
+
+/* The curated maps carry EXEMPT's discipline: an entry that no longer names a
+   real pattern requirement fails this suite rather than rotting quietly. This
+   suite already reads behaviour/patterns/ once, into PATTERNS (see the top of
+   this file) -- that map is reused here rather than adding a second reader. */
+test('every QUANTIFIED and NOT_QUANTIFIED key names a real pattern requirement', () => {
+  for (const map of [QUANTIFIED, NOT_QUANTIFIED]) {
+    for (const key of map.keys()) {
+      const [name, requirement] = key.split(':');
+      const pattern = PATTERNS.get(name);
+      assert.ok(pattern, `${key}: no pattern file called "${name}"`);
+      assert.ok(requirement in pattern.requires, `${key}: pattern "${name}" declares no "${requirement}"`);
+    }
+  }
+});
+
+test('every QUANTIFIED requirement is decidable per element', () => {
+  for (const key of QUANTIFIED.keys()) {
+    const requirement = key.split(':')[1];
+    assert.ok(DECIDABLE.has(requirement),
+      `${key}: quantifying needs a per-element verdict, and this requirement is behavioural`);
+  }
+});
+
+test('every entry carries a reason', () => {
+  for (const map of [QUANTIFIED, NOT_QUANTIFIED]) {
+    for (const [key, reason] of map) {
+      assert.ok(typeof reason === 'string' && reason.length > 20, `${key}: no reason on file`);
+    }
+  }
 });

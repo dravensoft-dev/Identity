@@ -63,8 +63,16 @@ export interface AssertPatternOptions {
   root: Element;
   /** Absolute path to the component's `*.behaviour.json`. */
   bindingPath: string;
-  /** Requirement key -> the element that must carry it. The key `default` sets
-   *  the element used for every requirement not named individually.
+  /** Requirement key -> the element that must carry it, or -- for a requirement
+   *  in QUANTIFIED -- every element it is about. The key `default` sets the
+   *  element used for every requirement not named individually.
+   *
+   *  The array form is not a convenience: a requirement whose prose quantifies
+   *  over each of something THROWS when handed one element, because answering for
+   *  a collection from its first member is the defect batch 8C7 exists to close.
+   *  Note what the array does not buy — the check reaches exactly the elements the
+   *  suite's own selector collected, so one that renders without the attribute the
+   *  selector keys on leaves the collection silently.
    *
    *  The absence of that key and a `null` value under it are different claims and
    *  must stay different: omit `default` to fall back to the host, pass
@@ -76,10 +84,38 @@ export interface AssertPatternOptions {
    *  exception to silence it. React's wrapper shipped that defect with `??` and
    *  it is called out in its own comment; `'default' in subjects` is the fix, and
    *  this wrapper starts from it. */
-  subjects?: Record<string, Element | null>;
+  subjects?: Record<string, Element | Element[] | null>;
   /** Requirement key -> the verdict this suite's own behavioural test
    *  established: `true` = my test proved it met, `false` = proved unmet. */
   behavioural?: Record<string, boolean>;
+}
+
+/** Resolve an id WITHIN the rendered tree, which is what an IDREF requirement
+ *  claims -- resolving against the whole document would also find a fixture an
+ *  earlier test left behind, since this directory shares one document across
+ *  its whole run (see testbed-env.ts).
+ *
+ *  It walks `[id]` and compares in JavaScript rather than building `#${id}`, and
+ *  that is a correctness choice before it is a cost one: an id is legal in HTML in
+ *  shapes that are a SyntaxError inside a CSS selector -- the colons React's
+ *  `useId()` returns are the case this repo already paid for, and nothing stops an
+ *  Angular fixture authoring one. Do not "optimise" this into a selector. The cost
+ *  argument only says the walk is affordable: a test tree is small enough that it
+ *  costs nothing worth a bug.
+ *
+ *  `root` itself is searched as well as its descendants, and here that is not
+ *  optional: this wrapper's default subject IS the host (`root` is the
+ *  fixture's `nativeElement`, not a container's first child the way React's
+ *  is), so an id can sit on `root` itself rather than only ever appearing
+ *  among its descendants. */
+function resolverFor(root: Element): (id: string) => Element | null {
+  return (id: string) => {
+    if (root.getAttribute && root.getAttribute('id') === id) return root;
+    for (const el of Array.from(root.querySelectorAll('[id]'))) {
+      if (el.getAttribute('id') === id) return el;
+    }
+    return null;
+  };
 }
 
 /**
@@ -105,6 +141,7 @@ export function assertPattern({ root, bindingPath, subjects = {}, behavioural = 
     subjects: perRequirement,
     fallback,
     behavioural,
+    resolveId: resolverFor(root),
   });
 
   if (problems.length) {

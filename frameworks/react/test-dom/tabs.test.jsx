@@ -131,9 +131,12 @@ test('tabs that arrive after mount are still operable, though nothing is selecte
     'an arrow key did not select -- the strip is keyboard-dead');
 });
 
-/* roles.controls, the half the evaluator cannot hold: it checks the attribute is
- * PRESENT on the one element the suite hands it. That every one of them RESOLVES
- * is this. */
+/* Since 8C7 the evaluator resolves roles.controls, and across every tab rather
+ * than the one the suite hands it, so the dangling-reference half of this no
+ * longer lives only here. What still does: the REVERSE wiring -- each panel
+ * labelled by the tab that controls it -- and that exactly one panel is unhidden
+ * while the rest are hidden rather than absent. Neither is a requirement key, so
+ * no pattern can ask for them. */
 test('every tab controls a panel that exists, not only the selected one', () => {
   const root = mount(three());
   const ids = new Set(panelsOf(root).map((p) => p.getAttribute('id')));
@@ -228,8 +231,13 @@ test('the binding is honest: every `tabs` requirement, in both directions', () =
     subjects: {
       default: root.querySelector('[role="tablist"]'),
       'roles.tab': root.querySelector('[role="tab"]'),
-      'roles.controls': root.querySelector('[role="tab"]'),
-      'states.selected': root.querySelector('[role="tab"]'),
+      /* Quantified: the pattern says EACH tab references its tabpanel, and
+         aria-selected is true on the active one and false on the rest. Handing
+         over the selected tab alone is what let a strip with N-1 dangling
+         references pass in 8C6 -- the one tab whose reference resolved was the
+         one the fixture put first. */
+      'roles.controls': [...root.querySelectorAll('[role="tab"]')],
+      'states.selected': [...root.querySelectorAll('[role="tab"]')],
       'roles.tabpanel': root.querySelector('[role="tabpanel"]'),
     },
     /* focus.* and keyboard.* return null from the shared evaluator -- no single

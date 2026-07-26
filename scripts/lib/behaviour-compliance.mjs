@@ -196,6 +196,28 @@ const ATTRIBUTE_FOR = {
   'states.selected': 'aria-selected',
 };
 
+/** The requirement keys whose attribute is a REFERENCE rather than a value. For
+ *  these, presence is not the claim: `aria-controls="panel-9"` with no element
+ *  called panel-9 is a broken reference that reads as met to a presence check.
+ *  8C6 shipped exactly that -- `Tabs` carried one `aria-controls` per tab and
+ *  rendered one panel, so N-1 references pointed at nothing and `roles.controls`
+ *  passed.
+ *
+ *  Resolution needs the tree, and this file may not have it (see the header: it
+ *  runs under plain node in its own suite), so the caller injects `resolveId`.
+ *
+ *  SCOPE, and it is narrower than the name suggests. This set is complete only
+ *  for the keys that reach ATTRIBUTE_FOR, because that is the one branch of
+ *  evaluate() that consults it. `roles.label` also has a reference form --
+ *  `aria-labelledby` -- and never passes through here at all: it is decided by
+ *  hasAccessibleName(), which reads the attribute for presence and stops. So a
+ *  dangling `aria-labelledby` on an element with no other name reads as met.
+ *  Adding `roles.label` to this set does not fix that, because the requirement is
+ *  satisfied by three alternatives and only one of them is a reference; the fix is
+ *  a conditional resolve inside hasAccessibleName. Recorded under *Known debt* in
+ *  CLAUDE.md rather than done here. */
+export const IDREF = new Set(['roles.controls', 'roles.describedby', 'roles.activedescendant']);
+
 /** Requirement keys naming a role the element itself must expose. `roles.element`
  *  is excluded because its required role comes from ELEMENT_ROLE, keyed by the
  *  pattern, not from the key. */
@@ -273,12 +295,18 @@ export const BEHAVIOURAL = new Set([
  *    an OVERCLAIM message so a reader sees what was asked for; never parsed.
  *  @param {string} patternName the owning pattern's name, which is what selects
  *    the semantics for roles.element and roles.label
+ *  @param {(id: string) => object | null} [resolveId] required when `key` is in
+ *    IDREF — looks an id up in the rendered tree and returns the element it
+ *    names, or null when nothing carries it. Each wrapper builds one scoped to
+ *    its own render; this file never has the tree to resolve one itself.
  *  @returns {true | false | null} null = undecidable from this element alone
- *  @throws {Error} on a key in neither DECIDABLE nor BEHAVIOURAL, and on a
- *    roles.element requirement whose pattern has no ELEMENT_ROLE entry. Both are
- *    programming errors — a typo in a pattern file, or a map left un-extended —
- *    not verdicts about a component, so neither may be returned as one. */
-export function evaluate(el, key, value, patternName) {
+ *  @throws {Error} on a key in neither DECIDABLE nor BEHAVIOURAL, on a
+ *    roles.element requirement whose pattern has no ELEMENT_ROLE entry, and on
+ *    an IDREF requirement given no resolveId. All three are programming errors —
+ *    a typo in a pattern file, a map left un-extended, or a caller that forgot to
+ *    thread the resolver — not verdicts about a component, so none may be
+ *    returned as one. */
+export function evaluate(el, key, value, patternName, resolveId) {
   if (key === 'roles.element') {
     const wanted = ELEMENT_ROLE[patternName];
     if (!wanted) {
@@ -292,7 +320,25 @@ export function evaluate(el, key, value, patternName) {
   if (key === 'roles.label') return hasAccessibleName(el, LABEL_ACCEPTS_TEXT.has(patternName));
 
   const attr = ATTRIBUTE_FOR[key];
-  if (attr) return el.getAttribute(attr) !== null;
+  if (attr) {
+    const raw = el.getAttribute(attr);
+    if (raw === null) return false;
+    if (!IDREF.has(key)) return true;
+    if (typeof resolveId !== 'function') {
+      throw new Error(
+        `evaluate: requirement "${key}" carries an IDREF and no resolveId was supplied. ` +
+        'Pass resolveId to comparePattern -- each wrapper builds one scoped to the rendered ' +
+        'tree. Falling back to a presence check would report a dangling reference as met, ' +
+        'which is the defect this parameter exists to catch.',
+      );
+    }
+    /* A space-separated list, and ONE resolving id is the claim. aria-describedby
+     * legitimately carries the consumer's own description alongside ours, and that
+     * one may name an element outside the component's rendered tree -- demanding
+     * that every id resolve would fail a correct component. */
+    const ids = raw.split(/\s+/).filter(Boolean);
+    return ids.some((id) => resolveId(id) != null);
+  }
 
   const wanted = ROLE_NAMED_BY_KEY[key];
   if (wanted) {
@@ -328,6 +374,46 @@ export function evaluate(el, key, value, patternName) {
     'null, which a suite could silence forever by declaring it behavioural.',
   );
 }
+
+/** Requirements whose prose quantifies over EVERY matching element, so a suite
+ *  must hand over a collection and one element is not an answer. Keyed
+ *  `pattern:requirement`.
+ *
+ *  HAND-CURATED, NEVER DERIVED. A scan for the word "each" finds fewer
+ *  requirements than a reader does: the prose says "false on the REST" and "one
+ *  per unit of content" just as readily. Deriving this would rebuild the
+ *  false-negative class this file's header already rejected once. Semantics key
+ *  off the requirement KEY and the PATTERN NAME, never off the human prose.
+ *
+ *  What quantifying buys is bounded by the SELECTOR the suite builds its
+ *  collection with. A tab rendered without `role="tab"` leaves a
+ *  `querySelectorAll('[role="tab"]')` collection silently, taking its dangling
+ *  reference with it, and every element that remains still passes. This rule
+ *  makes "the first element answered for the collection" impossible; it cannot
+ *  make a suite's selector match the elements the pattern is about. */
+export const QUANTIFIED = new Map([
+  ['feed:roles.article',
+    'one article per unit of content, so a feed whose third row lost its role is unmet however correct the first row is. Decidable per element through ROLE_NAMED_BY_KEY, and quantified over elements the component renders itself -- which is what separates it from the two entries in NOT_QUANTIFIED below.'],
+  ['listbox:states.selected',
+    'aria-selected is true on each selected option and false on the rest, so one option cannot answer for the list.'],
+  ['radiogroup:states.checked',
+    'true on the checked button and false on the rest -- verbatim the idiom that quantifies tabs:states.selected, one requirement key over.'],
+  ['tabs:roles.controls',
+    'each tab references its own tabpanel; checking only the selected one is exactly the defect 8C6 shipped.'],
+  ['tabs:states.selected',
+    'true on the active tab and false on the rest -- the same quantification listbox states, written as "the rest".'],
+]);
+
+/** Requirements whose prose quantifies but which are deliberately NOT in the map
+ *  above, each with the reason. They are listed rather than merely absent so the
+ *  next reader meets the decision instead of the silence, and so the staleness
+ *  test can prove they still name real requirements. */
+export const NOT_QUANTIFIED = new Map([
+  ['feed:states.posinset',
+    'BEHAVIOURAL rather than decidable: its prose carries a "when" (-1 for setsize when the total is unknown), so a snapshot of one element cannot answer it and evaluate() returns null. There is no per-element verdict to quantify over.'],
+  ['navigation:roles.label',
+    'quantifies over navigation landmarks on a PAGE, and only when more than one exists. A component suite renders one component; requiring a collection would force fixtures to render two landmarks to satisfy a rule that is not a claim about the component.'],
+]);
 
 /**
  * Compare one component's rendered subject elements against its binding, in both
@@ -378,22 +464,32 @@ export function evaluate(el, key, value, patternName) {
  * @param {object} o
  * @param {{name: string, requires: Record<string, unknown>}} o.pattern
  * @param {{pattern: string, exceptions?: {requirement: string, reason: string}[]}} o.binding
- * @param {Record<string, object|null>} [o.subjects] requirement key -> the element that must carry it
+ * @param {Record<string, object|object[]|null>} [o.subjects] requirement key -> the
+ *   element that must carry it, or an ARRAY of every element the requirement is
+ *   about. A requirement in QUANTIFIED demands the array and throws on one element;
+ *   every other requirement accepts either.
  * @param {object|null} [o.fallback] the element used for any requirement not named in `subjects`
  * @param {Record<string, boolean>} [o.behavioural] requirement key -> the verdict the
  *   caller's own behavioural test established, for requirements that must be asserted
  *   by acting on the tree rather than by reading it. Every undecidable requirement must
  *   appear as a key or this reports it — silence about an unverifiable claim is what
  *   this layer exists to remove.
+ * @param {(id: string) => object | null} [o.resolveId] looks an id up in the SAME
+ *   rendered tree `subjects`/`fallback` came from and returns the element it names, or
+ *   null when nothing carries it. Required whenever the pattern carries an IDREF
+ *   requirement (see the IDREF set) — evaluate() throws rather than degrading to a
+ *   presence check when one is owed and missing.
  * @returns {string[]} one message per problem, empty when clean
- * @throws {Error} whatever evaluate() throws — an unrecognised requirement key, or a
- *   roles.element requirement on a pattern with no ELEMENT_ROLE entry. Both are
- *   programming errors rather than verdicts, so they are not returned as problems.
- *   In a render suite that means the whole test aborts instead of reporting this
- *   component's problems beside the others; that is intended, but callers should
- *   know it can happen.
+ * @throws {Error} whatever evaluate() throws — an unrecognised requirement key, a
+ *   roles.element requirement on a pattern with no ELEMENT_ROLE entry, or an IDREF
+ *   requirement given no resolveId. All are programming errors rather than verdicts, so
+ *   they are not returned as problems. In a render suite that means the whole test
+ *   aborts instead of reporting this component's problems beside the others; that is
+ *   intended, but callers should know it can happen.
  */
-export function comparePattern({ pattern, binding, subjects = {}, fallback = null, behavioural = {} }) {
+export function comparePattern({
+  pattern, binding, subjects = {}, fallback = null, behavioural = {}, resolveId,
+}) {
   const excepted = new Map((binding.exceptions ?? []).map((e) => [e.requirement, e.reason]));
   const declared = new Map(Object.entries(behavioural));
   const used = new Set();
@@ -407,13 +503,32 @@ export function comparePattern({ pattern, binding, subjects = {}, fallback = nul
   let missedSubject = false;
 
   for (const [key, value] of Object.entries(pattern.requires)) {
-    const el = key in subjects ? subjects[key] : fallback;
-    if (!el) {
+    const subject = key in subjects ? subjects[key] : fallback;
+    const quantified = QUANTIFIED.has(`${pattern.name}:${key}`);
+    if (quantified && !Array.isArray(subject)) {
+      // The remedy is the same either way, but the state is not: `null` is a
+      // selector that matched nothing, and telling that author their subject is
+      // "a single element" sends them looking for a second one they already have
+      // none of.
+      const got = subject == null
+        ? 'its subject is null -- a selector matched nothing, or none was passed'
+        : 'its subject is a single element';
+      throw new Error(
+        `comparePattern: "${key}" of pattern "${pattern.name}" is quantified over every matching ` +
+        `element, but ${got}. Pass an array -- checking one is the ` +
+        `defect this rule exists to catch.\n      reason on file: ${QUANTIFIED.get(`${pattern.name}:${key}`)}`,
+      );
+    }
+    const els = Array.isArray(subject) ? subject : (subject ? [subject] : []);
+    if (!els.length) {
       missedSubject = true;
       problems.push(`${key}: no subject element — nothing was rendered, or the selector matched nothing.`);
       continue;
     }
-    const domVerdict = evaluate(el, key, value, pattern.name);
+    const verdicts = els.map((one) => evaluate(one, key, value, pattern.name, resolveId));
+    /* One undecidable element makes the whole requirement undecidable: a
+       collection cannot be half-behavioural. */
+    const domVerdict = verdicts.includes(null) ? null : verdicts.every(Boolean);
 
     // Where the verdict comes from decides the wording, never the rule.
     let verdict = domVerdict;
@@ -440,8 +555,9 @@ export function comparePattern({ pattern, binding, subjects = {}, fallback = nul
         '      Delete the exception, or name a subject if the exception is about a different element.',
       );
     } else if (!verdict && !hasException) {
+      const scale = els.length > 1 ? ` (${verdicts.filter((v) => v === false).length} of ${els.length} failed)` : '';
       problems.push(
-        `${key}: OVERCLAIM — the binding declares no exception, but ${source} does not meet it.\n` +
+        `${key}: OVERCLAIM${scale} — the binding declares no exception, but ${source} does not meet it.\n` +
         `      pattern requires: ${JSON.stringify(value)}`,
       );
     }
