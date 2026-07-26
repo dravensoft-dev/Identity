@@ -228,8 +228,13 @@ test('the binding is honest: every `tabs` requirement, in both directions', () =
     subjects: {
       default: root.querySelector('[role="tablist"]'),
       'roles.tab': root.querySelector('[role="tab"]'),
-      'roles.controls': root.querySelector('[role="tab"]'),
-      'states.selected': root.querySelector('[role="tab"]'),
+      /* Quantified: the pattern says EACH tab references its tabpanel, and
+         aria-selected is true on the active one and false on the rest. Handing
+         over the selected tab alone is what let a strip with N-1 dangling
+         references pass in 8C6 -- the one tab whose reference resolved was the
+         one the fixture put first. */
+      'roles.controls': [...root.querySelectorAll('[role="tab"]')],
+      'states.selected': [...root.querySelectorAll('[role="tab"]')],
       'roles.tabpanel': root.querySelector('[role="tabpanel"]'),
     },
     /* focus.* and keyboard.* return null from the shared evaluator -- no single
