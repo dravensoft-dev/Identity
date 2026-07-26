@@ -208,8 +208,15 @@ one branch.
 **Created**
 
 - `behaviour/patterns/disclosure.json` — the show/hide contract, adopted from APG.
-- `frameworks/react/components/navigation/side-nav-inject.js` — the two shared pure helpers,
-  `injectInto()` and `indentFor()`. A module beside the components rather than duplicated code in
+- `frameworks/react/components/navigation/side-nav-inject.jsx` — the two shared pure helpers,
+  **`.jsx` and not `.js`**, which Task 2's fix round settled: `check:dimensions` scans `.jsx`, `.ts`
+  and `.tsx` and deliberately never opens a `.js`, and this module produces a governed
+  `padding-inline-start` value. Task 2's own body below still says `.js` because that is what it
+  prescribed; the rename, and the two further guards it turned up, are recorded in its fix report.
+  A returned value is invisible to that gate under **any** extension — it keys on governed property
+  *sites* — so a helper that produces a dimension is asserted directly in the React suite as well,
+  which is how `indentFor()` is pinned. It holds the two shared pure helpers, `injectInto()` and
+  `indentFor()`: a module beside the components rather than duplicated code in
   four files; `use-container-width.js` and `use-dialog-modal.js` are the precedent that
   CLAUDE.md's "a component is self-contained" rule is about CSS classes, not JS helpers.
 - `frameworks/react/components/navigation/SideNavItem.{jsx,d.ts,prompt.md,behaviour.json}`
@@ -939,7 +946,7 @@ Expected: FAIL — `Cannot find module '../components/navigation/SideNavSection.
 
 ```jsx
 import React, { useId } from 'react';
-import { injectInto, indentFor } from './side-nav-inject.js';
+import { injectInto, indentFor } from './side-nav-inject.jsx';
 
 /** A named group of navigation items. It WRAPS -- it never replaces what a
  *  consumer wrote -- and its accessible name is the same heading a sighted user
@@ -1182,7 +1189,7 @@ Expected: FAIL — `Cannot find module '../components/navigation/SideNavCollapsi
 
 ```jsx
 import React, { useEffect, useState } from 'react';
-import { injectInto, indentFor } from './side-nav-inject.js';
+import { injectInto, indentFor } from './side-nav-inject.jsx';
 import { SideNavItem } from './SideNavItem.jsx';
 
 /** Whether `id` names a SideNavItem anywhere in this subtree.
