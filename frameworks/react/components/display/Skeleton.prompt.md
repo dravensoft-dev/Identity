@@ -6,7 +6,7 @@ Loading placeholder for asynchronous data (H1). Use it in tables and dashboards 
   : <Article data={data} />}
 
 <div role="status" aria-label="Loading profile">
-  <div style={{display:'flex',gap:12}} aria-hidden="true">
+  <div style={{display:'flex',gap:'var(--sp-3)'}} aria-hidden="true">
     <Skeleton variant="circle" height="40px" />
     <Skeleton variant="text" lines={2} width="220px" />
   </div>
@@ -21,6 +21,9 @@ Loading placeholder for asynchronous data (H1). Use it in tables and dashboards 
 - A `variant="text"` stack is one `<Skeleton>` and one announcement no matter how many `lines` it
   renders — the first example above (`lines={4}`) is a single `role="status"`, not four. The
   repetition below is between sibling `<Skeleton>` elements, never within one stack.
+- Don't wrap a *single* `<Skeleton>` in a live region of your own — it already carries
+  `role="status"`, so a wrapper adds a second announcement of the same wait. The wrapper in
+  the example above is for a **set** of siblings, which is the different case below.
 - Every `<Skeleton>` announces itself (`role="status"`, `aria-label="Loading"`), so several
   siblings — a circle beside a text stack, several independent skeletons in a list — are that
   many announcements, because the component cannot know where one set of placeholders begins

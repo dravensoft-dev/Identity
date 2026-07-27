@@ -46,7 +46,7 @@ labelled region and hide the individual placeholders from the accessibility tree
 
 ```html
 <div role="status" aria-label="Loading profile">
-  <div style="display:flex;gap:12px" aria-hidden="true">
+  <div style="display:flex;gap:var(--sp-3)" aria-hidden="true">
     <arena-skeleton variant="circle" width="40px" />
     <arena-skeleton variant="text" [lines]="2" width="220px" />
   </div>

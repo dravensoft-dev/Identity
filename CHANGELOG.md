@@ -908,6 +908,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **React's circular `Skeleton` announces itself, the way its three siblings always did.**
+  `variant="circle"` was the one variant in four that rendered `aria-hidden="true"` with no role,
+  so it was removed from the accessibility tree outright: a screen-reader user meeting a circular
+  placeholder was told **nothing**, while the identical placeholder in the Angular layer said
+  "Loading". It now renders `role="status"` and `aria-label="Loading"` like `block`, `line` and
+  `text`. **This changes what already-shipped consumer trees announce** — every
+  `<Skeleton variant="circle">` in an existing view becomes a named live region where it used to be
+  silent. There is no API change and nothing to migrate.
+  - **What settled it was not a preference between silence and noise.** The silence had been
+    defensible on the argument that a circle usually stands beside a name that is itself announced,
+    so a second "Loading" would be noise. But three of `Skeleton`'s own four variants announced
+    unconditionally, so no noise-reduction strategy was ever applied anywhere in the component and
+    the `circle` branch was simply the odd one out. A skeleton exists to say that it will be
+    replaced when asynchronous data arrives, and that is as true of a circle as of a block.
+  - **A set of sibling skeletons is now that many announcements, and that is deliberate**, because
+    the component cannot know where one set of placeholders begins and ends: a circle beside a text
+    stack is two, and twenty rows of the same pair are forty. When several stand for one block of
+    content, wrap the set yourself in a single `role="status" aria-label="…"` naming *what* is
+    loading, and mark the container holding the individual skeletons `aria-hidden="true"` so their
+    own announcements never reach the accessibility tree. The worked example and the Do/Don't are in
+    `Skeleton.prompt.md`, in both layers. A `variant="text"` stack is **one** announcement however
+    many `lines` it renders — the repetition is between sibling elements, never within one stack.
+  - `Skeleton.behaviour.json` goes back to a flat `{"pattern": "status", "exceptions": []}`. 8C9 had
+    split it into cases so that two `circle`-only exceptions stopped being asserted of all four
+    variants; with the defect itself fixed there is nothing left to scope, so the component leaves
+    the cased set and `components-divergences.md`'s `Skeleton` entry is **retired**. The two layers
+    now agree by construction rather than by anyone deciding which of them was right.
 - **`Tabs` no longer migrates a tab's typed state into whichever tab happens to land at the same
   index.** The tablist clones each child with `cloneElement`, which preserves the child's own key;
   the panel list wrote `key={i}` instead — an index into the array *after* filtering, which shifts
