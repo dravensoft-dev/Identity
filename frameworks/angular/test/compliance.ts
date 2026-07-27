@@ -32,7 +32,7 @@ import { dirname, join } from 'node:path';
 // index.ts reaches, so no declaration file is generated for it anywhere.
 import { comparePattern } from '../../../scripts/lib/behaviour-compliance.mjs';
 // @ts-expect-error -- same as above.
-import { loadBinding, loadPatterns } from '../../../scripts/lib/behaviour-contracts.mjs';
+import { loadBinding, loadPatterns, bindingCases } from '../../../scripts/lib/behaviour-contracts.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -118,6 +118,43 @@ function resolverFor(root: Element): (id: string) => Element | null {
   };
 }
 
+interface CompareOneOptions {
+  root: Element;
+  subjects: Record<string, Element | Element[] | null>;
+  behavioural: Record<string, boolean>;
+  pattern: PatternFile;
+  binding: { exceptions?: unknown[] };
+}
+
+/** Shared by `assertPattern` and `assertPatternCases`: compute the fallback
+ *  subject and call `comparePattern` once. Extracted because both call sites
+ *  repeated this block near-verbatim -- a port of the same extraction in the
+ *  React wrapper (assert-pattern.jsx's compareOne).
+ *
+ *  The `'default' in subjects` distinction must survive here exactly as it did
+ *  at each call site: a present-but-null `default` means a selector matched
+ *  nothing and must reach `comparePattern` as `null` unchanged, so its own "no
+ *  subject element" diagnostic fires -- collapsing it to the fallback (e.g.
+ *  with `??`) would misreport a missed selector as an OVERCLAIM against the
+ *  wrong element.
+ *
+ *  The fallback is `root` itself, not `root.firstElementChild` the way the
+ *  React wrapper's compareOne reads: an Angular primitive host-binds its root,
+ *  so the host IS the styled and measured element -- the same reason
+ *  `assertPattern` above already defaults to `root` rather than a child. */
+function compareOne({ root, subjects, behavioural, pattern, binding }: CompareOneOptions): string[] {
+  const { default: fallbackSubject, ...perRequirement } = subjects;
+  const fallback = 'default' in subjects ? fallbackSubject : root;
+  return comparePattern({
+    pattern,
+    binding,
+    subjects: perRequirement,
+    fallback,
+    behavioural,
+    resolveId: resolverFor(root),
+  });
+}
+
 /**
  * Assert a rendered Angular tree against its behaviour binding, in both
  * directions. Throws with every disagreement listed, not just the first.
@@ -132,19 +169,89 @@ export function assertPattern({ root, bindingPath, subjects = {}, behavioural = 
     // would throw something far less legible than the binding's own name.
     throw new Error(`${bindingPath}\n  names pattern "${binding.pattern}", which has no file in ${PATTERN_DIR}`);
   }
-  const { default: fallbackSubject, ...perRequirement } = subjects;
-  const fallback = 'default' in subjects ? fallbackSubject : root;
-
-  const problems: string[] = comparePattern({
-    pattern,
-    binding,
-    subjects: perRequirement,
-    fallback,
-    behavioural,
-    resolveId: resolverFor(root),
-  });
+  const problems = compareOne({ root, subjects, behavioural, pattern, binding });
 
   if (problems.length) {
     throw new Error(`${bindingPath}\n  pattern: ${pattern.name}\n  - ${problems.join('\n  - ')}`);
+  }
+}
+
+interface BindingCase {
+  name: string | null;
+  when: string | null;
+  pattern: string;
+  reason: string | null;
+  exceptions: unknown[];
+}
+
+export interface AssertPatternCasesOptions {
+  /** Absolute path to the component's `*.behaviour.json`. */
+  bindingPath: string;
+  /** Case name -> a thunk that renders that case and returns its root (and,
+   *  optionally, its subjects/behavioural maps). A thunk rather than a
+   *  rendered root so nothing is mounted until its case is reached and the
+   *  key sets have already been checked. */
+  cases: Record<string, () => { root: Element; subjects?: Record<string, unknown>; behavioural?: Record<string, boolean> }>;
+}
+
+/** Assert a CASED binding, one call per declared case.
+ *
+ *  A port of the React wrapper's `assertPatternCases`, not a second design.
+ *  The wrapper drives the loop rather than counting calls afterwards, and
+ *  that is the whole mechanism: a suite handed the responsibility of calling
+ *  once per case can forget, which is exactly how Skeleton verified its
+ *  circle variant and claimed the component. Here a missing key is a missing
+ *  key before anything renders.
+ *
+ *  `comparePattern` is called with a SYNTHESIZED binding carrying only this
+ *  case's exceptions. The shared evaluator never learns what a case is -- it
+ *  reads `binding.exceptions` and nothing else, so there was nothing there to
+ *  teach. */
+export function assertPatternCases({ bindingPath, cases }: AssertPatternCasesOptions): void {
+  const binding = loadBinding(bindingPath);
+  const declared: BindingCase[] = bindingCases(binding);
+  if (declared.length === 1 && declared[0].name === null) {
+    throw new Error(`${bindingPath}\n  declares no cases — assert it with assertPattern instead.`);
+  }
+  // validateBinding permits a binding to declare the same case name twice; the
+  // gate-side fix for that is still owed. Object.keys(cases) can never carry a
+  // duplicate, so comparing against a duplicated `want` list would produce a
+  // confusing missing/unknown diff instead of naming the real problem. Catch
+  // it here, before that comparison.
+  const want = declared.map((c) => c.name);
+  const seen = new Set<string | null>();
+  const dupes = new Set<string | null>();
+  for (const n of want) {
+    if (seen.has(n)) dupes.add(n);
+    seen.add(n);
+  }
+  if (dupes.size) {
+    throw new Error(`${bindingPath}\n  declares the same case name more than once: ${[...dupes].join(', ')}`);
+  }
+  const got = Object.keys(cases);
+  const missing = want.filter((n) => !got.includes(n as string));
+  const unknown = got.filter((n) => !want.includes(n));
+  if (missing.length || unknown.length) {
+    throw new Error(
+      `${bindingPath}\n  the suite must render every declared case, and only those.\n` +
+      (missing.length ? `  - never rendered: ${missing.join(', ')}\n` : '') +
+      (unknown.length ? `  - not declared in the binding: ${unknown.join(', ')}\n` : '') +
+      `  declared: ${want.join(', ')}`,
+    );
+  }
+
+  patternCache ??= loadPatterns(REPO) as Map<string, PatternFile>;
+  const problems: string[] = [];
+  for (const c of declared) {
+    const pattern = patternCache.get(c.pattern);
+    if (!pattern) {
+      throw new Error(`${bindingPath}\n  case "${c.name}" names pattern "${c.pattern}", which has no file in ${PATTERN_DIR}`);
+    }
+    const { root, subjects = {}, behavioural = {} } = cases[c.name as string]();
+    const found = compareOne({ root, subjects, behavioural, pattern, binding: { exceptions: c.exceptions } });
+    for (const p of found) problems.push(`case "${c.name}" (${c.when}): ${p}`);
+  }
+  if (problems.length) {
+    throw new Error(`${bindingPath}\n  - ${problems.join('\n  - ')}`);
   }
 }
