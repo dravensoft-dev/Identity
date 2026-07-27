@@ -16,18 +16,37 @@
  * <button> -- carries the pattern (`clickable-with-actions`); with no `onClick`
  * there is no button anywhere and the pattern does not apply (`inert`).
  *
- * `keyboard.Space` and `keyboard.Enter` are BEHAVIOURAL for the `button` pattern
- * exactly as they are for SideNav's disclosure trigger (see
- * side-nav-disclosure.test.jsx's header) and for the same reason: a `keydown` of
- * Enter or Space on a native <button> does NOT synthesise a `click` in
- * happy-dom -- that is the browser's own activation behaviour. Both interactive
- * subjects below are a native <button type="button"> with no `onKeyDown` of its
- * own intercepting (Tag's remove button has none at all; CalendarEvent's
- * `onKeyDown` in the paneled case is on the chip ROOT, a different element from
- * the body button that carries the pattern in that case), so a real `click`
- * dispatched and observed to run the handler is what a native button's Enter and
- * Space route to through the platform, and the categorical `true` records that
- * rather than a key dispatch happy-dom cannot honour. */
+ * `keyboard.Space` and `keyboard.Enter` are BEHAVIOURAL for the `button` pattern,
+ * and this suite proves both the same way side-nav-disclosure.test.jsx's own
+ * trigger test does -- ported rather than reinvented, because the precedent
+ * does three separate things and all three are needed:
+ *   (1) the interactive subject is a native <button type="button">, which is
+ *       what makes the PLATFORM route Enter and Space to a click -- nothing in
+ *       Arena implements either key, and nothing needs to.
+ *   (2) a real `keydown` of Enter and of ' ' is dispatched at that subject and
+ *       `event.defaultPrevented` is asserted false. This is the non-vacuous
+ *       half: an `onKeyDown` of ours calling `preventDefault()` on either key
+ *       would suppress the platform's own activation, and only dispatching and
+ *       observing catches that -- asserting from the element merely being a
+ *       <button> would not.
+ *   (3) a real `click` reaches the handler -- proved below and by `assert
+ *       equal(clicked/removed, true)`. Without it, (2) would establish only
+ *       that a key reaches a click, never that a click does anything.
+ * A `keydown` does NOT itself synthesise a `click` in happy-dom -- that is the
+ * browser's own activation behaviour -- so (2) can never be replaced by
+ * dispatching the key and checking for a side effect; it can only prove
+ * non-interception, which is exactly what it is used for here.
+ *
+ * `CalendarEvent`'s paneled body button needs (2) run at the BODY, not the
+ * root: the root carries the chip's own `onKeyDown` (CalendarEvent.jsx:141-167),
+ * and because keydown bubbles, a key pressed on the body DOES reach that
+ * ancestor handler. It is still safe -- not because the handler is on a
+ * "different element" out of the event's path, but because none of its
+ * branches match `Enter` or `' '`: it acts on `Escape`, `ArrowRight` and
+ * `ArrowLeft` only, so Enter/Space fall through unhandled and
+ * `defaultPrevented` stays false. Dispatching at the body is what actually
+ * exercises that bubble path rather than assuming it never reaches the
+ * handler. */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
@@ -38,6 +57,19 @@ import { Tag } from '../components/display/Tag.jsx';
 import { CalendarEvent } from '../components/display/CalendarEvent.jsx';
 
 afterEach(cleanup);
+
+/** Dispatch a real `keydown` of Enter and of Space at `el` and assert neither
+ *  was intercepted -- the non-vacuous half of a `keyboard.Space`/`keyboard.Enter`
+ *  verdict. `bubbles: true` is what lets an ancestor's `onKeyDown` actually see
+ *  it, which is the case worth exercising rather than assuming away. */
+function assertKeysUnintercepted(el) {
+  for (const key of ['Enter', ' ']) {
+    const ev = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+    act(() => { el.dispatchEvent(ev); });
+    assert.equal(ev.defaultPrevented, false,
+      `a handler of ours cancelled ${key === ' ' ? 'Space' : key}, suppressing the button's own activation`);
+  }
+}
 
 test('Tag meets both of its declared cases', () => {
   assertPatternCases({
@@ -53,6 +85,7 @@ test('Tag meets both of its declared cases', () => {
         // first child, so the fallback (root.firstElementChild) would point
         // at the wrong element; name the real subject explicitly.
         const button = root.querySelector('button');
+        assertKeysUnintercepted(button);
         act(() => { button.click(); });
         assert.equal(removed, true, 'sanity: a real click must reach onRemove');
         return {
@@ -80,6 +113,7 @@ test('CalendarEvent meets all three of its declared shapes', () => {
         let clicked = false;
         const root = mount(<CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z"
           end="2026-07-20T09:30:00Z" onClick={() => { clicked = true; }} {...CHIP} />);
+        assertKeysUnintercepted(root.firstElementChild);
         act(() => { root.firstElementChild.click(); });
         assert.equal(clicked, true, 'sanity: a real click must reach onClick');
         return {
@@ -97,6 +131,10 @@ test('CalendarEvent meets all three of its declared shapes', () => {
           actions={<button type="button">Delete</button>} {...CHIP} />);
         const body = [...root.querySelectorAll('button')]
           .find((b) => /^Standup,/.test(b.getAttribute('aria-label') || ''));
+        // Dispatched at the BODY, bubbling up through the chip root's own
+        // onKeyDown -- this exercises the real bubble path rather than
+        // assuming the ancestor handler never sees the key.
+        assertKeysUnintercepted(body);
         act(() => { body.click(); });
         assert.equal(clicked, true, 'sanity: a real click must reach onClick');
         return {

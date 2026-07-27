@@ -13,14 +13,20 @@
  * the same shape.
  *
  * `keyboard.Space` and `keyboard.Enter` are BEHAVIOURAL for the `button`
- * pattern, and a `keydown` of Enter or Space on a native <button> does NOT
- * synthesise a `click` in happy-dom -- that is the browser's own activation
- * behaviour. The close button carries no `(keydown)` of its own, only
- * `(click)`, so a real click dispatched and observed to emit `remove` is what
- * a native button's Enter and Space route to through the platform, and the
- * categorical `true` records that rather than a key dispatch happy-dom cannot
- * honour -- the same reasoning frameworks/react/test-dom/tag-and-chip-cases.
- * test.jsx's header carries for the same button. */
+ * pattern, and this suite proves both by dispatching a real `keydown` of Enter
+ * and of ' ' at the close button and asserting `event.defaultPrevented` stays
+ * false -- ported from frameworks/react/test-dom/tag-and-chip-cases.test.jsx's
+ * `assertKeysUnintercepted`, itself ported from
+ * side-nav-disclosure.test.jsx's trigger test. That is the non-vacuous half:
+ * an `(keydown)` of ours calling `preventDefault()` would suppress the
+ * platform's own activation, and only dispatching and observing catches that
+ * -- the element merely being a native <button> does not. A `keydown` does
+ * NOT itself synthesise a `click` in happy-dom, so this can only prove
+ * non-interception; a real click dispatched and observed to emit `remove`
+ * (below) is what proves the platform's route actually does something. The
+ * close button carries no `(keydown)` of its own, only `(click)`, so nothing
+ * here is expected to intercept either key -- but that is exactly the claim
+ * dispatching verifies rather than assumes. */
 import { useTestEnvironment } from './testbed-env';
 useTestEnvironment();
 
@@ -32,6 +38,18 @@ import { Tag } from '../primitives/tag/tag';
 import { assertPatternCases, ANGULAR_PRIMITIVES } from './compliance';
 
 const BINDING = join(ANGULAR_PRIMITIVES, 'tag/tag.behaviour.json');
+
+/** Dispatch a real `keydown` of Enter and of Space at `el` and assert neither
+ *  was intercepted -- the non-vacuous half of a `keyboard.Space`/`keyboard.Enter`
+ *  verdict. Ported from the React suite's `assertKeysUnintercepted`. */
+function assertKeysUnintercepted(el: Element): void {
+  for (const key of ['Enter', ' ']) {
+    const ev = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+    el.dispatchEvent(ev);
+    assert.equal(ev.defaultPrevented, false,
+      `a handler of ours cancelled ${key === ' ' ? 'Space' : key}, suppressing the button's own activation`);
+  }
+}
 
 function renderTag(removable: boolean) {
   const fixture = TestBed.createComponent(Tag);
@@ -58,6 +76,7 @@ test('arena-tag meets both of its declared cases', () => {
           fixtures.push(fixture);
           const host = fixture.nativeElement as Element;
           const button = host.querySelector('button') as HTMLElement;
+          assertKeysUnintercepted(button);
           let removed = false;
           fixture.componentInstance.remove.subscribe(() => { removed = true; });
           button.click();
