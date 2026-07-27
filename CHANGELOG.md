@@ -461,6 +461,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The Angular test directory compiles ahead of the run now — AOT, not JIT — and a type error
+  there means no test runs at all, rather than an assertion failing somewhere.** `bun run
+  build:angular-tests` compiles `frameworks/angular/index.ts` (the primitives barrel) together
+  with `frameworks/angular/test/` under `ngc --strictTemplates` into git-ignored
+  `build/angular-test/`; `test:angular`, `test` and `bun run check` now run `bun test` over that
+  emitted output, never over the `.ts` sources directly — a change to what every contributor's
+  `bun run test:angular` and `bun run test` actually execute. `bun run check` grows to **24
+  steps** for it; `GATES` itself stays **21**, because this is a build the existing test step now
+  consumes rather than a new gate. The JIT-era bypass this retires — overwriting a signal input's
+  instance field directly, because `componentRef.setInput()` on an undiscovered input used to
+  silently no-op and let a suite pass vacuously against the field's stale default — is gone:
+  `frameworks/angular/test/harness-capabilities.test.ts` now pins that a template binding,
+  `contentChild()` and `setInput()` (a required boolean carrying a `booleanAttribute` transform,
+  and the same shape optional) all reach a real signal input.
+  - **The build found a live test defect the old harness could never have reported.**
+    `chart-internals.test.ts` wrote `-Number.INFINITY` — not a real property, so the expression
+    evaluated to `NaN`, an entry the same array already carried — and the loop it sat in claimed
+    six inputs while supplying five, vacuous on the exact case it existed to cover. No runtime
+    assertion could have caught it: both the typo and the intended `-Infinity` return `1` from
+    the function under test. `ngc` caught it as a type error the moment a compiler was finally
+    pointed at the file.
+
 - **BREAKING — `Tabs.tabs` is gone; `Tabs` is a compound component. Every call site breaks.**
   Where you passed an array of `TabItem`, you now write one `<Tab value label>` per view, its
   children being what that view shows. The **`TabItem` type is deleted** from `api/types/` and from

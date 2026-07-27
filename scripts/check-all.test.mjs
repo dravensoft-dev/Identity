@@ -16,10 +16,18 @@ test('check:material runs last, after check:angular, the other Angular-layer gat
 
 test('testStep runs every suite under bun, with the DOM harness isolated in its own process', () => {
   // Not one merged invocation: `bun test` shares a process (and a globalThis)
-  // across every file a single call matches, and frameworks/react/test-dom's
-  // preload registers happy-dom without ever unregistering it -- fine alone,
-  // fatal combined with frameworks/angular/test, whose own files register it
-  // too. Two steps is what keeps that combination from ever happening.
+  // across every file a single call matches. The Angular suites are not what
+  // forces the split any more -- frameworks/angular/test/testbed-env.ts is the
+  // only registration site left in that directory, it is guarded
+  // (`if (!GlobalRegistrator.isRegistered)`), and it is emitted JavaScript now,
+  // so a single invocation is not even a path frameworks/react/test-dom/preload.js
+  // could reach a second time. What still forces the split is scripts/ and
+  // frameworks/react/test/, which are meant to run DOM-free: a happy-dom
+  // installed process-wide for the whole invocation changes what they prove
+  // without failing loudly to say so -- measured, merging all four turns a
+  // passing scripts/lib/static-server.test.mjs fetch assertion into a
+  // cross-origin failure, because `fetch` is no longer Bun's own. See
+  // check-all.mjs's own header for the fuller argument; this is the summary.
   //
   // The --preload is load-bearing, not cosmetic: react-dom latches its legacy
   // change detection unless a DOM exists before it evaluates, and nothing later

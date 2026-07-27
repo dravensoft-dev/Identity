@@ -639,11 +639,13 @@ now returns nothing.
 
 One hazard is new rather than removed, and it is worth stating precisely because it is easy to
 under-describe. A suite file that fails to *load* from the emit — a module specifier the emitted
-tree does not resolve, for instance — does not fail quietly: the run goes red (measured by
-breaking one on purpose: `269 pass / 5 fail / 5 errors, Ran 274 tests across 32 files`, with an
-`Unhandled error between tests` block per affected file; see `compliance.ts`'s own header for the
-induction). What stays silent is the *count* — nothing in that output names which tests, or which
-suite files, never loaded; a reader sees a failing run and has to go find what else it dropped.
+tree does not resolve, for instance — does not fail quietly: the run goes red, not merely one
+failing assertion. Break one specifier by hand and re-run `bun run test:angular` to see it —
+`compliance.ts`'s own header carries the induction and its own re-deriving instruction, since the
+pass/fail/file counts it once measured already went stale inside this same batch the moment a
+later commit added five tests, and pinning a number here would only go stale a second time. What
+stays silent is *which* tests or suite files never loaded, whatever the count turns out to be —
+a reader sees a failing run and has to go find what else it dropped.
 
 `bun test` runs every file in this directory in ONE process, and both happy-dom's document and Angular's `TestBed` environment can each be claimed only once per process — `GlobalRegistrator.register()` throws if already registered, and `TestBed.initTestEnvironment()` throws ("base providers ... already been called") the second time it runs across files that share a process. `testbed-env.ts` claims both, once, for the whole directory: `ensureDom()` and `useTestEnvironment()` are plain `if (claimed) return` guards, not a reset — `TestBed.resetTestEnvironment()` was tried and measurably does not work, because `BrowserDomAdapter.makeCurrent()` installs a process-wide DOM adapter on the FIRST platform creation that nothing resets, so a second per-file document would render into a document the adapter no longer points at (`getComputedStyle` reading the wrong document was the observed failure). So the directory shares one real document and one TestBed environment for its entire run rather than one pair per file; any suite needing a real component render just calls `useTestEnvironment()` (or `ensureDom()` alone, for a suite that needs a DOM but not TestBed) and is a normal new file, not an addition to `host-class-binding.test.ts`. The shared document also means state written onto it — a custom property set on `documentElement.style`, an element appended to `document.body` — outlives the file that wrote it unless that file clears it, typically in a `finally`; every directly-created fixture must still be `destroy()`-ed for the same reason — zoneless change detection sweeps all attached views, so a fixture left dirty throws out of an unrelated later test, and with one shared document that hazard now crosses files rather than staying inside one.
 
@@ -1137,7 +1139,14 @@ scheduled for deletion the same week.
   `confirm-dialog-focus-trap.test.ts` and `onboarding-focus-trap.test.ts`. Each still says, in
   the present tense, that a signal input cannot be driven through a template binding or
   `setInput()` under this harness — false now, per the *Architecture* paragraph above and the
-  suite that backs it. **This is not a typo sweep, on purpose.** Several of these files justify
+  suite that backs it. **This command's reach is bounded to `.ts` files under this one
+  directory, and the same false claim was not confined to it.** `components-divergences.md`
+  restated this exact limitation for `ConfirmDialog`, `CommandPalette` and `Skeleton`, in prose
+  this grep cannot see. Those three were found and corrected by reading the file, not by
+  widening this grep, and are not a fourth thing still to find here — a future stale restatement
+  of this limitation anywhere outside this directory needs the cross-file command in the
+  *"a component name written into ANOTHER file's prose"* entry above, not this one.
+  **This is not a typo sweep, on purpose.** Several of these files justify
   testing plain exported functions (chart geometry, focus-trap helpers) *by* the limitation
   they cite — extracting the logic and testing it directly, rather than driving the real
   component. Correcting only the false clause and leaving the extraction in place is defensible

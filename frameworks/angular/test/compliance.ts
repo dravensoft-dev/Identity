@@ -41,8 +41,20 @@ const here = dirname(fileURLToPath(import.meta.url));
  *  `primitives/` or `tailwind/components/` -- so a hop count resolves there to a
  *  directory that exists, contains the wrong things, and fails as ENOENT rather
  *  than as anything a reader would recognise. Walking to a marker resolves to the
- *  real source tree from both, which also keeps every suite runnable from its own
- *  source directory. */
+ *  real source tree from both -- but that only fixes the DATA paths, and is not enough on its
+ *  own to make a render suite runnable from source. `setInput()` and a template property
+ *  binding now reach a real signal input (harness-capabilities.test.ts), and that only compiles
+ *  against a real component under `ngc`: run a render suite straight from
+ *  `frameworks/angular/test/` and `bun test` transpiles the `.ts` by stripping types rather than
+ *  compiling it, producing a component TestBed cannot instantiate the way these suites expect.
+ *  Measured, not assumed: `bun test frameworks/angular/test/harness-capabilities.test.ts` from
+ *  source is 0 pass / 5 fail; `chart-data-table.test.ts` is 0 pass / 6 fail (NG0303 then
+ *  NG0950). Those failures read like a broken component, not like a wrong run target -- they are
+ *  the second. Run a render suite from the emit instead: `bun run test:angular`, or `bun test
+ *  build/angular-test/angular/test/<name>.test.js` after `bun run build:angular-tests`. A
+ *  DOM-free recipe suite -- asserting a `tailwind-variants` recipe or a plain exported function,
+ *  never mounting a component -- has no such dependency and still runs from source unchanged:
+ *  `bun test frameworks/angular/test/tag-variants.test.ts` is **4 pass** either way. */
 function findRepoRoot(from: string): string {
   let dir = from;
   while (!existsSync(join(dir, 'package.json'))) {
@@ -62,11 +74,17 @@ const REPO = findRepoRoot(here);
  * that does not exist from `build/angular-test/angular/test/`. That is not an
  * assertion failure -- the module never loads, so the whole suite file and every
  * suite importing it drops out of the run. Measured, not assumed: breaking the
- * specifier this way turns a clean 341/0 into "269 pass / 5 fail / 5 errors, Ran
- * 274 tests across 32 files" with an "Unhandled error between tests" per file --
- * the run goes RED, not green. What stays silent is the COUNT: nothing in that
- * output names the 67 missing tests or the five suites that never loaded, so a
- * reader sees a failing run and has to go find what else it dropped. A dynamic
+ * specifier this way turns a clean run RED, not merely one failing assertion --
+ * `bun run test:angular` reports the affected files failing to load, each with its own
+ * "Unhandled error between tests" block, and the printed pass/fail/file counts drop with them.
+ * Break one specifier by hand and re-run `bun run test:angular` to see the current numbers
+ * rather than trusting a figure written here, which moves every time a suite is added or
+ * removed -- an induction run against this tree once reported a clean run going from 341
+ * passing to 269 pass / 5 fail / 5 errors across 32 files, and five tests landing in this
+ * directory since then already make both halves of that stale. What stays silent regardless of
+ * the count is WHICH tests are missing: nothing in that output names the dropped tests or the
+ * suite files that never loaded, so a reader sees a failing run and has to go find what else it
+ * dropped. A dynamic
  * import of an absolute file URL is resolved at call time from a path this
  * module computed, so both locations reach the one real copy of the evaluator.
  *
