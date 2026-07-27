@@ -4,8 +4,10 @@
  *  arrived in. `check:angular` compiles `./index.ts` -- the shipped surface -- and
  *  says whether the layer typechecks. This compiles the test surface and produces
  *  the JavaScript the suites actually run, so a type error here does not merely
- *  fail an assertion somewhere: the tests cannot run at all. That is why no gate
- *  was added for the test directory and why GATES did not move.
+ *  fail an assertion somewhere: the tests cannot run at all. That guarantee comes
+ *  from being a build the test run depends on rather than a separate check run
+ *  beside it -- a failed emit already stops the suites, so nothing would be left
+ *  for a gate to additionally report.
  *
  *  It also makes the templates real. Under `@angular/compiler`'s JIT a signal input
  *  cannot be driven through a template binding, which is what forced this
