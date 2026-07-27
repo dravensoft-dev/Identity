@@ -819,14 +819,16 @@ scheduled for deletion the same week.
   ```
 
   and read every hit as a claim about `X` that you may have just falsified. 8C10 did exactly this
-  for `Skeleton` and corrected **six** sites over two rounds: `Table`'s and `Tab`'s reason strings
+  for `Skeleton` and corrected **six** sites, across fix commits `358cad9`, `23d9beb` and
+  `ac197c7`: `Table`'s and `Tab`'s reason strings
   (both exemplars **removed** rather than re-pointed at another name, because a replacement name is
   just the next thing to rot), `Toast`'s `divergesFromReason` (rewritten as explicit **history**,
   which is the one form that cannot go stale), two doc comments in
   `scripts/lib/behaviour-contracts.mjs` — one rewritten to past tense so `bindingCases()` keeps its
   origin story without asserting a tree that has moved, one re-pointed at the only live example
-  that qualifies — and, in a **third** round, a sentence in `components-divergences.md` describing
-  what an Angular test file asserts.
+  that qualifies — and a sentence in `components-divergences.md` describing
+  what an Angular test file asserts. That last site took **two** passes: `ac197c7`'s correction of
+  it was itself false, and a fourth commit fixed it.
 
   **That last one is the entry's own thesis demonstrating itself, and it is worth more than the
   rule it illustrates.** It was the SEVENTH instance and the FIRST introduced by the fix for the
@@ -838,6 +840,15 @@ scheduled for deletion the same week.
   direction** — not the one that was wrong, and not the one that fixed it. A reviewer read the test
   file. Treat "I grepped it" as insufficient evidence for a claim about another file's contents;
   the only sufficient evidence is having read that file.
+
+  **That rule was then broken by the commit that wrote it, which is the strongest evidence for it
+  there is.** `ac197c7`'s replacement sentence — the one carrying the rule — claimed the Angular
+  harness could not reach `Skeleton`'s other three variants, when `skeleton-dimensions.test.ts` had
+  been driving all four by the documented instance-field bypass the whole time. Same cause one step
+  out: its author read the one test file they had been pointed at and generalised to the directory.
+  So writing the rule down demonstrably does not stop it — the reading has to happen at the moment
+  the sentence is written, and "read that file" means the whole directory when the claim is about
+  what a test suite does or does not cover.
 
   **Prefer no exemplar, a command, or an explicitly-past-tense one.** All three are stale-proof;
   a present-tense component name is not. And when a claim about another file is unavoidable, cite

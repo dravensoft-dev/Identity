@@ -385,35 +385,51 @@ is verified — `frameworks/react/test-dom/placement-and-branches.test.jsx` rend
 variants and `Skeleton:react` is in `check:compliance`'s `COVERED`. The Angular claim is not:
 `skeleton.behaviour.json` says `status` with no exceptions and **no suite verifies that binding**,
 so Angular's side of the now-agreeing pair is an unverified claim, exactly as it was while the
-layers disagreed. Be precise about which claim is unverified, because a suite does render this
-component and does assert some of this: `frameworks/angular/test/host-class-binding.test.ts`
-imports `Skeleton` (:65), declares a `SkeletonHost` fixture (:180) and mounts a real `TestBed`
-tree of it in **three** tests. Two are host-class tests — the recipe's root classes land on the
-host (:742), a consumer's own class survives the `[class]` binding (:751). The third,
+layers disagreed. Be precise about which claim is unverified, because **two** suites render this
+component and one of them asserts the announcement itself.
+`frameworks/angular/test/host-class-binding.test.ts` imports `Skeleton` (:65), declares a
+`SkeletonHost` fixture (:180) and mounts a real `TestBed` tree of it in **three** tests. Two are
+host-class tests — the recipe's root classes land on the host (:742), a consumer's own class
+survives the `[class]` binding (:751). The third,
 *"arena-skeleton: the host itself carries the loading status, not a wrapper inside it"* (:759),
 asserts `role="status"` and `aria-label="Loading"` on the host, plus that the default variant
 renders no children of its own.
+`frameworks/angular/test/skeleton-dimensions.test.ts` mounts it too, in six tests, and reaches
+**every** variant: its `renderSkeleton` helper (:43-52) drives `variant` by overwriting the signal
+instance field — `instance['variant'] = () => variant`, this harness's documented bypass — and
+renders `block`, `circle`, `line` and `text`. What it asserts is the inline `[style.*]` dimension
+bindings, never `role`, `aria-label`, or anything else the `status` pattern names. Those two are
+the whole set that renders it: `skeleton-variants.test.ts` mounts nothing (it asserts the
+plain-TypeScript recipe and `skeletonRowSlot`), and the only other files under
+`frameworks/angular/test/` naming `Skeleton` at all — `compliance.ts` (:210) and
+`confirm-dialog-focus-trap.test.ts` (:21) — name it only in a comment.
 
-So the accurate statement is narrower than "nothing is checked". What that suite never does is
-**evaluate the binding against the `status` pattern**: it never calls `comparePattern` or
-`assertPattern`, so no requirement of `status` beyond those two attributes is checked, no
+So the accurate statement is narrower than "nothing is checked". What no suite in this layer does
+is **evaluate the binding against the `status` pattern**: neither file calls `comparePattern` or
+`assertPattern`, so no requirement of `status` beyond those two attributes is checked anywhere, no
 exception could ever expire there, and nothing would notice if the pattern gained a requirement
-the component does not meet. It also **stops at the default variant**, `block` — the harness runs
-Angular's JIT rather than `ngtsc`, so a signal input cannot be driven and the other three variants
-are unreachable from it, which is worth knowing here because the variant this batch changed was
-`circle`. That last limit is softer than it looks in this one component's case, and the reason is
-worth stating rather than leaving a reader to assume the worst: `role` and `aria-label` are
-**static host attributes** in `skeleton.ts` with no branch by variant, so asserting them on `block`
-establishes them for every variant by construction rather than by coverage. Rendering a component
-is not verifying its binding, and `Skeleton:angular` is absent from `check:compliance`'s `COVERED`
-for that reason.
+the component does not meet. The variant reach is **split between the two files** rather than
+absent, which is the correction an earlier version of this paragraph needed: the suite that
+asserts the announcement **stops at the default variant**, `block`, because its fixture is a
+template (`<arena-skeleton class="consumer-class" />`) and this JIT harness cannot drive a signal
+input through a template binding at all; the suite that does reach `circle` — the variant this
+batch changed — asserts dimensions instead. That split is softer than it looks in this one
+component's case, and the reason is worth stating rather than leaving a reader to assume the
+worst: `role` and `aria-label` are **static host attributes** in `skeleton.ts` (`:45-46`, inside
+the `host:` object, with no branch by variant — unlike React's, which branched), so asserting them
+on `block` establishes them for every variant by construction rather than by coverage. Rendering a
+component is not verifying its binding, and `Skeleton:angular` is absent from
+`check:compliance`'s `COVERED` (`scripts/check-compliance.mjs:103-119`) for that reason.
 
-**This sentence is itself a worked example of the hazard it sits inside.** Its first version
-claimed that suite "says nothing about `role`, `aria-label` or the `status` pattern", which was
-false — written from a `grep` that found two of the three tests, in the same batch that recorded
-*a component name written into another file's prose is a cross-file claim no gate checks*. It was
-the seventh instance of that class and the first one produced by the fix for it. Nothing failed;
-a reviewer read the test file. See `CLAUDE.md`'s *Known debt* entry for the class and the
+**This paragraph is itself a worked example of the hazard it sits inside, twice over.** Its first
+version claimed that suite "says nothing about `role`, `aria-label` or the `status` pattern",
+which was false — written from a `grep` that found two of the three tests in that one file, in the
+same batch that recorded *a component name written into another file's prose is a cross-file claim
+no gate checks*. Its second version, written to correct exactly that, then claimed the other three
+variants were **"unreachable"** from this harness — also false, and false the same way, one step
+out: its author read the one file and generalised to a directory that already held
+`skeleton-dimensions.test.ts` driving all four. A reviewer read the files both times; no gate
+caught either, in either direction. See `CLAUDE.md`'s *Known debt* entry for the class and the
 change-time command.
 
 ### Toast — a critical error interrupts in React and is queued in Angular
