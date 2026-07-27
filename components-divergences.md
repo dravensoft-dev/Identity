@@ -340,6 +340,43 @@ used to read *"the same shape as `ConfirmDialog`'s accessibility debt above"*; t
 by plan 8C4 and the comparison no longer holds. This entry is now the older of the two and stands
 on its own.
 
+### Skeleton — a circular skeleton announces itself in Angular and is silent in React
+
+**React:** `Skeleton.jsx` branches by variant. `block`, `line` and `text` render
+`role="status"` with `aria-label="Loading"`; `circle` renders `aria-hidden="true"` with no role
+at all, so a screen reader is told nothing about it.
+
+**Angular:** `skeleton.ts` sets `role: 'status'` and `'aria-label': 'Loading'` in its `host`
+bindings, statically, with **no branch by variant**. Every variant announces, `circle` included.
+
+**Why:** the two layers made different assumptions about where a circular skeleton appears, and
+neither assumption is wrong in general. React's silence assumes the circle is an avatar
+placeholder standing beside a name that is itself announced, so a second "Loading" would be
+noise. Angular's announcement assumes a circular skeleton with no announced neighbour is a
+loading state a user should be told about. Both hold in some layouts and neither holds in all of
+them.
+
+**The consequence, stated plainly, because it is what an entry is for:** meeting a circular
+skeleton, a screen-reader user hears "Loading" in Angular and hears nothing in React. That is a
+real difference to a real person, not a difference in how two files are shaped.
+
+**Converges:** undecided, deliberately. This is the *"both are defensible"* case in *How to add
+an entry* below — the answer requires a design decision about what a circle skeleton is for, and
+nothing in this repository has taken it. Neither layer is carrying debt against the other until
+it is taken.
+
+**Recorded how:** both bindings are honest about their own layer.
+`frameworks/react/components/display/Skeleton.behaviour.json` declares two cases —
+`placeholder` → `status` and `circle` → `none` — and carries `divergesFrom: "status"` naming
+Angular's flat binding, so `check:behaviour` reports the divergence as declared rather than as
+two layers disagreeing. `frameworks/angular/primitives/skeleton/skeleton.behaviour.json` stays
+flat at `status`, which is exactly what its component does.
+
+**How it was found, which is worth knowing for the next one:** nothing was looking for it.
+Converting the React binding to cases made the cross-layer check compare a cased binding against
+a flat one, and a flat binding can no longer silently agree with a cased one. `Toast` surfaced
+the same way in the same batch. Expect more of these as bindings are converted.
+
 ### Onboarding — the scrim is a sibling in React and the host in Angular
 
 > **The naming half of this entry is closed, and plan 8C4 closed it.** This section used to be

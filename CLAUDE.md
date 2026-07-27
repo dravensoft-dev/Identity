@@ -138,6 +138,44 @@ and a declaration reading "absent" would be false for it — Calendar is the one
 in that file where "absent" is true, and it binds the `absent` pattern precisely so
 that fact is machine-checkable rather than only stated in its `reason`.
 
+**A binding has two shapes, and the second exists because a binding describes a
+COMPONENT while the evaluator judges a RENDER.** A component that renders differently by
+its own props is several renders, and no flat exception list is correct for all of them.
+So a binding either names one `pattern` and lists its `exceptions`, or declares `cases` —
+named render configurations, each with its own `when` in prose, its own `pattern` and its
+own `exceptions`. Declaring both is rejected. **The flat shape stays valid and means one
+case**, so the untouched majority is not churned to say so; count the cased ones with
+`grep -rl '"cases"' --include='*.behaviour.json' frameworks/ | wc -l`.
+`bindingCases()` in `scripts/lib/behaviour-contracts.mjs` is the **single** place the two
+shapes are reconciled, and both gates read every binding through it.
+`scripts/lib/behaviour-compliance.mjs` was never taught what a case is — `comparePattern`
+reads `binding.exceptions` and nothing else, so each test wrapper synthesizes a per-case
+binding and the one file that runs in three runtimes stayed out of the change entirely.
+`when` is prose and can only be prose: nothing can verify that a suite rendered the
+configuration a case names.
+
+**A count of exceptions is now a count of DECLARATIONS, not of distinct defects**, and the
+difference is not pedantry — it is the one way prose about this layer goes quietly false. A
+requirement unmet in two cases is correctly declared twice: `CalendarEvent` declares
+`states.disabled` once per interactive case, because both shapes genuinely lack the concept.
+So `grep -rho '"requirement"' --include='*.behaviour.json' frameworks/ | wc -l` is not
+comparable across the point where a binding gained cases, and a drop in it must never be
+reported as "N defects removed". Count distinct binding+requirement pairs when the question is
+about defects: `grep -rHo '"requirement": "[^"]*"' --include='*.behaviour.json' frameworks/ |
+sort -u | wc -l`.
+
+**What closes a real hole rather than merely adding an expression: the wrapper drives the
+loop.** `assertPatternCases` — in both `frameworks/react/test-dom/assert-pattern.jsx` and
+`frameworks/angular/test/compliance.ts` — takes a map of case name → a **thunk** that
+renders that case, and compares that key set against the declared names *before anything
+mounts*; a never-rendered case and an undeclared one are both errors. A suite merely
+*asked* to call once per case can forget, and `Skeleton` is the worked example: its
+`assertPattern` call was pinned to `circle` — the one variant in four where its two
+exceptions were true — while `Skeleton:react` sat in `COVERED` as a claim about the
+component. (The rest of that file was not untested; two hand tests rendered all four
+variants. What no flat exception list could do is feed all four to the one mechanism that
+makes an exception expire.)
+
 `bun run check:behaviour` asserts every component declares, that no declaration names a
 pattern or requirement that does not exist, that no delegated entry is stale, and that
 the layers agree or say why not. When they disagree the gate names both and picks no
@@ -722,21 +760,65 @@ scheduled for deletion the same week.
   `TableRow` carries a `click` has no keyboard route at all. The obvious fix is invalid
   ARIA (`tabIndex={0}` plus `role="button"` cannot go on a card that also contains the
   consumer's own buttons, which is exactly what a `mobileLayout: 'block'` column draws
-  inside it), which is why it is recorded rather than done — and the binding cannot scope
-  a requirement to a variant, the same limit `Skeleton` proves, so it reads as
-  unconditional and is not. **What stays true of both is the verification, not the
+  inside it), which is why it is recorded rather than done — and the exception reads as
+  unconditional and is not. A binding **can** scope a requirement now, since 8C9 built
+  `cases`, but `Table` was deliberately left flat: card mode's interactivity is the
+  consumer's choice rather than a prop of `Table`, and the grid hand-test rule means any
+  case it declared could carry no suite. The reasons are in the conditionality entry
+  below. **`Table.behaviour.json`'s own reason string still cites `Skeleton` as proving
+  the limit, and that citation is stale** — it was left in place because 8C9 changed no
+  binding it did not convert. **What stays true of both is the verification, not the
   behaviour**: `grid-keyboard.test.jsx` is the one suite the grid rule excludes, so
   neither component can appear in `COVERED`, both are DOM-tested by hand, and
   `Calendar`'s now-exceptionless binding and `Table`'s surviving exception are alike
   unverified claims. See the grid-rule entry below.
-- **The binding schema cannot express "this pattern applies conditionally".** `Tag`
-  renders a real `<button>` only when `onRemove` is passed; without it — the common
-  case — it is a plain `<span>` matching no interactive pattern at all. It is bound to
-  `button` with an exception as a stopgap, so a reader of the binding alone would think
-  the pattern always applies. The spec's own open questions name this unresolved: "How
-  does a pattern express an optional requirement?" was answered by pushing anything
-  per-component into the binding rather than the pattern, and a whole pattern applying
-  only sometimes is the same problem one level up, still open.
+- **The conditionality gap is closed at ONE of its three levels, and the other two are
+  the ones a reader now has to be told about.** This entry used to record the schema as
+  unable to express "this pattern applies conditionally", with `Tag` as its proof — a real
+  `<button>` only when the tag is removable, bound to `button` with an exception as a
+  stopgap, so a reader of the binding alone would think the pattern always applied. Batch
+  8C9 built `cases` for exactly that (see *Architecture*), and `Tag` now declares
+  `plain` → `none` and `removable` → `button` **in both layers**, with its surviving
+  `states.disabled` exception scoped to the case it is true of. `Alert` (both layers),
+  `Toast`, `Skeleton` and `CalendarEvent` were converted the same way — count the converted
+  set with the command in *Architecture* rather than trusting this list, which will drift
+  the first time a batch converts another. **What cases solve is conditionality on the
+  component's OWN props, and only that.** Three things stay open:
+
+  **Conditional on CONSUMER usage is still unexpressible**, and it is a different level
+  rather than the same one unfinished: a case describes a render the component's own API
+  can produce, while these are produced by how a consumer assembles two components or by
+  what they pass in. The live instances are `Table`'s `focus.roving` (true of card mode,
+  and there only when a consumer put an `onClick` on a `TableRow`), `Tooltip`'s
+  `roles.describedby` (holds only when the consumer's child accepts and forwards props —
+  its own entry below), and `Pagination`'s `roles.label` (met when the caller supplies
+  `ariaLabel`, unmet when they take the default). **`Tooltip` is the one to state most
+  carefully: its binding reads `"exceptions": []`, so it is the live instance whose
+  binding looks completely clean.** And `comparePattern`'s stale-exception message still
+  has no vocabulary for "true for some inputs" — it offers only "delete it or name a
+  subject", which was the old complaint about variants and is now the complaint about
+  these.
+
+  **Nothing proves the declared cases are ALL the cases.** A component with five
+  meaningful renders may declare two and every gate stays green. This is the same limit
+  the curated `QUANTIFIED` set carries, and it has the same non-remedy: deriving cases
+  from source was not attempted, because a scan for prop branches finds fewer renders than
+  a reader does and would rebuild the false-negative class the evaluator's own header
+  already rejected once.
+
+  **A case bound to `none` verifies nothing**, because `none` has no requirements. For
+  `Skeleton`'s `circle` and `Tag`'s `plain` that verdict is correct — a decorative
+  placeholder and a label have no interactive contract — but the suite can then only
+  confirm the case was rendered, never that it is correctly inert. Nothing checks that
+  `circle` really carries `aria-hidden`.
+
+  **`Table` was deliberately NOT converted, and the reason is the first of those three.**
+  Its card mode is a variant, so it looks convertible; but whether a card is interactive
+  depends on the consumer, and declaring `card` → `none` would assert an inertness a
+  clickable card row contradicts. `Table` is also under the grid hand-test rule, so it can
+  carry no render suite and any case declaration would be unverified — trading an accurate
+  exception for an unverified claim, which is the trade batches 8C6 through 8C8 were spent
+  refusing. `SideNavItem` is the other deliberate non-conversion; see its own entry below.
 - **A behaviour text scan was designed, built, measured and rejected — do not
   re-propose it without reading this.** Plan 7c's spec proposed a static scan of
   component sources as the cheap tier beneath the render suites. It was
@@ -761,17 +843,65 @@ scheduled for deletion the same week.
   check it would supplement is not machine-checked at all: a scan's measured error rate
   is what it is regardless of what sits above or below it, and a 51% false-unmet rate
   is worse than an honest hole.
-- **A binding cannot scope an exception to a variant, and `Skeleton` is the proof.**
-  `Skeleton`'s `roles.element` and `live.politeness` exceptions are true of the
-  `circle` variant and false of `block`, `line` and `text`. The compliance suite
-  works around it by asserting against the `circle` variant specifically, which
-  pins the claim but leaves a reader of the binding alone believing the exception
-  is unconditional. This is the same gap already recorded for `Tag`'s `button`
-  pattern applying only when `onRemove` is passed — one level down, at the
-  requirement rather than the pattern, and still open. The spec's own unresolved
-  question, *"How does a pattern express an optional requirement?"*, is this.
-  `comparePattern`'s stale-exception message has no vocabulary for "true in one
-  variant" either — it offers only "delete it or name a subject".
+- **A circular `Skeleton` announces itself in Angular and is silent in React, both
+  bindings are honest, and which layer is right is NOT decided.** `skeleton.ts` sets
+  `role="status"` and `aria-label="Loading"` in its host bindings with **no branch by
+  variant at all**, so Angular announces every variant; React's `circle` branch renders
+  `aria-hidden="true"` with no role. The consequence is not a difference of shapes — it is
+  what a screen-reader user is told: meeting a circular skeleton, that user hears
+  "Loading" in Angular and hears **nothing** in React. Both positions are defensible.
+  React's silence assumes a circle skeleton usually stands beside a name that is itself
+  announced, so a second "Loading" would be noise; Angular's announcement assumes a
+  circular skeleton with no announced neighbour is a loading state a user should be told
+  about, and neither assumption always holds. Recorded, not settled — the full entry is in
+  `components-divergences.md`, per its own rule that a divergence where both layers are
+  defensible is an entry rather than a fix. React's binding declares `divergesFrom:
+  "status"` so `check:behaviour` reports the divergence as declared instead of as
+  disagreement.
+
+  **This was found by a property of the cases mechanism nobody predicted.** Converting ONE
+  layer to cases surfaces every place the two layers were quietly different, because a
+  flat binding on the other side can no longer silently agree with a cased one. It fired
+  twice in the batch that built cases: `Toast` (structural — Angular delegates to
+  `MatSnackBar`, and nobody is worse off) and `Skeleton` (with the accessibility
+  consequence above). Both are also the **first ever uses of `divergesFrom` in this
+  repository** — `grep -rl divergesFrom frameworks/` found nothing before them, so neither
+  branch of that escape hatch had been exercised against a real binding until now.
+- **No gate typechecks `frameworks/angular/test/`, so every wrapper and helper living there
+  is unchecked TypeScript.** `check:angular` runs `ngc --strictTemplates` over
+  `frameworks/angular/tsconfig.check.json`, whose `"files"` is `["./index.ts"]` — the
+  primitives barrel — so the compiler never opens the test directory; and `bun test` strips
+  types without checking them, so a green suite has never been evidence about types. This is
+  not theoretical. During 8C9 a review compiled `frameworks/angular/test/compliance.ts` by
+  hand and found **two TS2322 errors** in a directory reporting 340 passing tests — after a
+  green `check:angular` had already been read, in that same batch, as evidence the file
+  typechecked. It is not that evidence.
+  8C9 added two more files there (`assert-pattern-cases.test.ts`, `tag-cases.test.ts`). The
+  cheap mitigation, not done: a second tsconfig covering the test directory, wired into
+  `check:angular`.
+- **Duplicate case names are rejected only by the two test wrappers, never by the gate.**
+  `validateBinding` in `scripts/lib/behaviour-contracts.mjs` loops over `bindingCases()` and
+  never asserts the names are distinct, so a binding declaring `danger` twice passes
+  `check:behaviour`; and `crossLayerAgrees` builds its per-name map last-write-wins, so only
+  the last declaration of a repeated name is ever compared across layers. Both wrappers do
+  throw on a duplicate, and they must: `Object.keys()` on a suite's own case map can never
+  carry one, so the key-set diff would report a confusing missing/unknown pair instead of
+  naming the real problem. But a binding no suite covers is unguarded, and most bindings are
+  uncovered. Cheap to close in `validateBinding`; it was left open because the batch that
+  found it had that file closed by its own constraints.
+
+  **Three smaller things the same batch left, recorded here rather than in the plan that gets
+  deleted.** `divergesFromReason` (in `Skeleton`'s and `Toast`'s bindings) is a novel field
+  with no repo precedent that **no gate reads** — if a convention for divergence rationale is
+  ever wanted it should be named repo-wide rather than inheriting an unstated first instance
+  from one batch. A comment in `frameworks/angular/test/compliance.ts` explaining why a
+  `c.name as string` cast is safe **gives the wrong reason**: it cites the no-cases guard,
+  which only refuses the single-entry flat shape, when the real protection is that the
+  missing/unknown throw fires first — a null name can never match a real object key. The cast
+  is safe; the stated mechanism is not the one protecting it. And neither wrapper's
+  failure-path tests exercise the loop **body**, so the per-case binding synthesis and the
+  `case "<name>" (<when>): ` message prefixing are proved only by the real component suites
+  and by nothing that would survive their deletion.
 - **`Tooltip.behaviour.json` claims `roles.describedby` unconditionally, and the
   implementation only meets it for some children.** `aria-describedby` is added
   by `cloneElement` onto the consumer's own child, which only works when that
@@ -786,15 +916,17 @@ scheduled for deletion the same week.
   only place a consumer is warned is `Tooltip.prompt.md`'s Do/Don't, and nothing
   machine-checks it: the compliance suite renders a prop-accepting child by
   construction, so it proves the good case and can never exercise the bad ones.
-  This is the same open question already recorded above for `Tag`'s `button`
-  pattern and for `Skeleton`'s variant-scoped exceptions — a binding cannot
-  express "this requirement holds only for some inputs" — one more instance
-  rather than a new one. There is no grep for the set of instances, because a
+  **This is the live instance of the one conditionality level `cases` did not
+  close**, per the entry above: `Tag` and `Skeleton` were the two the schema could
+  not express and both are now expressed as cases, while this one depends on what a
+  consumer hands in rather than on any prop of `Tooltip`, so no case can name it.
+  There is no grep for the set of instances, because a
   requirement holding only for some inputs is a property of the implementation,
   not a string in the binding — that absence is exactly why the schema cannot
-  express it. `Tag`, `Skeleton` and this entry are recorded here case by case
-  instead, and finding the next one means reading a component's implementation
-  against its binding, not searching for a phrase.
+  express it. This entry, `Table`'s `focus.roving` and `Pagination`'s
+  `roles.label` are recorded case by case instead, and finding the next one means
+  reading a component's implementation against its binding, not searching for a
+  phrase.
 - **A grid component's DOM behaviour is checked by eye, and that is a rule with a
   price.** `frameworks/react/test-dom/` was deleted whole for its RAM cost and
   restored minus one suite, so the standing rule is narrow: **a component whose
@@ -874,8 +1006,8 @@ scheduled for deletion the same week.
   (`Alert:angular`), and `validateCoverage()` resolves that layer's binding alone; the sibling layer
   is simply uncovered, which the gate is silent about by charter but no longer reports as satisfied.
   A key without a `:layer` suffix is rejected, so the old name-only shape cannot creep back.
-- **Seven exceptions rest on a `behavioural` verdict no suite in either layer
-  declares.** `ActivityFeed`'s `posinset`/`busy`, `Tag`'s `disabled`,
+- **Some exceptions rest on a `behavioural` verdict no suite in either layer
+  declares.** `ActivityFeed`'s `posinset`/`busy`,
   `Input`'s and `Textarea`'s `readonly`, and Angular `activity-feed`'s
   `posinset`/`busy` are requirements no single element can decide from the DOM, so
   the suite asserts each by acting on the tree and records the verdict in
@@ -885,13 +1017,23 @@ scheduled for deletion the same week.
   bad key aborts the whole test rather than reporting one problem, so a suite's
   wrapper (`frameworks/react/test-dom/assert-pattern.jsx`,
   `frameworks/angular/test/compliance.ts`) must expect the throw, not only a
-  returned problem list. **None of those seven is pinned by a suite today, in either
-  layer** — verified by grep: no `behavioural` map in `frameworks/react/test-dom/` or
-  `frameworks/angular/test/` names `posinset`, `busy`, `readonly` or `disabled`. The
-  restore of the React suites did not change that, and the deletion was never what
-  caused it; the only `behavioural` verdicts any suite declares are the
-  `Dialog`/`ConfirmDialog` focus and keyboard keys, `Menu`'s, `Skeleton`'s
-  `focus.unaffected`, `Alert`'s, and the two charts' `alternative.table`.
+  returned problem list. **None of the five named above is pinned by a suite today, in
+  either layer** — verified by grep, and re-run it rather than trusting the list:
+  `grep -rln "posinset\|'states.busy'\|states.readonly" frameworks/react/test-dom/
+  frameworks/angular/test/` returns nothing. **This entry read *seven* until 8C9**, which
+  pinned `Tag`'s `states.disabled` in **both** layers by declaring it in the `removable`
+  case's `behavioural` map (`tag-and-chip-cases.test.jsx`, `tag-cases.test.ts`), and
+  `CalendarEvent`'s two declarations of the same requirement are pinned from birth in the
+  same suite. **The enumeration was never exhaustive and still is not** — `TableRow`
+  excepts `states.disabled`, `keyboard.Enter` and `keyboard.Space` and is in no suite at
+  all, and it was absent from the seven. Read the current set with
+  `grep -rHo '"requirement": "[^"]*"' --include='*.behaviour.json' frameworks/ | sort -u`
+  against `BEHAVIOURAL` in `scripts/lib/behaviour-compliance.mjs`, rather than any list
+  written here; and read the other side — which verdicts a suite actually declares — with
+  `grep -rho "'[a-z]*\.[A-Za-z]*': \(true\|false\)" frameworks/react/test-dom/
+  frameworks/angular/test/ | sed "s/: .*//;s/'//g" | sort -u`, since an enumeration of
+  that has gone stale here twice. The restore of the React test directory did not change
+  what is unpinned, and its deletion was never what caused it.
 - **Angular has no `Calendar`, and nothing has decided whether it should.** React's
   `Calendar` is a day/hour schedule grid with absolutely-positioned event blocks;
   Angular has no equivalent from either an `arena-*` primitive or Angular Material —
@@ -1289,15 +1431,25 @@ scheduled for deletion the same week.
   `"exceptions": []` on that binding and concludes the component is fully accessible. It is
   fully *compliant with the pattern it chose*. Choosing that pattern is the debt.
 
-- **`SideNavItem` binds `none` with a prose reason, because the binding schema still cannot say
-  "this pattern applies only when `href` is absent".** An item renders an `<a>` with `href` and a
-  `<button>` without, so no single interactive pattern always applies. Binding `button` with an
-  exception — what `Tag` does — would leave a reader of the binding alone believing the pattern
-  always holds, so `none` plus prose was chosen as the less-false of two false options; the
-  reason string carries what the schema cannot. This is the same unresolved question `Tag`,
-  `Skeleton`, `Table` and `Pagination` already carry, and the spec's own open question — *"How
-  does a pattern express an optional requirement?"* — is still open at both levels, the whole
-  pattern and the single requirement. **Count the `none` bindings rather than writing an ordinal**
+- **`SideNavItem` binds `none` with a prose reason, and that is now a CHOICE rather than a
+  limit — it is expressible as cases and was deliberately not converted.** An item renders an
+  `<a>` with `href` and a `<button>` without, so no single interactive pattern always applies.
+  When this was written the schema could not say so, and `none` plus prose was chosen as the
+  less-false of two false options: binding `button` with an exception — what `Tag` then did —
+  would have left a reader of the binding alone believing the pattern always holds. Since 8C9
+  the schema **can** say it: two cases split by `href` — the `<button>` shape binding `button`,
+  and the `<a href>` shape binding `none`, since there is no link pattern and a link's role and
+  keyboard come from the platform — is exactly the shape `Tag` and `CalendarEvent` now carry.
+  8C9 converted the seven bindings its spec named and no others, so **`SideNavItem`'s own reason
+  string is out of date about the mechanism while staying accurate about the component**: it
+  still reads *"The schema still cannot say…"*, and it can. A reader meeting it should know the
+  option exists and that nothing has taken it, rather than concluding the schema still refuses.
+  Converting it means writing a render suite for both shapes and adding `SideNavItem:react` to
+  `COVERED`; nothing schedules that. What is genuinely still open is the third conditionality
+  level — conditional on **consumer** usage, with `Table`, `Tooltip` and `Pagination` as the live
+  instances — recorded in its own entry above. **Count the `none` bindings rather than writing an
+  ordinal**, and note the count now includes `none` bound by a *case* rather than by a whole
+  binding (`Tag`'s `plain`, `Skeleton`'s `circle`, `CalendarEvent`'s `inert`)
   — `grep -rho '"pattern": "none"' --include='*.json' frameworks/ | wc -l`, and the `-o` is the
   point: `grep -rl` counts FILES, and `frameworks/angular/behaviour-delegated.json` holds several
   `none` entries at once, so the file count is not the binding count and the measurement written
