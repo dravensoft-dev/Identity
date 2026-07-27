@@ -190,8 +190,16 @@ export interface AssertPatternCasesOptions {
   /** Case name -> a thunk that renders that case and returns its root (and,
    *  optionally, its subjects/behavioural maps). A thunk rather than a
    *  rendered root so nothing is mounted until its case is reached and the
-   *  key sets have already been checked. */
-  cases: Record<string, () => { root: Element; subjects?: Record<string, unknown>; behavioural?: Record<string, boolean> }>;
+   *  key sets have already been checked.
+   *
+   *  `subjects` is typed the same as `CompareOneOptions.subjects` --
+   *  `Record<string, Element | Element[] | null>`, not `unknown` -- because
+   *  that is what a subject actually is: the element (or elements, or
+   *  deliberate absence) a requirement is checked against, never anything
+   *  else. `unknown` here would only have deferred the mismatch to
+   *  `compareOne`'s call site and made `tsc --strict` fail on line 251
+   *  instead of describing the true type up front. */
+  cases: Record<string, () => { root: Element; subjects?: Record<string, Element | Element[] | null>; behavioural?: Record<string, boolean> }>;
 }
 
 /** Assert a CASED binding, one call per declared case.
@@ -229,6 +237,14 @@ export function assertPatternCases({ bindingPath, cases }: AssertPatternCasesOpt
     throw new Error(`${bindingPath}\n  declares the same case name more than once: ${[...dupes].join(', ')}`);
   }
   const got = Object.keys(cases);
+  // `n as string`: bindingCases() types a case's name as `string | null`, but the
+  // `declared.length === 1 && declared[0].name === null` guard above already
+  // refused the one shape where `name` is null (the anonymous, flat-binding
+  // case), so every entry reaching this point carries a real name.
+  // validateBinding does not yet enforce a `cases[]` entry naming itself
+  // (tracked as owed, not fixed here) -- if that ever ships false, `got`
+  // (real string keys from a JS object) simply never contains "null" and this
+  // reads as an always-missing/always-unknown case rather than a silent lie.
   const missing = want.filter((n) => !got.includes(n as string));
   const unknown = got.filter((n) => !want.includes(n));
   if (missing.length || unknown.length) {
@@ -247,6 +263,9 @@ export function assertPatternCases({ bindingPath, cases }: AssertPatternCasesOpt
     if (!pattern) {
       throw new Error(`${bindingPath}\n  case "${c.name}" names pattern "${c.pattern}", which has no file in ${PATTERN_DIR}`);
     }
+    // `c.name as string`: same guarantee as the cast above -- `declared` cannot
+    // hold a null name past the no-cases guard, since that guard is the only
+    // place a null name is produced, and it already returned.
     const { root, subjects = {}, behavioural = {} } = cases[c.name as string]();
     const found = compareOne({ root, subjects, behavioural, pattern, binding: { exceptions: c.exceptions } });
     for (const p of found) problems.push(`case "${c.name}" (${c.when}): ${p}`);
