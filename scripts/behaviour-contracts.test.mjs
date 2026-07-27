@@ -251,8 +251,14 @@ test('a cased binding yields one entry per case, in order', () => {
 });
 
 /* `none` and `absent` REQUIRE a reason, so a case binding one must carry it or
-   inherit the binding's -- otherwise Skeleton's circle case cannot be written at
-   all, and every existing flat `none` binding would need rewriting. */
+   inherit the binding's -- otherwise a case binding either could not be written
+   at all, and every existing flat `none` binding would need rewriting. The case
+   this comment used to name as the one that "cannot be written at all" was
+   Skeleton's circle, and 8C10 retired it by fixing the defect it scoped: the
+   rule outlived its motivating case. Kept as HISTORY rather than re-pointed at
+   whichever case binds `none` today, because a component name written into
+   another file's prose is a claim no gate reads -- see CLAUDE.md's Known debt.
+   The bindings below are synthetic, so this test depends on no real component. */
 test('a case inherits the binding reason and may override it', () => {
   const [inherited] = bindingCases({ reason: 'from the binding',
     cases: [{ name: 'a', when: 'x', pattern: 'none', exceptions: [] }] });

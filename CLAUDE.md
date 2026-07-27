@@ -811,24 +811,60 @@ scheduled for deletion the same week.
 
   **The command, and it is a change-time procedure rather than a periodic audit**, because an
   unchecked cross-file claim cannot be swept for meaningfully — you only know a citation is false
-  once you have changed its subject. So when you change component `X`'s binding, run:
+  once you have changed its subject. So when you change component `X` — its binding, its source,
+  its behaviour, anything a sentence elsewhere might have described — run:
 
   ```bash
-  grep -rln '\bX\b' --include='*.behaviour.json' frameworks/ | grep -v '/X\.'
-  grep -rn  '\bX\b' scripts/lib/ frameworks/*/test*/
+  X=Skeleton   # the component you just changed
+  grep -rn --binary-files=without-match "\b$X\b" \
+      --include='*.md' --include='*.json' --include='*.mjs' --include='*.jsx' --include='*.ts' \
+      CLAUDE.md components-divergences.md api/ behaviour/ docs/ frameworks/ scripts/ \
+    | grep -v node_modules
   ```
 
-  and read every hit as a claim about `X` that you may have just falsified. 8C10 did exactly this
-  for `Skeleton` and corrected **six** sites, across fix commits `358cad9`, `23d9beb` and
-  `ac197c7`: `Table`'s and `Tab`'s reason strings
-  (both exemplars **removed** rather than re-pointed at another name, because a replacement name is
-  just the next thing to rot), `Toast`'s `divergesFromReason` (rewritten as explicit **history**,
-  which is the one form that cannot go stale), two doc comments in
-  `scripts/lib/behaviour-contracts.mjs` — one rewritten to past tense so `bindingCases()` keeps its
-  origin story without asserting a tree that has moved, one re-pointed at the only live example
-  that qualifies — and a sentence in `components-divergences.md` describing
-  what an Angular test file asserts. That last site took **two** passes: `ac197c7`'s correction of
-  it was itself false, and a fourth commit fixed it.
+  and read every hit as a claim about `X` that you may have just falsified. Two kinds are then
+  dropped by hand rather than by the query: hits under `X`'s **own** files — its quartet, its
+  binding, its contract, its manifest, its own suites — which describe the component instead of
+  claiming something about it, and hits in `CHANGELOG.md`, which is a frozen record of what
+  shipped at a tag and must never be back-edited. For a component with a long paper trail the
+  raw output runs to dozens of lines across dozens of files, most of them this file's own prose,
+  and that is the honest shape of the work rather than a sign the query is wrong.
+
+  **This command is deliberately wider than the one 8C10 first published, and the widening is the
+  correction rather than a tidy-up.** That version was `grep -rln '\bX\b'
+  --include='*.behaviour.json' frameworks/` plus `grep -rn '\bX\b' scripts/lib/
+  frameworks/*/test*/`. It reaches bindings, the shared contract library and the test
+  directories, and **nothing else**: not `behaviour/`, not `scripts/*.test.mjs` (only
+  `scripts/lib/`), not `api/`, not `docs/`, and not a component's own `.jsx` source. A final
+  review found surviving instances in three of those five — `behaviour/README.md` carried a
+  present-tense twin of the very sentence 8C10 had past-tensed in
+  `scripts/lib/behaviour-contracts.mjs`, `scripts/behaviour-contracts.test.mjs` justified a test
+  by a case that no longer exists, and `SideNavSection.jsx`'s header named two components as
+  carrying a limit both had left **and** called that limit unfixable a batch after `cases` fixed
+  it. So read **"8C10 corrected six sites" as a sweep of the command's reach, never of the
+  class**: the count was complete against a query that could not see most of the tree, which is
+  the same mistake as describing a file you grepped rather than read, one level up. The six, for
+  the record, were `Table`'s and `Tab`'s reason strings (both exemplars **removed** rather than
+  re-pointed at another name, because a replacement name is just the next thing to rot),
+  `Toast`'s `divergesFromReason` (rewritten as explicit **history**, the one form that cannot go
+  stale), two doc comments in `scripts/lib/behaviour-contracts.mjs` — one past-tensed so
+  `bindingCases()` keeps its origin story without asserting a tree that has moved, one re-pointed
+  at the only live example that qualifies — and a sentence in `components-divergences.md`
+  describing what an Angular test file asserts. Fix commits `358cad9`, `23d9beb`, `ac197c7` and
+  `357ccc4`; that last site took **three** passes, since `23d9beb` wrote it false, `ac197c7`'s
+  correction of it was itself false, and `357ccc4` fixed it.
+
+  **An unexecuted spec is inside the reach and is a real member of the class.** A spec is deleted
+  only once executed, and until then it is what drives a batch, so a claim it makes about a
+  component's current state misdirects that batch rather than merely aging.
+  `docs/superpowers/specs/2026-07-26-progressbar-pattern-design-pending-1.md` is the live
+  instance: `:99-100` says `Skeleton`'s "two are true of the `circle` variant and false of the
+  other three" and `:140-142` says "its two React exceptions belong to the variant-scoped family
+  above" — both present tense, both falsified by 8C10, which left `Skeleton.behaviour.json` flat
+  with no exceptions at all. It is **recorded here rather than corrected**, because the fix is not
+  a citation swap: that spec's §2 reasons from three open faces of the conditionality question,
+  one of which `cases` has since closed, and re-deriving that argument belongs to whoever plans
+  the batch. Read this paragraph before reading that spec.
 
   **That last one is the entry's own thesis demonstrating itself, and it is worth more than the
   rule it illustrates.** It was the SEVENTH instance and the FIRST introduced by the fix for the
