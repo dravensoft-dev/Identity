@@ -184,22 +184,38 @@ export function validateCoverage({ bindings, covered, suites }) {
  *  content; a cased binding still contributes exactly one row, and
  *  `patterns` names every case's pattern rather than a single `pattern`.
  *
- *  Exported as the pure half of collectBindings() below, which is not pure
- *  (it walks the filesystem) and so cannot be exercised directly by a test.
- *  @param {Record<string, {pattern?: string, cases?: object[]}>} bindings
- *  @returns {{name: string, layer: string, patterns: string[]}[]} */
+ *  `stem` -- the binding file's basename, when that differs from the
+ *  component name -- is filesystem information this function never derives
+ *  on its own; it is carried through when the caller attaches it to the
+ *  binding record (`{...binding, stem}`), and defaults to `name` otherwise,
+ *  the same default `validateCoverage` already applies.
+ *
+ *  This IS the loop body collectBindings() below runs -- not a parallel
+ *  copy of it -- so a test against this function is a test against the
+ *  code the gate actually executes.
+ *  @param {Record<string, {pattern?: string, cases?: object[], stem?: string}>} bindings
+ *  @returns {{name: string, layer: string, stem: string, patterns: string[]}[]} */
 export function inventoryFrom(bindings) {
   const out = [];
   for (const [key, binding] of Object.entries(bindings)) {
     const sep = key.lastIndexOf(':');
     const name = sep === -1 ? key : key.slice(0, sep);
     const layer = sep === -1 ? '' : key.slice(sep + 1);
-    out.push({ name, layer, patterns: bindingCases(binding).map((c) => c.pattern) });
+    out.push({
+      name,
+      layer,
+      stem: binding.stem ?? name,
+      patterns: bindingCases(binding).map((c) => c.pattern),
+    });
   }
   return out;
 }
 
-/** Read every binding in the tree as {name, patterns, layer, stem}.
+/** Read every binding in the tree as {name, patterns, layer, stem}, via
+ *  inventoryFrom() above -- this function's only job is assembling the
+ *  "<name>:<layer>" -> binding map from the filesystem; the row shape
+ *  itself is inventoryFrom's, so there is exactly one place that turns a
+ *  binding into a row.
  *
  *  React components live one group directory deep and reactComponents() returns
  *  bare names, so the group is found by looking; Angular primitives are one
@@ -211,7 +227,8 @@ export function inventoryFrom(bindings) {
  *  counting them would inflate the denominator with bindings that are uncoverable
  *  by construction. check:behaviour is what holds those entries honest. */
 function collectBindings() {
-  const out = [];
+  /** @type {Record<string, object>} "<name>:<layer>" -> binding, plus stem */
+  const byKey = {};
 
   const reactBase = join(repoRoot, 'frameworks/react/components');
   const groups = readdirSync(reactBase, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
@@ -219,7 +236,7 @@ function collectBindings() {
     const group = groups.find((g) => existsSync(join(reactBase, g, `${name}.behaviour.json`)));
     if (!group) continue; // check:behaviour owns "every component declares"; this gate does not duplicate it.
     const binding = loadBinding(join(reactBase, group, `${name}.behaviour.json`));
-    out.push({ name, patterns: bindingCases(binding).map((c) => c.pattern), layer: 'react', stem: name });
+    byKey[`${name}:react`] = { ...binding, stem: name };
   }
 
   const angularBase = join(repoRoot, 'frameworks/angular/primitives');
@@ -227,10 +244,10 @@ function collectBindings() {
     const path = join(angularBase, dir, `${dir}.behaviour.json`);
     if (!existsSync(path)) continue;
     const binding = loadBinding(path);
-    out.push({ name: binding.component, patterns: bindingCases(binding).map((c) => c.pattern), layer: 'angular', stem: dir });
+    byKey[`${binding.component}:angular`] = { ...binding, stem: dir };
   }
 
-  return out;
+  return inventoryFrom(byKey);
 }
 
 /** Read every suite file's source, keyed by basename. */
