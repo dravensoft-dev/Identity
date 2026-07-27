@@ -51,6 +51,7 @@ import { Breadcrumbs } from '../primitives/breadcrumbs/breadcrumbs';
 import type { Crumb } from '../api.generated';
 import { breadcrumbsStyles } from '../primitives/breadcrumbs/breadcrumbs.variants';
 import { BulkActionBar } from '../primitives/bulk-action-bar/bulk-action-bar';
+import type { BulkAction } from '../api.generated';
 import { bulkActionBarStyles } from '../primitives/bulk-action-bar/bulk-action-bar.variants';
 import { ChartCard } from '../primitives/chart-card/chart-card';
 import { chartCardStyles } from '../primitives/chart-card/chart-card.variants';
@@ -183,9 +184,11 @@ class SkeletonHost {}
   standalone: true,
   imports: [Breadcrumbs],
   host: { 'data-host': 'breadcrumbs' },
-  template: `<arena-breadcrumbs class="consumer-class" />`,
+  template: `<arena-breadcrumbs class="consumer-class" [items]="items" />`,
 })
-class BreadcrumbsHost {}
+class BreadcrumbsHost {
+  items: Crumb[] = [];
+}
 
 /* `items` is `input.required<Crumb[]>()`, and this JIT-only harness cannot
  * drive a signal input through a template binding (this file's header
@@ -257,9 +260,12 @@ test('arena-stat-card: under this JIT-only harness, a static "label"/"value" att
   standalone: true,
   imports: [BulkActionBar],
   host: { 'data-host': 'bulk-action-bar' },
-  template: `<arena-bulk-action-bar class="consumer-class" />`,
+  template: `<arena-bulk-action-bar class="consumer-class" [count]="count" [actions]="actions" />`,
 })
-class BulkActionBarHost {}
+class BulkActionBarHost {
+  count = 0;
+  actions: BulkAction[] = [];
+}
 
 /* `count` and `actions` became `input.required<number>()` /
  * `input.required<BulkAction[]>()` under the API contract
@@ -310,9 +316,11 @@ class ErrorStateWithoutActionHost {}
   standalone: true,
   imports: [PageHead],
   host: { 'data-host': 'page-head' },
-  template: `<arena-page-head class="consumer-class" />`,
+  template: `<arena-page-head class="consumer-class" [title]="title" />`,
 })
-class PageHeadWithoutActionsHost {}
+class PageHeadWithoutActionsHost {
+  title = '';
+}
 
 /* `title` became `input.required<string>()` (`api/components/PageHead.json`) --
  * the same NG0950 hazard `arena-app-logo`'s `name` and `arena-breadcrumbs`'s
@@ -344,9 +352,12 @@ class UnauthCardWithoutProjectionHost {}
   standalone: true,
   imports: [BarChart],
   host: { 'data-host': 'bar-chart' },
-  template: `<arena-bar-chart />`,
+  template: `<arena-bar-chart [labels]="labels" [values]="values" />`,
 })
-class BarChartHost {}
+class BarChartHost {
+  labels: string[] = [];
+  values: number[] = [];
+}
 
 /* `arena-bar-chart`'s `labels` and `values` are required signal inputs, which
  * this JIT harness cannot drive through a template binding (NG0303) or a
@@ -371,9 +382,12 @@ function createBarChartHost() {
   standalone: true,
   imports: [LineChart],
   host: { 'data-host': 'line-chart' },
-  template: `<arena-line-chart />`,
+  template: `<arena-line-chart [labels]="labels" [values]="values" />`,
 })
-class LineChartHost {}
+class LineChartHost {
+  labels: string[] = [];
+  values: number[] = [];
+}
 
 /* `arena-line-chart`'s required `labels`/`values`, driven the same way
  * createBarChartHost() drives the bar chart's -- see its comment for why a
@@ -393,9 +407,12 @@ function createLineChartHost() {
   standalone: true,
   imports: [DoughnutChart],
   host: { 'data-host': 'doughnut-chart' },
-  template: `<arena-doughnut-chart />`,
+  template: `<arena-doughnut-chart [labels]="labels" [values]="values" />`,
 })
-class DoughnutChartHost {}
+class DoughnutChartHost {
+  labels: string[] = [];
+  values: number[] = [];
+}
 
 /* `arena-doughnut-chart`'s required `labels`/`values`, driven the same way
  * createBarChartHost() drives the bar chart's -- see its comment for why a
@@ -1333,7 +1350,7 @@ test('every Angular primitive\'s root slot carries a display utility, so host-bi
     if (NO_MANIFEST.has(name)) continue;
     const manifestPath = join(manifestsDir, `${kebabToPascal(name)}.manifest.json`);
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { slots?: Record<string, string> };
-    const root = manifest.slots?.root;
+    const root = manifest.slots?.['root'];
     assert.ok(typeof root === 'string', `${name}: ${manifestPath} has no "slots.root" string`);
     assert.match(
       root as string,
