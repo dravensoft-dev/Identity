@@ -177,8 +177,29 @@ export function validateBinding(component, layer, binding, patterns) {
  *  nothing to compare its (nonexistent) behaviour to. Declaring `divergesFrom`
  *  against an absent binding would assert a divergence from a component that does
  *  not exist, which is not true either -- silence is the honest state here, not a
- *  declared difference. */
+ *  declared difference.
+ *
+ *  Both escapes are checked BEFORE the cased-binding comparison, and that order
+ *  is the fix batch 8C9 task 5 found missing: the cased branch below returns
+ *  unconditionally once case names match, so neither escape below it could ever
+ *  fire for a cased binding -- not `absent` (which Calendar's own binding would
+ *  need, the moment either side of a Calendar-shaped divergence grew cases), and
+ *  not `divergesFrom` (which Toast needs today: React's Toast is cased,
+ *  Angular's is a flat delegated `alert` binding for MatSnackBar, which does not
+ *  vary by tone, and that is a real divergence rather than a defect in either).
+ *
+ *  The truthiness guard on each `divergesFrom` read is not decoration: a cased
+ *  binding has no top-level `pattern`, so for two ordinary cased bindings that
+ *  never declared one, both `a.divergesFrom` and `b.pattern` are `undefined`,
+ *  and a bare `a.divergesFrom === b.pattern` would read that as a match and
+ *  wave through any two cased bindings whose cases actually disagree -- the
+ *  exact defect fix round 1 exists to catch. Requiring the LHS to be a real,
+ *  truthy string first is what keeps the escape from swallowing the rule. */
 export function crossLayerAgrees(a, b) {
+  if (a.pattern === ABSENT || b.pattern === ABSENT) return true;
+  if (a.divergesFrom && a.divergesFrom === b.pattern) return true;
+  if (b.divergesFrom && b.divergesFrom === a.pattern) return true;
+
   const mine = bindingCases(a);
   const theirs = bindingCases(b);
   const names = (cs) => cs.map((c) => c.name).sort().join(',');
@@ -196,10 +217,7 @@ export function crossLayerAgrees(a, b) {
     const theirsByName = byName(theirs);
     return mine.every((c) => theirsByName.get(c.name) === c.pattern);
   }
-  if (a.pattern === b.pattern) return true;
-  if (a.pattern === ABSENT || b.pattern === ABSENT) return true;
-  if (a.divergesFrom === b.pattern || b.divergesFrom === a.pattern) return true;
-  return false;
+  return a.pattern === b.pattern;
 }
 
 /** Every React component, by exported name. A `*.card.entry.jsx` is a demo page's

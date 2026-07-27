@@ -109,6 +109,8 @@ export const COVERED = {
   'SideNavCollapsible:react': 'side-nav-disclosure.test.jsx',
   'Tabs:react': 'tabs.test.jsx',
   'Tooltip:react': 'tooltip-keyboard.test.jsx',
+  'Alert:react': 'alert-tones.test.jsx',
+  'Toast:react': 'alert-tones.test.jsx',
   'Alert:angular': 'alert-role-tones.test.ts',
   'BarChart:angular': 'chart-data-table.test.ts',
 };

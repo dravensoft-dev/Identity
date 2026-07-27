@@ -43,7 +43,7 @@ import { TestBed } from '@angular/core/testing';
 // @ts-expect-error -- a plain .mjs helper with JSDoc types only; see compliance.ts.
 import { isFocusable } from '../../../scripts/lib/behaviour-compliance.mjs';
 import { Alert } from '../primitives/alert/alert';
-import { assertPattern, ANGULAR_PRIMITIVES } from './compliance';
+import { assertPatternCases, ANGULAR_PRIMITIVES } from './compliance';
 const BINDING = join(ANGULAR_PRIMITIVES, 'alert/alert.behaviour.json');
 
 /** Every tone `alert.ts`'s own `AlertTone` (from api.generated) admits. `info` is the default. */
@@ -179,33 +179,45 @@ test('arena-alert survives every timer its own render schedules, fired early -- 
   }
 });
 
-/* The binding is asserted on a NON-danger tone, and the tone is the whole point.
+/* Batch 8C9: alert.behaviour.json now declares two CASES rather than one flat
+ * `alert` binding with a `roles.element` exception. The exception was never a
+ * defect -- role is `alert` only when tone is danger, and every other tone
+ * renders `role="status"` correctly and completely, matching a different
+ * pattern rather than falling short of this one. `assertPatternCases` renders
+ * both branches and measures each against the pattern its own case names,
+ * which is what lets both come out empty instead of one exception standing in
+ * for a render that never happens.
  *
- * `alert.behaviour.json` excepts `roles.element` because the role is `alert` only
- * when the tone is danger. That exception is FALSE of the danger render -- run
- * this against `tone="danger"` and the comparison correctly reports STALE
- * EXCEPTION, because for that one branch the component does meet the pattern.
- * It is TRUE of the default tone and of the three other non-danger ones, which
- * are what the reason string on file describes in as many words.
- *
- * So this asserts the branch the exception is about, exactly as React's Skeleton
- * suite asserts the `circle` variant its own two exceptions describe. And it
- * leaves behind the same recorded gap: a binding is per component, so it cannot
- * say "true in one branch, false in another", and a reader of alert.behaviour.
- * json alone would conclude the alert role is never reached. The reason string
- * carries that scoping in prose only. That is the schema limitation the spec
- * records as open for Tag, one level down -- a requirement, rather than a whole
- * pattern, applying only sometimes. */
-test('arena-alert matches its alert binding on the default tone, which is the branch the exception describes', () => {
-  const fixture = renderAlert('info');
+ * This is additional to the hand-written test above, not a replacement for
+ * it: that test asserts the `aria-live` pairing (assertive with alert, polite
+ * with status), which is not a requirement key any pattern can state, so no
+ * evaluator can decide it. */
+test('arena-alert meets both of its declared cases', () => {
+  const fixtures: ReturnType<typeof renderAlert>[] = [];
   try {
-    assertPattern({
-      root: fixture.nativeElement as Element,
+    assertPatternCases({
       bindingPath: BINDING,
-      behavioural: { 'focus.unaffected': true, 'content.noAutoDismiss': true },
+      cases: {
+        danger: () => {
+          const fixture = renderAlert('danger');
+          fixtures.push(fixture);
+          return {
+            root: fixture.nativeElement as Element,
+            behavioural: { 'focus.unaffected': true, 'content.noAutoDismiss': true },
+          };
+        },
+        advisory: () => {
+          const fixture = renderAlert('info');
+          fixtures.push(fixture);
+          return {
+            root: fixture.nativeElement as Element,
+            behavioural: { 'focus.unaffected': true },
+          };
+        },
+      },
     });
   } finally {
-    fixture.destroy();
+    for (const fixture of fixtures) fixture.destroy();
   }
 });
 

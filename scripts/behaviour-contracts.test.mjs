@@ -301,3 +301,44 @@ test('two cased bindings whose case names and per-case patterns all match agree'
   ] };
   assert.equal(crossLayerAgrees(react, angular), true);
 });
+
+/* Fix round 2 (8C9 task 5): the cased branch above returns before either escape
+ * below it ever runs -- not just divergesFrom, but ABSENT too, which is the
+ * clause Calendar's own binding depends on. A cased binding could until now
+ * neither declare a divergence nor be compared against a layer that has no such
+ * component at all. These three pin the fix; the third is the one that must NOT
+ * change -- it is the counterexample two tests above, repeated here as a guard
+ * against the exact way a naive fix breaks it: `a.divergesFrom === b.pattern`
+ * with neither side declaring one is `undefined === undefined`, true by
+ * accident, for any two ordinary cased bindings with no divergesFrom at all. */
+test('a cased binding against an absent binding agrees, both directions', () => {
+  const cased = { cases: [
+    { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+  ] };
+  const absent = { pattern: 'absent', reason: 'Angular has no such component at all.' };
+  assert.equal(crossLayerAgrees(cased, absent), true);
+  assert.equal(crossLayerAgrees(absent, cased), true);
+});
+
+test('a cased binding whose divergesFrom names the other, flat side agrees', () => {
+  const cased = { divergesFrom: 'alert', cases: [
+    { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+  ] };
+  const flat = { pattern: 'alert', delegatedTo: 'Angular Material MatSnackBar' };
+  assert.equal(crossLayerAgrees(cased, flat), true);
+  assert.equal(crossLayerAgrees(flat, cased), true);
+});
+
+test('two cased bindings with mismatched case patterns and no divergesFrom still disagree', () => {
+  const react = { cases: [
+    { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+  ] };
+  const angular = { cases: [
+    { name: 'danger', when: 'tone is "danger"', pattern: 'status', exceptions: [] },
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+  ] };
+  assert.equal(crossLayerAgrees(react, angular), false);
+});
