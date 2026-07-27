@@ -63,7 +63,7 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, basename } from 'node:path';
-import { reactComponents, angularPrimitives, loadBinding } from './lib/behaviour-contracts.mjs';
+import { reactComponents, angularPrimitives, loadBinding, bindingCases } from './lib/behaviour-contracts.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..');
@@ -136,7 +136,7 @@ export function suiteMentions(source, stem) {
  *  replaces. A key with no `:layer` suffix is rejected rather than silently
  *  falling back to name-only resolution.
  *
- *  @param {{bindings: {name: string, pattern: string, layer: string, stem?: string}[], covered: Record<string,string>, suites: Record<string,string>}} o
+ *  @param {{bindings: {name: string, patterns: string[], layer: string, stem?: string}[], covered: Record<string,string>, suites: Record<string,string>}} o
  *  @returns {string[]} one message per problem, empty when clean */
 export function validateCoverage({ bindings, covered, suites }) {
   const problems = [];
@@ -177,7 +177,29 @@ export function validateCoverage({ bindings, covered, suites }) {
   return problems;
 }
 
-/** Read every binding in the tree as {name, pattern, layer, stem}.
+/** Normalise a map of raw binding records into inventory rows -- one row per
+ *  BINDING, never one per case, because there is deliberately no way to
+ *  record half a component covered. `bindings` is keyed "<name>:<layer>",
+ *  the same shape COVERED itself uses, mapping to the raw *.behaviour.json
+ *  content; a cased binding still contributes exactly one row, and
+ *  `patterns` names every case's pattern rather than a single `pattern`.
+ *
+ *  Exported as the pure half of collectBindings() below, which is not pure
+ *  (it walks the filesystem) and so cannot be exercised directly by a test.
+ *  @param {Record<string, {pattern?: string, cases?: object[]}>} bindings
+ *  @returns {{name: string, layer: string, patterns: string[]}[]} */
+export function inventoryFrom(bindings) {
+  const out = [];
+  for (const [key, binding] of Object.entries(bindings)) {
+    const sep = key.lastIndexOf(':');
+    const name = sep === -1 ? key : key.slice(0, sep);
+    const layer = sep === -1 ? '' : key.slice(sep + 1);
+    out.push({ name, layer, patterns: bindingCases(binding).map((c) => c.pattern) });
+  }
+  return out;
+}
+
+/** Read every binding in the tree as {name, patterns, layer, stem}.
  *
  *  React components live one group directory deep and reactComponents() returns
  *  bare names, so the group is found by looking; Angular primitives are one
@@ -197,7 +219,7 @@ function collectBindings() {
     const group = groups.find((g) => existsSync(join(reactBase, g, `${name}.behaviour.json`)));
     if (!group) continue; // check:behaviour owns "every component declares"; this gate does not duplicate it.
     const binding = loadBinding(join(reactBase, group, `${name}.behaviour.json`));
-    out.push({ name, pattern: binding.pattern, layer: 'react', stem: name });
+    out.push({ name, patterns: bindingCases(binding).map((c) => c.pattern), layer: 'react', stem: name });
   }
 
   const angularBase = join(repoRoot, 'frameworks/angular/primitives');
@@ -205,7 +227,7 @@ function collectBindings() {
     const path = join(angularBase, dir, `${dir}.behaviour.json`);
     if (!existsSync(path)) continue;
     const binding = loadBinding(path);
-    out.push({ name: binding.component, pattern: binding.pattern, layer: 'angular', stem: dir });
+    out.push({ name: binding.component, patterns: bindingCases(binding).map((c) => c.pattern), layer: 'angular', stem: dir });
   }
 
   return out;

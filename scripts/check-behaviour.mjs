@@ -19,7 +19,7 @@ import { dirname, join } from 'node:path';
 import {
   loadPatterns, validatePattern, validateBinding,
   reactComponents, angularPrimitives, PATTERN_DIR,
-  crossLayerAgrees,
+  crossLayerAgrees, bindingCases,
 } from './lib/behaviour-contracts.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -118,8 +118,14 @@ async function main() {
     const other = angular.get(component) ?? delegated[component];
     if (!other) continue;
     if (crossLayerAgrees(reactBinding, other)) continue;
+    /* A disagreement can now be about case NAMES as well as patterns -- a
+     * message naming only patterns would send the reader looking at the
+     * wrong field, so each side is printed as its full case list instead. */
+    const describe = (b) => bindingCases(b)
+      .map((c) => (c.name ? `${c.name}:${c.pattern}` : c.pattern))
+      .join(' + ');
     problems.push(
-      `${component}: react binds "${reactBinding.pattern}", angular binds "${other.pattern}", and neither declares divergesFrom.`
+      `${component}: react binds "${describe(reactBinding)}", angular binds "${describe(other)}", and neither declares divergesFrom.`
       + ` The PATTERN is the authority, not either layer — decide which is the defect.`,
     );
   }

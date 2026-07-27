@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { COVERED, SUITE_DIRS, suiteMentions, validateCoverage } from './check-compliance.mjs';
+import { COVERED, SUITE_DIRS, suiteMentions, validateCoverage, inventoryFrom } from './check-compliance.mjs';
 
 test('validateCoverage is clean when a composite key names the layer its suite verifies', () => {
   const problems = validateCoverage({
@@ -135,6 +135,23 @@ test('a COVERED key without a :layer suffix is rejected -- the shape is mandator
   assert.equal(problems.length, 1);
   assert.match(problems[0], /Dialog/);
   assert.match(problems[0], /:layer|composite|<component>:<layer>/i);
+});
+
+/* The inventory is one row per BINDING, never one per case. COVERED is keyed
+   <component>:<layer>, and a component is covered only when every one of its
+   cases is, which the wrapper enforces -- there is deliberately no way to
+   record half a component. */
+test('a cased binding contributes exactly one inventory row', () => {
+  const rows = inventoryFrom({
+    'Alert:react': {
+      cases: [
+        { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+        { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+      ],
+    },
+  });
+  assert.equal(rows.length, 1);
+  assert.deepEqual(rows[0].patterns, ['alert', 'status']);
 });
 
 test('every COVERED entry names a real suite file and a real binding', () => {
