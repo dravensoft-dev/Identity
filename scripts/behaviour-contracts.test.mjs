@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   validatePattern, loadPatterns, validateBinding, reactComponents, angularPrimitives,
-  crossLayerAgrees, loadBinding,
+  crossLayerAgrees, loadBinding, bindingCases,
 } from './lib/behaviour-contracts.mjs';
 
 const ok = {
@@ -122,7 +122,7 @@ test('none and absent are distinct patterns, not the same fact spelled two ways'
 
 test('an exception naming a requirement the pattern does not have is a problem', () => {
   const b = { pattern: 'dialog-modal', exceptions: [{ requirement: 'focus.restore', reason: 'x' }] };
-  assert.match(validateBinding('Dialog', 'react', b, patterns)[0], /no requirement "focus.restore"/);
+  assert.match(validateBinding('Dialog', 'react', b, patterns)[0], /excepts "focus.restore", which pattern "dialog-modal" does not require/);
 });
 
 test('an exception without a reason is a problem', () => {
@@ -223,4 +223,122 @@ test('the real Calendar binding needs no divergesFrom to agree with React', () =
   const reactBinding = { pattern: 'grid' };
   const angularCalendar = { pattern: 'absent', reason: 'Angular has no such component at all.' };
   assert.equal(crossLayerAgrees(reactBinding, angularCalendar), true);
+});
+
+test('a flat binding is one anonymous case', () => {
+  const cases = bindingCases({ pattern: 'status', exceptions: [{ requirement: 'roles.label' }] });
+  assert.equal(cases.length, 1);
+  assert.equal(cases[0].name, null);
+  assert.equal(cases[0].pattern, 'status');
+  assert.equal(cases[0].exceptions.length, 1);
+});
+
+test('a flat binding with no exceptions still yields an exceptions array', () => {
+  // comparePattern does `binding.exceptions ?? []` itself, but every OTHER
+  // consumer would have to repeat that guard. Normalising once is the point.
+  assert.deepEqual(bindingCases({ pattern: 'none' })[0].exceptions, []);
+});
+
+test('a cased binding yields one entry per case, in order', () => {
+  const cases = bindingCases({
+    cases: [
+      { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+      { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+    ],
+  });
+  assert.deepEqual(cases.map((c) => c.name), ['danger', 'advisory']);
+  assert.deepEqual(cases.map((c) => c.pattern), ['alert', 'status']);
+});
+
+/* `none` and `absent` REQUIRE a reason, so a case binding one must carry it or
+   inherit the binding's -- otherwise Skeleton's circle case cannot be written at
+   all, and every existing flat `none` binding would need rewriting. */
+test('a case inherits the binding reason and may override it', () => {
+  const [inherited] = bindingCases({ reason: 'from the binding',
+    cases: [{ name: 'a', when: 'x', pattern: 'none', exceptions: [] }] });
+  assert.equal(inherited.reason, 'from the binding');
+  const [own] = bindingCases({ reason: 'from the binding',
+    cases: [{ name: 'a', when: 'x', pattern: 'none', reason: 'its own', exceptions: [] }] });
+  assert.equal(own.reason, 'its own');
+  assert.equal(bindingCases({ pattern: 'status' })[0].reason, null);
+});
+
+/* The two shapes are alternatives. Carrying both is two places for one fact,
+   which is the defect deriving IDREF from IDREF_ATTRIBUTES already fixed once. */
+test('a binding declaring both pattern and cases is rejected by validateBinding', () => {
+  const problems = validateBinding('Alert', 'react',
+    { pattern: 'alert', cases: [{ name: 'x', when: 'y', pattern: 'alert', exceptions: [] }] },
+    new Map([['alert', { name: 'alert', requires: {} }]]));
+  assert.ok(problems.some((p) => /both .*pattern.* and .*cases/i.test(p)), problems.join('\n'));
+});
+
+/* Fix round 1: matching case NAMES is not enough -- two cased bindings whose
+ * `danger` case binds different patterns must disagree. crossLayerAgrees'
+ * fallback (`a.pattern === b.pattern`) is `undefined === undefined` for two
+ * cased bindings, since the both-fields rejection means neither has a
+ * top-level `pattern` -- trivially true unless each case's pattern is also
+ * compared, by name, not by position. */
+test('two cased bindings whose case names match but a case pattern disagrees do not agree', () => {
+  const react = { cases: [
+    { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+  ] };
+  const angular = { cases: [
+    { name: 'danger', when: 'tone is "danger"', pattern: 'status', exceptions: [] },
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+  ] };
+  assert.equal(crossLayerAgrees(react, angular), false);
+});
+
+test('two cased bindings whose case names and per-case patterns all match agree', () => {
+  const react = { cases: [
+    { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+  ] };
+  const angular = { cases: [
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+    { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+  ] };
+  assert.equal(crossLayerAgrees(react, angular), true);
+});
+
+/* Fix round 2 (8C9 task 5): the cased branch above returns before either escape
+ * below it ever runs -- not just divergesFrom, but ABSENT too, which is the
+ * clause Calendar's own binding depends on. A cased binding could until now
+ * neither declare a divergence nor be compared against a layer that has no such
+ * component at all. These three pin the fix; the third is the one that must NOT
+ * change -- it is the counterexample two tests above, repeated here as a guard
+ * against the exact way a naive fix breaks it: `a.divergesFrom === b.pattern`
+ * with neither side declaring one is `undefined === undefined`, true by
+ * accident, for any two ordinary cased bindings with no divergesFrom at all. */
+test('a cased binding against an absent binding agrees, both directions', () => {
+  const cased = { cases: [
+    { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+  ] };
+  const absent = { pattern: 'absent', reason: 'Angular has no such component at all.' };
+  assert.equal(crossLayerAgrees(cased, absent), true);
+  assert.equal(crossLayerAgrees(absent, cased), true);
+});
+
+test('a cased binding whose divergesFrom names the other, flat side agrees', () => {
+  const cased = { divergesFrom: 'alert', cases: [
+    { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+  ] };
+  const flat = { pattern: 'alert', delegatedTo: 'Angular Material MatSnackBar' };
+  assert.equal(crossLayerAgrees(cased, flat), true);
+  assert.equal(crossLayerAgrees(flat, cased), true);
+});
+
+test('two cased bindings with mismatched case patterns and no divergesFrom still disagree', () => {
+  const react = { cases: [
+    { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+  ] };
+  const angular = { cases: [
+    { name: 'danger', when: 'tone is "danger"', pattern: 'status', exceptions: [] },
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+  ] };
+  assert.equal(crossLayerAgrees(react, angular), false);
 });

@@ -6,11 +6,11 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { COVERED, SUITE_DIRS, suiteMentions, validateCoverage } from './check-compliance.mjs';
+import { COVERED, SUITE_DIRS, suiteMentions, validateCoverage, inventoryFrom } from './check-compliance.mjs';
 
 test('validateCoverage is clean when a composite key names the layer its suite verifies', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', pattern: 'dialog-modal', layer: 'react', stem: 'Dialog' }],
+    bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', stem: 'Dialog' }],
     covered: { 'Dialog:react': 'dialog-modal.test.jsx' },
     suites: { 'dialog-modal.test.jsx': 'assertPattern for Dialog.behaviour.json' },
   });
@@ -19,7 +19,7 @@ test('validateCoverage is clean when a composite key names the layer its suite v
 
 test('validateCoverage fails a COVERED entry naming a binding that no longer exists', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', pattern: 'dialog-modal', layer: 'react', stem: 'Dialog' }],
+    bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', stem: 'Dialog' }],
     covered: { 'Dialog:react': 'dialog-modal.test.jsx', 'Ghost:react': 'dialog-modal.test.jsx' },
     suites: { 'dialog-modal.test.jsx': 'Dialog.behaviour.json' },
   });
@@ -30,7 +30,7 @@ test('validateCoverage fails a COVERED entry naming a binding that no longer exi
 
 test('validateCoverage fails a COVERED entry whose suite never mentions the component', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', pattern: 'dialog-modal', layer: 'react', stem: 'Dialog' }],
+    bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', stem: 'Dialog' }],
     covered: { 'Dialog:react': 'dialog-modal.test.jsx' },
     suites: { 'dialog-modal.test.jsx': 'assertPattern for Menu.behaviour.json' },
   });
@@ -41,7 +41,7 @@ test('validateCoverage fails a COVERED entry whose suite never mentions the comp
 
 test('validateCoverage fails a COVERED entry naming a suite file that does not exist', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', pattern: 'dialog-modal', layer: 'react', stem: 'Dialog' }],
+    bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', stem: 'Dialog' }],
     covered: { 'Dialog:react': 'gone.test.jsx' },
     suites: {},
   });
@@ -55,8 +55,8 @@ test('validateCoverage says nothing about an uncovered binding', () => {
   // 47 suites on day one would have been switched off.
   const problems = validateCoverage({
     bindings: [
-      { name: 'Dialog', pattern: 'dialog-modal', layer: 'react', stem: 'Dialog' },
-      { name: 'Table', pattern: 'grid', layer: 'react', stem: 'Table' },
+      { name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', stem: 'Dialog' },
+      { name: 'Table', patterns: ['grid'], layer: 'react', stem: 'Table' },
     ],
     covered: { 'Dialog:react': 'dialog-modal.test.jsx' },
     suites: { 'dialog-modal.test.jsx': 'Dialog.behaviour.json' },
@@ -78,14 +78,14 @@ test('suiteMentions matches a binding filename in a suite body', () => {
  * that is what the suite text is searched for. */
 test('a binding whose file stem differs from its component name is matched on the stem', () => {
   const clean = validateCoverage({
-    bindings: [{ name: 'BarChart', pattern: 'figure-with-data-table', layer: 'angular', stem: 'bar-chart' }],
+    bindings: [{ name: 'BarChart', patterns: ['figure-with-data-table'], layer: 'angular', stem: 'bar-chart' }],
     covered: { 'BarChart:angular': 'chart-data-table.test.ts' },
     suites: { 'chart-data-table.test.ts': "join(P, 'bar-chart/bar-chart.behaviour.json')" },
   });
   assert.deepEqual(clean, []);
 
   const stale = validateCoverage({
-    bindings: [{ name: 'BarChart', pattern: 'figure-with-data-table', layer: 'angular', stem: 'bar-chart' }],
+    bindings: [{ name: 'BarChart', patterns: ['figure-with-data-table'], layer: 'angular', stem: 'bar-chart' }],
     covered: { 'BarChart:angular': 'chart-data-table.test.ts' },
     suites: { 'chart-data-table.test.ts': 'nothing relevant here' },
   });
@@ -99,8 +99,8 @@ test('a binding whose file stem differs from its component name is matched on th
  * named. */
 test('a composite key is verified only by its own layer, never the sibling layer', () => {
   const bindings = [
-    { name: 'ConfirmDialog', pattern: 'dialog-modal', layer: 'react', stem: 'ConfirmDialog' },
-    { name: 'ConfirmDialog', pattern: 'dialog-modal', layer: 'angular', stem: 'confirm-dialog' },
+    { name: 'ConfirmDialog', patterns: ['dialog-modal'], layer: 'react', stem: 'ConfirmDialog' },
+    { name: 'ConfirmDialog', patterns: ['dialog-modal'], layer: 'angular', stem: 'confirm-dialog' },
   ];
   // The React suite mentions the React stem -> the react claim holds.
   assert.deepEqual(
@@ -117,7 +117,7 @@ test('a composite key is verified only by its own layer, never the sibling layer
 
 test('a composite key naming a layer the component is not bound in fails', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', pattern: 'dialog-modal', layer: 'react', stem: 'Dialog' }],
+    bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', stem: 'Dialog' }],
     covered: { 'Dialog:angular': 'dialog-modal.test.jsx' },
     suites: { 'dialog-modal.test.jsx': 'Dialog.behaviour.json' },
   });
@@ -128,13 +128,30 @@ test('a composite key naming a layer the component is not bound in fails', () =>
 
 test('a COVERED key without a :layer suffix is rejected -- the shape is mandatory', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', pattern: 'dialog-modal', layer: 'react', stem: 'Dialog' }],
+    bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', stem: 'Dialog' }],
     covered: { Dialog: 'dialog-modal.test.jsx' },
     suites: { 'dialog-modal.test.jsx': 'Dialog.behaviour.json' },
   });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /Dialog/);
   assert.match(problems[0], /:layer|composite|<component>:<layer>/i);
+});
+
+/* The inventory is one row per BINDING, never one per case. COVERED is keyed
+   <component>:<layer>, and a component is covered only when every one of its
+   cases is, which the wrapper enforces -- there is deliberately no way to
+   record half a component. */
+test('a cased binding contributes exactly one inventory row', () => {
+  const rows = inventoryFrom({
+    'Alert:react': {
+      cases: [
+        { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+        { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+      ],
+    },
+  });
+  assert.equal(rows.length, 1);
+  assert.deepEqual(rows[0].patterns, ['alert', 'status']);
 });
 
 test('every COVERED entry names a real suite file and a real binding', () => {

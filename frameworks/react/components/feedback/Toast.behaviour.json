@@ -1,9 +1,17 @@
 {
-  "pattern": "alert",
-  "exceptions": [
-    { "requirement": "roles.element",
-      "reason": "role is only \"alert\" when tone===\"danger\" (paired with aria-live=\"assertive\"); every other tone -- including the default, neutral -- renders role=\"status\" with aria-live=\"polite\" instead. This binding stays on alert rather than moving to status on purpose, even though status is what most toasts actually render: alert is the safety-relevant contract, the one that matters for the critical/error case this component's own doc comment singles out (persist is described as \"mandatory in critical/error states\"), and the content.noAutoDismiss requirement below only exists to be checked against because this binds alert. Moving to status would drop that requirement from the contract entirely rather than record it as unmet, which would describe the tone that matters least and lose the one that matters most. The exception records that only the danger tone actually earns the role; every other tone is documented here as falling short of the pattern this binds, not as evidence the pattern should change." },
-    { "requirement": "content.noAutoDismiss",
-      "reason": "Toast.jsx itself has no timer, but its own doc comment describes toasts as auto-dismissed by \"the host\" by default, and describes `persist` as \"mandatory in critical/error states\" to opt out. Nothing in this file enforces persist=true when tone=\"danger\" -- that safeguard is a documented convention for the caller, not code, so a danger toast can still be rendered to disappear on a timer." }
+  "divergesFrom": "alert",
+  "divergesFromReason": "Angular delegates Toast to Angular Material's MatSnackBar (frameworks/angular/behaviour-delegated.json), which has no tone axis at all -- so its binding stays the flat pattern \"alert\" it always was, while React's varies role and aria-live by tone and is cased. What MatSnackBar actually renders, read against the installed @angular/material 22.0.5 in node_modules/@angular/material/fesm2022/snack-bar.mjs: MatSnackBarConfig.politeness defaults to 'polite', the container resolves _live to 'assertive' only when politeness === 'assertive' && !announcementMessage, and _role is assigned ONLY inside `if (this._platform.FIREFOX)`. The template binds [attr.aria-live]=\"_live\" [attr.role]=\"_role\", so outside Firefox a snackbar carries aria-live=\"polite\" and NO ROLE, whatever the message says. This divergence therefore has a cost to a real person rather than being merely structural: a critical error toast interrupts in React (role=\"alert\", aria-live=\"assertive\") and is queued in Angular. It is recorded and NOT decided, in components-divergences.md's \"Toast -- a critical error interrupts in React and is queued in Angular\", the same treatment Skeleton's divergence got. Note what this reason does NOT claim: behaviour-delegated.json's Toast entry binds `alert` with no exceptions while MatSnackBar renders no role, so that entry is inaccurate. It is left untouched on purpose -- that inaccuracy is pre-existing and belongs to CLAUDE.md's standing \"every claim the delegated declarations make about Angular Material is unpinned\" entry, and this binding must not stack a fresh claim on top of it.",
+  "cases": [
+    { "name": "danger",
+      "when": "tone is \"danger\" -- role=\"alert\" with aria-live=\"assertive\"",
+      "pattern": "alert",
+      "exceptions": [
+        { "requirement": "content.noAutoDismiss",
+          "reason": "Toast.jsx has no timer of its own, but its doc comment describes toasts as auto-dismissed by the host by default and `persist` as the opt-out. Nothing in this file enforces persist for a critical state, so the claim rests on the host." }
+      ] },
+    { "name": "advisory",
+      "when": "any other tone -- role=\"status\" with aria-live=\"polite\"",
+      "pattern": "status",
+      "exceptions": [] }
   ]
 }

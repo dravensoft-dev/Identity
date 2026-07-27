@@ -1,9 +1,23 @@
 {
-  "pattern": "button",
-  "exceptions": [
-    { "requirement": "roles.element",
-      "reason": "The chip takes THREE shapes and the pattern applies to two of them. With `onClick` and no action panel the chip root IS the <button>. With `onClick` AND `actionsEnabled` the root is a <div> -- a kebab cannot be nested inside a button -- and the <button> carrying the pattern is the chip body, a descendant of the root, so a reader resolving this binding against the root element alone finds no button there. With no `onClick` -- and nothing obliges a consumer to pass it -- there is no button at all: the chip is a <div> with no role, no tabbable behaviour and no activation, and this whole pattern does not apply to that shape. This is exactly the limitation Tag's own binding records and CLAUDE.md carries in Known debt: the binding schema cannot express 'this pattern applies conditionally', nor which element inside a component is its subject, so a reader of the binding alone would think the pattern always holds of the root. This binding, and the exception below, describes CalendarEvent only in the two shapes it takes when `onClick` is set." },
-    { "requirement": "states.disabled",
-      "reason": "There is no disabled concept: aria-disabled is never set and there is no member that makes an event unactivatable while still drawn. A chip is either interactive (onClick passed) or inert (onClick omitted), and the inert shape is a <div> rather than a disabled button -- which is the roles.element exception above, one requirement over." }
+  "cases": [
+    { "name": "clickable",
+      "when": "onClick is set and actionsEnabled is false or absent -- the chip root itself renders as <button>",
+      "pattern": "button",
+      "exceptions": [
+        { "requirement": "states.disabled",
+          "reason": "There is no disabled concept: aria-disabled is never set and there is no member that makes an event unactivatable while still drawn. A chip is either interactive (onClick passed) or inert (onClick omitted), and the inert shape is a <div> rather than a disabled button -- the `inert` case below." }
+      ] },
+    { "name": "clickable-with-actions",
+      "when": "onClick is set and actionsEnabled is true -- a kebab cannot nest inside a button, so the root becomes a <div> and the interactive attributes move down to the chip BODY, a descendant <button>",
+      "pattern": "button",
+      "exceptions": [
+        { "requirement": "states.disabled",
+          "reason": "There is no disabled concept: aria-disabled is never set and there is no member that makes an event unactivatable while still drawn. A chip is either interactive (onClick passed) or inert (onClick omitted), and the inert shape is a <div> rather than a disabled button -- the `inert` case below." }
+      ] },
+    { "name": "inert",
+      "when": "onClick is absent, regardless of actionsEnabled -- nothing obliges a consumer to pass onClick",
+      "pattern": "none",
+      "reason": "With no onClick the chip is a <div> with no role, no tabbable behaviour and no activation. This is true whether or not actionsEnabled renders a kebab beside it -- the kebab is its own IconButton with its own accessible name and is not the subject of this binding -- so this whole pattern does not apply to the chip itself in this shape.",
+      "exceptions": [] }
   ]
 }

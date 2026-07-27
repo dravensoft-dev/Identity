@@ -19,7 +19,7 @@ import { dirname, join } from 'node:path';
 import {
   loadPatterns, validatePattern, validateBinding,
   reactComponents, angularPrimitives, PATTERN_DIR,
-  crossLayerAgrees,
+  crossLayerAgrees, bindingCases,
 } from './lib/behaviour-contracts.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -35,6 +35,20 @@ function reactBindingPath(component) {
 }
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
+
+/** Render a binding as its case list, for the cross-layer disagreement
+ *  message below: a flat binding prints its bare pattern name, a cased
+ *  binding prints each case as "name:pattern" joined by " + ". A
+ *  disagreement can be about case NAMES as well as patterns, and a message
+ *  naming only patterns would send the reader looking at the wrong field.
+ *  Exported and hoisted to module scope -- not redefined per loop iteration
+ *  -- so this exact rendering is the one a test can pin directly rather
+ *  than one that has to be traced by hand at review time. */
+export function describeBinding(binding) {
+  return bindingCases(binding)
+    .map((c) => (c.name ? `${c.name}:${c.pattern}` : c.pattern))
+    .join(' + ');
+}
 
 async function main() {
   const problems = [];
@@ -119,7 +133,7 @@ async function main() {
     if (!other) continue;
     if (crossLayerAgrees(reactBinding, other)) continue;
     problems.push(
-      `${component}: react binds "${reactBinding.pattern}", angular binds "${other.pattern}", and neither declares divergesFrom.`
+      `${component}: react binds "${describeBinding(reactBinding)}", angular binds "${describeBinding(other)}", and neither declares divergesFrom.`
       + ` The PATTERN is the authority, not either layer — decide which is the defect.`,
     );
   }

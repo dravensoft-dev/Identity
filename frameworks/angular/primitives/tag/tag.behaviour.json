@@ -1,10 +1,17 @@
 {
   "component": "Tag",
-  "pattern": "button",
-  "exceptions": [
-    { "requirement": "roles.element",
-      "reason": "The <button> only renders when removable() is true (@if (removable()) { <button>...</button> }). Without it -- the common case -- arena-tag is a plain tone dot and projected content, no button, no role and no interactivity at all, and this whole pattern does not apply; it would bind none instead. This binding, and every exception in it including the one below, describes arena-tag only in the shape it takes when removable is set." },
-    { "requirement": "states.disabled",
-      "reason": "The remove button has no disabled concept at all -- aria-disabled is never set, and there is no input to make removal unavailable while still visible. It is either rendered (fully enabled) or not rendered at all." }
+  "cases": [
+    { "name": "plain",
+      "when": "removable() is false or absent -- the common case, a plain tone dot and projected content with no interactive affordance",
+      "pattern": "none",
+      "reason": "Without `removable` arena-tag is a label: a tone dot and projected content, with nothing to press. No interactive pattern applies, and binding one with an exception would tell a reader the pattern always holds.",
+      "exceptions": [] },
+    { "name": "removable",
+      "when": "removable() is true -- a real <button> renders inside the tag",
+      "pattern": "button",
+      "exceptions": [
+        { "requirement": "states.disabled",
+          "reason": "The remove button has no disabled concept at all -- aria-disabled is never set, and there is no input to make removal unavailable while the tag stays visible. A real gap rather than a description problem, and it survives this batch on purpose." }
+      ] }
   ]
 }

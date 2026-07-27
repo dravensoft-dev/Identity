@@ -50,6 +50,51 @@ meet, each with a reason. `bun run check:behaviour` asserts that every component
 declares, that every named pattern and requirement exists, and that the two layers
 agree or the difference is written down.
 
+### Flat bindings and cased bindings
+
+A binding describes a component; a render suite judges one render of it. A
+component that renders differently depending on its own props — `Skeleton`'s
+`circle` variant carrying two exceptions that are false of `block`, `line` and
+`text`; `Alert` rendering `role="alert"` for a `danger` tone and `role="status"`
+for any other — is several renders, and no single flat exception list is correct
+for all of them.
+
+`pattern` and `exceptions` are one shape: `cases` is the other. They are
+alternatives, never both — a binding declaring both is rejected by
+`validateBinding`. A flat binding (`pattern` plus `exceptions`) still means
+exactly what it always has, and stays the right shape for the common case of a
+component with one render worth judging. A cased binding replaces both with a
+`cases` array, and each entry carries:
+
+- `name` — a short identifier for the case (`"danger"`, `"circle"`);
+- `when` — prose stating the configuration that produces it (`"tone is
+  \"danger\""`, `"variant is \"circle\""`);
+- `pattern` — the pattern that case binds;
+- `exceptions` — that case's own exception list, exactly as a flat binding's;
+- `reason` — optional; required only when `pattern` is `none` or `absent`,
+  exactly as a flat binding's, and inherited from the binding's own `reason`
+  when the case does not override it.
+
+`when` is prose, and prose is all that is possible: nothing can verify that a
+render suite actually rendered the configuration a case names. A DOM
+discriminator would be circular in every motivating case anyway — what marks
+`Alert`'s `danger` case is `role="alert"`, which is the very attribute the
+requirement under examination is about.
+
+`bindingCases()` in `scripts/lib/behaviour-contracts.mjs` is the one place the
+two shapes meet: a flat binding normalises to a single anonymous case (`name:
+null`), so every consumer — `check:behaviour`, `check:compliance`, both
+layers' render-suite wrappers — reads a binding as a list of cases and never
+tests for `cases` itself. `reason` rides along on each normalised case too,
+inherited from the binding unless the case overrides it, because a case may
+bind `none` or `absent`, and those require one exactly as a flat binding does.
+
+The flat shape stays valid and means one case, so the untouched majority is not
+churned to say so. Find the bindings that do declare `cases` with
+`grep -rl '"cases"' --include='*.behaviour.json' frameworks/` — read the list
+rather than a figure written here, which drifts the first time a batch converts
+another binding.
+
 ### Native semantics vs. an absent capability
 
 A requirement met by the element's own native semantics counts as **met, with no
