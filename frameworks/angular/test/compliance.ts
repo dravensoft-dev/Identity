@@ -25,25 +25,93 @@
  * the functions check:behaviour reads the same files with, and a suite reading
  * them a second way could pass while asserting against a shape the gate has
  * stopped agreeing with. */
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
-// @ts-expect-error -- a plain .mjs helper with JSDoc types only; this suite runs
-// under bun's own TypeScript stripping, and check:angular compiles only what
-// index.ts reaches, so no declaration file is generated for it anywhere.
-import { comparePattern } from '../../../scripts/lib/behaviour-compliance.mjs';
-// @ts-expect-error -- same as above.
-import { loadBinding, loadPatterns, bindingCases } from '../../../scripts/lib/behaviour-contracts.mjs';
+import { existsSync } from 'node:fs';
 
 const here = dirname(fileURLToPath(import.meta.url));
+
+/** The repository root, found by walking up from this file to the directory holding
+ *  `package.json`, rather than by counting `../` hops.
+ *
+ *  A fixed hop count is correct for exactly one location, and this suite has two:
+ *  `frameworks/angular/test/` in source, and `build/angular-test/angular/test/` once
+ *  `ngc` has emitted it. The emitted tree holds the compiled `.js` and NONE of the
+ *  `.json` data these suites read -- measured: zero `.json` under the emitted
+ *  `primitives/` or `tailwind/components/` -- so a hop count resolves there to a
+ *  directory that exists, contains the wrong things, and fails as ENOENT rather
+ *  than as anything a reader would recognise. Walking to a marker resolves to the
+ *  real source tree from both -- but that only fixes the DATA paths, and is not enough on its
+ *  own to make a render suite runnable from source. `setInput()` and a template property
+ *  binding now reach a real signal input (harness-capabilities.test.ts), and that only compiles
+ *  against a real component under `ngc`: run a render suite straight from
+ *  `frameworks/angular/test/` and `bun test` transpiles the `.ts` by stripping types rather than
+ *  compiling it, producing a component TestBed cannot instantiate the way these suites expect.
+ *  Measured, not assumed: `bun test frameworks/angular/test/harness-capabilities.test.ts` from
+ *  source is 0 pass / 5 fail; `chart-data-table.test.ts` is 0 pass / 6 fail (NG0303 then
+ *  NG0950). Those failures read like a broken component, not like a wrong run target -- they are
+ *  the second. Run a render suite from the emit instead: `bun run test:angular`, or `bun test
+ *  build/angular-test/angular/test/<name>.test.js` after `bun run build:angular-tests`. A
+ *  DOM-free recipe suite -- asserting a `tailwind-variants` recipe or a plain exported function,
+ *  never mounting a component -- has no such dependency and still runs from source unchanged:
+ *  `bun test frameworks/angular/test/tag-variants.test.ts` is **4 pass** either way. */
+function findRepoRoot(from: string): string {
+  let dir = from;
+  while (!existsSync(join(dir, 'package.json'))) {
+    const parent = dirname(dir);
+    if (parent === dir) throw new Error(`no package.json above ${from} -- cannot locate the repository root`);
+    dir = parent;
+  }
+  return dir;
+}
+
+const REPO = findRepoRoot(here);
+
+/* The two shared `.mjs` helpers are reached through REPO for the same reason every
+ * data path above is, and the reason bites harder here: a module specifier is
+ * resolved against the importing FILE, so a static `../../../scripts/lib/...`
+ * points at the source tree from `frameworks/angular/test/` and at a directory
+ * that does not exist from `build/angular-test/angular/test/`. That is not an
+ * assertion failure -- the module never loads, so the whole suite file and every
+ * suite importing it drops out of the run. Measured, not assumed: breaking the
+ * specifier this way turns a clean run RED, not merely one failing assertion --
+ * `bun run test:angular` reports the affected files failing to load, each with its own
+ * "Unhandled error between tests" block, and the printed pass/fail/file counts drop with them.
+ * Break one specifier by hand and re-run `bun run test:angular` to see the current numbers
+ * rather than trusting a figure written here, which moves every time a suite is added or
+ * removed -- an induction run against this tree once reported a clean run going from 341
+ * passing to 269 pass / 5 fail / 5 errors across 32 files, and five tests landing in this
+ * directory since then already make both halves of that stale. What stays silent regardless of
+ * the count is WHICH tests are missing: nothing in that output names the dropped tests or the
+ * suite files that never loaded, so a reader sees a failing run and has to go find what else it
+ * dropped. A dynamic
+ * import of an absolute file URL is resolved at call time from a path this
+ * module computed, so both locations reach the one real copy of the evaluator.
+ *
+ * They stay untyped, as they were when they were static imports carrying
+ * `@ts-expect-error`: these are plain `.mjs` helpers with JSDoc types only, and no
+ * declaration file is generated for them anywhere. A computed specifier yields
+ * `any` rather than an error, so the suppression comments are gone and nothing is
+ * suppressed that was previously checked. */
+const LIB = join(REPO, 'scripts', 'lib');
+const { comparePattern, isFocusable } = await import(pathToFileURL(join(LIB, 'behaviour-compliance.mjs')).href);
+const { loadBinding, loadPatterns, bindingCases } = await import(pathToFileURL(join(LIB, 'behaviour-contracts.mjs')).href);
+
+/** Re-exported so a suite needing the evaluator's own focusability rule reaches the
+ *  same copy through the same resolution, rather than repeating the walk to the
+ *  repository root. */
+export { isFocusable };
 
 /** Absolute path of frameworks/angular/primitives, so a suite can name a binding
  *  without counting `../` hops -- a wrong import depth has already cost this
  *  chain one review cycle. */
-export const ANGULAR_PRIMITIVES = join(here, '..', 'primitives');
+export const ANGULAR_PRIMITIVES = join(REPO, 'frameworks', 'angular', 'primitives');
 
-/** Absolute repo root, derived from this file rather than from cwd: a suite must
- *  assert the same thing whether `bun test` was run from the root or not. */
-const REPO = join(here, '..', '..', '..');
+/** Absolute path of frameworks/tailwind/components, where the `*.manifest.json`
+ *  files live. Exported here rather than recomputed by each suite, because the
+ *  hop count from a suite is one of the two things that breaks once the suite runs
+ *  from the emitted tree. */
+export const TAILWIND_COMPONENTS = join(REPO, 'frameworks', 'tailwind', 'components');
 
 /** Absolute path of behaviour/patterns. */
 export const PATTERN_DIR = join(REPO, 'behaviour', 'patterns');

@@ -5,12 +5,8 @@
  * names must agree across layers -- `crossLayerAgrees`, Task 1): `plain` binds
  * `none`, `removable` binds `button`.
  *
- * The input is driven by overwriting the instance field before the first
- * `detectChanges()`, not `componentRef.setInput()` -- this harness runs
- * `@angular/compiler`'s JIT and never `ngtsc`, so a signal input never reaches
- * `ɵcmp.inputs` and `setInput()` would silently no-op rather than throw. See
- * alert-role-tones.test.ts's header for the full reasoning; this file copies
- * the same shape.
+ * The input is driven through `componentRef.setInput()` before the first
+ * `detectChanges()`, so each case renders the configuration its name claims.
  *
  * `keyboard.Space` and `keyboard.Enter` are BEHAVIOURAL for the `button`
  * pattern, and this suite proves both by dispatching a real `keydown` of Enter
@@ -53,8 +49,7 @@ function assertKeysUnintercepted(el: Element): void {
 
 function renderTag(removable: boolean) {
   const fixture = TestBed.createComponent(Tag);
-  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
-  instance['removable'] = () => removable;
+  fixture.componentRef.setInput('removable', removable);
   fixture.detectChanges();
   return fixture;
 }

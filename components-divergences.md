@@ -311,10 +311,16 @@ now a shared limit of both layers and is recorded here only because deleting it 
 **Tested how (Angular):** `frameworks/angular/test/confirm-dialog-focus-trap.test.ts` asserts the
 trap's mechanics — `focusableElements`, `focusFirstFocusable`, `trapTabKey`,
 `handleOpenTransition` — against a hand-built, real DOM tree under happy-dom. It is deliberately
-*not* a TestBed render of `<arena-confirm-dialog open="true">`: probed by hand first, both the
-`[open]="true"` template binding and `componentRef.setInput('open', true)` fail under this repo's
-JIT-only harness — the first throws NG0303, the second logs it and then silently no-ops — so no
-TestBed-based test can render an actually-open dialog. **Tested how (React):**
+*not* a TestBed render of `<arena-confirm-dialog open="true">`. **That used to be forced rather
+than chosen**: probed by hand under this repo's then-JIT-only harness, both the `[open]="true"`
+template binding and `componentRef.setInput('open', true)` failed — the first threw NG0303, the
+second logged it and then silently no-opped, so no TestBed-based test could render an
+actually-open dialog. Batch 8C11 moved this harness to AOT and retired that limitation:
+`frameworks/angular/test/harness-capabilities.test.ts` now drives `ConfirmDialog.open` through
+`setInput('open', true)` on a directly created fixture and asserts `[role="alertdialog"]` renders.
+This suite still tests the helpers directly rather than rendering the real component, which is now
+a design choice and not a forced one — see CLAUDE.md's *Known debt* entry on the seven files that
+still justify a testing strategy by the retired limitation. **Tested how (React):**
 `frameworks/react/test-dom/behavioural.test.jsx` and `dialog-modal.test.jsx`, which render the real
 component; `ConfirmDialog:react` is in `check:compliance`'s `COVERED`.
 
@@ -395,9 +401,10 @@ survives the `[class]` binding (:751). The third,
 asserts `role="status"` and `aria-label="Loading"` on the host, plus that the default variant
 renders no children of its own.
 `frameworks/angular/test/skeleton-dimensions.test.ts` mounts it too, in six tests, and reaches
-**every** variant: its `renderSkeleton` helper (:43-52) drives `variant` by overwriting the signal
-instance field — `instance['variant'] = () => variant`, this harness's documented bypass — and
-renders `block`, `circle`, `line` and `text`. What it asserts is the inline `[style.*]` dimension
+**every** variant: its `renderSkeleton` helper (:37-45) drives `variant` through
+`fixture.componentRef.setInput('variant', variant)` — the same `setInput()` technique every
+directly-created fixture in this AOT harness now uses — and renders `block`, `circle`, `line` and
+`text`. What it asserts is the inline `[style.*]` dimension
 bindings, never `role`, `aria-label`, or anything else the `status` pattern names. Those two are
 the whole set that renders it: `skeleton-variants.test.ts` mounts nothing (it asserts the
 plain-TypeScript recipe and `skeletonRowSlot`), and the only other files under
@@ -411,9 +418,12 @@ exception could ever expire there, and nothing would notice if the pattern gaine
 the component does not meet. The variant reach is **split between the two files** rather than
 absent, which is the correction an earlier version of this paragraph needed: the suite that
 asserts the announcement **stops at the default variant**, `block`, because its fixture is a
-template (`<arena-skeleton class="consumer-class" />`) and this JIT harness cannot drive a signal
-input through a template binding at all; the suite that does reach `circle` — the variant this
-batch changed — asserts dimensions instead. That split is softer than it looks in this one
+template (`<arena-skeleton class="consumer-class" />`) with no `[variant]` binding. **That used to
+be a harness limitation and is not any more**: batch 8C11 moved this harness to AOT, and
+`host-class-binding.test.ts`'s own header now calls the stop a scope decision rather than a
+limitation — the other three variants are covered elsewhere (`skeleton-variants.test.ts` for the
+recipe, `skeleton-dimensions.test.ts` for a real render of all four); the suite that does reach
+`circle` — the variant this batch changed — asserts dimensions instead. That split is softer than it looks in this one
 component's case, and the reason is worth stating rather than leaving a reader to assume the
 worst: `role` and `aria-label` are **static host attributes** in `skeleton.ts` (`:45-46`, inside
 the `host:` object, with no branch by variant — unlike React's, which branched), so asserting them
@@ -699,8 +709,15 @@ the shared `handleOpenTransition`/`trapTabKey` helpers against a hand-built DOM 
 shaped like the palette's panel (one real `<input>`, several `tabindex="-1"` row
 buttons) — real focus movement, real `document.activeElement`, and a Tab that must not
 reach a control placed behind the scrim. It does not render `<arena-command-palette>`
-through TestBed, for the reason `command-palette-keyboard.test.ts` already documents
-(`open` can never become `true` under this repo's JIT-only harness), so it is not proof
+through TestBed. **That used to be forced**: `command-palette-keyboard.test.ts` documented
+`open` as unable to become `true` under this repo's then-JIT-only harness. Batch 8C11 moved
+this harness to AOT and retired that limitation — `frameworks/angular/test/harness-capabilities.test.ts`
+now drives `CommandPalette.open` through `setInput('open', true)` on a directly created fixture
+and asserts its search input renders. `command-palette-focus-trap.test.ts` and
+`command-palette-keyboard.test.ts` still test the helpers directly rather than the real
+component, which is now a design choice rather than a forced one — both are among the seven
+files CLAUDE.md's *Known debt* records as still citing the retired limitation in their own
+prose. So this is not proof
 that the component's own `afterRenderEffect`/`onKey` wiring calls these functions at
 the right time — `ngc --strictTemplates` (`check:angular`) is what proves that wiring
 compiles against the component's real `viewChild`/`inject(DOCUMENT)` types.

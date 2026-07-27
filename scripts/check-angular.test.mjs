@@ -6,6 +6,35 @@ import { join } from 'node:path';
 import { repoRoot } from './lib/tailwind-compile.mjs';
 import { typecheck } from './check-angular.mjs';
 
+/* What is assertable about the emit project without paying for a compile.
+ *
+ * The two tests that shell out to `ngc` are suspended below, so these exist to
+ * catch the realistic regression instead: the emit project being narrowed so it
+ * stops covering the suites, or quietly given a `compilerOptions` block that
+ * relaxes what the shipped layer is held to. A test surface compiled more
+ * leniently than the layer it exercises is worse than the honest hole it
+ * replaced, so that is asserted mechanically rather than left to review. */
+const BUILD_ONLY_OPTIONS = ['outDir', 'sourceMap', 'incremental', 'tsBuildInfoFile'];
+
+test('the emit project covers the test directory and relaxes nothing', () => {
+  const emit = JSON.parse(readFileSync(join(repoRoot, 'frameworks/angular/tsconfig.test.json'), 'utf8'));
+  assert.equal(emit.extends, './tsconfig.check.json',
+    'the emit project must inherit the layer project rather than restate its strictness');
+  assert.ok(Array.isArray(emit.include) && emit.include.some((p) => p.startsWith('./test/')),
+    `the emit project no longer covers ./test/: ${JSON.stringify(emit.include)}`);
+  assert.equal(emit.angularCompilerOptions, undefined,
+    'the emit project must carry no angularCompilerOptions of its own -- it relaxes nothing');
+  const extra = Object.keys(emit.compilerOptions ?? {}).filter((k) => !BUILD_ONLY_OPTIONS.includes(k));
+  assert.deepEqual(extra, [],
+    `the emit project may carry build configuration only; these are something else: ${extra.join(', ')}`);
+});
+
+test('the layer project still names the barrel alone, so check:angular keeps its own subject', () => {
+  const layer = JSON.parse(readFileSync(join(repoRoot, 'frameworks/angular/tsconfig.check.json'), 'utf8'));
+  assert.deepEqual(layer.files, ['./index.ts'],
+    'the shipped surface is the barrel; folding the tests into it would report a test error as a broken layer');
+});
+
 // PLAN-E-SUSPENDED — commented out to keep the suite fast while plans A-D reshape the repo.
 // Cost when live: 7.97s. Reason: both tests shell out to a full ngc --strictTemplates run over the Angular layer.
 // Restore in Plan E: delete these five header lines and strip the leading "// " from

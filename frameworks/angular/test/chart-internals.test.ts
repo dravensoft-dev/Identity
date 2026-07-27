@@ -14,7 +14,12 @@ import type { SeriesTone } from '../api.generated';
 test('niceMax returns 1 for every input that is not a positive number', () => {
   // The guard is `!(max > 0)`, which is what makes NaN fall through it: every
   // comparison against NaN is false, so `NaN > 0` is false and the guard fires.
-  for (const bad of [0, -0, -1, -1000, Number.NaN, -Number.INFINITY])
+  // `-Infinity` and not `-Number.INFINITY`: that property does not exist, so the
+  // spelling evaluated to `-undefined`, i.e. `NaN` -- the entry before it. The
+  // array claimed six inputs and supplied five, and no runtime assertion could
+  // report that, because both spellings return 1. Found the first time a compiler
+  // was pointed at this directory.
+  for (const bad of [0, -0, -1, -1000, Number.NaN, -Infinity])
     assert.equal(niceMax(bad), 1, `niceMax(${bad})`);
 });
 
@@ -154,6 +159,10 @@ test('the mutually-exclusive warning fires once, and only when both are passed',
   // A cache-busted import gives a module instance with its own `warned` set, so
   // this proves the warning deterministically instead of depending on being the
   // first test in the process to reach it.
+  // @ts-expect-error -- a query-string specifier is a runtime cache-buster: bun
+  // resolves it to the module beside it and gives back a fresh instance, while
+  // TypeScript has no way to resolve the string at all. A wildcard module
+  // declaration would silence every unresolvable import in the layer to fix one.
   const fresh = await import('../primitives/chart-internals?warn-once-probe');
   const clean = captureWarnings(() => {
     fresh.resolveColors({ count: 1, tone: 'danger' });

@@ -12,16 +12,9 @@
  * can tell those two apart -- it is human judgement. That is recorded as debt
  * rather than faked into a passing assertion here.
  *
- * Inputs are driven by overwriting the instance field before the first
- * `detectChanges()`, for the reason alert-role-tones.test.ts's header gives at
- * length: this harness runs Angular's JIT and never `ngtsc`, so a signal input
- * never reaches `ɵcmp.inputs` -- but a template binding and `setInput()` fail
- * differently, and that difference is why neither is used here. A template
- * binding throws NG0303. `setInput()` does not throw at all: it silently
- * no-ops and the render keeps the field's default, which would make a suite
- * built on it pass vacuously against default data with nothing announcing the
- * mistake. Overwriting the instance field renders the REAL component against
- * REAL data instead. */
+ * Inputs are driven through `componentRef.setInput()` before the first
+ * `detectChanges()`, so every assertion below is against a render of the real
+ * data this file declares rather than against a component's defaults. */
 import { useTestEnvironment } from './testbed-env';
 useTestEnvironment();
 
@@ -42,10 +35,9 @@ const SERIES = 'Deliveries';
 
 function renderBarChart() {
   const fixture = TestBed.createComponent(BarChart);
-  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
-  instance['labels'] = () => LABELS;
-  instance['values'] = () => VALUES;
-  instance['seriesLabel'] = () => SERIES;
+  fixture.componentRef.setInput('labels', LABELS);
+  fixture.componentRef.setInput('values', VALUES);
+  fixture.componentRef.setInput('seriesLabel', SERIES);
   fixture.detectChanges();
   return fixture;
 }
@@ -144,9 +136,8 @@ test('arena-bar-chart matches its figure-with-data-table binding, which excepts 
  * the suite rather than only in prose, and the gap itself is debt. */
 test('arena-bar-chart with no seriesLabel still names itself, though only by type -- the label\'s quality is not machine-checkable', () => {
   const fixture = TestBed.createComponent(BarChart);
-  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
-  instance['labels'] = () => LABELS;
-  instance['values'] = () => VALUES;
+  fixture.componentRef.setInput('labels', LABELS);
+  fixture.componentRef.setInput('values', VALUES);
   fixture.detectChanges();
   try {
     const host = fixture.nativeElement as Element;
@@ -185,11 +176,10 @@ test('arena-bar-chart with no seriesLabel still names itself, though only by typ
  * against a component that suffixed the table and left the axis bare. */
 test('arena-bar-chart appends valueSuffix to the axis ticks and to the accessible table alike', () => {
   const fixture = TestBed.createComponent(BarChart);
-  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
-  instance['labels'] = () => LABELS;
-  instance['values'] = () => VALUES;
-  instance['seriesLabel'] = () => SERIES;
-  instance['valueSuffix'] = () => ' ms';
+  fixture.componentRef.setInput('labels', LABELS);
+  fixture.componentRef.setInput('values', VALUES);
+  fixture.componentRef.setInput('seriesLabel', SERIES);
+  fixture.componentRef.setInput('valueSuffix', ' ms');
   fixture.detectChanges();
   try {
     const host = fixture.nativeElement as Element;
@@ -227,10 +217,9 @@ test('arena-bar-chart appends valueSuffix to the axis ticks and to the accessibl
  * retyped: an en dash here would fail with a diff nobody can see. */
 test('arena-doughnut-chart takes its accessible name, caption and value column from seriesLabel', () => {
   const fixture = TestBed.createComponent(DoughnutChart);
-  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
-  instance['labels'] = () => LABELS;
-  instance['values'] = () => VALUES;
-  instance['seriesLabel'] = () => SERIES;
+  fixture.componentRef.setInput('labels', LABELS);
+  fixture.componentRef.setInput('values', VALUES);
+  fixture.componentRef.setInput('seriesLabel', SERIES);
   fixture.detectChanges();
   try {
     const host = fixture.nativeElement as Element;

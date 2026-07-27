@@ -1,24 +1,18 @@
 /* Render assertions for `width`/`height`/`radius`, added under Skeleton's API
  * contract task (8B1 Task 3, Reshape B): the three inputs bind onto the host
- * via `[style.width]` / `[style.height]` / `[style.borderRadius]`, which this
- * JIT-only harness's OTHER blind spot -- the `[style.x]` binding form -- makes
- * invisible to `check:dimensions`' scanners (see CLAUDE.md's `check:dimensions`
- * paragraph, "Angular's `[style.x]` binding form is invisible to all four
- * scanners too"). Only a real render proves they reach the DOM, and that the
+ * via `[style.width]` / `[style.height]` / `[style.borderRadius]`, and that
+ * binding form is invisible to `check:dimensions`' scanners regardless of how
+ * this harness compiles (see CLAUDE.md's `check:dimensions` paragraph,
+ * "Angular's `[style.x]` binding form is invisible to all four scanners too").
+ * Only a real render proves they reach the DOM, and that the
  * per-variant gating in `skeleton.ts` (radius only for `block`, `text`/`line`
  * ignore it, `circle` uses height||width as one diameter) matches the table in
  * the task brief and `Skeleton.jsx`.
  *
- * `width`/`height`/`radius`/`variant` are all `input()` signal fields, which
- * this harness cannot drive through a template binding (NG0303) or a literal
- * attribute (a silent no-op) -- see `host-class-binding.test.ts`'s own header
- * comment. This reuses the same instance-field-overwrite technique
- * `renderStatCard`/`renderAppLogo` use there: construct the real `Skeleton` via
- * `TestBed.createComponent`, overwrite the signal fields with plain functions
- * before the first `detectChanges()`, then read the real host's inline style.
- * That proves template/style-binding shape only, never the input contract
- * itself -- `bun run check:angular` (`ngc --strictTemplates`) is the authority
- * that the signal inputs themselves are declared correctly.
+ * `width`/`height`/`radius`/`variant` are all `input()` signal fields, driven
+ * through `componentRef.setInput()` before the first `detectChanges()` -- the
+ * technique every directly-created fixture in this directory uses -- and then
+ * read back off the real host's inline style.
  *
  * `renderSkeleton` takes its dimensions POSITIONALLY, not as an `{ width:
  * '160px', ... }` options object, and that is deliberate rather than a style
@@ -42,11 +36,10 @@ useTestEnvironment();
 
 function renderSkeleton(variant?: SkeletonVariant, width?: string, height?: string, radius?: string) {
   const fixture = TestBed.createComponent(Skeleton);
-  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
-  if (variant !== undefined) instance['variant'] = () => variant;
-  if (width !== undefined) instance['width'] = () => width;
-  if (height !== undefined) instance['height'] = () => height;
-  if (radius !== undefined) instance['radius'] = () => radius;
+  if (variant !== undefined) fixture.componentRef.setInput('variant', variant);
+  if (width !== undefined) fixture.componentRef.setInput('width', width);
+  if (height !== undefined) fixture.componentRef.setInput('height', height);
+  if (radius !== undefined) fixture.componentRef.setInput('radius', radius);
   fixture.detectChanges();
   return fixture;
 }

@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { Injector, runInInjectionContext } from '@angular/core';
 import { bulkActionBarStyles } from '../primitives/bulk-action-bar/bulk-action-bar.variants';
 import { BulkActionBar } from '../primitives/bulk-action-bar/bulk-action-bar';
+import type { BulkAction } from '../api.generated';
 
 /* This suite asserts against the plain-TypeScript recipe and stays a
  * recipe suite, not a render suite (host-class-binding.test.ts owns the one
@@ -86,7 +87,14 @@ test('the Clear output was renamed from `cleared` to `clear`, per the API contra
 
 test('classesFor still resolves a destructive action\'s classes to the same recipe output after the BulkAction retype', () => {
   const instance = constructBulkActionBar();
-  const viaMethod = instance.classesFor({ id: 'delete', label: 'Delete', destructive: true }).action();
+  /* `classesFor` is `protected`, and it stays protected -- a component's surface
+     does not widen to serve its own suite. A TYPED cast rather than
+     @ts-expect-error, because this test exists to catch a `BulkAction` retype:
+     a directive suppresses every error on the line, including a genuinely wrong
+     argument, which would blind the exact thing the test is named for. The cast
+     keeps the argument checked against the real `BulkAction`. */
+  const reachable = instance as unknown as { classesFor(action: BulkAction): { action(): string } };
+  const viaMethod = reachable.classesFor({ id: 'delete', label: 'Delete', destructive: true }).action();
   const viaRecipe = bulkActionBarStyles({ destructive: true }).action();
   assert.equal(viaMethod, viaRecipe);
 });

@@ -9,9 +9,11 @@ have a **dev-only, private `package.json`** at the root: the token layer is buil
 DTCG JSON by Style Dictionary, and the build and check scripts are tested with
 `bun test`, as is each framework layer from its own test directory
 (`bun run test:scripts` / `test:react` / `test:react-dom` / `test:angular`, or
-`bun run test` for all four). Those four run in **two `bun test` processes**, not one:
-`test` is `bun test scripts frameworks/react/test/ frameworks/angular/test && bun test
---preload ./frameworks/react/test-dom/preload.js frameworks/react/test-dom`, because
+`bun run test` for all four). Those four run in **two `bun test` processes**, not one,
+preceded by a build the Angular suites need before either process can see them:
+`test` is `bun run build:angular-tests && bun test scripts frameworks/react/test/
+build/angular-test/angular/test && bun test --preload
+./frameworks/react/test-dom/preload.js frameworks/react/test-dom`, because
 `frameworks/react/test-dom/` registers a DOM globally and must not share a process with
 the DOM-free suites (see the two-React-test-directories note under *Architecture*).
 That directory was deleted once, for its RAM cost, and restored minus the one suite
@@ -402,11 +404,16 @@ installs globals **process-wide**, and `bun test` shares one process across ever
 path a single invocation matches. So a DOM registered in the first directory's
 process would quietly change what its suites prove with nothing
 failing to say so — count them with `bun run test:react` rather than trusting a
-figure written here, which drifts with every component that gains a test — and it would also reach `frameworks/angular/test`, whose files
-register a DOM themselves and throw on the second registration. `testStep()` in
-`scripts/check-all.mjs` therefore runs two `bun test` invocations, and
-`check-all.test.mjs` asserts that array by literal value — a change to one is a
-change to both.
+figure written here, which drifts with every component that gains a test. `frameworks/angular/test`'s
+own registration site (`testbed-env.ts`) is guarded rather than throwing on a second call, so
+merging it into the preloaded invocation does not itself collide — verified by hand, it runs
+clean. What actually forces the split is `scripts/`: a happy-dom installed process-wide for the
+whole invocation replaces Bun's own `fetch`, which turns a passing
+`scripts/lib/static-server.test.mjs` fetch assertion into a cross-origin failure (see
+`scripts/check-all.mjs`'s own `testStep()` comment for the measured detail). `testStep()`
+therefore builds the Angular test surface with `ngc` and then runs two separate `bun test`
+invocations rather than one, and `check-all.test.mjs` asserts that array by literal value — a
+change to one is a change to both.
 
 **The rule the second directory carries: a component whose behaviour binding names
 the `grid` pattern is DOM-tested by hand**, with `bun run demos` and the
@@ -589,9 +596,10 @@ suite alone cannot see it move.** `scripts/behaviour-contracts.test.mjs`'s *"the
 inventory finds every component and no demo entry"* asserts `reactComponents('.').length`
 by literal value, with a comment naming every change that has moved it; a new component
 under `frameworks/react/components/` moves it by one and the assertion must be updated **in
-the same commit**. **Verify with the merged process** — `bun test scripts
-frameworks/react/test/ frameworks/angular/test` — because `bun test frameworks/react/test/`
-never matches `scripts/`, so it reports green over a tree whose test run is red. This is a
+the same commit**. **Verify with the merged process** — `bun run build:angular-tests && bun test
+scripts frameworks/react/test/ build/angular-test/angular/test` — because `bun test
+frameworks/react/test/` never matches `scripts/`, so it reports green over a tree whose test run
+is red. This is a
 different hazard from the two-invocation rule above, which is about a DOM registered
 process-wide: this one is about a path a narrowed invocation simply never matched. It cost
 plan 8C5 a red commit that a task report called green.
@@ -600,7 +608,44 @@ The Angular layer's quartet is the analogue: `<name>.ts` (standalone `OnPush` co
 
 **A host-bound root is the Angular layer's default, and it has one carve-out.** A primitive binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than rendering a wrapper div, so the host is the flex item its parent lays out and — where the component measures itself — the measured element is the styled element. One primitive correctly does **not**: `activity-feed`, whose root must be a real `<ul>` with `<li>` rows. The rule targets elements that exist only to carry styling; when the root must be a specific semantic or interactive element, keep it. **A host-bound root must carry a display utility** — `<arena-x>` is an unknown element defaulting to `display:inline`, where width and height do not apply, so a root slot without one renders a zero-area host. That is machine-guarded by a manifest-driven assertion in `frameworks/angular/test/host-class-binding.test.ts`.
 
-**The Angular test harness is JIT, and that bounds what a test can prove.** `frameworks/angular/test/` renders real zoneless Angular trees under `bun test` via `happy-dom`, which needs three test-only devDependencies beyond the `node:test`/`node:assert` baseline the rest of the repo uses — `@angular/platform-browser`, `happy-dom` and `@happy-dom/global-registrator`. Because the harness runs `@angular/compiler`'s JIT and never `ngtsc`, **a signal input cannot be driven through a template binding, a literal attribute, or `componentRef.setInput()`** — the first two ways fail loudly (NG0303, thrown), the third does not: `setInput()` on an undiscovered signal input silently no-ops and the render keeps the field's default, which is the more dangerous failure because a suite built on it passes vacuously with nothing announcing the mistake. Overwrite the instance field directly instead. `contentChild()` queries do not resolve either. Factor the logic into plain exported functions and test those against a real DOM rather than faking a render; `check:angular`'s `ngc --strictTemplates` is the authority that the input contract and the queries actually compile.
+**The Angular test harness compiles ahead of the run — AOT, not JIT — and that is a different
+guarantee, not merely a faster one.** `frameworks/angular/test/` renders real zoneless Angular
+trees under `bun test` via `happy-dom`, which needs three test-only devDependencies beyond the
+`node:test`/`node:assert` baseline the rest of the repo uses — `@angular/platform-browser`,
+`happy-dom` and `@happy-dom/global-registrator`. `bun run build:angular-tests` compiles
+`frameworks/angular/index.ts` (the primitives barrel) together with `frameworks/angular/test/`
+under `ngc --strictTemplates`, into git-ignored `build/angular-test/`; `test:angular`, `test` and
+`testStep()` in `scripts/check-all.mjs` all run `bun test` over that emitted output, never over
+the `.ts` sources. A type error anywhere in the test surface — including a template diagnostic in
+an inline `template:` string, which `ngc` checks the same as any other template — now fails the
+*build* step, and no test in that run executes at all, rather than merely failing an assertion
+somewhere. `bun run check` is 24 steps for it; `GATES` itself stays 21, because this is a build
+the existing test step now consumes rather than a new gate, and the seven `PLAN-E-SUSPENDED`
+tests are still seven. Staleness in the emit is prevented by the build always running ahead of the
+tests that read it, never by a gate watching the output afterward — `build-angular-tests.mjs`
+additionally prunes any `.js`/`.js.map`/`.d.ts` under `build/angular-test/` whose source has since
+been deleted, because `ngc`'s incremental build does not.
+
+`frameworks/angular/test/harness-capabilities.test.ts` pins what this restored, so the claim here
+has a suite behind it rather than a recollection: a template property binding reaches a required
+signal input; `contentChild()` resolves against real projected content; and
+`componentRef.setInput()` drives a required input — a plain string, and a boolean carrying a
+`booleanAttribute` transform — as well as an *optional* boolean input of the same transformed
+shape, displacing its default. The JIT-era bypass this superseded is retired: it overwrote a
+child's instance field directly, because `setInput()` on an undiscovered signal input used to
+silently no-op and the render kept the field's default, which a suite could pass vacuously against
+with nothing announcing the mistake; `grep -rn "\w\+\['[a-zA-Z]*'\] = " frameworks/angular/test/*.ts`
+now returns nothing.
+
+One hazard is new rather than removed, and it is worth stating precisely because it is easy to
+under-describe. A suite file that fails to *load* from the emit — a module specifier the emitted
+tree does not resolve, for instance — does not fail quietly: the run goes red, not merely one
+failing assertion. Break one specifier by hand and re-run `bun run test:angular` to see it —
+`compliance.ts`'s own header carries the induction and its own re-deriving instruction, since the
+pass/fail/file counts it once measured already went stale inside this same batch the moment a
+later commit added five tests, and pinning a number here would only go stale a second time. What
+stays silent is *which* tests or suite files never loaded, whatever the count turns out to be —
+a reader sees a failing run and has to go find what else it dropped.
 
 `bun test` runs every file in this directory in ONE process, and both happy-dom's document and Angular's `TestBed` environment can each be claimed only once per process — `GlobalRegistrator.register()` throws if already registered, and `TestBed.initTestEnvironment()` throws ("base providers ... already been called") the second time it runs across files that share a process. `testbed-env.ts` claims both, once, for the whole directory: `ensureDom()` and `useTestEnvironment()` are plain `if (claimed) return` guards, not a reset — `TestBed.resetTestEnvironment()` was tried and measurably does not work, because `BrowserDomAdapter.makeCurrent()` installs a process-wide DOM adapter on the FIRST platform creation that nothing resets, so a second per-file document would render into a document the adapter no longer points at (`getComputedStyle` reading the wrong document was the observed failure). So the directory shares one real document and one TestBed environment for its entire run rather than one pair per file; any suite needing a real component render just calls `useTestEnvironment()` (or `ensureDom()` alone, for a suite that needs a DOM but not TestBed) and is a normal new file, not an addition to `host-class-binding.test.ts`. The shared document also means state written onto it — a custom property set on `documentElement.style`, an element appended to `document.body` — outlives the file that wrote it unless that file clears it, typically in a `finally`; every directly-created fixture must still be `destroy()`-ed for the same reason — zoneless change detection sweeps all attached views, so a fixture left dirty throws out of an unrelated later test, and with one shared document that hazard now crosses files rather than staying inside one.
 
@@ -1061,18 +1106,57 @@ scheduled for deletion the same week.
   found nothing before them, so neither branch of that escape hatch had ever met a real
   binding. Run that command for the live set rather than trusting a figure here; with
   `Skeleton` closed, `Toast` is the only user left.
-- **No gate typechecks `frameworks/angular/test/`, so every wrapper and helper living there
-  is unchecked TypeScript.** `check:angular` runs `ngc --strictTemplates` over
-  `frameworks/angular/tsconfig.check.json`, whose `"files"` is `["./index.ts"]` — the
-  primitives barrel — so the compiler never opens the test directory; and `bun test` strips
-  types without checking them, so a green suite has never been evidence about types. This is
-  not theoretical. During 8C9 a review compiled `frameworks/angular/test/compliance.ts` by
-  hand and found **two TS2322 errors** in a directory reporting 340 passing tests — after a
-  green `check:angular` had already been read, in that same batch, as evidence the file
-  typechecked. It is not that evidence.
-  8C9 added two more files there (`assert-pattern-cases.test.ts`, `tag-cases.test.ts`). The
-  cheap mitigation, not done: a second tsconfig covering the test directory, wired into
-  `check:angular`.
+- **No gate typechecks `frameworks/angular/test/` — RETIRED as an entry, closed by batch 8C11.**
+  This recorded that `check:angular` compiled only `frameworks/angular/tsconfig.check.json`'s
+  `["./index.ts"]` — the primitives barrel — and never opened the test directory, and that `bun
+  test` strips types rather than checking them, so a green suite had never been evidence about
+  types. It was not theoretical: during 8C9 a review compiled `frameworks/angular/test/compliance.ts`
+  by hand and found **two TS2322 errors** in a directory reporting 340 passing tests, after a green
+  `check:angular` had already been read, in that same batch, as evidence the file typechecked. The
+  mitigation this entry proposed was "a second tsconfig covering the test directory, wired into
+  `check:angular`." What shipped is not that: `scripts/build-angular-tests.mjs`
+  (`bun run build:angular-tests`) compiles the barrel and the whole test directory together with
+  `ngc --strictTemplates` into git-ignored `build/angular-test/`, and `test:angular`, `test` and
+  `testStep()` all run the suites from that emit rather than from the `.ts` sources — so the
+  typecheck is a consequence of the build the tests already needed rather than a second gate beside
+  it, and a type error anywhere in the test surface now fails the build outright, with no test in
+  that run executing at all (see the *Architecture* paragraph above for the mechanism).
+  **What survives, because it was true before this and stays true after: a green compile is a claim
+  about TYPES, and never about behaviour.** The sharpest instance of that gap is in this very file
+  and this batch did not remove it — `chart-internals.test.ts`'s `niceMax` induction, where
+  `-Number.INFINITY` (not a real property; it evaluates to `NaN`, the entry already adjacent to it
+  in the array) sat in a list the test claimed held six inputs and supplied five, and no runtime
+  assertion could report it, because both the intended `-Infinity` and the typo return `1`. It was
+  caught only because its vacuity happened to also be a type error, the moment a compiler was
+  finally pointed at the file.
+- **Seven files under `frameworks/angular/test/` still justify themselves by a JIT limitation
+  that batch 8C11's move to AOT retired, and this batch deliberately left their prose alone.**
+  Find the live set with `grep -rlE "JIT|ngtsc" frameworks/angular/test/*.ts` and drop the two
+  hits that are already correct, past-tense history (`harness-capabilities.test.ts`,
+  `host-class-binding.test.ts`) — what is left is
+  `bar-chart-geometry.test.ts`, `line-chart-geometry.test.ts`, `doughnut-chart-geometry.test.ts`,
+  `command-palette-focus-trap.test.ts`, `command-palette-keyboard.test.ts`,
+  `confirm-dialog-focus-trap.test.ts` and `onboarding-focus-trap.test.ts`. Each still says, in
+  the present tense, that a signal input cannot be driven through a template binding or
+  `setInput()` under this harness — false now, per the *Architecture* paragraph above and the
+  suite that backs it. **This command's reach is bounded to `.ts` files under this one
+  directory, and the same false claim was not confined to it.** `components-divergences.md`
+  restated this exact limitation for `ConfirmDialog`, `CommandPalette` and `Skeleton`, in prose
+  this grep cannot see. Those three were found and corrected by reading the file, not by
+  widening this grep, and are not a fourth thing still to find here — a future stale restatement
+  of this limitation anywhere outside this directory needs the cross-file command in the
+  *"a component name written into ANOTHER file's prose"* entry above, not this one.
+  **This is not a typo sweep, on purpose.** Several of these files justify
+  testing plain exported functions (chart geometry, focus-trap helpers) *by* the limitation
+  they cite — extracting the logic and testing it directly, rather than driving the real
+  component. Correcting only the false clause and leaving the extraction in place is defensible
+  on its own terms — a pure function is often the right thing to test directly regardless of what
+  the harness can drive — but it is a design choice now, not a forced one, and nobody has revisited
+  whether these seven should instead render a real tree the way `harness-capabilities.test.ts`
+  and the migrated `host-class-binding.test.ts` fixtures now do. Rewriting seven suites' test
+  strategy was judged out of scope for a close-out batch whose subject was the harness, not the
+  primitives it borrows testing techniques from; recorded here rather than fixed so the false
+  prose has a pointer and the reopened question is not lost with it.
 - **Duplicate case names are rejected only by the two test wrappers, never by the gate.**
   `validateBinding` in `scripts/lib/behaviour-contracts.mjs` loops over `bindingCases()` and
   never asserts the names are distinct, so a binding declaring `danger` twice passes

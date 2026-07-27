@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.check.json",
+  "compilerOptions": {
+    "outDir": "../../build/angular-test",
+    "sourceMap": true,
+    "incremental": true,
+    "tsBuildInfoFile": "../../build/angular-test/.tsbuildinfo"
+  },
+  "files": [],
+  "include": ["./test/**/*.ts", "./index.ts"]
+}

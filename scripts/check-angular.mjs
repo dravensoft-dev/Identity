@@ -31,14 +31,23 @@ import { repoRoot } from './lib/tailwind-compile.mjs';
 // failed to spawn" — a misleading message for "too many errors to print".
 const MAX_BUFFER = 32 * 1024 * 1024;
 
+/** Absolute path of the ngc binary, or a named throw when the toolchain is absent.
+ *  Extracted so `scripts/build-angular-tests.mjs` locates it the same way this gate
+ *  does rather than hardcoding a second copy of the path.
+ *  @param {string} [root] @returns {string} */
+export function ngcBin(root = repoRoot) {
+  const bin = join(root, 'node_modules/@angular/compiler-cli/bundles/src/bin/ngc.js');
+  if (!existsSync(bin))
+    throw new Error(`@angular/compiler-cli is not installed at ${bin} — run \`bun install\` before check:angular`);
+  return bin;
+}
+
 /** Compile frameworks/angular with ngc under strictTemplates.
  *  @param {{root?: string}} [opts]
  *  @returns {{status: number, output: string}} */
 export function typecheck(opts = {}) {
   const root = opts.root ?? repoRoot;
-  const bin = join(root, 'node_modules/@angular/compiler-cli/bundles/src/bin/ngc.js');
-  if (!existsSync(bin))
-    throw new Error(`@angular/compiler-cli is not installed at ${bin} — run \`bun install\` before check:angular`);
+  const bin = ngcBin(root);
   const project = join(root, 'frameworks/angular/tsconfig.check.json');
   const out = mkdtempSync(join(tmpdir(), 'arena-ngc-'));
   try {

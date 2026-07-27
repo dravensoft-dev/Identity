@@ -1,11 +1,8 @@
 /* arena-tag gained a dismiss affordance in the reconciliation to a shared
  * Tag contract (api/components/Tag.json): `removable` gates an Arena-drawn
  * `×` button the same way React's does, and `remove` fires on click. Both are
- * asserted against a real render -- `removable` is a signal input, and this
- * harness is JIT-only (see alert-role-tones.test.ts's header, the shape this
- * copies): a signal input cannot be driven through a template binding, a
- * literal attribute, or `componentRef.setInput()`, so the instance field is
- * overwritten directly before the first `detectChanges()`. */
+ * asserted against a real render, with `removable` driven through
+ * `componentRef.setInput()` before the first `detectChanges()`. */
 import { useTestEnvironment } from './testbed-env';
 useTestEnvironment();
 
@@ -16,8 +13,7 @@ import { Tag } from '../primitives/tag/tag';
 
 function renderTag(removable: boolean) {
   const fixture = TestBed.createComponent(Tag);
-  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
-  instance['removable'] = () => removable;
+  fixture.componentRef.setInput('removable', removable);
   fixture.detectChanges();
   return fixture;
 }

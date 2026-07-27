@@ -651,6 +651,34 @@ because it was checked, not assumed.
 
 # Plan C — the twenty-two React-only components
 
+> **COMPLETE as of Plan 8C5 (2026-07-26)**, in batches 8C1–8C5: every component in the
+> subject set carries a contract, and `check:api` reports **50 contracts across 70 layer
+> implementations**.
+>
+> **The arithmetic does not match the twenty-two named below, and — as in Plan B — the
+> difference is not drift.** The subject set is now **thirty**. It grew *while being
+> contracted*, because a batch that turns an item into its own component adds a React
+> component and a delegated entry in the same change: `RadioGroup` in 8C2, then
+> `CalendarEvent`, `TableRow` and `TableCell` in 8C3, then the `SideNav` family in 8C5.
+> Re-derive the set rather than trusting either number — it is the key set of
+> `frameworks/angular/behaviour-delegated.json`, and every key in it must have a file in
+> `api/components/`:
+>
+> ```bash
+> bun run check:api
+> python3 -c "import json,os; d=json.load(open('frameworks/angular/behaviour-delegated.json')); \
+>   keys=[k for k in d if not k.startswith('\$')]; have={f[:-5] for f in os.listdir('api/components')}; \
+>   print(len(keys),'subjects', sorted(k for k in keys if k not in have),'uncontracted')"
+> ```
+>
+> **Batches numbered 8C6 and later are NOT Plan C, and the numbering misleads.** Plan C
+> ended at 8C5. What followed reused the prefix while doing other layers' work: 8C6 (`Tabs`
+> and `Tooltip`, plus the primitive-type clause in `check:api`), 8C7 (IDREF resolution and
+> `each`-quantification in the compliance evaluator), 8C8 (accessible names through the same
+> evaluator), 8C9 (binding `cases`), 8C10 (`Skeleton`'s announced circle) and 8C11 (the
+> Angular test directory moved from a JIT harness to an AOT one). None of them contracted a
+> component.
+
 **Objective.** Define the contract for every component that exists in React alone, and
 migrate React to it — so that each component's API is settled and normative *before*
 Angular has an implementation to defend, rather than after.

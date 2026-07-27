@@ -34,12 +34,12 @@ import '@angular/compiler';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { useTestEnvironment } from './testbed-env';
+import { ANGULAR_PRIMITIVES, TAILWIND_COMPONENTS } from './compliance';
 import { ActivityFeed } from '../primitives/activity-feed/activity-feed';
 import { activityFeedStyles } from '../primitives/activity-feed/activity-feed.variants';
 import { AppLogo } from '../primitives/app-logo/app-logo';
@@ -51,6 +51,7 @@ import { Breadcrumbs } from '../primitives/breadcrumbs/breadcrumbs';
 import type { Crumb } from '../api.generated';
 import { breadcrumbsStyles } from '../primitives/breadcrumbs/breadcrumbs.variants';
 import { BulkActionBar } from '../primitives/bulk-action-bar/bulk-action-bar';
+import type { BulkAction } from '../api.generated';
 import { bulkActionBarStyles } from '../primitives/bulk-action-bar/bulk-action-bar.variants';
 import { ChartCard } from '../primitives/chart-card/chart-card';
 import { chartCardStyles } from '../primitives/chart-card/chart-card.variants';
@@ -85,49 +86,33 @@ import { unauthCardStyles } from '../primitives/unauth-card/unauth-card.variants
  * measurably does not work (`resetTestEnvironment()` leaves the process-wide
  * DOM adapter pointing at whichever document was live at first initialisation).
  *
- * It stops at Skeleton's default variant. This harness runs each test file
- * through bun's own TypeScript stripping plus `@angular/compiler`'s runtime
- * template JIT -- it never runs `ngtsc`, the compiler-cli AST transform that
- * discovers a class's `input()` fields and registers them into `ɵcmp.inputs`.
- * Without that transform a signal input is invisible to both template
- * property binding (`[lines]="3"` fails NG0303, "not a known property") and
- * `ComponentRef.setInput()` -- but they fail differently, and the second is
- * the one to watch: the binding THROWS NG0303, while `setInput` logs NG0303
- * and then silently no-ops, leaving the component on its default. A throw
- * announces itself; a silent no-op lets a suite pass vacuously against
- * defaults it never changed. Confirmed with an isolated throwaway component
- * before this was written, so it is a property of the harness, not of
- * Skeleton, Tag or Avatar. `variant="text"` therefore cannot
- * be driven through a bound TestBed template here; only literal defaults
- * render. skeleton-variants.test.ts covers every variant's class output
- * against the plain-TypeScript recipe instead, which this limitation does
- * not touch, and `bun run check:angular` runs the real `ngc --strictTemplates`
- * -- the actual authority on whether skeleton.ts's `@if`/`@for` template
- * typechecks against the component's real inputs. */
+ * Inputs are driven two ways here, and the choice is mechanical rather than a
+ * matter of taste. Where a host component wraps the child, the host's own plain
+ * field is assigned and its template binds that field to the child's input --
+ * ordinary Angular, since a host in this file is a component the suite owns.
+ * Where a suite constructs the primitive directly with no wrapper,
+ * `fixture.componentRef.setInput()` drives it. A static literal attribute
+ * satisfies a string input as well, which two tests below assert directly.
+ *
+ * Skeleton's coverage here stops at the default variant, and that is a scope
+ * decision rather than a limitation: skeleton-variants.test.ts covers every
+ * variant's class output against the plain-TypeScript recipe, and
+ * skeleton-dimensions.test.ts renders all four for real. */
 useTestEnvironment();
 
 /* `name` is `input.required<string>()` (Resolution D of task 24's brief: nothing
  * defaults, on purpose -- an empty lock-up would ship no one's mark by omission,
- * so there is no fallback value to fall back to). A static literal attribute in
- * a template does not route to a signal input under this JIT-only harness (the
- * file header above documents why for Skeleton's `variant` and Breadcrumbs'
- * `items`), so this host exists only to prove what DOES happen with one --
- * the test using `AppLogoStaticAttributeHost` below never calls `detectChanges()`, because
- * `name()` throws NG0950 ("Input is required but no value is available yet")
- * the moment the child's template tries to read it, since the required input
- * was truly never satisfied under this harness, not merely defaulted quietly
- * the way an optional input is.
+ * so there is no fallback value to fall back to), and the static literal
+ * `name="Draven"` satisfies it: a string input takes a static attribute during
+ * the template's creation pass, before any change detection runs. Two tests
+ * below use this host -- one asserting that the attribute both reaches the input
+ * and stays on the element, the other reading the projected mark back.
  *
  * The projected `<span mark>mark</span>` carries the `mark` ATTRIBUTE
  * `<ng-content select="[mark]" />` actually selects on -- a bare
  * `<span>mark</span>` with no such attribute matches no selector at all (this
  * component's template has no catch-all `<ng-content>` for it to fall back
- * to) and projects nowhere, which this host used to do silently. The
- * "under this harness" test below never reads the projected content, so
- * that mistake cost it nothing directly -- but it meant this host proved
- * less than its own name claimed, and the real mark-projection test further
- * down (`createAppLogoMarkHost`) reuses this same host precisely because,
- * with the attribute now correct, it is one that actually projects. */
+ * to) and projects nowhere, which this host used to do silently. */
 @Component({
   standalone: true,
   imports: [AppLogo],
@@ -135,29 +120,10 @@ useTestEnvironment();
 })
 class AppLogoStaticAttributeHost {}
 
-/* Reuses `AppLogoStaticAttributeHost`'s own template -- its `<span mark>mark</span>`
- * is real projected content, not a stand-in for one -- but bypasses the required
- * `name` input the same way `createBreadcrumbsHost` bypasses `items`: query the
- * real child `AppLogo` instance via `By.directive` before the first
- * `detectChanges()`, and overwrite its `name` field with a plain function.
- * `detectChanges()` then runs for real, so this is the one place in the file that
- * proves `[mark]` content projection renders, rather than only that the literal
- * `name` attribute lands as a stray DOM attribute (the neighbouring test's own,
- * narrower claim). */
-function createAppLogoMarkHost() {
-  const fixture = TestBed.createComponent(AppLogoStaticAttributeHost);
-  const instance = fixture.debugElement.query(By.directive(AppLogo)).componentInstance as unknown as Record<string, unknown>;
-  instance['name'] = () => 'Draven';
-  return fixture;
-}
-
-/* The literal `name="Juan Carlos"` below is inert under this JIT-only harness, the same way
- * `ErrorStateWithoutActionHost`'s `title` is further down -- `name` is a signal input
- * (`input('')`) and a static attribute never reaches a signal input here (see this file's
- * header comment). It renders as a stray DOM attribute on the host and leaves `name()` itself
- * at its default, the empty string. Left in place rather than removed because no test below
- * reads it -- only the class merge is asserted -- so it changes nothing either way; recorded
- * here so a reader does not take it for a working name binding. */
+/* `name="Juan Carlos"` below is a real value for `arena-avatar`'s `name` input,
+ * not decoration: a static attribute satisfies a string input. Nothing below
+ * asserts on it -- only the class merge is -- so it is the initials source the
+ * component would render from rather than a claim this file makes. */
 @Component({
   standalone: true,
   imports: [Avatar],
@@ -183,36 +149,24 @@ class SkeletonHost {}
   standalone: true,
   imports: [Breadcrumbs],
   host: { 'data-host': 'breadcrumbs' },
-  template: `<arena-breadcrumbs class="consumer-class" />`,
+  template: `<arena-breadcrumbs class="consumer-class" [items]="items" />`,
 })
-class BreadcrumbsHost {}
+class BreadcrumbsHost {
+  items: Crumb[] = [];
+}
 
-/* `items` is `input.required<Crumb[]>()`, and this JIT-only harness cannot
- * drive a signal input through a template binding (this file's header
- * comment, and the NG0950 failure `AppLogoStaticAttributeHost` pins for
- * `name`) -- `BreadcrumbsHost`'s template above supplies no `items` binding
- * at all, so the child's first `detectChanges()` would throw the same
- * NG0950 the moment its own template reads `items()`. TestBed builds a
- * host's child view eagerly, before the first change-detection pass, which
- * is what makes the real child `Breadcrumbs` instance queryable here; this
- * overwrites its `items` field with a plain function before that first
- * `detectChanges()` -- `renderAppLogo`'s own bypass technique, applied to a
- * nested child rather than a fixture's own root. */
+/* `items` is `input.required<Crumb[]>()`, satisfied by `BreadcrumbsHost`'s own
+ * `[items]="items"` binding. Assigning the host's plain field before the first
+ * `detectChanges()` is what the binding then carries into the child. */
 function createBreadcrumbsHost(items: Crumb[] = []) {
   const fixture = TestBed.createComponent(BreadcrumbsHost);
-  const instance = fixture.debugElement.query(By.directive(Breadcrumbs)).componentInstance as unknown as Record<string, unknown>;
-  instance['items'] = () => items;
+  fixture.componentInstance.items = items;
   return fixture;
 }
 
-/* `label` and `value` became `input.required<string>()` in Task 7 (`api/components/
- * StatCard.json`) -- the same NG0950 hazard `arena-app-logo`'s `name` and
- * `arena-breadcrumbs`'s `items` already hit under this JIT-only harness (see this
- * file's header comment). A literal attribute never routes to a signal input here,
- * so `StatCardHost`'s template below -- kept as the NG0950 proof, mirroring
- * `AppLogoStaticAttributeHost` -- must never call `detectChanges()`: `label()` would
- * throw the instant the template reads it, since the required input was truly never
- * satisfied under this harness rather than merely defaulted quietly. */
+/* `label` and `value` are `input.required<string>()` (`api/components/StatCard.json`),
+ * and the static literals below satisfy both. This host is the second of the two
+ * static-attribute proofs in this file, mirroring `AppLogoStaticAttributeHost`. */
 @Component({
   standalone: true,
   imports: [StatCard],
@@ -220,36 +174,40 @@ function createBreadcrumbsHost(items: Crumb[] = []) {
 })
 class StatCardHost {}
 
-/* `renderStatCard` reuses `renderAppLogo`'s bypass technique above: construct the
- * real `StatCard` directly with `TestBed.createComponent`, then overwrite `label`/
- * `value` (and, when given, `delta`/`icon`) as plain functions before the first
- * `detectChanges()` -- no host wrapper, so a consumer class is instead added via
- * `classList.add` before that first `detectChanges()`, exactly as `renderAppLogo`'s
- * own second test does. This proves template and DOM shape only, never the input
- * contract itself; `bun run check:angular` (`ngc --strictTemplates`) is the real
- * authority that `label`/`value`/`delta`/`icon` are declared correctly. */
+/* `renderStatCard` constructs the real `StatCard` directly, with no host wrapper,
+ * and drives every input through `setInput()`. With no wrapper there is no
+ * template to carry a consumer's `class="..."`, so the tests below add the token
+ * with `classList.add` before the first `detectChanges()` instead, exactly as
+ * `renderAppLogo`'s own second test does. */
 function renderStatCard(label: string, value: string, delta?: StatDelta, icon?: string) {
   const fixture = TestBed.createComponent(StatCard);
-  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
-  instance['label'] = () => label;
-  instance['value'] = () => value;
-  if (delta !== undefined) instance['delta'] = () => delta;
-  if (icon !== undefined) instance['icon'] = () => icon;
+  fixture.componentRef.setInput('label', label);
+  fixture.componentRef.setInput('value', value);
+  if (delta !== undefined) fixture.componentRef.setInput('delta', delta);
+  if (icon !== undefined) fixture.componentRef.setInput('icon', icon);
   return fixture;
 }
 
-/* Proves the NG0950 hazard `renderStatCard` above exists to route around --
- * mirrors `AppLogoStaticAttributeHost`'s own test for `name` at the top of this
- * file. `detectChanges()` is deliberately never called: it would throw before
- * either assertion ran, and for the reason that test's own comment records,
- * `fixture.destroy()` runs regardless so a still-pending required input cannot
- * poison the next test through the shared document/ApplicationRef. */
-test('arena-stat-card: under this JIT-only harness, a static "label"/"value" attribute lands as a stray DOM attribute on the host and does not reach ɵcmp.inputs -- known layer-wide issue, not fixed here (Resolution J)', () => {
+/* This test's premise inverted when the suites moved from the JIT harness to the
+ * ngc emit. It used to pin the opposite claim -- that a static literal attribute
+ * landed on the element and never reached the signal input, so `detectChanges()`
+ * could never be called on this host without `label()` throwing NG0950. Compiled
+ * by ngtsc the attribute is a real input assignment, made during the template's
+ * creation pass, and the required inputs are satisfied without a single binding.
+ * Both halves are asserted, because they are separate facts: the value reaches
+ * the input (the render carries it) AND the attribute is still in the DOM, which
+ * is the part a reader is most likely to assume an input assignment consumes. */
+test('arena-stat-card: a static "label"/"value" attribute satisfies the required string input and stays on the element', () => {
   const fixture = TestBed.createComponent(StatCardHost);
+  fixture.detectChanges();
   const host = fixture.nativeElement.querySelector('arena-stat-card') as HTMLElement;
   assert.equal(host.getAttribute('label'), 'Revenue', 'the literal attribute should still land on the host element itself');
   assert.equal(host.getAttribute('value'), '$48.2k', 'sanity: the second literal attribute lands the same way');
-  assert.equal(host.getAttribute('class'), 'consumer-class', 'sanity: the static class attribute lands the same way');
+  assert.ok(host.classList.contains('consumer-class'), `sanity: the static class attribute survives the host [class] binding: "${host.className}"`);
+  const labelClass = statCardStyles().label().split(/\s+/)[0];
+  const valueClass = statCardStyles().value().split(/\s+/)[0];
+  assert.equal(host.querySelector(`.${labelClass}`)?.textContent, 'Revenue', 'the attribute must reach the label input, not only the DOM');
+  assert.equal(host.querySelector(`.${valueClass}`)?.textContent, '$48.2k', 'the attribute must reach the value input, not only the DOM');
   fixture.destroy();
 });
 
@@ -257,29 +215,20 @@ test('arena-stat-card: under this JIT-only harness, a static "label"/"value" att
   standalone: true,
   imports: [BulkActionBar],
   host: { 'data-host': 'bulk-action-bar' },
-  template: `<arena-bulk-action-bar class="consumer-class" />`,
+  template: `<arena-bulk-action-bar class="consumer-class" [count]="count" [actions]="actions" />`,
 })
-class BulkActionBarHost {}
+class BulkActionBarHost {
+  count = 0;
+  actions: BulkAction[] = [];
+}
 
-/* `count` and `actions` became `input.required<number>()` /
- * `input.required<BulkAction[]>()` under the API contract
- * (`api/components/BulkActionBar.json`) -- the same NG0950 hazard
- * `arena-app-logo`'s `name` and `arena-breadcrumbs`'s `items` already hit
- * under this JIT-only harness (see this file's header comment).
- * `BulkActionBarHost`'s template above supplies neither binding, so the
- * child's first `detectChanges()` would throw the moment its own template
- * reads `count()` -- routed around exactly as `createBreadcrumbsHost` does:
- * query the real child `BulkActionBar` instance via `By.directive` before
- * that first `detectChanges()`, and overwrite `count`/`actions` with plain
- * functions. `count` is set to `0` and `actions` to `[]` -- the same values
- * `input(0)`/`input([])` used to default to -- so every assertion below,
- * pinned before this task, keeps proving exactly what it proved before. */
+/* `count` and `actions` are `input.required<number>()` /
+ * `input.required<BulkAction[]>()` (`api/components/BulkActionBar.json`),
+ * satisfied by `BulkActionBarHost`'s own two bindings. Its fields hold `0` and
+ * `[]` -- the same values `input(0)`/`input([])` used to default to -- so every
+ * assertion below keeps proving what it proved before. */
 function createBulkActionBarHost() {
-  const fixture = TestBed.createComponent(BulkActionBarHost);
-  const instance = fixture.debugElement.query(By.directive(BulkActionBar)).componentInstance as unknown as Record<string, unknown>;
-  instance['count'] = () => 0;
-  instance['actions'] = () => [];
-  return fixture;
+  return TestBed.createComponent(BulkActionBarHost);
 }
 
 @Component({
@@ -290,45 +239,41 @@ function createBulkActionBarHost() {
 })
 class ChartCardHost {}
 
-/* The literal `title="Something went wrong"` below is inert under this JIT-only harness
- * for the same reason every other signal input here is (this file's header comment):
- * `title` is `input<string>()`, and a static attribute never reaches a signal input under
- * this harness -- it renders as a stray DOM attribute on the host and leaves `title()`
- * itself `undefined`. This component's `title` input also defaults to `'Something went
- * wrong'` (`error-state.ts`), the exact string written here -- so even though the literal
- * attribute never reaches the input, the rendered title happens to read the same either
- * way. Nothing below asserts on the title text, only on classes, `role="alert"` and the
- * actions wrapper's absence. */
+/* The literal `title="Something went wrong"` is the same string `error-state.ts`
+ * defaults `title` to, so the rendered title reads the same whether the attribute
+ * is supplied or not; nothing below asserts on it, only on classes, `role="alert"`
+ * and the actions wrapper.
+ *
+ * `retryLabel` is bound from a field rather than written as a literal because the
+ * two tests using this host want opposite values: absent, so the actions wrapper
+ * stays away, and set, so the retry button renders. An unset field binds
+ * `undefined`, which is exactly what supplying no attribute would give. */
 @Component({
   standalone: true,
   imports: [ErrorState],
-  template: `<arena-error-state class="consumer-class" title="Something went wrong" />`,
+  template: `<arena-error-state class="consumer-class" title="Something went wrong" [retryLabel]="retryLabel" />`,
 })
-class ErrorStateWithoutActionHost {}
+class ErrorStateWithoutActionHost {
+  retryLabel: string | undefined;
+}
 
 @Component({
   standalone: true,
   imports: [PageHead],
   host: { 'data-host': 'page-head' },
-  template: `<arena-page-head class="consumer-class" />`,
+  template: `<arena-page-head class="consumer-class" [title]="title" />`,
 })
-class PageHeadWithoutActionsHost {}
+class PageHeadWithoutActionsHost {
+  title = '';
+}
 
-/* `title` became `input.required<string>()` (`api/components/PageHead.json`) --
- * the same NG0950 hazard `arena-app-logo`'s `name` and `arena-breadcrumbs`'s
- * `items` already hit under this JIT-only harness (see this file's header
- * comment). `PageHeadWithoutActionsHost`'s template above supplies no `title`
- * binding at all -- kept exactly as it was (it still carries the
- * `consumer-class` the root-classes test needs), so the required input is
- * routed around the same way `createBreadcrumbsHost` does: query the real
- * child `PageHead` instance via `By.directive` before the first
- * `detectChanges()`, and overwrite its `title` field with a plain function.
+/* `title` is `input.required<string>()` (`api/components/PageHead.json`),
+ * satisfied by `PageHeadWithoutActionsHost`'s own `[title]="title"` binding.
  * The title text itself is irrelevant to every assertion below -- only the
- * class/DOM shape is checked. */
+ * class/DOM shape is checked -- so any non-empty string will do. */
 function createPageHeadWithoutActionsFixture() {
   const fixture = TestBed.createComponent(PageHeadWithoutActionsHost);
-  const instance = fixture.debugElement.query(By.directive(PageHead)).componentInstance as unknown as Record<string, unknown>;
-  instance['title'] = () => 'Portal';
+  fixture.componentInstance.title = 'Portal';
   return fixture;
 }
 
@@ -344,25 +289,20 @@ class UnauthCardWithoutProjectionHost {}
   standalone: true,
   imports: [BarChart],
   host: { 'data-host': 'bar-chart' },
-  template: `<arena-bar-chart />`,
+  template: `<arena-bar-chart [labels]="labels" [values]="values" />`,
 })
-class BarChartHost {}
+class BarChartHost {
+  labels: string[] = [];
+  values: number[] = [];
+}
 
-/* `arena-bar-chart`'s `labels` and `values` are required signal inputs, which
- * this JIT harness cannot drive through a template binding (NG0303) or a
- * literal attribute (a silent no-op). Query the real child `BarChart` instance
- * via `By.directive` and overwrite both fields before the first
- * `detectChanges()`, the same bypass createBreadcrumbsHost() and
- * createBulkActionBarHost() already use. The values are deliberately EMPTY
- * arrays: these four tests assert host box, style-object binding and the
- * fallback accessible name, all of which render with no data at all (`ticks`
- * always yields five grid lines), so driving real data here would test
- * something else. */
+/* `arena-bar-chart`'s required `labels`/`values` come from `BarChartHost`'s own
+ * two bindings. Its fields are deliberately EMPTY arrays: these four tests
+ * assert host box, style-object binding and the fallback accessible name, all
+ * of which render with no data at all (`ticks` always yields five grid lines),
+ * so driving real data here would test something else. */
 function createBarChartHost() {
   const fixture = TestBed.createComponent(BarChartHost);
-  const instance = fixture.debugElement.query(By.directive(BarChart)).componentInstance as unknown as Record<string, unknown>;
-  instance['labels'] = () => [];
-  instance['values'] = () => [];
   fixture.detectChanges();
   return fixture;
 }
@@ -371,20 +311,19 @@ function createBarChartHost() {
   standalone: true,
   imports: [LineChart],
   host: { 'data-host': 'line-chart' },
-  template: `<arena-line-chart />`,
+  template: `<arena-line-chart [labels]="labels" [values]="values" />`,
 })
-class LineChartHost {}
+class LineChartHost {
+  labels: string[] = [];
+  values: number[] = [];
+}
 
-/* `arena-line-chart`'s required `labels`/`values`, driven the same way
- * createBarChartHost() drives the bar chart's -- see its comment for why a
- * template binding and a literal attribute both fail under this JIT harness.
- * Empty arrays on purpose: these four tests assert host box, style-object
- * binding and the fallback accessible name, none of which needs data. */
+/* `arena-line-chart`'s required `labels`/`values`, bound the same way
+ * createBarChartHost() binds the bar chart's. Empty arrays on purpose: these
+ * four tests assert host box, style-object binding and the fallback accessible
+ * name, none of which needs data. */
 function createLineChartHost() {
   const fixture = TestBed.createComponent(LineChartHost);
-  const instance = fixture.debugElement.query(By.directive(LineChart)).componentInstance as unknown as Record<string, unknown>;
-  instance['labels'] = () => [];
-  instance['values'] = () => [];
   fixture.detectChanges();
   return fixture;
 }
@@ -393,66 +332,35 @@ function createLineChartHost() {
   standalone: true,
   imports: [DoughnutChart],
   host: { 'data-host': 'doughnut-chart' },
-  template: `<arena-doughnut-chart />`,
+  template: `<arena-doughnut-chart [labels]="labels" [values]="values" />`,
 })
-class DoughnutChartHost {}
+class DoughnutChartHost {
+  labels: string[] = [];
+  values: number[] = [];
+}
 
-/* `arena-doughnut-chart`'s required `labels`/`values`, driven the same way
- * createBarChartHost() drives the bar chart's -- see its comment for why a
- * template binding and a literal attribute both fail under this JIT harness.
- * Empty arrays on purpose: four of these five tests assert host box,
- * style-object binding and the fallback accessible name, and the fifth asserts
- * that NO data draws NO slice, which needs the empty array to be the real,
- * driven value rather than an untouched default. */
+/* `arena-doughnut-chart`'s required `labels`/`values`, bound the same way
+ * createBarChartHost() binds the bar chart's. Empty arrays on purpose: four of
+ * these five tests assert host box, style-object binding and the fallback
+ * accessible name, and the fifth asserts that NO data draws NO slice, which
+ * needs the empty array to be a real bound value rather than an untouched
+ * default. */
 function createDoughnutChartHost() {
   const fixture = TestBed.createComponent(DoughnutChartHost);
-  const instance = fixture.debugElement.query(By.directive(DoughnutChart)).componentInstance as unknown as Record<string, unknown>;
-  instance['labels'] = () => [];
-  instance['values'] = () => [];
   fixture.detectChanges();
   return fixture;
 }
 
-/* `arena-app-logo` is the first primitive in this layer with a `required`
- * signal input (`name`). Every other component's optional signal inputs are
- * undrivable through a TestBed template binding (NG0303) or a literal
- * attribute (a silent no-op that leaves the field at its default) under this
- * JIT-only harness -- documented at the top of this file. A required input
- * has no default to fall back to, so neither path renders the component at
- * all: it throws NG0950 ("Input is required but no value is available yet")
- * the instant the template reads it during change detection, proven by
- * `AppLogoStaticAttributeHost`'s own test below, which deliberately never
- * calls `detectChanges()` for exactly that reason.
- *
- * What DOES work, probed by hand before writing this: `TestBed.createComponent
- * (AppLogo)` (skipping a host wrapper, so AppLogo itself is the fixture's root)
- * creates the instance without running change detection, and at that point
- * `instance.name` / `instance.dim` are still just plain writable object
- * properties -- `input.required()` is a class-field assignment, not something
- * TypeScript's `readonly` enforces at runtime, and nothing about it depends on
- * ngtsc's initializer-API transform (the transform is what wires a *binding*
- * to the field; the field itself exists the moment the class is constructed).
- * Overwriting `instance.name` with a plain function that returns a fixed
- * string before the first `detectChanges()` bypasses Angular's input system
- * entirely -- no `ɵcmp.inputs` lookup, no required-input check -- while still
- * running the REAL compiled template through REAL change detection against
- * the REAL `AppLogo` class. It is not a stand-in component with a look-alike
- * template: it is this component, rendered for real, with its one otherwise
- * unreachable input satisfied by direct assignment instead of a binding.
- *
- * The limitation this buys: because it never consults `ɵcmp.inputs`, a test
- * built this way passes regardless of whether `name` (or `dim`) is declared
- * correctly, aliased, transformed, or declared as an input at all -- it
- * proves TEMPLATE and DOM shape only, and can never prove the input
- * contract itself. That is acceptable here because `bun run check:angular`'s
- * real `ngc --strictTemplates` is what proves the input contract; a later
- * test copying this technique should not read it as establishing more than
- * shape. */
+/* `AppLogo` is constructed directly here, with no host wrapper, so the fixture's
+ * root IS the component and `name`/`dim` are driven through `setInput()`. The
+ * wrapper is skipped rather than merely unnecessary: the second test below adds
+ * a class token straight onto the host element before the first
+ * `detectChanges()`, which is how it proves the host `[class]` binding merges
+ * rather than assigns. */
 function renderAppLogo(name: string, dim?: string) {
   const fixture = TestBed.createComponent(AppLogo);
-  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
-  instance['name'] = () => name;
-  if (dim !== undefined) instance['dim'] = () => dim;
+  fixture.componentRef.setInput('name', name);
+  if (dim !== undefined) fixture.componentRef.setInput('dim', dim);
   return fixture;
 }
 
@@ -493,8 +401,8 @@ test('arena-app-logo: a class already on the host before the first detectChanges
  * Angular's own whitespace handling (collapsing runs of whitespace between
  * inline nodes, generally NOT inserting any where the source has none) is a
  * real behaviour to verify against a real render, not to assume survives from
- * React's JSX. This is that verification: a real `AppLogo` instance, real
- * `@angular/compiler` JIT template compilation, real DOM. */
+ * React's JSX. This is that verification: a real `AppLogo` instance, its real
+ * ngtsc-compiled template, a real DOM. */
 test('arena-app-logo: the two-ink wordmark renders as one word with no space -- "DRAVEN" + "SOFT" reads as exactly "DRAVENSOFT"', () => {
   const fixture = renderAppLogo('DRAVEN', 'SOFT');
   fixture.detectChanges();
@@ -549,56 +457,47 @@ test('arena-app-logo: with no dim, the wordmark renders the name alone and no di
   fixture.destroy();
 });
 
-/* Resolution J of task 24's brief: known layer-wide issue, not fixed here. An
- * input named `name` collides with a real global HTML attribute -- the same
- * class of problem as an input named `title`. This is NOT currently recorded
- * in `components-divergences.md`: that file's `title` mentions are all about
- * a dialog `title` input (ConfirmDialog/StepperDialog) and PageHead's `title`
- * prop, which is a different thing (a prop name, not an attribute-collision
- * class). The stray-attribute collision class is tracked only as a review
- * item for the close-out, not yet as a divergences entry. Proven here: a
- * static literal `name="Draven"` on `<arena-app-logo>`
- * lands on the host as a plain DOM attribute BEFORE Angular ever runs change
- * detection (Angular sets an element's static, non-bound attributes during
- * its template's creation pass, which for a nested component runs as part of
- * its parent's own construction -- `TestBed.createComponent(Host)` alone is
- * enough, with no `detectChanges()` call, confirmed by hand before writing
- * this) -- a stray, inert attribute that never reaches the component's own
- * `name` signal input, which stays unset and would throw NG0950 the moment
- * anything tried to read it. `detectChanges()` is deliberately never called
- * in this test for that reason: it would throw before either assertion ran --
- * and for the same reason `fixture.destroy()` runs at the end: TestBed
- * attaches every created fixture to the shared `ApplicationRef`, and a later
- * test's own `detectChanges()` walks every still-attached view (zoneless CD
- * has no per-component isolation) -- confirmed by hand: without this
- * `destroy()`, the very next test in file order (`arena-avatar`'s) failed
- * with this same NG0950, thrown out of THIS fixture's still-pending required
- * input while detecting changes for an entirely unrelated component.
+/* This test's premise inverted when the suites moved from the JIT harness to
+ * the ngc emit; `StatCardHost`'s counterpart further up inverted with it. It
+ * used to pin that a static literal `name="Draven"` landed on
+ * `<arena-app-logo>` as a stray DOM attribute and never reached the required
+ * `name` input, so `detectChanges()` could not be called here at all without
+ * NG0950. Compiled by ngtsc it does reach the input, assigned during the
+ * template's creation pass, and BOTH facts are asserted: the attribute is
+ * still on the element, and the value it carried is the one the wordmark
+ * renders.
  *
- * That "never reaches the input" outcome is a property of THIS harness, not
- * of Angular in general: this suite runs `@angular/compiler`'s runtime JIT
- * and never `ngtsc` (see this file's header comment), so `AppLogo`'s
- * `ɵcmp.inputs` is never populated here and a static attribute has nothing
- * to route to. Under a real AOT build a static attribute matching a
- * declared input DOES route to it (and still remains in the DOM as an
- * attribute) -- this test proves only what lands in THIS harness's DOM, not
- * what a consumer's real build would do. */
-test('arena-app-logo: under this JIT-only harness, a static "name" attribute lands as a stray DOM attribute on the host and does not reach ɵcmp.inputs -- known layer-wide issue, not fixed here (Resolution J)', () => {
+ * `name` colliding with a real global HTML attribute is the reason the second
+ * half is worth pinning rather than assuming. An input assignment does not
+ * consume the attribute, so the element carries both -- a component reading
+ * `getAttribute('name')` instead of `name()` would read the same string today
+ * and a different one the moment a caller used a binding.
+ *
+ * `fixture.destroy()` runs at the end because TestBed attaches every created
+ * fixture to the shared `ApplicationRef`, and a later test's own
+ * `detectChanges()` walks every still-attached view -- zoneless change
+ * detection has no per-component isolation, and this directory shares one
+ * document for its whole run. */
+test('arena-app-logo: a static "name" attribute satisfies the required input AND stays on the element', () => {
   const fixture = TestBed.createComponent(AppLogoStaticAttributeHost);
+  fixture.detectChanges();
   const host = fixture.nativeElement.querySelector('arena-app-logo') as HTMLElement;
   assert.equal(host.getAttribute('name'), 'Draven', 'the literal attribute should still land on the host element itself');
-  assert.equal(host.getAttribute('class'), 'consumer-class', 'sanity: the static class attribute lands the same way');
+  assert.ok(host.classList.contains('consumer-class'), `sanity: the static class attribute survives the host [class] binding: "${host.className}"`);
+  const nameClass = appLogoStyles().name().split(/\s+/)[0];
+  assert.equal(
+    (host.querySelector(`.${nameClass}`) as HTMLElement | null)?.textContent,
+    'Draven',
+    'the attribute must reach the name input, not merely sit on the element',
+  );
   fixture.destroy();
 });
 
-/* Real coverage of `mark` content projection, absent before this: nothing rendered
- * `arena-app-logo` with real projected content and read it back. `createAppLogoMarkHost`
- * bypasses the required `name` input the way `createBreadcrumbsHost` bypasses `items`,
- * so `detectChanges()` runs for real and the projected `<span mark>mark</span>` is
- * proven to land inside the component's own mark slot, not merely to exist somewhere
- * in the host's light DOM. */
+/* Real coverage of `mark` content projection: the projected `<span mark>mark</span>`
+ * must land inside the component's own mark slot, not merely exist somewhere in the
+ * host's light DOM. */
 test('arena-app-logo: content selected for [mark] projects into the mark slot', () => {
-  const fixture = createAppLogoMarkHost();
+  const fixture = TestBed.createComponent(AppLogoStaticAttributeHost);
   fixture.detectChanges();
   const host = fixture.nativeElement.querySelector('arena-app-logo') as HTMLElement;
   const markClass = appLogoStyles().mark().split(/\s+/)[0];
@@ -612,21 +511,11 @@ test('arena-app-logo: content selected for [mark] projects into the mark slot', 
  * NOT host-bound -- its root must be a real `<ul>` so its rows can be real
  * `<li>`s, and `<arena-activity-feed>` cannot itself become one
  * (components-divergences.md, "ActivityFeed is the Angular primitive that
- * does not host-bind its root"). `items` is a
- * signal input this JIT-only harness cannot drive through a template binding
- * (NG0303, the same limitation this file's header documents for Skeleton's
- * `variant` and Breadcrumbs' `items`) or a literal attribute (a silent
- * no-op), so this reuses `renderAppLogo`'s own technique above: overwrite the
- * instance's `items` field with a plain function before the first
- * `detectChanges()`, bypassing the input system while still running the REAL
- * compiled template through REAL change detection against the REAL
- * `ActivityFeed` class. That proves template and DOM shape only, never the
- * input contract itself -- `bun run check:angular` is the authority that the
- * component's real `input()` field and `@for`/`@if` typecheck. */
+ * does not host-bind its root"). `items` is driven through `setInput()` on the
+ * directly-created fixture, the same shape `renderAppLogo` above uses. */
 function renderActivityFeed(items: unknown[]) {
   const fixture = TestBed.createComponent(ActivityFeed);
-  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
-  instance['items'] = () => items;
+  fixture.componentRef.setInput('items', items);
   return fixture;
 }
 
@@ -806,17 +695,12 @@ test('arena-breadcrumbs: the host itself carries the nav landmark, not a wrapper
  * both `breadcrumbs.prompt.md` and the class doc comment, not something
  * this test can restore.
  *
- * The template wires `(click)="onCrumbClick(crumb)"`, but `items` is a
- * signal input this JIT-only harness cannot drive through a template
- * binding (this file's header comment), so `createBreadcrumbsHost` is used
- * to satisfy it by direct field assignment, exactly as the three tests
- * above do. What IS provable for real: `onCrumbClick` is the exact method
- * the template's `(click)` binds to, not a stand-in. This test creates a
- * real `Breadcrumbs` instance via TestBed, calls that real method with a
- * real `Crumb`, and asserts `navigate` emits that crumb alone. `bun run
- * check:angular` (`ngc --strictTemplates`) is the authority that
- * `(click)="onCrumbClick(crumb)"` itself typechecks against the
- * component's real members. */
+ * The template wires `(click)="onCrumbClick(crumb)"`. This test does not
+ * dispatch a click -- it renders through `createBreadcrumbsHost`, then calls
+ * `onCrumbClick` directly with a real `Crumb` and asserts `navigate` emits
+ * that crumb alone. What that buys is that `onCrumbClick` is the exact method
+ * the template's `(click)` binds to, not a stand-in; the emit is what proves
+ * the binding itself compiles against the component's real members. */
 test('arena-breadcrumbs: a crumb click emits the clicked Crumb alone through navigate', async () => {
   const fixture = createBreadcrumbsHost();
   fixture.detectChanges();
@@ -859,8 +743,8 @@ test('arena-stat-card: a class already on the host before the first detectChange
 /* Real coverage of the pill's gate, now that both layers read the same
  * contract member: `delta()?.value` truthy renders the pill, matching React's
  * `delta?.value && (...)` exactly (Task 7's fix for React's old empty-pill
- * behaviour). Reachable here because `renderStatCard`'s bypass sets `delta`
- * as a plain function, the same technique the label/value fields already use. */
+ * behaviour). Reachable here because `renderStatCard` drives `delta` through
+ * `setInput()`, the same way it drives label and value. */
 test('arena-stat-card: a delta with a value renders the pill; a delta with a tone but no value renders nothing', () => {
   const withValue = renderStatCard('Deploys', '128', { value: '+12%', direction: 'up', tone: 'positive' });
   withValue.detectChanges();
@@ -956,33 +840,15 @@ test('arena-chart-card: a consumer-supplied class on the host survives the [clas
   assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
 });
 
-/* The bare case: no `title` and nothing projected into `[actions]` or
- * the default slot. Only this negative path is provable here. A positive
- * render (binding `title="..."` in a host template, the same literal-attribute
- * shape `arena-empty-state`'s and `arena-error-state`'s own `title="..."`
- * tests use above) was tried and probed by hand first: under this harness a
- * literal `title` attribute on `<arena-chart-card>` does NOT reach the
- * component's `input<string>()` at all -- `ɵcmp.inputs` for a signal-only
- * input is populated by ngtsc's initializer-API transform, which this JIT
- * harness never runs, so the compiler falls back to treating `title` as a
- * plain HTML global attribute (it happens to be a legal one) instead of
- * routing it to the input. The probe confirmed `host.getAttribute('title')`
- * is set while the component's own `title()` stays `undefined` and the head
- * row never renders -- the same family of gap `host-class-binding.test.ts`
- * already documents for Skeleton's `variant` and Breadcrumbs' `items` (there
- * it throws NG0303 through a bracket binding; here it silently no-ops
- * through a literal one, because `title` happens to collide with a real
- * global attribute name -- the same collision `components-divergences.md`
- * and this plan's Resolution J record as a known, unfixed layer-wide issue).
- * `contentChild(ArenaActions)` has the identical positive-case gap for the
- * same ngtsc reason (see arena-empty-state's own comment above). So neither
- * half of `@if (title() || actions())` can be driven true here; what IS real
- * coverage is the negative path -- with both undefined, the whole head row,
- * not just the actions wrapper inside it, must be absent, matching React's
- * `{(title || actions) && (...)}` gate rather than the task brief's
- * unconditional `head`. `bun run check:angular` (`ngc --strictTemplates`)
- * is the authority that the gate and the `contentChild` query typecheck
- * against the component's real members. */
+/* The bare case, and the bare case only: `ChartCardHost` supplies no `title`
+ * and projects nothing into `[actions]` or the default slot, so both halves of
+ * `@if (title() || actions())` are false. That is what is asserted -- the whole
+ * head row, not just the actions wrapper inside it, must be absent, matching
+ * React's `{(title || actions) && (...)}` gate rather than the task brief's
+ * unconditional `head`.
+ *
+ * The positive half is simply not covered by this file; nothing here claims it
+ * is unreachable. */
 test('arena-chart-card: the head row is entirely absent when there is neither a title nor projected actions', async () => {
   const fixture = TestBed.createComponent(ChartCardHost);
   fixture.detectChanges();
@@ -1008,54 +874,19 @@ test('arena-chart-card: the head row is entirely absent when there is neither a 
  * reference variable, or a DI token -- confirmed against the Angular docs
  * before writing this).
  *
- * Only the negative case is provable here. `contentChild` is a signal-based
- * initializer API, the same family as `input()`, whose fields this harness
- * has twice been unable to drive (Skeleton's `variant`, ConfirmDialog's
- * `open`) because the harness runs `@angular/compiler`'s runtime template
- * JIT and never `ngtsc`, the compiler-cli transform that discovers
- * initializer-API fields and registers them into the component's static
- * metadata. Projected static content is not a bound input, so this was
- * worth trying independently -- but it hits the same wall a third time, and
- * worse: confirmed with two throwaway probes (built, run, then deleted)
- * before writing this comment. First, a component identical to `EmptyState`
- * but with the `@if` gate removed -- a plain, unconditional `ng-content` --
- * still projects the real button into the DOM under this harness, proving
- * projection itself is not the problem; its own `contentChild(ProbeAction)`
- * field nonetheless resolved to `undefined` even though the matching
- * content was genuinely there. Second, the classic decorator form,
- * `@ContentChild(ProbeAction) action?: ProbeAction`, does not merely fail to
- * update -- Angular throws `Error: Standard Angular field decorators are
- * not supported in JIT mode` the moment the decorator runs. So there is no
- * form of content query -- signal or classic -- this harness can drive, and
- * with the `@if` gate in place (as shipped) the positive case can never
- * render here: `action()` never becomes truthy, so `ng-content` never
- * mounts, so the projected button never reaches the DOM for this test to
- * find. The real authority for whether `EmptyState`'s template typechecks
- * against its real `contentChild` query is `bun run check:angular`
- * (`ngc --strictTemplates`, real `ngtsc`), not this harness -- and that gate
- * passes. The negative case below has no such gap: with nothing projected,
- * `action()` is correctly `undefined` regardless of which compiler produced
- * it, so it is real coverage of the reported bug's exact repro (an empty
- * state with no action must not ship the wrapper's dead space).
+ * Only the negative case is covered below, and covering it is the point: it is
+ * the reported bug's exact repro -- an empty state with no action must not ship
+ * the wrapper's dead space -- so with nothing projected, `action()` is
+ * `undefined` and the wrapper must be absent from the DOM entirely. Whether the
+ * positive case could now be rendered here is untested; no test in this file
+ * projects into `[action]`.
  *
- * `title` became `input.required<string>()` under task 8B2 (`api/components/
- * EmptyState.json`) -- the same NG0950 hazard `arena-app-logo`'s `name`,
- * `arena-breadcrumbs`'s `items` and `arena-stat-card`'s `label`/`value` already
- * hit under this JIT-only harness (this file's header comment). The old
- * `EmptyStateWithoutActionHost` wrapper's literal `title="..."` attribute no
- * longer reaches the child at all, so its first `detectChanges()` would now
- * throw NG0950 before either assertion below ran. This test therefore switches
- * to `renderStatCard`'s own bypass technique: construct `EmptyState` directly
- * with `TestBed.createComponent` (no host wrapper, so `EmptyState` itself is
- * the fixture's root) and overwrite `title` as a plain function before that
- * first `detectChanges()`. `EmptyStateWithoutActionHost` is gone with it -- it
- * existed only to feed this one test and, unlike `StatCardHost`, never
- * separately proved the stray-attribute NG0950 shape, so there is nothing left
- * for it to keep proving. */
+ * `title` is `input.required<string>()` (`api/components/EmptyState.json`),
+ * driven through `setInput()` on a directly-created fixture -- `EmptyState`
+ * itself is the fixture's root, so there is no host wrapper here. */
 function renderEmptyState(title: string) {
   const fixture = TestBed.createComponent(EmptyState);
-  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
-  instance['title'] = () => title;
+  fixture.componentRef.setInput('title', title);
   return fixture;
 }
 
@@ -1088,11 +919,8 @@ test('arena-error-state: the root recipe classes land on the host element itself
  * retry `<button>` from `retryLabel`/`retry`; the projected `[secondaryAction]` slot
  * (`ArenaSecondaryAction`) is only for what a consumer adds beside it. The actions
  * wrapper is now gated on `retryLabel() || secondaryAction()` rather than a single
- * projected `[action]`. The positive half of that gate -- `secondaryAction()`, a
- * `contentChild` query -- still cannot be TestBed-rendered here for the same toolchain
- * reason as `arena-empty-state`'s action wrapper above: `contentChild` needs ngtsc's
- * initializer-API transform, which this JIT-only harness never runs. `bun run
- * check:angular` is the real authority that the query and the `@if` gate typecheck.
+ * projected `[action]`. The `secondaryAction()` half of that gate is not exercised by
+ * any test in this file -- nothing here projects into `[secondaryAction]`.
  * `ErrorStateWithoutActionHost` supplies neither `retryLabel` nor a projected
  * `[secondaryAction]`, so the wrapper stays absent -- this is the negative case, real
  * coverage of the same reported bug's exact repro, ported to `arena-error-state`'s own
@@ -1114,15 +942,11 @@ test('arena-error-state: the actions wrapper is absent from the DOM when neither
 
 /* Arena draws the retry button itself now -- the positive proof that a `retryLabel`
  * signal input renders a real `<button>` carrying the manifest's `retry` slot classes.
- * `retryLabel` is a signal input (`input<string>()`), so -- same JIT-harness limitation
- * as `PageHead`'s `title` (`createPageHeadWithoutActionsFixture` above) -- it cannot be
- * driven through a template binding or `setInput()`; the instance field is overwritten
- * directly, before the first `detectChanges()`, so the template's first read of
- * `retryLabel()` already sees the overwritten value rather than the default `undefined`. */
+ * The host's own field is assigned before the first `detectChanges()`, so the
+ * template's first read of `retryLabel()` already sees it. */
 function createErrorStateWithRetryFixture() {
   const fixture = TestBed.createComponent(ErrorStateWithoutActionHost);
-  const instance = fixture.debugElement.query(By.directive(ErrorState)).componentInstance as unknown as Record<string, unknown>;
-  instance['retryLabel'] = () => 'Retry';
+  fixture.componentInstance.retryLabel = 'Retry';
   return fixture;
 }
 
@@ -1197,13 +1021,9 @@ test('arena-page-head: an unmeasured width renders the WIDE layout, so the narro
   }
 });
 
-/* Same fix, same toolchain limitation as arena-empty-state's action wrapper
- * above (see that test's header comment for the full reasoning): the positive
- * case cannot be TestBed-rendered here because `contentChild` needs ngtsc's
- * initializer-API transform, which this JIT-only harness never runs, and with
- * the `@if` gate in place `actions()` can never become truthy for it to
- * mount. `bun run check:angular` is the real authority that the query and the
- * gate typecheck. The negative case below is real coverage of the same
+/* Same fix as arena-empty-state's action wrapper above, and the same coverage
+ * shape: only the negative case is exercised, because nothing in this file
+ * projects into `[actions]`. That negative case is real coverage of the same
  * reported bug's exact repro, ported to `arena-page-head`'s own actions slot:
  * that slot sits in a `gap-4` flex parent and carries `shrink-0` plus its own
  * `w-auto`/`w-full`, so an unprojected wrapper would ship a gap's worth of
@@ -1313,8 +1133,8 @@ function kebabToPascal(dirName: string): string {
 const NO_MANIFEST = new Set(['bar-chart', 'line-chart', 'doughnut-chart']);
 
 test('every Angular primitive\'s root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
-  const primitivesDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'primitives');
-  const manifestsDir = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'tailwind', 'components');
+  const primitivesDir = ANGULAR_PRIMITIVES;
+  const manifestsDir = TAILWIND_COMPONENTS;
   const names = readdirSync(primitivesDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name);
@@ -1333,7 +1153,7 @@ test('every Angular primitive\'s root slot carries a display utility, so host-bi
     if (NO_MANIFEST.has(name)) continue;
     const manifestPath = join(manifestsDir, `${kebabToPascal(name)}.manifest.json`);
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { slots?: Record<string, string> };
-    const root = manifest.slots?.root;
+    const root = manifest.slots?.['root'];
     assert.ok(typeof root === 'string', `${name}: ${manifestPath} has no "slots.root" string`);
     assert.match(
       root as string,
@@ -1345,10 +1165,9 @@ test('every Angular primitive\'s root slot carries a display utility, so host-bi
 
 /* The four tests below are the manifest guard's counterpart for a primitive
  * that has no manifest to guard. `labels` and `values` became required signal
- * inputs under the API contract (`api/components/BarChart.json`), so they are
- * driven through `createBarChartHost()`'s `By.directive` bypass rather than
- * through a template binding or a literal attribute, both of which this
- * harness silently drops (see the header). The bypass supplies EMPTY arrays:
+ * inputs under the API contract (`api/components/BarChart.json`), and
+ * `createBarChartHost()` carries them in on `BarChartHost`'s own two template
+ * bindings. The host's fields are EMPTY arrays:
  * everything asserted here -- the host box, the style-object binding, the
  * token-valued SVG presentation styles and the fallback accessible name --
  * renders with no data at all, because `ticks` always yields five grid lines.
@@ -1420,10 +1239,9 @@ test('arena-bar-chart: the picture carries an accessible name and the numbers ca
 
 /* The same four assertions, ported to the second hand-written chart. `labels` and
  * `values` became required signal inputs under the API contract
- * (`api/components/LineChart.json`), so they are driven through
- * `createLineChartHost()`'s `By.directive` bypass rather than through a template
- * binding or a literal attribute, both of which this harness silently drops (see
- * the header). The bypass supplies EMPTY arrays, and everything asserted here
+ * (`api/components/LineChart.json`), and `createLineChartHost()` carries them in
+ * on `LineChartHost`'s own two template bindings. The host's fields are EMPTY
+ * arrays, and everything asserted here
  * still renders: an empty `values` draws the value axis anyway (`ticks` always
  * yields five) and still renders the numbers table.
  * `line-chart-geometry.test.ts` carries the geometry that does need real data, as
@@ -1496,11 +1314,9 @@ test('arena-line-chart: the picture carries an accessible name and the numbers c
  * empty inputs and their token styles can be read off the real DOM. A doughnut has no
  * axis -- with an empty `values` there is no slice and no centre label. `labels` and
  * `values` became required signal inputs under the API contract
- * (`api/components/DoughnutChart.json`), so all five tests below drive them through
- * `createDoughnutChartHost()`'s `By.directive` bypass rather than through a template
- * binding or a literal attribute, both of which this harness silently drops (see the
- * header); the bypass supplies EMPTY arrays deliberately, keeping these five about the
- * no-data render. So the `<path>`'s `strokeWidth: 'var(--bw-strong)'` and the centre
+ * (`api/components/DoughnutChart.json`), and all five tests below take them from
+ * `DoughnutChartHost`'s own two template bindings; its fields are EMPTY arrays
+ * deliberately, keeping these five about the no-data render. So the `<path>`'s `strokeWidth: 'var(--bw-strong)'` and the centre
  * label's `fontSize: 'var(--dz-text-lg)'` are NOT render-provable here, and nothing
  * below pretends otherwise. What covers them instead:
  * `check:dimensions` reads both as themselves BECAUSE they are camelCase object keys
@@ -1612,14 +1428,8 @@ test('arena-unauth-card: the root recipe classes land on the host element itself
  * and `[footer]` are React's `{brand && <div>...}` / `{footer && <div>...}`
  * gates ported to Angular's own idiom, `contentChild(ArenaBrand)` /
  * `contentChild(ArenaFooter)` (`../primitives/projection-markers`). The
- * positive case -- something actually projected into either slot -- cannot
- * be TestBed-rendered here: `contentChild` needs ngtsc's initializer-API
- * transform, which this JIT-only harness never runs, so with the `@if` gate
- * in place neither query can ever resolve truthy under this harness and the
- * gated `<ng-content>` can never mount for this file to find.
- * `bun run check:angular` (`ngc --strictTemplates`) is the real authority
- * that both queries and both `@if` gates typecheck against the component's
- * real members. What IS real coverage: with nothing projected into either
+ * positive case -- something actually projected into either slot -- is not
+ * exercised by any test in this file. What IS covered: with nothing projected into either
  * slot, both wrappers -- `mb-7` on `brand`, `mt-5` on `footer` -- must be
  * entirely absent from the DOM, so a consumer who supplies neither ships no
  * dead space for either, matching React's exact gate rather than the task
@@ -1642,9 +1452,8 @@ test('arena-unauth-card: the brand and footer wrappers are both absent from the 
     null,
     'the footer wrapper div must not render when the [footer] slot is empty',
   );
-  // With no eyebrow/title bound either (undrivable through a literal attribute
-  // under this harness, same limitation as ChartCard's own `title` above), the
-  // panel and its body are the only two elements the bare card renders.
+  // `UnauthCardWithoutProjectionHost` supplies no eyebrow and no title either, so
+  // the panel and its body are the only two elements the bare card renders.
   const panelClass = unauthCardStyles().panel().split(/\s+/)[0];
   const bodyClass = unauthCardStyles().body().split(/\s+/)[0];
   assert.ok(host.querySelector(`.${panelClass}`), 'the panel must always render -- it is not gated');
