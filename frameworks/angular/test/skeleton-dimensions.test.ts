@@ -1,10 +1,10 @@
 /* Render assertions for `width`/`height`/`radius`, added under Skeleton's API
  * contract task (8B1 Task 3, Reshape B): the three inputs bind onto the host
- * via `[style.width]` / `[style.height]` / `[style.borderRadius]`, which this
- * JIT-only harness's OTHER blind spot -- the `[style.x]` binding form -- makes
- * invisible to `check:dimensions`' scanners (see CLAUDE.md's `check:dimensions`
- * paragraph, "Angular's `[style.x]` binding form is invisible to all four
- * scanners too"). Only a real render proves they reach the DOM, and that the
+ * via `[style.width]` / `[style.height]` / `[style.borderRadius]`, and that
+ * binding form is invisible to `check:dimensions`' scanners regardless of how
+ * this harness compiles (see CLAUDE.md's `check:dimensions` paragraph,
+ * "Angular's `[style.x]` binding form is invisible to all four scanners too").
+ * Only a real render proves they reach the DOM, and that the
  * per-variant gating in `skeleton.ts` (radius only for `block`, `text`/`line`
  * ignore it, `circle` uses height||width as one diameter) matches the table in
  * the task brief and `Skeleton.jsx`.

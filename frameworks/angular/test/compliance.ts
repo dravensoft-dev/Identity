@@ -61,10 +61,14 @@ const REPO = findRepoRoot(here);
  * points at the source tree from `frameworks/angular/test/` and at a directory
  * that does not exist from `build/angular-test/angular/test/`. That is not an
  * assertion failure -- the module never loads, so the whole suite file and every
- * suite importing it drops out of the run while `bun test` still reports a total
- * and a green tail. A dynamic import of an absolute file URL is resolved at call
- * time from a path this module computed, so both locations reach the one real
- * copy of the evaluator.
+ * suite importing it drops out of the run. Measured, not assumed: breaking the
+ * specifier this way turns a clean 341/0 into "269 pass / 5 fail / 5 errors, Ran
+ * 274 tests across 32 files" with an "Unhandled error between tests" per file --
+ * the run goes RED, not green. What stays silent is the COUNT: nothing in that
+ * output names the 67 missing tests or the five suites that never loaded, so a
+ * reader sees a failing run and has to go find what else it dropped. A dynamic
+ * import of an absolute file URL is resolved at call time from a path this
+ * module computed, so both locations reach the one real copy of the evaluator.
  *
  * They stay untyped, as they were when they were static imports carrying
  * `@ts-expect-error`: these are plain `.mjs` helpers with JSDoc types only, and no

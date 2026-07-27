@@ -82,14 +82,25 @@ export const GATES = [
  *  together in the first `bun test`, exactly as before frameworks/react/test-dom
  *  existed; frameworks/react/test-dom runs alone in the second. They cannot
  *  be merged: a single `bun test` invocation shares one process (and one
- *  `globalThis`) across every file it matches, the second invocation's
+ *  `globalThis`) across every file it matches, and the second invocation's
  *  `--preload frameworks/react/test-dom/preload.js` registers happy-dom for
  *  the whole process and is deliberately never paired with an `unregister()`
- *  (see preload.js's own reasoning), and several frameworks/angular/test
- *  files call `GlobalRegistrator.register()` of their own, unconditionally.
- *  Combine the two and the first such Angular file to run after the preload
- *  throws "Happy DOM has already been globally registered" -- reproduced by
- *  hand, not assumed.
+ *  (see preload.js's own reasoning). That registration would not itself throw
+ *  if merged with the Angular suites -- `frameworks/angular/test/testbed-env.ts`
+ *  is the only Angular registration site and it is guarded
+ *  (`ensureDom()` only calls `GlobalRegistrator.register()` when
+ *  `!GlobalRegistrator.isRegistered`), so it silently skips registering rather
+ *  than colliding with one the preload already made; verified by hand, merging
+ *  the preloaded invocation with the emitted Angular suites runs clean. What
+ *  the merge cannot do safely is add `scripts/` and `frameworks/react/test/`
+ *  to it: those two are meant to run DOM-free, and a happy-dom installed
+ *  process-wide for the whole invocation changes what they prove without
+ *  failing loudly to say so -- verified by hand as well, merging all four
+ *  turns a passing `scripts/lib/static-server.test.mjs` fetch assertion into a
+ *  cross-origin failure, because `fetch` is no longer Bun's own. That is the
+ *  same hazard the two-React-test-directories split exists to prevent (see
+ *  CLAUDE.md), and it is why the merged invocation still stays separate from
+ *  the preloaded one.
  *
  *  The `--preload` is not optional and not a convenience: react-dom decides
  *  whether `input` is supported at its own module evaluation, so a DOM
