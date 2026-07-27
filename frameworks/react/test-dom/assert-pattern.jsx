@@ -60,6 +60,40 @@ function resolverFor(root) {
   };
 }
 
+/** Shared by `assertPattern` and `assertPatternCases`: compute the fallback
+ *  subject and call `comparePattern` once. Extracted because both call sites
+ *  repeated this block near-verbatim.
+ *
+ *  The `'default' in subjects` distinction must survive here exactly as it did
+ *  at each call site: a present-but-null `default` means a selector matched
+ *  nothing and must reach `comparePattern` as `null` unchanged, so its own "no
+ *  subject element" diagnostic fires -- collapsing it to the first-child
+ *  fallback (e.g. with `??`) would misreport a missed selector as an OVERCLAIM
+ *  against the wrong element.
+ *
+ *  The fallback is always `root.firstElementChild` -- both callers pass the
+ *  same thing today, so it is not a parameter; do not generalise this until a
+ *  real second fallback shows up.
+ *  @param {object} o
+ *  @param {Element} o.root
+ *  @param {object} o.subjects
+ *  @param {object} o.behavioural
+ *  @param {object} o.pattern
+ *  @param {object} o.binding
+ *  @returns {string[]} problems */
+function compareOne({ root, subjects, behavioural, pattern, binding }) {
+  const { default: fallbackSubject, ...perRequirement } = subjects;
+  const fallback = 'default' in subjects ? fallbackSubject : root.firstElementChild;
+  return comparePattern({
+    pattern,
+    binding,
+    subjects: perRequirement,
+    fallback,
+    behavioural,
+    resolveId: resolverFor(root),
+  });
+}
+
 /**
  * Assert a rendered tree against its behaviour binding, in both directions.
  * Throws with every disagreement listed, not just the first.
@@ -98,23 +132,7 @@ export function assertPattern({ root, bindingPath, subjects = {}, behavioural = 
     // would throw something far less legible than the binding's own name.
     throw new Error(`${bindingPath}\n  names pattern "${binding.pattern}", which has no file in ${PATTERN_DIR}`);
   }
-  // `??` here previously collapsed a present-but-null `default` (selector
-  // matched nothing) into the same fallback as an absent one (caller named no
-  // default at all), so a typo'd selector silently compared against
-  // root.firstElementChild instead of surfacing comparePattern's own "no
-  // subject element" diagnostic. `'default' in subjects` keeps the two cases
-  // apart: present-and-null passes null through, absent falls back.
-  const { default: fallbackSubject, ...perRequirement } = subjects;
-  const fallback = 'default' in subjects ? fallbackSubject : root.firstElementChild;
-
-  const problems = comparePattern({
-    pattern,
-    binding,
-    subjects: perRequirement,
-    fallback,
-    behavioural,
-    resolveId: resolverFor(root),
-  });
+  const problems = compareOne({ root, subjects, behavioural, pattern, binding });
 
   if (problems.length) {
     throw new Error(`${bindingPath}\n  pattern: ${pattern.name}\n  - ${problems.join('\n  - ')}`);
@@ -149,17 +167,16 @@ export function assertPatternCases({ bindingPath, cases }) {
   // brief). Object.keys(cases) can never carry a duplicate, so comparing against
   // a duplicated `want` list would produce a confusing missing/unknown diff
   // instead of naming the real problem. Catch it here, before that comparison.
-  const names = declared.map((c) => c.name);
+  const want = declared.map((c) => c.name);
   const seen = new Set();
   const dupes = new Set();
-  for (const n of names) {
+  for (const n of want) {
     if (seen.has(n)) dupes.add(n);
     seen.add(n);
   }
   if (dupes.size) {
     throw new Error(`${bindingPath}\n  declares the same case name more than once: ${[...dupes].join(', ')}`);
   }
-  const want = names;
   const got = Object.keys(cases);
   const missing = want.filter((n) => !got.includes(n));
   const unknown = got.filter((n) => !want.includes(n));
@@ -180,16 +197,7 @@ export function assertPatternCases({ bindingPath, cases }) {
       throw new Error(`${bindingPath}\n  case "${c.name}" names pattern "${c.pattern}", which has no file in ${PATTERN_DIR}`);
     }
     const { root, subjects = {}, behavioural = {} } = cases[c.name]();
-    const { default: fallbackSubject, ...perRequirement } = subjects;
-    const fallback = 'default' in subjects ? fallbackSubject : root.firstElementChild;
-    const found = comparePattern({
-      pattern,
-      binding: { exceptions: c.exceptions },
-      subjects: perRequirement,
-      fallback,
-      behavioural,
-      resolveId: resolverFor(root),
-    });
+    const found = compareOne({ root, subjects, behavioural, pattern, binding: { exceptions: c.exceptions } });
     for (const p of found) problems.push(`case "${c.name}" (${c.when}): ${p}`);
   }
   if (problems.length) {
