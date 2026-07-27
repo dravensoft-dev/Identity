@@ -113,6 +113,9 @@ export const COVERED = {
   'Toast:react': 'alert-tones.test.jsx',
   'Alert:angular': 'alert-role-tones.test.ts',
   'BarChart:angular': 'chart-data-table.test.ts',
+  'Tag:react': 'tag-and-chip-cases.test.jsx',
+  'Tag:angular': 'tag-cases.test.ts',
+  'CalendarEvent:react': 'tag-and-chip-cases.test.jsx',
 };
 
 /** Does a suite's source read this binding at all?
