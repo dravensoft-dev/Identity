@@ -765,9 +765,10 @@ scheduled for deletion the same week.
   `cases`, but `Table` was deliberately left flat: card mode's interactivity is the
   consumer's choice rather than a prop of `Table`, and the grid hand-test rule means any
   case it declared could carry no suite. The reasons are in the conditionality entry
-  below. **`Table.behaviour.json`'s own reason string still cites `Skeleton` as proving
-  the limit, and that citation is stale** — it was left in place because 8C9 changed no
-  binding it did not convert. **What stays true of both is the verification, not the
+  below, and `Table.behaviour.json`'s own reason string now carries them too — it used to
+  cite `Skeleton` as proving a limit that no longer exists, and 8C9's close-out corrected
+  it in place rather than only recording it here. **What stays true of both is the
+  verification, not the
   behaviour**: `grid-keyboard.test.jsx` is the one suite the grid rule excludes, so
   neither component can appear in `COVERED`, both are DOM-tested by hand, and
   `Calendar`'s now-exceptionless binding and `Table`'s surviving exception are alike
@@ -1440,10 +1441,11 @@ scheduled for deletion the same week.
   the schema **can** say it: two cases split by `href` — the `<button>` shape binding `button`,
   and the `<a href>` shape binding `none`, since there is no link pattern and a link's role and
   keyboard come from the platform — is exactly the shape `Tag` and `CalendarEvent` now carry.
-  8C9 converted the seven bindings its spec named and no others, so **`SideNavItem`'s own reason
-  string is out of date about the mechanism while staying accurate about the component**: it
-  still reads *"The schema still cannot say…"*, and it can. A reader meeting it should know the
-  option exists and that nothing has taken it, rather than concluding the schema still refuses.
+  8C9 converted the seven bindings its spec named and no others, and **`SideNavItem`'s own reason
+  string now says so**: it used to read *"The schema still cannot say…"*, and 8C9's close-out
+  rewrote it to state that the shape is expressible, that this binding is an **unconverted case**
+  rather than evidence of a limit, and what converting it would cost. A reader meeting the binding
+  alone now learns the option exists and that nothing has taken it.
   Converting it means writing a render suite for both shapes and adding `SideNavItem:react` to
   `COVERED`; nothing schedules that. What is genuinely still open is the third conditionality
   level — conditional on **consumer** usage, with `Table`, `Tooltip` and `Pagination` as the live
