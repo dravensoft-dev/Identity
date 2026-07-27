@@ -821,16 +821,6 @@ scheduled for deletion the same week.
       CLAUDE.md components-divergences.md api/ behaviour/ docs/ frameworks/ scripts/
   ```
 
-  **There is no `| grep -v node_modules` on the end, and there must not be.** The path list never
-  descends into `node_modules`, so such a pipe can only subtract — and because `-rn` emits
-  `path:line:CONTENT`, it filters by content rather than by path and silently drops any hit whose
-  *text* mentions the directory. This shipped for one commit and dropped two real lines, one of
-  them `Toast.behaviour.json:3` — a genuine cross-file `Skeleton` citation, and **one of the six
-  sites this very entry lists as corrected**, hidden because its `divergesFromReason` cites
-  `node_modules/@angular/material/…` as its evidence. The entry's own remedy was concealing the
-  entry's own worked example. The earlier query's `| grep -v '/X\.'` was safe only because `-l`
-  emits paths alone; the same shape after `-rn` is a content match. Add no content filter here.
-
   and read every hit as a claim about `X` that you may have just falsified. Two kinds are then
   dropped by hand rather than by the query: hits under `X`'s **own** files — its quartet, its
   binding, its contract, its manifest, its own suites — which describe the component instead of
@@ -852,8 +842,9 @@ scheduled for deletion the same week.
   `scripts/lib/behaviour-contracts.mjs`, `scripts/behaviour-contracts.test.mjs` justified a test
   by a case that no longer exists, and `SideNavSection.jsx`'s header named **four** components —
   `Tag`, `Skeleton`, `Table`, `Pagination` — as carrying one limit, two of which had left it,
-  **and** called that limit unfixable a batch after `cases` fixed it. So read **"8C10 corrected six sites" as a sweep of the command's reach, never of the
-  class**: the count was complete against a query that could not see most of the tree, which is
+  **and** called that limit unfixable a batch after `cases` fixed it. So read **"8C10 corrected
+  six sites" as a sweep of the command's reach, never of the class**: the count was complete
+  against a query that could not see most of the tree, which is
   the same mistake as describing a file you grepped rather than read, one level up. The six, for
   the record, were `Table`'s and `Tab`'s reason strings (both exemplars **removed** rather than
   re-pointed at another name, because a replacement name is just the next thing to rot),
@@ -864,6 +855,20 @@ scheduled for deletion the same week.
   describing what an Angular test file asserts. Fix commits `358cad9`, `23d9beb`, `ac197c7` and
   `357ccc4`; that last site took **three** passes, since `23d9beb` wrote it false, `ac197c7`'s
   correction of it was itself false, and `357ccc4` fixed it.
+
+  **The widened command carries no `| grep -v node_modules` on the end, and it must not gain
+  one** — which is the same lesson one turn later, since the pipe was carried over from the
+  narrow query above without noticing that the query around it had changed. The path list never
+  descends into `node_modules`, so such a pipe can only subtract; and because `-rn` emits
+  `path:line:CONTENT` where `-rln` emits paths alone, it filters by **content**, silently dropping
+  any hit whose *text* mentions the directory. That is exactly why `| grep -v '/X\.'` was safe on
+  the old `-l` query and stopped being safe the moment the command started printing lines. It
+  shipped for one commit and dropped two real hits, one of them `Toast.behaviour.json:3` — a
+  genuine cross-file `Skeleton` citation, and **one of the six sites listed just above as
+  corrected**, hidden because its `divergesFromReason` cites `node_modules/@angular/material/…`
+  as its evidence. The entry's own remedy was concealing the entry's own worked example, which
+  reads as coverage and is therefore worse than no filter at all. Add no content filter to the
+  command above; the path list is the only scoping it needs.
 
   **An unexecuted spec is inside the reach and is a real member of the class.** A spec is deleted
   only once executed, and until then it is what drives a batch, so a claim it makes about a
@@ -877,8 +882,11 @@ scheduled for deletion the same week.
   one of which `cases` has since closed, and re-deriving that argument belongs to whoever plans
   the batch. Read this paragraph before reading that spec.
 
-  **That last one is the entry's own thesis demonstrating itself, and it is worth more than the
-  rule it illustrates.** It was the SEVENTH instance and the FIRST introduced by the fix for the
+  **The last of those six sites — the `components-divergences.md` sentence — is the entry's own
+  thesis demonstrating itself, and it is worth more than the rule it illustrates.** (Named rather
+  than referred to as "that last one", which is what it said until two paragraphs got inserted
+  between it and its subject; a positional back-reference rots the same way a component name
+  does.) It was the SEVENTH instance and the FIRST introduced by the fix for the
   class: the sentence was written to correct a different false claim, in the very commit that
   records this hazard, and it was itself false — it said a suite "says nothing about `role`,
   `aria-label` or the `status` pattern" when that file has a third `Skeleton` test asserting both
