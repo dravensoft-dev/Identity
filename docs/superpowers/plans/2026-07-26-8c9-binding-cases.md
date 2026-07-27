@@ -56,6 +56,13 @@ Every task's requirements implicitly include this section.
     `sha256sum -c` will not catch because the hash was taken after the task's edits. Found the
     hard way in Task 5 and recovered there; recorded here so Tasks 6 and 7 do not rediscover it.
     `git checkout HEAD -- <path>` is the other correct spelling when you genuinely want HEAD.
+12. **`bun run check:behaviour` is load-bearing for every conversion task and must be run before
+    committing one**, even where a task's own step list omits it. Converting one layer's binding
+    to cases can turn the cross-layer comparison red on its own, because a flat binding on the
+    other side can no longer silently agree. Both Task 5 and Task 6 discovered this by hitting it.
+    When it goes red, the answer is **never** to invent a matching shape for the other layer — say
+    what is true, declare `divergesFrom` with a reason describing the behavioural consequence, and
+    leave the other layer's file alone if its binding is honest about itself.
 
 ---
 
