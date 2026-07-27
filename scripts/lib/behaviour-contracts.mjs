@@ -210,8 +210,11 @@ export function validateBinding(component, layer, binding, patterns) {
  *  obvious: a top-level `divergesFrom` matching the counterpart's pattern
  *  satisfies the escape for the WHOLE binding, so the per-case comparison below
  *  never runs and every case is unchecked across layers. The live example is
- *  `Toast`, which is today the only binding that is both cased and carries
- *  `divergesFrom` (React's `divergesFrom: "alert"` against the flat `alert` that
+ *  `Toast`, which at the time of writing is the only binding that is both cased
+ *  and carries `divergesFrom` -- check that rather than trusting it, with
+ *  `grep -rl divergesFrom frameworks/` against the cased-binding grep above,
+ *  since this is exactly the kind of cross-file claim that entry warns about
+ *  (React's `divergesFrom: "alert"` against the flat `alert` that
  *  `behaviour-delegated.json` binds for Angular's MatSnackBar): its `danger` case
  *  could change from `alert` to anything at all and this function would stay
  *  silent, because the escape already returned true two lines up. That is not

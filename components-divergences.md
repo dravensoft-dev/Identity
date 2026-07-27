@@ -386,11 +386,35 @@ variants and `Skeleton:react` is in `check:compliance`'s `COVERED`. The Angular 
 `skeleton.behaviour.json` says `status` with no exceptions and **no suite verifies that binding**,
 so Angular's side of the now-agreeing pair is an unverified claim, exactly as it was while the
 layers disagreed. Be precise about which claim is unverified, because a suite does render this
-component: `frameworks/angular/test/host-class-binding.test.ts:65` imports `Skeleton` and mounts a
-real `TestBed` tree of it. What that suite asserts is the host **class** binding — that the recipe's
-root classes land on the host and a consumer's own class survives — which says nothing about
-`role`, `aria-label` or the `status` pattern. Rendering a component is not verifying its binding,
-and `Skeleton:angular` is absent from `check:compliance`'s `COVERED` for that reason.
+component and does assert some of this: `frameworks/angular/test/host-class-binding.test.ts`
+imports `Skeleton` (:65), declares a `SkeletonHost` fixture (:180) and mounts a real `TestBed`
+tree of it in **three** tests. Two are host-class tests — the recipe's root classes land on the
+host (:742), a consumer's own class survives the `[class]` binding (:751). The third,
+*"arena-skeleton: the host itself carries the loading status, not a wrapper inside it"* (:759),
+asserts `role="status"` and `aria-label="Loading"` on the host, plus that the default variant
+renders no children of its own.
+
+So the accurate statement is narrower than "nothing is checked". What that suite never does is
+**evaluate the binding against the `status` pattern**: it never calls `comparePattern` or
+`assertPattern`, so no requirement of `status` beyond those two attributes is checked, no
+exception could ever expire there, and nothing would notice if the pattern gained a requirement
+the component does not meet. It also **stops at the default variant**, `block` — the harness runs
+Angular's JIT rather than `ngtsc`, so a signal input cannot be driven and the other three variants
+are unreachable from it, which is worth knowing here because the variant this batch changed was
+`circle`. That last limit is softer than it looks in this one component's case, and the reason is
+worth stating rather than leaving a reader to assume the worst: `role` and `aria-label` are
+**static host attributes** in `skeleton.ts` with no branch by variant, so asserting them on `block`
+establishes them for every variant by construction rather than by coverage. Rendering a component
+is not verifying its binding, and `Skeleton:angular` is absent from `check:compliance`'s `COVERED`
+for that reason.
+
+**This sentence is itself a worked example of the hazard it sits inside.** Its first version
+claimed that suite "says nothing about `role`, `aria-label` or the `status` pattern", which was
+false — written from a `grep` that found two of the three tests, in the same batch that recorded
+*a component name written into another file's prose is a cross-file claim no gate checks*. It was
+the seventh instance of that class and the first one produced by the fix for it. Nothing failed;
+a reviewer read the test file. See `CLAUDE.md`'s *Known debt* entry for the class and the
+change-time command.
 
 ### Toast — a critical error interrupts in React and is queued in Angular
 

@@ -770,7 +770,7 @@ scheduled for deletion the same week.
   consumer's choice rather than a prop of `Table`, and the grid hand-test rule means any
   case it declared could carry no suite. The reasons are in the conditionality entry
   below, and `Table.behaviour.json`'s own reason string now carries them too. **That reason
-  string cited a component twice and was wrong twice, and it now cites none.** It first named
+  string cited a component twice and was wrong twice, and it now cites no exemplar.** It first named
   `Skeleton` as proving a limit — that the schema could not scope a requirement to a variant —
   which went stale when 8C9 built `cases`; 8C9's close-out rewrote it in place to name
   `Skeleton` as demonstrating the *remedy*, which went stale in 8C10 when `Skeleton`'s defect
@@ -793,9 +793,13 @@ scheduled for deletion the same week.
   variant (falsified when 8C9 built `cases`), then, after 8C9 rewrote the clause in place, as
   demonstrating that remedy (falsified when 8C10 fixed `Skeleton` and flattened its binding).
   Nothing failed either time. `check:behaviour` validates that a binding names a real pattern
-  and real requirements; **no gate reads a `reason` string, and none has an opinion about a
-  comment**, so a citation asserting another component's current state is unfalsifiable
-  infrastructure-wise and reliably becomes false.
+  and real requirements; and while `validateBinding` (`scripts/lib/behaviour-contracts.mjs`) does
+  read a `reason` for **presence** — `:156` requires one on a `none`/`absent` case, `:163` on every
+  exception — **nothing anywhere reads its CONTENT, and no gate has an opinion about a comment at
+  all**. So a citation asserting another component's current state is unfalsifiable
+  infrastructure-wise and reliably becomes false. The distinction matters when someone proposes a
+  gate for this: the hook to hang one on already exists, and what is missing is any notion of what
+  a reason *says*.
 
   **The distinction that matters, because a blanket ban would be wrong.** A *structural*
   reference is fine and should not be hunted: `TableCell` saying a cell may contain a `Button`,
@@ -815,16 +819,30 @@ scheduled for deletion the same week.
   ```
 
   and read every hit as a claim about `X` that you may have just falsified. 8C10 did exactly this
-  for `Skeleton` and found five, all corrected in that batch: `Table`'s and `Tab`'s reason strings
+  for `Skeleton` and corrected **six** sites over two rounds: `Table`'s and `Tab`'s reason strings
   (both exemplars **removed** rather than re-pointed at another name, because a replacement name is
   just the next thing to rot), `Toast`'s `divergesFromReason` (rewritten as explicit **history**,
-  which is the one form that cannot go stale), and two doc comments in
+  which is the one form that cannot go stale), two doc comments in
   `scripts/lib/behaviour-contracts.mjs` — one rewritten to past tense so `bindingCases()` keeps its
   origin story without asserting a tree that has moved, one re-pointed at the only live example
-  that qualifies.
+  that qualifies — and, in a **third** round, a sentence in `components-divergences.md` describing
+  what an Angular test file asserts.
+
+  **That last one is the entry's own thesis demonstrating itself, and it is worth more than the
+  rule it illustrates.** It was the SEVENTH instance and the FIRST introduced by the fix for the
+  class: the sentence was written to correct a different false claim, in the very commit that
+  records this hazard, and it was itself false — it said a suite "says nothing about `role`,
+  `aria-label` or the `status` pattern" when that file has a third `Skeleton` test asserting both
+  attributes. The cause was mundane and is the whole lesson: the author `grep`ed, found two of the
+  three tests, and described a file they had not read to the end. **No gate caught it, in either
+  direction** — not the one that was wrong, and not the one that fixed it. A reviewer read the test
+  file. Treat "I grepped it" as insufficient evidence for a claim about another file's contents;
+  the only sufficient evidence is having read that file.
 
   **Prefer no exemplar, a command, or an explicitly-past-tense one.** All three are stale-proof;
-  a present-tense component name is not.
+  a present-tense component name is not. And when a claim about another file is unavoidable, cite
+  it so a reader can check it cheaply — a path with line numbers, or the command that re-derives
+  it — rather than a summary they would have to trust.
 
   **Known members left in place, deliberately, because this batch did not falsify them and they
   are true today**: `Input.behaviour.json` cites the gap `Tag.behaviour.json` records for its
