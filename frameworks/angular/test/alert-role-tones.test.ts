@@ -189,9 +189,10 @@ test('arena-alert survives every timer its own render schedules, fired early -- 
  * for a render that never happens.
  *
  * This is additional to the hand-written test above, not a replacement for
- * it: that test asserts the `aria-live` pairing (assertive with alert, polite
- * with status), which is not a requirement key any pattern can state, so no
- * evaluator can decide it. */
+ * it: that test asserts the exact ROLE each tone renders (`alert` for danger,
+ * `status` for every other tone, tone by tone), which is a stronger claim
+ * than "some case matches some pattern" -- it pins the one-to-one mapping no
+ * requirement key can state, so no evaluator can decide it either. */
 test('arena-alert meets both of its declared cases', () => {
   const fixtures: ReturnType<typeof renderAlert>[] = [];
   try {
