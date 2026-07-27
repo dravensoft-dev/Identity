@@ -800,8 +800,17 @@ scheduled for deletion the same week.
   subject", which was the old complaint about variants and is now the complaint about
   these.
 
-  **Nothing proves the declared cases are ALL the cases.** A component with five
-  meaningful renders may declare two and every gate stays green. This is the same limit
+  **Nothing proves the declared cases are ALL the cases, and — the half first recorded too
+  narrowly — nothing proves a declared case's suite rendered ALL the renders its own `when`
+  admits.** A component with five meaningful renders may declare two and every gate stays
+  green; and `assertPatternCases` enforces one **thunk per case name**, never one render per
+  configuration the prose names, so a case whose `when` covers several shapes is proved by
+  whichever one its suite happened to mount. Both are live: `Skeleton`'s `placeholder`
+  declares `when: "variant is block, line or text"` and its suite renders `block` alone, and
+  `CalendarEvent`'s `inert` declares `when: "onClick is absent, regardless of
+  actionsEnabled"` while its suite renders the no-actions shape alone — never the
+  `actionsEnabled` one, whose root keeps a `tabIndex` and an `onKeyDown`. Neither changes a
+  verdict today, which is why both are recorded rather than fixed. This is the same limit
   the curated `QUANTIFIED` set carries, and it has the same non-remedy: deriving cases
   from source was not attempted, because a scan for prop branches finds fewer renders than
   a reader does and would rebuild the false-negative class the evaluator's own header
@@ -819,7 +828,15 @@ scheduled for deletion the same week.
   clickable card row contradicts. `Table` is also under the grid hand-test rule, so it can
   carry no render suite and any case declaration would be unverified — trading an accurate
   exception for an unverified claim, which is the trade batches 8C6 through 8C8 were spent
-  refusing. `SideNavItem` is the other deliberate non-conversion; see its own entry below.
+  refusing. **`TableRow` is the second deliberate non-conversion, and it is convertible
+  where `Table` is not**: `onClick` is `TableRow`'s own member, so an interactive case and
+  an inert one name renders this component's own props produce — exactly what a case is
+  for. What stops it is the second half of `Table`'s argument alone: `TableRow` is in no
+  suite, so a case declaration would be an unverified claim standing in for an accurate
+  exception. Its `roles.element` reason says so in place, and converting it means writing
+  the suite first. `SideNavItem` is the third; see its own entry below. `Tab` is **not** one
+  of these — its condition is being composed inside `Tabs` rather than any prop of its own,
+  which is the parent-composition level `cases` do not reach.
 - **A behaviour text scan was designed, built, measured and rejected — do not
   re-propose it without reading this.** Plan 7c's spec proposed a static scan of
   component sources as the cheap tier beneath the render suites. It was
@@ -863,9 +880,18 @@ scheduled for deletion the same week.
   **This was found by a property of the cases mechanism nobody predicted.** Converting ONE
   layer to cases surfaces every place the two layers were quietly different, because a
   flat binding on the other side can no longer silently agree with a cased one. It fired
-  twice in the batch that built cases: `Toast` (structural — Angular delegates to
-  `MatSnackBar`, and nobody is worse off) and `Skeleton` (with the accessibility
-  consequence above). Both are also the **first ever uses of `divergesFrom` in this
+  twice in the batch that built cases: `Toast` and `Skeleton` (with the accessibility
+  consequence above). **`Toast` was first recorded as structural and harmless — "nobody is
+  worse off" — and that was written without reading what `MatSnackBar` renders.** It is the
+  same shape as `Skeleton`, not a lesser one: in `@angular/material` 22.0.5,
+  `MatSnackBarConfig.politeness` defaults to `'polite'`, and `_role` is assigned **only**
+  inside `if (this._platform.FIREFOX)`, so outside Firefox the snackbar's live region
+  carries `aria-live="polite"` and **no role at all**. React's danger toast renders
+  `role="alert"` with `aria-live="assertive"`. So a screen-reader user meeting a critical
+  error toast has it **queued** in Angular and **interrupting** in React — a real cost to a
+  real person, in the safety-relevant case. It now has its own
+  `components-divergences.md` entry, and which layer is right is not decided there either.
+  Both are also the **first ever uses of `divergesFrom` in this
   repository** — `grep -rl divergesFrom frameworks/` found nothing before them, so neither
   branch of that escape hatch had been exercised against a real binding until now.
 - **No gate typechecks `frameworks/angular/test/`, so every wrapper and helper living there
@@ -890,6 +916,18 @@ scheduled for deletion the same week.
   naming the real problem. But a binding no suite covers is unguarded, and most bindings are
   uncovered. Cheap to close in `validateBinding`; it was left open because the batch that
   found it had that file closed by its own constraints.
+
+  **The same function has a second hole with the same cause, and it is worse: a `cases[]`
+  entry that does not NAME itself passes the gate entirely.** `bindingCases()` normalises a
+  missing `name` to `null` (`c.name ?? null`), and `validateBinding`'s `when`-required rule
+  is written `if (c.name !== null && !c.when)` — so a nameless entry skips the `when`
+  requirement too, and `cases: [{ "pattern": "none" }]` clears `check:behaviour` with no name
+  and no prose. It is not merely an unnamed case; it is a case that declares nothing about
+  which render it describes, which is the one thing a case is for. Both wrappers catch it
+  downstream — a `null` name can never match a real key of a suite's case map, so it is
+  reported as an always-missing case — but only for the minority of bindings a suite covers,
+  and the message names a missing render rather than the missing name. Close both in
+  `validateBinding` together: distinct names, and a name required on every `cases[]` entry.
 
   **Three smaller things the same batch left, recorded here rather than in the plan that gets
   deleted.** `divergesFromReason` (in `Skeleton`'s and `Toast`'s bindings) is a novel field

@@ -194,7 +194,19 @@ export function validateBinding(component, layer, binding, patterns) {
  *  and a bare `a.divergesFrom === b.pattern` would read that as a match and
  *  wave through any two cased bindings whose cases actually disagree -- the
  *  exact defect fix round 1 exists to catch. Requiring the LHS to be a real,
- *  truthy string first is what keeps the escape from swallowing the rule. */
+ *  truthy string first is what keeps the escape from swallowing the rule.
+ *
+ *  WHAT THAT ORDER COSTS, since the order itself is right and the cost is not
+ *  obvious: a top-level `divergesFrom` matching the counterpart's pattern
+ *  satisfies the escape for the WHOLE binding, so the per-case comparison below
+ *  never runs and every case is unchecked across layers. `Skeleton`'s
+ *  `placeholder` case could change from `status` to anything at all and this
+ *  function would stay silent, because `divergesFrom: "status"` against
+ *  Angular's flat binding already returned true two lines up. That is not
+ *  fixable by reordering -- a flat counterpart has no cases to compare against,
+ *  which is the whole reason the escape exists -- so a cased binding that
+ *  declares `divergesFrom` is trusting its own render suite alone for every
+ *  case's pattern, and nothing cross-layer stands behind it. */
 export function crossLayerAgrees(a, b) {
   if (a.pattern === ABSENT || b.pattern === ABSENT) return true;
   if (a.divergesFrom && a.divergesFrom === b.pattern) return true;

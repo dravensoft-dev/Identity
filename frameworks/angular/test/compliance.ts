@@ -237,14 +237,17 @@ export function assertPatternCases({ bindingPath, cases }: AssertPatternCasesOpt
     throw new Error(`${bindingPath}\n  declares the same case name more than once: ${[...dupes].join(', ')}`);
   }
   const got = Object.keys(cases);
-  // `n as string`: bindingCases() types a case's name as `string | null`, but the
-  // `declared.length === 1 && declared[0].name === null` guard above already
-  // refused the one shape where `name` is null (the anonymous, flat-binding
-  // case), so every entry reaching this point carries a real name.
-  // validateBinding does not yet enforce a `cases[]` entry naming itself
-  // (tracked as owed, not fixed here) -- if that ever ships false, `got`
-  // (real string keys from a JS object) simply never contains "null" and this
-  // reads as an always-missing/always-unknown case rather than a silent lie.
+  // `n as string`: bindingCases() types a case's name as `string | null`. The
+  // `declared.length === 1 && declared[0].name === null` guard above refuses only
+  // ONE shape where `name` is null -- the anonymous, flat-binding case -- and it
+  // is NOT what makes this cast safe: validateBinding does not enforce that a
+  // `cases[]` entry names itself, so a nameless entry in a multi-entry `cases[]`
+  // reaches here as `name: null` (tracked as owed in CLAUDE.md, not fixed here).
+  // What actually protects the cast is the missing/unknown throw immediately
+  // below: `got` holds real string keys from a JS object, so a null name can
+  // never match one, and such an entry is reported as an always-missing case and
+  // aborts before any consumer of the cast value runs. The cast is safe because
+  // this comparison fails loudly, never because null cannot arrive.
   const missing = want.filter((n) => !got.includes(n as string));
   const unknown = got.filter((n) => !want.includes(n));
   if (missing.length || unknown.length) {

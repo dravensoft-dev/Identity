@@ -89,8 +89,11 @@ tests for `cases` itself. `reason` rides along on each normalised case too,
 inherited from the binding unless the case overrides it, because a case may
 bind `none` or `absent`, and those require one exactly as a flat binding does.
 
-No binding declares `cases` yet — find the current set with
-`grep -rl '"cases"' --include='*.behaviour.json' frameworks/`.
+The flat shape stays valid and means one case, so the untouched majority is not
+churned to say so. Find the bindings that do declare `cases` with
+`grep -rl '"cases"' --include='*.behaviour.json' frameworks/` — read the list
+rather than a figure written here, which drifts the first time a batch converts
+another binding.
 
 ### Native semantics vs. an absent capability
 

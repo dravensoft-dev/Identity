@@ -20,9 +20,16 @@
  * and this suite proves both the same way side-nav-disclosure.test.jsx's own
  * trigger test does -- ported rather than reinvented, because the precedent
  * does three separate things and all three are needed:
- *   (1) the interactive subject is a native <button type="button">, which is
- *       what makes the PLATFORM route Enter and Space to a click -- nothing in
- *       Arena implements either key, and nothing needs to.
+ *   (1) the interactive subject is a native <button>, which is what makes the
+ *       PLATFORM route Enter and Space to a click -- nothing in Arena implements
+ *       either key, and nothing needs to. Note what is NOT claimed here: the
+ *       precedent this was ported from names a <button type="button">, and that
+ *       is true of CalendarEvent's buttons and of Angular's tag.ts, but React's
+ *       Tag.jsx renders its remove button with NO `type` at all. It defaults to
+ *       `submit`, which changes what the button does inside a <form> and changes
+ *       nothing about Enter/Space activation -- so the mechanism below holds for
+ *       it exactly as written, while the description had to stop claiming a
+ *       `type` the element does not carry.
  *   (2) a real `keydown` of Enter and of ' ' is dispatched at that subject and
  *       `event.defaultPrevented` is asserted false. This is the non-vacuous
  *       half: an `onKeyDown` of ours calling `preventDefault()` on either key
@@ -98,9 +105,16 @@ test('Tag meets both of its declared cases', () => {
   });
 });
 
+/* The props Calendar injects into every event chip -- see Calendar.jsx's own
+ * cloneElement call. `tabIndex: -1` is the value that matters and is not a
+ * detail: the grid is ONE roving tab stop, so every chip is OUT of the page Tab
+ * sequence and is reached by Enter from the cell that intersects it. A fixture
+ * passing 0 would render the `inert` case TABBABLE while its binding's reason
+ * says it has no tabbable behaviour -- true only at -1. No verdict moves either
+ * way; the fixture simply has to be the render Calendar actually produces. */
 const CHIP = {
   box: {}, color: 'var(--color-cat-1)', timeLabel: '09:00 - 09:30',
-  dateLabel: 'Monday 20 July', tabIndex: 0,
+  dateLabel: 'Monday 20 July', tabIndex: -1,
 };
 
 test('CalendarEvent meets all three of its declared shapes', () => {

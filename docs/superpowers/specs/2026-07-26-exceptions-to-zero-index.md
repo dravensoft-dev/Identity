@@ -19,16 +19,29 @@ today's tree, not more.
 Never trust the figures below; the commands are the authority.
 
 ```bash
-# exceptions in component bindings
+# exception DECLARATIONS in component bindings
 grep -rho '"requirement"' --include='*.behaviour.json' frameworks/ | wc -l
+# distinct binding+requirement pairs -- the count to use when the question is about DEFECTS
+grep -rHo '"requirement": "[^"]*"' --include='*.behaviour.json' frameworks/ | sort -u | wc -l
 # exceptions in the Angular delegated file
 grep -o '"requirement"' frameworks/angular/behaviour-delegated.json | wc -l
 # coverage
 bun run check:compliance
 ```
 
-As written: **63** in component bindings, **18** in the delegated file, **10 of 70** bindings
-covered. Batch 8C9 (binding cases) takes the first to 55 and the third to 15.
+**The first two commands are not the same question, and after 8C9 they no longer return the same
+number.** A requirement unmet in two cases is correctly declared twice — `CalendarEvent` declares
+`states.disabled` once per interactive case, because both shapes genuinely lack the concept — so the
+first command counts declarations and the second counts distinct defects. `CLAUDE.md` states the
+same rule; use the second whenever a section below reasons about how much work is left, and never
+report a drop in the first as "N defects removed".
+
+As written: **56** declarations / **55** distinct pairs in component bindings, **18** in the
+delegated file, **15 of 70** bindings covered — post-8C9, which converted seven bindings to cases
+(count them with `grep -rl '"cases"' --include='*.behaviour.json' frameworks/`) and took coverage
+from 10 to 15. An earlier revision of this line said 8C9 "takes the first to 55", which was the
+declarations-vs-distinct-pairs confusion above reproduced in the index attached to the command that
+returns 56.
 
 **The sections below are causes, not a partition — do not add them up.** Three exceptions appear
 twice on purpose, because closing them needs work from two sections: `ActivityFeed`'s `roles.label`
@@ -189,11 +202,13 @@ first time the hand check has had a written, machine-readable definition of what
 
 ## §8 — Coverage, which gates the whole goal
 
-`check:compliance` reports **10 of 70** today and 15 after 8C9. Every section above produces
+`check:compliance` reports **15 of 70** today, up from 10 before 8C9. Every section above produces
 `exceptions: []` on bindings that are mostly **outside `COVERED`**, and an unverified `exceptions: []`
 is a stronger claim with less behind it than the exception it replaced.
 
-Note also that 20 of the 70 bindings name the `none` pattern, which has **zero** requirements.
+Note also that a substantial share of the 70 bindings name the `none` pattern, which has **zero**
+requirements — count them with `grep -rl '"pattern": "none"' --include='*.behaviour.json'
+frameworks/ | wc -l`, which returns 24 as written and rises whenever a batch declares a `none` case.
 Covering those would move the headline number without verifying anything, and the temptation grows
 as the number becomes a goal. Do not take it: a case bound to `none` confirms the render exists, not
 that it is correctly inert — a limit 8C9 records for `Skeleton`'s `circle`.

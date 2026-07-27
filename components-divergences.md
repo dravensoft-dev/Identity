@@ -377,6 +377,59 @@ Converting the React binding to cases made the cross-layer check compare a cased
 a flat one, and a flat binding can no longer silently agree with a cased one. `Toast` surfaced
 the same way in the same batch. Expect more of these as bindings are converted.
 
+### Toast — a critical error interrupts in React and is queued in Angular
+
+**React:** `Toast.jsx` branches on tone off a single ternary — `role={tone === 'danger' ?
+'alert' : 'status'}` with the matching `aria-live` — so a danger toast renders `role="alert"`
+with `aria-live="assertive"` and every other tone renders `role="status"` with
+`aria-live="polite"`.
+
+**Angular:** there is no `arena-toast` primitive. Angular delegates to Angular Material's
+`MatSnackBar`, and `MatSnackBar` does not vary by tone at all — it has no tone. Read against the
+installed `@angular/material` 22.0.5, in
+`node_modules/@angular/material/fesm2022/snack-bar.mjs`:
+
+- `MatSnackBarConfig.politeness = 'polite'` is the class-field default, and the container
+  resolves `_live` to `'assertive'` only when `politeness === 'assertive' && !announcementMessage`;
+- `_role` is assigned **only inside `if (this._platform.FIREFOX)`**, where `'polite'` maps to
+  `status` and `'assertive'` to `alert`;
+- the container template binds `<div [attr.aria-live]="_live" [attr.role]="_role" …>`.
+
+So on every non-Firefox browser the snackbar's live region renders `aria-live="polite"` and
+**no role at all**, whatever the message says.
+
+**The consequence, stated plainly, because it is what an entry is for:** meeting a critical
+error toast, a screen-reader user has it **interrupt** in React and **queued behind whatever is
+already speaking** in Angular. That is the safety-relevant case — the one the React binding's
+`danger` case exists for — and it is a real difference to a real person, not a difference in how
+two files are shaped.
+
+**Why:** the two layers did not disagree about this; only one of them ever decided it. React
+designed a tone axis and mapped the top of it onto the assertive live region. Angular took a
+third-party control that has no tone axis and never wired one, and `MatSnackBarConfig.politeness`
+is the seam that would carry it — the same unwired-`MatSnackBarConfig` shape already recorded in
+`CLAUDE.md` for `duration` and `--dismiss-*`.
+
+**Converges:** undecided, deliberately, and for the same reason `Skeleton` above is. Two
+resolutions exist — a consumer-side wiring that sets `politeness: 'assertive'` for a danger
+snackbar, or a narrowed claim admitting Angular has no tone axis here — and choosing between them
+is a design decision about what Arena's Angular Toast *is*, which nothing in this repository has
+taken. Neither layer is carrying debt against the other until it is.
+
+**Recorded how:** `frameworks/react/components/feedback/Toast.behaviour.json` declares two cases,
+`danger` → `alert` and `advisory` → `status`, and carries `divergesFrom: "alert"` naming the flat
+delegated binding, so `check:behaviour` reports the divergence as declared rather than as two
+layers disagreeing. **`frameworks/angular/behaviour-delegated.json`'s `Toast` entry is left
+untouched on purpose**, and it is not accurate: it binds `alert` with `"exceptions": []` while
+`MatSnackBar` renders no role outside Firefox. That inaccuracy is pre-existing and is already
+covered by `CLAUDE.md`'s standing *"every claim the delegated declarations make about Angular
+Material is unpinned"* entry — it is named here so no reader mistakes the silence for agreement,
+and so no fresh claim is stacked on top of it.
+
+**How it was found:** not by the cross-layer check, which reported this as declared and moved on.
+By a reviewer opening `snack-bar.mjs`. The check compares the *shape* of two bindings; nothing in
+this repository compares a binding against a third-party library's real behaviour.
+
 ### Onboarding — the scrim is a sibling in React and the host in Angular
 
 > **The naming half of this entry is closed, and plan 8C4 closed it.** This section used to be
