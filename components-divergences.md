@@ -401,9 +401,10 @@ survives the `[class]` binding (:751). The third,
 asserts `role="status"` and `aria-label="Loading"` on the host, plus that the default variant
 renders no children of its own.
 `frameworks/angular/test/skeleton-dimensions.test.ts` mounts it too, in six tests, and reaches
-**every** variant: its `renderSkeleton` helper (:43-52) drives `variant` by overwriting the signal
-instance field — `instance['variant'] = () => variant`, this harness's documented bypass — and
-renders `block`, `circle`, `line` and `text`. What it asserts is the inline `[style.*]` dimension
+**every** variant: its `renderSkeleton` helper (:37-45) drives `variant` through
+`fixture.componentRef.setInput('variant', variant)` — the same `setInput()` technique every
+directly-created fixture in this AOT harness now uses — and renders `block`, `circle`, `line` and
+`text`. What it asserts is the inline `[style.*]` dimension
 bindings, never `role`, `aria-label`, or anything else the `status` pattern names. Those two are
 the whole set that renders it: `skeleton-variants.test.ts` mounts nothing (it asserts the
 plain-TypeScript recipe and `skeletonRowSlot`), and the only other files under
