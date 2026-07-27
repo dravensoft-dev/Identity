@@ -31,7 +31,7 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import { join } from 'node:path';
 import { mount, cleanup, act } from './harness.jsx';
-import { assertPattern, REACT_COMPONENTS } from './assert-pattern.jsx';
+import { assertPattern, assertPatternCases, REACT_COMPONENTS } from './assert-pattern.jsx';
 import { isFocusable } from '../../../scripts/lib/behaviour-compliance.mjs';
 import { Menu } from '../components/navigation/Menu.jsx';
 import { Skeleton } from '../components/display/Skeleton.jsx';
@@ -92,35 +92,19 @@ test('Skeleton circle is aria-hidden with no live region — both exceptions sta
   assert.equal(el.getAttribute('aria-live'), null);
 });
 
-/* Asserted against `circle`, and the variant is the whole point.
- *
- * This test was first written against `block`, and it failed with exactly two
- * problems: roles.element and live.politeness reported STALE EXCEPTION. That
- * failure was correct. Of the block variant those two exceptions ARE false —
- * block renders role="status", which carries an implicit polite live region — and
- * a binding that excepted them for block would be excusing a defect that variant
- * does not have.
- *
- * The honest resolution is not to delete the exceptions: they are true, of the
- * circle variant, which renders aria-hidden="true" and no role at all, and the
- * reason strings on file say so in as many words. It is to assert against the
- * variant the exceptions describe. So this renders `circle`.
- *
- * What that leaves behind is a real gap, and it is worth naming rather than
- * quietly stepping over: a binding is per component, so it has no way to say
- * "true in one variant, false in the other three", and nothing stops a reader of
- * Skeleton.behaviour.json alone from concluding no variant ever announces itself.
- * The reason strings carry that scoping in prose only. It is the same gap the
- * spec already records for Tag, whose `button` pattern applies only when
- * `onRemove` is passed, and calls unresolved. Widening the schema to fix it is
- * out of scope here; it is recorded as debt. */
-test('Skeleton matches its status binding on the circle variant, which is what its exceptions describe', () => {
-  const container = mount(<Skeleton variant="circle" />);
-  assertPattern({
-    root: container,
+test('Skeleton meets both of its declared cases', () => {
+  assertPatternCases({
     bindingPath: join(REACT_COMPONENTS, 'display/Skeleton.behaviour.json'),
-    subjects: { default: container.firstElementChild },
-    behavioural: { 'focus.unaffected': true },
+    cases: {
+      // status requires focus.unaffected, which is undecidable from the DOM
+      // alone: the div carries no tabIndex and nothing auto-focuses it, so a
+      // status update never receives or moves keyboard focus.
+      placeholder: () => ({
+        root: mount(<Skeleton variant="block" />),
+        behavioural: { 'focus.unaffected': true },
+      }),
+      circle: () => ({ root: mount(<Skeleton variant="circle" />) }),
+    },
   });
 });
 
