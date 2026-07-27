@@ -18,10 +18,14 @@ Loading placeholder for asynchronous data (H1). Use it in tables and dashboards 
 - `width`/`height`/`radius` are CSS strings, not numbers — write `width="40px"`, not `width={40}`.
 - `radius` only affects `variant="block"`: a circle is always a perfect circle and text/line rows keep
   a fixed small radius, so passing `radius` to either has no effect.
-- Every `<Skeleton>` announces itself (`role="status"`, `aria-label="Loading"`), so a row of several —
-  a circle beside a text stack, a list of rows — is that many announcements, because the component
-  cannot know where one set of placeholders begins and ends. A set standing for one block of content
-  should be announced once, by you: wrap it in a single `role="status" aria-label="…"` naming *what*
-  is loading, and mark the container holding the individual skeletons `aria-hidden="true"` so their
-  own announcements never reach the accessibility tree.
+- A `variant="text"` stack is one `<Skeleton>` and one announcement no matter how many `lines` it
+  renders — the first example above (`lines={4}`) is a single `role="status"`, not four. The
+  repetition below is between sibling `<Skeleton>` elements, never within one stack.
+- Every `<Skeleton>` announces itself (`role="status"`, `aria-label="Loading"`), so several
+  siblings — a circle beside a text stack, several independent skeletons in a list — are that
+  many announcements, because the component cannot know where one set of placeholders begins
+  and ends. A set standing for one block of content should be announced once, by you: wrap it in
+  a single `role="status" aria-label="…"` naming *what* is loading, and mark the container holding
+  the individual skeletons `aria-hidden="true"` so their own announcements never reach the
+  accessibility tree.
 - Don't leave it up indefinitely: if the load fails, replace it with `ErrorState`, not an eternal skeleton.
