@@ -12,27 +12,9 @@
  * component uses -- are invisible to the shared evaluator. In a rendered tree
  * they are one attribute.
  *
- * The input is driven by overwriting the instance field before the first
- * `detectChanges()`, not by `componentRef.setInput()`. This harness runs
- * `@angular/compiler`'s JIT and never `ngtsc`, so a signal input never reaches
- * `ɵcmp.inputs` -- but the two failure modes are NOT the same, and the
- * difference is the reason this file does not use `setInput()`: a template
- * binding throws NG0303, while `setInput()` on the same undiscovered input
- * does not throw at all -- it silently no-ops and the render keeps the
- * field's default (confirmed by hand: `setInput('tone', 'danger')` against
- * this component prints the NG0303 message to console but leaves `role`
- * at `status`, the default tone's role). The throw is the safe failure --
- * it stops the test file from loading. The no-op is the dangerous one: a
- * future suite that called `setInput()` here would render, assert, and pass
- * VACUOUSLY against the default tone with no signal anything was wrong.
- * onboarding-focus-trap.test.ts's header states this correctly; this file
- * copies that finding rather than the template-binding half of it. What
- * overwriting the field buys and what it costs are otherwise the same as
- * host-class-binding.test.ts's header describes for `renderAppLogo` /
- * `renderActivityFeed`, the established shape this copies: the REAL
- * component, the REAL compiled template and REAL change detection, but
- * nothing about the input CONTRACT -- `bun run check:angular`'s
- * `ngc --strictTemplates` is the authority for that. */
+ * `tone` is driven through `componentRef.setInput()` before the first
+ * `detectChanges()`, so each tone below is a real render of that tone rather
+ * than a render of the default. */
 import { useTestEnvironment } from './testbed-env';
 useTestEnvironment();
 
@@ -40,10 +22,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
-// @ts-expect-error -- a plain .mjs helper with JSDoc types only; see compliance.ts.
-import { isFocusable } from '../../../scripts/lib/behaviour-compliance.mjs';
 import { Alert } from '../primitives/alert/alert';
-import { assertPatternCases, ANGULAR_PRIMITIVES } from './compliance';
+// `isFocusable` comes from the shared evaluator, re-exported by compliance.ts so
+// the specifier resolves from the emitted tree as well as from source.
+import { assertPatternCases, ANGULAR_PRIMITIVES, isFocusable } from './compliance';
 const BINDING = join(ANGULAR_PRIMITIVES, 'alert/alert.behaviour.json');
 
 /** Every tone `alert.ts`'s own `AlertTone` (from api.generated) admits. `info` is the default. */
@@ -51,8 +33,7 @@ const TONES = ['info', 'success', 'warning', 'danger', 'neutral'] as const;
 
 function renderAlert(tone: (typeof TONES)[number]) {
   const fixture = TestBed.createComponent(Alert);
-  const instance = fixture.componentInstance as unknown as Record<string, unknown>;
-  instance['tone'] = () => tone;
+  fixture.componentRef.setInput('tone', tone);
   fixture.detectChanges();
   return fixture;
 }
@@ -151,9 +132,8 @@ test('arena-alert survives every timer its own render schedules, fired early -- 
   let fixture;
   try {
     fixture = TestBed.createComponent(Alert);
-    const instance = fixture.componentInstance as unknown as Record<string, unknown>;
-    instance['tone'] = () => 'danger';
-    instance['dismissible'] = () => true;
+    fixture.componentRef.setInput('tone', 'danger');
+    fixture.componentRef.setInput('dismissible', true);
     fixture.detectChanges();
   } finally {
     for (const [name, original] of saved) globals[name] = original;

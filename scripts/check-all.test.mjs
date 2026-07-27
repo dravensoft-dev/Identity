@@ -24,9 +24,16 @@ test('testStep runs every suite under bun, with the DOM harness isolated in its 
   // The --preload is load-bearing, not cosmetic: react-dom latches its legacy
   // change detection unless a DOM exists before it evaluates, and nothing later
   // than a preload is early enough. harness.jsx throws when it is missing.
+  //
+  // The build leads, and its position is part of the assertion. The Angular
+  // suites are emitted JavaScript now, so a stale or absent emit must fail as
+  // a build -- loudly, under its own step name -- rather than as a test run
+  // that quietly exercised old code or matched no files at all. That is the
+  // defect 8C10 shipped for four commits with a stale committed demo `.js`.
   const steps = testStep({ isBun: true, testFiles: ['a.test.mjs', 'b.test.mjs'] });
   assert.deepEqual(steps.map((s) => s.args), [
-    ['test', 'scripts', 'frameworks/react/test/', 'frameworks/angular/test'],
+    ['run', 'build:angular-tests'],
+    ['test', 'scripts', 'frameworks/react/test/', 'build/angular-test/angular/test'],
     ['test', '--preload', './frameworks/react/test-dom/preload.js', 'frameworks/react/test-dom'],
   ]);
 });

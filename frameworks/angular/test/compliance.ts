@@ -25,15 +25,9 @@
  * the functions check:behaviour reads the same files with, and a suite reading
  * them a second way could pass while asserting against a shape the gate has
  * stopped agreeing with. */
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 import { existsSync } from 'node:fs';
-// @ts-expect-error -- a plain .mjs helper with JSDoc types only; this suite runs
-// under bun's own TypeScript stripping, and check:angular compiles only what
-// index.ts reaches, so no declaration file is generated for it anywhere.
-import { comparePattern } from '../../../scripts/lib/behaviour-compliance.mjs';
-// @ts-expect-error -- same as above.
-import { loadBinding, loadPatterns, bindingCases } from '../../../scripts/lib/behaviour-contracts.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -60,6 +54,31 @@ function findRepoRoot(from: string): string {
 }
 
 const REPO = findRepoRoot(here);
+
+/* The two shared `.mjs` helpers are reached through REPO for the same reason every
+ * data path above is, and the reason bites harder here: a module specifier is
+ * resolved against the importing FILE, so a static `../../../scripts/lib/...`
+ * points at the source tree from `frameworks/angular/test/` and at a directory
+ * that does not exist from `build/angular-test/angular/test/`. That is not an
+ * assertion failure -- the module never loads, so the whole suite file and every
+ * suite importing it drops out of the run while `bun test` still reports a total
+ * and a green tail. A dynamic import of an absolute file URL is resolved at call
+ * time from a path this module computed, so both locations reach the one real
+ * copy of the evaluator.
+ *
+ * They stay untyped, as they were when they were static imports carrying
+ * `@ts-expect-error`: these are plain `.mjs` helpers with JSDoc types only, and no
+ * declaration file is generated for them anywhere. A computed specifier yields
+ * `any` rather than an error, so the suppression comments are gone and nothing is
+ * suppressed that was previously checked. */
+const LIB = join(REPO, 'scripts', 'lib');
+const { comparePattern, isFocusable } = await import(pathToFileURL(join(LIB, 'behaviour-compliance.mjs')).href);
+const { loadBinding, loadPatterns, bindingCases } = await import(pathToFileURL(join(LIB, 'behaviour-contracts.mjs')).href);
+
+/** Re-exported so a suite needing the evaluator's own focusability rule reaches the
+ *  same copy through the same resolution, rather than repeating the walk to the
+ *  repository root. */
+export { isFocusable };
 
 /** Absolute path of frameworks/angular/primitives, so a suite can name a binding
  *  without counting `../` hops -- a wrong import depth has already cost this

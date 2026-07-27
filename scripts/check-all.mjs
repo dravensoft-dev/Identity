@@ -5,8 +5,9 @@
  * has finished. Exit 1 if any step failed, 0 if all passed.
  *
  * The twenty-one gates in GATES below, plus the test suite: one more step under
- * node (scripts/ only), two more under bun (the merged framework suites, and
- * frameworks/react/test-dom in a process of its own -- see testStep).
+ * node (scripts/ only), three more under bun (the ngc emit of the Angular test
+ * surface, then the merged framework suites, then frameworks/react/test-dom in
+ * a process of its own -- see testStep).
  *
  * Three gates can report a third status. check:cards needs a headless
  * browser, and check:vendor and check:demos each need a Bun-only builder
@@ -69,9 +70,16 @@ export const GATES = [
  *  need different args. Returns an array, not a single step, because under
  *  bun the DOM harness needs a process of its own -- see below.
  *
- *  Under bun this is two separate `bun test` invocations, not one merged
- *  call. scripts/, frameworks/react/test/ and frameworks/angular/test run
- *  together in the first, exactly as before frameworks/react/test-dom
+ *  Under bun this is a build followed by two separate `bun test` invocations,
+ *  not one merged call. The build runs `bun run build:angular-tests`, which
+ *  compiles the Angular test surface with ngc into build/angular-test; the
+ *  suites the second step runs are that emit's output, never the `.ts`
+ *  sources. It is a step of its own rather than a `&&` prefix on the test
+ *  command so that a compile failure reports as a failed build under its own
+ *  name, instead of as a test command that mysteriously matched nothing.
+ *
+ *  scripts/, frameworks/react/test/ and the emitted Angular suites run
+ *  together in the first `bun test`, exactly as before frameworks/react/test-dom
  *  existed; frameworks/react/test-dom runs alone in the second. They cannot
  *  be merged: a single `bun test` invocation shares one process (and one
  *  `globalThis`) across every file it matches, the second invocation's
@@ -99,16 +107,26 @@ export const GATES = [
  *  reproduced by hand.
  *
  *  Under node, only scripts/ runs, and that asymmetry is deliberate rather
- *  than an oversight -- the framework suites (test-dom included) import
- *  `.jsx` and `.ts` directly, which bun transpiles and plain node does not.
+ *  than an oversight. It used to rest on one reason for both framework
+ *  layers -- they import `.jsx` and `.ts` directly, which bun transpiles and
+ *  plain node does not, and pretending otherwise would mean a build step for
+ *  tests. There IS a build step for tests now, for Angular, so the two halves
+ *  no longer share a reason and only one of them is still the real one.
+ *
+ *  The Angular suites are emitted JavaScript by the time they run, so nothing
+ *  about their source language keeps them off the node path any more; they
+ *  are left off it as a scope decision, not a technical bar. The React suites
+ *  (test-dom included) still import `.jsx` directly and have no emit, so they
+ *  genuinely cannot run under plain node -- THAT is the reason the node path
+ *  runs scripts/ alone, and it is a reason about React, not about Angular.
  *  Keeping the node path alive for scripts/ is what keeps every GATE
- *  runtime-portable; the framework suites simply are not, and pretending
- *  otherwise would mean a build step for tests.
+ *  runtime-portable.
  *  @param {{isBun: boolean, testFiles: string[]}} env
  *  @returns {{name: string, args: string[]}[]} */
 export function testStep({ isBun, testFiles }) {
   if (isBun) return [
-    { name: 'test (bun test scripts/ + framework suites)', args: ['test', 'scripts', 'frameworks/react/test/', 'frameworks/angular/test'] },
+    { name: 'build (ngc emit of the Angular test surface)', args: ['run', 'build:angular-tests'] },
+    { name: 'test (bun test scripts/ + framework suites)', args: ['test', 'scripts', 'frameworks/react/test/', 'build/angular-test/angular/test'] },
     { name: 'test (bun test frameworks/react/test-dom, isolated)', args: ['test', '--preload', './frameworks/react/test-dom/preload.js', 'frameworks/react/test-dom'] },
   ];
   return [{ name: 'test (node --test scripts/*.test.mjs)', args: ['--test', ...testFiles] }];
