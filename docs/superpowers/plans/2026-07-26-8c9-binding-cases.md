@@ -47,6 +47,15 @@ Every task's requirements implicitly include this section.
    has a real defect — stop and report it.
 10. **A test under `scripts/` may not import a framework layer's `.ts` or `.jsx`.** `scripts/` is
     the one suite `check-all.mjs` also runs under plain node.
+11. **`git checkout -- <path>` restores from the INDEX, not from HEAD, and every induction in this
+    plan edits a file the same task has already modified.** So the recipe has an order to it:
+    **`git add -A` first, then edit, then `git checkout -- <path>` to restore.** With the task's
+    own work staged, the restore returns the file to that work. Without staging, the index still
+    holds HEAD's version and the restore silently reverts the task's changes too — leaving a
+    green-looking tree that has quietly lost the conversion the task exists to make, which
+    `sha256sum -c` will not catch because the hash was taken after the task's edits. Found the
+    hard way in Task 5 and recovered there; recorded here so Tasks 6 and 7 do not rediscover it.
+    `git checkout HEAD -- <path>` is the other correct spelling when you genuinely want HEAD.
 
 ---
 
