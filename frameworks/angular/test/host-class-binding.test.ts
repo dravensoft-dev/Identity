@@ -34,12 +34,12 @@ import '@angular/compiler';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { useTestEnvironment } from './testbed-env';
+import { ANGULAR_PRIMITIVES, TAILWIND_COMPONENTS } from './compliance';
 import { ActivityFeed } from '../primitives/activity-feed/activity-feed';
 import { activityFeedStyles } from '../primitives/activity-feed/activity-feed.variants';
 import { AppLogo } from '../primitives/app-logo/app-logo';
@@ -1313,8 +1313,8 @@ function kebabToPascal(dirName: string): string {
 const NO_MANIFEST = new Set(['bar-chart', 'line-chart', 'doughnut-chart']);
 
 test('every Angular primitive\'s root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
-  const primitivesDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'primitives');
-  const manifestsDir = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'tailwind', 'components');
+  const primitivesDir = ANGULAR_PRIMITIVES;
+  const manifestsDir = TAILWIND_COMPONENTS;
   const names = readdirSync(primitivesDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name);

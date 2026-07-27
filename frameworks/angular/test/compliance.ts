@@ -27,6 +27,7 @@
  * stopped agreeing with. */
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { existsSync } from 'node:fs';
 // @ts-expect-error -- a plain .mjs helper with JSDoc types only; this suite runs
 // under bun's own TypeScript stripping, and check:angular compiles only what
 // index.ts reaches, so no declaration file is generated for it anywhere.
@@ -36,14 +37,40 @@ import { loadBinding, loadPatterns, bindingCases } from '../../../scripts/lib/be
 
 const here = dirname(fileURLToPath(import.meta.url));
 
+/** The repository root, found by walking up from this file to the directory holding
+ *  `package.json`, rather than by counting `../` hops.
+ *
+ *  A fixed hop count is correct for exactly one location, and this suite has two:
+ *  `frameworks/angular/test/` in source, and `build/angular-test/angular/test/` once
+ *  `ngc` has emitted it. The emitted tree holds the compiled `.js` and NONE of the
+ *  `.json` data these suites read -- measured: zero `.json` under the emitted
+ *  `primitives/` or `tailwind/components/` -- so a hop count resolves there to a
+ *  directory that exists, contains the wrong things, and fails as ENOENT rather
+ *  than as anything a reader would recognise. Walking to a marker resolves to the
+ *  real source tree from both, which also keeps every suite runnable from its own
+ *  source directory. */
+function findRepoRoot(from: string): string {
+  let dir = from;
+  while (!existsSync(join(dir, 'package.json'))) {
+    const parent = dirname(dir);
+    if (parent === dir) throw new Error(`no package.json above ${from} -- cannot locate the repository root`);
+    dir = parent;
+  }
+  return dir;
+}
+
+const REPO = findRepoRoot(here);
+
 /** Absolute path of frameworks/angular/primitives, so a suite can name a binding
  *  without counting `../` hops -- a wrong import depth has already cost this
  *  chain one review cycle. */
-export const ANGULAR_PRIMITIVES = join(here, '..', 'primitives');
+export const ANGULAR_PRIMITIVES = join(REPO, 'frameworks', 'angular', 'primitives');
 
-/** Absolute repo root, derived from this file rather than from cwd: a suite must
- *  assert the same thing whether `bun test` was run from the root or not. */
-const REPO = join(here, '..', '..', '..');
+/** Absolute path of frameworks/tailwind/components, where the `*.manifest.json`
+ *  files live. Exported here rather than recomputed by each suite, because the
+ *  hop count from a suite is one of the two things that breaks once the suite runs
+ *  from the emitted tree. */
+export const TAILWIND_COMPONENTS = join(REPO, 'frameworks', 'tailwind', 'components');
 
 /** Absolute path of behaviour/patterns. */
 export const PATTERN_DIR = join(REPO, 'behaviour', 'patterns');
