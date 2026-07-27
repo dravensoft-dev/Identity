@@ -271,3 +271,33 @@ test('a binding declaring both pattern and cases is rejected by validateBinding'
     new Map([['alert', { name: 'alert', requires: {} }]]));
   assert.ok(problems.some((p) => /both .*pattern.* and .*cases/i.test(p)), problems.join('\n'));
 });
+
+/* Fix round 1: matching case NAMES is not enough -- two cased bindings whose
+ * `danger` case binds different patterns must disagree. crossLayerAgrees'
+ * fallback (`a.pattern === b.pattern`) is `undefined === undefined` for two
+ * cased bindings, since the both-fields rejection means neither has a
+ * top-level `pattern` -- trivially true unless each case's pattern is also
+ * compared, by name, not by position. */
+test('two cased bindings whose case names match but a case pattern disagrees do not agree', () => {
+  const react = { cases: [
+    { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+  ] };
+  const angular = { cases: [
+    { name: 'danger', when: 'tone is "danger"', pattern: 'status', exceptions: [] },
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+  ] };
+  assert.equal(crossLayerAgrees(react, angular), false);
+});
+
+test('two cased bindings whose case names and per-case patterns all match agree', () => {
+  const react = { cases: [
+    { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+  ] };
+  const angular = { cases: [
+    { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+    { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+  ] };
+  assert.equal(crossLayerAgrees(react, angular), true);
+});

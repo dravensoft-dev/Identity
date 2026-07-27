@@ -76,10 +76,19 @@ export function loadBinding(absPath) {
  *
  *  A binding describes a component; comparePattern judges a RENDER. A component
  *  that renders differently depending on its own props is several renders, and no
- *  flat exception list is correct for all of them -- Skeleton's two exceptions are
- *  true of the circle variant and false of the other three, and its suite rendered
- *  circle specifically, so the binding looked honest and the component was half
- *  verified.
+ *  flat exception list is correct for all of them. Skeleton is the case that
+ *  motivated this: its `status` binding carries two exceptions true of the
+ *  `circle` variant alone -- three of its four variants meet the pattern
+ *  outright, and `circle` implements a different case entirely (aria-hidden,
+ *  decorative, no live region). Nothing about the component was under-tested --
+ *  `placement-and-branches.test.jsx` has two hand-written tests asserting all
+ *  four variants directly. What a flat exception list could not do is feed all
+ *  four to the ONE mechanism that can make an exception expire: `assertPattern`
+ *  judges a single render, so it had to be pinned to `circle`, the one variant
+ *  where the two exceptions are actually true -- documented in place, where
+ *  pinning it to `block` instead correctly reported both as STALE EXCEPTION. A
+ *  reader of the binding alone was told a Skeleton is a `status` missing two
+ *  requirements, which is true of one variant in four and silent about the rest.
  *
  *  The flat shape stays valid and means ONE case, so the untouched majority of
  *  bindings is not churned to say what it already says. Every consumer reads
@@ -174,6 +183,19 @@ export function crossLayerAgrees(a, b) {
   const theirs = bindingCases(b);
   const names = (cs) => cs.map((c) => c.name).sort().join(',');
   if (names(mine) !== names(theirs)) return false;
+  /* A cased binding has no top-level `pattern` -- the both-fields rejection in
+   * validateBinding forbids declaring both -- so falling through to the
+   * `a.pattern === b.pattern` check below would compare `undefined ===
+   * undefined` and agree trivially, no matter what each case actually binds.
+   * Names matching is necessary but not sufficient: the same name must also
+   * bind the same pattern on both sides, matched BY NAME rather than by
+   * position, since the names check above already establishes order does not
+   * matter. */
+  if (Array.isArray(a.cases) || Array.isArray(b.cases)) {
+    const byName = (cs) => new Map(cs.map((c) => [c.name, c.pattern]));
+    const theirsByName = byName(theirs);
+    return mine.every((c) => theirsByName.get(c.name) === c.pattern);
+  }
   if (a.pattern === b.pattern) return true;
   if (a.pattern === ABSENT || b.pattern === ABSENT) return true;
   if (a.divergesFrom === b.pattern || b.divergesFrom === a.pattern) return true;

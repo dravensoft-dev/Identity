@@ -70,7 +70,10 @@ component with one render worth judging. A cased binding replaces both with a
 - `when` — prose stating the configuration that produces it (`"tone is
   \"danger\""`, `"variant is \"circle\""`);
 - `pattern` — the pattern that case binds;
-- `exceptions` — that case's own exception list, exactly as a flat binding's.
+- `exceptions` — that case's own exception list, exactly as a flat binding's;
+- `reason` — optional; required only when `pattern` is `none` or `absent`,
+  exactly as a flat binding's, and inherited from the binding's own `reason`
+  when the case does not override it.
 
 `when` is prose, and prose is all that is possible: nothing can verify that a
 render suite actually rendered the configuration a case names. A DOM
