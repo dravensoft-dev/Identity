@@ -158,6 +158,19 @@ test('a cased binding yields one entry per case, in order', () => {
   assert.deepEqual(cases.map((c) => c.pattern), ['alert', 'status']);
 });
 
+/* `none` and `absent` REQUIRE a reason, so a case binding one must carry it or
+   inherit the binding's -- otherwise Skeleton's circle case cannot be written at
+   all, and every existing flat `none` binding would need rewriting. */
+test('a case inherits the binding reason and may override it', () => {
+  const [inherited] = bindingCases({ reason: 'from the binding',
+    cases: [{ name: 'a', when: 'x', pattern: 'none', exceptions: [] }] });
+  assert.equal(inherited.reason, 'from the binding');
+  const [own] = bindingCases({ reason: 'from the binding',
+    cases: [{ name: 'a', when: 'x', pattern: 'none', reason: 'its own', exceptions: [] }] });
+  assert.equal(own.reason, 'its own');
+  assert.equal(bindingCases({ pattern: 'status' })[0].reason, null);
+});
+
 /* The two shapes are alternatives. Carrying both is two places for one fact,
    which is the defect deriving IDREF from IDREF_ATTRIBUTES already fixed once. */
 test('a binding declaring both pattern and cases is rejected by validateBinding', () => {
@@ -194,14 +207,21 @@ In `scripts/lib/behaviour-contracts.mjs`, immediately below `loadBinding`:
  *
  *  An anonymous case (`name: null`) is how a flat binding presents itself, and it
  *  is what the wrappers refuse when a suite asks for cases by name.
- *  @param {{pattern?: string, exceptions?: object[], cases?: object[]}} binding
- *  @returns {Array<{name: string|null, when: string|null, pattern: string, exceptions: object[]}>} */
+ *
+ *  `reason` rides along because a case may bind `none` or `absent`, and those
+ *  REQUIRE one -- "nothing recorded", "verified presentational" and "does not
+ *  exist here" must not look alike. A case's own reason wins; a flat binding's
+ *  reason is carried in its place, which is what keeps every existing `none`
+ *  binding valid without being rewritten.
+ *  @param {{pattern?: string, exceptions?: object[], reason?: string, cases?: object[]}} binding
+ *  @returns {Array<{name: string|null, when: string|null, pattern: string, reason: string|null, exceptions: object[]}>} */
 export function bindingCases(binding) {
   if (!Array.isArray(binding.cases)) {
     return [{
       name: null,
       when: null,
       pattern: binding.pattern,
+      reason: binding.reason ?? null,
       exceptions: binding.exceptions ?? [],
     }];
   }
@@ -209,6 +229,7 @@ export function bindingCases(binding) {
     name: c.name ?? null,
     when: c.when ?? null,
     pattern: c.pattern,
+    reason: c.reason ?? binding.reason ?? null,
     exceptions: c.exceptions ?? [],
   }));
 }
@@ -235,7 +256,7 @@ it, and add the mutual-exclusion check before it:
       problems.push(`${label}: unknown pattern "${c.pattern}" — no such file in ${PATTERN_DIR}`);
       continue;
     }
-    if (REQUIRES_OPTIONAL.has(c.pattern) && !(c.name ? c.reason ?? binding.reason : binding.reason)) {
+    if (REQUIRES_OPTIONAL.has(c.pattern) && !c.reason) {
       problems.push(`${label}: binding ${c.pattern} requires a reason — "nothing recorded", "verified presentational" and "does not exist here" must not look alike`);
     }
     for (const e of c.exceptions) {
