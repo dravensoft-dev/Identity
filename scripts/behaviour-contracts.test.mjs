@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   validatePattern, loadPatterns, validateBinding, reactComponents, angularPrimitives,
-  crossLayerAgrees, loadBinding,
+  crossLayerAgrees, loadBinding, bindingCases,
 } from './lib/behaviour-contracts.mjs';
 
 const ok = {
@@ -122,7 +122,7 @@ test('none and absent are distinct patterns, not the same fact spelled two ways'
 
 test('an exception naming a requirement the pattern does not have is a problem', () => {
   const b = { pattern: 'dialog-modal', exceptions: [{ requirement: 'focus.restore', reason: 'x' }] };
-  assert.match(validateBinding('Dialog', 'react', b, patterns)[0], /no requirement "focus.restore"/);
+  assert.match(validateBinding('Dialog', 'react', b, patterns)[0], /excepts "focus.restore", which pattern "dialog-modal" does not require/);
 });
 
 test('an exception without a reason is a problem', () => {
@@ -223,4 +223,51 @@ test('the real Calendar binding needs no divergesFrom to agree with React', () =
   const reactBinding = { pattern: 'grid' };
   const angularCalendar = { pattern: 'absent', reason: 'Angular has no such component at all.' };
   assert.equal(crossLayerAgrees(reactBinding, angularCalendar), true);
+});
+
+test('a flat binding is one anonymous case', () => {
+  const cases = bindingCases({ pattern: 'status', exceptions: [{ requirement: 'roles.label' }] });
+  assert.equal(cases.length, 1);
+  assert.equal(cases[0].name, null);
+  assert.equal(cases[0].pattern, 'status');
+  assert.equal(cases[0].exceptions.length, 1);
+});
+
+test('a flat binding with no exceptions still yields an exceptions array', () => {
+  // comparePattern does `binding.exceptions ?? []` itself, but every OTHER
+  // consumer would have to repeat that guard. Normalising once is the point.
+  assert.deepEqual(bindingCases({ pattern: 'none' })[0].exceptions, []);
+});
+
+test('a cased binding yields one entry per case, in order', () => {
+  const cases = bindingCases({
+    cases: [
+      { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
+      { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
+    ],
+  });
+  assert.deepEqual(cases.map((c) => c.name), ['danger', 'advisory']);
+  assert.deepEqual(cases.map((c) => c.pattern), ['alert', 'status']);
+});
+
+/* `none` and `absent` REQUIRE a reason, so a case binding one must carry it or
+   inherit the binding's -- otherwise Skeleton's circle case cannot be written at
+   all, and every existing flat `none` binding would need rewriting. */
+test('a case inherits the binding reason and may override it', () => {
+  const [inherited] = bindingCases({ reason: 'from the binding',
+    cases: [{ name: 'a', when: 'x', pattern: 'none', exceptions: [] }] });
+  assert.equal(inherited.reason, 'from the binding');
+  const [own] = bindingCases({ reason: 'from the binding',
+    cases: [{ name: 'a', when: 'x', pattern: 'none', reason: 'its own', exceptions: [] }] });
+  assert.equal(own.reason, 'its own');
+  assert.equal(bindingCases({ pattern: 'status' })[0].reason, null);
+});
+
+/* The two shapes are alternatives. Carrying both is two places for one fact,
+   which is the defect deriving IDREF from IDREF_ATTRIBUTES already fixed once. */
+test('a binding declaring both pattern and cases is rejected by validateBinding', () => {
+  const problems = validateBinding('Alert', 'react',
+    { pattern: 'alert', cases: [{ name: 'x', when: 'y', pattern: 'alert', exceptions: [] }] },
+    new Map([['alert', { name: 'alert', requires: {} }]]));
+  assert.ok(problems.some((p) => /both .*pattern.* and .*cases/i.test(p)), problems.join('\n'));
 });

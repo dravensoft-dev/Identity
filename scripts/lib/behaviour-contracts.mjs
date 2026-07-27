@@ -72,18 +72,79 @@ export function loadBinding(absPath) {
   return JSON.parse(readFileSync(absPath, 'utf8'));
 }
 
+/** A binding's render CASES, normalised, and the one place the two shapes meet.
+ *
+ *  A binding describes a component; comparePattern judges a RENDER. A component
+ *  that renders differently depending on its own props is several renders, and no
+ *  flat exception list is correct for all of them -- Skeleton's two exceptions are
+ *  true of the circle variant and false of the other three, and its suite rendered
+ *  circle specifically, so the binding looked honest and the component was half
+ *  verified.
+ *
+ *  The flat shape stays valid and means ONE case, so the untouched majority of
+ *  bindings is not churned to say what it already says. Every consumer reads
+ *  bindings through here rather than testing for `cases` itself: a second place
+ *  that decides what a case is would be free to disagree with this one.
+ *
+ *  An anonymous case (`name: null`) is how a flat binding presents itself, and it
+ *  is what the wrappers refuse when a suite asks for cases by name.
+ *
+ *  `reason` rides along because a case may bind `none` or `absent`, and those
+ *  REQUIRE one -- "nothing recorded", "verified presentational" and "does not
+ *  exist here" must not look alike. A case's own reason wins; a flat binding's
+ *  reason is carried in its place, which is what keeps every existing `none`
+ *  binding valid without being rewritten.
+ *  @param {{pattern?: string, exceptions?: object[], reason?: string, cases?: object[]}} binding
+ *  @returns {Array<{name: string|null, when: string|null, pattern: string, reason: string|null, exceptions: object[]}>} */
+export function bindingCases(binding) {
+  if (!Array.isArray(binding.cases)) {
+    return [{
+      name: null,
+      when: null,
+      pattern: binding.pattern,
+      reason: binding.reason ?? null,
+      exceptions: binding.exceptions ?? [],
+    }];
+  }
+  return binding.cases.map((c) => ({
+    name: c.name ?? null,
+    when: c.when ?? null,
+    pattern: c.pattern,
+    reason: c.reason ?? binding.reason ?? null,
+    exceptions: c.exceptions ?? [],
+  }));
+}
+
 /** @returns {string[]} problems; empty means valid */
 export function validateBinding(component, layer, binding, patterns) {
   const problems = [];
   const where = `${layer}/${component}`;
-  const pattern = patterns.get(binding.pattern);
 
-  if (!pattern) {
-    problems.push(`${where}: unknown pattern "${binding.pattern}" — no such file in ${PATTERN_DIR}`);
+  if ('pattern' in binding && Array.isArray(binding.cases)) {
+    problems.push(`${where}: declares both "pattern" and "cases" — a binding declares one or the other. Two places for one fact is what deriving IDREF from IDREF_ATTRIBUTES fixed once already.`);
     return problems;
   }
-  if (REQUIRES_OPTIONAL.has(binding.pattern) && !binding.reason) {
-    problems.push(`${where}: binding ${binding.pattern} requires a reason — "nothing recorded", "verified presentational" and "does not exist here" must not look alike`);
+  for (const c of bindingCases(binding)) {
+    const label = c.name ? `${where} case "${c.name}"` : where;
+    if (c.name !== null && !c.when) {
+      problems.push(`${label}: a case must say WHEN it is produced. Prose is enough and prose is all that is possible -- nothing can verify a suite rendered the configuration a case names.`);
+    }
+    const pattern = patterns.get(c.pattern);
+    if (!pattern) {
+      problems.push(`${label}: unknown pattern "${c.pattern}" — no such file in ${PATTERN_DIR}`);
+      continue;
+    }
+    if (REQUIRES_OPTIONAL.has(c.pattern) && !c.reason) {
+      problems.push(`${label}: binding ${c.pattern} requires a reason — "nothing recorded", "verified presentational" and "does not exist here" must not look alike`);
+    }
+    for (const e of c.exceptions) {
+      if (!(e.requirement in pattern.requires)) {
+        problems.push(`${label}: excepts "${e.requirement}", which pattern "${c.pattern}" does not require`);
+      }
+      if (!e.reason) {
+        problems.push(`${label}: exception for "${e.requirement}" has no reason`);
+      }
+    }
   }
   if ('delegatedTo' in binding && !binding.delegatedTo) {
     problems.push(`${where}: delegatedTo must name what provides the behaviour, e.g. "Angular Material matTooltip"`);
@@ -94,14 +155,6 @@ export function validateBinding(component, layer, binding, patterns) {
    * Carrying the name is what lets the cross-layer assertion fire at all. */
   if (layer === 'angular' && !binding.component) {
     problems.push(`${where}: an angular binding must declare "component", naming its React counterpart (e.g. "StatCard" for stat-card)`);
-  }
-  for (const exception of binding.exceptions ?? []) {
-    if (!(exception.requirement in pattern.requires)) {
-      problems.push(`${where}: exception names no requirement "${exception.requirement}" in pattern ${binding.pattern} — stale or mistyped`);
-    }
-    if (!exception.reason) {
-      problems.push(`${where}: exception for "${exception.requirement}" has no reason`);
-    }
   }
   return problems;
 }
@@ -117,6 +170,10 @@ export function validateBinding(component, layer, binding, patterns) {
  *  not exist, which is not true either -- silence is the honest state here, not a
  *  declared difference. */
 export function crossLayerAgrees(a, b) {
+  const mine = bindingCases(a);
+  const theirs = bindingCases(b);
+  const names = (cs) => cs.map((c) => c.name).sort().join(',');
+  if (names(mine) !== names(theirs)) return false;
   if (a.pattern === b.pattern) return true;
   if (a.pattern === ABSENT || b.pattern === ABSENT) return true;
   if (a.divergesFrom === b.pattern || b.divergesFrom === a.pattern) return true;
