@@ -826,9 +826,11 @@ scheduled for deletion the same week.
   dropped by hand rather than by the query: hits under `X`'s **own** files — its quartet, its
   binding, its contract, its manifest, its own suites — which describe the component instead of
   claiming something about it, and hits in `CHANGELOG.md`, which is a frozen record of what
-  shipped at a tag and must never be back-edited. For a component with a long paper trail the
-  raw output runs to dozens of lines across dozens of files, most of them this file's own prose,
-  and that is the honest shape of the work rather than a sign the query is wrong.
+  shipped at a tag and must never be back-edited. Expect a large raw result for a component with
+  a long paper trail — for `Skeleton` at the close of 8C10 it was 203 lines across 38 files, of
+  which the batch's own plan and design spec were 64 and this file's prose another 35 — and read
+  that as the honest shape of the work rather than a sign the query is too wide. Skim by file,
+  not by line: the interesting hits are the files that are not about `X`.
 
   **This command is deliberately wider than the one 8C10 first published, and the widening is the
   correction rather than a tidy-up.** That version was `grep -rln '\bX\b'
