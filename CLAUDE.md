@@ -604,7 +604,7 @@ The Angular layer's quartet is the analogue: `<name>.ts` (standalone `OnPush` co
 
 `bun test` runs every file in this directory in ONE process, and both happy-dom's document and Angular's `TestBed` environment can each be claimed only once per process — `GlobalRegistrator.register()` throws if already registered, and `TestBed.initTestEnvironment()` throws ("base providers ... already been called") the second time it runs across files that share a process. `testbed-env.ts` claims both, once, for the whole directory: `ensureDom()` and `useTestEnvironment()` are plain `if (claimed) return` guards, not a reset — `TestBed.resetTestEnvironment()` was tried and measurably does not work, because `BrowserDomAdapter.makeCurrent()` installs a process-wide DOM adapter on the FIRST platform creation that nothing resets, so a second per-file document would render into a document the adapter no longer points at (`getComputedStyle` reading the wrong document was the observed failure). So the directory shares one real document and one TestBed environment for its entire run rather than one pair per file; any suite needing a real component render just calls `useTestEnvironment()` (or `ensureDom()` alone, for a suite that needs a DOM but not TestBed) and is a normal new file, not an addition to `host-class-binding.test.ts`. The shared document also means state written onto it — a custom property set on `documentElement.style`, an element appended to `document.body` — outlives the file that wrote it unless that file clears it, typically in a `finally`; every directly-created fixture must still be `destroy()`-ed for the same reason — zoneless change detection sweeps all attached views, so a fixture left dirty throws out of an unrelated later test, and with one shared document that hazard now crosses files rather than staying inside one.
 
-**Specimen/demo pages** start with an HTML comment `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card rendering — keep it as the first line, which is the only line `check:cards` reads. **That viewport is machine-checked**: `bun run check:cards` loads every declaring page at its declared width in headless Chromium and fails when the rendered content over-runs the box in either axis, because the card is cropped to it and the overflow is lost silently. Declaring it by arithmetic does not work — it was tried, and the page clipped in both axes anyway. Measure by running the gate. A page that declares far *more* height than it renders only warns. `frameworks/react/ui_kits/console/index.html` carries no `@dsCard` on purpose: it is an app with its own scroll area, not a card. Component demos load React from a local importmap pointing at `frameworks/react/vendor/*.js` — a committed, generated ESM bundle of the `react`/`react-dom` devDependencies, since React 18 ships CommonJS only and the importmap needs real ES modules (`bun run build:vendor`, guarded by `check:vendor`; see `scripts/build-vendor.mjs`) — and pull `@phosphor-icons/web` straight from `node_modules/` (the static server is rooted at the repo root and does not exclude it). **JSX is compiled ahead of time, not in the browser.** Each demo page's own script used to be inline JSX, transpiled at load by `@babel/standalone` through `jsx-loader.js`'s `window.arenaImport()`; that inline block is now a real sibling source file (`<page>.entry.jsx`, e.g. `alert.card.entry.jsx` next to `alert.card.html`), and every component `.jsx` plus every `.entry.jsx` has a compiled `.js` sibling — same directory, same basename — that the page loads with a plain `<script type="module" src="…">`. `bun run build:demos` (`scripts/build-demos.mjs`) compiles them with Bun's own transpiler (classic JSX, matching what `@babel/standalone`'s default preset was doing) and rewrites each relative import's `.jsx` extension to `.js`, so the recursive-import behavior `jsx-loader.js` used to do at runtime now happens once, at build time; `check:demos` (`scripts/check-demos-generated.mjs`) guards drift and orphaned output, on the same committed-generated-output contract as `check:vendor`. There is a build step for the demos now — this repo does not claim otherwise. **So editing a component `.jsx` means running `bun run build:demos` in the same tree, and one specific piece of reasoning talks batches out of it**: the React DOM suites import the `.jsx` directly, so every test stays green with the `.js` sibling stale, and it is easy to conclude the rebuild is therefore unnecessary. It is not — the demo pages load the `.js`, so a stale sibling means **`bun run demos` shows the pre-fix component while the suites prove the fix**, which is exactly the by-hand check the grid rule and every `.prompt.md` checklist depend on. This shipped in 8C10: a plan constraint forbade `build:demos` on that reasoning, `Skeleton.js` went stale for three commits, and the specimens rendered the `aria-hidden` circle the batch existed to remove. `check:demos` caught it at the close-out sweep, which is the gate working — but a batch that runs the full sweep only at the end wears the drift until then.
+**Specimen/demo pages** start with an HTML comment `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card rendering — keep it as the first line, which is the only line `check:cards` reads. **That viewport is machine-checked**: `bun run check:cards` loads every declaring page at its declared width in headless Chromium and fails when the rendered content over-runs the box in either axis, because the card is cropped to it and the overflow is lost silently. Declaring it by arithmetic does not work — it was tried, and the page clipped in both axes anyway. Measure by running the gate. A page that declares far *more* height than it renders only warns. `frameworks/react/ui_kits/console/index.html` carries no `@dsCard` on purpose: it is an app with its own scroll area, not a card. Component demos load React from a local importmap pointing at `frameworks/react/vendor/*.js` — a committed, generated ESM bundle of the `react`/`react-dom` devDependencies, since React 18 ships CommonJS only and the importmap needs real ES modules (`bun run build:vendor`, guarded by `check:vendor`; see `scripts/build-vendor.mjs`) — and pull `@phosphor-icons/web` straight from `node_modules/` (the static server is rooted at the repo root and does not exclude it). **JSX is compiled ahead of time, not in the browser.** Each demo page's own script used to be inline JSX, transpiled at load by `@babel/standalone` through `jsx-loader.js`'s `window.arenaImport()`; that inline block is now a real sibling source file (`<page>.entry.jsx`, e.g. `alert.card.entry.jsx` next to `alert.card.html`), and every component `.jsx` plus every `.entry.jsx` has a compiled `.js` sibling — same directory, same basename — that the page loads with a plain `<script type="module" src="…">`. `bun run build:demos` (`scripts/build-demos.mjs`) compiles them with Bun's own transpiler (classic JSX, matching what `@babel/standalone`'s default preset was doing) and rewrites each relative import's `.jsx` extension to `.js`, so the recursive-import behavior `jsx-loader.js` used to do at runtime now happens once, at build time; `check:demos` (`scripts/check-demos-generated.mjs`) guards drift and orphaned output, on the same committed-generated-output contract as `check:vendor`. There is a build step for the demos now — this repo does not claim otherwise. **So editing a component `.jsx` means running `bun run build:demos` in the same tree, and one specific piece of reasoning talks batches out of it**: the React DOM suites import the `.jsx` directly, so every test stays green with the `.js` sibling stale, and it is easy to conclude the rebuild is therefore unnecessary. It is not — the demo pages load the `.js`, so a stale sibling means **`bun run demos` shows the pre-fix component while the suites prove the fix**, which is exactly the by-hand check the grid rule and every `.prompt.md` checklist depend on. This shipped in 8C10: a plan constraint forbade `build:demos` on that reasoning, and `Skeleton.js` stayed stale across four commits — `cd00339`, which introduced it, through `80ebedc` — while the specimens rendered the `aria-hidden` circle the batch existed to remove. `check:demos` caught it at the close-out sweep, which is the gate working — but a batch that runs the full sweep only at the end wears the drift until then.
 
 `support.js` is a generated bundle (`dc-runtime`, whose source is not in this repo) used only by the root `*.dc.html` pages. Do not edit it.
 
@@ -775,16 +775,65 @@ scheduled for deletion the same week.
   which went stale when 8C9 built `cases`; 8C9's close-out rewrote it in place to name
   `Skeleton` as demonstrating the *remedy*, which went stale in 8C10 when `Skeleton`'s defect
   was fixed and its binding went flat again. Twice in two batches, in opposite directions, is a
-  structural signal rather than bad luck: **a component name written into ANOTHER component's
-  reason string is a cross-file claim no gate checks**, so it rots silently while
-  `check:behaviour` stays green. 8C10 removed the exemplar rather than replacing it with a
-  third, and left the capability stated on its own with a pointer to the command that lists the
-  cased bindings. Prefer that shape when a reason string wants an example. **What stays true of both is the
+  structural signal rather than bad luck, and it generalises — the standing hazard, the
+  distinction from a harmless structural reference, and the change-time command that finds the
+  rest are the entry directly below this one. 8C10 removed the exemplar rather than replacing it
+  with a third, and left the capability stated on its own with a pointer to the command that
+  lists the cased bindings. **What stays true of both is the
   verification, not the
   behaviour**: `grid-keyboard.test.jsx` is the one suite the grid rule excludes, so
   neither component can appear in `COVERED`, both are DOM-tested by hand, and
   `Calendar`'s now-exceptionless binding and `Table`'s surviving exception are alike
   unverified claims. See the grid-rule entry below.
+- **A component name written into ANOTHER file's prose is a cross-file claim no gate checks,
+  and it rots silently while every gate stays green.** This is a standing hazard rather than a
+  list of defects, and it was diagnosed the hard way: `Table.behaviour.json`'s `focus.roving`
+  reason cited `Skeleton` twice in two consecutive batches and was wrong both times, in
+  **opposite** directions — first as proving that the schema could not scope a requirement to a
+  variant (falsified when 8C9 built `cases`), then, after 8C9 rewrote the clause in place, as
+  demonstrating that remedy (falsified when 8C10 fixed `Skeleton` and flattened its binding).
+  Nothing failed either time. `check:behaviour` validates that a binding names a real pattern
+  and real requirements; **no gate reads a `reason` string, and none has an opinion about a
+  comment**, so a citation asserting another component's current state is unfalsifiable
+  infrastructure-wise and reliably becomes false.
+
+  **The distinction that matters, because a blanket ban would be wrong.** A *structural*
+  reference is fine and should not be hunted: `TableCell` saying a cell may contain a `Button`,
+  `CalendarEvent` naming the `IconButton` it renders as a kebab, `SideNavSection` naming
+  `SideNavItem` — each describes **this** component's own render, and it moves only when this
+  component moves. What rots is a citation asserting **another component's current state** — that
+  it is cased, that it carries an exception, that it hardcodes a label, that it "records the
+  opposite". Those are claims about a file the author is not editing and no gate is reading.
+
+  **The command, and it is a change-time procedure rather than a periodic audit**, because an
+  unchecked cross-file claim cannot be swept for meaningfully — you only know a citation is false
+  once you have changed its subject. So when you change component `X`'s binding, run:
+
+  ```bash
+  grep -rln '\bX\b' --include='*.behaviour.json' frameworks/ | grep -v '/X\.'
+  grep -rn  '\bX\b' scripts/lib/ frameworks/*/test*/
+  ```
+
+  and read every hit as a claim about `X` that you may have just falsified. 8C10 did exactly this
+  for `Skeleton` and found five, all corrected in that batch: `Table`'s and `Tab`'s reason strings
+  (both exemplars **removed** rather than re-pointed at another name, because a replacement name is
+  just the next thing to rot), `Toast`'s `divergesFromReason` (rewritten as explicit **history**,
+  which is the one form that cannot go stale), and two doc comments in
+  `scripts/lib/behaviour-contracts.mjs` — one rewritten to past tense so `bindingCases()` keeps its
+  origin story without asserting a tree that has moved, one re-pointed at the only live example
+  that qualifies.
+
+  **Prefer no exemplar, a command, or an explicitly-past-tense one.** All three are stale-proof;
+  a present-tense component name is not.
+
+  **Known members left in place, deliberately, because this batch did not falsify them and they
+  are true today**: `Input.behaviour.json` cites the gap `Tag.behaviour.json` records for its
+  remove button's missing disabled concept (still true — `Tag`'s `removable` case still carries
+  that exception), and `RadioGroup`/`Radio` cite `Breadcrumbs` and `Pagination` as at least
+  hardcoding a label. Each is one batch away from becoming the next instance, and each is exactly
+  what the command above is for. A scan for the class as a whole over-reports badly — a naive
+  name grep flags "normal **Tab** order" and HTML "**tag**" — so the change-time procedure is the
+  usable form and a repo-wide list is not.
 - **The conditionality gap is closed at ONE of its three levels, and the other two are
   the ones a reader now has to be told about.** This entry used to record the schema as
   unable to express "this pattern applies conditionally", with `Tag` as its proof — a real

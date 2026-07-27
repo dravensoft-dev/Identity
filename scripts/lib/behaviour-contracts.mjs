@@ -77,18 +77,28 @@ export function loadBinding(absPath) {
  *  A binding describes a component; comparePattern judges a RENDER. A component
  *  that renders differently depending on its own props is several renders, and no
  *  flat exception list is correct for all of them. Skeleton is the case that
- *  motivated this: its `status` binding carries two exceptions true of the
- *  `circle` variant alone -- three of its four variants meet the pattern
- *  outright, and `circle` implements a different case entirely (aria-hidden,
+ *  motivated this, and the motivation is history rather than a description of
+ *  today's tree -- 8C10 fixed the underlying defect, so `Skeleton` now binds flat
+ *  `status` with no exceptions and no cases. It is kept because it is WHY this
+ *  function exists. As it stood: its `status` binding carried two exceptions true
+ *  of the `circle` variant alone -- three of its four variants met the pattern
+ *  outright, and `circle` implemented a different case entirely (aria-hidden,
  *  decorative, no live region). Nothing about the component was under-tested --
- *  `placement-and-branches.test.jsx` has two hand-written tests asserting all
+ *  `placement-and-branches.test.jsx` had two hand-written tests asserting all
  *  four variants directly. What a flat exception list could not do is feed all
  *  four to the ONE mechanism that can make an exception expire: `assertPattern`
  *  judges a single render, so it had to be pinned to `circle`, the one variant
- *  where the two exceptions are actually true -- documented in place, where
+ *  where the two exceptions were actually true -- documented in place, where
  *  pinning it to `block` instead correctly reported both as STALE EXCEPTION. A
  *  reader of the binding alone was told a Skeleton is a `status` missing two
- *  requirements, which is true of one variant in four and silent about the rest.
+ *  requirements, which was true of one variant in four and silent about the rest.
+ *  That the case which motivated `cases` was later fixed and un-cased does not
+ *  weaken the mechanism: a component whose renders genuinely differ still needs
+ *  it. For the bindings that are cased TODAY, run
+ *  `grep -rl '"cases"' --include='*.behaviour.json' frameworks/` -- deliberately a
+ *  command and not a list, because a component name written into a comment or
+ *  another component's reason string is a cross-file claim no gate checks, which
+ *  is how this very paragraph went stale (see CLAUDE.md's Known debt).
  *
  *  The flat shape stays valid and means ONE case, so the untouched majority of
  *  bindings is not churned to say what it already says. Every consumer reads
@@ -199,10 +209,12 @@ export function validateBinding(component, layer, binding, patterns) {
  *  WHAT THAT ORDER COSTS, since the order itself is right and the cost is not
  *  obvious: a top-level `divergesFrom` matching the counterpart's pattern
  *  satisfies the escape for the WHOLE binding, so the per-case comparison below
- *  never runs and every case is unchecked across layers. `Skeleton`'s
- *  `placeholder` case could change from `status` to anything at all and this
- *  function would stay silent, because `divergesFrom: "status"` against
- *  Angular's flat binding already returned true two lines up. That is not
+ *  never runs and every case is unchecked across layers. The live example is
+ *  `Toast`, which is today the only binding that is both cased and carries
+ *  `divergesFrom` (React's `divergesFrom: "alert"` against the flat `alert` that
+ *  `behaviour-delegated.json` binds for Angular's MatSnackBar): its `danger` case
+ *  could change from `alert` to anything at all and this function would stay
+ *  silent, because the escape already returned true two lines up. That is not
  *  fixable by reordering -- a flat counterpart has no cases to compare against,
  *  which is the whole reason the escape exists -- so a cased binding that
  *  declares `divergesFrom` is trusting its own render suite alone for every

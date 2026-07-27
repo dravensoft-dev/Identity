@@ -383,9 +383,14 @@ the need for the split.
 **What is NOT proven, and it is the same limit the rest of this file carries.** The React claim
 is verified — `frameworks/react/test-dom/placement-and-branches.test.jsx` renders all four
 variants and `Skeleton:react` is in `check:compliance`'s `COVERED`. The Angular claim is not:
-`skeleton.behaviour.json` says `status` with no exceptions and no suite renders it, so Angular's
-side of the now-agreeing pair is an unverified claim, exactly as it was while the layers
-disagreed.
+`skeleton.behaviour.json` says `status` with no exceptions and **no suite verifies that binding**,
+so Angular's side of the now-agreeing pair is an unverified claim, exactly as it was while the
+layers disagreed. Be precise about which claim is unverified, because a suite does render this
+component: `frameworks/angular/test/host-class-binding.test.ts:65` imports `Skeleton` and mounts a
+real `TestBed` tree of it. What that suite asserts is the host **class** binding — that the recipe's
+root classes land on the host and a consumer's own class survives — which says nothing about
+`role`, `aria-label` or the `status` pattern. Rendering a component is not verifying its binding,
+and `Skeleton:angular` is absent from `check:compliance`'s `COVERED` for that reason.
 
 ### Toast — a critical error interrupts in React and is queued in Angular
 
