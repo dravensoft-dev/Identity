@@ -84,7 +84,7 @@ test('Skeleton renders role=status in three variants and not in circle', () => {
   assert.deepEqual(seen, { block: true, line: true, text: true, circle: false });
 });
 
-test('Skeleton circle is aria-hidden with no live region — both exceptions stand', () => {
+test('Skeleton circle is aria-hidden with no live region', () => {
   const container = mount(<Skeleton variant="circle" />);
   const el = container.firstElementChild;
   assert.equal(el.getAttribute('aria-hidden'), 'true');
