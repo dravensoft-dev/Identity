@@ -165,10 +165,20 @@ across 32 files — the same counts as today, so nothing is lost or skipped in t
 | `skeleton-dimensions.test.ts` | 0 | 6 |
 | `tag-remove.test.ts` | 0 | 2 |
 
-**24 of the 25 in `host-class-binding.test.ts` are one identical error** —
-`TypeError: undefined is not an object (evaluating 'inputSignalNode.transformFn')` — so the
-migration is mechanical rather than 25 separate investigations. The 25th is the manifest path from
-§3.
+**The 29 have exactly two causes and no long tail**, which is what makes the migration mechanical
+rather than 29 separate investigations. Measured:
+
+- **24** are one identical error, all in `host-class-binding.test.ts`:
+  `TypeError: undefined is not an object (evaluating 'inputSignalNode.transformFn')` — the bypass,
+  meeting a real binding.
+- **5** are the path resolution of §3, failing as `ENOENT`: the manifest sweep in
+  `host-class-binding.test.ts`, and the four suites that load a `*.behaviour.json` through
+  `compliance.ts`'s `ANGULAR_PRIMITIVES` (`chart-data-table` twice, `alert-role-tones`,
+  `tag-cases`). Measured: the emit writes **zero** `.json` under either directory.
+
+So the bypass causes failures in one file only. `chart-data-table`, `alert-role-tones` and
+`tag-cases` fail for the path reason alone, and their bypass sites — like `skeleton-dimensions`'s
+and `tag-remove`'s — are harmless under AOT and are retired for consistency rather than necessity.
 
 There are **41 bypass sites across exactly 6 files**. The directory holds 34 `.ts` files in all —
 32 suites and two helpers, `testbed-env.ts` and `compliance.ts` — and `@angular/core/testing` is
@@ -195,7 +205,9 @@ restored with `git checkout --` **after staging**, and the restore proved with `
 3. **`check:angular` still names the shipped layer alone.** Introduce an error in a primitive; the
    gate must fail naming the layer, and it must keep compiling `./index.ts` and nothing else.
 
-`ARENA_CHECK_STRICT=1 bun run check` reports all 23 steps at close-out.
+`ARENA_CHECK_STRICT=1 bun run check` reports all **24** steps at close-out, up from 23. `GATES` is
+unmoved at 21 — the extra step is the emit, which `testStep()` gains as its first entry so the
+build's own failure is reported as a step rather than swallowed inside a test command.
 
 ## The cost, measured rather than estimated
 
