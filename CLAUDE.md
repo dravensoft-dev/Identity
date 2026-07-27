@@ -174,7 +174,11 @@ mounts*; a never-rendered case and an undeclared one are both errors. A suite me
 exceptions were true — while `Skeleton:react` sat in `COVERED` as a claim about the
 component. (The rest of that file was not untested; two hand tests rendered all four
 variants. What no flat exception list could do is feed all four to the one mechanism that
-makes an exception expire.)
+makes an exception expire.) **That worked example is now history rather than a file to go
+and read**: 8C10 fixed the defect the split exposed, so `Skeleton` binds flat again and
+`placement-and-branches.test.jsx` calls `assertPattern` — against `block` **and** `circle`,
+which is the same lesson enforced by hand where a flat binding gives the wrapper no case
+list to drive. The hole `assertPatternCases` closes is unchanged; only its exhibit moved.
 
 `bun run check:behaviour` asserts every component declares, that no declaration names a
 pattern or requirement that does not exist, that no delegated entry is stale, and that
@@ -600,7 +604,7 @@ The Angular layer's quartet is the analogue: `<name>.ts` (standalone `OnPush` co
 
 `bun test` runs every file in this directory in ONE process, and both happy-dom's document and Angular's `TestBed` environment can each be claimed only once per process — `GlobalRegistrator.register()` throws if already registered, and `TestBed.initTestEnvironment()` throws ("base providers ... already been called") the second time it runs across files that share a process. `testbed-env.ts` claims both, once, for the whole directory: `ensureDom()` and `useTestEnvironment()` are plain `if (claimed) return` guards, not a reset — `TestBed.resetTestEnvironment()` was tried and measurably does not work, because `BrowserDomAdapter.makeCurrent()` installs a process-wide DOM adapter on the FIRST platform creation that nothing resets, so a second per-file document would render into a document the adapter no longer points at (`getComputedStyle` reading the wrong document was the observed failure). So the directory shares one real document and one TestBed environment for its entire run rather than one pair per file; any suite needing a real component render just calls `useTestEnvironment()` (or `ensureDom()` alone, for a suite that needs a DOM but not TestBed) and is a normal new file, not an addition to `host-class-binding.test.ts`. The shared document also means state written onto it — a custom property set on `documentElement.style`, an element appended to `document.body` — outlives the file that wrote it unless that file clears it, typically in a `finally`; every directly-created fixture must still be `destroy()`-ed for the same reason — zoneless change detection sweeps all attached views, so a fixture left dirty throws out of an unrelated later test, and with one shared document that hazard now crosses files rather than staying inside one.
 
-**Specimen/demo pages** start with an HTML comment `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card rendering — keep it as the first line, which is the only line `check:cards` reads. **That viewport is machine-checked**: `bun run check:cards` loads every declaring page at its declared width in headless Chromium and fails when the rendered content over-runs the box in either axis, because the card is cropped to it and the overflow is lost silently. Declaring it by arithmetic does not work — it was tried, and the page clipped in both axes anyway. Measure by running the gate. A page that declares far *more* height than it renders only warns. `frameworks/react/ui_kits/console/index.html` carries no `@dsCard` on purpose: it is an app with its own scroll area, not a card. Component demos load React from a local importmap pointing at `frameworks/react/vendor/*.js` — a committed, generated ESM bundle of the `react`/`react-dom` devDependencies, since React 18 ships CommonJS only and the importmap needs real ES modules (`bun run build:vendor`, guarded by `check:vendor`; see `scripts/build-vendor.mjs`) — and pull `@phosphor-icons/web` straight from `node_modules/` (the static server is rooted at the repo root and does not exclude it). **JSX is compiled ahead of time, not in the browser.** Each demo page's own script used to be inline JSX, transpiled at load by `@babel/standalone` through `jsx-loader.js`'s `window.arenaImport()`; that inline block is now a real sibling source file (`<page>.entry.jsx`, e.g. `alert.card.entry.jsx` next to `alert.card.html`), and every component `.jsx` plus every `.entry.jsx` has a compiled `.js` sibling — same directory, same basename — that the page loads with a plain `<script type="module" src="…">`. `bun run build:demos` (`scripts/build-demos.mjs`) compiles them with Bun's own transpiler (classic JSX, matching what `@babel/standalone`'s default preset was doing) and rewrites each relative import's `.jsx` extension to `.js`, so the recursive-import behavior `jsx-loader.js` used to do at runtime now happens once, at build time; `check:demos` (`scripts/check-demos-generated.mjs`) guards drift and orphaned output, on the same committed-generated-output contract as `check:vendor`. There is a build step for the demos now — this repo does not claim otherwise.
+**Specimen/demo pages** start with an HTML comment `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card rendering — keep it as the first line, which is the only line `check:cards` reads. **That viewport is machine-checked**: `bun run check:cards` loads every declaring page at its declared width in headless Chromium and fails when the rendered content over-runs the box in either axis, because the card is cropped to it and the overflow is lost silently. Declaring it by arithmetic does not work — it was tried, and the page clipped in both axes anyway. Measure by running the gate. A page that declares far *more* height than it renders only warns. `frameworks/react/ui_kits/console/index.html` carries no `@dsCard` on purpose: it is an app with its own scroll area, not a card. Component demos load React from a local importmap pointing at `frameworks/react/vendor/*.js` — a committed, generated ESM bundle of the `react`/`react-dom` devDependencies, since React 18 ships CommonJS only and the importmap needs real ES modules (`bun run build:vendor`, guarded by `check:vendor`; see `scripts/build-vendor.mjs`) — and pull `@phosphor-icons/web` straight from `node_modules/` (the static server is rooted at the repo root and does not exclude it). **JSX is compiled ahead of time, not in the browser.** Each demo page's own script used to be inline JSX, transpiled at load by `@babel/standalone` through `jsx-loader.js`'s `window.arenaImport()`; that inline block is now a real sibling source file (`<page>.entry.jsx`, e.g. `alert.card.entry.jsx` next to `alert.card.html`), and every component `.jsx` plus every `.entry.jsx` has a compiled `.js` sibling — same directory, same basename — that the page loads with a plain `<script type="module" src="…">`. `bun run build:demos` (`scripts/build-demos.mjs`) compiles them with Bun's own transpiler (classic JSX, matching what `@babel/standalone`'s default preset was doing) and rewrites each relative import's `.jsx` extension to `.js`, so the recursive-import behavior `jsx-loader.js` used to do at runtime now happens once, at build time; `check:demos` (`scripts/check-demos-generated.mjs`) guards drift and orphaned output, on the same committed-generated-output contract as `check:vendor`. There is a build step for the demos now — this repo does not claim otherwise. **So editing a component `.jsx` means running `bun run build:demos` in the same tree, and one specific piece of reasoning talks batches out of it**: the React DOM suites import the `.jsx` directly, so every test stays green with the `.js` sibling stale, and it is easy to conclude the rebuild is therefore unnecessary. It is not — the demo pages load the `.js`, so a stale sibling means **`bun run demos` shows the pre-fix component while the suites prove the fix**, which is exactly the by-hand check the grid rule and every `.prompt.md` checklist depend on. This shipped in 8C10: a plan constraint forbade `build:demos` on that reasoning, and `Skeleton.js` stayed stale across four commits — `cd00339`, which introduced it, through `80ebedc` — while the specimens rendered the `aria-hidden` circle the batch existed to remove. `check:demos` caught it at the close-out sweep, which is the gate working — but a batch that runs the full sweep only at the end wears the drift until then.
 
 `support.js` is a generated bundle (`dc-runtime`, whose source is not in this repo) used only by the root `*.dc.html` pages. Do not edit it.
 
@@ -765,14 +769,155 @@ scheduled for deletion the same week.
   `cases`, but `Table` was deliberately left flat: card mode's interactivity is the
   consumer's choice rather than a prop of `Table`, and the grid hand-test rule means any
   case it declared could carry no suite. The reasons are in the conditionality entry
-  below, and `Table.behaviour.json`'s own reason string now carries them too — it used to
-  cite `Skeleton` as proving a limit that no longer exists, and 8C9's close-out corrected
-  it in place rather than only recording it here. **What stays true of both is the
+  below, and `Table.behaviour.json`'s own reason string now carries them too. **That reason
+  string cited a component twice and was wrong twice, and it now cites no exemplar.** It first named
+  `Skeleton` as proving a limit — that the schema could not scope a requirement to a variant —
+  which went stale when 8C9 built `cases`; 8C9's close-out rewrote it in place to name
+  `Skeleton` as demonstrating the *remedy*, which went stale in 8C10 when `Skeleton`'s defect
+  was fixed and its binding went flat again. Twice in two batches, in opposite directions, is a
+  structural signal rather than bad luck, and it generalises — the standing hazard, the
+  distinction from a harmless structural reference, and the change-time command that finds the
+  rest are the entry directly below this one. 8C10 removed the exemplar rather than replacing it
+  with a third, and left the capability stated on its own with a pointer to the command that
+  lists the cased bindings. **What stays true of both is the
   verification, not the
   behaviour**: `grid-keyboard.test.jsx` is the one suite the grid rule excludes, so
   neither component can appear in `COVERED`, both are DOM-tested by hand, and
   `Calendar`'s now-exceptionless binding and `Table`'s surviving exception are alike
   unverified claims. See the grid-rule entry below.
+- **A component name written into ANOTHER file's prose is a cross-file claim no gate checks,
+  and it rots silently while every gate stays green.** This is a standing hazard rather than a
+  list of defects, and it was diagnosed the hard way: `Table.behaviour.json`'s `focus.roving`
+  reason cited `Skeleton` twice in two consecutive batches and was wrong both times, in
+  **opposite** directions — first as proving that the schema could not scope a requirement to a
+  variant (falsified when 8C9 built `cases`), then, after 8C9 rewrote the clause in place, as
+  demonstrating that remedy (falsified when 8C10 fixed `Skeleton` and flattened its binding).
+  Nothing failed either time. `check:behaviour` validates that a binding names a real pattern
+  and real requirements; and while `validateBinding` (`scripts/lib/behaviour-contracts.mjs`) does
+  read a `reason` for **presence** — `:156` requires one on a `none`/`absent` case, `:163` on every
+  exception — **nothing anywhere reads its CONTENT, and no gate has an opinion about a comment at
+  all**. So a citation asserting another component's current state is unfalsifiable
+  infrastructure-wise and reliably becomes false. The distinction matters when someone proposes a
+  gate for this: the hook to hang one on already exists, and what is missing is any notion of what
+  a reason *says*.
+
+  **The distinction that matters, because a blanket ban would be wrong.** A *structural*
+  reference is fine and should not be hunted: `TableCell` saying a cell may contain a `Button`,
+  `CalendarEvent` naming the `IconButton` it renders as a kebab, `SideNavSection` naming
+  `SideNavItem` — each describes **this** component's own render, and it moves only when this
+  component moves. What rots is a citation asserting **another component's current state** — that
+  it is cased, that it carries an exception, that it hardcodes a label, that it "records the
+  opposite". Those are claims about a file the author is not editing and no gate is reading.
+
+  **The command, and it is a change-time procedure rather than a periodic audit**, because an
+  unchecked cross-file claim cannot be swept for meaningfully — you only know a citation is false
+  once you have changed its subject. So when you change component `X` — its binding, its source,
+  its behaviour, anything a sentence elsewhere might have described — run:
+
+  ```bash
+  X=Skeleton   # the component you just changed
+  grep -rn --binary-files=without-match "\b$X\b" \
+      --include='*.md' --include='*.json' --include='*.mjs' --include='*.jsx' --include='*.ts' \
+      CLAUDE.md components-divergences.md api/ behaviour/ docs/ frameworks/ scripts/
+  ```
+
+  and read every hit as a claim about `X` that you may have just falsified. Two kinds are then
+  dropped by hand rather than by the query: hits under `X`'s **own** files — its quartet, its
+  binding, its contract, its manifest, its own suites — which describe the component instead of
+  claiming something about it, and hits in `CHANGELOG.md`, which is a frozen record of what
+  shipped at a tag and must never be back-edited. Expect a large raw result for a component with
+  a long paper trail — for `Skeleton` at the close of 8C10 it was 207 lines across 39 files, of
+  which the batch's own plan and design spec were 64 and this file's prose another 38 — and read
+  that as the honest shape of the work rather than a sign the query is too wide. Skim by file,
+  not by line: the interesting hits are the files that are not about `X`.
+
+  **This command is deliberately wider than the one 8C10 first published, and the widening is the
+  correction rather than a tidy-up.** That version was `grep -rln '\bX\b'
+  --include='*.behaviour.json' frameworks/` plus `grep -rn '\bX\b' scripts/lib/
+  frameworks/*/test*/`. It reaches bindings, the shared contract library and the test
+  directories, and **nothing else**: not `behaviour/`, not `scripts/*.test.mjs` (only
+  `scripts/lib/`), not `api/`, not `docs/`, and not a component's own `.jsx` source. A final
+  review found surviving instances in three of those five — `behaviour/README.md` carried a
+  present-tense twin of the very sentence 8C10 had past-tensed in
+  `scripts/lib/behaviour-contracts.mjs`, `scripts/behaviour-contracts.test.mjs` justified a test
+  by a case that no longer exists, and `SideNavSection.jsx`'s header named **four** components —
+  `Tag`, `Skeleton`, `Table`, `Pagination` — as carrying one limit, two of which had left it,
+  **and** called that limit unfixable a batch after `cases` fixed it. So read **"8C10 corrected
+  six sites" as a sweep of the command's reach, never of the class**: the count was complete
+  against a query that could not see most of the tree, which is
+  the same mistake as describing a file you grepped rather than read, one level up. The six, for
+  the record, were `Table`'s and `Tab`'s reason strings (both exemplars **removed** rather than
+  re-pointed at another name, because a replacement name is just the next thing to rot),
+  `Toast`'s `divergesFromReason` (rewritten as explicit **history**, the one form that cannot go
+  stale), two doc comments in `scripts/lib/behaviour-contracts.mjs` — one past-tensed so
+  `bindingCases()` keeps its origin story without asserting a tree that has moved, one re-pointed
+  at the only live example that qualifies — and a sentence in `components-divergences.md`
+  describing what an Angular test file asserts. Fix commits `358cad9`, `23d9beb`, `ac197c7` and
+  `357ccc4`; that last site took **three** passes, since `23d9beb` wrote it false, `ac197c7`'s
+  correction of it was itself false, and `357ccc4` fixed it.
+
+  **The widened command carries no `| grep -v node_modules` on the end, and it must not gain
+  one** — which is the same lesson one turn later, since the pipe was carried over from the
+  narrow query above without noticing that the query around it had changed. The path list never
+  descends into `node_modules`, so such a pipe can only subtract; and because `-rn` emits
+  `path:line:CONTENT` where `-rln` emits paths alone, it filters by **content**, silently dropping
+  any hit whose *text* mentions the directory. That is exactly why `| grep -v '/X\.'` was safe on
+  the old `-l` query and stopped being safe the moment the command started printing lines. It
+  shipped for one commit and dropped two real hits, one of them `Toast.behaviour.json:3` — a
+  genuine cross-file `Skeleton` citation, and **one of the six sites listed just above as
+  corrected**, hidden because its `divergesFromReason` cites `node_modules/@angular/material/…`
+  as its evidence. The entry's own remedy was concealing the entry's own worked example, which
+  reads as coverage and is therefore worse than no filter at all. Add no content filter to the
+  command above; the path list is the only scoping it needs.
+
+  **An unexecuted spec is inside the reach and is a real member of the class.** A spec is deleted
+  only once executed, and until then it is what drives a batch, so a claim it makes about a
+  component's current state misdirects that batch rather than merely aging.
+  `docs/superpowers/specs/2026-07-26-progressbar-pattern-design-pending-1.md` is the live
+  instance: `:99-100` says `Skeleton`'s "two are true of the `circle` variant and false of the
+  other three" and `:140-142` says "its two React exceptions belong to the variant-scoped family
+  above" — both present tense, both falsified by 8C10, which left `Skeleton.behaviour.json` flat
+  with no exceptions at all. It is **recorded here rather than corrected**, because the fix is not
+  a citation swap: that spec's §2 reasons from three open faces of the conditionality question,
+  one of which `cases` has since closed, and re-deriving that argument belongs to whoever plans
+  the batch. Read this paragraph before reading that spec.
+
+  **The last of those six sites — the `components-divergences.md` sentence — is the entry's own
+  thesis demonstrating itself, and it is worth more than the rule it illustrates.** (Named rather
+  than referred to as "that last one", which is what it said until two paragraphs got inserted
+  between it and its subject; a positional back-reference rots the same way a component name
+  does.) It was the SEVENTH instance and the FIRST introduced by the fix for the
+  class: the sentence was written to correct a different false claim, in the very commit that
+  records this hazard, and it was itself false — it said a suite "says nothing about `role`,
+  `aria-label` or the `status` pattern" when that file has a third `Skeleton` test asserting both
+  attributes. The cause was mundane and is the whole lesson: the author `grep`ed, found two of the
+  three tests, and described a file they had not read to the end. **No gate caught it, in either
+  direction** — not the one that was wrong, and not the one that fixed it. A reviewer read the test
+  file. Treat "I grepped it" as insufficient evidence for a claim about another file's contents;
+  the only sufficient evidence is having read that file.
+
+  **That rule was then broken by the commit that wrote it, which is the strongest evidence for it
+  there is.** `ac197c7`'s replacement sentence — the one carrying the rule — claimed the Angular
+  harness could not reach `Skeleton`'s other three variants, when `skeleton-dimensions.test.ts` had
+  been driving all four by the documented instance-field bypass the whole time. Same cause one step
+  out: its author read the one test file they had been pointed at and generalised to the directory.
+  So writing the rule down demonstrably does not stop it — the reading has to happen at the moment
+  the sentence is written, and "read that file" means the whole directory when the claim is about
+  what a test suite does or does not cover.
+
+  **Prefer no exemplar, a command, or an explicitly-past-tense one.** All three are stale-proof;
+  a present-tense component name is not. And when a claim about another file is unavoidable, cite
+  it so a reader can check it cheaply — a path with line numbers, or the command that re-derives
+  it — rather than a summary they would have to trust.
+
+  **Known members left in place, deliberately, because this batch did not falsify them and they
+  are true today**: `Input.behaviour.json` cites the gap `Tag.behaviour.json` records for its
+  remove button's missing disabled concept (still true — `Tag`'s `removable` case still carries
+  that exception), and `RadioGroup`/`Radio` cite `Breadcrumbs` and `Pagination` as at least
+  hardcoding a label. Each is one batch away from becoming the next instance, and each is exactly
+  what the command above is for. A scan for the class as a whole over-reports badly — a naive
+  name grep flags "normal **Tab** order" and HTML "**tag**" — so the change-time procedure is the
+  usable form and a repo-wide list is not.
 - **The conditionality gap is closed at ONE of its three levels, and the other two are
   the ones a reader now has to be told about.** This entry used to record the schema as
   unable to express "this pattern applies conditionally", with `Tag` as its proof — a real
@@ -781,9 +926,14 @@ scheduled for deletion the same week.
   8C9 built `cases` for exactly that (see *Architecture*), and `Tag` now declares
   `plain` → `none` and `removable` → `button` **in both layers**, with its surviving
   `states.disabled` exception scoped to the case it is true of. `Alert` (both layers),
-  `Toast`, `Skeleton` and `CalendarEvent` were converted the same way — count the converted
-  set with the command in *Architecture* rather than trusting this list, which will drift
-  the first time a batch converts another. **What cases solve is conditionality on the
+  `Toast` and `CalendarEvent` were converted the same way — count the converted
+  set with the command in *Architecture* rather than trusting this list, which has already
+  drifted **downwards** as well as up. `Skeleton` was converted in 8C9 and **un**-converted in
+  8C10: its two cases existed to scope a defect, 8C10 fixed the defect, all four variants meet
+  `status`, and the binding went back to flat because a case had nothing left to scope. That is
+  the shape to expect — a conversion is not a one-way ratchet, and a binding leaving the cased
+  set can mean the component got better rather than that the record got worse.
+  **What cases solve is conditionality on the
   component's OWN props, and only that.** Three things stay open:
 
   **Conditional on CONSUMER usage is still unexpressible**, and it is a different level
@@ -805,22 +955,29 @@ scheduled for deletion the same week.
   admits.** A component with five meaningful renders may declare two and every gate stays
   green; and `assertPatternCases` enforces one **thunk per case name**, never one render per
   configuration the prose names, so a case whose `when` covers several shapes is proved by
-  whichever one its suite happened to mount. Both are live: `Skeleton`'s `placeholder`
-  declares `when: "variant is block, line or text"` and its suite renders `block` alone, and
-  `CalendarEvent`'s `inert` declares `when: "onClick is absent, regardless of
+  whichever one its suite happened to mount. The live instance is
+  `CalendarEvent`'s `inert`, which declares `when: "onClick is absent, regardless of
   actionsEnabled"` while its suite renders the no-actions shape alone — never the
-  `actionsEnabled` one, whose root keeps a `tabIndex` and an `onKeyDown`. Neither changes a
-  verdict today, which is why both are recorded rather than fixed. This is the same limit
+  `actionsEnabled` one, whose root keeps a `tabIndex` and an `onKeyDown`. It does not change a
+  verdict today, which is why it is recorded rather than fixed. **This entry named a second
+  instance until 8C10 and the limit did not narrow when it went**: `Skeleton`'s `placeholder`
+  declared `when: "variant is block, line or text"` and its suite rendered `block` alone, and
+  that stopped being an instance because the whole case stopped existing — the binding went
+  flat — not because anything addressed the limit. Nothing still checks that a case's suite
+  renders every render its `when` admits. This is the same limit
   the curated `QUANTIFIED` set carries, and it has the same non-remedy: deriving cases
   from source was not attempted, because a scan for prop branches finds fewer renders than
   a reader does and would rebuild the false-negative class the evaluator's own header
   already rejected once.
 
   **A case bound to `none` verifies nothing**, because `none` has no requirements. For
-  `Skeleton`'s `circle` and `Tag`'s `plain` that verdict is correct — a decorative
-  placeholder and a label have no interactive contract — but the suite can then only
-  confirm the case was rendered, never that it is correctly inert. Nothing checks that
-  `circle` really carries `aria-hidden`.
+  `Tag`'s `plain` and `CalendarEvent`'s `inert` that verdict is correct — a label and a
+  chip with no `onClick` have no interactive contract — but the suite can then only
+  confirm the case was rendered, never that it is correctly inert. Nothing checks that a
+  plain `Tag` really renders a `<span>` with no role and nothing pressable in it.
+  (`Skeleton`'s `circle` was the third example here and is gone: 8C10 gave the circle the
+  same `role="status"` its siblings carry, so it is neither a case nor bound to `none` any
+  more. Its departure removed an example, not the limit.)
 
   **`Table` was deliberately NOT converted, and the reason is the first of those three.**
   Its card mode is a variant, so it looks convertible; but whether a card is interactive
@@ -851,7 +1008,10 @@ scheduled for deletion the same week.
   eighteen are irreducible** — none is a regex that could be sharpened. Each is a
   claim about *placement* (`Menu`'s `aria-haspopup` on a wrapping `<span>` rather
   than the focusable trigger), *branch* (`Skeleton`'s `role="status"` in three of
-  four variants), *conditional value* (`alert.ts`'s
+  four variants **as the tree then stood** — 8C10 made it four of four, which
+  changes the exhibit and not the measurement: the 18-of-94 figure is a fact about
+  the tree the scan was run against, and re-running it today would produce a
+  different number and the same verdict), *conditional value* (`alert.ts`'s
   `'[attr.role]': "tone() === 'danger' ? 'alert' : 'status'"`, and `Toast.jsx`'s
   same shape), or *semantic completeness* (`Menu`'s Enter opens the menu but never
   moves focus). A rendered DOM resolves all three at once, which is why the render
@@ -861,39 +1021,46 @@ scheduled for deletion the same week.
   check it would supplement is not machine-checked at all: a scan's measured error rate
   is what it is regardless of what sits above or below it, and a 51% false-unmet rate
   is worse than an honest hole.
-- **A circular `Skeleton` announces itself in Angular and is silent in React, both
-  bindings are honest, and which layer is right is NOT decided.** `skeleton.ts` sets
-  `role="status"` and `aria-label="Loading"` in its host bindings with **no branch by
-  variant at all**, so Angular announces every variant; React's `circle` branch renders
-  `aria-hidden="true"` with no role. The consequence is not a difference of shapes — it is
-  what a screen-reader user is told: meeting a circular skeleton, that user hears
-  "Loading" in Angular and hears **nothing** in React. Both positions are defensible.
-  React's silence assumes a circle skeleton usually stands beside a name that is itself
-  announced, so a second "Loading" would be noise; Angular's announcement assumes a
-  circular skeleton with no announced neighbour is a loading state a user should be told
-  about, and neither assumption always holds. Recorded, not settled — the full entry is in
-  `components-divergences.md`, per its own rule that a divergence where both layers are
-  defensible is an entry rather than a fix. React's binding declares `divergesFrom:
-  "status"` so `check:behaviour` reports the divergence as declared instead of as
-  disagreement.
+- **Converting ONE layer to cases surfaces every place the two layers were quietly
+  different. It fired twice; one of the two is now fixed and the other is deferred to Plan
+  D.** The mechanism is the durable part and is not a fact about either component: a flat
+  binding on the far side can no longer silently agree with a cased one, so the cross-layer
+  check starts reporting differences nobody was looking for. Expect more as bindings are
+  converted. It fired on `Toast` and on `Skeleton`, in the batch that built cases.
 
-  **This was found by a property of the cases mechanism nobody predicted.** Converting ONE
-  layer to cases surfaces every place the two layers were quietly different, because a
-  flat binding on the other side can no longer silently agree with a cased one. It fired
-  twice in the batch that built cases: `Toast` and `Skeleton` (with the accessibility
-  consequence above). **`Toast` was first recorded as structural and harmless — "nobody is
-  worse off" — and that was written without reading what `MatSnackBar` renders.** It is the
-  same shape as `Skeleton`, not a lesser one: in `@angular/material` 22.0.5,
-  `MatSnackBarConfig.politeness` defaults to `'polite'`, and `_role` is assigned **only**
-  inside `if (this._platform.FIREFOX)`, so outside Firefox the snackbar's live region
+  **`Skeleton` is CLOSED and its entry is retired.** It recorded that Angular announced every
+  variant while React's `circle` branch rendered `aria-hidden="true"` with no role, so a
+  screen-reader user meeting a circular skeleton heard "Loading" in Angular and **nothing** in
+  React. It was written up as *"both are defensible"* and left undecided; that framing was
+  wrong. A skeleton exists to announce that it will be replaced when asynchronous data
+  arrives, so a variant announcing nothing is not doing the job — the answer follows from the
+  definition and needed no judgement about noise. React's own code agreed three times in four,
+  which is the evidence the branch was an oddity rather than a strategy. 8C10 fixed React,
+  touched no Angular file, and the React binding went back to flat `status` with no cases and
+  no `divergesFrom`. Kept here rather than deleted because **the lesson is that an undecided
+  divergence can be a mis-triage**: two defensible-looking positions were two readings of a
+  component whose purpose settles it, and the cheapest test is whether the same layer already
+  contradicts itself elsewhere. The retired entry is in `components-divergences.md`.
+
+  **`Toast` is OPEN and is deferred to Plan D.** It was first recorded as structural and
+  harmless — "nobody is worse off" — and that was written without reading what `MatSnackBar`
+  renders. It is the same shape `Skeleton` was, not a lesser one: in `@angular/material`
+  22.0.5, `MatSnackBarConfig.politeness` defaults to `'polite'`, and `_role` is assigned
+  **only** inside `if (this._platform.FIREFOX)`, so outside Firefox the snackbar's live region
   carries `aria-live="polite"` and **no role at all**. React's danger toast renders
-  `role="alert"` with `aria-live="assertive"`. So a screen-reader user meeting a critical
-  error toast has it **queued** in Angular and **interrupting** in React — a real cost to a
-  real person, in the safety-relevant case. It now has its own
-  `components-divergences.md` entry, and which layer is right is not decided there either.
-  Both are also the **first ever uses of `divergesFrom` in this
-  repository** — `grep -rl divergesFrom frameworks/` found nothing before them, so neither
-  branch of that escape hatch had been exercised against a real binding until now.
+  `role="alert"` with `aria-live="assertive"`. So a screen-reader user meeting a critical error
+  toast has it **queued** in Angular and **interrupting** in React — a real cost to a real
+  person, in the safety-relevant case. It is not the `Skeleton` case, because Angular is not
+  wrong about a control it does not own: Material has no tone axis to be wrong about. Plan D
+  removes Material, and an `arena-toast` on the CDK would be born with the right role per tone.
+  **Nothing is fixed for Angular users until then**, and a deferral moves the work rather than
+  reducing what anyone pays meanwhile. Its `components-divergences.md` entry carries the two
+  interim resolutions that exist and were not taken.
+
+  `divergesFrom` was **first exercised by these two** — `grep -rl divergesFrom frameworks/`
+  found nothing before them, so neither branch of that escape hatch had ever met a real
+  binding. Run that command for the live set rather than trusting a figure here; with
+  `Skeleton` closed, `Toast` is the only user left.
 - **No gate typechecks `frameworks/angular/test/`, so every wrapper and helper living there
   is unchecked TypeScript.** `check:angular` runs `ngc --strictTemplates` over
   `frameworks/angular/tsconfig.check.json`, whose `"files"` is `["./index.ts"]` — the
@@ -930,7 +1097,8 @@ scheduled for deletion the same week.
   `validateBinding` together: distinct names, and a name required on every `cases[]` entry.
 
   **Three smaller things the same batch left, recorded here rather than in the plan that gets
-  deleted.** `divergesFromReason` (in `Skeleton`'s and `Toast`'s bindings) is a novel field
+  deleted.** `divergesFromReason` (introduced on `Skeleton`'s and `Toast`'s bindings, and on
+  `Toast`'s alone since 8C10 closed the `Skeleton` divergence) is a novel field
   with no repo precedent that **no gate reads** — if a convention for divergence rationale is
   ever wanted it should be named repo-wide rather than inheriting an unstated first instance
   from one batch. A comment in `frameworks/angular/test/compliance.ts` explaining why a
@@ -957,7 +1125,9 @@ scheduled for deletion the same week.
   construction, so it proves the good case and can never exercise the bad ones.
   **This is the live instance of the one conditionality level `cases` did not
   close**, per the entry above: `Tag` and `Skeleton` were the two the schema could
-  not express and both are now expressed as cases, while this one depends on what a
+  not express, and both have since left the problem — `Tag` by being expressed as cases,
+  `Skeleton` by having its defect fixed in 8C10, after which nothing was left to scope and
+  its binding went flat. This one is neither: it depends on what a
   consumer hands in rather than on any prop of `Tooltip`, so no case can name it.
   There is no grep for the set of instances, because a
   requirement holding only for some inputs is a property of the implementation,
@@ -1013,7 +1183,11 @@ scheduled for deletion the same week.
   working end to end rather than an exception quietly outliving its subject; `Menu`'s
   misplaced `aria-haspopup` and
   `Skeleton`'s `circle` branch, the two mistakes the rejected text scan got
-  backwards; and the failure path of the compliance wrapper on the React side, four
+  backwards — and the `Skeleton` half is now pinned as the **fix** rather than the defect,
+  since 8C10 gave the circle its siblings' role and the suite asserts all four announce; the
+  suite's own header keeps the original branch shape on record, because the lesson about what
+  a scan cannot see outlives the branch that demonstrated it. Also
+  restored: the failure path of the compliance wrapper on the React side, four
   tests that write deliberately false bindings to a temp file and prove STALE
   EXCEPTION, OVERCLAIM, "no subject element" and "not declared behavioural" actually
   fire.
@@ -1489,7 +1663,9 @@ scheduled for deletion the same week.
   level — conditional on **consumer** usage, with `Table`, `Tooltip` and `Pagination` as the live
   instances — recorded in its own entry above. **Count the `none` bindings rather than writing an
   ordinal**, and note the count now includes `none` bound by a *case* rather than by a whole
-  binding (`Tag`'s `plain`, `Skeleton`'s `circle`, `CalendarEvent`'s `inert`)
+  binding (`Tag`'s `plain` and `CalendarEvent`'s `inert`; `Skeleton`'s `circle` was a third
+  until 8C10 retired that case, which is the count moving DOWN and another reason not to
+  write an ordinal)
   — `grep -rho '"pattern": "none"' --include='*.json' frameworks/ | wc -l`, and the `-o` is the
   point: `grep -rl` counts FILES, and `frameworks/angular/behaviour-delegated.json` holds several
   `none` entries at once, so the file count is not the binding count and the measurement written

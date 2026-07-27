@@ -53,11 +53,22 @@ agree or the difference is written down.
 ### Flat bindings and cased bindings
 
 A binding describes a component; a render suite judges one render of it. A
-component that renders differently depending on its own props — `Skeleton`'s
-`circle` variant carrying two exceptions that are false of `block`, `line` and
-`text`; `Alert` rendering `role="alert"` for a `danger` tone and `role="status"`
-for any other — is several renders, and no single flat exception list is correct
-for all of them.
+component that renders differently depending on its own props — `Alert`
+rendering `role="alert"` for a `danger` tone and `role="status"` for any other —
+is several renders, and no single flat exception list is correct for all of them.
+
+`Skeleton` is the case that *motivated* this shape, and it is named here in the
+past tense deliberately: its `status` binding once carried two exceptions true of
+the `circle` variant alone, batch 8C10 fixed that defect, and it binds flat today.
+The tense is the point. This sentence used to make the same claim in the present,
+and it went false the moment the component improved — a component name written
+into another file's prose is a claim no gate reads, so it rots while every gate
+stays green (`CLAUDE.md`'s *Known debt* carries the hazard and the change-time
+grep that finds it). History cannot go false, which is why the motivating case is
+written as history; `Alert` is the one present-tense name kept, because the
+paragraph on `when` below already reasons from its `danger` case, so removing it
+here would cost a worked example and buy nothing. For the live set, run the
+command at the end of this section rather than reading any name from this page.
 
 `pattern` and `exceptions` are one shape: `cases` is the other. They are
 alternatives, never both — a binding declaring both is rejected by

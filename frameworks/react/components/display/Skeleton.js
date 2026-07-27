@@ -21,7 +21,8 @@ export function Skeleton({ variant = "block", width, height, lines = 3, radius }
     const d = height || width || "var(--sp-10)";
     return React.createElement("div", {
       className: "arena-skeleton",
-      "aria-hidden": "true",
+      role: "status",
+      "aria-label": "Loading",
       style: { width: d, height: d, borderRadius: "50%" }
     });
   }

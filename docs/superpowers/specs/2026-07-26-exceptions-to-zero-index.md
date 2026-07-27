@@ -208,10 +208,14 @@ is a stronger claim with less behind it than the exception it replaced.
 
 Note also that a substantial share of the 70 bindings name the `none` pattern, which has **zero**
 requirements — count them with `grep -rl '"pattern": "none"' --include='*.behaviour.json'
-frameworks/ | wc -l`, which returns 24 as written and rises whenever a batch declares a `none` case.
+frameworks/ | wc -l`, which returns 23 as written and moves whenever a batch declares or retires a
+`none` case — it read 24 until 8C10 fixed `Skeleton`'s `circle` variant and its binding went flat.
 Covering those would move the headline number without verifying anything, and the temptation grows
 as the number becomes a goal. Do not take it: a case bound to `none` confirms the render exists, not
-that it is correctly inert — a limit 8C9 records for `Skeleton`'s `circle`.
+that it is correctly inert — the live instance is `Tag`'s `plain` case, which is bound to `none` and
+IS rendered by a covered suite (`Tag:react`, `Tag:angular`), so the suite proves the plain tag was
+drawn and nothing proves it is inert. 8C9 recorded the limit against `Skeleton`'s `circle`; that
+example went stale in 8C10 when the circle stopped being a case at all, and the limit did not.
 
 **What binding cases give this section.** A stricter definition of "covered", inherited free: after
 8C9 a component is covered only when *every declared case* is rendered, so coverage widened later is

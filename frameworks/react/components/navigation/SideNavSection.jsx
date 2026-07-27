@@ -5,16 +5,25 @@ import { injectInto, indentFor, COLUMN } from './side-nav-inject.jsx';
  *  consumer wrote -- and its accessible name is the same heading a sighted user
  *  reads, so the grouping the eye sees is the grouping a screen reader announces.
  *
- *  A SECTION ALWAYS HAS CHILDREN, and that is a guard rather than a convention.
- *  Allowing a childless one would give the component two shapes that a single
- *  behaviour binding cannot describe -- the same "true in one variant, false in
- *  the other" limit Tag, Skeleton, Table and Pagination already carry, and which
- *  has no fix. NO ORDINAL HERE, deliberately: this comment shipped saying "the
- *  fifth instance" while its own batch-mate SideNavItem.behaviour.json said "the
- *  fourth", which is why CLAUDE.md's Known debt now carries the record and a
- *  command that counts rather than a number anyone maintains by hand. What IS
- *  optional is having sections at all: loose items at the root are legal and may
- *  sit beside them.
+ *  A SECTION ALWAYS HAS CHILDREN, and that is a guard rather than a convention:
+ *  the render below is a role="group" whose aria-labelledby resolves to a heading
+ *  NAMING that group, so a childless one draws a label for nothing. That is the
+ *  defect the guard refuses, and it is the load-bearing reason.
+ *
+ *  NO NAME LIST AND NO ORDINAL HERE, deliberately, because this clause once
+ *  carried both and both went false. It used to justify the guard by "two shapes
+ *  a single behaviour binding cannot describe", cite sibling components as
+ *  carrying the same "true in one variant, false in the other" limit, and add
+ *  that the limit "has no fix" -- and 8C9 built `cases` as exactly that fix,
+ *  after which the cited components began leaving the limit one batch at a time.
+ *  A component name written into another file's prose is a claim no gate reads,
+ *  and so is an ordinal: this comment also shipped saying "the fifth instance"
+ *  while its own batch-mate said "the fourth". CLAUDE.md's Known debt carries the
+ *  record, the live commands, and the conditionality levels `cases` still does
+ *  not reach. What survives of the secondary argument is only that a second shape
+ *  would be a second thing to declare and verify, which is a cost rather than an
+ *  impossibility. What IS optional is having sections at all: loose items at the
+ *  root are legal and may sit beside them.
  *
  *  useId rather than a derived id: the section declares no `id` member, and this
  *  wiring is internal -- nothing outside needs to address the heading. That is the
