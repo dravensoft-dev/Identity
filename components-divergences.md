@@ -340,42 +340,52 @@ used to read *"the same shape as `ConfirmDialog`'s accessibility debt above"*; t
 by plan 8C4 and the comparison no longer holds. This entry is now the older of the two and stands
 on its own.
 
-### Skeleton — a circular skeleton announces itself in Angular and is silent in React
+### Skeleton — the circular variant's announcement, RETIRED as a divergence
 
-**React:** `Skeleton.jsx` branches by variant. `block`, `line` and `text` render
-`role="status"` with `aria-label="Loading"`; `circle` renders `aria-hidden="true"` with no role
-at all, so a screen reader is told nothing about it.
+This section recorded that `Skeleton.jsx` branched by variant — `block`, `line` and `text`
+rendering `role="status"` with `aria-label="Loading"`, and `circle` rendering
+`aria-hidden="true"` with no role at all — while `skeleton.ts` set `role: 'status'` and
+`'aria-label': 'Loading'` in its `host` bindings statically, with **no branch by variant**. The
+consequence was not a difference of shapes: meeting a circular skeleton, a screen-reader user
+heard "Loading" in Angular and heard nothing in React. It was recorded as *"both are
+defensible"* and left undecided.
 
-**Angular:** `skeleton.ts` sets `role: 'status'` and `'aria-label': 'Loading'` in its `host`
-bindings, statically, with **no branch by variant**. Every variant announces, `circle` included.
+**Plan 8C10 closed it, and closed it under step 2 of *How to add an entry* below: one layer was
+simply wrong.** React was. Angular has announced every variant since it was written and needed
+no change; `skeleton.ts` was not touched. `Skeleton.jsx`'s `circle` branch now renders
+`role="status"` and `aria-label="Loading"` like its three siblings.
 
-**Why:** the two layers made different assumptions about where a circular skeleton appears, and
-neither assumption is wrong in general. React's silence assumes the circle is an avatar
-placeholder standing beside a name that is itself announced, so a second "Loading" would be
-noise. Angular's announcement assumes a circular skeleton with no announced neighbour is a
-loading state a user should be told about. Both hold in some layouts and neither holds in all of
-them.
+**What settled it was not a judgement call, which is the transferable part.** The undecided
+framing assumed the answer needed a design decision about whether a second "Loading" beside an
+announced name is noise. It did not. A skeleton exists to announce that it will be replaced by a
+functional component when asynchronous data arrives; a skeleton that announces nothing is not
+doing that job, whatever shape it is. The variant's behaviour follows from the definition, and
+no preference had to be weighed to reach it. **React's own code was the evidence**: `block`,
+`line` and `text` all announced unconditionally, so no noise-reduction strategy was ever applied
+across this component. The `circle` branch was the odd one out rather than the deliberate
+exception it read as.
 
-**The consequence, stated plainly, because it is what an entry is for:** meeting a circular
-skeleton, a screen-reader user hears "Loading" in Angular and hears nothing in React. That is a
-real difference to a real person, not a difference in how two files are shaped.
+**How it was found, which is why this note replaces the section rather than deleting it.**
+Nothing was looking for it. Converting the React binding to cases made the cross-layer check
+compare a cased binding against a flat one, and a flat binding can no longer silently agree with
+a cased one. `Toast` surfaced the same way in the same batch and is still open below. Expect
+more of these as bindings are converted — the property is a permanent one of the cases
+mechanism, not a fact about `Skeleton`, and it outlives the divergence it found.
 
-**Converges:** undecided, deliberately. This is the *"both are defensible"* case in *How to add
-an entry* below — the answer requires a design decision about what a circle skeleton is for, and
-nothing in this repository has taken it. Neither layer is carrying debt against the other until
-it is taken.
+**Recorded how, now:** `frameworks/react/components/display/Skeleton.behaviour.json` is back to
+the flat `{"pattern": "status", "exceptions": []}` — no cases, no `divergesFrom` — because all
+four variants meet `status` and there is nothing left for a case to scope.
+`frameworks/angular/primitives/skeleton/skeleton.behaviour.json` is unchanged and still flat at
+`status`. That the split was built and then retired is the mechanism working rather than a
+retreat: splitting the variants is what made the defect visible, and fixing the defect retired
+the need for the split.
 
-**Recorded how:** both bindings are honest about their own layer.
-`frameworks/react/components/display/Skeleton.behaviour.json` declares two cases —
-`placeholder` → `status` and `circle` → `none` — and carries `divergesFrom: "status"` naming
-Angular's flat binding, so `check:behaviour` reports the divergence as declared rather than as
-two layers disagreeing. `frameworks/angular/primitives/skeleton/skeleton.behaviour.json` stays
-flat at `status`, which is exactly what its component does.
-
-**How it was found, which is worth knowing for the next one:** nothing was looking for it.
-Converting the React binding to cases made the cross-layer check compare a cased binding against
-a flat one, and a flat binding can no longer silently agree with a cased one. `Toast` surfaced
-the same way in the same batch. Expect more of these as bindings are converted.
+**What is NOT proven, and it is the same limit the rest of this file carries.** The React claim
+is verified — `frameworks/react/test-dom/placement-and-branches.test.jsx` renders all four
+variants and `Skeleton:react` is in `check:compliance`'s `COVERED`. The Angular claim is not:
+`skeleton.behaviour.json` says `status` with no exceptions and no suite renders it, so Angular's
+side of the now-agreeing pair is an unverified claim, exactly as it was while the layers
+disagreed.
 
 ### Toast — a critical error interrupts in React and is queued in Angular
 
@@ -410,11 +420,26 @@ third-party control that has no tone axis and never wired one, and `MatSnackBarC
 is the seam that would carry it — the same unwired-`MatSnackBarConfig` shape already recorded in
 `CLAUDE.md` for `duration` and `--dismiss-*`.
 
-**Converges:** undecided, deliberately, and for the same reason `Skeleton` above is. Two
-resolutions exist — a consumer-side wiring that sets `politeness: 'assertive'` for a danger
-snackbar, or a narrowed claim admitting Angular has no tone axis here — and choosing between them
-is a design decision about what Arena's Angular Toast *is*, which nothing in this repository has
-taken. Neither layer is carrying debt against the other until it is.
+**Converges:** **deferred to Plan D**, which is a decision and not a resolution. `Skeleton` above
+was retired because one layer was simply wrong; this one is not that case. Angular is not wrong
+about a control it does not own — it delegates to a third-party component that has no tone axis
+to be wrong about — so there is nothing here to fix at this layer's level. Plan D removes Angular
+Material, and an `arena-toast` built on the CDK would be born with the right role and live-region
+politeness per tone, the way every other Arena primitive carries its own behaviour. That is where
+this converges.
+
+**Nothing is fixed for Angular users until Plan D lands, and this entry must not be read as
+though it were.** Until then, every Angular consumer of a critical error toast ships the
+behaviour described above: `aria-live="polite"` and, outside Firefox, no role at all, so the
+message is queued behind whatever is already speaking rather than interrupting it. A deferral
+moves the work; it does not reduce the cost anyone is paying in the meantime.
+
+Two interim resolutions exist and neither was taken. A consumer-side wiring setting `politeness:
+'assertive'` for a danger snackbar puts a component-level obligation on every host and is
+forgotten silently when a host misses it; a narrowed delegated claim admitting Angular has no
+tone axis here would make the record accurate without changing what a user hears. Both are
+available before Plan D if the cost above is judged too high to carry, and Plan D supersedes
+either.
 
 **Recorded how:** `frameworks/react/components/feedback/Toast.behaviour.json` declares two cases,
 `danger` → `alert` and `advisory` → `status`, and carries `divergesFrom: "alert"` naming the flat

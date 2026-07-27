@@ -174,7 +174,11 @@ mounts*; a never-rendered case and an undeclared one are both errors. A suite me
 exceptions were true — while `Skeleton:react` sat in `COVERED` as a claim about the
 component. (The rest of that file was not untested; two hand tests rendered all four
 variants. What no flat exception list could do is feed all four to the one mechanism that
-makes an exception expire.)
+makes an exception expire.) **That worked example is now history rather than a file to go
+and read**: 8C10 fixed the defect the split exposed, so `Skeleton` binds flat again and
+`placement-and-branches.test.jsx` calls `assertPattern` — against `block` **and** `circle`,
+which is the same lesson enforced by hand where a flat binding gives the wrapper no case
+list to drive. The hole `assertPatternCases` closes is unchanged; only its exhibit moved.
 
 `bun run check:behaviour` asserts every component declares, that no declaration names a
 pattern or requirement that does not exist, that no delegated entry is stale, and that
@@ -767,7 +771,14 @@ scheduled for deletion the same week.
   case it declared could carry no suite. The reasons are in the conditionality entry
   below, and `Table.behaviour.json`'s own reason string now carries them too — it used to
   cite `Skeleton` as proving a limit that no longer exists, and 8C9's close-out corrected
-  it in place rather than only recording it here. **What stays true of both is the
+  it in place rather than only recording it here. **That corrected citation has since gone
+  stale in the other direction and is NOT fixed**: the reason now reads *"`cases` exist, and
+  `Skeleton` demonstrates that remedy rather than the limit it used to prove"*, and after 8C10
+  `Skeleton` demonstrates neither — it binds flat, because its defect was fixed. The
+  load-bearing half of the sentence (`cases` exist, and `Table` was deliberately left flat) is
+  still true; only the exemplar is wrong, and `Tag` or `CalendarEvent` is the one to name when
+  someone next opens that file. It was left alone because 8C10 was a documentation batch that
+  touched no `frameworks/` file at all. **What stays true of both is the
   verification, not the
   behaviour**: `grid-keyboard.test.jsx` is the one suite the grid rule excludes, so
   neither component can appear in `COVERED`, both are DOM-tested by hand, and
@@ -781,9 +792,14 @@ scheduled for deletion the same week.
   8C9 built `cases` for exactly that (see *Architecture*), and `Tag` now declares
   `plain` → `none` and `removable` → `button` **in both layers**, with its surviving
   `states.disabled` exception scoped to the case it is true of. `Alert` (both layers),
-  `Toast`, `Skeleton` and `CalendarEvent` were converted the same way — count the converted
-  set with the command in *Architecture* rather than trusting this list, which will drift
-  the first time a batch converts another. **What cases solve is conditionality on the
+  `Toast` and `CalendarEvent` were converted the same way — count the converted
+  set with the command in *Architecture* rather than trusting this list, which has already
+  drifted **downwards** as well as up. `Skeleton` was converted in 8C9 and **un**-converted in
+  8C10: its two cases existed to scope a defect, 8C10 fixed the defect, all four variants meet
+  `status`, and the binding went back to flat because a case had nothing left to scope. That is
+  the shape to expect — a conversion is not a one-way ratchet, and a binding leaving the cased
+  set can mean the component got better rather than that the record got worse.
+  **What cases solve is conditionality on the
   component's OWN props, and only that.** Three things stay open:
 
   **Conditional on CONSUMER usage is still unexpressible**, and it is a different level
@@ -805,22 +821,29 @@ scheduled for deletion the same week.
   admits.** A component with five meaningful renders may declare two and every gate stays
   green; and `assertPatternCases` enforces one **thunk per case name**, never one render per
   configuration the prose names, so a case whose `when` covers several shapes is proved by
-  whichever one its suite happened to mount. Both are live: `Skeleton`'s `placeholder`
-  declares `when: "variant is block, line or text"` and its suite renders `block` alone, and
-  `CalendarEvent`'s `inert` declares `when: "onClick is absent, regardless of
+  whichever one its suite happened to mount. The live instance is
+  `CalendarEvent`'s `inert`, which declares `when: "onClick is absent, regardless of
   actionsEnabled"` while its suite renders the no-actions shape alone — never the
-  `actionsEnabled` one, whose root keeps a `tabIndex` and an `onKeyDown`. Neither changes a
-  verdict today, which is why both are recorded rather than fixed. This is the same limit
+  `actionsEnabled` one, whose root keeps a `tabIndex` and an `onKeyDown`. It does not change a
+  verdict today, which is why it is recorded rather than fixed. **This entry named a second
+  instance until 8C10 and the limit did not narrow when it went**: `Skeleton`'s `placeholder`
+  declared `when: "variant is block, line or text"` and its suite rendered `block` alone, and
+  that stopped being an instance because the whole case stopped existing — the binding went
+  flat — not because anything addressed the limit. Nothing still checks that a case's suite
+  renders every render its `when` admits. This is the same limit
   the curated `QUANTIFIED` set carries, and it has the same non-remedy: deriving cases
   from source was not attempted, because a scan for prop branches finds fewer renders than
   a reader does and would rebuild the false-negative class the evaluator's own header
   already rejected once.
 
   **A case bound to `none` verifies nothing**, because `none` has no requirements. For
-  `Skeleton`'s `circle` and `Tag`'s `plain` that verdict is correct — a decorative
-  placeholder and a label have no interactive contract — but the suite can then only
-  confirm the case was rendered, never that it is correctly inert. Nothing checks that
-  `circle` really carries `aria-hidden`.
+  `Tag`'s `plain` and `CalendarEvent`'s `inert` that verdict is correct — a label and a
+  chip with no `onClick` have no interactive contract — but the suite can then only
+  confirm the case was rendered, never that it is correctly inert. Nothing checks that a
+  plain `Tag` really renders a `<span>` with no role and nothing pressable in it.
+  (`Skeleton`'s `circle` was the third example here and is gone: 8C10 gave the circle the
+  same `role="status"` its siblings carry, so it is neither a case nor bound to `none` any
+  more. Its departure removed an example, not the limit.)
 
   **`Table` was deliberately NOT converted, and the reason is the first of those three.**
   Its card mode is a variant, so it looks convertible; but whether a card is interactive
@@ -851,7 +874,10 @@ scheduled for deletion the same week.
   eighteen are irreducible** — none is a regex that could be sharpened. Each is a
   claim about *placement* (`Menu`'s `aria-haspopup` on a wrapping `<span>` rather
   than the focusable trigger), *branch* (`Skeleton`'s `role="status"` in three of
-  four variants), *conditional value* (`alert.ts`'s
+  four variants **as the tree then stood** — 8C10 made it four of four, which
+  changes the exhibit and not the measurement: the 18-of-94 figure is a fact about
+  the tree the scan was run against, and re-running it today would produce a
+  different number and the same verdict), *conditional value* (`alert.ts`'s
   `'[attr.role]': "tone() === 'danger' ? 'alert' : 'status'"`, and `Toast.jsx`'s
   same shape), or *semantic completeness* (`Menu`'s Enter opens the menu but never
   moves focus). A rendered DOM resolves all three at once, which is why the render
@@ -861,39 +887,46 @@ scheduled for deletion the same week.
   check it would supplement is not machine-checked at all: a scan's measured error rate
   is what it is regardless of what sits above or below it, and a 51% false-unmet rate
   is worse than an honest hole.
-- **A circular `Skeleton` announces itself in Angular and is silent in React, both
-  bindings are honest, and which layer is right is NOT decided.** `skeleton.ts` sets
-  `role="status"` and `aria-label="Loading"` in its host bindings with **no branch by
-  variant at all**, so Angular announces every variant; React's `circle` branch renders
-  `aria-hidden="true"` with no role. The consequence is not a difference of shapes — it is
-  what a screen-reader user is told: meeting a circular skeleton, that user hears
-  "Loading" in Angular and hears **nothing** in React. Both positions are defensible.
-  React's silence assumes a circle skeleton usually stands beside a name that is itself
-  announced, so a second "Loading" would be noise; Angular's announcement assumes a
-  circular skeleton with no announced neighbour is a loading state a user should be told
-  about, and neither assumption always holds. Recorded, not settled — the full entry is in
-  `components-divergences.md`, per its own rule that a divergence where both layers are
-  defensible is an entry rather than a fix. React's binding declares `divergesFrom:
-  "status"` so `check:behaviour` reports the divergence as declared instead of as
-  disagreement.
+- **Converting ONE layer to cases surfaces every place the two layers were quietly
+  different. It fired twice; one of the two is now fixed and the other is deferred to Plan
+  D.** The mechanism is the durable part and is not a fact about either component: a flat
+  binding on the far side can no longer silently agree with a cased one, so the cross-layer
+  check starts reporting differences nobody was looking for. Expect more as bindings are
+  converted. It fired on `Toast` and on `Skeleton`, in the batch that built cases.
 
-  **This was found by a property of the cases mechanism nobody predicted.** Converting ONE
-  layer to cases surfaces every place the two layers were quietly different, because a
-  flat binding on the other side can no longer silently agree with a cased one. It fired
-  twice in the batch that built cases: `Toast` and `Skeleton` (with the accessibility
-  consequence above). **`Toast` was first recorded as structural and harmless — "nobody is
-  worse off" — and that was written without reading what `MatSnackBar` renders.** It is the
-  same shape as `Skeleton`, not a lesser one: in `@angular/material` 22.0.5,
-  `MatSnackBarConfig.politeness` defaults to `'polite'`, and `_role` is assigned **only**
-  inside `if (this._platform.FIREFOX)`, so outside Firefox the snackbar's live region
+  **`Skeleton` is CLOSED and its entry is retired.** It recorded that Angular announced every
+  variant while React's `circle` branch rendered `aria-hidden="true"` with no role, so a
+  screen-reader user meeting a circular skeleton heard "Loading" in Angular and **nothing** in
+  React. It was written up as *"both are defensible"* and left undecided; that framing was
+  wrong. A skeleton exists to announce that it will be replaced when asynchronous data
+  arrives, so a variant announcing nothing is not doing the job — the answer follows from the
+  definition and needed no judgement about noise. React's own code agreed three times in four,
+  which is the evidence the branch was an oddity rather than a strategy. 8C10 fixed React,
+  touched no Angular file, and the React binding went back to flat `status` with no cases and
+  no `divergesFrom`. Kept here rather than deleted because **the lesson is that an undecided
+  divergence can be a mis-triage**: two defensible-looking positions were two readings of a
+  component whose purpose settles it, and the cheapest test is whether the same layer already
+  contradicts itself elsewhere. The retired entry is in `components-divergences.md`.
+
+  **`Toast` is OPEN and is deferred to Plan D.** It was first recorded as structural and
+  harmless — "nobody is worse off" — and that was written without reading what `MatSnackBar`
+  renders. It is the same shape `Skeleton` was, not a lesser one: in `@angular/material`
+  22.0.5, `MatSnackBarConfig.politeness` defaults to `'polite'`, and `_role` is assigned
+  **only** inside `if (this._platform.FIREFOX)`, so outside Firefox the snackbar's live region
   carries `aria-live="polite"` and **no role at all**. React's danger toast renders
-  `role="alert"` with `aria-live="assertive"`. So a screen-reader user meeting a critical
-  error toast has it **queued** in Angular and **interrupting** in React — a real cost to a
-  real person, in the safety-relevant case. It now has its own
-  `components-divergences.md` entry, and which layer is right is not decided there either.
-  Both are also the **first ever uses of `divergesFrom` in this
-  repository** — `grep -rl divergesFrom frameworks/` found nothing before them, so neither
-  branch of that escape hatch had been exercised against a real binding until now.
+  `role="alert"` with `aria-live="assertive"`. So a screen-reader user meeting a critical error
+  toast has it **queued** in Angular and **interrupting** in React — a real cost to a real
+  person, in the safety-relevant case. It is not the `Skeleton` case, because Angular is not
+  wrong about a control it does not own: Material has no tone axis to be wrong about. Plan D
+  removes Material, and an `arena-toast` on the CDK would be born with the right role per tone.
+  **Nothing is fixed for Angular users until then**, and a deferral moves the work rather than
+  reducing what anyone pays meanwhile. Its `components-divergences.md` entry carries the two
+  interim resolutions that exist and were not taken.
+
+  `divergesFrom` was **first exercised by these two** — `grep -rl divergesFrom frameworks/`
+  found nothing before them, so neither branch of that escape hatch had ever met a real
+  binding. Run that command for the live set rather than trusting a figure here; with
+  `Skeleton` closed, `Toast` is the only user left.
 - **No gate typechecks `frameworks/angular/test/`, so every wrapper and helper living there
   is unchecked TypeScript.** `check:angular` runs `ngc --strictTemplates` over
   `frameworks/angular/tsconfig.check.json`, whose `"files"` is `["./index.ts"]` — the
@@ -930,7 +963,8 @@ scheduled for deletion the same week.
   `validateBinding` together: distinct names, and a name required on every `cases[]` entry.
 
   **Three smaller things the same batch left, recorded here rather than in the plan that gets
-  deleted.** `divergesFromReason` (in `Skeleton`'s and `Toast`'s bindings) is a novel field
+  deleted.** `divergesFromReason` (introduced on `Skeleton`'s and `Toast`'s bindings, and on
+  `Toast`'s alone since 8C10 closed the `Skeleton` divergence) is a novel field
   with no repo precedent that **no gate reads** — if a convention for divergence rationale is
   ever wanted it should be named repo-wide rather than inheriting an unstated first instance
   from one batch. A comment in `frameworks/angular/test/compliance.ts` explaining why a
@@ -957,7 +991,9 @@ scheduled for deletion the same week.
   construction, so it proves the good case and can never exercise the bad ones.
   **This is the live instance of the one conditionality level `cases` did not
   close**, per the entry above: `Tag` and `Skeleton` were the two the schema could
-  not express and both are now expressed as cases, while this one depends on what a
+  not express, and both have since left the problem — `Tag` by being expressed as cases,
+  `Skeleton` by having its defect fixed in 8C10, after which nothing was left to scope and
+  its binding went flat. This one is neither: it depends on what a
   consumer hands in rather than on any prop of `Tooltip`, so no case can name it.
   There is no grep for the set of instances, because a
   requirement holding only for some inputs is a property of the implementation,
@@ -1013,7 +1049,11 @@ scheduled for deletion the same week.
   working end to end rather than an exception quietly outliving its subject; `Menu`'s
   misplaced `aria-haspopup` and
   `Skeleton`'s `circle` branch, the two mistakes the rejected text scan got
-  backwards; and the failure path of the compliance wrapper on the React side, four
+  backwards — and the `Skeleton` half is now pinned as the **fix** rather than the defect,
+  since 8C10 gave the circle its siblings' role and the suite asserts all four announce; the
+  suite's own header keeps the original branch shape on record, because the lesson about what
+  a scan cannot see outlives the branch that demonstrated it. Also
+  restored: the failure path of the compliance wrapper on the React side, four
   tests that write deliberately false bindings to a temp file and prove STALE
   EXCEPTION, OVERCLAIM, "no subject element" and "not declared behavioural" actually
   fire.
@@ -1489,7 +1529,9 @@ scheduled for deletion the same week.
   level — conditional on **consumer** usage, with `Table`, `Tooltip` and `Pagination` as the live
   instances — recorded in its own entry above. **Count the `none` bindings rather than writing an
   ordinal**, and note the count now includes `none` bound by a *case* rather than by a whole
-  binding (`Tag`'s `plain`, `Skeleton`'s `circle`, `CalendarEvent`'s `inert`)
+  binding (`Tag`'s `plain` and `CalendarEvent`'s `inert`; `Skeleton`'s `circle` was a third
+  until 8C10 retired that case, which is the count moving DOWN and another reason not to
+  write an ordinal)
   — `grep -rho '"pattern": "none"' --include='*.json' frameworks/ | wc -l`, and the `-o` is the
   point: `grep -rl` counts FILES, and `frameworks/angular/behaviour-delegated.json` holds several
   `none` entries at once, so the file count is not the binding count and the measurement written
