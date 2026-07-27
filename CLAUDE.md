@@ -818,17 +818,26 @@ scheduled for deletion the same week.
   X=Skeleton   # the component you just changed
   grep -rn --binary-files=without-match "\b$X\b" \
       --include='*.md' --include='*.json' --include='*.mjs' --include='*.jsx' --include='*.ts' \
-      CLAUDE.md components-divergences.md api/ behaviour/ docs/ frameworks/ scripts/ \
-    | grep -v node_modules
+      CLAUDE.md components-divergences.md api/ behaviour/ docs/ frameworks/ scripts/
   ```
+
+  **There is no `| grep -v node_modules` on the end, and there must not be.** The path list never
+  descends into `node_modules`, so such a pipe can only subtract — and because `-rn` emits
+  `path:line:CONTENT`, it filters by content rather than by path and silently drops any hit whose
+  *text* mentions the directory. This shipped for one commit and dropped two real lines, one of
+  them `Toast.behaviour.json:3` — a genuine cross-file `Skeleton` citation, and **one of the six
+  sites this very entry lists as corrected**, hidden because its `divergesFromReason` cites
+  `node_modules/@angular/material/…` as its evidence. The entry's own remedy was concealing the
+  entry's own worked example. The earlier query's `| grep -v '/X\.'` was safe only because `-l`
+  emits paths alone; the same shape after `-rn` is a content match. Add no content filter here.
 
   and read every hit as a claim about `X` that you may have just falsified. Two kinds are then
   dropped by hand rather than by the query: hits under `X`'s **own** files — its quartet, its
   binding, its contract, its manifest, its own suites — which describe the component instead of
   claiming something about it, and hits in `CHANGELOG.md`, which is a frozen record of what
   shipped at a tag and must never be back-edited. Expect a large raw result for a component with
-  a long paper trail — for `Skeleton` at the close of 8C10 it was 203 lines across 38 files, of
-  which the batch's own plan and design spec were 64 and this file's prose another 35 — and read
+  a long paper trail — for `Skeleton` at the close of 8C10 it was 207 lines across 39 files, of
+  which the batch's own plan and design spec were 64 and this file's prose another 38 — and read
   that as the honest shape of the work rather than a sign the query is too wide. Skim by file,
   not by line: the interesting hits are the files that are not about `X`.
 
@@ -841,9 +850,9 @@ scheduled for deletion the same week.
   review found surviving instances in three of those five — `behaviour/README.md` carried a
   present-tense twin of the very sentence 8C10 had past-tensed in
   `scripts/lib/behaviour-contracts.mjs`, `scripts/behaviour-contracts.test.mjs` justified a test
-  by a case that no longer exists, and `SideNavSection.jsx`'s header named two components as
-  carrying a limit both had left **and** called that limit unfixable a batch after `cases` fixed
-  it. So read **"8C10 corrected six sites" as a sweep of the command's reach, never of the
+  by a case that no longer exists, and `SideNavSection.jsx`'s header named **four** components —
+  `Tag`, `Skeleton`, `Table`, `Pagination` — as carrying one limit, two of which had left it,
+  **and** called that limit unfixable a batch after `cases` fixed it. So read **"8C10 corrected six sites" as a sweep of the command's reach, never of the
   class**: the count was complete against a query that could not see most of the tree, which is
   the same mistake as describing a file you grepped rather than read, one level up. The six, for
   the record, were `Table`'s and `Tab`'s reason strings (both exemplars **removed** rather than
