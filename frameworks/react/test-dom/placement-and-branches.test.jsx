@@ -16,12 +16,17 @@
  *   is a SPAN and isFocusable() says false, while the button focus actually reaches
  *   carries neither attribute.
  *
- *   Branches. Skeleton.jsx renders role="status" aria-label="Loading" for the
- *   block, line and multi-line text variants, and aria-hidden="true" with no role
- *   at all for circle. A scan sees role="status" present in the file and retires
- *   both of Skeleton's exceptions — which are about the one branch that lacks it.
- *   Rendering all four variants is what separates "the file contains this" from
- *   "this component produces this".
+ *   Branches. Skeleton.jsx used to render role="status" aria-label="Loading" for
+ *   the block, line and multi-line text variants, and aria-hidden="true" with no
+ *   role at all for circle -- the one branch a scan would have gotten wrong. A
+ *   scan sees role="status" present in the file and would have reported the
+ *   circle branch compliant on the strength of text sitting elsewhere in the same
+ *   file, which is exactly backwards: that branch was the one variant that
+ *   announced nothing. Rendering all four variants is what separates "the file
+ *   contains this" from "this component produces this", and it is what caught the
+ *   defect this batch fixed -- the circle now renders the same role and name as
+ *   its three siblings, and the lesson stands even though its subject no longer
+ *   does.
  *
  * These are not hypothetical failure modes. They are the two mistakes 7b's review
  * found by hand, and the reason a scan was measured and then cut in favour of a
@@ -31,7 +36,7 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import { join } from 'node:path';
 import { mount, cleanup, act } from './harness.jsx';
-import { assertPattern, assertPatternCases, REACT_COMPONENTS } from './assert-pattern.jsx';
+import { assertPattern, REACT_COMPONENTS } from './assert-pattern.jsx';
 import { isFocusable } from '../../../scripts/lib/behaviour-compliance.mjs';
 import { Menu } from '../components/navigation/Menu.jsx';
 import { Skeleton } from '../components/display/Skeleton.jsx';
@@ -74,37 +79,46 @@ test('Menu matches its menu-button binding when the subject is the focusable tri
 
 const VARIANTS = ['block', 'line', 'text', 'circle'];
 
-test('Skeleton renders role=status in three variants and not in circle', () => {
+test('Skeleton renders role=status in every variant, circle included', () => {
   const seen = {};
   for (const variant of VARIANTS) {
     const container = mount(<Skeleton variant={variant} />);
     seen[variant] = Boolean(container.querySelector('[role="status"]'));
     cleanup();
   }
-  assert.deepEqual(seen, { block: true, line: true, text: true, circle: false });
+  assert.deepEqual(seen, { block: true, line: true, text: true, circle: true });
 });
 
-test('Skeleton circle is aria-hidden with no live region', () => {
+test('Skeleton circle carries the role and a name, like its siblings', () => {
   const container = mount(<Skeleton variant="circle" />);
   const el = container.firstElementChild;
-  assert.equal(el.getAttribute('aria-hidden'), 'true');
-  assert.equal(el.getAttribute('role'), null);
-  assert.equal(el.getAttribute('aria-live'), null);
+  assert.equal(el.getAttribute('role'), 'status');
+  assert.equal(el.getAttribute('aria-label'), 'Loading');
+  assert.equal(el.getAttribute('aria-hidden'), null);
 });
 
-test('Skeleton meets both of its declared cases', () => {
-  assertPatternCases({
+test('Skeleton matches its status binding, block and circle both', () => {
+  // status requires focus.unaffected, which is undecidable from the DOM alone:
+  // the div carries no tabIndex and nothing auto-focuses it, so a status
+  // update never receives or moves keyboard focus. Checked against block --
+  // the subject the old "placeholder" case rendered -- and against circle,
+  // since the binding is flat again and claims the whole component rather
+  // than one variant of it; testing block alone would repeat the exact
+  // mistake this file's own comment records Skeleton making before `cases`
+  // existed.
+  const placeholder = mount(<Skeleton variant="block" />);
+  assertPattern({
+    root: placeholder,
     bindingPath: join(REACT_COMPONENTS, 'display/Skeleton.behaviour.json'),
-    cases: {
-      // status requires focus.unaffected, which is undecidable from the DOM
-      // alone: the div carries no tabIndex and nothing auto-focuses it, so a
-      // status update never receives or moves keyboard focus.
-      placeholder: () => ({
-        root: mount(<Skeleton variant="block" />),
-        behavioural: { 'focus.unaffected': true },
-      }),
-      circle: () => ({ root: mount(<Skeleton variant="circle" />) }),
-    },
+    behavioural: { 'focus.unaffected': true },
+  });
+  cleanup();
+
+  const circle = mount(<Skeleton variant="circle" />);
+  assertPattern({
+    root: circle,
+    bindingPath: join(REACT_COMPONENTS, 'display/Skeleton.behaviour.json'),
+    behavioural: { 'focus.unaffected': true },
   });
 });
 

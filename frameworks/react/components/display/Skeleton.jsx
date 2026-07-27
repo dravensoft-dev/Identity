@@ -24,7 +24,7 @@ export function Skeleton({ variant = 'block', width, height, lines = 3, radius }
   const base = { borderRadius: radius || 'var(--r-sm)' };
   if (variant === 'circle') {
     const d = height || width || 'var(--sp-10)';
-    return <div className="arena-skeleton" aria-hidden="true" style={{ width: d, height: d, borderRadius: '50%' }} />;
+    return <div className="arena-skeleton" role="status" aria-label="Loading" style={{ width: d, height: d, borderRadius: '50%' }} />;
   }
   if (variant === 'text' || variant === 'line') {
     if (variant === 'text' && lines > 1) {

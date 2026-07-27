@@ -1,15 +1,4 @@
 {
-  "divergesFrom": "status",
-  "divergesFromReason": "Angular's Skeleton (frameworks/angular/primitives/skeleton/skeleton.ts) binds role=\"status\" and aria-label=\"Loading\" statically on the host, with no branch by variant at all, so it announces every variant including circle. React's circle case renders aria-hidden=\"true\" with no role, so a circle skeleton announces nothing. Both bindings are honest about their own layer -- this is not a difference in how the two files are shaped, it is a difference in what a screen-reader user is told: meeting a circular skeleton, that user hears \"Loading\" in Angular and hears nothing in React. Both positions are defensible. React's silence assumes a circle skeleton usually stands beside a name that is itself announced, so a second \"Loading\" would be noise -- the same reasoning the circle case's own reason carries above. Angular's announcement assumes a circular skeleton with no announced neighbour is a loading state a user should be told about, and that assumption does not always hold either. Which layer is right is not decided here.",
-  "cases": [
-    { "name": "placeholder",
-      "when": "variant is \"block\", \"line\" or \"text\" -- the variants that stand in for content that will arrive",
-      "pattern": "status",
-      "exceptions": [] },
-    { "name": "circle",
-      "when": "variant is \"circle\" -- an avatar-shaped placeholder",
-      "pattern": "none",
-      "reason": "The circle variant renders aria-hidden=\"true\" with no role, which is what a decorative placeholder should be: it stands beside a real name that is itself announced, so announcing \"Loading\" a second time would be noise. It is presentational by decision, not by omission -- which is exactly the distinction the `none` pattern exists to record.",
-      "exceptions": [] }
-  ]
+  "pattern": "status",
+  "exceptions": []
 }
