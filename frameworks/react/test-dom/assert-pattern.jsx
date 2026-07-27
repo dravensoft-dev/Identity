@@ -16,7 +16,7 @@
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { comparePattern } from '../../../scripts/lib/behaviour-compliance.mjs';
-import { loadBinding, loadPatterns } from '../../../scripts/lib/behaviour-contracts.mjs';
+import { loadBinding, loadPatterns, bindingCases } from '../../../scripts/lib/behaviour-contracts.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -118,5 +118,81 @@ export function assertPattern({ root, bindingPath, subjects = {}, behavioural = 
 
   if (problems.length) {
     throw new Error(`${bindingPath}\n  pattern: ${pattern.name}\n  - ${problems.join('\n  - ')}`);
+  }
+}
+
+/** Assert a CASED binding, one call per declared case.
+ *
+ *  The wrapper drives the loop rather than counting calls afterwards, and that is
+ *  the whole mechanism: a suite handed the responsibility of calling once per case
+ *  can forget, which is exactly how Skeleton verified its circle variant and
+ *  claimed the component. Here a missing key is a missing key before anything
+ *  renders.
+ *
+ *  `comparePattern` is called with a SYNTHESIZED binding carrying only this
+ *  case's exceptions. The shared evaluator never learns what a case is -- it reads
+ *  `binding.exceptions` and nothing else, so there was nothing there to teach.
+ *  @param {object} o
+ *  @param {string} o.bindingPath
+ *  @param {Record<string, () => {root: Element, subjects?: object, behavioural?: object}>} o.cases
+ *    case name -> a thunk that renders that case and returns its root. A thunk
+ *    rather than a rendered root so nothing is mounted until its case is reached
+ *    and the key sets have already been checked. */
+export function assertPatternCases({ bindingPath, cases }) {
+  const binding = loadBinding(bindingPath);
+  const declared = bindingCases(binding);
+  if (declared.length === 1 && declared[0].name === null) {
+    throw new Error(`${bindingPath}\n  declares no cases — assert it with assertPattern instead.`);
+  }
+  // validateBinding permits a binding to declare the same case name twice; the
+  // gate-side fix for that is still owed (see the open finding in the 8C9 task
+  // brief). Object.keys(cases) can never carry a duplicate, so comparing against
+  // a duplicated `want` list would produce a confusing missing/unknown diff
+  // instead of naming the real problem. Catch it here, before that comparison.
+  const names = declared.map((c) => c.name);
+  const seen = new Set();
+  const dupes = new Set();
+  for (const n of names) {
+    if (seen.has(n)) dupes.add(n);
+    seen.add(n);
+  }
+  if (dupes.size) {
+    throw new Error(`${bindingPath}\n  declares the same case name more than once: ${[...dupes].join(', ')}`);
+  }
+  const want = names;
+  const got = Object.keys(cases);
+  const missing = want.filter((n) => !got.includes(n));
+  const unknown = got.filter((n) => !want.includes(n));
+  if (missing.length || unknown.length) {
+    throw new Error(
+      `${bindingPath}\n  the suite must render every declared case, and only those.\n` +
+      (missing.length ? `  - never rendered: ${missing.join(', ')}\n` : '') +
+      (unknown.length ? `  - not declared in the binding: ${unknown.join(', ')}\n` : '') +
+      `  declared: ${want.join(', ')}`,
+    );
+  }
+
+  patternCache ??= loadPatterns(REPO);
+  const problems = [];
+  for (const c of declared) {
+    const pattern = patternCache.get(c.pattern);
+    if (!pattern) {
+      throw new Error(`${bindingPath}\n  case "${c.name}" names pattern "${c.pattern}", which has no file in ${PATTERN_DIR}`);
+    }
+    const { root, subjects = {}, behavioural = {} } = cases[c.name]();
+    const { default: fallbackSubject, ...perRequirement } = subjects;
+    const fallback = 'default' in subjects ? fallbackSubject : root.firstElementChild;
+    const found = comparePattern({
+      pattern,
+      binding: { exceptions: c.exceptions },
+      subjects: perRequirement,
+      fallback,
+      behavioural,
+      resolveId: resolverFor(root),
+    });
+    for (const p of found) problems.push(`case "${c.name}" (${c.when}): ${p}`);
+  }
+  if (problems.length) {
+    throw new Error(`${bindingPath}\n  - ${problems.join('\n  - ')}`);
   }
 }
