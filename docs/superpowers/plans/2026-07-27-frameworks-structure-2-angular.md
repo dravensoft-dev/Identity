@@ -40,6 +40,15 @@ So it has been run. Every reference into `frameworks/angular/primitives/` from o
 | every other `frameworks/angular/test/*.ts` | 1–3 each | 4 |
 | `CHANGELOG.md` | 4 | **none — frozen, never back-edited** |
 
+**Four more, added after Task 1 ran the query and found them.** They build the path
+rather than writing it as one string, so the `sed 's/:.*//'` form above collapses them out
+of sight; each was confirmed functional rather than a comment, at the line given:
+`scripts/check-compliance.mjs:247`, `scripts/check-behaviour.mjs:76`,
+`scripts/check-api.mjs:494` and `scripts/check-manifest-states.test.mjs:88`. Task 6 covered
+three of the four; **`check-behaviour.mjs` was in no task's file list** and is added to Task 6
+below. This is the same lesson batch 1 recorded one level further in: the query that finds
+inbound references has to run before the move, and it has to be *read*, not just counted.
+
 Re-run the query at the start of Task 1 and compare; a referrer that appeared since is a referrer this plan does not cover.
 
 ```bash
@@ -578,8 +587,12 @@ git log -1 --format=%B | head -3
 ### Task 6: Teach the gates the new shape, and add Angular to `MIGRATED`
 
 **Files:**
-- Modify: `scripts/lib/behaviour-contracts.mjs` (`angularPrimitives`), `scripts/check-compliance.mjs`, `scripts/check-api.mjs`, `scripts/check-material.mjs`, `scripts/check-manifest-states.mjs` (`SOURCE_OVERRIDES`), `scripts/check-dimension-literals.mjs` (`EXEMPT`) and its suite, `scripts/check-structure.mjs` (`MIGRATED`), `frameworks/angular/tsconfig.check.json`
-- Test: `scripts/behaviour-contracts.test.mjs`, `scripts/check-dimension-literals.test.mjs`, `scripts/check-structure.test.mjs`, `scripts/check-manifest-states.test.mjs`
+- Modify: `scripts/lib/behaviour-contracts.mjs` (`angularPrimitives`), `scripts/check-compliance.mjs` (`:247`), `scripts/check-behaviour.mjs` (`:76`), `scripts/check-api.mjs` (`:494`), `scripts/check-material.mjs`, `scripts/check-manifest-states.mjs` (`SOURCE_OVERRIDES`), `scripts/check-dimension-literals.mjs` (`EXEMPT`) and its suite, `scripts/check-structure.mjs` (`MIGRATED`), `frameworks/angular/tsconfig.check.json`
+- Test: `scripts/behaviour-contracts.test.mjs`, `scripts/check-dimension-literals.test.mjs`, `scripts/check-structure.test.mjs`, `scripts/check-manifest-states.test.mjs` (`:88`)
+
+The four line numbers are where Task 1's query found a hardcoded `frameworks/angular/primitives`
+path built rather than written whole. `check-behaviour.mjs` was in no task's file list until
+Task 1 found it; do not assume the other three are the complete set — re-run the query.
 
 **Interfaces:**
 - Produces: `angularPrimitives(root)` walking `frameworks/angular/components/<category>/` and still returning the **kebab directory names**, sorted — its callers key on that. `check-compliance.mjs` derives each binding's path as `<category>/<dir>/<Pascal>.behaviour.json`, so it needs the same `pascal()` derivation `check-structure.mjs`'s `kebab()` inverts; export one of them rather than writing a second.
