@@ -3,5 +3,5 @@ export * from './components';
 export * from './ContainerSize';
 export * from './FocusTrap';
 export * from './ProjectionMarkers';
-export * from './theme/theme-service';
-export * from './icons/icon-manifest';
+export * from './theme/ThemeService';
+export * from './icons/IconManifest';

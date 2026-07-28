@@ -97,14 +97,24 @@ export const SUITE_DIRS = [
  * with no `:layer` suffix is rejected outright rather than falling back to
  * name-only resolution, so the old shape cannot creep back in silently.
  *
- * The mention check below searches for the file STEM of that layer's binding
- * rather than for the key, because a stem is not always the component name.
- * It was not, for the whole Angular layer, until the structure refactor's
- * batch 2: the file was named for the kebab directory it sat in, so
- * `bar-chart/bar-chart.behaviour.json` declared component "BarChart" and a
- * check keyed on the component name would never have fired for an Angular
- * suite. Both layers now spell the stem Pascal, so the two agree today -- the
- * stem is still what is searched for, because nothing holds them equal.
+ * The mention check below searches for that layer's binding PATH TAIL -- the
+ * path relative to the layer's component root, `display/tag/Tag.behaviour.json`
+ * for Angular and `display/Tag.behaviour.json` for React -- and never for the
+ * bare stem. The tail is what makes the check layer-discriminating, and the
+ * discrimination is the whole point of the compound key: resolving the right
+ * BINDING is only half of it, and a mention test a sibling layer's suite can
+ * satisfy leaves the other half open.
+ *
+ * A bare stem used to discriminate by accident. Until the structure refactor's
+ * batch 2 the Angular file was named for the kebab directory it sat in, so
+ * `bar-chart/bar-chart.behaviour.json` declared component "BarChart" while
+ * React's was `BarChart.behaviour.json` -- the two stems could not collide, and
+ * nobody had to say why. Batch 2 spelled both stems Pascal and that accident
+ * ended: with `Alert` on both sides, `'Alert:angular': 'alert-tones.test.jsx'`
+ * -- React's own suite -- validated clean. The tails still cannot collide,
+ * because the Angular one carries its kebab directory and the React one does
+ * not, and that is a structural property of the two layouts rather than a
+ * coincidence of spelling.
  *
  * Add an entry when you add a suite. Removing or renaming a suite without
  * removing its entry fails this gate, which is the point.
@@ -129,13 +139,27 @@ export const COVERED = {
 };
 
 /** Does a suite's source read this binding at all?
- *  A filename match, not a semantic one -- enough to catch a suite that was
- *  renamed or gutted while COVERED still claimed it, and deliberately no more:
- *  proving a suite *asserts the right thing* is what the suite itself is for.
- *  @param {string} source @param {string} stem the binding file's basename stem
+ *  A path match, not a semantic one -- enough to catch a suite that was renamed
+ *  or gutted while COVERED still claimed it, and to catch a suite from the
+ *  SIBLING layer standing in for the one the key names, and deliberately no
+ *  more: proving a suite *asserts the right thing* is what the suite itself is
+ *  for.
+ *
+ *  `tail` is the binding's path relative to its layer's component root, so a
+ *  bare `Alert.behaviour.json` anywhere in the prose cannot satisfy it and
+ *  neither can the other layer's copy of the same component -- see COVERED's
+ *  own comment for why the bare stem stopped discriminating.
+ *
+ *  The segment separator is matched loosely, because a suite may spell the tail
+ *  either as one string (`join(P, 'display/tag/Tag.behaviour.json')`) or as
+ *  join() arguments (`join(P, 'display', 'Tag.behaviour.json')`). Both are the
+ *  same path and both are live in the tree today; a gate that accepted only one
+ *  would be legislating a code style rather than checking coverage.
+ *  @param {string} source @param {string} tail e.g. `display/tag/Tag.behaviour.json`
  *  @returns {boolean} */
-export function suiteMentions(source, stem) {
-  return source.includes(`${stem}.behaviour.json`);
+export function suiteMentions(source, tail) {
+  const escaped = tail.split('/').map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return new RegExp(escaped.join(`(?:/|['"]\\s*,\\s*['"])`)).test(source);
 }
 
 /** The pure half, so the gate's own test can exercise every failure branch
@@ -143,22 +167,24 @@ export function suiteMentions(source, stem) {
  *  gate in this chain read module globals and its failure branches were
  *  therefore untestable, which is recorded as debt.
  *
- *  A binding record carries `layer` ('react' or 'angular') and `stem`, the
- *  basename of the file it was read from, when that differs from the component
- *  name; `stem` defaults to the name. A `COVERED` key is `<Component>:<layer>`
+ *  A binding record carries `layer` ('react' or 'angular') and `tail`, the path
+ *  the binding file sits at relative to its layer's component root; `tail`
+ *  defaults to `<name>.behaviour.json`. A `COVERED` key is `<Component>:<layer>`
  *  and resolves to the ONE binding matching both name and layer -- never to
  *  any binding sharing the name, which is the dual-bound defect this shape
  *  replaces. A key with no `:layer` suffix is rejected rather than silently
- *  falling back to name-only resolution.
+ *  falling back to name-only resolution. The layer decides the binding, and the
+ *  tail then decides which suites can claim it: both halves are needed, because
+ *  since batch 2 the two layers spell a component's binding stem identically.
  *
- *  @param {{bindings: {name: string, patterns: string[], layer: string, stem?: string}[], covered: Record<string,string>, suites: Record<string,string>}} o
+ *  @param {{bindings: {name: string, patterns: string[], layer: string, tail?: string}[], covered: Record<string,string>, suites: Record<string,string>}} o
  *  @returns {string[]} one message per problem, empty when clean */
 export function validateCoverage({ bindings, covered, suites }) {
   const problems = [];
-  /** @type {Map<string, string>} "name:layer" -> its binding file stem */
+  /** @type {Map<string, string>} "name:layer" -> its binding file's path tail */
   const byKey = new Map();
   for (const b of bindings) {
-    byKey.set(`${b.name}:${b.layer}`, b.stem ?? b.name);
+    byKey.set(`${b.name}:${b.layer}`, b.tail ?? `${b.name}.behaviour.json`);
   }
 
   for (const [key, suiteFile] of Object.entries(covered)) {
@@ -182,10 +208,10 @@ export function validateCoverage({ bindings, covered, suites }) {
       problems.push(`COVERED maps "${key}" to "${suiteFile}", which does not exist. Fix the path or delete the entry.`);
       continue;
     }
-    const stem = byKey.get(key);
-    if (!suiteMentions(suites[suiteFile], stem)) {
+    const tail = byKey.get(key);
+    if (!suiteMentions(suites[suiteFile], tail)) {
       problems.push(
-        `COVERED maps "${key}" to "${suiteFile}", but that suite never mentions ${stem}.behaviour.json. The coverage claim is stale.`,
+        `COVERED maps "${key}" to "${suiteFile}", but that suite never names ${tail}. The coverage claim is stale, or the suite belongs to the other layer.`,
       );
     }
   }
@@ -199,17 +225,17 @@ export function validateCoverage({ bindings, covered, suites }) {
  *  content; a cased binding still contributes exactly one row, and
  *  `patterns` names every case's pattern rather than a single `pattern`.
  *
- *  `stem` -- the binding file's basename, when that differs from the
- *  component name -- is filesystem information this function never derives
- *  on its own; it is carried through when the caller attaches it to the
- *  binding record (`{...binding, stem}`), and defaults to `name` otherwise,
+ *  `tail` -- the binding file's path relative to its layer's component root
+ *  -- is filesystem information this function never derives on its own; it is
+ *  carried through when the caller attaches it to the binding record
+ *  (`{...binding, tail}`), and defaults to `<name>.behaviour.json` otherwise,
  *  the same default `validateCoverage` already applies.
  *
  *  This IS the loop body collectBindings() below runs -- not a parallel
  *  copy of it -- so a test against this function is a test against the
  *  code the gate actually executes.
- *  @param {Record<string, {pattern?: string, cases?: object[], stem?: string}>} bindings
- *  @returns {{name: string, layer: string, stem: string, patterns: string[]}[]} */
+ *  @param {Record<string, {pattern?: string, cases?: object[], tail?: string}>} bindings
+ *  @returns {{name: string, layer: string, tail: string, patterns: string[]}[]} */
 export function inventoryFrom(bindings) {
   const out = [];
   for (const [key, binding] of Object.entries(bindings)) {
@@ -219,14 +245,14 @@ export function inventoryFrom(bindings) {
     out.push({
       name,
       layer,
-      stem: binding.stem ?? name,
+      tail: binding.tail ?? `${name}.behaviour.json`,
       patterns: bindingCases(binding).map((c) => c.pattern),
     });
   }
   return out;
 }
 
-/** Read every binding in the tree as {name, patterns, layer, stem}, via
+/** Read every binding in the tree as {name, patterns, layer, tail}, via
  *  inventoryFrom() above -- this function's only job is assembling the
  *  "<name>:<layer>" -> binding map from the filesystem; the row shape
  *  itself is inventoryFrom's, so there is exactly one place that turns a
@@ -244,7 +270,7 @@ export function inventoryFrom(bindings) {
  *  counting them would inflate the denominator with bindings that are uncoverable
  *  by construction. check:behaviour is what holds those entries honest. */
 function collectBindings() {
-  /** @type {Record<string, object>} "<name>:<layer>" -> binding, plus stem */
+  /** @type {Record<string, object>} "<name>:<layer>" -> binding, plus tail */
   const byKey = {};
 
   const reactBase = join(repoRoot, 'frameworks/react/components');
@@ -253,14 +279,14 @@ function collectBindings() {
     const group = groups.find((g) => existsSync(join(reactBase, g, `${name}.behaviour.json`)));
     if (!group) continue; // check:behaviour owns "every component declares"; this gate does not duplicate it.
     const binding = loadBinding(join(reactBase, group, `${name}.behaviour.json`));
-    byKey[`${name}:react`] = { ...binding, stem: name };
+    byKey[`${name}:react`] = { ...binding, tail: `${group}/${name}.behaviour.json` };
   }
 
   for (const dir of angularPrimitives(repoRoot)) {
     const found = angularBindingPath(repoRoot, dir);
     if (!found) continue; // check:behaviour owns "every component declares"; this gate does not duplicate it.
     const binding = loadBinding(found.path);
-    byKey[`${binding.component}:angular`] = { ...binding, stem: found.stem };
+    byKey[`${binding.component}:angular`] = { ...binding, tail: found.tail };
   }
 
   return inventoryFrom(byKey);
@@ -269,9 +295,16 @@ function collectBindings() {
 /** Every suite file under `dir`, found by a recursive walk rather than a flat
  *  `readdirSync` -- the Angular half of SUITE_DIRS is now a component tree,
  *  category/component nested, not a flat directory of suites.
+ *
+ *  A missing `dir` yields the empty list rather than throwing. collectSuites()
+ *  below already skips a missing directory before calling, so this is not that
+ *  caller's guard: it is this function's own, because it is EXPORTED and a
+ *  second caller inheriting a guard that lives in the first one is exactly the
+ *  shape that breaks the moment there is a second caller.
  *  @param {string} dir @returns {string[]} absolute paths */
 export function walkSuites(dir) {
   const out = [];
+  if (!existsSync(dir)) return out;
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name);
     if (entry.isDirectory()) {

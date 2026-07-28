@@ -31,9 +31,9 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { Tag } from './Tag';
-import { assertPatternCases, ANGULAR_PRIMITIVES } from '../../../test/Compliance';
+import { assertPatternCases, ANGULAR_COMPONENTS } from '../../../test/Compliance';
 
-const BINDING = join(ANGULAR_PRIMITIVES, 'display/tag/Tag.behaviour.json');
+const BINDING = join(ANGULAR_COMPONENTS, 'display/tag/Tag.behaviour.json');
 
 /** Dispatch a real `keydown` of Enter and of Space at `el` and assert neither
  *  was intercepted -- the non-vacuous half of a `keyboard.Space`/`keyboard.Enter`

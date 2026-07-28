@@ -24,8 +24,8 @@ import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { BarChart } from './bar-chart/BarChart';
 import { DoughnutChart } from './doughnut-chart/DoughnutChart';
-import { assertPattern, ANGULAR_PRIMITIVES } from '../../test/Compliance';
-const BINDING = join(ANGULAR_PRIMITIVES, 'charts/bar-chart/BarChart.behaviour.json');
+import { assertPattern, ANGULAR_COMPONENTS } from '../../test/Compliance';
+const BINDING = join(ANGULAR_COMPONENTS, 'charts/bar-chart/BarChart.behaviour.json');
 
 /** `BarChart.ts` takes two parallel arrays, `labels` and `values` -- not the
  *  single array of objects a reader might assume. */

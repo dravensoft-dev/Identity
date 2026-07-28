@@ -113,9 +113,9 @@ export { isFocusable };
  *  without counting `../` hops -- a wrong import depth has already cost this
  *  chain one review cycle. Each component now sits one level deeper, under its
  *  category (`<category>/<kebab>/<Pascal>.behaviour.json`), so a caller must name
- *  the category too -- see the callers in alert-role-tones.test.ts, tag-cases.test.ts
- *  and chart-data-table.test.ts. */
-export const ANGULAR_PRIMITIVES = join(REPO, 'frameworks', 'angular', 'components');
+ *  the category too -- see the callers in Alert.roleTones.test.ts,
+ *  Tag.cases.test.ts and ChartDataTable.test.ts. */
+export const ANGULAR_COMPONENTS = join(REPO, 'frameworks', 'angular', 'components');
 
 /** Absolute path of frameworks/tailwind/components, where the `*.manifest.json`
  *  files live. Exported here rather than recomputed by each suite, because the

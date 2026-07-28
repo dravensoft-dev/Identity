@@ -306,26 +306,41 @@ export function angularPrimitives(root) {
 }
 
 /** The behaviour binding an Angular component directory holds, as
- *  `{path, stem}` -- the ONE place the Angular layer's binding path is built.
+ *  `{path, stem, tail}` -- the ONE place the Angular layer's binding path is
+ *  built.
  *
  *  The category is found by looking rather than derived, exactly as
  *  check-compliance.mjs's React branch finds a component's group; the stem is
  *  pascal(dir), because the file is `<Pascal>.behaviour.json` beside
- *  `<Pascal>.ts`. Both callers need both halves and neither may build only one:
- *  a right path with a wrong stem passes the read and then fails the coverage
+ *  `<Pascal>.ts`. `tail` is `<category>/<dir>/<stem>.behaviour.json`, the path
+ *  relative to `frameworks/angular/components` -- what a suite writes when it
+ *  names its own binding, and what check:compliance searches a suite's text for.
+ *  Callers need different halves and none may rebuild one it was not given: a
+ *  right path with a wrong stem passes the read and then fails the coverage
  *  mention check for a filename that does not exist.
+ *
+ *  The category is resolved by FIRST MATCH, and nothing here rejects the same
+ *  kebab directory appearing under two categories -- deliberately, because
+ *  check:structure already does. Its category-mismatch rule reports a component
+ *  sitting under a category `frameworks/Components.json` does not assign it to,
+ *  so a second copy under a second category is named there and this function
+ *  never has to arbitrate. Do not re-derive that worry:
+ *  `validateStructure({categories:{display:['Tag'],feedback:['Alert']},
+ *  layers:{angular:{display:['tag'],feedback:['tag','alert']}}})` reports
+ *  "angular: Tag is in components/feedback/ but frameworks/Components.json
+ *  assigns it to display".
  *
  *  Returns null when the directory holds no binding, which is check-behaviour's
  *  "every component declares" problem to report and not this function's.
  *  @param {string} root @param {string} dir kebab directory name
- *  @returns {{path: string, stem: string}|null} */
+ *  @returns {{path: string, stem: string, tail: string}|null} */
 export function angularBindingPath(root, dir) {
   const base = join(root, 'frameworks/angular/components');
   const stem = pascal(dir);
   for (const category of readdirSync(base, { withFileTypes: true })) {
     if (!category.isDirectory()) continue;
     const path = join(base, category.name, dir, `${stem}.behaviour.json`);
-    if (existsSync(path)) return { path, stem };
+    if (existsSync(path)) return { path, stem, tail: `${category.name}/${dir}/${stem}.behaviour.json` };
   }
   return null;
 }

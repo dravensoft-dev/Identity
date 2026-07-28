@@ -31,7 +31,7 @@ export function skeletonRowSlot(row: number, total: number): 'line' | 'lastLine'
  *  always a perfect circle and `text`/`line` keep a fixed small radius, both via
  *  the recipe class rather than an override. This binding form ([style.x]) is
  *  invisible to `check:dimensions`' scanners (see CLAUDE.md's Angular
- *  `[style.x]` blind spot), so `frameworks/angular/test/skeleton-dimensions.test.ts`
+ *  `[style.x]` blind spot), so `Skeleton.dimensions.test.ts`, beside this file,
  *  proves it with a real render instead. */
 @Component({
   selector: 'arena-skeleton',

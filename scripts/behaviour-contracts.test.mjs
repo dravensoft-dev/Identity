@@ -202,6 +202,7 @@ test('an Angular binding path resolves the category by looking and the stem as P
   assert.deepEqual(angularBindingPath('.', 'bar-chart'), {
     path: 'frameworks/angular/components/charts/bar-chart/BarChart.behaviour.json',
     stem: 'BarChart',
+    tail: 'charts/bar-chart/BarChart.behaviour.json',
   });
   assert.equal(angularBindingPath('.', 'no-such-component'), null);
 });

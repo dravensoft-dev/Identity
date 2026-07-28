@@ -315,7 +315,7 @@ export function compareSurface(contract, members, layer, types = new Map()) {
   const rawSeen = new Set();
   for (const m of members) {
     /* Duplicate detection is on the RAW member name, before any contract
-     * binding is consulted -- two identical `icon` slots (stat-card.ts's own
+     * binding is consulted -- two identical `icon` slots (StatCard.ts's own
      * doc comment quoting the real template, before the templateSlots() fix
      * above) must be caught even though both bind to a name the contract
      * does declare, which is exactly the shape that made `seen.add()` alone
@@ -482,6 +482,24 @@ export function compareSurface(contract, members, layer, types = new Map()) {
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 
+/** The React declaration file for a contract, or null.
+ *
+ *  BATCH 3 OF THE STRUCTURE REFACTOR MUST CONVERT THIS to the walk
+ *  `resolveAngularImplementations()` below uses. It is the same
+ *  existsSync-probe-returning-null shape that made the Angular half of this gate
+ *  pass silently over twenty unread implementations, and it is left here only
+ *  because React has not moved yet.
+ *
+ *  What differs today is the FAILURE MODE, not the shape. React's contracts are
+ *  the majority and none of them is Angular-only, so a layout change that breaks
+ *  this lookup makes main()'s `if (!path) continue` skip nearly every contract at
+ *  once and the gate reports far fewer contracts than `api/components/` holds --
+ *  loudly wrong rather than quietly green. The Angular probe was silent precisely
+ *  because Angular implements a minority of the contracts, so "resolved to null"
+ *  was indistinguishable from "this layer does not implement it". Batch 3 removes
+ *  the distinction rather than relying on it: a gate that cannot tell "absent"
+ *  from "I could not find it" is one layout change away from the silent case,
+ *  whichever side of it happens to be true today. */
 function reactPath(component) {
   for (const group of REACT_GROUPS) {
     const path = join(root, 'frameworks/react/components', group, `${component}.d.ts`);

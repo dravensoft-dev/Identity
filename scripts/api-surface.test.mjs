@@ -297,7 +297,7 @@ test('angularSurface skips a constructor block, the same way protected and priva
   assert.deepEqual(members.map((m) => m.name), ['a', 'b']);
 });
 
-test('angularSurface does not cut a member at a template-literal interpolation\'s own } -- command-palette.ts\'s `arena-command-palette-${nextId++}` field', () => {
+test('angularSurface does not cut a member at a template-literal interpolation\'s own } -- CommandPalette.ts\'s `arena-command-palette-${nextId++}` field', () => {
   const src = `
     export class X {
       readonly open = input(false, { transform: booleanAttribute });
@@ -366,7 +366,7 @@ test('angularSurface reports template slots alongside declared members', () => {
  * prose must never manufacture a slot -- only the real @Component template
  * literal is the source of truth. Before this fix, templateSlots() scanned
  * the WHOLE source, so a doc comment merely quoting the template syntax (the
- * real shape stat-card.ts shipped) reported the same slot TWICE, and deleting
+ * real shape StatCard.ts shipped) reported the same slot TWICE, and deleting
  * the real <ng-content> from the template left the doc comment alone to
  * satisfy the contract -- a component that stopped projecting a slot still
  * passed. These two tests pin the fix: the doc comment alone yields no slot,

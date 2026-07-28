@@ -34,7 +34,7 @@ test('the recipe\'s own unset-argument default resolves the same classes as an e
 });
 
 test('the root slot carries a display utility in its own base string, independent of the open variant', () => {
-  // This is the property frameworks/angular/test/host-class-binding.test.ts
+  // This is the property frameworks/angular/test/HostClassBinding.test.ts
   // machine-checks against every primitive's manifest on disk; this asserts
   // the same thing against the recipe's own default output.
   assert.match(commandPaletteStyles({ open: true }).root(), /\bflex\b/);

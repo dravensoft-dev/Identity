@@ -6,9 +6,10 @@
  *
  * The five assertions, and where each is covered:
  *   1 coverage         -> resolveAngularImplementations, plus the path-shape
- *                         test below. kebab()/pascal() live in
- *                         check-structure.mjs and are pinned by its own suite;
- *                         they are imported here only to build the fixtures.
+ *                         test below. pascal() lives in check-structure.mjs
+ *                         and is pinned by its own suite -- alongside kebab(),
+ *                         its inverse -- and is imported here only to build the
+ *                         fixtures.
  *   2 form             -> compareSurface on a platform/union member
  *   3 agreement        -> compareSurface, both directions, plus the optional rule
  *   4 derived rules    -> validateTypes (R1) and compareSurface (R4, R5)
@@ -22,7 +23,7 @@ import { dirname, join } from 'node:path';
 import {
   bindingName, validateTypes, validateContract, compareSurface, resolveAngularImplementations,
 } from './check-api.mjs';
-import { kebab, pascal } from './check-structure.mjs';
+import { pascal } from './check-structure.mjs';
 import { buildApiModules } from './build-api-types.mjs';
 import { reactSurface, UnrecognisedShape } from './lib/api-surface.mjs';
 
@@ -57,7 +58,8 @@ const TREE = { charts: ['bar-chart'], display: ['tag', 'unauth-card'] };
 
 /** An `exists` predicate over a fixture: every directory in `tree` holds its
  *  own <Pascal>.ts, minus the ones named in `missing`. Built from the same
- *  kebab/pascal pair the gate uses, so a fixture cannot drift from the rule. */
+ *  pascal() the gate's own path shape is derived from, so a fixture cannot
+ *  drift from the rule. */
 const treeExists = (tree, missing = []) => {
   const gone = new Set(missing);
   const present = new Set();
@@ -66,12 +68,6 @@ const treeExists = (tree, missing = []) => {
       if (!gone.has(dir)) present.add(`frameworks/angular/components/${category}/${dir}/${pascal(dir)}.ts`);
   return (path) => present.has(path);
 };
-
-test('kebab turns a component name into the Angular directory name', () => {
-  assert.equal(kebab('AppLogo'), 'app-logo');
-  assert.equal(kebab('StatCard'), 'stat-card');
-  assert.equal(kebab('Breadcrumbs'), 'breadcrumbs');
-});
 
 test('a complete layer resolves every component to its own PascalCase file and reports nothing', () => {
   const { implementations, problems } = resolveAngularImplementations(TREE, treeExists(TREE));

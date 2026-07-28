@@ -79,6 +79,17 @@ test('MIGRATED names the layers this gate currently reaches', () => {
   assert.deepEqual(MIGRATED, ['tailwind', 'angular']);
 });
 
+/* kebab() is asserted DIRECTLY here as well as through the round trip below,
+ * because a round trip passes whenever pascal() inverts whatever kebab() did --
+ * including a wrong kebab. This is the one suite that owns the pair, and
+ * check-api.test.mjs's header says so, so the direct assertions belong here
+ * rather than in the file that merely imports them to build fixtures. */
+test('kebab turns a component name into the Angular directory name', () => {
+  assert.equal(kebab('AppLogo'), 'app-logo');
+  assert.equal(kebab('StatCard'), 'stat-card');
+  assert.equal(kebab('Breadcrumbs'), 'breadcrumbs');
+});
+
 test('pascal is kebab run backwards, for every directory name the tree carries', () => {
   assert.equal(pascal('activity-feed'), 'ActivityFeed');
   assert.equal(pascal('tag'), 'Tag');

@@ -40,7 +40,7 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { useTestEnvironment } from './TestbedEnv';
-import { ANGULAR_PRIMITIVES, LIB, SCRIPTS, TAILWIND_COMPONENTS } from './Compliance';
+import { ANGULAR_COMPONENTS, LIB, SCRIPTS, TAILWIND_COMPONENTS } from './Compliance';
 import { ActivityFeed } from '../components/display/activity-feed/ActivityFeed';
 import { activityFeedStyles } from '../components/display/activity-feed/ActivityFeed.variants';
 import { AppLogo } from '../components/brand/app-logo/AppLogo';
@@ -1171,15 +1171,15 @@ function findManifestFile(componentsDir: string, filename: string): string | und
 const NO_MANIFEST = new Set(['bar-chart', 'line-chart', 'doughnut-chart']);
 
 test('every Angular primitive\'s root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
-  const primitivesDir = ANGULAR_PRIMITIVES;
+  const componentsDir = ANGULAR_COMPONENTS;
   const manifestsDir = TAILWIND_COMPONENTS;
   // Each primitive now sits one level deeper, under its category
   // (components/<category>/<kebab>/), so this walks the category directories and
   // collects the component directory names beneath them.
-  const names = readdirSync(primitivesDir, { withFileTypes: true })
+  const names = readdirSync(componentsDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .flatMap((category) =>
-      readdirSync(join(primitivesDir, category.name), { withFileTypes: true })
+      readdirSync(join(componentsDir, category.name), { withFileTypes: true })
         .filter((entry) => entry.isDirectory())
         .map((entry) => entry.name),
     );
