@@ -1,5 +1,5 @@
 import { tv } from '../../../tailwind/tv';
-import manifest from '../../../tailwind/components/Skeleton.manifest';
+import manifest from '../../../tailwind/components/display/skeleton/Skeleton.manifest';
 
 /** Recipe for `arena-skeleton`. See `tag.variants.ts` for why this
  *  extensionless import resolves to the generated `.ts`, not the `.json`.

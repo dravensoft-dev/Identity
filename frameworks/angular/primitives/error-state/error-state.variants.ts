@@ -1,5 +1,5 @@
 import { tv } from '../../../tailwind/tv';
-import manifest from '../../../tailwind/components/ErrorState.manifest';
+import manifest from '../../../tailwind/components/feedback/error-state/ErrorState.manifest';
 
 /** Recipe for `arena-error-state`. Both `ErrorState.manifest.ts` (the
  *  literal-typed build output) and `ErrorState.manifest.json` (its source)

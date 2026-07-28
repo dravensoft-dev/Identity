@@ -1,5 +1,5 @@
 import { tv } from '../../../tailwind/tv';
-import manifest from '../../../tailwind/components/StatCard.manifest';
+import manifest from '../../../tailwind/components/display/stat-card/StatCard.manifest';
 
 /** Recipe for `arena-stat-card`. Both `StatCard.manifest.ts` (the
  *  literal-typed build output) and `StatCard.manifest.json` (its source) sit

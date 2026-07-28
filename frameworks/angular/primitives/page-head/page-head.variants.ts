@@ -1,5 +1,5 @@
 import { tv } from '../../../tailwind/tv';
-import manifest from '../../../tailwind/components/PageHead.manifest';
+import manifest from '../../../tailwind/components/navigation/page-head/PageHead.manifest';
 
 /** Recipe for `arena-page-head`. Both `PageHead.manifest.ts` (the
  *  literal-typed build output) and `PageHead.manifest.json` (its source)

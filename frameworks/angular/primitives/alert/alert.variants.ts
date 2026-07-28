@@ -1,5 +1,5 @@
 import { tv } from '../../../tailwind/tv';
-import manifest from '../../../tailwind/components/Alert.manifest';
+import manifest from '../../../tailwind/components/feedback/alert/Alert.manifest';
 
 /** Recipe for `arena-alert`. Both `Alert.manifest.ts` (the literal-typed
  *  build output) and `Alert.manifest.json` (its source) sit beside each

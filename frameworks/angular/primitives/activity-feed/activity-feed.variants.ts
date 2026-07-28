@@ -1,5 +1,5 @@
 import { tv } from '../../../tailwind/tv';
-import manifest from '../../../tailwind/components/ActivityFeed.manifest';
+import manifest from '../../../tailwind/components/display/activity-feed/ActivityFeed.manifest';
 
 /** Recipe for `arena-activity-feed`. See `tag.variants.ts` for why this
  *  extensionless import resolves to the generated `.ts`, not the `.json`. */

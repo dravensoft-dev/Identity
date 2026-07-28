@@ -33,7 +33,7 @@
 import '@angular/compiler';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -1114,6 +1114,26 @@ function kebabToPascal(dirName: string): string {
   return dirName.split('-').map((segment) => segment[0].toUpperCase() + segment.slice(1)).join('');
 }
 
+/** Finds a manifest by filename anywhere under the Tailwind components tree,
+ *  rather than assuming it sits flat in `componentsDir` -- the layer moved to
+ *  `components/<category>/<component>/`, and this is the walk
+ *  scripts/lib/tailwind-compile.mjs's own `manifestFiles()` comment warns is
+ *  otherwise reimplemented once per gate. Returns undefined rather than
+ *  throwing so a caller can assert absence (see NO_MANIFEST below) as well as
+ *  presence. */
+function findManifestFile(componentsDir: string, filename: string): string | undefined {
+  const stack = [componentsDir];
+  while (stack.length > 0) {
+    const dir = stack.pop() as string;
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const p = join(dir, e.name);
+      if (e.isDirectory()) stack.push(p);
+      else if (e.name === filename) return p;
+    }
+  }
+  return undefined;
+}
+
 /* The primitives that have no manifest at all, named rather than inferred --
  * the same discipline check-dimension-literals.mjs applies to its EXEMPT map,
  * and for the same reason: a guard that silently skips whatever it cannot find
@@ -1142,17 +1162,20 @@ test('every Angular primitive\'s root slot carries a display utility, so host-bi
 
   for (const excluded of NO_MANIFEST) {
     assert.ok(names.includes(excluded), `NO_MANIFEST names "${excluded}", which is not a primitive directory -- stale entry`);
-    const excludedManifestPath = join(manifestsDir, `${kebabToPascal(excluded)}.manifest.json`);
+    const excludedManifestName = `${kebabToPascal(excluded)}.manifest.json`;
+    const excludedManifestPath = findManifestFile(manifestsDir, excludedManifestName);
     assert.ok(
-      !existsSync(excludedManifestPath),
+      excludedManifestPath === undefined,
       `NO_MANIFEST names "${excluded}", but ${excludedManifestPath} now exists -- the exclusion is stale and should be removed so this primitive is checked like every other one`,
     );
   }
 
   for (const name of names) {
     if (NO_MANIFEST.has(name)) continue;
-    const manifestPath = join(manifestsDir, `${kebabToPascal(name)}.manifest.json`);
-    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { slots?: Record<string, string> };
+    const manifestName = `${kebabToPascal(name)}.manifest.json`;
+    const manifestPath = findManifestFile(manifestsDir, manifestName);
+    assert.ok(manifestPath !== undefined, `${name}: no manifest named ${manifestName} found anywhere under ${manifestsDir}`);
+    const manifest = JSON.parse(readFileSync(manifestPath as string, 'utf8')) as { slots?: Record<string, string> };
     const root = manifest.slots?.['root'];
     assert.ok(typeof root === 'string', `${name}: ${manifestPath} has no "slots.root" string`);
     assert.match(

@@ -1,5 +1,5 @@
 import { tv } from '../../../tailwind/tv';
-import manifest from '../../../tailwind/components/EmptyState.manifest';
+import manifest from '../../../tailwind/components/feedback/empty-state/EmptyState.manifest';
 
 /** Recipe for `arena-empty-state`. Both `EmptyState.manifest.ts` (the
  *  literal-typed build output) and `EmptyState.manifest.json` (its source)

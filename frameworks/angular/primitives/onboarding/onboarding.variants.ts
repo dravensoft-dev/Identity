@@ -1,5 +1,5 @@
 import { tv } from '../../../tailwind/tv';
-import manifest from '../../../tailwind/components/Onboarding.manifest';
+import manifest from '../../../tailwind/components/feedback/onboarding/Onboarding.manifest';
 
 /** Recipe for `arena-onboarding`. See `tag.variants.ts` for why this
  *  extensionless import resolves to the generated `.ts`, not the `.json`. */

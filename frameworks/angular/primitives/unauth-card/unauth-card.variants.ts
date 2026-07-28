@@ -1,5 +1,5 @@
 import { tv } from '../../../tailwind/tv';
-import manifest from '../../../tailwind/components/UnauthCard.manifest';
+import manifest from '../../../tailwind/components/display/unauth-card/UnauthCard.manifest';
 
 /** Recipe for `arena-unauth-card`. Both `UnauthCard.manifest.ts` (the literal-typed
  *  build output) and `UnauthCard.manifest.json` (its source) sit beside each other,

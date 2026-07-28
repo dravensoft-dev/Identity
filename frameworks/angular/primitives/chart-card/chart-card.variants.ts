@@ -1,5 +1,5 @@
 import { tv } from '../../../tailwind/tv';
-import manifest from '../../../tailwind/components/ChartCard.manifest';
+import manifest from '../../../tailwind/components/charts/chart-card/ChartCard.manifest';
 
 /** Recipe for `arena-chart-card`. Both `ChartCard.manifest.ts` (the
  *  literal-typed build output) and `ChartCard.manifest.json` (its source)
