@@ -5,6 +5,20 @@ sequenced Tailwind → Angular → React, one plan each, and the `-pending-N` su
 decrements as each lands. Batch 1 (Tailwind) and batch 2 (Angular) have landed; batch 3
 (React) is the one that remains, and this file is deleted when it does.
 
+> **Read the batch 3 paragraph under *What each batch touches* before planning that
+> batch, not after.** It carries one thing that is not a preference: giving React the same
+> `components/<category>/<kebab>/` shape **silently disarms a guard batch 2 built**, and
+> nothing fails to announce it. Two remedies are worked out there and neither is
+> implemented, deliberately — the choice is batch 3's. Find it with
+> `grep -n "reopens a discrimination"` on this file; the second hit is the note, the
+> first is this pointer.
+>
+> This pointer exists because the note itself sits two hundred lines down, in a section a
+> planner reaches late or not at all. The hazard is the kind that is invisible at the
+> moment it is created and expensive afterwards: the guard it disarms was built to close a
+> gate that had been reporting a clean run over twenty component implementations it never
+> read.
+
 ## The problem
 
 `frameworks/` holds three layers that solve the same problem and are laid out three
