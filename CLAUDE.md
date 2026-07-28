@@ -704,9 +704,12 @@ skips quietly — makes that a hard failure instead. An Angular primitive's reci
 manifest — `frameworks/angular/primitives/tag/` is the reference shape.
 
 **One shape for every framework layer, and today exactly one layer has it.** The rule:
-**directories are `kebab-case` and lowercase, files are `PascalCase` with hyphens removed,
-and a secondary dotted segment stays `lowerCamelCase`** — `Badge.manifest.json`,
-`BarChart.variants.ts`. A layer lays its components out as
+**directories are `kebab-case` and lowercase; a file name begins with a capital, and a
+multi-word stem is `PascalCase` with hyphens removed; a secondary dotted segment stays
+`lowerCamelCase`** — `Badge.manifest.json`, `BarChart.variants.ts`. Capital-initial is the
+rule and PascalCase is how a multi-word stem is *formed* under it, which is why a
+conventional all-caps document name needs no dispensation: `README.md` and `ADOPTION.md`
+comply as they stand. A layer lays its components out as
 `frameworks/<layer>/components/<category>/<component-kebab>/`, and everything belonging to
 one component — its source, its types, its binding, its prompt, its demo page, its tests —
 lives in that one directory. A file that is not one component's rises to the narrowest
@@ -720,7 +723,9 @@ spec whose suffix decrements per batch and which is deleted when the third lands
 paragraph is the durable statement of the rule and that file is the working detail.
 
 **Four exceptions to the naming rule, and every one is mechanical rather than stylistic**
-— a toolchain recognises the literal lowercase name, so capitalising it breaks something.
+— a toolchain, or a reader, recognises the literal name, so capitalising it breaks or
+obscures something. All four are the cases the rule above cannot cover: a name that
+begins with a *lowercase* letter, or one with no stem to capitalise at all.
 `index.ts`, because TypeScript resolves a directory import by looking for exactly that
 filename and would not find `Index.ts` on a case-sensitive filesystem. `index.html`,
 because a directory served over HTTP is answered by exactly that name
@@ -748,8 +753,12 @@ still keeps its twenty primitives in one directory each directly under `primitiv
 no category level and no `components/` at all; React still puts a whole category's
 components side by side in one directory —
 `frameworks/react/components/display/` is 84 files today and not one subdirectory. Both keep
-their current shape until their own batches, so **every claim elsewhere in this file about
-either layer's layout is current, not stale**. **`MIGRATED` in `scripts/check-structure.mjs` is where to read which
+their current shape until their own batches: **this batch moved no file under
+`frameworks/angular/primitives/` or `frameworks/react/components/`** — 19 files there had an
+import string rewritten to follow the Tailwind layer, and not one was moved. That is the
+measured claim and the only one made here — it is not a warrant that every sentence elsewhere in this
+file about those two layers is current, which nothing derives and nothing could cheaply
+check. **`MIGRATED` in `scripts/check-structure.mjs` is where to read which
 layers the gate currently claims anything about** — `['tailwind']` today. It grows by one
 entry per batch and is deleted outright when the last layer lands, at which point the gate
 covers every layer unconditionally. Until it holds all three, the "declared but present in

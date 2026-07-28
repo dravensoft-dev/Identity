@@ -441,7 +441,7 @@ git log -1 --format=%B | head -3
 
 ### Task 4: Repoint everything the move broke
 
-Two families of reference point at where the manifests used to be. Each `*.card.html` descended two levels, so every root-relative `../` count in it is short by two; `check:cards` renders each page in a real headless browser, so a miscounted path fails the gate rather than shipping a blank card. And **17 Angular `.variants.ts` recipes import a manifest by the pre-move flat path**, so the Angular layer has not compiled since Task 2.
+Two families of reference point at where the manifests used to be. Each `*.card.html` descended two levels, so every root-relative `../` count in it is short by two. **`check:cards` catches less of that than it looks**: it renders each page in a real headless browser, but the only status it *fails* on is `clip`, so a broken **script** path leaves `#root` empty and reports as `unrendered` — which exits 2, and `check-all` marks SKIP and the run INCOMPLETE rather than failed, unless `ARENA_CHECK_STRICT=1` or `CI=true` — while a broken **stylesheet** path is not caught at all, because the page still renders and an unstyled specimen that fits its declared box passes outright. So run the gate, but treat a by-hand `bun run demos` pass over the specimens as the real check. And **17 Angular `.variants.ts` recipes import a manifest by the pre-move flat path**, so the Angular layer has not compiled since Task 2.
 
 > **Amended after Task 3.** This task was written as the specimen fix alone. The Angular half was found by Task 3's implementer, which reported `build:angular-tests` failing at bare HEAD, and confirmed by the controller: `frameworks/angular/primitives/<name>/<name>.variants.ts` each carry `import manifest from '../../../tailwind/components/<Name>.manifest'`. Neither the spec nor this plan covered them — the spec's batch-1 paragraph says the batch "reaches outside its own layer once", for `tv.ts`, and it reaches out twice. Both halves are the same defect: a reference to a path Task 2 moved, so they are fixed in one task rather than split.
 
@@ -498,7 +498,7 @@ something the other 37 do not.
 - [ ] **Step 4: Run the cards gate**
 
 Run: `bun run check:cards`
-Expected: PASS. This renders every declaring page in the repo, not only the Tailwind ones, so a pass here also confirms nothing else broke.
+Expected: PASS. This renders every declaring page in the repo, not only the Tailwind ones. **A pass is weaker evidence than it reads as**: the gate fails only on content over-running the declared box, so it confirms no page clips — not that every page still loads its stylesheets or its script. A page whose script path is broken reports `unrendered`, which is a SKIP and an INCOMPLETE run rather than a failure; a page whose stylesheet path is broken passes. Open a few specimens with `bun run demos` before treating this step as done.
 
 - [ ] **Step 5: See the Angular breakage before fixing it**
 
@@ -566,8 +566,10 @@ utilities.css, specimen.css and specimen.js by layer-relative path, so every
 ../ count was short by two after their two-level descent. The fetch of each
 page's own manifest needed no change -- it moved with the page and is still
 its sibling. check:cards renders every declaring page in headless Chromium at
-its declared viewport, so a miscounted path fails that gate rather than
-shipping a card that is silently blank.
+its declared viewport, but it fails only on content over-running the declared
+box: a broken script path reports unrendered, which is a SKIP and an
+INCOMPLETE run rather than a failure, and a broken stylesheet path is not
+caught at all. The specimens were opened by hand with bun run demos.
 
 The 17 Angular .variants.ts recipes import a manifest by the pre-move flat
 path and have not compiled since the move. This half was not in the plan: the

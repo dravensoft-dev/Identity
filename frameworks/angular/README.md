@@ -86,7 +86,7 @@ The manifest import is **extensionless on purpose**: the generated `Tag.manifest
 and its source `Tag.manifest.json` sit beside each other, and TS and bun probe `.ts`
 before `.json`, so this resolves to the literal-typed build output. A bundler
 configured `.json`-first would silently widen every variant back to `string`.
-`tag.variants.ts` carries that warning on the import itself.
+`tag.variants.ts` carries that warning in the file, as the doc comment on `tagStyles`.
 
 ## Conventions
 

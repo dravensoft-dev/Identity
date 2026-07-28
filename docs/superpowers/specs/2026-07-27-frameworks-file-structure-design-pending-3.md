@@ -31,15 +31,24 @@ listing of the component shows.
 
 ## The shape
 
-**Directories are `kebab-case`, lowercase. Files are `PascalCase`, hyphens removed.**
-Secondary dotted segments stay `lowerCamelCase`: `BarChart.variants.ts`,
-`Alert.roleTones.test.ts`, `Tooltip.timer.dom.test.jsx`.
+**Directories are `kebab-case`, lowercase. A file name begins with a capital, and a
+multi-word stem is `PascalCase` with hyphens removed.** Secondary dotted segments stay
+`lowerCamelCase`: `BarChart.variants.ts`, `Alert.roleTones.test.ts`,
+`Tooltip.timer.dom.test.jsx`.
+
+Capital-initial is the rule; PascalCase is how a multi-word stem is *formed* under it, not
+a second requirement. That distinction matters because it is what keeps the exception list
+at four: a conventional all-caps document name — `README.md`, `ADOPTION.md` — begins with a
+capital and complies as it stands, so it needs no dispensation. Stated the narrower way,
+every layer's own README would have been a violation the moment the first layer migrated.
 
 Every layer becomes `<framework>/components/<category>/<component>/`, and everything
 that belongs to one component — its source, its types, its binding, its prompt, its
 demo page, its tests — is inside that one directory.
 
-Four exceptions to the naming rule, each mechanical rather than aesthetic:
+Four exceptions to the naming rule, each mechanical rather than aesthetic — and each one a
+name the rule above cannot reach, because it begins with a *lowercase* letter or has no
+stem to capitalise at all:
 
 | Exception | Why |
 | --- | --- |
@@ -97,6 +106,11 @@ Measured consumers, so the placements below are derived rather than assumed:
 outside the gate entirely.
 
 ## Target layout
+
+Illustrative, not a directory listing: it shows each layer's source files and omits the
+prose that sits beside them — `frameworks/angular/README.md`, `frameworks/angular/ADOPTION.md`
+and `frameworks/tailwind/README.md` (React has neither today). All three comply with the
+capital-initial rule unchanged and are not renamed by any batch.
 
 ```
 frameworks/Components.json
@@ -350,7 +364,13 @@ than trusting the name.
 Each page's `<script type="importmap">` and its `styles.css` and `assets/` references
 are repo-root-relative by `../` count, so every page that descends one level gains one
 `../`. `check:cards` renders each declaring page in headless Chromium at its declared
-viewport, so a miscounted path fails that gate rather than shipping a blank card.
+viewport, but **it is a weaker net under a miscounted path than it looks**: the only
+status it fails on is content over-running the box. A broken *script* path leaves `#root`
+empty and classifies as `unrendered`, which exits 2 — `check-all` reports SKIP and calls
+the run INCOMPLETE, not failed, unless `ARENA_CHECK_STRICT=1` or `CI=true`. A broken
+*stylesheet* path is not caught at all: the page still renders, so an unstyled specimen
+that fits its declared box passes outright. Each batch must therefore open a sample of the
+moved pages by hand with `bun run demos`; the gate is a backstop, not the check.
 
 ## What each batch touches
 

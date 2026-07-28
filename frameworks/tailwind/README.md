@@ -107,10 +107,13 @@ extension, it is itself a failure.
 
 ## How this layer is laid out
 
-**Directories are `kebab-case` and lowercase; files are `PascalCase` with hyphens removed;
-a secondary dotted segment stays `lowerCamelCase`.** So the layer root is `Tv.ts`,
+**Directories are `kebab-case` and lowercase; a file name begins with a capital, and a
+multi-word stem is `PascalCase` with hyphens removed; a secondary dotted segment stays
+`lowerCamelCase`.** So the layer root's seven source files are `Tv.ts`,
 `ManifestClasses.js`, `Theme.css`, `Utilities.css`, `Animations.css`, `Specimen.css` and
-`Specimen.js`, and a component's three files sit together in one directory:
+`Specimen.js` — this file sits beside them and complies as it stands, `README` being a
+capital-initial name like any other — and a component's three files sit together in one
+directory:
 
 ```
 components/display/badge/
@@ -130,8 +133,18 @@ mechanical naming exceptions in full.
 A specimen sits **two** directories deeper than the flat layout it replaced, so every
 reference it makes out of its own directory — the repo-root `styles.css`, and this layer's
 `Utilities.css`, `Specimen.css` and `Specimen.js` — gained two `../` segments.
-`check:cards` loads each page in headless Chromium and renders it for real, so a
-miscounted path fails that gate rather than shipping a blank card.
+
+**Be exact about what catches a miscount, because `check:cards` catches less of it than
+it looks.** That gate loads each declaring page in headless Chromium, and the only status
+it *fails* on is `clip` — content over-running the declared box. So a broken **script**
+path (`Specimen.js`, or the page's own manifest `fetch`) leaves `#root` empty, which
+`classify()` reports as `unrendered`; `main()` routes that to `skip()`, which exits 2, and
+`check-all` marks the gate SKIP and the whole run INCOMPLETE — **not failed**, unless
+`ARENA_CHECK_STRICT=1` or `CI=true`. And a broken **stylesheet** path (`styles.css`,
+`Utilities.css`, `Specimen.css`) is not caught at all: the page still renders, so an
+unstyled specimen that happens to fit its declared box passes outright, and one that
+under-runs only warns. What actually stands behind a correct specimen is the by-hand
+check — `bun run demos` and open the page.
 
 ## What ships here
 
