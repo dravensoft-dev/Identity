@@ -51,8 +51,8 @@
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join, relative } from 'node:path';
-import { repoRoot } from './lib/tailwind-compile.mjs';
+import { basename, join, relative } from 'node:path';
+import { manifestFiles, repoRoot } from './lib/tailwind-compile.mjs';
 
 const COMPONENTS_DIR = join(repoRoot, 'frameworks/tailwind/components');
 const REACT_COMPONENTS_DIR = join(repoRoot, 'frameworks/react/components');
@@ -268,10 +268,10 @@ export function collect() {
   const findings = [];
   const matchedKeys = [];
   let sites = 0;
-  const manifestFiles = readdirSync(COMPONENTS_DIR).filter((f) => f.endsWith('.manifest.json')).sort();
-  for (const file of manifestFiles) {
-    const manifest = JSON.parse(readFileSync(join(COMPONENTS_DIR, file), 'utf8'));
-    const sources = resolveSources(manifest.component);
+  const manifestFiles_ = manifestFiles(COMPONENTS_DIR);
+  for (const p of manifestFiles_) {
+    const manifest = JSON.parse(readFileSync(p, 'utf8'));
+    const sources = resolveSources(basename(p).replace(/\.manifest\.json$/, ''));
     const sourceText = sources.map((s) => readFileSync(join(repoRoot, s), 'utf8')).join('\n');
     const result = evaluateManifest(manifest, sourceText, sources);
     findings.push(...result.findings);

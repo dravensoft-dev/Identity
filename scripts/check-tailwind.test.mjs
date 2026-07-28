@@ -24,6 +24,13 @@ test('passes a compiled layer whose classes all emitted and whose keys all resol
   assert.deepEqual(checkCompiled(css, manifests, TOKENS), []);
 });
 
+test('fails when zero manifests were found -- a gate that finds nothing must not report a clean pass', () => {
+  const css = compiled('', '');
+  const errs = checkCompiled(css, new Map(), TOKENS);
+  assert.equal(errs.length, 1);
+  assert.match(errs[0], /0 manifest/i);
+});
+
 test('fails a manifest class that emitted no rule', () => {
   const css = compiled('    --color-primary: var(--color-primary);', '  .bg-primary { background-color: var(--color-primary); }');
   const manifests = new Map([['X.manifest.json', { slots: { root: 'bg-primary bg-nonsense' } }]]);

@@ -17,7 +17,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join, relative } from 'node:path';
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const repoRoot = join(here, '..', '..');
@@ -47,6 +47,27 @@ export function escapeClass(cls) {
   return backslash(cls);
 }
 
+/** Every manifest under the Tailwind components tree, as absolute paths, sorted.
+ *
+ *  This replaced a single `readdirSync(components)` when the layer moved to
+ *  components/<category>/<component>/. It is exported rather than repeated
+ *  because three other gates found manifests by their own readdirSync of that
+ *  one directory, and three spellings of the same walk is how one of them ends
+ *  up missing a category nobody remembers to add.
+ *  @param {string} componentsDir @returns {string[]} */
+export function manifestFiles(componentsDir) {
+  const out = [];
+  const walk = (dir) => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const p = join(dir, e.name);
+      if (e.isDirectory()) walk(p);
+      else if (e.name.endsWith('.manifest.json')) out.push(p);
+    }
+  };
+  walk(componentsDir);
+  return out.sort();
+}
+
 /** The stdin entry stylesheet: the preset with automatic content detection
  *  disabled (`source(none)`), plus the component manifests registered as the
  *  only explicit source. Without `source(none)` the CLI additionally scans
@@ -61,7 +82,7 @@ export function escapeClass(cls) {
  *  @param {string} [extra] absolute glob of additional content
  *  @returns {string} */
 export function entryStylesheet(preset, components, extra) {
-  return `@import '${preset}' source(none);\n@source '${components}/*.manifest.json';\n`
+  return `@import '${preset}' source(none);\n@source '${components}/**/*.manifest.json';\n`
     + (extra ? `@source '${extra}';\n` : '');
 }
 
@@ -75,8 +96,8 @@ export function compileLayer(opts = {}) {
   const bin = join(root, 'node_modules/.bin/tailwindcss');
 
   const manifests = new Map();
-  for (const f of readdirSync(components).filter((f) => f.endsWith('.manifest.json')).sort())
-    manifests.set(f, JSON.parse(readFileSync(join(components, f), 'utf8')));
+  for (const p of manifestFiles(components))
+    manifests.set(relative(root, p), JSON.parse(readFileSync(p, 'utf8')));
 
   const entry = entryStylesheet(preset, components, opts.extraSource);
   const dir = mkdtempSync(join(tmpdir(), 'arena-tw-'));

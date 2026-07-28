@@ -73,7 +73,7 @@ test('shadow-1..3 still dedupe against each other (pre-existing registration, re
  * the coverage is unchanged, because `bun run check` runs both suites. */
 
 test("Button.manifest.json through tv(): text-ctl* and the variant's text color both survive", async () => {
-  const { default: manifest } = await import('../frameworks/tailwind/components/Button.manifest.json', { with: { type: 'json' } });
+  const { default: manifest } = await import('../frameworks/tailwind/components/forms/button/Button.manifest.json', { with: { type: 'json' } });
   const buttonStyles = tv(manifest);
   const expectSize = { sm: 'text-ctl-md', md: 'text-ctl', lg: 'text-ctl' };
   const expectColor = { primary: 'text-primary-content', danger: 'text-error' };
@@ -356,7 +356,7 @@ test('the exact cases the coordinator\'s review found broken now behave correctl
 });
 
 test('Button.manifest.json\'s three ctl-h heights now dedupe against each other through tv()', async () => {
-  const { default: manifest } = await import('../frameworks/tailwind/components/Button.manifest.json', { with: { type: 'json' } });
+  const { default: manifest } = await import('../frameworks/tailwind/components/forms/button/Button.manifest.json', { with: { type: 'json' } });
   const buttonStyles = tv(manifest);
   const heights = { sm: 'h-ctl-h-sm', md: 'h-ctl-h', lg: 'h-ctl-h-lg' };
   for (const size of ['sm', 'md', 'lg']) {

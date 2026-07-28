@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { repoRoot } from './lib/tailwind-compile.mjs';
 import { classesFor } from '../frameworks/tailwind/manifest-classes.js';
 
-const tag = JSON.parse(readFileSync(join(repoRoot, 'frameworks/tailwind/components/Tag.manifest.json'), 'utf8'));
+const tag = JSON.parse(readFileSync(join(repoRoot, 'frameworks/tailwind/components/display/tag/Tag.manifest.json'), 'utf8'));
 
 test('the default variants apply when nothing is chosen', () => {
   const { root, dot } = classesFor(tag);

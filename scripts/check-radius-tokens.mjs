@@ -45,10 +45,10 @@
  *   bun scripts/check-radius-tokens.mjs   -> exit 0 clean, 1 otherwise
  *   node scripts/check-radius-tokens.mjs  -> same, runtime-portable
  */
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { repoRoot } from './lib/tailwind-compile.mjs';
+import { manifestFiles, repoRoot } from './lib/tailwind-compile.mjs';
 import { classStringsBySlot } from './check-manifest-states.mjs';
 
 const COMPONENTS_DIR = join(repoRoot, 'frameworks/tailwind/components');
@@ -75,9 +75,8 @@ export function evaluateManifest(manifest) {
 /** @returns {{component: string, slot: string}[]} */
 export function collect() {
   const findings = [];
-  const manifestFiles = readdirSync(COMPONENTS_DIR).filter((f) => f.endsWith('.manifest.json')).sort();
-  for (const file of manifestFiles) {
-    const manifest = JSON.parse(readFileSync(join(COMPONENTS_DIR, file), 'utf8'));
+  for (const p of manifestFiles(COMPONENTS_DIR)) {
+    const manifest = JSON.parse(readFileSync(p, 'utf8'));
     findings.push(...evaluateManifest(manifest));
   }
   return findings;
