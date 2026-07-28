@@ -87,7 +87,7 @@ export const GATES = [
  *  `--preload frameworks/react/test-dom/preload.js` registers happy-dom for
  *  the whole process and is deliberately never paired with an `unregister()`
  *  (see preload.js's own reasoning). That registration would not itself throw
- *  if merged with the Angular suites -- `frameworks/angular/test/testbed-env.ts`
+ *  if merged with the Angular suites -- `frameworks/angular/test/TestbedEnv.ts`
  *  is the only Angular registration site and it is guarded
  *  (`ensureDom()` only calls `GlobalRegistrator.register()` when
  *  `!GlobalRegistrator.isRegistered`), so it silently skips registering rather

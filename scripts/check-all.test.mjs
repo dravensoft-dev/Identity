@@ -17,7 +17,7 @@ test('check:material runs last, after check:angular, the other Angular-layer gat
 test('testStep runs every suite under bun, with the DOM harness isolated in its own process', () => {
   // Not one merged invocation: `bun test` shares a process (and a globalThis)
   // across every file a single call matches. The Angular suites are not what
-  // forces the split any more -- frameworks/angular/test/testbed-env.ts is the
+  // forces the split any more -- frameworks/angular/test/TestbedEnv.ts is the
   // only registration site left in that directory, it is guarded
   // (`if (!GlobalRegistrator.isRegistered)`), and it is emitted JavaScript now,
   // so a single invocation is not even a path frameworks/react/test-dom/preload.js

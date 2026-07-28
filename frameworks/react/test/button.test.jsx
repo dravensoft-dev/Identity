@@ -63,7 +63,7 @@ test('Button drops a consumer style object and a consumer attribute, each indepe
  * `id`, and it passes the same test api/README.md states for that one: the D1
  * flatten removed the capability, and there is no other surface a host can
  * write it on. Button's half of that reason is its own: Angular delegates it to
- * MatButton and there is no arena-button primitive -- behaviour-delegated.json
+ * MatButton and there is no arena-button primitive -- BehaviourDelegated.json
  * says Arena "should not grow one" -- so the rule's escape hatch, that a
  * consumer writes the attribute on the host, has no host to be written on.
  *

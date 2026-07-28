@@ -16,7 +16,7 @@ but an empty `value` renders no pill at all, matching React exactly.
 
 A tile can legitimately show `tone="danger"` with `delta.tone="positive"` in the
 same breath — a bad state that is improving is still a bad state. Styling is the
-sibling `stat-card.variants.ts` recipe.
+sibling `StatCard.variants.ts` recipe.
 
 ```html
 <arena-stat-card label="Revenue" value="$48.2k" [delta]="{ value: '12%', direction: 'up', tone: 'positive' }" />

@@ -36,25 +36,31 @@ const here = dirname(fileURLToPath(import.meta.url));
  *
  *  A fixed hop count is correct for exactly one location, and this suite has two:
  *  `frameworks/angular/test/` in source, and `build/angular-test/angular/test/` once
- *  `ngc` has emitted it. The emitted tree holds the compiled `.js` and NONE of the
- *  `.json` data these suites read -- measured: zero `.json` under the emitted
- *  `primitives/` or `tailwind/components/` -- so a hop count resolves there to a
+ *  `ngc` has emitted it -- and since the structure refactor's batch 2 a suite is no
+ *  longer confined to those two, because most of them now sit beside the component they
+ *  cover, at a depth that varies by category. The emitted tree holds the compiled `.js`
+ *  and NONE of the `.json` data these suites read -- measured with
+ *  `find build/angular-test -name '*.json'`, which returns nothing -- so a hop count
+ *  resolves there to a
  *  directory that exists, contains the wrong things, and fails as ENOENT rather
  *  than as anything a reader would recognise. Walking to a marker resolves to the
- *  real source tree from both -- but that only fixes the DATA paths, and is not enough on its
+ *  real source tree from every one of them -- but that only fixes the DATA paths, and is not enough on its
  *  own to make a render suite runnable from source. `setInput()` and a template property
- *  binding now reach a real signal input (harness-capabilities.test.ts), and that only compiles
- *  against a real component under `ngc`: run a render suite straight from
- *  `frameworks/angular/test/` and `bun test` transpiles the `.ts` by stripping types rather than
+ *  binding now reach a real signal input (HarnessCapabilities.test.ts), and that only compiles
+ *  against a real component under `ngc`: run a render suite straight from its source
+ *  directory and `bun test` transpiles the `.ts` by stripping types rather than
  *  compiling it, producing a component TestBed cannot instantiate the way these suites expect.
- *  Measured, not assumed: `bun test frameworks/angular/test/harness-capabilities.test.ts` from
- *  source is 0 pass / 5 fail; `chart-data-table.test.ts` is 0 pass / 6 fail (NG0303 then
+ *  Measured, not assumed: `bun test frameworks/angular/test/HarnessCapabilities.test.ts` from
+ *  source is 0 pass / 5 fail; `bun test
+ *  frameworks/angular/components/charts/ChartDataTable.test.ts` is 0 pass / 6 fail (NG0303 then
  *  NG0950). Those failures read like a broken component, not like a wrong run target -- they are
- *  the second. Run a render suite from the emit instead: `bun run test:angular`, or `bun test
- *  build/angular-test/angular/test/<name>.test.js` after `bun run build:angular-tests`. A
+ *  the second. Run a render suite from the emit instead: `bun run test:angular`, or `bun test`
+ *  over the suite's own path under `build/angular-test/angular/` -- which mirrors its source
+ *  path with `.ts` emitted as `.js` -- after `bun run build:angular-tests`. A
  *  DOM-free recipe suite -- asserting a `tailwind-variants` recipe or a plain exported function,
  *  never mounting a component -- has no such dependency and still runs from source unchanged:
- *  `bun test frameworks/angular/test/tag-variants.test.ts` is **4 pass** either way. */
+ *  `bun test frameworks/angular/components/display/tag/Tag.variants.test.ts` is **4 pass**
+ *  either way. */
 function findRepoRoot(from: string): string {
   let dir = from;
   while (!existsSync(join(dir, 'package.json'))) {

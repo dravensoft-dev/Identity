@@ -27,7 +27,8 @@ afterEach(cleanup);
 /* `content.noAutoDismiss` -- "an alert must not disappear on a timer" -- is a
  * claim about the passage of time, which is why the evaluator returns null for it
  * and a suite has to act rather than read. This is the React port of
- * frameworks/angular/test/alert-role-tones.test.ts's own timer test, and it is
+ * the Angular layer's components/feedback/alert/Alert.roleTones.test.ts's own
+ * timer test, and it is
  * here because a bare `behavioural: { 'content.noAutoDismiss': true }` beside a
  * suite that acts on every other behavioural verdict is exactly the unbacked
  * assertion this layer exists to remove -- the verdict happens to be true

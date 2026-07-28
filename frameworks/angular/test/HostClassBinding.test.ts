@@ -1029,7 +1029,7 @@ test('arena-page-head: an unmeasured width renders the WIDE layout, so the narro
  * that slot sits in a `gap-4` flex parent and carries `shrink-0` plus its own
  * `w-auto`/`w-full`, so an unprojected wrapper would ship a gap's worth of
  * dead space to every page with no actions. It is gated on the shared
- * `ArenaActions` marker (`../components/projection-markers`), the plural
+ * `ArenaActions` marker (`../ProjectionMarkers`), the plural
  * sibling of the `ArenaAction` that `arena-empty-state` uses. */
 test('arena-page-head: the actions wrapper is absent from the DOM when no [actions] content is projected', async () => {
   document.documentElement.style.setProperty('--bp-sm', BP_SM);
@@ -1087,10 +1087,10 @@ test('arena-page-head: a platform with no ResizeObserver still renders, on the w
  * primitive rather than special-casing the one exception. Skeleton's
  * `block arena-shimmer` fix (Skeleton.manifest.json) exists
  * because its `root` slot shipped without a display utility and collapsed to
- * a zero-area box under exactly that default. Sixteen more primitives are
- * still to come, so this guard is general rather than one more per-primitive
- * assertion: every directory under `primitives/` is read at run time and
- * checked against its manifest, so a future slice inherits the guard for
+ * a zero-area box under exactly that default. This guard is general rather
+ * than one more per-primitive assertion: every component directory under
+ * `components/<category>/` is read at run time and
+ * checked against its manifest, so a component added later inherits the guard for
  * free rather than needing its own copy pasted in.
  *
  * The obvious version of this guard would render each host in this file's
@@ -1133,7 +1133,7 @@ const { pascal: kebabToPascal } = await import(
  * manifest under the tree -- its own doc comment in tailwind-compile.mjs warns
  * that three gates once found manifests by their own flat readdirSync, and
  * that three spellings of the same walk is how one of them ends up missing a
- * category nobody remembers to add. Reached the same way compliance.ts reaches
+ * category nobody remembers to add. Reached the same way Compliance.ts reaches
  * behaviour-compliance.mjs and behaviour-contracts.mjs: a dynamic import of an
  * absolute file URL, resolved at call time from LIB, so it works unmodified
  * from both frameworks/angular/test/ and the ngc emit at
@@ -1475,7 +1475,7 @@ test('arena-unauth-card: the root recipe classes land on the host element itself
  * `arena-error-state`'s own action-wrapper tests document above: `[brand]`
  * and `[footer]` are React's `{brand && <div>...}` / `{footer && <div>...}`
  * gates ported to Angular's own idiom, `contentChild(ArenaBrand)` /
- * `contentChild(ArenaFooter)` (`../components/projection-markers`). The
+ * `contentChild(ArenaFooter)` (`../ProjectionMarkers`). The
  * positive case -- something actually projected into either slot -- is not
  * exercised by any test in this file. What IS covered: with nothing projected into either
  * slot, both wrappers -- `mb-7` on `brand`, `mt-5` on `footer` -- must be

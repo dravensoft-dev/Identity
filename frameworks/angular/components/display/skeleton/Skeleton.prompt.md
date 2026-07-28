@@ -4,7 +4,7 @@ renders a stack whose last line is short, the way a paragraph ends; `line`, `blo
 and `circle` are single shapes. `width`, `height` and `radius` are CSS strings that
 override the recipe's per-variant defaults; each applies only where the shape has
 something to override — see the table below. Styling is the sibling
-`skeleton.variants.ts` recipe.
+`Skeleton.variants.ts` recipe.
 
 ```html
 <arena-skeleton variant="text" [lines]="3" />

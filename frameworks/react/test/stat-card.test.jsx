@@ -2,7 +2,7 @@
  * BOTH layers -- fixing React's own old empty-pill defect, where a delta
  * carrying a tone and a direction but an empty (falsy) `value` still rendered
  * an outline pill with nothing inside it. `frameworks/angular/test/
- * host-class-binding.test.ts` got a render test for exactly this
+ * HostClassBinding.test.ts` got a render test for exactly this
  * (`arena-stat-card: a delta with a value renders the pill; a delta with a
  * tone but no value renders nothing`); `StatCard.jsx` is the file that
  * changed on the React side, and it had none. This is that test, in this

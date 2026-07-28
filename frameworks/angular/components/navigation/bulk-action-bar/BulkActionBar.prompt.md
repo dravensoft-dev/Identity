@@ -4,7 +4,7 @@ action stays outline in `--error` -- transparent at rest, the soft `--danger-sof
 tint only on hover -- like every risk trigger but one; the filled danger surface stays
 `arena-confirm-dialog`'s alone. `count` and `actions` are required. Import `BulkAction`
 (from `../../api.generated`) for the `actions` input's element type. Styling is the
-sibling `bulk-action-bar.variants.ts` recipe.
+sibling `BulkActionBar.variants.ts` recipe.
 
 ```html
 <arena-bulk-action-bar [count]="selected().length" noun="deployments"

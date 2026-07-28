@@ -51,7 +51,7 @@ measured.
 
 **The legend is keyboard-reachable.** The legend column is an `overflow: auto` scroll
 region, and it carries `tabindex="0"`, `role="group"` and `aria-label="Doughnut chart
-legend"` (`doughnut-chart.ts`), so a keyboard-only user can Tab to the column and scroll
+legend"` (`DoughnutChart.ts`), so a keyboard-only user can Tab to the column and scroll
 it. Current Chrome and Firefox do put a scrollable container in the tab order on their
 own, so this is belt-and-braces on an up-to-date browser — but it is not something to
 rely on: it is a recent default (Chrome shipped it in 127), older engines do not do it,

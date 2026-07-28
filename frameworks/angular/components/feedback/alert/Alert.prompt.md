@@ -2,7 +2,7 @@ Arena in-page message. Unlike a snackbar it is persistent: it belongs where the
 condition it reports lives, and it stays until that condition is resolved. `tone`
 carries the severity and picks the Phosphor Fill icon; `actionLabel` adds one
 uppercase mono action; `dismissible` adds the single `ph-x` close control. Styling is
-the sibling `alert.variants.ts` recipe.
+the sibling `Alert.variants.ts` recipe.
 
 ```html
 <arena-alert tone="warning" title="Deploy window closes in 20 minutes">

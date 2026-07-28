@@ -10,8 +10,8 @@ own `role="img"`.
 </arena-chart-card>
 ```
 
-Import `ArenaActions` from `frameworks/angular/primitives/projection-markers` (or the
-primitives barrel) alongside `ChartCard` in the host component's `imports` —
+Import `ArenaActions` from `frameworks/angular/ProjectionMarkers` (or the
+layer barrel) alongside `ChartCard` in the host component's `imports` —
 `actions` is a directive, not a plain attribute, because it is how the card
 detects that actions were projected at all. Without it the attribute is inert, the
 head row never renders when there is no title, and the button silently disappears.

@@ -41,7 +41,7 @@ flex row compressed a component that React's equivalent could not compress.
 Width and height do not apply to a non-replaced inline box, so **every manifest's `root` slot must
 carry a display utility.** This shipped as a real bug once (a zero-area Skeleton) and is now
 machine-guarded by a manifest-driven assertion in
-`frameworks/angular/test/host-class-binding.test.ts`.
+`frameworks/angular/test/HostClassBinding.test.ts`.
 
 **Consequence to know:** React's `style` prop and `{...rest}` spread have **no Angular
 counterpart, and need none — in every host-bound primitive.** A consumer writes
@@ -236,7 +236,7 @@ is a structure a custom element cannot become.
 
 **Consequence to know:** a consumer attribute written directly on
 `<arena-activity-feed>` (a static `class=""`, an ARIA attribute) lands on the inert host,
-not on the styled `<ul>` inside it. `host-class-binding.test.ts`'s manifest-driven display-
+not on the styled `<ul>` inside it. `HostClassBinding.test.ts`'s manifest-driven display-
 utility guard still covers this component (it reads every primitive's `slots.root` string
 regardless of whether the component host-binds it), and `ActivityFeed.manifest.json`'s
 `root` slot (`"flex flex-col list-none m-0 p-0"`) still carries `flex`, so the guard is not
@@ -287,7 +287,7 @@ secondary action is projected, on each.
 > asserted `aria-modal="true"` over a free-roaming focus, with no accessible name, no trap, no
 > restore and no Escape. All of that is now met in both layers:
 > `frameworks/react/use-dialog-modal.js` is a deliberate port of
-> `frameworks/angular/primitives/focus-trap.ts`, `ConfirmDialog.title` is required and guarded in
+> `frameworks/angular/FocusTrap.ts`, `ConfirmDialog.title` is required and guarded in
 > both layers with `aria-labelledby` pointing at it, and `ConfirmDialog.behaviour.json` retains a
 > single exception — `roles.element`, which is `role="alertdialog"` and which **both** layers
 > declare, so it is a shared deviation from the pattern rather than a divergence between layers.
@@ -314,7 +314,7 @@ The keyboard trap is what keeps focus in; a pointer-driven assistive technology 
 through Tab is not covered by it. This was recorded here when it was half of a divergence; it is
 now a shared limit of both layers and is recorded here only because deleting it would lose it.
 
-**Tested how (Angular):** `frameworks/angular/test/confirm-dialog-focus-trap.test.ts` asserts the
+**Tested how (Angular):** `frameworks/angular/components/feedback/confirm-dialog/ConfirmDialog.focusTrap.test.ts` asserts the
 trap's mechanics — `focusableElements`, `focusFirstFocusable`, `trapTabKey`,
 `handleOpenTransition` — against a hand-built, real DOM tree under happy-dom. It is deliberately
 *not* a TestBed render of `<arena-confirm-dialog open="true">`. **That used to be forced rather
@@ -322,7 +322,7 @@ than chosen**: probed by hand under this repo's then-JIT-only harness, both the 
 template binding and `componentRef.setInput('open', true)` failed — the first threw NG0303, the
 second logged it and then silently no-opped, so no TestBed-based test could render an
 actually-open dialog. Batch 8C11 moved this harness to AOT and retired that limitation:
-`frameworks/angular/test/harness-capabilities.test.ts` now drives `ConfirmDialog.open` through
+`frameworks/angular/test/HarnessCapabilities.test.ts` now drives `ConfirmDialog.open` through
 `setInput('open', true)` on a directly created fixture and asserts `[role="alertdialog"]` renders.
 This suite still tests the helpers directly rather than rendering the real component, which is now
 a design choice and not a forced one — see CLAUDE.md's *Known debt* entry on the seven files that
@@ -356,7 +356,7 @@ on its own.
 
 This section recorded that `Skeleton.jsx` branched by variant — `block`, `line` and `text`
 rendering `role="status"` with `aria-label="Loading"`, and `circle` rendering
-`aria-hidden="true"` with no role at all — while `skeleton.ts` set `role: 'status'` and
+`aria-hidden="true"` with no role at all — while `Skeleton.ts` set `role: 'status'` and
 `'aria-label': 'Loading'` in its `host` bindings statically, with **no branch by variant**. The
 consequence was not a difference of shapes: meeting a circular skeleton, a screen-reader user
 heard "Loading" in Angular and heard nothing in React. It was recorded as *"both are
@@ -364,7 +364,7 @@ defensible"* and left undecided.
 
 **Plan 8C10 closed it, and closed it under step 2 of *How to add an entry* below: one layer was
 simply wrong.** React was. Angular has announced every variant since it was written and needed
-no change; `skeleton.ts` was not touched. `Skeleton.jsx`'s `circle` branch now renders
+no change; `Skeleton.ts` was not touched. `Skeleton.jsx`'s `circle` branch now renders
 `role="status"` and `aria-label="Loading"` like its three siblings.
 
 **What settled it was not a judgement call, which is the transferable part.** The undecided
@@ -387,7 +387,7 @@ mechanism, not a fact about `Skeleton`, and it outlives the divergence it found.
 **Recorded how, now:** `frameworks/react/components/display/Skeleton.behaviour.json` is back to
 the flat `{"pattern": "status", "exceptions": []}` — no cases, no `divergesFrom` — because all
 four variants meet `status` and there is nothing left for a case to scope.
-`frameworks/angular/primitives/skeleton/skeleton.behaviour.json` is unchanged and still flat at
+`frameworks/angular/components/display/skeleton/Skeleton.behaviour.json` is unchanged and still flat at
 `status`. That the split was built and then retired is the mechanism working rather than a
 retreat: splitting the variants is what made the defect visible, and fixing the defect retired
 the need for the split.
@@ -395,27 +395,31 @@ the need for the split.
 **What is NOT proven, and it is the same limit the rest of this file carries.** The React claim
 is verified — `frameworks/react/test-dom/placement-and-branches.test.jsx` renders all four
 variants and `Skeleton:react` is in `check:compliance`'s `COVERED`. The Angular claim is not:
-`skeleton.behaviour.json` says `status` with no exceptions and **no suite verifies that binding**,
+`Skeleton.behaviour.json` says `status` with no exceptions and **no suite verifies that binding**,
 so Angular's side of the now-agreeing pair is an unverified claim, exactly as it was while the
 layers disagreed. Be precise about which claim is unverified, because **two** suites render this
 component and one of them asserts the announcement itself.
-`frameworks/angular/test/host-class-binding.test.ts` imports `Skeleton` (:65), declares a
-`SkeletonHost` fixture (:180) and mounts a real `TestBed` tree of it in **three** tests. Two are
-host-class tests — the recipe's root classes land on the host (:742), a consumer's own class
-survives the `[class]` binding (:751). The third,
-*"arena-skeleton: the host itself carries the loading status, not a wrapper inside it"* (:759),
+`frameworks/angular/test/HostClassBinding.test.ts` imports `Skeleton` (:67), declares a
+`SkeletonHost` fixture (:147) and mounts a real `TestBed` tree of it in **three** tests. Two are
+host-class tests — the recipe's root classes land on the host (:632), a consumer's own class
+survives the `[class]` binding (:641). The third,
+*"arena-skeleton: the host itself carries the loading status, not a wrapper inside it"* (:649),
 asserts `role="status"` and `aria-label="Loading"` on the host, plus that the default variant
 renders no children of its own.
-`frameworks/angular/test/skeleton-dimensions.test.ts` mounts it too, in six tests, and reaches
+`frameworks/angular/components/display/skeleton/Skeleton.dimensions.test.ts` mounts it too, in six
+tests, and reaches
 **every** variant: its `renderSkeleton` helper (:37-45) drives `variant` through
 `fixture.componentRef.setInput('variant', variant)` — the same `setInput()` technique every
 directly-created fixture in this AOT harness now uses — and renders `block`, `circle`, `line` and
 `text`. What it asserts is the inline `[style.*]` dimension
 bindings, never `role`, `aria-label`, or anything else the `status` pattern names. Those two are
-the whole set that renders it: `skeleton-variants.test.ts` mounts nothing (it asserts the
-plain-TypeScript recipe and `skeletonRowSlot`), and the only other files under
-`frameworks/angular/test/` naming `Skeleton` at all — `compliance.ts` (:210) and
-`confirm-dialog-focus-trap.test.ts` (:21) — name it only in a comment.
+the whole set that renders it: `Skeleton.variants.test.ts` mounts nothing (it asserts the
+plain-TypeScript recipe and `skeletonRowSlot`), and the only other `.ts` files in this layer
+naming `Skeleton` at all — `frameworks/angular/test/Compliance.ts` (:282) and
+`frameworks/angular/components/feedback/confirm-dialog/ConfirmDialog.focusTrap.test.ts` (:21) —
+name it only in a comment. Re-derive that set with
+`grep -rln Skeleton --include='*.ts' frameworks/angular/`, which also finds the component's own
+four files and the generated `Api.generated.ts`; the suites are what this paragraph is about.
 
 So the accurate statement is narrower than "nothing is checked". What no suite in this layer does
 is **evaluate the binding against the `status` pattern**: neither file calls `comparePattern` or
@@ -426,16 +430,16 @@ absent, which is the correction an earlier version of this paragraph needed: the
 asserts the announcement **stops at the default variant**, `block`, because its fixture is a
 template (`<arena-skeleton class="consumer-class" />`) with no `[variant]` binding. **That used to
 be a harness limitation and is not any more**: batch 8C11 moved this harness to AOT, and
-`host-class-binding.test.ts`'s own header now calls the stop a scope decision rather than a
-limitation — the other three variants are covered elsewhere (`skeleton-variants.test.ts` for the
-recipe, `skeleton-dimensions.test.ts` for a real render of all four); the suite that does reach
+`HostClassBinding.test.ts`'s own header now calls the stop a scope decision rather than a
+limitation — the other three variants are covered elsewhere (`Skeleton.variants.test.ts` for the
+recipe, `Skeleton.dimensions.test.ts` for a real render of all four); the suite that does reach
 `circle` — the variant this batch changed — asserts dimensions instead. That split is softer than it looks in this one
 component's case, and the reason is worth stating rather than leaving a reader to assume the
-worst: `role` and `aria-label` are **static host attributes** in `skeleton.ts` (`:45-46`, inside
+worst: `role` and `aria-label` are **static host attributes** in `Skeleton.ts` (`:45-46`, inside
 the `host:` object, with no branch by variant — unlike React's, which branched), so asserting them
 on `block` establishes them for every variant by construction rather than by coverage. Rendering a
 component is not verifying its binding, and `Skeleton:angular` is absent from
-`check:compliance`'s `COVERED` (`scripts/check-compliance.mjs:103-119`) for that reason.
+`check:compliance`'s `COVERED` (`scripts/check-compliance.mjs:113-129`) for that reason.
 
 **This paragraph is itself a worked example of the hazard it sits inside, twice over.** Its first
 version claimed that suite "says nothing about `role`, `aria-label` or the `status` pattern",
@@ -444,7 +448,7 @@ same batch that recorded *a component name written into another file's prose is 
 no gate checks*. Its second version, written to correct exactly that, then claimed the other three
 variants were **"unreachable"** from this harness — also false, and false the same way, one step
 out: its author read the one file and generalised to a directory that already held
-`skeleton-dimensions.test.ts` driving all four. A reviewer read the files both times; no gate
+`Skeleton.dimensions.test.ts` driving all four. A reviewer read the files both times; no gate
 caught either, in either direction. See `CLAUDE.md`'s *Known debt* entry for the class and the
 change-time command.
 
@@ -505,7 +509,7 @@ either.
 **Recorded how:** `frameworks/react/components/feedback/Toast.behaviour.json` declares two cases,
 `danger` → `alert` and `advisory` → `status`, and carries `divergesFrom: "alert"` naming the flat
 delegated binding, so `check:behaviour` reports the divergence as declared rather than as two
-layers disagreeing. **`frameworks/angular/behaviour-delegated.json`'s `Toast` entry is left
+layers disagreeing. **`frameworks/angular/BehaviourDelegated.json`'s `Toast` entry is left
 untouched on purpose**, and it is not accurate: it binds `alert` with `"exceptions": []` while
 `MatSnackBar` renders no role outside Firefox. That inaccuracy is pre-existing and is already
 covered by `CLAUDE.md`'s standing *"every claim the delegated declarations make about Angular
@@ -557,7 +561,7 @@ a latent hazard rather than a live defect — the two layers behave identically 
 **One consequence of the ported chain, recorded rather than hidden:** on a step carrying neither
 `title` nor `eyebrow`, the panel's `aria-label` is `"Step N of M"` — byte-identical to the
 `aria-label` already on the progress-dots div inside that same panel, in **both** layers
-(`Onboarding.jsx`, `onboarding.ts`). A screen reader announces the two the same. That is the price
+(`Onboarding.jsx`, `Onboarding.ts`). A screen reader announces the two the same. That is the price
 of a positional fallback and it is pinned by an assertion in
 `frameworks/react/test-dom/onboarding-modal.test.jsx` rather than left to prose.
 
@@ -568,7 +572,7 @@ and managed no focus whatsoever — nothing moved focus in on open, nothing rest
 Tab and Shift+Tab walked straight out of the panel into the page behind the scrim, and Escape did
 nothing, while `aria-modal="true"` had already told assistive technology the page behind was
 unavailable. Angular implemented the contract it asserted, through
-`frameworks/angular/primitives/focus-trap.ts`.
+`frameworks/angular/FocusTrap.ts`.
 
 **Plan 8C4 closed it, and closed it by porting rather than by re-solving.**
 `frameworks/react/use-dialog-modal.js` is a deliberate mirror of that Angular module — same
@@ -662,8 +666,8 @@ so there is no collapsed state for it to report.
 
 DOM focus is moved into the search input explicitly on open, and restored to whatever
 held it beforehand on close, reusing `arena-confirm-dialog`'s own focus contract —
-`handleOpenTransition` and `trapTabKey`, generalized out of `confirm-dialog.ts` into
-`frameworks/angular/primitives/focus-trap.ts` so this component did not need a second
+`handleOpenTransition` and `trapTabKey`, generalized out of `ConfirmDialog.ts` into
+`frameworks/angular/FocusTrap.ts` so this component did not need a second
 implementation. Every row stays `tabindex="-1"`, so the search input is the panel's
 only legal Tab stop; Tab and Shift+Tab are trapped there — with exactly one focusable
 element the trap simply re-focuses it and consumes the key — so focus can never escape
@@ -710,17 +714,17 @@ combobox/listbox pattern wants role, aria-activedescendant or managed focus, and
 accessible name." The focus-management gap (bare `autofocus`, no Tab trap) was caught
 in review as the second occurrence of the exact trap `ConfirmDialog` hit first.
 
-**Tested how:** `frameworks/angular/test/command-palette-focus-trap.test.ts` exercises
+**Tested how:** `frameworks/angular/components/navigation/command-palette/CommandPalette.focusTrap.test.ts` exercises
 the shared `handleOpenTransition`/`trapTabKey` helpers against a hand-built DOM tree
 shaped like the palette's panel (one real `<input>`, several `tabindex="-1"` row
 buttons) — real focus movement, real `document.activeElement`, and a Tab that must not
 reach a control placed behind the scrim. It does not render `<arena-command-palette>`
-through TestBed. **That used to be forced**: `command-palette-keyboard.test.ts` documented
+through TestBed. **That used to be forced**: `CommandPalette.keyboard.test.ts` documented
 `open` as unable to become `true` under this repo's then-JIT-only harness. Batch 8C11 moved
-this harness to AOT and retired that limitation — `frameworks/angular/test/harness-capabilities.test.ts`
+this harness to AOT and retired that limitation — `frameworks/angular/test/HarnessCapabilities.test.ts`
 now drives `CommandPalette.open` through `setInput('open', true)` on a directly created fixture
-and asserts its search input renders. `command-palette-focus-trap.test.ts` and
-`command-palette-keyboard.test.ts` still test the helpers directly rather than the real
+and asserts its search input renders. `CommandPalette.focusTrap.test.ts` and
+`CommandPalette.keyboard.test.ts` still test the helpers directly rather than the real
 component, which is now a design choice rather than a forced one — both are among the seven
 files CLAUDE.md's *Known debt* records as still citing the retired limitation in their own
 prose. So this is not proof
@@ -728,7 +732,7 @@ that the component's own `afterRenderEffect`/`onKey` wiring calls these function
 the right time — `ngc --strictTemplates` (`check:angular`) is what proves that wiring
 compiles against the component's real `viewChild`/`inject(DOCUMENT)` types.
 `activeOptionId`, the function `aria-activedescendant` is computed from, is asserted
-directly in `command-palette-keyboard.test.ts`: it always resolves to a real row's id,
+directly in `CommandPalette.keyboard.test.ts`: it always resolves to a real row's id,
 and is `undefined` rather than dangling when the filtered list is empty or the active
 index is out of range.
 
@@ -778,10 +782,10 @@ alignment intent re-expressed as the shared `align` enum and its bottom margin d
 parent composes the spacing.
 
 **Worth knowing:** the measurement helper is shared, not private to this component.
-`frameworks/angular/primitives/container-size.ts` exports `containerWidth()` and
+`frameworks/angular/ContainerSize.ts` exports `containerWidth()` and
 `readBreakpoint()`, mirroring React's `use-container-width.js` without the `use` prefix —
-a signal-returning function is not a React hook. It is exported from the primitives
-barrel deliberately, so a consumer writing their own responsive component reaches for
+a signal-returning function is not a React hook. It is named directly in the layer barrel
+(`frameworks/angular/index.ts`) deliberately, so a consumer writing their own responsive component reaches for
 Arena's measurement rather than a media query. One deliberate difference from React's
 version: `readBreakpoint()` injects `DOCUMENT` **before** consulting its cache, not
 after, so the "call from an injection context" contract holds on every call instead of
@@ -798,7 +802,7 @@ chart primitives) inherit the helper unchanged.
 `{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, ... }`. React's DOM
 layer appends `px` to a unitless number on a length property, so `width: 1` renders `1px`.
 
-**Angular:** `chart-internals.ts` exports the same object as `SR_ONLY`, with every length
+**Angular:** `ChartInternals.ts` exports the same object as `SR_ONLY`, with every length
 spelled out — `width: '1px'`, `height: '1px'`, `margin: '-1px'`. Angular's `[style]`
 binding appends nothing: it stringifies the value and hands it to `setProperty`, so a
 bare `1` is an invalid length and is dropped silently, leaving the table visible on the
@@ -843,7 +847,7 @@ governed property inline.
 metadata. It is the box `containerWidth()` observes and the containing block the tooltip is
 positioned against, and `<arena-bar-chart>` is an unknown element whose UA default is
 `display:inline` — the same hazard every manifest's `root` slot carries a display utility for. A
-chart has no manifest, so it states the display itself; `host-class-binding.test.ts` names the
+chart has no manifest, so it states the display itself; `HostClassBinding.test.ts` names the
 chart primitives in `NO_MANIFEST` and asserts the rendered host's `display` and `position` against
 a real DOM instead of against a manifest string.
 
@@ -869,7 +873,7 @@ pointer position and `point.x` share the SVG's own origin.
 **Why:** it is a straight bug, not a design choice — the two numbers being compared have to be in
 one coordinate space, and only the SVG's box gives that. Mirroring it into a second layer was
 explicitly out of the question. The nearest-point search itself is extracted as
-`nearestPointIndex()` and pinned in `line-chart-geometry.test.ts`; the coordinate origin it is fed
+`nearestPointIndex()` and pinned in `LineChart.geometry.test.ts`; the coordinate origin it is fed
 is the part that cannot be unit-tested here, because it needs a real layout box.
 
 **Converges:** yes — React should measure the SVG. **Open debt on the React layer**, and it is
@@ -893,7 +897,7 @@ directly. This is the same hazard every manifest's `root` slot carries a display
 chart has no manifest, so it states the display itself — as `arena-bar-chart` and
 `arena-line-chart` already do, with the difference that this one's display is `flex` rather than
 `block`, because the row is the layout rather than a wrapper inside it. `position:relative` is kept
-for the absolutely-positioned numbers table. `host-class-binding.test.ts` names all three chart
+for the absolutely-positioned numbers table. `HostClassBinding.test.ts` names all three chart
 primitives in `NO_MANIFEST` and asserts the rendered host's `display`, `position`, `width` and
 `gap` against a real DOM.
 
@@ -914,7 +918,7 @@ supplies is unnamed. A slice past the visible rows of a long legend is unreachab
 wherever the UA does not supply that stop.
 
 **Angular:** `arena-doughnut-chart`'s legend column carries the identical `overflow: auto`, plus
-`tabindex="0"`, `role="group"` and `aria-label="Doughnut chart legend"` (`doughnut-chart.ts`),
+`tabindex="0"`, `role="group"` and `aria-label="Doughnut chart legend"` (`DoughnutChart.ts`),
 so the column is itself a tab stop and the browser's native scroll keys move it once focused.
 
 **Why:** the Angular fix closes a real WCAG 2.1.1 (Keyboard) defect that both layers used to share.
@@ -961,7 +965,7 @@ then fills the dot with. The rendered result is the same filled circle React's p
 only the mechanism differs — Angular routes every tone through one `bg-current` declaration
 instead of writing a `bg-<tone>` per value, which is `Tag.manifest.json`'s own dot slot
 exactly (`"dot": "size-1.5 rounded-pill bg-current"`, unconditionally rendered by
-`tag.ts`'s template alongside its projected content) — taken rather than re-derived, per
+`Tag.ts`'s template alongside its projected content) — taken rather than re-derived, per
 this task's own brief. (`Tag`'s dot originally read `h-1.5 w-1.5`; it was brought onto
 the `size-*` idiom `ActivityFeed`'s own `size-2` and the rest of the layer already use, so
 the two square-dot slots stop minting one duplicate rule in `Utilities.css` for the same
@@ -1106,7 +1110,7 @@ layout, which is the whole reason SideNav stays a bridge.
 **What is newly true of the Angular half: `mat-nav-list` is a flat list of links, and that is all
 it is.** It provides no named section group and no nested disclosure, so the two shapes this batch
 added to React have no counterpart inside the control the bridge dresses. Angular's declarations
-reach *outside* `mat-nav-list` for both — `frameworks/angular/behaviour-delegated.json` delegates
+reach *outside* `mat-nav-list` for both — `frameworks/angular/BehaviourDelegated.json` delegates
 `SideNavSection` to the `matSubheader` directive and `SideNavCollapsible` to `MatExpansionPanel` —
 and both of those entries state honestly that `arena-material.css` has no rule for their host
 classes, so a subheader or an expansion panel used in an Arena sidebar renders in Material's own

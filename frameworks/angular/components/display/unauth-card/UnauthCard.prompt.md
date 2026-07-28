@@ -1,7 +1,7 @@
 Arena's signed-out panel. A frame: the lock-up, an eyebrow, a title, whatever the screen
 is actually for, and a footer. It knows nothing about credentials, so one component
 serves sign-in, "check your inbox", "this link expired" and two-factor entry. Styling is
-the sibling `unauth-card.variants.ts` recipe.
+the sibling `UnauthCard.variants.ts` recipe.
 
 ```html
 <div class="flex min-h-screen items-center justify-center p-gutter">
@@ -20,8 +20,8 @@ the sibling `unauth-card.variants.ts` recipe.
 </div>
 ```
 
-Import `ArenaBrand` and `ArenaFooter` from `frameworks/angular/primitives/projection-markers`
-(or the primitives barrel) alongside `UnauthCard` in the host component's `imports` —
+Import `ArenaBrand` and `ArenaFooter` from `frameworks/angular/ProjectionMarkers`
+(or the layer barrel) alongside `UnauthCard` in the host component's `imports` —
 `brand` and `footer` are directives, not plain attributes, because they are how the panel
 detects that something was actually projected into each slot. Both wrappers carry their
 own margin, so a card that omits one ships no dead space for it.

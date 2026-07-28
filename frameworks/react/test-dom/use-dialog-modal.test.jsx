@@ -11,7 +11,8 @@
  * reaching the next one -- is the browser's own and is verified in Chromium by
  * hand.
  *
- * This is the technique frameworks/angular/test/onboarding-focus-trap.test.ts
+ * This is the technique the Angular layer's own
+ * components/feedback/onboarding/Onboarding.focusTrap.test.ts
  * uses against the module this one mirrors, and it is why the helpers are
  * exported as pure functions of a container rather than living inside the hook. */
 import test from 'node:test';
@@ -19,7 +20,7 @@ import assert from 'node:assert/strict';
 import { focusableElements, focusFirstFocusable, trapTabKey } from '../use-dialog-modal.js';
 
 /* Hand-built trees, no render. This is the technique Angular's
- * onboarding-focus-trap.test.ts uses, and it is why the helpers are exported as
+ * Onboarding.focusTrap.test.ts uses, and it is why the helpers are exported as
  * pure functions of a container rather than living inside the hook. */
 function panelWith(html) {
   const el = document.createElement('div');

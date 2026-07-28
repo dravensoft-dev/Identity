@@ -1,7 +1,7 @@
 Arena avatar — a person's or team's mark. `src` renders the image; without it the
 initials of `name` render on the raised surface, so `name` is always worth passing.
 `shape="circle"` is a person, `shape="rounded"` a team or organisation. `status` adds
-a presence dot. Styling is the sibling `avatar.variants.ts` recipe; the component
+a presence dot. Styling is the sibling `Avatar.variants.ts` recipe; the component
 carries no CSS classes of its own.
 
 ```html

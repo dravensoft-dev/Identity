@@ -166,8 +166,8 @@ now one shared recursive walk, `manifestFiles()` in `scripts/lib/tailwind-compil
 an empty result is an explicit failure rather than a clean pass. Every site that needs to
 find manifests calls it — `compileLayer()` in that same file, which `check:tailwind` and
 `build:tailwind` go through; `check:radius` and `check:states` directly; and Angular's
-`host-class-binding.test.ts`, through the same dynamic-import-of-a-file-URL pattern
-`compliance.ts` uses so the specifier resolves from both the source tree and the `ngc`
+`HostClassBinding.test.ts`, through the same dynamic-import-of-a-file-URL pattern
+`Compliance.ts` uses so the specifier resolves from both the source tree and the `ngc`
 emit — so nobody has a reason to write a fifth spelling of the walk.
 `compileLayer()`'s returned `manifests` map is keyed by **repo-relative path**
 rather than by basename, which is what a message naming a manifest in a nested tree needs;

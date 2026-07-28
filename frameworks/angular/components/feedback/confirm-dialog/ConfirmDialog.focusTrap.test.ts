@@ -2,7 +2,7 @@
  * real focus trap: focus moves into the panel on open, Tab/Shift+Tab cycle
  * within it, and focus is restored to whatever held it beforehand on close.
  * Plan 5a's Task 14 review generalized that trap's mechanics out of
- * `ConfirmDialog.ts` into `frameworks/angular/components/focus-trap.ts`, so
+ * `ConfirmDialog.ts` into `frameworks/angular/FocusTrap.ts`, so
  * `arena-command-palette` could reuse it instead of writing a second
  * implementation -- `ConfirmDialog.ts` still re-exports the same names for
  * any caller that reached them there, which is why importing from either

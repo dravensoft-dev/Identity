@@ -2,7 +2,7 @@ Arena confirmation for a high-consequence action. It does not close on click-out
 losing a half-finished decision to a stray click is the failure this component exists
 to prevent. `requireText` makes the user type a word before the confirm button
 enables. `destructive` turns the eyebrow red and gives the confirm button Arena's
-**only filled danger surface**. Styling is the sibling `confirm-dialog.variants.ts`
+**only filled danger surface**. Styling is the sibling `ConfirmDialog.variants.ts`
 recipe.
 
 ```html

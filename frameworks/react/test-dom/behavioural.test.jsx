@@ -22,10 +22,10 @@
  *     and recorded as a written checklist. A BROWSER-DRIVEN GATE IS STILL
  *     REFUSED: it would be this repo's fourth non-portable gate.
  *
- * DO NOT CITE frameworks/angular/test/confirm-dialog-focus-trap.test.ts or
- * command-palette-focus-trap.test.ts as evidence for the React verdict. An
+ * DO NOT CITE the Angular layer's ConfirmDialog.focusTrap.test.ts or
+ * CommandPalette.focusTrap.test.ts as evidence for the React verdict. An
  * earlier version of this comment did. Those suites test the ANGULAR layer --
- * they import ../primitives/focus-trap, which React does not use. React's trap
+ * they import frameworks/angular/FocusTrap.ts, which React does not use. React's trap
  * is proved by React's own assertions or it is not proved. Do not re-add the
  * citation.
  *

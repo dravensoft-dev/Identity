@@ -35,14 +35,23 @@ Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
 - `theme/theme-service.ts` + `theme/no-fouc.html` — dark-first signal theme
   service (light = `.arena-light`) and the pre-paint snippet.
 
-**Primitives — token-styled components Material does not provide.** Each is a
-quartet: `<name>.ts` (standalone, `OnPush`, signal I/O, `arena-` selector),
-`<name>.variants.ts` (a `tailwind-variants` recipe built with the shared `tv`),
-`<name>.prompt.md` (usage + Do/Don't), and a barrel. `primitives/tag/` is the
+**Primitives — token-styled components Material does not provide.** Each lives in
+`components/<category>/<component-kebab>/` and is a
+quartet: `<Component>.ts` (standalone, `OnPush`, signal I/O, `arena-` selector),
+`<Component>.variants.ts` (a `tailwind-variants` recipe built with the shared `tv`),
+`<Component>.prompt.md` (usage + Do/Don't), and an `index.ts` barrel.
+`components/display/tag/` is the
 reference shape. The three SVG charts are the one exception and have no
-`<name>.variants.ts` — see below.
+`<Component>.variants.ts` — see below. The category is the one
+`frameworks/Components.json` declares, and the file-naming rule is the repo-wide one
+`CLAUDE.md` states: directories kebab-case, file names capital-initial. Each component's
+own tests sit in that same directory as `<Component>.<facet>.test.ts`.
 
-The layer ships **20 primitives**: `activity-feed`, `alert`, `app-logo`, `avatar`,
+The layer ships **20 primitives**, in five categories — `brand`, `charts`, `display`,
+`feedback`, `navigation`; there is no `forms`, because every form control is delegated to
+Material. Count them with
+`find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l` rather than
+trusting this list: `activity-feed`, `alert`, `app-logo`, `avatar`,
 `bar-chart`, `breadcrumbs`, `bulk-action-bar`, `chart-card`, `command-palette`,
 `confirm-dialog`, `doughnut-chart`, `empty-state`, `error-state`, `line-chart`,
 `onboarding`, `page-head`, `skeleton`, `stat-card`, `tag`, `unauth-card`.
@@ -60,24 +69,28 @@ bindings, not class strings, so `bar-chart`, `line-chart` and `doughnut-chart` h
 `check:dimensions` can actually read. `chart-card` is not one of them: it is a bordered
 tile with a microlabel, so it has a manifest like every other expressible component.
 
-Four shared files sit beside the primitives and are not components:
-`container-size.ts` (the host element's width as a signal, plus `readBreakpoint`),
-`chart-internals.ts` (the chart maths and the identity-or-meaning colour contract),
-`focus-trap.ts` (the shared overlay focus trap, generalized out of `confirm-dialog` and
-used by it and `command-palette`) and `projection-markers.ts` (the `[action]`,
+Four shared files are not components, and each sits at the narrowest level that contains
+all of its consumers rather than in one shared bucket:
+`ContainerSize.ts` (the host element's width as a signal, plus `readBreakpoint`),
+`FocusTrap.ts` (the shared overlay focus trap, generalized out of `confirm-dialog` and
+used by it, `command-palette` and `onboarding`) and `ProjectionMarkers.ts` (the `[action]`,
 `[actions]`, `[brand]` and `[footer]` marker directives that let a component
 detect whether an optional slot was projected, so its spacing wrapper can be gated —
 each bare, with no `arena-` prefix, because the attribute is the contract member's
-name, per `api/README.md`'s binding table).
+name, per `api/README.md`'s binding table) all have consumers in more than one category,
+so they sit at the layer root and `frameworks/angular/index.ts` names each of them
+directly. `components/charts/ChartInternals.ts` (the chart maths and the
+identity-or-meaning colour contract) has consumers in one category only, so it stops at
+that category's directory.
 
 A primitive defines no styling of its own. Its recipe lives in
 `frameworks/tailwind/components/<category>/<component-kebab>/<Component>.manifest.json`
-— the category is the one `frameworks/Components.json` declares — and reaches the
+— the same category — and reaches the
 component through the shared `tv`:
 
 ```ts
-import { tv } from '../../../tailwind/Tv';
-import manifest from '../../../tailwind/components/display/tag/Tag.manifest';
+import { tv } from '../../../../tailwind/Tv';
+import manifest from '../../../../tailwind/components/display/tag/Tag.manifest';
 
 export const tagStyles = tv(manifest);
 ```
@@ -86,12 +99,12 @@ The manifest import is **extensionless on purpose**: the generated `Tag.manifest
 and its source `Tag.manifest.json` sit beside each other, and TS and bun probe `.ts`
 before `.json`, so this resolves to the literal-typed build output. A bundler
 configured `.json`-first would silently widen every variant back to `string`.
-`tag.variants.ts` carries that warning in the file, as the doc comment on `tagStyles`.
+`Tag.variants.ts` carries that warning in the file, as the doc comment on `tagStyles`.
 
 ## Conventions
 
 Standalone (no `NgModule`), `OnPush`, `input()`/`output()`/`model()`, `inject()`
-for DI, kebab-case filenames with no type suffix, `arena-` selector prefix, no
+for DI, capital-initial filenames with no type suffix, `arena-` selector prefix, no
 component `styles` (recipe owns styling), no comments beyond one JSDoc line,
 barrels with no `../` imports inside the layer. Dark-first (`.arena-light` for
 light). Danger is outline. Icons are Phosphor (Bold default). No gradients, no emoji.
@@ -125,8 +138,10 @@ strip `arena-material.css` of most of its reason to exist.
 
 ### Material bridge: supported and verified
 
-**The primitives stand alone.** No file under `frameworks/angular/primitives/` imports
-`@angular/material` — a consumer can use all 21 with no Material installed at all. When
+**The primitives stand alone.** No file under `frameworks/angular/components/` imports
+`@angular/material` — verify with `grep -rn '@angular/material'
+frameworks/angular/components/`, which returns nothing, so a consumer can use all twenty
+with no Material installed at all. When
 the Angular layer is published (plan 6), `@angular/material` will be an **optional** peer
 dependency; nothing here requires it today.
 
@@ -162,7 +177,8 @@ root `package.json` — a bridge with no stated target version cannot be falsifi
 
 `bun run check:angular` compiles every primitive with `ngc` under `strictTemplates`
 (`tsconfig.check.json`), and it reaches a primitive **through the barrel** — a
-primitive missing from `primitives/index.ts` is not typechecked. Each manifest-backed
+primitive missing from its own `index.ts`, its category's, `components/index.ts` or the
+layer's `index.ts` is not typechecked. Each manifest-backed
 primitive also has a static specimen at
 `frameworks/tailwind/components/<category>/<component-kebab>/<Component>.card.html`,
 which renders the real markup

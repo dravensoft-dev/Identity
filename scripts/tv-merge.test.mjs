@@ -61,10 +61,11 @@ test('shadow-1..3 still dedupe against each other (pre-existing registration, re
 });
 
 /* The same assertion against a real recipe — Tag's — lives in
- * frameworks/angular/test/tag-variants.test.ts, not here. It has to: this
+ * frameworks/angular/components/display/tag/Tag.variants.test.ts, not here. It
+ * has to: this
  * file is in scripts/, which is the one suite check-all.mjs also runs under
  * plain node, and reaching into the Angular layer from here dragged node into
- * resolving `tag.variants.ts`'s own extensionless `from '../../../tailwind/Tv'`
+ * resolving `Tag.variants.ts`'s own extensionless `from '../../../../tailwind/Tv'`
  * — the idiom every file in that layer uses, and the one Angular's tsc
  * expects. Bun resolves it, node does not, so this one import made
  * `node scripts/check-all.mjs` fail on a defect that existed in neither layer.

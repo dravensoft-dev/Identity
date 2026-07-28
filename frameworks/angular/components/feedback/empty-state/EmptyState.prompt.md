@@ -17,8 +17,8 @@ Arena draws itself, not projected content.
 </arena-empty-state>
 ```
 
-Import `ArenaAction` from `frameworks/angular/primitives/projection-markers` (or the
-primitives barrel) alongside `EmptyState` in the host component's `imports` —
+Import `ArenaAction` from `frameworks/angular/ProjectionMarkers` (or the
+layer barrel) alongside `EmptyState` in the host component's `imports` —
 `action` is a directive, not a plain attribute, because it is how the empty
 state detects that an action was projected at all. `ArenaAction` is shared: every
 primitive that projects a single action through `[action]` (`EmptyState`,

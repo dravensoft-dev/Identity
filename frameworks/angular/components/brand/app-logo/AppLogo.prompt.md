@@ -1,6 +1,6 @@
 Arena brand lock-up. Project the mark into the `mark` slot and pass the product name; one
 `size` picks both the mark's box and the wordmark, from the `--logo-*` scale. Styling is
-the sibling `app-logo.variants.ts` recipe; the component carries no CSS classes of its own.
+the sibling `AppLogo.variants.ts` recipe; the component carries no CSS classes of its own.
 
 ```html
 <arena-app-logo name="Draven" dim="soft" size="md">

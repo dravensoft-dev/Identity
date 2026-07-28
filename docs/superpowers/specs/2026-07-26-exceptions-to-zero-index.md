@@ -24,7 +24,7 @@ grep -rho '"requirement"' --include='*.behaviour.json' frameworks/ | wc -l
 # distinct binding+requirement pairs -- the count to use when the question is about DEFECTS
 grep -rHo '"requirement": "[^"]*"' --include='*.behaviour.json' frameworks/ | sort -u | wc -l
 # exceptions in the Angular delegated file
-grep -o '"requirement"' frameworks/angular/behaviour-delegated.json | wc -l
+grep -o '"requirement"' frameworks/angular/BehaviourDelegated.json | wc -l
 # coverage
 bun run check:compliance
 ```
@@ -169,7 +169,7 @@ available; a condition that can be designed away should not be modelled.
 
 ## §6 — Angular Material, which is Plan D
 
-The **18** exceptions in `behaviour-delegated.json` cannot be closed by editing anything in this
+The **18** exceptions in `BehaviourDelegated.json` cannot be closed by editing anything in this
 repository — they are claims about `MatProgressBar`, `MatTable`, `MatButtonToggleGroup` and their
 siblings. Emptying them means replacing Material with Arena primitives on the CDK, which is Plan D
 in `2026-07-23-8-api-contracts-design.md`.

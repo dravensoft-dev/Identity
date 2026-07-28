@@ -7,8 +7,8 @@
  * handler is bound to the input, and the palette was mouse-only.
  *
  * The fix reuses `arena-confirm-dialog`'s own focus contract, generalized
- * out of `ConfirmDialog.ts` into `frameworks/angular/components/
- * focus-trap.ts` (`handleOpenTransition`, `trapTabKey`) rather than
+ * out of `ConfirmDialog.ts` into `frameworks/angular/FocusTrap.ts`
+ * (`handleOpenTransition`, `trapTabKey`) rather than
  * reimplemented here -- see `confirm-dialog-focus-trap.test.ts`'s header for
  * why those are plain functions of a real `HTMLElement` in the first place.
  *

@@ -1,6 +1,6 @@
 Arena event feed. Each item is an actor, an action, an optional target and an optional
 time; `tone` colours the leading dot from Badge's vocabulary. Styling is the sibling
-`activity-feed.variants.ts` recipe.
+`ActivityFeed.variants.ts` recipe.
 
 ```html
 <arena-activity-feed [items]="[

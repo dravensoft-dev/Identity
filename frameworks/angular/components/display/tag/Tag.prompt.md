@@ -1,5 +1,5 @@
 Arena status/emphasis tag — a pill whose `tone` follows the Badge/Tag taxonomy.
-Standalone, `OnPush`, signal I/O. Styling is the sibling `tag.variants.ts`
+Standalone, `OnPush`, signal I/O. Styling is the sibling `Tag.variants.ts`
 recipe; the component carries no CSS classes of its own. `removable` shows an
 Arena-drawn dismiss `×` that emits `remove` on click.
 
