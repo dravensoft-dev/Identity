@@ -34,12 +34,13 @@ import '@angular/compiler';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { useTestEnvironment } from './testbed-env';
-import { ANGULAR_PRIMITIVES, TAILWIND_COMPONENTS } from './compliance';
+import { ANGULAR_PRIMITIVES, LIB, TAILWIND_COMPONENTS } from './compliance';
 import { ActivityFeed } from '../primitives/activity-feed/activity-feed';
 import { activityFeedStyles } from '../primitives/activity-feed/activity-feed.variants';
 import { AppLogo } from '../primitives/app-logo/app-logo';
@@ -1114,24 +1115,27 @@ function kebabToPascal(dirName: string): string {
   return dirName.split('-').map((segment) => segment[0].toUpperCase() + segment.slice(1)).join('');
 }
 
-/** Finds a manifest by filename anywhere under the Tailwind components tree,
- *  rather than assuming it sits flat in `componentsDir` -- the layer moved to
- *  `components/<category>/<component>/`, and this is the walk
- *  scripts/lib/tailwind-compile.mjs's own `manifestFiles()` comment warns is
- *  otherwise reimplemented once per gate. Returns undefined rather than
- *  throwing so a caller can assert absence (see NO_MANIFEST below) as well as
- *  presence. */
+/* manifestFiles() already walks components/<category>/<component>/ for every
+ * manifest under the tree -- its own doc comment in tailwind-compile.mjs warns
+ * that three gates once found manifests by their own flat readdirSync, and
+ * that three spellings of the same walk is how one of them ends up missing a
+ * category nobody remembers to add. Reached the same way compliance.ts reaches
+ * behaviour-compliance.mjs and behaviour-contracts.mjs: a dynamic import of an
+ * absolute file URL, resolved at call time from LIB, so it works unmodified
+ * from both frameworks/angular/test/ and the ngc emit at
+ * build/angular-test/angular/test/, where a static relative specifier would
+ * point at a directory that does not exist (see compliance.ts's own comment on
+ * REPO for why). It stays untyped for the same reason: a plain .mjs helper
+ * with JSDoc types only, no declaration file generated anywhere. */
+const { manifestFiles } = await import(pathToFileURL(join(LIB, 'tailwind-compile.mjs')).href);
+
+/** Finds a manifest by filename among every manifest `manifestFiles()` found
+ *  under the Tailwind components tree, rather than assuming it sits flat in
+ *  `componentsDir`. Returns undefined rather than throwing so a caller can
+ *  assert absence (see NO_MANIFEST below) as well as presence. */
 function findManifestFile(componentsDir: string, filename: string): string | undefined {
-  const stack = [componentsDir];
-  while (stack.length > 0) {
-    const dir = stack.pop() as string;
-    for (const e of readdirSync(dir, { withFileTypes: true })) {
-      const p = join(dir, e.name);
-      if (e.isDirectory()) stack.push(p);
-      else if (e.name === filename) return p;
-    }
-  }
-  return undefined;
+  const paths: string[] = manifestFiles(componentsDir);
+  return paths.find((p) => basename(p) === filename);
 }
 
 /* The primitives that have no manifest at all, named rather than inferred --

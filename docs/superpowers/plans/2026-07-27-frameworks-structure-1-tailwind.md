@@ -482,10 +482,18 @@ The `fetch('./<Name>.manifest.json')` in each page needs no change: the manifest
 Run:
 
 ```bash
-grep -rn '"\.\./\.\./\.\./styles\.css"\|"\.\./utilities\.css"\|"\.\./specimen\.css"\|\.\./specimen\.js' frameworks/tailwind/components/ | head
+grep -rn '"\.\./\.\./\.\./styles\.css"\|"\.\./utilities\.css"\|"\.\./specimen\.css"\|'"'"'\.\./specimen\.js'"'"'' frameworks/tailwind/components/ | head
 ```
 
-Expected: no output. Any hit is a page the `sed` did not match — open it and fix by hand rather than widening the pattern, since an unmatched page usually means it references something the other 37 do not.
+Expected: no output. Every alternative is quote-delimited on both sides, including
+`specimen.js`'s — an unquoted `\.\./specimen\.js` alternative matches as a trailing
+*substring* of the correctly-rewritten `'../../../specimen.js'` (three `../` still end
+in `../specimen.js`), so it would report a false positive against every one of the 38
+already-fixed pages rather than against none. Quoting on both sides is what makes a hit
+mean what Step 2's `sed` means by a match: the whole attribute value, not a suffix of a
+longer one. Any real hit is a page the `sed` did not match — open it and fix by hand
+rather than widening the pattern, since an unmatched page usually means it references
+something the other 37 do not.
 
 - [ ] **Step 4: Run the cards gate**
 

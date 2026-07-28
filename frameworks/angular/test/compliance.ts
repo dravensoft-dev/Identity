@@ -93,7 +93,7 @@ const REPO = findRepoRoot(here);
  * declaration file is generated for them anywhere. A computed specifier yields
  * `any` rather than an error, so the suppression comments are gone and nothing is
  * suppressed that was previously checked. */
-const LIB = join(REPO, 'scripts', 'lib');
+export const LIB = join(REPO, 'scripts', 'lib');
 const { comparePattern, isFocusable } = await import(pathToFileURL(join(LIB, 'behaviour-compliance.mjs')).href);
 const { loadBinding, loadPatterns, bindingCases } = await import(pathToFileURL(join(LIB, 'behaviour-contracts.mjs')).href);
 
