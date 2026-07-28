@@ -100,11 +100,17 @@ guard still applies and still passes.
 
 ### The Tailwind layer is border-box; React is content-box
 
-**The Tailwind layer** — `frameworks/tailwind/`'s compiled `utilities.css`, consumed
+**The Tailwind layer** — `frameworks/tailwind/`'s compiled `Utilities.css`, consumed
 directly by every `*.card.html` specimen and, through `theme/arena-tailwind.css`'s
 preset import, by a real Tailwind-based Angular consumer app too — carries Tailwind
-v4's own preflight (`frameworks/tailwind/utilities.css:112`, `@layer base`): `*, ::after,
-::before, ::backdrop, ::file-selector-button { box-sizing: border-box; … }`.
+v4's own preflight, inside `@layer base`: `*, ::after,
+::before, ::backdrop, ::file-selector-button { box-sizing: border-box; … }`. **Re-derive
+the line rather than trusting one written here** —
+`grep -n 'box-sizing: border-box' frameworks/tailwind/Utilities.css`, which answers 123
+today. This file used to cite `:112`, which was true when written and had already drifted
+to 121 by the time anyone read it again: the stylesheet is generated output and grows
+whenever a token is added, so a line number in it is exactly the kind of figure this
+repository's own rules say to derive with a command instead.
 
 **React** sets no such rule anywhere in `tokens/` or `styles.css`, so every React
 component is `content-box` — the CSS default — unless it opts in itself. Only four do:
@@ -197,8 +203,8 @@ is out of scope here: this change touches no file under `frameworks/react/`.
 
 **React:** each animated component injects a `<style>` tag once, guarded by a module-level
 `let injected = false`, via `useEffect` and `document.head.appendChild`.
-**Angular:** animations live in `frameworks/tailwind/animations.css` as `@utility` + `@keyframes`,
-compiled into the committed `frameworks/tailwind/utilities.css`.
+**Angular:** animations live in `frameworks/tailwind/Animations.css` as `@utility` + `@keyframes`,
+compiled into the committed `frameworks/tailwind/Utilities.css`.
 
 **Why:** the Angular layer already ships a compiled stylesheet, so a shared file is both cheaper
 and statically checkable. `@utility` emits nothing when unused, so an animation costs nothing until
@@ -958,7 +964,7 @@ exactly (`"dot": "size-1.5 rounded-pill bg-current"`, unconditionally rendered b
 `tag.ts`'s template alongside its projected content) — taken rather than re-derived, per
 this task's own brief. (`Tag`'s dot originally read `h-1.5 w-1.5`; it was brought onto
 the `size-*` idiom `ActivityFeed`'s own `size-2` and the rest of the layer already use, so
-the two square-dot slots stop minting one duplicate rule in `utilities.css` for the same
+the two square-dot slots stop minting one duplicate rule in `Utilities.css` for the same
 6×6 box. The rendered box is unchanged.)
 
 **Checked against "danger is outline" on purpose:** plan 5a's token→utility ledger — since

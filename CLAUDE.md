@@ -486,7 +486,7 @@ gate that no longer exists. The gate scans `.jsx`, `.ts` and `.tsx` under `frame
 including every `*.entry.jsx` demo-page composition script (see below) — it does not scan
 `.html`, so the root-level and `guidelines/` pages stay clean only because they were
 tokenized by hand, and nothing holds that. The `*.card.html` specimens under
-`frameworks/tailwind/components/` are the one family of unscanned pages that stays clean
+`frameworks/tailwind/components/<category>/<component>/` are the one family of unscanned pages that stays clean
 structurally rather than by hand: every class they render comes from the manifest through
 `classesFor()`, so a literal typed into a specimen is styling the manifest does not carry
 — the one thing a specimen must never show. **They do still carry bare `px` for
@@ -604,7 +604,7 @@ different hazard from the two-invocation rule above, which is about a DOM regist
 process-wide: this one is about a path a narrowed invocation simply never matched. It cost
 plan 8C5 a red commit that a task report called green.
 
-The Angular layer's quartet is the analogue: `<name>.ts` (standalone `OnPush` component, `arena-` selector, signal I/O, no component `styles`), `<name>.variants.ts` (a `tailwind-variants` recipe built with `frameworks/tailwind/tv.ts`), `<name>.prompt.md`, and a barrel export. Dark-first (`.arena-light`), danger stays outline, Phosphor icons. The three SVG charts are the one exception and have no `<name>.variants.ts` — see the charts note below.
+The Angular layer's quartet is the analogue: `<name>.ts` (standalone `OnPush` component, `arena-` selector, signal I/O, no component `styles`), `<name>.variants.ts` (a `tailwind-variants` recipe built with `frameworks/tailwind/Tv.ts`), `<name>.prompt.md`, and a barrel export. Dark-first (`.arena-light`), danger stays outline, Phosphor icons. The three SVG charts are the one exception and have no `<name>.variants.ts` — see the charts note below.
 
 **A host-bound root is the Angular layer's default, and it has one carve-out.** A primitive binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than rendering a wrapper div, so the host is the flex item its parent lays out and — where the component measures itself — the measured element is the styled element. One primitive correctly does **not**: `activity-feed`, whose root must be a real `<ul>` with `<li>` rows. The rule targets elements that exist only to carry styling; when the root must be a specific semantic or interactive element, keep it. **A host-bound root must carry a display utility** — `<arena-x>` is an unknown element defaulting to `display:inline`, where width and height do not apply, so a root slot without one renders a zero-area host. That is machine-guarded by a manifest-driven assertion in `frameworks/angular/test/host-class-binding.test.ts`.
 
@@ -619,9 +619,11 @@ under `ngc --strictTemplates`, into git-ignored `build/angular-test/`; `test:ang
 the `.ts` sources. A type error anywhere in the test surface — including a template diagnostic in
 an inline `template:` string, which `ngc` checks the same as any other template — now fails the
 *build* step, and no test in that run executes at all, rather than merely failing an assertion
-somewhere. `bun run check` is 24 steps for it; `GATES` itself stays 21, because this is a build
-the existing test step now consumes rather than a new gate, and the seven `PLAN-E-SUSPENDED`
-tests are still seven. Staleness in the emit is prevented by the build always running ahead of the
+somewhere. `bun run check` is 25 steps under bun for it; the AOT build added **nothing** to
+`GATES`, because this is a build the existing test step now consumes rather than a new gate,
+and the seven `PLAN-E-SUSPENDED` tests are still seven. (`GATES` is 22 today, and the entry
+that moved it from 21 to 22 is `check:structure`, which is a real gate and belongs to a
+different batch entirely — see the structure paragraph below.) Staleness in the emit is prevented by the build always running ahead of the
 tests that read it, never by a gate watching the output afterward — `build-angular-tests.mjs`
 additionally prunes any `.js`/`.js.map`/`.d.ts` under `build/angular-test/` whose source has since
 been deleted, because `ngc`'s incremental build does not.
@@ -668,15 +670,26 @@ shape; the three SVG charts are the declared exception — no manifest, no
 against React's `charts.card.html` rather than a specimen of their own), each
 styled by the
 shared `frameworks/tailwind/` recipes through the configured `tv`
-(`frameworks/tailwind/tv.ts`) — see `frameworks/angular/ADOPTION.md`.
+(`frameworks/tailwind/Tv.ts`) — see `frameworks/angular/ADOPTION.md`.
 `frameworks/tailwind/` is a **single shared** Tailwind v4 layer (`@theme`
 preset + per-component manifests), authored once because the token→utility
-mapping is pure CSS. **The Tailwind
+mapping is pure CSS. It is the **one layer migrated to the structure rule
+below**: its root holds `Tv.ts`, `ManifestClasses.js`, `Theme.css`,
+`Utilities.css`, `Animations.css`, `Specimen.css` and `Specimen.js`, and a
+component's three files — `<Name>.manifest.json`, the generated
+`<Name>.manifest.ts` and the `<Name>.card.html` specimen — sit together in
+`components/<category>/<component-kebab>/`. Count the manifests with
+`find frameworks/tailwind/components -name '*.manifest.json' | wc -l` rather
+than trusting a figure. **The Tailwind
 layer derives every utility from an existing token and introduces no new hex
 and no new value** — add the token first, then reference it. This is
 machine-checked, not hoped for: `bun run check:tailwind` compiles the preset
 with the manifests as content and asserts every class emits a rule and every
-theme key resolves to a real token; `bun run check:coverage` asserts every
+theme key resolves to a real token — **and, since the layer went nested,
+that it found any manifests at all**, because a gate iterating zero manifests
+finds zero violations by construction; it printed `0 manifest(s) … all
+resolve` and exited 0 over a tree it never looked at, which is why finding
+none is now an explicit failure in `checkCompiled`; `bun run check:coverage` asserts every
 token either reaches a utility or is named in `EXCLUDED` with a reason;
 `bun run check:arbitrary` fails on a bracket carrying a raw literal;
 `bun run check:radius` fails on the one core Tailwind utility in this
@@ -686,9 +699,65 @@ It is the converse of `check:coverage` and just as narrow: it does not attempt
 "every utility traces to a token" in general, only this one verified case,
 because everywhere else in a cleared namespace already resolves to nothing
 and `check:tailwind` catches that on its own.
-`bun run check` runs all twenty-one plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
+`bun run check` runs all twenty-two plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
 skips quietly — makes that a hard failure instead. An Angular primitive's recipe is its
 manifest — `frameworks/angular/primitives/tag/` is the reference shape.
+
+**One shape for every framework layer, and today exactly one layer has it.** The rule:
+**directories are `kebab-case` and lowercase, files are `PascalCase` with hyphens removed,
+and a secondary dotted segment stays `lowerCamelCase`** — `Badge.manifest.json`,
+`BarChart.variants.ts`. A layer lays its components out as
+`frameworks/<layer>/components/<category>/<component-kebab>/`, and everything belonging to
+one component — its source, its types, its binding, its prompt, its demo page, its tests —
+lives in that one directory. A file that is not one component's rises to the narrowest
+level containing all of its consumers, and a compound family counts as its parent rather
+than as the category — so a helper covering `SideNav`/`SideNavItem`/`SideNavSection`/
+`SideNavCollapsible` *would* land in `side-nav/` rather than in `navigation/`, stated as
+the rule rather than as a path that exists, since React has not moved yet. The design, with the placements derived by
+reading each file's imports rather than guessed, is
+`docs/superpowers/specs/2026-07-27-frameworks-file-structure-design*.md` — a `-pending-N`
+spec whose suffix decrements per batch and which is deleted when the third lands, so this
+paragraph is the durable statement of the rule and that file is the working detail.
+
+**Four exceptions to the naming rule, and every one is mechanical rather than stylistic**
+— a toolchain recognises the literal lowercase name, so capitalising it breaks something.
+`index.ts`, because TypeScript resolves a directory import by looking for exactly that
+filename and would not find `Index.ts` on a case-sensitive filesystem. `index.html`,
+because a directory served over HTTP is answered by exactly that name
+(`frameworks/react/ui_kits/console/index.html`). `tsconfig.check.json` and
+`tsconfig.test.json`, because `tsconfig*` is the name editors and toolchains recognise by
+convention — this is the softest of the four, since `ngc -p <path>` is explicit and the
+rename would compile; the exception is for the reader. And `.gitkeep`
+(`frameworks/angular/.gitkeep`), which has no stem to capitalise.
+
+**`frameworks/Components.json` is the declaration and `check:structure` is the gate.** The
+file names each component's category once, so the category is not written once per layer
+with nothing holding the copies together, and the kebab directory name is **derived** from
+the PascalCase name by `kebab()` in `scripts/check-structure.mjs` — a function, never a
+table. The gate fails a component directory sitting in a category the file assigns
+elsewhere, a directory the file does not name at all, and a directory name that is not
+kebab-case; once every layer is migrated it additionally fails a declared component present
+in no layer. **It says nothing about whether the category is the RIGHT one** — "is
+`Tooltip` feedback or navigation?" is editorial judgement and no gate has it, the same way
+`check:behaviour`'s green run is a coverage claim and never an accessibility one. Nor does
+a directory existing prove the component inside it is complete: `check:api` and
+`check:behaviour` are still what hold that.
+
+**Only Tailwind is migrated, and that is a fact to read rather than to infer.** Angular
+still keeps its twenty primitives in one directory each directly under `primitives/`, with
+no category level and no `components/` at all; React still puts a whole category's
+components side by side in one directory —
+`frameworks/react/components/display/` is 84 files today and not one subdirectory. Both keep
+their current shape until their own batches, so **every claim elsewhere in this file about
+either layer's layout is current, not stale**. **`MIGRATED` in `scripts/check-structure.mjs` is where to read which
+layers the gate currently claims anything about** — `['tailwind']` today. It grows by one
+entry per batch and is deleted outright when the last layer lands, at which point the gate
+covers every layer unconditionally. Until it holds all three, the "declared but present in
+no layer" rule is deliberately held back, because a component absent from the migrated
+layers may simply live in one the gate does not yet reach — which would make the gate
+loudest about exactly the thing the refactor has not got to. So a reader meeting the new
+shape in one layer and the old shape in two others is looking at work in progress, not at
+an inconsistency to fix locally.
 
 **When `bun run check` is expected: once, when a plan's implementation is
 finished — not before every commit.** The individual gates are cheap and stay

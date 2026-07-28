@@ -71,15 +71,22 @@ each bare, with no `arena-` prefix, because the attribute is the contract member
 name, per `api/README.md`'s binding table).
 
 A primitive defines no styling of its own. Its recipe lives in
-`frameworks/tailwind/components/<Component>.manifest.json` and reaches the
+`frameworks/tailwind/components/<category>/<component-kebab>/<Component>.manifest.json`
+— the category is the one `frameworks/Components.json` declares — and reaches the
 component through the shared `tv`:
 
 ```ts
 import { tv } from '../../../tailwind/Tv';
-import manifest from '../../../tailwind/components/Tag.manifest.json' with { type: 'json' };
+import manifest from '../../../tailwind/components/display/tag/Tag.manifest';
 
 export const tagStyles = tv(manifest);
 ```
+
+The manifest import is **extensionless on purpose**: the generated `Tag.manifest.ts`
+and its source `Tag.manifest.json` sit beside each other, and TS and bun probe `.ts`
+before `.json`, so this resolves to the literal-typed build output. A bundler
+configured `.json`-first would silently widen every variant back to `string`.
+`tag.variants.ts` carries that warning on the import itself.
 
 ## Conventions
 
@@ -157,7 +164,8 @@ root `package.json` — a bridge with no stated target version cannot be falsifi
 (`tsconfig.check.json`), and it reaches a primitive **through the barrel** — a
 primitive missing from `primitives/index.ts` is not typechecked. Each manifest-backed
 primitive also has a static specimen at
-`frameworks/tailwind/components/<Component>.card.html`, which renders the real markup
+`frameworks/tailwind/components/<category>/<component-kebab>/<Component>.card.html`,
+which renders the real markup
 with the real recipe and no Angular executed. A specimen therefore proves the *recipe*,
 never the *component*: it hand-builds the DOM from the manifest, so a component-logic
 bug can render correctly in the card while being broken in the primitive. The three SVG
