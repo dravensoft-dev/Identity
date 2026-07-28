@@ -415,11 +415,14 @@ directly-created fixture in this AOT harness now uses — and renders `block`, `
 bindings, never `role`, `aria-label`, or anything else the `status` pattern names. Those two are
 the whole set that renders it: `Skeleton.variants.test.ts` mounts nothing (it asserts the
 plain-TypeScript recipe and `skeletonRowSlot`), and the only other `.ts` files in this layer
-naming `Skeleton` at all — `frameworks/angular/test/Compliance.ts` (:282) and
-`frameworks/angular/components/feedback/confirm-dialog/ConfirmDialog.focusTrap.test.ts` (:21) —
-name it only in a comment. Re-derive that set with
-`grep -rln Skeleton --include='*.ts' frameworks/angular/`, which also finds the component's own
-four files and the generated `Api.generated.ts`; the suites are what this paragraph is about.
+naming `Skeleton` at all — `frameworks/angular/test/Compliance.ts` and
+`frameworks/angular/components/feedback/confirm-dialog/ConfirmDialog.focusTrap.test.ts` —
+name it only in a comment, one line each; `grep -n Skeleton <file>` locates them, and a line
+number written here would not survive the next edit above it, as one written in this batch did
+not. Re-derive the whole set with
+`grep -rln Skeleton --include='*.ts' frameworks/angular/`: besides the five files named in this
+paragraph it returns the generated `Api.generated.ts` and the rest of the component's own
+directory (`index.ts`, `Skeleton.ts`, `Skeleton.variants.ts`), none of which is a suite.
 
 So the accurate statement is narrower than "nothing is checked". What no suite in this layer does
 is **evaluate the binding against the `status` pattern**: neither file calls `comparePattern` or

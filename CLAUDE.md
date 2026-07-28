@@ -788,8 +788,8 @@ a directory existing prove the component inside it is complete: `check:api` and
 **Tailwind and Angular are migrated; React is not — and that is a fact to read rather than to
 infer.** React still puts a whole category's components side by side in one directory:
 `ls frameworks/react/components/display | wc -l` is 84 and
-`find frameworks/react/components/display -mindepth 1 -type d` finds nothing. It keeps that
-shape until batch 3. **`MIGRATED` in `scripts/check-structure.mjs` is the authoritative answer
+`find frameworks/react/components/display -mindepth 1 -type d` finds nothing.
+**`MIGRATED` in `scripts/check-structure.mjs` is the authoritative answer
 to which layers the gate currently claims anything about** — read it there rather than
 here, because this sentence is prose and that array is what the gate runs on. It grows by one
 entry per batch and is deleted outright when the last layer lands, at which point the gate
@@ -1286,8 +1286,18 @@ scheduled for deletion the same week.
   finally pointed at the file.
 - **Seven Angular suites still justify themselves by a JIT limitation
   that batch 8C11's move to AOT retired, and no batch since has touched the JIT clause.**
-  (Batch 2 of the structure refactor edited three of these headers, but only to repoint a path
-  that had stopped resolving; not one word of the limitation itself was changed.)
+  (Batch 2 of the structure refactor edited the headers of **five** of the seven, and not
+  only paths: two of the five — `BarChart.geometry.test.ts` and
+  `CommandPalette.keyboard.test.ts` — had no path in their comments at all, and what changed
+  was a sibling named in prose, `confirm-dialog.ts` → `ConfirmDialog.ts`. The two chart
+  suites it did *not* edit, `LineChart.geometry.test.ts` and `DoughnutChart.geometry.test.ts`,
+  had their imports rewritten and their comments left alone. Re-derive it rather than trusting
+  this — compare each file's content across the batch, since a `git log` on the paths counts
+  the pure-rename commit and tells you nothing:
+  `git show effbc00:frameworks/angular/test/<old-name>.ts` against
+  `git show 90133e1:frameworks/angular/<new-path>`. What survives all of that is the load-bearing
+  half: no changed line in any of the five mentions `JIT`, `ngtsc`, `NG0303` or `setInput`, so
+  not one word of the limitation itself moved.)
   Find the live set with `grep -rlE "JIT|ngtsc" --include='*.ts' frameworks/angular/` and drop
   the two
   hits that are already correct, past-tense history (`test/HarnessCapabilities.test.ts`,
