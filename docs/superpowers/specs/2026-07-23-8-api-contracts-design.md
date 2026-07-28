@@ -287,8 +287,14 @@ reopened.
    the same assertion `check:tokens` makes for the token layer.
 
 Which layers implement a component is resolved structurally, not from a list:
-`frameworks/react/components/*/<Name>.d.ts` for React, and
-`frameworks/angular/primitives/<kebab-name>/<kebab-name>.ts` for Angular. A component
+`frameworks/react/components/*/<Name>.d.ts` for React, and — since the structure
+refactor's batch 2 — `frameworks/angular/components/<category>/<kebab-name>/<Pascal>.ts`
+for Angular, resolved by WALKING the layer rather than by an `existsSync` probe per
+contract. Do not rebuild the probe from this document: it is the exact lookup that,
+when the layer moved, missed every contract and let `check:api` print
+"50 contract(s) hold across 50 layer implementation(s)" and exit 0 over twenty
+unread Angular implementations. `resolveAngularImplementations()` in
+`scripts/check-api.mjs` carries the replacement and the reason. A component
 implemented in one layer only is absence, not divergence, and assertion 3 applies only to
 layers that implement it.
 

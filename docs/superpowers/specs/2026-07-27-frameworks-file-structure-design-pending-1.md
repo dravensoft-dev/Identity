@@ -1,8 +1,9 @@
 # One shape for every framework layer
 
-**Status:** design, approved 2026-07-27 — **two plans pending.** The migration is
+**Status:** design, approved 2026-07-27 — **one plan pending.** The migration is
 sequenced Tailwind → Angular → React, one plan each, and the `-pending-N` suffix
-decrements as each lands. Batch 1 (Tailwind) has landed.
+decrements as each lands. Batch 1 (Tailwind) and batch 2 (Angular) have landed; batch 3
+(React) is the one that remains, and this file is deleted when it does.
 
 ## The problem
 
@@ -38,7 +39,7 @@ multi-word stem is `PascalCase` with hyphens removed.** Secondary dotted segment
 
 Capital-initial is the rule; PascalCase is how a multi-word stem is *formed* under it, not
 a second requirement. That distinction matters because it is what keeps the exception list
-at four: a conventional all-caps document name — `README.md`, `ADOPTION.md` — begins with a
+short: a conventional all-caps document name — `README.md`, `ADOPTION.md` — begins with a
 capital and complies as it stands, so it needs no dispensation. Stated the narrower way,
 every layer's own README would have been a violation the moment the first layer migrated.
 
@@ -46,7 +47,7 @@ Every layer becomes `<framework>/components/<category>/<component>/`, and everyt
 that belongs to one component — its source, its types, its binding, its prompt, its
 demo page, its tests — is inside that one directory.
 
-Four exceptions to the naming rule, each mechanical rather than aesthetic — and each one a
+Five exceptions to the naming rule, each mechanical rather than aesthetic — and each one a
 name the rule above cannot reach, because it begins with a *lowercase* letter or has no
 stem to capitalise at all:
 
@@ -56,6 +57,16 @@ stem to capitalise at all:
 | `index.html` | `ui-kits/console/` is served as a directory; the server looks for that literal name. |
 | `tsconfig.check.json`, `tsconfig.test.json` | `tsconfig*` is a name editors and toolchains recognise by convention. `ngc -p <path>` is explicit, so renaming would work — the exception is for the reader, not the compiler. |
 | `.gitkeep` | No stem to capitalise. |
+| `angular/theme/arena-tailwind.css`, `angular/theme/arena-material.css`, `angular/theme/no-fouc.html`, `angular/theme/arena-material.prompt.md` | Adopter-facing. `frameworks/angular/ADOPTION.md` steps 1–3 give the first two as `@import` lines to paste into the host app's own `styles.css` and the third as the replacement for the app's `index.html` no-FOUC script, so a rename breaks every app that has already adopted Arena. The fourth is cited nowhere (`grep -rn arena-material.prompt`) and is kept for a weaker reason: it is the `<artifact>.prompt.md` for `arena-material.css` and follows the stem of the adopter-facing file it documents. |
+
+**The fifth row was found by batch 2's review, not by batch 2**, and the list said four
+until then. `theme/theme-service.ts` and `icons/icon-manifest.ts` were the two lowercase
+files that were **not** adopter-facing — both are reached through `frameworks/angular/index.ts`
+and no adopter writes either path — and they were renamed to `ThemeService.ts` and
+`IconManifest.ts` rather than exempted. Batch 3 should measure before it assumes:
+`find frameworks/angular frameworks/tailwind -type f -printf '%f\n' | grep -E '^[^A-Z]' |
+sort -u` returns exactly the exception set today, and adding `frameworks/react` to it is
+that batch's own starting inventory.
 
 `ui_kits/` becomes `ui-kits/` — the only directory in `frameworks/` that is not already
 kebab-case.
@@ -472,4 +483,7 @@ before a batch is green after it, running the same assertions against the same
 components — a batch that changes what a suite proves has gone wrong.
 
 `api/`, `behaviour/`, `tokens/`, `scripts/` and the repo-root pages keep their current
-layout; the naming rule reaches `frameworks/` only.
+layout; the naming rule reaches `frameworks/` only — and inside `frameworks/`, subject to
+the five exceptions above, which include four adopter-facing files under
+`frameworks/angular/theme/`. There is no blanket dispensation for `theme/` or `icons/`:
+each exempt file is named individually, for a reason that is about that file.

@@ -31,8 +31,8 @@ Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
   `[activated]` is Material's visual state; `aria-current="page"` is the one a screen
   reader announces. Both are required — set only `[activated]`, and the visual state
   and the announced one disagree.
-- `icons/icon-manifest.ts` — canonical Phosphor role→glyph map.
-- `theme/theme-service.ts` + `theme/no-fouc.html` — dark-first signal theme
+- `icons/IconManifest.ts` — canonical Phosphor role→glyph map.
+- `theme/ThemeService.ts` + `theme/no-fouc.html` — dark-first signal theme
   service (light = `.arena-light`) and the pre-paint snippet.
 
 **Primitives — token-styled components Material does not provide.** Each lives in

@@ -599,13 +599,13 @@ above, which now carries that shared limit for all three overlays.
 
 **React:** `Onboarding.jsx` renders no icon anywhere — no `<i className="ph-...">` in the
 component, despite Duotone being licensed system-wide for "features and onboarding" per
-README's iconography convention and `frameworks/angular/icons/icon-manifest.ts`'s
+README's iconography convention and `frameworks/angular/icons/IconManifest.ts`'s
 `{ role: 'onboarding', phosphor: 'ph-sparkle', weight: 'duotone' }` entry.
 
-**Angular:** matches React exactly — no icon slot, no `icon` input. `icon-manifest.ts`'s
+**Angular:** matches React exactly — no icon slot, no `icon` input. `IconManifest.ts`'s
 `onboarding` role is a registry seed for a consumer building their own icon usage, not
 something any primitive in this layer currently consumes directly (no primitive imports
-from `icon-manifest.ts`; `EmptyState`/`ErrorState` instead take a plain `icon: string`
+from `IconManifest.ts`; `EmptyState`/`ErrorState` instead take a plain `icon: string`
 input the consumer fills from wherever they like).
 
 **Why:** the task brief's own sample manifest and template carry no icon either, matching
@@ -752,7 +752,7 @@ forgets to, and even when Enter is pressed with an empty filtered list.
 **Angular:** `run.emit(command)` reports the command alone; nothing in the component
 closes it. The host is expected to react the same way it already does to
 `arena-confirm-dialog`'s `confirm`/`cancel` and `arena-onboarding`'s
-`skip`/`done` — by setting `open` to `false` itself, as `command-palette.prompt.md`'s
+`skip`/`done` — by setting `open` to `false` itself, as `CommandPalette.prompt.md`'s
 own example shows: `(run)="paletteOpen.set(false); dispatch($event)"`.
 
 **Why:** every other controlled Angular primitive in this layer already puts the

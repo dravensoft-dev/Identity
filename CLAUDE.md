@@ -689,7 +689,7 @@ and brand (`*.dc.html`). React lives in `frameworks/react/`;
 (`theme/arena-tailwind.css`) and an Angular Material `--mat-*` token bridge
 (`theme/arena-material.css`), a Phosphor icon manifest (`icons/`), a
 dark-first signal `ThemeService`
-(`theme/theme-service.ts` + `theme/no-fouc.html`), and
+(`theme/ThemeService.ts` + `theme/no-fouc.html`), and
 20 standalone `OnPush` primitives under `components/<category>/<component-kebab>/`
 (`components/display/tag/` is the reference
 shape; the three SVG charts are the declared exception — no manifest, no
@@ -758,18 +758,40 @@ reading each file's imports rather than guessed, is
 spec whose suffix decrements per batch and which is deleted when the third lands, so this
 paragraph is the durable statement of the rule and that file is the working detail.
 
-**Four exceptions to the naming rule, and every one is mechanical rather than stylistic**
-— a toolchain, or a reader, recognises the literal name, so capitalising it breaks or
-obscures something. All four are the cases the rule above cannot cover: a name that
-begins with a *lowercase* letter, or one with no stem to capitalise at all.
+**Five exceptions to the naming rule, and every one is mechanical rather than stylistic**
+— a toolchain, a reader, or somebody else's source file recognises the literal name, so
+capitalising it breaks or obscures something. All of them are cases the rule above cannot
+cover: a name that begins with a *lowercase* letter, or one with no stem to capitalise at
+all. **Measure the set rather than trusting this list** — `find frameworks/angular
+frameworks/tailwind -type f -printf '%f\n' | grep -E '^[^A-Z]' | sort -u` — which is how
+the fifth was found, one batch after the list said four. The command names the two
+**migrated** layers only; add `frameworks/react` to it once batch 3 lands, and note that
+`index.html` lives only there today.
 `index.ts`, because TypeScript resolves a directory import by looking for exactly that
 filename and would not find `Index.ts` on a case-sensitive filesystem. `index.html`,
 because a directory served over HTTP is answered by exactly that name
 (`frameworks/react/ui_kits/console/index.html`). `tsconfig.check.json` and
 `tsconfig.test.json`, because `tsconfig*` is the name editors and toolchains recognise by
-convention — this is the softest of the four, since `ngc -p <path>` is explicit and the
-rename would compile; the exception is for the reader. And `.gitkeep`
+convention — this is the softest of them, since `ngc -p <path>` is explicit and the
+rename would compile; the exception is for the reader. `.gitkeep`
 (`frameworks/angular/.gitkeep`), which has no stem to capitalise.
+
+And the fifth: **the four adopter-facing files under `frameworks/angular/theme/`** —
+`arena-tailwind.css`, `arena-material.css`, `no-fouc.html` and `arena-material.prompt.md`.
+The first three are named inside an *adopter's own* source: `frameworks/angular/ADOPTION.md`
+steps 1 and 2 give `@import '../../frameworks/angular/theme/arena-tailwind.css';` and
+`@import '../../frameworks/angular/theme/arena-material.css';` as lines to paste into the
+host app's `styles.css`, and step 3 names `theme/no-fouc.html` as the replacement for the
+app's own `index.html` no-FOUC script. Renaming any of those is a breaking change to
+every app that has already adopted Arena, which this refactor did not set out to make.
+`arena-material.prompt.md` is cited nowhere at all — verified with `grep -rn
+arena-material.prompt` — and it is kept lowercase for a different, weaker reason: it is the
+prompt document *for* `arena-material.css` and takes that file's stem, the same
+`<artifact>.prompt.md` pairing every component uses, so it follows the adopter-facing name
+it documents rather than diverging from it. Note what is NOT exempt: `theme/ThemeService.ts`
+and `icons/IconManifest.ts` were `theme-service.ts` and `icon-manifest.ts` and were renamed,
+because both are reached through `frameworks/angular/index.ts` and no adopter ever writes
+either path. `frameworks/tailwind/` carries no lowercase-initial file at all.
 
 **`frameworks/Components.json` is the declaration and `check:structure` is the gate.** The
 file names each component's category once, so the category is not written once per layer
@@ -1072,14 +1094,15 @@ scheduled for deletion the same week.
   docs/superpowers/specs/2026-07-23-8-api-contracts-design.md`. The two shapes are mixed and only
   one of them is a defect. Its `>` quoted blocks are records of what a shipped plan settled, and
   a path in one is correct **as history** — rewriting those would make the record lie. Its
-  unquoted normative text is the problem: `:291` still tells a reader `check:api` resolves an
-  Angular implementation at `frameworks/angular/primitives/<kebab-name>/<kebab-name>.ts`, which
-  is where the gate looked when it silently checked nothing (the false-green entry at the head of
-  this section is the same defect from the gate's side). The structure refactor's batch 2
-  **recorded this rather than correcting it**, for the same reason as the entry above: separating
-  the historical uses from the normative ones is a reading of that spec's argument, not a
-  find-and-replace, and it belongs to whoever plans Plan D. Read this paragraph before reading
-  that spec.
+  unquoted normative text is the problem. **Exactly one line of it has been corrected, and the
+  rest is still open.** `:291` used to tell a reader `check:api` resolves an Angular
+  implementation at `frameworks/angular/primitives/<kebab-name>/<kebab-name>.ts` — which is
+  where the gate looked when it silently checked nothing (the false-green entry at the head of
+  this section is the same defect from the gate's side), so a reader could have rebuilt the
+  defect straight from the spec. That line now names the walk and says why the probe is refused.
+  Everything else in that file stays as it was: separating the historical uses from the normative
+  ones is a reading of that spec's argument, not a find-and-replace, and it belongs to whoever
+  plans Plan D. Read this paragraph before reading that spec.
 
   **The last of those six sites — the `components-divergences.md` sentence — is the entry's own
   thesis demonstrating itself, and it is worth more than the rule it illustrates.** (Named rather
@@ -1097,8 +1120,9 @@ scheduled for deletion the same week.
 
   **That rule was then broken by the commit that wrote it, which is the strongest evidence for it
   there is.** `ac197c7`'s replacement sentence — the one carrying the rule — claimed the Angular
-  harness could not reach `Skeleton`'s other three variants, when `skeleton-dimensions.test.ts` had
-  been driving all four by the documented instance-field bypass the whole time. Same cause one step
+  harness could not reach `Skeleton`'s other three variants, when the suite then called
+  `skeleton-dimensions.test.ts` — `Skeleton.dimensions.test.ts` since the structure refactor's
+  batch 2 — had been driving all four by the documented instance-field bypass the whole time. Same cause one step
   out: its author read the one test file they had been pointed at and generalised to the directory.
   So writing the rule down demonstrably does not stop it — the reading has to happen at the moment
   the sentence is written, and "read that file" means the whole directory when the claim is about
@@ -1340,26 +1364,43 @@ scheduled for deletion the same week.
 - **Comments inside the Angular layer still cite siblings by their pre-move
   filenames, and nothing resolves them.** The structure refactor's batch 2 renamed every file
   in that layer and moved most of its suites; it rewrote every **import specifier**, which a
-  compiler checks, and every **path** naming a file that no longer exists, which the
-  path-existence sweep finds — but a bare filename in a sentence is neither. So
+  compiler checks — but a bare filename in a sentence is not one. So
   `host-class-binding.test.ts`, `chart-internals.test.ts`, `testbed-env.ts`,
   `tag-variants.test.ts`, `skeleton-dimensions.test.ts`, `bar-chart-geometry.test.ts` and
   their siblings are still named across the layer's own headers and inline comments, and a
   reader who greps one finds nothing. List them with
   `grep -rnE "[a-z][a-z0-9]*(-[a-z0-9]+)+\.(test\.)?ts" --include='*.ts'
-  frameworks/angular/` and read each hit — it returned **66** raw hits at the close of batch 2
-  and it over-reports, because a kebab word followed by `.ts` is also how these files
-  legitimately name a *component directory* or a still-correct history clause. Count by
-  reading, not by piping to `wc -l`.
-  Cross-layer citations of the same kind were corrected in that batch (six sites, in
-  `scripts/`, `frameworks/tailwind/README.md` and three React suites) precisely because
-  those are the ones a reader of another layer cannot resolve at all; the intra-layer ones
-  were left, because the file being named is usually one directory away and the batch's
-  subject was structure, not prose everywhere. **It is a citation swap and nothing more** —
-  unlike the seven-suite entry above, which needs a design decision — so it is the cheapest
-  entry in this section to close and the easiest to close wrongly: a name is only worth
-  rewriting once you have opened the file it now names and confirmed the sentence around it
-  is still true.
+  frameworks/angular/` and read each hit — it over-reports, because a kebab word followed by
+  `.ts` is also how these files legitimately name a *component directory* or a still-correct
+  history clause. Count by reading, not by piping to `wc -l`. **It is a citation swap and
+  nothing more** — unlike the seven-suite entry above, which needs a design decision — so it
+  is the cheapest entry in this section to close and the easiest to close wrongly: a name is
+  only worth rewriting once you have opened the file it now names and confirmed the sentence
+  around it is still true.
+
+  **Two narrower classes are CLOSED, and this entry described both wrongly at first, in
+  opposite directions.** It claimed batch 2 had rewritten "every path naming a file that no
+  longer exists, which the path-existence sweep finds"; **five full paths inside the layer
+  resolved to nothing** — `Skeleton.ts` citing `frameworks/angular/test/skeleton-dimensions.test.ts`,
+  and `ConfirmDialog.variants.test.ts`, `Onboarding.variants.test.ts`,
+  `BulkActionBar.variants.test.ts` and `CommandPalette.variants.test.ts` all citing
+  `frameworks/angular/test/host-class-binding.test.ts`. And it claimed cross-layer citations
+  "were corrected in that batch (six sites)"; **ten survived**, in
+  `scripts/lib/api-surface.mjs`, `scripts/check-api.mjs`, `scripts/api-surface.test.mjs`
+  (twice), `frameworks/react/test-dom/tag-and-chip-cases.test.jsx` (twice),
+  `frameworks/react/test-dom/onboarding-modal.test.jsx` (twice),
+  `components-divergences.md` and — a **gate-read artifact**, not a comment —
+  `frameworks/react/components/feedback/Toast.behaviour.json`. The close-out fix corrected
+  all fifteen. **Describing a class as closed when it is not turns a deferral into a false
+  all-clear**, which is worse than the deferral: the intra-layer class above is honestly
+  deferred and a reader knows to expect hits, while a reader of the old sentence would have
+  stopped looking. Re-derive both classes rather than trusting this paragraph — the paths
+  with a script that walks `git ls-files`, extracts every `frameworks/…` token and reports the
+  ones `os.path.exists` denies (it also reports deliberate past-tense history, such as
+  `check-duplicate-constants.mjs`'s "which was `frameworks/angular/primitives/chart-internals.ts`
+  when this happened", which is the correct form and must be left alone); the cross-layer
+  citations with the change-time command in the *"a component name written into ANOTHER file's
+  prose"* entry above, run for the moved component.
 - **Duplicate case names are rejected only by the two test wrappers, never by the gate.**
   `validateBinding` in `scripts/lib/behaviour-contracts.mjs` loops over `bindingCases()` and
   never asserts the names are distinct, so a binding declaring `danger` twice passes

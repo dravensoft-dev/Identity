@@ -30,7 +30,7 @@ tokens; it does not replace Material's SCSS palette.
 ## 3. Theme
 
 Replace the app's `ThemeService` and the `index.html` no-FOUC script with
-`theme/theme-service.ts` and `theme/no-fouc.html`. **Flip the default to dark;**
+`theme/ThemeService.ts` and `theme/no-fouc.html`. **Flip the default to dark;**
 light is the `.arena-light` class (not `html.dark`).
 
 ## 4. Fonts
@@ -44,7 +44,7 @@ references resolve. No CDN request. (Regenerate binaries with
 
 ## 5. Icons
 
-Run the FontAwesome→Phosphor swap seeded by `icons/icon-manifest.ts`.
+Run the FontAwesome→Phosphor swap seeded by `icons/IconManifest.ts`.
 **Install the official package by default** — `@phosphor-icons/web` — for
 development flexibility; the CDN webfont is a prototype-only shortcut. Keep the
 `<app-icon>` wrapper so call sites don't churn. Bold default, Fill = active,

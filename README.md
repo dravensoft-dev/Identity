@@ -392,12 +392,14 @@ touching the language:
   host app wear Arena — `theme/arena-tailwind.css` (the shared `@theme` preset
   in scope), `theme/arena-material.css` (Arena tokens mapped onto Material's
   `--mat-*` vars),
-  `icons/icon-manifest.ts` (the Phosphor role→glyph map) and
-  `theme/theme-service.ts` + `theme/no-fouc.html` (the dark-first signal theme
-  service and its pre-paint snippet) — and token-styled primitives Material
-  doesn't provide, each a quartet (`<name>.ts`, `<name>.variants.ts`,
-  `<name>.prompt.md`, a barrel) under `primitives/`, with `tag` as the
-  reference shape. See `frameworks/angular/README.md` for the layer and
+  `icons/IconManifest.ts` (the Phosphor role→glyph map) and
+  `theme/ThemeService.ts` + `theme/no-fouc.html` (the dark-first signal theme
+  service and its pre-paint snippet) — and token-styled components Material
+  doesn't provide, each in its own directory under
+  `components/<category>/<component-kebab>/` and each a quartet
+  (`<Component>.ts`, `<Component>.variants.ts`, `<Component>.prompt.md`, a
+  barrel) alongside its own colocated suites, with `components/display/tag/` as
+  the reference shape. See `frameworks/angular/README.md` for the layer and
   `frameworks/angular/ADOPTION.md` for the step-by-step adoption playbook.
 - `frameworks/tailwind/` — a **shared**, token-derived Tailwind v4 layer (a
   `@theme` preset + per-component class/variant manifests). It is authored once,

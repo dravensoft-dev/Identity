@@ -66,7 +66,10 @@ gap only — `DoughnutChart.jsx`'s legend has the identical `overflow: auto` wit
 `tabindex`, `role` or `aria-label`, and still needs the same treatment (see
 `components-divergences.md`). It was never needed on the other two charts: neither
 BarChart nor LineChart has a legend column at all, and their plot boxes are
-`overflow: visible` (`bar-chart.ts:128`, `line-chart.ts:141`) — nothing there scrolls,
+`overflow: visible` — re-derive with `grep -n 'overflow:visible'
+frameworks/angular/components/charts/bar-chart/BarChart.ts
+frameworks/angular/components/charts/line-chart/LineChart.ts`, rather than a line
+number, which has already gone stale once — nothing there scrolls,
 so nothing there strands a keyboard user the way a scrollable box with nothing focusable
 inside it does. Hover-only data is a separate, still-open gap
 and affects all three charts: every label and value is already in the visually-hidden
