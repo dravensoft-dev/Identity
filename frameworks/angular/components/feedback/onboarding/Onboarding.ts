@@ -13,7 +13,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { onboardingStyles } from './Onboarding.variants';
-import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../focus-trap';
+import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../FocusTrap';
 import { onboardingWidth, sp3, sp4 } from '../../../tokens.generated';
 import type { OnboardingAnchor, OnboardingStep } from '../../../api.generated';
 
@@ -39,7 +39,7 @@ import type { OnboardingAnchor, OnboardingStep } from '../../../api.generated';
  *  Escape reports dismissal through the same `skip` output the scrim click
  *  and the Skip button already use. This reuses `arena-confirm-dialog`'s
  *  focus contract through the shared
- *  `frameworks/angular/components/focus-trap.ts`
+ *  `frameworks/angular/FocusTrap.ts`
  *  (`handleOpenTransition`, `trapTabKey`) rather than a second
  *  implementation. React's `Onboarding.jsx` had none of it until plan 8C4, which
  *  gave it `use-dialog-modal.js` -- a port of this same module, consumed by all

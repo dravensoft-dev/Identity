@@ -50,7 +50,7 @@ import {
   focusableElements,
   handleOpenTransition,
   trapTabKey,
-} from '../components/focus-trap';
+} from '../FocusTrap';
 import { isConfirmLocked } from '../components/feedback/confirm-dialog/ConfirmDialog';
 
 /** Builds a panel with the same focusable shape ConfirmDialog's template

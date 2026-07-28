@@ -12,7 +12,7 @@
  * none of that is repeated here. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PAD } from '../components/chart-internals';
+import { PAD } from '../components/charts/ChartInternals';
 import { barValueY, barColumns } from '../components/charts/bar-chart/BarChart';
 
 const IH = 244; // CHART_HEIGHT (280) - PAD.t (8) - PAD.b (28)

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, contentChild, input, output } from '@angular/core';
-import { ArenaSecondaryAction } from '../../projection-markers';
+import { ArenaSecondaryAction } from '../../../ProjectionMarkers';
 import { errorStateStyles } from './ErrorState.variants';
 
 /** Section- or screen-level failure, with recovery and an optional support

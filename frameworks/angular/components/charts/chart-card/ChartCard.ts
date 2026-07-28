@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, contentChild, input } from '@angular/core';
-import { ArenaActions } from '../../projection-markers';
+import { ArenaActions } from '../../../ProjectionMarkers';
 import { chartCardStyles } from './ChartCard.variants';
 
 /** The card a chart sits on. `title` is an uppercase muted microlabel,

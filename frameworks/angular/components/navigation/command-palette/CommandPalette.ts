@@ -15,7 +15,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { commandPaletteStyles } from './CommandPalette.variants';
-import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../focus-trap';
+import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../FocusTrap';
 import type { Command } from '../../../api.generated';
 
 let nextId = 0;
@@ -129,7 +129,7 @@ export function activeOptionId(uid: string, active: number, rowCount: number): s
  *  with exactly one focusable element the trap simply re-focuses it and
  *  consumes the key -- so focus can never escape to the page behind the
  *  scrim. All of this reuses `arena-confirm-dialog`'s own focus contract,
- *  generalized into `frameworks/angular/components/focus-trap.ts`
+ *  generalized into `frameworks/angular/FocusTrap.ts`
  *  (`handleOpenTransition`, `trapTabKey`) rather than reimplemented here. */
 @Component({
   selector: 'arena-command-palette',

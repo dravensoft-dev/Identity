@@ -30,7 +30,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DOCUMENT, Injector, runInInjectionContext } from '@angular/core';
-import { containerWidth, readBreakpoint } from '../components/container-size';
+import { containerWidth, readBreakpoint } from '../ContainerSize';
 import { pageHeadStyles } from '../components/navigation/page-head/PageHead.variants';
 
 function injectorWith(properties: Record<string, string>): Injector {

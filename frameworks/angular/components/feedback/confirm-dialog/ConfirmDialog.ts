@@ -20,14 +20,14 @@ import {
   focusableElements,
   handleOpenTransition,
   trapTabKey,
-} from '../../focus-trap';
+} from '../../../FocusTrap';
 
 let nextId = 0;
 
 /** Re-exported for `confirm-dialog-focus-trap.test.ts` and any other consumer
  *  that reached these through `arena-confirm-dialog` before the fix wave
  *  (plan 5a, Task 14 review) that generalized them into
- *  `frameworks/angular/components/focus-trap.ts`, now shared with
+ *  `frameworks/angular/FocusTrap.ts`, now shared with
  *  `arena-command-palette`. */
 export type { FocusTrapState };
 export { focusFirstFocusable, focusableElements, handleOpenTransition, trapTabKey };

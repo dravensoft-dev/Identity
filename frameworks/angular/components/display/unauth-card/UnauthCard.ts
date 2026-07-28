@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, contentChild, input } from '@angular/core';
-import { ArenaBrand, ArenaFooter } from '../../projection-markers';
+import { ArenaBrand, ArenaFooter } from '../../../ProjectionMarkers';
 import { unauthCardStyles } from './UnauthCard.variants';
 
 /** The panel a signed-out screen needs — a frame, never the form. It knows nothing

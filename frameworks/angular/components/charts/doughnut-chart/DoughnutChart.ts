@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
-import { containerWidth } from '../../container-size';
-import { CHART_HEIGHT, SR_ONLY, arcPath, resolveColors } from '../../chart-internals';
+import { containerWidth } from '../../../ContainerSize';
+import { CHART_HEIGHT, SR_ONLY, arcPath, resolveColors } from '../ChartInternals';
 import { chartLegendMin, chartLegendMax, chartLegendGap } from '../../../tokens.generated';
 
 /** The plot width assumed for the first paint, before `containerWidth()` has

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, contentChild, input } from '@angular/core';
-import { containerWidth, readBreakpoint } from '../../container-size';
-import { ArenaActions } from '../../projection-markers';
+import { containerWidth, readBreakpoint } from '../../../ContainerSize';
+import { ArenaActions } from '../../../ProjectionMarkers';
 import { pageHeadStyles } from './PageHead.variants';
 import { PageHeadAlign } from '../../../api.generated';
 

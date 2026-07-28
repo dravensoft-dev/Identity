@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, contentChild, input } from '@angular/core';
-import { ArenaAction } from '../../projection-markers';
+import { ArenaAction } from '../../../ProjectionMarkers';
 import { emptyStateStyles } from './EmptyState.variants';
 
 /** Section- or screen-level empty state, with one clear way forward. The

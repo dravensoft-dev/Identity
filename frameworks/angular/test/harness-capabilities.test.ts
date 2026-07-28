@@ -29,7 +29,7 @@ import { TestBed } from '@angular/core/testing';
 import { CommandPalette } from '../components/navigation/command-palette/CommandPalette';
 import { ConfirmDialog } from '../components/feedback/confirm-dialog/ConfirmDialog';
 import { EmptyState } from '../components/feedback/empty-state/EmptyState';
-import { ArenaAction } from '../components/projection-markers';
+import { ArenaAction } from '../ProjectionMarkers';
 import { StatCard } from '../components/display/stat-card/StatCard';
 
 /** Carries both content-projection claims at once: `[title]` is a property binding

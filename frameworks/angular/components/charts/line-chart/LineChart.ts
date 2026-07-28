@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, signal } from '@angular/core';
-import { containerWidth } from '../../container-size';
-import { CHART_HEIGHT, PAD, SR_ONLY, niceMax, resolveColors, ticks } from '../../chart-internals';
+import { containerWidth } from '../../../ContainerSize';
+import { CHART_HEIGHT, PAD, SR_ONLY, niceMax, resolveColors, ticks } from '../ChartInternals';
 import type { SeriesTone } from '../../../api.generated';
 import { chartPointR, chartPointRHover } from '../../../tokens.generated';
 
