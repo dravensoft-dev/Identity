@@ -111,10 +111,27 @@ export const SUITE_DIRS = [
  * React's was `BarChart.behaviour.json` -- the two stems could not collide, and
  * nobody had to say why. Batch 2 spelled both stems Pascal and that accident
  * ended: with `Alert` on both sides, `'Alert:angular': 'alert-tones.test.jsx'`
- * -- React's own suite -- validated clean. The tails still cannot collide,
+ * -- React's own suite -- validated clean. The tails do not collide TODAY,
  * because the Angular one carries its kebab directory and the React one does
- * not, and that is a structural property of the two layouts rather than a
- * coincidence of spelling.
+ * not -- but that is a property of the CURRENT two layouts, not a durable
+ * structural guarantee, and it is due to expire on a known schedule rather
+ * than by surprise. The refactor's own pending batch 3 (see
+ * docs/superpowers/specs/2026-07-27-frameworks-file-structure-design-pending-1.md,
+ * which lists this file among what that batch touches) gives React the same
+ * `components/<category>/<kebab>/<Component>.behaviour.json` shape Angular
+ * just gained. The moment it does, a component bound in both layers gets
+ * byte-identical tails again -- `display/tag/Tag.behaviour.json` on both
+ * sides -- and this discrimination silently reverts to the exact pre-fix
+ * defect this file exists to prevent, with nothing failing to say so. Two
+ * remedies were worked out for that batch and neither is implemented here:
+ * prefix each layer's root onto its own tail before comparing (so the two
+ * become `frameworks/react/components/display/tag/Tag.behaviour.json` and
+ * `frameworks/angular/components/display/tag/Tag.behaviour.json`), or have a
+ * suite report its own directory rather than matching its source text against
+ * a bare relative tail. Whoever plans batch 3 owes suiteMentions() one of
+ * those two, and should re-derive whether the collision is still live before
+ * assuming this paragraph is current -- it describes the layouts as they
+ * stand at the time it was written, and batch 3 is exactly what changes them.
  *
  * Add an entry when you add a suite. Removing or renaming a suite without
  * removing its entry fails this gate, which is the point.
@@ -168,14 +185,22 @@ export function suiteMentions(source, tail) {
  *  therefore untestable, which is recorded as debt.
  *
  *  A binding record carries `layer` ('react' or 'angular') and `tail`, the path
- *  the binding file sits at relative to its layer's component root; `tail`
- *  defaults to `<name>.behaviour.json`. A `COVERED` key is `<Component>:<layer>`
- *  and resolves to the ONE binding matching both name and layer -- never to
- *  any binding sharing the name, which is the dual-bound defect this shape
- *  replaces. A key with no `:layer` suffix is rejected rather than silently
- *  falling back to name-only resolution. The layer decides the binding, and the
- *  tail then decides which suites can claim it: both halves are needed, because
- *  since batch 2 the two layers spell a component's binding stem identically.
+ *  the binding file sits at relative to its layer's component root. `tail` is
+ *  REQUIRED and a binding missing it throws, rather than falling back to a bare
+ *  `<name>.behaviour.json` the way an earlier version of this function did: that
+ *  bare stem is precisely the layer-blind shape suiteMentions()'s tail match
+ *  exists to refuse (see the note beside COVERED above), so silently
+ *  reconstructing it for a caller that forgot to attach one would quietly
+ *  readmit the defect this file was written to close, with nothing failing to
+ *  say so. collectBindings() always attaches a tail; this throw is a check on
+ *  that invariant, not a code path anything today is expected to hit. A
+ *  `COVERED` key is `<Component>:<layer>` and resolves to the ONE binding
+ *  matching both name and layer -- never to any binding sharing the name, which
+ *  is the dual-bound defect this shape replaces. A key with no `:layer` suffix
+ *  is rejected rather than silently falling back to name-only resolution. The
+ *  layer decides the binding, and the tail then decides which suites can claim
+ *  it: both halves are needed, because since batch 2 the two layers spell a
+ *  component's binding stem identically.
  *
  *  @param {{bindings: {name: string, patterns: string[], layer: string, tail?: string}[], covered: Record<string,string>, suites: Record<string,string>}} o
  *  @returns {string[]} one message per problem, empty when clean */
@@ -184,7 +209,15 @@ export function validateCoverage({ bindings, covered, suites }) {
   /** @type {Map<string, string>} "name:layer" -> its binding file's path tail */
   const byKey = new Map();
   for (const b of bindings) {
-    byKey.set(`${b.name}:${b.layer}`, b.tail ?? `${b.name}.behaviour.json`);
+    if (!b.tail) {
+      throw new Error(
+        `validateCoverage: binding "${b.name}:${b.layer}" carries no tail. A missing tail ` +
+        `cannot discriminate by layer -- falling back to a bare "${b.name}.behaviour.json" ` +
+        `is the exact pre-fix defect this file exists to prevent. Attach a tail rather than ` +
+        `relying on a default.`,
+      );
+    }
+    byKey.set(`${b.name}:${b.layer}`, b.tail);
   }
 
   for (const [key, suiteFile] of Object.entries(covered)) {
@@ -228,8 +261,11 @@ export function validateCoverage({ bindings, covered, suites }) {
  *  `tail` -- the binding file's path relative to its layer's component root
  *  -- is filesystem information this function never derives on its own; it is
  *  carried through when the caller attaches it to the binding record
- *  (`{...binding, tail}`), and defaults to `<name>.behaviour.json` otherwise,
- *  the same default `validateCoverage` already applies.
+ *  (`{...binding, tail}`), and is REQUIRED: a binding with no `tail` throws
+ *  rather than falling back to `<name>.behaviour.json`, the same throw
+ *  `validateCoverage` applies and for the same reason -- that bare stem is
+ *  exactly the layer-blind shape the tail match exists to refuse, so a silent
+ *  fallback would readmit it. collectBindings() below always attaches one.
  *
  *  This IS the loop body collectBindings() below runs -- not a parallel
  *  copy of it -- so a test against this function is a test against the
@@ -242,10 +278,18 @@ export function inventoryFrom(bindings) {
     const sep = key.lastIndexOf(':');
     const name = sep === -1 ? key : key.slice(0, sep);
     const layer = sep === -1 ? '' : key.slice(sep + 1);
+    if (!binding.tail) {
+      throw new Error(
+        `inventoryFrom: binding "${key}" carries no tail. A missing tail cannot ` +
+        `discriminate by layer -- falling back to a bare "${name}.behaviour.json" is the ` +
+        `exact pre-fix defect this file exists to prevent. Attach a tail rather than ` +
+        `relying on a default.`,
+      );
+    }
     out.push({
       name,
       layer,
-      tail: binding.tail ?? `${name}.behaviour.json`,
+      tail: binding.tail,
       patterns: bindingCases(binding).map((c) => c.pattern),
     });
   }

@@ -57,7 +57,7 @@ stem to capitalise at all:
 | `index.html` | `ui-kits/console/` is served as a directory; the server looks for that literal name. |
 | `tsconfig.check.json`, `tsconfig.test.json` | `tsconfig*` is a name editors and toolchains recognise by convention. `ngc -p <path>` is explicit, so renaming would work — the exception is for the reader, not the compiler. |
 | `.gitkeep` | No stem to capitalise. |
-| `angular/theme/arena-tailwind.css`, `angular/theme/arena-material.css`, `angular/theme/no-fouc.html`, `angular/theme/arena-material.prompt.md` | Adopter-facing. `frameworks/angular/ADOPTION.md` steps 1–3 give the first two as `@import` lines to paste into the host app's own `styles.css` and the third as the replacement for the app's `index.html` no-FOUC script, so a rename breaks every app that has already adopted Arena. The fourth is cited nowhere (`grep -rn arena-material.prompt`) and is kept for a weaker reason: it is the `<artifact>.prompt.md` for `arena-material.css` and follows the stem of the adopter-facing file it documents. |
+| `angular/theme/arena-tailwind.css`, `angular/theme/arena-material.css`, `angular/theme/no-fouc.html`, `angular/theme/arena-material.prompt.md` | Adopter-facing, but not for the same reason. `frameworks/angular/ADOPTION.md` steps 1 and 2 give the first two as `@import` lines pasted verbatim into the host app's own `styles.css`, so a rename breaks every app that has already adopted Arena. Step 3 names `no-fouc.html` only as the source of a `<script>` tag whose *contents* the adopter pastes into their own `index.html` — the filename itself never enters adopter source, so a rename there breaks a documentation line, not a build. The fourth is cited nowhere (`grep -rn arena-material.prompt`) and is kept for the same weaker reason as `no-fouc.html`: it is the `<artifact>.prompt.md` for `arena-material.css` and follows the stem of the adopter-facing file it documents. |
 
 **The fifth row was found by batch 2's review, not by batch 2**, and the list said four
 until then. `theme/theme-service.ts` and `icons/icon-manifest.ts` were the two lowercase
@@ -436,7 +436,27 @@ or read those two paths by name.
 **Batch 3 — React.** The largest, and last because it is the riskiest.
 `reactComponents()` stops keying on "a `.jsx` whose name starts with a capital" — a
 heuristic this design breaks, since `SideNavInject.jsx` would now match it — and keys on
-"a component is a directory", which is what Angular already does. Touches
+"a component is a directory", which is what Angular already does.
+
+**This batch reopens a discrimination batch 2 only just closed, and must not land
+without fixing it.** `check-compliance.mjs`'s `suiteMentions()` tells the two layers'
+bindings for the same component apart by matching a suite's source against that
+binding's path TAIL rather than its bare stem — `display/tag/Tag.behaviour.json` for
+Angular, `display/Tag.behaviour.json` for React today — because with both stems now
+spelled `Tag.behaviour.json`, a bare-stem match would let either layer's suite satisfy
+the other's coverage claim, exactly the defect batch 2's fix wave closed. That fix works
+only because React's tail carries no kebab directory yet. This batch's own target layout
+above gives React `components/<category>/<kebab>/<Component>.behaviour.json`, so `Tag`
+lands at `display/tag/Tag.behaviour.json` on the React side too — byte-identical to
+Angular's — and the tail match stops discriminating with nothing failing to say so. Fix
+it in the same change as the directory move, with one of two remedies worked out and
+neither implemented: prefix each layer's root onto its own tail before comparing
+(`frameworks/react/components/...` vs `frameworks/angular/components/...`), or have a
+suite report its own directory rather than being matched against its source text. The
+fuller version of this note lives beside `COVERED` in `check-compliance.mjs` and its
+mirror in `check-compliance.test.mjs`, both written for this batch to find.
+
+Touches
 `check-behaviour.mjs`, `check-compliance.mjs`, `check-api.mjs`, `build-demos.mjs`,
 `check-demos-generated.mjs`, `build-vendor.mjs`, `check-vendor-generated.mjs`,
 `check-dimension-literals.mjs` (`EXEMPT` names real paths), `build-api-types.mjs` and

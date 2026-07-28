@@ -92,8 +92,17 @@ test('suiteMentions accepts a tail spelled as join() arguments', () => {
  * between the layers by accident and nobody had to say so. Batch 2 spelled both
  * stems Pascal and that accident ended: with both files named `Alert.behaviour.json`,
  * `'Alert:angular': 'alert-tones.test.jsx'` -- React's own suite, naming React's
- * own binding -- validated CLEAN. The tails cannot collide, because the Angular
- * one carries its kebab directory and the React one does not.
+ * own binding -- validated CLEAN. The tails do not collide TODAY, because the
+ * Angular one carries its kebab directory and the React one does not -- but
+ * that is true of the CURRENT two layouts only. The refactor's own pending
+ * batch 3 (docs/superpowers/specs/2026-07-27-frameworks-file-structure-design-
+ * pending-1.md) gives React the same `<category>/<kebab>/<Component>` shape
+ * Angular just gained, at which point a dual-bound component's tails collide
+ * again and this test's own fixture below would need a real Angular kebab
+ * segment on the React side too to keep proving anything. See the longer note
+ * on this in check-compliance.mjs, beside COVERED, which names the two
+ * candidate fixes -- prefixing each layer's root onto its tail, or having a
+ * suite report its own directory -- neither implemented yet.
  *
  * DELETION-SIMULATED: replacing suiteMentions' body with the old
  * `source.includes(`${basename(tail)}`)` shape makes the second half of this test
@@ -154,6 +163,7 @@ test('a COVERED key without a :layer suffix is rejected -- the shape is mandator
 test('a cased binding contributes exactly one inventory row', () => {
   const rows = inventoryFrom({
     'Alert:react': {
+      tail: 'feedback/Alert.behaviour.json',
       cases: [
         { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
         { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
@@ -162,6 +172,47 @@ test('a cased binding contributes exactly one inventory row', () => {
   });
   assert.equal(rows.length, 1);
   assert.deepEqual(rows[0].patterns, ['alert', 'status']);
+});
+
+/* A missing tail must not silently degrade to the bare `<name>.behaviour.json`
+ * shape -- that bare stem is exactly the layer-blind pattern suiteMentions'
+ * tail match exists to refuse (see the note beside COVERED in
+ * check-compliance.mjs), so falling back to it for a caller that forgot to
+ * attach one would quietly readmit the defect this whole file was written to
+ * close. collectBindings() always attaches a tail today, so this is a check on
+ * that invariant rather than a live path -- but the invariant must be an
+ * error, not a default, or a future caller can violate it with nothing saying
+ * so.
+ *
+ * DELETION-SIMULATED: reverting inventoryFrom's `tail: binding.tail` to
+ * `binding.tail ?? \`${name}.behaviour.json\`` (and removing the throw above
+ * it) makes this test fail with "Missing expected exception" -- the call
+ * returns a row carrying the bare-stem fallback instead of throwing. */
+test('inventoryFrom throws on a binding with no tail', () => {
+  assert.throws(
+    () => inventoryFrom({ 'Alert:react': { pattern: 'status', exceptions: [] } }),
+    /Alert:react.*no tail/s,
+  );
+});
+
+/* Same invariant, checked at validateCoverage's own entry point rather than
+ * only at inventoryFrom's -- both functions are exported and independently
+ * callable, and both used to carry the same silent default.
+ *
+ * DELETION-SIMULATED: reverting `byKey.set(...)` to
+ * `byKey.set(\`${b.name}:${b.layer}\`, b.tail ?? \`${b.name}.behaviour.json\`)`
+ * (and removing the throw above it) makes this test fail the same way --
+ * "Missing expected exception" -- because validateCoverage then runs to
+ * completion and returns `[]` instead of throwing. */
+test('validateCoverage throws on a binding with no tail', () => {
+  assert.throws(
+    () => validateCoverage({
+      bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react' }],
+      covered: {},
+      suites: {},
+    }),
+    /Dialog:react.*no tail/s,
+  );
 });
 
 test('every COVERED entry names a real suite file and a real binding', () => {

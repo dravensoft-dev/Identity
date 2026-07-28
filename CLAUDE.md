@@ -777,21 +777,28 @@ rename would compile; the exception is for the reader. `.gitkeep`
 (`frameworks/angular/.gitkeep`), which has no stem to capitalise.
 
 And the fifth: **the four adopter-facing files under `frameworks/angular/theme/`** —
-`arena-tailwind.css`, `arena-material.css`, `no-fouc.html` and `arena-material.prompt.md`.
-The first three are named inside an *adopter's own* source: `frameworks/angular/ADOPTION.md`
-steps 1 and 2 give `@import '../../frameworks/angular/theme/arena-tailwind.css';` and
-`@import '../../frameworks/angular/theme/arena-material.css';` as lines to paste into the
-host app's `styles.css`, and step 3 names `theme/no-fouc.html` as the replacement for the
-app's own `index.html` no-FOUC script. Renaming any of those is a breaking change to
-every app that has already adopted Arena, which this refactor did not set out to make.
-`arena-material.prompt.md` is cited nowhere at all — verified with `grep -rn
-arena-material.prompt` — and it is kept lowercase for a different, weaker reason: it is the
-prompt document *for* `arena-material.css` and takes that file's stem, the same
-`<artifact>.prompt.md` pairing every component uses, so it follows the adopter-facing name
-it documents rather than diverging from it. Note what is NOT exempt: `theme/ThemeService.ts`
-and `icons/IconManifest.ts` were `theme-service.ts` and `icon-manifest.ts` and were renamed,
-because both are reached through `frameworks/angular/index.ts` and no adopter ever writes
-either path. `frameworks/tailwind/` carries no lowercase-initial file at all.
+`arena-tailwind.css`, `arena-material.css`, `no-fouc.html` and `arena-material.prompt.md`
+— and the four do not all carry the same reason. **The first two are named inside an
+*adopter's own* source, verbatim**: `frameworks/angular/ADOPTION.md` steps 1 and 2 give
+`@import '../../frameworks/angular/theme/arena-tailwind.css';` and
+`@import '../../frameworks/angular/theme/arena-material.css';` as lines pasted directly
+into the host app's `styles.css`, so renaming either is a breaking change to every app
+that has already adopted Arena, which this refactor did not set out to make.
+**`no-fouc.html` is not a third instance of that reason, even though step 3 sits right
+next to steps 1 and 2**: ADOPTION.md step 3, and the file's own header comment, both
+instruct the adopter to paste the `<script>` tag's *contents* into their own
+`index.html` — never to reference `no-fouc.html` by name or path — so the filename
+itself never enters an adopter's source. Renaming it breaks a documentation line (this
+paragraph and ADOPTION.md's own prose) rather than any app that has already adopted
+Arena. `arena-material.prompt.md` is cited nowhere at all — verified with `grep -rn
+arena-material.prompt` — and, like `no-fouc.html`, it is kept lowercase for a weaker
+reason than the first two: it is the prompt document *for* `arena-material.css` and
+takes that file's stem, the same `<artifact>.prompt.md` pairing every component uses, so
+it follows the adopter-facing name it documents rather than diverging from it. Note what
+is NOT exempt: `theme/ThemeService.ts` and `icons/IconManifest.ts` were `theme-service.ts`
+and `icon-manifest.ts` and were renamed, because both are reached through
+`frameworks/angular/index.ts` and no adopter ever writes either path. `frameworks/tailwind/`
+carries no lowercase-initial file at all.
 
 **`frameworks/Components.json` is the declaration and `check:structure` is the gate.** The
 file names each component's category once, so the category is not written once per layer
