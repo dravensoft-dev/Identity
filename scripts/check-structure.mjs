@@ -1,7 +1,8 @@
-/* Fails when a framework layer places a component directory in a category
- * frameworks/Components.json does not assign it, when a component directory
- * exists that no category declares, or when a declared component exists in no
- * layer at all.
+/* Fails when a component name is declared in more than one category in
+ * frameworks/Components.json, when a framework layer places a component
+ * directory in a category the file does not assign it, when a component
+ * directory exists that no category declares, or when a declared component
+ * exists in no layer at all.
  *
  * WHAT THIS DOES NOT CHECK, and it is the interesting half: whether the
  * category is the RIGHT one. "Is Tooltip feedback or navigation?" is editorial
@@ -64,9 +65,26 @@ export function readLayer(layer) {
  *  @returns {string[]} one line per problem, empty when clean */
 export function validateStructure({ categories, layers, complete = false }) {
   const problems = [];
-  const declared = new Map();          // kebab dir -> {name, category}
+
+  // Assertion 1: no name appears in two categories. Keyed on the PascalCase
+  // name exactly as frameworks/Components.json spells it -- "a name appears
+  // in two categories" is a statement about that identifier, not about its
+  // kebab derivation. Two *different* PascalCase names deriving the same
+  // kebab directory is a different property (not what this assertion asks
+  // for) and stays unguarded here; scripts/check-structure.test.mjs's header
+  // and this comment are the record of that scope, not an oversight.
+  const firstCategoryOf = new Map();   // name -> the first category it was seen in
   for (const [category, names] of Object.entries(categories))
-    for (const name of names) declared.set(kebab(name), { name, category });
+    for (const name of names) {
+      if (firstCategoryOf.has(name)) {
+        problems.push(`${name} is declared in both ${firstCategoryOf.get(name)} and ${category} in frameworks/Components.json`);
+        continue;
+      }
+      firstCategoryOf.set(name, category);
+    }
+
+  const declared = new Map();          // kebab dir -> {name, category}
+  for (const [name, category] of firstCategoryOf) declared.set(kebab(name), { name, category });
 
   const seen = new Set();
   for (const [layer, tree] of Object.entries(layers))

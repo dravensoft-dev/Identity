@@ -53,6 +53,20 @@ test('a directory that is not kebab-case is a problem, even in the right categor
   assert.ok(problems.some((p) => /Badge/.test(p) && /kebab/.test(p)));
 });
 
+test('a component name declared in two categories is a problem, naming both -- and no layer tree is needed to find it', () => {
+  // layers: {} means the only possible source of a problem is the
+  // categories file itself, so this fails if the duplicate-name rule is
+  // ever deleted rather than passing vacuously through the layer-comparison
+  // codepath, which produces its own (different) message for this same
+  // input once a layer tree is involved.
+  const dupCategories = { display: ['Badge', 'Tag'], forms: ['Button', 'Tag'] };
+  const problems = validateStructure({ categories: dupCategories, layers: {} });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /Tag/);
+  assert.match(problems[0], /display/);
+  assert.match(problems[0], /forms/);
+});
+
 test('MIGRATED names the layers this gate currently reaches', () => {
   assert.deepEqual(MIGRATED, ['tailwind']);
 });
