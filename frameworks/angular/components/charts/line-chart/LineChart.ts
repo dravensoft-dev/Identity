@@ -17,7 +17,7 @@ const POINT_R = chartPointR;
 const POINT_R_HOVER = chartPointRHover;
 
 /* Every static style below is a camelCase object bound with `[style]`, never a
- * `style="a-b:c"` string in the template, for the reason bar-chart.ts records at
+ * `style="a-b:c"` string in the template, for the reason BarChart.ts records at
  * length: check-dimension-literals.mjs finds a governed property by an unbroken
  * run of letters before a colon, so a kebab-case declaration in a template string
  * is either invisible to it (`font-size:` reads as a property named `size`) or

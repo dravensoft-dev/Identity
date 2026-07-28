@@ -2,9 +2,9 @@
  * real focus trap: focus moves into the panel on open, Tab/Shift+Tab cycle
  * within it, and focus is restored to whatever held it beforehand on close.
  * Plan 5a's Task 14 review generalized that trap's mechanics out of
- * `confirm-dialog.ts` into `frameworks/angular/primitives/focus-trap.ts`, so
+ * `ConfirmDialog.ts` into `frameworks/angular/components/focus-trap.ts`, so
  * `arena-command-palette` could reuse it instead of writing a second
- * implementation -- `confirm-dialog.ts` still re-exports the same names for
+ * implementation -- `ConfirmDialog.ts` still re-exports the same names for
  * any caller that reached them there, which is why importing from either
  * module works, but this file was pointed at the canonical module.
  *
@@ -26,7 +26,7 @@
  * (open())` block can never render the panel, so no TestBed-based test of
  * this component can exercise an actually-open dialog.
  *
- * `confirm-dialog.ts` was written to route around exactly this: the trap's
+ * `ConfirmDialog.ts` was written to route around exactly this: the trap's
  * mechanics (`focusableElements`, `focusFirstFocusable`, `trapTabKey`,
  * `handleOpenTransition`) are exported as plain functions of a real
  * `HTMLElement`, with no Angular dependency, so they are testable against a

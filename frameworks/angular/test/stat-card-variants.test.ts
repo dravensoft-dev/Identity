@@ -11,7 +11,7 @@
  * the delta's tone and direction are fields of the one `delta` object member
  * (`delta.tone`, `delta.direction`). The recipe below still takes them as
  * flat `tone` and `deltaTone` variants, because a tailwind-variants recipe
- * has no nesting -- `stat-card.ts` is what maps one onto the other. A service
+ * has no nesting -- `StatCard.ts` is what maps one onto the other. A service
  * at 99.98% uptime is healthy whether or not it improved this week, so a
  * `danger` value tone with a `positive` delta tone in the same tile is a
  * real, expected combination, not a contradiction -- React's own

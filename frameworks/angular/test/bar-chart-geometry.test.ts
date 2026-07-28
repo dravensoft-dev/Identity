@@ -5,7 +5,7 @@
  * `[values]="..."` fails NG0303 and a literal attribute is a silent no-op (see
  * host-class-binding.test.ts's header). `barValueY` and `barColumns` are therefore
  * plain exported functions that the component composes, the same resolution
- * confirm-dialog.ts took for its focus helpers, and they are what carries the
+ * ConfirmDialog.ts took for its focus helpers, and they are what carries the
  * geometry this file needs to pin.
  *
  * chart-internals.test.ts already covers barPath, niceMax, ticks and resolveColors;

@@ -240,7 +240,7 @@ function createBulkActionBarHost() {
 })
 class ChartCardHost {}
 
-/* The literal `title="Something went wrong"` is the same string `error-state.ts`
+/* The literal `title="Something went wrong"` is the same string `ErrorState.ts`
  * defaults `title` to, so the rendered title reads the same whether the attribute
  * is supplied or not; nothing below asserts on it, only on classes, `role="alert"`
  * and the actions wrapper.
@@ -395,7 +395,7 @@ test('arena-app-logo: a class already on the host before the first detectChanges
 });
 
 /* Resolution C of task 24's brief: the two-ink wordmark (`DRAVEN` + `SOFT`) is
- * ONE WORD split into two inks, and `app-logo.ts`'s template places `@if
+ * ONE WORD split into two inks, and `AppLogo.ts`'s template places `@if
  * (dim(); as tail) {...}` immediately after `{{ name() }}` -- and the second
  * `<span>` immediately after `{{ tail }}` -- with no whitespace anywhere in
  * the source between them, entirely on one template-literal line, because
@@ -693,7 +693,7 @@ test('arena-breadcrumbs: the host itself carries the nav landmark, not a wrapper
  * alongside the emission (ctrl-click, middle-click and open-in-new-tab keep
  * working, which is the point). This is a real capability loss from the
  * previous `ArenaCrumbNavigateEvent { crumb, event }` shape, recorded in
- * both `breadcrumbs.prompt.md` and the class doc comment, not something
+ * both `Breadcrumbs.prompt.md` and the class doc comment, not something
  * this test can restore.
  *
  * The template wires `(click)="onCrumbClick(crumb)"`. This test does not
@@ -1161,8 +1161,7 @@ test('every Angular primitive\'s root slot carries a display utility, so host-bi
   const manifestsDir = TAILWIND_COMPONENTS;
   // Each primitive now sits one level deeper, under its category
   // (components/<category>/<kebab>/), so this walks the category directories and
-  // collects the component directory names beneath them -- the same shape
-  // angularPrimitives() in scripts/lib/behaviour-contracts.mjs walks.
+  // collects the component directory names beneath them.
   const names = readdirSync(primitivesDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .flatMap((category) =>

@@ -1,6 +1,6 @@
 /* arena-alert binds its host role conditionally:
  *   '[attr.role]': "tone() === 'danger' ? 'alert' : 'status'"
- * and alert.behaviour.json excepts `roles.element` saying exactly that. A text
+ * and Alert.behaviour.json excepts `roles.element` saying exactly that. A text
  * scan reads the string 'alert' in the source and calls the requirement met,
  * which retires a true exception -- the exact failure mode the spec's proposed
  * scan was measured against and cut for. Rendering once per tone settles it, and
@@ -28,7 +28,7 @@ import { Alert } from '../components/feedback/alert/Alert';
 import { assertPatternCases, ANGULAR_PRIMITIVES, isFocusable } from './compliance';
 const BINDING = join(ANGULAR_PRIMITIVES, 'feedback/alert/Alert.behaviour.json');
 
-/** Every tone `alert.ts`'s own `AlertTone` (from api.generated) admits. `info` is the default. */
+/** Every tone `Alert.ts`'s own `AlertTone` (from api.generated) admits. `info` is the default. */
 const TONES = ['info', 'success', 'warning', 'danger', 'neutral'] as const;
 
 function renderAlert(tone: (typeof TONES)[number]) {
@@ -159,7 +159,7 @@ test('arena-alert survives every timer its own render schedules, fired early -- 
   }
 });
 
-/* Batch 8C9: alert.behaviour.json now declares two CASES rather than one flat
+/* Batch 8C9: Alert.behaviour.json now declares two CASES rather than one flat
  * `alert` binding with a `roles.element` exception. The exception was never a
  * defect -- role is `alert` only when tone is danger, and every other tone
  * renders `role="status"` correctly and completely, matching a different

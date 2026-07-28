@@ -27,7 +27,7 @@ import { DoughnutChart } from '../components/charts/doughnut-chart/DoughnutChart
 import { assertPattern, ANGULAR_PRIMITIVES } from './compliance';
 const BINDING = join(ANGULAR_PRIMITIVES, 'charts/bar-chart/BarChart.behaviour.json');
 
-/** `bar-chart.ts` takes two parallel arrays, `labels` and `values` -- not the
+/** `BarChart.ts` takes two parallel arrays, `labels` and `values` -- not the
  *  single array of objects a reader might assume. */
 const LABELS = ['Alpha', 'Beta', 'Gamma'];
 const VALUES = [12, 30, 7];
@@ -200,7 +200,7 @@ test('arena-bar-chart appends valueSuffix to the axis ticks and to the accessibl
 });
 
 /* `seriesLabel` is the one member the API-contract batch ADDED rather than
- * reshaped, and D7 approved it precisely because `doughnut-chart.ts` used to
+ * reshaped, and D7 approved it precisely because `DoughnutChart.ts` used to
  * emit the literal `aria-label="Doughnut chart"` with no caller-supplied path at
  * ALL -- the worst case of the aria-label debt CLAUDE.md records. Three template
  * sites now read the input: the graphic's accessible name, the table caption and

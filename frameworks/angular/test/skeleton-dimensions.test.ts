@@ -5,7 +5,7 @@
  * this harness compiles (see CLAUDE.md's `check:dimensions` paragraph,
  * "Angular's `[style.x]` binding form is invisible to all four scanners too").
  * Only a real render proves they reach the DOM, and that the
- * per-variant gating in `skeleton.ts` (radius only for `block`, `text`/`line`
+ * per-variant gating in `Skeleton.ts` (radius only for `block`, `text`/`line`
  * ignore it, `circle` uses height||width as one diameter) matches the table in
  * the task brief and `Skeleton.jsx`.
  *

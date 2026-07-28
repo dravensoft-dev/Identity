@@ -1,6 +1,6 @@
 /* CommandPalette's behaviour IS the component: filter as you type, arrow to
  * move the active row, Enter to run it, Escape to close, hover to select.
- * `command-palette.ts` was written the way `confirm-dialog.ts` was -- the
+ * `CommandPalette.ts` was written the way `ConfirmDialog.ts` was -- the
  * behaviour that does not need Angular's own component instance lives in
  * plain exported functions, so it is testable with no `TestBed` at all.
  *

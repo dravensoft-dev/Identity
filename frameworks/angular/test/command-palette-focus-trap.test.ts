@@ -7,7 +7,7 @@
  * handler is bound to the input, and the palette was mouse-only.
  *
  * The fix reuses `arena-confirm-dialog`'s own focus contract, generalized
- * out of `confirm-dialog.ts` into `frameworks/angular/primitives/
+ * out of `ConfirmDialog.ts` into `frameworks/angular/components/
  * focus-trap.ts` (`handleOpenTransition`, `trapTabKey`) rather than
  * reimplemented here -- see `confirm-dialog-focus-trap.test.ts`'s header for
  * why those are plain functions of a real `HTMLElement` in the first place.
@@ -22,9 +22,9 @@
  * or become a Tab stop -- built by hand and exercised with real `.focus()`
  * calls and real `document.activeElement`, independent of whether the
  * Angular template that produces this shape can be rendered here. This is
- * NOT proof that `command-palette.ts`'s own `afterRenderEffect`/`onKey`
+ * NOT proof that `CommandPalette.ts`'s own `afterRenderEffect`/`onKey`
  * wiring calls these functions correctly at the right time; that wiring
- * mirrors `confirm-dialog.ts`'s constructor and `onKeydown` line for line
+ * mirrors `ConfirmDialog.ts`'s constructor and `onKeydown` line for line
  * (both call `handleOpenTransition` from an `afterRenderEffect` keyed on
  * `open()`, and `trapTabKey` from a `'Tab'` keydown branch), and
  * `ngc --strictTemplates` (`check:angular`) is the authority that it

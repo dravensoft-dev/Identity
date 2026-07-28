@@ -9,7 +9,7 @@
  * This is the third occurrence of the same defect on this branch
  * (`arena-confirm-dialog` first, `arena-command-palette` second). Onboarding
  * was written before the shared helper existed, which is why it was missed.
- * The fix reuses `frameworks/angular/primitives/focus-trap.ts` unchanged
+ * The fix reuses `frameworks/angular/components/focus-trap.ts` unchanged
  * rather than adding a fourth implementation, so this suite exercises the same
  * functions the component's own constructor and `onKeydown` call, against a
  * hand-built DOM tree shaped like Onboarding's panel.

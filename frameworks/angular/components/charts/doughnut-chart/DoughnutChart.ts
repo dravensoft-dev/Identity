@@ -42,7 +42,7 @@ const INNER_RATIO = 0.62;
 const DIM_OPACITY = 0.55;
 
 /* Every static style below is a camelCase object bound with `[style]`, never a
- * `style="a-b:c"` string in the template, for the reason bar-chart.ts and line-chart.ts
+ * `style="a-b:c"` string in the template, for the reason BarChart.ts and LineChart.ts
  * both record at length: check-dimension-literals.mjs finds a governed property by an
  * unbroken run of letters before a colon, so a kebab-case declaration in a template
  * string is either invisible to it (`font-size:` reads as a property named `size`) or
@@ -270,8 +270,8 @@ export class DoughnutChart {
   private readonly width = computed(() => this.measured() ?? ASSUMED_WIDTH);
 
   /** The chart's accessible name, and the numbers table's caption. A name when one is
-   *  given, the chart type alone when none is — the same rule bar-chart.ts and
-   *  line-chart.ts follow. `protected`, so the reader never sees it as a member. */
+   *  given, the chart type alone when none is — the same rule BarChart.ts and
+   *  LineChart.ts follow. `protected`, so the reader never sees it as a member. */
   protected readonly name = computed(() => {
     const series = this.seriesLabel();
     return series ? `${series} — doughnut chart` : 'Doughnut chart';

@@ -1,7 +1,7 @@
 /* `arena-tag` renders a real <button> only when `removable()` is true; without
  * it -- the common case -- it is a plain tone dot and projected content, with
- * nothing to press. `tag.behaviour.json` now declares two cases that bind
- * DIFFERENT patterns, matching `Tag.behaviour.json`'s case names exactly (the
+ * nothing to press. This layer's `Tag.behaviour.json` now declares two cases that bind
+ * DIFFERENT patterns, matching React's `Tag.behaviour.json`'s case names exactly (the
  * names must agree across layers -- `crossLayerAgrees`, Task 1): `plain` binds
  * `none`, `removable` binds `button`.
  *
