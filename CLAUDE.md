@@ -1285,7 +1285,9 @@ scheduled for deletion the same week.
   caught only because its vacuity happened to also be a type error, the moment a compiler was
   finally pointed at the file.
 - **Seven Angular suites still justify themselves by a JIT limitation
-  that batch 8C11's move to AOT retired, and no batch since has touched their prose.**
+  that batch 8C11's move to AOT retired, and no batch since has touched the JIT clause.**
+  (Batch 2 of the structure refactor edited three of these headers, but only to repoint a path
+  that had stopped resolving; not one word of the limitation itself was changed.)
   Find the live set with `grep -rlE "JIT|ngtsc" --include='*.ts' frameworks/angular/` and drop
   the two
   hits that are already correct, past-tense history (`test/HarnessCapabilities.test.ts`,
