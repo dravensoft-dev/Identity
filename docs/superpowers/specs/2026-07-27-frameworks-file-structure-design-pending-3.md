@@ -370,12 +370,22 @@ recursive walk), `build-tailwind.mjs`, `check-tailwind-generated.mjs`,
 (`SOURCE_OVERRIDES` and `EXEMPT` name real paths), `check-card-viewports.mjs`,
 `frameworks/tailwind/README.md`.
 
-It also reaches outside its own layer once, and that is unavoidable rather than scope
-creep: renaming `frameworks/tailwind/tv.ts` to `Tv.ts` and `manifest-classes.js` to
-`ManifestClasses.js` breaks the **19 Angular files** that import them. Batch 1 updates
-those import paths and nothing else in Angular — a mechanical string edit, no
-restructuring. The alternative, deferring the layer-root renames to batch 2, would leave
-one layer half-renamed between batches, which is worse.
+It also reaches outside its own layer **twice**, and both are unavoidable rather than
+scope creep. Renaming `frameworks/tailwind/tv.ts` to `Tv.ts` and `manifest-classes.js` to
+`ManifestClasses.js` breaks the **19 Angular files** that import them. And **17 Angular
+`.variants.ts` recipes import a Tailwind manifest by path** —
+`import manifest from '../../../tailwind/components/<Name>.manifest'` — so moving the
+manifests breaks the Angular compile on its own, before any file is renamed. Batch 1
+updates both sets of import paths and nothing else in Angular: mechanical string edits,
+no restructuring. The alternative, deferring them to batch 2, would leave one layer
+half-renamed and the other uncompilable across a batch boundary, which is worse.
+
+**This paragraph said "once" and was wrong**, and it is worth recording how rather than
+just correcting it: the manifest imports were found by the *implementer* of the walk task,
+which reported `build:angular-tests` failing at bare HEAD and correctly declined to fix it.
+The lesson generalises to batches 2 and 3 — a layer's inbound references are not
+discoverable by reading that layer, and the query that finds them is
+`grep -rn "<moved-path-fragment>" frameworks/ scripts/` run **before** the move, not after.
 
 **Batch 2 — Angular.** `primitives/` becomes `components/<category>/<component>/`.
 Touches `scripts/lib/behaviour-contracts.mjs` (`angularPrimitives`, plus the new

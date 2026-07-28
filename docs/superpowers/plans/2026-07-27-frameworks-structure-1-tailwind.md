@@ -439,16 +439,19 @@ git log -1 --format=%B | head -3
 
 ---
 
-### Task 4: Repoint the 38 specimen pages
+### Task 4: Repoint everything the move broke
 
-Each `*.card.html` descended two levels, so every root-relative `../` count in it is short by two. `check:cards` renders each page in a real headless browser, so a miscounted path fails the gate rather than shipping a blank card.
+Two families of reference point at where the manifests used to be. Each `*.card.html` descended two levels, so every root-relative `../` count in it is short by two; `check:cards` renders each page in a real headless browser, so a miscounted path fails the gate rather than shipping a blank card. And **17 Angular `.variants.ts` recipes import a manifest by the pre-move flat path**, so the Angular layer has not compiled since Task 2.
+
+> **Amended after Task 3.** This task was written as the specimen fix alone. The Angular half was found by Task 3's implementer, which reported `build:angular-tests` failing at bare HEAD, and confirmed by the controller: `frameworks/angular/primitives/<name>/<name>.variants.ts` each carry `import manifest from '../../../tailwind/components/<Name>.manifest'`. Neither the spec nor this plan covered them — the spec's batch-1 paragraph says the batch "reaches outside its own layer once", for `tv.ts`, and it reaches out twice. Both halves are the same defect: a reference to a path Task 2 moved, so they are fixed in one task rather than split.
 
 **Files:**
 - Modify: all 38 `frameworks/tailwind/components/<category>/<component>/<Name>.card.html`
+- Modify: the 17 `frameworks/angular/primitives/<name>/<name>.variants.ts` that import a Tailwind manifest
 
 **Interfaces:**
 - Consumes: the tree from Task 2.
-- Produces: nothing new. `check:cards` green over the moved specimens.
+- Produces: nothing new. `check:cards` green over the moved specimens, and `check:angular` / `test:angular` green again.
 
 - [ ] **Step 1: See the failure before fixing it**
 
@@ -484,26 +487,88 @@ grep -rn '"\.\./\.\./\.\./styles\.css"\|"\.\./utilities\.css"\|"\.\./specimen\.c
 
 Expected: no output. Any hit is a page the `sed` did not match — open it and fix by hand rather than widening the pattern, since an unmatched page usually means it references something the other 37 do not.
 
-- [ ] **Step 4: Run the gate**
+- [ ] **Step 4: Run the cards gate**
 
 Run: `bun run check:cards`
 Expected: PASS. This renders every declaring page in the repo, not only the Tailwind ones, so a pass here also confirms nothing else broke.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 5: See the Angular breakage before fixing it**
+
+Run: `bun run build:angular-tests`
+Expected: FAIL, with `ngc` reporting that it cannot resolve `../../../tailwind/components/<Name>.manifest` from one or more `.variants.ts` files. This has been broken since Task 2 and is not a regression from Tasks 3 or 4.
+
+Enumerate the affected files:
 
 ```bash
-git add frameworks/tailwind/components
+grep -rln "tailwind/components/[A-Z]" frameworks/angular --include='*.ts' | sort
+```
+
+Expected: 17 paths, all of the form `frameworks/angular/primitives/<name>/<name>.variants.ts`.
+
+- [ ] **Step 6: Repoint each manifest import at its component directory**
+
+The manifest now lives at `tailwind/components/<category>/<component-kebab>/<Name>.manifest`, and the importer is at `frameworks/angular/primitives/<name>/`, so the hop count is unchanged — only the tail of the path grows. Derive the category and kebab directory the same deterministic way Task 2 did, from `frameworks/Components.json`:
+
+```bash
+bun -e '
+const { readFileSync, readdirSync, writeFileSync } = require("fs");
+const cats = JSON.parse(readFileSync("frameworks/Components.json", "utf8"));
+const where = new Map();
+for (const [cat, names] of Object.entries(cats))
+  for (const n of names) where.set(n, cat + "/" + n.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase());
+for (const d of readdirSync("frameworks/angular/primitives", { withFileTypes: true })) {
+  if (!d.isDirectory()) continue;
+  const p = `frameworks/angular/primitives/${d.name}/${d.name}.variants.ts`;
+  let src; try { src = readFileSync(p, "utf8"); } catch { continue; }
+  const out = src.replace(/tailwind\/components\/([A-Z][A-Za-z0-9]*)\.manifest/g,
+    (m, name) => where.has(name) ? `tailwind/components/${where.get(name)}/${name}.manifest` : m);
+  if (out !== src) { writeFileSync(p, out); console.log("repointed", p); }
+}'
+```
+
+Expected: 17 `repointed` lines.
+
+- [ ] **Step 7: Verify no stale manifest import survives, and that none was mangled**
+
+Run:
+
+```bash
+grep -rn "tailwind/components/[A-Z]" frameworks/angular --include='*.ts'
+git diff --stat frameworks/angular
+```
+
+Expected: no output from the first command — every remaining import names a category directory, so none matches `components/<Capital>`. The second must show 17 files, one changed line each. **More than one changed line in any file means the rewrite touched something it should not have** — inspect and revert that file by hand.
+
+- [ ] **Step 8: Run the Angular gates**
+
+Run: `bun run check:angular && bun run build:angular-tests && bun run test:angular`
+Expected: all pass. `build:angular-tests` compiles the barrel and the whole test surface with `ngc --strictTemplates`, so an unresolved specifier fails the build outright with no test in that run executing — a green build is what proves all 17 specifiers resolve.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add frameworks/tailwind/components frameworks/angular
 git commit -q -F - <<'MSG'
-fix: repoint the 38 Tailwind specimens after their two-level descent
+fix: repoint everything the Tailwind move broke
 
-Each page references styles.css by repo-root-relative path and utilities.css,
-specimen.css and specimen.js by layer-relative path, so every ../ count was
-short by two. The fetch of each page's own manifest needed no change -- the
-manifest moved with the page and is still its sibling.
+Two families of reference pointed at where the manifests used to be.
 
-check:cards renders every declaring page in headless Chromium at its declared
-viewport, so a miscounted path fails that gate rather than shipping a card
-that is silently blank.
+The 38 specimens reference styles.css by repo-root-relative path and
+utilities.css, specimen.css and specimen.js by layer-relative path, so every
+../ count was short by two after their two-level descent. The fetch of each
+page's own manifest needed no change -- it moved with the page and is still
+its sibling. check:cards renders every declaring page in headless Chromium at
+its declared viewport, so a miscounted path fails that gate rather than
+shipping a card that is silently blank.
+
+The 17 Angular .variants.ts recipes import a manifest by the pre-move flat
+path and have not compiled since the move. This half was not in the plan: the
+design said this batch reaches outside its own layer once, for tv.ts, and it
+reaches out twice. Found by the implementer of the previous task, which
+reported build:angular-tests failing at bare HEAD.
+
+Both halves are one defect -- a reference to a path the move invalidated --
+so they are fixed together rather than split across two commits.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 MSG
