@@ -71,8 +71,8 @@ export function validateStructure({ categories, layers, complete = false }) {
   // in two categories" is a statement about that identifier, not about its
   // kebab derivation. Two *different* PascalCase names deriving the same
   // kebab directory is a different property (not what this assertion asks
-  // for) and stays unguarded here; scripts/check-structure.test.mjs's header
-  // and this comment are the record of that scope, not an oversight.
+  // for) and stays unguarded here -- scripts/check-structure.test.mjs's own
+  // header records that scope, not an oversight.
   const firstCategoryOf = new Map();   // name -> the first category it was seen in
   for (const [category, names] of Object.entries(categories))
     for (const name of names) {
@@ -112,10 +112,31 @@ export function validateStructure({ categories, layers, complete = false }) {
   return problems;
 }
 
+/** A MIGRATED layer that yields zero component directories is not "nothing to
+ *  check" -- readLayer() returns {} for a missing frameworks/<layer>/components,
+ *  and validateStructure() finds zero problems in an empty tree by construction,
+ *  so without this a moved, renamed or not-yet-existing layer would report a
+ *  clean pass over ground it never looked at. Same failure mode, same fix, as
+ *  check-tailwind.mjs's own "found 0 manifests" guard.
+ *  @param {Record<string, Record<string, string[]>>} layers
+ *  @returns {string[]} one line per empty MIGRATED layer */
+export function zeroLayerProblems(layers) {
+  const problems = [];
+  for (const [layer, tree] of Object.entries(layers)) {
+    const count = Object.values(tree).reduce((n, dirs) => n + dirs.length, 0);
+    if (count === 0)
+      problems.push(`found 0 component directories in frameworks/${layer}/components — an empty result set is a failure, not a clean pass; check the discovery path`);
+  }
+  return problems;
+}
+
 function main() {
   const categories = JSON.parse(readFileSync(join(repoRoot, 'frameworks/Components.json'), 'utf8'));
   const layers = Object.fromEntries(MIGRATED.map((l) => [l, readLayer(l)]));
-  const problems = validateStructure({ categories, layers, complete: MIGRATED.length === 3 });
+  const problems = [
+    ...zeroLayerProblems(layers),
+    ...validateStructure({ categories, layers, complete: MIGRATED.length === 3 }),
+  ];
 
   if (problems.length) {
     console.error('check:structure — a layer does not match frameworks/Components.json:\n');
@@ -124,7 +145,10 @@ function main() {
     process.exit(1);
   }
   const total = Object.values(categories).reduce((n, names) => n + names.length, 0);
-  console.log(`check:structure OK — ${MIGRATED.join(', ')} place every component directory where frameworks/Components.json says (${total} declared).`);
+  const checked = Object.values(layers).reduce(
+    (n, tree) => n + Object.values(tree).reduce((m, dirs) => m + dirs.length, 0), 0,
+  );
+  console.log(`check:structure OK — components/ under ${MIGRATED.join(', ')} match frameworks/Components.json (${checked} checked of ${total} declared).`);
   console.log('  (A green run says the layers agree with one declaration, never that the categories are well chosen.)');
 }
 

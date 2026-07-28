@@ -22,7 +22,7 @@
  * JSON directly.
  *
  *   bun scripts/build-tailwind.mjs      -> writes frameworks/tailwind/Utilities.css
- *                                          and a frameworks/tailwind/components/*.manifest.ts
+ *                                          and a frameworks/tailwind/components/**\/*.manifest.ts
  *                                          beside every *.manifest.json
  */
 import { writeFileSync } from 'node:fs';

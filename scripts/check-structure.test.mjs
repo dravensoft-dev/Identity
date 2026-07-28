@@ -1,10 +1,18 @@
 /* check:structure asserts that every framework layer places a component
  * directory in the category frameworks/Components.json assigns it. It does
  * NOT assert the category is the right one -- that is editorial judgement and
- * no gate has it. A green run is a consistency claim, never a taxonomy one. */
+ * no gate has it. A green run is a consistency claim, never a taxonomy one.
+ *
+ * A second thing it does NOT assert: that two different PascalCase names never
+ * derive the same kebab directory. kebab() is deterministic but not injective,
+ * and validateStructure's `declared` map is keyed on the kebab derivation, so a
+ * second colliding name silently overwrites the first entry in that map rather
+ * than failing -- unlike two categories both naming the SAME PascalCase name,
+ * which the duplicate-name assertion below catches explicitly. This is a
+ * different property from that one, and it stays unguarded. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateStructure, MIGRATED } from './check-structure.mjs';
+import { validateStructure, zeroLayerProblems, MIGRATED } from './check-structure.mjs';
 
 const categories = { display: ['Badge', 'Tag'], forms: ['Button'] };
 
@@ -69,4 +77,30 @@ test('a component name declared in two categories is a problem, naming both -- a
 
 test('MIGRATED names the layers this gate currently reaches', () => {
   assert.deepEqual(MIGRATED, ['tailwind']);
+});
+
+test('a MIGRATED layer with zero component directories is a failure, not a clean pass', () => {
+  // The regression this guards: readLayer() returns {} for a missing
+  // frameworks/<layer>/components, and validateStructure({categories, layers: {tailwind: {}}})
+  // returns [] for that empty tree -- so main() would print OK and exit 0 over a
+  // layer it never looked at, exactly the failure check-tailwind.mjs's own
+  // zero-manifest guard exists to catch.
+  const problems = zeroLayerProblems({ tailwind: {} });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /0 component director/);
+  assert.match(problems[0], /tailwind/);
+});
+
+test('a category with no component directories still counts as zero for its layer', () => {
+  const problems = zeroLayerProblems({ tailwind: { display: [] } });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /0 component director/);
+});
+
+test('a non-empty layer has no zero-directory problem', () => {
+  assert.deepEqual(zeroLayerProblems({ tailwind: { display: ['tag'] } }), []);
+});
+
+test('zeroLayerProblems is silent about a layer with no entry at all -- MIGRATED, not this function, decides which layers are in scope', () => {
+  assert.deepEqual(zeroLayerProblems({}), []);
 });

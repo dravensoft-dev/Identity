@@ -72,10 +72,22 @@ export function evaluateManifest(manifest) {
   return findings;
 }
 
-/** @returns {{component: string, slot: string}[]} */
-export function collect() {
+/** A components tree that yields zero manifest files is the gate looking at
+ *  nothing rather than a clean tree -- the exact failure mode
+ *  check-tailwind.mjs's own zero-manifest guard exists to catch, and the one
+ *  shared-walk consumer (besides that gate) it had not yet reached.
+ *  @param {string[]} files @returns {string|null} */
+export function zeroManifestProblem(files) {
+  return files.length === 0
+    ? 'found 0 manifests -- an empty result set is a failure, not a clean pass; check the discovery path'
+    : null;
+}
+
+/** @param {string[]} [files] defaults to a fresh walk of COMPONENTS_DIR
+ *  @returns {{component: string, slot: string}[]} */
+export function collect(files = manifestFiles(COMPONENTS_DIR)) {
   const findings = [];
-  for (const p of manifestFiles(COMPONENTS_DIR)) {
+  for (const p of files) {
     const manifest = JSON.parse(readFileSync(p, 'utf8'));
     findings.push(...evaluateManifest(manifest));
   }
@@ -83,7 +95,13 @@ export function collect() {
 }
 
 function main() {
-  const findings = collect();
+  const files = manifestFiles(COMPONENTS_DIR);
+  const zero = zeroManifestProblem(files);
+  if (zero) {
+    console.error(`check-radius-tokens: ${zero}`);
+    process.exit(1);
+  }
+  const findings = collect(files);
   if (findings.length) {
     console.error(`check-radius-tokens: ${findings.length} rounded-full usage(s) -- derives from no Arena token\n`);
     for (const f of findings) console.error(`  ${f.component}:${f.slot} carries rounded-full -- use rounded-pill (--r-pill) instead`);
