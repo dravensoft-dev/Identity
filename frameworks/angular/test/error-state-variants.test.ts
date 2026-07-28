@@ -3,7 +3,7 @@
  * recipes use. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { errorStateStyles } from '../primitives/error-state/error-state.variants';
+import { errorStateStyles } from '../components/feedback/error-state/ErrorState.variants';
 
 test('the root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
   assert.match(errorStateStyles().root(), /\bflex\b/);

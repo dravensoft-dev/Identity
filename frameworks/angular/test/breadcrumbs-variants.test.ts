@@ -3,7 +3,7 @@
  * recipes use. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { breadcrumbsStyles } from '../primitives/breadcrumbs/breadcrumbs.variants';
+import { breadcrumbsStyles } from '../components/navigation/breadcrumbs/Breadcrumbs.variants';
 
 test('the root slot carries a display utility -- a host-bound arena-breadcrumbs has no other way to lay out', () => {
   assert.match(breadcrumbsStyles().root(), /\bflex\b/);

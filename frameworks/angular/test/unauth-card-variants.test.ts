@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { unauthCardStyles } from '../primitives/unauth-card/unauth-card.variants';
+import { unauthCardStyles } from '../components/display/unauth-card/UnauthCard.variants';
 
 test('the width is the derivation, never a literal', () => {
   const root = unauthCardStyles().root();

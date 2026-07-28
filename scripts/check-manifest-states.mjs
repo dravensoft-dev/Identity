@@ -30,7 +30,7 @@
  *
  *   - SOURCE_OVERRIDES corrects a mapping the naive search gets wrong outright.
  *     `Tag.manifest.json` mirrors the Angular primitive `arena-tag`
- *     (frameworks/angular/primitives/tag/tag.ts), a different component from
+ *     (frameworks/angular/components/display/tag/Tag.ts), a different component from
  *     React's `Tag.jsx` -- CLAUDE.md says this explicitly. A same-name search
  *     would find `Tag.jsx` and silently check the wrong file.
  *
@@ -62,7 +62,7 @@ const REACT_COMPONENTS_DIR = join(repoRoot, 'frameworks/react/components');
  *  A manifest not listed here resolves by filename search; see
  *  `resolveDefaultSource`. */
 export const SOURCE_OVERRIDES = new Map([
-  ['Tag', ['frameworks/angular/primitives/tag/tag.ts']],
+  ['Tag', ['frameworks/angular/components/display/tag/Tag.ts']],
   /* Table is a COMPOUND component: the manifest's `rowInteractive` slot mirrors
      a row, and a row is `TableRow.jsx`, not `Table.jsx`. The naive same-name
      search finds only `Table.jsx` -- which owns the grid, the header and the

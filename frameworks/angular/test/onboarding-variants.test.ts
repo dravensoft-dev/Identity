@@ -6,7 +6,7 @@
  * carries no `flex` -- these tests pin that shape rather than assuming it. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { onboardingStyles } from '../primitives/onboarding/onboarding.variants';
+import { onboardingStyles } from '../components/feedback/onboarding/Onboarding.variants';
 
 function tokens(classString: string): string[] {
   return classString.split(/\s+/).filter(Boolean);

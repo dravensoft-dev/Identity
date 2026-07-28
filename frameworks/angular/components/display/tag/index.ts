@@ -1,2 +1,2 @@
-export * from './tag';
-export * from './tag.variants';
+export * from './Tag';
+export * from './Tag.variants';

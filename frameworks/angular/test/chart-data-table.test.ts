@@ -22,10 +22,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
-import { BarChart } from '../primitives/bar-chart/bar-chart';
-import { DoughnutChart } from '../primitives/doughnut-chart/doughnut-chart';
+import { BarChart } from '../components/charts/bar-chart/BarChart';
+import { DoughnutChart } from '../components/charts/doughnut-chart/DoughnutChart';
 import { assertPattern, ANGULAR_PRIMITIVES } from './compliance';
-const BINDING = join(ANGULAR_PRIMITIVES, 'bar-chart/bar-chart.behaviour.json');
+const BINDING = join(ANGULAR_PRIMITIVES, 'charts/bar-chart/BarChart.behaviour.json');
 
 /** `bar-chart.ts` takes two parallel arrays, `labels` and `values` -- not the
  *  single array of objects a reader might assume. */

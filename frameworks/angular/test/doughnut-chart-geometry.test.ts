@@ -14,10 +14,10 @@
  * produces and the one `arcPath` has to split in two. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CHART_HEIGHT, arcPath } from '../primitives/chart-internals';
+import { CHART_HEIGHT, arcPath } from '../components/chart-internals';
 import {
   doughnutSlices, doughnutLegendWidth, doughnutPlotWidth, doughnutRadii,
-} from '../primitives/doughnut-chart/doughnut-chart';
+} from '../components/charts/doughnut-chart/DoughnutChart';
 
 const TWO_PI = Math.PI * 2;
 const TWELVE_OCLOCK = -Math.PI / 2;

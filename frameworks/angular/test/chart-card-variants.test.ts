@@ -3,7 +3,7 @@
  * recipes use. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { chartCardStyles } from '../primitives/chart-card/chart-card.variants';
+import { chartCardStyles } from '../components/charts/chart-card/ChartCard.variants';
 
 test('the root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
   assert.match(chartCardStyles().root(), /\bflex\b/);

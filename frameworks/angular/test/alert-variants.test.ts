@@ -3,7 +3,7 @@
  * recipes use. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { alertStyles } from '../primitives/alert/alert.variants';
+import { alertStyles } from '../components/feedback/alert/Alert.variants';
 
 test('the default tone is info', () => {
   assert.equal(alertStyles().root(), alertStyles({ tone: 'info' }).root());

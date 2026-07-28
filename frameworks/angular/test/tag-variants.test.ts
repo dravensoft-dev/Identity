@@ -7,7 +7,7 @@
  * Plan 5a's primitives each add a file here beside this one. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tagStyles } from '../primitives/tag/tag.variants';
+import { tagStyles } from '../components/display/tag/Tag.variants';
 
 test('the default tone is neutral', () => {
   assert.equal(tagStyles().root(), tagStyles({ tone: 'neutral' }).root());

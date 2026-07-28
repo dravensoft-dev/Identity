@@ -29,7 +29,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { TestBed } from '@angular/core/testing';
 import { useTestEnvironment } from './testbed-env';
-import { Skeleton } from '../primitives/skeleton/skeleton';
+import { Skeleton } from '../components/display/skeleton/Skeleton';
 import type { SkeletonVariant } from '../api.generated';
 
 useTestEnvironment();

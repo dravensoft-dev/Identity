@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import {
   CAT_SLOTS, CHART_HEIGHT, PAD, SR_ONLY,
   catColor, toneColor, resolveColors, niceMax, ticks, barPath, arcPath,
-} from '../primitives/chart-internals';
+} from '../components/chart-internals';
 import type { SeriesTone } from '../api.generated';
 
 // --- niceMax --------------------------------------------------------------
@@ -163,7 +163,7 @@ test('the mutually-exclusive warning fires once, and only when both are passed',
   // resolves it to the module beside it and gives back a fresh instance, while
   // TypeScript has no way to resolve the string at all. A wildcard module
   // declaration would silence every unresolvable import in the layer to fix one.
-  const fresh = await import('../primitives/chart-internals?warn-once-probe');
+  const fresh = await import('../components/chart-internals?warn-once-probe');
   const clean = captureWarnings(() => {
     fresh.resolveColors({ count: 1, tone: 'danger' });
     fresh.resolveColors({ count: 1, slot: 2 });

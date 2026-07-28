@@ -1,2 +1,2 @@
-export * from './bulk-action-bar';
-export * from './bulk-action-bar.variants';
+export * from './BulkActionBar';
+export * from './BulkActionBar.variants';

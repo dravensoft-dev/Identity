@@ -1,2 +1,2 @@
-export * from './app-logo';
-export * from './app-logo.variants';
+export * from './AppLogo';
+export * from './AppLogo.variants';

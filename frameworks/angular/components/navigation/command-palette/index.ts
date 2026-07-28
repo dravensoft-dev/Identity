@@ -1,2 +1,2 @@
-export * from './command-palette';
-export * from './command-palette.variants';
+export * from './CommandPalette';
+export * from './CommandPalette.variants';

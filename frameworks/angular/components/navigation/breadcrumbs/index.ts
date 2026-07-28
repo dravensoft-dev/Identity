@@ -1,2 +1,2 @@
-export * from './breadcrumbs';
-export * from './breadcrumbs.variants';
+export * from './Breadcrumbs';
+export * from './Breadcrumbs.variants';

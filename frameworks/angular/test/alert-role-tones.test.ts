@@ -22,11 +22,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
-import { Alert } from '../primitives/alert/alert';
+import { Alert } from '../components/feedback/alert/Alert';
 // `isFocusable` comes from the shared evaluator, re-exported by compliance.ts so
 // the specifier resolves from the emitted tree as well as from source.
 import { assertPatternCases, ANGULAR_PRIMITIVES, isFocusable } from './compliance';
-const BINDING = join(ANGULAR_PRIMITIVES, 'alert/alert.behaviour.json');
+const BINDING = join(ANGULAR_PRIMITIVES, 'feedback/alert/Alert.behaviour.json');
 
 /** Every tone `alert.ts`'s own `AlertTone` (from api.generated) admits. `info` is the default. */
 const TONES = ['info', 'success', 'warning', 'danger', 'neutral'] as const;

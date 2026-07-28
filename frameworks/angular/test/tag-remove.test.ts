@@ -9,7 +9,7 @@ useTestEnvironment();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { TestBed } from '@angular/core/testing';
-import { Tag } from '../primitives/tag/tag';
+import { Tag } from '../components/display/tag/Tag';
 
 function renderTag(removable: boolean) {
   const fixture = TestBed.createComponent(Tag);

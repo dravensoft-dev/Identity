@@ -12,8 +12,8 @@
  * none of that is repeated here. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PAD } from '../primitives/chart-internals';
-import { barValueY, barColumns } from '../primitives/bar-chart/bar-chart';
+import { PAD } from '../components/chart-internals';
+import { barValueY, barColumns } from '../components/charts/bar-chart/BarChart';
 
 const IH = 244; // CHART_HEIGHT (280) - PAD.t (8) - PAD.b (28)
 const BASELINE = PAD.t + IH;

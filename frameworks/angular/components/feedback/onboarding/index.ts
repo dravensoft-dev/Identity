@@ -1,2 +1,2 @@
-export * from './onboarding';
-export * from './onboarding.variants';
+export * from './Onboarding';
+export * from './Onboarding.variants';

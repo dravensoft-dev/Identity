@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveActivityFeedRows } from '../primitives/activity-feed/activity-feed';
+import { resolveActivityFeedRows } from '../components/display/activity-feed/ActivityFeed';
 import type { ActivityItem } from '../api.generated';
-import { activityFeedStyles } from '../primitives/activity-feed/activity-feed.variants';
+import { activityFeedStyles } from '../components/display/activity-feed/ActivityFeed.variants';
 
 test('the dot carries the tone as a colour, never as a fill', () => {
   for (const tone of ['neutral', 'accent', 'gold', 'success', 'warning', 'danger', 'info'] as const) {

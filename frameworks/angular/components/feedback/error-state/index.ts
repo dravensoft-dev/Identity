@@ -1,2 +1,2 @@
-export * from './error-state';
-export * from './error-state.variants';
+export * from './ErrorState';
+export * from './ErrorState.variants';

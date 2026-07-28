@@ -1,2 +1,2 @@
-export * from './empty-state';
-export * from './empty-state.variants';
+export * from './EmptyState';
+export * from './EmptyState.variants';

@@ -8,7 +8,7 @@
  * rather than assuming it. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { commandPaletteStyles } from '../primitives/command-palette/command-palette.variants';
+import { commandPaletteStyles } from '../components/navigation/command-palette/CommandPalette.variants';
 
 function tokens(classString: string): string[] {
   return classString.split(/\s+/).filter(Boolean);

@@ -1,2 +1,2 @@
-export * from './confirm-dialog';
-export * from './confirm-dialog.variants';
+export * from './ConfirmDialog';
+export * from './ConfirmDialog.variants';

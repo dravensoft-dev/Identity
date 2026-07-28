@@ -1,2 +1,2 @@
-export * from './skeleton';
-export * from './skeleton.variants';
+export * from './Skeleton';
+export * from './Skeleton.variants';

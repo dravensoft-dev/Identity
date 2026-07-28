@@ -35,7 +35,7 @@ ensureDom();
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../primitives/focus-trap';
+import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../components/focus-trap';
 
 /** Builds the shape `arena-command-palette`'s panel renders: a real, enabled
  *  search `<input>` followed by `rowCount` `tabindex="-1"` row buttons --

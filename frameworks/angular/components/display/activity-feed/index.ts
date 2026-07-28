@@ -1,2 +1,2 @@
-export * from './activity-feed';
-export * from './activity-feed.variants';
+export * from './ActivityFeed';
+export * from './ActivityFeed.variants';

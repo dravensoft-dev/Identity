@@ -1,2 +1,2 @@
-export * from './alert';
-export * from './alert.variants';
+export * from './Alert';
+export * from './Alert.variants';

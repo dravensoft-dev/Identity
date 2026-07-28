@@ -45,7 +45,7 @@ import {
   nextActiveIndex,
   optionRowId,
   scrollRowIntoView,
-} from '../primitives/command-palette/command-palette';
+} from '../components/navigation/command-palette/CommandPalette';
 
 const COMMANDS: Command[] = [
   { id: 'deploy', label: 'Deploy to production', hint: 'client portal', shortcut: '⌘D' },

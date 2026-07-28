@@ -5,7 +5,7 @@
  * pin that boundary exactly, not just to exercise the recipe. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { confirmDialogStyles } from '../primitives/confirm-dialog/confirm-dialog.variants';
+import { confirmDialogStyles } from '../components/feedback/confirm-dialog/ConfirmDialog.variants';
 
 function tokens(classString: string): string[] {
   return classString.split(/\s+/).filter(Boolean);

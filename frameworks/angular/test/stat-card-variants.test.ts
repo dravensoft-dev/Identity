@@ -23,7 +23,7 @@
  * `tone="danger"`. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { statCardStyles } from '../primitives/stat-card/stat-card.variants';
+import { statCardStyles } from '../components/display/stat-card/StatCard.variants';
 
 test('the default delta tone is neutral', () => {
   assert.equal(statCardStyles().delta(), statCardStyles({ deltaTone: 'neutral' }).delta());

@@ -2,7 +2,7 @@
  * asserts the recipe directly rather than through a rendered component. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { appLogoStyles } from '../primitives/app-logo/app-logo.variants';
+import { appLogoStyles } from '../components/brand/app-logo/AppLogo.variants';
 
 test('every size pairs a mark step with its wordmark step, and the four steps are distinct', () => {
   const seen = new Set<string>();

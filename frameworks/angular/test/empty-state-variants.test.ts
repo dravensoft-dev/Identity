@@ -3,7 +3,7 @@
  * recipes use. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { emptyStateStyles } from '../primitives/empty-state/empty-state.variants';
+import { emptyStateStyles } from '../components/feedback/empty-state/EmptyState.variants';
 
 test('the root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
   assert.match(emptyStateStyles().root(), /\bflex\b/);

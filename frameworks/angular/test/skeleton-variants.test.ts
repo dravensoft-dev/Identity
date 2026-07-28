@@ -2,8 +2,8 @@
  * directory's own header comment: what is worth asserting is the recipe. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { skeletonStyles } from '../primitives/skeleton/skeleton.variants';
-import { skeletonRowSlot } from '../primitives/skeleton/skeleton';
+import { skeletonStyles } from '../components/display/skeleton/Skeleton.variants';
+import { skeletonRowSlot } from '../components/display/skeleton/Skeleton';
 
 test('the default variant is block', () => {
   assert.equal(skeletonStyles().root(), skeletonStyles({ variant: 'block' }).root());

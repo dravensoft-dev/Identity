@@ -41,38 +41,38 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { useTestEnvironment } from './testbed-env';
 import { ANGULAR_PRIMITIVES, LIB, TAILWIND_COMPONENTS } from './compliance';
-import { ActivityFeed } from '../primitives/activity-feed/activity-feed';
-import { activityFeedStyles } from '../primitives/activity-feed/activity-feed.variants';
-import { AppLogo } from '../primitives/app-logo/app-logo';
-import { appLogoStyles } from '../primitives/app-logo/app-logo.variants';
-import { Avatar } from '../primitives/avatar/avatar';
-import { avatarStyles } from '../primitives/avatar/avatar.variants';
-import { BarChart } from '../primitives/bar-chart/bar-chart';
-import { Breadcrumbs } from '../primitives/breadcrumbs/breadcrumbs';
+import { ActivityFeed } from '../components/display/activity-feed/ActivityFeed';
+import { activityFeedStyles } from '../components/display/activity-feed/ActivityFeed.variants';
+import { AppLogo } from '../components/brand/app-logo/AppLogo';
+import { appLogoStyles } from '../components/brand/app-logo/AppLogo.variants';
+import { Avatar } from '../components/display/avatar/Avatar';
+import { avatarStyles } from '../components/display/avatar/Avatar.variants';
+import { BarChart } from '../components/charts/bar-chart/BarChart';
+import { Breadcrumbs } from '../components/navigation/breadcrumbs/Breadcrumbs';
 import type { Crumb } from '../api.generated';
-import { breadcrumbsStyles } from '../primitives/breadcrumbs/breadcrumbs.variants';
-import { BulkActionBar } from '../primitives/bulk-action-bar/bulk-action-bar';
+import { breadcrumbsStyles } from '../components/navigation/breadcrumbs/Breadcrumbs.variants';
+import { BulkActionBar } from '../components/navigation/bulk-action-bar/BulkActionBar';
 import type { BulkAction } from '../api.generated';
-import { bulkActionBarStyles } from '../primitives/bulk-action-bar/bulk-action-bar.variants';
-import { ChartCard } from '../primitives/chart-card/chart-card';
-import { chartCardStyles } from '../primitives/chart-card/chart-card.variants';
-import { DoughnutChart } from '../primitives/doughnut-chart/doughnut-chart';
-import { EmptyState } from '../primitives/empty-state/empty-state';
-import { emptyStateStyles } from '../primitives/empty-state/empty-state.variants';
-import { ErrorState } from '../primitives/error-state/error-state';
-import { errorStateStyles } from '../primitives/error-state/error-state.variants';
-import { LineChart } from '../primitives/line-chart/line-chart';
-import { PageHead } from '../primitives/page-head/page-head';
-import { pageHeadStyles } from '../primitives/page-head/page-head.variants';
-import { Skeleton } from '../primitives/skeleton/skeleton';
-import { skeletonStyles } from '../primitives/skeleton/skeleton.variants';
-import { StatCard } from '../primitives/stat-card/stat-card';
-import { statCardStyles } from '../primitives/stat-card/stat-card.variants';
+import { bulkActionBarStyles } from '../components/navigation/bulk-action-bar/BulkActionBar.variants';
+import { ChartCard } from '../components/charts/chart-card/ChartCard';
+import { chartCardStyles } from '../components/charts/chart-card/ChartCard.variants';
+import { DoughnutChart } from '../components/charts/doughnut-chart/DoughnutChart';
+import { EmptyState } from '../components/feedback/empty-state/EmptyState';
+import { emptyStateStyles } from '../components/feedback/empty-state/EmptyState.variants';
+import { ErrorState } from '../components/feedback/error-state/ErrorState';
+import { errorStateStyles } from '../components/feedback/error-state/ErrorState.variants';
+import { LineChart } from '../components/charts/line-chart/LineChart';
+import { PageHead } from '../components/navigation/page-head/PageHead';
+import { pageHeadStyles } from '../components/navigation/page-head/PageHead.variants';
+import { Skeleton } from '../components/display/skeleton/Skeleton';
+import { skeletonStyles } from '../components/display/skeleton/Skeleton.variants';
+import { StatCard } from '../components/display/stat-card/StatCard';
+import { statCardStyles } from '../components/display/stat-card/StatCard.variants';
 import type { StatDelta } from '../api.generated';
-import { Tag } from '../primitives/tag/tag';
-import { tagStyles } from '../primitives/tag/tag.variants';
-import { UnauthCard } from '../primitives/unauth-card/unauth-card';
-import { unauthCardStyles } from '../primitives/unauth-card/unauth-card.variants';
+import { Tag } from '../components/display/tag/Tag';
+import { tagStyles } from '../components/display/tag/Tag.variants';
+import { UnauthCard } from '../components/display/unauth-card/UnauthCard';
+import { unauthCardStyles } from '../components/display/unauth-card/UnauthCard.variants';
 
 /* The TestBed environment may be initialised only ONCE per process: bun runs
  * every test file in one process, and Angular's TestBed throws ("Cannot set
@@ -1029,7 +1029,7 @@ test('arena-page-head: an unmeasured width renders the WIDE layout, so the narro
  * that slot sits in a `gap-4` flex parent and carries `shrink-0` plus its own
  * `w-auto`/`w-full`, so an unprojected wrapper would ship a gap's worth of
  * dead space to every page with no actions. It is gated on the shared
- * `ArenaActions` marker (`../primitives/projection-markers`), the plural
+ * `ArenaActions` marker (`../components/projection-markers`), the plural
  * sibling of the `ArenaAction` that `arena-empty-state` uses. */
 test('arena-page-head: the actions wrapper is absent from the DOM when no [actions] content is projected', async () => {
   document.documentElement.style.setProperty('--bp-sm', BP_SM);
@@ -1159,9 +1159,17 @@ const NO_MANIFEST = new Set(['bar-chart', 'line-chart', 'doughnut-chart']);
 test('every Angular primitive\'s root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
   const primitivesDir = ANGULAR_PRIMITIVES;
   const manifestsDir = TAILWIND_COMPONENTS;
+  // Each primitive now sits one level deeper, under its category
+  // (components/<category>/<kebab>/), so this walks the category directories and
+  // collects the component directory names beneath them -- the same shape
+  // angularPrimitives() in scripts/lib/behaviour-contracts.mjs walks.
   const names = readdirSync(primitivesDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name);
+    .flatMap((category) =>
+      readdirSync(join(primitivesDir, category.name), { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => entry.name),
+    );
   assert.ok(names.length > 0, 'no primitive directories found -- the guard would silently check nothing');
 
   for (const excluded of NO_MANIFEST) {
@@ -1454,7 +1462,7 @@ test('arena-unauth-card: the root recipe classes land on the host element itself
  * `arena-error-state`'s own action-wrapper tests document above: `[brand]`
  * and `[footer]` are React's `{brand && <div>...}` / `{footer && <div>...}`
  * gates ported to Angular's own idiom, `contentChild(ArenaBrand)` /
- * `contentChild(ArenaFooter)` (`../primitives/projection-markers`). The
+ * `contentChild(ArenaFooter)` (`../components/projection-markers`). The
  * positive case -- something actually projected into either slot -- is not
  * exercised by any test in this file. What IS covered: with nothing projected into either
  * slot, both wrappers -- `mb-7` on `brand`, `mt-5` on `footer` -- must be

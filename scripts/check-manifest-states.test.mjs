@@ -85,7 +85,7 @@ test('findReactSource returns null for a name with no matching file', () => {
 
 test('Tag resolves through SOURCE_OVERRIDES to the Angular primitive, not React\'s Tag.jsx', () => {
   assert.deepEqual(resolveSources('Tag'), SOURCE_OVERRIDES.get('Tag'));
-  assert.deepEqual(resolveSources('Tag'), ['frameworks/angular/primitives/tag/tag.ts']);
+  assert.deepEqual(resolveSources('Tag'), ['frameworks/angular/components/display/tag/Tag.ts']);
 });
 
 test('a manifest with no override and no matching React source throws rather than resolving silently', () => {

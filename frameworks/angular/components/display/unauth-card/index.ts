@@ -1,2 +1,2 @@
-export * from './unauth-card';
-export * from './unauth-card.variants';
+export * from './UnauthCard';
+export * from './UnauthCard.variants';

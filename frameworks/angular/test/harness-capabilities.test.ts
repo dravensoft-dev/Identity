@@ -26,11 +26,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CommandPalette } from '../primitives/command-palette/command-palette';
-import { ConfirmDialog } from '../primitives/confirm-dialog/confirm-dialog';
-import { EmptyState } from '../primitives/empty-state/empty-state';
-import { ArenaAction } from '../primitives/projection-markers';
-import { StatCard } from '../primitives/stat-card/stat-card';
+import { CommandPalette } from '../components/navigation/command-palette/CommandPalette';
+import { ConfirmDialog } from '../components/feedback/confirm-dialog/ConfirmDialog';
+import { EmptyState } from '../components/feedback/empty-state/EmptyState';
+import { ArenaAction } from '../components/projection-markers';
+import { StatCard } from '../components/display/stat-card/StatCard';
 
 /** Carries both content-projection claims at once: `[title]` is a property binding
  *  onto a required signal input, and the `[action]`-marked button is real projected

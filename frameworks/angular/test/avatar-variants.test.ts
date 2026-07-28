@@ -3,7 +3,7 @@
  * recipes use. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { avatarStyles } from '../primitives/avatar/avatar.variants';
+import { avatarStyles } from '../components/display/avatar/Avatar.variants';
 
 test('the default variants are md, circle, no presence dot', () => {
   const defaults = avatarStyles();

@@ -11,8 +11,8 @@
  * that is repeated here. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PAD } from '../primitives/chart-internals';
-import { lineX, lineValueY, nearestPointIndex, linePoints, lineAreaPath } from '../primitives/line-chart/line-chart';
+import { PAD } from '../components/chart-internals';
+import { lineX, lineValueY, nearestPointIndex, linePoints, lineAreaPath } from '../components/charts/line-chart/LineChart';
 
 const IH = 244; // CHART_HEIGHT (280) - PAD.t (8) - PAD.b (28)
 const BASELINE = PAD.t + IH;

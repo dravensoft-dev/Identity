@@ -50,8 +50,8 @@ import {
   focusableElements,
   handleOpenTransition,
   trapTabKey,
-} from '../primitives/focus-trap';
-import { isConfirmLocked } from '../primitives/confirm-dialog/confirm-dialog';
+} from '../components/focus-trap';
+import { isConfirmLocked } from '../components/feedback/confirm-dialog/ConfirmDialog';
 
 /** Builds a panel with the same focusable shape ConfirmDialog's template
  *  renders when `requireText` is set: an input, then two buttons (cancel,

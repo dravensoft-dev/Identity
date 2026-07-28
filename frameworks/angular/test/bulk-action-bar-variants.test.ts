@@ -4,8 +4,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Injector, runInInjectionContext } from '@angular/core';
-import { bulkActionBarStyles } from '../primitives/bulk-action-bar/bulk-action-bar.variants';
-import { BulkActionBar } from '../primitives/bulk-action-bar/bulk-action-bar';
+import { bulkActionBarStyles } from '../components/navigation/bulk-action-bar/BulkActionBar.variants';
+import { BulkActionBar } from '../components/navigation/bulk-action-bar/BulkActionBar';
 import type { BulkAction } from '../api.generated';
 
 /* This suite asserts against the plain-TypeScript recipe and stays a

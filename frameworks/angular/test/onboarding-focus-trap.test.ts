@@ -44,7 +44,7 @@ import {
   focusableElements,
   handleOpenTransition,
   trapTabKey,
-} from '../primitives/focus-trap';
+} from '../components/focus-trap';
 
 /** A page behind the scrim, with a real focusable control on it. Every trap
  *  assertion below is ultimately about this button: an `aria-modal` overlay

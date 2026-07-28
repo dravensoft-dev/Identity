@@ -1,2 +1,2 @@
-export * from './stat-card';
-export * from './stat-card.variants';
+export * from './StatCard';
+export * from './StatCard.variants';
