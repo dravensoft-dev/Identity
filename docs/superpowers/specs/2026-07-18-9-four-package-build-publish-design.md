@@ -1,3 +1,8 @@
+**This spec predates the 2026-07-27 frameworks file-structure refactor and is stale in
+both directions that refactor touches: every Tailwind path it names reflects the old flat
+`frameworks/tailwind/components/` layout, and the token counts it cites no longer hold.**
+Read it for its decisions, not for its numbers or its paths.
+
 # Four atomic npm packages — build + publish — design
 
 **Date:** 2026-07-18 · **revised 2026-07-18** after v4.0.0 shipped and the framework

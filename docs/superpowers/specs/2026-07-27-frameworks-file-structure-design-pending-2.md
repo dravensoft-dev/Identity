@@ -1,8 +1,8 @@
 # One shape for every framework layer
 
-**Status:** design, approved 2026-07-27 — **three plans pending.** The migration is
+**Status:** design, approved 2026-07-27 — **two plans pending.** The migration is
 sequenced Tailwind → Angular → React, one plan each, and the `-pending-N` suffix
-decrements as each lands.
+decrements as each lands. Batch 1 (Tailwind) has landed.
 
 ## The problem
 
@@ -391,8 +391,13 @@ recursive walk), `build-tailwind.mjs`, `check-tailwind-generated.mjs`,
 `frameworks/tailwind/README.md`.
 
 It also reaches outside its own layer **twice**, and both are unavoidable rather than
-scope creep. Renaming `frameworks/tailwind/tv.ts` to `Tv.ts` and `manifest-classes.js` to
-`ManifestClasses.js` breaks the **19 Angular files** that import them. And **17 Angular
+scope creep. Renaming `frameworks/tailwind/tv.ts` to `Tv.ts` breaks the **17 Angular
+`.variants.ts` files** that import it by extensionless specifier — derived with
+`grep -rlE "^import .* from '.*tailwind/Tv';" frameworks/angular --include='*.ts' | wc -l`.
+`manifest-classes.js` renaming to `ManifestClasses.js` breaks nothing in Angular: no
+Angular file imports it (`grep -rl "ManifestClasses" frameworks/angular --include='*.ts' |
+wc -l` is `0`); its only consumers are `frameworks/tailwind/Specimen.js` and
+`scripts/manifest-classes.test.mjs`, both inside this batch's own layer. And **17 Angular
 `.variants.ts` recipes import a Tailwind manifest by path** —
 `import manifest from '../../../tailwind/components/<Name>.manifest'` — so moving the
 manifests breaks the Angular compile on its own, before any file is renamed. Batch 1

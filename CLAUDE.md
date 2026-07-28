@@ -739,10 +739,11 @@ rename would compile; the exception is for the reader. And `.gitkeep`
 file names each component's category once, so the category is not written once per layer
 with nothing holding the copies together, and the kebab directory name is **derived** from
 the PascalCase name by `kebab()` in `scripts/check-structure.mjs` — a function, never a
-table. The gate fails a component directory sitting in a category the file assigns
-elsewhere, a directory the file does not name at all, and a directory name that is not
-kebab-case; once every layer is migrated it additionally fails a declared component present
-in no layer. **It says nothing about whether the category is the RIGHT one** — "is
+table. The gate fails a component name declared in two categories at once, a component
+directory sitting in a category the file assigns elsewhere, a directory the file does not
+name at all, and a directory name that is not kebab-case; once every layer is migrated it
+additionally fails a declared component present in no layer. **It says nothing about
+whether the category is the RIGHT one** — "is
 `Tooltip` feedback or navigation?" is editorial judgement and no gate has it, the same way
 `check:behaviour`'s green run is a coverage claim and never an accessibility one. Nor does
 a directory existing prove the component inside it is complete: `check:api` and
@@ -754,8 +755,12 @@ no category level and no `components/` at all; React still puts a whole category
 components side by side in one directory —
 `frameworks/react/components/display/` is 84 files today and not one subdirectory. Both keep
 their current shape until their own batches: **this batch moved no file under
-`frameworks/angular/primitives/` or `frameworks/react/components/`** — 19 files there had an
-import string rewritten to follow the Tailwind layer, and not one was moved. That is the
+`frameworks/angular/primitives/` or `frameworks/react/components/`** — 19 files there had a
+string rewritten to follow the Tailwind layer's rename, and not one was moved. Of those 19,
+17 are an import specifier (`git show --name-only --pretty="" aad325a | grep -E
+'^frameworks/(angular/primitives|react/components)/' | xargs grep -l 'tailwind/Tv' | wc -l`);
+the other two — `doughnut-chart.ts`, `Tag.jsx` — are a doc-comment path rewritten to match,
+not an import. That is the
 measured claim and the only one made here — it is not a warrant that every sentence elsewhere in this
 file about those two layers is current, which nothing derives and nothing could cheaply
 check. **`MIGRATED` in `scripts/check-structure.mjs` is where to read which
