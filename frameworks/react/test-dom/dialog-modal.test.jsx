@@ -70,7 +70,7 @@ afterEach(cleanup);
  *
  * DO NOT CITE THE ANGULAR FOCUS-TRAP SUITES AS EVIDENCE FOR EITHER VERDICT. An
  * earlier version of this comment did. They test a DIFFERENT LAYER — they import
- * ../primitives/focus-trap and ../primitives/confirm-dialog/confirm-dialog,
+ * frameworks/angular/FocusTrap.ts and that layer's own ConfirmDialog.ts,
  * Angular's own implementation, which React does not share. React's trap is
  * proven by React's own suite or it is not proven.
  *

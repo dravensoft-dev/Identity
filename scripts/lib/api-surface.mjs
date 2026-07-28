@@ -532,7 +532,7 @@ function literalType(arg, name) {
 
 /** The interior of the `@Component({...})` decorator's own `template:` backtick
  *  literal -- never the whole source. A class doc comment sitting above the
- *  decorator can quote `<ng-content select="[x]" />` as PROSE (stat-card.ts
+ *  decorator can quote `<ng-content select="[x]" />` as PROSE (StatCard.ts
  *  does, describing its own `icon` slot), and prose is not markup: scanning
  *  the whole file for that reason reported the same slot twice, and -- worse
  *  -- deleting the real <ng-content> left the doc comment alone to satisfy

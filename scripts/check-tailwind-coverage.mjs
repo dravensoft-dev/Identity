@@ -98,7 +98,7 @@ export function checkCoverage(tokens, exposed, excluded) {
     const isExcluded = excluded.has(t);
     if (isExposed && isExcluded) errs.push(`--${t} is both exposed and excluded — drop the exclusion`);
     else if (!isExposed && !isExcluded)
-      errs.push(`--${t} reaches no Tailwind utility — expose it in frameworks/tailwind/theme.css or add it to EXCLUDED with a reason`);
+      errs.push(`--${t} reaches no Tailwind utility — expose it in frameworks/tailwind/Theme.css or add it to EXCLUDED with a reason`);
   }
   for (const t of [...excluded.keys()].sort())
     if (!tokens.has(t)) errs.push(`--${t} is excluded but no such token exists — drop the exclusion`);
@@ -109,7 +109,7 @@ export function checkCoverage(tokens, exposed, excluded) {
 
 function main() {
   const tokens = arenaTokens();
-  const preset = readFileSync(join(repoRoot, 'frameworks/tailwind/theme.css'), 'utf8');
+  const preset = readFileSync(join(repoRoot, 'frameworks/tailwind/Theme.css'), 'utf8');
   const exposed = presetTokens(preset);
   const errs = checkCoverage(tokens, exposed, EXCLUDED);
   if (errs.length) {

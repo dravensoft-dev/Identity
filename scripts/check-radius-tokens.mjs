@@ -1,7 +1,7 @@
 /* Fails when a Tailwind manifest under frameworks/tailwind/components/ carries
  * the bare `rounded-full` utility. Arena's whole radius vocabulary --
  * `rounded-xs`/`-sm`/`-md`/`-lg`/`-xl`/`-2xl`/`-pill` -- is wired in
- * frameworks/tailwind/theme.css to a `--r-*` token via `--radius-*`, and every
+ * frameworks/tailwind/Theme.css to a `--r-*` token via `--radius-*`, and every
  * OTHER Tailwind default in a cleared namespace (`--radius-*: initial`) already
  * emits no rule at all, which is exactly what makes it visible to
  * check-tailwind.mjs's "every class emits a rule" assertion. `rounded-full` is
@@ -36,7 +36,7 @@
  * others that might share the shape.
  *
  * SCOPE: manifests only. It does not scan the `*.card.html` specimens or the
- * compiled `utilities.css`, so a specimen typing `rounded-full` onto an element
+ * compiled `Utilities.css`, so a specimen typing `rounded-full` onto an element
  * directly would pass unseen. That is narrower than the name suggests and is
  * stated here rather than left for a reader to discover -- nothing in the tree
  * does it today, and a specimen is supposed to take every class from
@@ -45,10 +45,10 @@
  *   bun scripts/check-radius-tokens.mjs   -> exit 0 clean, 1 otherwise
  *   node scripts/check-radius-tokens.mjs  -> same, runtime-portable
  */
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { repoRoot } from './lib/tailwind-compile.mjs';
+import { manifestFiles, repoRoot } from './lib/tailwind-compile.mjs';
 import { classStringsBySlot } from './check-manifest-states.mjs';
 
 const COMPONENTS_DIR = join(repoRoot, 'frameworks/tailwind/components');
@@ -72,19 +72,36 @@ export function evaluateManifest(manifest) {
   return findings;
 }
 
-/** @returns {{component: string, slot: string}[]} */
-export function collect() {
+/** A components tree that yields zero manifest files is the gate looking at
+ *  nothing rather than a clean tree -- the exact failure mode
+ *  check-tailwind.mjs's own zero-manifest guard exists to catch, and the one
+ *  shared-walk consumer (besides that gate) it had not yet reached.
+ *  @param {string[]} files @returns {string|null} */
+export function zeroManifestProblem(files) {
+  return files.length === 0
+    ? 'found 0 manifests -- an empty result set is a failure, not a clean pass; check the discovery path'
+    : null;
+}
+
+/** @param {string[]} [files] defaults to a fresh walk of COMPONENTS_DIR
+ *  @returns {{component: string, slot: string}[]} */
+export function collect(files = manifestFiles(COMPONENTS_DIR)) {
   const findings = [];
-  const manifestFiles = readdirSync(COMPONENTS_DIR).filter((f) => f.endsWith('.manifest.json')).sort();
-  for (const file of manifestFiles) {
-    const manifest = JSON.parse(readFileSync(join(COMPONENTS_DIR, file), 'utf8'));
+  for (const p of files) {
+    const manifest = JSON.parse(readFileSync(p, 'utf8'));
     findings.push(...evaluateManifest(manifest));
   }
   return findings;
 }
 
 function main() {
-  const findings = collect();
+  const files = manifestFiles(COMPONENTS_DIR);
+  const zero = zeroManifestProblem(files);
+  if (zero) {
+    console.error(`check-radius-tokens: ${zero}`);
+    process.exit(1);
+  }
+  const findings = collect(files);
   if (findings.length) {
     console.error(`check-radius-tokens: ${findings.length} rounded-full usage(s) -- derives from no Arena token\n`);
     for (const f of findings) console.error(`  ${f.component}:${f.slot} carries rounded-full -- use rounded-pill (--r-pill) instead`);

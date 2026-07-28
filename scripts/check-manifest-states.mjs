@@ -30,7 +30,7 @@
  *
  *   - SOURCE_OVERRIDES corrects a mapping the naive search gets wrong outright.
  *     `Tag.manifest.json` mirrors the Angular primitive `arena-tag`
- *     (frameworks/angular/primitives/tag/tag.ts), a different component from
+ *     (frameworks/angular/components/display/tag/Tag.ts), a different component from
  *     React's `Tag.jsx` -- CLAUDE.md says this explicitly. A same-name search
  *     would find `Tag.jsx` and silently check the wrong file.
  *
@@ -51,8 +51,8 @@
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join, relative } from 'node:path';
-import { repoRoot } from './lib/tailwind-compile.mjs';
+import { basename, join, relative } from 'node:path';
+import { manifestFiles, repoRoot } from './lib/tailwind-compile.mjs';
 
 const COMPONENTS_DIR = join(repoRoot, 'frameworks/tailwind/components');
 const REACT_COMPONENTS_DIR = join(repoRoot, 'frameworks/react/components');
@@ -62,7 +62,7 @@ const REACT_COMPONENTS_DIR = join(repoRoot, 'frameworks/react/components');
  *  A manifest not listed here resolves by filename search; see
  *  `resolveDefaultSource`. */
 export const SOURCE_OVERRIDES = new Map([
-  ['Tag', ['frameworks/angular/primitives/tag/tag.ts']],
+  ['Tag', ['frameworks/angular/components/display/tag/Tag.ts']],
   /* Table is a COMPOUND component: the manifest's `rowInteractive` slot mirrors
      a row, and a row is `TableRow.jsx`, not `Table.jsx`. The naive same-name
      search finds only `Table.jsx` -- which owns the grid, the header and the
@@ -268,10 +268,10 @@ export function collect() {
   const findings = [];
   const matchedKeys = [];
   let sites = 0;
-  const manifestFiles = readdirSync(COMPONENTS_DIR).filter((f) => f.endsWith('.manifest.json')).sort();
-  for (const file of manifestFiles) {
-    const manifest = JSON.parse(readFileSync(join(COMPONENTS_DIR, file), 'utf8'));
-    const sources = resolveSources(manifest.component);
+  const manifestFiles_ = manifestFiles(COMPONENTS_DIR);
+  for (const p of manifestFiles_) {
+    const manifest = JSON.parse(readFileSync(p, 'utf8'));
+    const sources = resolveSources(basename(p).replace(/\.manifest\.json$/, ''));
     const sourceText = sources.map((s) => readFileSync(join(repoRoot, s), 'utf8')).join('\n');
     const result = evaluateManifest(manifest, sourceText, sources);
     findings.push(...result.findings);

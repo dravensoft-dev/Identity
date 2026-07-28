@@ -18,9 +18,10 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   loadPatterns, validatePattern, validateBinding,
-  reactComponents, angularPrimitives, PATTERN_DIR,
+  reactComponents, angularPrimitives, angularBindingPath, PATTERN_DIR,
   crossLayerAgrees, bindingCases,
 } from './lib/behaviour-contracts.mjs';
+import { pascal } from './check-structure.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -73,12 +74,14 @@ async function main() {
   /* 3. Every Angular primitive declares. */
   const angular = new Map();
   for (const name of angularPrimitives(root)) {
-    const path = join(root, 'frameworks/angular/primitives', name, `${name}.behaviour.json`);
-    if (!existsSync(path)) {
-      problems.push(`angular/${name}: no ${name}.behaviour.json`);
+    /* The binding sits at components/<category>/<name>/<Pascal>.behaviour.json;
+     * angularBindingPath is the one place that path is built. */
+    const found = angularBindingPath(root, name);
+    if (!found) {
+      problems.push(`angular/${name}: no ${pascal(name)}.behaviour.json`);
       continue;
     }
-    const binding = read(path);
+    const binding = read(found.path);
     problems.push(...validateBinding(name, 'angular', binding, patterns));
     if (binding.component && !react.has(binding.component)) {
       problems.push(`angular/${name}: component "${binding.component}" is not a React component — mistyped, or React dropped it`);
@@ -99,13 +102,13 @@ async function main() {
    *    primitive existed at all. Every Angular primitive directory is bound
    *    now, so `angular` already carries every one of them by the time this
    *    step runs. */
-  const delegatedPath = join(root, 'frameworks/angular/behaviour-delegated.json');
+  const delegatedPath = join(root, 'frameworks/angular/BehaviourDelegated.json');
   const delegated = existsSync(delegatedPath) ? read(delegatedPath) : {};
   for (const [component] of react) {
     if (angular.has(component)) continue;
     const entry = delegated[component];
     if (!entry) {
-      problems.push(`angular/${component}: no primitive and no entry in behaviour-delegated.json — say whether Material provides it or nothing does`);
+      problems.push(`angular/${component}: no primitive and no entry in BehaviourDelegated.json — say whether Material provides it or nothing does`);
       continue;
     }
     problems.push(...validateBinding(component, 'angular-delegated', entry, patterns));

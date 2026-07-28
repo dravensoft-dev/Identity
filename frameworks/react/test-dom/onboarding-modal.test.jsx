@@ -43,7 +43,7 @@
  * optional in a shipped two-layer contract, so Dialog's and ConfirmDialog's
  * answer — guard the title and throw — was not available without breaking that
  * contract and moving Angular too. React adopts the chain Angular already
- * computes instead (onboarding.ts's `label`), so the two layers agree by
+ * computes instead (Onboarding.ts's `label`), so the two layers agree by
  * construction. assertPattern only ever sees the titled case; the two fallback
  * arms need their own assertions or they are a claim nothing checks. */
 import test, { afterEach } from 'node:test';
@@ -265,8 +265,9 @@ test('Onboarding falls back to a positional name when the step has neither title
    * nothing about the subject, and it is byte-for-byte the aria-label the progress
    * dots inside this same panel already carry — so a step with no editorial text
    * announces the dialog and its dots identically. That collision is real, it is
-   * shipped in Angular today (onboarding.ts's dots at line 71 and its `label`
-   * computed), and it is mirrored here rather than dodged: a different third arm
+   * shipped in Angular today (Onboarding.ts's dots -- grep -n "dots()"
+   * frameworks/angular/components/feedback/onboarding/Onboarding.ts -- and its
+   * `label` computed), and it is mirrored here rather than dodged: a different third arm
    * would break the property that the two layers agree by construction, which is
    * the entire ground on which OnboardingStep.title was allowed to stay optional.
    * A caller who wants a useful name supplies a step title. */

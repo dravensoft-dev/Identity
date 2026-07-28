@@ -7,12 +7,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Arena — Dravensoft's design system. It is **not a published npm package**, but it does
 have a **dev-only, private `package.json`** at the root: the token layer is built from
 DTCG JSON by Style Dictionary, and the build and check scripts are tested with
-`bun test`, as is each framework layer from its own test directory
+`bun test`, as is each framework layer from its own suites
 (`bun run test:scripts` / `test:react` / `test:react-dom` / `test:angular`, or
 `bun run test` for all four). Those four run in **two `bun test` processes**, not one,
 preceded by a build the Angular suites need before either process can see them:
 `test` is `bun run build:angular-tests && bun test scripts frameworks/react/test/
-build/angular-test/angular/test && bun test --preload
+build/angular-test/angular && bun test --preload
 ./frameworks/react/test-dom/preload.js frameworks/react/test-dom`, because
 `frameworks/react/test-dom/` registers a DOM globally and must not share a process with
 the DOM-free suites (see the two-React-test-directories note under *Architecture*).
@@ -23,8 +23,9 @@ is DOM-tested by hand**, and what that rule costs is recorded under *Known debt*
 because `scripts/` is the one suite `check-all.mjs` also runs under plain node, and those
 files use the extensionless imports their own toolchains expect and node does not resolve.
 A property worth asserting against a real recipe or component is asserted from that
-layer's own `test/` directory; `scripts/tv-merge.test.mjs` and
-`frameworks/angular/test/tag-variants.test.ts` are the pair that established this.
+layer's own suites — React's `test/` and `test-dom/` directories, and for Angular the
+component's own directory; `scripts/tv-merge.test.mjs` and
+`frameworks/angular/components/display/tag/Tag.variants.test.ts` are the pair that established this.
 Nothing here is published to npm. It ships as three things at once from
 the same tree:
 
@@ -81,7 +82,7 @@ never re-defines a value.
 target: a token whose consumer is JavaScript rather than CSS.** A token flagged
 `$extensions["com.dravensoft.arena"].script: true` in `tokens/src/` emits twice —
 the custom property it always would have, and a bare number exported from
-`frameworks/react/tokens.generated.js` and `frameworks/angular/tokens.generated.ts`.
+`frameworks/react/tokens.generated.js` and `frameworks/angular/Tokens.generated.ts`.
 Emission is **per layer** so a component's import never crosses the `tokens/` ↔
 `frameworks/` boundary. Flag a token only when JS arithmetic must consume it to
 produce a position — an SVG `y` from a data value, a clamp against
@@ -131,8 +132,8 @@ load-bearing: an exception names exactly one requirement, so one entry cannot ex
 whole clause.
 
 Every component declares, in **every** layer, beside its own source — React at
-`<Name>.behaviour.json`, Angular at `<name>.behaviour.json`, and the controls Material
-provides or lacks, in `frameworks/angular/behaviour-delegated.json` — **count that file's
+`<Name>.behaviour.json`, Angular at `<Component>.behaviour.json`, and the controls Material
+provides or lacks, in `frameworks/angular/BehaviourDelegated.json` — **count that file's
 keys rather than trusting a figure here**; it read *twenty-two* until plan 8C2 split
 `Radio.jsx` in two and added a twenty-third in the same change.
 **Delegation is a state, not an absence**: Angular has a tooltip, it is `matTooltip`,
@@ -168,7 +169,7 @@ sort -u | wc -l`.
 
 **What closes a real hole rather than merely adding an expression: the wrapper drives the
 loop.** `assertPatternCases` — in both `frameworks/react/test-dom/assert-pattern.jsx` and
-`frameworks/angular/test/compliance.ts` — takes a map of case name → a **thunk** that
+`frameworks/angular/test/Compliance.ts` — takes a map of case name → a **thunk** that
 renders that case, and compares that key set against the declared names *before anything
 mounts*; a never-rendered case and an undeclared one are both errors. A suite merely
 *asked* to call once per case can forget, and `Skeleton` is the worked example: its
@@ -192,7 +193,8 @@ coverage claim, never an accessibility one.
 **And now something does check whether a component behaves as it declares — by
 rendering it, in both layers, with one component-shaped hole.** `check:compliance`
 is the coverage record; the verification itself lives in render suites
-(`frameworks/react/test-dom/`, `frameworks/angular/test/`)
+(`frameworks/react/test-dom/`, and on the Angular side each component's own
+directory under `frameworks/angular/components/`)
 that assert, per requirement of a component's bound pattern, that the rendered DOM
 either meets it with no exception declared, or fails it with one declared. That
 single bidirectional statement is the stale-exception rule the layer was modelled
@@ -208,7 +210,7 @@ third value, `null`, for requirements no single element can decide (`focus.*`,
 `keyboard.*`, `content.noAutoDismiss`, `alternative.table`); a suite must name
 each of those in its `behavioural` map and assert it by acting on the tree, and
 each layer's wrapper (`frameworks/react/test-dom/assert-pattern.jsx`,
-`frameworks/angular/test/compliance.ts`) throws if one is
+`frameworks/angular/test/Compliance.ts`) throws if one is
 silently skipped. **Coverage is partial by design
 and grows one component at a time** — `COVERED` in `scripts/check-compliance.mjs`
 is the record, with the same bidirectional staleness rule `EXEMPT` carries; the
@@ -262,7 +264,7 @@ carries the rule and the capability it costs.
 statement and the first thing a new platform target reads, the way `tokens/src/TYPE-MAP.md`
 is for the token layer. Shared objects and enums are declared once in `api/types/` and
 emitted **per layer** by `bun run build:api` into the committed
-`frameworks/react/api.generated.d.ts` and `frameworks/angular/api.generated.ts`, so a
+`frameworks/react/api.generated.d.ts` and `frameworks/angular/Api.generated.ts`, so a
 component's import never crosses the `api/` ↔ `frameworks/` boundary. The word *prop* never
 appears in a contract: it is React's vocabulary, and a neutral contract using it would
 already have chosen a layer. **The structural difference from `behaviour/` is one file, not
@@ -331,7 +333,7 @@ that way for exactly one commit and could have returned a bare `'12px'` with eve
 green. It is also the first `.jsx` under `frameworks/react/components/` that is **not a
 component**, which is worth knowing because the documented way to measure Plan C's subject
 set counts `.jsx` files and therefore now over-counts by one; cross-check against
-`frameworks/angular/behaviour-delegated.json`'s key set, which holds only real components.
+`frameworks/angular/BehaviourDelegated.json`'s key set, which holds only real components.
 
 The recursion inherits the family's limit rather than escaping it: **a consumer's own
 wrapper component between two levels breaks the chain, and so does a fragment.**
@@ -369,9 +371,9 @@ enum at all.**
 **Plan C's contracts are single-layer, and that is a property of the plan, not a gap.**
 The components Plan C brings under contract exist in React alone — they are
 exactly the controls Angular delegates to Material, so **count them rather than trusting a
-figure**: every `.jsx` under `frameworks/react/components/` with no matching directory under
-`frameworks/angular/primitives/`, which is also exactly the key set of
-`frameworks/angular/behaviour-delegated.json`, minus `Switch`, which was contracted before Plan C
+figure**: every `.jsx` under `frameworks/react/components/` with no matching component
+directory under `frameworks/angular/components/<category>/`, which is also exactly the key set of
+`frameworks/angular/BehaviourDelegated.json`, minus `Switch`, which was contracted before Plan C
 began. A count written here would drift, and has, twice: it read *twenty-one*, which was true when
 written and went stale the moment plan 8C2 split `Radio.jsx` into two quartets — `RadioGroup`
 became a new React component and a new delegated entry in the same change, moving the set to
@@ -404,8 +406,11 @@ installs globals **process-wide**, and `bun test` shares one process across ever
 path a single invocation matches. So a DOM registered in the first directory's
 process would quietly change what its suites prove with nothing
 failing to say so — count them with `bun run test:react` rather than trusting a
-figure written here, which drifts with every component that gains a test. `frameworks/angular/test`'s
-own registration site (`testbed-env.ts`) is guarded rather than throwing on a second call, so
+figure written here, which drifts with every component that gains a test. **The Angular half of
+this paragraph no longer describes a directory**: since the structure refactor's batch 2 that
+layer's suites sit beside the components they cover, and the run target is the whole emitted
+layer (`build/angular-test/angular`). Its single registration site,
+`frameworks/angular/test/TestbedEnv.ts`, is guarded rather than throwing on a second call, so
 merging it into the preloaded invocation does not itself collide — verified by hand, it runs
 clean. What actually forces the split is `scripts/`: a happy-dom installed process-wide for the
 whole invocation replaces Bun's own `fetch`, which turns a passing
@@ -473,7 +478,7 @@ runtime projection of data onto a screen position — a chart tooltip's offset d
 from a hovered value, an hour label's offset derived from a clock minute, an event
 block's height derived from its duration — where the literal is the true value at
 that site because nothing in `tokens/src/` could stand in for a number computed from
-data at runtime; and, since `chart-internals.ts`, the **visually-hidden idiom** —
+data at runtime; and, since `ChartInternals.ts`, the **visually-hidden idiom** —
 `SR_ONLY`'s 1px box and the −1px margin that must cancel it exactly, where the number
 is a constraint of the accessibility idiom rather than a design dimension and a token
 would break the cancellation. That third category widened the map's charter beyond
@@ -486,7 +491,7 @@ gate that no longer exists. The gate scans `.jsx`, `.ts` and `.tsx` under `frame
 including every `*.entry.jsx` demo-page composition script (see below) — it does not scan
 `.html`, so the root-level and `guidelines/` pages stay clean only because they were
 tokenized by hand, and nothing holds that. The `*.card.html` specimens under
-`frameworks/tailwind/components/` are the one family of unscanned pages that stays clean
+`frameworks/tailwind/components/<category>/<component>/` are the one family of unscanned pages that stays clean
 structurally rather than by hand: every class they render comes from the manifest through
 `classesFor()`, so a literal typed into a specimen is styling the manifest does not carry
 — the one thing a specimen must never show. **They do still carry bare `px` for
@@ -519,7 +524,7 @@ hover/focus tracking, no `:hover`/`:focus` in an injected style string. It exist
 this exact shape shipped twice on one branch — `Tabs`, then `Pagination` one batch after
 the first was fixed and written down — and prose alone did not stop the second
 occurrence. It resolves the manifest-to-component mapping itself through a
-`SOURCE_OVERRIDES` map — `Tag` against `tag.ts`, and a compound component against **every**
+`SOURCE_OVERRIDES` map — `Tag` against `Tag.ts`, and a compound component against **every**
 `.jsx` its manifest mirrors, since a naive same-name search finds only the parent, which
 typically renders the root slot and nothing else (`Table` against `Table.jsx`+`TableRow.jsx`,
 `SideNav` against all four of its). **Read the map rather than a count written here**, which
@@ -556,7 +561,7 @@ and letter spacing is a `number` carrying an `em` render hint in `$extensions`.
 
 **The two layers solve the modal focus contract with the same code, and that was
 deliberate rather than convergent.** `frameworks/react/use-dialog-modal.js` is a PORT of
-`frameworks/angular/primitives/focus-trap.ts`, not a second design — the same focusable
+`frameworks/angular/FocusTrap.ts`, not a second design — the same focusable
 selector (every natively-focusable clause carrying its own `:not([tabindex="-1"])`,
 because a selector list is OR'd and `button:not([disabled])` alone would pull a real
 `<button tabindex="-1">` back into the tab order), the same boundary-wrap rule, the same
@@ -597,36 +602,57 @@ inventory finds every component and no demo entry"* asserts `reactComponents('.'
 by literal value, with a comment naming every change that has moved it; a new component
 under `frameworks/react/components/` moves it by one and the assertion must be updated **in
 the same commit**. **Verify with the merged process** — `bun run build:angular-tests && bun test
-scripts frameworks/react/test/ build/angular-test/angular/test` — because `bun test
+scripts frameworks/react/test/ build/angular-test/angular` — because `bun test
 frameworks/react/test/` never matches `scripts/`, so it reports green over a tree whose test run
 is red. This is a
 different hazard from the two-invocation rule above, which is about a DOM registered
 process-wide: this one is about a path a narrowed invocation simply never matched. It cost
 plan 8C5 a red commit that a task report called green.
+**This very command demonstrated the hazard on itself**, which is the sharpest reason to copy
+it from here rather than to reconstruct one: it read `build/angular-test/angular/test` — correct
+while every Angular suite lived in one directory, and silently wrong the moment the structure
+refactor's batch 2 colocated most of them with their components. That path still exists in the
+emit and still holds the harness suites, so the stale command ran **82 files / 1039 tests** and
+reported green, where the corrected one runs **112 files / 1319 tests**; the Angular half alone
+went from 3 files to 33. Nothing failed, because a narrowed invocation matching fewer files is
+indistinguishable from one matching all of them. **The single authority is `testStep()` in
+`scripts/check-all.mjs`** — it is what `bun run check` runs and what
+`scripts/check-all.test.mjs` asserts by literal value; read the args array there rather than any
+command written in prose, this one included.
 
-The Angular layer's quartet is the analogue: `<name>.ts` (standalone `OnPush` component, `arena-` selector, signal I/O, no component `styles`), `<name>.variants.ts` (a `tailwind-variants` recipe built with `frameworks/tailwind/tv.ts`), `<name>.prompt.md`, and a barrel export. Dark-first (`.arena-light`), danger stays outline, Phosphor icons. The three SVG charts are the one exception and have no `<name>.variants.ts` — see the charts note below.
+The Angular layer's quartet is the analogue, and since the structure refactor's batch 2 it lives in `frameworks/angular/components/<category>/<component-kebab>/`: `<Component>.ts` (standalone `OnPush` component, `arena-` selector, signal I/O, no component `styles`), `<Component>.variants.ts` (a `tailwind-variants` recipe built with `frameworks/tailwind/Tv.ts`), `<Component>.prompt.md`, and an `index.ts` barrel — plus `<Component>.behaviour.json` and the component's own suites, `<Component>.<facet>.test.ts`, in the same directory. Dark-first (`.arena-light`), danger stays outline, Phosphor icons. The three SVG charts are the one exception and have no `<Component>.variants.ts` — see the charts note below. Angular has **five** of the six categories the layout rule allows: there is no `forms/`, because every form control is delegated to Material.
 
-**A host-bound root is the Angular layer's default, and it has one carve-out.** A primitive binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than rendering a wrapper div, so the host is the flex item its parent lays out and — where the component measures itself — the measured element is the styled element. One primitive correctly does **not**: `activity-feed`, whose root must be a real `<ul>` with `<li>` rows. The rule targets elements that exist only to carry styling; when the root must be a specific semantic or interactive element, keep it. **A host-bound root must carry a display utility** — `<arena-x>` is an unknown element defaulting to `display:inline`, where width and height do not apply, so a root slot without one renders a zero-area host. That is machine-guarded by a manifest-driven assertion in `frameworks/angular/test/host-class-binding.test.ts`.
+**A host-bound root is the Angular layer's default, and it has one carve-out.** A primitive binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than rendering a wrapper div, so the host is the flex item its parent lays out and — where the component measures itself — the measured element is the styled element. One primitive correctly does **not**: `activity-feed`, whose root must be a real `<ul>` with `<li>` rows. The rule targets elements that exist only to carry styling; when the root must be a specific semantic or interactive element, keep it. **A host-bound root must carry a display utility** — `<arena-x>` is an unknown element defaulting to `display:inline`, where width and height do not apply, so a root slot without one renders a zero-area host. That is machine-guarded by a manifest-driven assertion in `frameworks/angular/test/HostClassBinding.test.ts`.
 
 **The Angular test harness compiles ahead of the run — AOT, not JIT — and that is a different
-guarantee, not merely a faster one.** `frameworks/angular/test/` renders real zoneless Angular
+guarantee, not merely a faster one.** The Angular suites render real zoneless Angular
 trees under `bun test` via `happy-dom`, which needs three test-only devDependencies beyond the
 `node:test`/`node:assert` baseline the rest of the repo uses — `@angular/platform-browser`,
-`happy-dom` and `@happy-dom/global-registrator`. `bun run build:angular-tests` compiles
-`frameworks/angular/index.ts` (the primitives barrel) together with `frameworks/angular/test/`
+`happy-dom` and `@happy-dom/global-registrator`. **Most of them sit beside the component they
+cover**, as `<Component>.<facet>.test.ts` in that component's own directory; what stays in
+`frameworks/angular/test/` is the harness itself and the suites that are about no single
+component — read `ls frameworks/angular/test/` for the set rather than a list written here, and
+note that two of those files carry no `.test.` infix on purpose, because `bun test` collects by
+that infix and a shared module must not be collected as a suite.
+`bun run build:angular-tests` compiles
+`frameworks/angular/index.ts` (the layer barrel) together with everything
+`frameworks/angular/tsconfig.test.json` includes — `./components/**/*.ts`, `./test/**/*.ts` and
+`./index.ts` —
 under `ngc --strictTemplates`, into git-ignored `build/angular-test/`; `test:angular`, `test` and
 `testStep()` in `scripts/check-all.mjs` all run `bun test` over that emitted output, never over
 the `.ts` sources. A type error anywhere in the test surface — including a template diagnostic in
 an inline `template:` string, which `ngc` checks the same as any other template — now fails the
 *build* step, and no test in that run executes at all, rather than merely failing an assertion
-somewhere. `bun run check` is 24 steps for it; `GATES` itself stays 21, because this is a build
-the existing test step now consumes rather than a new gate, and the seven `PLAN-E-SUSPENDED`
-tests are still seven. Staleness in the emit is prevented by the build always running ahead of the
+somewhere. `bun run check` is 25 steps under bun for it; the AOT build added **nothing** to
+`GATES`, because this is a build the existing test step now consumes rather than a new gate,
+and the seven `PLAN-E-SUSPENDED` tests are still seven. (`GATES` is 22 today, and the entry
+that moved it from 21 to 22 is `check:structure`, which is a real gate and belongs to a
+different batch entirely — see the structure paragraph below.) Staleness in the emit is prevented by the build always running ahead of the
 tests that read it, never by a gate watching the output afterward — `build-angular-tests.mjs`
 additionally prunes any `.js`/`.js.map`/`.d.ts` under `build/angular-test/` whose source has since
 been deleted, because `ngc`'s incremental build does not.
 
-`frameworks/angular/test/harness-capabilities.test.ts` pins what this restored, so the claim here
+`frameworks/angular/test/HarnessCapabilities.test.ts` pins what this restored, so the claim here
 has a suite behind it rather than a recollection: a template property binding reaches a required
 signal input; `contentChild()` resolves against real projected content; and
 `componentRef.setInput()` drives a required input — a plain string, and a boolean carrying a
@@ -634,20 +660,22 @@ signal input; `contentChild()` resolves against real projected content; and
 shape, displacing its default. The JIT-era bypass this superseded is retired: it overwrote a
 child's instance field directly, because `setInput()` on an undiscovered signal input used to
 silently no-op and the render kept the field's default, which a suite could pass vacuously against
-with nothing announcing the mistake; `grep -rn "\w\+\['[a-zA-Z]*'\] = " frameworks/angular/test/*.ts`
-now returns nothing.
+with nothing announcing the mistake; `grep -rn "\w\+\['[a-zA-Z]*'\] = " --include='*.ts'
+frameworks/angular/` now returns nothing. **That grep is deliberately the whole layer** — it read
+`frameworks/angular/test/*.ts` until batch 2 of the structure refactor moved most of the suites
+into their components' directories, where a glob bounded to `test/` would no longer see them.
 
 One hazard is new rather than removed, and it is worth stating precisely because it is easy to
 under-describe. A suite file that fails to *load* from the emit — a module specifier the emitted
 tree does not resolve, for instance — does not fail quietly: the run goes red, not merely one
 failing assertion. Break one specifier by hand and re-run `bun run test:angular` to see it —
-`compliance.ts`'s own header carries the induction and its own re-deriving instruction, since the
+`Compliance.ts`'s own header carries the induction and its own re-deriving instruction, since the
 pass/fail/file counts it once measured already went stale inside this same batch the moment a
 later commit added five tests, and pinning a number here would only go stale a second time. What
 stays silent is *which* tests or suite files never loaded, whatever the count turns out to be —
 a reader sees a failing run and has to go find what else it dropped.
 
-`bun test` runs every file in this directory in ONE process, and both happy-dom's document and Angular's `TestBed` environment can each be claimed only once per process — `GlobalRegistrator.register()` throws if already registered, and `TestBed.initTestEnvironment()` throws ("base providers ... already been called") the second time it runs across files that share a process. `testbed-env.ts` claims both, once, for the whole directory: `ensureDom()` and `useTestEnvironment()` are plain `if (claimed) return` guards, not a reset — `TestBed.resetTestEnvironment()` was tried and measurably does not work, because `BrowserDomAdapter.makeCurrent()` installs a process-wide DOM adapter on the FIRST platform creation that nothing resets, so a second per-file document would render into a document the adapter no longer points at (`getComputedStyle` reading the wrong document was the observed failure). So the directory shares one real document and one TestBed environment for its entire run rather than one pair per file; any suite needing a real component render just calls `useTestEnvironment()` (or `ensureDom()` alone, for a suite that needs a DOM but not TestBed) and is a normal new file, not an addition to `host-class-binding.test.ts`. The shared document also means state written onto it — a custom property set on `documentElement.style`, an element appended to `document.body` — outlives the file that wrote it unless that file clears it, typically in a `finally`; every directly-created fixture must still be `destroy()`-ed for the same reason — zoneless change detection sweeps all attached views, so a fixture left dirty throws out of an unrelated later test, and with one shared document that hazard now crosses files rather than staying inside one.
+`bun test` runs every file a single invocation matches in ONE process — which since the suites were colocated means the whole Angular layer, not one directory — and both happy-dom's document and Angular's `TestBed` environment can each be claimed only once per process — `GlobalRegistrator.register()` throws if already registered, and `TestBed.initTestEnvironment()` throws ("base providers ... already been called") the second time it runs across files that share a process. `frameworks/angular/test/TestbedEnv.ts` claims both, once, for the whole run: `ensureDom()` and `useTestEnvironment()` are plain `if (claimed) return` guards, not a reset — `TestBed.resetTestEnvironment()` was tried and measurably does not work, because `BrowserDomAdapter.makeCurrent()` installs a process-wide DOM adapter on the FIRST platform creation that nothing resets, so a second per-file document would render into a document the adapter no longer points at (`getComputedStyle` reading the wrong document was the observed failure). So every Angular suite shares one real document and one TestBed environment for the whole run rather than one pair per file; any suite needing a real component render just calls `useTestEnvironment()` (or `ensureDom()` alone, for a suite that needs a DOM but not TestBed) and is a normal new file in its component's own directory, not an addition to `HostClassBinding.test.ts`. **That the module is shared across directories now is exactly why it stays in `test/`** — it belongs to no one component, so the placement rule sends it up to the level containing all its consumers. The shared document also means state written onto it — a custom property set on `documentElement.style`, an element appended to `document.body` — outlives the file that wrote it unless that file clears it, typically in a `finally`; every directly-created fixture must still be `destroy()`-ed for the same reason — zoneless change detection sweeps all attached views, so a fixture left dirty throws out of an unrelated later test, and with one shared document that hazard crosses files rather than staying inside one.
 
 **Specimen/demo pages** start with an HTML comment `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card rendering — keep it as the first line, which is the only line `check:cards` reads. **That viewport is machine-checked**: `bun run check:cards` loads every declaring page at its declared width in headless Chromium and fails when the rendered content over-runs the box in either axis, because the card is cropped to it and the overflow is lost silently. Declaring it by arithmetic does not work — it was tried, and the page clipped in both axes anyway. Measure by running the gate. A page that declares far *more* height than it renders only warns. `frameworks/react/ui_kits/console/index.html` carries no `@dsCard` on purpose: it is an app with its own scroll area, not a card. Component demos load React from a local importmap pointing at `frameworks/react/vendor/*.js` — a committed, generated ESM bundle of the `react`/`react-dom` devDependencies, since React 18 ships CommonJS only and the importmap needs real ES modules (`bun run build:vendor`, guarded by `check:vendor`; see `scripts/build-vendor.mjs`) — and pull `@phosphor-icons/web` straight from `node_modules/` (the static server is rooted at the repo root and does not exclude it). **JSX is compiled ahead of time, not in the browser.** Each demo page's own script used to be inline JSX, transpiled at load by `@babel/standalone` through `jsx-loader.js`'s `window.arenaImport()`; that inline block is now a real sibling source file (`<page>.entry.jsx`, e.g. `alert.card.entry.jsx` next to `alert.card.html`), and every component `.jsx` plus every `.entry.jsx` has a compiled `.js` sibling — same directory, same basename — that the page loads with a plain `<script type="module" src="…">`. `bun run build:demos` (`scripts/build-demos.mjs`) compiles them with Bun's own transpiler (classic JSX, matching what `@babel/standalone`'s default preset was doing) and rewrites each relative import's `.jsx` extension to `.js`, so the recursive-import behavior `jsx-loader.js` used to do at runtime now happens once, at build time; `check:demos` (`scripts/check-demos-generated.mjs`) guards drift and orphaned output, on the same committed-generated-output contract as `check:vendor`. There is a build step for the demos now — this repo does not claim otherwise. **So editing a component `.jsx` means running `bun run build:demos` in the same tree, and one specific piece of reasoning talks batches out of it**: the React DOM suites import the `.jsx` directly, so every test stays green with the `.js` sibling stale, and it is easy to conclude the rebuild is therefore unnecessary. It is not — the demo pages load the `.js`, so a stale sibling means **`bun run demos` shows the pre-fix component while the suites prove the fix**, which is exactly the by-hand check the grid rule and every `.prompt.md` checklist depend on. This shipped in 8C10: a plan constraint forbade `build:demos` on that reasoning, and `Skeleton.js` stayed stale across four commits — `cd00339`, which introduced it, through `80ebedc` — while the specimens rendered the `aria-hidden` circle the batch existed to remove. `check:demos` caught it at the close-out sweep, which is the gate working — but a batch that runs the full sweep only at the end wears the drift until then.
 
@@ -661,22 +689,43 @@ and brand (`*.dc.html`). React lives in `frameworks/react/`;
 (`theme/arena-tailwind.css`) and an Angular Material `--mat-*` token bridge
 (`theme/arena-material.css`), a Phosphor icon manifest (`icons/`), a
 dark-first signal `ThemeService`
-(`theme/theme-service.ts` + `theme/no-fouc.html`), and
-20 standalone `OnPush` primitives under `primitives/` (`tag` is the reference
+(`theme/ThemeService.ts` + `theme/no-fouc.html`), and
+20 standalone `OnPush` primitives under `components/<category>/<component-kebab>/`
+(`components/display/tag/` is the reference
 shape; the three SVG charts are the declared exception — no manifest, no
 `.variants.ts`, token-valued camelCase `[style]` objects like React's, and reviewed
 against React's `charts.card.html` rather than a specimen of their own), each
 styled by the
 shared `frameworks/tailwind/` recipes through the configured `tv`
-(`frameworks/tailwind/tv.ts`) — see `frameworks/angular/ADOPTION.md`.
+(`frameworks/tailwind/Tv.ts`) — see `frameworks/angular/ADOPTION.md`. Count the
+components with `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l`
+rather than trusting the figure in this sentence, which is the kind that drifts.
+Its layer root additionally holds the generated `Api.generated.ts` and
+`Tokens.generated.ts`, the `BehaviourDelegated.json` declaration, and the three shared
+internals whose consumers span more than one category — `ContainerSize.ts`, `FocusTrap.ts`
+and `ProjectionMarkers.ts`, each named directly by `frameworks/angular/index.ts` so the
+public export surface did not shrink when they moved out of the old flat barrel.
+`ChartInternals.ts` has consumers in one category only and therefore stops at
+`components/charts/`.
 `frameworks/tailwind/` is a **single shared** Tailwind v4 layer (`@theme`
 preset + per-component manifests), authored once because the token→utility
-mapping is pure CSS. **The Tailwind
+mapping is pure CSS. It is **migrated to the structure rule
+below**, and was the first layer to be: its root holds `Tv.ts`, `ManifestClasses.js`, `Theme.css`,
+`Utilities.css`, `Animations.css`, `Specimen.css` and `Specimen.js`, and a
+component's three files — `<Name>.manifest.json`, the generated
+`<Name>.manifest.ts` and the `<Name>.card.html` specimen — sit together in
+`components/<category>/<component-kebab>/`. Count the manifests with
+`find frameworks/tailwind/components -name '*.manifest.json' | wc -l` rather
+than trusting a figure. **The Tailwind
 layer derives every utility from an existing token and introduces no new hex
 and no new value** — add the token first, then reference it. This is
 machine-checked, not hoped for: `bun run check:tailwind` compiles the preset
 with the manifests as content and asserts every class emits a rule and every
-theme key resolves to a real token; `bun run check:coverage` asserts every
+theme key resolves to a real token — **and, since the layer went nested,
+that it found any manifests at all**, because a gate iterating zero manifests
+finds zero violations by construction; it printed `0 manifest(s) … all
+resolve` and exited 0 over a tree it never looked at, which is why finding
+none is now an explicit failure in `checkCompiled`; `bun run check:coverage` asserts every
 token either reaches a utility or is named in `EXCLUDED` with a reason;
 `bun run check:arbitrary` fails on a bracket carrying a raw literal;
 `bun run check:radius` fails on the one core Tailwind utility in this
@@ -686,9 +735,103 @@ It is the converse of `check:coverage` and just as narrow: it does not attempt
 "every utility traces to a token" in general, only this one verified case,
 because everywhere else in a cleared namespace already resolves to nothing
 and `check:tailwind` catches that on its own.
-`bun run check` runs all twenty-one plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
+`bun run check` runs all twenty-two plus the test suite, without stopping at the first failure. **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`, or Chromium on the usual paths), `check:vendor` needs `Bun.build` to rebuild `frameworks/react/vendor/*.js` for comparison, and `check:demos` needs `Bun.Transpiler` to rebuild every component and demo-entry `.js` for comparison — neither builder exists under plain `node scripts/check-all.mjs`, which leaves each with nothing to compare against. Where any of the three dependencies is missing the gate exits 2, and `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than green; `ARENA_CHECK_STRICT=1` — or `CI=true`, so an automated run never
 skips quietly — makes that a hard failure instead. An Angular primitive's recipe is its
-manifest — `frameworks/angular/primitives/tag/` is the reference shape.
+manifest — `frameworks/angular/components/display/tag/` is the reference shape.
+
+**One shape for every framework layer, and today two of the three have it.** The rule:
+**directories are `kebab-case` and lowercase; a file name begins with a capital, and a
+multi-word stem is `PascalCase` with hyphens removed; a secondary dotted segment stays
+`lowerCamelCase`** — `Badge.manifest.json`, `BarChart.variants.ts`. Capital-initial is the
+rule and PascalCase is how a multi-word stem is *formed* under it, which is why a
+conventional all-caps document name needs no dispensation: `README.md` and `ADOPTION.md`
+comply as they stand. A layer lays its components out as
+`frameworks/<layer>/components/<category>/<component-kebab>/`, and everything belonging to
+one component — its source, its types, its binding, its prompt, its demo page, its tests —
+lives in that one directory. A file that is not one component's rises to the narrowest
+level containing all of its consumers, and a compound family counts as its parent rather
+than as the category — so a helper covering `SideNav`/`SideNavItem`/`SideNavSection`/
+`SideNavCollapsible` *would* land in `side-nav/` rather than in `navigation/`, stated as
+the rule rather than as a path that exists, since React has not moved yet. The design, with the placements derived by
+reading each file's imports rather than guessed, is
+`docs/superpowers/specs/2026-07-27-frameworks-file-structure-design*.md` — a `-pending-N`
+spec whose suffix decrements per batch and which is deleted when the third lands, so this
+paragraph is the durable statement of the rule and that file is the working detail.
+
+**Five exceptions to the naming rule, and every one is mechanical rather than stylistic**
+— a toolchain, a reader, or somebody else's source file recognises the literal name, so
+capitalising it breaks or obscures something. All of them are cases the rule above cannot
+cover: a name that begins with a *lowercase* letter, or one with no stem to capitalise at
+all. **Measure the set rather than trusting this list** — `find frameworks/angular
+frameworks/tailwind -type f -printf '%f\n' | grep -E '^[^A-Z]' | sort -u` — which is how
+the fifth was found, one batch after the list said four. The command names the two
+**migrated** layers only; add `frameworks/react` to it once batch 3 lands, and note that
+`index.html` lives only there today.
+`index.ts`, because TypeScript resolves a directory import by looking for exactly that
+filename and would not find `Index.ts` on a case-sensitive filesystem. `index.html`,
+because a directory served over HTTP is answered by exactly that name
+(`frameworks/react/ui_kits/console/index.html`). `tsconfig.check.json` and
+`tsconfig.test.json`, because `tsconfig*` is the name editors and toolchains recognise by
+convention — this is the softest of them, since `ngc -p <path>` is explicit and the
+rename would compile; the exception is for the reader. `.gitkeep`
+(`frameworks/angular/.gitkeep`), which has no stem to capitalise.
+
+And the fifth: **the four adopter-facing files under `frameworks/angular/theme/`** —
+`arena-tailwind.css`, `arena-material.css`, `no-fouc.html` and `arena-material.prompt.md`
+— and the four do not all carry the same reason. **The first two are named inside an
+*adopter's own* source, verbatim**: `frameworks/angular/ADOPTION.md` steps 1 and 2 give
+`@import '../../frameworks/angular/theme/arena-tailwind.css';` and
+`@import '../../frameworks/angular/theme/arena-material.css';` as lines pasted directly
+into the host app's `styles.css`, so renaming either is a breaking change to every app
+that has already adopted Arena, which this refactor did not set out to make.
+**`no-fouc.html` is not a third instance of that reason, even though step 3 sits right
+next to steps 1 and 2**: ADOPTION.md step 3, and the file's own header comment, both
+instruct the adopter to paste the `<script>` tag's *contents* into their own
+`index.html` — never to reference `no-fouc.html` by name or path — so the filename
+itself never enters an adopter's source. Renaming it breaks a documentation line (this
+paragraph and ADOPTION.md's own prose) rather than any app that has already adopted
+Arena. `arena-material.prompt.md` is cited nowhere at all — verified with `grep -rn
+arena-material.prompt` — and, like `no-fouc.html`, it is kept lowercase for a weaker
+reason than the first two: it is the prompt document *for* `arena-material.css` and
+takes that file's stem, the same `<artifact>.prompt.md` pairing every component uses, so
+it follows the adopter-facing name it documents rather than diverging from it. Note what
+is NOT exempt: `theme/ThemeService.ts` and `icons/IconManifest.ts` were `theme-service.ts`
+and `icon-manifest.ts` and were renamed, because both are reached through
+`frameworks/angular/index.ts` and no adopter ever writes either path. `frameworks/tailwind/`
+carries no lowercase-initial file at all.
+
+**`frameworks/Components.json` is the declaration and `check:structure` is the gate.** The
+file names each component's category once, so the category is not written once per layer
+with nothing holding the copies together, and the kebab directory name is **derived** from
+the PascalCase name by `kebab()` in `scripts/check-structure.mjs` — a function, never a
+table. The gate fails a component name declared in two categories at once, a component
+directory sitting in a category the file assigns elsewhere, a directory the file does not
+name at all, and a directory name that is not kebab-case; once every layer is migrated it
+additionally fails a declared component present in no layer. **It says nothing about
+whether the category is the RIGHT one** — "is
+`Tooltip` feedback or navigation?" is editorial judgement and no gate has it, the same way
+`check:behaviour`'s green run is a coverage claim and never an accessibility one. Nor does
+a directory existing prove the component inside it is complete: `check:api` and
+`check:behaviour` are still what hold that.
+
+**Tailwind and Angular are migrated; React is not — and that is a fact to read rather than to
+infer.** React still puts a whole category's components side by side in one directory:
+`ls frameworks/react/components/display | wc -l` is 84 and
+`find frameworks/react/components/display -mindepth 1 -type d` finds nothing.
+**`MIGRATED` in `scripts/check-structure.mjs` is the authoritative answer
+to which layers the gate currently claims anything about** — read it there rather than
+here, because this sentence is prose and that array is what the gate runs on. It grows by one
+entry per batch and is deleted outright when the last layer lands, at which point the gate
+covers every layer unconditionally. Until it holds all three, the "declared but present in
+no layer" rule is deliberately held back, because a component absent from the migrated
+layers may simply live in one the gate does not yet reach — which would make the gate
+loudest about exactly the thing the refactor has not got to. So a reader meeting the new
+shape in two layers and the old shape in one is looking at work in progress, not at
+an inconsistency to fix locally.
+**What a migrated layer being green does *not* warrant** is that every sentence elsewhere in
+this file about it is current — nothing derives that and nothing could cheaply check it. Batch
+2 is the evidence: `check:structure` went green on Angular in the same commit that left this
+file printing a `bun test` command whose Angular path matched 3 files out of 33.
 
 **When `bun run check` is expected: once, when a plan's implementation is
 finished — not before every commit.** The individual gates are cheap and stay
@@ -732,6 +875,30 @@ debt filed in one dies with it. That has already happened once: plan 5.5's
 close-out recorded three follow-ups into its own plan document, which was
 scheduled for deletion the same week.
 
+- **A green run is only as good as what the gate looked at, and a gate that finds nothing
+  reports zero violations either way.** This is a rule rather than an anecdote, because it has
+  now shipped three times in two batches of one refactor, each time in a different mechanism,
+  and each time the surviving evidence was a plausible-looking green line of output.
+  `check:tailwind` iterated zero manifests after the Tailwind layer went nested and printed
+  `0 manifest(s) … all resolve` over a tree it never opened. `check:api`'s `angularPath()`
+  built the pre-move `frameworks/angular/primitives/<kebab>/<kebab>.ts`, wrapped the lookup in
+  `existsSync` and returned `null`; `main()`'s `if (!path) continue` then skipped the Angular
+  half of `compareSurface` for **every** contract, and the gate reported
+  `50 contract(s) hold across 50 layer implementation(s)` — the React count alone — while
+  twenty contracted components with a real Angular implementation went unread. It reports 70
+  now. And this file's own `bun test` verification command named a directory that still exists
+  and holds three suites, so a reader copy-pasting it ran 3 files and saw green over 33.
+  **The shape is always the same: a lookup that cannot distinguish "absent" from "not found",
+  or a path that narrows a run without narrowing what the run claims.** Two remedies, and the
+  first is the one that generalises. **Decide absence by walking the tree**, so "this layer does
+  not implement it" and "this gate cannot find it" stop being the same value — that is what
+  `check:api` does now, and two guards with tests stand behind it: a component directory whose
+  source file the gate cannot open is a per-component problem, and zero directories at all is a
+  whole-layer one. **And make a zero-result count an explicit failure** rather than a vacuous
+  pass — `check:tailwind`, `check:radius` and `check:structure` each carry one, as exported
+  pure functions with suites. When you write or move anything a gate resolves by path, the
+  question to ask is not "does it still pass" but "how many things did it look at, and is that
+  number the one I expect".
 - **The two script-readable gates leave a structural hole between them, and it is
   wider than it looks.** `check:script-tokens`' orphan rule is *imported by at
   least one layer* — correct, because `calendarHourH` is legitimately React-only
@@ -751,7 +918,7 @@ scheduled for deletion the same week.
   whose value equals it. That would have caught `Onboarding.manifest.json`'s
   `w-80`, which shipped and had to be fixed by hand.
 - **Two 8px insets meet the chart-token criterion and were left out.** The
-  doughnut's `rOuter` inset (`DoughnutChart.jsx`, `doughnut-chart.ts`), commented
+  doughnut's `rOuter` inset (`DoughnutChart.jsx`, `DoughnutChart.ts`), commented
   as *"breathing room so a slice's stroke is not clipped"*, and the axis-label
   offset in `PAD.l - 8` / `height - 8`, which appears six times across the two
   layers. Both are spacing decisions in px, indistinguishable in kind from
@@ -771,7 +938,7 @@ scheduled for deletion the same week.
   nodes (`if (item.group || !isScript(item.token)) continue;`), so only a
   leaf token's own description is carried into
   `frameworks/react/tokens.generated.js` and
-  `frameworks/angular/tokens.generated.ts`. Group prose survives only in the
+  `frameworks/angular/Tokens.generated.ts`. Group prose survives only in the
   CSS. This is pre-existing and not caused by this plan — `chart.json`'s group
   description is lost the same way — but it bit here: `delay`'s group
   description carries the constraint that these delays are pointer intent and
@@ -927,6 +1094,23 @@ scheduled for deletion the same week.
   one of which `cases` has since closed, and re-deriving that argument belongs to whoever plans
   the batch. Read this paragraph before reading that spec.
 
+  **A second live instance, and it is a whole file rather than two sentences.**
+  `docs/superpowers/specs/2026-07-23-8-api-contracts-design.md` is unexecuted — Plan D has not
+  shipped — and it names the Angular layer's **pre-move** paths throughout: list them with
+  `grep -n "angular/primitives\|angular/test/\|behaviour-delegated\|api\.generated"
+  docs/superpowers/specs/2026-07-23-8-api-contracts-design.md`. The two shapes are mixed and only
+  one of them is a defect. Its `>` quoted blocks are records of what a shipped plan settled, and
+  a path in one is correct **as history** — rewriting those would make the record lie. Its
+  unquoted normative text is the problem. **Exactly one line of it has been corrected, and the
+  rest is still open.** `:291` used to tell a reader `check:api` resolves an Angular
+  implementation at `frameworks/angular/primitives/<kebab-name>/<kebab-name>.ts` — which is
+  where the gate looked when it silently checked nothing (the false-green entry at the head of
+  this section is the same defect from the gate's side), so a reader could have rebuilt the
+  defect straight from the spec. That line now names the walk and says why the probe is refused.
+  Everything else in that file stays as it was: separating the historical uses from the normative
+  ones is a reading of that spec's argument, not a find-and-replace, and it belongs to whoever
+  plans Plan D. Read this paragraph before reading that spec.
+
   **The last of those six sites — the `components-divergences.md` sentence — is the entry's own
   thesis demonstrating itself, and it is worth more than the rule it illustrates.** (Named rather
   than referred to as "that last one", which is what it said until two paragraphs got inserted
@@ -943,8 +1127,9 @@ scheduled for deletion the same week.
 
   **That rule was then broken by the commit that wrote it, which is the strongest evidence for it
   there is.** `ac197c7`'s replacement sentence — the one carrying the rule — claimed the Angular
-  harness could not reach `Skeleton`'s other three variants, when `skeleton-dimensions.test.ts` had
-  been driving all four by the documented instance-field bypass the whole time. Same cause one step
+  harness could not reach `Skeleton`'s other three variants, when the suite then called
+  `skeleton-dimensions.test.ts` — `Skeleton.dimensions.test.ts` since the structure refactor's
+  batch 2 — had been driving all four by the documented instance-field bypass the whole time. Same cause one step
   out: its author read the one test file they had been pointed at and generalised to the directory.
   So writing the rule down demonstrably does not stop it — the reading has to happen at the moment
   the sentence is written, and "read that file" means the whole directory when the claim is about
@@ -1056,7 +1241,7 @@ scheduled for deletion the same week.
   four variants **as the tree then stood** — 8C10 made it four of four, which
   changes the exhibit and not the measurement: the 18-of-94 figure is a fact about
   the tree the scan was run against, and re-running it today would produce a
-  different number and the same verdict), *conditional value* (`alert.ts`'s
+  different number and the same verdict), *conditional value* (`Alert.ts`'s
   `'[attr.role]': "tone() === 'danger' ? 'alert' : 'status'"`, and `Toast.jsx`'s
   same shape), or *semantic completeness* (`Menu`'s Enter opens the menu but never
   moves focus). A rendered DOM resolves all three at once, which is why the render
@@ -1108,14 +1293,15 @@ scheduled for deletion the same week.
   `Skeleton` closed, `Toast` is the only user left.
 - **No gate typechecks `frameworks/angular/test/` — RETIRED as an entry, closed by batch 8C11.**
   This recorded that `check:angular` compiled only `frameworks/angular/tsconfig.check.json`'s
-  `["./index.ts"]` — the primitives barrel — and never opened the test directory, and that `bun
+  `["./index.ts"]` — the layer barrel — and never opened the test directory, and that `bun
   test` strips types rather than checking them, so a green suite had never been evidence about
-  types. It was not theoretical: during 8C9 a review compiled `frameworks/angular/test/compliance.ts`
+  types. It was not theoretical: during 8C9 a review compiled `frameworks/angular/test/Compliance.ts`
   by hand and found **two TS2322 errors** in a directory reporting 340 passing tests, after a green
   `check:angular` had already been read, in that same batch, as evidence the file typechecked. The
   mitigation this entry proposed was "a second tsconfig covering the test directory, wired into
   `check:angular`." What shipped is not that: `scripts/build-angular-tests.mjs`
-  (`bun run build:angular-tests`) compiles the barrel and the whole test directory together with
+  (`bun run build:angular-tests`) compiles the barrel and every `.ts` under `components/` and
+  `test/` together with
   `ngc --strictTemplates` into git-ignored `build/angular-test/`, and `test:angular`, `test` and
   `testStep()` all run the suites from that emit rather than from the `.ts` sources — so the
   typecheck is a consequence of the build the tests already needed rather than a second gate beside
@@ -1123,28 +1309,52 @@ scheduled for deletion the same week.
   that run executing at all (see the *Architecture* paragraph above for the mechanism).
   **What survives, because it was true before this and stays true after: a green compile is a claim
   about TYPES, and never about behaviour.** The sharpest instance of that gap is in this very file
-  and this batch did not remove it — `chart-internals.test.ts`'s `niceMax` induction, where
+  and this batch did not remove it — `ChartInternals.test.ts`'s `niceMax` induction, where
   `-Number.INFINITY` (not a real property; it evaluates to `NaN`, the entry already adjacent to it
   in the array) sat in a list the test claimed held six inputs and supplied five, and no runtime
   assertion could report it, because both the intended `-Infinity` and the typo return `1`. It was
   caught only because its vacuity happened to also be a type error, the moment a compiler was
   finally pointed at the file.
-- **Seven files under `frameworks/angular/test/` still justify themselves by a JIT limitation
-  that batch 8C11's move to AOT retired, and this batch deliberately left their prose alone.**
-  Find the live set with `grep -rlE "JIT|ngtsc" frameworks/angular/test/*.ts` and drop the two
-  hits that are already correct, past-tense history (`harness-capabilities.test.ts`,
-  `host-class-binding.test.ts`) — what is left is
-  `bar-chart-geometry.test.ts`, `line-chart-geometry.test.ts`, `doughnut-chart-geometry.test.ts`,
-  `command-palette-focus-trap.test.ts`, `command-palette-keyboard.test.ts`,
-  `confirm-dialog-focus-trap.test.ts` and `onboarding-focus-trap.test.ts`. Each still says, in
+- **Seven Angular suites still justify themselves by a JIT limitation
+  that batch 8C11's move to AOT retired, and no batch since has touched the JIT clause.**
+  (Batch 2 of the structure refactor edited the headers of **five** of the seven, and not
+  only paths: two of the five — `BarChart.geometry.test.ts` and
+  `CommandPalette.keyboard.test.ts` — had no path in their comments at all, and what changed
+  was a sibling named in prose, `confirm-dialog.ts` → `ConfirmDialog.ts`. The two chart
+  suites it did *not* edit, `LineChart.geometry.test.ts` and `DoughnutChart.geometry.test.ts`,
+  had their imports rewritten and their comments left alone. Re-derive it rather than trusting
+  this — compare each file's content across the batch, since a `git log` on the paths counts
+  the pure-rename commit and tells you nothing:
+  `git show effbc00:frameworks/angular/test/<old-name>.ts` against
+  `git show 90133e1:frameworks/angular/<new-path>`. What survives all of that is the load-bearing
+  half: no changed line in any of the five mentions `JIT`, `ngtsc`, `NG0303` or `setInput`, so
+  not one word of the limitation itself moved.)
+  Find the live set with `grep -rlE "JIT|ngtsc" --include='*.ts' frameworks/angular/` and drop
+  the two
+  hits that are already correct, past-tense history (`test/HarnessCapabilities.test.ts`,
+  `test/HostClassBinding.test.ts`) — what is left, re-derived after the structure refactor's
+  batch 2 moved every one of them beside its component, is
+  `components/charts/bar-chart/BarChart.geometry.test.ts`,
+  `components/charts/line-chart/LineChart.geometry.test.ts`,
+  `components/charts/doughnut-chart/DoughnutChart.geometry.test.ts`,
+  `components/navigation/command-palette/CommandPalette.focusTrap.test.ts`,
+  `components/navigation/command-palette/CommandPalette.keyboard.test.ts`,
+  `components/feedback/confirm-dialog/ConfirmDialog.focusTrap.test.ts` and
+  `components/feedback/onboarding/Onboarding.focusTrap.test.ts`. Each still says, in
   the present tense, that a signal input cannot be driven through a template binding or
   `setInput()` under this harness — false now, per the *Architecture* paragraph above and the
-  suite that backs it. **This command's reach is bounded to `.ts` files under this one
-  directory, and the same false claim was not confined to it.** `components-divergences.md`
+  suite that backs it. **The command reads the whole layer, and that widening is a correction
+  rather than tidying**: it was `frameworks/angular/test/*.ts`, which was the right scope while
+  every suite lived in that one directory and became the wrong one the moment they moved — run
+  today it returns the two past-tense files and **none** of the seven, so it would have read as
+  "this debt is paid" while all seven were untouched. That is the same false-green shape the
+  rule at the end of this section records. **The reach is still only `.ts` files under the
+  Angular layer, and the same false claim was not confined to them.**
+  `components-divergences.md`
   restated this exact limitation for `ConfirmDialog`, `CommandPalette` and `Skeleton`, in prose
   this grep cannot see. Those three were found and corrected by reading the file, not by
   widening this grep, and are not a fourth thing still to find here — a future stale restatement
-  of this limitation anywhere outside this directory needs the cross-file command in the
+  of this limitation anywhere outside this layer needs the cross-file command in the
   *"a component name written into ANOTHER file's prose"* entry above, not this one.
   **This is not a typo sweep, on purpose.** Several of these files justify
   testing plain exported functions (chart geometry, focus-trap helpers) *by* the limitation
@@ -1152,11 +1362,52 @@ scheduled for deletion the same week.
   component. Correcting only the false clause and leaving the extraction in place is defensible
   on its own terms — a pure function is often the right thing to test directly regardless of what
   the harness can drive — but it is a design choice now, not a forced one, and nobody has revisited
-  whether these seven should instead render a real tree the way `harness-capabilities.test.ts`
-  and the migrated `host-class-binding.test.ts` fixtures now do. Rewriting seven suites' test
-  strategy was judged out of scope for a close-out batch whose subject was the harness, not the
-  primitives it borrows testing techniques from; recorded here rather than fixed so the false
+  whether these seven should instead render a real tree the way `HarnessCapabilities.test.ts`
+  and the migrated `HostClassBinding.test.ts` fixtures now do. Rewriting seven suites' test
+  strategy was judged out of scope for 8C11, a close-out batch whose subject was the harness, and
+  out of scope again for the structure refactor, which moved files and renamed them and changed
+  no test's strategy; recorded here rather than fixed so the false
   prose has a pointer and the reopened question is not lost with it.
+- **Comments inside the Angular layer still cite siblings by their pre-move
+  filenames, and nothing resolves them.** The structure refactor's batch 2 renamed every file
+  in that layer and moved most of its suites; it rewrote every **import specifier**, which a
+  compiler checks — but a bare filename in a sentence is not one. So
+  `host-class-binding.test.ts`, `chart-internals.test.ts`, `testbed-env.ts`,
+  `tag-variants.test.ts`, `skeleton-dimensions.test.ts`, `bar-chart-geometry.test.ts` and
+  their siblings are still named across the layer's own headers and inline comments, and a
+  reader who greps one finds nothing. List them with
+  `grep -rnE "[a-z][a-z0-9]*(-[a-z0-9]+)+\.(test\.)?ts" --include='*.ts'
+  frameworks/angular/` and read each hit — it over-reports, because a kebab word followed by
+  `.ts` is also how these files legitimately name a *component directory* or a still-correct
+  history clause. Count by reading, not by piping to `wc -l`. **It is a citation swap and
+  nothing more** — unlike the seven-suite entry above, which needs a design decision — so it
+  is the cheapest entry in this section to close and the easiest to close wrongly: a name is
+  only worth rewriting once you have opened the file it now names and confirmed the sentence
+  around it is still true.
+
+  **Two narrower classes are CLOSED, and this entry described both wrongly at first, in
+  opposite directions.** It claimed batch 2 had rewritten "every path naming a file that no
+  longer exists, which the path-existence sweep finds"; **five full paths inside the layer
+  resolved to nothing** — `Skeleton.ts` citing `frameworks/angular/test/skeleton-dimensions.test.ts`,
+  and `ConfirmDialog.variants.test.ts`, `Onboarding.variants.test.ts`,
+  `BulkActionBar.variants.test.ts` and `CommandPalette.variants.test.ts` all citing
+  `frameworks/angular/test/host-class-binding.test.ts`. And it claimed cross-layer citations
+  "were corrected in that batch (six sites)"; **ten survived**, in
+  `scripts/lib/api-surface.mjs`, `scripts/check-api.mjs`, `scripts/api-surface.test.mjs`
+  (twice), `frameworks/react/test-dom/tag-and-chip-cases.test.jsx` (twice),
+  `frameworks/react/test-dom/onboarding-modal.test.jsx` (twice),
+  `components-divergences.md` and — a **gate-read artifact**, not a comment —
+  `frameworks/react/components/feedback/Toast.behaviour.json`. The close-out fix corrected
+  all fifteen. **Describing a class as closed when it is not turns a deferral into a false
+  all-clear**, which is worse than the deferral: the intra-layer class above is honestly
+  deferred and a reader knows to expect hits, while a reader of the old sentence would have
+  stopped looking. Re-derive both classes rather than trusting this paragraph — the paths
+  with a script that walks `git ls-files`, extracts every `frameworks/…` token and reports the
+  ones `os.path.exists` denies (it also reports deliberate past-tense history, such as
+  `check-duplicate-constants.mjs`'s "which was `frameworks/angular/primitives/chart-internals.ts`
+  when this happened", which is the correct form and must be left alone); the cross-layer
+  citations with the change-time command in the *"a component name written into ANOTHER file's
+  prose"* entry above, run for the moved component.
 - **Duplicate case names are rejected only by the two test wrappers, never by the gate.**
   `validateBinding` in `scripts/lib/behaviour-contracts.mjs` loops over `bindingCases()` and
   never asserts the names are distinct, so a binding declaring `danger` twice passes
@@ -1185,7 +1436,7 @@ scheduled for deletion the same week.
   `Toast`'s alone since 8C10 closed the `Skeleton` divergence) is a novel field
   with no repo precedent that **no gate reads** — if a convention for divergence rationale is
   ever wanted it should be named repo-wide rather than inheriting an unstated first instance
-  from one batch. A comment in `frameworks/angular/test/compliance.ts` explaining why a
+  from one batch. A comment in `frameworks/angular/test/Compliance.ts` explaining why a
   `c.name as string` cast is safe **gives the wrong reason**: it cites the no-cases guard,
   which only refuses the single-entry flat shape, when the real protection is that the
   missing/unknown throw fires first — a null name can never match a real object key. The cast
@@ -1313,13 +1564,18 @@ scheduled for deletion the same week.
   **throws** on an unknown requirement key or a missing `ELEMENT_ROLE` entry — one
   bad key aborts the whole test rather than reporting one problem, so a suite's
   wrapper (`frameworks/react/test-dom/assert-pattern.jsx`,
-  `frameworks/angular/test/compliance.ts`) must expect the throw, not only a
+  `frameworks/angular/test/Compliance.ts`) must expect the throw, not only a
   returned problem list. **None of the five named above is pinned by a suite today, in
   either layer** — verified by grep, and re-run it rather than trusting the list:
   `grep -rln "posinset\|'states.busy'\|states.readonly" frameworks/react/test-dom/
-  frameworks/angular/test/` returns nothing. **This entry read *seven* until 8C9**, which
+  --include='*.test.ts' frameworks/angular/` returns nothing. **The Angular half of that
+  command is the whole layer now, and the `--include` is what keeps it honest**: the suites
+  moved out of `frameworks/angular/test/` in the structure refactor's batch 2, and widening to
+  the layer without restricting to `*.test.ts` matches
+  `ActivityFeed.behaviour.json` — the binding that *declares* the exception rather than a suite
+  that pins it, which is the opposite of what the question asks. **This entry read *seven* until 8C9**, which
   pinned `Tag`'s `states.disabled` in **both** layers by declaring it in the `removable`
-  case's `behavioural` map (`tag-and-chip-cases.test.jsx`, `tag-cases.test.ts`), and
+  case's `behavioural` map (`tag-and-chip-cases.test.jsx`, `Tag.cases.test.ts`), and
   `CalendarEvent`'s two declarations of the same requirement are pinned from birth in the
   same suite. **The enumeration was never exhaustive and still is not** — `TableRow`
   excepts `states.disabled`, `keyboard.Enter` and `keyboard.Space` and is in no suite at
@@ -1328,14 +1584,14 @@ scheduled for deletion the same week.
   against `BEHAVIOURAL` in `scripts/lib/behaviour-compliance.mjs`, rather than any list
   written here; and read the other side — which verdicts a suite actually declares — with
   `grep -rho "'[a-z]*\.[A-Za-z]*': \(true\|false\)" frameworks/react/test-dom/
-  frameworks/angular/test/ | sed "s/: .*//;s/'//g" | sort -u`, since an enumeration of
+  frameworks/angular/ | sed "s/: .*//;s/'//g" | sort -u`, since an enumeration of
   that has gone stale here twice. The restore of the React test directory did not change
   what is unpinned, and its deletion was never what caused it.
 - **Angular has no `Calendar`, and nothing has decided whether it should.** React's
   `Calendar` is a day/hour schedule grid with absolutely-positioned event blocks;
   Angular has no equivalent from either an `arena-*` primitive or Angular Material —
   `mat-calendar` is a month/date-selection grid, a different widget solving a
-  different problem. `frameworks/angular/behaviour-delegated.json`'s `Calendar` entry
+  different problem. `frameworks/angular/BehaviourDelegated.json`'s `Calendar` entry
   binds pattern `absent` and records this as a fact, not a decision: it does not
   commit Angular to gaining a schedule view, and it does not resolve whether the gap
   should stay this way. It is simply open.
@@ -1343,15 +1599,15 @@ scheduled for deletion the same week.
 - **A chart's `aria-label` is checked for existence, never for usefulness, and the
   charts fall back to a name that is only their type.** `figure-with-data-table`'s
   `roles.label` requires "aria-label naming the chart", and
-  `frameworks/angular/test/chart-data-table.test.ts` proves the three verifiable
+  `frameworks/angular/components/charts/ChartDataTable.test.ts` proves the three verifiable
   parts of that pattern against a real render — the `<table>` exists, it is
   visually hidden rather than absent, and its cells pair each category with its
   plotted value. It cannot prove the fourth. All three charts now have a
   consumer-supplied name path — `seriesLabel`, which `DoughnutChart` gained when the
   charts came under the API contract, so the earlier worst case of a literal with no
   caller path at all is closed — and all three still fall back to a name that is only
-  their type when none is given: `bar-chart.ts` emits the constant `Bar chart`,
-  `line-chart.ts` and `doughnut-chart.ts` the same. **The debt that remains is the
+  their type when none is given: `BarChart.ts` emits the constant `Bar chart`,
+  `LineChart.ts` and `DoughnutChart.ts` the same. **The debt that remains is the
   harder half: a name that is *present* is never checked for being *useful*.** A
   fallback satisfies the requirement mechanically while telling a screen-reader user
   nothing — a page with two bar charts on it announces both identically — and a
@@ -1361,7 +1617,7 @@ scheduled for deletion the same week.
   thing and are not covered by a suite at all.
 
 - **Every claim the delegated declarations make about Angular Material is unpinned.**
-  `frameworks/angular/behaviour-delegated.json` asserts what Material's controls do —
+  `frameworks/angular/BehaviourDelegated.json` asserts what Material's controls do —
   that `MatButtonToggleGroup` applies `role="group"` rather than `role="radiogroup"`,
   that `MatTable` adds no keyboard handling, that `matTooltip`'s `showDelay` defaults to
   0 — and which Material surfaces `arena-material.css` dresses. **None of it records the
@@ -1410,11 +1666,11 @@ scheduled for deletion the same week.
   the other.
 
 - **Three Angular primitives import a contract type with a value import, and nothing
-  checks it.** The convention is `import type { X } from '../../api.generated'` in both
-  layers — every declaration in `api.generated.ts` is a type and none of them exists at
+  checks it.** The convention is `import type { X } from '../../../Api.generated'` in both
+  layers — every declaration in `Api.generated.ts` is a type and none of them exists at
   runtime (`export type` for the enums, `export interface` for the predefined objects), so
-  a value import there is a type-only import written without `type`. `avatar.ts`,
-  `alert.ts` and `page-head.ts`
+  a value import there is a type-only import written without `type`. `Avatar.ts`,
+  `Alert.ts` and `PageHead.ts`
   each write the bare form instead. It compiles and nothing has ever broken because of it;
   it is recorded because it is a live inconsistency no gate can see, and because it was
   previously written down **only inside plan 8B3**, which was deleted when that plan was
@@ -1751,7 +2007,7 @@ scheduled for deletion the same week.
   until 8C10 retired that case, which is the count moving DOWN and another reason not to
   write an ordinal)
   — `grep -rho '"pattern": "none"' --include='*.json' frameworks/ | wc -l`, and the `-o` is the
-  point: `grep -rl` counts FILES, and `frameworks/angular/behaviour-delegated.json` holds several
+  point: `grep -rl` counts FILES, and `frameworks/angular/BehaviourDelegated.json` holds several
   `none` entries at once, so the file count is not the binding count and the measurement written
   here to replace a stale ordinal was itself wrong. 8C5 added two in one change, and this
   file has now had three separate prose ordinals about this limit go stale, one of them inside
@@ -1760,7 +2016,7 @@ scheduled for deletion the same week.
   replaced both ordinals with a pointer here.
 
 - **Plan D inherits an open question about `SideNav`, registered here so it is not inherited
-  silently.** `frameworks/angular/behaviour-delegated.json`'s `SideNav` entry claims Material
+  silently.** `frameworks/angular/BehaviourDelegated.json`'s `SideNav` entry claims Material
   provides this control — its reason says `mat-nav-list` "already provides the anchor-or-button
   distinction, the active state and the keyboard behaviour". **That is defensible for a flat list
   of links and questionable now**: `mat-nav-list` provides no named section group and no nested
@@ -1824,9 +2080,9 @@ count written here, which would drift.
   section without redirecting the citation breaks it, so **measure the citing set
   rather than trusting a list written here** — a list of it was carried in this file
   and in `api/README.md`, and both were wrong in **both** directions:
-  `frameworks/angular/primitives/onboarding/onboarding.ts` was named as a citer to
+  `frameworks/angular/components/feedback/onboarding/Onboarding.ts` was named as a citer to
   protect and names no section at all, while
-  `frameworks/angular/test/host-class-binding.test.ts` and
+  `frameworks/angular/test/HostClassBinding.test.ts` and
   `frameworks/tailwind/README.md` quote one each and were listed by neither. The
   command: `grep -rn "components-divergences" --include='*.json' --include='*.ts'
   --include='*.md' --include='*.jsx' . | grep -v node_modules`, then keep only the
@@ -1838,10 +2094,19 @@ count written here, which would drift.
   known blind spots — a kebab-case SVG attribute, and Angular's `[style.x]`
   binding form — are **not** in the script's own header; they are documented in
   the `check:dimensions` paragraph under *Architecture* above, which is the only
-  place they are written down.
+  place they are written down. **An `EXEMPT` key carries a file path, so a layer
+  that moves invalidates every key naming it** — the three
+  `ChartInternals.ts` entries were rekeyed in the structure refactor's batch 2.
+  That is loud rather than silent, because a stale exemption fails this gate; but
+  it also means a key here is a cross-file claim of the kind this section's own
+  rule is about, and the paired suite asserts on the map by name, so the rekey is
+  a change to two files.
 - **`scripts/check-manifest-states.mjs`** — `EXEMPT` (a state delegated to a
   composed child, or a deliberate Angular-only accessibility addition) and
   `SOURCE_OVERRIDES` (the manifest-to-component mapping is not one-to-one).
+  `SOURCE_OVERRIDES`' values are file paths and carry exactly the same rekeying
+  liability: `Tag` now resolves to
+  `frameworks/angular/components/display/tag/Tag.ts`.
 - **`scripts/check-tailwind-coverage.mjs`** — `EXCLUDED`, every token that
   deliberately reaches no Tailwind utility, with the reason. The gate asserts the
   entry exists, never that the reason is true — so a reason can rot silently, and

@@ -56,7 +56,7 @@ const EXT = 'com.dravensoft.arena';
  *  typecheck the import. */
 export const SCRIPT_TARGETS = [
   'frameworks/react/tokens.generated.js',
-  'frameworks/angular/tokens.generated.ts',
+  'frameworks/angular/Tokens.generated.ts',
 ];
 
 const SCRIPT_HEADER =

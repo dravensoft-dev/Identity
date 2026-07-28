@@ -3,10 +3,16 @@
  * `Tag` renders a real <button> only when `removable` is true; without it -- the
  * common case -- it is a <span> with nothing to press, matching no interactive
  * pattern at all. The flat binding used to say `button` with a `roles.element`
- * exception, which told a reader the pattern always held. `Tag.behaviour.json`
- * now declares two cases that bind DIFFERENT patterns: `plain` is `none`, and
- * `removable` is `button`. `tag.behaviour.json` (Angular) carries the same two
- * case names, which `crossLayerAgrees` requires.
+ * exception, which told a reader the pattern always held.
+ * `display/Tag.behaviour.json` now declares two cases that bind DIFFERENT
+ * patterns: `plain` is `none`, and `removable` is `button`. Angular's own
+ * binding, the `Tag` one under `frameworks/angular/components/display/tag/`,
+ * carries the same two case names, which `crossLayerAgrees` requires. Both are
+ * spelled `Tag` since the structure refactor's batch 2, so a bare stem no longer
+ * says which layer is meant -- name the directory. (Deliberately NOT written as
+ * that layer's full binding path: check:compliance discriminates layers by
+ * searching a suite for its own layer's path tail, and spelling the sibling's
+ * tail here would let this React suite satisfy an Angular coverage claim.)
  *
  * `CalendarEvent` takes the same treatment across the three shapes its own
  * exception always described (see CalendarEvent.behaviour.json and
@@ -24,7 +30,7 @@
  *       PLATFORM route Enter and Space to a click -- nothing in Arena implements
  *       either key, and nothing needs to. Note what is NOT claimed here: the
  *       precedent this was ported from names a <button type="button">, and that
- *       is true of CalendarEvent's buttons and of Angular's tag.ts, but React's
+ *       is true of CalendarEvent's buttons and of Angular's Tag.ts, but React's
  *       Tag.jsx renders its remove button with NO `type` at all. It defaults to
  *       `submit`, which changes what the button does inside a <form> and changes
  *       nothing about Enter/Space activation -- so the mechanism below holds for

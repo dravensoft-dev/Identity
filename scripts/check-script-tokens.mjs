@@ -28,10 +28,13 @@ export function cssCounterpart(value) {
   return m ? Number(m[1]) : null;
 }
 
-/** Every name imported from a `tokens.generated.*` module in one source file. */
+/** Every name imported from a `tokens.generated.*` module in one source file.
+ *  Matched case-insensitively on the stem: React's is `tokens.generated.js`,
+ *  Angular's is `Tokens.generated.ts`, and the two layers deliberately do not
+ *  share a case. */
 export function importedNames(source) {
   const names = new Set();
-  const re = /import\s*\{([^}]*)\}\s*from\s*['"][^'"]*tokens\.generated(?:\.js|\.ts)?['"]/g;
+  const re = /import\s*\{([^}]*)\}\s*from\s*['"][^'"]*tokens\.generated(?:\.js|\.ts)?['"]/gi;
   for (const m of source.matchAll(re)) {
     for (const raw of m[1].split(',')) {
       const name = raw.trim().split(/\s+as\s+/)[0].trim();
@@ -75,7 +78,7 @@ function* sourceFiles(dir) {
     const path = join(dir, entry);
     if (statSync(path).isDirectory()) { yield* sourceFiles(path); continue; }
     if (!SCAN_EXT.has(extname(entry))) continue;
-    if (entry.startsWith('tokens.generated.')) continue;
+    if (/^tokens\.generated\./i.test(entry)) continue;
     yield path;
   }
 }

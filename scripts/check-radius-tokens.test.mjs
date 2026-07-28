@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { hasRoundedFull, evaluateManifest, collect } from './check-radius-tokens.mjs';
+import { hasRoundedFull, evaluateManifest, collect, zeroManifestProblem } from './check-radius-tokens.mjs';
 
 test('a plain class string carries no rounded-full', () => {
   assert.equal(hasRoundedFull('size-5 rounded-pill bg-base-300'), false);
@@ -42,4 +42,17 @@ test('evaluateManifest reports nothing for a clean manifest', () => {
 
 test('the real manifest tree carries no rounded-full -- the six known offenders are fixed', () => {
   assert.deepEqual(collect(), []);
+});
+
+test('zeroManifestProblem fails when zero manifests were found -- a gate that finds nothing must not report a clean pass', () => {
+  const problem = zeroManifestProblem([]);
+  assert.match(problem, /0 manifest/i);
+});
+
+test('zeroManifestProblem is null for a non-empty file list', () => {
+  assert.equal(zeroManifestProblem(['X.manifest.json']), null);
+});
+
+test('collect accepts an explicit file list, so an empty walk finds zero findings rather than falling back to a real one', () => {
+  assert.deepEqual(collect([]), []);
 });

@@ -25,7 +25,7 @@ export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onD
   const step = steps[index] || {};
   const last = index === steps.length - 1;
   /* The coachmark's accessible name, and a direct port of the `label` computed in
-   * frameworks/angular/primitives/onboarding/onboarding.ts -- which named React's
+   * frameworks/angular/components/feedback/onboarding/Onboarding.ts -- which named React's
    * bare `step.title` as the defect and shipped the fix first. `OnboardingStep.title`
    * is optional in a contract both layers share, so React omitted the attribute
    * entirely on an untitled step and rendered role="dialog" with no name at all.

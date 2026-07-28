@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { testStep, summarize, stepStatus, GATES } from './check-all.mjs';
 
-test('GATES lists the twenty-one check gates', () => {
-  assert.equal(GATES.length, 21);
+test('GATES lists the twenty-two check gates', () => {
+  assert.equal(GATES.length, 22);
   assert.deepEqual(
     GATES.map((g) => g.name),
-    ['check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:behaviour', 'check:compliance', 'check:api', 'check:fonts', 'check:vendor', 'check:demos', 'check:cards', 'check:angular', 'check:material'],
+    ['check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:structure', 'check:behaviour', 'check:compliance', 'check:api', 'check:fonts', 'check:vendor', 'check:demos', 'check:cards', 'check:angular', 'check:material'],
   );
 });
 
@@ -17,7 +17,7 @@ test('check:material runs last, after check:angular, the other Angular-layer gat
 test('testStep runs every suite under bun, with the DOM harness isolated in its own process', () => {
   // Not one merged invocation: `bun test` shares a process (and a globalThis)
   // across every file a single call matches. The Angular suites are not what
-  // forces the split any more -- frameworks/angular/test/testbed-env.ts is the
+  // forces the split any more -- frameworks/angular/test/TestbedEnv.ts is the
   // only registration site left in that directory, it is guarded
   // (`if (!GlobalRegistrator.isRegistered)`), and it is emitted JavaScript now,
   // so a single invocation is not even a path frameworks/react/test-dom/preload.js
@@ -41,7 +41,7 @@ test('testStep runs every suite under bun, with the DOM harness isolated in its 
   const steps = testStep({ isBun: true, testFiles: ['a.test.mjs', 'b.test.mjs'] });
   assert.deepEqual(steps.map((s) => s.args), [
     ['run', 'build:angular-tests'],
-    ['test', 'scripts', 'frameworks/react/test/', 'build/angular-test/angular/test'],
+    ['test', 'scripts', 'frameworks/react/test/', 'build/angular-test/angular'],
     ['test', '--preload', './frameworks/react/test-dom/preload.js', 'frameworks/react/test-dom'],
   ]);
 });

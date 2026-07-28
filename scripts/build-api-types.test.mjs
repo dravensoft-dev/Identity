@@ -87,6 +87,6 @@ test('both layers receive the identical body -- one contract, two import paths',
 test('API_TARGETS names one file per layer, and neither lives under api/', () => {
   assert.deepEqual(API_TARGETS, [
     'frameworks/react/api.generated.d.ts',
-    'frameworks/angular/api.generated.ts',
+    'frameworks/angular/Api.generated.ts',
   ]);
 });

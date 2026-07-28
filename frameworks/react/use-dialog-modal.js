@@ -1,5 +1,5 @@
 /* The React half of Arena's modal focus contract, and a deliberate mirror of
- * frameworks/angular/primitives/focus-trap.ts -- same selector, same wrap rule,
+ * frameworks/angular/FocusTrap.ts -- same selector, same wrap rule,
  * same open/close transition. Two layers solving this differently is how
  * components-divergences.md fills up, and Angular's version is the one that
  * already ships with a suite behind it.

@@ -61,7 +61,7 @@ test('the layer project still names the barrel alone, so check:angular keeps its
 //     // @angular/* by walking up from the temp tree, and follows a symlink just
 //     // as well as a real directory, so there is nothing to gain from copying it.
 //     symlinkSync(join(repoRoot, 'node_modules'), join(dir, 'node_modules'));
-//     const tag = join(dir, 'frameworks/angular/primitives/tag/tag.ts');
+//     const tag = join(dir, 'frameworks/angular/components/display/tag/Tag.ts');
 //     writeFileSync(tag, readFileSync(tag, 'utf8').replace('styles().root()', 'styles().nosuchslot()'));
 //     const { status, output } = typecheck({ root: dir });
 //     assert.notEqual(status, 0);

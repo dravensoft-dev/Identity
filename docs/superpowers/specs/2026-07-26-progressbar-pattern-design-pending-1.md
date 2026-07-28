@@ -23,7 +23,7 @@ component nor the binding but the set of patterns available to bind. Count the l
 rather than trusting a figure here. The component files:
 `grep -rho '"requirement"' --include='*.behaviour.json' frameworks/ | wc -l`, which is 63 as
 written. The delegated file separately:
-`grep -o '"requirement"' frameworks/angular/behaviour-delegated.json | wc -l`, which is 18.
+`grep -o '"requirement"' frameworks/angular/BehaviourDelegated.json | wc -l`, which is 18.
 
 (Both commands were run before being written down. A `frameworks/**/*.behaviour.json` glob does
 **not** work here — without `globstar` it fails to expand, grep warns, and the count silently comes
@@ -133,7 +133,7 @@ something true and useful rather than an artefact: Material's `MatProgressBar` a
 records only `aria-valuenow` mirrored from `value`, and says nothing about min or max; but the three
 requirements are conditional, an indeterminate spinner correctly carries none of them, and a
 delegated entry has no component of Arena's to render, so there is no suite to hand a verdict to
-either way. **Nothing in `behaviour-delegated.json` is verified by a suite** — that is true of every
+either way. **Nothing in `BehaviourDelegated.json` is verified by a suite** — that is true of every
 claim in that file today and is recorded under *Known debt*, not introduced here. The plan must
 confirm the two reasons say what this paragraph says before rewriting either.
 
@@ -189,7 +189,7 @@ guarded with `sha256sum`, restored with `git checkout --`, restore proved with `
 | `check:behaviour` | 21 patterns | 22 patterns |
 | `check:compliance` | 10 of 70 | 12 of 70 |
 | exceptions in component files | 63 | 61 |
-| exceptions in `behaviour-delegated.json` | 18 | 16 |
+| exceptions in `BehaviourDelegated.json` | 18 | 16 |
 
 Both of the component-file removals are `ProgressBar:react`'s; `Spinner:react` declares none today
 and declares none after, which is why unifying it moves the pattern count and not the exception

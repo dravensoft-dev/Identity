@@ -88,7 +88,7 @@ const browser = findChromium();
 //   }
 // });
 //
-// /* Reproduces the real card harness: specimen.css's body carries its own
+// /* Reproduces the real card harness: Specimen.css's body carries its own
 //  * padding (var(--sp-6), 24px — modelled here as a literal since this fixture
 //  * is not itself an Arena page), and that padding is exactly what stops the
 //  * last in-flow child's bottom margin from collapsing through to the
@@ -104,7 +104,7 @@ const browser = findChromium();
 //  * (its margin) + 24 (bottom padding) = 164, not 148. This is the exact shape
 //  * that made four consecutive real specimens each need 16px more than the
 //  * gate suggested: every one of them ends its last section in a `.row`, and
-//  * `.row`'s own margin-bottom in specimen.css is var(--sp-4) — 16px. */
+//  * `.row`'s own margin-bottom in Specimen.css is var(--sp-4) — 16px. */
 // const trailingMarginPage = `<!doctype html><html><head><meta charset="utf-8">
 // <style>html,body{margin:0}body{padding:24px}#box{height:100px;margin-bottom:16px}</style></head>
 // <body><div id="box"></div></body></html>`;

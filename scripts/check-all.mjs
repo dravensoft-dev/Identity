@@ -4,7 +4,7 @@
  * inherited, not buffered), and a pass/fail summary prints once every step
  * has finished. Exit 1 if any step failed, 0 if all passed.
  *
- * The twenty-one gates in GATES below, plus the test suite: one more step under
+ * The twenty-two gates in GATES below, plus the test suite: one more step under
  * node (scripts/ only), three more under bun (the ngc emit of the Angular test
  * surface, then the merged framework suites, then frameworks/react/test-dom in
  * a process of its own -- see testStep).
@@ -54,6 +54,7 @@ export const GATES = [
   { name: 'check:arbitrary', file: 'check-arbitrary-values.mjs' },
   { name: 'check:dimensions', file: 'check-dimension-literals.mjs' },
   { name: 'check:states', file: 'check-manifest-states.mjs' },
+  { name: 'check:structure', file: 'check-structure.mjs' },
   { name: 'check:behaviour', file: 'check-behaviour.mjs' },
   { name: 'check:compliance', file: 'check-compliance.mjs' },
   { name: 'check:api', file: 'check-api.mjs' },
@@ -86,7 +87,7 @@ export const GATES = [
  *  `--preload frameworks/react/test-dom/preload.js` registers happy-dom for
  *  the whole process and is deliberately never paired with an `unregister()`
  *  (see preload.js's own reasoning). That registration would not itself throw
- *  if merged with the Angular suites -- `frameworks/angular/test/testbed-env.ts`
+ *  if merged with the Angular suites -- `frameworks/angular/test/TestbedEnv.ts`
  *  is the only Angular registration site and it is guarded
  *  (`ensureDom()` only calls `GlobalRegistrator.register()` when
  *  `!GlobalRegistrator.isRegistered`), so it silently skips registering rather
@@ -137,7 +138,7 @@ export const GATES = [
 export function testStep({ isBun, testFiles }) {
   if (isBun) return [
     { name: 'build (ngc emit of the Angular test surface)', args: ['run', 'build:angular-tests'] },
-    { name: 'test (bun test scripts/ + framework suites)', args: ['test', 'scripts', 'frameworks/react/test/', 'build/angular-test/angular/test'] },
+    { name: 'test (bun test scripts/ + framework suites)', args: ['test', 'scripts', 'frameworks/react/test/', 'build/angular-test/angular'] },
     { name: 'test (bun test frameworks/react/test-dom, isolated)', args: ['test', '--preload', './frameworks/react/test-dom/preload.js', 'frameworks/react/test-dom'] },
   ];
   return [{ name: 'test (node --test scripts/*.test.mjs)', args: ['--test', ...testFiles] }];

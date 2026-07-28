@@ -10,8 +10,9 @@
  *
  * Everything here is pure. scripts/check-behaviour.mjs does the filesystem walk
  * and the reporting; this module is what its suite can import. */
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, basename, extname } from 'node:path';
+import { pascal } from '../check-structure.mjs';
 
 export const PATTERN_DIR = 'behaviour/patterns';
 
@@ -215,7 +216,7 @@ export function validateBinding(component, layer, binding, patterns) {
  *  `grep -rl divergesFrom frameworks/` against the cased-binding grep above,
  *  since this is exactly the kind of cross-file claim that entry warns about
  *  (React's `divergesFrom: "alert"` against the flat `alert` that
- *  `behaviour-delegated.json` binds for Angular's MatSnackBar): its `danger` case
+ *  `BehaviourDelegated.json` binds for Angular's MatSnackBar): its `danger` case
  *  could change from `alert` to anything at all and this function would stay
  *  silent, because the escape already returned true two lines up. That is not
  *  fixable by reordering -- a flat counterpart has no cases to compare against,
@@ -275,13 +276,71 @@ export function reactComponents(root) {
   return out.sort();
 }
 
-/** Every Angular primitive, by directory name. Bare `.ts` files under
- *  primitives/ are shared internals (chart-internals, focus-trap), not
- *  components, so the walk keys on directories. */
+/** Every Angular component, by kebab directory name, across every category.
+ *
+ *  The layer is `frameworks/angular/components/<category>/<kebab>/` as of the
+ *  structure refactor's batch 2, so the walk is two levels deep. What has not
+ *  changed is that a bare `.ts` file is a shared internal rather than a
+ *  component -- `components/charts/ChartInternals.ts` sits beside the four
+ *  chart directories, and `ContainerSize.ts`, `FocusTrap.ts` and
+ *  `ProjectionMarkers.ts` sit at the layer root -- so both levels of the walk
+ *  key on directories.
+ *
+ *  It returns the KEBAB directory names, not the PascalCase component names,
+ *  and both callers key on that: check-behaviour.mjs reports `angular/<dir>`
+ *  and check-compliance.mjs resolves a binding path from it. The category is
+ *  deliberately not returned -- a component's category is
+ *  frameworks/Components.json's to declare and check:structure's to hold, and
+ *  a second gate carrying it would be a second opinion nothing reconciles.
+ *  Use angularBindingPath() below to get back to a file. */
 export function angularPrimitives(root) {
-  const base = join(root, 'frameworks/angular/primitives');
-  return readdirSync(base, { withFileTypes: true })
-    .filter((e) => e.isDirectory())
-    .map((e) => e.name)
-    .sort();
+  const base = join(root, 'frameworks/angular/components');
+  const out = [];
+  for (const category of readdirSync(base, { withFileTypes: true })) {
+    if (!category.isDirectory()) continue;
+    for (const dir of readdirSync(join(base, category.name), { withFileTypes: true })) {
+      if (dir.isDirectory()) out.push(dir.name);
+    }
+  }
+  return out.sort();
+}
+
+/** The behaviour binding an Angular component directory holds, as
+ *  `{path, stem, tail}` -- the ONE place the Angular layer's binding path is
+ *  built.
+ *
+ *  The category is found by looking rather than derived, exactly as
+ *  check-compliance.mjs's React branch finds a component's group; the stem is
+ *  pascal(dir), because the file is `<Pascal>.behaviour.json` beside
+ *  `<Pascal>.ts`. `tail` is `<category>/<dir>/<stem>.behaviour.json`, the path
+ *  relative to `frameworks/angular/components` -- what a suite writes when it
+ *  names its own binding, and what check:compliance searches a suite's text for.
+ *  Callers need different halves and none may rebuild one it was not given: a
+ *  right path with a wrong stem passes the read and then fails the coverage
+ *  mention check for a filename that does not exist.
+ *
+ *  The category is resolved by FIRST MATCH, and nothing here rejects the same
+ *  kebab directory appearing under two categories -- deliberately, because
+ *  check:structure already does. Its category-mismatch rule reports a component
+ *  sitting under a category `frameworks/Components.json` does not assign it to,
+ *  so a second copy under a second category is named there and this function
+ *  never has to arbitrate. Do not re-derive that worry:
+ *  `validateStructure({categories:{display:['Tag'],feedback:['Alert']},
+ *  layers:{angular:{display:['tag'],feedback:['tag','alert']}}})` reports
+ *  "angular: Tag is in components/feedback/ but frameworks/Components.json
+ *  assigns it to display".
+ *
+ *  Returns null when the directory holds no binding, which is check-behaviour's
+ *  "every component declares" problem to report and not this function's.
+ *  @param {string} root @param {string} dir kebab directory name
+ *  @returns {{path: string, stem: string, tail: string}|null} */
+export function angularBindingPath(root, dir) {
+  const base = join(root, 'frameworks/angular/components');
+  const stem = pascal(dir);
+  for (const category of readdirSync(base, { withFileTypes: true })) {
+    if (!category.isDirectory()) continue;
+    const path = join(base, category.name, dir, `${stem}.behaviour.json`);
+    if (existsSync(path)) return { path, stem, tail: `${category.name}/${dir}/${stem}.behaviour.json` };
+  }
+  return null;
 }

@@ -41,8 +41,8 @@ three.
 Every component declares, in every layer, beside its own source:
 
 - React: `frameworks/react/components/<group>/<Name>.behaviour.json`
-- Angular: `frameworks/angular/primitives/<name>/<name>.behaviour.json`
-- Angular, delegated: one entry in `frameworks/angular/behaviour-delegated.json`,
+- Angular: `frameworks/angular/components/<category>/<component-kebab>/<Component>.behaviour.json`
+- Angular, delegated: one entry in `frameworks/angular/BehaviourDelegated.json`,
   because a component Material provides has no Arena directory to sit beside.
 
 A binding names a pattern and lists the requirements the component does not yet

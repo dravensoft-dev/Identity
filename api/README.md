@@ -349,7 +349,7 @@ never required. A component that generates no id has no such gap and adds no suc
 consumer writes it on the host directly — does not reach either. Neither has a host to reach at
 all: both are React-only, delegated to `matIconButton` and `MatButton` on the Angular side, with
 no `arena-icon-button` and no `arena-button` primitive — and
-`frameworks/angular/behaviour-delegated.json`'s own entry says Arena "should not grow one".
+`frameworks/angular/BehaviourDelegated.json`'s own entry says Arena "should not grow one".
 And for a component whose focusable element is a **descendant**
 of its host rather than the host itself, the justification fails even where a host exists —
 `tabindex="-1"` written on `<arena-icon-button>` would land on the custom element, not on the
@@ -500,7 +500,7 @@ nothing here will notice. This is a known limit, not a gap left to close quietly
 `CLAUDE.md`'s Known debt.
 
 `bun run build:api` emits `frameworks/react/api.generated.d.ts` and
-`frameworks/angular/api.generated.ts` from these files. Both are committed and both carry
+`frameworks/angular/Api.generated.ts` from these files. Both are committed and both carry
 the same body; emission is **per layer** so a component's import never crosses the
 `api/` ↔ `frameworks/` boundary — the rule the script-readable token target established,
 for the same reason.
@@ -638,6 +638,6 @@ which has already gone stale once: `grep -rn "components-divergences" --include=
 --include='*.ts' --include='*.md' --include='*.jsx' . | grep -v node_modules`, then keep only
 the hits that quote a section by name. Those are the ones a deletion breaks; a citation naming
 the file alone survives any edit to it. The distinction is not academic —
-`frameworks/angular/primitives/onboarding/onboarding.ts` was listed here as a citer to protect
-and names no section at all, while `frameworks/angular/test/host-class-binding.test.ts` and
+`frameworks/angular/components/feedback/onboarding/Onboarding.ts` was listed here as a citer to protect
+and names no section at all, while `frameworks/angular/test/HostClassBinding.test.ts` and
 `frameworks/tailwind/README.md` quote one each and were not listed.

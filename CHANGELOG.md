@@ -31,7 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   contracted** — no count is written here, because the set grows whenever a batch turns an item
   into a component, and this entry freezes at the next tag while the tree does not. Measure the
   set the way CLAUDE.md says to: every `.jsx` under `frameworks/react/components/` with no
-  matching directory under `frameworks/angular/primitives/`.
+  matching directory under `frameworks/angular/components/<category>/`. (That instruction read
+  `frameworks/angular/primitives/` until the structure refactor's batch 2 moved the layer;
+  corrected here, not back-edited into a released entry, because `[Unreleased]` is the section
+  that has not frozen at a tag yet and an instruction a reader cannot run is worse than none.)
 - **`SideNavSection`** groups items under a name. It renders a labelled `role="group"` whose
   accessible name is the same heading a sighted user reads, so the grouping the eye sees is the
   grouping a screen reader announces. Having sections at all is optional — loose items at the root
@@ -59,7 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **The `dialog-modal` pattern is met in React, for the first time, by all three overlays.**
   `frameworks/react/use-dialog-modal.js` is a shared hook and a deliberate PORT of the Angular
-  layer's already-shipped `frameworks/angular/primitives/focus-trap.ts` — the same focusable
+  layer's already-shipped focus trap, now `frameworks/angular/FocusTrap.ts` — the same focusable
   selector including its per-clause `:not([tabindex="-1"])` guard, the same boundary-wrap rule, the
   same never-cache-the-focusables rule, the same open/close transition. `Dialog`, `ConfirmDialog`
   and `Onboarding` all consume it. Escape always reports through the component's OWN dismissal

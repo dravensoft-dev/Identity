@@ -5,7 +5,11 @@
  * check-dimension-literals.test.mjs already use.
  *
  * The five assertions, and where each is covered:
- *   1 coverage         -> kebab(), plus the path-shape test below
+ *   1 coverage         -> resolveAngularImplementations, plus the path-shape
+ *                         test below. pascal() lives in check-structure.mjs
+ *                         and is pinned by its own suite -- alongside kebab(),
+ *                         its inverse -- and is imported here only to build the
+ *                         fixtures.
  *   2 form             -> compareSurface on a platform/union member
  *   3 agreement        -> compareSurface, both directions, plus the optional rule
  *   4 derived rules    -> validateTypes (R1) and compareSurface (R4, R5)
@@ -16,7 +20,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { kebab, bindingName, validateTypes, validateContract, compareSurface } from './check-api.mjs';
+import {
+  bindingName, validateTypes, validateContract, compareSurface, resolveAngularImplementations,
+} from './check-api.mjs';
+import { pascal } from './check-structure.mjs';
 import { buildApiModules } from './build-api-types.mjs';
 import { reactSurface, UnrecognisedShape } from './lib/api-surface.mjs';
 
@@ -33,12 +40,85 @@ const CONTRACT = {
   },
 };
 
-/* 1 — coverage */
+/* 1 — coverage.
+ *
+ * Coverage is decided by resolveAngularImplementations: which Angular
+ * components this gate can read is what "the contract holds across N layer
+ * implementations" is a claim about. Its two problem rules are guards against
+ * a SILENT failure -- this gate once printed
+ * "50 contract(s) hold across 50 layer implementation(s)" and exited 0 while
+ * every one of twenty real Angular implementations went unread, because
+ * absence and unfindability were the same value (null). A guard with no test
+ * behind it would survive its own deletion, which is the one thing a guard
+ * against silence must not do, so both messages are pinned below and each is
+ * pinned firing ALONE. */
 
-test('kebab turns a component name into the Angular directory name', () => {
-  assert.equal(kebab('AppLogo'), 'app-logo');
-  assert.equal(kebab('StatCard'), 'stat-card');
-  assert.equal(kebab('Breadcrumbs'), 'breadcrumbs');
+/** The layer tree this gate really walks, in miniature. */
+const TREE = { charts: ['bar-chart'], display: ['tag', 'unauth-card'] };
+
+/** An `exists` predicate over a fixture: every directory in `tree` holds its
+ *  own <Pascal>.ts, minus the ones named in `missing`. Built from the same
+ *  pascal() the gate's own path shape is derived from, so a fixture cannot
+ *  drift from the rule. */
+const treeExists = (tree, missing = []) => {
+  const gone = new Set(missing);
+  const present = new Set();
+  for (const [category, dirs] of Object.entries(tree))
+    for (const dir of dirs)
+      if (!gone.has(dir)) present.add(`frameworks/angular/components/${category}/${dir}/${pascal(dir)}.ts`);
+  return (path) => present.has(path);
+};
+
+test('a complete layer resolves every component to its own PascalCase file and reports nothing', () => {
+  const { implementations, problems } = resolveAngularImplementations(TREE, treeExists(TREE));
+  assert.deepEqual(problems, []);
+  assert.equal(implementations.size, 3);
+  assert.equal(implementations.get('BarChart'), 'frameworks/angular/components/charts/bar-chart/BarChart.ts');
+  assert.equal(implementations.get('UnauthCard'), 'frameworks/angular/components/display/unauth-card/UnauthCard.ts');
+});
+
+test('a component directory whose PascalCase file is missing is a problem, not a skip -- and the rest of the layer still resolves', () => {
+  // The per-directory guard, firing ALONE: the walk is non-empty, so the
+  // zero-total rule below has nothing to say. This is what one renamed or
+  // moved component directory looks like, and it is exactly the case a
+  // zero-total guard by itself cannot see.
+  const { implementations, problems } = resolveAngularImplementations(TREE, treeExists(TREE, ['tag']));
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /frameworks\/angular\/components\/display\/tag\/: is a component directory with no Tag\.ts/);
+  assert.match(problems[0], /clean pass over an unchecked layer/);
+  assert.equal(implementations.size, 2);
+  assert.ok(!implementations.has('Tag'));
+});
+
+test('a layer that yields zero implementations is a failure, not a clean pass', () => {
+  // The zero-total guard, firing ALONE: readLayer() returns {} for a moved or
+  // renamed frameworks/angular/components, so there is no directory for a
+  // per-directory problem to be about. This is what the whole layer moving
+  // looks like -- the failure this gate actually shipped -- and it is the same
+  // shape as zeroLayerProblems in check-structure.mjs and the zero-manifest
+  // guards in check-tailwind.mjs and check-radius-tokens.mjs.
+  const { implementations, problems } = resolveAngularImplementations({}, () => false);
+  assert.equal(implementations.size, 0);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /found 0 Angular component implementations/);
+  assert.match(problems[0], /an empty result set is a failure, not a clean pass/);
+});
+
+test('a layer whose every component file is unreadable reports both rules, because both are true', () => {
+  // Not a third rule: the two are independent, so a tree with directories and
+  // no readable file in any of them trips each of them once. Pinned so nobody
+  // "tidies" the zero-total check into an else-branch of the per-directory one.
+  const { problems } = resolveAngularImplementations(TREE, () => false);
+  assert.equal(problems.length, 4);
+  assert.equal(problems.filter((p) => /is a component directory with no/.test(p)).length, 3);
+  assert.equal(problems.filter((p) => /found 0 Angular component implementations/.test(p)).length, 1);
+});
+
+test('a category holding no directories contributes nothing and is not itself a component', () => {
+  const { implementations, problems } = resolveAngularImplementations({ forms: [] }, () => true);
+  assert.equal(implementations.size, 0);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /found 0 Angular component implementations/);
 });
 
 /* the binding table */
@@ -442,7 +522,7 @@ test('R1: a predefined object may not carry a slot or an event field', () => {
  * declared type list. {form:'enum', type:'Nonexistent'} would emit an
  * unresolvable TypeScript reference into BOTH generated modules -- caught
  * downstream by ngc only because frameworks/angular/index.ts re-exports
- * ./api.generated and tsconfig.check.json pulls it in, which is luck, not
+ * ./Api.generated and tsconfig.check.json pulls it in, which is luck, not
  * design (React's own .d.ts has nothing that would catch it at all). */
 test('an object field naming an enum type nobody declared fails', () => {
   const problems = validateTypes([{

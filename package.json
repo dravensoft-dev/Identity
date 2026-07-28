@@ -45,6 +45,7 @@
     "check:arbitrary": "bun scripts/check-arbitrary-values.mjs",
     "check:dimensions": "bun scripts/check-dimension-literals.mjs",
     "check:states": "bun scripts/check-manifest-states.mjs",
+    "check:structure": "bun scripts/check-structure.mjs",
     "check:behaviour": "bun scripts/check-behaviour.mjs",
     "check:compliance": "bun scripts/check-compliance.mjs",
     "check:api": "bun scripts/check-api.mjs",
@@ -56,7 +57,7 @@
     "test:scripts": "bun test scripts",
     "test:react": "bun test frameworks/react/test/",
     "test:react-dom": "bun test --preload ./frameworks/react/test-dom/preload.js frameworks/react/test-dom",
-    "test:angular": "bun run build:angular-tests && bun test build/angular-test/angular/test",
-    "test": "bun run build:angular-tests && bun test scripts frameworks/react/test/ build/angular-test/angular/test && bun test --preload ./frameworks/react/test-dom/preload.js frameworks/react/test-dom"
+    "test:angular": "bun run build:angular-tests && bun test build/angular-test/angular",
+    "test": "bun run build:angular-tests && bun test scripts frameworks/react/test/ build/angular-test/angular && bun test --preload ./frameworks/react/test-dom/preload.js frameworks/react/test-dom"
   }
 }

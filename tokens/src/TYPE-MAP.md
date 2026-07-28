@@ -48,7 +48,7 @@ these values, do not re-derive them.
 A token carrying `$extensions["com.dravensoft.arena"].script: true` is emitted
 **twice**: as the CSS custom property it would have had anyway, and as a bare
 number exported from each framework layer's generated module
-(`frameworks/react/tokens.generated.js`, `frameworks/angular/tokens.generated.ts`).
+(`frameworks/react/tokens.generated.js`, `frameworks/angular/Tokens.generated.ts`).
 
 The flag lives in the source, not in a list inside the build script, because a
 second list is a second thing to keep in sync.

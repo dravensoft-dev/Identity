@@ -1,0 +1,57 @@
+{
+  "brand": ["AppLogo"],
+  "charts": ["BarChart", "ChartCard", "DoughnutChart", "LineChart"],
+  "display": [
+    "ActivityFeed",
+    "Avatar",
+    "Badge",
+    "Calendar",
+    "CalendarEvent",
+    "Card",
+    "Skeleton",
+    "StatCard",
+    "Table",
+    "TableCell",
+    "TableRow",
+    "Tag",
+    "UnauthCard"
+  ],
+  "feedback": [
+    "Alert",
+    "ConfirmDialog",
+    "Dialog",
+    "EmptyState",
+    "ErrorState",
+    "Onboarding",
+    "ProgressBar",
+    "Spinner",
+    "Toast",
+    "Tooltip"
+  ],
+  "forms": [
+    "Button",
+    "Checkbox",
+    "IconButton",
+    "Input",
+    "Radio",
+    "RadioGroup",
+    "Select",
+    "Switch",
+    "Textarea"
+  ],
+  "navigation": [
+    "Breadcrumbs",
+    "BulkActionBar",
+    "CommandPalette",
+    "Menu",
+    "PageHead",
+    "Pagination",
+    "SegmentedControl",
+    "SideNav",
+    "SideNavCollapsible",
+    "SideNavItem",
+    "SideNavSection",
+    "Tab",
+    "Tabs"
+  ]
+}

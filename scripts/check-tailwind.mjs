@@ -43,6 +43,13 @@ export function themeKeys(css) {
 export function checkCompiled(css, manifests, tokens) {
   const errs = [];
 
+  // A gate that iterates zero manifests finds zero violations by construction
+  // and would otherwise report a clean pass over a layer it never looked at —
+  // exactly what happened when discovery went flat against a moved, nested
+  // tree and this gate printed "0 manifest(s) ... all resolve" and exited 0.
+  if (manifests.size === 0)
+    errs.push('found 0 manifests — an empty result set is a failure, not a clean pass; check the discovery path');
+
   // Every class a manifest declares must have produced a rule. This is what
   // holds up a manifest with no consumer anywhere in the repo.
   for (const [file, manifest] of manifests)
