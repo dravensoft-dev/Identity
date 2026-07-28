@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { Injector, runInInjectionContext } from '@angular/core';
 import { bulkActionBarStyles } from './BulkActionBar.variants';
 import { BulkActionBar } from './BulkActionBar';
-import type { BulkAction } from '../../../api.generated';
+import type { BulkAction } from '../../../Api.generated';
 
 /* This suite asserts against the plain-TypeScript recipe and stays a
  * recipe suite, not a render suite (host-class-binding.test.ts owns the one

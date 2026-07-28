@@ -28,7 +28,7 @@ import { Alert } from './Alert';
 import { assertPatternCases, ANGULAR_PRIMITIVES, isFocusable } from '../../../test/Compliance';
 const BINDING = join(ANGULAR_PRIMITIVES, 'feedback/alert/Alert.behaviour.json');
 
-/** Every tone `Alert.ts`'s own `AlertTone` (from api.generated) admits. `info` is the default. */
+/** Every tone `Alert.ts`'s own `AlertTone` (from Api.generated) admits. `info` is the default. */
 const TONES = ['info', 'success', 'warning', 'danger', 'neutral'] as const;
 
 function renderAlert(tone: (typeof TONES)[number]) {

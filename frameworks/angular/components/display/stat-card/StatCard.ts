@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { statCardStyles } from './StatCard.variants';
-import type { Tone, StatDelta } from '../../../api.generated';
+import type { Tone, StatDelta } from '../../../Api.generated';
 
 /** One metric on a dashboard: a micro-label, the number, and an optional delta pill.
  *  `tone` and `delta.tone` answer different questions about the same number. `tone`

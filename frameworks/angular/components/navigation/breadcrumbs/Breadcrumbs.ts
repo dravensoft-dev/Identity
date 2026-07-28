@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import type { Crumb } from '../../../api.generated';
+import type { Crumb } from '../../../Api.generated';
 import { breadcrumbsStyles } from './Breadcrumbs.variants';
 
 /** Explicit return path for hierarchies deeper than tabs. The last crumb is

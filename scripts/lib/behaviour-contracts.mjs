@@ -215,7 +215,7 @@ export function validateBinding(component, layer, binding, patterns) {
  *  `grep -rl divergesFrom frameworks/` against the cased-binding grep above,
  *  since this is exactly the kind of cross-file claim that entry warns about
  *  (React's `divergesFrom: "alert"` against the flat `alert` that
- *  `behaviour-delegated.json` binds for Angular's MatSnackBar): its `danger` case
+ *  `BehaviourDelegated.json` binds for Angular's MatSnackBar): its `danger` case
  *  could change from `alert` to anything at all and this function would stay
  *  silent, because the escape already returned true two lines up. That is not
  *  fixable by reordering -- a flat counterpart has no cases to compare against,

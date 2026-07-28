@@ -11,8 +11,8 @@
 
 import {
   chartHeight, chartPadTop, chartPadRight, chartPadBottom, chartPadLeft, catSlots,
-} from '../../tokens.generated';
-import type { SeriesTone } from '../../api.generated';
+} from '../../Tokens.generated';
+import type { SeriesTone } from '../../Api.generated';
 
 /** How many identity slots the categorical ramp defines. Assigned in order,
  *  never cycled. Derived from the ramp itself, so adding a slot needs no edit here. */

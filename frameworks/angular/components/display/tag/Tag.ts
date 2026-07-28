@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, output } from '@angular/core';
-import type { TagTone } from '../../../api.generated';
+import type { TagTone } from '../../../Api.generated';
 import { tagStyles } from './Tag.variants';
 
 /** Arena status/emphasis tag — pill, tone taxonomy per the Badge/Tag rule.

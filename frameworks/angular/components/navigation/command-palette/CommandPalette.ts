@@ -16,7 +16,7 @@ import {
 } from '@angular/core';
 import { commandPaletteStyles } from './CommandPalette.variants';
 import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../FocusTrap';
-import type { Command } from '../../../api.generated';
+import type { Command } from '../../../Api.generated';
 
 let nextId = 0;
 

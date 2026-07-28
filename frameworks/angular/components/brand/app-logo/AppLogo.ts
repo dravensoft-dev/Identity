@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { appLogoStyles } from './AppLogo.variants';
-import type { LogoSize, Orientation } from '../../../api.generated';
+import type { LogoSize, Orientation } from '../../../Api.generated';
 
 /** Brand lock-up: a mark projected into the `mark` slot, beside (horizontal)
  *  or above (vertical) a product name. `name` is required and the `mark`

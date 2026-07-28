@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import type { ActivityItem } from '../../../api.generated';
+import type { ActivityItem } from '../../../Api.generated';
 import { activityFeedStyles } from './ActivityFeed.variants';
 
 export interface ActivityFeedRow {

@@ -38,7 +38,7 @@ ensureDom();
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { Command } from '../../../api.generated';
+import type { Command } from '../../../Api.generated';
 import {
   activeOptionId,
   filterCommands,

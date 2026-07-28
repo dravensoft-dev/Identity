@@ -1,4 +1,4 @@
-export * from './api.generated';
+export * from './Api.generated';
 export * from './components';
 export * from './ContainerSize';
 export * from './FocusTrap';

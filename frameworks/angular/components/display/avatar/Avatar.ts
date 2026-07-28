@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { avatarStyles } from './Avatar.variants';
-import { AvatarSize, AvatarShape, AvatarStatus } from '../../../api.generated';
+import { AvatarSize, AvatarShape, AvatarStatus } from '../../../Api.generated';
 
 /** Person or entity mark — the image when `src` is set, initials from `name` otherwise.
  *  The host itself is the recipe's `root` — it is the flex item a parent row lays

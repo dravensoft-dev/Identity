@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { bulkActionBarStyles } from './BulkActionBar.variants';
-import type { BulkAction } from '../../../api.generated';
+import type { BulkAction } from '../../../Api.generated';
 
 /** Appears when rows are selected, and operates on the selection as a set.
  *  The host itself is the recipe's `root` -- it is the flex item a parent row

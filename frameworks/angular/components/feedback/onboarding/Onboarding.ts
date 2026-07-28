@@ -14,8 +14,8 @@ import {
 } from '@angular/core';
 import { onboardingStyles } from './Onboarding.variants';
 import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../FocusTrap';
-import { onboardingWidth, sp3, sp4 } from '../../../tokens.generated';
-import type { OnboardingAnchor, OnboardingStep } from '../../../api.generated';
+import { onboardingWidth, sp3, sp4 } from '../../../Tokens.generated';
+import type { OnboardingAnchor, OnboardingStep } from '../../../Api.generated';
 
 /** Guided coachmark tour (H10). Presents features within the product with
  *  progress dots, "Skip" and "Next" -- controlled: the host owns `index` and

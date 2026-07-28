@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { resolveActivityFeedRows } from './ActivityFeed';
-import type { ActivityItem } from '../../../api.generated';
+import type { ActivityItem } from '../../../Api.generated';
 import { activityFeedStyles } from './ActivityFeed.variants';
 
 test('the dot carries the tone as a colour, never as a fill', () => {

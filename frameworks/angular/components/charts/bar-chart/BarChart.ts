@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { containerWidth } from '../../../ContainerSize';
 import { CHART_HEIGHT, PAD, SR_ONLY, barPath, niceMax, resolveColors, ticks } from '../ChartInternals';
-import type { SeriesTone } from '../../../api.generated';
-import { chartBarGap, chartBarRadius } from '../../../tokens.generated';
+import type { SeriesTone } from '../../../Api.generated';
+import { chartBarGap, chartBarRadius } from '../../../Tokens.generated';
 
 /** The gap between two adjacent bars, in px. It is the plot surface showing
  *  through rather than a stroke on the bar: a stroke would sit inside the

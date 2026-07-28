@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, signal } from '@angular/core';
 import { containerWidth } from '../../../ContainerSize';
 import { CHART_HEIGHT, PAD, SR_ONLY, niceMax, resolveColors, ticks } from '../ChartInternals';
-import type { SeriesTone } from '../../../api.generated';
-import { chartPointR, chartPointRHover } from '../../../tokens.generated';
+import type { SeriesTone } from '../../../Api.generated';
+import { chartPointR, chartPointRHover } from '../../../Tokens.generated';
 
 /** The plot width assumed for the first paint, before `containerWidth()` has
  *  measured anything. Wide on purpose — a chart that starts narrow and widens

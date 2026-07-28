@@ -30,7 +30,7 @@ import assert from 'node:assert/strict';
 import { TestBed } from '@angular/core/testing';
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 import { Skeleton } from './Skeleton';
-import type { SkeletonVariant } from '../../../api.generated';
+import type { SkeletonVariant } from '../../../Api.generated';
 
 useTestEnvironment();
 

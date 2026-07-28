@@ -99,13 +99,13 @@ async function main() {
    *    primitive existed at all. Every Angular primitive directory is bound
    *    now, so `angular` already carries every one of them by the time this
    *    step runs. */
-  const delegatedPath = join(root, 'frameworks/angular/behaviour-delegated.json');
+  const delegatedPath = join(root, 'frameworks/angular/BehaviourDelegated.json');
   const delegated = existsSync(delegatedPath) ? read(delegatedPath) : {};
   for (const [component] of react) {
     if (angular.has(component)) continue;
     const entry = delegated[component];
     if (!entry) {
-      problems.push(`angular/${component}: no primitive and no entry in behaviour-delegated.json — say whether Material provides it or nothing does`);
+      problems.push(`angular/${component}: no primitive and no entry in BehaviourDelegated.json — say whether Material provides it or nothing does`);
       continue;
     }
     problems.push(...validateBinding(component, 'angular-delegated', entry, patterns));

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { skeletonStyles } from './Skeleton.variants';
-import type { SkeletonVariant } from '../../../api.generated';
+import type { SkeletonVariant } from '../../../Api.generated';
 
 /** Which text-stack slot row `n` of `total` renders. Matches React's
  *  `Skeleton.jsx`: the last row of *more than one* line runs short like a

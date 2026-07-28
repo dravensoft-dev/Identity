@@ -442,7 +442,7 @@ test('R1: a predefined object may not carry a slot or an event field', () => {
  * declared type list. {form:'enum', type:'Nonexistent'} would emit an
  * unresolvable TypeScript reference into BOTH generated modules -- caught
  * downstream by ngc only because frameworks/angular/index.ts re-exports
- * ./api.generated and tsconfig.check.json pulls it in, which is luck, not
+ * ./Api.generated and tsconfig.check.json pulls it in, which is luck, not
  * design (React's own .d.ts has nothing that would catch it at all). */
 test('an object field naming an enum type nobody declared fails', () => {
   const problems = validateTypes([{

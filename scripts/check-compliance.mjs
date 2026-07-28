@@ -232,7 +232,7 @@ export function inventoryFrom(bindings) {
  *  bare names, so the group is found by looking; Angular primitives are one
  *  directory each and the directory name is the file stem.
  *
- *  `frameworks/angular/behaviour-delegated.json` is deliberately NOT read here.
+ *  `frameworks/angular/BehaviourDelegated.json` is deliberately NOT read here.
  *  A delegated declaration describes a control Angular Material provides and
  *  this repo does not render, so no suite in this tree could ever verify one --
  *  counting them would inflate the denominator with bindings that are uncoverable

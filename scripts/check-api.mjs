@@ -139,7 +139,7 @@ export function validateTypes(types) {
          * would emit an unresolvable TypeScript reference into BOTH generated
          * modules (renderApiModule emits `field.type` verbatim, undeclared or
          * not). Caught downstream today only because
-         * frameworks/angular/index.ts re-exports ./api.generated and
+         * frameworks/angular/index.ts re-exports ./Api.generated and
          * tsconfig.check.json pulls it in -- luck, not design; React's own
          * .d.ts has no such backstop at all. */
         if (!kindByName.has(spec.type)) {

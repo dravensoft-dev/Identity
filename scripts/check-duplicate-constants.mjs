@@ -68,7 +68,7 @@ function* sourceFiles(dir) {
     const path = join(dir, entry);
     if (statSync(path).isDirectory()) { yield* sourceFiles(path); continue; }
     if (!SCAN_EXT.has(extname(entry))) continue;
-    if (entry.startsWith('tokens.generated.')) continue;
+    if (/^tokens\.generated\./i.test(entry)) continue;
     // A compiled .js sibling restates its .jsx source; scanning both would
     // report every constant as duplicated with itself.
     if (extname(entry) === '.js' && readdirSync(dir).includes(`${entry.slice(0, -3)}.jsx`)) continue;

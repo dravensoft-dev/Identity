@@ -7,7 +7,7 @@ import {
   CAT_SLOTS, CHART_HEIGHT, PAD, SR_ONLY,
   catColor, toneColor, resolveColors, niceMax, ticks, barPath, arcPath,
 } from './ChartInternals';
-import type { SeriesTone } from '../../api.generated';
+import type { SeriesTone } from '../../Api.generated';
 
 // --- niceMax --------------------------------------------------------------
 

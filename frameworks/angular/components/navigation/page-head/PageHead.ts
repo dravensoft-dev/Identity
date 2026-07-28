@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, contentChild, input } fro
 import { containerWidth, readBreakpoint } from '../../../ContainerSize';
 import { ArenaActions } from '../../../ProjectionMarkers';
 import { pageHeadStyles } from './PageHead.variants';
-import { PageHeadAlign } from '../../../api.generated';
+import { PageHeadAlign } from '../../../Api.generated';
 
 /** Page header: the display-weight title, an optional subtitle, and the page's
  *  actions. It stacks below `--bp-sm`, measured on ITSELF rather than on the

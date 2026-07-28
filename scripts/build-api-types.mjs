@@ -5,7 +5,7 @@
  * the SAME body into both layers:
  *
  *   frameworks/react/api.generated.d.ts
- *   frameworks/angular/api.generated.ts
+ *   frameworks/angular/Api.generated.ts
  *
  * Two files rather than one shared module, for the reason the script-readable
  * token target established: a component's import must never cross the
@@ -27,7 +27,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 /** Repo-relative output paths, in emission order. */
 export const API_TARGETS = [
   'frameworks/react/api.generated.d.ts',
-  'frameworks/angular/api.generated.ts',
+  'frameworks/angular/Api.generated.ts',
 ];
 
 const HEADER =
