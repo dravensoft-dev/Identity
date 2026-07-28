@@ -3,10 +3,11 @@
  * process.exit(1) has killed a test process in this repo twice. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { COVERED, SUITE_DIRS, suiteMentions, validateCoverage, inventoryFrom } from './check-compliance.mjs';
+import { tmpdir } from 'node:os';
+import { COVERED, SUITE_DIRS, suiteMentions, validateCoverage, inventoryFrom, walkSuites, collectSuites } from './check-compliance.mjs';
 
 test('validateCoverage is clean when a composite key names the layer its suite verifies', () => {
   const problems = validateCoverage({
@@ -156,13 +157,59 @@ test('a cased binding contributes exactly one inventory row', () => {
 
 test('every COVERED entry names a real suite file and a real binding', () => {
   // The live record, checked against the live tree. This is the test that turns
-  // COVERED from documentation into an invariant.
+  // COVERED from documentation into an invariant. SUITE_DIRS is walked rather than
+  // flat-joined -- the Angular half is a component tree, and a suite named by
+  // COVERED can sit several directories deep.
   assert.ok(Object.keys(COVERED).length > 0, 'COVERED should not be empty');
   const here = dirname(fileURLToPath(import.meta.url));
+  const suites = collectSuites();
   for (const [key, suiteFile] of Object.entries(COVERED)) {
-    const found = SUITE_DIRS.map((d) => join(d, suiteFile)).find((p) => existsSync(p));
-    assert.ok(found, `COVERED["${key}"] names ${suiteFile}, which is in neither suite directory`);
-    assert.ok(readFileSync(found, 'utf8').includes('.behaviour.json'), `${suiteFile} reads no binding`);
+    assert.ok(suiteFile in suites, `COVERED["${key}"] names ${suiteFile}, which is in no suite directory`);
+    assert.ok(suites[suiteFile].includes('.behaviour.json'), `${suiteFile} reads no binding`);
   }
   assert.ok(here.endsWith('scripts'));
+});
+
+/* walkSuites() must recurse -- the Angular half of SUITE_DIRS is now a component
+ * tree (components/<category>/<component>/<Name>.<facet>.test.ts), not a flat
+ * directory, so a suite two or three levels deep must still be found. */
+test('walkSuites finds a suite nested several directories deep', () => {
+  const root = mkdtempSync(join(tmpdir(), 'walk-suites-'));
+  try {
+    mkdirSync(join(root, 'a', 'b'), { recursive: true });
+    writeFileSync(join(root, 'a', 'b', 'Thing.facet.test.ts'), '// suite');
+    writeFileSync(join(root, 'not-a-suite.ts'), '// not collected');
+    const found = walkSuites(root);
+    assert.deepEqual(found, [join(root, 'a', 'b', 'Thing.facet.test.ts')]);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+/* The assertion Step 6 adds: in a nested tree two suites CAN share a basename,
+ * where a flat directory never could, and the old code had no assertion because
+ * it never needed one -- it would have let the second file silently overwrite
+ * the first in the basename-keyed map, which is exactly the shape COVERED's own
+ * `suiteMentions` lookup depends on being unambiguous. This test fails if that
+ * assertion is ever deleted: deletion-simulated by hand (removing the `if
+ * (seen.has(name)) throw ...` block from collectSuites() and re-running this
+ * file) turns this test from a pass -- it caught the thrown error and asserted
+ * on its message -- into a failure, because `assert.throws` then finds nothing
+ * thrown and reports "Missing expected exception". */
+test('collectSuites throws on a basename collision across two suite directories', () => {
+  const dirA = mkdtempSync(join(tmpdir(), 'suites-a-'));
+  const dirB = mkdtempSync(join(tmpdir(), 'suites-b-'));
+  try {
+    mkdirSync(join(dirA, 'nested'), { recursive: true });
+    mkdirSync(join(dirB, 'nested'), { recursive: true });
+    writeFileSync(join(dirA, 'nested', 'Dup.facet.test.ts'), '// first');
+    writeFileSync(join(dirB, 'nested', 'Dup.facet.test.ts'), '// second');
+    assert.throws(
+      () => collectSuites([dirA, dirB]),
+      /two suites share the basename Dup\.facet\.test\.ts/,
+    );
+  } finally {
+    rmSync(dirA, { recursive: true, force: true });
+    rmSync(dirB, { recursive: true, force: true });
+  }
 });

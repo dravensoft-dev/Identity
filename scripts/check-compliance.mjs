@@ -68,9 +68,15 @@ import { reactComponents, angularPrimitives, loadBinding, bindingCases } from '.
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..');
 
-/** The suite directories this gate reads. */
+/** The suite directories this gate reads. The Angular entry covers both halves
+ *  of that layer's suites since colocation: the per-component ones now sitting
+ *  beside the component they cover under components/, and the handful that stay
+ *  in test/ (the two harness modules' own dependents, plus the suites that cover
+ *  more than one component or the harness itself). Both are walked recursively
+ *  by walkSuites() below, so nesting depth does not matter here. */
 export const SUITE_DIRS = [
   join(repoRoot, 'frameworks', 'react', 'test-dom'),
+  join(repoRoot, 'frameworks', 'angular', 'components'),
   join(repoRoot, 'frameworks', 'angular', 'test'),
 ];
 
@@ -111,10 +117,10 @@ export const COVERED = {
   'Tooltip:react': 'tooltip-keyboard.test.jsx',
   'Alert:react': 'alert-tones.test.jsx',
   'Toast:react': 'alert-tones.test.jsx',
-  'Alert:angular': 'alert-role-tones.test.ts',
-  'BarChart:angular': 'chart-data-table.test.ts',
+  'Alert:angular': 'Alert.roleTones.test.ts',
+  'BarChart:angular': 'ChartDataTable.test.ts',
   'Tag:react': 'tag-and-chip-cases.test.jsx',
-  'Tag:angular': 'tag-cases.test.ts',
+  'Tag:angular': 'Tag.cases.test.ts',
   'CalendarEvent:react': 'tag-and-chip-cases.test.jsx',
 };
 
@@ -255,14 +261,48 @@ function collectBindings() {
   return inventoryFrom(byKey);
 }
 
-/** Read every suite file's source, keyed by basename. */
-function collectSuites() {
+/** Every suite file under `dir`, found by a recursive walk rather than a flat
+ *  `readdirSync` -- the Angular half of SUITE_DIRS is now a component tree,
+ *  category/component nested, not a flat directory of suites.
+ *  @param {string} dir @returns {string[]} absolute paths */
+export function walkSuites(dir) {
+  const out = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      out.push(...walkSuites(path));
+    } else if (/\.test\.(jsx|ts|mjs)$/.test(entry.name)) {
+      out.push(path);
+    }
+  }
+  return out;
+}
+
+/** Read every suite file's source, keyed by basename, across every directory
+ *  in `dirs` (defaults to the real SUITE_DIRS -- a parameter so a test can
+ *  point this at a throwaway tree instead of the repo's own).
+ *
+ *  Keying by basename stops being safe to do silently once suites are nested:
+ *  a flat directory can never produce two files of the same name, but a walk
+ *  over a component tree can, and the old flat `readdirSync` had no assertion
+ *  because it never needed one. A collision here means one suite would
+ *  silently shadow the other in every lookup keyed by basename -- COVERED's
+ *  `suiteMentions` check among them -- so it throws rather than picking a
+ *  winner nobody chose.
+ *  @param {string[]} [dirs] @returns {Record<string,string>} */
+export function collectSuites(dirs = SUITE_DIRS) {
   const out = {};
-  for (const dir of SUITE_DIRS) {
+  const seen = new Map();
+  for (const dir of dirs) {
     if (!existsSync(dir)) continue;
-    for (const f of readdirSync(dir)) {
-      if (!/\.test\.(jsx|ts|mjs)$/.test(f)) continue;
-      out[basename(f)] = readFileSync(join(dir, f), 'utf8');
+    for (const f of walkSuites(dir)) {
+      const name = basename(f);
+      if (seen.has(name))
+        throw new Error(
+          `check:compliance — two suites share the basename ${name}:\n  ${seen.get(name)}\n  ${f}\n` +
+          `Suites are keyed by basename, so one would silently shadow the other.`);
+      seen.set(name, f);
+      out[name] = readFileSync(f, 'utf8');
     }
   }
   return out;

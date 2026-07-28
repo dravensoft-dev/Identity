@@ -57,7 +57,7 @@
     "test:scripts": "bun test scripts",
     "test:react": "bun test frameworks/react/test/",
     "test:react-dom": "bun test --preload ./frameworks/react/test-dom/preload.js frameworks/react/test-dom",
-    "test:angular": "bun run build:angular-tests && bun test build/angular-test/angular/test",
-    "test": "bun run build:angular-tests && bun test scripts frameworks/react/test/ build/angular-test/angular/test && bun test --preload ./frameworks/react/test-dom/preload.js frameworks/react/test-dom"
+    "test:angular": "bun run build:angular-tests && bun test build/angular-test/angular",
+    "test": "bun run build:angular-tests && bun test scripts frameworks/react/test/ build/angular-test/angular && bun test --preload ./frameworks/react/test-dom/preload.js frameworks/react/test-dom"
   }
 }

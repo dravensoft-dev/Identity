@@ -138,7 +138,7 @@ export const GATES = [
 export function testStep({ isBun, testFiles }) {
   if (isBun) return [
     { name: 'build (ngc emit of the Angular test surface)', args: ['run', 'build:angular-tests'] },
-    { name: 'test (bun test scripts/ + framework suites)', args: ['test', 'scripts', 'frameworks/react/test/', 'build/angular-test/angular/test'] },
+    { name: 'test (bun test scripts/ + framework suites)', args: ['test', 'scripts', 'frameworks/react/test/', 'build/angular-test/angular'] },
     { name: 'test (bun test frameworks/react/test-dom, isolated)', args: ['test', '--preload', './frameworks/react/test-dom/preload.js', 'frameworks/react/test-dom'] },
   ];
   return [{ name: 'test (node --test scripts/*.test.mjs)', args: ['--test', ...testFiles] }];
