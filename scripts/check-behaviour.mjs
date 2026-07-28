@@ -18,9 +18,10 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   loadPatterns, validatePattern, validateBinding,
-  reactComponents, angularPrimitives, PATTERN_DIR,
+  reactComponents, angularPrimitives, angularBindingPath, PATTERN_DIR,
   crossLayerAgrees, bindingCases,
 } from './lib/behaviour-contracts.mjs';
+import { pascal } from './check-structure.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -73,12 +74,14 @@ async function main() {
   /* 3. Every Angular primitive declares. */
   const angular = new Map();
   for (const name of angularPrimitives(root)) {
-    const path = join(root, 'frameworks/angular/primitives', name, `${name}.behaviour.json`);
-    if (!existsSync(path)) {
-      problems.push(`angular/${name}: no ${name}.behaviour.json`);
+    /* The binding sits at components/<category>/<name>/<Pascal>.behaviour.json;
+     * angularBindingPath is the one place that path is built. */
+    const found = angularBindingPath(root, name);
+    if (!found) {
+      problems.push(`angular/${name}: no ${pascal(name)}.behaviour.json`);
       continue;
     }
-    const binding = read(path);
+    const binding = read(found.path);
     problems.push(...validateBinding(name, 'angular', binding, patterns));
     if (binding.component && !react.has(binding.component)) {
       problems.push(`angular/${name}: component "${binding.component}" is not a React component — mistyped, or React dropped it`);

@@ -2,7 +2,9 @@
  * layers, which is how chart geometry drifted before the script-readable token
  * target existed: CAT_SLOTS, CHART_HEIGHT and PAD were declared identically in
  * frameworks/react/components/charts/chart-internals.js and
- * frameworks/angular/primitives/chart-internals.ts. Those three would have
+ * frameworks/angular/components/charts/ChartInternals.ts (which was
+ * frameworks/angular/primitives/chart-internals.ts when this happened).
+ * Those three would have
  * failed here the day the second one was written -- but W and EDGE, in the two
  * Onboarding implementations, would NOT have: both were declared inside a
  * function body (React's Onboarding component; Angular's computed(() => {...}))

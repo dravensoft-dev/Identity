@@ -70,13 +70,17 @@ test('suiteMentions matches a binding filename in a suite body', () => {
   assert.equal(suiteMentions("join(X, 'feedback/Dialog.behaviour.json')", 'Menu'), false);
 });
 
-/* The Angular layer's binding file is named for its kebab-case directory, not for
- * the Pascal-case React counterpart the binding's own `component` field carries --
- * `bar-chart/bar-chart.behaviour.json` declares component "BarChart". A mention
- * check keyed on the component name alone would therefore never fire for an
- * Angular suite, and a cross-layer check that silently never fires looks exactly
- * like coverage. So a binding record carries the file STEM it is read from, and
- * that is what the suite text is searched for. */
+/* A binding record carries the file STEM it was read from, and that -- never the
+ * component name -- is what the suite text is searched for. The Angular layer is
+ * why: until the structure refactor's batch 2 its binding file was named for its
+ * kebab-case directory rather than for the Pascal-case React counterpart the
+ * binding's own `component` field carries, so `bar-chart/bar-chart.behaviour.json`
+ * declared component "BarChart", and a mention check keyed on the component name
+ * would never have fired for an Angular suite -- a cross-layer check that silently
+ * never fires looks exactly like coverage. Both layers spell the stem Pascal today,
+ * so no live binding exercises the difference; the input below is synthetic on
+ * purpose, because nothing HOLDS the two equal and a stem is filesystem
+ * information this function must never derive. */
 test('a binding whose file stem differs from its component name is matched on the stem', () => {
   const clean = validateCoverage({
     bindings: [{ name: 'BarChart', patterns: ['figure-with-data-table'], layer: 'angular', stem: 'bar-chart' }],

@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** The layers this gate claims anything about. See the header. */
-export const MIGRATED = ['tailwind'];
+export const MIGRATED = ['tailwind', 'angular'];
 
 const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
@@ -36,6 +36,25 @@ const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
  *  @param {string} name e.g. "ActivityFeed" @returns {string} e.g. "activity-feed" */
 export function kebab(name) {
   return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+}
+
+/** The PascalCase file stem a kebab directory name derives to -- the inverse of
+ *  kebab() above, and the second half of the one derivation this repo has for
+ *  the mapping. It lives here beside its inverse rather than being re-derived
+ *  wherever a gate needs a file stem: check-api.mjs, check-behaviour.mjs and
+ *  scripts/lib/behaviour-contracts.mjs all import from here.
+ *
+ *  It is an inverse only where kebab() is lossless, which is every name the
+ *  tree carries and is not a property of the transform: kebab('UIPanel') is
+ *  'uipanel', and nothing recovers 'UIPanel' from that. That is why no caller
+ *  TRUSTS the result -- each one builds a path with it and reports loudly when
+ *  the file is not there, rather than treating a miss as absence. Angular's
+ *  behaviour binding still declares its React counterpart by name for the same
+ *  reason (see validateBinding in scripts/lib/behaviour-contracts.mjs): a
+ *  cross-layer identity is carried, never derived.
+ *  @param {string} dir e.g. "activity-feed" @returns {string} e.g. "ActivityFeed" */
+export function pascal(dir) {
+  return dir.replace(/(^|-)([a-z0-9])/g, (_, _sep, c) => c.toUpperCase());
 }
 
 /** Read one layer's tree as category -> component directory names.

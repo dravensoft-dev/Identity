@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   validatePattern, loadPatterns, validateBinding, reactComponents, angularPrimitives,
-  crossLayerAgrees, loadBinding, bindingCases,
+  angularBindingPath, crossLayerAgrees, loadBinding, bindingCases,
 } from './lib/behaviour-contracts.mjs';
 
 const ok = {
@@ -179,11 +179,31 @@ test('the React inventory finds every component and no demo entry', () => {
   assert.ok(!found.some((c) => c.endsWith('.card.entry')));
 });
 
-test('the Angular inventory finds every primitive and no bare module', () => {
+/* The layer is components/<category>/<kebab>/ as of the structure refactor's
+ * batch 2, so this walk is two levels deep and has two ways to go wrong that a
+ * flat one did not: it can return the CATEGORY names, and it can return a
+ * shared internal that now sits one level in. Both are pinned below.
+ * `ChartInternals.ts` is the live instance of the second -- a bare `.ts` beside
+ * the four chart directories -- and its pre-move spelling, `chart-internals`,
+ * is kept in the assertion because a walk that reached back to the old tree
+ * would find that name and not the new one. */
+test('the Angular inventory finds every component, no category and no bare module', () => {
   const found = angularPrimitives('.');
   assert.equal(found.length, 20);
   assert.ok(found.includes('tag'));
+  assert.ok(found.includes('bar-chart'));
+  for (const category of ['brand', 'charts', 'display', 'feedback', 'navigation'])
+    assert.ok(!found.includes(category), `${category} is a category, not a component`);
+  assert.ok(!found.includes('ChartInternals'));
   assert.ok(!found.includes('chart-internals'));
+});
+
+test('an Angular binding path resolves the category by looking and the stem as Pascal', () => {
+  assert.deepEqual(angularBindingPath('.', 'bar-chart'), {
+    path: 'frameworks/angular/components/charts/bar-chart/BarChart.behaviour.json',
+    stem: 'BarChart',
+  });
+  assert.equal(angularBindingPath('.', 'no-such-component'), null);
 });
 
 /* crossLayerAgrees carries check-behaviour.mjs's step 6 -- "the two layers agree,

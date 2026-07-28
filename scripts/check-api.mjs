@@ -72,6 +72,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { buildApiModules } from './build-api-types.mjs';
 import { reactSurface, angularSurface, UnrecognisedShape } from './lib/api-surface.mjs';
+import { kebab, pascal, readLayer } from './check-structure.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -90,12 +91,11 @@ const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);
 /** React groups, the same list check-behaviour.mjs walks. */
 const REACT_GROUPS = ['brand', 'charts', 'display', 'feedback', 'forms', 'navigation'];
 
-/** "AppLogo" -> "app-logo". Pascal -> kebab is safe in this direction and only
- *  this one; the inverse is not, which is why an Angular behaviour binding names
- *  its React counterpart rather than deriving it. */
-export function kebab(pascal) {
-  return pascal.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-}
+/** "AppLogo" -> "app-logo", re-exported rather than re-implemented: this gate
+ *  carried its own identical copy until the structure refactor gave
+ *  check-structure.mjs the same derivation and its inverse, and two copies of
+ *  one mapping is one of them going stale later. */
+export { kebab };
 
 /** A contract member's name as one layer binds it. The contract governs the
  *  member surface, never the syntax a platform expresses it in. See the binding
@@ -489,10 +489,47 @@ function reactPath(component) {
   return null;
 }
 
-function angularPath(component) {
-  const dir = kebab(component);
-  const path = join(root, 'frameworks/angular/primitives', dir, `${dir}.ts`);
-  return existsSync(path) ? path : null;
+/** Every Angular component implementation, as component name -> file path,
+ *  read from the tree rather than derived per contract.
+ *
+ *  THE GUARD IS THE POINT, and it exists because this gate shipped the exact
+ *  failure it now refuses. angularPath() used to build
+ *  `frameworks/angular/primitives/<kebab>/<kebab>.ts` per contract and wrap the
+ *  lookup in existsSync, returning null on a miss; when the structure refactor
+ *  moved the layer to `components/<category>/<kebab>/<Pascal>.ts` every lookup
+ *  missed, main()'s `if (!path) continue` skipped the Angular half of
+ *  compareSurface for all fifty contracts, and the gate printed
+ *  "50 contract(s) hold across 50 layer implementation(s)" and exited 0 while
+ *  twenty real Angular implementations went unread. A gate that resolves an
+ *  implementation to null cannot tell "this layer does not implement it" from
+ *  "this gate cannot find it", and the second one is silent by construction.
+ *
+ *  So absence is decided by WALKING the layer, and two things are reported
+ *  rather than skipped. A directory the tree really has whose component file
+ *  this gate cannot open is a problem -- that is the per-component half, and it
+ *  is what a rename or a single moved directory looks like. Zero directories
+ *  altogether is a problem too -- that is the whole-layer half, the same shape
+ *  as check-tailwind.mjs's "found 0 manifests" and check-structure.mjs's
+ *  zero-directory guard, and it is what a moved or renamed LAYER looks like.
+ *  Neither can be reached by a component that Angular genuinely does not
+ *  implement, which simply has no directory and is correctly silent.
+ *  @returns {{implementations: Map<string, string>, problems: string[]}} */
+function angularImplementations() {
+  const base = join(root, 'frameworks/angular/components');
+  const implementations = new Map();
+  const problems = [];
+  for (const [category, dirs] of Object.entries(readLayer('angular')))
+    for (const dir of dirs) {
+      const name = pascal(dir);
+      const path = join(base, category, dir, `${name}.ts`);
+      if (existsSync(path)) { implementations.set(name, path); continue; }
+      problems.push(
+        `frameworks/angular/components/${category}/${dir}/: is a component directory with no ${name}.ts — `
+        + 'this gate cannot read a surface it cannot find, and skipping it would report a clean pass over an unchecked layer');
+    }
+  if (implementations.size === 0)
+    problems.push('found 0 Angular component implementations — an empty result set is a failure, not a clean pass; check the discovery path');
+  return { implementations, problems };
 }
 
 function main() {
@@ -524,6 +561,8 @@ function main() {
 
   const contractDir = join(root, 'api/components');
   const files = existsSync(contractDir) ? readdirSync(contractDir).filter((f) => f.endsWith('.json')).sort() : [];
+  const angularLayer = angularImplementations();
+  problems.push(...angularLayer.problems);
   let layersChecked = 0;
 
   for (const file of files) {
@@ -532,7 +571,7 @@ function main() {
 
     /* 1. Coverage, resolved structurally rather than from a list. */
     const react = reactPath(contract.component);
-    const angular = angularPath(contract.component);
+    const angular = angularLayer.implementations.get(contract.component) ?? null;
     if (!react && !angular) {
       problems.push(`${file}: names component "${contract.component}", which no layer implements`);
       continue;

@@ -63,7 +63,7 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, basename } from 'node:path';
-import { reactComponents, angularPrimitives, loadBinding, bindingCases } from './lib/behaviour-contracts.mjs';
+import { reactComponents, angularPrimitives, angularBindingPath, loadBinding, bindingCases } from './lib/behaviour-contracts.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..');
@@ -97,10 +97,14 @@ export const SUITE_DIRS = [
  * with no `:layer` suffix is rejected outright rather than falling back to
  * name-only resolution, so the old shape cannot creep back in silently.
  *
- * The Angular binding FILE is named for the kebab directory it sits in
- * (`bar-chart/bar-chart.behaviour.json` declares component "BarChart"), so the
- * mention check below searches for the file stem of THAT layer's binding, not
- * the key.
+ * The mention check below searches for the file STEM of that layer's binding
+ * rather than for the key, because a stem is not always the component name.
+ * It was not, for the whole Angular layer, until the structure refactor's
+ * batch 2: the file was named for the kebab directory it sat in, so
+ * `bar-chart/bar-chart.behaviour.json` declared component "BarChart" and a
+ * check keyed on the component name would never have fired for an Angular
+ * suite. Both layers now spell the stem Pascal, so the two agree today -- the
+ * stem is still what is searched for, because nothing holds them equal.
  *
  * Add an entry when you add a suite. Removing or renaming a suite without
  * removing its entry fails this gate, which is the point.
@@ -229,8 +233,10 @@ export function inventoryFrom(bindings) {
  *  binding into a row.
  *
  *  React components live one group directory deep and reactComponents() returns
- *  bare names, so the group is found by looking; Angular primitives are one
- *  directory each and the directory name is the file stem.
+ *  bare names, so the group is found by looking. Angular components are one
+ *  kebab directory each, one category deep, with a PascalCase file stem;
+ *  angularBindingPath() resolves both halves and is the one place that path is
+ *  built (see scripts/lib/behaviour-contracts.mjs).
  *
  *  `frameworks/angular/BehaviourDelegated.json` is deliberately NOT read here.
  *  A delegated declaration describes a control Angular Material provides and
@@ -250,12 +256,11 @@ function collectBindings() {
     byKey[`${name}:react`] = { ...binding, stem: name };
   }
 
-  const angularBase = join(repoRoot, 'frameworks/angular/primitives');
   for (const dir of angularPrimitives(repoRoot)) {
-    const path = join(angularBase, dir, `${dir}.behaviour.json`);
-    if (!existsSync(path)) continue;
-    const binding = loadBinding(path);
-    byKey[`${binding.component}:angular`] = { ...binding, stem: dir };
+    const found = angularBindingPath(repoRoot, dir);
+    if (!found) continue; // check:behaviour owns "every component declares"; this gate does not duplicate it.
+    const binding = loadBinding(found.path);
+    byKey[`${binding.component}:angular`] = { ...binding, stem: found.stem };
   }
 
   return inventoryFrom(byKey);

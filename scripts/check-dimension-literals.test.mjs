@@ -376,13 +376,13 @@ test('EXEMPT records the four data-to-pixel projections this task newly exempts,
 // these named rather than inheriting a blind spot.
 
 test('EXEMPT records the three SR_ONLY visually-hidden literals, by name', () => {
-  assert.ok(EXEMPT.has("frameworks/angular/primitives/chart-internals.ts:width:'1px'"));
-  assert.ok(EXEMPT.has("frameworks/angular/primitives/chart-internals.ts:height:'1px'"));
-  assert.ok(EXEMPT.has("frameworks/angular/primitives/chart-internals.ts:margin:'-1px'"));
+  assert.ok(EXEMPT.has("frameworks/angular/components/charts/ChartInternals.ts:width:'1px'"));
+  assert.ok(EXEMPT.has("frameworks/angular/components/charts/ChartInternals.ts:height:'1px'"));
+  assert.ok(EXEMPT.has("frameworks/angular/components/charts/ChartInternals.ts:margin:'-1px'"));
   // The rest of the idiom needs no exemption: `padding: '0'` and `border: '0'`
   // are zero, which is legal outright, and the non-dimension keys are ungoverned.
-  assert.ok(!EXEMPT.has("frameworks/angular/primitives/chart-internals.ts:padding:'0'"));
-  assert.ok(!EXEMPT.has("frameworks/angular/primitives/chart-internals.ts:border:'0'"));
+  assert.ok(!EXEMPT.has("frameworks/angular/components/charts/ChartInternals.ts:padding:'0'"));
+  assert.ok(!EXEMPT.has("frameworks/angular/components/charts/ChartInternals.ts:border:'0'"));
 });
 
 // --- Plan 8B1 Task 3: Skeleton's width/height/radius become CSS strings ---

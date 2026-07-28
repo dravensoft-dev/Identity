@@ -12,7 +12,7 @@
  * different property from that one, and it stays unguarded. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateStructure, zeroLayerProblems, MIGRATED } from './check-structure.mjs';
+import { validateStructure, zeroLayerProblems, kebab, pascal, MIGRATED } from './check-structure.mjs';
 
 const categories = { display: ['Badge', 'Tag'], forms: ['Button'] };
 
@@ -76,7 +76,15 @@ test('a component name declared in two categories is a problem, naming both -- a
 });
 
 test('MIGRATED names the layers this gate currently reaches', () => {
-  assert.deepEqual(MIGRATED, ['tailwind']);
+  assert.deepEqual(MIGRATED, ['tailwind', 'angular']);
+});
+
+test('pascal is kebab run backwards, for every directory name the tree carries', () => {
+  assert.equal(pascal('activity-feed'), 'ActivityFeed');
+  assert.equal(pascal('tag'), 'Tag');
+  assert.equal(pascal('unauth-card'), 'UnauthCard');
+  for (const name of ['ActivityFeed', 'Tag', 'UnauthCard', 'BarChart', 'PageHead', 'AppLogo'])
+    assert.equal(pascal(kebab(name)), name);
 });
 
 test('a MIGRATED layer with zero component directories is a failure, not a clean pass', () => {
