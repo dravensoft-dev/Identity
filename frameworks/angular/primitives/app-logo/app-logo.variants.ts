@@ -1,4 +1,4 @@
-import { tv } from '../../../tailwind/tv';
+import { tv } from '../../../tailwind/Tv';
 import manifest from '../../../tailwind/components/brand/app-logo/AppLogo.manifest';
 
 /** Recipe for `arena-app-logo`. See `tag.variants.ts` for why this

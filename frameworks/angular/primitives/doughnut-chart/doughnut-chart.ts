@@ -80,7 +80,7 @@ const CENTRE_LABEL_STYLE = { fontSize: 'var(--dz-text-lg)' } as const satisfies 
  *  charts' no-manifest exception rather than a preference: this layer styles focus with
  *  `focus-visible:` utilities carried by a component's manifest (see
  *  `ConfirmDialog.manifest.json`'s `focus-visible:ring-[length:var(--focus-width)]`), and
- *  `utilities.css` is generated from manifests only — so the three charts, which
+ *  `Utilities.css` is generated from manifests only — so the three charts, which
  *  deliberately have none, cannot reach that idiom without being given one. The two
  *  inline alternatives are both worse than the UA default: a `[style]` object cannot
  *  express `:focus-visible` at all, and toggling a token-valued `boxShadow` from

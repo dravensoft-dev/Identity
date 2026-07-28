@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { getDefaultConfig } from 'tailwind-merge';
-import { tv, ARENA_SPACING_SUFFIXES, spacingConsumingGroups } from '../frameworks/tailwind/tv.ts';
+import { tv, ARENA_SPACING_SUFFIXES, spacingConsumingGroups } from '../frameworks/tailwind/Tv.ts';
 import { parseDecls } from './lib/css-decls.mjs';
 
 /* No gate exercises tailwind-variants' `tv()` merge until this file: every other
@@ -18,7 +18,7 @@ import { parseDecls } from './lib/css-decls.mjs';
  * whichever was concatenated later silently ate the other — verified against
  * Button.manifest.json (the color lost) and Tag.manifest.json (the size lost).
  *
- * Fixed in frameworks/tailwind/tv.ts by registering Arena's custom suffixes
+ * Fixed in frameworks/tailwind/Tv.ts by registering Arena's custom suffixes
  * under Tailwind's own `font-size` class group ID (`fromTheme('text')` is
  * what the built-in group already keys on; extending it, rather than
  * inventing a new group, keeps the size scale's existing correct conflict
@@ -64,7 +64,7 @@ test('shadow-1..3 still dedupe against each other (pre-existing registration, re
  * frameworks/angular/test/tag-variants.test.ts, not here. It has to: this
  * file is in scripts/, which is the one suite check-all.mjs also runs under
  * plain node, and reaching into the Angular layer from here dragged node into
- * resolving `tag.variants.ts`'s own extensionless `from '../../../tailwind/tv'`
+ * resolving `tag.variants.ts`'s own extensionless `from '../../../tailwind/Tv'`
  * — the idiom every file in that layer uses, and the one Angular's tsc
  * expects. Bun resolves it, node does not, so this one import made
  * `node scripts/check-all.mjs` fail on a defect that existed in neither layer.
@@ -149,7 +149,7 @@ test('every registered Arena tracking name dedupes against a sibling, in both di
  * leading/blur/size/ease/max-w all at once). Hand-written cases like the
  * `tracking` block above only prove the names someone thought to probe; they
  * say nothing about a namespace nobody probed. This block instead reads
- * frameworks/tailwind/theme.css itself — the same file tv.ts's registrations
+ * frameworks/tailwind/Theme.css itself — the same file tv.ts's registrations
  * are meant to track — extracts Arena's namespaces and their keys
  * mechanically, and asserts each namespace dedupes its own keys pairwise. A
  * new Arena key added to a namespace THIS DERIVATION FINDS, without a
@@ -160,7 +160,7 @@ test('every registered Arena tracking name dedupes against a sibling, in both di
  *
  * That claim had a real gap on first landing — fix pass 1's derivation found
  * a namespace only via its `--<ns>-*: initial;` reset line, so it silently
- * missed the one namespace theme.css leaves open on purpose (`--spacing-*`).
+ * missed the one namespace Theme.css leaves open on purpose (`--spacing-*`).
  * Fix pass 2, immediately below, closes that: namespace membership is now
  * decided from the key name itself. Nothing here claims to be exhaustive
  * over "every conceivable namespace" — only over the ones a key can actually
@@ -169,13 +169,13 @@ test('every registered Arena tracking name dedupes against a sibling, in both di
  * `spacing` included). A wholly new, non-native, unreset namespace is the
  * one shape this still could not find — see the residual-gap test below. */
 
-const themeCssPath = new URL('../frameworks/tailwind/theme.css', import.meta.url);
+const themeCssPath = new URL('../frameworks/tailwind/Theme.css', import.meta.url);
 const [themeDecls] = [...parseDecls(readFileSync(themeCssPath, 'utf8')).values()];
 
 /* Fix pass 2 — the first version of this derivation keyed namespace
  * discovery off `--<ns>-*: initial;` reset lines, which is a PROXY for "this
  * is an Arena namespace," not the thing itself, and the proxy broke exactly
- * once: `--spacing-*` is deliberately left open (theme.css's own comment —
+ * once: `--spacing-*` is deliberately left open (Theme.css's own comment —
  * Tailwind's numeric scale has to keep working alongside Arena's named
  * steps), so it has no reset line and was entirely invisible to the old
  * scan. Real cost: `Button.manifest.json`'s `h-ctl-h`/`h-ctl-h-sm`/
@@ -184,7 +184,7 @@ const [themeDecls] = [...parseDecls(readFileSync(themeCssPath, 'utf8')).values()
  * Namespaces are now derived from the key name itself. `NATIVE_THEME_NAMESPACES`
  * is Tailwind's own fixed set of `@theme` namespaces — sourced from
  * tailwind-merge's `getDefaultConfig().theme` keys, not listed from memory —
- * and a key belongs to one of those namespaces whether or not OUR theme.css
+ * and a key belongs to one of those namespaces whether or not OUR Theme.css
  * happens to reset it, `spacing` included. Reset lines are still read
  * (`resetNamespaces`), because two Arena namespaces (`size`, `z-index`) are
  * NOT native Tailwind theme namespaces — they're Arena's own, riding on
@@ -257,14 +257,14 @@ const SKIP = new Set(['color', 'spacing']);
 
 const namespaces = deriveNamespaces(themeDecls);
 
-test('every Arena namespace in theme.css is either mapped to a prefix or explicitly skipped', () => {
+test('every Arena namespace in Theme.css is either mapped to a prefix or explicitly skipped', () => {
   for (const ns of namespaces.keys()) {
     assert.ok(PREFIX[ns] || SKIP.has(ns),
-      `theme.css defines --${ns}-* but this test has no PREFIX entry and no SKIP reason for it — add one`);
+      `Theme.css defines --${ns}-* but this test has no PREFIX entry and no SKIP reason for it — add one`);
   }
 });
 
-test('every Arena-defined namespace with 2+ keys dedupes its own keys pairwise, derived from theme.css', () => {
+test('every Arena-defined namespace with 2+ keys dedupes its own keys pairwise, derived from Theme.css', () => {
   let exercised = 0;
   for (const [ns, keys] of namespaces) {
     if (SKIP.has(ns) || keys.length < 2) continue;
@@ -276,9 +276,9 @@ test('every Arena-defined namespace with 2+ keys dedupes its own keys pairwise, 
       assert.equal(merge(`${b} ${a}`), a, `${b} ${a} should collapse to ${a} (namespace --${ns}-*)`);
     }
   }
-  // Vacuous-pass guard: if theme.css's shape changed enough that nothing
+  // Vacuous-pass guard: if Theme.css's shape changed enough that nothing
   // qualified, the loop above would pass having asserted nothing.
-  assert.ok(exercised >= 10, `expected to exercise most theme.css namespaces, only exercised ${exercised}`);
+  assert.ok(exercised >= 10, `expected to exercise most Theme.css namespaces, only exercised ${exercised}`);
 });
 
 /* Namespaces with fewer than 2 Arena-defined keys have nothing of their own
@@ -370,7 +370,7 @@ test('Button.manifest.json\'s three ctl-h heights now dedupe against each other 
  * stop": a namespace that is BOTH unreset (no `--<ns>-*: initial;`) AND not
  * one of tailwind-merge's own native `@theme` namespaces would still be
  * invisible to `deriveNamespaces` -- there is no third signal left to find
- * it by. That shape does not exist in theme.css today (`spacing` was the
+ * it by. That shape does not exist in Theme.css today (`spacing` was the
  * only unreset namespace, and it IS native), so this is not a live bug, but
  * it is why "every Arena-defined key" is no longer this file's claim.
  *
@@ -392,7 +392,7 @@ test('a fake key added to an unreset-but-native namespace (spacing\'s own shape)
   const [fakeDecls] = [...parseDecls(fakeThemeCss).values()];
   const fakeNamespaces = deriveNamespaces(fakeDecls);
   assert.ok(fakeNamespaces.has('spacing'),
-    'spacing has no --spacing-*: initial reset in this fixture either, matching theme.css\'s real shape -- it must still be found');
+    'spacing has no --spacing-*: initial reset in this fixture either, matching Theme.css\'s real shape -- it must still be found');
   assert.ok(fakeNamespaces.get('spacing').includes('fake-test-key'),
     'a fake key on the open spacing namespace was not picked up -- this is the exact escape fix pass 2 closes');
 });
@@ -415,7 +415,7 @@ test('a fake key added to an unreset-but-native namespace (spacing\'s own shape)
  * stale entry (naming a token that no longer exists) fails exactly like a
  * missing one. UNATTRIBUTED below is that same map for this file. */
 
-/** Every Arena-defined property in theme.css that LOOKS like a namespaced
+/** Every Arena-defined property in Theme.css that LOOKS like a namespaced
  *  key — `--<namespace>-<suffix>`, i.e. a non-reset declaration with at
  *  least one hyphen after its first word — is a candidate that must end up
  *  either attributed to a namespace by deriveNamespaces, or named in
@@ -435,7 +435,7 @@ function namespacedPropertyCandidates(decls) {
 
 /** Properties that legitimately attribute to no namespace, and why. Both
  *  reasons here are the same shape: `--default-*` wires a Tailwind default
- *  directly (theme.css's own comment: "derives from --font-sans, which we
+ *  directly (Theme.css's own comment: "derives from --font-sans, which we
  *  cleared, so it is set here") rather than exposing an Arena scale with
  *  siblings to self-dedupe against — there is no second `--default-font-
  *  family` to conflict with. This is NOT where `blur`'s or `container`'s
@@ -447,12 +447,12 @@ function namespacedPropertyCandidates(decls) {
  *  stock-pairing cases). Only a property that never enters `namespaces` at
  *  all belongs here. */
 const UNATTRIBUTED = new Map([
-  ['default-font-family', 'wires a Tailwind default directly (theme.css: "derives from --font-sans, which we cleared"); not an Arena scale with a sibling to self-dedupe against'],
+  ['default-font-family', 'wires a Tailwind default directly (Theme.css: "derives from --font-sans, which we cleared"); not an Arena scale with a sibling to self-dedupe against'],
   ['default-transition-duration', 'wires a Tailwind default directly; not an Arena scale with a sibling to self-dedupe against'],
   ['default-transition-timing-function', 'wires a Tailwind default directly; not an Arena scale with a sibling to self-dedupe against'],
 ]);
 
-test('every namespaced-looking property in theme.css is attributed to a namespace or listed in UNATTRIBUTED with a reason', () => {
+test('every namespaced-looking property in Theme.css is attributed to a namespace or listed in UNATTRIBUTED with a reason', () => {
   const candidates = namespacedPropertyCandidates(themeDecls);
   const attributedNames = new Set();
   for (const [ns, keys] of namespaces) for (const key of keys) attributedNames.add(`${ns}-${key}`);
@@ -470,7 +470,7 @@ test('every namespaced-looking property in theme.css is attributed to a namespac
   // the list only ever grows and stops meaning anything.
   const candidateSet = new Set(candidates);
   for (const name of UNATTRIBUTED.keys())
-    if (!candidateSet.has(name)) errs.push(`UNATTRIBUTED lists --${name} but no such property exists in theme.css — drop the entry`);
+    if (!candidateSet.has(name)) errs.push(`UNATTRIBUTED lists --${name} but no such property exists in Theme.css — drop the entry`);
 
   assert.deepEqual(errs, [], errs.join('\n'));
 });

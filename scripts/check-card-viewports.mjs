@@ -83,14 +83,14 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
  * loop below now polls at — for anything these pages render.
  *
  * That scan still misses one shape, found by hand: a bottom margin on the
- * *last in-flow child*, which every specimen carries, since specimen.css's
+ * *last in-flow child*, which every specimen carries, since Specimen.css's
  * `.row` sets margin-bottom and a section is usually a page's last element.
  * getBoundingClientRect never includes an element's own margin, only its
  * border box, so no descendant rect the scan reads ever carries it — and
  * body's own bottom padding (the `padding` term above) is a different box
  * than the child's margin, so adding it does not either. But that margin is
  * not lost space: every card harness's body carries its own bottom padding
- * (specimen.css, var(--sp-6)), which is exactly what stops the child's
+ * (Specimen.css, var(--sp-6)), which is exactly what stops the child's
  * margin from collapsing through to become the document's own margin (the
  * ordinary CSS collapsing-margins rule — a parent's bottom padding sits
  * between a child's margin and the parent's border edge, so the two cannot
@@ -177,7 +177,7 @@ export const MEASURE_SCRIPT = `(async () => {
     // the bottom margin of its last in-flow child — collapsing-margins
     // stops that margin from escaping through body's own box specifically
     // *because* body carries bottom padding (every card harness's body
-    // does, via specimen.css), so the margin lands inside body's border box
+    // does, via Specimen.css), so the margin lands inside body's border box
     // rather than past it. Neither term above sees it: getBoundingClientRect
     // never includes an element's own margin, and \`padding\` is body's
     // paddingBottom, not any child's margin. Taking the max of the two

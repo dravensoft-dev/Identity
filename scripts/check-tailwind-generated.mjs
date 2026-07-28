@@ -1,4 +1,4 @@
-/* Asserts the committed frameworks/tailwind/utilities.css, and every
+/* Asserts the committed frameworks/tailwind/Utilities.css, and every
  * committed *.manifest.ts, are what the current preset and manifests compile
  * to. The same contract check-tokens-generated.mjs holds for tokens/*.css:
  * build output in the tree is only trustworthy while something fails when it
@@ -44,7 +44,7 @@ function main() {
     console.error(`check-tailwind-generated: ${stale} is stale — run \`bun run build:tailwind\` and commit the result`);
     process.exit(1);
   }
-  console.log('check-tailwind-generated: utilities.css and every manifest.ts match the preset and the manifests');
+  console.log('check-tailwind-generated: Utilities.css and every manifest.ts match the preset and the manifests');
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

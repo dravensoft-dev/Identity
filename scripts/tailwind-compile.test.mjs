@@ -40,10 +40,10 @@ test('hex-escapes a leading digit instead of backslash-escaping it', () => {
 });
 
 test('entryStylesheet disables automatic content detection on the preset import and keeps the explicit manifest source', () => {
-  const stylesheet = entryStylesheet('/repo/frameworks/tailwind/theme.css', '/repo/frameworks/tailwind/components');
+  const stylesheet = entryStylesheet('/repo/frameworks/tailwind/Theme.css', '/repo/frameworks/tailwind/components');
   assert.equal(
     stylesheet,
-    "@import '/repo/frameworks/tailwind/theme.css' source(none);\n" +
+    "@import '/repo/frameworks/tailwind/Theme.css' source(none);\n" +
       "@source '/repo/frameworks/tailwind/components/**/*.manifest.json';\n",
   );
 });

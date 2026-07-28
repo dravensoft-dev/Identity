@@ -91,7 +91,7 @@ export function entryStylesheet(preset, components, extra) {
  *  @returns {{css: string, manifests: Map<string, object>}} */
 export function compileLayer(opts = {}) {
   const root = opts.root ?? repoRoot;
-  const preset = join(root, 'frameworks/tailwind/theme.css');
+  const preset = join(root, 'frameworks/tailwind/Theme.css');
   const components = join(root, 'frameworks/tailwind/components');
   const bin = join(root, 'node_modules/.bin/tailwindcss');
 

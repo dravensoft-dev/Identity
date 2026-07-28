@@ -1,4 +1,4 @@
-/* frameworks/tailwind/specimen.css
+/* frameworks/tailwind/Specimen.css
    Page chrome for the *.card.html specimens — and nothing that could style a
    component. Every class a specimen puts on a component's own element comes
    from its manifest through classesFor(); what is left over is the page: a
@@ -7,7 +7,7 @@
    specimen and its React counterpart sit on the same surface and a difference
    between them is a difference in the component. The `.row` modifiers exist
    because a specimen sometimes has to lay its row out differently to make its
-   point — see section()'s JSDoc in specimen.js for what each one is for. */
+   point — see section()'s JSDoc in Specimen.js for what each one is for. */
 body {
   margin: 0;
   padding: var(--sp-6);

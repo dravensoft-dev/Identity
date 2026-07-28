@@ -1096,7 +1096,7 @@ test('arena-page-head: a platform with no ResizeObserver still renders, on the w
  * The obvious version of this guard would render each host in this file's
  * real TestBed tree and assert `getComputedStyle(host).display !== 'inline'`
  * -- but that only proves something if the generated stylesheet is actually
- * in effect. It is not: `frameworks/tailwind/utilities.css` wraps every
+ * in effect. It is not: `frameworks/tailwind/Utilities.css` wraps every
  * rule in `@layer utilities { ... }`, and happy-dom's CSS engine does not
  * evaluate rules inside `@layer` at all (confirmed by hand: injecting
  * `@layer utilities { .inline-flex { display: inline-flex } }` into a

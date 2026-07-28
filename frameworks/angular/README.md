@@ -5,7 +5,7 @@ Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
 **Bridge (foundation) — make an existing Angular/Material app wear Arena:**
 - `theme/arena-tailwind.css` — one import that brings Arena's tokens (including
   the self-hosted fonts declared in `tokens/fonts.css`, binaries in `assets/fonts/`)
-  + the shared `frameworks/tailwind/theme.css` `@theme` preset into scope.
+  + the shared `frameworks/tailwind/Theme.css` `@theme` preset into scope.
 - `theme/arena-material.css` — maps Arena tokens onto Angular Material's
   `--mat-*` custom properties so the components below render in Arena. What it covers:
   buttons (filled, outlined, and an outline-only `arena-danger`), the outlined form
@@ -75,7 +75,7 @@ A primitive defines no styling of its own. Its recipe lives in
 component through the shared `tv`:
 
 ```ts
-import { tv } from '../../../tailwind/tv';
+import { tv } from '../../../tailwind/Tv';
 import manifest from '../../../tailwind/components/Tag.manifest.json' with { type: 'json' };
 
 export const tagStyles = tv(manifest);

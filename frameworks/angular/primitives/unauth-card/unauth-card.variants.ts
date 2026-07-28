@@ -1,4 +1,4 @@
-import { tv } from '../../../tailwind/tv';
+import { tv } from '../../../tailwind/Tv';
 import manifest from '../../../tailwind/components/display/unauth-card/UnauthCard.manifest';
 
 /** Recipe for `arena-unauth-card`. Both `UnauthCard.manifest.ts` (the literal-typed

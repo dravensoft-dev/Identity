@@ -1,7 +1,7 @@
 /* Fails when a Tailwind manifest under frameworks/tailwind/components/ carries
  * the bare `rounded-full` utility. Arena's whole radius vocabulary --
  * `rounded-xs`/`-sm`/`-md`/`-lg`/`-xl`/`-2xl`/`-pill` -- is wired in
- * frameworks/tailwind/theme.css to a `--r-*` token via `--radius-*`, and every
+ * frameworks/tailwind/Theme.css to a `--r-*` token via `--radius-*`, and every
  * OTHER Tailwind default in a cleared namespace (`--radius-*: initial`) already
  * emits no rule at all, which is exactly what makes it visible to
  * check-tailwind.mjs's "every class emits a rule" assertion. `rounded-full` is
@@ -36,7 +36,7 @@
  * others that might share the shape.
  *
  * SCOPE: manifests only. It does not scan the `*.card.html` specimens or the
- * compiled `utilities.css`, so a specimen typing `rounded-full` onto an element
+ * compiled `Utilities.css`, so a specimen typing `rounded-full` onto an element
  * directly would pass unseen. That is narrower than the name suggests and is
  * stated here rather than left for a reader to discover -- nothing in the tree
  * does it today, and a specimen is supposed to take every class from

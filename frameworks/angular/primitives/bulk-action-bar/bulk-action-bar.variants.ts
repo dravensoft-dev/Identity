@@ -1,4 +1,4 @@
-import { tv } from '../../../tailwind/tv';
+import { tv } from '../../../tailwind/Tv';
 import manifest from '../../../tailwind/components/navigation/bulk-action-bar/BulkActionBar.manifest';
 
 /** Recipe for `arena-bulk-action-bar`. Both `BulkActionBar.manifest.ts` (the

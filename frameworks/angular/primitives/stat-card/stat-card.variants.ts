@@ -1,4 +1,4 @@
-import { tv } from '../../../tailwind/tv';
+import { tv } from '../../../tailwind/Tv';
 import manifest from '../../../tailwind/components/display/stat-card/StatCard.manifest';
 
 /** Recipe for `arena-stat-card`. Both `StatCard.manifest.ts` (the

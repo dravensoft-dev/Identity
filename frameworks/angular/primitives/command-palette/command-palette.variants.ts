@@ -1,4 +1,4 @@
-import { tv } from '../../../tailwind/tv';
+import { tv } from '../../../tailwind/Tv';
 import manifest from '../../../tailwind/components/navigation/command-palette/CommandPalette.manifest';
 
 /** Recipe for `arena-command-palette`. See `tag.variants.ts` for why this

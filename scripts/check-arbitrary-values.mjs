@@ -214,7 +214,7 @@ function main() {
   if (errs.length) {
     console.error(`check-arbitrary-values: ${errs.length} problem(s) under frameworks/\n`);
     for (const e of errs) console.error(`  ${e}`);
-    console.error('\nExpose the token in frameworks/tailwind/theme.css and use the utility, or reference the token as var(--name). In .md, exempt a genuine counterexample with a check-arbitrary-values marker naming it.');
+    console.error('\nExpose the token in frameworks/tailwind/Theme.css and use the utility, or reference the token as var(--name). In .md, exempt a genuine counterexample with a check-arbitrary-values marker naming it.');
     process.exit(1);
   }
   console.log(`check-arbitrary-values: ${scanned} file(s) scanned, none`);

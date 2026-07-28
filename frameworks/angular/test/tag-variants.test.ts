@@ -29,7 +29,7 @@ test('every tone keeps the shared base classes', () => {
 /* Moved here from scripts/tv-merge.test.mjs, which proves the same property
  * against synthetic class strings but cannot import this recipe: scripts/ is
  * the suite that must also run under plain node, and node cannot resolve the
- * extensionless `from '../../../tailwind/tv'` that this layer's files use.
+ * extensionless `from '../../../tailwind/Tv'` that this layer's files use.
  *
  * What it guards: `text-ctl-xs` is an Arena font-size suffix, and
  * tailwind-merge classifies a bare `text-*` suffix it does not recognise as a

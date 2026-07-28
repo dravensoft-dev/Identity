@@ -1,4 +1,4 @@
-import { tv } from '../../../tailwind/tv';
+import { tv } from '../../../tailwind/Tv';
 import manifest from '../../../tailwind/components/feedback/onboarding/Onboarding.manifest';
 
 /** Recipe for `arena-onboarding`. See `tag.variants.ts` for why this

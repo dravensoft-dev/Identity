@@ -1,4 +1,4 @@
-import { tv } from '../../../tailwind/tv';
+import { tv } from '../../../tailwind/Tv';
 import manifest from '../../../tailwind/components/navigation/page-head/PageHead.manifest';
 
 /** Recipe for `arena-page-head`. Both `PageHead.manifest.ts` (the

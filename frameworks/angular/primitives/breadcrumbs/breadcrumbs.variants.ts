@@ -1,4 +1,4 @@
-import { tv } from '../../../tailwind/tv';
+import { tv } from '../../../tailwind/Tv';
 import manifest from '../../../tailwind/components/navigation/breadcrumbs/Breadcrumbs.manifest';
 
 /** Recipe for `arena-breadcrumbs`. Both `Breadcrumbs.manifest.ts` (the

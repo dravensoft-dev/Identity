@@ -1,4 +1,4 @@
-/* frameworks/tailwind/tv.ts
+/* frameworks/tailwind/Tv.ts
    Arena's configured `tailwind-variants` factory. Every recipe imports THIS `tv`
    (not the bare one from 'tailwind-variants') so twMerge dedupes utilities that
    resolve to Arena's semantic token scale. Consumers install `tailwind-variants`
@@ -55,9 +55,9 @@
    `--font-weight-regular` and, worst, `--spacing-ctl-h`/`ctl-h-sm`/
    `ctl-h-lg`/`row-py`/`row-px`/`stack`/`gutter` ship under-registered.
    `--spacing-*` is the sharpest case of all: it is the one Arena namespace
-   theme.css deliberately does NOT reset (`--spacing: var(--sp-1)` stays
+   Theme.css deliberately does NOT reset (`--spacing: var(--sp-1)` stays
    live so Tailwind's own numeric scale keeps working alongside Arena's
-   named steps — see theme.css's own comment), which is exactly why a first
+   named steps — see Theme.css's own comment), which is exactly why a first
    pass at closing this class, keyed off `--<ns>-*: initial` markers, still
    missed it: `Button.manifest.json` used `h-ctl-h`/`h-ctl-h-sm`/
    `h-ctl-h-lg` across its three sizes with none of them deduping. Trust the
@@ -79,7 +79,7 @@
    that group didn't already know. A stock name that already works
    (`tracking-tight`, `leading-snug`, `font-bold`) needs no entry — adding
    one would be redundant, not protective. `color` and `font` (family) are
-   the two namespaces in `theme.css` with no entry here at all, and that is
+   the two namespaces in `Theme.css` with no entry here at all, and that is
    not an oversight: tailwind-merge's theme matchers for both (`isAny` for
    `color`, `isAnyNonArbitrary` for `font`) accept literally any bare
    identifier, so an unrecognised suffix — the precondition for the whole
@@ -107,7 +107,7 @@
    `body`) — `mergeClassGroup` below unions the two instead of one
    silently replacing the other.
 
-   scripts/tv-merge.test.mjs derives its namespaces from theme.css's key
+   scripts/tv-merge.test.mjs derives its namespaces from Theme.css's key
    names (not from `--<ns>-*: initial` markers alone — that was fix pass 1's
    claim, and `--spacing-*`, deliberately unreset, is exactly what it
    missed) and asserts each dedupes pairwise, so a new key in one of THOSE
@@ -121,7 +121,7 @@
    shipped with zero protection and a fully green suite. Fix pass 3 closes
    it structurally instead of documenting it: a SEPARATE completeness check
    in scripts/tv-merge.test.mjs independently lists every property in
-   theme.css that looks namespaced (`--<namespace>-<suffix>`) and asserts
+   Theme.css that looks namespaced (`--<namespace>-<suffix>`) and asserts
    each one was either attributed by `deriveNamespaces` or is named in an
    `UNATTRIBUTED` map with a reason (the same shape as check-tailwind-
    coverage.mjs's own `EXCLUDED`, stale entries included) — so an

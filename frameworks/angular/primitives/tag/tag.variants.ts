@@ -1,4 +1,4 @@
-import { tv } from '../../../tailwind/tv';
+import { tv } from '../../../tailwind/Tv';
 import manifest from '../../../tailwind/components/display/tag/Tag.manifest';
 
 /** Recipe for `arena-tag`. Both `Tag.manifest.ts` (the literal-typed build

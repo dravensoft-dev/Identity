@@ -4,4 +4,4 @@
    scope so the app deletes its hand-authored @theme block. Adds no value of its
    own — both imports are token-only. */
 @import '../../../styles.css';            /* Arena tokens: fonts, palette, colors, type, spacing, effects */
-@import '../../tailwind/theme.css';       /* the shared @theme → utility mapping */
+@import '../../tailwind/Theme.css';       /* the shared @theme → utility mapping */

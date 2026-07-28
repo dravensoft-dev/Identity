@@ -1,4 +1,4 @@
-/* frameworks/tailwind/theme.css
+/* frameworks/tailwind/Theme.css
    Arena's Tailwind v4 preset. Consume AFTER Arena's tokens are in scope
    (import ../../styles.css, or the individual tokens/*.css, first).
    Every value here is a var() into an existing Arena token — no literals,
@@ -27,7 +27,7 @@
    as content and asserts every key still resolves to a real Arena token;
    scripts/check-tailwind-coverage.mjs asserts no token is missing from it. */
 @import 'tailwindcss';
-@import './animations.css';
+@import './Animations.css';
 
 @theme {
   /* ---- colour → tokens/palette.css ------------------------------------- */

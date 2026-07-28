@@ -28,10 +28,10 @@
  * `frameworks/tailwind/components/`, so the equivalent path here is three
  * `..` segments, not four. Doing it here, once, at module load — rather than
  * in each `*.card.html` — is what makes it apply to every specimen already
- * written and every one still to come, the same reason `specimen.css` was
+ * written and every one still to come, the same reason `Specimen.css` was
  * pulled out on its own.
  */
-import { classesFor } from './manifest-classes.js';
+import { classesFor } from './ManifestClasses.js';
 
 for (const style of ['bold', 'fill']) {
   const link = document.createElement('link');

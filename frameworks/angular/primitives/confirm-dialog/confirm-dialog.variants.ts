@@ -1,4 +1,4 @@
-import { tv } from '../../../tailwind/tv';
+import { tv } from '../../../tailwind/Tv';
 import manifest from '../../../tailwind/components/feedback/confirm-dialog/ConfirmDialog.manifest';
 
 /** Recipe for `arena-confirm-dialog`. See `tag.variants.ts` for why this

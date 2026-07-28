@@ -1,4 +1,4 @@
-import { tv } from '../../../tailwind/tv';
+import { tv } from '../../../tailwind/Tv';
 import manifest from '../../../tailwind/components/feedback/error-state/ErrorState.manifest';
 
 /** Recipe for `arena-error-state`. Both `ErrorState.manifest.ts` (the

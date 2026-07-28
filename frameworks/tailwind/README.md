@@ -40,7 +40,7 @@ not the utilities it reaches.
 
 ## The animations that live in CSS, and why
 
-`animations.css` holds the `@keyframes` and the utilities that ride them —
+`Animations.css` holds the `@keyframes` and the utilities that ride them —
 `arena-shimmer` (Skeleton), `arena-pop` (Dialog), `arena-menu` (Menu),
 `arena-fade` (Tooltip), `arena-prog-indeterminate` (ProgressBar),
 `arena-btn-spin` (Button) and `arena-spinner` — because a manifest holds class
@@ -101,7 +101,7 @@ extension, it is itself a failure.
 
 1. Bring Arena's tokens into scope — `@import "../../styles.css";` (or the
    individual `tokens/*.css`).
-2. `@import "./theme.css";` — the Tailwind `@theme` preset.
+2. `@import "./Theme.css";` — the Tailwind `@theme` preset.
 3. Consume a component manifest from `./components/<Component>.manifest.json`.
 
 ## What ships here
@@ -122,7 +122,7 @@ have a manifest — it is a bordered tile. Calendar is date arithmetic and JS re
 branches; what a manifest could capture is a fraction of it, and that fraction would
 drift from the rest.
 
-`utilities.css` is **generated** — `bun run build:tailwind` compiles the preset with
+`Utilities.css` is **generated** — `bun run build:tailwind` compiles the preset with
 the manifests as content, and `bun run check:tailwind-generated` fails when the
 committed file and the source disagree. It exists so a static specimen page can render
 a manifest without a build step; do not edit it. The same build also emits a
@@ -132,7 +132,7 @@ manifest needs a `bun run build:tailwind` before the gates pass.
 
 **A variant name is scanned as a class name.** Tailwind reads a manifest as raw text, so
 a variant *name* that collides with a utility (`visible`, `block`, `line`, `fixed`,
-`static`…) leaks a dead rule into `utilities.css`. It is harmless per instance and
+`static`…) leaks a dead rule into `Utilities.css`. It is harmless per instance and
 accumulates across the set; `BulkActionBar` hit it with `visible` and the layer settled
 on `open` as the shared name for a shown/hidden boolean. Name variants with that in mind.
 
@@ -218,7 +218,7 @@ same reason — a resting row needs its own explicit background and text color,
 not an absence that happens to lose to the active row's tint by alphabetical
 luck. A `tv()` `variants` block does not carry this risk the same way: each of
 its slot's classes resolves through one `slot()` call, and the configured
-`tv` (`frameworks/tailwind/tv.ts`) merges that call's own base and chosen
+`tv` (`frameworks/tailwind/Tv.ts`) merges that call's own base and chosen
 branch with `tailwind-merge`, which resolves same-property conflicts by
 config, not by generation order. The risk above is specifically about **named
 sibling slots** — extra `slots` keys, outside any `variants` block, that a
@@ -258,7 +258,7 @@ and put it there instead.
 
 ## This layer is border-box; React is content-box, and that is expected
 
-`utilities.css`'s preflight sets `box-sizing: border-box` on every element (`@layer
+`Utilities.css`'s preflight sets `box-sizing: border-box` on every element (`@layer
 base`). Nothing in `tokens/` or `styles.css` does, so a React component is
 content-box unless it opts in itself — most do not. **A slot that combines an
 explicit size with a border, or an explicit size with padding, therefore
