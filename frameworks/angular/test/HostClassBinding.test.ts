@@ -40,7 +40,7 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { useTestEnvironment } from './TestbedEnv';
-import { ANGULAR_PRIMITIVES, LIB, TAILWIND_COMPONENTS } from './Compliance';
+import { ANGULAR_PRIMITIVES, LIB, SCRIPTS, TAILWIND_COMPONENTS } from './Compliance';
 import { ActivityFeed } from '../components/display/activity-feed/ActivityFeed';
 import { activityFeedStyles } from '../components/display/activity-feed/ActivityFeed.variants';
 import { AppLogo } from '../components/brand/app-logo/AppLogo';
@@ -1111,9 +1111,23 @@ test('arena-page-head: a platform with no ResizeObserver still renders, on the w
 const DISPLAY_UTILITY =
   /(?:^|\s)(?:block|inline-block|inline|flex|inline-flex|grid|inline-grid|table|inline-table|table-[a-z-]+|flow-root|contents|list-item|hidden)(?=\s|$)/;
 
-function kebabToPascal(dirName: string): string {
-  return dirName.split('-').map((segment) => segment[0].toUpperCase() + segment.slice(1)).join('');
-}
+/* The kebab -> Pascal derivation is check-structure.mjs's, not a local copy.
+ * This file declared its own `kebabToPascal` until the structure refactor gave
+ * that module `pascal()` beside the `kebab()` it inverts, and two spellings of
+ * one mapping is one of them going stale later -- the same argument
+ * tailwind-compile.mjs's `manifestFiles()` doc comment makes about three
+ * spellings of one walk, one directory below this line. Reached the same way
+ * `manifestFiles` is, and for the same reason: a dynamic import of an absolute
+ * file URL resolved at call time, so it works unmodified from both
+ * frameworks/angular/test/ and the ngc emit at build/angular-test/angular/test/,
+ * where a static relative specifier would point at a directory that does not
+ * exist. It is a gate script rather than a lib module, which is safe because
+ * its main() is guarded by a `process.argv[1] === import.meta.url` check and so
+ * runs nothing on import; and it stays untyped for the same reason every other
+ * `.mjs` reached this way does. */
+const { pascal: kebabToPascal } = await import(
+  pathToFileURL(join(SCRIPTS, 'check-structure.mjs')).href
+) as { pascal: (dirName: string) => string };
 
 /* manifestFiles() already walks components/<category>/<component>/ for every
  * manifest under the tree -- its own doc comment in tailwind-compile.mjs warns

@@ -72,7 +72,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { buildApiModules } from './build-api-types.mjs';
 import { reactSurface, angularSurface, UnrecognisedShape } from './lib/api-surface.mjs';
-import { kebab, pascal, readLayer } from './check-structure.mjs';
+import { pascal, readLayer } from './check-structure.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -91,11 +91,12 @@ const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);
 /** React groups, the same list check-behaviour.mjs walks. */
 const REACT_GROUPS = ['brand', 'charts', 'display', 'feedback', 'forms', 'navigation'];
 
-/** "AppLogo" -> "app-logo", re-exported rather than re-implemented: this gate
- *  carried its own identical copy until the structure refactor gave
- *  check-structure.mjs the same derivation and its inverse, and two copies of
- *  one mapping is one of them going stale later. */
-export { kebab };
+/* This gate carried its own copy of the "AppLogo" -> "app-logo" derivation
+ * until the structure refactor gave check-structure.mjs the same mapping and
+ * its inverse. It is gone rather than re-exported: nothing here calls it any
+ * more, since Angular discovery now WALKS the layer instead of deriving a
+ * path per contract, and a re-export would leave check-api.test.mjs pinning
+ * another module's function through a gate that never uses it. */
 
 /** A contract member's name as one layer binds it. The contract governs the
  *  member surface, never the syntax a platform expresses it in. See the binding
@@ -489,11 +490,19 @@ function reactPath(component) {
   return null;
 }
 
-/** Every Angular component implementation, as component name -> file path,
- *  read from the tree rather than derived per contract.
+/** Decide which Angular components this gate can read, and what it must
+ *  complain about, from the layer tree as `category -> kebab directory names`
+ *  and a predicate saying whether a repo-relative path exists. Pure, and
+ *  exported for that reason: both rules below are guards against a SILENT
+ *  failure, so a guard with no suite behind it would itself survive its own
+ *  deletion -- which is how this gate came to need them in the first place.
+ *  Every sibling zero-result guard in this repo is an exported pure function
+ *  with a suite (zeroLayerProblems in check-structure.mjs, checkCompiled's
+ *  manifest count in check-tailwind.mjs, zeroManifestProblem in
+ *  check-radius-tokens.mjs); this is the same shape.
  *
- *  THE GUARD IS THE POINT, and it exists because this gate shipped the exact
- *  failure it now refuses. angularPath() used to build
+ *  THE GUARDS ARE THE POINT, and they exist because this gate shipped the exact
+ *  failure they now refuse. angularPath() used to build
  *  `frameworks/angular/primitives/<kebab>/<kebab>.ts` per contract and wrap the
  *  lookup in existsSync, returning null on a miss; when the structure refactor
  *  moved the layer to `components/<category>/<kebab>/<Pascal>.ts` every lookup
@@ -513,16 +522,28 @@ function reactPath(component) {
  *  zero-directory guard, and it is what a moved or renamed LAYER looks like.
  *  Neither can be reached by a component that Angular genuinely does not
  *  implement, which simply has no directory and is correctly silent.
+ *
+ *  The two rules are DISTINCT, not one rule stated twice, and each fires
+ *  alone: a renamed component file leaves the walk non-empty and produces the
+ *  per-directory problem only, while a moved layer makes readLayer() return {}
+ *  so there is no directory for a per-directory problem to be about and the
+ *  zero-total one fires by itself.
+ *
+ *  Paths are repo-RELATIVE both in and out; the caller resolves them against
+ *  its own root. That is what lets the whole decision be tested against a Set
+ *  rather than a filesystem, and it keeps the problem message -- which quotes
+ *  the relative path -- exactly what a reader sees.
+ *  @param {Record<string, string[]>} tree category -> kebab directory names
+ *  @param {(path: string) => boolean} exists predicate on a repo-relative path
  *  @returns {{implementations: Map<string, string>, problems: string[]}} */
-function angularImplementations() {
-  const base = join(root, 'frameworks/angular/components');
+export function resolveAngularImplementations(tree, exists) {
   const implementations = new Map();
   const problems = [];
-  for (const [category, dirs] of Object.entries(readLayer('angular')))
+  for (const [category, dirs] of Object.entries(tree))
     for (const dir of dirs) {
       const name = pascal(dir);
-      const path = join(base, category, dir, `${name}.ts`);
-      if (existsSync(path)) { implementations.set(name, path); continue; }
+      const path = `frameworks/angular/components/${category}/${dir}/${name}.ts`;
+      if (exists(path)) { implementations.set(name, path); continue; }
       problems.push(
         `frameworks/angular/components/${category}/${dir}/: is a component directory with no ${name}.ts — `
         + 'this gate cannot read a surface it cannot find, and skipping it would report a clean pass over an unchecked layer');
@@ -530,6 +551,20 @@ function angularImplementations() {
   if (implementations.size === 0)
     problems.push('found 0 Angular component implementations — an empty result set is a failure, not a clean pass; check the discovery path');
   return { implementations, problems };
+}
+
+/** resolveAngularImplementations above, wired to the real tree: the only
+ *  things this adds are readLayer('angular'), an existsSync against the repo
+ *  root, and the resolution of each relative path to an absolute one. */
+function angularImplementations() {
+  const { implementations, problems } = resolveAngularImplementations(
+    readLayer('angular'),
+    (path) => existsSync(join(root, path)),
+  );
+  return {
+    implementations: new Map([...implementations].map(([name, path]) => [name, join(root, path)])),
+    problems,
+  };
 }
 
 function main() {
