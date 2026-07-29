@@ -171,7 +171,7 @@ export function Calendar({
           const isToday = d === today;
           return (
             <div key={d} onClick={onDateClick ? () => onDateClick(d) : undefined}
-              style={{ flex: 1, minWidth: 0, padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2) calc(var(--sp-1) * 2)', textAlign: 'center',
+              style={{ flex: 1, minWidth: 0, padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2) 0', textAlign: 'center',
                 cursor: onDateClick ? 'pointer' : 'default' }}>
               <div style={label}>{formatDate(d, { weekday: 'short' })}</div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text)', fontWeight: 'var(--fw-bold)', marginTop: 'calc(var(--sp-1) * 0.5)',

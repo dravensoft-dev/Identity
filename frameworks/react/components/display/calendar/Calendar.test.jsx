@@ -233,3 +233,11 @@ test('a chip with no kebab reserves nothing, and keeps its ordinary right paddin
   assert.match(html, /padding:calc\(var\(--sp-1\) \* 1\) calc\(var\(--sp-1\) \* 1\.5\);padding-right:calc\(var\(--sp-1\) \* 1\.5\)/,
     'the unpanelled chip lost its ordinary right padding');
 });
+
+test('a day header cell has no bottom padding, and the scroller keeps its top padding', () => {
+  const html = render({});
+  assert.match(html, /padding:calc\(var\(--sp-1\) \* 1\.5\) calc\(var\(--sp-1\) \* 2\) 0;text-align:center/,
+    'the day header cell still pads its own bottom, doubling the gap under the header');
+  assert.match(html, /overflow-y:auto;padding-top:calc\(var\(--sp-1\) \* 2\)/,
+    'the scroll area lost its top padding -- the first hour label is centred on its line and is clipped by the header without it');
+});

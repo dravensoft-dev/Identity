@@ -201,7 +201,7 @@ export function Calendar({
       style: {
         flex: 1,
         minWidth: 0,
-        padding: "calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2) calc(var(--sp-1) * 2)",
+        padding: "calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2) 0",
         textAlign: "center",
         cursor: onDateClick ? "pointer" : "default"
       }
