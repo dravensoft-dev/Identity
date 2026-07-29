@@ -352,14 +352,14 @@ No `| grep -v` on the end. The path list is the only scoping this needs — a co
 - [ ] **Step 2: Classify every hit into one of three buckets**
 
 - **Rewrite** — a present-tense citation of where something is. `api/components/Tag.json` → `contracts/api/components/Tag.json`.
-- **Leave** — a past-tense clause describing where something *was*, and anything under `docs/superpowers/specs/`. Those two specs are handled in Task 3.7, not here.
+- **Leave** — a past-tense clause describing where something *was*, and anything under `docs/superpowers/specs/`. Those two specs are recorded as debt in Task 3.6, not rewritten here.
 - **Reword** — a sentence whose meaning, not just its path, changes. There is one in this batch: `scripts/lib/api-surface.mjs:213` cites `api/README.md` as the authority for the per-item-renderer convention; the path changes and the sentence stands.
 
 Expect the concentrations to be `scripts/check-api.mjs` (already done in Task 1.2), `frameworks/angular/test/HostClassBinding.test.ts` (12), `scripts/lib/api-surface.mjs` (9), `CLAUDE.md` (20), `components-divergences.md` (5), `contracts/api/README.md` (14, self-referential) and a scatter of one- and two-hit component headers.
 
 - [ ] **Step 3: Rewrite `contracts/api/README.md`'s self-references**
 
-It is the level's normative document and it names its own directory throughout. Every `api/components/`, `api/types/` and `api/README.md` inside it becomes the `contracts/`-prefixed form. Also rewrite line 13's simile — it currently reads that this is read first "the way `tokens/src/TYPE-MAP.md` is" — to name `contracts/design/README.md`. That file does not exist yet; **leave this one line for Task 3.7** and note it in the commit body rather than writing a forward reference into a document that would be false for two batches.
+It is the level's normative document and it names its own directory throughout. Every `api/components/`, `api/types/` and `api/README.md` inside it becomes the `contracts/`-prefixed form. Also rewrite line 13's simile — it currently reads that this is read first "the way `tokens/src/TYPE-MAP.md` is" — to name `contracts/design/README.md`. That file does not exist yet; **leave this one line alone — Task 3.5 step 2 fixes it** — and note the deferral in the commit body rather than writing a forward reference into a document that would be false for two batches.
 
 - [ ] **Step 4: Verify no present-tense `api/` citation survives**
 
