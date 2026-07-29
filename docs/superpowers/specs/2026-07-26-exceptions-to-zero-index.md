@@ -36,8 +36,8 @@ first command counts declarations and the second counts distinct defects. `CLAUD
 same rule; use the second whenever a section below reasons about how much work is left, and never
 report a drop in the first as "N defects removed".
 
-As written: **41** declarations / **41** distinct pairs in component bindings, **17** in the
-delegated file, **25 of 70** bindings covered. The two figures are equal again, which is itself
+As written: **35** declarations / **35** distinct pairs in component bindings, **12** in the
+delegated file, **28 of 70** bindings covered. The two figures are equal again, which is itself
 informative: the one binding that declared a requirement twice was `CalendarEvent`, and both of its
 `states.disabled` declarations were retired together. Seven component bindings are cased (count them with
 `grep -rl '"cases"' --include='*.behaviour.json' frameworks/`, which does not reach the delegated
@@ -205,9 +205,16 @@ calls the component.
 
 | subject | condition |
 |---|---|
-| `Table:react` `focus.roving` | true in card mode only, and only when a consumer put an `onClick` on a `TableRow` |
 | `Toast:react` `content.noAutoDismiss` | the host owns the timer; `persist` is documented as mandatory for critical states and enforced nowhere |
 | `Tooltip:react` `roles.describedby` | holds only when the consumer's child accepts and forwards props; **a fragment defeats it silently, and the binding reads `exceptions: []`** |
+
+`Table`'s `focus.roving` was a row here too and is **gone rather than solved**, in the other
+available way: it was never consumer-conditional at all. The reason read "true in card mode only,
+and only when a consumer put an `onClick` on a `TableRow`" — but the clickable card row is
+`TableRow`'s own `card-interactive` case, not a clause of `Table`'s binding. Once that was seen,
+`Table` split cleanly into `wide` → `grid` and `card` → `none` with no condition left over. **Check
+that an entry here is really consumer-conditional before modelling it**; two of the four were
+misfiled, one as an API gap and one as a neighbouring component's case.
 
 `Pagination`'s `roles.label` was the fourth row and it is **gone rather than solved**: §3 made the
 member required and guarded, which removed the conditionality instead of expressing it. Prefer that
@@ -226,10 +233,18 @@ that such cases are legitimate.
 
 ## §6 — Angular Material, which is Plan D
 
-The **17** exceptions in `BehaviourDelegated.json` cannot be closed by editing anything in this
+The **12** exceptions in `BehaviourDelegated.json` cannot be closed by editing anything in this
 repository — they are claims about `MatProgressBar`, `MatTable`, `MatButtonToggleGroup` and their
 siblings. Emptying them means replacing Material with Arena primitives on the CDK, which is Plan D
 in `2026-07-23-8-api-contracts-design.md`.
+
+**It read 17, and the correction is worth more than the number.** Five left when React's `TableRow`
+stopped binding `button`. Nothing about Angular Material changed: the delegated entry mirrored
+React's binding, so it was measured against `button` too, and its five exceptions restated what the
+`Table` entry's eight already say about Material's rows and cells. Bound to `none`, the duplication
+goes. So the rule to carry is narrower than "only Plan D moves this file": **a delegated entry moves
+whenever the PATTERN it is measured against changes**, and a batch touching only the React side can
+do that without noticing. Do not read a drop here as progress against Material.
 
 Two facts to carry into that work: the delegated file records **no Material version** for any of its
 claims (they were verified against `@angular/material` 22.0.5), and `check:behaviour` never re-checks
@@ -241,21 +256,36 @@ rather than retrofitted: any primitive with variants should declare cases from i
 the delegated file itself could take cases, which is the cheapest way to stop a single flat
 exception list describing several Material configurations at once.
 
-## §7 — The two components that can never have a suite
+## §7 — The two components that can never have a suite — **CLOSED**
 
-`Calendar` and `Table` bind `grid`, and the standing rule is that a component whose binding names
-`grid` is DOM-tested **by hand**. The rule is a measurement, not a preference:
-`grid-keyboard.test.jsx` alone peaked at 164 MiB against 109 for the other six suites together.
+They can. `Calendar` and `Table` both have render suites and both are in `COVERED`; the rule that
+kept them out is retired.
 
-So `Calendar` already declares full `grid` compliance with **nothing rendering it**, and `Table`'s
-surviving exception is unverifiable for the same reason. Reaching `exceptions: []` on these two is
-possible; *verifying* it is not, unless the rule is retired and the memory cost paid.
-`git show edb9f3e^:frameworks/react/test-dom/grid-keyboard.test.jsx` is the deleted suite, ready to
-restore if that trade is ever made.
+**It was retired the way it was made — by measuring.** The rule cited `grid-keyboard.test.jsx` at
+164 MiB against 109 for six other suites, and the first finding is that **that figure is not
+comparable to anything measured today**: another machine, other versions of bun, React and
+happy-dom, and a harness baseline nobody recorded. Only a before/after pair from one sitting counts.
+Taken that way: 89 MiB for the harness alone, 128 for the grid suite, ~143 for the whole DOM
+invocation without it and ~158 with. The rule's own justification — that the grid cost more than
+every other suite combined — is false now: 39 MiB above baseline against roughly 54 for the other
+nineteen together.
 
-**What binding cases give this section.** An enumerable hand-check list. Once a binding declares its
-cases, the cases *are* the checklist a person walks through on the `*.card.html` page — which is the
-first time the hand check has had a written, machine-readable definition of what "all of it" means.
+**The second finding contradicts the premise the new suites were written on.** Walking the grid
+cell by cell instead of remounting eight times did *not* make it cheap. The bill is the **number of
+key presses**, because each one re-renders the whole grid through `act()`: mounting the 84-cell
+fixture is +15 MiB, walking it is +60. What makes it affordable is a **small fixture** — the
+Calendar suite renders 6×5 by setting `dayStart`/`dayEnd` explicitly rather than taking the default
+6×14, and every invariant it asserts holds at any size from 2×2 up. That is the transferable rule
+for the next grid, and it is the opposite of what "test it thoroughly" would suggest.
+
+The method, for whoever writes the next one: one mount per scenario; a walk visiting every cell with
+one press per step, asserting both the landing cell and that exactly one `tabindex="0"` exists and
+is that cell; edge clamps as one extra press per edge rather than a forty-press loop. `DOUBTS.md`
+carries it in full.
+
+**What binding cases gave this section** turned out to be more than a hand-check list: `Table`'s two
+cases are what let the card shape say `none` — the grid's requirements do not go *unmet* below the
+breakpoint, they do not *apply*, because there is no grid element at all.
 
 ## §8 — Coverage, which gates the whole goal
 
@@ -290,7 +320,8 @@ survives into every section above.
 4. **§2** — the real work, and the only section that changes what a user experiences.
 5. **§8** — widen coverage once the bindings worth covering are honest.
 6. **§6** — Plan D, which is a programme rather than a batch.
-7. **§5** and **§7** — decisions rather than implementations; take them when the cost is worth paying.
+7. ~~**§7**~~ — **done.** The cost was measured and it was worth paying. **§5** has two rows left,
+   both decisions rather than implementations.
 
 §2 is deliberately not first despite being the only section that helps a real user, because
 `ActivityFeed`'s `states.busy` cannot be retired before §4's machinery and its `roles.label` cannot
