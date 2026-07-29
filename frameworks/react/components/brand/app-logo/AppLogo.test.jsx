@@ -13,7 +13,12 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { AppLogo } from './AppLogo.jsx';
 
-const MARK = <img src="../../../../assets/rotor-crimson.svg" alt="" />;
+/* Five hops to the repo root from this directory, matching the same asset
+ * reference in AppLogo.card.entry.jsx next door. Nothing here fetches it --
+ * renderToStaticMarkup only serialises the attribute -- but the two files
+ * describing the same path differently is a trap for whoever reads one and
+ * copies it into the other. */
+const MARK = <img src="../../../../../assets/rotor-crimson.svg" alt="" />;
 
 test('throws without a mark', () => {
   assert.throws(() => renderToStaticMarkup(<AppLogo name="Draven" />), /mark.*required/);

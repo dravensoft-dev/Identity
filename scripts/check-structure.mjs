@@ -91,11 +91,11 @@ export function readLayer(layer) {
  *  `complete` says the caller passed every layer there is. Only then does the
  *  "declared but present nowhere" rule run: a component absent from a PARTIAL
  *  set of layers may simply live in one that was not passed, so firing on it
- *  would make the gate loudest about the thing it cannot see. main() derives it
- *  as `LAYERS.length === 3`, which is true today and is a re-derivation from a
- *  pinned constant rather than a free literal -- see the comment at that call.
- *  The parameter survives because validateStructure is pure and a caller may
- *  hand it any subset, which is exactly what this function's own suite does.
+ *  would make the gate loudest about the thing it cannot see. main() passes
+ *  `true` unconditionally, because it passes every layer in LAYERS and LAYERS is
+ *  the exhaustive enumeration -- see the comment at that call. The parameter
+ *  survives because validateStructure is pure and a caller may hand it any
+ *  subset, which is exactly what this function's own suite does.
  *  @returns {string[]} one line per problem, empty when clean */
 export function validateStructure({ categories, layers, complete = false }) {
   const problems = [];
@@ -171,18 +171,24 @@ export function zeroLayerProblems(layers) {
 function main() {
   const categories = JSON.parse(readFileSync(join(repoRoot, 'frameworks/Components.json'), 'utf8'));
   const layers = Object.fromEntries(LAYERS.map((l) => [l, readLayer(l)]));
-  const complete = LAYERS.length === 3;
+  /* Unconditionally true, and that is the derivation rather than a free
+   * literal. `complete` means "the caller passed every layer there is"; the line
+   * above passes every layer in LAYERS, and LAYERS is the exhaustive
+   * enumeration of them -- pinned twice by check-structure.test.mjs, by value
+   * and by exhaustiveness against frameworks/ on disk. So the claim this flag
+   * makes is already held by those two assertions, and main() has nothing left
+   * to condition it on.
+   *
+   * It read `LAYERS.length === 3` for one commit, written to replace a bare
+   * `true` that nothing pinned. That went one layer too far: it made rule 4 --
+   * "declared but present in no layer" -- silently switch OFF the day a FOURTH
+   * layer is added, since adding it means updating LAYERS and the suite's
+   * deepEqual to go green, and nothing else would have failed. The pin those
+   * two assertions provide is the right one; a length comparison on top of them
+   * only re-created the loss it was written to close. */
+  const complete = true;
   const problems = [
     ...zeroLayerProblems(layers),
-    /* Derived from LAYERS rather than written as a bare `true`, and the
-     * difference is a pin rather than a style. No suite runs main(), so a
-     * literal here is reachable by nothing: flipping it to false would switch
-     * rule 4 -- "declared but present in no layer" -- off in silence, and every
-     * test would stay green. LAYERS is pinned twice by check-structure.test.mjs,
-     * by value and by exhaustiveness against frameworks/ on disk, so deriving
-     * the flag from its length puts the scope claim back behind an assertion.
-     * This is what `complete: MIGRATED.length === 3` was doing before MIGRATED
-     * was deleted; the pin was lost with the constant and is restored here. */
     ...validateStructure({ categories, layers, complete }),
   ];
 
@@ -196,13 +202,15 @@ function main() {
   const checked = Object.values(layers).reduce(
     (n, tree) => n + Object.values(tree).reduce((m, dirs) => m + dirs.length, 0), 0,
   );
-  /* The rule-4 clause is appended only when rule 4 actually RAN. It was
-   * unconditional for one commit, while `complete` was a bare `true` -- and the
-   * induction that proved the pin above (flip LAYERS to two entries, watch its
-   * suite go red) also caught this: the gate printed "every declared component
-   * present in at least one layer" while `complete` derived false and rule 4 had
-   * not been evaluated at all. A success line must claim only what the run
-   * checked. */
+  /* The rule-4 clause is appended only when rule 4 actually RAN. Today
+   * `complete` is unconditionally true and this ternary always takes its first
+   * arm, so the guard is not currently load-bearing -- it is kept because a
+   * success line must claim only what the run checked, and it reads `complete`
+   * rather than restating the reasoning above. It was caught being wrong once:
+   * while `complete` briefly derived from `LAYERS.length`, this clause was
+   * printed unconditionally, so the gate announced "every declared component
+   * present in at least one layer" over a run in which rule 4 had not been
+   * evaluated at all. */
   const rule4 = complete ? ', every declared component present in at least one layer' : '';
   console.log(`check:structure OK — components/ under ${LAYERS.join(', ')} match frameworks/Components.json (${checked} checked of ${total} declared${rule4}).`);
   console.log('  (A green run says the layers agree with one declaration, never that the categories are well chosen.)');

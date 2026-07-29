@@ -464,6 +464,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING (paths, in all three layers) — every framework layer now has one shape, and almost
+  every documented path moved.** The rule: **directories are `kebab-case` and lowercase; a file
+  name begins with a capital, and a multi-word stem is `PascalCase` with hyphens removed; a
+  secondary dotted segment stays `lowerCamelCase`** — so `Badge.manifest.json` and
+  `BarChart.variants.ts`. A layer lays its components out as
+  `frameworks/<layer>/components/<category>/<component-kebab>/`, and **everything belonging to one
+  component lives in that one directory** — its source, its types, its behaviour binding, its
+  prompt, its demo page, its tests. A file that is not one component's rises to the narrowest
+  level containing all of its consumers. This landed in three batches, one layer each: Tailwind,
+  then Angular, then React. Nothing about behaviour, API contracts, accessibility or tokens
+  changed in any of them — the refactor moved files, renamed them, and rewrote the prose and the
+  gates that resolve paths.
+  - **What a copy-in consumer has to change.** Component imports gain a directory:
+    `frameworks/react/components/forms/Button.jsx` is now
+    `frameworks/react/components/forms/button/Button.jsx`, and so is every one of the fifty. The
+    shared layer-root modules are capitalised — `use-container-width.js` → `UseContainerWidth.js`,
+    `use-dialog-modal.js` → `UseDialogModal.js`, `tokens.generated.js` → `Tokens.generated.js`,
+    `api.generated.d.ts` → `Api.generated.d.ts` — and the categorical-ramp helper both moved and
+    was renamed, from `components/charts/chart-internals.js` to `frameworks/react/DataVisuals.js`,
+    because `Calendar` consumes it as well as the charts and the narrowest level containing both
+    is the layer root. `ui_kits/` is `ui-kits/`, the demo importmap's vendor bundles are
+    `vendor/React.js`, `vendor/ReactDomClient.js` and `vendor/ReactJsxRuntime.js`, and the
+    Tailwind layer's preset import is `@import "./Theme.css";` where it was `theme.css`, with each
+    manifest now at `components/<category>/<component-kebab>/<Component>.manifest.json`. Angular's
+    `primitives/` is gone into `components/<category>/<component-kebab>/`; its barrel is still
+    `frameworks/angular/index.ts` and **its export surface did not shrink**, because the three
+    shared internals that rose to the layer root (`ContainerSize.ts`, `FocusTrap.ts`,
+    `ProjectionMarkers.ts`) are named there directly. `README.md` and `SKILL.md` were rewritten
+    for all of it; this entry is the record the CHANGELOG owed and did not have while batches 1
+    and 2 were merging.
+  - **What deliberately did NOT move, because renaming it would break an app that has already
+    adopted Arena.** `frameworks/angular/theme/arena-tailwind.css` and `arena-material.css` are
+    named verbatim inside an adopter's own `styles.css` — `ADOPTION.md` steps 1 and 2 give those
+    `@import` lines to paste — so they keep their lowercase names, and the exception is mechanical
+    rather than stylistic. The rest of the lowercase-initial set is the same kind of thing: a
+    toolchain or a reader recognises the literal name. `index.ts` (TypeScript resolves a directory
+    import by exactly that name), `index.html` and `frameworks/react/ui-kits/console/index.entry.jsx`
+    with its compiled sibling (a page served over HTTP is answered by `index.html`, and the entry
+    script takes its page's stem), `tsconfig.check.json` and `tsconfig.test.json`, `.gitkeep`
+    (no stem to capitalise), `no-fouc.html` and `arena-material.prompt.md`.
+  - **All four `package.json` test scripts changed, and the React DOM split is now a filename
+    rule rather than a directory one.** `frameworks/react/test-dom/` is gone; a suite needing a
+    real DOM carries a `.dom.test.jsx` infix and sits beside the component it covers, so the two
+    `bun test` invocations now divide on that infix — the DOM-free one takes the whole layer and
+    excludes it with `--path-ignore-patterns`, the DOM one filters for it — rather than on which
+    of two directories a file was put in. The split itself is
+    unchanged and is still not optional — a happy-dom registered process-wide would change what
+    the DOM-free suites prove, and `--preload ./frameworks/react/test/Preload.js` is still what
+    installs the DOM early enough for react-dom's `canUseDOM` to latch true. Copy the invocations
+    from `testStep()` in `scripts/check-all.mjs`, which is the single authority and what
+    `scripts/check-all.test.mjs` pins by literal value.
+  - **A new declaration and a new gate hold the shape.** `frameworks/Components.json` names each
+    component's category **once**, so the category is not written per layer with nothing tying the
+    copies together, and the kebab directory name is derived from the PascalCase name by a
+    function rather than a table. `check:structure` fails a component declared in two categories,
+    a directory in a category the file assigns elsewhere, a directory the file does not name, a
+    name that is not kebab-case, and — now that all three layers are migrated — a declared
+    component present in no layer at all. `bun run check` grows to **25 steps** and `GATES` to
+    **22**. It says nothing about whether the category is the *right* one: that is editorial
+    judgement and no gate has it.
+
 - **The Angular test directory compiles ahead of the run now — AOT, not JIT — and a type error
   there means no test runs at all, rather than an assertion failing somewhere.** `bun run
   build:angular-tests` compiles `frameworks/angular/index.ts` (the primitives barrel) together

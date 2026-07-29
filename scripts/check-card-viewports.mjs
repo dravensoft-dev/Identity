@@ -531,7 +531,18 @@ function skip(reason) {
  * enough that the wait-dominated per-page latency (fonts, the JSX transpile
  * round-trip, arenaReady) overlaps across pages instead of serializing, low
  * enough to stay well short of thrashing. Picked from the middle of that
- * range with no other tiebreaker. */
+ * range with no other tiebreaker.
+ *
+ * That reasoning is why the constant read 5, which it did until 4c8f160 set it
+ * to 1 without revisiting the paragraph above. Read that commit's message for
+ * the measurement rather than trusting a restatement here; its finding was that
+ * concurrency bought about a second of sweep only once the per-page deadline
+ * was more than doubled to survive the contention it created, which trades
+ * hang-detection latency for nothing. So the range above is the argument that
+ * was superseded, not the reason for the value now here -- kept because a
+ * future reader raising the bound should know it was tried and measured. What
+ * a bound of 1 means downstream is written where it bites, on
+ * interleaveForDispatch; do not restate it here. */
 const PAGE_CONCURRENCY = 1;
 
 /** Run `fn` over `items` with at most `limit` calls in flight at once,

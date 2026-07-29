@@ -151,7 +151,8 @@ test('re-entering during the close grace period clears the pending close timer r
    * Sampling the DOM mid-window is the obvious repair and it does work, but it
    * buys the proof with a timing margin: the assertion has to land between
    * --delay-close and (re-entry + --delay-open), about 170ms of slack either
-   * side, on a suite whose waits already overrun under a loaded directory run.
+   * side, on a suite whose waits already overrun when the whole `.dom.test.jsx`
+   * invocation is running and this file is competing with every other suite in it.
    * Tightening that further was not worth it when an exact answer was available.
    *
    * ONE VARIANT IS A TRAP AND IS RECORDED SO IT IS NOT RE-ATTEMPTED: reading the
