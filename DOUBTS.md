@@ -1485,20 +1485,26 @@ stale-proof; a present-tense component name is not.
   but still a number that silently goes wrong if the reserve ever changes. What survives in the
   band is the pre-existing behaviour, not a new defect.
 
-- **A half-width chip carrying a kebab has almost no title left.** Reserving the kebab's 34px
+- **A narrow chip under 56px tall still has almost no title left.** Reserving the kebab's 34px
   band is what stopped the title being drawn underneath it, and on a full-width chip it costs
-  nothing. On a chip sharing its slot — `cols: 2`, about 78px outer — the content box comes out
-  at **36.58px** measured, which renders `Client review — Northwind` as `Clien…`. It used to
-  wrap its `10:00 – 11:30` time label onto three lines as well; it now draws no time label,
-  because a chip sharing its slot has no room for one on a single line. Before the reserve the
-  same chip drew more of
-  its title, but drew it *under* an opaque button, so this is a legibility trade rather than a
-  regression; it is recorded because the trade is real and nobody has ruled on it.
+  nothing. On a chip sharing its slot — `cols: 2`, about 78px outer — it leaves a **36.58px**
+  content box, which renders `Client review — Northwind` as `Clien…`.
 
-  The options all cost something and none is obviously right: show the kebab only on hover or
-  focus (fails a touch reader, and the chip is a `grid` cell whose hover is not a given), drop
-  the time line when the chip is narrower than some threshold (another responsive branch in a
-  component that already has one), or accept it. Deciding needs a spec.
+  **A tall one no longer has this problem**: at 56px or more the kebab moves to the chip's
+  bottom-right, the reserve is dropped, and the title gets the whole **64.6px**. Measured, its
+  truncation falls from **74% to 54%** — not to the 18% its kebab-less neighbours show, because
+  that figure belongs to their shorter titles and this one is 140px of text in a 64.6px box
+  however the kebab is placed. 56px is the sum that makes title and kebab fit without overlap,
+  so the fix reaches events of roughly 75 minutes or more. A shorter chip has nowhere to put
+  the kebab and keeps the reserve.
+
+  What remains is therefore a short, narrow chip with actions: a 30- or 60-minute event sharing
+  its column. The options for it all cost something and none is obviously right: show the kebab
+  only on hover or focus (fails a touch reader, and the chip is a `grid` cell whose hover is not
+  a given), or do not render it at all below some width (which makes `actionsEnabled` a request
+  rather than a guarantee and silently removes the only route to the consumer's actions).
+  Accepting it is the current position, and it is defensible: the chip is a hit target, and the
+  detail lives behind the kebab.
 
 - **`Textarea` overruns its container by 26px, and it is the only React component left that
   does.** `Calendar`'s chip was one — measured overrunning its day column by 12px and fixed by
@@ -3267,3 +3273,20 @@ script-flagged token with no JS consumer yet fails the gate — and a CSS use do
 look like a self-contained refactor, but its JS consumer is the width term itself, so it cannot
 be landed ahead of it. Any plan that sequences a script-flagged token before its consumer is
 wrong about this gate.
+
+### `frameworks/react/components/display/calendar/CalendarInternals.js` — the stacking threshold is a sum of measured parts, and nothing checks it
+
+`calendar.actions-below-min-h` is 56px because a chip needs 4px of padding, a 15px title line,
+a 32px kebab and 4px of padding again to stack them without overlap — 55px, rounded up to the
+4px scale. **Three of those four numbers are not tokens.** The paddings are
+`calc(var(--sp-1) * 1)` and would move with `--sp-1`; the kebab is `--dz-ctl-h-sm`, which is
+26px under compact density rather than 32px; and the title line is `normal` line-height on
+`--dz-text-sm`, which is not a token at all and changes with the font.
+
+So the threshold is conservative under compact density and would go quietly short if the chip's
+padding grew or its title font did. Nothing checks the sum: `check:script-tokens` holds the
+token against its CSS twin, and `check:dimensions` never sees a comparison. What catches a
+regression here is the by-hand checklist in `CalendarEvent.prompt.md`, in a real browser,
+because `Calendar` binds the `grid` pattern and can have no render suite. Measured after the
+change, the margin is 15px: the title's bottom sits that far above the kebab's top on a 66px
+chip.
