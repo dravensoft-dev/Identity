@@ -89,3 +89,7 @@ Serve the tree with `bun run demos`, open
 8. A short event — 30 minutes or less — still shows its whole title. Its chip is
    at the height floor, and under `border-box` that floor is the chip's outer
    height, so a floor set too low clips the title with nothing failing.
+9. A chip sharing its slot with an overlap draws no time label, and a chip that
+   has the column to itself does. The label is redundant with the chip's own
+   position on an hour grid, so it is the first thing to go when the chip is too
+   small for it — the same call the component already makes on height.
