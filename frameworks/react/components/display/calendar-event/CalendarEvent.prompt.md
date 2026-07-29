@@ -73,10 +73,8 @@ Serve the tree with `bun run demos`, open
    costs none of the RAM the grid rule exists to avoid.
 4. Escape with the panel open CLOSES the panel and puts focus back on the
    kebab — not on the document, which is what would happen if nothing caught
-   the control being unmounted under it. A second Escape does **not** currently
-   return focus to the hour cell — it is a dead key on the kebab, and the route
-   back is ArrowLeft to the chip body and then Escape. That is a known defect,
-   not the intended behaviour; see `DOUBTS.md`.
+   the control being unmounted under it. A second Escape returns focus to the
+   hour cell.
 5. Arrow keys still move by day and hour from an hour cell, and clamp at all
    four edges — the first day, the last day, the first hour and the last.
 6. Every chip sits inside its own day column, with an even gutter each side, and

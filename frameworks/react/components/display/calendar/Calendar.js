@@ -100,12 +100,6 @@ export function Calendar({
     if (cell)
       cell.focus();
   };
-  const isEventNode = (node) => {
-    for (const n of eventRefs.current.values())
-      if (n === node)
-        return true;
-    return false;
-  };
   const onGridKeyDown = (e) => {
     const t = e.target;
     if (!t || typeof t.getAttribute !== "function")
@@ -140,7 +134,7 @@ export function Calendar({
         setCursor({ day, hour });
       return;
     }
-    if (e.key === "Escape" && isEventNode(t)) {
+    if (e.key === "Escape") {
       e.preventDefault();
       focusCursorCell();
     }
