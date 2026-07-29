@@ -101,6 +101,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
     style: {
       position: "absolute",
       ...box,
+      boxSizing: "border-box",
       display: "flex",
       flexDirection: "column",
       gap: 0,

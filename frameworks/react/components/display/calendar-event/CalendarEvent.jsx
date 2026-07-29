@@ -74,7 +74,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
           e.preventDefault(); e.stopPropagation(); focusableRef.current.focus();
         }
       } : undefined}
-      style={{ position: 'absolute', ...box,
+      style={{ position: 'absolute', ...box, boxSizing: 'border-box',
         display: 'flex', flexDirection: 'column', gap: 0,
 
         overflow: panelOpen ? 'visible' : 'hidden',

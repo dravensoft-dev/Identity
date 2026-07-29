@@ -284,7 +284,7 @@ export function Calendar({
     const color = catColor(p.ev.colorId ?? 1);
     const top = y(p.startMin);
     const rawH = y(p.endMin) - top;
-    const h = `max(calc(var(--sp-1) * 4.5), ${rawH}px)`;
+    const h = `max(calc(var(--sp-1) * 6.5), ${rawH}px)`;
     return React.cloneElement(elementOf.get(p.ev), {
       ref: (node) => {
         if (node)

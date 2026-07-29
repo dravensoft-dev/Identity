@@ -205,3 +205,17 @@ test('the chip lifts its clip while the panel is open, and only then', () => {
   assert.match(chip({}), /text-overflow:ellipsis/,
     'the title span lost the ellipsis the chip clip was standing in for');
 });
+
+test('a chip is border-box, so the injected width is its outer edge', () => {
+  const html = render({});
+  assert.match(html, /width:calc\(100% - var\(--sp-1\)\);box-sizing:border-box/,
+    'the chip is still content-box -- its padding and border are added past the width Calendar injected, and a full-width chip overruns its day column');
+});
+
+test('the chip height floor clears the title line once the height is an outer height', () => {
+  const html = render({});
+  assert.match(html, /height:max\(calc\(var\(--sp-1\) \* 6\.5\), \d+px\)/,
+    'the height floor is still stated as a content height -- under border-box it leaves too little content box for the title line');
+  assert.doesNotMatch(html, /calc\(var\(--sp-1\) \* 4\.5\)/,
+    'the old content-box floor survived somewhere in the render');
+});
