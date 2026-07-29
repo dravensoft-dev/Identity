@@ -1011,9 +1011,11 @@ id, and a required `id` would have forced a meaningless one onto every divider.
 `Onboarding` met the `dialog-modal` pattern in React for the first time, through
 `frameworks/react/use-dialog-modal.js` — a deliberate port of the Angular layer's own
 `focus-trap.ts` rather than a second design. Eleven of the twelve exceptions those three carried are
-retired; the twelfth, `ConfirmDialog`'s `roles.element`, stays because `role="alertdialog"` is
-arguably more correct for a destructive confirmation and **both** layers declare it, making it a
-shared deviation from the pattern rather than a divergence between layers. `check:compliance` moved
+retired; the twelfth, `ConfirmDialog`'s `roles.element`, stayed at the time because
+`role="alertdialog"` is arguably more correct for a destructive confirmation and **both** layers
+declared it, making it a shared deviation from the pattern rather than a divergence between
+layers. It is retired now, and not by changing the component: the catalogue gained the
+`alertdialog` pattern the component already implemented. `check:compliance` moved
 6 of 66 → 7 of 66, and three sections of `components-divergences.md` were retired or renarrowed
 because the gaps they recorded closed.
 
