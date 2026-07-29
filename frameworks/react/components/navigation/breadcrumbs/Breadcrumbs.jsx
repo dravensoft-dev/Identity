@@ -1,9 +1,10 @@
 import React from 'react';
 
-export function Breadcrumbs({ items, separator = '/', onNavigate }) {
+export function Breadcrumbs({ items, ariaLabel, separator = '/', onNavigate }) {
+  if (!ariaLabel) throw new Error('Breadcrumbs: `ariaLabel` is required');
   if (!items) throw new Error('Breadcrumbs: `items` is required');
   return (
-    <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 'calc(var(--sp-1) * 2)' }}>
+    <nav aria-label={ariaLabel} style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 'calc(var(--sp-1) * 2)' }}>
       {items.map((it, i) => {
         const last = i === items.length - 1;
         const common = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', letterSpacing: 'var(--ls-mono-nav)' };

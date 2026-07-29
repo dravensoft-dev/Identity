@@ -76,7 +76,7 @@ class SkeletonHost {}
   standalone: true,
   imports: [Breadcrumbs],
   host: { 'data-host': 'breadcrumbs' },
-  template: `<arena-breadcrumbs class="consumer-class" [items]="items" />`,
+  template: `<arena-breadcrumbs class="consumer-class" ariaLabel="Project navigation" [items]="items" />`,
 })
 class BreadcrumbsHost {
   items: Crumb[] = [];
@@ -467,7 +467,8 @@ test('arena-breadcrumbs: the host itself carries the nav landmark, not a wrapper
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-breadcrumbs') as HTMLElement;
   assert.equal(host.getAttribute('role'), 'navigation');
-  assert.equal(host.getAttribute('aria-label'), 'Breadcrumb');
+  assert.equal(host.getAttribute('aria-label'), 'Project navigation',
+    'the landmark name must come from the ariaLabel input, not from a constant the component owns');
   assert.equal(host.children.length, 0, 'with no items, the trail renders no crumbs of its own');
   fixture.destroy();
 });

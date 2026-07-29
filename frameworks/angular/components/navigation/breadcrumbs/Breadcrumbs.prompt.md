@@ -11,7 +11,7 @@ nothing; intercepting a plain click to substitute SPA routing now belongs at the
 (`routerLink`), not here:
 
 ```html
-<arena-breadcrumbs [items]="[
+<arena-breadcrumbs ariaLabel="Project navigation" [items]="[
   { label: 'Clients', href: '/clients' },
   { label: 'Ardennes', href: '/clients/ardennes' },
   { label: 'Deployments' }

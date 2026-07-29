@@ -62,6 +62,7 @@ function Demo() {
   }, "Breadcrumbs — the last item is the current location"), React.createElement("div", {
     className: "row"
   }, React.createElement(Breadcrumbs, {
+    ariaLabel: "Project navigation",
     items: [{ label: "Projects", href: "#" }, { label: "Client Portal", href: "#" }, { label: "Deployments" }]
   })), React.createElement("div", {
     className: "sub"

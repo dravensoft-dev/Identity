@@ -4,6 +4,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Breadcrumbs } from './Breadcrumbs.jsx';
 
+const LABEL = 'Project navigation';
+
 const ITEMS = [
   { label: 'Clients', href: '/clients' },
   { label: 'Acme Corp', href: '/clients/acme' },
@@ -11,7 +13,7 @@ const ITEMS = [
 ];
 
 test('the trail renders every crumb, in order', () => {
-  const html = renderToStaticMarkup(<Breadcrumbs items={ITEMS} />);
+  const html = renderToStaticMarkup(<Breadcrumbs ariaLabel={LABEL} items={ITEMS} />);
   assert.match(html, /Clients/);
   assert.match(html, /Acme Corp/);
   assert.match(html, /Overview/);
@@ -20,28 +22,35 @@ test('the trail renders every crumb, in order', () => {
 });
 
 test('the last crumb is not a link, and carries aria-current="page"', () => {
-  const html = renderToStaticMarkup(<Breadcrumbs items={ITEMS} />);
+  const html = renderToStaticMarkup(<Breadcrumbs ariaLabel={LABEL} items={ITEMS} />);
   const lastCrumb = /<span aria-current="page"[^>]*>Overview<\/span>/.exec(html);
   assert.ok(lastCrumb, `expected the current crumb as a non-link <span aria-current="page">, got: ${html}`);
 });
 
 test('a non-current crumb renders as a real anchor carrying onNavigate\'s own call site', () => {
-  const html = renderToStaticMarkup(<Breadcrumbs items={ITEMS} onNavigate={() => {}} />);
+  const html = renderToStaticMarkup(<Breadcrumbs ariaLabel={LABEL} items={ITEMS} onNavigate={() => {}} />);
   assert.match(html, /<a href="\/clients"[^>]*>Clients<\/a>/);
   assert.match(html, /<a href="\/clients\/acme"[^>]*>Acme Corp<\/a>/);
 });
 
 test('with no onNavigate at all, a non-current crumb still renders as an anchor -- the callback is optional, the link is not', () => {
-  const html = renderToStaticMarkup(<Breadcrumbs items={ITEMS} />);
+  const html = renderToStaticMarkup(<Breadcrumbs ariaLabel={LABEL} items={ITEMS} />);
   assert.match(html, /<a href="\/clients"[^>]*>Clients<\/a>/);
 });
 
 test('throws when items is absent', () => {
-  assert.throws(() => renderToStaticMarkup(<Breadcrumbs />), /items.*required/);
+  assert.throws(() => renderToStaticMarkup(<Breadcrumbs ariaLabel={LABEL} />), /items.*required/);
+});
+
+test('throws when ariaLabel is absent -- nothing can derive the name of a trail', () => {
+  assert.throws(
+    () => renderToStaticMarkup(<Breadcrumbs items={ITEMS} />),
+    /Breadcrumbs: `ariaLabel` is required/,
+  );
 });
 
 test('an empty items array is supplied-but-empty and stays legal', () => {
-  const html = renderToStaticMarkup(<Breadcrumbs items={[]} />);
-  assert.match(html, /<nav aria-label="Breadcrumb"/);
+  const html = renderToStaticMarkup(<Breadcrumbs ariaLabel={LABEL} items={[]} />);
+  assert.match(html, new RegExp(`<nav aria-label="${LABEL}"`));
   assert.doesNotMatch(html, /<a /);
 });

@@ -33,7 +33,7 @@ function Demo(){const[v,setV]=React.useState('Overview');const[range,setRange]=R
   </div>
   <div className="sub">Breadcrumbs — the last item is the current location</div>
   <div className="row">
-    <Breadcrumbs items={[{label:'Projects',href:'#'},{label:'Client Portal',href:'#'},{label:'Deployments'}]} />
+    <Breadcrumbs ariaLabel="Project navigation" items={[{label:'Projects',href:'#'},{label:'Client Portal',href:'#'},{label:'Deployments'}]} />
   </div>
   <div className="sub">SideNav — sections group, collapsibles disclose, the active item is aria-current</div>
   {

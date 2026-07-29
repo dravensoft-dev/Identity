@@ -1,7 +1,7 @@
 Breadcrumb navigation (H3). Gives an explicit return path when the hierarchy is deeper than the tabs. The last item is the current page (not linked).
 
 ```jsx
-<Breadcrumbs items={[
+<Breadcrumbs ariaLabel="Project navigation" items={[
   { label: 'Projects', href: '/projects' },
   { label: 'Checkout', href: '/projects/checkout' },
   { label: 'Deployment #482' },
