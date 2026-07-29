@@ -1683,10 +1683,14 @@ whenever a token is added, so a line number in it is exactly the kind of figure 
 repository's own rules say to derive with a command instead.
 
 **React** sets no such rule anywhere in `contracts/design/`, `contracts/design-generated/` or `styles.css`, so every React
-component is `content-box` — the CSS default — unless it opts in itself. Only four do:
-`Input.jsx`, `Button.jsx`, `Spinner.jsx` and `ConfirmDialog.jsx` each set `boxSizing:
-'border-box'` locally; every other component, including every other form control, is
-content-box.
+component is `content-box` — the CSS default — unless it opts in itself, **or unless the UA
+stylesheet already made that element border-box** (see the correction below, which is the
+mechanism several rows of the table further down get wrong). Only five opt in explicitly:
+`Input.jsx`, `Button.jsx`, `Spinner.jsx`, `ConfirmDialog.jsx` and `CalendarEvent.jsx` each set
+`boxSizing: 'border-box'` locally; every other component that is not already border-box by UA
+default is content-box. `CalendarEvent`'s is the newest and the only one with no Tailwind
+counterpart to agree with — it opted in to fix a measured 12px overrun of its own day column,
+not to converge with anything.
 
 **What this means numerically:** a slot that combines an explicit size with a border, or
 an explicit size with padding, renders a box that is **smaller in the Tailwind layer by
@@ -1702,24 +1706,63 @@ past it." Verified against the current sources:
 |---|---|---|
 | `Checkbox`'s `box` | 22×22 (`size-5`=20 content + 2×`--bw`=2) | 20×20 (`size-5`, border included) |
 | `Radio`'s `ring` | 22×22 (same derivation) | 20×20 (`size-5`, border included) |
-| `Select`'s `field` height | 42px (`--dz-ctl-h`=40 + 2×`--bw`) | 40px (`h-ctl-h`, border included) |
-| `Switch`'s `track` | 44×26 outer, 40×22 content (`w-10 h-5.5`=40×22 content + 2×`p-0.5`=2 each side; no border) | 40×22 outer, 36×18 content (`w-10 h-5.5 p-0.5`, padding included) |
+| `Select`'s `field` height | ~~42px (`--dz-ctl-h`=40 + 2×`--bw`)~~ **measured 40px** | 40px (`h-ctl-h`, border included) |
+| `Switch`'s `track` | ~~44×26 outer, 40×22 content~~ **measurement pending; the track is a `<button>`** | 40×22 outer, 36×18 content (`w-10 h-5.5 p-0.5`, padding included) |
 | `Toast`'s `root` | 375px outer (`w-85`=340 content + 2×`px-4`=32 + `--bw`=1 right + `--bw-strong`=2 left) | 340px outer (`w-85`, border and padding included) |
-| `Pagination`'s `nav`/`page` | 52×36 outer (`h-8.5 min-w-8.5`=34 content each axis + 2×`px-2`=16 each side on width + 2×`--bw`=2 each axis) | 34×34 outer (`h-8.5 min-w-8.5`, border and padding included) |
+| `Pagination`'s `nav`/`page` | ~~52×36 outer~~ **measured 34×34 on `nav`** | 34×34 outer (`h-8.5 min-w-8.5`, border and padding included) |
 | `Spinner`'s `circle` | **agrees** — 14×14, 20×20, 32×32 outer at sm/md/lg | same, 14×14 / 20×20 / 32×32 |
 | `Menu`'s `panel` | 214px min outer (`--sp-1`×50=200 min content + 2×`--sp-1`×1.5=12 padding + 2×`--bw`=2) | 200px (`min-w-50 p-1.5 border`, both included) |
-| `Button`'s `root` | 42px tall at `md` (`--dz-ctl-h`=40 + 2×`--bw`) | 40px (`h-ctl-h`, border included) |
-| `IconButton`'s `root`, ghost only | 34/42/50 at sm/md/lg (size + 2×`--bw`) | 32/40/48 (border included) |
+| `Button`'s `root` | ~~42px tall at `md`~~ **measured 40px** | 40px (`h-ctl-h`, border included) |
+| `IconButton`'s `root`, ghost only | ~~34/42/50 at sm/md/lg~~ **measured 32 at `sm`** | 32/40/48 (border included) |
 | `Dialog`'s `panel` | 482px (`--sp-1`×120=480 + 2×`--bw`) | 480px (`w-120`, border included) |
 | `SegmentedControl`'s `segment` | **agrees** — 28/34 tall at sm/md | same; the height axis carries no padding and the width is auto |
 
+**CORRECTION — five of those rows are wrong, and the reason is the UA stylesheet.** The table
+was derived by reading each source and applying "React declares no `box-sizing`, therefore
+content-box". That inference is invalid for a form control: **Chromium's UA stylesheet declares
+`box-sizing: border-box` for `<button>` and `<select>`**, so a React slot rendered as one of
+those elements is border-box whether or not Arena says so, and it agrees with the Tailwind
+layer instead of diverging from it. Measured in headless Chromium on the components' own card
+pages, at their declared viewports:
+
+| Slot | Element | Table claimed | Measured |
+|---|---|---|---|
+| `Button`'s `root` | `<button>` | 42px tall at `md` | **40px** |
+| `IconButton`'s `root` | `<button>` | 34px at `sm` | **32px** |
+| `Select`'s `field` | `<select>` | 42px tall | **40px** |
+| `Pagination`'s `nav` | `<button>` | 52×36 outer | **34×34** |
+
+`Switch`'s `track` is the fifth: it is the `<button>` at `Switch.jsx:31`, not a `<span>`, so
+its declared `40×22` is an outer size and the row's `44×26` is wrong by the same mechanism —
+**and so is the thumb-inset paragraph derived from it below**, which reasons from a 22px
+content box the element does not have. It is listed as pending rather than measured because no
+probe was pointed at it.
+
+`SegmentedControl`'s `segment` row says the two layers "agree" and gives the reason as "the
+height axis carries no padding and the width is auto". The conclusion is right and the reason
+is not: segments are `<button>`s, so they would agree regardless.
+
+**The rows that stand** are the ones whose slot is a `<span>` or a `<div>`, which carry no UA
+`box-sizing`: `Checkbox`'s `box`, `Radio`'s `ring`, `Toast`'s `root`, `Menu`'s `panel`,
+`Dialog`'s `panel`, and `Spinner`'s `circle` (which agrees for the reason given — its own
+explicit opt-in).
+
+**This is open debt, not a finished correction.** The four measurements above are real; the
+`Switch` row was classified from its source and never measured; and no systematic re-derivation
+of the whole table has been run. Whoever re-derives it should measure rather than read, because
+reading is exactly what produced the error. Note also that "React agrees here" now rests on a
+UA default that no specification Arena controls guarantees — thinner ground than an explicit
+`boxSizing`, and an argument for the repo-wide reset the *Open item* below already names.
+
 `Switch` carries no border at all — `p-0.5` alone is enough to reproduce the same
-divergence, which is why the rule above is stated for padding and not just border. The
-same subtraction cascades into the thumb: React's content-box track has 2px slack left
-over inside its content box after centring the 18px thumb vertically (22px content −
-18px thumb), on top of the 2px padding, for a 4px inset from the track's outer edge;
-Tailwind's border-box content box is exactly 18px tall — no slack — so its inset is the
-2px padding alone.
+divergence *where the element is not already border-box*, which is why the rule above is
+stated for padding and not just border. **The `Switch` illustration itself no longer holds**:
+its track is the `<button>` at `Switch.jsx:31`, so the UA stylesheet already makes it
+border-box and there is no subtraction to cascade. The reasoning this paragraph used to carry
+— that React's track has 2px of slack inside a 22px content box after centring the 18px thumb,
+for a 4px inset against Tailwind's 2px — assumed a content box the element does not have, and
+is retained here only as the shape of the argument, not as a measurement of `Switch`. Neither
+the track nor the thumb has been re-measured.
 
 `Toast`'s `root` is the largest divergence in the layer so far by a distance: React's
 content-box outer width is `w-85` (340px content) plus both horizontal paddings
@@ -1731,21 +1774,27 @@ diverges either way, and `Toast` combines it with both.
 
 `Pagination`'s `nav` (the prev/next arrows) and `page` (a single-digit page number) repeat
 the same shape at a smaller scale, and on two axes at once because the slot pairs a fixed
-height with a `min-width`, each carrying its own padding and border. React's content-box
-outer is 52×36: `h-8.5`/`min-w-8.5` (34px content on both axes) plus `px-2` (8px a side,
-16px total, added to width only) plus the `--bw` border (1px a side, 2px total, added to
-both axes) — width 34 + 16 + 2 = 52, height 34 + 0 + 2 = 36 (there is no vertical
-padding). Tailwind's border-box renders both utilities at their nominal 34px outer on both
-axes, since border and padding are carved out of the declared size rather than added past
-it — 34×34, not 36×36 (36×36 double-counts the border on an outer number that already
-includes it, and drops `px-2` entirely).
+height with a `min-width`, each carrying its own padding and border — **or they would, if the
+slot were not a `<button>`.** React's outer was derived here as 52×36: `h-8.5`/`min-w-8.5`
+(34px content on both axes) plus `px-2` (8px a side, 16px total, added to width only) plus the
+`--bw` border (1px a side, 2px total, added to both axes) — width 34 + 16 + 2 = 52, height
+34 + 0 + 2 = 36 (there is no vertical padding). **That derivation is wrong**, and the `nav`
+measures **34×34** in Chromium: the UA stylesheet makes a `<button>` border-box, so the
+declared 34 is the outer figure on both axes and `px-2` is carved out of the width rather than
+added past it. Tailwind renders the same 34×34 for the same reason. The two layers agree on
+this slot; see the correction above the table.
 
-Four **elements** — not four components — agree, and only because their React source opts
-into `border-box` at that element: `Input.jsx:58`'s field, `Button.jsx:85`'s spinner span,
-`ConfirmDialog.jsx`'s require-text input and `Spinner.jsx:49-51`'s circle all set
-`boxSizing: 'border-box'`. The distinction matters and was got wrong here once: **the opt-in
-is per-element, so `Button`'s spinner agreeing tells you nothing about `Button`'s root**,
-which sets no `boxSizing` and diverges by 2px — it has its own row in the table above.
+Four **elements** — not four components — agree because their React source opts into
+`border-box` at that element: `Input.jsx:48`'s field, `Button.jsx:85`'s spinner span,
+`ConfirmDialog.jsx`'s require-text input and `Spinner.jsx:33-38`'s circle all set
+`boxSizing: 'border-box'`. Read "because", not "only because": the correction above shows that
+several more elements agree without any opt-in, because the UA stylesheet already made them
+border-box. Four is also no longer the count of opt-ins — `CalendarEvent.jsx`'s chip is a
+fifth, and it has no Tailwind counterpart to agree with, so it appears in no row of the table. The distinction still matters — **the opt-in
+is per-element, so `Button`'s spinner agreeing tells you nothing about `Button`'s root** —
+but the example this sentence used to give was itself wrong: the root was said to set no
+`boxSizing` and therefore to diverge by 2px, and it measures 40px, agreeing, because it is a
+`<button>`. Per-element reasoning is right; "no opt-in, therefore content-box" is what is not.
 `Spinner` is the cleanest
 demonstration that the agreement is the opt-in and not luck: its `circle` slot combines
 an explicit size with a `--bw-strong` border — P3's trigger exactly — and still measures
@@ -3064,3 +3113,68 @@ padding, which every card harness's body does via `Specimen.css`, so the margin 
 
 Taking the max covers both. Removing either term reopens one case silently, since the gate only
 fails on `clip`.
+
+### `frameworks/react/components/display/calendar/Calendar.jsx` — the scroll area's two paddings
+
+The scroll box below the day headers carries `paddingTop` and `paddingBottom` of
+`calc(var(--sp-1) * 2)`, and they are not spacing. Each hour label is **centred on its own
+line**: it is positioned at `calc(<y>px - var(--sp-1))`, so the first overhangs the top of the
+grid by 4px and the last overhangs the bottom. Without the pads the first is clipped by the
+header strip above it and the last by the scroll box, whenever the calendar is left to size
+itself.
+
+The day header cell's own `paddingBottom` used to sit directly above this one, doubling the
+gap to 16px. It had no such constraint and was removed; this one must stay. Measured after the
+removal, on `Calendar.card.html` at 1100×620: the header strip is 37px tall rather than 45px,
+and the first hour label still sits 4px below the header's bottom border and is fully drawn.
+
+### `frameworks/react/components/display/calendar-event/CalendarEvent.jsx` — stretch is what makes the ellipsis real
+
+The chip's body button sets `display: flex; flexDirection: column` and **deliberately sets no
+`align-items`**, so it stays `stretch` and the title span is as wide as the button rather than
+as wide as its own text. That is what makes the span's own
+`white-space: nowrap; overflow: hidden; text-overflow: ellipsis` engage at all.
+
+This was got wrong once, and the correction is the fact worth keeping: the title's own
+nowrap/hidden/ellipsis does **not** survive the chip's clip being lifted on its own. Under
+`align-items: flex-start` the span is sized to its content, and with `nowrap` its min-content
+width **is** the full text width, so its own overflow never engages and the chip's clip was
+doing the whole job — measured at 56px of title spilling into the neighbouring day column the
+moment the panel opened. Adding `align-items` to that button, in any value but `stretch`,
+silently reintroduces a hard cut.
+
+It is also why the fix for the title running under the kebab is a reserved `paddingRight` on
+the chip rather than a width on the span: reserving space leaves the layout mode alone. The
+kebab is absolutely positioned, and an absolutely positioned element is laid out against its
+containing block's **padding box**, so `right: 0` puts it inside the padding band and growing
+that band is exactly what reserves its room. `KEBAB_RESERVE` is
+`calc(var(--dz-ctl-h-sm) + var(--bw) * 2)` because the kebab is an `IconButton size="sm"` in
+its default `ghost` variant — that token plus a `--bw` border a side — so the reserve
+re-densifies with the control it reserves for. Measured: the reserve computes to 34px and the
+kebab's border box to 32px, because a `<button>` is border-box by UA default and its border is
+therefore carved out rather than added; the 2px difference lands as a gap between the title and
+the button, which is harmless. See *The Tailwind layer is border-box; React is content-box* in
+section 3 for that mechanism and for the rows of its table it invalidates.
+
+### `frameworks/react/components/display/calendar-event/CalendarEvent.jsx` — the chip is border-box, so `Calendar`'s injected size is its outer edge
+
+`Calendar` injects `top`, `height`, `left` and `width` into every chip, and all four read as
+statements about the chip's **outer** edge — "the column, less a gutter", "the event's own time
+span". The chip sets `boxSizing: 'border-box'` so they mean that. Under the `content-box`
+default the browser added the chip's 12px of horizontal padding and its 2px left border past
+the injected width, and a full-width chip overran its day column by 12px; the same addition on
+the other axis made every chip 8px taller than its own time range.
+
+The consequence to remember is on the height: because the floor is now an **outer** height,
+`Calendar`'s `max(calc(var(--sp-1) * 6.5), rawH)` reads 26px, not 18px. 26px is the value that
+leaves the shortest chip rendering at exactly the size it rendered at before the change
+(18px content + 8px padding), and it is the floor that keeps a 12px `--dz-text-sm` title line
+inside a chip whose content box is now the declared height minus 8px. Lowering it re-clips
+short chips; there is no gate that would notice, because `Calendar` binds the `grid` pattern
+and is DOM-tested by hand.
+
+The alternative — subtracting `CalendarEvent`'s padding and border inside `Calendar`'s own
+`calc()` — was rejected rather than overlooked. It re-encodes one component's padding inside
+the other, so the two would have to move together forever, against the division of labour the
+pair is built around: `Calendar` owns *where* a chip goes and `CalendarEvent` owns what it
+*looks like*.
