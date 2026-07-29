@@ -38,9 +38,14 @@ waiting to be applied to the other two. `contracts/api-generated/` would be empt
 `api/` keeps `components/` and `types/`; `behaviour/` and `design/` are flat. An inner
 directory earns its place when it separates two different vocabularies — a component
 contract and a shared type are different things, and `check:api` reads them as two sets.
-`patterns/` and `src/` separated their contents from nothing but the README beside them,
-which is why flattening `behaviour/patterns/` into `contracts/behaviour/` and
-`tokens/src/` into `contracts/design/` lost nothing.
+Neither of the two directories this batch flattened had that reason, but they didn't
+share one reason either. `behaviour/patterns/` never separated a vocabulary from
+anything: its README sat one level up, beside it, so folding it into
+`contracts/behaviour/` lost nothing. `tokens/src/` separated something real, just not a
+second vocabulary — `tokens/` held the generated CSS files directly, so `src/` was what
+kept the DTCG sources apart from Style Dictionary's own output in that same parent. The
+`design/` / `design-generated/` split now does that job at the top level, so `src/` had
+nothing left to separate once it moved.
 
 ## What checks each level
 
