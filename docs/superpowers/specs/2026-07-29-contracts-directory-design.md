@@ -125,14 +125,34 @@ Tailwind layer went nested, `check:api` skipping the Angular half of every compa
 the Angular layer moved, and this file's own verification command matching 3 test files out
 of 33. Each time the surviving evidence was a plausible-looking green line of output.
 
-So every gate that enumerates a contract directory gains an explicit failure on finding
-nothing, as an exported pure function with its own suite — the shape `check:tailwind`,
-`check:radius` and `check:structure` already carry:
+**Which of them actually passes vacuously was measured, not assumed** — each directory was
+moved aside and its gate run, on 2026-07-29:
 
-- `check:api` — zero contracts, or zero types
-- `check:behaviour` — zero patterns
-- `check:dtcg` — zero DTCG sources
-- `check:tokens` and `check:script-tokens` — zero generated CSS
+| Probe | Result |
+|---|---|
+| `api/components/` absent | **exit 0** — `check-api: 0 contract(s) hold across 0 layer implementation(s)` |
+| `api/types/` absent | exit 1, but from an uncaught `readdirSync` ENOENT: a stack trace, not a diagnosis |
+| `behaviour/patterns/` empty | exit 1, a cascade of ~100 `unknown pattern "alert"` lines naming the wrong problem |
+| `tokens/src/` empty | exit 1, `check-dtcg: no token files found in tokens/src` — the only one already guarded |
+
+So exactly one false green exists today, and it is `check:api`'s contract directory:
+`main()` wraps that one `readdirSync` in `existsSync(contractDir) ? … : []`, which is the
+lookup-that-cannot-tell-absent-from-not-found shape this repository has already recorded
+three times.
+
+Every gate that enumerates a contract directory still gains an explicit zero failure, as an
+exported pure function with its own suite — the shape `check:tailwind`, `check:radius` and
+`check:structure` already carry — but the value is different per gate and the plan should
+say which it is buying:
+
+- `check:api` — zero contracts (**closes a real false green**), or zero types (replaces an
+  ENOENT stack trace with a named problem)
+- `check:behaviour` — zero patterns (replaces a hundred-line cascade with one line)
+- `check:dtcg` — zero DTCG sources (already guarded inline; the change is to make it an
+  exported function with a suite, so the guard cannot be dropped silently)
+- `check:tokens` and `check:script-tokens` — zero generated CSS. Both already fail loudly:
+  the first reports each file missing, the second reports every script-readable token as
+  absent from any CSS. The guard names the directory instead.
 
 **And the plan compares counts, rather than reading green.** The baseline, measured
 2026-07-29 by running each gate:
@@ -219,7 +239,12 @@ repointing, then that level's zero guards, then that level's citation sweep, the
 
 **Batch 1 — api.** The most contained: its only path readers are `check-api.mjs` and
 `build-api-types.mjs`, and nothing outside `scripts/` resolves it. This batch creates
-`contracts/` and writes `contracts/README.md`.
+`contracts/` by moving the first level into it.
+
+`contracts/README.md` is written in **batch 3**, not here. A document describing three
+levels, written when one exists, would be prose asserting a tree that is not on disk — the
+exact shape of stale claim this repository's *Known debt* is mostly made of. It is written
+once, when the structure it describes is complete.
 
 **Batch 2 — behaviour.** Flattens `patterns/`, and above all moves all three `PATTERN_DIR`
 declarations. This is the batch where a false green is easiest to produce: a wrapper left
