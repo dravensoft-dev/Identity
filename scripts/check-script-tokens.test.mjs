@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { cssCounterpart, importedNames, catSlotEnumProblems } from './check-script-tokens.mjs';
+import { cssCounterpart, importedNames, catSlotEnumProblems, zeroGeneratedCssProblems } from './check-script-tokens.mjs';
 import { buildScriptModules } from './build-tokens.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -85,4 +85,22 @@ test('the committed CatSlot matches the ramp the tokens are built from', async (
   const catSlots = Number(/^export const catSlots = (\d+);$/m.exec(body)[1]);
   const catSlot = JSON.parse(readFileSync(join(root, 'contracts/api/types/cat-slot.json'), 'utf8'));
   assert.deepEqual(catSlotEnumProblems(catSlots, catSlot.values), []);
+});
+
+/* Moving contracts/design-generated/ aside on 2026-07-29 did not fail this gate
+ * through a guard at all -- it failed through a 21-line cascade, one line per
+ * script-readable token, each reading "exported to JS but --X is not in any
+ * contracts/design-generated/*.css". None of those 21 lines names the actual
+ * problem, which is that the walk over contracts/design-generated/ found no
+ * .css files to compare against -- exactly the shape zeroPatternProblems and
+ * zeroSourceProblems already guard against in the other two contract gates. */
+test('zero generated CSS files is one named failure, not a 21-line cascade', () => {
+  const problems = zeroGeneratedCssProblems(0);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /0 /);
+  assert.match(problems[0], /design-generated/);
+});
+
+test('a populated design-generated directory has no zero problem', () => {
+  assert.deepEqual(zeroGeneratedCssProblems(5), []);
 });

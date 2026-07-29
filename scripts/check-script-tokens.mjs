@@ -74,6 +74,31 @@ export function catSlotEnumProblems(catSlots, values) {
   return [`contracts/api/types/cat-slot.json: CatSlot is [${actual.join(', ')}], but the --color-cat-* ramp in contracts/design/palette.dark.json has ${catSlots} slot(s), so it must be [${expected.join(', ')}] — the contract type restates the ramp and has to follow it`];
 }
 
+/** An empty contracts/design-generated/ is a failure, and it has to be reported
+ *  as ONE problem rather than as the cascade every downstream check produces
+ *  when it finds the lookup table empty.
+ *
+ *  There are two candidate zero counts here, and they fail differently: the
+ *  number of .css files the walk below finds, and the number of custom
+ *  properties parsed out of them. This guards the FILE count, not the
+ *  property count, because the file count is what the walk itself discovers --
+ *  the direct analogue of zeroSourceProblems' files.length in check-dtcg.mjs
+ *  and zeroPatternProblems' patterns.size in check-behaviour.mjs, both of
+ *  which guard what a directory listing returns, not a quantity computed from
+ *  parsing what it returns. "Files present but every one of them declares
+ *  nothing" is a real, different failure -- but it is a content problem, not a
+ *  discovery one, and content is check-tokens-generated.mjs's job: it diffs
+ *  every declaration against a fresh build and would name that exact failure
+ *  by itself. Measured on 2026-07-29 by moving contracts/design-generated/
+ *  aside: 21 lines, one per script-readable token, each reading "exported to
+ *  JS but --X is not in any contracts/design-generated/*.css" -- a cascade
+ *  naming a consequence 21 times over and the cause never.
+ *  @param {number} count @returns {string[]} */
+export function zeroGeneratedCssProblems(count) {
+  if (count > 0) return [];
+  return ['found 0 .css files in contracts/design-generated — an empty result set is a failure, not a clean pass; check the discovery path'];
+}
+
 const SCAN_EXT = new Set(['.js', '.jsx', '.ts', '.tsx']);
 
 function* sourceFiles(dir) {
@@ -114,9 +139,15 @@ async function main() {
    * four -- harmless, because a script-readable token is emitted by
    * build-tokens.mjs into one of the generated files, never into the
    * hand-authored colors.css. */
+  const cssFiles = readdirSync(join(root, 'contracts', 'design-generated')).filter((f) => extname(f) === '.css');
+  const zeroCss = zeroGeneratedCssProblems(cssFiles.length);
+  if (zeroCss.length) {
+    console.error(`check-script-tokens: ${zeroCss.length} problem(s)\n`);
+    for (const z of zeroCss) console.error(`  ${z}`);
+    process.exit(1);
+  }
   const cssValues = new Map();
-  for (const file of readdirSync(join(root, 'contracts', 'design-generated'))) {
-    if (extname(file) !== '.css') continue;
+  for (const file of cssFiles) {
     for (const [, decls] of parseDecls(readFileSync(join(root, 'contracts', 'design-generated', file), 'utf8'))) {
       for (const [prop, value] of decls) if (!cssValues.has(prop)) cssValues.set(prop, value);
     }
