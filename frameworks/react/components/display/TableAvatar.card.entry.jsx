@@ -20,7 +20,7 @@ function Demo(){
   ];
 
   const body = (onClick) => rows.map((r)=>(
-    <TableRow key={r.build} onClick={onClick}>
+    <TableRow key={r.build} onClick={onClick} disabled={r.status!=='ok'}>
       <TableCell>{r.build}</TableCell>
       <TableCell>{r.project}</TableCell>
       <TableCell><Badge tone={r.status==='ok'?'success':'danger'} dot>{r.status==='ok'?'Deployed':'Down'}</Badge></TableCell>
