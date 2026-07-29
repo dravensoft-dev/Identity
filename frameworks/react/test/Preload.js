@@ -1,5 +1,5 @@
-/* The DOM this directory's suites render into, installed BEFORE react-dom is
- * evaluated. Loaded with `bun test --preload frameworks/react/test-dom/preload.js`;
+/* The DOM every `.dom.test.jsx` suite renders into, installed BEFORE react-dom is
+ * evaluated. Loaded with `bun test --preload frameworks/react/test/Preload.js`;
  * every invocation site passes it (package.json's `test:react-dom` and `test`,
  * and testStep() in scripts/check-all.mjs).
  *
@@ -12,7 +12,7 @@
  * `input` or `change` reaches an `onChange` handler zero times, silently: nothing
  * in the failure names the cause.
  *
- * Registering happy-dom from harness.jsx's module body is too late — ES imports
+ * Registering happy-dom from Harness.jsx's module body is too late — ES imports
  * are evaluated before any body statement. Registering it from a SEPARATE ES
  * MODULE IMPORTED FIRST does not work either, and that is the part worth writing
  * down, because it is the obvious next thing to try: bun evaluated `react-dom`
@@ -22,12 +22,15 @@
  * `canUseDOM = true`, `isInputEventSupported = true`, and a dispatched `input`
  * reaches React.
  *
- * This file must NOT be preloaded for frameworks/react/test/, which asserts on
- * renderToStaticMarkup and is DOM-free BY DESIGN — see CLAUDE.md's "React has two
- * test directories and they must not merge". Registering happy-dom there would
- * quietly change what those six suites prove.
+ * This file must NOT be preloaded for the suites WITHOUT a `.dom.` infix, which
+ * assert on renderToStaticMarkup and are DOM-free BY DESIGN — see CLAUDE.md's
+ * "React's suites run in two `bun test` invocations that must not merge".
+ * Registering happy-dom there would quietly change what they prove. (The split was
+ * a directory boundary — this file lived in frameworks/react/test-dom/ — until the
+ * structure refactor's batch 3 colocated the suites with their components; the
+ * filename infix carries it now, and the reason is unchanged.)
  *
- * Nothing is ever unregistered: this directory is its own `bun test` process and
+ * Nothing is ever unregistered: the DOM suites are their own `bun test` process and
  * the process exiting is the teardown. */
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 

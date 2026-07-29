@@ -55,7 +55,7 @@ What "into the chip" means depends on the shape. A chip with no action panel *is
 `Calendar` binds the `grid` pattern, so by Arena's rule it is DOM-tested by hand
 rather than by a render suite — the measured RAM cost of a grid fixture is why.
 Serve the tree with `bun run demos`, open
-`frameworks/react/components/display/calendar.card.html`, and check all of:
+`frameworks/react/components/display/calendar/Calendar.card.html`, and check all of:
 
 1. Tab reaches the schedule ONCE, and one more Tab leaves it. No chip and no
    kebab is a stop of its own. An OPEN panel is the exception and is meant to
@@ -68,7 +68,7 @@ Serve the tree with `bun run demos`, open
    and every control in it is clickable — check a SHORT event, 30 minutes or
    less, not only a long one. The geometry is what this step is for; the
    keyboard route beside it is pinned by
-   `frameworks/react/test-dom/placement-and-branches.test.jsx`, because
+   `frameworks/react/test/PlacementAndBranches.dom.test.jsx`, because
    `CalendarEvent` binds `button` rather than `grid` and a chip mounted alone
    costs none of the RAM the grid rule exists to avoid.
 4. Escape with the panel open CLOSES the panel and puts focus back on the

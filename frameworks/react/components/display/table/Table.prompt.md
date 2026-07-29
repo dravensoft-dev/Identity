@@ -71,12 +71,12 @@ Card mode answers none of this. A card is a list item, and a list is traversed w
 
 `Table` binds the `grid` pattern, so by Arena's rule it is DOM-tested by hand rather
 than by a render suite — the measured RAM cost of a grid fixture is why. What is
-automatic is in `frameworks/react/test/table.test.jsx` and covers the markup only:
+automatic is in `frameworks/react/components/display/table/Table.test.jsx` and covers the markup only:
 the roles, the name, the `label` guard, the tab-stop count, and that the removed
 members reach nothing. Everything below is behaviour and only a person checks it.
 
 Serve the tree with `bun run demos`, open
-`frameworks/react/components/display/table-avatar.card.html`, and check all of:
+`frameworks/react/components/display/TableAvatar.card.html`, and check all of:
 
 1. Tab reaches the table ONCE, and one more Tab leaves it. No cell is a stop of its
    own. Controls YOU drew inside a cell are the exception and are meant to be: they
@@ -92,7 +92,7 @@ Serve the tree with `bun run demos`, open
    than before: a control in a cell is now the expected way to build a status or an
    actions column, not an edge case. The demo page's own cells hold a `Badge`, which
    is not focusable — check this one on the Delivery Console's Deployments tab
-   (`frameworks/react/ui_kits/console/index.html`), whose actions column draws a real
+   (`frameworks/react/ui-kits/console/index.html`), whose actions column draws a real
    `Button`.
 3. Arrow keys move by cell and clamp at all four edges — the first column, the last
    column, the header row at the top, the last body row at the bottom. Focus never

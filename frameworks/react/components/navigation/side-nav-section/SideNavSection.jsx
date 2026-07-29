@@ -44,7 +44,7 @@ export function SideNavSection({
   /* toArray().length, never Children.count(): count() counts a bare `false` as one
    * child, and the conditional-render idiom -- {isAdmin && <SideNavItem …/>} --
    * writes exactly that when the condition is false. The render path below goes
-   * through injectInto, which is toArray() under the hood (see side-nav-inject.jsx),
+   * through injectInto, which is toArray() under the hood (see SideNavInject.jsx),
    * so a guard using count() would pass with "one child" while the actual render
    * drops it and produces the very childless group this guard exists to refuse --
    * the guard and the thing it guards would count two different things. Every other

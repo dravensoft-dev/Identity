@@ -48,7 +48,7 @@ afterEach(cleanup);
  *   THE BOUNDARY IS OURS AND IS PROVABLE. Shift+Tab on the first focusable
  *     landing on the last, and Tab on the last landing on the first, are
  *     `last.focus()` and `first.focus()` calls made by our own keydown handler
- *     in frameworks/react/use-dialog-modal.js. happy-dom honours .focus(), so
+ *     in frameworks/react/UseDialogModal.js. happy-dom honours .focus(), so
  *     these are real assertions about real behaviour, and behavioural.test.jsx
  *     makes both of them — "Dialog wraps Shift+Tab from the first focusable to
  *     the last" and its Tab twin — and then makes both again for ConfirmDialog.

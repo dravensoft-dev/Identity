@@ -14,7 +14,7 @@ import { Pagination } from './Pagination.jsx';
  * ones included, is decidable from static markup.
  *
  * `pageWindow` is the elision helper and is pinned separately in
- * pagination-window.test.jsx; nothing here re-derives it. */
+ * PaginationWindow.test.jsx, beside this file; nothing here re-derives it. */
 
 test('Pagination is a nav landmark and names itself "Pagination" by default', () => {
   const html = renderToStaticMarkup(<Pagination page={3} pageCount={12} />);

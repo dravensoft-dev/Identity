@@ -7,7 +7,7 @@ import { Checkbox } from './Checkbox.jsx';
 /* This directory renders with renderToStaticMarkup and has no DOM, so no test here
  * fires a change. The `change` event's payload -- the new checked state as a boolean --
  * is therefore NOT verified by this suite; it is verified where a DOM exists, in
- * frameworks/react/test-dom/form-control-events.test.jsx, which clicks the real
+ * ../FormControlEvents.dom.test.jsx, which clicks the real
  * checkbox and asserts the payload is a boolean before asserting what it equals --
  * the sharpest of the six, because a DOM event and a boolean are unmistakably
  * different things. What IS verified here is the half SSR can see:

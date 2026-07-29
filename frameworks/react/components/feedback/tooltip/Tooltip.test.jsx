@@ -13,7 +13,7 @@ import { Tooltip } from './Tooltip.jsx';
  * has neither, so a static render shows the TRIGGER and never the bubble. Nothing
  * below asserts the bubble's text, its role="tooltip", or either delay; that would
  * be asserting something false about a static render.
- * `frameworks/react/test-dom/tooltip-timer.test.jsx` owns the pointer reveal and
+ * `Tooltip.timer.dom.test.jsx`, beside this file, owns the pointer reveal and
  * keeps owning it -- it drives real mouseover/mouseout against a real DOM and pins
  * the cancel-and-reschedule rule around --delay-open and --delay-close --
  * and `tooltip-keyboard.test.jsx` owns the focus path, the merged

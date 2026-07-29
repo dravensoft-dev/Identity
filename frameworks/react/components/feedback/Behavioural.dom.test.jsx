@@ -10,7 +10,7 @@
  *   THE BOUNDARY IS OURS AND IS PROVED HERE. Shift+Tab on the first focusable
  *     landing on the last, and Tab on the last landing on the first, are
  *     `.focus()` calls made by our own handler in
- *     frameworks/react/use-dialog-modal.js. happy-dom honours .focus(), so both
+ *     frameworks/react/UseDialogModal.js. happy-dom honours .focus(), so both
  *     are real assertions about real behaviour, and both are below.
  *
  *   THE INTERIOR IS THE BROWSER'S AND IS STILL NOT PROVABLE. That Tab from a

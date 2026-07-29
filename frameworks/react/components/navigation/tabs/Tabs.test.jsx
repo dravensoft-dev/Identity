@@ -7,7 +7,7 @@ import { Tab } from '../tab/Tab.jsx';
 
 /* This directory has no DOM, so no test here fires a click or an arrow key -- the
  * roving tab stop MOVING, and `change`'s payload, are asserted in
- * frameworks/react/test-dom/tabs.test.jsx. What SSR can hold is the structure:
+ * Tabs.dom.test.jsx, beside this file. What SSR can hold is the structure:
  * that a tablist and one tabpanel per tab are rendered with exactly one of the
  * panels visible, that every piece of wiring between them resolves, that the
  * degenerate cases -- no children, and an active value naming none of them --

@@ -30,7 +30,8 @@ mirrored from Angular deliberately, not an oversight.
 **Checked in Chromium by hand**, because native sequential focus navigation is the browser's
 and no suite in this repo drives one: with the tour open, Tab repeatedly through Back / Skip /
 Next and confirm focus never leaves the coachmark, then Shift+Tab back through it. The
-boundary wraps at either end are covered by `frameworks/react/test-dom/onboarding-modal.test.jsx`;
+boundary wraps at either end are covered by
+`frameworks/react/components/feedback/onboarding/Onboarding.dom.test.jsx`;
 the interior is this check.
 
 **Do / Don't**
@@ -47,7 +48,7 @@ browser's native sequential focus navigation, which happy-dom does not implement
 browser-driven gate stays refused, so this list is the check.
 
 Serve the tree with `bun run demos` and open
-`frameworks/react/components/feedback/onboarding.card.html`.
+`frameworks/react/components/feedback/onboarding/Onboarding.card.html`.
 
 **Start by pressing Escape.** That card renders with the tour already open, because a
 specimen has to show something, and pressing "Start tour" while `open` is already

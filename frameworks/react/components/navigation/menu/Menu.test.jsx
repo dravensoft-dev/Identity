@@ -9,7 +9,7 @@ import { Menu } from './Menu.jsx';
  * state that starts false. So the half of Menu's contract that lives inside the
  * panel (an entry's `icon` drawn as an <i>, `select` carrying the whole item, a
  * disabled entry reporting nothing) is NOT verifiable here and is asserted
- * against a real tree in frameworks/react/test-dom/menu.test.jsx.
+ * against a real tree in Menu.dom.test.jsx, beside this file.
  *
  * What IS verifiable here is everything the closed component renders: the
  * trigger slot reaching the page, neither R4 escape being left on the root, and

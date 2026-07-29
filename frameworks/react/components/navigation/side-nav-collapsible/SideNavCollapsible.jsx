@@ -85,7 +85,7 @@ export function SideNavCollapsible({
     <div style={COLUMN}>
       {/* THE TRIGGER IS A ROW, and it draws the same one a SideNavItem draws --
           they sit adjacent in one list and a reader must not be able to tell the
-          geometry apart. `rowStyle` is that single figure (side-nav-inject.jsx);
+          geometry apart. `rowStyle` is that single figure (SideNavInject.jsx);
           what this component decides for itself is only the ink, which is
           constant here where the item's tracks its active state. */}
       <button id={triggerId} type="button" aria-expanded={expanded} aria-controls={regionId}

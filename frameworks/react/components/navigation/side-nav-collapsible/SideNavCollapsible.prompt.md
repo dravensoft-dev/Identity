@@ -99,7 +99,7 @@ against none; that suite asserts the structural half instead (the links sit insi
 `[hidden]` while collapsed, and nothing adds a `tabindex`).
 
 Serve the tree with `bun run demos`, open
-`frameworks/react/components/navigation/navigation.card.html`, and check all of:
+`frameworks/react/components/navigation/Navigation.card.html`, and check all of:
 
 1. The `Deployments` group is **already open** on first paint. `active="prod"` names an
    item inside it, so this is the auto-expand, not a `defaultExpanded`. A probe testing

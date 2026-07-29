@@ -17,7 +17,7 @@
  * ---------------------------------------------------------------------------
  * WHICH DOM EVENT DRIVES EACH CONTROL.
  *
- * These are real browser semantics -- ./preload.js installs the DOM before
+ * These are real browser semantics -- ../../test/Preload.js installs the DOM before
  * react-dom evaluates, so React runs its normal event path rather than the legacy
  * change-detection polyfill it falls back to when it believes `input` is
  * unsupported. Each row below was measured against this harness.

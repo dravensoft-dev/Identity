@@ -18,9 +18,11 @@ import { Badge } from '../badge/Badge.jsx';
  *
  * NOTHING ELSE DOES EITHER. `Table` binds the `grid` pattern, and a component
  * whose binding names `grid` is DOM-tested BY HAND under Arena's standing rule --
- * `frameworks/react/test-dom/grid-keyboard.test.jsx` alone peaked at 164 MiB while
- * the other six suites together peaked at 109, so the directory was restored
- * without it. `Table` therefore has no render suite, cannot appear in
+ * the deleted `grid-keyboard.test.jsx` alone peaked at 164 MiB while
+ * the six other suites in the React DOM directory of the day peaked at 109
+ * together, so that directory was restored
+ * without it (and batch 3 later removed the directory itself, by colocating the
+ * suites that had come back with the components they cover). `Table` therefore has no render suite, cannot appear in
  * `COVERED` in `scripts/check-compliance.mjs`, and its binding claims seven of the
  * eight `grid` requirements with only a person behind the claim. The checklist that
  * person follows is in `Table.prompt.md`, under "Verifying the grid by hand".

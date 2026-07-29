@@ -499,7 +499,7 @@ holds the three in step; a member description can drift from its layer's prose a
 nothing here will notice. This is a known limit, not a gap left to close quietly — see
 `CLAUDE.md`'s Known debt.
 
-`bun run build:api` emits `frameworks/react/api.generated.d.ts` and
+`bun run build:api` emits `frameworks/react/Api.generated.d.ts` and
 `frameworks/angular/Api.generated.ts` from these files. Both are committed and both carry
 the same body; emission is **per layer** so a component's import never crosses the
 `api/` ↔ `frameworks/` boundary — the rule the script-readable token target established,

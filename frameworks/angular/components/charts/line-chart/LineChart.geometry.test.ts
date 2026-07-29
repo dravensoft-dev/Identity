@@ -7,8 +7,10 @@
  * `nearestPointIndex`, `linePoints` and `lineAreaPath` are therefore plain exported
  * functions that the component composes, and they carry the geometry this file pins.
  *
- * chart-internals.test.ts already covers niceMax, ticks and resolveColors; none of
- * that is repeated here. */
+ * frameworks/angular/DataVisuals.test.ts already covers niceMax, ticks and resolveColors;
+ * none of that is repeated here. (That file was chart-internals.test.ts when this header
+ * was written, ChartInternals.test.ts after the structure refactor's batch 2, and
+ * DataVisuals.test.ts at the layer root after batch 3.) */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PAD } from '../../../DataVisuals';

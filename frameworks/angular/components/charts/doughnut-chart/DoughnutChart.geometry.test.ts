@@ -8,8 +8,11 @@
  * therefore plain exported functions that the component composes, and they carry the
  * geometry this file pins.
  *
- * chart-internals.test.ts already covers arcPath, niceMax, ticks and resolveColors; none
- * of that is repeated here. The one place this file does touch `arcPath` is the
+ * frameworks/angular/DataVisuals.test.ts already covers arcPath, niceMax, ticks and
+ * resolveColors; none of that is repeated here. (That file was chart-internals.test.ts
+ * when this header was written, ChartInternals.test.ts after the structure refactor's
+ * batch 2, and DataVisuals.test.ts at the layer root after batch 3.)
+ * The one place this file does touch `arcPath` is the
  * full-circle case, because a single 100% slice is the input THIS chart uniquely
  * produces and the one `arcPath` has to split in two. */
 import test from 'node:test';
@@ -128,7 +131,7 @@ test('a lone slice sweeps the entire circle', () => {
 
 test('a full-circle slice is drawn as two arcs, because one would collapse to nothing', () => {
   // Start and end land on the same point at 360 degrees, so a single arc command has
-  // zero extent and the ring vanishes. chart-internals' arcPath splits it at the
+  // zero extent and the ring vanishes. DataVisuals' arcPath splits it at the
   // halfway angle; this is the one input that reaches that branch, and only a doughnut
   // produces it.
   const [only] = doughnutSlices([42]);

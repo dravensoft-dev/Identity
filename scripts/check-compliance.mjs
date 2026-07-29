@@ -170,8 +170,10 @@ export const SUITE_DIRS = [
  * all, and had the layer tag not been in place first, it would have reverted
  * silently to the exact pre-fix defect.
  * Prefixing each layer's root onto its own tail before comparing was considered
- * for that moment and rejected: no suite spells its layer root in its source
- * (both roots are derived constants), so a root-prefixed tail would have
+ * for that moment and rejected: no suite spells its layer root as part of the
+ * path it hands to join() -- every one of them passes the derived constant
+ * REACT_COMPONENTS or ANGULAR_COMPONENTS as the first argument and a tail as the
+ * rest -- so a root-prefixed tail would have
  * matched no suite at all and every coverage claim would have failed --
  * adopting it would have meant editing every suite to spell an absolute path,
  * a code-style change dressed as a gate fix. Tagging each suite with the layer
@@ -301,7 +303,7 @@ export function validateCoverage({ bindings, covered, suites }) {
     if (suite.layer !== layer) {
       problems.push(
         `COVERED maps "${key}" to "${suiteFile}", which is a suite of the ${suite.layer} layer. ` +
-        `A ${layer} claim needs a ${layer} suite: the two layers can spell byte-identical ` +
+        `A claim for the ${layer} layer needs a ${layer} suite: the two layers can spell byte-identical ` +
         `binding paths, so naming the right file is not evidence of the right layer.`,
       );
       continue;

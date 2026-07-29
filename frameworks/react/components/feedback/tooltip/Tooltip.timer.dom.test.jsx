@@ -17,13 +17,13 @@
  * Real timers: this repo has no bun:test and therefore no fake-timer facility
  * -- all 60 suites are node:test plus node:assert/strict, and node:test has no
  * clock of its own. act() and fake timers also interact badly. --delay-open is
- * 400ms and --delay-close is 120ms, both imported from tokens.generated.js
+ * 400ms and --delay-close is 120ms, both imported from Tokens.generated.js
  * rather than written here, so the whole suite costs about two seconds. If this
  * ever proves flaky, shorten the margins around the delays; do not add a
  * fake-timer dependency.
  *
  * A KNOWN, PRE-EXISTING WART, recorded so the next reader does not think they
- * caused it: on a loaded `bun test frameworks/react/test-dom/` run this suite
+ * caused it: on a loaded `bun run test:react-dom` run this suite
  * intermittently prints "An update to Tooltip inside a test was not wrapped in
  * act(...)". It is a warning, never a failure -- the run stays green. It is a
  * real-timer race between a pending Tooltip timer and an act() boundary, it

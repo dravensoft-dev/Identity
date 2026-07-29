@@ -42,7 +42,7 @@ import type { OnboardingAnchor, OnboardingStep } from '../../../Api.generated';
  *  `frameworks/angular/FocusTrap.ts`
  *  (`handleOpenTransition`, `trapTabKey`) rather than a second
  *  implementation. React's `Onboarding.jsx` had none of it until plan 8C4, which
- *  gave it `use-dialog-modal.js` -- a port of this same module, consumed by all
+ *  gave it `UseDialogModal.js` -- a port of this same module, consumed by all
  *  three React overlays. The divergence that recorded the gap is retired; see
  *  `components-divergences.md`. */
 @Component({

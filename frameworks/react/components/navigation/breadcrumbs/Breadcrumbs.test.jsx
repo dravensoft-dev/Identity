@@ -1,8 +1,9 @@
 /* `onNavigate` (`api/components/Breadcrumbs.json`) is new wiring this branch
- * added and left untested. `renderToStaticMarkup` is DOM-free by this
- * directory's own convention, so it cannot dispatch a synthetic click and
- * observe `onNavigate` fire -- that would need a real DOM, which belongs in
- * frameworks/react/test-dom/, not here, and no suite anywhere in this repo
+ * added and left untested. This suite carries no `.dom.` infix, so it runs in
+ * the DOM-free invocation and asserts on `renderToStaticMarkup`; it cannot
+ * dispatch a synthetic click and
+ * observe `onNavigate` fire -- that would need a real DOM, which belongs in a
+ * `.dom.test.jsx` suite, not here, and no suite anywhere in this repo
  * currently renders Breadcrumbs with a DOM. What IS provable without one:
  * the trail renders in order, the last crumb is not a link and carries
  * `aria-current="page"`, and every non-current crumb is a real anchor

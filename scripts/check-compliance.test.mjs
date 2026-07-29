@@ -116,8 +116,10 @@ test('suiteMentions accepts a tail spelled as join() arguments', () => {
  * tail-only check would have reverted silently to the same defect commit
  * `663b2e4` had already closed once. Prefixing each
  * layer's root onto its own tail before comparing was considered for that
- * moment and rejected: no suite spells its layer root in its source (both roots
- * are derived constants), so a root-prefixed tail would have matched no suite
+ * moment and rejected: no suite spells its layer root as part of the path it
+ * hands to join() -- every one passes the derived constant REACT_COMPONENTS or
+ * ANGULAR_COMPONENTS as the first argument and a tail as the rest -- so a
+ * root-prefixed tail would have matched no suite
  * at all and every coverage claim would have failed. Tagging each suite with
  * the layer of the directory it was found in was taken instead, and this test
  * proves THAT check rather than suiteMentions.

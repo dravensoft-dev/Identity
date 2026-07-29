@@ -26,7 +26,7 @@ export function SideNavItem({
    * indistinguishable here, and two copies of this would drift. `rowStyle` is why
    * that now holds ACROSS components too -- a collapsible's trigger sits in the
    * same list and draws the same row, and it reads the same figure from
-   * side-nav-inject.jsx rather than a second copy of it. The active-state ink
+   * SideNavInject.jsx rather than a second copy of it. The active-state ink
    * below stays here: it is this component's decision, not shared geometry. The
    * padding is split into block/inline rather than the old shorthand because the
    * inline start is where the indent lands. */

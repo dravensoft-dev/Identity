@@ -30,7 +30,7 @@ test('cssCounterpart returns null for a value that is not a bare number', () => 
 });
 
 test('importedNames finds names in a braced import from the generated module', () => {
-  const src = "import { chartHeight, chartPadLeft } from '../../tokens.generated.js';";
+  const src = "import { chartHeight, chartPadLeft } from '../../Tokens.generated.js';";
   assert.deepEqual([...importedNames(src)].sort(), ['chartHeight', 'chartPadLeft']);
 });
 
@@ -39,7 +39,7 @@ test('importedNames spans a multi-line import', () => {
     'import {',
     '  chartHeight,',
     '  chartBarRadius,',
-    "} from '../../tokens.generated.js';",
+    "} from '../../Tokens.generated.js';",
   ].join('\n');
   assert.deepEqual([...importedNames(src)].sort(), ['chartBarRadius', 'chartHeight']);
 });

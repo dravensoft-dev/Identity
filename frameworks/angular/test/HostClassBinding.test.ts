@@ -1245,7 +1245,7 @@ test('arena-bar-chart: the numbers table is bound as a style object, not stringi
   assert.ok(table, 'the visually-hidden numbers table did not render');
   // `[attr.style]="SR_ONLY"` would set the literal string "[object Object]" and
   // apply nothing, leaving the table visible on the page. `[style]` takes the
-  // object, which is what chart-internals.ts documents.
+  // object, which is what DataVisuals.ts documents.
   assert.ok(!(table.getAttribute('style') ?? '').includes('[object Object]'),
     `the style object was stringified: "${table.getAttribute('style')}"`);
   assert.equal(table.style.position, 'absolute');
@@ -1254,7 +1254,7 @@ test('arena-bar-chart: the numbers table is bound as a style object, not stringi
   assert.equal(table.style.margin, '-1px');
   // SR_ONLY's `clip` is deliberately not asserted here: happy-dom's
   // CSSStyleDeclaration does not expose the deprecated `clip` property, so it
-  // reads back as '' whether or not it was applied. chart-internals.test.ts
+  // reads back as '' whether or not it was applied. DataVisuals.test.ts
   // asserts the constant itself carries it.
 });
 
@@ -1317,7 +1317,7 @@ test('arena-line-chart: the numbers table is bound as a style object, not string
   assert.ok(table, 'the visually-hidden numbers table did not render');
   // `[attr.style]="SR_ONLY"` -- which the task brief specified -- would set the
   // literal string "[object Object]" and apply nothing, leaving the table visible
-  // under the chart. `[style]` takes the object, which is what chart-internals.ts
+  // under the chart. `[style]` takes the object, which is what DataVisuals.ts
   // documents.
   assert.ok(!(table.getAttribute('style') ?? '').includes('[object Object]'),
     `the style object was stringified: "${table.getAttribute('style')}"`);
@@ -1405,7 +1405,7 @@ test('arena-doughnut-chart: the numbers table is bound as a style object, not st
   // `[attr.style]="SR_ONLY"` -- which the task brief specified, as it did for both other
   // charts -- would set the literal string "[object Object]" and apply nothing, leaving
   // the table visible beside the legend. `[style]` takes the object, which is what
-  // chart-internals.ts documents.
+  // DataVisuals.ts documents.
   assert.ok(!(table.getAttribute('style') ?? '').includes('[object Object]'),
     `the style object was stringified: "${table.getAttribute('style')}"`);
   assert.equal(table.style.position, 'absolute');

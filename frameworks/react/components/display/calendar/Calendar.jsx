@@ -66,7 +66,7 @@ export function Calendar({
   /* THE EVENTS ARE THE CONTENT SLOT, one <CalendarEvent> per event, and this is
      a PROJECTION rather than a rewrite: the props come off the children and feed
      the same placeEvents/layoutDay pipeline the array member fed, and
-     calendar-internals.js did not change a line for it.
+     CalendarInternals.js did not change a line for it.
 
      `elementOf` is keyed BY PROPS IDENTITY and never by `id`. Keying by id would
      quietly assume ids are unique, and a duplicate would draw one consumer's

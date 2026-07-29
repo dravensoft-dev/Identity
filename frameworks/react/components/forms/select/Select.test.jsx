@@ -7,7 +7,7 @@ import { Select } from './Select.jsx';
 /* This directory renders with renderToStaticMarkup and has no DOM, so no test here
  * fires a change. The `change` event's payload -- the chosen option's value as a
  * string -- is therefore NOT verified by this suite; it is verified where a DOM exists,
- * in frameworks/react/test-dom/form-control-events.test.jsx, which dispatches a real
+ * in ../FormControlEvents.dom.test.jsx, which dispatches a real
  * change and asserts the payload's TYPE before its value. What IS verified here is the
  * half SSR can see: that an option's `value` and `label` are drawn into their own places now
  * that the bare-string branch is gone, that the native members the flattened heritage

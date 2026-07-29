@@ -11,7 +11,7 @@
  * `keyboard.Space` and `keyboard.Enter` are BEHAVIOURAL for the `button`
  * pattern, and this suite proves both by dispatching a real `keydown` of Enter
  * and of ' ' at the close button and asserting `event.defaultPrevented` stays
- * false -- ported from frameworks/react/test-dom/tag-and-chip-cases.test.jsx's
+ * false -- ported from frameworks/react/components/display/TagAndChipCases.dom.test.jsx's
  * `assertKeysUnintercepted`, itself ported from
  * side-nav-disclosure.test.jsx's trigger test. That is the non-vacuous half:
  * an `(keydown)` of ours calling `preventDefault()` would suppress the

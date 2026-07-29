@@ -13,12 +13,17 @@ import { CalendarEvent } from '../calendar-event/CalendarEvent.jsx';
  * focus, keys or the roving tab stop.
  *
  * NOTHING ELSE DOES EITHER, AND THAT IS THE SHARPEST GAP THIS REPO CARRIES.
- * `frameworks/react/test-dom/grid-keyboard.test.jsx` owned the roving tab stop, the
- * four-edge clamp, Home/End and Enter/Escape into an event chip. That directory was
- * deleted for its RAM cost and restored; this one suite was not, and stays out under
+ * The deleted `grid-keyboard.test.jsx` owned the roving tab stop, the
+ * four-edge clamp, Home/End and Enter/Escape into an event chip. It lived in
+ * frameworks/react/test-dom/, the directory the React DOM suites had then; that
+ * directory was deleted for its RAM cost and restored without this one suite, and
+ * the structure refactor's batch 3 later removed the directory itself by colocating
+ * what remained of it. The suite stays out under
  * a standing rule -- a component whose behaviour binding names the `grid` pattern is
- * DOM-tested by hand, because this suite alone cost more RAM than the other six
- * combined. Calendar.behaviour.json retired all
+ * DOM-tested by hand, because it alone cost more RAM than the six other suites that
+ * directory then held, combined.
+ * (`git show edb9f3e^:frameworks/react/test-dom/grid-keyboard.test.jsx` is the file;
+ * the path in that command is the one it had at that revision and must stay so.) Calendar.behaviour.json retired all
  * eight of its `grid` exceptions when the navigation shipped, so the binding now
  * claims FULL compliance with the pattern and no test anywhere checks the claim.
  * Keyboard navigation is verified by hand: serve the tree with `bun run demos`, open
@@ -107,7 +112,7 @@ test('a CalendarEvent missing a required member throws', () => {
  * the old fallback restored, which is the only reason this comment exists.
  *
  * Stubbing the ZERO-ARGUMENT call alone keeps it surgical: that form is used
- * only by the component's default, while calendar-internals always constructs
+ * only by the component's default, while CalendarInternals always constructs
  * its formatters with arguments and so still gets the real ones. */
 test('an omitted timeZone resolves to the reader own zone, exactly', () => {
   const Real = Intl.DateTimeFormat;

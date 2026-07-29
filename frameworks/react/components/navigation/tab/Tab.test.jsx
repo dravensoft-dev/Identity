@@ -8,7 +8,7 @@ import { Tab } from './Tab.jsx';
  * fires a click. What it CAN see is the whole of Tab's markup contract: the element,
  * the roles and states it carries, the tab stop it takes, and the two R4 escapes.
  * The behaviour -- that clicking selects, that an arrow moves focus -- belongs to
- * Tabs and is asserted in frameworks/react/test-dom/tabs.test.jsx.
+ * Tabs and is asserted in ../tabs/Tabs.dom.test.jsx.
  *
  * Every fixture's `value` and `label` DIFFER on purpose. A same-string fixture
  * cannot discriminate a component that draws the value as its text. */

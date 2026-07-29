@@ -4,10 +4,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Dialog } from './Dialog.jsx';
 
-/* This directory renders with renderToStaticMarkup and has no DOM, so nothing here
+/* This suite carries no `.dom.` infix, so it renders with renderToStaticMarkup and
+ * has no DOM, and nothing here
  * presses a key or clicks the scrim. The `close` event's two triggers -- Escape and
  * a scrim click -- are therefore NOT verified by this suite; they are pinned against
- * a real tree in ../test-dom/dialog-modal.test.jsx and ../test-dom/behavioural.test.jsx.
+ * a real tree in ../DialogModal.dom.test.jsx and ../Behavioural.dom.test.jsx.
  * What IS verified here is the contract SHAPE that SSR can see: that every member
  * api/components/Dialog.json declares reaches its declared place in the markup, that
  * `width` is a CSS string rather than the number the .d.ts used to declare, that the
