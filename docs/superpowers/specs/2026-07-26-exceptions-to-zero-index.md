@@ -36,8 +36,8 @@ first command counts declarations and the second counts distinct defects. `CLAUD
 same rule; use the second whenever a section below reasons about how much work is left, and never
 report a drop in the first as "N defects removed".
 
-As written: **54** declarations / **53** distinct pairs in component bindings, **17** in the
-delegated file, **17 of 70** bindings covered. Seven component bindings are cased (count them with
+As written: **52** declarations / **51** distinct pairs in component bindings, **17** in the
+delegated file, **18 of 70** bindings covered. Seven component bindings are cased (count them with
 `grep -rl '"cases"' --include='*.behaviour.json' frameworks/`, which does not reach the delegated
 file, where one entry is cased too).
 
@@ -54,37 +54,39 @@ is one of its five in §2 *and* an instance of §4; and `Pagination`'s `roles.la
 the clearest example of §5's consumer-conditionality. Each is listed where a reader looking for that
 cause would expect it.
 
-## §1 — Patterns the catalogue is missing
+## §1 — Patterns the catalogue is missing — **CLOSED**
 
-**The component is right and the catalogue is wrong.** These exceptions record no defect at all: the
-binding measures a component against a pattern nobody thinks it should implement, because the
-catalogue offers no better fit.
+**The component is right and the catalogue is wrong.** These exceptions recorded no defect at all:
+the binding measured a component against a pattern nobody thought it should implement, because the
+catalogue offered no better fit. Both rows are closed, and what closing them looked like is the
+part worth keeping — it is the cheapest kind of exception to retire and the easiest to mistake for
+a defect.
 
-| subject | renders | needs |
-|---|---|---|
-| `ConfirmDialog:react`, `confirm-dialog:angular` | `role="alertdialog"` | an `alertdialog` pattern |
+`progressbar` is sourced from ARIA 1.2's role reference because APG publishes no pattern page for
+it — the third such pattern, after `status` and `textbox`. It carries three CONDITIONAL value
+requirements, in `BEHAVIOURAL` because ARIA expresses indeterminacy by *omitting* `aria-valuenow`
+and no snapshot of one element can tell a legitimately indeterminate bar from a broken determinate
+one. `ProgressBar` binds it as two cases and `Spinner` flat, in React and in the delegated
+declarations alike; `Spinner` unified onto the same role and both components gained an explicit
+`aria-live="polite"`, because `progressbar` carries no implicit live region where `status` does.
+Three of the four exceptions were catalogue artefacts and vanished; the fourth was retired by
+fixing the component, and both React bindings are now backed by a render suite.
 
-**One row of this section is closed, and it is worth saying what closing it looked like.**
-`progressbar` is a pattern in the catalogue, sourced from ARIA 1.2's role reference because APG
-publishes no pattern page for it — the third such pattern, after `status` and `textbox`. It carries
-three CONDITIONAL value requirements, in `BEHAVIOURAL` because ARIA expresses indeterminacy by
-*omitting* `aria-valuenow` and no snapshot of one element can tell a legitimately indeterminate bar
-from a broken determinate one. `ProgressBar` binds it as two cases and `Spinner` flat, in React and
-in the delegated declarations alike; `Spinner` unified onto the same role and both components gained
-an explicit `aria-live="polite"`, because `progressbar` carries no implicit live region where
-`status` does. Three of the four exceptions were catalogue artefacts and vanished; the fourth was
-retired by fixing the component, and both React bindings are now backed by a render suite.
+`alertdialog` is the opposite kind of source: APG **does** publish a page here ("Alert and Message
+Dialogs"), so it cites a real APG patterns URL and — unlike `progressbar` — the literal non-APG
+list in `scripts/behaviour-contracts.test.mjs` was **not** touched. Its requirement set is
+`dialog-modal`'s seven verbatim with `roles.element` as `alertdialog`. `ConfirmDialog` renders that
+role unconditionally in both layers (`destructive` and `requireText` reach colour and a disabled
+button and nothing else), so it binds **flat**, which answers the question this section used to
+pose about whether the pattern needed cases. React needed no new suite — `DialogModal.dom.test.jsx`
+already selected `[role="dialog"], [role="alertdialog"]` — and Angular gained its first TestBed
+compliance suite for the component, made possible by 8C11's move to an AOT harness.
 
-`ConfirmDialog`'s own reason concedes the same shape — *"arguably the more correct choice for a
-destructive-action confirmation (APG treats alertdialog as dialog's specialisation for exactly this
-case)"* — and unlike `progressbar`, APG **does** publish a pattern page here ("Alert and Message
-Dialogs"), so the new pattern gets a real APG source rather than the ARIA role reference.
-
-**What binding cases give this section.** The reasoning, more than the mechanism: 8C9 established
-that a binding should measure a render against *the pattern it actually implements*, and adding a
-pattern is the same move one level up. Check whether `alertdialog` applies to `ConfirmDialog`
-unconditionally before writing it — if the component ever renders a non-destructive confirmation,
-that is a case, and §1 and 8C9 compose.
+**The transferable lesson.** Both rows were retired without touching what either component does for
+a user, which is exactly why this section was first in the order: it is pure bookkeeping, and it
+makes every later section's numbers honest. It also shows where the cross-file sweep fails — three
+of the four claims this batch falsified were written in terms of the *pattern*, not the component,
+so a grep for `ConfirmDialog` finds none of them.
 
 ## §2 — Real accessibility defects
 
@@ -235,7 +237,7 @@ survives into every section above.
 
 ## Suggested order, and why
 
-1. **§1** — cheapest, retires exceptions that were never defects, and one spec is already written.
+1. ~~**§1**~~ — **done.** Cheapest, and it retired exceptions that were never defects.
 2. **§4** — small, and 8C9 makes its suites nearly free.
 3. **§3** — API changes with a settled precedent; unblocks part of §2's `ActivityFeed`.
 4. **§2** — the real work, and the only section that changes what a user experiences.
