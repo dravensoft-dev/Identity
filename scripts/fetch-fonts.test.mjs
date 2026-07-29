@@ -71,10 +71,10 @@ test('facesFromDisk emits family by family, ascending weight within each', () =>
 test('facesFromDisk throws naming a family with no binary at all', () => {
   const root = mkdtempSync(join(tmpdir(), 'fetch-fonts-test-'));
   try {
-    mkdirSync(join(root, 'tokens', 'src'), { recursive: true });
+    mkdirSync(join(root, 'contracts', 'design'), { recursive: true });
     mkdirSync(join(root, 'assets', 'fonts'), { recursive: true });
     writeFileSync(
-      join(root, 'tokens', 'src', 'typography.json'),
+      join(root, 'contracts', 'design', 'typography.json'),
       JSON.stringify({
         font: { display: { $value: ['Nonexistent Family', 'system-ui', 'sans-serif'] } },
         fw: { regular: { $value: 400 }, bold: { $value: 700 } },

@@ -1,5 +1,5 @@
 /* Asserts the committed frameworks/<layer>/tokens.generated.* are what
- * tokens/src/ generates, that each export agrees with its CSS counterpart, that
+ * contracts/design/ generates, that each export agrees with its CSS counterpart, that
  * no token is flagged script-readable without anything importing it, and that
  * `CatSlot` — the one contract type restating a token-derived bound — still
  * matches the ramp it restates.
@@ -53,7 +53,7 @@ export function importedNames(source) {
  *
  *  `contracts/api/types/cat-slot.json` declares `CatSlot` as the literal set 1..8, and
  *  that 8 is not authored there: it is the count of `--color-cat-*` slots in
- *  `tokens/src/palette.dark.json`, which reaches JS as the derived `catSlots`
+ *  `contracts/design/palette.dark.json`, which reaches JS as the derived `catSlots`
  *  export in the modules this gate already builds. `contracts/api/README.md`'s "A closed
  *  set of values is not always an enum" passage permits that copy to exist only
  *  because this assertion ties it back to the palette — add a ninth colour to
@@ -71,7 +71,7 @@ export function catSlotEnumProblems(catSlots, values) {
   const actual = Array.isArray(values) ? values : [];
   const matches = actual.length === expected.length && expected.every((v, i) => actual[i] === v);
   if (matches) return [];
-  return [`contracts/api/types/cat-slot.json: CatSlot is [${actual.join(', ')}], but the --color-cat-* ramp in tokens/src/palette.dark.json has ${catSlots} slot(s), so it must be [${expected.join(', ')}] — the contract type restates the ramp and has to follow it`];
+  return [`contracts/api/types/cat-slot.json: CatSlot is [${actual.join(', ')}], but the --color-cat-* ramp in contracts/design/palette.dark.json has ${catSlots} slot(s), so it must be [${expected.join(', ')}] — the contract type restates the ramp and has to follow it`];
 }
 
 const SCAN_EXT = new Set(['.js', '.jsx', '.ts', '.tsx']);
@@ -109,11 +109,15 @@ async function main() {
     if (actual !== expected) problems.push(`${path}: stale — run bun run build:tokens`);
   }
 
-  /* 2. Parity against the CSS. */
+  /* 2. Parity against the CSS. Reads only contracts/design-generated/, where
+   * it used to read tokens/ and pick up colors.css alongside the generated
+   * four -- harmless, because a script-readable token is emitted by
+   * build-tokens.mjs into one of the generated files, never into the
+   * hand-authored colors.css. */
   const cssValues = new Map();
-  for (const file of readdirSync(join(root, 'tokens'))) {
+  for (const file of readdirSync(join(root, 'contracts', 'design-generated'))) {
     if (extname(file) !== '.css') continue;
-    for (const [, decls] of parseDecls(readFileSync(join(root, 'tokens', file), 'utf8'))) {
+    for (const [, decls] of parseDecls(readFileSync(join(root, 'contracts', 'design-generated', file), 'utf8'))) {
       for (const [prop, value] of decls) if (!cssValues.has(prop)) cssValues.set(prop, value);
     }
   }
@@ -125,7 +129,7 @@ async function main() {
 
   for (const { cssName, jsName, value } of flagged) {
     if (!cssValues.has(cssName)) {
-      problems.push(`${jsName}: exported to JS but --${cssName} is not in any tokens/*.css`);
+      problems.push(`${jsName}: exported to JS but --${cssName} is not in any contracts/design-generated/*.css`);
       continue;
     }
     const css = cssCounterpart(cssValues.get(cssName));
@@ -150,7 +154,8 @@ async function main() {
   /* 4. The one contract type that restates a token-derived bound. See
    * catSlotEnumProblems above for why this lives in this gate. The count is
    * read from the freshly built module rather than the committed one, so this
-   * is an assertion against tokens/src/ even when step 1 is already failing. */
+   * is an assertion against contracts/design/ even when step 1 is already
+   * failing. */
   const [, freshModule] = built.entries().next().value;
   const catSlots = Number(/^export const catSlots = (\d+);$/m.exec(freshModule)?.[1]);
   if (!Number.isInteger(catSlots)) {

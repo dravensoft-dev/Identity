@@ -5,9 +5,10 @@
  * the dark theme only, and the light theme sat at 3.46:1 for three releases. An
  * unverifiable claim is what this script retires — not just the two numbers.
  *
- * Nothing here is hardcoded: the surfaces come from tokens/palette.css and the
- * derivation percentages from tokens/colors.css, so re-skinning Arena and
- * re-running this is the whole point (see README -> Theming).
+ * Nothing here is hardcoded: the surfaces come from
+ * contracts/design-generated/palette.css and the derivation percentages from
+ * contracts/design/colors.css, so re-skinning Arena and re-running this is
+ * the whole point (see README -> Theming).
  *
  *   bun scripts/check-text-contrast.mjs   -> exit 0 if all gates pass, 1 otherwise
  */
@@ -17,8 +18,8 @@ import { dirname, join } from 'node:path';
 import { contrast } from './validate-palette.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const palette = readFileSync(join(root, 'tokens/palette.css'), 'utf8');
-const colors = readFileSync(join(root, 'tokens/colors.css'), 'utf8');
+const palette = readFileSync(join(root, 'contracts/design-generated/palette.css'), 'utf8');
+const colors = readFileSync(join(root, 'contracts/design/colors.css'), 'utf8');
 
 /** Pull one declaration block out of a token file. The blocks contain no nested
  *  braces, so a non-greedy [^}]* is exact here — not a general CSS parser. */
@@ -38,7 +39,7 @@ function readHex(body, name) {
 function tryHex(body, name) {
   try { return readHex(body, name); } catch { return null; }
 }
-const MISSING = 'not declared in tokens/palette.css — every theme block must define it';
+const MISSING = 'not declared in contracts/design-generated/palette.css — every theme block must define it';
 
 // The derivations and aliases all live in one shared :root,.arena-light block —
 // which is precisely why a percentage tuned for dark reached light unmeasured.
@@ -181,7 +182,7 @@ let ok = true;
 for (const { token, use } of REMOVED) {
   if (resolvePercent(token) === null) continue;
   ok = false;
-  console.log(`\n[FAIL] --${token} is declared in tokens/colors.css. It was removed in 2.0.0 — use ${use}.`);
+  console.log(`\n[FAIL] --${token} is declared in contracts/design/colors.css. It was removed in 2.0.0 — use ${use}.`);
 }
 for (const t of THEMES) {
   const body = block(palette, t.selector, 'palette.css');
@@ -195,7 +196,7 @@ for (const t of THEMES) {
     const percent = resolvePercent(token);
     if (percent === null) {
       ok = false;
-      console.log(`  [FAIL] --${token.padEnd(16)} not declared in tokens/colors.css`);
+      console.log(`  [FAIL] --${token.padEnd(16)} not declared in contracts/design/colors.css`);
       continue;
     }
     const ratios = surfaces.map(([n, hex]) => [n, contrast(composite(content, hex, percent), hex)]);

@@ -1,6 +1,6 @@
 /* Renders the Arena token language from its own source.
  *
- * Names and $descriptions come from tokens/src/*.json; VALUES come from
+ * Names and $descriptions come from contracts/design/*.json; VALUES come from
  * getComputedStyle on the live document, so the page exercises the whole chain
  * (JSON -> build -> CSS -> browser) instead of echoing the JSON back. A token
  * that resolves empty means the committed CSS is stale, and it is flagged
@@ -26,8 +26,8 @@ const el = (tag, className, text) => {
 };
 
 async function loadTokens(file) {
-  const res = await fetch(`tokens/src/${file}`);
-  if (!res.ok) throw new Error(`cannot load tokens/src/${file}: ${res.status}`);
+  const res = await fetch(`contracts/design/${file}`);
+  if (!res.ok) throw new Error(`cannot load contracts/design/${file}: ${res.status}`);
   return flattenTokens(await res.json());
 }
 
@@ -296,7 +296,7 @@ async function main() {
   /* The 40 aliases have no JSON source — they are hand-authored CSS. Their names
    * are read with the same parser the drift gate uses, so there is one
    * implementation rather than a list duplicated here. */
-  const colorsCss = await (await fetch('tokens/colors.css')).text();
+  const colorsCss = await (await fetch('contracts/design/colors.css')).text();
   const aliasNames = new Set();
   for (const [, decls] of parseDecls(colorsCss)) for (const name of decls.keys()) aliasNames.add(name);
   const aliases = [...aliasNames].map((name) => ({
@@ -310,7 +310,7 @@ async function main() {
   sections.push(() => renderSection({
     eyebrow: 'Composition layer',
     title: 'Aliases and derivations',
-    note: 'Hand-authored in tokens/colors.css, not generated: DTCG owns values, this layer owns how values '
+    note: 'Hand-authored in contracts/design/colors.css, not generated: DTCG owns values, this layer owns how values '
       + 'are combined at runtime. It defines no skin value of its own — only references and color-mix '
       + 'compositions, which is why every one of these re-derives when the palette is swapped.',
     tokens: aliases,

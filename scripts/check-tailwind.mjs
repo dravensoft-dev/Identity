@@ -17,7 +17,7 @@ const GENERATED = ['palette.css', 'typography.css', 'spacing.css', 'effects.css'
 export function arenaTokens(root = repoRoot) {
   const names = new Set();
   for (const f of GENERATED)
-    for (const decls of parseDecls(readFileSync(join(root, 'tokens', f), 'utf8')).values())
+    for (const decls of parseDecls(readFileSync(join(root, 'contracts', 'design-generated', f), 'utf8')).values())
       for (const name of decls.keys()) names.add(name);
   return names;
 }

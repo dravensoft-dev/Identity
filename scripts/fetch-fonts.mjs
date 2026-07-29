@@ -1,8 +1,8 @@
 /* scripts/fetch-fonts.mjs
    Downloads the latin-subset woff2 binaries for Arena's three families into
-   assets/fonts/ and (re)generates tokens/fonts.css with local url()s only —
-   no CDN request, CSP-clean. assets/fonts/ is the single source of truth,
-   shared by every framework layer. Run: bun scripts/fetch-fonts.mjs */
+   assets/fonts/ and (re)generates contracts/design-generated/fonts.css with
+   local url()s only — no CDN request, CSP-clean. assets/fonts/ is the single
+   source of truth, shared by every framework layer. Run: bun scripts/fetch-fonts.mjs */
 import { writeFileSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,22 +10,22 @@ import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
 const fontsDir = join(root, 'assets', 'fonts');
-const cssPath = join(root, 'tokens', 'fonts.css');
+const cssPath = join(root, 'contracts', 'design-generated', 'fonts.css');
 
 /* A modern-browser UA makes Google Fonts serve woff2 (not ttf). */
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
   '(KHTML, like Gecko) Chrome/120.0 Safari/537.36';
 
-/* The family list is derived from tokens/src/typography.json, not declared
- * here. When it was declared here, a variant author who changed font.display
- * to "Inter" got --font-display: Inter with no @font-face for Inter, and fell
- * through to system-ui with no error at all -- the worst shape a broken
- * promise can take. The weights stop being declared twice for the same
- * reason: FAMILIES.weights and the fw tokens agreed by discipline, which is
- * not a mechanism. */
+/* The family list is derived from contracts/design/typography.json, not
+ * declared here. When it was declared here, a variant author who changed
+ * font.display to "Inter" got --font-display: Inter with no @font-face for
+ * Inter, and fell through to system-ui with no error at all -- the worst
+ * shape a broken promise can take. The weights stop being declared twice for
+ * the same reason: FAMILIES.weights and the fw tokens agreed by discipline,
+ * which is not a mechanism. */
 export function families(root) {
-  const src = JSON.parse(readFileSync(join(root, 'tokens/src/typography.json'), 'utf8'));
+  const src = JSON.parse(readFileSync(join(root, 'contracts/design/typography.json'), 'utf8'));
   const weights = Object.entries(src.fw)
     .filter(([k]) => !k.startsWith('$'))
     .map(([, t]) => t.$value)
@@ -132,7 +132,7 @@ async function main() {
   }
 
   writeFileSync(cssPath, fontsCss(faces));
-  console.log('wrote tokens/fonts.css');
+  console.log('wrote contracts/design-generated/fonts.css');
 }
 
 if (import.meta.main) {

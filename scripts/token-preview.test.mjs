@@ -71,9 +71,9 @@ function deriveCases(files) {
     const bySelector = new Map();
     for (const { selector, source } of file.blocks) {
       if (!bySelector.has(selector)) bySelector.set(selector, []);
-      bySelector.get(selector).push(`tokens/src/${source}`);
+      bySelector.get(selector).push(`contracts/design/${source}`);
     }
-    for (const [selector, sources] of bySelector) cases.push([sources, `tokens/${file.out}`, selector]);
+    for (const [selector, sources] of bySelector) cases.push([sources, `contracts/design-generated/${file.out}`, selector]);
   }
   return cases;
 }

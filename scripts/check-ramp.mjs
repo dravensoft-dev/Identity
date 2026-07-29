@@ -2,8 +2,9 @@
  * themes, against the real chart surface (--color-base-200 — charts sit on the
  * card, not on the page background).
  *
- * The ramp is read from tokens/palette.css, never hardcoded here: swapping the
- * skin and re-running this is the whole point (see README → Theming).
+ * The ramp is read from contracts/design-generated/palette.css, never
+ * hardcoded here: swapping the skin and re-running this is the whole point
+ * (see README → Theming).
  *
  *   bun scripts/check-ramp.mjs      → exit 0 if both themes pass, 1 otherwise
  */
@@ -13,7 +14,7 @@ import { dirname, join } from 'node:path';
 import { validate } from './validate-palette.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const css = readFileSync(join(root, 'tokens/palette.css'), 'utf8');
+const css = readFileSync(join(root, 'contracts/design-generated/palette.css'), 'utf8');
 
 const SLOTS = 8;
 

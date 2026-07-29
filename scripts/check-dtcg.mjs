@@ -1,4 +1,4 @@
-/* Asserts every token in tokens/src/ is valid DTCG 2025.10 — the first stable
+/* Asserts every token in contracts/design/ is valid DTCG 2025.10 — the first stable
  * Format Module (W3C, Oct 2025).
  *
  * Following the repo's check-*.mjs convention this encodes the 2025.10 rules
@@ -120,7 +120,7 @@ export function zeroSourceProblems(count) {
 
 function main() {
   const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-  const src = join(root, 'tokens/src');
+  const src = join(root, 'contracts/design');
   const files = readdirSync(src).filter((f) => f.endsWith('.json')).sort();
   const zero = zeroSourceProblems(files.length);
   if (zero.length) { for (const z of zero) console.error(`check-dtcg: ${z}`); process.exit(1); }
