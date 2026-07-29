@@ -77,3 +77,15 @@ Serve the tree with `bun run demos`, open
    hour cell.
 5. Arrow keys still move by day and hour from an hour cell, and clamp at all
    four edges — the first day, the last day, the first hour and the last.
+6. Every chip sits inside its own day column, with an even gutter each side, and
+   the full-width ones especially — a chip whose event overlaps nothing is the
+   case that overruns. The chip is `box-sizing: border-box`, so the width
+   `Calendar` injects is its outer edge; if you ever see a chip cross a column
+   border, that property is the first thing to check.
+7. On a chip carrying a kebab, the title stops before the button and ellipsises
+   there rather than running underneath it. Check a full-width chip and a
+   half-width one: the half-width case has very little title left once the
+   kebab's band is reserved, and it is the one worth an opinion.
+8. A short event — 30 minutes or less — still shows its whole title. Its chip is
+   at the height floor, and under `border-box` that floor is the chip's outer
+   height, so a floor set too low clips the title with nothing failing.
