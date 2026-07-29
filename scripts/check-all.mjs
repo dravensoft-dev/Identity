@@ -85,9 +85,12 @@ export const GATES = [
  *  directory: frameworks/react/test-dom/ held the DOM suites and
  *  frameworks/react/test/ held everything else, so the first invocation named
  *  the DOM-free directory and the second named the DOM one. The structure
- *  refactor colocated every suite beside the component it covers, which
- *  removed both directories, so the split is now carried by the `.dom.test.jsx`
- *  filename infix instead: the first invocation passes
+ *  refactor colocated most suites beside the component they cover, which
+ *  removed `test-dom/` outright and left `frameworks/react/test/` holding only
+ *  the harness plus the suites that are about no one component -- and those
+ *  include DOM ones, so its contents no longer answer the question the old
+ *  directory boundary answered. The split is carried by the `.dom.test.jsx`
+ *  filename infix instead, wherever the file sits: the first invocation passes
  *  `frameworks/react` plus `--path-ignore-patterns=**\/*.dom.test.jsx` to
  *  exclude every DOM suite wherever it sits, and the second passes the bare
  *  string `.dom.test.jsx` as its one positional -- `bun test` matches a

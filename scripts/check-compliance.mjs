@@ -1,8 +1,13 @@
 /* check:compliance — which behaviour bindings are verified by a render suite,
  * and is that record still true.
  *
- * The suites themselves (frameworks/react/test-dom/, frameworks/angular/test/)
- * do the verifying: each asserts, per requirement, that the rendered DOM either
+ * The suites themselves do the verifying -- in both layers they sit beside the
+ * component they cover, under frameworks/<layer>/components/, with the handful
+ * that belong to no one component in frameworks/<layer>/test/ (SUITE_DIRS below
+ * is the list). On the React side a suite that needs a DOM carries the
+ * `.dom.test.jsx` filename infix; this gate does not read that infix, and says
+ * so where SUITE_DIRS explains it.
+ * Each asserts, per requirement, that the rendered DOM either
  * meets it with no exception declared or fails it with one declared. This gate
  * does not re-do that, and could not -- it is runtime-portable, reads JSON and
  * filesystem paths only, and never imports a framework layer's .ts or .jsx. What
@@ -10,10 +15,14 @@
  * the coverage silently rots: a component gains a binding and no suite, and
  * `bun run check` stays green while nobody notices.
  *
- * THE REACT LAYER HAS RENDER SUITES AGAIN, WITH ONE COMPONENT-SHAPED HOLE.
- * frameworks/react/test-dom/ was deleted and restored; what did not come back
- * is grid-keyboard.test.jsx, and the rule that keeps it out is stated here
- * because this is the gate that can see its consequence:
+ * THE REACT LAYER HAS RENDER SUITES, WITH ONE COMPONENT-SHAPED HOLE.
+ * The React DOM suites once lived in their own directory, frameworks/react/test-dom/;
+ * it was deleted whole for its RAM cost and restored minus one suite,
+ * grid-keyboard.test.jsx, which never came back. (The directory itself is gone
+ * too, for an unrelated reason -- the structure refactor colocated its suites
+ * with their components -- but the hole below is the deletion's, not the move's.)
+ * The rule that keeps that one suite out is stated here because this is the gate
+ * that can see its consequence:
  *
  *   A component whose behaviour binding names the `grid` pattern is
  *   DOM-tested BY HAND -- `bun run demos`, then operate the component on its
@@ -32,8 +41,9 @@
  * The price is that Calendar's binding claims "exceptions": [] -- full
  * compliance with the grid pattern -- with no suite behind it, and cannot be
  * listed in COVERED. What guards it instead is a STATIC assertion in
- * frameworks/react/test/calendar.test.jsx: a grid is one tab stop, and that
- * count is a property of the markup rather than of behaviour.
+ * frameworks/react/components/display/calendar/Calendar.test.jsx ("a Calendar
+ * renders exactly one tab stop, kebab or no kebab"): a grid is one tab stop, and
+ * that count is a property of the markup rather than of behaviour.
  *
  * COVERED IS DELIBERATELY PARTIAL and grows one component at a time -- run the
  * gate for the live pair rather than trusting a figure written here, which has
@@ -63,7 +73,10 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, basename } from 'node:path';
-import { reactComponents, angularPrimitives, angularBindingPath, loadBinding, bindingCases } from './lib/behaviour-contracts.mjs';
+import {
+  reactComponents, reactBindingPath, angularPrimitives, angularBindingPath, loadBinding, bindingCases,
+} from './lib/behaviour-contracts.mjs';
+import { kebab } from './check-structure.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..');
@@ -147,11 +160,13 @@ export const SUITE_DIRS = [
  * the bare stem to the path tail. That tail match then discriminated correctly
  * only because Angular's tail carried a kebab directory and React's did not --
  * again a property of the two layouts of the moment, not a structural
- * guarantee -- and it was due to expire the moment the structure refactor's
- * batch 3 gave React the same `components/<category>/<kebab>/<Component>.behaviour.json`
- * shape Angular had already gained: a component bound in both layers would then
- * get byte-identical tails, `display/tag/Tag.behaviour.json` on both sides, and
- * the discrimination would have reverted silently to the exact pre-fix defect.
+ * guarantee -- and it expired when the structure refactor's batch 3 gave React
+ * the same `components/<category>/<kebab>/<Component>.behaviour.json` shape
+ * Angular had already gained. A component bound in both layers now gets
+ * byte-identical tails -- `display/tag/Tag.behaviour.json` on both sides, which
+ * `Tag` really is today -- so the tail match no longer discriminates by layer at
+ * all, and had the layer tag not been in place first, it would have reverted
+ * silently to the exact pre-fix defect.
  * Prefixing each layer's root onto its own tail before comparing was considered
  * for that moment and rejected: no suite spells its layer root in its source
  * (both roots are derived constants), so a root-prefixed tail would have
@@ -166,21 +181,21 @@ export const SUITE_DIRS = [
  * @type {Record<string, string>}
  */
 export const COVERED = {
-  'Dialog:react': 'dialog-modal.test.jsx',
-  'ConfirmDialog:react': 'dialog-modal.test.jsx',
-  'Onboarding:react': 'onboarding-modal.test.jsx',
-  'Menu:react': 'placement-and-branches.test.jsx',
-  'Skeleton:react': 'placement-and-branches.test.jsx',
-  'SideNavCollapsible:react': 'side-nav-disclosure.test.jsx',
-  'Tabs:react': 'tabs.test.jsx',
-  'Tooltip:react': 'tooltip-keyboard.test.jsx',
-  'Alert:react': 'alert-tones.test.jsx',
-  'Toast:react': 'alert-tones.test.jsx',
+  'Dialog:react': 'DialogModal.dom.test.jsx',
+  'ConfirmDialog:react': 'DialogModal.dom.test.jsx',
+  'Onboarding:react': 'Onboarding.dom.test.jsx',
+  'Menu:react': 'PlacementAndBranches.dom.test.jsx',
+  'Skeleton:react': 'PlacementAndBranches.dom.test.jsx',
+  'SideNavCollapsible:react': 'SideNav.disclosure.dom.test.jsx',
+  'Tabs:react': 'Tabs.dom.test.jsx',
+  'Tooltip:react': 'Tooltip.keyboard.dom.test.jsx',
+  'Alert:react': 'AlertTones.dom.test.jsx',
+  'Toast:react': 'AlertTones.dom.test.jsx',
+  'Tag:react': 'TagAndChipCases.dom.test.jsx',
+  'CalendarEvent:react': 'TagAndChipCases.dom.test.jsx',
   'Alert:angular': 'Alert.roleTones.test.ts',
   'BarChart:angular': 'ChartDataTable.test.ts',
-  'Tag:react': 'tag-and-chip-cases.test.jsx',
   'Tag:angular': 'Tag.cases.test.ts',
-  'CalendarEvent:react': 'tag-and-chip-cases.test.jsx',
 };
 
 /** Does a suite's source read this binding at all?
@@ -233,12 +248,13 @@ export function suiteMentions(source, tail) {
  *  a fact `collectSuites()` attached from the directory the suite was found in,
  *  never derived from the suite's text -- and only a suite from the matching
  *  layer proceeds to the tail check, which proves that suite reads the right
- *  BINDING within that layer. Both checks are needed: since batch 2 the two
- *  layers spell a component's binding stem identically, and the structure
- *  refactor's pending batch 3 gives React the same kebab-directory shape
- *  Angular already has, which makes the two layers spell a shared component's
- *  whole tail identically too -- at which point the tail check alone could no
- *  longer tell the layers apart, and the layer check is what still can.
+ *  BINDING within that layer. Both checks are needed, and the second one alone
+ *  is no longer sufficient: since batch 2 the two layers spell a component's
+ *  binding stem identically, and since batch 3 gave React the same
+ *  kebab-directory shape Angular already had, they spell a shared component's
+ *  whole TAIL identically too -- `Tag` has `display/tag/Tag.behaviour.json` on
+ *  both sides today. The tail check can no longer tell the layers apart; the
+ *  layer check is what does.
  *
  *  @param {{bindings: {name: string, patterns: string[], layer: string, tail?: string}[], covered: Record<string,string>, suites: Record<string, {source: string, layer: string}>}} o
  *  @returns {string[]} one message per problem, empty when clean */
@@ -349,11 +365,10 @@ export function inventoryFrom(bindings) {
  *  itself is inventoryFrom's, so there is exactly one place that turns a
  *  binding into a row.
  *
- *  React components live one group directory deep and reactComponents() returns
- *  bare names, so the group is found by looking. Angular components are one
- *  kebab directory each, one category deep, with a PascalCase file stem;
- *  angularBindingPath() resolves both halves and is the one place that path is
- *  built (see scripts/lib/behaviour-contracts.mjs).
+ *  Both layers are one kebab directory each, one category deep, with a
+ *  PascalCase file stem. reactBindingPath() and angularBindingPath() resolve
+ *  both halves and are the one place each layer's path is built (see
+ *  scripts/lib/behaviour-contracts.mjs).
  *
  *  `frameworks/angular/BehaviourDelegated.json` is deliberately NOT read here.
  *  A delegated declaration describes a control Angular Material provides and
@@ -364,13 +379,11 @@ function collectBindings() {
   /** @type {Record<string, object>} "<name>:<layer>" -> binding, plus tail */
   const byKey = {};
 
-  const reactBase = join(repoRoot, 'frameworks/react/components');
-  const groups = readdirSync(reactBase, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
   for (const name of reactComponents(repoRoot)) {
-    const group = groups.find((g) => existsSync(join(reactBase, g, `${name}.behaviour.json`)));
-    if (!group) continue; // check:behaviour owns "every component declares"; this gate does not duplicate it.
-    const binding = loadBinding(join(reactBase, group, `${name}.behaviour.json`));
-    byKey[`${name}:react`] = { ...binding, tail: `${group}/${name}.behaviour.json` };
+    const found = reactBindingPath(repoRoot, kebab(name));
+    if (!found) continue; // check:behaviour owns "every component declares"; this gate does not duplicate it.
+    const binding = loadBinding(found.path);
+    byKey[`${name}:react`] = { ...binding, tail: found.tail };
   }
 
   for (const dir of angularPrimitives(repoRoot)) {

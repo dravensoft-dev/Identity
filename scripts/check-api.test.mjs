@@ -5,7 +5,8 @@
  * check-dimension-literals.test.mjs already use.
  *
  * The five assertions, and where each is covered:
- *   1 coverage         -> resolveAngularImplementations, plus the path-shape
+ *   1 coverage         -> resolveReactImplementations and
+ *                         resolveAngularImplementations, plus the path-shape
  *                         test below. pascal() lives in check-structure.mjs
  *                         and is pinned by its own suite -- alongside kebab(),
  *                         its inverse -- and is imported here only to build the
@@ -21,7 +22,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
-  bindingName, validateTypes, validateContract, compareSurface, resolveAngularImplementations,
+  bindingName, validateTypes, validateContract, compareSurface,
+  resolveAngularImplementations, resolveReactImplementations,
 } from './check-api.mjs';
 import { pascal } from './check-structure.mjs';
 import { buildApiModules } from './build-api-types.mjs';
@@ -57,17 +59,24 @@ const CONTRACT = {
 const TREE = { charts: ['bar-chart'], display: ['tag', 'unauth-card'] };
 
 /** An `exists` predicate over a fixture: every directory in `tree` holds its
- *  own <Pascal>.ts, minus the ones named in `missing`. Built from the same
- *  pascal() the gate's own path shape is derived from, so a fixture cannot
- *  drift from the rule. */
-const treeExists = (tree, missing = []) => {
+ *  own <Pascal>.<ext> under `frameworks/<layer>/components/`, minus the ones
+ *  named in `missing`. Built from the same pascal() the gate's own path shape
+ *  is derived from, so a fixture cannot drift from the rule.
+ *
+ *  Layer and extension are parameters because the two resolvers differ in
+ *  exactly those two things and in nothing else -- Angular reads a component's
+ *  `<Pascal>.ts`, React its `<Pascal>.d.ts` -- so one fixture rule serves both
+ *  and neither half can be corrected without the other. */
+const layerExists = (layer, ext) => (tree, missing = []) => {
   const gone = new Set(missing);
   const present = new Set();
   for (const [category, dirs] of Object.entries(tree))
     for (const dir of dirs)
-      if (!gone.has(dir)) present.add(`frameworks/angular/components/${category}/${dir}/${pascal(dir)}.ts`);
+      if (!gone.has(dir)) present.add(`frameworks/${layer}/components/${category}/${dir}/${pascal(dir)}.${ext}`);
   return (path) => present.has(path);
 };
+const treeExists = layerExists('angular', 'ts');
+const reactTreeExists = layerExists('react', 'd.ts');
 
 test('a complete layer resolves every component to its own PascalCase file and reports nothing', () => {
   const { implementations, problems } = resolveAngularImplementations(TREE, treeExists(TREE));
@@ -119,6 +128,59 @@ test('a category holding no directories contributes nothing and is not itself a 
   assert.equal(implementations.size, 0);
   assert.equal(problems.length, 1);
   assert.match(problems[0], /found 0 Angular component implementations/);
+});
+
+/* The React half of assertion 1, and it carries the same two guards for the
+ * same reason. React was a hardcoded group list probed with existsSync and
+ * resolved to null on a miss until the structure refactor's batch 3 -- the last
+ * lookup of that shape in the repo, and the one whose own comment named that
+ * batch as the one that owed it a walk. Its failure mode looked louder than
+ * Angular's only because React holds the majority of the contracts, so a broken
+ * lookup skipped nearly all of them at once and the printed count collapsed
+ * visibly; that is a property of how the contracts happen to be distributed
+ * today, not of the probe, and it would have gone quiet the moment the balance
+ * moved. Both messages are pinned below, each firing ALONE. */
+
+const REACT_TREE = { charts: ['bar-chart'], display: ['tag', 'unauth-card'] };
+
+test('a complete React layer resolves every component to its own .d.ts and reports nothing', () => {
+  const { implementations, problems } = resolveReactImplementations(REACT_TREE, reactTreeExists(REACT_TREE));
+  assert.deepEqual(problems, []);
+  assert.equal(implementations.size, 3);
+  assert.equal(implementations.get('BarChart'), 'frameworks/react/components/charts/bar-chart/BarChart.d.ts');
+  assert.equal(implementations.get('UnauthCard'), 'frameworks/react/components/display/unauth-card/UnauthCard.d.ts');
+});
+
+test('a React component directory whose .d.ts is missing is a problem, not a skip -- and the rest of the layer still resolves', () => {
+  // The per-directory guard, firing ALONE: the walk is non-empty, so the
+  // zero-total rule has nothing to say. One renamed or moved component
+  // directory looks exactly like this, and a zero-total guard cannot see it.
+  const { implementations, problems } = resolveReactImplementations(REACT_TREE, reactTreeExists(REACT_TREE, ['tag']));
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /frameworks\/react\/components\/display\/tag\/: is a component directory with no Tag\.d\.ts/);
+  assert.match(problems[0], /clean pass over an unchecked layer/);
+  assert.equal(implementations.size, 2);
+  assert.ok(!implementations.has('Tag'));
+});
+
+test('a React layer that yields zero implementations is a failure, not a clean pass', () => {
+  // The zero-total guard, firing ALONE: readLayer() returns {} for a moved or
+  // renamed frameworks/react/components, so there is no directory for a
+  // per-directory problem to be about.
+  const { implementations, problems } = resolveReactImplementations({}, () => false);
+  assert.equal(implementations.size, 0);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /found 0 React component implementations/);
+  assert.match(problems[0], /an empty result set is a failure, not a clean pass/);
+});
+
+test('a React layer whose every .d.ts is unreadable reports both rules, because both are true', () => {
+  // Not a third rule: the two are independent, so a tree with directories and
+  // no readable file in any of them trips each of them once.
+  const { problems } = resolveReactImplementations(REACT_TREE, () => false);
+  assert.equal(problems.length, 4);
+  assert.equal(problems.filter((p) => /is a component directory with no/.test(p)).length, 3);
+  assert.equal(problems.filter((p) => /found 0 React component implementations/.test(p)).length, 1);
 });
 
 /* the binding table */

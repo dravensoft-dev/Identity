@@ -1,7 +1,8 @@
 /* Fails when the same named numeric constant is declared in BOTH framework
  * layers, which is how chart geometry drifted before the script-readable token
  * target existed: CAT_SLOTS, CHART_HEIGHT and PAD were declared identically in
- * frameworks/react/components/charts/chart-internals.js and
+ * frameworks/react/DataVisuals.js (which was
+ * frameworks/react/components/charts/chart-internals.js when this happened) and
  * frameworks/angular/DataVisuals.ts (which was
  * frameworks/angular/components/charts/ChartInternals.ts, and before that
  * frameworks/angular/primitives/chart-internals.ts, when this happened).

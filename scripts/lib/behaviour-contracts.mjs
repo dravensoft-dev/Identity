@@ -248,29 +248,39 @@ export function crossLayerAgrees(a, b) {
   return a.pattern === b.pattern;
 }
 
-/** Every React component, by exported name. A `*.card.entry.jsx` is a demo page's
- *  composition script, not a component, and has no contract.
+/** Every React component, by PascalCase name, across every category.
  *
- *  A COMPONENT FILE IS PascalCase, and a kebab-case sibling is a helper module.
- *  That was always true of this tree and was relied on without being stated: the
- *  `.card.entry.` clause above is one instance of it, and every helper beside a
- *  component (`pagination-window`, `chart-internals`, `use-dialog-modal`) simply
- *  happened to be spelled `.js`, so this walk never met one. Plan 8C5 produced
- *  the first kebab-case `.jsx` -- `side-nav-inject.jsx`, which is `.jsx` rather
- *  than `.js` on purpose, because check-dimension-literals.mjs scans `.jsx` and
- *  deliberately never opens a `.js` (see that file's own header). Without this
- *  clause the walk reported it as a component named `side-nav-inject` and
- *  check:behaviour demanded a behaviour binding for a module that renders
- *  nothing. Keying on the case is the rule the tree already followed rather than
- *  a new exception for one file. */
+ *  A COMPONENT IS A DIRECTORY. The layer is
+ *  `frameworks/react/components/<category>/<kebab>/` as of the structure
+ *  refactor's batch 3, so the walk is two levels deep and keys on directories at
+ *  both, exactly as angularPrimitives() below does. Everything belonging to one
+ *  component -- its `.jsx`, its `.d.ts`, its binding, its prompt, its demo page,
+ *  its suites -- lives in that one directory, and a loose FILE beside the
+ *  directories is by construction not a component: a category-wide demo page and
+ *  its `*.card.entry.jsx` composition script, or a suite spanning more than one
+ *  component. Neither can be mistaken for a directory.
+ *
+ *  It returns PascalCase names because both callers key on that -- check:behaviour
+ *  reports `react/<Name>` and check:compliance builds a `<Name>:react` coverage
+ *  key -- and `pascal()` is the same derivation check:structure's `kebab()`
+ *  inverts, imported from there rather than re-spelled here. Use
+ *  reactBindingPath() below to get back to a file; the category is deliberately
+ *  not returned, for the reason angularPrimitives() gives.
+ *
+ *  This walk USED TO key on "a `.jsx` whose filename starts with a capital",
+ *  with a documented carve-out for `.card.entry.` and one for kebab-case helper
+ *  modules -- `side-nav-inject.jsx` was the file that forced the second. That
+ *  heuristic is retired rather than merely unused: this layout breaks it outright,
+ *  since the naming rule spells every file capital-initial and that helper is
+ *  `SideNavInject.jsx` today. Keying on directories is what the Angular walk had
+ *  already been doing since batch 2. */
 export function reactComponents(root) {
   const base = join(root, 'frameworks/react/components');
   const out = [];
-  for (const group of readdirSync(base)) {
-    for (const file of readdirSync(join(base, group))) {
-      if (extname(file) !== '.jsx' || file.includes('.card.entry.')) continue;
-      if (!/^[A-Z]/.test(file)) continue;
-      out.push(basename(file, '.jsx'));
+  for (const category of readdirSync(base, { withFileTypes: true })) {
+    if (!category.isDirectory()) continue;
+    for (const dir of readdirSync(join(base, category.name), { withFileTypes: true })) {
+      if (dir.isDirectory()) out.push(pascal(dir.name));
     }
   }
   return out.sort();
@@ -343,6 +353,31 @@ export function angularBindingPath(root, dir) {
     if (!category.isDirectory()) continue;
     const path = join(base, category.name, dir, `${stem}.behaviour.json`);
     if (existsSync(path)) return { path, stem, tail: `${category.name}/${dir}/${stem}.behaviour.json` };
+  }
+  return null;
+}
+
+/** The behaviour binding a React component directory holds, as
+ *  `{path, stem, tail}` -- the ONE place the React layer's binding path is
+ *  built, and the exact mirror of angularBindingPath above.
+ *
+ *  The category is found by looking rather than derived: a component's category
+ *  is frameworks/Components.json's to declare and check:structure's to hold, and
+ *  a second gate carrying it would be a second opinion nothing reconciles.
+ *  `tail` is `<category>/<dir>/<stem>.behaviour.json`, relative to
+ *  frameworks/react/components -- what a suite writes when it names its own
+ *  binding. It is byte-identical in shape to Angular's, which is why
+ *  check:compliance stopped discriminating by tail text (see SUITE_DIRS there).
+ *  @param {string} root @param {string} dir kebab directory name
+ *  @returns {{path: string, stem: string, tail: string} | null} */
+export function reactBindingPath(root, dir) {
+  const base = join(root, 'frameworks/react/components');
+  const stem = pascal(dir);
+  for (const category of readdirSync(base, { withFileTypes: true })) {
+    if (!category.isDirectory()) continue;
+    const tail = `${category.name}/${dir}/${stem}.behaviour.json`;
+    const path = join(base, tail);
+    if (existsSync(path)) return { path, stem, tail };
   }
   return null;
 }

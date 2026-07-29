@@ -358,11 +358,11 @@ test('a nested-parens call is deliberately out of scope, not misread', () => {
 // outright, via calc() over a real token.
 
 test('EXEMPT records the four data-to-pixel projections this task newly exempts, by name', () => {
-  assert.ok(EXEMPT.has('frameworks/react/components/charts/BarChart.jsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`'));
-  assert.ok(EXEMPT.has('frameworks/react/components/charts/LineChart.jsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`'));
-  assert.ok(EXEMPT.has('frameworks/react/components/display/Calendar.jsx:top:`calc(${y(m)}px - var(--sp-1))`'));
-  assert.ok(EXEMPT.has('frameworks/react/components/display/Calendar.jsx:height:`max(calc(var(--sp-1) * 4.5), ${rawH}px)`'));
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/Avatar.jsx:fontSize:d * 0.4'));
+  assert.ok(EXEMPT.has('frameworks/react/components/charts/bar-chart/BarChart.jsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`'));
+  assert.ok(EXEMPT.has('frameworks/react/components/charts/line-chart/LineChart.jsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/calendar/Calendar.jsx:top:`calc(${y(m)}px - var(--sp-1))`'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/calendar/Calendar.jsx:height:`max(calc(var(--sp-1) * 4.5), ${rawH}px)`'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/avatar/Avatar.jsx:fontSize:d * 0.4'));
 });
 
 // --- The visually-hidden idiom: a literal that is not a design dimension ---
@@ -397,18 +397,18 @@ test('EXEMPT records the three SR_ONLY visually-hidden literals, by name', () =>
 // arbitrary demo placeholder heights that do not fall on that scale.
 
 test('EXEMPT records the two demo-entry height literals that are not on the 4px spacing scale, by name', () => {
-  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:height:11px'));
-  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:height:90px'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.jsx:height:11px'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.jsx:height:90px'));
   // The five values review round 1 replaced with token arithmetic are no
   // longer exempt -- and no longer literal, so the gate never sees them.
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:160px'));
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:120px'));
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:height:72px'));
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:48px'));
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:40px'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.jsx:width:160px'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.jsx:width:120px'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.jsx:height:72px'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.jsx:width:48px'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.jsx:width:40px'));
   // The one value that stays legal outright: a percentage is a free unit
   // (FREE_UNITS), so `width="45%"` needed no exemption at all.
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton.card.entry.jsx:width:45%'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.jsx:width:45%'));
 });
 
 test('the SR_ONLY object shape produces exactly the raws those keys are cut from', () => {
@@ -433,11 +433,11 @@ test('the SR_ONLY object shape produces exactly the raws those keys are cut from
 // place in an ordering it takes no part in.
 
 test('EXEMPT records both local-stacking zIndex literals, by name', () => {
-  assert.ok(EXEMPT.has('frameworks/react/components/display/Calendar.jsx:zIndex:1'));
-  assert.ok(EXEMPT.has('frameworks/react/components/display/CalendarEvent.jsx:zIndex:1'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/calendar/Calendar.jsx:zIndex:1'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/calendar-event/CalendarEvent.jsx:zIndex:1'));
   // Both share one reason, because they are one case in two places.
-  assert.equal(EXEMPT.get('frameworks/react/components/display/CalendarEvent.jsx:zIndex:1'),
-    EXEMPT.get('frameworks/react/components/display/Calendar.jsx:zIndex:1'));
+  assert.equal(EXEMPT.get('frameworks/react/components/display/calendar-event/CalendarEvent.jsx:zIndex:1'),
+    EXEMPT.get('frameworks/react/components/display/calendar/Calendar.jsx:zIndex:1'));
 });
 
 // --- Fix pass 1: a stale exemption must fail, not pass silently ---------
