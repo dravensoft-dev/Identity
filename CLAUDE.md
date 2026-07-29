@@ -56,9 +56,9 @@ bun run demos   # serves the repo root on :8000 and prints the entry points
 ## Architecture
 
 **Tokens are the only styling layer, and their values are DTCG JSON.** `styles.css` does
-nothing but `@import` six files split across two directories: five generated files under
-`contracts/design-generated/` and one hand-authored file, `colors.css`, under
-`contracts/design/`. Four of those five —
+nothing but `@import` six files split across two directories: `contracts/design-generated/`,
+which holds five generated CSS files, and `contracts/design/`, which holds one
+hand-authored file, `colors.css`. Four of those five generated files —
 `contracts/design-generated/palette.css`, `typography.css`, `spacing.css`, `effects.css`
 — are **generated build output**: their values are authored in strictly-conformant DTCG
 2025.10 JSON under `contracts/design/` and emitted by `bun scripts/build-tokens.mjs`
@@ -228,7 +228,7 @@ gate never demands totality, only that every claim in the record is true. A gree
 suite asserting all four of a component's exceptions are still true passes while
 the component stays exactly as broken.
 
-**Arena's third contract is the API, and it lives at `contracts/api/`.** `contracts/api/components/<Name>.json`
+**Arena's third contract is the API.** `contracts/api/components/<Name>.json`
 states, once and neutrally, the members that component's API presents; every layer
 implementing it implements exactly those members. A member is one of **nine forms** —
 primitive, enum, predefined object, array of primitives, array of predefined objects,
@@ -718,7 +718,8 @@ a reader sees a failing run and has to go find what else it dropped.
 `support.js` is a generated bundle (`dc-runtime`, whose source is not in this repo) used only by the root `*.dc.html` pages. Do not edit it.
 
 **Framework layers live under `frameworks/`.** The root holds only the
-framework-agnostic language (`contracts/design/`, `contracts/design-generated/`, `guidelines/`, `assets/`, `scripts/`,
+framework-agnostic language (`contracts/` — all three contract levels, `api/`,
+`behaviour/` and `design/`, plus `design-generated/` — `guidelines/`, `assets/`, `scripts/`,
 `styles.css`) plus the demo runtime (`theme.js`, `support.js`)
 and brand (`*.dc.html`). React lives in `frameworks/react/`, and since the structure
 refactor's batch 3 it has the same shape as the other two: components under
@@ -2251,6 +2252,70 @@ scheduled for deletion the same week.
   several collapsibles wiring one handler cannot tell which fired without closing over the id they
   were forced to supply. **`id` stays required — that is the approved spec's decision and 8C5 did not
   reopen it.** The question is recorded, not the answer.
+
+- **Two unexecuted specs cite the pre-`contracts/` paths, and are left that way on
+  purpose.** `docs/superpowers/specs/2026-07-23-8-api-contracts-design.md` (36 hits) and
+  `2026-07-18-9-four-package-build-publish-design.md` (8) name `api/`, `behaviour/` and
+  `tokens/` throughout. Re-derive with `grep -nE '(^|[^a-zA-Z/])(api|behaviour|tokens)/'
+  docs/superpowers/specs/*.md`. Both mix historical uses — a path inside a `>` block
+  recording what a shipped plan settled, correct **as history** — with normative text that
+  a reader would follow today, and separating the two is a reading of each spec's argument
+  rather than a find-and-replace. The four-package spec is the sharper case: it is *about*
+  where files live, so its paths are load-bearing to its argument, and its own header
+  already warns they are stale in the other direction (the pre-refactor
+  `frameworks/tailwind/` layout). This is the same treatment the first of them already
+  carries for its pre-move `frameworks/` paths, recorded above; read this paragraph before
+  reading either spec.
+
+- **Nothing checks that `contracts/` has the shape `contracts/README.md` describes.** A
+  stray file in `contracts/`, a level missing its `README.md`, a fourth directory added
+  beside the three — all pass every gate. `check:structure` is the analogue for
+  `frameworks/` and has no counterpart here, and a `check:contracts` was judged out of
+  scope for a batch whose subject was moving files. Related and also open: the
+  capital-initial naming rule is declared for the framework layers and does not reach
+  `contracts/`, so `button.json`, `palette.dark.json` and `menu-item.json` keep lowercase
+  stems. That is **correct** — those stems are identifiers, a pattern's being the value a
+  binding writes into `"pattern"` and a token source's deciding the name of the CSS it
+  emits — but the exemption is written down only here, in the entry that says nothing
+  enforces it. **The zero-guard rule recorded at the head of this section promised five
+  gates and four exist**: `zeroContractProblems` (`check-api.mjs`), `zeroPatternProblems`
+  (`check-behaviour.mjs`), `zeroSourceProblems` (`check-dtcg.mjs`), and
+  `zeroGeneratedCssProblems` plus `cssDiscoveryProblems` (`check-script-tokens.mjs`). The
+  fifth, `check:tokens`, deliberately has none, and that is a decision rather than a gap
+  left by this batch: `check-tokens-generated.mjs` builds from `build-tokens.mjs`'s
+  hardcoded `FILES` list and walks no directory of its own, so it has no result set that
+  discovery could ever find empty — a missing source file still fails it, through the
+  build it depends on having nothing to read, just not via a guard shaped like the other
+  four's.
+
+- **Two lessons this batch paid for, and both generalise past this one refactor.** A moved
+  level's own normative README needs a direct read, not a grep. `contracts/behaviour/README.md`
+  shipped citing "One file per pattern in `patterns/`" — a directory flattened away one commit
+  earlier — and arguing "It is a sibling of `tokens/`, not a child" — describing the old
+  root-level layout rather than a level nested under `contracts/`. No keyword query would ever
+  have found either, because a document describes itself in the first person and a search has to
+  already know what it is looking for. `contracts/design/README.md` had the matching defect: its
+  own exclusion clause read "never in `tokens/src/`" and, carried through the move unexamined,
+  became the self-contradicting "never in `contracts/design/`" two clauses after that same
+  paragraph had just placed `colors.css` inside `contracts/design/`. Both were found by a
+  reviewer reading the file end to end, not by any sweep. And a worklist must be scoped by path
+  list only, never by piping `grep -n` output through `grep -v`: `grep -n` prints
+  `path:line:content`, so a `grep -v` after it filters by the line's *text*, not by the path, and
+  drops any hit whose content merely mentions the excluded string. This batch's behaviour sweep
+  piped its query through `| grep -v 'contracts/behaviour/'` right after moving the patterns into
+  that same directory, and silently excluded the directory it had just moved. `CLAUDE.md` already
+  records this exact trap for a different command, in the entry about cross-file citations of a
+  component's name above — this is a second instance of the same mistake, not a new one, and the
+  fix both times is the same: scope the `git ls-files`/`grep -rn` input by a path list before the
+  content match, never by filtering the output afterward. **A third, narrower lesson belongs
+  beside these two**: collapsing two directories into one can make a sentence that was true
+  become false without a word of it changing. The `contracts/design/README.md` exclusion clause
+  two sentences above is the worked example — true while `tokens/src/` and `colors.css` were two
+  levels of one hierarchy, false the moment the move merged them into one `contracts/design/` and
+  the sentence started contradicting its own subject two clauses earlier in the same paragraph.
+  Three sentences of this exact shape shipped in one sweep before review caught them: that one,
+  its sibling exclusion for the behaviour contract three lines further down in the same file, and
+  the matching clause this file's own *Architecture* section carried before this batch.
 
 ### Where the rest of the debt lives
 

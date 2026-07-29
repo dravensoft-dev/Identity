@@ -381,7 +381,8 @@ It reads the ramp straight out of `palette.css`, which the build regenerates fro
 
 ### Framework layers (`frameworks/`)
 
-Arena's pure design language — `contracts/design/`, `contracts/design-generated/`, `guidelines/`, `assets/`, `scripts/`,
+Arena's pure design language — `contracts/` (all three contract levels: `api/`,
+`behaviour/`, `design/`, plus `design-generated/`), `guidelines/`, `assets/`, `scripts/`,
 `styles.css` — lives at the repo root and is framework-agnostic. Everything
 framework-bound lives under `frameworks/`, so a new framework is added without
 touching the language:

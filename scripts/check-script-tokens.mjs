@@ -82,9 +82,11 @@ export function catSlotEnumProblems(catSlots, values) {
  *  number of .css files the walk below finds, and the number of custom
  *  properties parsed out of them. This guards the FILE count, not the
  *  property count, because the file count is what the walk itself discovers --
- *  the direct analogue of zeroSourceProblems' files.length in check-dtcg.mjs
- *  and zeroPatternProblems' patterns.size in check-behaviour.mjs, both of
- *  which guard what a directory listing returns, not a quantity computed from
+ *  the direct analogue of zeroSourceProblems' files.length in check-dtcg.mjs,
+ *  zeroPatternProblems' patterns.size in check-behaviour.mjs and
+ *  zeroContractProblems' files.length in check-api.mjs, all three of
+ *  which guard what a directory listing (or, for check-api.mjs, a filtered
+ *  readdirSync) returns, not a quantity computed from
  *  parsing what it returns. "Files present but every one of them declares
  *  nothing" is a real, different failure -- but it is a content problem, not a
  *  discovery one, and content is check-tokens-generated.mjs's job: it diffs
