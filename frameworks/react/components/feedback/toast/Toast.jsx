@@ -2,13 +2,14 @@ import React from 'react';
 const TOAST_TONES = { neutral: 'var(--line-strong)', success: 'var(--success)', danger: 'var(--danger)', gold: 'var(--gold)' };
 
 export function Toast({ title, message, tone = 'neutral', actionLabel, onAction, dismissible = false, onClose, persist = false }) {
+  const pinned = persist || tone === 'danger';
   return (
-    <div role={tone === 'danger' ? 'alert' : 'status'} aria-live={tone === 'danger' ? 'assertive' : 'polite'} data-persist={persist ? '' : undefined}
+    <div role={tone === 'danger' ? 'alert' : 'status'} aria-live={tone === 'danger' ? 'assertive' : 'polite'} data-persist={pinned ? '' : undefined}
       style={{ display: 'flex', gap: 'calc(var(--sp-1) * 3)', alignItems: 'flex-start', width: 'calc(var(--sp-1) * 85)', padding: 'calc(var(--sp-1) * 3.5) calc(var(--sp-1) * 4)', zIndex: 'var(--z-toast)',
       background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
       borderLeft: 'var(--bw-strong) solid ' + (TOAST_TONES[tone] || TOAST_TONES.neutral), borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-2)' }}>
       <div style={{ flex: 1 }}>
-        {title && <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--dz-text)', color: 'var(--bone)' }}>{title}{persist && <span title="Does not auto-dismiss" style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-column-header)', color: 'var(--mute)', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-xs)', padding: '0 calc(var(--sp-1) * 1)', textTransform: 'uppercase' }}>Pinned</span>}</div>}
+        {title && <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--dz-text)', color: 'var(--bone)' }}>{title}{pinned && <span title="Does not auto-dismiss" style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-column-header)', color: 'var(--mute)', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-xs)', padding: '0 calc(var(--sp-1) * 1)', textTransform: 'uppercase' }}>Pinned</span>}</div>}
         {message && <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--fs-sm)', color: 'var(--mute)', marginTop: 'calc(var(--sp-1) * 0.5)' }}>{message}</div>}
         {actionLabel && (
           <button onClick={onAction}

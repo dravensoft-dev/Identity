@@ -53,6 +53,7 @@ export const ELEMENT_ROLE = {
   'menu-button': 'button',
   navigation: 'navigation',
   progressbar: 'progressbar',
+  select: 'combobox',
   status: 'status',
   switch: 'switch',
   textbox: 'textbox',
@@ -77,28 +78,27 @@ export function roleOf(el, resolveId) {
 
 const LABELABLE = new Set(['INPUT', 'SELECT', 'TEXTAREA']);
 
-function namedByLabelElement(el, resolveLabelFor) {
+function namedByLabelElement(el, resolveLabel) {
   if (!LABELABLE.has(el.tagName.toUpperCase())) return false;
-  const id = el.getAttribute('id');
-  if (!id) return false;
-  if (typeof resolveLabelFor !== 'function') {
+  if (typeof resolveLabel !== 'function') {
     throw new Error(
-      'hasAccessibleName: this is a labelable form control carrying an id, so a <label for> ' +
-      'elsewhere in the tree may be its name, and no resolveLabelFor was supplied to decide. ' +
-      'Pass one to comparePattern -- each wrapper builds one scoped to the rendered tree. ' +
-      'Returning false instead would report every correctly labelled native control as ' +
-      'unnamed, which is the commonest way a control is named on the platform.',
+      'hasAccessibleName: this is a labelable form control, so a <label> may be its name -- ' +
+      'either one whose `for` points at it or one WRAPPING it -- and no resolveLabel was ' +
+      'supplied to decide. Pass one to comparePattern; each wrapper builds one scoped to the ' +
+      'rendered tree, because neither route is reachable from the four DOM operations this ' +
+      'evaluator is allowed. Returning false instead would report every correctly labelled ' +
+      'native control as unnamed, which is the commonest way a control is named at all.',
     );
   }
-  const label = resolveLabelFor(id);
+  const label = resolveLabel(el);
   return label !== null && (label.textContent ?? '').trim() !== '';
 }
 
-export function hasAccessibleName(el, acceptsText = false, resolveId, resolveLabelFor) {
+export function hasAccessibleName(el, acceptsText = false, resolveId, resolveLabel) {
   if (el.getAttribute('aria-label')) return true;
   if (acceptsText && (el.textContent ?? '').trim()) return true;
   const raw = el.getAttribute('aria-labelledby');
-  if (!raw) return namedByLabelElement(el, resolveLabelFor);
+  if (!raw) return namedByLabelElement(el, resolveLabel);
   if (typeof resolveId !== 'function') {
     throw new Error(
       'hasAccessibleName: this element is named only by aria-labelledby and no resolveId was ' +
@@ -206,7 +206,7 @@ export const BEHAVIOURAL = new Set([
   'states.valuenow', 'states.valuemin', 'states.valuemax',
 ]);
 
-export function evaluate(el, key, value, patternName, resolveId, resolveLabelFor) {
+export function evaluate(el, key, value, patternName, resolveId, resolveLabel) {
   if (key === 'roles.element') {
     const wanted = ELEMENT_ROLE[patternName];
     if (!wanted) {
@@ -218,7 +218,7 @@ export function evaluate(el, key, value, patternName, resolveId, resolveLabelFor
     return roleOf(el, resolveId) === wanted;
   }
   if (key === 'roles.label') {
-    return hasAccessibleName(el, LABEL_ACCEPTS_TEXT.has(patternName), resolveId, resolveLabelFor);
+    return hasAccessibleName(el, LABEL_ACCEPTS_TEXT.has(patternName), resolveId, resolveLabel);
   }
 
   const attr = ATTRIBUTE_FOR[key];
@@ -294,7 +294,7 @@ export const NOT_QUANTIFIED = new Map([
 ]);
 
 export function comparePattern({
-  pattern, binding, subjects = {}, fallback = null, behavioural = {}, resolveId, resolveLabelFor,
+  pattern, binding, subjects = {}, fallback = null, behavioural = {}, resolveId, resolveLabel,
 }) {
   const excepted = new Map((binding.exceptions ?? []).map((e) => [e.requirement, e.reason]));
   const declared = new Map(Object.entries(behavioural));
@@ -323,7 +323,7 @@ export function comparePattern({
       problems.push(`${key}: no subject element — nothing was rendered, or the selector matched nothing.`);
       continue;
     }
-    const verdicts = els.map((one) => evaluate(one, key, value, pattern.name, resolveId, resolveLabelFor));
+    const verdicts = els.map((one) => evaluate(one, key, value, pattern.name, resolveId, resolveLabel));
 
     const domVerdict = verdicts.includes(null) ? null : verdicts.every(Boolean);
 

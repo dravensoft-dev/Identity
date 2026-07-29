@@ -18,6 +18,9 @@ function useFadeKeyframes() {
 export function Tooltip({ children, label }) {
   if (!label)
     throw new Error("Tooltip: `label` is required");
+  if (!React.isValidElement(children) || children.type === React.Fragment) {
+    throw new Error("Tooltip: `children` must be a single element that forwards props to its own DOM node. " + "A fragment or a bare string takes aria-describedby nowhere, so the bubble names nothing.");
+  }
   useFadeKeyframes();
   const [show, setShow] = useState(false);
   const bubbleId = `tooltip-${useId().replace(/:/g, "")}`;
@@ -47,9 +50,9 @@ export function Tooltip({ children, label }) {
     document.addEventListener("keydown", onEscape);
     return () => document.removeEventListener("keydown", onEscape);
   }, [show]);
-  const own = React.isValidElement(children) ? children.props["aria-describedby"] : undefined;
+  const own = children.props["aria-describedby"];
   const describedBy = show ? [own, bubbleId].filter(Boolean).join(" ") : own;
-  const described = React.isValidElement(children) ? React.cloneElement(children, { "aria-describedby": describedBy }) : children;
+  const described = React.cloneElement(children, { "aria-describedby": describedBy });
   return React.createElement("span", {
     style: { position: "relative", display: "inline-flex" },
     onMouseEnter: () => schedule(true, delayOpen),

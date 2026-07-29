@@ -73,13 +73,25 @@ test('Alert meets both of its declared cases', () => {
   });
 });
 
-test('Toast meets both of its declared cases, and content.noAutoDismiss stays unmet on danger alone', () => {
+test('Toast meets both of its declared cases, and a danger toast cannot be un-pinned', () => {
+  const unpinned = mount(<Toast tone="neutral" title="Saved" message="Draft stored" />);
+  assert.equal(unpinned.firstElementChild.hasAttribute('data-persist'), false,
+    'an advisory toast is the host\'s to dismiss, and says so');
+  cleanup();
+
+  const asked = mount(<Toast tone="danger" title="Failed" message="The cluster refused it" persist={false} />);
+  assert.equal(asked.firstElementChild.hasAttribute('data-persist'), true,
+    'a danger toast must ignore persist={false} -- a critical message on a timer is one a user can miss');
+  assert.match(asked.textContent, /Pinned/,
+    'and it must say so on screen too, or the marker contradicts the behaviour');
+  cleanup();
+
   assertPatternCases({
     bindingPath: join(REACT_COMPONENTS, 'feedback/toast/Toast.behaviour.json'),
     cases: {
       danger: () => ({
         root: mount(<Toast tone="danger" message="Failed" />),
-        behavioural: { 'focus.unaffected': true, 'content.noAutoDismiss': false },
+        behavioural: { 'focus.unaffected': true, 'content.noAutoDismiss': true },
       }),
       advisory: () => ({
         root: mount(<Toast tone="neutral" message="Saved" />),

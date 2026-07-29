@@ -1,3 +1,7 @@
+/* The three charts answer figure-with-data-table the same way, so the shared
+ * body is `assertFigure` and each test only supplies its own fixture: a loop over
+ * the component classes does not typecheck, since TestBed.createComponent cannot
+ * unify two unrelated component types. */
 import { useTestEnvironment } from '../../test/TestbedEnv';
 useTestEnvironment();
 
@@ -7,6 +11,7 @@ import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { BarChart } from './bar-chart/BarChart';
 import { DoughnutChart } from './doughnut-chart/DoughnutChart';
+import { LineChart } from './line-chart/LineChart';
 import { assertPattern, ANGULAR_COMPONENTS } from '../../test/Compliance';
 const BINDING = join(ANGULAR_COMPONENTS, 'charts/bar-chart/BarChart.behaviour.json');
 
@@ -139,6 +144,53 @@ test('arena-doughnut-chart takes its accessible name, caption and value column f
 
     const headers = [...table.querySelectorAll('thead th')].map((c) => (c.textContent ?? '').trim());
     assert.deepEqual(headers, ['Category', SERIES]);
+  } finally {
+    fixture.destroy();
+  }
+});
+
+function assertFigure(host: Element, tail: string): void {
+  const graphic = host.querySelector('[role="img"]') as Element;
+  assert.match(graphic.getAttribute('aria-label') ?? '', /\S/, 'the graphic must carry a name');
+
+  const table = host.querySelector('table') as HTMLTableElement;
+  assert.notEqual(table, null, 'a chart with no data table is a picture nobody can read');
+  const pairs = [...table.querySelectorAll('tbody tr')]
+    .map((row) => [...row.querySelectorAll('th, td')].map((c) => (c.textContent ?? '').trim()));
+  assert.deepEqual(pairs, LABELS.map((label, i) => [label, String(VALUES[i])]),
+    'the table and the picture must not be able to disagree');
+  assert.equal(table.getAttribute('aria-hidden'), null, 'the table must stay in the accessibility tree');
+  assert.equal(table.style.position, 'absolute', 'it is hidden by being taken out of flow, not by being removed');
+
+  assertPattern({
+    root: host,
+    bindingPath: join(ANGULAR_COMPONENTS, tail),
+    subjects: { default: graphic },
+    behavioural: { 'alternative.table': true },
+  });
+}
+
+test('arena-doughnut-chart matches its figure-with-data-table binding, which excepts nothing', () => {
+  const fixture = TestBed.createComponent(DoughnutChart);
+  fixture.componentRef.setInput('labels', LABELS);
+  fixture.componentRef.setInput('values', VALUES);
+  fixture.componentRef.setInput('seriesLabel', SERIES);
+  fixture.detectChanges();
+  try {
+    assertFigure(fixture.nativeElement as Element, 'charts/doughnut-chart/DoughnutChart.behaviour.json');
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('arena-line-chart matches its figure-with-data-table binding, which excepts nothing', () => {
+  const fixture = TestBed.createComponent(LineChart);
+  fixture.componentRef.setInput('labels', LABELS);
+  fixture.componentRef.setInput('values', VALUES);
+  fixture.componentRef.setInput('seriesLabel', SERIES);
+  fixture.detectChanges();
+  try {
+    assertFigure(fixture.nativeElement as Element, 'charts/line-chart/LineChart.behaviour.json');
   } finally {
     fixture.destroy();
   }

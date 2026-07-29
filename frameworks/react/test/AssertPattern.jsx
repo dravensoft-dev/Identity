@@ -24,11 +24,14 @@ function resolverFor(root) {
 }
 
 function labelResolverFor(root) {
-  return (id) => {
-    for (const el of root.querySelectorAll('label[for]')) {
-      if (el.getAttribute('for') === id) return el;
+  return (el) => {
+    const id = el.getAttribute('id');
+    if (id) {
+      for (const candidate of root.querySelectorAll('label[for]')) {
+        if (candidate.getAttribute('for') === id) return candidate;
+      }
     }
-    return null;
+    return typeof el.closest === 'function' ? el.closest('label') : null;
   };
 }
 
@@ -42,7 +45,7 @@ function compareOne({ root, subjects, behavioural, pattern, binding }) {
     fallback,
     behavioural,
     resolveId: resolverFor(root),
-    resolveLabelFor: labelResolverFor(root),
+    resolveLabel: labelResolverFor(root),
   });
 }
 

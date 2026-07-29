@@ -4,10 +4,11 @@
 import React from "react";
 const TOAST_TONES = { neutral: "var(--line-strong)", success: "var(--success)", danger: "var(--danger)", gold: "var(--gold)" };
 export function Toast({ title, message, tone = "neutral", actionLabel, onAction, dismissible = false, onClose, persist = false }) {
+  const pinned = persist || tone === "danger";
   return React.createElement("div", {
     role: tone === "danger" ? "alert" : "status",
     "aria-live": tone === "danger" ? "assertive" : "polite",
-    "data-persist": persist ? "" : undefined,
+    "data-persist": pinned ? "" : undefined,
     style: {
       display: "flex",
       gap: "calc(var(--sp-1) * 3)",
@@ -25,7 +26,7 @@ export function Toast({ title, message, tone = "neutral", actionLabel, onAction,
     style: { flex: 1 }
   }, title && React.createElement("div", {
     style: { display: "flex", alignItems: "center", gap: "calc(var(--sp-1) * 2)", fontFamily: "var(--font-body)", fontWeight: "var(--fw-semibold)", fontSize: "var(--dz-text)", color: "var(--bone)" }
-  }, title, persist && React.createElement("span", {
+  }, title, pinned && React.createElement("span", {
     title: "Does not auto-dismiss",
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-2xs)", letterSpacing: "var(--ls-column-header)", color: "var(--mute)", border: "var(--bw) solid var(--color-base-300)", borderRadius: "var(--r-xs)", padding: "0 calc(var(--sp-1) * 1)", textTransform: "uppercase" }
   }, "Pinned")), message && React.createElement("div", {
