@@ -74,7 +74,7 @@ grep -rn "frameworks/react\|ui_kits\|test-dom" \
 ```
 frameworks/react/
     Api.generated.d.ts   Tokens.generated.js
-    UseContainerWidth.js  UseDialogModal.js
+    UseContainerWidth.js  UseDialogModal.js  DataVisuals.js
     vendor/React.js  ReactDomClient.js  ReactJsxRuntime.js
     ui-kits/console/index.html  Shell.jsx/.js  LoginScreen.jsx/.js  …
     components/
@@ -84,7 +84,6 @@ frameworks/react/
             AppLogo.test.jsx
             AppLogo.card.html  AppLogo.card.entry.jsx/.js
         charts/
-            ChartInternals.js
             Charts.card.html  Charts.card.entry.jsx/.js
             bar-chart/  chart-card/  doughnut-chart/  line-chart/
         display/
@@ -328,6 +327,7 @@ Pure `git mv`. Nothing's content changes, so `git show --stat` is reviewable as 
 - Move: all 309 files under `frameworks/react/components/` into per-component directories or their category level
 - Move: all 44 suites in `frameworks/react/test/` into component directories; all 18 files in `frameworks/react/test-dom/` into component directories or `frameworks/react/test/`
 - Rename: `api.generated.d.ts`, `tokens.generated.js`, `use-container-width.js`, `use-dialog-modal.js`, the three `vendor/*.js`, `ui_kits/` → `ui-kits/`
+- Move + repoint, in a **second commit**: `frameworks/angular/components/charts/ChartInternals.ts` → `frameworks/angular/DataVisuals.ts` and its suite, with `frameworks/angular/index.ts`, `components/charts/index.ts`, `scripts/check-dimension-literals.mjs` + `.test.mjs`, `scripts/check-duplicate-constants.mjs`
 
 **Interfaces:**
 - Produces: the tree drawn under *File structure this batch produces* above. Task 3 repoints every specifier into it; Task 4 changes how `bun test` selects within it; Task 5 teaches the gates to resolve it.
@@ -387,11 +387,21 @@ for h in chart-internals calendar-internals pagination-window side-nav-inject; d
 done
 ```
 
-Expected: `chart-internals` → bar-chart, doughnut-chart, line-chart (three components of one category that are **not** a compound family, so it stops at the category); `calendar-internals` → calendar, calendar-event (a family, so it lands on the parent); `pagination-window` → pagination alone; `side-nav-inject` → the four `side-nav-*` (a family, so the parent). Then:
+Expected: `calendar-internals` → calendar, calendar-event (a family, so it lands on the parent); `pagination-window` → pagination alone; `side-nav-inject` → the four `side-nav-*` (a family, so the parent).
+
+**`chart-internals` is the fourth and it does NOT stop at the charts category — the spec's own measured table was wrong about it.** `Calendar.jsx:3` imports `catColor` from it, so a `display` component consumes it and the rule *"consumed across categories → the layer root"* applies. Verify before moving, because this is the correction rather than the plan's original claim:
+
+```bash
+grep -rn "chart-internals" frameworks/react/components --include='*.jsx' | grep -v /charts/
+```
+
+Expected: two hits, `Calendar.jsx` and its compiled `Calendar.js`. It rises to the layer root, and it is **renamed `DataVisuals`**, because a module a schedule grid consumes is not "chart internals": it bundles the data-colour contract (`catColor`, `toneColor`, `resolveColors`, `CAT_SLOTS` — the half Calendar uses), the chart geometry (`niceMax`, `ticks`, `barPath`, `arcPath`, `PAD`, `CHART_HEIGHT`), and the visually-hidden idiom.
+
+**The rename is applied to the Angular layer in the same task, and that is a deliberate widening of this batch's scope.** Angular's `components/charts/ChartInternals.ts` has consumers in one category today and would stop at that category by the rule — but only because Angular has no `Calendar`, and it has none only because the component is delegated to Material. A future plan removes that delegation, at which point Angular acquires the same cross-category consumer React already has. Moving both now costs one task; discovering it again later costs another batch. The two layers keep one name for one contract.
 
 ```bash
 cd frameworks/react/components
-git mv charts/chart-internals.js charts/ChartInternals.js
+git mv charts/chart-internals.js ../DataVisuals.js
 git mv display/calendar-internals.js display/calendar/CalendarInternals.js
 git mv navigation/pagination-window.js navigation/pagination/PaginationWindow.js
 git mv navigation/side-nav-inject.jsx navigation/side-nav/SideNavInject.jsx
@@ -400,6 +410,19 @@ cd ../../..
 ```
 
 `SideNavInject.jsx` keeps its `.jsx` extension for the reason its own history records: `check:dimensions` scans `.jsx`/`.ts`/`.tsx` and deliberately never opens a `.js`, and `indentFor()` produces a governed `padding-inline-start`. Under `.js` it would sit outside the gate entirely.
+
+Then the Angular half of the same rename, which is a move **and** a repoint, because that layer compiles and its suites must stay green inside this task:
+
+```bash
+cd frameworks/angular
+git mv components/charts/ChartInternals.ts DataVisuals.ts
+git mv components/charts/ChartInternals.test.ts DataVisuals.test.ts   # rises with its subject
+cd ../..
+```
+
+Then, on the Angular side only: rewrite every specifier naming it, drop its `export * from './ChartInternals'` from `components/charts/index.ts`, add `export * from './DataVisuals'` to `frameworks/angular/index.ts` beside `ContainerSize`/`FocusTrap`/`ProjectionMarkers` — **it was on the public surface through the charts barrel and must stay on it**, which is a capability change this batch is not allowed to make — and rekey `check-dimension-literals.mjs`'s three `EXEMPT` entries plus the assertions naming them in `check-dimension-literals.test.mjs`. `check-duplicate-constants.mjs`'s header names the old path in a history clause; give it the same *"which was … when this happened"* form its Angular half already uses. Close with `bun run check:angular && bun run test:angular && bun run check:dimensions` green.
+
+**This is the one place Task 2 touches a file outside `frameworks/react/`, and the one place it is not a pure move** — so it is a second commit, after the pure-move commit, never folded into it.
 
 - [ ] **Step 5: Move the demo pages**
 
@@ -567,7 +590,7 @@ Four shapes changed, and each has one rule:
 
 1. **A sibling in the same category** — `'./Button.jsx'` or `'../forms/Button.jsx'` → `'../../forms/button/Button.jsx'` from inside a component directory. Every cross-component import now goes up two levels and down two.
 2. **A layer-root module** — `'../../use-container-width.js'` → `'../../../UseContainerWidth.js'`; likewise `UseDialogModal.js`, `Tokens.generated.js`, `Api.generated.d.ts`.
-3. **A relocated helper** — `'./chart-internals.js'` → `'../ChartInternals.js'` from inside `charts/bar-chart/`; `'./calendar-internals.js'` → `'./CalendarInternals.js'` from inside `display/calendar/` and `'../calendar/CalendarInternals.js'` from `display/calendar-event/`; `'./pagination-window.js'` → `'./PaginationWindow.js'`; `'./side-nav-inject.jsx'` → `'./SideNavInject.jsx'` from `side-nav/` and `'../side-nav/SideNavInject.jsx'` from the three sibling directories.
+3. **A relocated helper** — `'./chart-internals.js'` → `'../../../DataVisuals.js'` from inside `charts/bar-chart/`, and `'../charts/chart-internals.js'` → `'../../../DataVisuals.js'` from inside `display/calendar/`, which is the import that moved the module in the first place; `'./calendar-internals.js'` → `'./CalendarInternals.js'` from inside `display/calendar/` and `'../calendar/CalendarInternals.js'` from `display/calendar-event/`; `'./pagination-window.js'` → `'./PaginationWindow.js'`; `'./side-nav-inject.jsx'` → `'./SideNavInject.jsx'` from `side-nav/` and `'../side-nav/SideNavInject.jsx'` from the three sibling directories.
 4. **A suite reaching its subject** — a colocated suite imports `'./Tag.jsx'`; a category-level DOM suite imports `'./alert/Alert.jsx'`; a `test/` suite imports `'../components/navigation/menu/Menu.jsx'` and the support with `'./Harness.jsx'` / `'./AssertPattern.jsx'`.
 
 Do this by letting the runtime find them rather than by substitution — a blind rewrite over 300 files cannot distinguish a specifier from prose in a `.prompt.md`:
@@ -958,7 +981,7 @@ Its header at line 27 names `frameworks/react/components/navigation/side-nav-inj
 
 `PASSTHROUGH` is keyed by component **name**, not by path, so it does not move.
 
-`scripts/check-duplicate-constants.mjs`'s header names `frameworks/react/components/charts/chart-internals.js` as one of the two files that carried the drifted constants. Its Angular half already models the right form — *"`frameworks/angular/components/charts/ChartInternals.ts` (which was `frameworks/angular/primitives/chart-internals.ts` when this happened)"* — so give the React half the same shape rather than a bare substitution: the sentence is a claim about where the drift happened, and rewriting it to today's path alone would make the record lie about the past.
+`scripts/check-duplicate-constants.mjs`'s header names `frameworks/react/components/charts/chart-internals.js` as one of the two files that carried the drifted constants. **Task 2 already gave the Angular half of that sentence its new path; this step does the React half only — read the line before editing it.** Its Angular half already models the right form — *"`frameworks/angular/components/charts/ChartInternals.ts` (which was `frameworks/angular/primitives/chart-internals.ts` when this happened)"* — so give the React half the same shape rather than a bare substitution: the sentence is a claim about where the drift happened, and rewriting it to today's path alone would make the record lie about the past.
 
 - [ ] **Step 6: Delete `MIGRATED`**
 
@@ -1126,7 +1149,7 @@ git log -1 --format=%B | head -3
 The spec names this as where the real risk lives: *"`CLAUDE.md` describes these paths in prose throughout … Rewriting that prose is part of the work, not an optional extra."* Batch 2 is the evidence — `check:structure` went green on Angular in the same commit that left `CLAUDE.md` printing a `bun test` command whose Angular path matched 3 files out of 33.
 
 **Files:**
-- Modify: `CLAUDE.md`, `README.md`, `SKILL.md`, `components-divergences.md`, `frameworks/react/components/display/table/Table.prompt.md`, `frameworks/react/components/feedback/toast/Toast.prompt.md`
+- Modify: `CLAUDE.md`, `README.md`, `SKILL.md`, `components-divergences.md`, `frameworks/angular/README.md`, `frameworks/react/components/display/table/Table.prompt.md`, `frameworks/react/components/feedback/toast/Toast.prompt.md`
 - Delete: `docs/superpowers/specs/2026-07-27-frameworks-file-structure-design-pending-1.md`
 
 **Interfaces:**
@@ -1153,6 +1176,8 @@ The paragraphs that are wrong as of Task 6, at minimum:
 - **`reactComponents()`'s heuristic**, described under *Architecture* as keying on capital-initial `.jsx` and carrying `side-nav-inject.jsx` as its worked example. Both are retired.
 - **The `SideNavInject.jsx` paragraph**, which says its `.jsx` extension is load-bearing *and* that it is "the first `.jsx` under `frameworks/react/components/` that is not a component", and that the documented way to measure Plan C's subject set therefore over-counts by one. The extension reason survives; the over-count consequence does not, because the subject set is now measured by directory.
 - **The `check:structure` / `MIGRATED` paragraphs**, which say Tailwind and Angular are migrated and React is not, and point at `MIGRATED` as the authoritative answer. `MIGRATED` is gone; the gate covers all three unconditionally and rule 3 is live.
+- **The naming-exception list, which gains a SIXTH row and is measured rather than recited.** `frameworks/react/ui-kits/console/index.entry.jsx` and its compiled `.js` keep a lowercase initial: an entry script takes the stem of the page it composes — the convention every `<page>.card.entry.jsx` in the layer follows — and that page must be `index.html`, which is itself an exception because a directory served over HTTP is answered by that literal name. The reasoning is the same one the spec applied to `arena-material.prompt.md` following `arena-material.css`. Re-derive the whole set rather than copying this sentence, now that all three layers are in scope: `find frameworks -type f -printf '%f\n' | grep -E '^[^A-Z]' | sort -u`. Note what this row is **not**: `Index.entry.jsx` was rejected because a capitalised `Index` beside a mandatorily-lowercase `index.html` reads as a typo in every directory listing, and renaming the pair to a different stem was rejected because it would break the `<page>.entry.jsx` pairing the rest of the layer keeps.
+- **`ChartInternals` is `DataVisuals` in both layers, and it sits at each layer's root.** `CLAUDE.md` currently says *"`ChartInternals.ts` has consumers in one category only and therefore stops at `components/charts/`"* — false in React from the start (`Calendar` imports `catColor`), and now false in Angular by decision. Say why the two layers moved together: Angular's consumer set is narrower only because its `Calendar` is delegated to Material, and a future plan removes that delegation. Say why the name changed: a module a schedule grid consumes is not "chart internals". The Angular layer-root list — `ContainerSize.ts`, `FocusTrap.ts`, `ProjectionMarkers.ts` — gains it, and the sentence claiming `ChartInternals.ts` stops at `components/charts/` goes.
 - **`check:compliance`'s layer discrimination**, wherever `CLAUDE.md` describes `COVERED`'s compound key — the discrimination is structural now, not textual.
 - **The gate count.** `bun run check` runs 22 gates; confirm by running it rather than by copying this sentence.
 - **Every literal path** naming `test-dom/`, `ui_kits/`, `use-dialog-modal.js`, `use-container-width.js`, `api.generated.d.ts`, `tokens.generated.js`, a `vendor/*.js`, or a `components/<category>/<Name>.jsx`.
