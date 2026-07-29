@@ -1,12 +1,12 @@
+/* Every verdict in the `behavioural` map below is earned by a named assertion in
+ * this file, in the order the dialog lives: focus.onOpen, focus.trap in both
+ * directions, keyboard.Escape, then focus.onClose last because it dismantles the
+ * panel the others need. The four are undecidable from one element, so a wrong
+ * verdict here would pin a false claim exactly as a text scan would. The invoker
+ * button is appended to the shared document and removed in the finally, because
+ * one document is shared by the whole run and outlives the file that wrote it. */
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 useTestEnvironment();
-
-/* Every verdict in the `behavioural` map below is earned by a named assertion in
- * this file, in the order the dialog lives: open, trap, Escape, close. The four
- * are undecidable from one element, so a wrong verdict here would pin a false
- * claim exactly as a text scan would. The invoker button is appended to the
- * shared document and removed in the finally, because one document outlives the
- * file that wrote it. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -44,26 +44,23 @@ test('arena-confirm-dialog meets the alertdialog pattern it binds', () => {
     assert.equal(focusables.length, 2, 'the fixture must offer cancel and confirm, and nothing else focusable');
     const [cancel, confirm] = focusables;
 
-    // focus.onOpen
     assert.equal(document.activeElement, cancel,
-      'opening did not move focus to the first focusable control inside the panel');
+      'focus.onOpen: opening did not move focus to the first focusable control inside the panel');
 
-    // focus.trap -- the boundary wrap in both directions, which is Arena's own .focus() call
     confirm.focus();
     const forward = press(confirm, 'Tab');
-    assert.equal(forward.defaultPrevented, true, 'Tab off the last control was not intercepted');
-    assert.equal(document.activeElement, cancel, 'Tab off the last control did not wrap to the first');
+    assert.equal(forward.defaultPrevented, true, 'focus.trap: Tab off the last control was not intercepted');
+    assert.equal(document.activeElement, cancel, 'focus.trap: Tab off the last control did not wrap to the first');
 
     const backward = press(cancel, 'Tab', true);
-    assert.equal(backward.defaultPrevented, true, 'Shift+Tab off the first control was not intercepted');
-    assert.equal(document.activeElement, confirm, 'Shift+Tab off the first control did not wrap to the last');
+    assert.equal(backward.defaultPrevented, true, 'focus.trap: Shift+Tab off the first control was not intercepted');
+    assert.equal(document.activeElement, confirm, 'focus.trap: Shift+Tab off the first control did not wrap to the last');
 
-    // keyboard.Escape -- reported through the component's own dismissal channel
     let cancelled = 0;
     fixture.componentInstance.cancel.subscribe(() => { cancelled += 1; });
     const escape = press(document.activeElement as Element, 'Escape');
-    assert.equal(escape.defaultPrevented, true, 'Escape was not intercepted');
-    assert.equal(cancelled, 1, 'Escape did not report through the dialog\'s own cancel output');
+    assert.equal(escape.defaultPrevented, true, 'keyboard.Escape: Escape was not intercepted');
+    assert.equal(cancelled, 1, 'keyboard.Escape: Escape did not report through the dialog\'s own cancel output');
 
     assertPattern({
       root: host,
@@ -77,11 +74,10 @@ test('arena-confirm-dialog meets the alertdialog pattern it binds', () => {
       },
     });
 
-    // focus.onClose -- asserted last, because it dismantles the panel the rest needed
     fixture.componentRef.setInput('open', false);
     fixture.detectChanges();
     assert.equal(host.querySelector('[role="alertdialog"]'), null, 'closing did not remove the panel');
-    assert.equal(document.activeElement, invoker, 'closing did not restore focus to the invoker');
+    assert.equal(document.activeElement, invoker, 'focus.onClose: closing did not restore focus to the invoker');
   } finally {
     fixture.destroy();
     invoker.remove();
