@@ -1,3 +1,9 @@
+/* `DropsProps` below is the load-bearing fixture: Arena's own components forward
+ * the props they DECLARE and drop the rest, since the API contract flattened
+ * their {...rest} spreads, so `onClick` arrives and aria-haspopup does not.
+ * That is the DEFAULT usage on the demo page, where the trigger is <Button>,
+ * and every other assertion here uses a raw <button> -- the one shape a
+ * cloneElement injection reaches. It fails without the DOM guarantee. */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
@@ -138,4 +144,22 @@ test('Menu meets the menu-button pattern it binds', () => {
       'focus.onOpen': true, 'keyboard.Enter': true, 'keyboard.Space': true, 'keyboard.Escape': true,
     },
   });
+});
+
+function DropsProps({ children, onClick }) {
+  return <button type="button" onClick={onClick}>{children}</button>;
+}
+
+test('the popup state reaches a trigger that drops every prop it is handed', () => {
+  const root = mount(<Menu trigger={<DropsProps>Open</DropsProps>} items={[{ label: 'Rename' }]} />);
+  const trigger = root.querySelector('button');
+
+  assert.equal(trigger.getAttribute('aria-haspopup'), 'menu',
+    'a prop-dropping trigger left the popup state nowhere, which is what the demo page does');
+  assert.equal(trigger.getAttribute('aria-expanded'), 'false');
+
+  act(() => { trigger.click(); });
+  assert.equal(trigger.getAttribute('aria-expanded'), 'true', 'the open state did not follow');
+  press(root.querySelector('[role="menuitem"]'), 'Escape');
+  assert.equal(trigger.getAttribute('aria-expanded'), 'false', 'the closed state did not follow');
 });

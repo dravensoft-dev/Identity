@@ -47,7 +47,7 @@ function Demo(){
 }
       {events.map((e) => (
         <CalendarEvent key={e.id} id={e.id} title={e.title} start={e.start} end={e.end}
-          colorId={e.colorId} onClick={() => setPicked(e.title)}
+          colorId={e.colorId} onClick={() => setPicked(e.title)} disabled={e.id === 's1'}
           {...(e.id === 'm1' || e.id === 'm7' ? {
             actionsEnabled: true,
             actions: <Button size="sm" variant="ghost" icon="ph-bold ph-trash">Delete</Button>,

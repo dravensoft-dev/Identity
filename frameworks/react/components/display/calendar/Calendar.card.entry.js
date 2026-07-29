@@ -50,6 +50,7 @@ function Demo() {
     end: e.end,
     colorId: e.colorId,
     onClick: () => setPicked(e.title),
+    disabled: e.id === "s1",
     ...e.id === "m1" || e.id === "m7" ? {
       actionsEnabled: true,
       actions: React.createElement(Button, {

@@ -763,11 +763,23 @@ stale-proof; a present-tense component name is not.
   nothing at all, in silence. `Menu.trigger` had the identical hole and took the identical
   guard in the same programme.
 
-  **What is still undetectable is a component that accepts the prop and drops it.** Nothing
-  distinguishes that from one that forwards it, at any point React can observe, so the
-  binding's `exceptions: []` remains slightly stronger than the implementation can promise.
-  `Tooltip.prompt.md`'s Do/Don't is still where a consumer is warned; the difference is that
-  the two shapes a warning could not catch are now errors rather than warnings.
+  **The third shape was called undetectable here and it was not.** A component that accepts
+  the prop and drops it is invisible to `cloneElement` — nothing distinguishes it from one that
+  forwards — but it is perfectly visible in the DOM, and that is where both components now
+  write. `Tooltip` and `Menu` set the attribute on the resolved node in an effect; the clone
+  stays, because it is what puts the attribute in the server-rendered HTML before hydration.
+
+  **It was not hypothetical: it was live on both demo pages**, and only a by-hand check in real
+  Chromium found it. Arena's own components forward the props they DECLARE and drop the rest,
+  since the API contract flattened their `{...rest}` spreads — so `<Button>` as a trigger got
+  `onClick` and no `aria-haspopup`, and `<Button>` inside a `Tooltip` left the bubble pointing at
+  nothing. Every suite assertion had used a raw `<button>`, the one shape a clone reaches, which
+  is why the fixtures now mimic that split on purpose.
+
+  **What is left unpromised is narrower:** a child that renders no DOM node of its own at the
+  wrapper's first position, or one that re-parents its content, is still outside what an effect
+  reading `firstElementChild` can reach. `Tooltip.prompt.md`'s Do/Don't remains where a consumer
+  is warned.
 
   **This was the live instance of the one conditionality level `cases` did not close**, and
   the level is now empty of live instances rather than solved. `Tag` and `Skeleton` left it

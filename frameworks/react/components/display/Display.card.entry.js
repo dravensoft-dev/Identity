@@ -41,7 +41,11 @@ function Demo() {
   }, "Danger"), React.createElement(Tag, {
     removable: true,
     onRemove: () => {}
-  }, "React")), React.createElement("div", {
+  }, "React"), React.createElement(Tag, {
+    removable: true,
+    disabled: true,
+    onRemove: () => {}
+  }, "Locked")), React.createElement("div", {
     className: "sub"
   }, "Card"), React.createElement("div", {
     className: "row",

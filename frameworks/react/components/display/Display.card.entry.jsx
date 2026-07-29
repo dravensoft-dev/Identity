@@ -23,6 +23,7 @@ function Demo(){return (<div>
     <Tag tone="warning">Warning</Tag>
     <Tag tone="danger">Danger</Tag>
     <Tag removable onRemove={()=>{}}>React</Tag>
+    <Tag removable disabled onRemove={()=>{}}>Locked</Tag>
   </div>
   <div className="sub">Card</div>
   <div className="row" style={{alignItems:'stretch'}}>

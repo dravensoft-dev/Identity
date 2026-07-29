@@ -22,7 +22,8 @@ function Demo() {
   ];
   const body = (onClick) => rows.map((r) => React.createElement(TableRow, {
     key: r.build,
-    onClick
+    onClick,
+    disabled: r.status !== "ok"
   }, React.createElement(TableCell, null, r.build), React.createElement(TableCell, null, r.project), React.createElement(TableCell, null, React.createElement(Badge, {
     tone: r.status === "ok" ? "success" : "danger",
     dot: true

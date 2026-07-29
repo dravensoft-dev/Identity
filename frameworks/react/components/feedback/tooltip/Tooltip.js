@@ -53,7 +53,18 @@ export function Tooltip({ children, label }) {
   const own = children.props["aria-describedby"];
   const describedBy = show ? [own, bubbleId].filter(Boolean).join(" ") : own;
   const described = React.cloneElement(children, { "aria-describedby": describedBy });
+  const wrapRef = useRef(null);
+  useEffect(() => {
+    const el = wrapRef.current && wrapRef.current.firstElementChild;
+    if (!el)
+      return;
+    if (describedBy)
+      el.setAttribute("aria-describedby", describedBy);
+    else
+      el.removeAttribute("aria-describedby");
+  }, [describedBy]);
   return React.createElement("span", {
+    ref: wrapRef,
     style: { position: "relative", display: "inline-flex" },
     onMouseEnter: () => schedule(true, delayOpen),
     onMouseLeave: () => schedule(false, delayClose),
