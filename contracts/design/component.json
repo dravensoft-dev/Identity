@@ -21,6 +21,11 @@
       "$value": { "value": 100, "unit": "px" },
       "$description": "The narrowest column share a chip may occupy and still draw its time\nlabel. Measured: the label is 78.02px at --dz-text-2xs, and a chip's content box\nis its share less 18px -- 4px of gutter to its neighbour, 12px of its own\npadding, 2px of its left border -- so 96.02px, rounded up to the 4px scale. The\nthreshold is on the share rather than on the chip so that Calendar never has to\nknow CalendarEvent's padding.",
       "$extensions": { "com.dravensoft.arena": { "script": true } }
+    },
+    "actions-below-min-h": {
+      "$value": { "value": 56, "unit": "px" },
+      "$description": "The shortest chip that can carry its kebab below its title rather than\nbeside it. Measured: 4px of padding, a 15px title line, the 32px kebab and 4px\nof padding again is 55px, rounded up to the 4px scale. Below it the two would\noverlap, so the chip keeps reserving a lateral band instead. Script-readable\nbecause it is compared against a projected pixel height.",
+      "$extensions": { "com.dravensoft.arena": { "script": true } }
     }
   },
   "onboarding": {

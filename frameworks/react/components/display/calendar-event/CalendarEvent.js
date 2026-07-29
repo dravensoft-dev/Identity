@@ -18,6 +18,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
   timeLabel,
   dateLabel,
   showTime,
+  actionsBelow,
   tabIndex,
   defaultPanelOpen
 }, ref) {
@@ -109,7 +110,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
       overflow: panelOpen ? "visible" : "hidden",
       textAlign: "left",
       padding: "calc(var(--sp-1) * 1) calc(var(--sp-1) * 1.5)",
-      paddingRight: hasPanel ? KEBAB_RESERVE : "calc(var(--sp-1) * 1.5)",
+      paddingRight: hasPanel && !actionsBelow ? KEBAB_RESERVE : "calc(var(--sp-1) * 1.5)",
       background: `color-mix(in oklab, ${color} 16%, var(--surface-card))`,
       borderLeft: `var(--bw-strong) solid ${color}`,
       borderTop: "none",
@@ -143,7 +144,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
     }
   }, body) : body, React.createElement("span", {
     ref: kebabWrapRef,
-    style: { position: "absolute", top: 0, right: 0 }
+    style: { position: "absolute", right: 0, ...actionsBelow ? { bottom: 0 } : { top: 0 } }
   }, React.createElement(IconButton, {
     icon: "ph-bold ph-dots-three-vertical",
     label: "Actions",

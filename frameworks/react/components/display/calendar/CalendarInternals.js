@@ -1,8 +1,12 @@
-import { calendarTimeMinH, calendarTimeMinW } from '../../../Tokens.generated.js';
+import { calendarActionsBelowMinH, calendarTimeMinH, calendarTimeMinW } from '../../../Tokens.generated.js';
 
 export function showsTime(chipHeight, slotWidth) {
   if (chipHeight < calendarTimeMinH) return false;
   return slotWidth === null || slotWidth >= calendarTimeMinW;
+}
+
+export function stacksActions(chipHeight, slotWidth) {
+  return chipHeight >= calendarActionsBelowMinH && !showsTime(chipHeight, slotWidth);
 }
 
 const warned = new Set();

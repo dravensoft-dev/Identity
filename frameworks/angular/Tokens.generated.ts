@@ -42,6 +42,14 @@ export const calendarTimeMinH = 32;
  */
 export const calendarTimeMinW = 100;
 /*
+   The shortest chip that can carry its kebab below its title rather than
+   beside it. Measured: 4px of padding, a 15px title line, the 32px kebab and 4px
+   of padding again is 55px, rounded up to the 4px scale. Below it the two would
+   overlap, so the chip keeps reserving a lateral band instead. Script-readable
+   because it is compared against a projected pixel height.
+ */
+export const calendarActionsBelowMinH = 56;
+/*
    The popover's width. Script-readable because Math.min/Math.max compare it
    against window.innerWidth. This ALSO replaces the calc(var(--sp-1) * 80) the
    component rendered: the value existed twice in two idioms, held in step by a

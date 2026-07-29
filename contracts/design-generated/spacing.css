@@ -137,6 +137,14 @@
      know CalendarEvent's padding.
    */
   --calendar-time-min-w:100px;
+  /*
+     The shortest chip that can carry its kebab below its title rather than
+     beside it. Measured: 4px of padding, a 15px title line, the 32px kebab and 4px
+     of padding again is 55px, rounded up to the 4px scale. Below it the two would
+     overlap, so the chip keeps reserving a lateral band instead. Script-readable
+     because it is compared against a projected pixel height.
+   */
+  --calendar-actions-below-min-h:56px;
 
   /* Onboarding coachmark. */
   /*
