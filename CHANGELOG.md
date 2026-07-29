@@ -48,6 +48,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The day header cells no longer pad their own bottom**, halving the dead space above the
   first hour line from 16px to 8px. The scroll area's top padding stays: the hour labels are
   centred on their line and the first is clipped without it.
+- **A narrow, tall `Calendar` chip carries its kebab below its title.** A chip sharing its
+  column with actions gave 34px of its 78.6px to the kebab's reserved band, leaving a 36.58px
+  content box and a title cut to five characters. It now anchors the kebab bottom-right and
+  reserves nothing, so the content box is 64.6px and the title's truncation falls from 74% to
+  54%. Short chips keep the lateral reserve, because the two would overlap.
 - **A `Calendar` chip draws its time label only when it fits in both axes.** Every chip
   sharing its column with an overlap wrapped a 78.02px label into a 64.6px box — three of the
   four carried no kebab, so this was never the kebab's doing. `Calendar` already made the

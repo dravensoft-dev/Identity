@@ -15,6 +15,7 @@ import {
   placeEvents,
   rangeTitle,
   showsTime,
+  stacksActions,
   startOfWeek,
   todayIso,
   weekdayOf,
@@ -298,7 +299,8 @@ export function Calendar({
       color,
       timeLabel: `${formatHM(p.startMin)} – ${formatHM(p.endMin)}`,
       dateLabel: formatDate(d, { weekday: "long", day: "numeric", month: "long" }),
-      showTime: showsTime(rawH, slotFor(p.cols))
+      showTime: showsTime(rawH, slotFor(p.cols)),
+      actionsBelow: stacksActions(rawH, slotFor(p.cols))
     });
   }))), showNow && React.createElement("div", {
     "aria-hidden": "true",

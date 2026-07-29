@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Calendar } from './Calendar.jsx';
 import { CalendarEvent } from '../calendar-event/CalendarEvent.jsx';
-import { showsTime } from './CalendarInternals.js';
+import { showsTime, stacksActions } from './CalendarInternals.js';
 
 const EVENTS = [
   { id: 'a', title: 'Standup', start: '2026-07-20T09:00:00Z', end: '2026-07-20T09:30:00Z', colorId: 1 },
@@ -265,4 +265,40 @@ test('the static render still draws its time labels, because nothing has measure
   const html = render({});
   assert.match(html, /14:00 – 15:00/,
     'the server render lost a time label -- the width term is being applied before anything measured');
+});
+
+test('a chip stacks its kebab below only when it is narrow and tall enough', () => {
+  assert.equal(stacksActions(66, 83), true, 'a tall chip in a half-width slot did not stack its kebab');
+  assert.equal(stacksActions(44, 83), false, 'a 60-minute chip stacked a kebab that would overlap its title');
+  assert.equal(stacksActions(66, 166), false, 'a full-width chip stacked its kebab, which it has room not to');
+  assert.equal(stacksActions(26, 83), false, 'the shortest chip stacked its kebab');
+});
+
+test('the stacking threshold is inclusive, and an unmeasured container never stacks', () => {
+  assert.equal(stacksActions(56, 83), true, 'a chip exactly at the threshold was refused');
+  assert.equal(stacksActions(55.9, 83), false, 'the height threshold is not being applied');
+  assert.equal(stacksActions(66, null), false, 'a server render stacked, so the static markup would move');
+});
+
+test('a stacked chip anchors its kebab to the bottom and reserves no lateral band', () => {
+  const stacked = renderToStaticMarkup(
+    <CalendarEvent id="a" title="Client review — Northwind" start="2026-07-20T10:00:00Z" end="2026-07-20T11:30:00Z"
+      actionsEnabled actions={<button type="button">Delete</button>} actionsBelow
+      box={{}} color="var(--color-cat-1)" timeLabel="10:00 – 11:30" dateLabel="Monday 20 July" />,
+  );
+  assert.match(stacked, /position:absolute;right:0;bottom:0/,
+    'the kebab is not anchored to the chip bottom');
+  assert.doesNotMatch(stacked, /padding-right:calc\(var\(--dz-ctl-h-sm\)/,
+    'a stacked chip still reserves the lateral band, so the title gains nothing');
+});
+
+test('an unstacked chip keeps the top-right kebab and its reserve', () => {
+  const plain = renderToStaticMarkup(
+    <CalendarEvent id="a" title="Release window" start="2026-07-20T15:00:00Z" end="2026-07-20T16:30:00Z"
+      actionsEnabled actions={<button type="button">Delete</button>}
+      box={{}} color="var(--color-cat-1)" timeLabel="15:00 – 16:30" dateLabel="Monday 20 July" />,
+  );
+  assert.match(plain, /position:absolute;right:0;top:0/, 'the kebab left its conventional corner');
+  assert.match(plain, /padding-right:calc\(var\(--dz-ctl-h-sm\) \+ var\(--bw\) \* 2\)/,
+    'the unstacked chip lost the reserve that keeps its title clear of the kebab');
 });

@@ -4,7 +4,7 @@ import { catColor } from '../../../DataVisuals.js';
 import { calendarGutterW, calendarHourH } from '../../../Tokens.generated.js';
 import {
   addDays, defaultDayStart, formatHM, layoutDay, nowMinutes, parseHM,
-  placeEvents, rangeTitle, showsTime, startOfWeek, todayIso, weekdayOf, formatDate,
+  placeEvents, rangeTitle, showsTime, stacksActions, startOfWeek, todayIso, weekdayOf, formatDate,
 } from './CalendarInternals.js';
 
 const GUTTER = 'var(--calendar-gutter-w)';
@@ -256,6 +256,7 @@ export function Calendar({
                     timeLabel: `${formatHM(p.startMin)} – ${formatHM(p.endMin)}`,
                     dateLabel: formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' }),
                     showTime: showsTime(rawH, slotFor(p.cols)),
+                    actionsBelow: stacksActions(rawH, slotFor(p.cols)),
                   });
                 })}
               </div>

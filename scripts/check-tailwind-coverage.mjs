@@ -38,6 +38,7 @@ export const EXCLUDED = new Map([
   ['calendar-gutter-w', 'script-readable: JS subtracts it from the measured container width to get the grid\'s width. Also rendered directly as var(--calendar-gutter-w) by Calendar — the hour-label column\'s width and the header strip\'s padding-left — never through the @theme spacing scale this gate checks'],
   ['calendar-time-min-h', 'script-readable: compared in JS against a chip\'s projected pixel height to decide whether its time label fits vertically. Never rendered as a length'],
   ['calendar-time-min-w', 'script-readable: compared in JS against a chip\'s column share to decide whether its time label fits horizontally. Never rendered as a length'],
+  ['calendar-actions-below-min-h', 'script-readable: compared in JS against a chip\'s projected pixel height to decide whether its kebab can sit below its title instead of beside it. Never rendered as a length'],
   ['onboarding-width', 'script-readable: compared against window.innerWidth by Math.min/Math.max. Rendered directly as var(--onboarding-width) in both layers — React inline, Angular via the shared manifest\'s w-[var(--onboarding-width)] — never through the @theme spacing scale this gate checks'],
   ['delay-open', 'script-readable: a setTimeout argument for pointer intent, never a utility'],
   ['delay-close', 'script-readable: a setTimeout argument for pointer intent, never a utility'],
