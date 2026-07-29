@@ -42,10 +42,12 @@ What "into the chip" means depends on the shape. A chip with no action panel *is
 - Let the chip be inert when nothing happens on activation. An interactive-looking chip that does nothing is worse than a plain one.
 - Keep the panel to a couple of controls. It opens over the schedule at the chip's own width, and a panel wider than the day column it hangs from covers the events beside it.
 - Pass `actions` whenever you pass `actionsEnabled`. The two travel together; the boolean alone draws a button onto an empty panel.
+- Reach for `disabled` when the event is drawn but must not be opened — one already past, or one owned by someone else. It reflects through `aria-disabled`, so the chip keeps its place in the grid's roving Tab sequence and is announced as unavailable instead of disappearing from it, and `onClick` is never called while it is set.
 
 **Don't**
 - Don't put children inside it. It takes none: the title and the time line are the chip body, and Arena draws both.
 - Don't render one outside a `Calendar`. It has no position of its own and no useful meaning without the grid around it.
+- Don't use `disabled` to make a chip inert. Omit `onClick` for that: an inert chip is a `<div>` with nothing to press, where a disabled one is a button that announces it cannot be pressed right now. They read differently to a screen reader on purpose.
 - Don't reach past `colorId: 8`. There are eight ramp slots and they never cycle; a ninth entity wrapping to slot 1 claims two different things are the same thing.
 - Don't reach for `style` or `className`. It takes neither, the same as every other Arena component under the API contract.
 - Don't write `defaultPanelOpen`. It is reachable and it is not API: it exists so a static render can assert the open branch, since `renderToStaticMarkup` cannot click. It is in no contract and no `.d.ts`, and it can be removed without a major.

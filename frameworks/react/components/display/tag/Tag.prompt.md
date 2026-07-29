@@ -21,6 +21,13 @@ Toast.
 - Use `removable` only when removing the chip is a real user action (applied
   filters), not on informational tags — and pass `onRemove` alongside it, or
   the × renders with nothing to call.
+- Reach for `disabled` when removal is temporarily unavailable and the chip must
+  stay on screen — a filter the user's permissions lock. The × keeps its place
+  in the Tab sequence and announces itself as unavailable, which is why this is
+  `aria-disabled` and not the native `disabled` attribute. Without `removable`
+  there is no × and `disabled` does nothing.
+- Don't use `disabled` to mean "this chip is greyed out". A tag with no `×` is
+  already inert; the state is about the remove action alone.
 - Don't mix the Tag/Toast × with the modal close: dialogs close with their
   explicit button (Cancel), not with the ph-x icon.
 - Don't add a `tone` outside the taxonomy — `neutral`, `primary`, `success`,
