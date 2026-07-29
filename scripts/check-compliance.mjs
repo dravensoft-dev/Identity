@@ -32,6 +32,8 @@ export const COVERED = {
   'Tooltip:react': 'Tooltip.keyboard.dom.test.jsx',
   'Alert:react': 'AlertTones.dom.test.jsx',
   'Toast:react': 'AlertTones.dom.test.jsx',
+  'ProgressBar:react': 'ProgressBar.dom.test.jsx',
+  'Spinner:react': 'Spinner.dom.test.jsx',
   'Tag:react': 'TagAndChipCases.dom.test.jsx',
   'CalendarEvent:react': 'TagAndChipCases.dom.test.jsx',
   'Alert:angular': 'Alert.roleTones.test.ts',
