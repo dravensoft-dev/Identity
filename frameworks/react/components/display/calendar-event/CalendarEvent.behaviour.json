@@ -1,23 +1,23 @@
 {
   "cases": [
-    { "name": "clickable",
+    {
+      "name": "clickable",
       "when": "onClick is set and actionsEnabled is false or absent -- the chip root itself renders as <button>",
       "pattern": "button",
-      "exceptions": [
-        { "requirement": "states.disabled",
-          "reason": "There is no disabled concept: aria-disabled is never set and there is no member that makes an event unactivatable while still drawn. A chip is either interactive (onClick passed) or inert (onClick omitted), and the inert shape is a <div> rather than a disabled button -- the `inert` case below." }
-      ] },
-    { "name": "clickable-with-actions",
+      "exceptions": []
+    },
+    {
+      "name": "clickable-with-actions",
       "when": "onClick is set and actionsEnabled is true -- a kebab cannot nest inside a button, so the root becomes a <div> and the interactive attributes move down to the chip BODY, a descendant <button>",
       "pattern": "button",
-      "exceptions": [
-        { "requirement": "states.disabled",
-          "reason": "There is no disabled concept: aria-disabled is never set and there is no member that makes an event unactivatable while still drawn. A chip is either interactive (onClick passed) or inert (onClick omitted), and the inert shape is a <div> rather than a disabled button -- the `inert` case below." }
-      ] },
-    { "name": "inert",
+      "exceptions": []
+    },
+    {
+      "name": "inert",
       "when": "onClick is absent, regardless of actionsEnabled -- nothing obliges a consumer to pass onClick",
       "pattern": "none",
       "reason": "With no onClick the chip is a <div> with no role, no tabbable behaviour and no activation. This is true whether or not actionsEnabled renders a kebab beside it -- the kebab is its own IconButton with its own accessible name and is not the subject of this binding -- so this whole pattern does not apply to the chip itself in this shape.",
-      "exceptions": [] }
+      "exceptions": []
+    }
   ]
 }

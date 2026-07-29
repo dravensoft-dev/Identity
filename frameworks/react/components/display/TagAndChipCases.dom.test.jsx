@@ -30,12 +30,25 @@ test('Tag meets both of its declared cases', () => {
 
         const button = root.querySelector('button');
         assertKeysUnintercepted(button);
+        assert.equal(button.hasAttribute('aria-disabled'), false,
+          'an available action must not announce itself as disabled');
         act(() => { button.click(); });
         assert.equal(removed, true, 'sanity: a real click must reach onRemove');
+
+        let blocked = false;
+        const off = mount(<Tag removable disabled onRemove={() => { blocked = true; }}>Backend</Tag>);
+        const offButton = off.querySelector('button');
+        assert.equal(offButton.getAttribute('aria-disabled'), 'true',
+          'a disabled remove must say so through aria-disabled, not by vanishing from the tab order');
+        assert.equal(offButton.hasAttribute('disabled'), false,
+          'the native attribute would take the button out of the tab order, which is what aria-disabled exists to avoid');
+        act(() => { offButton.click(); });
+        assert.equal(blocked, false, 'a disabled remove still reported through onRemove');
+
         return {
           root,
           subjects: { default: button },
-          behavioural: { 'states.disabled': false, 'keyboard.Space': true, 'keyboard.Enter': true },
+          behavioural: { 'states.disabled': true, 'keyboard.Space': true, 'keyboard.Enter': true },
         };
       },
     },
@@ -57,11 +70,22 @@ test('CalendarEvent meets all three of its declared shapes', () => {
         const root = mount(<CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z"
           end="2026-07-20T09:30:00Z" onClick={() => { clicked = true; }} {...CHIP} />);
         assertKeysUnintercepted(root.firstElementChild);
+        assert.equal(root.firstElementChild.hasAttribute('aria-disabled'), false,
+          'an activatable chip must not announce itself as disabled');
         act(() => { root.firstElementChild.click(); });
         assert.equal(clicked, true, 'sanity: a real click must reach onClick');
+
+        let blocked = false;
+        const off = mount(<CalendarEvent id="a-off" title="Standup" start="2026-07-20T09:00:00Z"
+          end="2026-07-20T09:30:00Z" disabled onClick={() => { blocked = true; }} {...CHIP} />);
+        assert.equal(off.firstElementChild.getAttribute('aria-disabled'), 'true',
+          'a disabled chip must say so through aria-disabled, keeping its place in the grid\'s Tab sequence');
+        act(() => { off.firstElementChild.click(); });
+        assert.equal(blocked, false, 'a disabled chip still reported through onClick');
+
         return {
           root,
-          behavioural: { 'states.disabled': false, 'keyboard.Space': true, 'keyboard.Enter': true },
+          behavioural: { 'states.disabled': true, 'keyboard.Space': true, 'keyboard.Enter': true },
         };
       },
 
@@ -74,12 +98,26 @@ test('CalendarEvent meets all three of its declared shapes', () => {
           .find((b) => /^Standup,/.test(b.getAttribute('aria-label') || ''));
 
         assertKeysUnintercepted(body);
+        assert.equal(body.hasAttribute('aria-disabled'), false,
+          'an activatable chip body must not announce itself as disabled');
         act(() => { body.click(); });
         assert.equal(clicked, true, 'sanity: a real click must reach onClick');
+
+        let blocked = false;
+        const off = mount(<CalendarEvent id="b-off" title="Standup" start="2026-07-20T09:00:00Z"
+          end="2026-07-20T09:30:00Z" disabled onClick={() => { blocked = true; }} actionsEnabled
+          actions={<button type="button">Delete</button>} {...CHIP} />);
+        const offBody = [...off.querySelectorAll('button')]
+          .find((b) => /^Standup,/.test(b.getAttribute('aria-label') || ''));
+        assert.equal(offBody.getAttribute('aria-disabled'), 'true',
+          'the disabled state must reach the BODY button, which is where the interactivity moved');
+        act(() => { offBody.click(); });
+        assert.equal(blocked, false, 'a disabled chip body still reported through onClick');
+
         return {
           root,
           subjects: { default: body },
-          behavioural: { 'states.disabled': false, 'keyboard.Space': true, 'keyboard.Enter': true },
+          behavioural: { 'states.disabled': true, 'keyboard.Space': true, 'keyboard.Enter': true },
         };
       },
 
