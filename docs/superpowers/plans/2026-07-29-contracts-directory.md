@@ -603,15 +603,21 @@ Expected: PASS, with **the same file and test counts recorded at the end of batc
 
 - [ ] **Step 6: Prove the compliance wrappers really read the new directory**
 
-The counts above prove the run size. This proves the path:
+The counts above prove the run size. This proves the path by running both wrappers; the original probe excluded every consumer via `--path-ignore-patterns='**/*.dom.test.jsx'`, leaving only a vacuous pass:
 
 ```bash
 mkdir -p .probe && mv contracts/behaviour/status.json .probe/
-bun test frameworks/react --path-ignore-patterns='**/*.dom.test.jsx' 2>&1 | tail -5
+
+bun test --preload ./frameworks/react/test/Preload.js '.dom.test.jsx'
+echo "React exit=$?"
+
+bun run build:angular-tests && bun test build/angular-test/angular
+echo "Angular exit=$?"
+
 mv .probe/status.json contracts/behaviour/ && rmdir .probe
 git status --porcelain
 ```
-Expected: FAIL, naming a missing `status` pattern — which is the wrapper reading `contracts/behaviour/` for real. A pass here would mean the wrapper is reading something else, or nothing. Then a clean `git status`.
+Expected: **React FAIL**, printing `missing 'status' pattern` at the absolute `contracts/behaviour` path — the wrapper reads from the real tree. **Angular FAIL**, thrown from `build/angular-test/angular/test/Compliance.js` — the wrapper's hop count resolves from the emitted tree. Then a clean `git status`.
 
 - [ ] **Step 7: Commit**
 
