@@ -3196,7 +3196,11 @@ its default `ghost` variant — that token plus a `--bw` border a side — so th
 re-densifies with the control it reserves for. Measured: the reserve computes to 34px and the
 kebab's border box to 32px, because a `<button>` is border-box by UA default and its border is
 therefore carved out rather than added; the 2px difference lands as a gap between the title and
-the button, which is harmless. See *The Tailwind layer is border-box; React is content-box* in
+the button, which is harmless. **The reserve is conditional**: a chip narrow enough to lose its
+time label and at least `calendar.actions-below-min-h` tall anchors the kebab to its
+bottom-right instead and reserves nothing, because there is then no lateral collision to
+prevent. The two rules cannot both fire: stacking requires the time label to be suppressed, and
+the residual band in section 1 is defined by the label still drawing. See *The Tailwind layer is border-box; React is content-box* in
 section 3 for that mechanism and for the rows of its table it invalidates.
 
 ### `frameworks/react/components/display/calendar-event/CalendarEvent.jsx` — the chip is border-box, so `Calendar`'s injected size is its outer edge

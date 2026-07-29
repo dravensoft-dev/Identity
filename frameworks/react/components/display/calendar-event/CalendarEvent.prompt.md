@@ -93,3 +93,8 @@ Serve the tree with `bun run demos`, open
    has the column to itself does. The label is redundant with the chip's own
    position on an hour grid, so it is the first thing to go when the chip is too
    small for it — the same call the component already makes on height.
+10. On a chip that shares its column and is tall enough — a 90-minute event beside
+    an overlap — the kebab sits at the BOTTOM-right and the title runs the full
+    width above it. On a short one it stays top-right with the title stopping
+    before it. Open the panel in the stacked case too: it hangs below the chip
+    rather than over its own body, and every control in it is clickable.
