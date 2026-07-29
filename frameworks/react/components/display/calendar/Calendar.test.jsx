@@ -219,3 +219,17 @@ test('the chip height floor clears the title line once the height is an outer he
   assert.doesNotMatch(html, /calc\(var\(--sp-1\) \* 4\.5\)/,
     'the old content-box floor survived somewhere in the render');
 });
+
+test('a chip carrying a kebab reserves the width the kebab occupies', () => {
+  const html = render({}, { actionsEnabled: true, actions: <b>act</b> });
+  assert.match(html, /padding-right:calc\(var\(--dz-ctl-h-sm\) \+ var\(--bw\) \* 2\)/,
+    'a panelled chip reserves nothing for its kebab, so the title is drawn underneath it');
+});
+
+test('a chip with no kebab reserves nothing, and keeps its ordinary right padding', () => {
+  const html = render({});
+  assert.doesNotMatch(html, /var\(--dz-ctl-h-sm\)/,
+    'a chip with no kebab reserved a gutter for a button it never renders');
+  assert.match(html, /padding:calc\(var\(--sp-1\) \* 1\) calc\(var\(--sp-1\) \* 1\.5\);padding-right:calc\(var\(--sp-1\) \* 1\.5\)/,
+    'the unpanelled chip lost its ordinary right padding');
+});

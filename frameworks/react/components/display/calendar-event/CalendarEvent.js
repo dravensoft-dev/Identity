@@ -3,6 +3,7 @@
  * for the full rationale. */
 import React from "react";
 import { IconButton } from "../../forms/icon-button/IconButton.js";
+const KEBAB_RESERVE = "calc(var(--dz-ctl-h-sm) + var(--bw) * 2)";
 export const CalendarEvent = React.forwardRef(function CalendarEvent({
   id,
   title,
@@ -108,6 +109,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
       overflow: panelOpen ? "visible" : "hidden",
       textAlign: "left",
       padding: "calc(var(--sp-1) * 1) calc(var(--sp-1) * 1.5)",
+      paddingRight: hasPanel ? KEBAB_RESERVE : "calc(var(--sp-1) * 1.5)",
       background: `color-mix(in oklab, ${color} 16%, var(--surface-card))`,
       borderLeft: `var(--bw-strong) solid ${color}`,
       borderTop: "none",
