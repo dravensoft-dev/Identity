@@ -10,6 +10,6 @@ const ITEMS = [
 ];
 function Demo(){return(<div>
   <div className="sub">Inside a Card — the feed renders no surface of its own</div>
-  <Card><ActivityFeed items={ITEMS}/></Card>
+  <Card><ActivityFeed label="Deployment activity" items={ITEMS}/></Card>
 </div>);}
 createRoot(document.getElementById('root')).render(<Demo/>);

@@ -4,7 +4,7 @@ then — and gives each part its own ink: `actor` in `--bone`, `action` in `--bo
 each row.
 
 ```jsx
-<ActivityFeed items={[
+<ActivityFeed label="Deployment activity" items={[
   { id: '1', actor: 'ana@',   action: 'approved the release', target: 'build #4821', time: '2h ago' },
   { id: '2', actor: 'diego@', action: 'opened incident',      target: 'checkout latency', time: '3h ago', tone: 'danger' },
 ]} />

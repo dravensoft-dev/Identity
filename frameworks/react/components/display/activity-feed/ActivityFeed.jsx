@@ -5,16 +5,37 @@ const TONES = {
   success: 'var(--success)', warning: 'var(--warning)', danger: 'var(--danger)', info: 'var(--info)',
 };
 
-export function ActivityFeed({ items }) {
+export function ActivityFeed({ items, label, busy = false }) {
+  if (!label) throw new Error('ActivityFeed: `label` is required');
   if (items == null) throw new Error('ActivityFeed: `items` is required');
+
+  const feedRef = React.useRef(null);
+
+  const onKeyDown = (e) => {
+    if (e.key !== 'PageDown' && e.key !== 'PageUp') return;
+    const articles = [...feedRef.current.querySelectorAll('[role="article"]')];
+    if (articles.length === 0) return;
+    const here = articles.indexOf(e.target.closest('[role="article"]'));
+    const there = here === -1
+      ? (e.key === 'PageDown' ? 0 : articles.length - 1)
+      : here + (e.key === 'PageDown' ? 1 : -1);
+    if (there < 0 || there >= articles.length) return;
+    e.preventDefault();
+    articles[there].focus();
+  };
+
   return (
-    <ul style={{ display: 'flex', flexDirection: 'column', listStyle: 'none', margin: 0, padding: 0 }}>
+    <ul ref={feedRef} role="feed" aria-label={label} aria-busy={busy ? 'true' : 'false'}
+      onKeyDown={onKeyDown}
+      style={{ display: 'flex', flexDirection: 'column', listStyle: 'none', margin: 0, padding: 0 }}>
       {items.map((item, i) => (
         <li key={item.id != null ? item.id : i}
+          role="article" tabIndex={0}
+          aria-posinset={i + 1} aria-setsize={items.length}
           style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)',
             padding: 'calc(var(--sp-1) * 3.5) 0',
             borderTop: i ? 'var(--bw) solid var(--color-base-300)' : 'none' }}>
-          <span style={{ flex: 'none', width: 'calc(var(--sp-1) * 2)', height: 'calc(var(--sp-1) * 2)',
+          <span aria-hidden="true" style={{ flex: 'none', width: 'calc(var(--sp-1) * 2)', height: 'calc(var(--sp-1) * 2)',
             borderRadius: 'var(--r-pill)', background: TONES[item.tone] || TONES.accent }} />
           <span style={{ fontSize: 'var(--dz-text)', color: 'var(--bone-dim)' }}>
             <b style={{ color: 'var(--bone)' }}>{item.actor}</b> {item.action}

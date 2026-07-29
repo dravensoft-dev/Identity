@@ -321,6 +321,7 @@ test('arena-app-logo: content selected for [mark] projects into the mark slot', 
 
 function renderActivityFeed(items: unknown[]) {
   const fixture = TestBed.createComponent(ActivityFeed);
+  fixture.componentRef.setInput('label', 'Deployment activity');
   fixture.componentRef.setInput('items', items);
   return fixture;
 }
