@@ -1421,6 +1421,187 @@ git log -1 --format=%B
 
 ---
 
+### Task 3.5b: `check:script-tokens`'s zero guard becomes an exported function with a suite
+
+The design spec promised the zero guard on all five contract-directory gates. Three were
+built during the refactor itself — `zeroContractProblems` (Task 1.1), `zeroPatternProblems`
+(Task 2.1) and `zeroSourceProblems` (Task 3.1) — and `check:script-tokens` was the one left
+over: reviewing Task 3.1 surfaced that its own directory walk, over `contracts/design-generated/`,
+had never been guarded. `check:tokens` is the fifth named in the spec and is not touched
+here — see Step 0 below for why it cannot be.
+
+**Files:**
+- Modify: `scripts/check-script-tokens.mjs`
+- Test: `scripts/check-script-tokens.test.mjs`
+
+**Interfaces:**
+- Produces: `export function zeroGeneratedCssProblems(count)` → `string[]`.
+
+- [ ] **Step 0: Confirm `check:tokens` owes no guard**
+
+`check-tokens-generated.mjs` builds from `build-tokens.mjs`'s hardcoded `FILES` list and
+compares the result against the committed CSS — it never calls `readdirSync` and walks no
+directory at all. There is no result set a discovery step could find empty, so there is
+nothing here to guard; inventing one would assert a walk that does not exist. This is the
+one place this plan states a negative rather than a guard, and it is here so the next
+reader does not go looking for a fifth guard that was never owed.
+
+- [ ] **Step 1: Measure the current failure, by hand, before writing anything**
+
+```bash
+mkdir -p /tmp/design-generated-backup && mv contracts/design-generated/* /tmp/design-generated-backup/
+bun run check:script-tokens
+mv /tmp/design-generated-backup/* contracts/design-generated/ && rmdir /tmp/design-generated-backup
+git status --porcelain   # must be clean before continuing
+```
+Expected: 21 lines, one per script-readable token, each reading `<name>: exported to JS but
+--<css-name> is not in any contracts/design-generated/*.css` — a cascade naming a
+consequence 21 times over and the cause never, the same shape `check:behaviour` produced
+against an emptied `behaviour/patterns/` before Task 2.1.
+
+- [ ] **Step 2: Write the failing tests**
+
+Append to `scripts/check-script-tokens.test.mjs`, importing `zeroGeneratedCssProblems`
+alongside the existing exports:
+
+```js
+/* Moving contracts/design-generated/ aside on 2026-07-29 did not fail this gate
+ * through a guard at all -- it failed through a 21-line cascade, one line per
+ * script-readable token, each reading "exported to JS but --X is not in any
+ * contracts/design-generated/*.css". None of those 21 lines names the actual
+ * problem, which is that the walk over contracts/design-generated/ found no
+ * .css files to compare against -- exactly the shape zeroPatternProblems and
+ * zeroSourceProblems already guard against in the other two contract gates. */
+test('zero generated CSS files is one named failure, not a 21-line cascade', () => {
+  const problems = zeroGeneratedCssProblems(0);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /0 /);
+  assert.match(problems[0], /design-generated/);
+});
+
+test('a populated design-generated directory has no zero problem', () => {
+  assert.deepEqual(zeroGeneratedCssProblems(5), []);
+});
+```
+
+- [ ] **Step 3: Run the tests and watch them fail**
+
+Run: `bun test scripts/check-script-tokens.test.mjs`
+Expected: FAIL — `zeroGeneratedCssProblems is not a function`.
+
+- [ ] **Step 4: Decide what the guard counts, and implement**
+
+Two candidates exist and fail differently: the number of `.css` files the walk finds, and
+the number of custom properties parsed out of them. Guard the FILE count — it is what the
+walk itself discovers, the direct analogue of `zeroSourceProblems`' `files.length` and
+`zeroPatternProblems`' `patterns.size`, both of which guard a directory listing rather than
+a quantity computed from parsing what it returns. "Files present but every one of them
+declares nothing" is a real, different failure, but it is a content problem, not a discovery
+one, and content is `check-tokens-generated.mjs`'s own job — it diffs every declaration
+against a fresh build and would name that failure by itself.
+
+```js
+/** An empty contracts/design-generated/ is a failure, and it has to be reported
+ *  as ONE problem rather than as the cascade every downstream check produces
+ *  when it finds the lookup table empty.
+ *
+ *  There are two candidate zero counts here, and they fail differently: the
+ *  number of .css files the walk below finds, and the number of custom
+ *  properties parsed out of them. This guards the FILE count, not the
+ *  property count, because the file count is what the walk itself discovers --
+ *  the direct analogue of zeroSourceProblems' files.length in check-dtcg.mjs
+ *  and zeroPatternProblems' patterns.size in check-behaviour.mjs, both of
+ *  which guard what a directory listing returns, not a quantity computed from
+ *  parsing what it returns. "Files present but every one of them declares
+ *  nothing" is a real, different failure -- but it is a content problem, not a
+ *  discovery one, and content is check-tokens-generated.mjs's job: it diffs
+ *  every declaration against a fresh build and would name that exact failure
+ *  by itself. Measured on 2026-07-29 by moving contracts/design-generated/
+ *  aside: 21 lines, one per script-readable token, each reading "exported to
+ *  JS but --X is not in any contracts/design-generated/*.css" -- a cascade
+ *  naming a consequence 21 times over and the cause never.
+ *  @param {number} count @returns {string[]} */
+export function zeroGeneratedCssProblems(count) {
+  if (count > 0) return [];
+  return ['found 0 .css files in contracts/design-generated — an empty result set is a failure, not a clean pass; check the discovery path'];
+}
+```
+
+In `main()`, count the `.css` files once and guard before building the lookup table:
+
+```js
+  const cssFiles = readdirSync(join(root, 'contracts', 'design-generated')).filter((f) => extname(f) === '.css');
+  const zeroCss = zeroGeneratedCssProblems(cssFiles.length);
+  if (zeroCss.length) {
+    console.error(`check-script-tokens: ${zeroCss.length} problem(s)\n`);
+    for (const z of zeroCss) console.error(`  ${z}`);
+    process.exit(1);
+  }
+  const cssValues = new Map();
+  for (const file of cssFiles) {
+    for (const [, decls] of parseDecls(readFileSync(join(root, 'contracts', 'design-generated', file), 'utf8'))) {
+      for (const [prop, value] of decls) if (!cssValues.has(prop)) cssValues.set(prop, value);
+    }
+  }
+```
+
+- [ ] **Step 5: Run the tests and watch them pass**
+
+Run: `bun test scripts/check-script-tokens.test.mjs`
+Expected: PASS — 17 tests (the 15 already there plus the two new ones).
+
+- [ ] **Step 6: Run the gate, then re-measure the emptied directory**
+
+Run: `bun run check:script-tokens`
+Expected: `check-script-tokens: 21 script-readable token(s) in sync across 2 layer(s); CatSlot
+matches the 8-slot ramp` — the baseline, unchanged.
+
+Repeat Step 1's move-aside by hand. Expected now: one line —
+`found 0 .css files in contracts/design-generated — an empty result set is a failure, not a
+clean pass; check the discovery path` — replacing the 21-line cascade. Restore the directory
+and confirm `git status --porcelain` is clean before committing.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add scripts/check-script-tokens.mjs scripts/check-script-tokens.test.mjs
+git commit -q -F - <<'MSG'
+refactor: check:script-tokens' zero guard becomes an exported function with a suite
+
+The fourth of the five contract-directory zero guards, and the one the design
+spec actually owed: check-script-tokens.mjs walks contracts/design-generated/
+with readdirSync to build the CSS lookup table every script-readable token is
+checked against, and an empty walk was never refused -- it silently produced
+an empty table and let every downstream comparison fail on its own.
+
+Measured on 2026-07-29 by moving contracts/design-generated/ aside: 21 lines,
+one per script-readable token, each reading "exported to JS but --X is not in
+any contracts/design-generated/*.css" -- a cascade naming a consequence 21
+times over and the cause never. zeroGeneratedCssProblems collapses that to one
+named line: "found 0 .css files in contracts/design-generated".
+
+It guards the FILE count the walk finds, not the custom-property count parsed
+out of them -- the direct analogue of zeroSourceProblems' files.length in
+check-dtcg.mjs and zeroPatternProblems' patterns.size in check-behaviour.mjs,
+both of which guard what a directory listing returns rather than a quantity
+computed from parsing what it returns. "Files present but every one of them
+declares nothing" is a real, different failure, but it is a content problem
+rather than a discovery one, and content is check-tokens-generated.mjs's own
+job -- it diffs every declaration against a fresh build and would name that
+failure by itself.
+
+check:tokens has no equivalent guard and cannot: check-tokens-generated.mjs
+builds from build-tokens.mjs's hardcoded FILES list and walks no directory at
+all, so there is no result set that can be empty. That distinction is recorded
+in the plan rather than invented as a second guard here.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+MSG
+git log -1 --format=%B
+```
+
+---
+
 ### Task 3.6: record what the refactor did not close
 
 **Files:**
@@ -1532,8 +1713,10 @@ git log -1 --format=%B
 
 ## Self-review
 
-**Spec coverage.** Every section of the spec maps to a task: the structure (1.2, 2.2, 3.3), the three asymmetries and the rename (3.3, 3.5), `contracts/README.md` (3.5), the mechanics table (1.2, 2.2, 3.3), zero guards with the measured per-gate justification (1.1, 2.1, 3.1), the citation sweep's three buckets (1.3, 2.3, 3.4), the three argument-rewrites (2.3 step 2, 3.4 step 3), the name-only citation in `DoughnutChart.jsx` (3.4 step 3), sequencing (the batch order), what the refactor does not do (3.6 step 2), and verification (3.3 step 8, 3.6 steps 5–7).
+**Spec coverage.** Every section of the spec maps to a task: the structure (1.2, 2.2, 3.3), the three asymmetries and the rename (3.3, 3.5), `contracts/README.md` (3.5), the mechanics table (1.2, 2.2, 3.3), zero guards with the measured per-gate justification (1.1, 2.1, 3.1, 3.5b), the citation sweep's three buckets (1.3, 2.3, 3.4), the three argument-rewrites (2.3 step 2, 3.4 step 3), the name-only citation in `DoughnutChart.jsx` (3.4 step 3), sequencing (the batch order), what the refactor does not do (3.6 step 2), and verification (3.3 step 8, 3.6 steps 5–7).
 
 **Three things the spec did not anticipate, added here.** `fetch-fonts.mjs` had to gain an offline path before `fonts.css` could move, since a generated file is regenerated and regenerating it meant downloading from a third party (Task 3.2). `check-script-tokens.mjs`'s CSS scan reads a *directory*, which the move narrows from "all six token CSS files" to "the five generated ones" — Task 3.3 step 3 carries the check and the remedy if the count moves. And `families()` hands every family the same weight list while Google Fonts serves only some of them, so `facesFromDisk` filters against the binaries on disk rather than crossing the two sets; measured against `assets/fonts/`, which holds Archivo at 400–900 and the other two families at 400–700.
+
+**A fourth thing, found after the batch closed rather than during it.** The spec promised the zero guard on all five contract-directory gates and only three shipped inside batches 1–3; reviewing Task 3.1 surfaced that `check:script-tokens` still owed one, which Task 3.5b adds. It also settles, rather than merely notices, that `check:tokens` was never owed a fifth: `check-tokens-generated.mjs` builds from a hardcoded file list and walks no directory, so it has no result set that can be empty.
 
 **One deliberate inconsistency**, flagged where it occurs: Task 3.1 writes a message naming `contracts/design` two tasks before the gate reads that path, rather than editing the same string twice.
