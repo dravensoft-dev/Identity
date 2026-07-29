@@ -820,7 +820,7 @@ git commit -q -F - <<'MSG'
 refactor: check:dtcg's zero guard becomes an exported function with a suite
 
 This is the only one of the five contract gates that already refused an empty
-directory, and it is why the design level fails cleanly where contracts/api/ passed in
+directory, and it is why the design level fails cleanly where api/ passed in
 green and behaviour/ produced a hundred-line cascade. The guard was inline in
 main(), which is to say untested, which is to say removable with every suite
 still green.
