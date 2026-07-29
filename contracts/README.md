@@ -15,6 +15,21 @@ another: `design/` answers *what is this value*, `behaviour/` answers *what must
 component do*, and `api/` answers *what does a consumer write*. A component can satisfy
 any one of them while failing the other two.
 
+## Audience and scope
+- **Audience of the language: general public.** Arena is meant to give identity to **every kind of Dravensoft software**, regardless of who the end user is — from consumer apps to internal tools. Its foundations (color, typography, spacing, accessibility, voice) are general-purpose and don't assume a technical profile.
+- **The example application is `frameworks/react/ui-kits/console/`**, not the language itself. It illustrates Arena applied to the **Delivery Console, a product aimed at developers/technical teams**. That's why it includes data density, domain terminology (build, deploy, p95) and keyboard accelerators specific to that audience. `Arena - Overview.html` is the opposite: the framework-agnostic token language, and it deliberately shows no components.
+- **Implication for audits and evaluations:** findings observed on the example should be split into (a) those that apply to the **language** (tokens, components, patterns — universal) and (b) those specific to the **example's technical context** (jargon, density, shortcuts). The latter are not defects of the language: in a product for a general audience they would be replaced with plain copy, comfortable density and fewer shortcuts. When evaluating Arena for another kind of software, calibrate against that general audience, not against the Console.
+
+## Why a language of our own (and not Material/Fluent as-is)
+Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default, rounded and neutral in tone**. Dravensoft's identity is the opposite: **dominant warm black, crimson/gold accents, sharp geometry and a bold voice**. Forcing the brand onto Material would produce a "generic with a skin" app. Instead, Arena:
+- **Adopts proven structural principles**: token discipline and a typographic scale (Carbon/IBM-inspired), clear states and density (Material-inspired), visible and accessible focus.
+- **Rewrites the aesthetic decisions** for the identity: dark-first, contained radii, deep warm shadows, crimson as the voice and gold as distinction, and the **Rotor** as the signature mark.
+
+## Sources
+- Approved identity manual: `Dravensoft Identity.dc.html`.
+- Brand: Dravensoft — custom software development / B2B consulting.
+- Concept: pride, spectacle, mastery. Motto: *"Software worthy of being exalted."*
+
 ## Why only design has a `-generated` sibling
 
 `design-generated/` holds the five CSS files built from `design/` — four by Style
@@ -38,14 +53,13 @@ waiting to be applied to the other two. `contracts/api-generated/` would be empt
 `api/` keeps `components/` and `types/`; `behaviour/` and `design/` are flat. An inner
 directory earns its place when it separates two different vocabularies — a component
 contract and a shared type are different things, and `check:api` reads them as two sets.
-Neither of the two directories this batch flattened had that reason, but they didn't
-share one reason either. `behaviour/patterns/` never separated a vocabulary from
-anything: its README sat one level up, beside it, so folding it into
-`contracts/behaviour/` lost nothing. `tokens/src/` separated something real, just not a
-second vocabulary — `tokens/` held the generated CSS files directly, so `src/` was what
-kept the DTCG sources apart from Style Dictionary's own output in that same parent. The
-`design/` / `design-generated/` split now does that job at the top level, so `src/` had
-nothing left to separate once it moved.
+`behaviour/` is flat because a pattern file and the README describing patterns are one
+vocabulary, not two. `design/` is flat because the job an inner directory would do — keeping
+the DTCG sources apart from Style Dictionary's output — is done at the top level by the
+`design/` / `design-generated/` split instead.
+
+So an inner directory is earned, never assumed. Add one only when it separates two
+vocabularies a gate reads as two sets.
 
 ## What checks each level
 
@@ -63,3 +77,60 @@ build it depends on has nothing to read and stops rather than reporting a clean 
 None of the five is a claim that a component is correct: `check:behaviour`'s green run is
 a coverage claim and never an accessibility one, and `check:api` says nothing about what
 any component *does*.
+
+## Where everything lives
+
+Arena's pure design language — `contracts/` (all three levels plus `design-generated/`),
+`guidelines/`, `assets/`, `scripts/`, `styles.css` — sits at the repository root and is
+framework-agnostic. Everything framework-bound sits under `frameworks/`, so a new
+framework is added without touching the language.
+
+**The language**
+
+- `styles.css` — the global entry point, `@import`s only. Consumers link this file.
+- `contracts/design/` — the DTCG 2025.10 source of every token value (`*.json`),
+  `README.md` (the normative design specification and `$type` table), and `colors.css`
+  (hand-authored: aliases and `color-mix` derivations).
+- `contracts/design-generated/` — the five built CSS files: `fonts.css` (from
+  `fetch-fonts.mjs`), plus `palette.css`, `typography.css`, `spacing.css` and
+  `effects.css` (from `build-tokens.mjs`). Never edit any of them.
+- `assets/` — `rotor-crimson/bone/ink.svg`, `app-icon.svg`, and `fonts/` (the bundled
+  self-hosted `.woff2` binaries).
+- `guidelines/` — specimen cards (`@dsCard`): typography (`type-display`, `type-body`,
+  `type-mono`), color (`colors-neutrals`, `colors-accents`, `colors-status`,
+  `colors-categorical`), spacing (`spacing-scale`, `spacing-density`), effects
+  (`effects-radius`, `effects-shadow`), iconography (`icons`), brand (`brand-logo`) and
+  the **danger convention** (`components-danger`).
+- `scripts/` — the build steps and the gates. `build-tokens.mjs` generates the four token
+  CSS files from `contracts/design/`; `check-dtcg.mjs` asserts the source conforms to
+  2025.10; `check-tokens-generated.mjs` asserts the committed CSS matches the source;
+  `check-ramp.mjs` asserts the shipped ramp clears every gate in both themes;
+  `check-text-contrast.mjs` measures every text level against the real surfaces in both
+  themes; `validate-palette.mjs` is the vendored data-viz palette validator;
+  `check-release.mjs` asserts the version, the marketplace `ref` and the tag agree; and
+  `serve.mjs` backs `bun run demos`.
+
+**The framework layers**
+
+- [`frameworks/react/`](../frameworks/react/README.md) — the React primitives, the
+  example Console app, and the shared layer-root modules.
+- [`frameworks/angular/`](../frameworks/angular/README.md) — the Angular layer for an
+  existing Angular 20+/Tailwind-v4/Material app, plus
+  [`ADOPTION.md`](../frameworks/angular/ADOPTION.md) for the adoption playbook.
+- [`frameworks/tailwind/`](../frameworks/tailwind/README.md) — a **shared**,
+  token-derived Tailwind v4 layer, authored once rather than per framework because the
+  token→utility mapping is pure CSS and a component's Tailwind recipe is data.
+
+Pick the layer you need: raw tokens, a framework's primitives, or the Tailwind layer on
+top.
+
+**At the root**
+
+- `Arena - Overview.html` — the token language, generated at runtime from
+  `contracts/design/` and `contracts/design/colors.css`. Serve it with `bun run demos`.
+- `Dravensoft Identity.dc.html` — the approved identity manual. It sits at the root
+  because it loads `support.js`, `styles.css` and `assets/` by relative path.
+- `SKILL.md` — the plugin-root Agent Skill, also usable standalone.
+- `.claude-plugin/` — the Claude Code plugin manifest and marketplace catalog.
+- `DOUBTS.md` — everything Arena knows is wrong, incomplete, or unverified.
+- `CHANGELOG.md` — version history.

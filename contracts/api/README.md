@@ -56,9 +56,11 @@ not a narrowing of the vocabulary.
 a record whose keys the *consumer* names: Arena routes it and never inspects it, which is neither
 "Arena draws it" (an object) nor "the consumer draws it" (a slot). `Table`'s rows are the case
 that named it — `row[c.key]` indexes the record by a key the consumer chose. It exists because
-the sentence above used to say *seven*, and was false: `Table.rows` is a member and was none of
-them. (`Calendar`'s per-event `meta` bag was named here as the second case and is not one: it
-was deleted rather than reshaped — see R1.)
+the other eight cannot express a record whose keys the consumer names; without it such a member
+gets modelled badly rather than modelled at all. Both members that motivated it have since been
+removed, so the form has zero live instances — verify with `grep -rn consumerData
+contracts/api/components/`. That is a fact about the vocabulary and not a reason to retire the
+form.
 
 The form is **narrow on purpose**, and that narrowness is what stops it being the escape R4
 closes. It is exactly one spelling, `Record<string, unknown>`; a record of a *known* type is a
@@ -74,9 +76,10 @@ returns a value, so it was none of the eight, and `classify()` in `scripts/lib/a
 refused one rather than reading it as an event with the parameter as its payload. Where such a
 member existed outside a data-entry control it was replaced by data the component renders itself:
 the charts' `valueFormatter` became `valueSuffix`, a primitive Arena appends to every number it
-draws — the axis tick, the tooltip and the accessible data table alike. That replacement landed
-when the three charts were brought under contract; the reader's refusal shipped first, so no
-contract could declare the old shape in the meantime.
+draws — the axis tick, the tooltip and the accessible data table alike. A chart declaring a
+formatter still fails the gate: the ninth form is for data-entry controls alone, which
+`check:api` enforces by rejecting a `functionInput` in any contract not declaring
+`"kind": "input"` at top level.
 
 **The ninth form deliberately reverses that refusal, and only for data-entry controls.** A field
 that validates or parses its own value genuinely needs a function it can call, and no other form
@@ -111,18 +114,13 @@ throws on it, and that throw is an **enforcement, not a gap** — the per-item c
 removes such a member rather than modelling it, so no contract should ever declare one and the
 reader is right to refuse every one it meets.
 
-> **Corrected on 2026-07-24, plan 8C3.** This paragraph used to end *"…would classify a slot as
-> data and close a door `Table.render` needs left open"*, which contradicted the per-item
-> convention stated further down — the one that had already **removed** `ActivityFeed.renderItem`
-> and that names `TableColumn.render` as the same case. Two passages of this document asserted
-> opposite futures for the same member. The convention wins, because its reason is the stronger
-> one and is not about R3 at all: **per-item projection has no Angular answer** short of a
-> structural directive and `ngTemplateOutlet`, which no row of the binding table covers and no
-> reader function reads. `Calendar.renderEvent` and `TableColumn.render` were removed under it, and
-> the plan that was going to teach the reader R3 was deleted instead — **a reader for a shape no
-> contract may declare is speculative work**, which this layer refuses on principle. Should a
-> member ever genuinely need a parameterised slot, the reader change is small and the throw's
-> message is where to start.
+**The reason is Angular, not R3.** R3 permits the shape — a per-item renderer fills the cell or
+row Arena renders rather than replacing it. What refuses it is that **per-item projection has no
+Angular answer** short of a structural directive and `ngTemplateOutlet`, a binding no row of the
+binding table covers and no reader function reads. Teaching the reader R3 would be **a reader for
+a shape no contract may declare**, which is speculative work this layer refuses on principle.
+Should a member ever genuinely need a parameterised slot, the reader change is small and the
+throw's message is where to start.
 
 **Angular's spelling of a `functionInput` is the bare arrow**, and the reader has read it since the
 form landed:
@@ -153,11 +151,11 @@ inside it. A field that is a function becomes an **event of the component**, car
 object in its payload; a field that is a node becomes a **slot of the component**, or a
 primitive if Arena draws it. **And no consumer data inside it either** — an object states its
 fields, and consumer data is by construction a record whose fields are unknown, so a declared
-type cannot carry an undescribed bag. `Calendar`'s per-event `meta` is what this deletes, and
-**it became nothing at all.** This sentence used to predict it would "become a member of the
-component"; that was false the moment the per-item convention removed `renderEvent`, because
-`renderEvent`'s parameter was the only route by which a consumer's own record ever came back
-out, and the other mechanical guard on the eighth form is that a consumer-data member must have
+type cannot carry an undescribed bag. A per-event `meta` bag on `Calendar` is the shape this
+refuses, and it becomes **nothing at all** rather than a member of the component: the per-item
+convention removes `renderEvent`, whose parameter is the only route by which a consumer's own
+record ever comes back out, and the other mechanical guard on the eighth form is that a
+consumer-data member must have
 a consumer. With no route out it is dead API, so `CalendarEvent` declares `id`, `title`,
 `start`, `end` and `colorId`, and the bag is gone from the contract entirely. What a consumer
 loses with it is recorded in `Calendar.prompt.md`, not hidden.
@@ -264,12 +262,10 @@ component's own file imports straight from `../../api.generated` and there is no
 prior local declaration to preserve.
 
 **One deliberate exception: the rule drops when the migrated name stops being a
-type at all.** `SideNav.d.ts` used to re-export `SideNavItem`, a predefined object
-type; plan 8C5 turned `SideNavItem` into a component of the same name in the same
-directory, and a file cannot both import a type called `SideNavItem` and export a
-component called `SideNavItem` — one name cannot mean both. `SideNav.d.ts` drops
-the re-export rather than resolve the collision, and the comment at that call site
-is the only other place this is recorded.
+type at all.** `SideNavItem` is a component, not a predefined object type, and a file
+cannot both import a type called `SideNavItem` and export a component called
+`SideNavItem` — one name cannot mean both. `SideNav.d.ts` therefore carries no
+re-export rather than resolving the collision.
 
 ## Conventions the audits settled
 
@@ -319,8 +315,8 @@ specification defines for that element**: they change what the control is or doe
 omitted them would be describing a narrower control than the one Arena ships. Global attributes,
 ARIA attributes and the generic DOM handlers are not members — in Angular a consumer writes those on
 the host directly, which is the same reason `style` and the `{...rest}` spread were deliberately not
-ported (`components-divergences.md`, "An Angular primitive host-binds its root; a React component
-renders a wrapper", which states it once for every host-bound primitive). So `<button>` contributes `type`, `disabled`,
+ported ([`DOUBTS.md`](../../DOUBTS.md) section 3, "An Angular primitive host-binds its root; a React
+component renders a wrapper", which states it once for every host-bound primitive). So `<button>` contributes `type`, `disabled`,
 `name`, `value`, `autoFocus` and the six `form*` overrides, plus a `click` event; `<span>` and
 `<div>` contribute nothing at all, and flattening a component built on one of those adds no member
 beyond the `content` slot it already accepted through `children`.
@@ -460,19 +456,17 @@ ramp slot is the case that decided that rule and then tested it. It is a bounded
 bound lives in exactly one authoritative place — `contracts/design/palette.dark.json`'s
 `--color-cat-*` ramp — reaching the components as the derived `catSlots` constant in
 `Tokens.generated.*`, where `catColor()`'s `Math.min(CAT_SLOTS, …)` clamp enforces it at
-runtime on both layers and re-derives itself the day the ramp gains or loses a colour. The
-objection to modelling it as an enum was that doing so hand-copies that derived N into a
-contract as a literal set with **nothing tying the copy back to the palette** — a
-stale-assertion surface of exactly the kind this layer exists to remove.
+runtime on both layers and re-derives itself the day the ramp gains or loses a colour. Modelling
+such a set as an enum hand-copies that derived N into a contract as a literal set, and a copy
+with **nothing tying it back to the palette** is a stale-assertion surface of exactly the kind
+this layer exists to remove.
 
-**It is an enum today, and what made that legitimate is a gate rather than a change of mind.**
+**So it may be an enum only while something machine-checks the restatement.**
 `contracts/api/types/cat-slot.json` declares `CatSlot = 1 | … | 8`, and `check:script-tokens`
 (`catSlotEnumProblems()` in `scripts/check-script-tokens.mjs`) asserts that set is exactly
-1..`catSlots` in order — add a ninth colour to the ramp and the gate fails until the contract
-type follows. The copy is tied back to the palette, so the objection no longer holds. The
-second half of it fell to a build change in the same batch: `enumLiteral()` in
-`build-api-types.mjs` now renders a numeric set unquoted, where the generator used to quote
-every value and a numeric enum would not have rendered at all.
+1..`catSlots` **in order** — add a ninth colour to the ramp and the gate fails until the
+contract type follows. `enumLiteral()` in `build-api-types.mjs` renders a numeric set unquoted,
+which is what lets the type render at all.
 
 So the rule survives with its test attached: a closed set that restates a token-derived value
 may be an enum **only** while something machine-checks the restatement. `CatSlot` is the only
@@ -510,38 +504,18 @@ for the same reason.
 `bun run check:api` makes five assertions: coverage, form, agreement, the derived rules,
 and generated drift. See `scripts/check-api.mjs`.
 
-Two of the five rules are **authoring rules the audit applies, and no gate asserts them**:
+**Two of the five derived rules are authoring rules the audit applies, and no gate asserts
+them.** R2 — "who draws it" — is a fact about intent and markup ownership rather than about
+a declaration, so a contract naming a slot for content Arena draws passes. R3 — whether a
+parameterised slot fills a cell or replaces a row — is a fact about the rendered tree;
+`check:compliance` is the only layer that sees a rendered tree, and it does not read
+contracts.
 
-- **R2 is not machine-checkable.** "Who draws it" is a fact about intent and markup
-  ownership, not about a declaration. A contract can name a slot for content Arena draws,
-  and the gate will agree with it.
-- **R3 is not machine-checkable.** Whether a parameterised slot fills a cell or replaces a
-  row is a fact about the rendered tree, not about the member list. `check:compliance` is
-  the layer that can see a rendered tree, and it does not read contracts.
-
-Two more things the gate does not assert, for reasons that are not R2/R3's — these are
-gaps in the gate's own reach, not authoring rules left to human judgement:
-
-- **`default` is documented and read by nothing.** The contract format above shows
-  `"default": "/"`, and all three shipped contracts (`AppLogo`, `Breadcrumbs`, `StatCard`)
-  carry at least one — but `spec.default` is referenced nowhere in `scripts/`. A contract
-  saying `default: "md"` while React defaults to `'lg'` and Angular defaults to `'sm'`
-  is invisible to `check:api` today. This is deliberately **not** implemented: React's
-  default lives in a `.jsx` destructuring pattern the gate never reads at all (see the
-  next point), so a default comparison could only ever be enforced against Angular, which
-  would be worse than not claiming it — a gate that is silently one-sided is a false
-  promise of parity, not a partial one.
-- **React's checked surface is its hand-written `.d.ts`, never its `.jsx`.**
-  `check-api.mjs` resolves a React component to `<Name>.d.ts` and reads that; the
-  implementation is never opened. Angular has no declaration file to read instead — its
-  surface comes from the real `<name>.ts` component. So R4's own "no platform types and no
-  escapes" is enforced against real source on the Angular side and only against a
-  declaration on the React side: restoring `style` and a `{...rest}` spread to
-  `AppLogo.jsx` right now (they were removed from the `.d.ts` under this migration, per
-  R4) would leave `check:api` green, because nothing looks at the `.jsx` again once the
-  `.d.ts` agrees with the contract. This is a real limit on a gate whose whole claim is
-  that an API divergence is a defect — it holds only as far as the `.d.ts` is honest about
-  what the `.jsx` does.
+Two further things sit outside the gate's reach rather than outside machine-checking:
+`default` is part of the contract format and is read by nothing, and React's checked
+surface is its hand-written `.d.ts` rather than its `.jsx`. Both are recorded with their
+consequences in [`DOUBTS.md`](../../DOUBTS.md) — section 4 for the summary, section 1 for
+the full entries.
 
 R1, R4 and R5 *are* asserted: R1 by the type schema (a field may only be a primitive or an
 enum), R4 by the reader recognising platform types by name and reporting them, R5 by a
@@ -628,16 +602,20 @@ contract written by whoever migrates the component reproduces exactly that.
 Only after the decision: write the contract, migrate every layer, update the tests,
 manifests and demos that follow, and run the gates.
 
-### What happens to `components-divergences.md`
+### What happens to the recorded divergences
 
-An entry whose entire content is an API divergence is **deleted**, not migrated — the
-contract replaces it, and the divergence no longer exists to record. Entries covering
-rendering or behaviour stay. A change deleting a cited section must redirect the citation
-in the same change — so **measure the citing set rather than trusting a list written here**,
-which has already gone stale once: `grep -rn "components-divergences" --include='*.json'
---include='*.ts' --include='*.md' --include='*.jsx' . | grep -v node_modules`, then keep only
-the hits that quote a section by name. Those are the ones a deletion breaks; a citation naming
-the file alone survives any edit to it. The distinction is not academic —
-`frameworks/angular/components/feedback/onboarding/Onboarding.ts` was listed here as a citer to protect
-and names no section at all, while `frameworks/angular/test/HostClassBinding.test.ts` and
-`frameworks/tailwind/README.md` quote one each and were not listed.
+The layer divergences live in [`DOUBTS.md`](../../DOUBTS.md) section 3. An entry whose
+entire content is an API divergence is **deleted** when the component comes under contract,
+not migrated — the contract replaces it, and the divergence stops existing to record.
+Entries covering rendering or behaviour stay.
+
+**A change deleting a cited section must redirect the citation in the same change**, so
+measure the citing set rather than trusting a list written here:
+
+```bash
+grep -rn "DOUBTS.md" --include='*.json' --include='*.ts' --include='*.md' \
+    --include='*.jsx' --include='*.mjs' . | grep -v node_modules
+```
+
+Keep only the hits that quote a section **by name** — those are the ones a deletion breaks.
+A citation naming the file alone survives any edit to it.

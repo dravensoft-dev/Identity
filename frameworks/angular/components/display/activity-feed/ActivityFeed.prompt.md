@@ -22,9 +22,8 @@ time; `tone` colours the leading dot from Badge's vocabulary. Styling is the sib
   `Tag`'s own dot and `Avatar`'s presence dot, not a danger surface. See README's Danger
   convention section.
 
-**No row escape hatch.** React's `ActivityFeed` used to take a `renderItem` prop that
-replaced a row wholesale; it was removed from the API contract because Angular has no
-binding for per-item projection (that would need a structural directive and
-`ngTemplateOutlet`, which no row of the binding table covers). A consumer needing a
-different row imports the exported `activityFeedStyles` and composes the slots
-themselves — on both layers now, not just this one.
+**No row escape hatch**, on either layer. The API contract declares no per-item renderer,
+because Angular has no binding for per-item projection — that would need a structural
+directive and `ngTemplateOutlet`, which no row of the binding table covers. A consumer
+needing a different row imports the exported `activityFeedStyles` and composes the slots
+themselves.
