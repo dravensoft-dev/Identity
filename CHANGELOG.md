@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `ErrorState` renders `role="alert"`, so a failure that appears without a page reload is
+  announced rather than only drawn. React was silent where Angular already announced.
+- `Menu` puts `aria-haspopup` and `aria-expanded` on the trigger itself instead of a wrapper
+  around it, moves focus to the first item on open, and restores focus to the trigger on
+  Escape and on selection. A `trigger` that cannot carry attributes — a fragment or a bare
+  string — now throws instead of silently losing them.
 - A clickable `Table` row is reachable by keyboard on a narrow viewport. Below `--bp-md` the
   row rendered as a plain `<div>` with a click handler and no role, no tab stop and no key
   handling, so it could be operated by pointer alone; it now carries `role="button"`,

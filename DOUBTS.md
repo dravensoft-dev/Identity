@@ -453,7 +453,9 @@ stale-proof; a present-tense component name is not.
   direction it wrongly retired **18 of 94 live exceptions (19%)**, and **all
   eighteen are irreducible** — none is a regex that could be sharpened. Each is a
   claim about *placement* (`Menu`'s `aria-haspopup` on a wrapping `<span>` rather
-  than the focusable trigger), *branch* (`Skeleton`'s `role="status"` in three of
+  than the focusable trigger — fixed since, and like the `Skeleton` exhibit beside
+  it that changes the example rather than the measurement), *branch* (`Skeleton`'s
+  `role="status"` in three of
   four variants **as the tree then stood** — 8C10 made it four of four, which
   changes the exhibit and not the measurement: the 18-of-94 figure is a fact about
   the tree the scan was run against, and re-running it today would produce a
@@ -2085,27 +2087,27 @@ the other. **Tested how (React):**
 component. Both layers are in `check:compliance`'s `COVERED` — `ConfirmDialog:react` and
 `ConfirmDialog:angular`.
 
-#### ErrorState — Angular announces itself, React is silent
+#### ErrorState — RESOLVED: both layers announce themselves
 
-**React:** `ErrorState.jsx` sets no `role` at all — it renders as a plain `<div>`, so a screen
-reader gives no indication that a failure just appeared unless the surrounding page happens to
-move focus there.
+> **This entry is closed.** React's `ErrorState.jsx` sets `role="alert"`, matching
+> `arena-error-state`'s host-bound one. Both bindings read `exceptions: []` and
+> `AlertTones.dom.test.jsx` renders the React one.
 
-**Angular:** `arena-error-state` host-binds `role="alert"`, an assertive live region announced
-immediately on mount.
+**Why it mattered:** an error surface can mount without a page reload — a failed fetch swapping a
+loading state for an error in place — and a sighted user sees it instantly while a screen reader
+user got nothing, because nothing announced the mount. `role="alert"` is the correct, narrow tool
+for exactly that: an unprompted, important status change.
 
-**Why:** an error surface can mount without a page reload — a failed fetch swapping a loading
-state for `arena-error-state` in place — and a sighted user sees it instantly while a screen
-reader user gets nothing unless the mount itself is announced. `role="alert"` is the correct,
-narrow tool for exactly that: an unprompted, important status change. This is not the same
-precedent as `Alert.ts`: React's own `Alert.jsx` already sets `role={tone === 'danger' ? 'alert'
-: 'status'}`, and Angular's `Alert.ts` mirrors that exactly — no divergence there, so it is not
-what motivates this one.
+**What the fix cost, and it is the part worth keeping:** one attribute, and the inversion of a test
+that asserted `doesNotMatch(/role="/)`. That assertion existed to PIN the defect, which is the
+mechanism this layer is built on — a defect nobody can quietly stop describing. It also means the
+React layer carried a one-attribute accessibility gap for as long as the exception described it
+accurately, which no gate would ever have escalated: `check:behaviour` is a coverage claim and
+never an accessibility one.
 
-**Converges:** yes — React should be brought up to this. **Open debt on the React layer.** This
-used to read *"the same shape as `ConfirmDialog`'s accessibility debt above"*; that debt was paid
-by plan 8C4 and the comparison no longer holds. This entry is now the older of the two and stands
-on its own.
+**Not the same precedent as `Alert`:** React's own `Alert.jsx` already set
+`role={tone === 'danger' ? 'alert' : 'status'}` and Angular's `Alert.ts` mirrored it exactly, so no
+divergence there motivated this one.
 
 #### Skeleton — the circular variant's announcement, RETIRED as a divergence
 
