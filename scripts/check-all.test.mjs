@@ -41,8 +41,9 @@ test('testStep runs every suite under bun, with the DOM harness isolated in its 
   const steps = testStep({ isBun: true, testFiles: ['a.test.mjs', 'b.test.mjs'] });
   assert.deepEqual(steps.map((s) => s.args), [
     ['run', 'build:angular-tests'],
-    ['test', 'scripts', 'frameworks/react/test/', 'build/angular-test/angular'],
-    ['test', '--preload', './frameworks/react/test-dom/preload.js', 'frameworks/react/test-dom'],
+    ['test', 'scripts', 'frameworks/react', 'build/angular-test/angular',
+     '--path-ignore-patterns=**/*.dom.test.jsx'],
+    ['test', '--preload', './frameworks/react/test/Preload.js', '.dom.test.jsx'],
   ]);
 });
 

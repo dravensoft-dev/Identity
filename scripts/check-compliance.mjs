@@ -73,14 +73,36 @@ const repoRoot = join(here, '..');
  *  and which tree a suite file was found in is the one fact about it that no
  *  later layout change can make collide. See validateCoverage below.
  *
- *  The two Angular entries cover both halves of that layer's suites since
- *  colocation: the per-component ones sitting beside the component they cover
- *  under components/, and the handful that stay in test/ (the two harness
- *  modules' own dependents, plus the suites that cover more than one component
- *  or the harness itself). All three are walked recursively by walkSuites()
- *  below, so nesting depth does not matter here. */
+ *  Both layers now split the same way: a components/ entry for the suites
+ *  colocated beside the component they cover, and a test/ entry for the
+ *  handful that are not any one component's -- a shared harness module's own
+ *  dependents, or a suite that spans more than one component. React's split
+ *  used to be a directory boundary instead (frameworks/react/test/ was
+ *  DOM-free, frameworks/react/test-dom/ was not); the structure refactor
+ *  colocated the DOM-free suites into components/ alongside everything else
+ *  and moved the DOM ones there too, carrying the `.dom.test.jsx` filename
+ *  infix as their only remaining mark (see check-all.mjs for what reads that
+ *  infix). This gate does not care about that infix at all -- a suite either
+ *  proves a rendered DOM against a binding or it does not, regardless of
+ *  which invocation runs it -- but the merge has one real consequence worth
+ *  recording here rather than discovering later: the React components/ tree
+ *  now also holds the 44 DOM-free suites (renderToStaticMarkup, no DOM at
+ *  all), so they are collectable by walkSuites() below for the first time.
+ *  None of them names a binding path today -- checked by reading both,
+ *  `frameworks/react/components/navigation/pagination/Pagination.test.jsx`
+ *  and `frameworks/react/components/display/calendar/Calendar.test.jsx`
+ *  mention the `grid` pattern and a component's binding only in prose, never
+ *  as a path a suite reads -- so nothing in COVERED changes. But a DOM-free
+ *  suite cannot verify a rendered DOM, and if a future COVERED entry ever
+ *  resolved to one, that entry would be exactly the false claim this gate
+ *  exists to catch: a suite proving markup a server could produce is not
+ *  proof of what a browser does with it after it mounts.
+ *
+ *  All four entries are walked recursively by walkSuites() below, so nesting
+ *  depth does not matter here. */
 export const SUITE_DIRS = [
-  { layer: 'react', dir: join(repoRoot, 'frameworks', 'react', 'test-dom') },
+  { layer: 'react', dir: join(repoRoot, 'frameworks', 'react', 'components') },
+  { layer: 'react', dir: join(repoRoot, 'frameworks', 'react', 'test') },
   { layer: 'angular', dir: join(repoRoot, 'frameworks', 'angular', 'components') },
   { layer: 'angular', dir: join(repoRoot, 'frameworks', 'angular', 'test') },
 ];
