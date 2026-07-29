@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  booleanAttribute,
+  computed,
+  inject,
+  input,
+} from '@angular/core';
 import type { ActivityItem } from '../../../Api.generated';
 import { activityFeedStyles } from './ActivityFeed.variants';
 
@@ -19,11 +27,14 @@ export function resolveActivityFeedRows(items: readonly ActivityItem[]): Activit
   selector: 'arena-activity-feed',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '(keydown)': 'onKeydown($event)' },
   template: `
-    <ul [class]="base().root()">
-      @for (row of rows(); track row.item.id ?? $index) {
-        <li [class]="row.itemClass">
-          <span [class]="row.dotClass"></span>
+    <ul [class]="base().root()" role="feed" [attr.aria-label]="label()"
+        [attr.aria-busy]="busy() ? 'true' : 'false'">
+      @for (row of rows(); track row.item.id ?? $index; let i = $index) {
+        <li [class]="row.itemClass" role="article" tabindex="0"
+            [attr.aria-posinset]="i + 1" [attr.aria-setsize]="rows().length">
+          <span [class]="row.dotClass" aria-hidden="true"></span>
           <span [class]="base().text()">
             <b [class]="base().actor()">{{ row.item.actor }}</b> {{ row.item.action }}
             @if (row.item.target) {
@@ -39,8 +50,27 @@ export function resolveActivityFeedRows(items: readonly ActivityItem[]): Activit
   `,
 })
 export class ActivityFeed {
+  readonly label = input.required<string>();
   readonly items = input.required<readonly ActivityItem[]>();
+  readonly busy = input(false, { transform: booleanAttribute });
+
+  private readonly host = inject(ElementRef<HTMLElement>);
 
   protected readonly base = computed(() => activityFeedStyles());
   protected readonly rows = computed(() => resolveActivityFeedRows(this.items()));
+
+  protected onKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'PageDown' && event.key !== 'PageUp') return;
+    const root = this.host.nativeElement as HTMLElement;
+    const articles = Array.from(root.querySelectorAll<HTMLElement>('[role="article"]'));
+    if (articles.length === 0) return;
+    const target = event.target as Element | null;
+    const here = articles.indexOf(target?.closest('[role="article"]') as HTMLElement);
+    const there = here === -1
+      ? (event.key === 'PageDown' ? 0 : articles.length - 1)
+      : here + (event.key === 'PageDown' ? 1 : -1);
+    if (there < 0 || there >= articles.length) return;
+    event.preventDefault();
+    articles[there].focus();
+  }
 }

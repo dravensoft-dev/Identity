@@ -36,8 +36,8 @@ first command counts declarations and the second counts distinct defects. `CLAUD
 same rule; use the second whenever a section below reasons about how much work is left, and never
 report a drop in the first as "N defects removed".
 
-As written: **35** declarations / **35** distinct pairs in component bindings, **12** in the
-delegated file, **28 of 70** bindings covered. The two figures are equal again, which is itself
+As written: **21** declarations / **21** distinct pairs in component bindings, **12** in the
+delegated file, **30 of 70** bindings covered. The two figures are equal again, which is itself
 informative: the one binding that declared a requirement twice was `CalendarEvent`, and both of its
 `states.disabled` declarations were retired together. Seven component bindings are cased (count them with
 `grep -rl '"cases"' --include='*.behaviour.json' frameworks/`, which does not reach the delegated
@@ -50,8 +50,8 @@ correctly declared once per case. Read a drop in the first figure as a drop in d
 nothing more.
 
 **The sections below are causes, not a partition — do not add them up.** Three exceptions appear
-twice on purpose, because closing them needs work from two sections: `ActivityFeed`'s `roles.label`
-is one of its seven in §2 *and* an instance of §3's naming problem; `TableRow`'s `states.disabled`
+twice on purpose, because closing them needed work from two sections: `ActivityFeed`'s `roles.label`
+was one of its seven in §2 *and* an instance of §3's naming problem; `TableRow`'s `states.disabled`
 is one of its five in §2 *and* an instance of §4. `Pagination`'s `roles.label` was the third, in §3
 *and* as §5's clearest consumer-conditionality; §3 closed it, and it left both sections at once —
 which is the argument for listing a cause twice rather than picking one home for it.
@@ -98,7 +98,6 @@ roles, keyboard handlers and focus management.
 
 | subject | pattern | what is missing |
 |---|---|---|
-| `ActivityFeed:react`, `activity-feed:angular` | `feed` | 7 each: no `role="feed"`, no `role="article"`, no name, no `aria-posinset`/`setsize`, no `aria-busy`, and **no keydown handler at all** — PageUp and PageDown do nothing |
 | `Menu:react` | `menu-button` | 6: `aria-haspopup` on the wrong element, no `aria-expanded`, focus never enters the menu on open, Enter/Space/Escape incomplete |
 | `TableRow:react` | `button` | 5, and the pattern may be the wrong one — a `<tr>` cannot become a `<button>` |
 | `BulkActionBar:react`, `bulk-action-bar:angular` | `toolbar` | 4 each: renders `role="region"`, no roving tab stop, no arrow keys |
@@ -110,26 +109,33 @@ roles, keyboard handlers and focus management.
 wrong pattern rather than a component that fell short. Decide that first; the other five are
 implementation.
 
-**What binding cases give this section.** Directly useful for two of them. `states.busy` is
-conditional by nature — `aria-busy` is set *when an update is pending* — so `ActivityFeed` needs a
-`busy` case to have anything to assert; today that exception cannot be retired even by a correct
-implementation, because no single render decides it. `BulkActionBar` is the same shape if it is ever
-hidden when the selection is empty. And the all-cases-or-fail rule means whoever implements these
-inherits a suite that cannot quietly verify one configuration and claim the component.
+**`ActivityFeed` is closed, and it was the largest single row here — fourteen declarations, seven
+per layer, on a component that met not one of the seven.** It now carries `role="feed"` and
+`role="article"`, `aria-posinset`/`aria-setsize`, a required `label`, a `busy` input reflected as
+`aria-busy`, and PageUp/PageDown between articles. Two things from it are worth carrying:
 
-## §3 — A name only a human can supply — **one row left**
+`busy` had to become an **input** rather than something Arena infers, because only the host knows
+when its own loading finished — and that is what gave the binding its two cases, since `aria-busy`
+is true during an update and false once it settles and no single render decides both.
+
+And PageUp/PageDown **stop at the ends rather than wrapping**, asserted specifically in both
+layers. Wrapping is right for a roving composite and wrong for a feed. That is the kind of decision
+a pattern file states in six words and a suite has to make concrete.
+
+**What binding cases give this section.** `ActivityFeed` proved the point and `BulkActionBar` is
+the same shape if it is ever hidden when the selection is empty. The all-cases-or-fail rule means
+whoever implements the rest inherits a suite that cannot quietly verify one configuration and claim
+the component.
+
+## §3 — A name only a human can supply — **CLOSED**
 
 **Every one of these is an API change before it is a behaviour change**, which is why they are their
 own section rather than part of §2.
 
-| subject | today |
-|---|---|
-| `ActivityFeed` (both layers) | the `roles.label` third of its seven |
+**CLOSED.** `ActivityFeed`'s `roles.label` was the last row and it was closed in §2, alongside the
+six other things that component needed at once — which is why it waited there rather than here.
 
-That row waits on §2 rather than on this section: `ActivityFeed` needs six other things at the same
-time, and adding its `label` alone would leave the binding excepting the rest.
-
-**The other four are closed, on the precedent this section named.** `Table.label` is the shape and
+**All five are closed, on the precedent this section named.** `Table.label` is the shape and
 it was followed to the letter — `required: true` with no default, a non-optional `.d.ts`,
 `input.required` on the Angular side, and a guard that throws as the first statement of the body.
 `Breadcrumbs` (both layers), `Pagination`, `RadioGroup` and `Radio` all take a caller-supplied name
@@ -153,15 +159,11 @@ instances carry different names, which is the only assertion here that could eve
 props, so no case could have expressed it. Making the member required removed the conditionality
 instead, which is why this section was separate from §5 and why its row there is gone too.
 
-## §4 — States the components have no concept of — **one row left**
+## §4 — States the components have no concept of — **CLOSED**
 
-| subject | requirement |
-|---|---|
-| `TableRow:react` | `states.disabled` |
-
-`TableRow`'s row is not a leftover: it is entangled with that binding's other four exceptions and
-with the pattern it should have been measured against at all, so it is settled in §2 rather than
-here. Everything else is closed.
+`TableRow`'s `states.disabled` was the last row, and it was settled where it belonged: entangled
+with that binding's other four exceptions and with the pattern it should never have been measured
+against, so it moved with the rest of `TableRow` rather than being fixed here in isolation.
 
 **`Tag` and `CalendarEvent` needed the state and now have it**, in both layers for `Tag`. Both
 reflect through `aria-disabled` rather than the native `disabled` attribute, because the native one
@@ -312,11 +314,10 @@ survives into every section above.
 ## Suggested order, and why
 
 1. ~~**§1**~~ — **done.** Cheapest, and it retired exceptions that were never defects.
-2. ~~**§4**~~ — **done but for `TableRow`**, which §2 settles. It was not free: two of its six
-   declarations were stale rather than real, and writing the suite that proved it also fixed two
-   false negatives in the shared evaluator.
-3. ~~**§3**~~ — **done but for `ActivityFeed`**, whose `roles.label` waits on §2 rather than the
-   other way round: it needs six other things in the same change.
+2. ~~**§4**~~ — **done.** It was not free: two of its six declarations were stale rather than
+   real, and writing the suite that proved it also fixed two false negatives in the shared
+   evaluator.
+3. ~~**§3**~~ — **done.**
 4. **§2** — the real work, and the only section that changes what a user experiences.
 5. **§8** — widen coverage once the bindings worth covering are honest.
 6. **§6** — Plan D, which is a programme rather than a batch.

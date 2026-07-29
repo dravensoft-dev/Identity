@@ -15,6 +15,7 @@ function Demo() {
   return React.createElement("div", null, React.createElement("div", {
     className: "sub"
   }, "Inside a Card — the feed renders no surface of its own"), React.createElement(Card, null, React.createElement(ActivityFeed, {
+    label: "Deployment activity",
     items: ITEMS
   })));
 }
