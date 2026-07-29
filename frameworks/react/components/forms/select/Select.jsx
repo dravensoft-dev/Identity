@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 export function Select({ label, options = [], value, onChange, disabled = false, required = false, name, multiple = false }) {
   const [focus, setFocus] = useState(false);
+  const selectId = `select-${useId().replace(/:/g, '')}`;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 1.5)' }}>
-      {label && <label style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{label}</label>}
+      {label && <label htmlFor={selectId} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{label}</label>}
       <div style={{ position: 'relative' }}>
-        <select value={value} onChange={(e) => onChange && onChange(e.target.value)} disabled={disabled}
+        <select id={selectId} value={value} onChange={(e) => onChange && onChange(e.target.value)} disabled={disabled}
           required={required} name={name} multiple={multiple}
           onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
           style={{ appearance: 'none', width: '100%', height: 'var(--dz-ctl-h)', padding: '0 calc(var(--sp-1) * 9) 0 calc(var(--sp-1) * 3)',

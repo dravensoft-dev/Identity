@@ -11,6 +11,8 @@ import { mount, cleanup } from '../../test/Harness.jsx';
 import { assertPattern, REACT_COMPONENTS } from '../../test/AssertPattern.jsx';
 import { Breadcrumbs } from './breadcrumbs/Breadcrumbs.jsx';
 import { Pagination } from './pagination/Pagination.jsx';
+import { SideNav } from './side-nav/SideNav.jsx';
+import { SideNavItem } from './side-nav-item/SideNavItem.jsx';
 
 afterEach(cleanup);
 
@@ -46,6 +48,29 @@ test('Pagination is a named nav landmark, and two of them are told apart', () =>
   assertPattern({
     root,
     bindingPath: join(REACT_COMPONENTS, 'navigation/pagination/Pagination.behaviour.json'),
+    subjects: { default: nav },
+  });
+});
+
+test('SideNav is a named nav landmark, and two of them are told apart', () => {
+  const root = mount(
+    <SideNav ariaLabel="Project sections" active="overview" onNav={() => {}}>
+      <SideNavItem id="overview" label="Overview" />
+      <SideNavItem id="deployments" label="Deployments" />
+    </SideNav>,
+  );
+  const nav = root.querySelector('nav');
+  assert.equal(nav.getAttribute('aria-label'), 'Project sections',
+    'a sidebar and a breadcrumb trail on one page are two landmarks and must not share a name');
+
+  const other = mount(
+    <SideNav ariaLabel="Account sections" onNav={() => {}}><SideNavItem id="billing" label="Billing" /></SideNav>,
+  );
+  assert.notEqual(other.querySelector('nav').getAttribute('aria-label'), nav.getAttribute('aria-label'));
+
+  assertPattern({
+    root,
+    bindingPath: join(REACT_COMPONENTS, 'navigation/side-nav/SideNav.behaviour.json'),
     subjects: { default: nav },
   });
 });

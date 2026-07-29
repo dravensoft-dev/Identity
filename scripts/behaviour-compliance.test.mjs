@@ -304,24 +304,31 @@ test('evaluate credits a native element for states.multiline, as it already does
     'a div taking the role by hand has no native reflection to inherit');
 });
 
-test('evaluate resolves roles.label through a <label for>, the platform route for a form control', () => {
+test('evaluate resolves roles.label through a <label>, the platform route for a form control', () => {
   const input = el('input', { id: 'in-project' });
   const label = el('label', { for: 'in-project' }, 'Project');
 
   assert.equal(evaluate(input, 'roles.label', '', 'textbox', null, () => label), true);
   assert.equal(evaluate(input, 'roles.label', '', 'textbox', null, () => null), false,
-    'no label element in the tree means no name');
-  assert.equal(evaluate(input, 'roles.label', '', 'textbox', null, () => el('label', { for: 'in-project' })), false,
+    'no label in the tree means no name');
+  assert.equal(evaluate(input, 'roles.label', '', 'textbox', null, () => el('label', {})), false,
     'an empty label names nothing');
+
+  const wrapped = el('input', {});
+  assert.equal(evaluate(wrapped, 'roles.label', '', 'checkbox', null, () => el('label', {}, 'Notify')), true,
+    'a control with no id can still be named by a label WRAPPING it, which the resolver decides');
 });
 
-test('a labelable control carrying an id THROWS when no label resolver is supplied', () => {
+test('a labelable control THROWS when no label resolver is supplied', () => {
   assert.throws(
     () => evaluate(el('input', { id: 'x' }), 'roles.label', '', 'textbox'),
-    /resolveLabelFor/,
+    /resolveLabel/,
   );
-  assert.equal(evaluate(el('input'), 'roles.label', '', 'textbox'), false,
-    'with no id nothing can name it by reference, so there is nothing to resolve and nothing to throw about');
+  assert.throws(
+    () => evaluate(el('input'), 'roles.label', '', 'checkbox'),
+    /resolveLabel/,
+    'an id is not required: a wrapping label names a control that has none',
+  );
   assert.equal(evaluate(el('div', { id: 'x' }), 'roles.label', '', 'textbox'), false,
     'a div is not labelable, so the route does not apply and no resolver is needed');
 });
