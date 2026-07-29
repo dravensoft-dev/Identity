@@ -7,5 +7,5 @@
     "tsBuildInfoFile": "../../build/angular-test/.tsbuildinfo"
   },
   "files": [],
-  "include": ["./components/**/*.ts", "./test/**/*.ts", "./index.ts"]
+  "include": ["./components/**/*.ts", "./test/**/*.ts", "./*.ts"]
 }

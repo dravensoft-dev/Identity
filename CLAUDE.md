@@ -11,20 +11,24 @@ DTCG JSON by Style Dictionary, and the build and check scripts are tested with
 (`bun run test:scripts` / `test:react` / `test:react-dom` / `test:angular`, or
 `bun run test` for all four). Those four run in **two `bun test` processes**, not one,
 preceded by a build the Angular suites need before either process can see them:
-`test` is `bun run build:angular-tests && bun test scripts frameworks/react/test/
-build/angular-test/angular && bun test --preload
-./frameworks/react/test-dom/preload.js frameworks/react/test-dom`, because
-`frameworks/react/test-dom/` registers a DOM globally and must not share a process with
-the DOM-free suites (see the two-React-test-directories note under *Architecture*).
-That directory was deleted once, for its RAM cost, and restored minus the one suite
-that carried the cost: **a component whose behaviour binding names the `grid` pattern
-is DOM-tested by hand**, and what that rule costs is recorded under *Known debt*.
+`test` is `bun run build:angular-tests && bun test scripts frameworks/react
+build/angular-test/angular --path-ignore-patterns='**/*.dom.test.jsx' && bun test
+--preload ./frameworks/react/test/Preload.js '.dom.test.jsx'`, because the preload
+registers a DOM globally and must not share a process with the DOM-free suites (see
+the DOM-split note under *Architecture*). **The criterion that decides which
+invocation a suite belongs to is the `.dom.test.jsx` filename infix, wherever the file
+sits** — it used to be a directory, `frameworks/react/test-dom/`, and the structure
+refactor's batch 3 removed that directory by colocating its suites with the components
+they cover. That directory was deleted once before then, for its RAM cost, and restored
+minus the one suite that carried the cost: **a component whose behaviour binding names
+the `grid` pattern is DOM-tested by hand**, and what that rule costs is recorded under
+*Known debt*.
 **A test under `scripts/` may not import a framework layer's `.ts` or `.jsx`**,
 because `scripts/` is the one suite `check-all.mjs` also runs under plain node, and those
 files use the extensionless imports their own toolchains expect and node does not resolve.
 A property worth asserting against a real recipe or component is asserted from that
-layer's own suites — React's `test/` and `test-dom/` directories, and for Angular the
-component's own directory; `scripts/tv-merge.test.mjs` and
+layer's own suites, which in both layers now sit beside the component they cover;
+`scripts/tv-merge.test.mjs` and
 `frameworks/angular/components/display/tag/Tag.variants.test.ts` are the pair that established this.
 Nothing here is published to npm. It ships as three things at once from
 the same tree:
@@ -44,8 +48,8 @@ bun run demos   # serves the repo root on :8000 and prints the entry points
 ```
 
 - `guidelines/*.html` — token specimen cards (type, color, spacing, effects, icons, brand, danger convention).
-- `frameworks/react/components/<group>/*.card.html` — live component demos, one card per group.
-- `frameworks/react/ui_kits/console/index.html` — the Delivery Console example app (login → dashboard → project).
+- `frameworks/react/components/**/*.card.html` — live component demos. A page sits either **inside one component's own directory** (`display/skeleton/Skeleton.card.html`) or **beside the directories at its category level** when it composes several components onto one card (`display/Display.card.html`, `navigation/MenuPagination.card.html`). List them with `find frameworks/react/components -name '*.card.html'`.
+- `frameworks/react/ui-kits/console/index.html` — the Delivery Console example app (login → dashboard → project).
 - `Arena - Overview.html` (repo root) — the token language: every token Arena defines, generated at runtime from `tokens/src/*.json` and `tokens/colors.css`. **It shows no components on purpose** — those belong to the framework layers, and a root-level copy of them was a second implementation that drifted. It lives at the root because it loads `styles.css`, `theme.js`, `assets/`, `scripts/lib/` and `tokens/src/` by relative path, and it must be served over HTTP because it fetches its own source.
 - `Dravensoft Identity.dc.html` (repo root) — the approved brand manual, and the only remaining `dc-runtime` page. It loads `support.js`, `styles.css` and `assets/` by relative path. From a subdirectory it 404s, no token resolves, and the page renders unstyled. Do not move it.
 
@@ -82,7 +86,7 @@ never re-defines a value.
 target: a token whose consumer is JavaScript rather than CSS.** A token flagged
 `$extensions["com.dravensoft.arena"].script: true` in `tokens/src/` emits twice —
 the custom property it always would have, and a bare number exported from
-`frameworks/react/tokens.generated.js` and `frameworks/angular/Tokens.generated.ts`.
+`frameworks/react/Tokens.generated.js` and `frameworks/angular/Tokens.generated.ts`.
 Emission is **per layer** so a component's import never crosses the `tokens/` ↔
 `frameworks/` boundary. Flag a token only when JS arithmetic must consume it to
 produce a position — an SVG `y` from a data value, a clamp against
@@ -168,7 +172,7 @@ about defects: `grep -rHo '"requirement": "[^"]*"' --include='*.behaviour.json' 
 sort -u | wc -l`.
 
 **What closes a real hole rather than merely adding an expression: the wrapper drives the
-loop.** `assertPatternCases` — in both `frameworks/react/test-dom/assert-pattern.jsx` and
+loop.** `assertPatternCases` — in both `frameworks/react/test/AssertPattern.jsx` and
 `frameworks/angular/test/Compliance.ts` — takes a map of case name → a **thunk** that
 renders that case, and compares that key set against the declared names *before anything
 mounts*; a never-rendered case and an undeclared one are both errors. A suite merely
@@ -179,7 +183,7 @@ component. (The rest of that file was not untested; two hand tests rendered all 
 variants. What no flat exception list could do is feed all four to the one mechanism that
 makes an exception expire.) **That worked example is now history rather than a file to go
 and read**: 8C10 fixed the defect the split exposed, so `Skeleton` binds flat again and
-`placement-and-branches.test.jsx` calls `assertPattern` — against `block` **and** `circle`,
+`frameworks/react/test/PlacementAndBranches.dom.test.jsx` calls `assertPattern` — against `block` **and** `circle`,
 which is the same lesson enforced by hand where a flat binding gives the wrapper no case
 list to drive. The hole `assertPatternCases` closes is unchanged; only its exhibit moved.
 
@@ -192,10 +196,12 @@ coverage claim, never an accessibility one.
 
 **And now something does check whether a component behaves as it declares — by
 rendering it, in both layers, with one component-shaped hole.** `check:compliance`
-is the coverage record; the verification itself lives in render suites
-(`frameworks/react/test-dom/`, and on the Angular side each component's own
-directory under `frameworks/angular/components/`)
-that assert, per requirement of a component's bound pattern, that the rendered DOM
+is the coverage record; the verification itself lives in render suites. **Both layers
+now hold them the same way** — beside the component they cover, under
+`frameworks/<layer>/components/`, with the handful that belong to no one component in
+`frameworks/<layer>/test/`; those four trees are `SUITE_DIRS` in
+`scripts/check-compliance.mjs`. They
+assert, per requirement of a component's bound pattern, that the rendered DOM
 either meets it with no exception declared, or fails it with one declared. That
 single bidirectional statement is the stale-exception rule the layer was modelled
 on and did not have: **an exception can finally expire.** The hole is by rule and
@@ -209,7 +215,7 @@ from three runtimes, one of them plain node in its own test, which has no DOM. I
 third value, `null`, for requirements no single element can decide (`focus.*`,
 `keyboard.*`, `content.noAutoDismiss`, `alternative.table`); a suite must name
 each of those in its `behavioural` map and assert it by acting on the tree, and
-each layer's wrapper (`frameworks/react/test-dom/assert-pattern.jsx`,
+each layer's wrapper (`frameworks/react/test/AssertPattern.jsx`,
 `frameworks/angular/test/Compliance.ts`) throws if one is
 silently skipped. **Coverage is partial by design
 and grows one component at a time** — `COVERED` in `scripts/check-compliance.mjs`
@@ -264,7 +270,7 @@ carries the rule and the capability it costs.
 statement and the first thing a new platform target reads, the way `tokens/src/TYPE-MAP.md`
 is for the token layer. Shared objects and enums are declared once in `api/types/` and
 emitted **per layer** by `bun run build:api` into the committed
-`frameworks/react/api.generated.d.ts` and `frameworks/angular/Api.generated.ts`, so a
+`frameworks/react/Api.generated.d.ts` and `frameworks/angular/Api.generated.ts`, so a
 component's import never crosses the `api/` ↔ `frameworks/` boundary. The word *prop* never
 appears in a contract: it is React's vocabulary, and a neutral contract using it would
 already have chosen a layer. **The structural difference from `behaviour/` is one file, not
@@ -325,15 +331,18 @@ context anywhere**. What makes that work is one rule applied uniformly: injectio
 **direct children only, one hop**, and a section or a collapsible re-injects into its own
 children with `depth + 1`. Every level does the same single hop, so depth accumulates
 without anything having to know the whole tree. The shared helper is
-`frameworks/react/components/navigation/side-nav-inject.jsx`, and **its `.jsx` extension is
+`frameworks/react/components/navigation/side-nav/SideNavInject.jsx` — it covers the whole
+`SideNav` family and no more, so the placement rule sends it to that family's parent
+directory rather than up to `navigation/` — and **its `.jsx` extension is
 load-bearing rather than cosmetic**: `check:dimensions` scans `.jsx`/`.ts`/`.tsx` and
 deliberately never opens a `.js`, and the helper's `indentFor()` produces a governed
 `padding-inline-start`, so under `.js` it would sit outside the gate entirely — it shipped
 that way for exactly one commit and could have returned a bare `'12px'` with every gate
-green. It is also the first `.jsx` under `frameworks/react/components/` that is **not a
-component**, which is worth knowing because the documented way to measure Plan C's subject
-set counts `.jsx` files and therefore now over-counts by one; cross-check against
-`frameworks/angular/BehaviourDelegated.json`'s key set, which holds only real components.
+green. It is a `.jsx` under `frameworks/react/components/` that is **not a component**, and
+that used to distort the count of Plan C's subject set, because the documented way to measure
+that set counted `.jsx` files. It no longer can: a component is a **directory** now, both in
+that measurement and in `reactComponents()`, and a file sitting inside one cannot be mistaken
+for one.
 
 The recursion inherits the family's limit rather than escaping it: **a consumer's own
 wrapper component between two levels breaks the chain, and so does a fragment.**
@@ -371,8 +380,8 @@ enum at all.**
 **Plan C's contracts are single-layer, and that is a property of the plan, not a gap.**
 The components Plan C brings under contract exist in React alone — they are
 exactly the controls Angular delegates to Material, so **count them rather than trusting a
-figure**: every `.jsx` under `frameworks/react/components/` with no matching component
-directory under `frameworks/angular/components/<category>/`, which is also exactly the key set of
+figure**: every component **directory** under `frameworks/react/components/<category>/` with no
+matching directory under `frameworks/angular/components/<category>/`, which is also exactly the key set of
 `frameworks/angular/BehaviourDelegated.json`, minus `Switch`, which was contracted before Plan C
 began. A count written here would drift, and has, twice: it read *twenty-one*, which was true when
 written and went stale the moment plan 8C2 split `Radio.jsx` into two quartets — `RadioGroup`
@@ -397,59 +406,76 @@ with no gate behind the loss — `check:api` reads the `.d.ts`, and a restored s
 `.jsx` would leave it green. That is the same limit already recorded two paragraphs down for
 every migrated React component; Plan C widens its reach, it does not close it.
 
-**React has two test directories, they must not merge, and the second one has a
-rule about what it may hold.**
-`frameworks/react/test/` asserts on `renderToStaticMarkup` — no DOM, by design,
-because those suites prove those components render correctly server-side.
-`frameworks/react/test-dom/` registers `@happy-dom/global-registrator`, which
-installs globals **process-wide**, and `bun test` shares one process across every
-path a single invocation matches. So a DOM registered in the first directory's
-process would quietly change what its suites prove with nothing
+**React's suites run in two `bun test` invocations that must not merge, and what
+decides which one a suite belongs to is its FILENAME.** A `.dom.test.jsx` suite renders
+into a real DOM; every other `*.test.jsx` asserts on `renderToStaticMarkup` — no DOM, by
+design, because those suites prove those components render correctly server-side. The
+DOM is installed by `--preload ./frameworks/react/test/Preload.js`, which registers
+`@happy-dom/global-registrator`; that installs globals **process-wide**, and `bun test`
+shares one process across every path a single invocation matches. So a DOM registered in
+the DOM-free invocation's process would quietly change what its suites prove with nothing
 failing to say so — count them with `bun run test:react` rather than trusting a
-figure written here, which drifts with every component that gains a test. **The Angular half of
-this paragraph no longer describes a directory**: since the structure refactor's batch 2 that
-layer's suites sit beside the components they cover, and the run target is the whole emitted
-layer (`build/angular-test/angular`). Its single registration site,
-`frameworks/angular/test/TestbedEnv.ts`, is guarded rather than throwing on a second call, so
-merging it into the preloaded invocation does not itself collide — verified by hand, it runs
-clean. What actually forces the split is `scripts/`: a happy-dom installed process-wide for the
-whole invocation replaces Bun's own `fetch`, which turns a passing
-`scripts/lib/static-server.test.mjs` fetch assertion into a cross-origin failure (see
-`scripts/check-all.mjs`'s own `testStep()` comment for the measured detail). `testStep()`
-therefore builds the Angular test surface with `ngc` and then runs two separate `bun test`
-invocations rather than one, and `check-all.test.mjs` asserts that array by literal value — a
-change to one is a change to both.
+figure written here, which drifts with every component that gains a test.
 
-**The rule the second directory carries: a component whose behaviour binding names
-the `grid` pattern is DOM-tested by hand**, with `bun run demos` and the
-component's own `*.card.html` page. It is tied to the binding rather than to a
+**This used to be a directory boundary and no longer is, in either layer.**
+React's DOM suites lived in `frameworks/react/test-dom/` and everything else in
+`frameworks/react/test/`, so the first invocation named the DOM-free directory and the
+second named the DOM one. The structure refactor's batch 3 colocated most suites beside
+the component they cover, which removed `test-dom/` outright and left
+`frameworks/react/test/` holding the harness (`Harness.jsx`, `Preload.js`,
+`AssertPattern.jsx`) plus the suites that are about no one component — and **those
+include DOM ones**, so that directory's contents no longer answer the question the old
+boundary answered; `ls frameworks/react/test/` is the check. The infix answers it
+instead, wherever the file sits: the first invocation passes `frameworks/react` with
+`--path-ignore-patterns='**/*.dom.test.jsx'`, and the second passes the bare string
+`.dom.test.jsx` as its one positional, which `bun test` matches as a path substring.
+Angular went the same way in batch 2 — its suites sit beside their components and the run
+target is the whole emitted layer (`build/angular-test/angular`).
+
+**The reason the two cannot merge is unchanged by any of that.** Angular's single
+registration site, `frameworks/angular/test/TestbedEnv.ts`, is guarded rather than
+throwing on a second call, so merging it into the preloaded invocation does not itself
+collide — verified by hand, it runs clean. What actually forces the split is `scripts/`:
+a happy-dom installed process-wide for the whole invocation replaces Bun's own `fetch`,
+which turns a passing `scripts/lib/static-server.test.mjs` fetch assertion into a
+cross-origin failure (see `scripts/check-all.mjs`'s own `testStep()` comment for the
+measured detail). `testStep()` therefore builds the Angular test surface with `ngc` and
+then runs two separate `bun test` invocations rather than one, and `check-all.test.mjs`
+asserts that array by literal value — a change to one is a change to both.
+
+**A component whose behaviour binding names the `grid` pattern is DOM-tested by hand**,
+with `bun run demos` and the component's own `*.card.html` page. The rule used to be
+described as one the DOM *directory* carried; it is really a rule about a component,
+wherever that component's suite would have sat, and it survives the directory unchanged.
+It is tied to the binding rather than to a
 judgement about what looks like a grid, so it is a grep rather than an argument,
 and so a component that becomes a grid later inherits it without anyone
-remembering; today it selects exactly `Calendar` and `Table`. The whole directory
-was deleted once for its RAM cost and restored minus the one suite that carried
+remembering; today it selects exactly `Calendar` and `Table`. The DOM directory
+was deleted whole once for its RAM cost and restored minus the one suite that carried
 that cost — `grid-keyboard.test.jsx` alone peaked at 164 MiB against 109 MiB for
-the other six together, because its fixture is 84 cells per mount, eight mounts,
-and 160 key events through `act()`. The directory was never the problem; the grid
-was. What that costs is under *Known debt*, and it is a real cost, not a
+the six other suites it then held together, because its fixture is 84 cells per mount,
+eight mounts, and 160 key events through `act()`. The directory was never the problem;
+the grid was. What that costs is under *Known debt*, and it is a real cost, not a
 formality.
 
-**`frameworks/react/test-dom/` must be run through `--preload
-./frameworks/react/test-dom/preload.js`, and that is not a convenience.** react-dom
+**The `.dom.test.jsx` suites must be run through `--preload
+./frameworks/react/test/Preload.js`, and that is not a convenience.** react-dom
 decides **once, at its own module evaluation**, whether the browser supports the
 `input` event: `canUseDOM` gates the block computing `isInputEventSupported`, and if a
 DOM is not already installed the flag latches false and React falls back to its legacy
 change-detection polyfill, under which a dispatched `input` or `change` reaches an
-`onChange` handler **zero** times, silently. Registering happy-dom from `harness.jsx`'s
+`onChange` handler **zero** times, silently. Registering happy-dom from `Harness.jsx`'s
 module body is too late (ES imports evaluate first) and — measured, so do not retry it —
 so is registering it from a **separate ES module imported ahead of `react-dom/client`**:
 bun evaluates `react-dom` before that module anyway. Only a preload is early enough.
-This cost a day to find, so it is written down here as well as in `preload.js`, and it
-survived the directory's deletion and restore unchanged. All
+This cost a day to find, so it is written down here as well as in `Preload.js`, and it
+survived the DOM directory's deletion, its restore and its eventual disappearance
+unchanged. All
 three invocation sites pass it (`test:react-dom`, `test`, and `testStep()`), and
-`harness.jsx` **throws** when `document` is missing rather than installing a fallback,
+`Harness.jsx` **throws** when `document` is missing rather than installing a fallback,
 because a fallback would silently run those suites under the legacy semantics. The
-preload must never be applied to `frameworks/react/test/`, for the reason in the
-paragraph above.
+preload must never be applied to the DOM-free invocation, for the reason in the
+paragraphs above.
 
 **A dimension in a framework layer is a token or a derivation of tokens. A bare
 literal is a bug.** This is machine-checked: `bun run check:dimensions` scans
@@ -478,7 +504,8 @@ runtime projection of data onto a screen position — a chart tooltip's offset d
 from a hovered value, an hour label's offset derived from a clock minute, an event
 block's height derived from its duration — where the literal is the true value at
 that site because nothing in `tokens/src/` could stand in for a number computed from
-data at runtime; and, since `ChartInternals.ts`, the **visually-hidden idiom** —
+data at runtime; and, since the module now called `DataVisuals.ts` (`ChartInternals.ts` when
+the category was added), the **visually-hidden idiom** —
 `SR_ONLY`'s 1px box and the −1px margin that must cancel it exactly, where the number
 is a constraint of the accessibility idiom rather than a design dimension and a token
 would break the cancellation. That third category widened the map's charter beyond
@@ -560,7 +587,7 @@ colours are structured sRGB objects, dimensions and durations are `{value,unit}`
 and letter spacing is a `number` carrying an `em` render hint in `$extensions`.
 
 **The two layers solve the modal focus contract with the same code, and that was
-deliberate rather than convergent.** `frameworks/react/use-dialog-modal.js` is a PORT of
+deliberate rather than convergent.** `frameworks/react/UseDialogModal.js` is a PORT of
 `frameworks/angular/FocusTrap.ts`, not a second design — the same focusable
 selector (every natively-focusable clause carrying its own `:not([tabindex="-1"])`,
 because a selector list is OR'd and `button:not([disabled])` alone would pull a real
@@ -569,8 +596,8 @@ never-cache-the-focusables rule, the same open/close transition. `Dialog`, `Conf
 and `Onboarding` all consume it, and Escape always reports through the component's **own**
 dismissal channel — `onClose`, `onCancel`, `onSkip` — so meeting the pattern added no
 member anywhere. **`CLAUDE.md`'s rule that a component is self-contained is about CSS
-classes, not about JS helpers**; `use-container-width.js` settled that reading before this
-and `use-dialog-modal.js` sits beside it. The React module is one shape wider than the
+classes, not about JS helpers**; `UseContainerWidth.js` settled that reading before this
+and `UseDialogModal.js` sits beside it at the React layer's root. The React module is one shape wider than the
 Angular one it mirrors: Angular handles Tab only and keeps Escape in each component's own
 `onKeydown`, where React folds Escape into the handler the hook returns.
 
@@ -582,7 +609,8 @@ from a control in the middle reaches the next one, is the browser's native seque
 focus navigation, which neither layer implements and happy-dom does not have; a test
 asserting it would pass identically against a perfect trap and against none. So the
 interior is checked by a person in real Chromium against a written checklist in each
-component's `.prompt.md`. **No browser-driven gate**: `dialog-modal.test.jsx`'s header
+component's `.prompt.md`. **No browser-driven gate**:
+`frameworks/react/components/feedback/DialogModal.dom.test.jsx`'s header
 refuses one as this repository's fourth non-portable gate, and that refusal stands — the
 arrangement is the same one the grid rule uses.
 
@@ -594,17 +622,19 @@ Inject **as little as the job needs**. Prefer keyframes alone and leave the `ani
 
 **Every animation answers `prefers-reduced-motion`**, and the answer depends on what the motion means. Motion that reports work in progress *slows* rather than stops (`Spinner`, `ProgressBar`, `Button`) — a frozen spinner reads as a hung process. Decorative motion stops outright (`Skeleton`). An entrance keeps its fade and drops its travel (`Dialog`, `Menu`) — the movement is the vestibular trigger, the fade is the meaning. An opacity-only animation needs no clause at all (`Tooltip`): there is no motion to reduce.
 
-**Every component is a quartet.** `X.jsx` (implementation), `X.d.ts` (types, with a `@startingPoint` doc comment), `X.prompt.md` (usage, examples, Do/Don't per README's H10 rule), and an entry in the group's `*.card.html` demo. Adding a component means adding all four.
+**Every component is a quartet, and since the structure refactor's batch 3 the four files live in the component's own directory**, `frameworks/react/components/<category>/<component-kebab>/`: `X.jsx` (implementation), `X.d.ts` (types, with a `@startingPoint` doc comment), `X.prompt.md` (usage, examples, Do/Don't per README's H10 rule), and an entry in a `*.card.html` demo. **That demo page is one of two shapes** — `X.card.html` in the component's own directory when the card is about that component alone, or a page one level up, beside the directories at its category level, when it composes several components onto one card (`display/Display.card.html`, `navigation/MenuPagination.card.html`). A category-level page belongs to no one component, which is why the placement rule puts it there rather than inside any of them. Adding a component means adding all four; which of the two demo shapes it joins is a judgement about the card, not about the component.
 
 **A new React component also moves a literal count outside its own layer, and the React
 suite alone cannot see it move.** `scripts/behaviour-contracts.test.mjs`'s *"the React
-inventory finds every component and no demo entry"* asserts `reactComponents('.').length`
+inventory finds every component, no category and no loose file"* asserts
+`reactComponents('.').length`
 by literal value, with a comment naming every change that has moved it; a new component
-under `frameworks/react/components/` moves it by one and the assertion must be updated **in
+**directory** under `frameworks/react/components/<category>/` moves it by one and the
+assertion must be updated **in
 the same commit**. **Verify with the merged process** — `bun run build:angular-tests && bun test
-scripts frameworks/react/test/ build/angular-test/angular` — because `bun test
-frameworks/react/test/` never matches `scripts/`, so it reports green over a tree whose test run
-is red. This is a
+scripts frameworks/react build/angular-test/angular --path-ignore-patterns='**/*.dom.test.jsx'`
+— because `bun test frameworks/react` never matches `scripts/`, so it reports green over a
+tree whose test run is red. This is a
 different hazard from the two-invocation rule above, which is about a DOM registered
 process-wide: this one is about a path a narrowed invocation simply never matched. It cost
 plan 8C5 a red commit that a task report called green.
@@ -612,9 +642,12 @@ plan 8C5 a red commit that a task report called green.
 it from here rather than to reconstruct one: it read `build/angular-test/angular/test` — correct
 while every Angular suite lived in one directory, and silently wrong the moment the structure
 refactor's batch 2 colocated most of them with their components. That path still exists in the
-emit and still holds the harness suites, so the stale command ran **82 files / 1039 tests** and
-reported green, where the corrected one runs **112 files / 1319 tests**; the Angular half alone
-went from 3 files to 33. Nothing failed, because a narrowed invocation matching fewer files is
+emit and still holds the harness suites, so against that tree the stale command ran **82 files /
+1039 tests** and reported green, where the corrected one ran **112 files / 1319 tests**; the
+Angular half alone
+went from 3 files to 33. (Both figures are measurements of the tree as it then stood, kept as
+the evidence rather than as a current baseline — re-derive by running the command.)
+Nothing failed, because a narrowed invocation matching fewer files is
 indistinguishable from one matching all of them. **The single authority is `testStep()` in
 `scripts/check-all.mjs`** — it is what `bun run check` runs and what
 `scripts/check-all.test.mjs` asserts by literal value; read the args array there rather than any
@@ -677,14 +710,24 @@ a reader sees a failing run and has to go find what else it dropped.
 
 `bun test` runs every file a single invocation matches in ONE process — which since the suites were colocated means the whole Angular layer, not one directory — and both happy-dom's document and Angular's `TestBed` environment can each be claimed only once per process — `GlobalRegistrator.register()` throws if already registered, and `TestBed.initTestEnvironment()` throws ("base providers ... already been called") the second time it runs across files that share a process. `frameworks/angular/test/TestbedEnv.ts` claims both, once, for the whole run: `ensureDom()` and `useTestEnvironment()` are plain `if (claimed) return` guards, not a reset — `TestBed.resetTestEnvironment()` was tried and measurably does not work, because `BrowserDomAdapter.makeCurrent()` installs a process-wide DOM adapter on the FIRST platform creation that nothing resets, so a second per-file document would render into a document the adapter no longer points at (`getComputedStyle` reading the wrong document was the observed failure). So every Angular suite shares one real document and one TestBed environment for the whole run rather than one pair per file; any suite needing a real component render just calls `useTestEnvironment()` (or `ensureDom()` alone, for a suite that needs a DOM but not TestBed) and is a normal new file in its component's own directory, not an addition to `HostClassBinding.test.ts`. **That the module is shared across directories now is exactly why it stays in `test/`** — it belongs to no one component, so the placement rule sends it up to the level containing all its consumers. The shared document also means state written onto it — a custom property set on `documentElement.style`, an element appended to `document.body` — outlives the file that wrote it unless that file clears it, typically in a `finally`; every directly-created fixture must still be `destroy()`-ed for the same reason — zoneless change detection sweeps all attached views, so a fixture left dirty throws out of an unrelated later test, and with one shared document that hazard crosses files rather than staying inside one.
 
-**Specimen/demo pages** start with an HTML comment `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card rendering — keep it as the first line, which is the only line `check:cards` reads. **That viewport is machine-checked**: `bun run check:cards` loads every declaring page at its declared width in headless Chromium and fails when the rendered content over-runs the box in either axis, because the card is cropped to it and the overflow is lost silently. Declaring it by arithmetic does not work — it was tried, and the page clipped in both axes anyway. Measure by running the gate. A page that declares far *more* height than it renders only warns. `frameworks/react/ui_kits/console/index.html` carries no `@dsCard` on purpose: it is an app with its own scroll area, not a card. Component demos load React from a local importmap pointing at `frameworks/react/vendor/*.js` — a committed, generated ESM bundle of the `react`/`react-dom` devDependencies, since React 18 ships CommonJS only and the importmap needs real ES modules (`bun run build:vendor`, guarded by `check:vendor`; see `scripts/build-vendor.mjs`) — and pull `@phosphor-icons/web` straight from `node_modules/` (the static server is rooted at the repo root and does not exclude it). **JSX is compiled ahead of time, not in the browser.** Each demo page's own script used to be inline JSX, transpiled at load by `@babel/standalone` through `jsx-loader.js`'s `window.arenaImport()`; that inline block is now a real sibling source file (`<page>.entry.jsx`, e.g. `alert.card.entry.jsx` next to `alert.card.html`), and every component `.jsx` plus every `.entry.jsx` has a compiled `.js` sibling — same directory, same basename — that the page loads with a plain `<script type="module" src="…">`. `bun run build:demos` (`scripts/build-demos.mjs`) compiles them with Bun's own transpiler (classic JSX, matching what `@babel/standalone`'s default preset was doing) and rewrites each relative import's `.jsx` extension to `.js`, so the recursive-import behavior `jsx-loader.js` used to do at runtime now happens once, at build time; `check:demos` (`scripts/check-demos-generated.mjs`) guards drift and orphaned output, on the same committed-generated-output contract as `check:vendor`. There is a build step for the demos now — this repo does not claim otherwise. **So editing a component `.jsx` means running `bun run build:demos` in the same tree, and one specific piece of reasoning talks batches out of it**: the React DOM suites import the `.jsx` directly, so every test stays green with the `.js` sibling stale, and it is easy to conclude the rebuild is therefore unnecessary. It is not — the demo pages load the `.js`, so a stale sibling means **`bun run demos` shows the pre-fix component while the suites prove the fix**, which is exactly the by-hand check the grid rule and every `.prompt.md` checklist depend on. This shipped in 8C10: a plan constraint forbade `build:demos` on that reasoning, and `Skeleton.js` stayed stale across four commits — `cd00339`, which introduced it, through `80ebedc` — while the specimens rendered the `aria-hidden` circle the batch existed to remove. `check:demos` caught it at the close-out sweep, which is the gate working — but a batch that runs the full sweep only at the end wears the drift until then.
+**Specimen/demo pages** start with an HTML comment `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card rendering — keep it as the first line, which is the only line `check:cards` reads. **That viewport is machine-checked**: `bun run check:cards` loads every declaring page at its declared width in headless Chromium and fails when the rendered content over-runs the box in either axis, because the card is cropped to it and the overflow is lost silently. Declaring it by arithmetic does not work — it was tried, and the page clipped in both axes anyway. Measure by running the gate. A page that declares far *more* height than it renders only warns. `frameworks/react/ui-kits/console/index.html` carries no `@dsCard` on purpose: it is an app with its own scroll area, not a card. Component demos load React from a local importmap pointing at `frameworks/react/vendor/*.js` — a committed, generated ESM bundle of the `react`/`react-dom` devDependencies, since React 18 ships CommonJS only and the importmap needs real ES modules (`bun run build:vendor`, guarded by `check:vendor`; see `scripts/build-vendor.mjs`) — and pull `@phosphor-icons/web` straight from `node_modules/` (the static server is rooted at the repo root and does not exclude it). **JSX is compiled ahead of time, not in the browser.** Each demo page's own script used to be inline JSX, transpiled at load by `@babel/standalone` through `jsx-loader.js`'s `window.arenaImport()`; that inline block is now a real sibling source file (`<page>.entry.jsx`, e.g. `Alert.card.entry.jsx` next to `Alert.card.html`), and every component `.jsx` plus every `.entry.jsx` has a compiled `.js` sibling — same directory, same basename — that the page loads with a plain `<script type="module" src="…">`. `bun run build:demos` (`scripts/build-demos.mjs`) compiles them with Bun's own transpiler (classic JSX, matching what `@babel/standalone`'s default preset was doing) and rewrites each relative import's `.jsx` extension to `.js`, so the recursive-import behavior `jsx-loader.js` used to do at runtime now happens once, at build time; `check:demos` (`scripts/check-demos-generated.mjs`) guards drift and orphaned output, on the same committed-generated-output contract as `check:vendor`. There is a build step for the demos now — this repo does not claim otherwise. **So editing a component `.jsx` means running `bun run build:demos` in the same tree, and one specific piece of reasoning talks batches out of it**: the React DOM suites import the `.jsx` directly, so every test stays green with the `.js` sibling stale, and it is easy to conclude the rebuild is therefore unnecessary. It is not — the demo pages load the `.js`, so a stale sibling means **`bun run demos` shows the pre-fix component while the suites prove the fix**, which is exactly the by-hand check the grid rule and every `.prompt.md` checklist depend on. This shipped in 8C10: a plan constraint forbade `build:demos` on that reasoning, and `Skeleton.js` stayed stale across four commits — `cd00339`, which introduced it, through `80ebedc` — while the specimens rendered the `aria-hidden` circle the batch existed to remove. `check:demos` caught it at the close-out sweep, which is the gate working — but a batch that runs the full sweep only at the end wears the drift until then.
 
 `support.js` is a generated bundle (`dc-runtime`, whose source is not in this repo) used only by the root `*.dc.html` pages. Do not edit it.
 
 **Framework layers live under `frameworks/`.** The root holds only the
 framework-agnostic language (`tokens/`, `guidelines/`, `assets/`, `scripts/`,
 `styles.css`) plus the demo runtime (`theme.js`, `support.js`)
-and brand (`*.dc.html`). React lives in `frameworks/react/`;
+and brand (`*.dc.html`). React lives in `frameworks/react/`, and since the structure
+refactor's batch 3 it has the same shape as the other two: components under
+`components/<category>/<component-kebab>/`, the Delivery Console example app under
+`ui-kits/console/`, the committed vendor bundles under `vendor/`, and the test harness
+plus the suites that belong to no one component under `test/`. Its layer root holds the
+generated `Api.generated.d.ts` and `Tokens.generated.js` and three shared
+internals: `DataVisuals.js` and `UseContainerWidth.js`, each consumed from more than one
+category, and `UseDialogModal.js`, which is at the layer root **because its suite counts as a
+consumer** — its three component consumers are all in `feedback/` and would put it in
+`components/feedback/` on their own, but `test/UseDialogModal.dom.test.jsx` is a consumer too,
+and the narrowest level containing that one as well is the layer root.
 `frameworks/angular/` holds the Angular layer: a Tailwind preset entry
 (`theme/arena-tailwind.css`) and an Angular Material `--mat-*` token bridge
 (`theme/arena-material.css`), a Phosphor icon manifest (`icons/`), a
@@ -694,19 +737,32 @@ dark-first signal `ThemeService`
 (`components/display/tag/` is the reference
 shape; the three SVG charts are the declared exception — no manifest, no
 `.variants.ts`, token-valued camelCase `[style]` objects like React's, and reviewed
-against React's `charts.card.html` rather than a specimen of their own), each
+against React's `components/charts/Charts.card.html` rather than a specimen of their own), each
 styled by the
 shared `frameworks/tailwind/` recipes through the configured `tv`
 (`frameworks/tailwind/Tv.ts`) — see `frameworks/angular/ADOPTION.md`. Count the
 components with `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l`
 rather than trusting the figure in this sentence, which is the kind that drifts.
 Its layer root additionally holds the generated `Api.generated.ts` and
-`Tokens.generated.ts`, the `BehaviourDelegated.json` declaration, and the three shared
-internals whose consumers span more than one category — `ContainerSize.ts`, `FocusTrap.ts`
+`Tokens.generated.ts`, the `BehaviourDelegated.json` declaration, and the four shared
+internals — `ContainerSize.ts`, `DataVisuals.ts`, `FocusTrap.ts`
 and `ProjectionMarkers.ts`, each named directly by `frameworks/angular/index.ts` so the
 public export surface did not shrink when they moved out of the old flat barrel.
-`ChartInternals.ts` has consumers in one category only and therefore stops at
-`components/charts/`.
+
+**`DataVisuals` is the fourth, it was `ChartInternals.ts` under
+`components/charts/`, and it moved in BOTH layers at once.** In React the old
+placement was false from the start: `Calendar` imports `catColor` from it, so a
+`display` component consumes it and the rule *"a file that is not one component's rises to
+the narrowest level containing all of its consumers"* puts it at the layer root, not in a
+category. Verify with `grep -rln DataVisuals frameworks/react/components`, which returns the
+three charts **and** `display/calendar/`. Angular's consumers really are the three charts
+alone, so its copy could have stayed — it was moved by decision rather than by the rule,
+because that narrower set is an artifact of Angular's `Calendar` being delegated to Material
+and a future plan removes that delegation; leaving the two layers spelling the same module
+at different paths would have made the eventual move a second migration instead of an import.
+The name changed with the placement for the same reason: a module a schedule grid consumes
+is not "chart internals". It is `frameworks/react/DataVisuals.js` and
+`frameworks/angular/DataVisuals.ts` today.
 `frameworks/tailwind/` is a **single shared** Tailwind v4 layer (`@theme`
 preset + per-component manifests), authored once because the token→utility
 mapping is pure CSS. It is **migrated to the structure rule
@@ -739,10 +795,11 @@ and `check:tailwind` catches that on its own.
 skips quietly — makes that a hard failure instead. An Angular primitive's recipe is its
 manifest — `frameworks/angular/components/display/tag/` is the reference shape.
 
-**One shape for every framework layer, and today two of the three have it.** The rule:
+**One shape for every framework layer, and as of the structure refactor's batch 3 all
+three have it.** The rule:
 **directories are `kebab-case` and lowercase; a file name begins with a capital, and a
 multi-word stem is `PascalCase` with hyphens removed; a secondary dotted segment stays
-`lowerCamelCase`** — `Badge.manifest.json`, `BarChart.variants.ts`. Capital-initial is the
+`lowerCamelCase`** — `Badge.manifest.json`, `StatCard.variants.ts`. Capital-initial is the
 rule and PascalCase is how a multi-word stem is *formed* under it, which is why a
 conventional all-caps document name needs no dispensation: `README.md` and `ADOPTION.md`
 comply as they stand. A layer lays its components out as
@@ -750,27 +807,27 @@ comply as they stand. A layer lays its components out as
 one component — its source, its types, its binding, its prompt, its demo page, its tests —
 lives in that one directory. A file that is not one component's rises to the narrowest
 level containing all of its consumers, and a compound family counts as its parent rather
-than as the category — so a helper covering `SideNav`/`SideNavItem`/`SideNavSection`/
-`SideNavCollapsible` *would* land in `side-nav/` rather than in `navigation/`, stated as
-the rule rather than as a path that exists, since React has not moved yet. The design, with the placements derived by
-reading each file's imports rather than guessed, is
-`docs/superpowers/specs/2026-07-27-frameworks-file-structure-design*.md` — a `-pending-N`
-spec whose suffix decrements per batch and which is deleted when the third lands, so this
-paragraph is the durable statement of the rule and that file is the working detail.
+than as the category — so the helper covering `SideNav`/`SideNavItem`/`SideNavSection`/
+`SideNavCollapsible` lands in `side-nav/` rather than in `navigation/`, and it is
+`frameworks/react/components/navigation/side-nav/SideNavInject.jsx` today. This paragraph
+is the whole statement of the rule. The design document it used to point at as the working
+detail — `docs/superpowers/specs/2026-07-27-frameworks-file-structure-design-pending-N.md`,
+a `-pending-N` spec whose suffix decremented per batch — was deleted when the third batch
+landed, per its own header, so there is nothing left to defer to.
 
-**Five exceptions to the naming rule, and every one is mechanical rather than stylistic**
+**Six exceptions to the naming rule, and every one is mechanical rather than stylistic**
 — a toolchain, a reader, or somebody else's source file recognises the literal name, so
 capitalising it breaks or obscures something. All of them are cases the rule above cannot
 cover: a name that begins with a *lowercase* letter, or one with no stem to capitalise at
-all. **Measure the set rather than trusting this list** — `find frameworks/angular
-frameworks/tailwind -type f -printf '%f\n' | grep -E '^[^A-Z]' | sort -u` — which is how
-the fifth was found, one batch after the list said four. The command names the two
-**migrated** layers only; add `frameworks/react` to it once batch 3 lands, and note that
-`index.html` lives only there today.
+all. **Measure the set rather than trusting this list** — `find frameworks -type f
+-printf '%f\n' | grep -E '^[^A-Z]' | sort -u` — which is how
+the fifth was found, one batch after the list said four. The command names all three
+layers now that batch 3 has landed; `index.html` and `index.entry.*` live only in React,
+and the rest only in Angular.
 `index.ts`, because TypeScript resolves a directory import by looking for exactly that
 filename and would not find `Index.ts` on a case-sensitive filesystem. `index.html`,
 because a directory served over HTTP is answered by exactly that name
-(`frameworks/react/ui_kits/console/index.html`). `tsconfig.check.json` and
+(`frameworks/react/ui-kits/console/index.html`). `tsconfig.check.json` and
 `tsconfig.test.json`, because `tsconfig*` is the name editors and toolchains recognise by
 convention — this is the softest of them, since `ngc -p <path>` is explicit and the
 rename would compile; the exception is for the reader. `.gitkeep`
@@ -800,38 +857,56 @@ and `icon-manifest.ts` and were renamed, because both are reached through
 `frameworks/angular/index.ts` and no adopter ever writes either path. `frameworks/tailwind/`
 carries no lowercase-initial file at all.
 
+And the sixth, added by batch 3: **`frameworks/react/ui-kits/console/index.entry.jsx` and
+its compiled `index.entry.js`**. It inherits its exception rather than earning a new one —
+a demo page's composition script takes the stem of the page it composes, which is the
+`<page>.entry.jsx` pairing every card in the layer keeps (`Alert.card.entry.jsx` beside
+`Alert.card.html`), and the page it composes is `index.html`, already exempt above because
+a directory served over HTTP is answered by exactly that name. That is the same shape as
+`arena-material.prompt.md` following `arena-material.css`: the file is named after the
+adopter-facing name it documents rather than diverging from it. Both alternatives were
+considered and rejected. `Index.entry.jsx` reads as a typo in every directory listing,
+sitting one line from a mandatorily-lowercase `index.html` — the exception exists for the
+reader, and a capital there costs exactly what it was meant to buy. Renaming the pair to
+some other stem — `Console.entry.jsx` beside `Console.html` — would comply, and would break
+the HTTP directory index that makes `bun run demos` serve the app at
+`/frameworks/react/ui-kits/console/`, which is the one thing this directory's naming is
+for.
+
 **`frameworks/Components.json` is the declaration and `check:structure` is the gate.** The
 file names each component's category once, so the category is not written once per layer
 with nothing holding the copies together, and the kebab directory name is **derived** from
 the PascalCase name by `kebab()` in `scripts/check-structure.mjs` — a function, never a
 table. The gate fails a component name declared in two categories at once, a component
 directory sitting in a category the file assigns elsewhere, a directory the file does not
-name at all, and a directory name that is not kebab-case; once every layer is migrated it
-additionally fails a declared component present in no layer. **It says nothing about
+name at all, and a directory name that is not kebab-case; and, since every layer is
+migrated, a declared component present in no layer. **It says nothing about
 whether the category is the RIGHT one** — "is
 `Tooltip` feedback or navigation?" is editorial judgement and no gate has it, the same way
 `check:behaviour`'s green run is a coverage claim and never an accessibility one. Nor does
 a directory existing prove the component inside it is complete: `check:api` and
 `check:behaviour` are still what hold that.
 
-**Tailwind and Angular are migrated; React is not — and that is a fact to read rather than to
-infer.** React still puts a whole category's components side by side in one directory:
-`ls frameworks/react/components/display | wc -l` is 84 and
-`find frameworks/react/components/display -mindepth 1 -type d` finds nothing.
-**`MIGRATED` in `scripts/check-structure.mjs` is the authoritative answer
-to which layers the gate currently claims anything about** — read it there rather than
-here, because this sentence is prose and that array is what the gate runs on. It grows by one
-entry per batch and is deleted outright when the last layer lands, at which point the gate
-covers every layer unconditionally. Until it holds all three, the "declared but present in
-no layer" rule is deliberately held back, because a component absent from the migrated
-layers may simply live in one the gate does not yet reach — which would make the gate
-loudest about exactly the thing the refactor has not got to. So a reader meeting the new
-shape in two layers and the old shape in one is looking at work in progress, not at
-an inconsistency to fix locally.
-**What a migrated layer being green does *not* warrant** is that every sentence elsewhere in
-this file about it is current — nothing derives that and nothing could cheaply check it. Batch
-2 is the evidence: `check:structure` went green on Angular in the same commit that left this
-file printing a `bun test` command whose Angular path matched 3 files out of 33.
+**All three layers are migrated, and `MIGRATED` is gone.** That constant in
+`scripts/check-structure.mjs` used to name the layers the gate claimed anything about,
+growing by one entry per batch, and its own header said it would be deleted outright when
+the last layer landed. Batch 3 moved React, the third and last, so it was. What the gate
+enumerates instead is `LAYERS`, and the two are **not the same list under another name**:
+`MIGRATED` was a scope that shrank the gate's claim, while `LAYERS` is an exhaustive
+enumeration, deliberately not a walk of `frameworks/`, so that a layer renamed or removed
+wholesale becomes loud (`zeroLayerProblems`) instead of quietly leaving the gate's scope —
+which is the false-green shape recorded at the head of *Known debt*.
+**The consequence worth knowing is that the "declared but present in no layer" rule is now
+live, for the first time.** It was held back while `MIGRATED` was short, because a component
+absent from the migrated layers might simply live in one the gate could not yet reach, which
+would have made the gate loudest about exactly the thing the refactor had not got to. It
+runs on every run now, and `check:structure`'s own success line says so — it appends
+`, every declared component present in at least one layer` only when the gate is claiming
+every layer, so the line is evidence rather than decoration.
+**What a green `check:structure` does *not* warrant** is that every sentence elsewhere in
+this file about a layer is current — nothing derives that and nothing could cheaply check it.
+Batch 2 is the evidence: `check:structure` went green on Angular in the same commit that left
+this file printing a `bun test` command whose Angular path matched 3 files out of 33.
 
 **When `bun run check` is expected: once, when a plan's implementation is
 finished — not before every commit.** The individual gates are cheap and stay
@@ -937,7 +1012,7 @@ scheduled for deletion the same week.
   modules.** `collectScriptTokens()` in `scripts/build-tokens.mjs` skips group
   nodes (`if (item.group || !isScript(item.token)) continue;`), so only a
   leaf token's own description is carried into
-  `frameworks/react/tokens.generated.js` and
+  `frameworks/react/Tokens.generated.js` and
   `frameworks/angular/Tokens.generated.ts`. Group prose survives only in the
   CSS. This is pre-existing and not caused by this plan — `chart.json`'s group
   description is lost the same way — but it bit here: `delay`'s group
@@ -1110,6 +1185,18 @@ scheduled for deletion the same week.
   Everything else in that file stays as it was: separating the historical uses from the normative
   ones is a reading of that spec's argument, not a find-and-replace, and it belongs to whoever
   plans Plan D. Read this paragraph before reading that spec.
+  **The structure refactor's batch 3 made it worse without touching it: React's pre-move paths
+  joined the list.** That spec names `frameworks/react/test-dom/`,
+  `frameworks/react/use-dialog-modal.js`, `frameworks/react/api.generated.d.ts` and
+  kebab-named suites under `frameworks/react/test/` such as
+  `frameworks/react/test/stat-card.test.jsx` — none of those files exists now, and
+  `frameworks/react/test/` itself survives meaning something different (the harness plus the
+  suites belonging to no one component, DOM ones included) from the DOM-free directory the
+  spec describes. Widen the grep above to
+  `"angular/primitives\|angular/test/\|behaviour-delegated\|api\.generated\|react/test-dom\|react/test/\|use-dialog-modal"`.
+  It is recorded rather than rewritten for exactly the reason the paragraph above gives, and the
+  historical/normative split is the same one: many of those React paths sit in measurement
+  records of what a past batch's test counts were, where the old path is correct as history.
 
   **The last of those six sites — the `components-divergences.md` sentence — is the entry's own
   thesis demonstrating itself, and it is worth more than the rule it illustrates.** (Named rather
@@ -1309,7 +1396,9 @@ scheduled for deletion the same week.
   that run executing at all (see the *Architecture* paragraph above for the mechanism).
   **What survives, because it was true before this and stays true after: a green compile is a claim
   about TYPES, and never about behaviour.** The sharpest instance of that gap is in this very file
-  and this batch did not remove it — `ChartInternals.test.ts`'s `niceMax` induction, where
+  and this batch did not remove it — the `niceMax` induction in the suite now called
+  `frameworks/angular/DataVisuals.test.ts` (it was `ChartInternals.test.ts` when this was
+  written, and batch 3 renamed it), where
   `-Number.INFINITY` (not a real property; it evaluates to `NaN`, the entry already adjacent to it
   in the array) sat in a list the test claimed held six inputs and supplied five, and no runtime
   assertion could report it, because both the intended `-Infinity` and the typo return `1`. It was
@@ -1368,22 +1457,104 @@ scheduled for deletion the same week.
   out of scope again for the structure refactor, which moved files and renamed them and changed
   no test's strategy; recorded here rather than fixed so the false
   prose has a pointer and the reopened question is not lost with it.
-- **Comments inside the Angular layer still cite siblings by their pre-move
-  filenames, and nothing resolves them.** The structure refactor's batch 2 renamed every file
-  in that layer and moved most of its suites; it rewrote every **import specifier**, which a
-  compiler checks — but a bare filename in a sentence is not one. So
-  `host-class-binding.test.ts`, `chart-internals.test.ts`, `testbed-env.ts`,
+- **Comments in EVERY migrated layer still cite siblings by their pre-move
+  filenames, and nothing resolves them.** Batches 2 and 3 of the structure refactor each
+  renamed a layer's files and moved most of its suites (batch 1's layer, Tailwind, has no
+  suites to move, which is why this class starts at batch 2); each rewrote every
+  **import specifier**, which
+  a compiler or a test runner checks — but a bare filename in a sentence is not one. So
+  `host-class-binding.test.ts`, `testbed-env.ts`,
   `tag-variants.test.ts`, `skeleton-dimensions.test.ts`, `bar-chart-geometry.test.ts` and
-  their siblings are still named across the layer's own headers and inline comments, and a
-  reader who greps one finds nothing. List them with
-  `grep -rnE "[a-z][a-z0-9]*(-[a-z0-9]+)+\.(test\.)?ts" --include='*.ts'
-  frameworks/angular/` and read each hit — it over-reports, because a kebab word followed by
-  `.ts` is also how these files legitimately name a *component directory* or a still-correct
-  history clause. Count by reading, not by piping to `wc -l`. **It is a citation swap and
+  their siblings are still named across the Angular layer's own headers and inline comments,
+  and a reader who greps one finds nothing. **This entry was Angular-only until batch 3, and
+  that batch created the React half of the same class** — every React suite was renamed from
+  `<kebab>.test.jsx` to `<Component>[.<facet>][.dom].test.jsx`, so every header naming a
+  sibling by its old name went stale in one commit. Two commands, one per layer, because the
+  two spell a stale name differently:
+
+  ```bash
+  # Angular: a kebab stem before .ts
+  grep -rnE "[a-z][a-z0-9]*(-[a-z0-9]+)+\.(test\.)?ts" --include='*.ts' frameworks/angular/
+  # React: a lowercase-initial stem before .jsx / .test.jsx / .card.html, cited ANYWHERE
+  grep -rnP "(?<![A-Za-z0-9.])[a-z][a-z0-9]*(-[a-z0-9]+)*\.(test\.jsx|jsx|card\.html)\b" \
+      --include='*.md' --include='*.json' --include='*.mjs' --include='*.jsx' --include='*.ts' \
+      --include='*.html' \
+      CLAUDE.md README.md SKILL.md components-divergences.md api/ behaviour/ docs/ frameworks/ \
+      scripts/ tokens/
+  ```
+
+  **Two things about the React one are load-bearing.** Its path list is the whole repo, not
+  `frameworks/react/` — **the class is "a comment cites a moved file by its old name", and the
+  citing file can live in any layer**, which a React-scoped search cannot see by construction;
+  the live proof is that a React-scoped sweep reported this half clean while
+  `frameworks/angular/components/display/tag/Tag.cases.test.ts` and two paragraphs of this very
+  file were still citing pre-move React names. And the negative lookbehind
+  `(?<![A-Za-z0-9.])` is what makes the result readable: without it every lowercase *secondary*
+  segment matches its own filename — `Tooltip.timer.dom.test.jsx` hits on `timer.dom.test.jsx`
+  — and the output goes from about 50 lines to about 230, nearly all of them noise.
+  **Neither command carries a `| grep -v` and neither should**: `CHANGELOG.md` is excluded by
+  not being in the path list, which is the only safe way, since a content filter on `-n` output
+  drops hits by their *text* — the trap recorded in the cross-file entry above.
+
+  Read each hit — both over-report, because a lowercase stem before an extension is also how
+  these files legitimately name a *component directory*, a still-correct history clause, a
+  synthetic test fixture (`scanFile('a.jsx', …)`, `covered: { 'Dialog:react': 'dialog-modal.test.jsx' }`),
+  or a genuinely deleted file (`grid-keyboard.test.jsx` is the standing example, and it must stay).
+  Count by reading, not by piping to `wc -l`. **It is a citation swap and
   nothing more** — unlike the seven-suite entry above, which needs a design decision — so it
   is the cheapest entry in this section to close and the easiest to close wrongly: a name is
   only worth rewriting once you have opened the file it now names and confirmed the sentence
   around it is still true.
+
+  **The React half is CLOSED, against the widened command above and nothing narrower** — which
+  is worth saying that precisely, because it was declared closed once already against a
+  React-scoped search that could not reach three live instances. Batch 3's close-out repointed
+  **fifteen** files: `test/UseDialogModal.dom.test.jsx`, `test/PlacementAndBranches.dom.test.jsx`,
+  `components/feedback/DialogModal.dom.test.jsx` (×4), `components/feedback/Behavioural.dom.test.jsx`
+  (×4), `components/feedback/onboarding/Onboarding.dom.test.jsx` (×4),
+  `components/feedback/tooltip/Tooltip.keyboard.dom.test.jsx` (×4),
+  `components/feedback/tooltip/Tooltip.test.jsx`, `components/navigation/menu/Menu.dom.test.jsx`,
+  `components/display/table/Table.test.jsx` (×2), `components/display/calendar/Calendar.test.jsx`,
+  `components/display/TagAndChipCases.dom.test.jsx`,
+  `components/navigation/side-nav/SideNavInject.jsx`, `components/forms/switch/Switch.test.jsx`,
+  `components/navigation/tabs/Tabs.prompt.md`
+  and `components/navigation/side-nav-collapsible/SideNavCollapsible.prompt.md` — **plus four
+  outside the React layer that only the widened command reaches**:
+  `frameworks/angular/components/display/tag/Tag.cases.test.ts`,
+  `frameworks/angular/components/display/stat-card/StatCard.variants.test.ts`,
+  `scripts/check-card-viewports.mjs` (four card pages) and `scripts/check-card-viewports.test.mjs`,
+  and two paragraphs of this file citing `tabs.test.jsx`. Each target
+  was opened first and the surrounding claim confirmed still true. Re-run the command rather
+  than trusting that list; everything it returns today is history, a synthetic fixture, or a
+  hit under `docs/superpowers/`, where the executed plan and the two unexecuted specs are
+  already recorded as carrying pre-move paths.
+  **On the Angular side four are CLOSED and the rest are not.** Batch 3 fixed the
+  `chart-internals.test.ts` citations in
+  `components/charts/bar-chart/BarChart.geometry.test.ts`,
+  `components/charts/line-chart/LineChart.geometry.test.ts` and
+  `components/charts/doughnut-chart/DoughnutChart.geometry.test.ts` (twice in the last, a
+  header clause and an inline comment). That file had been renamed **twice** — batch 2 made it
+  `ChartInternals.test.ts`, batch 3 made it `frameworks/angular/DataVisuals.test.ts` at the
+  layer root — and both times the `import` line one or two lines below was rewritten while the
+  header above it was not, which is precisely the shape this entry records. Each was checked by
+  opening `DataVisuals.test.ts` and confirming it really does cover the functions the header
+  claims (`barPath`, `arcPath`, `niceMax`, `ticks`, `resolveColors`), and each now carries the
+  rename chain in past tense so a third rename cannot silently falsify it. **The rest of the
+  Angular class is untouched** — re-run its command rather than assuming these four were most
+  of it.
+
+  **A second shape belongs to this entry and is not a filename at all: a comment asserting a
+  property of its own DIRECTORY.** Eleven React suites opened with *"This directory renders
+  with renderToStaticMarkup and has no DOM"*, which was a property of `frameworks/react/test/`
+  and became a property of nothing when batch 3 colocated the suites — three of the eleven were
+  outright **false**, because `tooltip/`, `tabs/` and `menu/` each hold a `.dom.test.jsx`
+  sibling, and the other eight were one component away from it. `frameworks/react/test/Smoke.dom.test.jsx`
+  carried the sharpest form, *"This directory is separate from frameworks/react/test/ on
+  purpose"*, from inside `frameworks/react/test/`. All are converted to *"This suite carries no
+  `.dom.` infix"*, and **the rule is a property of the FILENAME now, never of the directory** —
+  any sentence stating it as a directory property is one sibling away from being false. A path
+  sweep cannot see this shape, and neither can a grep for renamed tokens; it is found by reading
+  the header of a file you are already editing.
 
   **Two narrower classes are CLOSED, and this entry described both wrongly at first, in
   opposite directions.** It claimed batch 2 had rewritten "every path naming a file that no
@@ -1398,7 +1569,11 @@ scheduled for deletion the same week.
   `frameworks/react/test-dom/onboarding-modal.test.jsx` (twice),
   `components-divergences.md` and — a **gate-read artifact**, not a comment —
   `frameworks/react/components/feedback/Toast.behaviour.json`. The close-out fix corrected
-  all fifteen. **Describing a class as closed when it is not turns a deferral into a false
+  all fifteen. (Those three React paths are the names those files carried at the time and
+  are kept as the record; batch 3 moved them to
+  `frameworks/react/components/display/TagAndChipCases.dom.test.jsx`,
+  `frameworks/react/components/feedback/onboarding/Onboarding.dom.test.jsx` and
+  `frameworks/react/components/feedback/toast/Toast.behaviour.json`.) **Describing a class as closed when it is not turns a deferral into a false
   all-clear**, which is worse than the deferral: the intra-layer class above is honestly
   deferred and a reader knows to expect hits, while a reader of the old sentence would have
   stopped looking. Re-derive both classes rather than trusting this paragraph — the paths
@@ -1472,7 +1647,9 @@ scheduled for deletion the same week.
   reading a component's implementation against its binding, not searching for a
   phrase.
 - **A grid component's DOM behaviour is checked by eye, and that is a rule with a
-  price.** `frameworks/react/test-dom/` was deleted whole for its RAM cost and
+  price.** The React DOM suites' own directory — `frameworks/react/test-dom/`, which the
+  structure refactor's batch 3 later removed by colocating those suites with their
+  components — was deleted whole for its RAM cost and
   restored minus one suite, so the standing rule is narrow: **a component whose
   behaviour binding names the `grid` pattern is DOM-tested by hand — serve the tree
   with `bun run demos` and operate the component on its `*.card.html` page.** It is
@@ -1482,8 +1659,8 @@ scheduled for deletion the same week.
   `Table`.
 
   The rule is a measurement, not a preference: `grid-keyboard.test.jsx` alone peaked
-  at 164 MiB — 194 before its two performance fixes — while the other six suites
-  together peaked at 109 and the whole directory at 171. The grid cost more than
+  at 164 MiB — 194 before its two performance fixes — while the six other suites
+  that directory then held peaked at 109 together and the whole directory at 171. The grid cost more than
   everything else combined, because its fixture is 6 days × 14 hour cells = 84 cells
   per mount, mounted eight times, with 160 key events dispatched through `act()`.
   Cutting there cuts exactly where the cost is; the directory was never the problem.
@@ -1499,19 +1676,19 @@ scheduled for deletion the same week.
   alone — plus the seven requirements it now claims to meet, so it is a claim of
   near-compliance rather than of nothing.
   What partly guards `Calendar` instead is a **static** tab-stop count in
-  `frameworks/react/test/calendar.test.jsx` — a grid is one tab stop, and that count
+  `frameworks/react/components/display/calendar/Calendar.test.jsx` — a grid is one tab stop, and that count
   is a property of the markup rather than of behaviour, so a DOM-free suite can hold
   it. It catches a second tab stop appearing inside the grid. It does not catch an
   arrow key that stops moving, and it is the whole of what stands in for a suite.
 
   **What the restore bought back**, all of it green again and none of it worth
-  re-deriving from scratch if the directory is ever touched: that the six form
-  controls' events *fire* at all (`form-control-events.test.jsx` dispatches real
+  re-deriving from scratch if these suites are ever touched: that the six form
+  controls' events *fire* at all (`components/forms/FormControlEvents.dom.test.jsx` dispatches real
   events and proves `Input`, `Textarea`, `Select`, `Checkbox` and `RadioGroup` hand
   the consumer a **value** rather than the DOM event — the DOM-free suites assert
   only the *shape* of that and say so in their own headers); `Tooltip`'s
   single-timer rule, cancel-on-transition and unmount cleanup; the stale-exception
-  rule in behavioural form, where `behavioural.test.jsx` pinned four live defects of
+  rule in behavioural form, where `components/feedback/Behavioural.dom.test.jsx` pinned four live defects of
   `Dialog`/`ConfirmDialog` — no Escape, no focus on open, no restore on close — by
   asserting they were *still broken*, **and where plan 8C4 then INVERTED every one of
   those assertions in the change that fixed the defects**, which is the mechanism
@@ -1530,7 +1707,13 @@ scheduled for deletion the same week.
   If the grid suite is ever wanted back — which would mean paying the 164 MiB and
   retiring this rule — it does not need rewriting:
   `git show edb9f3e^:frameworks/react/test-dom/grid-keyboard.test.jsx` is the file,
-  and it would need `Calendar:react` restored to `COVERED` alongside it.
+  and it would need `Calendar:react` restored to `COVERED` alongside it. **Do not
+  modernise the path in that command.** `git show <rev>:<path>` resolves the path
+  *inside that revision's* tree, where the file really was
+  `frameworks/react/test-dom/grid-keyboard.test.jsx`; rewriting it to today's layout
+  makes the command fail with "path does not exist in HEAD". Where the restored file
+  would go is a separate question, and the answer is
+  `frameworks/react/components/display/calendar/Calendar.gridKeyboard.dom.test.jsx`.
 - **Compliance coverage is a small fraction of the bindings and nothing schedules the
   rest.** `bun run check:compliance` prints the live pair; do not trust a figure written
   here, which has drifted once already — every batch that adds a component adds a binding
@@ -1554,6 +1737,19 @@ scheduled for deletion the same week.
   (`Alert:angular`), and `validateCoverage()` resolves that layer's binding alone; the sibling layer
   is simply uncovered, which the gate is silent about by charter but no longer reports as satisfied.
   A key without a `:layer` suffix is rejected, so the old name-only shape cannot creep back.
+  **And which layer a suite belongs to is decided STRUCTURALLY now, not textually.**
+  `validateCoverage` makes two separate checks: first that the key's layer equals
+  `suite.layer` — a tag `collectSuites()` attaches from the `SUITE_DIRS` tree the file was
+  found under, a fact about the filesystem fixed at collection time — and only then that the
+  suite's text names that layer's binding path *tail*. The tail proves which **binding**
+  within a layer, and it can no longer prove the layer, because since batch 3 both layers
+  spell a dual-bound component's tail byte-identically (`display/tag/Tag.behaviour.json` on
+  both sides). Two textual accidents in a row had carried the discrimination — the bare stem
+  while Angular's binding was kebab-named, then the tail while Angular's carried a kebab
+  directory React's did not — and each expired with a layout change. Had the layer tag not
+  been in place first, batch 3 would have reverted the gate silently to the defect commit
+  `663b2e4` closed. `check-compliance.mjs`'s own comment beside `SUITE_DIRS` and `COVERED`
+  carries the full history.
 - **Some exceptions rest on a `behavioural` verdict no suite in either layer
   declares.** `ActivityFeed`'s `posinset`/`busy`,
   `Input`'s and `Textarea`'s `readonly`, and Angular `activity-feed`'s
@@ -1563,19 +1759,23 @@ scheduled for deletion the same week.
   wrong verdict pins a false claim exactly as a scan would have. And `comparePattern`
   **throws** on an unknown requirement key or a missing `ELEMENT_ROLE` entry — one
   bad key aborts the whole test rather than reporting one problem, so a suite's
-  wrapper (`frameworks/react/test-dom/assert-pattern.jsx`,
+  wrapper (`frameworks/react/test/AssertPattern.jsx`,
   `frameworks/angular/test/Compliance.ts`) must expect the throw, not only a
   returned problem list. **None of the five named above is pinned by a suite today, in
   either layer** — verified by grep, and re-run it rather than trusting the list:
-  `grep -rln "posinset\|'states.busy'\|states.readonly" frameworks/react/test-dom/
-  --include='*.test.ts' frameworks/angular/` returns nothing. **The Angular half of that
-  command is the whole layer now, and the `--include` is what keeps it honest**: the suites
-  moved out of `frameworks/angular/test/` in the structure refactor's batch 2, and widening to
-  the layer without restricting to `*.test.ts` matches
-  `ActivityFeed.behaviour.json` — the binding that *declares* the exception rather than a suite
-  that pins it, which is the opposite of what the question asks. **This entry read *seven* until 8C9**, which
+  `grep -rln "posinset\|'states.busy'\|states.readonly" --include='*.dom.test.jsx'
+  --include='*.test.ts' frameworks/react/ frameworks/angular/` returns nothing. **Both
+  halves of that command are now a whole layer, and the two `--include`s are what keep it
+  honest**: the suites moved out of `frameworks/angular/test/` in the structure refactor's
+  batch 2 and out of `frameworks/react/test-dom/` in batch 3, so neither directory bounds
+  the question any more — and widening to a layer without restricting to a suite extension
+  matches the bindings that *declare* these exceptions
+  (`ActivityFeed.behaviour.json`, `Input.behaviour.json`, `Textarea.behaviour.json`) rather
+  than a suite that pins one, which is the opposite of what the question asks; on the React
+  side it also reaches `vendor/ReactDomClient.js`, a committed third-party bundle.
+  **This entry read *seven* until 8C9**, which
   pinned `Tag`'s `states.disabled` in **both** layers by declaring it in the `removable`
-  case's `behavioural` map (`tag-and-chip-cases.test.jsx`, `Tag.cases.test.ts`), and
+  case's `behavioural` map (`TagAndChipCases.dom.test.jsx`, `Tag.cases.test.ts`), and
   `CalendarEvent`'s two declarations of the same requirement are pinned from birth in the
   same suite. **The enumeration was never exhaustive and still is not** — `TableRow`
   excepts `states.disabled`, `keyboard.Enter` and `keyboard.Space` and is in no suite at
@@ -1583,10 +1783,12 @@ scheduled for deletion the same week.
   `grep -rHo '"requirement": "[^"]*"' --include='*.behaviour.json' frameworks/ | sort -u`
   against `BEHAVIOURAL` in `scripts/lib/behaviour-compliance.mjs`, rather than any list
   written here; and read the other side — which verdicts a suite actually declares — with
-  `grep -rho "'[a-z]*\.[A-Za-z]*': \(true\|false\)" frameworks/react/test-dom/
-  frameworks/angular/ | sed "s/: .*//;s/'//g" | sort -u`, since an enumeration of
-  that has gone stale here twice. The restore of the React test directory did not change
-  what is unpinned, and its deletion was never what caused it.
+  `grep -rho "'[a-z]*\.[A-Za-z]*': \(true\|false\)" --include='*.dom.test.jsx'
+  --include='*.test.ts' frameworks/react/ frameworks/angular/ | sed "s/: .*//;s/'//g" |
+  sort -u`, since an enumeration of
+  that has gone stale here twice. Neither the deletion and restore of the React DOM test
+  directory nor its later disappearance changed what is unpinned; none of them was ever
+  what caused it.
 - **Angular has no `Calendar`, and nothing has decided whether it should.** React's
   `Calendar` is a day/hour schedule grid with absolutely-positioned event blocks;
   Angular has no equivalent from either an `arena-*` primitive or Angular Material —
@@ -1741,7 +1943,7 @@ scheduled for deletion the same week.
   or `roles.controls` however much arrow-key handling it grew, so the panel and its wiring
   had to exist before the keyboard behaviour had anything to attach to. Unlike `Calendar`
   and `Table`, `Tabs` binds `tabs` rather than `grid`, so it was never inside the hand-check
-  rule, and `frameworks/react/test-dom/tabs.test.jsx` now backs the claim with a render
+  rule, and `frameworks/react/components/navigation/tabs/Tabs.dom.test.jsx` now backs the claim with a render
   suite — `Tabs:react` is in `COVERED`. What the fix did **not** buy: the interior of the
   roving tab stop (that Tab from elsewhere in the page actually lands on the active tab)
   is still unverifiable in happy-dom, same as the rest of this repo's focus claims, and is
@@ -1777,7 +1979,7 @@ scheduled for deletion the same week.
   throw is about a reference that exists and cannot be checked, never about a missing one.
   **And *each* is quantified rather than sampled** — a subject may be an array, every element
   in it must meet the requirement, and a quantified requirement handed a single element throws
-  as well. `tabs.test.jsx` hands over every tab **as well as** keeping its own hand-resolution
+  as well. `Tabs.dom.test.jsx` hands over every tab **as well as** keeping its own hand-resolution
   test, which the layer does not supersede: that test also asserts the reverse `aria-labelledby`
   wiring — each panel labelled by the tab that controls it — and that exactly one panel is
   unhidden while the rest are hidden rather than absent. Neither is a requirement key, so no
@@ -1816,7 +2018,7 @@ scheduled for deletion the same week.
   over at all; and one that quantifies over a *page* rather than over what the component
   renders, which a component suite cannot satisfy without faking a second landmark.
   **What quantifying buys is bounded by the selector that builds the collection**, and that
-  boundary is the mechanism's real edge rather than a defect in it. `tabs.test.jsx` passes
+  boundary is the mechanism's real edge rather than a defect in it. `Tabs.dom.test.jsx` passes
   `querySelectorAll('[role="tab"]')`, so a tab rendered *without* `role="tab"` leaves the
   collection silently and takes its dangling `aria-controls` with it, while every element that
   remains still passes. Not live — `Tabs.jsx` renders the role uniformly — but the rule makes
@@ -1916,7 +2118,7 @@ scheduled for deletion the same week.
   records — a name that is present, satisfies `roles.label` mechanically, and tells a
   screen-reader user nothing — and it is why `Table.label` and `SegmentedControl.ariaLabel`
   were guarded rather than defaulted. It ships knowingly, and
-  `frameworks/react/test-dom/onboarding-modal.test.jsx` asserts the collision rather than
+  `frameworks/react/components/feedback/onboarding/Onboarding.dom.test.jsx` asserts the collision rather than
   papering over it.
 
 - **`SideNav`'s D1 flatten dropped every forwarded attribute and no gate stands behind the
@@ -2073,7 +2275,8 @@ count written here, which would drift.
   bucket it does not name**: of the per-component sections, only about a third
   are behaviour that migrates into `exceptions`; a few are API and
   belong to plan 8; and several are per-component *rendering* divergences —
-  `chart-internals`' units,
+  `DataVisuals`' units (that section was headed `chart-internals` until batch 3 renamed the
+  module),
   UnauthCard's hand-duplicated panel classes, SideNav being described three times —
   which are neither behaviour nor API and have no destination in the spec's scheme.
   They stay as prose alongside the structural half. A migration that deletes a cited
@@ -2095,8 +2298,10 @@ count written here, which would drift.
   binding form — are **not** in the script's own header; they are documented in
   the `check:dimensions` paragraph under *Architecture* above, which is the only
   place they are written down. **An `EXEMPT` key carries a file path, so a layer
-  that moves invalidates every key naming it** — the three
-  `ChartInternals.ts` entries were rekeyed in the structure refactor's batch 2.
+  that moves invalidates every key naming it** — the same three entries have been rekeyed
+  twice, to `frameworks/angular/components/charts/ChartInternals.ts` in the structure
+  refactor's batch 2 and to `frameworks/angular/DataVisuals.ts` in batch 3, which moved that
+  module to the layer root and renamed it.
   That is loud rather than silent, because a stale exemption fails this gate; but
   it also means a key here is a cross-file claim of the kind this section's own
   rule is about, and the paired suite asserts on the map by name, so the rekey is

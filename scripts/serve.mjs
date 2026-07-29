@@ -57,8 +57,8 @@ Bun.serve({
     if (isDir(path)) {
       /* Redirect to the trailing slash before serving anything. Without it the
          browser resolves the page's relative URLs against the PARENT
-         directory, so `./Screen.jsx` in ui_kits/console/index.html asks for
-         ui_kits/Screen.jsx and 404s — the page loads, renders nothing, and
+         directory, so `./Screen.jsx` in ui-kits/console/index.html asks for
+         ui-kits/Screen.jsx and 404s — the page loads, renders nothing, and
          shows only the dark background. Every static server does this; ours
          did not, so the console app was reachable only at its full
          .../console/ or .../console/index.html URL. */

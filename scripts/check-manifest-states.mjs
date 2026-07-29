@@ -70,8 +70,8 @@ export const SOURCE_OVERRIDES = new Map([
      invented. Both files are listed because the manifest covers both: `Table`'s
      own slots (the wrapper, the header cell) and the row's. */
   ['Table', [
-    'frameworks/react/components/display/Table.jsx',
-    'frameworks/react/components/display/TableRow.jsx',
+    'frameworks/react/components/display/table/Table.jsx',
+    'frameworks/react/components/display/table-row/TableRow.jsx',
   ]],
   /* SideNav is a COMPOUND component too, and the naive search is wrong here in a
      sharper way than it is for Table: `SideNav.jsx` renders the <nav> and nothing
@@ -85,17 +85,17 @@ export const SOURCE_OVERRIDES = new Map([
      reported as invented -- a false failure on a correct change, and the exact
      inverse of the defect this gate exists to catch. */
   ['SideNav', [
-    'frameworks/react/components/navigation/SideNav.jsx',
-    'frameworks/react/components/navigation/SideNavItem.jsx',
-    'frameworks/react/components/navigation/SideNavSection.jsx',
-    'frameworks/react/components/navigation/SideNavCollapsible.jsx',
+    'frameworks/react/components/navigation/side-nav/SideNav.jsx',
+    'frameworks/react/components/navigation/side-nav-item/SideNavItem.jsx',
+    'frameworks/react/components/navigation/side-nav-section/SideNavSection.jsx',
+    'frameworks/react/components/navigation/side-nav-collapsible/SideNavCollapsible.jsx',
   ]],
   /* Tabs is a COMPOUND component: the manifest's `tab` slot mirrors a tab, and a
      tab is `Tab.jsx`, not `Tabs.jsx` -- which owns the strip, the panel and the
      keyboard and implements no focus state of its own. The naive same-name search
      finds only the parent and would report the tab's focus ring as invented. */
-  ['Tabs', ['frameworks/react/components/navigation/Tabs.jsx',
-            'frameworks/react/components/navigation/Tab.jsx']],
+  ['Tabs', ['frameworks/react/components/navigation/tabs/Tabs.jsx',
+            'frameworks/react/components/navigation/tab/Tab.jsx']],
 ]);
 
 /** A specific `<Component>:<slot>:<family>` this crude, single-file scan

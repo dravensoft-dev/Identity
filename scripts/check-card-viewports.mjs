@@ -57,7 +57,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
  * for so far* is loaded, but content that mounts after — an icon glyph, a
  * monospace label — can ask for a face nothing had requested yet, and
  * document.fonts does not re-open the promise that already resolved. Found
- * by hand chasing exactly this: two pages (forms.card.html,
+ * by hand chasing exactly this: two pages (Forms.card.html,
  * ConfirmDialog.card.html) measured a taller box than they render at rest,
  * for as long as ~200ms after document.fonts.ready — a fallback glyph's
  * metrics before the real font swaps in — every time, reproducibly. The old
@@ -77,7 +77,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
  * whatever direct child of body contains it) reports short. Scanning
  * getElementsByTagName('*') catches that at any depth and for anything out
  * of normal flow, and is still one flat pass with no recursion — measured by
- * hand at under 1ms against alert.card.html's real 26 elements and about
+ * hand at under 1ms against Alert.card.html's real 26 elements and about
  * 100ms against a synthetic 20,000-element page, so it stays comfortably
  * inside a single frame's budget (~16ms at 60Hz) — the cadence the stability
  * loop below now polls at — for anything these pages render.
@@ -148,13 +148,15 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
  * at frame cadence the same three reads cost a handful of milliseconds, so
  * there is no reason to relax the count along with the cadence. On its own,
  * though, three-in-a-row was not enough: it counts identical *layout* reads,
- * and forms.card.html and ConfirmDialog.card.html both hold a stable-looking
+ * and Forms.card.html and ConfirmDialog.card.html both hold a stable-looking
  * fallback-glyph layout for well over three frames before the real font
  * swaps in (see fontsSettled below, and its own comment above). fontsSettled()
  * is the second, independent gate that case needed — the two together, not a bigger
  * number for either alone, are what it took to match the old floor's result
- * exactly. Verified empirically against all 45 @dsCard pages in the repo:
- * every one measures the same contentHeight, scrollHeight and scrollWidth
+ * exactly. Verified empirically against all 45 @dsCard pages the repo held at
+ * the time -- the count is 70 today, so that is the measurement's scope rather
+ * than a current figure; re-derive with `bun run check:cards`, which prints it:
+ * every one measured the same contentHeight, scrollHeight and scrollWidth
  * this loop reported before the switch to frames, across repeated runs (see
  * the report accompanying this change).
  *
@@ -529,7 +531,18 @@ function skip(reason) {
  * enough that the wait-dominated per-page latency (fonts, the JSX transpile
  * round-trip, arenaReady) overlaps across pages instead of serializing, low
  * enough to stay well short of thrashing. Picked from the middle of that
- * range with no other tiebreaker. */
+ * range with no other tiebreaker.
+ *
+ * That reasoning is why the constant read 5, which it did until 4c8f160 set it
+ * to 1 without revisiting the paragraph above. Read that commit's message for
+ * the measurement rather than trusting a restatement here; its finding was that
+ * concurrency bought about a second of sweep only once the per-page deadline
+ * was more than doubled to survive the contention it created, which trades
+ * hang-detection latency for nothing. So the range above is the argument that
+ * was superseded, not the reason for the value now here -- kept because a
+ * future reader raising the bound should know it was tried and measured. What
+ * a bound of 1 means downstream is written where it bites, on
+ * interleaveForDispatch; do not restate it here. */
 const PAGE_CONCURRENCY = 1;
 
 /** Run `fn` over `items` with at most `limit` calls in flight at once,
@@ -555,12 +568,20 @@ export async function mapWithConcurrency(items, limit, fn) {
 }
 
 /* findCardPages sorts by path, and four of the heaviest pages in the repo to
- * actually paint — brand.card.html, charts.card.html,
- * activity-feed.card.html and calendar.card.html — happen to sort first,
- * right next to each other. mapWithConcurrency's worker loop claims items in
+ * actually paint — AppLogo.card.html, Charts.card.html,
+ * ActivityFeed.card.html and Calendar.card.html — sort at the very front of
+ * that order. (They were brand.card.html, charts.card.html,
+ * activity-feed.card.html and calendar.card.html, sorting first and strictly
+ * adjacent, until the structure refactor's batch 3 renamed and renested them.
+ * They are no longer adjacent — Display.card.html and TableAvatar.card.html
+ * sort between them, because a capital initial sorts before a lowercase
+ * directory name — but all four still land inside the first six, so the
+ * argument below is unchanged in substance. Re-derive rather than trusting
+ * this: `findCardPages('.')` and read the head of the array.)
+ * mapWithConcurrency's worker loop claims items in
  * plain array order, so under the identity order every wave of PAGE_CONCURRENCY
- * workers starts by claiming items 0..PAGE_CONCURRENCY-1 — those same four
- * pages, together, every run. Headless Chromium's software rasterizer
+ * workers starts by claiming items 0..PAGE_CONCURRENCY-1 — those same pages,
+ * together, every run, for any PAGE_CONCURRENCY of 2 or more. Headless Chromium's software rasterizer
  * (--disable-gpu, one process behind every target) is not built to paint
  * several canvas/SVG-heavy or animated pages at once: confirmed by hand,
  * measured alone each of the four settles in under 3s, but with two or more
@@ -579,9 +600,14 @@ export async function mapWithConcurrency(items, limit, fn) {
  *  .length / groups)` positions, not `groups` itself, so the separation only
  *  clears a `groups`-wide mapWithConcurrency's wave once there are at least
  *  about `groups` items per row (`items.length` on the order of `groups²` or
- *  more). At this file's real scale — 45 pages, `groups` = PAGE_CONCURRENCY
- *  (5) — that holds comfortably (9 items per row), which is the only case
- *  this function is ever asked to handle.
+ *  more). At this file's real scale that holds comfortably and always has:
+ *  it was 45 pages against a `groups` of 5 when this was written (9 per row),
+ *  and `bun run check:cards` reports 70 pages today, which only widens the
+ *  margin. Both figures are measurements rather than constants — the caller
+ *  passes PAGE_CONCURRENCY as `groups`, so read that constant rather than a
+ *  number written here, and note it is 1 today, at which value
+ *  mapWithConcurrency never has two pages in flight and this interleave is
+ *  inert rather than wrong.
  *  @template T @param {T[]} items @param {number} groups @returns {T[]} */
 export function interleaveForDispatch(items, groups) {
   const width = Math.max(1, Math.min(groups, items.length || 1));

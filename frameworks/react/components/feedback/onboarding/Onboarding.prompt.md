@@ -1,0 +1,71 @@
+Guided in-product onboarding (H10). Complements `EmptyState`: presents features step by step the first time. Controlled — store `index` and whether it was already completed (e.g. in localStorage) so it isn't repeated.
+
+```jsx
+const [step, setStep] = useState(0);
+<Onboarding open={showTour} index={step}
+  onNext={() => setStep((s) => s + 1)}
+  onBack={() => setStep((s) => s - 1)}
+  onSkip={endTour} onDone={endTour}
+  steps={[
+    { eyebrow: 'Welcome', title: 'Your first deployment', body: 'From here you will deploy and roll back with one click.' },
+    { title: 'Command palette', body: 'Press ⌘K to run any action without the mouse.' },
+    { title: 'All set', body: 'You can reopen this guide from Help anytime.' },
+  ]} />
+```
+
+**Behaviour.** The coachmark is a modal dialog and behaves like one: opening moves focus to
+the first control inside it, Tab is trapped at both ends of that set, closing restores focus
+to whatever had it before, and **Escape dismisses through `onSkip`** — the same channel the
+scrim click uses, so Escape joins the mouse path rather than replacing it. There is no
+separate "dismiss" callback to wire.
+
+**The accessible name is a fallback chain**, `step.title ?? step.eyebrow ?? "Step N of M"`,
+matching what the Angular layer computes. **A caller who wants a useful name still supplies a
+step `title`** — a positional name is a floor, not a substitute. On a step with neither
+`title` nor `eyebrow` the dialog is announced as `Step 2 of 3`, which is the exact string the
+progress dots inside it already carry as their own `aria-label`, so a screen reader announces
+the two identically. That is the cost of keeping `OnboardingStep.title` optional and is
+mirrored from Angular deliberately, not an oversight.
+
+**Checked in Chromium by hand**, because native sequential focus navigation is the browser's
+and no suite in this repo drives one: with the tour open, Tab repeatedly through Back / Skip /
+Next and confirm focus never leaves the coachmark, then Shift+Tab back through it. The
+boundary wraps at either end are covered by
+`frameworks/react/components/feedback/onboarding/Onboarding.dom.test.jsx`;
+the interior is this check.
+
+**Do / Don't**
+- Max 3–5 steps, and store that it was already completed so it isn't repeated.
+- Don't block critical tasks after the tour: "Skip" must always be available.
+- Give every step a `title` (or at least an `eyebrow`): without one the dialog names itself
+  positionally and tells a screen-reader user nothing about what it is showing them.
+
+## Verifying the focus trap by hand
+
+A suite proves the boundary wrap — Arena's own `.focus()` call. It cannot prove the
+**interior**, that Tab from a middle control reaches the next one: that is the
+browser's native sequential focus navigation, which happy-dom does not implement. A
+browser-driven gate stays refused, so this list is the check.
+
+Serve the tree with `bun run demos` and open
+`frameworks/react/components/feedback/onboarding/Onboarding.card.html`.
+
+**Start by pressing Escape.** That card renders with the tour already open, because a
+specimen has to show something, and pressing "Start tour" while `open` is already
+`true` correctly does nothing — the hook keys its effect on `open` changing. Skipping
+this step measures the closed-to-open transition that never happened.
+
+Then, with the tour closed:
+
+1. **Tab to "Start tour" and press Enter.** Focus must land on **Skip**, the first
+   focusable in the coachmark. On the first step there is no Back button, so Skip is
+   genuinely first; on a middle step it is Back.
+2. **Tab once.** Focus moves to **Next**. Native navigation, not Arena's.
+3. **Tab again.** Focus wraps back to Skip.
+4. **Shift+Tab.** Focus wraps from Skip to Next.
+5. **Escape.** The tour closes through `onSkip` — the same channel the Skip button and
+   the scrim click use, and the one Angular's `arena-onboarding` also routes Escape to
+   — and focus returns to "Start tour".
+
+Driving this through CDP: Enter must be `keyDown` with `text: '\r'`; a `rawKeyDown`
+does not activate a button.

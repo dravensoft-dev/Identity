@@ -125,10 +125,13 @@ components/display/badge/
 The category comes from `frameworks/Components.json`, which declares it once for all three
 framework layers, and `bun run check:structure` fails a component directory that sits
 anywhere else. That gate says nothing about whether the category is the *right* one — that
-is editorial judgement and no gate has it. **This is the only layer migrated to that shape
-so far**; `MIGRATED` in `scripts/check-structure.mjs` is where to read which layers the gate
-currently claims anything about. The root `CLAUDE.md` carries the rule and its four
-mechanical naming exceptions in full.
+is editorial judgement and no gate has it. **This was the FIRST layer migrated to that shape;
+all three are migrated now**, Angular in the refactor's batch 2 and React in batch 3, so the
+gate reads every layer unconditionally and its `MIGRATED` list — which used to be where you
+read which layers it was claiming anything about — was deleted with the last one. What it
+enumerates instead is `LAYERS`. The root `CLAUDE.md` carries the rule and its
+mechanical naming exceptions in full; count them there rather than here, since this sentence
+said *four* while the set was five and then six.
 
 A specimen sits **two** directories deeper than the flat layout it replaced, so every
 reference it makes out of its own directory — the repo-root `styles.css`, and this layer's

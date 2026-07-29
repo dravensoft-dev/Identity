@@ -73,7 +73,7 @@ test('arena-bar-chart renders a real <table> carrying every plotted number', () 
  * with `display:none` or `hidden` is removed from the accessibility tree too, so
  * it would satisfy "there is a table in the source" while providing exactly the
  * alternative a sighted-only chart already provides: none. The idiom this layer
- * uses is `SR_ONLY` (chart-internals.ts) -- a 1px clipped box, which is also one
+ * uses is `SR_ONLY` (frameworks/angular/DataVisuals.ts) -- a 1px clipped box, which is also one
  * of the entries in check-dimension-literals.mjs's EXEMPT map, since the number
  * is a constraint of the accessibility idiom rather than a design dimension. */
 test('arena-bar-chart hides its data table visually without removing it from the accessibility tree', () => {

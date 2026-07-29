@@ -88,15 +88,12 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FORMS = new Set(['primitive', 'enum', 'object', 'array', 'slot', 'event', 'consumerData', 'functionInput']);
 const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);
 
-/** React groups, the same list check-behaviour.mjs walks. */
-const REACT_GROUPS = ['brand', 'charts', 'display', 'feedback', 'forms', 'navigation'];
-
 /* This gate carried its own copy of the "AppLogo" -> "app-logo" derivation
  * until the structure refactor gave check-structure.mjs the same mapping and
- * its inverse. It is gone rather than re-exported: nothing here calls it any
- * more, since Angular discovery now WALKS the layer instead of deriving a
- * path per contract, and a re-export would leave check-api.test.mjs pinning
- * another module's function through a gate that never uses it. */
+ * its inverse. It is gone rather than re-exported: nothing here derives a path
+ * per contract any more, since BOTH layers are discovered by WALKING them, and
+ * a re-export would leave check-api.test.mjs pinning another module's function
+ * through a gate that never uses it. */
 
 /** A contract member's name as one layer binds it. The contract governs the
  *  member surface, never the syntax a platform expresses it in. See the binding
@@ -482,30 +479,51 @@ export function compareSurface(contract, members, layer, types = new Map()) {
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 
-/** The React declaration file for a contract, or null.
+/** Which React components this gate can read, and what it must complain about,
+ *  from the layer tree as `category -> kebab directory names` and a predicate
+ *  saying whether a repo-relative path exists. The exact mirror of
+ *  resolveAngularImplementations below, and pure for the same reason: both rules
+ *  are guards against a SILENT failure, so a guard with no suite behind it would
+ *  survive its own deletion.
  *
- *  BATCH 3 OF THE STRUCTURE REFACTOR MUST CONVERT THIS to the walk
- *  `resolveAngularImplementations()` below uses. It is the same
- *  existsSync-probe-returning-null shape that made the Angular half of this gate
- *  pass silently over twenty unread implementations, and it is left here only
- *  because React has not moved yet.
- *
- *  What differs today is the FAILURE MODE, not the shape. React's contracts are
- *  the majority and none of them is Angular-only, so a layout change that breaks
- *  this lookup makes main()'s `if (!path) continue` skip nearly every contract at
- *  once and the gate reports far fewer contracts than `api/components/` holds --
- *  loudly wrong rather than quietly green. The Angular probe was silent precisely
- *  because Angular implements a minority of the contracts, so "resolved to null"
- *  was indistinguishable from "this layer does not implement it". Batch 3 removes
- *  the distinction rather than relying on it: a gate that cannot tell "absent"
- *  from "I could not find it" is one layout change away from the silent case,
- *  whichever side of it happens to be true today. */
-function reactPath(component) {
-  for (const group of REACT_GROUPS) {
-    const path = join(root, 'frameworks/react/components', group, `${component}.d.ts`);
-    if (existsSync(path)) return path;
-  }
-  return null;
+ *  It replaces an existsSync probe over a hardcoded group list that returned
+ *  null on a miss -- the same shape that made the Angular half of this gate
+ *  print "50 contract(s) hold across 50 layer implementation(s)" while twenty
+ *  real implementations went unread. React's failure mode was loud rather than
+ *  silent only because React holds the majority of the contracts, so a broken
+ *  lookup skipped nearly all of them at once; that is a property of today's
+ *  contract distribution and never a property of the probe.
+ *  @param {Record<string,string[]>} tree @param {(p: string) => boolean} exists
+ *  @returns {{implementations: Map<string,string>, problems: string[]}} */
+export function resolveReactImplementations(tree, exists) {
+  const implementations = new Map();
+  const problems = [];
+  for (const [category, dirs] of Object.entries(tree))
+    for (const dir of dirs) {
+      const name = pascal(dir);
+      const path = `frameworks/react/components/${category}/${dir}/${name}.d.ts`;
+      if (exists(path)) { implementations.set(name, path); continue; }
+      problems.push(
+        `frameworks/react/components/${category}/${dir}/: is a component directory with no ${name}.d.ts — `
+        + 'this gate cannot read a surface it cannot find, and skipping it would report a clean pass over an unchecked layer');
+    }
+  if (implementations.size === 0)
+    problems.push('found 0 React component implementations — an empty result set is a failure, not a clean pass; check the discovery path');
+  return { implementations, problems };
+}
+
+/** resolveReactImplementations above, wired to the real tree: the only things
+ *  this adds are readLayer('react'), an existsSync against the repo root, and
+ *  the resolution of each relative path to an absolute one. */
+function reactImplementations() {
+  const { implementations, problems } = resolveReactImplementations(
+    readLayer('react'),
+    (path) => existsSync(join(root, path)),
+  );
+  return {
+    implementations: new Map([...implementations].map(([name, path]) => [name, join(root, path)])),
+    problems,
+  };
 }
 
 /** Decide which Angular components this gate can read, and what it must
@@ -614,6 +632,20 @@ function main() {
 
   const contractDir = join(root, 'api/components');
   const files = existsSync(contractDir) ? readdirSync(contractDir).filter((f) => f.endsWith('.json')).sort() : [];
+  /* Both layers are discovered by walking, once, before the contract loop --
+   * never probed per contract. A contract naming a component a layer does not
+   * implement simply misses the map, which is absence and correctly silent; a
+   * directory the walk really found but whose surface file is unopenable is a
+   * problem the walk itself reports, which is what "absent" and "not found"
+   * being one value used to hide. Every component directory contributes to the
+   * map whether a contract names it or not, so the map never has to know what
+   * is contracted -- coverage here is partial by design, and the lookups below
+   * take from it only the names api/components/ asks for. A directory no
+   * contract names is simply never looked up; it is not a problem, and the
+   * per-directory guard above is about a directory whose SURFACE FILE is
+   * missing, which is a different question and true regardless. */
+  const reactLayer = reactImplementations();
+  problems.push(...reactLayer.problems);
   const angularLayer = angularImplementations();
   problems.push(...angularLayer.problems);
   let layersChecked = 0;
@@ -623,7 +655,7 @@ function main() {
     problems.push(...validateContract(contract, typeNames));
 
     /* 1. Coverage, resolved structurally rather than from a list. */
-    const react = reactPath(contract.component);
+    const react = reactLayer.implementations.get(contract.component) ?? null;
     const angular = angularLayer.implementations.get(contract.component) ?? null;
     if (!react && !angular) {
       problems.push(`${file}: names component "${contract.component}", which no layer implements`);

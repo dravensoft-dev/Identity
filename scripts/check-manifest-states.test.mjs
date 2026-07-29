@@ -76,7 +76,7 @@ test('classStringsBySlot reads both slots and every variant branch, merging same
 test('findReactSource finds Pagination.jsx by a recursive search', () => {
   const found = findReactSource('Pagination');
   assert.ok(found, 'expected a match');
-  assert.ok(found.endsWith('frameworks/react/components/navigation/Pagination.jsx'));
+  assert.ok(found.endsWith('frameworks/react/components/navigation/pagination/Pagination.jsx'));
 });
 
 test('findReactSource returns null for a name with no matching file', () => {

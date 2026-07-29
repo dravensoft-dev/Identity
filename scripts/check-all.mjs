@@ -6,8 +6,8 @@
  *
  * The twenty-two gates in GATES below, plus the test suite: one more step under
  * node (scripts/ only), three more under bun (the ngc emit of the Angular test
- * surface, then the merged framework suites, then frameworks/react/test-dom in
- * a process of its own -- see testStep).
+ * surface, then the merged framework suites, then the `.dom.test.jsx` suites
+ * in a process of their own -- see testStep).
  *
  * Three gates can report a third status. check:cards needs a headless
  * browser, and check:vendor and check:demos each need a Bun-only builder
@@ -79,44 +79,64 @@ export const GATES = [
  *  command so that a compile failure reports as a failed build under its own
  *  name, instead of as a test command that mysteriously matched nothing.
  *
- *  scripts/, frameworks/react/test/ and the emitted Angular suites run
- *  together in the first `bun test`, exactly as before frameworks/react/test-dom
- *  existed; frameworks/react/test-dom runs alone in the second. They cannot
- *  be merged: a single `bun test` invocation shares one process (and one
- *  `globalThis`) across every file it matches, and the second invocation's
- *  `--preload frameworks/react/test-dom/preload.js` registers happy-dom for
- *  the whole process and is deliberately never paired with an `unregister()`
- *  (see preload.js's own reasoning). That registration would not itself throw
- *  if merged with the Angular suites -- `frameworks/angular/test/TestbedEnv.ts`
+ *  scripts/ and the emitted Angular suites run together with the whole
+ *  frameworks/react tree in the first `bun test`; the DOM suites run alone in
+ *  the second. The criterion that decides which suite goes where used to be a
+ *  directory: frameworks/react/test-dom/ held the DOM suites and
+ *  frameworks/react/test/ held everything else, so the first invocation named
+ *  the DOM-free directory and the second named the DOM one. The structure
+ *  refactor colocated most suites beside the component they cover, which
+ *  removed `test-dom/` outright and left `frameworks/react/test/` holding only
+ *  the harness plus the suites that are about no one component -- and those
+ *  include DOM ones, so its contents no longer answer the question the old
+ *  directory boundary answered. The split is carried by the `.dom.test.jsx`
+ *  filename infix instead, wherever the file sits: the first invocation passes
+ *  `frameworks/react` plus `--path-ignore-patterns=**\/*.dom.test.jsx` to
+ *  exclude every DOM suite wherever it sits, and the second passes the bare
+ *  string `.dom.test.jsx` as its one positional -- `bun test` matches a
+ *  positional as a path *substring*, so that one pattern alone selects every
+ *  file carrying the infix, in whatever directory it lives.
+ *
+ *  They still cannot be merged, and the reason is unchanged by the move: a
+ *  single `bun test` invocation shares one process (and one `globalThis`)
+ *  across every file it matches, and the second invocation's
+ *  `--preload frameworks/react/test/Preload.js` registers happy-dom for the
+ *  whole process and is deliberately never paired with an `unregister()` (see
+ *  Preload.js's own reasoning). That registration would not itself throw if
+ *  merged with the Angular suites -- `frameworks/angular/test/TestbedEnv.ts`
  *  is the only Angular registration site and it is guarded
  *  (`ensureDom()` only calls `GlobalRegistrator.register()` when
  *  `!GlobalRegistrator.isRegistered`), so it silently skips registering rather
  *  than colliding with one the preload already made; verified by hand, merging
  *  the preloaded invocation with the emitted Angular suites runs clean. What
- *  the merge cannot do safely is add `scripts/` and `frameworks/react/test/`
- *  to it: those two are meant to run DOM-free, and a happy-dom installed
+ *  the merge cannot do safely is add `scripts/` and the DOM-free React suites
+ *  to it: those are meant to run DOM-free, and a happy-dom installed
  *  process-wide for the whole invocation changes what they prove without
  *  failing loudly to say so -- verified by hand as well, merging all four
  *  turns a passing `scripts/lib/static-server.test.mjs` fetch assertion into a
  *  cross-origin failure, because `fetch` is no longer Bun's own. That is the
- *  same hazard the two-React-test-directories split exists to prevent (see
- *  CLAUDE.md), and it is why the merged invocation still stays separate from
- *  the preloaded one.
+ *  same hazard the two-React-test-directories split used to exist to prevent
+ *  (see CLAUDE.md), and it is why the merged invocation still stays separate
+ *  from the preloaded one.
  *
  *  The `--preload` is not optional and not a convenience: react-dom decides
  *  whether `input` is supported at its own module evaluation, so a DOM
- *  installed any later -- including from a module harness.jsx imports first --
+ *  installed any later -- including from a module Harness.jsx imports first --
  *  latches React's legacy change detection, and no dispatched `input` or
- *  `change` reaches a handler. harness.jsx throws rather than installing a
+ *  `change` reaches a handler. Harness.jsx throws rather than installing a
  *  fallback DOM, so this argument going missing fails loudly.
  *
- *  'frameworks/react/test/' carries a trailing slash for a second, unrelated
- *  reason: `bun test` matches a directory argument as a path *substring*, not
- *  a path prefix, so the bare string 'frameworks/react/test' also matches
- *  every file under the sibling 'frameworks/react/test-dom/' -- silently
- *  pulling the DOM harness back into the one invocation it must stay out of.
- *  The trailing slash anchors the match at the directory boundary; also
- *  reproduced by hand.
+ *  Past state, kept here because it explains why the shape above is what it
+ *  is: while the split was a directory, `frameworks/react/test/` was passed
+ *  with a trailing slash for a second, unrelated reason -- `bun test` matched
+ *  a directory argument as a path substring, not a path prefix, so the bare
+ *  string `frameworks/react/test` also matched every file under the sibling
+ *  `frameworks/react/test-dom/`, silently pulling the DOM harness back into
+ *  the one invocation it had to stay out of. The trailing slash anchored the
+ *  match at the directory boundary. That hazard no longer exists:
+ *  frameworks/react/test-dom/ is gone, the first invocation's positional is
+ *  now the whole frameworks/react tree by design, and what keeps the DOM
+ *  suites out of it is the `--path-ignore-patterns` glob, not a path prefix.
  *
  *  Under node, only scripts/ runs, and that asymmetry is deliberate rather
  *  than an oversight. It used to rest on one reason for both framework
@@ -128,9 +148,10 @@ export const GATES = [
  *  The Angular suites are emitted JavaScript by the time they run, so nothing
  *  about their source language keeps them off the node path any more; they
  *  are left off it as a scope decision, not a technical bar. The React suites
- *  (test-dom included) still import `.jsx` directly and have no emit, so they
- *  genuinely cannot run under plain node -- THAT is the reason the node path
- *  runs scripts/ alone, and it is a reason about React, not about Angular.
+ *  (the `.dom.test.jsx` ones included) still import `.jsx` directly and have
+ *  no emit, so they genuinely cannot run under plain node -- THAT is the
+ *  reason the node path runs scripts/ alone, and it is a reason about React,
+ *  not about Angular.
  *  Keeping the node path alive for scripts/ is what keeps every GATE
  *  runtime-portable.
  *  @param {{isBun: boolean, testFiles: string[]}} env
@@ -138,8 +159,11 @@ export const GATES = [
 export function testStep({ isBun, testFiles }) {
   if (isBun) return [
     { name: 'build (ngc emit of the Angular test surface)', args: ['run', 'build:angular-tests'] },
-    { name: 'test (bun test scripts/ + framework suites)', args: ['test', 'scripts', 'frameworks/react/test/', 'build/angular-test/angular'] },
-    { name: 'test (bun test frameworks/react/test-dom, isolated)', args: ['test', '--preload', './frameworks/react/test-dom/preload.js', 'frameworks/react/test-dom'] },
+    { name: 'test (bun test scripts/ + framework suites)',
+      args: ['test', 'scripts', 'frameworks/react', 'build/angular-test/angular',
+             '--path-ignore-patterns=**/*.dom.test.jsx'] },
+    { name: 'test (React DOM suites, isolated)',
+      args: ['test', '--preload', './frameworks/react/test/Preload.js', '.dom.test.jsx'] },
   ];
   return [{ name: 'test (node --test scripts/*.test.mjs)', args: ['--test', ...testFiles] }];
 }

@@ -64,7 +64,7 @@ export function isConfirmLocked(required: string | undefined, typed: string): bo
  *  open and is restored to whatever held it beforehand on close; Tab/Shift+Tab
  *  cycle within the panel rather than escaping to the page behind it; Escape
  *  reports dismissal the same way the Cancel button does. `ConfirmDialog.jsx`
- *  does all of this too as of plan 8C4, through `use-dialog-modal.js`, a port of
+ *  does all of this too as of plan 8C4, through `UseDialogModal.js`, a port of
  *  this layer's own `focus-trap.ts`. So this component is no longer the only
  *  accessible half of the pair, and `components-divergences.md`'s entry has been
  *  renarrowed to what actually still differs -- see its "ConfirmDialog -- the

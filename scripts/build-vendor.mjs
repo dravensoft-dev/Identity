@@ -57,9 +57,9 @@ export const BANNER =
  *  three bundles.
  *  @type {{entry: string, specifier: string, out: string, real: string, external: string[]}[]} */
 export const ENTRIES = [
-  { entry: 'react/index.js', specifier: 'react', out: 'react.js', real: 'react', external: [] },
-  { entry: 'react/jsx-runtime.js', specifier: 'react/jsx-runtime', out: 'react-jsx-runtime.js', real: 'react/jsx-runtime.js', external: ['react'] },
-  { entry: 'react-dom/client.js', specifier: 'react-dom/client', out: 'react-dom-client.js', real: 'react-dom/client.js', external: ['react'] },
+  { entry: 'react/index.js', specifier: 'react', out: 'React.js', real: 'react', external: [] },
+  { entry: 'react/jsx-runtime.js', specifier: 'react/jsx-runtime', out: 'ReactJsxRuntime.js', real: 'react/jsx-runtime.js', external: ['react'] },
+  { entry: 'react-dom/client.js', specifier: 'react-dom/client', out: 'ReactDomClient.js', real: 'react-dom/client.js', external: ['react'] },
 ];
 
 /** @param {string} root @param {string} real @returns {string[]} every

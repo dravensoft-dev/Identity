@@ -12,7 +12,9 @@
  * different property from that one, and it stays unguarded. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateStructure, zeroLayerProblems, kebab, pascal, MIGRATED } from './check-structure.mjs';
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { validateStructure, zeroLayerProblems, kebab, pascal, LAYERS, repoRoot } from './check-structure.mjs';
 
 const categories = { display: ['Badge', 'Tag'], forms: ['Button'] };
 
@@ -42,6 +44,14 @@ test('a layer carrying only some categories is fine -- Angular has no forms/', (
   assert.deepEqual(validateStructure({ categories, layers }), []);
 });
 
+/* Rule 4, and as of batch 3 of the structure refactor this is the rule main()
+ * actually runs: MIGRATED is gone, every layer is read, and main() passes
+ * `complete: true` unconditionally -- because it passes every layer in LAYERS,
+ * and LAYERS is pinned exhaustive by the pair further down. The rule was held
+ * back for the whole refactor, so this pair is what stands behind a rule that
+ * has only just started firing against the real tree. Both directions, because
+ * the parameter is the whole difference, and the false direction is the one
+ * main() never produces -- it exists for callers of this pure function. */
 test('a declared component missing from every layer is a problem once every layer is in', () => {
   const layers = { tailwind: { display: ['badge', 'tag'] } };
   const problems = validateStructure({ categories, layers, complete: true });
@@ -49,10 +59,10 @@ test('a declared component missing from every layer is a problem once every laye
   assert.match(problems[0], /Button/);
 });
 
-test('the same tree is clean while layers are still unmigrated', () => {
+test('the same tree is clean when the caller passed only SOME of the layers', () => {
   const layers = { tailwind: { display: ['badge', 'tag'] } };
   assert.deepEqual(validateStructure({ categories, layers }), [],
-    'a component absent from the migrated layers may simply live in one this gate does not yet reach');
+    'a component absent from a partial set of layers may simply live in one that was not passed');
 });
 
 test('a directory that is not kebab-case is a problem, even in the right category', () => {
@@ -75,8 +85,31 @@ test('a component name declared in two categories is a problem, naming both -- a
   assert.match(problems[0], /forms/);
 });
 
-test('MIGRATED names the layers this gate currently reaches', () => {
-  assert.deepEqual(MIGRATED, ['tailwind', 'angular']);
+/* MIGRATED is gone, and this pair replaces the assertion that pinned it by
+ * value. There is nothing left to pin a partial scope to: main() passes every
+ * layer and `complete: true` unconditionally, so what is worth asserting is
+ * that LAYERS is exhaustive rather than what its current members happen to be.
+ * The second test is the one that would catch a fourth layer being added to
+ * frameworks/ and not to LAYERS. That is how a LAYER falls out of the gate's
+ * scope -- a layer that MOVES is caught by zeroLayerProblems instead -- and it
+ * is deliberately not written as the only way anything can: main() derived
+ * `complete` from `LAYERS.length` for one commit, and under that derivation a
+ * fourth layer added correctly to BOTH this assertion and LAYERS would have
+ * switched rule 4 off entirely with every test still green. That is a RULE
+ * leaving scope rather than a layer, and it is why `complete` is a bare `true`
+ * again -- see the comment at main()'s own call. This pair is what that `true`
+ * rests on, so the two are one argument and must move together. */
+test('LAYERS names every framework layer, all of them migrated', () => {
+  assert.deepEqual([...LAYERS].sort(), ['angular', 'react', 'tailwind']);
+});
+
+test('LAYERS is exhaustive against frameworks/ as it stands on disk', () => {
+  const onDisk = readdirSync(join(repoRoot, 'frameworks'), { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name)
+    .sort();
+  assert.deepEqual([...LAYERS].sort(), onDisk,
+    'a layer directory exists that LAYERS does not name -- check:structure would skip it entirely');
 });
 
 /* kebab() is asserted DIRECTLY here as well as through the round trip below,
@@ -98,7 +131,7 @@ test('pascal is kebab run backwards, for every directory name the tree carries',
     assert.equal(pascal(kebab(name)), name);
 });
 
-test('a MIGRATED layer with zero component directories is a failure, not a clean pass', () => {
+test('a layer with zero component directories is a failure, not a clean pass', () => {
   // The regression this guards: readLayer() returns {} for a missing
   // frameworks/<layer>/components, and validateStructure({categories, layers: {tailwind: {}}})
   // returns [] for that empty tree -- so main() would print OK and exit 0 over a
@@ -120,6 +153,6 @@ test('a non-empty layer has no zero-directory problem', () => {
   assert.deepEqual(zeroLayerProblems({ tailwind: { display: ['tag'] } }), []);
 });
 
-test('zeroLayerProblems is silent about a layer with no entry at all -- MIGRATED, not this function, decides which layers are in scope', () => {
+test('zeroLayerProblems is silent about a layer with no entry at all -- LAYERS, not this function, decides which layers are in scope', () => {
   assert.deepEqual(zeroLayerProblems({}), []);
 });

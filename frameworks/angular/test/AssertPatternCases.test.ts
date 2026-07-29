@@ -1,7 +1,7 @@
 /* The wrapper's own failure paths. These write bindings that are deliberately
    wrong to a temp file and prove the diagnostic fires -- a check nobody has
    watched fail is a check nobody knows works. A port of
-   frameworks/react/test-dom/assert-pattern-cases.test.jsx, not a second
+   frameworks/react/test/AssertPatternCases.dom.test.jsx, not a second
    design; the two layers each own their copy, as they already do for
    assertPattern.
 

@@ -30,7 +30,7 @@ test('cssCounterpart returns null for a value that is not a bare number', () => 
 });
 
 test('importedNames finds names in a braced import from the generated module', () => {
-  const src = "import { chartHeight, chartPadLeft } from '../../tokens.generated.js';";
+  const src = "import { chartHeight, chartPadLeft } from '../../Tokens.generated.js';";
   assert.deepEqual([...importedNames(src)].sort(), ['chartHeight', 'chartPadLeft']);
 });
 
@@ -39,7 +39,7 @@ test('importedNames spans a multi-line import', () => {
     'import {',
     '  chartHeight,',
     '  chartBarRadius,',
-    "} from '../../tokens.generated.js';",
+    "} from '../../Tokens.generated.js';",
   ].join('\n');
   assert.deepEqual([...importedNames(src)].sort(), ['chartBarRadius', 'chartHeight']);
 });
@@ -51,7 +51,7 @@ test('importedNames ignores an import from anything else', () => {
 
 test('catSlots is derived from the ramp and equals its slot count', async () => {
   const modules = await buildScriptModules();
-  const body = modules.get('frameworks/react/tokens.generated.js');
+  const body = modules.get('frameworks/react/Tokens.generated.js');
   assert.match(body, /^export const catSlots = 8;$/m);
 });
 
@@ -81,7 +81,7 @@ test('catSlotEnumProblems rejects a non-array', () => {
 
 test('the committed CatSlot matches the ramp the tokens are built from', async () => {
   const modules = await buildScriptModules();
-  const body = modules.get('frameworks/react/tokens.generated.js');
+  const body = modules.get('frameworks/react/Tokens.generated.js');
   const catSlots = Number(/^export const catSlots = (\d+);$/m.exec(body)[1]);
   const catSlot = JSON.parse(readFileSync(join(root, 'api/types/cat-slot.json'), 'utf8'));
   assert.deepEqual(catSlotEnumProblems(catSlots, catSlot.values), []);

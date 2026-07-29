@@ -1,9 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { existsSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   validatePattern, loadPatterns, validateBinding, reactComponents, angularPrimitives,
-  angularBindingPath, crossLayerAgrees, loadBinding, bindingCases,
+  angularBindingPath, reactBindingPath, crossLayerAgrees, loadBinding, bindingCases,
 } from './lib/behaviour-contracts.mjs';
+import { pascal } from './check-structure.mjs';
 
 const ok = {
   name: 'dialog-modal',
@@ -160,8 +163,14 @@ test('an angular binding that names its counterpart is valid', () => {
  * one and grew `SideNavItem`, 47 -> 48 when `SideNavSection` gave it its
  * first named group, 48 -> 49 when `SideNavCollapsible` gave it its first
  * `disclosure`, and 49 -> 50 when `Tabs` became a compound component and grew
- * `Tab`. Update it with the change that moves it. */
-test('the React inventory finds every component and no demo entry', () => {
+ * `Tab`. Update it with the change that moves it.
+ *
+ * It did NOT move when the structure refactor's batch 3 rewrote this walk to
+ * key on directories instead of on capital-initial `.jsx` filenames, and that
+ * is exactly what the number is doing here: the same fifty, found a different
+ * way. A rewrite that found a different set of the same size would be
+ * indistinguishable from a correct one without the name assertions below. */
+test('the React inventory finds every component, no category and no loose file', () => {
   const found = reactComponents('.');
   assert.equal(found.length, 50);
   assert.ok(found.includes('Dialog'));
@@ -171,22 +180,46 @@ test('the React inventory finds every component and no demo entry', () => {
   assert.ok(found.includes('SideNavItem'));
   assert.ok(found.includes('SideNavSection'));
   assert.ok(found.includes('SideNavCollapsible'));
-  /* A kebab-case sibling is a helper module, not a component. `side-nav-inject`
-   * is the first one spelled `.jsx` (it must be, to stay inside
-   * check:dimensions' EXTENSIONS), and without the case filter it was reported
-   * as a component and check:behaviour demanded a binding for it. */
+  /* A COMPONENT IS A DIRECTORY, so everything this walk must not return is a
+   * FILE, and files sit in two places. A helper module sits INSIDE a component's
+   * own directory -- `SideNavInject.jsx` is in `side-nav/`, and is `.jsx` rather
+   * than `.js` so it stays inside check:dimensions' EXTENSIONS. A category-wide
+   * demo page's composition script sits BESIDE the directories, one level up --
+   * `Display.card.entry.jsx` is directly in `display/`. The walk reads directory
+   * entries at both levels, so neither can reach the result. */
+  assert.ok(!found.includes('SideNavInject'));
+  /* The kebab spelling is a REGRESSION PIN against the retired heuristic, not a
+   * claim about the tree: no `side-nav-inject.jsx` exists any more, and this walk
+   * derives every name through pascal(), so nothing can make this fail today. It
+   * is kept because that file is why the old capital-initial rule had a
+   * carve-out, and because it is the shape a walk reaching back into a pre-batch-3
+   * tree would return. Delete it if the pre-move tree stops being interesting;
+   * do not leave it here unexplained. */
   assert.ok(!found.includes('side-nav-inject'));
   assert.ok(!found.some((c) => c.endsWith('.card.entry')));
+  /* A category is not a component either: the walk's outer level must not leak
+   * into its result the way the Angular walk's own test pins below. */
+  for (const category of ['brand', 'charts', 'display', 'feedback', 'forms', 'navigation'])
+    assert.ok(!found.includes(pascal(category)), `${category} is a category, not a component`);
 });
 
 /* The layer is components/<category>/<kebab>/ as of the structure refactor's
  * batch 2, so this walk is two levels deep and has two ways to go wrong that a
- * flat one did not: it can return the CATEGORY names, and it can return a
- * shared internal that now sits one level in. Both are pinned below.
- * `ChartInternals.ts` is the live instance of the second -- a bare `.ts` beside
- * the four chart directories -- and its pre-move spelling, `chart-internals`,
- * is kept in the assertion because a walk that reached back to the old tree
- * would find that name and not the new one. */
+ * flat one did not: it can return the CATEGORY names, and it can return a bare
+ * `.ts` FILE that sits one level in. Both are pinned below.
+ * `ChartDataTable.test.ts` is the live instance of the second -- beside the four
+ * chart directories -- today. `ChartInternals.ts` was the PRIOR live instance
+ * of that same shape; batch 3 moved it to the layer root and renamed it
+ * `DataVisuals.ts`, so its pre-move spelling is kept below purely as history,
+ * guarding against a walk that reached back into an old tree.
+ *
+ * THE SPELLINGS BELOW ARE THE REAL FILENAMES, and that matters. The walk pushes
+ * `dir.name`, so a version of it with the `isDirectory()` guard removed would
+ * return `ChartDataTable.test.ts`, never a stem `ChartDataTable` -- an assertion
+ * against the stem could not fail however the walk broke, which is what these
+ * two used to be. The last assertion is the general form of the same guard: a
+ * walk that starts returning files rather than directories fails it whatever
+ * the file happens to be called. */
 test('the Angular inventory finds every component, no category and no bare module', () => {
   const found = angularPrimitives('.');
   assert.equal(found.length, 20);
@@ -194,8 +227,20 @@ test('the Angular inventory finds every component, no category and no bare modul
   assert.ok(found.includes('bar-chart'));
   for (const category of ['brand', 'charts', 'display', 'feedback', 'navigation'])
     assert.ok(!found.includes(category), `${category} is a category, not a component`);
-  assert.ok(!found.includes('ChartInternals'));
-  assert.ok(!found.includes('chart-internals'));
+  assert.ok(!found.includes('ChartDataTable.test.ts'));
+  assert.ok(!found.includes('index.ts'));
+  assert.ok(!found.includes('chart-internals.ts'));
+  const base = 'frameworks/angular/components';
+  const categories = readdirSync(base, { withFileTypes: true })
+    .filter((e) => e.isDirectory()).map((e) => e.name);
+  for (const name of found)
+    assert.ok(
+      categories.some((c) => {
+        const p = join(base, c, name);
+        return existsSync(p) && statSync(p).isDirectory();
+      }),
+      `${name} does not resolve to a component directory under ${base}/<category>/`,
+    );
 });
 
 test('an Angular binding path resolves the category by looking and the stem as Pascal', () => {
@@ -205,6 +250,26 @@ test('an Angular binding path resolves the category by looking and the stem as P
     tail: 'charts/bar-chart/BarChart.behaviour.json',
   });
   assert.equal(angularBindingPath('.', 'no-such-component'), null);
+});
+
+/* The React twin, and the tail is the interesting half rather than the path:
+ * since batch 3 gave React the same kebab-directory shape, a component bound in
+ * both layers spells a byte-identical tail on both sides. That is asserted
+ * directly below rather than left implied, because check:compliance's layer
+ * discrimination had to stop relying on the tail differing (see SUITE_DIRS in
+ * check-compliance.mjs) and this is the fact that forced it. */
+test('a React binding path resolves the category by looking and the stem as Pascal', () => {
+  assert.deepEqual(reactBindingPath('.', 'bar-chart'), {
+    path: 'frameworks/react/components/charts/bar-chart/BarChart.behaviour.json',
+    stem: 'BarChart',
+    tail: 'charts/bar-chart/BarChart.behaviour.json',
+  });
+  assert.equal(reactBindingPath('.', 'no-such-component'), null);
+});
+
+test('a component bound in both layers now spells the same tail on both sides', () => {
+  assert.equal(reactBindingPath('.', 'tag').tail, angularBindingPath('.', 'tag').tail);
+  assert.equal(reactBindingPath('.', 'tag').tail, 'display/tag/Tag.behaviour.json');
 });
 
 /* crossLayerAgrees carries check-behaviour.mjs's step 6 -- "the two layers agree,
@@ -235,7 +300,7 @@ test('absent on either side is skipped even with no divergesFrom declared', () =
  * Path is relative to the repo root, as every other on-disk assertion in this
  * suite is -- loadPatterns('.') above sets that convention. */
 test('loadBinding reads a real binding from disk', () => {
-  const b = loadBinding('./frameworks/react/components/feedback/Dialog.behaviour.json');
+  const b = loadBinding('./frameworks/react/components/feedback/dialog/Dialog.behaviour.json');
   assert.equal(b.pattern, 'dialog-modal');
   assert.ok(Array.isArray(b.exceptions));
 });

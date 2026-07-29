@@ -286,7 +286,7 @@ secondary action is projected, on each.
 > be titled *"ConfirmDialog — Angular is accessible, React is not yet"* and recorded that React
 > asserted `aria-modal="true"` over a free-roaming focus, with no accessible name, no trap, no
 > restore and no Escape. All of that is now met in both layers:
-> `frameworks/react/use-dialog-modal.js` is a deliberate port of
+> `frameworks/react/UseDialogModal.js` is a deliberate port of
 > `frameworks/angular/FocusTrap.ts`, `ConfirmDialog.title` is required and guarded in
 > both layers with `aria-labelledby` pointing at it, and `ConfirmDialog.behaviour.json` retains a
 > single exception — `roles.element`, which is `role="alertdialog"` and which **both** layers
@@ -327,7 +327,8 @@ actually-open dialog. Batch 8C11 moved this harness to AOT and retired that limi
 This suite still tests the helpers directly rather than rendering the real component, which is now
 a design choice and not a forced one — see CLAUDE.md's *Known debt* entry on the seven files that
 still justify a testing strategy by the retired limitation. **Tested how (React):**
-`frameworks/react/test-dom/behavioural.test.jsx` and `dialog-modal.test.jsx`, which render the real
+`frameworks/react/components/feedback/Behavioural.dom.test.jsx` and
+`frameworks/react/components/feedback/DialogModal.dom.test.jsx`, which render the real
 component; `ConfirmDialog:react` is in `check:compliance`'s `COVERED`.
 
 ### ErrorState — Angular announces itself, React is silent
@@ -384,7 +385,7 @@ a cased one. `Toast` surfaced the same way in the same batch and is still open b
 more of these as bindings are converted — the property is a permanent one of the cases
 mechanism, not a fact about `Skeleton`, and it outlives the divergence it found.
 
-**Recorded how, now:** `frameworks/react/components/display/Skeleton.behaviour.json` is back to
+**Recorded how, now:** `frameworks/react/components/display/skeleton/Skeleton.behaviour.json` is back to
 the flat `{"pattern": "status", "exceptions": []}` — no cases, no `divergesFrom` — because all
 four variants meet `status` and there is nothing left for a case to scope.
 `frameworks/angular/components/display/skeleton/Skeleton.behaviour.json` is unchanged and still flat at
@@ -393,7 +394,7 @@ retreat: splitting the variants is what made the defect visible, and fixing the 
 the need for the split.
 
 **What is NOT proven, and it is the same limit the rest of this file carries.** The React claim
-is verified — `frameworks/react/test-dom/placement-and-branches.test.jsx` renders all four
+is verified — `frameworks/react/test/PlacementAndBranches.dom.test.jsx` renders all four
 variants and `Skeleton:react` is in `check:compliance`'s `COVERED`. The Angular claim is not:
 `Skeleton.behaviour.json` says `status` with no exceptions and **no suite verifies that binding**,
 so Angular's side of the now-agreeing pair is an unverified claim, exactly as it was while the
@@ -509,7 +510,7 @@ tone axis here would make the record accurate without changing what a user hears
 available before Plan D if the cost above is judged too high to carry, and Plan D supersedes
 either.
 
-**Recorded how:** `frameworks/react/components/feedback/Toast.behaviour.json` declares two cases,
+**Recorded how:** `frameworks/react/components/feedback/toast/Toast.behaviour.json` declares two cases,
 `danger` → `alert` and `advisory` → `status`, and carries `divergesFrom: "alert"` naming the flat
 delegated binding, so `check:behaviour` reports the divergence as declared rather than as two
 layers disagreeing. **`frameworks/angular/BehaviourDelegated.json`'s `Toast` entry is left
@@ -566,7 +567,7 @@ a latent hazard rather than a live defect — the two layers behave identically 
 `aria-label` already on the progress-dots div inside that same panel, in **both** layers
 (`Onboarding.jsx`, `Onboarding.ts`). A screen reader announces the two the same. That is the price
 of a positional fallback and it is pinned by an assertion in
-`frameworks/react/test-dom/onboarding-modal.test.jsx` rather than left to prose.
+`frameworks/react/components/feedback/onboarding/Onboarding.dom.test.jsx` rather than left to prose.
 
 ### Onboarding — the modal contract, RETIRED as a divergence
 
@@ -578,7 +579,7 @@ unavailable. Angular implemented the contract it asserted, through
 `frameworks/angular/FocusTrap.ts`.
 
 **Plan 8C4 closed it, and closed it by porting rather than by re-solving.**
-`frameworks/react/use-dialog-modal.js` is a deliberate mirror of that Angular module — same
+`frameworks/react/UseDialogModal.js` is a deliberate mirror of that Angular module — same
 focusable selector including its per-clause `:not([tabindex="-1"])` guard, same boundary-wrap rule,
 same never-cache rule, same open/close transition — consumed by all three React overlays. Escape
 reports through `onSkip`, which is the output Angular already routes its own Escape to, so the two
@@ -786,7 +787,7 @@ parent composes the spacing.
 
 **Worth knowing:** the measurement helper is shared, not private to this component.
 `frameworks/angular/ContainerSize.ts` exports `containerWidth()` and
-`readBreakpoint()`, mirroring React's `use-container-width.js` without the `use` prefix —
+`readBreakpoint()`, mirroring React's `UseContainerWidth.js` without the `use` prefix —
 a signal-returning function is not a React hook. It is named directly in the layer barrel
 (`frameworks/angular/index.ts`) deliberately, so a consumer writing their own responsive component reaches for
 Arena's measurement rather than a media query. One deliberate difference from React's
@@ -799,13 +800,18 @@ the global `document` directly and has no injection contract to keep consistent.
 primitive whose host classes depend on a runtime measurement, and the next five (the
 chart primitives) inherit the helper unchanged.
 
-### chart-internals — the visually-hidden style carries its units in Angular
+### DataVisuals — the visually-hidden style carries its units in Angular
 
-**React:** `chart-internals.js` exports `srOnly`, a style object with bare numbers —
+(This module was `chart-internals.js`/`ChartInternals.ts` under each layer's `charts`
+category until the structure refactor's batch 3 moved it to each layer's root and renamed
+it, because `Calendar` consumes `catColor` from it and a module a schedule grid consumes is
+not "chart internals".)
+
+**React:** `frameworks/react/DataVisuals.js` exports `srOnly`, a style object with bare numbers —
 `{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, ... }`. React's DOM
 layer appends `px` to a unitless number on a length property, so `width: 1` renders `1px`.
 
-**Angular:** `ChartInternals.ts` exports the same object as `SR_ONLY`, with every length
+**Angular:** `frameworks/angular/DataVisuals.ts` exports the same object as `SR_ONLY`, with every length
 spelled out — `width: '1px'`, `height: '1px'`, `margin: '-1px'`. Angular's `[style]`
 binding appends nothing: it stringifies the value and hands it to `setProperty`, so a
 bare `1` is an invalid length and is dropped silently, leaving the table visible on the

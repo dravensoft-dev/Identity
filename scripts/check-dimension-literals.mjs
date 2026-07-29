@@ -24,8 +24,9 @@
  *
  * BLIND SPOT, and it is not the SVG one. This gate anchors on governed property
  * SITES, so a value a FUNCTION RETURNS is invisible to it under EVERY extension.
- * `indentFor()` in frameworks/react/components/navigation/side-nav-inject.jsx
- * produces a padding-inline-start, and each of its four call sites reads
+ * `indentFor()` in frameworks/react/components/navigation/side-nav/SideNavInject.jsx
+ * produces a padding-inline-start, and both of its call sites -- one in that
+ * file and one in SideNavSection.jsx, counted rather than recalled -- read
  * `paddingInlineStart: indentFor(indentStep, depth)` -- a call, which
  * expressionLeaves bottoms out at and scanLeaf then declines to judge, exactly
  * as it declines every other call. A helper returning a bare '12px' would leave
@@ -36,7 +37,8 @@
  * helper's own body, never at what it hands back. The second half is that the
  * helper's OUTPUT is asserted directly in its layer's test suite. That is how
  * `indentFor` is pinned: see "indentFor returns token arithmetic at every
- * depth, never a bare length" in frameworks/react/test/side-nav.test.jsx, which
+ * depth, never a bare length" in
+ * frameworks/react/components/navigation/side-nav/SideNav.test.jsx, which
  * asserts the exact string at three depths and then, for every depth in a
  * range, that no bare px/rem/em survives in it. A helper that produces a
  * governed dimension and has no such test is outside this gate no matter where
@@ -68,17 +70,26 @@ const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
  * The rest of SVG_ATTRS deliberately does NOT join this set — `r`, `x`, `y`,
  * `cx`, `cy`, `x1`, `x2`, `y1`, `y2` are one- and two-letter names that
  * collide with ordinary object keys having nothing to do with CSS, and
- * governing them today would cost something real, not a hypothetical one:
- * `frameworks/angular/components/charts/ChartInternals.ts` carries
- * `PAD = { t: 8, r: 8, b: 28, l: 44 } as const` — a `.ts` file, which
- * EXTENSIONS does include, so PROP_COLON already reaches its `r: 8` object
- * key. Adding `r` to PROPS today would immediately flag that object as a
- * bare-number dimension literal, even though the key is a plot-padding
- * name with nothing to do with an SVG radius. React's sibling,
- * `chart-internals.js`'s own identically-shaped `PAD`, still escapes —
- * for the unrelated reason that it is a `.js` file and EXTENSIONS never
- * includes `.js` — but that is not a safety net this decision leans on:
- * the Angular file alone already makes the collision real, not academic.
+ * governing them today would cost something real, not a hypothetical one.
+ * The chart layers carry a plot padding named `PAD`, whose `r` key is a plot
+ * RIGHT pad and has nothing to do with an SVG radius, and one spelling of it
+ * is a bare number inside an extension EXTENSIONS opens: measured by adding
+ * `r` to this set and running the gate, the hit is
+ * `frameworks/angular/DataVisuals.test.ts`'s
+ * `assert.deepEqual({ ...PAD }, { t: 8, r: 8, b: 28, l: 44 })` — a `.ts` file,
+ * so PROP_COLON reaches its `r: 8` straight away, and a test's expected value
+ * is exactly where a token cannot stand in.
+ * The two SOURCES escape for reasons that are each their own and neither of
+ * which this decision leans on: `frameworks/angular/DataVisuals.ts` spells
+ * `PAD = { t: chartPadTop, r: chartPadRight, … } as const`, imported
+ * script-readable token identifiers rather than the literals it carried before
+ * tokens/src/chart.json existed, and an imported identifier is outside what the
+ * dataflow rule traces; and React's copy, `frameworks/react/DataVisuals.js`,
+ * is spelled identically AND is a `.js` file, which EXTENSIONS never includes.
+ * (The two are not siblings in any directory: each sits at its own layer's
+ * root, having moved there — and been renamed from `ChartInternals` — when a
+ * display component turned out to consume the chart internals too.) The
+ * Angular test alone already makes the collision real, not academic.
  * Adding these nine later is a judgment call that needs the tree
  * re-checked at that time, not a decision this comment can make
  * permanent. Those SVG_ATTRS members stay listed for documentation and
@@ -131,23 +142,23 @@ const PROPS = new Set([
  * held five, which is the exact prose-drift this gate exists to prevent. Read
  * the entries. */
 export const EXEMPT = new Map([
-  ['frameworks/react/components/display/Calendar.jsx:zIndex:1',
+  ['frameworks/react/components/display/calendar/Calendar.jsx:zIndex:1',
    'local stacking inside a positioned container; does not join the global z order'],
-  ['frameworks/react/components/display/CalendarEvent.jsx:zIndex:1',
+  ['frameworks/react/components/display/calendar-event/CalendarEvent.jsx:zIndex:1',
    'local stacking inside a positioned container; does not join the global z order'],
-  ['frameworks/react/components/charts/BarChart.jsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`',
+  ['frameworks/react/components/charts/bar-chart/BarChart.jsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`',
    'yOf(values[hover]) projects the hovered data point onto the chart\'s own measured inner height — a runtime data-to-pixel projection, not a design dimension. Unlike Avatar\'s ratio (this same task turns that operand into a token), there is no token to give this one: the series values, their max, and the container\'s measured width all change at runtime, so nothing in tokens/src/ could stand in for it'],
-  ['frameworks/react/components/charts/LineChart.jsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`',
+  ['frameworks/react/components/charts/line-chart/LineChart.jsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`',
    'the same yOf(values[hover]) projection as BarChart\'s own exemption above — a data point\'s value mapped onto the chart\'s measured pixel height, not a token'],
-  ['frameworks/react/components/display/Calendar.jsx:top:`calc(${y(m)}px - var(--sp-1))`',
+  ['frameworks/react/components/display/calendar/Calendar.jsx:top:`calc(${y(m)}px - var(--sp-1))`',
    'y(m) projects a clock minute onto the visible hour range, itself driven by the dayStart/dayEnd props — a time-to-pixel projection, not a design dimension; there is no token for an arbitrary minute of the day'],
-  ['frameworks/react/components/display/Calendar.jsx:height:`max(calc(var(--sp-1) * 4.5), ${rawH}px)`',
+  ['frameworks/react/components/display/calendar/Calendar.jsx:height:`max(calc(var(--sp-1) * 4.5), ${rawH}px)`',
    'the max()\'s floor, calc(var(--sp-1) * 4.5), already reads a token, and stays governed — only the computed arm is exempt: rawH is an event\'s duration in minutes projected to pixels, the same data-to-pixel category as the two chart entries above, never a fixed dimension'],
-  ['frameworks/angular/components/charts/ChartInternals.ts:width:\'1px\'',
+  ['frameworks/angular/DataVisuals.ts:width:\'1px\'',
    'SR_ONLY is the standard visually-hidden idiom, and its 1px box is not a design dimension — it is the smallest non-zero footprint that keeps the element in the accessibility tree, paired with clip:rect(0 0 0 0) to hide it regardless of box size. 0 would drop it from the tree in some engines and defeat the whole point. Nothing in tokens/src/ could stand in for it: the number is a constraint of the a11y idiom, and it must be a fixed literal for the negative margin below to cancel exactly'],
-  ['frameworks/angular/components/charts/ChartInternals.ts:height:\'1px\'',
+  ['frameworks/angular/DataVisuals.ts:height:\'1px\'',
    'the other axis of the same 1px visually-hidden box as the width entry above'],
-  ['frameworks/angular/components/charts/ChartInternals.ts:margin:\'-1px\'',
+  ['frameworks/angular/DataVisuals.ts:margin:\'-1px\'',
    'the same idiom\'s negative pull, which must cancel exactly the 1px box above so the hidden table shifts no sibling — it is bound to that literal, not to Arena\'s spacing scale, and a token here would break the cancellation'],
   // Skeleton's API contract (api/components/Skeleton.json, Plan 8B1 Task 3) made
   // width/height/radius plain CSS strings a CONSUMER supplies per instance.
@@ -156,13 +167,13 @@ export const EXEMPT = new Map([
   // `<svg width="100%">`), it reads this component's own contract member the
   // same way. Most of the demo's sizes DO fall on Arena's 4px spacing scale
   // (var(--sp-1) = 4px) and were rewritten as token arithmetic instead of
-  // exempted — see skeleton.card.entry.jsx. These two do not: they are
+  // exempted — see Skeleton.card.entry.jsx. These two do not: they are
   // arbitrary demo placeholder heights (11px, 90px), the same tolerated
   // demo-harness sizing the `.card.html` specimens carry un-gated elsewhere.
-  ['frameworks/react/components/display/skeleton.card.entry.jsx:height:11px',
-   'skeleton.card.entry.jsx\'s `variant="line"` example paired with `width="45%"` — an arbitrary demo placeholder height, not on Arena\'s 4px spacing scale'],
-  ['frameworks/react/components/display/skeleton.card.entry.jsx:height:90px',
-   'skeleton.card.entry.jsx\'s closing `variant="block"` example — an arbitrary demo placeholder height, not on Arena\'s 4px spacing scale'],
+  ['frameworks/react/components/display/skeleton/Skeleton.card.entry.jsx:height:11px',
+   'Skeleton.card.entry.jsx\'s `variant="line"` example paired with `width="45%"` — an arbitrary demo placeholder height, not on Arena\'s 4px spacing scale'],
+  ['frameworks/react/components/display/skeleton/Skeleton.card.entry.jsx:height:90px',
+   'Skeleton.card.entry.jsx\'s closing `variant="block"` example — an arbitrary demo placeholder height, not on Arena\'s 4px spacing scale'],
 ]);
 
 /** Units the token layer genuinely does not model, and that no token could

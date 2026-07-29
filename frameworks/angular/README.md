@@ -79,9 +79,16 @@ detect whether an optional slot was projected, so its spacing wrapper can be gat
 each bare, with no `arena-` prefix, because the attribute is the contract member's
 name, per `api/README.md`'s binding table) all have consumers in more than one category,
 so they sit at the layer root and `frameworks/angular/index.ts` names each of them
-directly. `components/charts/ChartInternals.ts` (the chart maths and the
-identity-or-meaning colour contract) has consumers in one category only, so it stops at
-that category's directory.
+directly. `DataVisuals.ts` (the chart maths and the identity-or-meaning colour contract)
+sits at the layer root beside them, and it is the one that got there by decision rather
+than by the rule: it was `components/charts/ChartInternals.ts`, and in this layer its
+consumers really are the three charts alone. The structure refactor's batch 3 moved it
+because that narrow consumer set is an artifact of Angular's `Calendar` being delegated
+to Material — React's `Calendar` imports `catColor` from the same module, so React's copy
+belonged at the layer root by the rule, and leaving the two layers spelling one module at
+two different paths would have made the eventual Plan D move a second migration instead
+of an import. The name changed with the placement: a module a schedule grid consumes is
+not "chart internals".
 
 A primitive defines no styling of its own. Its recipe lives in
 `frameworks/tailwind/components/<category>/<component-kebab>/<Component>.manifest.json`

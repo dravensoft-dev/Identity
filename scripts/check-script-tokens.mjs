@@ -29,9 +29,13 @@ export function cssCounterpart(value) {
 }
 
 /** Every name imported from a `tokens.generated.*` module in one source file.
- *  Matched case-insensitively on the stem: React's is `tokens.generated.js`,
- *  Angular's is `Tokens.generated.ts`, and the two layers deliberately do not
- *  share a case. */
+ *  Matched case-insensitively on the stem. Both layers spell it `Tokens.generated`
+ *  today -- `frameworks/react/Tokens.generated.js` and
+ *  `frameworks/angular/Tokens.generated.ts` -- but the match stays
+ *  case-insensitive because React's was `tokens.generated.js` until the structure
+ *  refactor's batch 3 applied the capital-initial naming rule to it, and a
+ *  case-sensitive matcher would have silently stopped finding every React import
+ *  the day it was renamed. */
 export function importedNames(source) {
   const names = new Set();
   const re = /import\s*\{([^}]*)\}\s*from\s*['"][^'"]*tokens\.generated(?:\.js|\.ts)?['"]/gi;

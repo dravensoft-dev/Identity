@@ -72,6 +72,72 @@ function pruneOrphans(dir) {
   }
 }
 
+/** Every `.test.ts` under `dir`, repo-relative to `dir` itself.
+ *  @param {string} dir @returns {string[]} e.g. ["DataVisuals.test.ts", "components/charts/bar-chart/BarChart.geometry.test.ts"] */
+function collectTestSources(dir) {
+  const out = [];
+  walk(dir);
+  return out;
+
+  function walk(current) {
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const full = join(current, entry.name);
+      if (entry.isDirectory()) { walk(full); continue; }
+      if (entry.name.endsWith('.test.ts')) out.push(relative(dir, full));
+    }
+  }
+}
+
+/** Every emitted `.test.js` under `dir`, repo-relative to `dir` itself.
+ *  @param {string} dir @returns {string[]} */
+function collectEmittedTests(dir) {
+  const out = [];
+  if (!existsSync(dir)) return out;
+  walk(dir);
+  return out;
+
+  function walk(current) {
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const full = join(current, entry.name);
+      if (entry.isDirectory()) { walk(full); continue; }
+      if (entry.name.endsWith('.test.js')) out.push(relative(dir, full));
+    }
+  }
+}
+
+/** Every source `.test.ts` must have a matching emitted `.test.js`, or the suite
+ *  compiled into nothing and `bun test build/angular-test/angular` never sees it
+ *  -- a suite that is silently ABSENT rather than one that fails. This is the
+ *  exact shape CLAUDE.md's Known debt opens with: "a green run is only as good
+ *  as what the gate looked at, and a gate that finds nothing reports zero
+ *  violations either way." `tsconfig.test.json`'s `include` is the one thing
+ *  that can produce this: a `.test.ts` that no included path reaches (or that
+ *  nothing importable transitively pulls in) is never handed to `ngc` at all,
+ *  and an incremental, non-failing compile has no way to say so on its own --
+ *  it compiled everything it was given, correctly.
+ *
+ *  Both lists are repo-relative to the SAME root by construction --
+ *  `collectTestSources(frameworks/angular)` and
+ *  `collectEmittedTests(build/angular-test/angular)` -- so a `.test.ts` stem and
+ *  its `.test.js` sibling are byte-identical once each list's own extension is
+ *  stripped, and no path-shape guessing is needed to compare them.
+ *  @param {string[]} sourceTests @param {string[]} emittedTests
+ *  @returns {string[]} one message per source suite missing from the emit */
+export function missingEmitProblems(sourceTests, emittedTests) {
+  const emittedStems = new Set(emittedTests.map((f) => f.slice(0, -'.js'.length)));
+  const problems = [];
+  for (const src of sourceTests) {
+    const stem = src.slice(0, -'.ts'.length);
+    if (!emittedStems.has(stem)) {
+      problems.push(
+        `${src} has no corresponding .test.js in build/angular-test/angular -- ` +
+        `ngc never compiled it (check tsconfig.test.json's "include"), so this suite never runs`,
+      );
+    }
+  }
+  return problems;
+}
+
 function main() {
   let bin;
   try {
@@ -96,6 +162,17 @@ function main() {
     for (const p of pruned) console.log(`  ${p}`);
   } else {
     console.log('build-angular-tests: no orphaned output to prune');
+  }
+
+  const emitProblems = missingEmitProblems(
+    collectTestSources(join(SRC_ROOT, 'angular')),
+    collectEmittedTests(join(OUT_DIR, 'angular')),
+  );
+  if (emitProblems.length > 0) {
+    console.error(`\nbuild-angular-tests: ${emitProblems.length} suite(s) compiled into nothing:\n`);
+    for (const p of emitProblems) console.error(`  ${p}`);
+    console.error('');
+    process.exit(1);
   }
 }
 

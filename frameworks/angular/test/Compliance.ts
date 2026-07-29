@@ -1,6 +1,6 @@
 /* The Angular layer's binding to comparePattern(): path constants, the two file
  * reads, and throwing on the result. The React wrapper at
- * frameworks/react/test-dom/assert-pattern.jsx is its mirror, and the comparison
+ * frameworks/react/test/AssertPattern.jsx is its mirror, and the comparison
  * itself is in neither of them -- it lives in
  * scripts/lib/behaviour-compliance.mjs, shared by both, because two copies of
  * this rule would be two places for it to drift and it is the layer's only real
@@ -207,7 +207,7 @@ interface CompareOneOptions {
 /** Shared by `assertPattern` and `assertPatternCases`: compute the fallback
  *  subject and call `comparePattern` once. Extracted because both call sites
  *  repeated this block near-verbatim -- a port of the same extraction in the
- *  React wrapper (assert-pattern.jsx's compareOne).
+ *  React wrapper (AssertPattern.jsx's compareOne).
  *
  *  The `'default' in subjects` distinction must survive here exactly as it did
  *  at each call site: a present-but-null `default` means a selector matched

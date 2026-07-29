@@ -11,12 +11,23 @@
  * never that a component directory contains a complete component. check:api
  * and check:behaviour are what hold the latter.
  *
- * MIGRATED is the layers this gate reaches. It exists because the structure
- * refactor lands one layer per batch, and a gate that silently passed over an
- * unmigrated layer would be worse than one that says which layers it is
- * claiming anything about. It grows by one entry per batch and is deleted
- * outright when the last layer lands, at which point the gate covers every
- * layer unconditionally.
+ * EVERY LAYER IS IN SCOPE, unconditionally. This gate used to carry a MIGRATED
+ * list because the structure refactor landed one layer per batch, and a gate
+ * that silently passed over an unmigrated layer would have been worse than one
+ * that said which layers it was claiming anything about; the list grew by one
+ * entry per batch and was to be deleted outright when the last layer landed.
+ * Batch 3 of the refactor moved React, the third and last, so it is gone. With
+ * it goes the condition that held rule 4 back: "declared but present in no
+ * layer" now runs against every run.
+ *
+ * LAYERS is not that list under another name, and the difference is the whole
+ * point of naming them rather than discovering them. It is an exhaustive
+ * enumeration, so a layer that is renamed or moved wholesale does not quietly
+ * leave the gate's scope -- readLayer() returns {} for it and zeroLayerProblems
+ * says so. A walk of frameworks/ would have made the gate self-maintaining and
+ * would also have made a vanished layer indistinguishable from a layer that
+ * never existed, which is the false-green shape this repo has now shipped three
+ * times.
  *
  *   bun scripts/check-structure.mjs   -> exit 0 clean, 1 with problems listed
  */
@@ -26,8 +37,9 @@ import { fileURLToPath } from 'node:url';
 
 export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** The layers this gate claims anything about. See the header. */
-export const MIGRATED = ['tailwind', 'angular'];
+/** Every framework layer, all three of them migrated. See the header for why
+ *  this is enumerated rather than discovered by walking frameworks/. */
+export const LAYERS = ['tailwind', 'angular', 'react'];
 
 const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
@@ -76,11 +88,14 @@ export function readLayer(layer) {
 /** @param {{categories: Record<string,string[]>,
  *           layers: Record<string,Record<string,string[]>>,
  *           complete?: boolean}} input
- *  `complete` says every layer is migrated. Until it is true the
- *  "declared but present nowhere" rule is held back, because a component
- *  absent from the migrated layers may simply live in one this gate does not
- *  yet reach -- which would make the gate loudest about the thing the refactor
- *  has not got to yet.
+ *  `complete` says the caller passed every layer there is. Only then does the
+ *  "declared but present nowhere" rule run: a component absent from a PARTIAL
+ *  set of layers may simply live in one that was not passed, so firing on it
+ *  would make the gate loudest about the thing it cannot see. main() passes
+ *  `true` unconditionally, because it passes every layer in LAYERS and LAYERS is
+ *  the exhaustive enumeration -- see the comment at that call. The parameter
+ *  survives because validateStructure is pure and a caller may hand it any
+ *  subset, which is exactly what this function's own suite does.
  *  @returns {string[]} one line per problem, empty when clean */
 export function validateStructure({ categories, layers, complete = false }) {
   const problems = [];
@@ -131,14 +146,18 @@ export function validateStructure({ categories, layers, complete = false }) {
   return problems;
 }
 
-/** A MIGRATED layer that yields zero component directories is not "nothing to
- *  check" -- readLayer() returns {} for a missing frameworks/<layer>/components,
- *  and validateStructure() finds zero problems in an empty tree by construction,
- *  so without this a moved, renamed or not-yet-existing layer would report a
- *  clean pass over ground it never looked at. Same failure mode, same fix, as
- *  check-tailwind.mjs's own "found 0 manifests" guard.
+/** A layer that yields zero component directories is not "nothing to check" --
+ *  readLayer() returns {} for a missing frameworks/<layer>/components, and
+ *  validateStructure() finds zero problems in an empty tree by construction, so
+ *  without this a moved or renamed layer would report a clean pass over ground
+ *  it never looked at. Same failure mode, same fix, as check-tailwind.mjs's own
+ *  "found 0 manifests" guard.
+ *
+ *  It judges the layers it is HANDED and never decides which layers are in
+ *  scope -- LAYERS does that, and it is what makes a vanished layer loud here
+ *  rather than absent.
  *  @param {Record<string, Record<string, string[]>>} layers
- *  @returns {string[]} one line per empty MIGRATED layer */
+ *  @returns {string[]} one line per empty layer */
 export function zeroLayerProblems(layers) {
   const problems = [];
   for (const [layer, tree] of Object.entries(layers)) {
@@ -151,10 +170,26 @@ export function zeroLayerProblems(layers) {
 
 function main() {
   const categories = JSON.parse(readFileSync(join(repoRoot, 'frameworks/Components.json'), 'utf8'));
-  const layers = Object.fromEntries(MIGRATED.map((l) => [l, readLayer(l)]));
+  const layers = Object.fromEntries(LAYERS.map((l) => [l, readLayer(l)]));
+  /* Unconditionally true, and that is the derivation rather than a free
+   * literal. `complete` means "the caller passed every layer there is"; the line
+   * above passes every layer in LAYERS, and LAYERS is the exhaustive
+   * enumeration of them -- pinned twice by check-structure.test.mjs, by value
+   * and by exhaustiveness against frameworks/ on disk. So the claim this flag
+   * makes is already held by those two assertions, and main() has nothing left
+   * to condition it on.
+   *
+   * It read `LAYERS.length === 3` for one commit, written to replace a bare
+   * `true` that nothing pinned. That went one layer too far: it made rule 4 --
+   * "declared but present in no layer" -- silently switch OFF the day a FOURTH
+   * layer is added, since adding it means updating LAYERS and the suite's
+   * deepEqual to go green, and nothing else would have failed. The pin those
+   * two assertions provide is the right one; a length comparison on top of them
+   * only re-created the loss it was written to close. */
+  const complete = true;
   const problems = [
     ...zeroLayerProblems(layers),
-    ...validateStructure({ categories, layers, complete: MIGRATED.length === 3 }),
+    ...validateStructure({ categories, layers, complete }),
   ];
 
   if (problems.length) {
@@ -167,7 +202,17 @@ function main() {
   const checked = Object.values(layers).reduce(
     (n, tree) => n + Object.values(tree).reduce((m, dirs) => m + dirs.length, 0), 0,
   );
-  console.log(`check:structure OK — components/ under ${MIGRATED.join(', ')} match frameworks/Components.json (${checked} checked of ${total} declared).`);
+  /* The rule-4 clause is appended only when rule 4 actually RAN. Today
+   * `complete` is unconditionally true and this ternary always takes its first
+   * arm, so the guard is not currently load-bearing -- it is kept because a
+   * success line must claim only what the run checked, and it reads `complete`
+   * rather than restating the reasoning above. It was caught being wrong once:
+   * while `complete` briefly derived from `LAYERS.length`, this clause was
+   * printed unconditionally, so the gate announced "every declared component
+   * present in at least one layer" over a run in which rule 4 had not been
+   * evaluated at all. */
+  const rule4 = complete ? ', every declared component present in at least one layer' : '';
+  console.log(`check:structure OK — components/ under ${LAYERS.join(', ')} match frameworks/Components.json (${checked} checked of ${total} declared${rule4}).`);
   console.log('  (A green run says the layers agree with one declaration, never that the categories are well chosen.)');
 }
 

@@ -1,8 +1,13 @@
 /* check:compliance — which behaviour bindings are verified by a render suite,
  * and is that record still true.
  *
- * The suites themselves (frameworks/react/test-dom/, frameworks/angular/test/)
- * do the verifying: each asserts, per requirement, that the rendered DOM either
+ * The suites themselves do the verifying -- in both layers they sit beside the
+ * component they cover, under frameworks/<layer>/components/, with the handful
+ * that belong to no one component in frameworks/<layer>/test/ (SUITE_DIRS below
+ * is the list). On the React side a suite that needs a DOM carries the
+ * `.dom.test.jsx` filename infix; this gate does not read that infix, and says
+ * so where SUITE_DIRS explains it.
+ * Each asserts, per requirement, that the rendered DOM either
  * meets it with no exception declared or fails it with one declared. This gate
  * does not re-do that, and could not -- it is runtime-portable, reads JSON and
  * filesystem paths only, and never imports a framework layer's .ts or .jsx. What
@@ -10,10 +15,14 @@
  * the coverage silently rots: a component gains a binding and no suite, and
  * `bun run check` stays green while nobody notices.
  *
- * THE REACT LAYER HAS RENDER SUITES AGAIN, WITH ONE COMPONENT-SHAPED HOLE.
- * frameworks/react/test-dom/ was deleted and restored; what did not come back
- * is grid-keyboard.test.jsx, and the rule that keeps it out is stated here
- * because this is the gate that can see its consequence:
+ * THE REACT LAYER HAS RENDER SUITES, WITH ONE COMPONENT-SHAPED HOLE.
+ * The React DOM suites once lived in their own directory, frameworks/react/test-dom/;
+ * it was deleted whole for its RAM cost and restored minus one suite,
+ * grid-keyboard.test.jsx, which never came back. (The directory itself is gone
+ * too, for an unrelated reason -- the structure refactor colocated its suites
+ * with their components -- but the hole below is the deletion's, not the move's.)
+ * The rule that keeps that one suite out is stated here because this is the gate
+ * that can see its consequence:
  *
  *   A component whose behaviour binding names the `grid` pattern is
  *   DOM-tested BY HAND -- `bun run demos`, then operate the component on its
@@ -32,8 +41,9 @@
  * The price is that Calendar's binding claims "exceptions": [] -- full
  * compliance with the grid pattern -- with no suite behind it, and cannot be
  * listed in COVERED. What guards it instead is a STATIC assertion in
- * frameworks/react/test/calendar.test.jsx: a grid is one tab stop, and that
- * count is a property of the markup rather than of behaviour.
+ * frameworks/react/components/display/calendar/Calendar.test.jsx ("a Calendar
+ * renders exactly one tab stop, kebab or no kebab"): a grid is one tab stop, and
+ * that count is a property of the markup rather than of behaviour.
  *
  * COVERED IS DELIBERATELY PARTIAL and grows one component at a time -- run the
  * gate for the live pair rather than trusting a figure written here, which has
@@ -63,21 +73,51 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, basename } from 'node:path';
-import { reactComponents, angularPrimitives, angularBindingPath, loadBinding, bindingCases } from './lib/behaviour-contracts.mjs';
+import {
+  reactComponents, reactBindingPath, angularPrimitives, angularBindingPath, loadBinding, bindingCases,
+} from './lib/behaviour-contracts.mjs';
+import { kebab } from './check-structure.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..');
 
-/** The suite directories this gate reads. The Angular entry covers both halves
- *  of that layer's suites since colocation: the per-component ones now sitting
- *  beside the component they cover under components/, and the handful that stay
- *  in test/ (the two harness modules' own dependents, plus the suites that cover
- *  more than one component or the harness itself). Both are walked recursively
- *  by walkSuites() below, so nesting depth does not matter here. */
+/** The suite trees this gate reads, each tagged with the layer it belongs to.
+ *  The tag is the whole layer discrimination: a coverage claim names a layer,
+ *  and which tree a suite file was found in is the one fact about it that no
+ *  later layout change can make collide. See validateCoverage below.
+ *
+ *  Both layers now split the same way: a components/ entry for the suites
+ *  colocated beside the component they cover, and a test/ entry for the
+ *  handful that are not any one component's -- a shared harness module's own
+ *  dependents, or a suite that spans more than one component. React's split
+ *  used to be a directory boundary instead (frameworks/react/test/ was
+ *  DOM-free, frameworks/react/test-dom/ was not); the structure refactor
+ *  colocated the DOM-free suites into components/ alongside everything else
+ *  and moved the DOM ones there too, carrying the `.dom.test.jsx` filename
+ *  infix as their only remaining mark (see check-all.mjs for what reads that
+ *  infix). This gate does not care about that infix at all -- a suite either
+ *  proves a rendered DOM against a binding or it does not, regardless of
+ *  which invocation runs it -- but the merge has one real consequence worth
+ *  recording here rather than discovering later: the React components/ tree
+ *  now also holds the 44 DOM-free suites (renderToStaticMarkup, no DOM at
+ *  all), so they are collectable by walkSuites() below for the first time.
+ *  None of them names a binding path today -- checked by reading both,
+ *  `frameworks/react/components/navigation/pagination/Pagination.test.jsx`
+ *  and `frameworks/react/components/display/calendar/Calendar.test.jsx`
+ *  mention the `grid` pattern and a component's binding only in prose, never
+ *  as a path a suite reads -- so nothing in COVERED changes. But a DOM-free
+ *  suite cannot verify a rendered DOM, and if a future COVERED entry ever
+ *  resolved to one, that entry would be exactly the false claim this gate
+ *  exists to catch: a suite proving markup a server could produce is not
+ *  proof of what a browser does with it after it mounts.
+ *
+ *  All four entries are walked recursively by walkSuites() below, so nesting
+ *  depth does not matter here. */
 export const SUITE_DIRS = [
-  join(repoRoot, 'frameworks', 'react', 'test-dom'),
-  join(repoRoot, 'frameworks', 'angular', 'components'),
-  join(repoRoot, 'frameworks', 'angular', 'test'),
+  { layer: 'react', dir: join(repoRoot, 'frameworks', 'react', 'components') },
+  { layer: 'react', dir: join(repoRoot, 'frameworks', 'react', 'test') },
+  { layer: 'angular', dir: join(repoRoot, 'frameworks', 'angular', 'components') },
+  { layer: 'angular', dir: join(repoRoot, 'frameworks', 'angular', 'test') },
 ];
 
 /**
@@ -97,75 +137,84 @@ export const SUITE_DIRS = [
  * with no `:layer` suffix is rejected outright rather than falling back to
  * name-only resolution, so the old shape cannot creep back in silently.
  *
- * The mention check below searches for that layer's binding PATH TAIL -- the
- * path relative to the layer's component root, `display/tag/Tag.behaviour.json`
- * for Angular and `display/Tag.behaviour.json` for React -- and never for the
- * bare stem. The tail is what makes the check layer-discriminating, and the
- * discrimination is the whole point of the compound key: resolving the right
- * BINDING is only half of it, and a mention test a sibling layer's suite can
- * satisfy leaves the other half open.
+ * RESOLVING THE RIGHT LAYER AND RESOLVING THE RIGHT BINDING are two separate
+ * checks now, and neither is the other's job. `validateCoverage` first compares
+ * the key's layer against `suite.layer` -- a tag `collectSuites()` attaches from
+ * the SUITE_DIRS entry a suite file was found under, a fact about the
+ * filesystem fixed at collection time. Only once that agrees does it search the
+ * suite's text for that layer's binding PATH TAIL -- the path relative to the
+ * layer's component root, e.g. `display/tag/Tag.behaviour.json` -- to prove the
+ * suite reads the right BINDING within that layer. The tail proves that and
+ * nothing more; it does not, and after this file's own history below could not
+ * reliably, prove which layer a suite belongs to.
  *
- * A bare stem used to discriminate by accident. Until the structure refactor's
- * batch 2 the Angular file was named for the kebab directory it sat in, so
- * `bar-chart/bar-chart.behaviour.json` declared component "BarChart" while
- * React's was `BarChart.behaviour.json` -- the two stems could not collide, and
- * nobody had to say why. Batch 2 spelled both stems Pascal and that accident
- * ended: with `Alert` on both sides, `'Alert:angular': 'alert-tones.test.jsx'`
- * -- React's own suite -- validated clean. The tails do not collide TODAY,
- * because the Angular one carries its kebab directory and the React one does
- * not -- but that is a property of the CURRENT two layouts, not a durable
- * structural guarantee, and it is due to expire on a known schedule rather
- * than by surprise. The refactor's own pending batch 3 (see
- * docs/superpowers/specs/2026-07-27-frameworks-file-structure-design-pending-1.md,
- * which lists this file among what that batch touches) gives React the same
- * `components/<category>/<kebab>/<Component>.behaviour.json` shape Angular
- * just gained. The moment it does, a component bound in both layers gets
- * byte-identical tails again -- `display/tag/Tag.behaviour.json` on both
- * sides -- and this discrimination silently reverts to the exact pre-fix
- * defect this file exists to prevent, with nothing failing to say so. Two
- * remedies were worked out for that batch and neither is implemented here:
- * prefix each layer's root onto its own tail before comparing (so the two
- * become `frameworks/react/components/display/tag/Tag.behaviour.json` and
- * `frameworks/angular/components/display/tag/Tag.behaviour.json`), or have a
- * suite report its own directory rather than matching its source text against
- * a bare relative tail. Whoever plans batch 3 owes suiteMentions() one of
- * those two, and should re-derive whether the collision is still live before
- * assuming this paragraph is current -- it describes the layouts as they
- * stand at the time it was written, and batch 3 is exactly what changes them.
+ * That split exists because a bare stem, and later a bare tail, each
+ * discriminated between the layers only by accident, and each accident had a
+ * known expiry. Until the structure refactor's batch 2 the Angular binding file
+ * was named for the kebab directory it sat in, so `bar-chart/bar-chart.behaviour.json`
+ * declared component "BarChart" while React's was `BarChart.behaviour.json` --
+ * the two stems could not collide, and nobody had to say why. Batch 2 spelled
+ * both stems Pascal and that accident ended: with `Alert` on both sides,
+ * `'Alert:angular': 'alert-tones.test.jsx'` -- React's own suite, under the name
+ * it carried then; batch 3 renamed it `AlertTones.dom.test.jsx`, and this line
+ * quotes the map as it read at the time, so do not update it -- validated
+ * clean, which was the defect commit `663b2e4` closed by moving the check from
+ * the bare stem to the path tail. That tail match then discriminated correctly
+ * only because Angular's tail carried a kebab directory and React's did not --
+ * again a property of the two layouts of the moment, not a structural
+ * guarantee -- and it expired when the structure refactor's batch 3 gave React
+ * the same `components/<category>/<kebab>/<Component>.behaviour.json` shape
+ * Angular had already gained. A component bound in both layers now gets
+ * byte-identical tails -- `display/tag/Tag.behaviour.json` on both sides, which
+ * `Tag` really is today -- so the tail match no longer discriminates by layer at
+ * all, and had the layer tag not been in place first, it would have reverted
+ * silently to the exact pre-fix defect.
+ * Prefixing each layer's root onto its own tail before comparing was considered
+ * for that moment and rejected: no suite spells its layer root as part of the
+ * path it hands to join() -- every one of them passes the derived constant
+ * REACT_COMPONENTS or ANGULAR_COMPONENTS as the first argument and a tail as the
+ * rest -- so a root-prefixed tail would have
+ * matched no suite at all and every coverage claim would have failed --
+ * adopting it would have meant editing every suite to spell an absolute path,
+ * a code-style change dressed as a gate fix. Tagging each suite with the layer
+ * of the directory it was found in, which is what `collectSuites()` and
+ * `SUITE_DIRS` do, was taken instead: it needed no suite to change at all.
  *
  * Add an entry when you add a suite. Removing or renaming a suite without
  * removing its entry fails this gate, which is the point.
  * @type {Record<string, string>}
  */
 export const COVERED = {
-  'Dialog:react': 'dialog-modal.test.jsx',
-  'ConfirmDialog:react': 'dialog-modal.test.jsx',
-  'Onboarding:react': 'onboarding-modal.test.jsx',
-  'Menu:react': 'placement-and-branches.test.jsx',
-  'Skeleton:react': 'placement-and-branches.test.jsx',
-  'SideNavCollapsible:react': 'side-nav-disclosure.test.jsx',
-  'Tabs:react': 'tabs.test.jsx',
-  'Tooltip:react': 'tooltip-keyboard.test.jsx',
-  'Alert:react': 'alert-tones.test.jsx',
-  'Toast:react': 'alert-tones.test.jsx',
+  'Dialog:react': 'DialogModal.dom.test.jsx',
+  'ConfirmDialog:react': 'DialogModal.dom.test.jsx',
+  'Onboarding:react': 'Onboarding.dom.test.jsx',
+  'Menu:react': 'PlacementAndBranches.dom.test.jsx',
+  'Skeleton:react': 'PlacementAndBranches.dom.test.jsx',
+  'SideNavCollapsible:react': 'SideNav.disclosure.dom.test.jsx',
+  'Tabs:react': 'Tabs.dom.test.jsx',
+  'Tooltip:react': 'Tooltip.keyboard.dom.test.jsx',
+  'Alert:react': 'AlertTones.dom.test.jsx',
+  'Toast:react': 'AlertTones.dom.test.jsx',
+  'Tag:react': 'TagAndChipCases.dom.test.jsx',
+  'CalendarEvent:react': 'TagAndChipCases.dom.test.jsx',
   'Alert:angular': 'Alert.roleTones.test.ts',
   'BarChart:angular': 'ChartDataTable.test.ts',
-  'Tag:react': 'tag-and-chip-cases.test.jsx',
   'Tag:angular': 'Tag.cases.test.ts',
-  'CalendarEvent:react': 'tag-and-chip-cases.test.jsx',
 };
 
 /** Does a suite's source read this binding at all?
  *  A path match, not a semantic one -- enough to catch a suite that was renamed
- *  or gutted while COVERED still claimed it, and to catch a suite from the
- *  SIBLING layer standing in for the one the key names, and deliberately no
- *  more: proving a suite *asserts the right thing* is what the suite itself is
- *  for.
+ *  or gutted while COVERED still claimed it, and deliberately no more: proving
+ *  a suite *asserts the right thing* is what the suite itself is for. This is
+ *  the second of validateCoverage's two checks, run only once the first --
+ *  whether the suite belongs to the claimed layer at all, decided from where
+ *  `collectSuites()` found it, never from this function -- has already agreed;
+ *  suiteMentions never has to tell the layers apart, only the bindings within
+ *  one.
  *
  *  `tail` is the binding's path relative to its layer's component root, so a
- *  bare `Alert.behaviour.json` anywhere in the prose cannot satisfy it and
- *  neither can the other layer's copy of the same component -- see COVERED's
- *  own comment for why the bare stem stopped discriminating.
+ *  bare `Alert.behaviour.json` anywhere in the prose cannot satisfy it -- see
+ *  COVERED's own comment for why the bare stem stopped discriminating.
  *
  *  The segment separator is matched loosely, because a suite may spell the tail
  *  either as one string (`join(P, 'display/tag/Tag.behaviour.json')`) or as
@@ -198,11 +247,20 @@ export function suiteMentions(source, tail) {
  *  matching both name and layer -- never to any binding sharing the name, which
  *  is the dual-bound defect this shape replaces. A key with no `:layer` suffix
  *  is rejected rather than silently falling back to name-only resolution. The
- *  layer decides the binding, and the tail then decides which suites can claim
- *  it: both halves are needed, because since batch 2 the two layers spell a
- *  component's binding stem identically.
+ *  layer decides the binding; whether the mapped suite may satisfy that layer's
+ *  claim is decided next, by comparing the key's layer against `suite.layer` --
+ *  a fact `collectSuites()` attached from the directory the suite was found in,
+ *  never derived from the suite's text -- and only a suite from the matching
+ *  layer proceeds to the tail check, which proves that suite reads the right
+ *  BINDING within that layer. Both checks are needed, and the second one alone
+ *  is no longer sufficient: since batch 2 the two layers spell a component's
+ *  binding stem identically, and since batch 3 gave React the same
+ *  kebab-directory shape Angular already had, they spell a shared component's
+ *  whole TAIL identically too -- `Tag` has `display/tag/Tag.behaviour.json` on
+ *  both sides today. The tail check can no longer tell the layers apart; the
+ *  layer check is what does.
  *
- *  @param {{bindings: {name: string, patterns: string[], layer: string, tail?: string}[], covered: Record<string,string>, suites: Record<string,string>}} o
+ *  @param {{bindings: {name: string, patterns: string[], layer: string, tail?: string}[], covered: Record<string,string>, suites: Record<string, {source: string, layer: string}>}} o
  *  @returns {string[]} one message per problem, empty when clean */
 export function validateCoverage({ bindings, covered, suites }) {
   const problems = [];
@@ -241,10 +299,19 @@ export function validateCoverage({ bindings, covered, suites }) {
       problems.push(`COVERED maps "${key}" to "${suiteFile}", which does not exist. Fix the path or delete the entry.`);
       continue;
     }
-    const tail = byKey.get(key);
-    if (!suiteMentions(suites[suiteFile], tail)) {
+    const suite = suites[suiteFile];
+    if (suite.layer !== layer) {
       problems.push(
-        `COVERED maps "${key}" to "${suiteFile}", but that suite never names ${tail}. The coverage claim is stale, or the suite belongs to the other layer.`,
+        `COVERED maps "${key}" to "${suiteFile}", which is a suite of the ${suite.layer} layer. ` +
+        `A claim for the ${layer} layer needs a ${layer} suite: the two layers can spell byte-identical ` +
+        `binding paths, so naming the right file is not evidence of the right layer.`,
+      );
+      continue;
+    }
+    const tail = byKey.get(key);
+    if (!suiteMentions(suite.source, tail)) {
+      problems.push(
+        `COVERED maps "${key}" to "${suiteFile}", but that suite never names ${tail}. The coverage claim is stale.`,
       );
     }
   }
@@ -302,11 +369,10 @@ export function inventoryFrom(bindings) {
  *  itself is inventoryFrom's, so there is exactly one place that turns a
  *  binding into a row.
  *
- *  React components live one group directory deep and reactComponents() returns
- *  bare names, so the group is found by looking. Angular components are one
- *  kebab directory each, one category deep, with a PascalCase file stem;
- *  angularBindingPath() resolves both halves and is the one place that path is
- *  built (see scripts/lib/behaviour-contracts.mjs).
+ *  Both layers are one kebab directory each, one category deep, with a
+ *  PascalCase file stem. reactBindingPath() and angularBindingPath() resolve
+ *  both halves and are the one place each layer's path is built (see
+ *  scripts/lib/behaviour-contracts.mjs).
  *
  *  `frameworks/angular/BehaviourDelegated.json` is deliberately NOT read here.
  *  A delegated declaration describes a control Angular Material provides and
@@ -317,18 +383,30 @@ function collectBindings() {
   /** @type {Record<string, object>} "<name>:<layer>" -> binding, plus tail */
   const byKey = {};
 
-  const reactBase = join(repoRoot, 'frameworks/react/components');
-  const groups = readdirSync(reactBase, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
+  /* BOTH SKIPS BELOW ARE SILENT, and this is the one place in this gate where
+   * "absent" and "I could not find it" are the same value -- feeding a printed
+   * count, which is exactly the shape this repo has been bitten by. It stands
+   * because the silence is COVERED ELSEWHERE rather than because it is harmless.
+   * A component whose binding does not resolve -- it has none, or its directory
+   * name did not round-trip through kebab()/pascal() -- drops out of the
+   * denominator here with no message; but check:behaviour walks the same two
+   * inventories through the same two path builders and reports that identical
+   * miss LOUDLY, as "no <Name>.behaviour.json", and `bun run check` runs both.
+   * So the miss cannot reach a green run: it fails one gate while merely
+   * shrinking the other's count. Duplicating the report here would give one
+   * defect two owners, which is what "check:behaviour owns 'every component
+   * declares'" means. What it does NOT protect against is this gate being run
+   * alone -- read the N of M as a coverage ratio, never as an inventory. */
   for (const name of reactComponents(repoRoot)) {
-    const group = groups.find((g) => existsSync(join(reactBase, g, `${name}.behaviour.json`)));
-    if (!group) continue; // check:behaviour owns "every component declares"; this gate does not duplicate it.
-    const binding = loadBinding(join(reactBase, group, `${name}.behaviour.json`));
-    byKey[`${name}:react`] = { ...binding, tail: `${group}/${name}.behaviour.json` };
+    const found = reactBindingPath(repoRoot, kebab(name));
+    if (!found) continue;
+    const binding = loadBinding(found.path);
+    byKey[`${name}:react`] = { ...binding, tail: found.tail };
   }
 
   for (const dir of angularPrimitives(repoRoot)) {
     const found = angularBindingPath(repoRoot, dir);
-    if (!found) continue; // check:behaviour owns "every component declares"; this gate does not duplicate it.
+    if (!found) continue;
     const binding = loadBinding(found.path);
     byKey[`${binding.component}:angular`] = { ...binding, tail: found.tail };
   }
@@ -362,7 +440,13 @@ export function walkSuites(dir) {
 
 /** Read every suite file's source, keyed by basename, across every directory
  *  in `dirs` (defaults to the real SUITE_DIRS -- a parameter so a test can
- *  point this at a throwaway tree instead of the repo's own).
+ *  point this at a throwaway tree instead of the repo's own). Each entry
+ *  carries the `layer` of the directory it was found in alongside its
+ *  `source`, because that tag -- not anything the suite's text spells -- is
+ *  what validateCoverage below uses to decide whether a suite may satisfy a
+ *  given layer's claim. There is exactly one place a suite's layer is
+ *  decided: here, from SUITE_DIRS, never derived from the suite's path or
+ *  content.
  *
  *  Keying by basename stops being safe to do silently once suites are nested:
  *  a flat directory can never produce two files of the same name, but a walk
@@ -371,11 +455,12 @@ export function walkSuites(dir) {
  *  silently shadow the other in every lookup keyed by basename -- COVERED's
  *  `suiteMentions` check among them -- so it throws rather than picking a
  *  winner nobody chose.
- *  @param {string[]} [dirs] @returns {Record<string,string>} */
+ *  @param {{layer: string, dir: string}[]} [dirs]
+ *  @returns {Record<string, {source: string, layer: string}>} */
 export function collectSuites(dirs = SUITE_DIRS) {
   const out = {};
   const seen = new Map();
-  for (const dir of dirs) {
+  for (const { layer, dir } of dirs) {
     if (!existsSync(dir)) continue;
     for (const f of walkSuites(dir)) {
       const name = basename(f);
@@ -384,7 +469,7 @@ export function collectSuites(dirs = SUITE_DIRS) {
           `check:compliance — two suites share the basename ${name}:\n  ${seen.get(name)}\n  ${f}\n` +
           `Suites are keyed by basename, so one would silently shadow the other.`);
       seen.set(name, f);
-      out[name] = readFileSync(f, 'utf8');
+      out[name] = { source: readFileSync(f, 'utf8'), layer };
     }
   }
   return out;

@@ -35,7 +35,7 @@ This registers the `design` skill under the `arena` plugin. Invoke it explicitly
 ### Use in a project (copy-in kit)
 To use the tokens and components directly in an app:
 
-1. **Copy** `tokens/`, `assets/`, `styles.css`, `frameworks/react/use-container-width.js` and `frameworks/react/tokens.generated.js` into your app (e.g. under `/arena`). `use-container-width.js` is the shared hook `Table` (and any responsive component) imports; copy it whenever you copy one of those. `tokens.generated.js` is the design values JavaScript reads as numbers rather than through CSS; it is generated from `tokens/src/`, so never edit it.
+1. **Copy** `tokens/`, `assets/`, `styles.css`, `frameworks/react/UseContainerWidth.js` and `frameworks/react/Tokens.generated.js` into your app (e.g. under `/arena`). `UseContainerWidth.js` is the shared hook `Table` (and any responsive component) imports; copy it whenever you copy one of those. `Tokens.generated.js` is the design values JavaScript reads as numbers rather than through CSS; it is generated from `tokens/src/`, so never edit it.
 2. **Link the entry point.** `styles.css` only `@import`s the token files, exposing every design token as a CSS custom property (`--color-*`, `--font-*`, `--r-*`, `--shadow-*`, …) and loading the fonts:
    ```html
    <link rel="stylesheet" href="/arena/styles.css" />
@@ -43,13 +43,13 @@ To use the tokens and components directly in an app:
 3. **Pick the theme.** Dark is the default (`:root`). Add `class="arena-light"` on `<html>` for the warm light theme, or wire the built-in toggle with `theme.js`.
 4. **Use the components.** Copy the `.jsx` files you need from `frameworks/react/components/` and import them:
    ```jsx
-   import { Button } from './frameworks/react/components/forms/Button.jsx';
+   import { Button } from './frameworks/react/components/forms/button/Button.jsx';
 
    <Button variant="primary" size="md">Deploy</Button>
    ```
    Every component ships a `.d.ts` (types) and a `.prompt.md` (usage, examples, Do/Don't).
 
-   A few components build on another one rather than restating it, so copy the dependency with them: `ConfirmDialog` and `ErrorState` need `forms/Button.jsx`, and `Calendar` needs `charts/chart-internals.js` for the categorical ramp. The charts, `Calendar` and `Onboarding` also need `frameworks/react/tokens.generated.js` — the design values JavaScript reads as numbers rather than through CSS (a chart's plot height, an hour's height on the time grid, the coachmark's width). Copy it beside `use-container-width.js`; it is generated from `tokens/src/`, so never edit it.
+   A few components build on another one rather than restating it, so copy the dependency with them: `ConfirmDialog` and `ErrorState` need `forms/button/Button.jsx`, and `Calendar` needs `frameworks/react/DataVisuals.js` for the categorical ramp. The charts, `Calendar` and `Onboarding` also need `frameworks/react/Tokens.generated.js` — the design values JavaScript reads as numbers rather than through CSS (a chart's plot height, an hour's height on the time grid, the coachmark's width). Copy it beside `UseContainerWidth.js`; it is generated from `tokens/src/`, so never edit it.
 
 ### How components are styled
 Components render with **inline `style` objects that read the CSS custom properties** (e.g. `background: 'var(--crimson)'`). They do **not** expose utility classes — there is no `class="btn"`. `styles.css` provides only the token variables and fonts; all component logic lives in the `.jsx`. This keeps each component self-contained and fully themeable: change a token and every component follows.
@@ -61,7 +61,7 @@ Components render with **inline `style` objects that read the CSS custom propert
 
 ## Audience and scope
 - **Audience of the language: general public.** Arena is meant to give identity to **every kind of Dravensoft software**, regardless of who the end user is — from consumer apps to internal tools. Its foundations (color, typography, spacing, accessibility, voice) are general-purpose and don't assume a technical profile.
-- **The example application is `frameworks/react/ui_kits/console/`**, not the language itself. It illustrates Arena applied to the **Delivery Console, a product aimed at developers/technical teams**. That's why it includes data density, domain terminology (build, deploy, p95) and keyboard accelerators specific to that audience. `Arena - Overview.html` is the opposite: the framework-agnostic token language, and it deliberately shows no components.
+- **The example application is `frameworks/react/ui-kits/console/`**, not the language itself. It illustrates Arena applied to the **Delivery Console, a product aimed at developers/technical teams**. That's why it includes data density, domain terminology (build, deploy, p95) and keyboard accelerators specific to that audience. `Arena - Overview.html` is the opposite: the framework-agnostic token language, and it deliberately shows no components.
 - **Implication for audits and evaluations:** findings observed on the example should be split into (a) those that apply to the **language** (tokens, components, patterns — universal) and (b) those specific to the **example's technical context** (jargon, density, shortcuts). The latter are not defects of the language: in a product for a general audience they would be replaced with plain copy, comfortable density and fewer shortcuts. When evaluating Arena for another kind of software, calibrate against that general audience, not against the Console.
 
 ## Why a language of our own (and not Material/Fluent as-is)
@@ -166,7 +166,7 @@ System-wide bounds on how much is shown — the twin of `z`: same `$type` (`numb
 |---|---|---|
 | `--limit-pagination-siblings` | 1 | how many page numbers flank the current one before `Pagination`'s list elides. The window's total width is a *consequence*, derived at the point of use — `first + last + (2 × siblings + 1) + two ellipses` — never authored as a second number |
 
-**Script-readable, not Tailwind-exposed**: unlike `z`, `limit`'s consumer is an array bound in JavaScript, not a CSS property, so it carries no utility class. It reaches React as the bare number `limitPaginationSiblings` (`frameworks/react/tokens.generated.js`) and is named in `check:coverage`'s `EXCLUDED` map for that reason rather than reaching a utility.
+**Script-readable, not Tailwind-exposed**: unlike `z`, `limit`'s consumer is an array bound in JavaScript, not a CSS property, so it carries no utility class. It reaches React as the bare number `limitPaginationSiblings` (`frameworks/react/Tokens.generated.js`) and is named in `check:coverage`'s `EXCLUDED` map for that reason rather than reaching a utility.
 
 ### Control density type scale (`dz`)
 Chrome text — a button label, an input's value, a hint, a validation error, a badge, a table cell — is governed by how dense the surrounding controls are, not by the prose scale (`fs`). `dz` already declared control heights, row padding and stack gap; it now carries its own five-step text scale, generated into `tokens/spacing.css` from `tokens/src/spacing.json` (base) and `tokens/src/density.compact.json` (the `.arena-compact` override):
@@ -249,7 +249,7 @@ Two more `$type: duration` families, deliberately not part of `dur` or `loop` ab
 
 `delay` applies to the **pointer only** — a keyboard focus must reveal its tooltip immediately, and routing that path through `--delay-open` would make an already-hard-to-reach control also feel broken. `dismiss` is run by the *host*, never by `Toast` itself: `Toast` renders and exposes `persist`, which overrides both values and never auto-dismisses — mandatory in critical/error states so they are not missed (README H1, see the danger convention above).
 
-**Script-readable, not Tailwind-exposed**: both families' consumers are `setTimeout` arguments in JavaScript, not CSS properties, so neither carries a utility class. They reach React as `delayOpen`/`delayClose`/`dismissDefault`/`dismissActionable` (`frameworks/react/tokens.generated.js`) and are named in `check:coverage`'s `EXCLUDED` map for that reason rather than reaching a utility.
+**Script-readable, not Tailwind-exposed**: both families' consumers are `setTimeout` arguments in JavaScript, not CSS properties, so neither carries a utility class. They reach React as `delayOpen`/`delayClose`/`dismissDefault`/`dismissActionable` (`frameworks/react/Tokens.generated.js`) and are named in `check:coverage`'s `EXCLUDED` map for that reason rather than reaching a utility.
 
 ## ICONOGRAPHY
 - **Official set: [Phosphor Icons](https://phosphoricons.com)** (MIT license, free commercial use, no attribution). Chosen for aligning with Dravensoft's bold identity: it's the open-source family with the widest style range (1,500+ icons in 6 weights) and its **Bold** weight has the presence and high contrast the brand calls for — the icon equivalent of Archivo Black.
@@ -322,7 +322,7 @@ Two of these numbers the scripts **report without gating**: crimson as text sits
 
 Eight slots for colouring N arbitrary entities — chart series, calendar events, any set where the color answers *which thing*. Authored per theme, **fixed order, never cycled**. A ninth entity folds to "Other", small multiples, or direct labels — never a generated hue. The slots carry **identity only**; when a series *is* a state, a chart's `tone` prop uses the status colors instead.
 
-The ramp is one system with one entry point: `catColor(slot)` in `frameworks/react/components/charts/chart-internals.js`. `Calendar` reads it from there rather than keeping its own copy — two clamps over one ramp is how a ramp stops being a ramp.
+The ramp is one system with one entry point: `catColor(slot)` in `frameworks/react/DataVisuals.js`. `Calendar` reads it from there rather than keeping its own copy — two clamps over one ramp is how a ramp stops being a ramp.
 
 Where a component has no `tone` escape hatch, **state goes on a non-chromatic channel** — never by turning an identity-coloured entity `--danger`. An entity painted a status color while its neighbours carry identity colors makes the palette mean two things at once, and the reader cannot tell which. `Calendar` is the strict case: it draws every event chip itself, so a consumer has no chromatic channel *and* no non-chromatic one, and a cancelled class says so in its title or does not appear on the schedule. That is a real capability the API contract removed, and `Calendar.prompt.md` records it.
 
@@ -366,12 +366,12 @@ It reads the ramp straight out of `palette.css`, which the build regenerates fro
 ## Index / manifest
 - `styles.css` — global entry point (only @imports). Consumers link this file.
 - `tokens/` — `src/` (the DTCG 2025.10 source of every token value, plus `TYPE-MAP.md`), then the CSS: `fonts.css` (generated by `fetch-fonts.mjs`), `palette.css`, `typography.css`, `spacing.css`, `effects.css` (all four generated by `build-tokens.mjs` — do not edit), and `colors.css` (hand-authored: aliases and `color-mix` derivations).
-- `frameworks/react/use-container-width.js` — shared `useContainerWidth` hook and `readBreakpoint`; responsive components import it. `frameworks/react/tokens.generated.js` — design values JavaScript reads as numbers rather than through CSS; generated from `tokens/src/`, so never edit it. `theme.js` — theme toggle helper. `frameworks/react/vendor/` — a committed, generated CommonJS→ESM bundle of React for the demo pages' importmap (`build-vendor.mjs`); every component `.jsx` and demo `.entry.jsx` has a compiled `.js` sibling the pages actually load (`build-demos.mjs`, `check:demos`).
+- `frameworks/react/UseContainerWidth.js` — shared `useContainerWidth` hook and `readBreakpoint`; responsive components import it. `frameworks/react/Tokens.generated.js` — design values JavaScript reads as numbers rather than through CSS; generated from `tokens/src/`, so never edit it. `theme.js` — theme toggle helper. `frameworks/react/vendor/` — a committed, generated CommonJS→ESM bundle of React for the demo pages' importmap (`build-vendor.mjs`); every component `.jsx` and demo `.entry.jsx` has a compiled `.js` sibling the pages actually load (`build-demos.mjs`, `check:demos`).
 - `scripts/` — `validate-palette.mjs` (the data-viz palette validator, vendored), `check-ramp.mjs` (asserts the shipped ramp clears every gate in both themes), `check-text-contrast.mjs` (measures every text level against the real surfaces in both themes) and `check-release.mjs` (asserts the version, the marketplace `ref` and the tag agree, and that the pinned tag actually hands out the version being advertised), `build-tokens.mjs` (generates the four token CSS files from `tokens/src/`), `check-dtcg.mjs` (asserts the DTCG source conforms to 2025.10), `check-tokens-generated.mjs` (asserts the committed CSS matches the source) and `serve.mjs` (`bun run demos`).
 - `assets/` — `rotor-crimson/bone/ink.svg`, `app-icon.svg`, and `fonts/` (the bundled self-hosted `.woff2` binaries).
 - `guidelines/` — specimen cards (`@dsCard`): typography (`type-display`, `type-body`, `type-mono`), color (`colors-neutrals`, `colors-accents`, `colors-status`, `colors-categorical`), spacing (`spacing-scale`, `spacing-density`), effects (`effects-radius`, `effects-shadow`), iconography (`icons`), brand (`brand-logo`) and the **danger convention** (`components-danger`).
-- `frameworks/react/components/` — React primitives: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch), `display/` (Card, Badge, Tag, Avatar, Table/TableRow/TableCell, Skeleton, StatCard, Calendar/CalendarEvent, ActivityFeed, UnauthCard), `navigation/` (Tabs/Tab, SegmentedControl, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar, PageHead, SideNav/SideNavItem/SideNavSection/SideNavCollapsible), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding, Spinner), `charts/` (ChartCard, BarChart, LineChart, DoughnutChart — dependency-free SVG), `brand/` (AppLogo).
-- `frameworks/react/ui_kits/console/` — recreation of the Delivery Console (an example internal product).
+- `frameworks/react/components/` — React primitives, each in its own directory under `<category>/<component-kebab>/` and each a quartet (`<Name>.jsx`, `<Name>.d.ts`, `<Name>.prompt.md`, a `*.card.html` demo) alongside its own colocated suites: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch), `display/` (Card, Badge, Tag, Avatar, Table/TableRow/TableCell, Skeleton, StatCard, Calendar/CalendarEvent, ActivityFeed, UnauthCard), `navigation/` (Tabs/Tab, SegmentedControl, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar, PageHead, SideNav/SideNavItem/SideNavSection/SideNavCollapsible), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding, Spinner), `charts/` (ChartCard, BarChart, LineChart, DoughnutChart — dependency-free SVG), `brand/` (AppLogo).
+- `frameworks/react/ui-kits/console/` — recreation of the Delivery Console (an example internal product).
 - `Arena - Overview.html` (repo root) — the token language, generated at runtime from `tokens/src/` and `tokens/colors.css`. Serve it: `bun run demos`.
 - `Dravensoft Identity.dc.html` (repo root) — the approved identity manual. It sits at the root because it loads `support.js`, `styles.css` and `assets/` by relative path.
 - `SKILL.md` — plugin-root Agent Skill (also usable standalone).
@@ -385,8 +385,10 @@ Arena's pure design language — `tokens/`, `guidelines/`, `assets/`, `scripts/`
 framework-bound lives under `frameworks/`, so a new framework is added without
 touching the language:
 
-- `frameworks/react/` — the React primitives, the example Console app, and the
-  `useContainerWidth` hook.
+- `frameworks/react/` — the React primitives under
+  `components/<category>/<component-kebab>/`, the example Console app under
+  `ui-kits/console/`, and the shared layer-root modules `UseContainerWidth.js`,
+  `UseDialogModal.js` and `DataVisuals.js`.
 - `frameworks/angular/` — the Angular layer, for an existing Angular
   20+/Tailwind-v4/Material app. Two kinds of artifact: a bridge that makes the
   host app wear Arena — `theme/arena-tailwind.css` (the shared `@theme` preset

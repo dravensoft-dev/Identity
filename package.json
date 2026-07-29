@@ -55,9 +55,9 @@
     "check:cards": "bun scripts/check-card-viewports.mjs",
     "check": "bun scripts/check-all.mjs",
     "test:scripts": "bun test scripts",
-    "test:react": "bun test frameworks/react/test/",
-    "test:react-dom": "bun test --preload ./frameworks/react/test-dom/preload.js frameworks/react/test-dom",
+    "test:react": "bun test frameworks/react --path-ignore-patterns='**/*.dom.test.jsx'",
+    "test:react-dom": "bun test --preload ./frameworks/react/test/Preload.js '.dom.test.jsx'",
     "test:angular": "bun run build:angular-tests && bun test build/angular-test/angular",
-    "test": "bun run build:angular-tests && bun test scripts frameworks/react/test/ build/angular-test/angular && bun test --preload ./frameworks/react/test-dom/preload.js frameworks/react/test-dom"
+    "test": "bun run build:angular-tests && bun test scripts frameworks/react build/angular-test/angular --path-ignore-patterns='**/*.dom.test.jsx' && bun test --preload ./frameworks/react/test/Preload.js '.dom.test.jsx'"
   }
 }

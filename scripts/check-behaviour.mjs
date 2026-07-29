@@ -18,22 +18,12 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   loadPatterns, validatePattern, validateBinding,
-  reactComponents, angularPrimitives, angularBindingPath, PATTERN_DIR,
+  reactComponents, reactBindingPath, angularPrimitives, angularBindingPath,
   crossLayerAgrees, bindingCases,
 } from './lib/behaviour-contracts.mjs';
-import { pascal } from './check-structure.mjs';
+import { pascal, kebab } from './check-structure.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-
-/** React components live in group directories; find the one holding a component. */
-const REACT_GROUPS = ['brand', 'charts', 'display', 'feedback', 'forms', 'navigation'];
-function reactBindingPath(component) {
-  for (const group of REACT_GROUPS) {
-    const path = join(root, 'frameworks/react/components', group, `${component}.behaviour.json`);
-    if (existsSync(path)) return path;
-  }
-  return null;
-}
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 
@@ -61,12 +51,14 @@ async function main() {
   /* 2. Every React component declares. */
   const react = new Map();
   for (const component of reactComponents(root)) {
-    const path = reactBindingPath(component);
-    if (!path) {
+    /* The binding sits at components/<category>/<kebab>/<Pascal>.behaviour.json;
+     * reactBindingPath is the one place that path is built. */
+    const found = reactBindingPath(root, kebab(component));
+    if (!found) {
       problems.push(`react/${component}: no ${component}.behaviour.json — every component declares, including a presentational one`);
       continue;
     }
-    const binding = read(path);
+    const binding = read(found.path);
     problems.push(...validateBinding(component, 'react', binding, patterns));
     react.set(component, binding);
   }
