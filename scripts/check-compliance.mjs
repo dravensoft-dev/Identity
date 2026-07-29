@@ -36,6 +36,8 @@ export const COVERED = {
   'Spinner:react': 'Spinner.dom.test.jsx',
   'Tag:react': 'TagAndChipCases.dom.test.jsx',
   'CalendarEvent:react': 'TagAndChipCases.dom.test.jsx',
+  'Input:react': 'TextboxStates.dom.test.jsx',
+  'Textarea:react': 'TextboxStates.dom.test.jsx',
   'Alert:angular': 'Alert.roleTones.test.ts',
   'BarChart:angular': 'ChartDataTable.test.ts',
   'ConfirmDialog:angular': 'ConfirmDialog.compliance.test.ts',
