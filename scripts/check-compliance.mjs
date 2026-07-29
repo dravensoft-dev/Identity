@@ -38,8 +38,13 @@ export const COVERED = {
   'CalendarEvent:react': 'TagAndChipCases.dom.test.jsx',
   'Input:react': 'TextboxStates.dom.test.jsx',
   'Textarea:react': 'TextboxStates.dom.test.jsx',
+  'RadioGroup:react': 'RadioGroupPattern.dom.test.jsx',
+  'Radio:react': 'RadioGroupPattern.dom.test.jsx',
+  'Breadcrumbs:react': 'NavigationLandmarks.dom.test.jsx',
+  'Pagination:react': 'NavigationLandmarks.dom.test.jsx',
   'Alert:angular': 'Alert.roleTones.test.ts',
   'BarChart:angular': 'ChartDataTable.test.ts',
+  'Breadcrumbs:angular': 'Breadcrumbs.compliance.test.ts',
   'ConfirmDialog:angular': 'ConfirmDialog.compliance.test.ts',
   'Tag:angular': 'Tag.cases.test.ts',
 };
