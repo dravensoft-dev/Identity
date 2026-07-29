@@ -108,11 +108,22 @@ export function validateTree(tree, file) {
   return errs;
 }
 
+/** An empty source directory is a failure rather than a clean pass. This is the
+ *  oldest of the repository's zero guards and was inline in main() until the
+ *  contracts/ move -- exported here so it has a suite, because a guard nothing
+ *  tests is a guard that can be deleted with every gate still green.
+ *  @param {number} count @returns {string[]} */
+export function zeroSourceProblems(count) {
+  if (count > 0) return [];
+  return ['found 0 token files in contracts/design — an empty result set is a failure, not a clean pass; check the discovery path'];
+}
+
 function main() {
   const root = join(dirname(fileURLToPath(import.meta.url)), '..');
   const src = join(root, 'tokens/src');
   const files = readdirSync(src).filter((f) => f.endsWith('.json')).sort();
-  if (!files.length) { console.error('check-dtcg: no token files found in tokens/src'); process.exit(1); }
+  const zero = zeroSourceProblems(files.length);
+  if (zero.length) { for (const z of zero) console.error(`check-dtcg: ${z}`); process.exit(1); }
   let errs = [];
   for (const f of files) errs = errs.concat(validateTree(JSON.parse(readFileSync(join(src, f), 'utf8')), f));
   if (errs.length) {
