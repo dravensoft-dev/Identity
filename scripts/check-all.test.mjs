@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { testStep, summarize, stepStatus, GATES } from './check-all.mjs';
 
-test('GATES lists the twenty-two check gates', () => {
-  assert.equal(GATES.length, 22);
+test('GATES lists the twenty-three check gates', () => {
+  assert.equal(GATES.length, 23);
   assert.deepEqual(
     GATES.map((g) => g.name),
-    ['check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:structure', 'check:behaviour', 'check:compliance', 'check:api', 'check:fonts', 'check:vendor', 'check:demos', 'check:cards', 'check:angular', 'check:material'],
+    ['check:docs', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:structure', 'check:behaviour', 'check:compliance', 'check:api', 'check:fonts', 'check:vendor', 'check:demos', 'check:cards', 'check:angular', 'check:material'],
   );
 });
 
@@ -15,30 +15,7 @@ test('check:material runs last, after check:angular, the other Angular-layer gat
 });
 
 test('testStep runs every suite under bun, with the DOM harness isolated in its own process', () => {
-  // Not one merged invocation: `bun test` shares a process (and a globalThis)
-  // across every file a single call matches. The Angular suites are not what
-  // forces the split any more -- frameworks/angular/test/TestbedEnv.ts is the
-  // only registration site left in that directory, it is guarded
-  // (`if (!GlobalRegistrator.isRegistered)`), and it is emitted JavaScript now,
-  // so a single invocation is not even a path ./frameworks/react/test/Preload.js
-  // could reach a second time. What still forces the split is scripts/ and the
-  // DOM-free React suites -- every suite except the `.dom.test.jsx` ones,
-  // wherever they sit -- which are meant to run DOM-free: a happy-dom
-  // installed process-wide for the whole invocation changes what they prove
-  // without failing loudly to say so -- measured, merging all four turns a
-  // passing scripts/lib/static-server.test.mjs fetch assertion into a
-  // cross-origin failure, because `fetch` is no longer Bun's own. See
-  // check-all.mjs's own header for the fuller argument; this is the summary.
-  //
-  // The --preload is load-bearing, not cosmetic: react-dom latches its legacy
-  // change detection unless a DOM exists before it evaluates, and nothing later
-  // than a preload is early enough. Harness.jsx throws when it is missing.
-  //
-  // The build leads, and its position is part of the assertion. The Angular
-  // suites are emitted JavaScript now, so a stale or absent emit must fail as
-  // a build -- loudly, under its own step name -- rather than as a test run
-  // that quietly exercised old code or matched no files at all. That is the
-  // defect 8C10 shipped for four commits with a stale committed demo `.js`.
+
   const steps = testStep({ isBun: true, testFiles: ['a.test.mjs', 'b.test.mjs'] });
   assert.deepEqual(steps.map((s) => s.args), [
     ['run', 'build:angular-tests'],
@@ -57,7 +34,7 @@ test('stepStatus maps exit 2 to a skip, and everything else to pass or fail', ()
   assert.equal(stepStatus(0), 'pass');
   assert.equal(stepStatus(1), 'fail');
   assert.equal(stepStatus(2), 'skip');
-  assert.equal(stepStatus(null), 'fail'); // spawn failure
+  assert.equal(stepStatus(null), 'fail');
 });
 
 test('summarize lists every step and reports overall success', () => {
