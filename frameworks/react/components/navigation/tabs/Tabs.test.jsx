@@ -5,7 +5,8 @@ import React from 'react';
 import { Tabs } from './Tabs.jsx';
 import { Tab } from '../tab/Tab.jsx';
 
-/* This directory has no DOM, so no test here fires a click or an arrow key -- the
+/* This suite carries no `.dom.` infix, so it runs in the DOM-free invocation and no
+ * test here fires a click or an arrow key -- the
  * roving tab stop MOVING, and `change`'s payload, are asserted in
  * Tabs.dom.test.jsx, beside this file. What SSR can hold is the structure:
  * that a tablist and one tabpanel per tab are rendered with exactly one of the

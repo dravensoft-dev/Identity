@@ -20,7 +20,7 @@ test('off renders iconOff and aria-checked="false"', () => {
 
 /* renderToStaticMarkup cannot dispatch a click, so activation is reached the
  * one other way a function component allows: call the component and read the
- * onClick off the element it returned — the same technique side-nav.test.jsx
+ * onClick off the element it returned — the same technique SideNav.test.jsx
  * uses for the same reason. */
 test('confirm routes a click to onRequestChange and does not fire onFuncOn', () => {
   const seen = [];

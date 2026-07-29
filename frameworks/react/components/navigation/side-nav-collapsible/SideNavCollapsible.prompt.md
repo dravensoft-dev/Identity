@@ -90,7 +90,7 @@ Two consequences worth holding on to:
 **Two halves of this component are not machine-checkable, and neither is unverified
 because it is unimportant.** happy-dom does not synthesise a click from a keydown on a
 native button, so no suite can prove Enter and Space actually toggle the region -- what
-`side-nav-disclosure.test.jsx` proves instead is that the trigger is a native
+`SideNav.disclosure.dom.test.jsx` proves instead is that the trigger is a native
 `<button type="button">`, that no handler of ours cancels either key, and that a click
 toggles, which together make the platform's activation the only remaining link. And
 happy-dom has no sequential focus navigation at all, so a Tab keypress plus

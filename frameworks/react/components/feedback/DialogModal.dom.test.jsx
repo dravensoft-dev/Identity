@@ -37,7 +37,7 @@ afterEach(cleanup);
  *
  * `true` means "this requirement IS met", `false` means it is not, and every
  * verdict in both maps is established by acting on a real tree in
- * behavioural.test.jsx, which sits beside this file.
+ * Behavioural.dom.test.jsx, which sits beside this file.
  *
  * -------------------------------------------------------------------------
  * WHAT A SUITE CAN AND CANNOT PROVE ABOUT focus.trap. An earlier version of
@@ -49,7 +49,7 @@ afterEach(cleanup);
  *     landing on the last, and Tab on the last landing on the first, are
  *     `last.focus()` and `first.focus()` calls made by our own keydown handler
  *     in frameworks/react/UseDialogModal.js. happy-dom honours .focus(), so
- *     these are real assertions about real behaviour, and behavioural.test.jsx
+ *     these are real assertions about real behaviour, and Behavioural.dom.test.jsx
  *     makes both of them — "Dialog wraps Shift+Tab from the first focusable to
  *     the last" and its Tab twin — and then makes both again for ConfirmDialog.
  *     That is why both verdicts below are true, and neither was flipped without
@@ -74,7 +74,7 @@ afterEach(cleanup);
  * Angular's own implementation, which React does not share. React's trap is
  * proven by React's own suite or it is not proven.
  *
- * Change a verdict here and the matching assertion in behavioural.test.jsx must
+ * Change a verdict here and the matching assertion in Behavioural.dom.test.jsx must
  * change with it — that file's header explains why the still-false ones pin a
  * defect on purpose. */
 const DIALOG_BEHAVIOURAL = {
@@ -82,7 +82,7 @@ const DIALOG_BEHAVIOURAL = {
 };
 
 /* ConfirmDialog's four are now true as well, and each verdict is established the
- * same way Dialog's is: by acting on a real tree in behavioural.test.jsx. Plan
+ * same way Dialog's is: by acting on a real tree in Behavioural.dom.test.jsx. Plan
  * 8C4's Task 4 moved them, one task after Dialog, through the same shared hook --
  * which is exactly what splitting this map made possible.
  *

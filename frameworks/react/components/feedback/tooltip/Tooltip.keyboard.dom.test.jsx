@@ -1,4 +1,4 @@
-/* Tooltip's keyboard and description path. Separate from tooltip-timer.test.jsx,
+/* Tooltip's keyboard and description path. Separate from Tooltip.timer.dom.test.jsx,
  * whose header scopes it to the single-timer rule, because these are different
  * claims about the same component and one file asserting both would say less
  * about each.
@@ -12,7 +12,7 @@
  * ONE test below does wait out a real --delay-open, because Escape's whole point
  * is the POINTER-revealed bubble and a pointer cannot reveal one any faster. That
  * makes this file a second contributor to the known, pre-existing "update to
- * Tooltip was not wrapped in act(...)" warning tooltip-timer.test.jsx's header
+ * Tooltip was not wrapped in act(...)" warning Tooltip.timer.dom.test.jsx's header
  * documents at length: it is a warning, the run stays green, and the instruction
  * there stands -- do not chase it by widening MARGIN, and do not add a fake-timer
  * dependency to this repository to make it go away.
@@ -29,7 +29,7 @@ import { delayOpen } from '../../../Tokens.generated.js';
 afterEach(cleanup);
 
 /** Margin either side of a delay boundary, the same figure and the same reason
- *  tooltip-timer.test.jsx gives: large enough that ordinary timer jitter cannot
+ *  Tooltip.timer.dom.test.jsx gives: large enough that ordinary timer jitter cannot
  *  cross it, small enough that the one test needing it stays cheap. */
 const MARGIN = 120;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -65,7 +65,7 @@ const pressElsewhere = (key) => {
   return ev;
 };
 /** React 18 synthesises onMouseEnter from a delegated `mouseover`; a literal
- *  `mouseenter` is a silent no-op. tooltip-timer.test.jsx's header has the whole
+ *  `mouseenter` is a silent no-op. Tooltip.timer.dom.test.jsx's header has the whole
  *  measurement. The handlers sit on the wrapper span, not on the child. */
 const hover = (root) => act(() => {
   root.firstElementChild.dispatchEvent(new window.MouseEvent('mouseover', { bubbles: true }));

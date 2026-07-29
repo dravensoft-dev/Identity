@@ -9,14 +9,16 @@ import { Tooltip } from './Tooltip.jsx';
  * Tooltip mounts with `show` false, and TWO different things flip it: a mouseover
  * plus --delay-open, and a focus, which reveals IMMEDIATELY because the delays are
  * pointer intent and a keyboard user has already paid to reach the control. Both
- * need an event and a DOM. This directory renders with renderToStaticMarkup and
- * has neither, so a static render shows the TRIGGER and never the bubble. Nothing
+ * need an event and a DOM. This suite carries no `.dom.` infix, so it renders with
+ * renderToStaticMarkup and has neither, and a static render shows the TRIGGER and
+ * never the bubble. (The rule is a property of the FILENAME, never of the directory:
+ * two `.dom.test.jsx` siblings sit right beside this file.) Nothing
  * below asserts the bubble's text, its role="tooltip", or either delay; that would
  * be asserting something false about a static render.
  * `Tooltip.timer.dom.test.jsx`, beside this file, owns the pointer reveal and
  * keeps owning it -- it drives real mouseover/mouseout against a real DOM and pins
  * the cancel-and-reschedule rule around --delay-open and --delay-close --
- * and `tooltip-keyboard.test.jsx` owns the focus path, the merged
+ * and `Tooltip.keyboard.dom.test.jsx`, also beside this file, owns the focus path, the merged
  * aria-describedby and Escape.
  *
  * What IS verifiable statically is exactly what this migration changed:

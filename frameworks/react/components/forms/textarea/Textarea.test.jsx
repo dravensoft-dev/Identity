@@ -4,8 +4,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Textarea } from './Textarea.jsx';
 
-/* This directory renders with renderToStaticMarkup and has no DOM, so no test here
- * fires a change. The `change` event's payload -- the new text as a string -- is
+/* This suite carries no `.dom.` infix, so it renders with renderToStaticMarkup and has
+ * no DOM, and no test here fires a change. The `change` event's payload -- the new text as a string -- is
  * therefore NOT verified by this suite; it is verified where a DOM exists, in
  * ../FormControlEvents.dom.test.jsx, which dispatches a real
  * input event and asserts the payload's TYPE before its value. What IS verified here is

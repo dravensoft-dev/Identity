@@ -52,7 +52,7 @@ import { Badge } from '../badge/Badge.jsx';
  * `responsive={false}` is passed everywhere below. A bare static mount is already
  * the wide branch for the reason above, but pinning it keeps these assertions about
  * the API rather than about what an unmeasured container happens to do -- the same
- * reason calendar.test.jsx pins `view="week"`. */
+ * reason Calendar.test.jsx pins `view="week"`. */
 
 const COLUMNS = [
   { header: 'Build', mono: true },
@@ -200,7 +200,7 @@ test('an Arena component inside a TableCell renders', () => {
     'the Badge rendered outside the gridcell it was written in');
 });
 
-/* THE REMOVALS ARE PROVED, exactly as calendar.test.jsx proves `renderEvent`'s.
+/* THE REMOVALS ARE PROVED, exactly as Calendar.test.jsx proves `renderEvent`'s.
  * A removal nothing asserts is a removal that can come back: `check:api` reads
  * `Table.d.ts` and never opens `Table.jsx`, so a `render` call quietly restored to
  * the implementation would leave that gate green. Asserted as byte-equality

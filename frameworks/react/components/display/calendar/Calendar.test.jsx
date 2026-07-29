@@ -27,7 +27,7 @@ import { CalendarEvent } from '../calendar-event/CalendarEvent.jsx';
  * eight of its `grid` exceptions when the navigation shipped, so the binding now
  * claims FULL compliance with the pattern and no test anywhere checks the claim.
  * Keyboard navigation is verified by hand: serve the tree with `bun run demos`, open
- * calendar.card.html and drive the grid from the keyboard. See CLAUDE.md's Known debt.
+ * Calendar.card.html, beside this file, and drive the grid from the keyboard. See CLAUDE.md's Known debt.
  *
  * `view="week"` is passed everywhere below. Without a DOM the container measures
  * null, which is already the wide branch, but pinning it keeps these assertions

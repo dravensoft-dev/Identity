@@ -4,7 +4,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Menu } from './Menu.jsx';
 
-/* This directory renders with renderToStaticMarkup and has no DOM, and a Menu's
+/* This suite carries no `.dom.` infix, so it renders with renderToStaticMarkup and has
+ * no DOM, and a Menu's
  * panel only exists after its trigger has been clicked -- `open` is internal
  * state that starts false. So the half of Menu's contract that lives inside the
  * panel (an entry's `icon` drawn as an <i>, `select` carrying the whole item, a
@@ -13,8 +14,8 @@ import { Menu } from './Menu.jsx';
  *
  * What IS verifiable here is everything the closed component renders: the
  * trigger slot reaching the page, neither R4 escape being left on the root, and
- * the required `items` guard. The R4 assertions belong in this directory rather
- * than beside the others precisely because they are about the ROOT element,
+ * the required `items` guard. The R4 assertions belong in the DOM-FREE suite rather
+ * than in the DOM one precisely because they are about the ROOT element,
  * which is drawn whether the menu is open or not. */
 
 test('a closed Menu draws its trigger and no panel', () => {

@@ -4,7 +4,7 @@
  * sequential focus navigation: a Tab keydown does not move
  * document.activeElement on its own. So a test asserting that focus did not
  * escape a panel would pass identically against a component with a perfect trap
- * and one with none -- which is why dialog-modal.test.jsx's header refuses that
+ * and one with none -- which is why DialogModal.dom.test.jsx's header refuses that
  * shape. The boundary wrap is different in kind: it is an explicit .focus()
  * call made by OUR handler, and happy-dom honours .focus(). So the wrap tests
  * below discriminate, and the interior of the trap -- Tab from a middle element

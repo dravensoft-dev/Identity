@@ -23,7 +23,7 @@
  * there is no button anywhere and the pattern does not apply (`inert`).
  *
  * `keyboard.Space` and `keyboard.Enter` are BEHAVIOURAL for the `button` pattern,
- * and this suite proves both the same way side-nav-disclosure.test.jsx's own
+ * and this suite proves both the same way SideNav.disclosure.dom.test.jsx's own
  * trigger test does -- ported rather than reinvented, because the precedent
  * does three separate things and all three are needed:
  *   (1) the interactive subject is a native <button>, which is what makes the

@@ -1,6 +1,6 @@
 /* The requirements evaluate() returns null for: they are behaviours, not
  * attributes, and a DOM snapshot cannot decide them. Each verdict
- * dialog-modal.test.jsx declares in its `behavioural` map is settled here by
+ * DialogModal.dom.test.jsx declares in its `behavioural` map is settled here by
  * acting on a real tree, so that map no longer rests on the author's reading of
  * the source.
  *
@@ -55,7 +55,7 @@
  * check-dimension-literals.mjs EXEMPT map has this property already: an
  * exemption that no longer matches a real violation fails the gate that owns
  * it. Attribute-shaped requirements got the same property in
- * dialog-modal.test.jsx, where a stale exception throws STALE EXCEPTION.
+ * DialogModal.dom.test.jsx, where a stale exception throws STALE EXCEPTION.
  * Behaviour-shaped requirements could not, because no snapshot decides them --
  * so they are pinned here instead, and this file is the only thing standing
  * between a behavioural exception and silent rot.
@@ -219,7 +219,7 @@ test('Dialog restores focus to the invoker on close -- focus.onClose is met', ()
 
 /* The fourth Dialog requirement, and the only one with no assertion here before
  * plan 8C4 -- focus.trap rested on a reading of the source, which this file's
- * header and dialog-modal.test.jsx's both admitted at length.
+ * header and DialogModal.dom.test.jsx's both admitted at length.
  *
  * Only HALF of it is provable here, and the half is exact: a boundary wrap is
  * OUR OWN .focus() call, which happy-dom honours, so Shift+Tab landing on the
@@ -393,7 +393,7 @@ test('ConfirmDialog wraps Tab from the last focusable to the first -- the other 
 });
 
 /* ConfirmDialog's focus.onClose had NO behavioural coverage before this suite:
- * the shared BEHAVIOURAL map in dialog-modal.test.jsx declared focus.onClose
+ * the shared BEHAVIOURAL map in DialogModal.dom.test.jsx declared focus.onClose
  * false for both components, but only Dialog's verdict was established by acting
  * on a tree, so ConfirmDialog's rested on a reading of the source -- the exact
  * state this suite exists to end.

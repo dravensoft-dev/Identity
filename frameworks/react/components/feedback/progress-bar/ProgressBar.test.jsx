@@ -4,8 +4,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { ProgressBar } from './ProgressBar.jsx';
 
-/* This directory renders with renderToStaticMarkup and has no DOM, so nothing here
- * observes the indeterminate sweep -- that is a keyframe animation on an injected
+/* This suite carries no `.dom.` infix, so it renders with renderToStaticMarkup and has
+ * no DOM, and nothing here observes the indeterminate sweep -- that is a keyframe animation on an injected
  * class, and useEffect does not run under SSR. What IS verified is everything the
  * static markup can decide: the clamp, the fill, the percentage's two modes, the
  * tone map, and -- the point of this migration -- that `label` is the bar's

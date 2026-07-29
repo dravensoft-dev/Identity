@@ -1,5 +1,5 @@
 /* Menu's contract lives inside a panel that only exists after a click, so this
- * is the half frameworks/react/test/menu.test.jsx says in its own header it
+ * is the half Menu.test.jsx, beside this file, says in its own header it
  * cannot reach: `open` is internal state starting false, and renderToStaticMarkup
  * has no way to press the trigger.
  *

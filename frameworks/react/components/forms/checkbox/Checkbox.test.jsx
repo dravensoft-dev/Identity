@@ -4,8 +4,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Checkbox } from './Checkbox.jsx';
 
-/* This directory renders with renderToStaticMarkup and has no DOM, so no test here
- * fires a change. The `change` event's payload -- the new checked state as a boolean --
+/* This suite carries no `.dom.` infix, so it renders with renderToStaticMarkup and has
+ * no DOM, and no test here fires a change. The `change` event's payload -- the new checked state as a boolean --
  * is therefore NOT verified by this suite; it is verified where a DOM exists, in
  * ../FormControlEvents.dom.test.jsx, which clicks the real
  * checkbox and asserts the payload is a boolean before asserting what it equals --

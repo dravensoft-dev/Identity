@@ -4,7 +4,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Tab } from './Tab.jsx';
 
-/* This directory has no DOM and renders with renderToStaticMarkup, so nothing here
+/* This suite carries no `.dom.` infix, so it has no DOM and renders with
+ * renderToStaticMarkup, and nothing here
  * fires a click. What it CAN see is the whole of Tab's markup contract: the element,
  * the roles and states it carries, the tab stop it takes, and the two R4 escapes.
  * The behaviour -- that clicking selects, that an arrow moves focus -- belongs to

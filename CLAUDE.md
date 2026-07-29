@@ -724,9 +724,10 @@ refactor's batch 3 it has the same shape as the other two: components under
 plus the suites that belong to no one component under `test/`. Its layer root holds the
 generated `Api.generated.d.ts` and `Tokens.generated.js` and three shared
 internals: `DataVisuals.js` and `UseContainerWidth.js`, each consumed from more than one
-category, and `UseDialogModal.js`, whose three component consumers are all in `feedback/`
-but whose suite is `test/UseDialogModal.dom.test.jsx` — so the narrowest level containing
-every consumer is the layer root either way.
+category, and `UseDialogModal.js`, which is at the layer root **because its suite counts as a
+consumer** — its three component consumers are all in `feedback/` and would put it in
+`components/feedback/` on their own, but `test/UseDialogModal.dom.test.jsx` is a consumer too,
+and the narrowest level containing that one as well is the layer root.
 `frameworks/angular/` holds the Angular layer: a Tailwind preset entry
 (`theme/arena-tailwind.css`) and an Angular Material `--mat-*` token bridge
 (`theme/arena-material.css`), a Phosphor icon manifest (`icons/`), a
@@ -1456,25 +1457,51 @@ scheduled for deletion the same week.
   out of scope again for the structure refactor, which moved files and renamed them and changed
   no test's strategy; recorded here rather than fixed so the false
   prose has a pointer and the reopened question is not lost with it.
-- **Comments inside the Angular layer still cite siblings by their pre-move
-  filenames, and nothing resolves them.** The structure refactor's batch 2 renamed every file
-  in that layer and moved most of its suites; it rewrote every **import specifier**, which a
-  compiler checks — but a bare filename in a sentence is not one. So
-  `host-class-binding.test.ts`, `chart-internals.test.ts`, `testbed-env.ts`,
+- **Comments in EVERY migrated layer still cite siblings by their pre-move
+  filenames, and nothing resolves them.** Each batch of the structure refactor renamed a
+  layer's files and moved most of its suites; each rewrote every **import specifier**, which
+  a compiler or a test runner checks — but a bare filename in a sentence is not one. So
+  `host-class-binding.test.ts`, `testbed-env.ts`,
   `tag-variants.test.ts`, `skeleton-dimensions.test.ts`, `bar-chart-geometry.test.ts` and
-  their siblings are still named across the layer's own headers and inline comments, and a
-  reader who greps one finds nothing. List them with
-  `grep -rnE "[a-z][a-z0-9]*(-[a-z0-9]+)+\.(test\.)?ts" --include='*.ts'
-  frameworks/angular/` and read each hit — it over-reports, because a kebab word followed by
-  `.ts` is also how these files legitimately name a *component directory* or a still-correct
-  history clause. Count by reading, not by piping to `wc -l`. **It is a citation swap and
+  their siblings are still named across the Angular layer's own headers and inline comments,
+  and a reader who greps one finds nothing. **This entry was Angular-only until batch 3, and
+  that batch created the React half of the same class** — every React suite was renamed from
+  `<kebab>.test.jsx` to `<Component>[.<facet>][.dom].test.jsx`, so every header naming a
+  sibling by its old name went stale in one commit. Two commands, one per layer, because the
+  two spell a stale name differently:
+
+  ```bash
+  # Angular: a kebab stem before .ts
+  grep -rnE "[a-z][a-z0-9]*(-[a-z0-9]+)+\.(test\.)?ts" --include='*.ts' frameworks/angular/
+  # React: a lowercase-initial stem before .test.jsx / .card.html
+  grep -rnE "\b[a-z][a-z0-9-]*\.(test\.jsx|card\.html)" --include='*.jsx' --include='*.md' \
+      --include='*.json' frameworks/react/
+  ```
+
+  Read each hit — both over-report, because a lowercase stem before an extension is also how
+  these files legitimately name a *component directory*, a still-correct history clause, or a
+  genuinely deleted file (`grid-keyboard.test.jsx` is the standing example, and it must stay).
+  Count by reading, not by piping to `wc -l`. **It is a citation swap and
   nothing more** — unlike the seven-suite entry above, which needs a design decision — so it
   is the cheapest entry in this section to close and the easiest to close wrongly: a name is
   only worth rewriting once you have opened the file it now names and confirmed the sentence
   around it is still true.
 
-  **Four of these are CLOSED, named here so the next reader does not re-find them.** The
-  structure refactor's batch 3 fixed the `chart-internals.test.ts` citations in
+  **The React half is CLOSED and the Angular half is not, which is why both commands are
+  above.** Batch 3's close-out swept the React layer with the second command and repointed
+  **fourteen** files: `test/UseDialogModal.dom.test.jsx`, `test/PlacementAndBranches.dom.test.jsx`,
+  `components/feedback/DialogModal.dom.test.jsx` (×4), `components/feedback/Behavioural.dom.test.jsx`
+  (×4), `components/feedback/onboarding/Onboarding.dom.test.jsx` (×4),
+  `components/feedback/tooltip/Tooltip.keyboard.dom.test.jsx` (×4),
+  `components/feedback/tooltip/Tooltip.test.jsx`, `components/navigation/menu/Menu.dom.test.jsx`,
+  `components/display/table/Table.test.jsx` (×2), `components/display/calendar/Calendar.test.jsx`,
+  `components/display/TagAndChipCases.dom.test.jsx`,
+  `components/navigation/side-nav/SideNavInject.jsx`, `components/forms/switch/Switch.test.jsx`
+  and `components/navigation/side-nav-collapsible/SideNavCollapsible.prompt.md`. Each target
+  was opened first and the surrounding claim confirmed still true. Re-run the command rather
+  than trusting that list.
+  **On the Angular side four are CLOSED and the rest are not.** Batch 3 fixed the
+  `chart-internals.test.ts` citations in
   `components/charts/bar-chart/BarChart.geometry.test.ts`,
   `components/charts/line-chart/LineChart.geometry.test.ts` and
   `components/charts/doughnut-chart/DoughnutChart.geometry.test.ts` (twice in the last, a
@@ -1485,8 +1512,21 @@ scheduled for deletion the same week.
   opening `DataVisuals.test.ts` and confirming it really does cover the functions the header
   claims (`barPath`, `arcPath`, `niceMax`, `ticks`, `resolveColors`), and each now carries the
   rename chain in past tense so a third rename cannot silently falsify it. **The rest of the
-  class is untouched** — re-run the command above rather than assuming these four were most of
-  it.
+  Angular class is untouched** — re-run its command rather than assuming these four were most
+  of it.
+
+  **A second shape belongs to this entry and is not a filename at all: a comment asserting a
+  property of its own DIRECTORY.** Eleven React suites opened with *"This directory renders
+  with renderToStaticMarkup and has no DOM"*, which was a property of `frameworks/react/test/`
+  and became a property of nothing when batch 3 colocated the suites — three of the eleven were
+  outright **false**, because `tooltip/`, `tabs/` and `menu/` each hold a `.dom.test.jsx`
+  sibling, and the other eight were one component away from it. `frameworks/react/test/Smoke.dom.test.jsx`
+  carried the sharpest form, *"This directory is separate from frameworks/react/test/ on
+  purpose"*, from inside `frameworks/react/test/`. All are converted to *"This suite carries no
+  `.dom.` infix"*, and **the rule is a property of the FILENAME now, never of the directory** —
+  any sentence stating it as a directory property is one sibling away from being false. A path
+  sweep cannot see this shape, and neither can a grep for renamed tokens; it is found by reading
+  the header of a file you are already editing.
 
   **Two narrower classes are CLOSED, and this entry described both wrongly at first, in
   opposite directions.** It claimed batch 2 had rewritten "every path naming a file that no

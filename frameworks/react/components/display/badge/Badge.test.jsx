@@ -1,7 +1,7 @@
 /* Badge's render proof, added when Badge came under the API capability
  * contract. Nothing here asserts a computed pixel: the suite renders with
  * renderToStaticMarkup and asserts that a value resolves to var(--token)
- * rather than to a number, which is what the rest of this directory does. */
+ * rather than to a number, which is what the rest of the layer's suites do. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';

@@ -4,8 +4,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { SegmentedControl } from './SegmentedControl.jsx';
 
-/* This directory renders with renderToStaticMarkup and has no DOM, so no test here
- * fires a change. The `change` event's payload -- the chosen option's value as a
+/* This suite carries no `.dom.` infix, so it renders with renderToStaticMarkup and has
+ * no DOM, and no test here fires a change. The `change` event's payload -- the chosen option's value as a
  * string -- is therefore NOT verified by this suite. What IS verified is the half SSR
  * can see: that an option's `value` and `label` are drawn into their own places now
  * that the bare-string branch is gone, that `value` selects exactly one option, that

@@ -122,8 +122,8 @@ test('Skeleton matches its status binding, block and circle both', () => {
   });
 });
 
-/* A THIRD PLACEMENT DEFECT, and the one this directory was restored just in time
- * to catch. `Calendar` keeps a map of event id -> the chip's forwarded ref and
+/* A THIRD PLACEMENT DEFECT, and the one the React DOM suites were restored just in
+ * time to catch. `Calendar` keeps a map of event id -> the chip's forwarded ref and
  * calls node.focus() on it when Enter steps in from an hour cell. A chip
  * carrying an action panel is a <div> — the chip cannot be a <button> with a
  * kebab inside it — so the interactive attributes move down to a body <button>,
@@ -132,7 +132,7 @@ test('Skeleton matches its status binding, block and circle both', () => {
  * Measured in Chromium; the chip looked and behaved correctly to a mouse.
  *
  * Every other guard is blind to it. The static one-tab-stop count in
- * calendar.test.jsx PASSED BECAUSE OF the bug. And happy-dom's focus() focuses
+ * Calendar.test.jsx PASSED BECAUSE OF the bug. And happy-dom's focus() focuses
  * non-focusable elements, so asserting that focus moves would pass here whether
  * the ref were right or wrong — which is why this asserts the IDENTITY of the
  * element the ref landed on instead, and why `Calendar`'s own Enter route stays

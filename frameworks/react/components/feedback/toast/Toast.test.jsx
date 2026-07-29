@@ -4,8 +4,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Toast } from './Toast.jsx';
 
-/* This directory renders with renderToStaticMarkup and has no DOM, so no test here
- * fires a click: neither the `action` nor the `close` event's firing is verified.
+/* This suite carries no `.dom.` infix, so it renders with renderToStaticMarkup and has
+ * no DOM, and no test here fires a click: neither the `action` nor the `close` event's firing is verified.
  * What IS verified is the half SSR can see, and it is the half both of this
  * migration's decisions live in --
  *

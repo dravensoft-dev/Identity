@@ -4,8 +4,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Input } from './Input.jsx';
 
-/* This directory renders with renderToStaticMarkup and has no DOM, so no test here
- * fires a change or a blur. Two things are therefore NOT verified by this suite:
+/* This suite carries no `.dom.` infix, so it renders with renderToStaticMarkup and has
+ * no DOM, and no test here fires a change or a blur. Two things are therefore NOT verified by this suite:
  * the `change` and `blur` payloads -- the value as a string, which is the whole of
  * decision DA -- and the validate-on-blur path, since `validate` runs only once the
  * field has been touched and nothing here can touch it. Both need a real DOM; no grep

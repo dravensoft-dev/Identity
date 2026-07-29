@@ -73,7 +73,7 @@ export function indentFor(indentStep, depth) {
  * These stay inside a .jsx file so the gate keeps seeing them: every value below
  * sits at a governed property SITE in a scanned file, so a bare '12px' written
  * here fails check:dimensions exactly as it would at the call site. That is not
- * true of `indentFor`'s RETURN value, which is why side-nav.test.jsx asserts on
+ * true of `indentFor`'s RETURN value, which is why SideNav.test.jsx asserts on
  * it directly; nothing about this extraction moved geometry out from under the
  * gate. */
 

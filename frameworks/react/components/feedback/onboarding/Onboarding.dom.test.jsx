@@ -1,7 +1,7 @@
 /* Onboarding against dialog-modal, in both directions — and the whole of this
  * component's DOM coverage, which was nothing at all before plan 8C4's Task 5.
  *
- * The shape is dialog-modal.test.jsx's and behavioural.test.jsx's, merged into
+ * The shape is DialogModal.dom.test.jsx's and Behavioural.dom.test.jsx's, merged into
  * one file because Onboarding arrives with no suite: the assertPattern call that
  * compares the rendered tree against the binding, and, beside it, the behavioural
  * tests that establish every verdict that call declares. Splitting them across
@@ -62,7 +62,7 @@ afterEach(cleanup);
  * exists to end.
  *
  * The map is Onboarding's alone and is deliberately not shared with
- * dialog-modal.test.jsx's two. Those were split from a single shared map for a
+ * DialogModal.dom.test.jsx's two. Those were split from a single shared map for a
  * reason that applies here with more force: a map that has to be true of three
  * components forces three components into one commit, and Onboarding moved a task
  * after the other two. */
@@ -83,7 +83,7 @@ const ONBOARDING_BEHAVIOURAL = {
  *
  *  `init` carries the modifier flags: the trap reads `shiftKey` off the event, and
  *  a bare `{ key, bubbles }` would leave it false and make a wrap test pass in the
- *  wrong direction. Same shape as behavioural.test.jsx's. */
+ *  wrong direction. Same shape as Behavioural.dom.test.jsx's. */
 function press(el, key, init = {}) {
   act(() => {
     el.dispatchEvent(new window.KeyboardEvent('keydown', { key, bubbles: true, ...init }));
@@ -179,7 +179,7 @@ test('Onboarding moves focus to the first focusable inside the panel on open -- 
  * holds the open state so onSkip really unmounts the coachmark.
  *
  * IT STARTS CLOSED, AND THAT IS THE WHOLE POINT, for the reason DialogHarness in
- * behavioural.test.jsx records: every real restore-the-invoker captures
+ * Behavioural.dom.test.jsx records: every real restore-the-invoker captures
  * document.activeElement at the instant `open` becomes true. A harness that
  * mounts open and focuses the invoker afterwards captures body, restores body,
  * and passes against an implementation that does nothing useful. Opening BY

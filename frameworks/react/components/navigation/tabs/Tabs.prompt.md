@@ -28,4 +28,5 @@ A row of tabs and the one panel they switch between. The active tab has a crimso
 
 **Checked by hand, because a suite cannot hold it:** happy-dom has no sequential focus navigation,
 so nothing asserts that Tab from a tab reaches the panel rather than the next tab. Serve the tree
-with `bun run demos`, open `navigation.card.html`, and check it in a real browser.
+with `bun run demos`, open `frameworks/react/components/navigation/Navigation.card.html`,
+and check it in a real browser.
