@@ -51,6 +51,7 @@ export const ELEMENT_ROLE = {
   listbox: 'listbox',
   'menu-button': 'button',
   navigation: 'navigation',
+  progressbar: 'progressbar',
   status: 'status',
   switch: 'switch',
   textbox: 'textbox',
@@ -182,6 +183,7 @@ export const BEHAVIOURAL = new Set([
 
   'states.disabled', 'states.required', 'states.readonly',
   'states.multiselectable', 'states.busy', 'states.posinset',
+  'states.valuenow', 'states.valuemin', 'states.valuemax',
 ]);
 
 export function evaluate(el, key, value, patternName, resolveId) {
