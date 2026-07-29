@@ -18,12 +18,20 @@ page — count them rather than trusting a figure here, which moves whenever a
 batch adds a pattern (`ls *.json | wc -l` for the total, run from this
 directory, and `grep -l 'apg/' *.json | wc -l` for the APG-derived share; note
 `navigation` cites an APG *practices* page rather than a *patterns* one, so a
-grep on `apg/patterns` alone undercounts by one). The exceptions are stable:
-two, `status` and `textbox`, cite the ARIA 1.2 role reference instead, because
-APG has no pattern page for either role; `figure-with-data-table` cites WCAG
-because APG has no chart pattern; `none` and `absent` cite nothing, because
-there is nothing to adopt from when the claim is that no pattern applies — see
-below for why they are two different patterns and not one.
+grep on `apg/patterns` alone undercounts by one). The exceptions are not a fixed
+list and must not be written as one: `progressbar`, `status` and `textbox` cite
+the ARIA 1.2 role reference instead, because APG has no pattern page for any of
+those roles; `figure-with-data-table` cites WCAG because APG has no chart
+pattern; `none` and `absent` cite nothing, because there is nothing to adopt
+from when the claim is that no pattern applies — see below for why they are two
+different patterns and not one.
+
+**That set is machine-checked**, which is what makes it safe to name here at
+all: `none aside, exactly the patterns with no APG pattern page cite something
+else`, in `scripts/behaviour-contracts.test.mjs`, asserts it by literal value.
+Adding a pattern that cites anything but an APG *patterns* page fails that test
+until the list follows, so the test is the authority and this paragraph is the
+explanation.
 
 `none` and `absent` look alike — both cite nothing, both require nothing — but they
 answer different questions, and collapsing them was the exact bug this layer once

@@ -30,6 +30,7 @@ export function ProgressBar({ progressPercentage = 0, indeterminate = false, ton
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-sm)", color: "var(--mute)" }
   }, pct, "%")), React.createElement("div", {
     role: "progressbar",
+    "aria-live": "polite",
     "aria-valuenow": indeterminate ? undefined : pct,
     "aria-valuemin": 0,
     "aria-valuemax": 100,

@@ -135,11 +135,16 @@ citing the source it was adopted from. **Most cite a WAI-ARIA APG page; count th
 trusting a figure here** (`ls contracts/behaviour/*.json | wc -l` for the total,
 `grep -l 'apg/' contracts/behaviour/*.json | wc -l` for the APG-derived share — note
 `navigation` cites an APG *practices* page rather than a *patterns* one, so a grep on
-`apg/patterns` alone undercounts by one). The exceptions are the interesting part: `status` and
-`textbox` cite the ARIA 1.2 role reference, because APG has no pattern page for either role;
+`apg/patterns` alone undercounts by one). The exceptions are the interesting part, and they are a
+**growing** set rather than a fixed one: `progressbar`, `status` and `textbox` cite the ARIA 1.2
+role reference, because APG has no pattern page for any of those roles;
 `figure-with-data-table` is Arena's own and cites WCAG, because APG has no chart pattern; and
 `none` and `absent` cite nothing, because there is nothing to adopt from when the claim is that
-no pattern applies. `requires` is a flat map of **dotted** keys, and that shape is load-bearing:
+no pattern applies. **That set is asserted by literal value** — `none aside, exactly the patterns
+with no APG pattern page cite something else`, in `scripts/behaviour-contracts.test.mjs` — so a
+new pattern citing anything but an APG *patterns* page fails that test until the list follows. It
+is the one claim in this paragraph a grep for a component name can never catch, because it is
+written in terms of patterns. `requires` is a flat map of **dotted** keys, and that shape is load-bearing:
 an exception names exactly one requirement, so one entry cannot excuse a whole clause.
 
 Every component declares, in **every** layer, beside its own source — `<Name>.behaviour.json` —

@@ -64,7 +64,7 @@ test('none aside, exactly the patterns with no APG pattern page cite something e
     .filter(([stem, p]) => stem !== 'none' && !p.source.includes('/ARIA/apg/'))
     .map(([stem]) => stem)
     .sort();
-  assert.deepEqual(nonApg, ['absent', 'figure-with-data-table', 'status', 'textbox']);
+  assert.deepEqual(nonApg, ['absent', 'figure-with-data-table', 'progressbar', 'status', 'textbox']);
 });
 
 const patterns = new Map([

@@ -4,9 +4,12 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Spinner } from './Spinner.jsx';
 
-test('Spinner announces its label through the status role', () => {
+test('Spinner announces its label through an explicitly polite progressbar', () => {
   const html = renderToStaticMarkup(<Spinner label="Loading deploys" />);
-  assert.match(html, /role="status"/);
+  assert.match(html, /role="progressbar"/);
+  assert.match(html, /aria-live="polite"/,
+    'role="progressbar" carries no implicit live region, so dropping the explicit aria-live '
+    + 'silently removes the announcement role="status" used to provide');
   assert.match(html, /aria-label="Loading deploys"/);
 });
 

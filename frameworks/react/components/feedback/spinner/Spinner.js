@@ -26,7 +26,8 @@ export function Spinner({ size = "md", tone = "accent", label = "Loading" }) {
   const d = SIZES[size] || SIZES.md;
   const color = TONES[tone] || TONES.accent;
   return React.createElement("span", {
-    role: "status",
+    role: "progressbar",
+    "aria-live": "polite",
     "aria-label": label,
     style: { display: "inline-flex", color }
   }, React.createElement("span", {
