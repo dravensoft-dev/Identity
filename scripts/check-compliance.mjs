@@ -26,6 +26,8 @@ export const COVERED = {
   'ConfirmDialog:react': 'DialogModal.dom.test.jsx',
   'Onboarding:react': 'Onboarding.dom.test.jsx',
   'Menu:react': 'Menu.dom.test.jsx',
+  'BulkActionBar:react': 'BulkActionBar.toolbar.dom.test.jsx',
+  'CommandPalette:react': 'CommandPalette.combobox.dom.test.jsx',
   'Skeleton:react': 'PlacementAndBranches.dom.test.jsx',
   'SideNavCollapsible:react': 'SideNav.disclosure.dom.test.jsx',
   'Tabs:react': 'Tabs.dom.test.jsx',
@@ -51,6 +53,8 @@ export const COVERED = {
   'BarChart:angular': 'ChartDataTable.test.ts',
   'ActivityFeed:angular': 'ActivityFeed.cases.test.ts',
   'Breadcrumbs:angular': 'Breadcrumbs.compliance.test.ts',
+  'BulkActionBar:angular': 'BulkActionBar.toolbar.test.ts',
+  'CommandPalette:angular': 'CommandPalette.combobox.test.ts',
   'ConfirmDialog:angular': 'ConfirmDialog.compliance.test.ts',
   'Tag:angular': 'Tag.cases.test.ts',
 };

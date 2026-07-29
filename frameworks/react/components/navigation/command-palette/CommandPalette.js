@@ -2,6 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useState, useEffect, useRef } from "react";
+let nextId = 0;
 export function CommandPalette({ open, commands, placeholder = "Search for an action or project…", onClose, onRun }) {
   if (open == null)
     throw new Error("CommandPalette: `open` is required");
@@ -10,6 +11,11 @@ export function CommandPalette({ open, commands, placeholder = "Search for an ac
   const [q, setQ] = useState("");
   const [i, setI] = useState(0);
   const inputRef = useRef(null);
+  const uid = useRef(null);
+  if (uid.current === null)
+    uid.current = `arena-command-palette-${nextId++}`;
+  const listboxId = `${uid.current}-listbox`;
+  const optionId = (index) => `${uid.current}-option-${index}`;
   const filtered = commands.filter((c) => (c.label + " " + (c.hint || "")).toLowerCase().includes(q.toLowerCase()));
   useEffect(() => {
     if (open) {
@@ -60,11 +66,13 @@ export function CommandPalette({ open, commands, placeholder = "Search for an ac
     onClick: (e) => e.stopPropagation(),
     role: "dialog",
     "aria-modal": "true",
+    "aria-label": "Command palette",
     style: { width: "calc(var(--sp-1) * 140)", maxWidth: "92vw", background: "var(--surface-card)", border: "var(--bw) solid var(--line-strong)", borderRadius: "var(--r-lg)", boxShadow: "var(--shadow-3)", overflow: "hidden" }
   }, React.createElement("div", {
     style: { display: "flex", alignItems: "center", gap: "calc(var(--sp-1) * 2.5)", padding: "calc(var(--sp-1) * 3.5) calc(var(--sp-1) * 4)", borderBottom: "var(--bw) solid var(--color-base-300)" }
   }, React.createElement("i", {
     className: "ph-bold ph-magnifying-glass",
+    "aria-hidden": "true",
     style: { color: "var(--mute)", fontSize: "var(--icon-lg)" }
   }), React.createElement("input", {
     ref: inputRef,
@@ -72,15 +80,29 @@ export function CommandPalette({ open, commands, placeholder = "Search for an ac
     onChange: (e) => setQ(e.target.value),
     onKeyDown: onKey,
     placeholder,
+    role: "combobox",
+    "aria-autocomplete": "list",
+    "aria-haspopup": "listbox",
+    "aria-expanded": "true",
+    "aria-controls": listboxId,
+    "aria-label": placeholder || "Search commands",
+    "aria-activedescendant": i >= 0 && i < filtered.length ? optionId(i) : undefined,
     style: { flex: 1, background: "transparent", border: "none", outline: "none", color: "var(--bone)", fontFamily: "var(--font-body)", fontSize: "var(--dz-text)" }
   }), React.createElement("span", {
     style: { fontFamily: "var(--font-mono)", fontSize: "var(--dz-text-xs)", color: "var(--mute)", border: "var(--bw) solid var(--color-base-300)", borderRadius: "var(--r-xs)", padding: "calc(var(--sp-1) * 0.5) calc(var(--sp-1) * 1.5)" }
   }, "ESC")), React.createElement("div", {
+    id: listboxId,
+    role: "listbox",
+    "aria-label": "Commands",
     style: { maxHeight: "calc(var(--sp-1) * 80)", overflow: "auto", padding: "calc(var(--sp-1) * 1.5)" }
   }, filtered.length === 0 && React.createElement("div", {
     style: { padding: "calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 3)", fontFamily: "var(--font-body)", fontSize: "var(--fs-md)", color: "var(--mute)" }
   }, 'No results for "', q, '".'), filtered.map((c, idx) => React.createElement("button", {
     key: c.id,
+    id: optionId(idx),
+    role: "option",
+    "aria-selected": idx === i,
+    tabIndex: -1,
     onMouseEnter: () => setI(idx),
     onClick: () => run(c),
     style: {
