@@ -33,3 +33,15 @@ test('Tooltip drops a consumer attribute -- no {...rest} spread reaches the root
   );
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- a {...rest} escape is back');
 });
+
+test('a child that cannot carry aria-describedby throws rather than describing nothing', () => {
+  assert.throws(
+    () => renderToStaticMarkup(<Tooltip label="Copy"><>Copy</></Tooltip>),
+    /Tooltip: `children` must be a single element/,
+    'a fragment passes isValidElement and swallows the clone -- the silent half of this hole',
+  );
+  assert.throws(
+    () => renderToStaticMarkup(<Tooltip label="Copy">Copy</Tooltip>),
+    /Tooltip: `children` must be a single element/,
+  );
+});
