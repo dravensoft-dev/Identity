@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `BulkActionBar` is a `toolbar` with one roving tab stop and arrow-key navigation, in both
+  layers; it rendered `role="region"` with every control in the Tab sequence. The Angular host
+  also announced that region and its label while the selection was empty and nothing was
+  drawn — both are gated on the count now.
+- `CommandPalette` is a real combobox in React too: the input carries `role="combobox"`,
+  `aria-expanded` and `aria-controls`, the rows are `role="option"`, and the active row is
+  named by `aria-activedescendant` instead of only being coloured.
+- Angular's `CommandPalette` emits `close` before `run`, so a host that listens only to `run`
+  is no longer left with the palette over the result it just produced.
 - `ErrorState` renders `role="alert"`, so a failure that appears without a page reload is
   announced rather than only drawn. React was silent where Angular already announced.
 - `Menu` puts `aria-haspopup` and `aria-expanded` on the trigger itself instead of a wrapper
