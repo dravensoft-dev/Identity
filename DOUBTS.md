@@ -928,6 +928,18 @@ stale-proof; a present-tense component name is not.
   pins the fallback rather than faking a verdict on it. The React charts do the same
   thing and are not covered by a suite at all.
 
+  **`ProgressBar` is the same defect outside the charts**, and it is worth naming here
+  rather than in a second entry because the mechanism is identical: `ProgressBar.jsx`
+  falls back to `aria-label={label || 'Progress'}`, which satisfies the `progressbar`
+  pattern's `roles.label` mechanically while telling a screen-reader user only what the
+  component is. Two progress bars on one page announce identically. Unlike the charts it
+  now IS covered by a suite —
+  `frameworks/react/components/feedback/progress-bar/ProgressBar.dom.test.jsx` — and that
+  changes nothing about this half: the suite proves a name resolves, which is exactly the
+  check that cannot tell a useful name from a present one. `Table.label` and
+  `SegmentedControl.ariaLabel` are what the fix looks like when it is taken: required and
+  guarded at runtime rather than defaulted.
+
 - **Every claim the delegated declarations make about Angular Material is unpinned.**
   `frameworks/angular/BehaviourDelegated.json` asserts what Material's controls do —
   that `MatButtonToggleGroup` applies `role="group"` rather than `role="radiogroup"`,
