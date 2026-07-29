@@ -13,6 +13,8 @@ export interface CalendarEventProps {
 
   colorId?: CatSlot;
 
+  disabled?: boolean;
+
   actionsEnabled?: boolean;
 
   actions?: React.ReactNode;

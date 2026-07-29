@@ -34,11 +34,18 @@ export default {
         "root": "opacity-50"
       },
       "false": {}
+    },
+    "readonly": {
+      "true": {
+        "field": "bg-base-200 cursor-default"
+      },
+      "false": {}
     }
   },
   "defaultVariants": {
     "state": "neutral",
     "resize": "vertical",
-    "disabled": "false"
+    "disabled": "false",
+    "readonly": "false"
   }
 } as const;

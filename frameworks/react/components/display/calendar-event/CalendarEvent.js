@@ -11,6 +11,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
   end,
   colorId,
   onClick,
+  disabled = false,
   actionsEnabled = false,
   actions,
   box,
@@ -73,11 +74,12 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
     ref: bodyIsButton ? undefined : setFocusable,
     type: onClick && !hasPanel ? "button" : undefined,
     tabIndex: bodyIsButton ? undefined : tabIndex,
-    onClick: onClick && !hasPanel ? (e) => {
+    onClick: onClick && !hasPanel && !disabled ? (e) => {
       e.stopPropagation();
       onClick();
     } : undefined,
     "aria-label": onClick && !hasPanel ? `${title}, ${dateLabel}, ${timeLabel}` : undefined,
+    "aria-disabled": onClick && !hasPanel && disabled ? "true" : undefined,
     onKeyDown: hasPanel ? (e) => {
       if (e.key === "Escape" && panelOpen) {
         e.stopPropagation();
@@ -117,18 +119,20 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
       borderRight: "none",
       borderBottom: "none",
       borderRadius: "var(--r-sm)",
-      cursor: onClick ? "pointer" : "default",
+      cursor: onClick ? disabled ? "not-allowed" : "pointer" : "default",
+      opacity: onClick && disabled ? 0.5 : 1,
       font: "inherit"
     }
   }, hasPanel ? React.createElement(React.Fragment, null, onClick ? React.createElement("button", {
     type: "button",
     ref: setFocusable,
     tabIndex,
-    onClick: (e) => {
+    onClick: disabled ? undefined : (e) => {
       e.stopPropagation();
       onClick();
     },
     "aria-label": `${title}, ${dateLabel}, ${timeLabel}`,
+    "aria-disabled": disabled ? "true" : undefined,
     style: {
       display: "flex",
       flexDirection: "column",
@@ -140,7 +144,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
       font: "inherit",
       color: "inherit",
       textAlign: "left",
-      cursor: "pointer"
+      cursor: disabled ? "not-allowed" : "pointer"
     }
   }, body) : body, React.createElement("span", {
     ref: kebabWrapRef,

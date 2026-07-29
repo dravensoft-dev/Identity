@@ -22,7 +22,8 @@ export function Textarea({
         aria-invalid={!!error} value={value}
         onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
         onChange={(e) => { grow(e); onChange && onChange(e.target.value); }}
-        style={{ width: '100%', padding: 'calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 3)', background: 'var(--surface-input)',
+        style={{ width: '100%', padding: 'calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 3)',
+          background: readOnly ? 'var(--panel)' : 'var(--surface-input)', cursor: readOnly ? 'default' : 'text',
           border: 'var(--bw) solid ' + borderColor, borderRadius: 'var(--r-sm)', boxShadow: ring,
           color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', lineHeight: 'var(--lh-body)',
           resize: autoResize ? 'none' : 'vertical', outline: 'none', opacity: disabled ? 0.5 : 1,

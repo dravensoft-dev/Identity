@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Tag.disabled` and `CalendarEvent.disabled` — the action stays drawn and announces itself
+  as unavailable through `aria-disabled`, keeping its place in the tab order rather than
+  vanishing from it the way the native `disabled` attribute would.
+- A read-only visual state on `Input` and `Textarea`. It is deliberately not `disabled`'s
+  treatment: a read-only field stays at full contrast, because its value is the point, and
+  drops to the panel surface so it reads as a fact rather than somewhere to type.
+- `contracts/behaviour/alertdialog.json`, the pattern `ConfirmDialog` already implemented.
 - `DOUBTS.md` at the repository root — everything Arena knows is wrong, incomplete or
   unverified, in one explanatory document. It is the only `.md` exempt from the
   60,000-character limit.

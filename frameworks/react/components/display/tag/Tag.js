@@ -16,7 +16,7 @@ const BORDERS = {
   warning: "var(--color-warning)",
   danger: "var(--color-error)"
 };
-export function Tag({ children, tone = "neutral", removable = false, onRemove }) {
+export function Tag({ children, tone = "neutral", removable = false, disabled = false, onRemove }) {
   const color = TONES[tone] || TONES.neutral;
   const border = BORDERS[tone] || BORDERS.neutral;
   return React.createElement("span", {
@@ -36,9 +36,20 @@ export function Tag({ children, tone = "neutral", removable = false, onRemove })
     "aria-hidden": "true",
     style: { display: "inline-block", flexShrink: 0, width: "calc(var(--sp-1) * 1.5)", height: "calc(var(--sp-1) * 1.5)", borderRadius: "50%", background: "currentColor" }
   }), children, removable && React.createElement("button", {
-    onClick: onRemove,
+    onClick: disabled ? undefined : onRemove,
     "aria-label": "Remove",
-    style: { display: "inline-flex", alignItems: "center", background: "none", border: "none", color: "var(--mute)", cursor: "pointer", padding: 0, fontSize: "var(--icon-sm)", lineHeight: "var(--dz-lh)" }
+    "aria-disabled": disabled ? "true" : undefined,
+    style: {
+      display: "inline-flex",
+      alignItems: "center",
+      background: "none",
+      border: "none",
+      color: disabled ? "var(--mute-2-disabled)" : "var(--mute)",
+      cursor: disabled ? "not-allowed" : "pointer",
+      padding: 0,
+      fontSize: "var(--icon-sm)",
+      lineHeight: "var(--dz-lh)"
+    }
   }, React.createElement("i", {
     className: "ph-bold ph-x"
   })));

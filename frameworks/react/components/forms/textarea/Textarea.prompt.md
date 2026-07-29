@@ -22,6 +22,13 @@ override it — which left an external `<label>`, an `aria-describedby` or a for
 addressing the field by name with no path at all. Pass it and it wins; omit it and the
 label-derived value is still generated.
 
+**`readOnly` and `disabled` look different because they mean different things.** A
+disabled field is dimmed and out of the conversation. A read-only one is at **full
+contrast** — its value is the point — and drops to the panel surface so it reads as a
+fact rather than a well you can type into. Reach for `readOnly` whenever the value must
+stay legible and copyable, and for `disabled` only when the field is genuinely
+inapplicable right now.
+
 **Do / Don't**
 - Real multi-line content (descriptions, notes, messages). For a single line use `Input`.
 - With `maxLength`, enable `counter` so the limit is visible — the counter renders only

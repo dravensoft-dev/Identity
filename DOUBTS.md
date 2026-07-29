@@ -342,12 +342,15 @@ stale-proof; a present-tense component name is not.
   it so a reader can check it cheaply — a path with line numbers, or the command that re-derives
   it — rather than a summary they would have to trust.
 
-  **Known members left in place, deliberately, because this batch did not falsify them and they
-  are true today**: `Input.behaviour.json` cites the gap `Tag.behaviour.json` records for its
-  remove button's missing disabled concept (still true — `Tag`'s `removable` case still carries
-  that exception), and `RadioGroup`/`Radio` cite `Breadcrumbs` and `Pagination` as at least
-  hardcoding a label. Each is one batch away from becoming the next instance, and each is exactly
-  what the command above is for. A scan for the class as a whole over-reports badly — a naive
+  **One of those members has since become the instance it was predicted to be.**
+  `Input.behaviour.json` cited the gap `Tag.behaviour.json` recorded for its remove button's
+  missing disabled concept. Both exceptions are now retired — `Tag` has a `disabled` input in
+  both layers and `Input`'s `readonly` exception turned out to have been stale for some time —
+  so the citing text and the cited text went false together, in the batch that was supposed to
+  touch only one of them. That is the whole hazard: the cross-reference was the reason the
+  second file needed editing, and nothing but this entry said so. Still standing:
+  `RadioGroup`/`Radio` cite `Breadcrumbs` and `Pagination` as at least hardcoding a label, which
+  is one batch away from the same fate and is exactly what the command above is for. A scan for the class as a whole over-reports badly — a naive
   name grep flags "normal **Tab** order" and HTML "**tag**" — so the change-time procedure is the
   usable form and a repo-wide list is not.
 - **The conditionality gap is closed at ONE of its three levels, and the other two are
@@ -871,8 +874,7 @@ stale-proof; a present-tense component name is not.
   `663b2e4` closed. `check-compliance.mjs`'s own comment beside `SUITE_DIRS` and `COVERED`
   carries the full history.
 - **Some exceptions rest on a `behavioural` verdict no suite in either layer
-  declares.** `ActivityFeed`'s `posinset`/`busy`,
-  `Input`'s and `Textarea`'s `readonly`, and Angular `activity-feed`'s
+  declares.** `ActivityFeed`'s `posinset`/`busy` and Angular `activity-feed`'s
   `posinset`/`busy` are requirements no single element can decide from the DOM, so
   the suite asserts each by acting on the tree and records the verdict in
   `behavioural`. That verdict is trusted, not re-derived: a suite that declares the
@@ -881,25 +883,32 @@ stale-proof; a present-tense component name is not.
   bad key aborts the whole test rather than reporting one problem, so a suite's
   wrapper (`frameworks/react/test/AssertPattern.jsx`,
   `frameworks/angular/test/Compliance.ts`) must expect the throw, not only a
-  returned problem list. **None of the five named above is pinned by a suite today, in
+  returned problem list. **None of the four named above is pinned by a suite today, in
   either layer** — verified by grep, and re-run it rather than trusting the list:
   `grep -rln "posinset\|'states.busy'\|states.readonly" --include='*.dom.test.jsx'
-  --include='*.test.ts' frameworks/react/ frameworks/angular/` returns nothing. **Both
+  --include='*.test.ts' frameworks/react/ frameworks/angular/` returns
+  `TextboxStates.dom.test.jsx` and nothing else, which is `readonly` — the two entries that
+  left this set. **Both
   halves of that command are now a whole layer, and the two `--include`s are what keep it
   honest**: the suites moved out of `frameworks/angular/test/` in the structure refactor's
   batch 2 and out of `frameworks/react/test-dom/` in batch 3, so neither directory bounds
   the question any more — and widening to a layer without restricting to a suite extension
-  matches the bindings that *declare* these exceptions
-  (`ActivityFeed.behaviour.json`, `Input.behaviour.json`, `Textarea.behaviour.json`) rather
-  than a suite that pins one, which is the opposite of what the question asks; on the React
-  side it also reaches `vendor/ReactDomClient.js`, a committed third-party bundle.
+  matches the bindings that *declare* these exceptions (`ActivityFeed.behaviour.json` in
+  both layers) rather than a suite that pins one, which is the opposite of what the question
+  asks; on the React side it also reaches `vendor/ReactDomClient.js`, a committed
+  third-party bundle.
   **This entry read *seven* until 8C9**, which
   pinned `Tag`'s `states.disabled` in **both** layers by declaring it in the `removable`
   case's `behavioural` map (`TagAndChipCases.dom.test.jsx`, `Tag.cases.test.ts`), and
   `CalendarEvent`'s two declarations of the same requirement are pinned from birth in the
-  same suite. **The enumeration was never exhaustive and still is not** — `TableRow`
-  excepts `states.disabled`, `keyboard.Enter` and `keyboard.Space` and is in no suite at
-  all, and it was absent from the seven. Read the current set with
+  same suite. It reads *four* now: `Input`'s and `Textarea`'s `readonly` left it when
+  `TextboxStates.dom.test.jsx` was written, and what that suite found is the reason this
+  entry matters — **both exceptions had been false for some time and nothing could see it**,
+  because an unpinned BEHAVIOURAL requirement has no verdict to compare against and stays
+  green whatever the component does. An entry on this list is not merely unverified; it is
+  unfalsifiable until a suite renders it. **The enumeration was never exhaustive and still is
+  not** — `TableRow` excepts `states.disabled`, `keyboard.Enter` and `keyboard.Space` and is
+  in no suite at all, and it was absent from the seven. Read the current set with
   `grep -rHo '"requirement": "[^"]*"' --include='*.behaviour.json' frameworks/ | sort -u`
   against `BEHAVIOURAL` in `scripts/lib/behaviour-compliance.mjs`, rather than any list
   written here; and read the other side — which verdicts a suite actually declares — with
@@ -1033,6 +1042,25 @@ stale-proof; a present-tense component name is not.
   it is recorded because it is a live inconsistency no gate can see, and because it was
   previously written down **only inside plan 8B3**, which was deleted when that plan was
   executed. That is the exact failure mode this section's preamble names.
+
+- **A boolean variant's `defaultVariants` entry is written two different ways, and which way
+  a manifest uses is decided by whether anything typechecks it.** With `true`/`false` keys,
+  `tailwind-variants` infers a **boolean** variant, so the default must be `false`, not
+  `"false"`. Re-derive the split rather than trusting a list here: every manifest whose
+  component has an Angular `<Component>.variants.ts` consumer uses the boolean
+  (`ActivityFeed`, `PageHead`, `BulkActionBar`, `Alert`, `ConfirmDialog`, `Onboarding`,
+  `CommandPalette`, and `Tag` since this batch); every manifest without one uses the string
+  (`Card`, `SideNav`, `SegmentedControl`, `Tabs`, `Button`, `IconButton`, `Checkbox`,
+  `Radio`, `Switch`, `Select`, `Input`, `Textarea`). **That is not a style split, it is a
+  detection split** — `ngc --strictTemplates` rejects the string form, and a manifest with no
+  Angular consumer is never compiled by anything, so the wrong form is invisible. React does
+  not consume these recipes at all (its components are inline styles), and `check:tailwind`
+  asserts that classes resolve, not that defaults typecheck.
+  At runtime both work, because the lookup stringifies the key — so this costs nothing today
+  and costs a compile error the day a component in the second list gains an Angular
+  primitive. Adding `disabled` to `Tag` is what surfaced it: `Tag` moved from the second list
+  to the first mid-batch. The thirteen were left alone deliberately, because changing them
+  fixes nothing measurable and no gate would hold the fix in place.
 
 - **Plan D owes `functionInput` an Angular implementation. The spelling is no longer open;
   only the implementation is.** `Input.validate` is the repo's only `functionInput` and

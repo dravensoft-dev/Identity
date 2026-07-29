@@ -14,7 +14,7 @@ const BORDERS = {
   warning: 'var(--color-warning)',
   danger: 'var(--color-error)',
 };
-export function Tag({ children, tone = 'neutral', removable = false, onRemove }) {
+export function Tag({ children, tone = 'neutral', removable = false, disabled = false, onRemove }) {
   const color = TONES[tone] || TONES.neutral;
   const border = BORDERS[tone] || BORDERS.neutral;
   return (
@@ -23,7 +23,11 @@ export function Tag({ children, tone = 'neutral', removable = false, onRemove })
       borderRadius: 'var(--r-sm)', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-md)' }}>
       <span aria-hidden="true" style={{ display: 'inline-block', flexShrink: 0, width: 'calc(var(--sp-1) * 1.5)', height: 'calc(var(--sp-1) * 1.5)', borderRadius: '50%', background: 'currentColor' }} />
       {children}
-      {removable && <button onClick={onRemove} aria-label="Remove" style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 'none', color: 'var(--mute)', cursor: 'pointer', padding: 0, fontSize: 'var(--icon-sm)', lineHeight: 'var(--dz-lh)' }}><i className="ph-bold ph-x" /></button>}
+      {removable && <button onClick={disabled ? undefined : onRemove} aria-label="Remove"
+        aria-disabled={disabled ? 'true' : undefined}
+        style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 'none',
+          color: disabled ? 'var(--mute-2-disabled)' : 'var(--mute)',
+          cursor: disabled ? 'not-allowed' : 'pointer', padding: 0, fontSize: 'var(--icon-sm)', lineHeight: 'var(--dz-lh)' }}><i className="ph-bold ph-x" /></button>}
     </span>
   );
 }

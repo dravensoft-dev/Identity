@@ -36,8 +36,10 @@ first command counts declarations and the second counts distinct defects. `CLAUD
 same rule; use the second whenever a section below reasons about how much work is left, and never
 report a drop in the first as "N defects removed".
 
-As written: **52** declarations / **51** distinct pairs in component bindings, **17** in the
-delegated file, **18 of 70** bindings covered. Seven component bindings are cased (count them with
+As written: **46** declarations / **46** distinct pairs in component bindings, **17** in the
+delegated file, **20 of 70** bindings covered. The two figures are equal again, which is itself
+informative: the one binding that declared a requirement twice was `CalendarEvent`, and both of its
+`states.disabled` declarations were retired together. Seven component bindings are cased (count them with
 `grep -rl '"cases"' --include='*.behaviour.json' frameworks/`, which does not reach the delegated
 file, where one entry is cased too).
 
@@ -139,23 +141,49 @@ props — its reason says *"met when the caller supplies a name, unmet when they
 §5 problem, not a case. Making the member required and guarded is what removes the conditionality
 altogether, which is the cheaper fix and the reason this section exists separately.
 
-## §4 — States the components have no concept of
+## §4 — States the components have no concept of — **one row left**
 
 | subject | requirement |
 |---|---|
-| `Tag:react`, `tag:angular`, `CalendarEvent:react`, `TableRow:react` | `states.disabled` |
-| `Input:react`, `Textarea:react` | `states.readonly` |
+| `TableRow:react` | `states.disabled` |
 
-Each needs a prop, a contract member, a visual state and the ARIA reflection. `Input` and `Textarea`
-are the clearest: `disabled` and `required` are both authored and drive real styling, and `readOnly`
-simply was not.
+`TableRow`'s row is not a leftover: it is entangled with that binding's other four exceptions and
+with the pattern it should have been measured against at all, so it is settled in §2 rather than
+here. Everything else is closed.
 
-**What binding cases give this section.** More than anywhere else. `states.disabled` and
-`states.readonly` already live in `BEHAVIOURAL`'s conditional tail — a snapshot cannot decide them,
-because an *enabled* control correctly carries no `aria-disabled` — so a suite must render the
-condition and assert it. A `disabled` case is precisely that render, declared where a reader can see
-it. Implement these **after** 8C9 and the suites write themselves; implement them before and each
-one re-invents an undeclared convention.
+**`Tag` and `CalendarEvent` needed the state and now have it**, in both layers for `Tag`. Both
+reflect through `aria-disabled` rather than the native `disabled` attribute, because the native one
+removes the control from the tab order and a screen-reader user then never learns the action exists.
+`CalendarEvent` needed it in two places for one member — with a kebab the root cannot be a button
+and the interactivity moves to a descendant — which is why its two interactive cases each declared
+the gap and each is now asserted separately.
+
+**`Input` and `Textarea` were a different story, and it is the one worth carrying forward.** Their
+`states.readonly` exceptions had been **stale for some time**. Each asserted seven things about the
+tree and every one was false: `readOnly` was destructured with a default, reached the native
+element, was a contract member, was in the `.d.ts`, was in the `.prompt.md`, and was already
+asserted by both components' own suites — and the clause about `...rest` smuggling it through was
+false twice over, since the spread had been removed. Only "nor reflected in any visual state"
+survived, and that was one commit's work.
+
+**Nothing could have caught it**, and that is the transferable finding. `states.readonly` is
+BEHAVIOURAL: `evaluate()` returns `null` and there is no verdict to compare against until a suite
+supplies one. An exception on a BEHAVIOURAL requirement with no suite behind it is not merely
+unverified — it is **unfalsifiable**, and it stays green however far the component drifts from what
+it says. `DOUBTS.md` keeps the live list of which those are; read it before trusting any remaining
+exception's prose in the sections below.
+
+Writing that suite also found two false negatives in the evaluator itself, both now fixed:
+`roles.label` had no route for a `<label for>`, so every correctly labelled native form control read
+as unnamed, and `states.multiline` refused a plain `<input>` while `states.checked` two lines above
+already credited a native one. Neither was reachable until a form control was rendered against a
+pattern for the first time.
+
+**What binding cases give this section.** Less than expected, in the end. A flat binding was right
+for both textboxes: the verdict a suite passes is about whether the COMPONENT reflects the state, so
+the suite renders both polarities inside one case rather than declaring one case per polarity. That
+is the convention `Tag`'s `removable` case already used, and it stops the combinatorial explosion a
+case-per-state would have caused for a control with three conditional states.
 
 ## §5 — Conditional on consumer usage
 
@@ -238,7 +266,9 @@ survives into every section above.
 ## Suggested order, and why
 
 1. ~~**§1**~~ — **done.** Cheapest, and it retired exceptions that were never defects.
-2. **§4** — small, and 8C9 makes its suites nearly free.
+2. ~~**§4**~~ — **done but for `TableRow`**, which §2 settles. It was not free: two of its six
+   declarations were stale rather than real, and writing the suite that proved it also fixed two
+   false negatives in the shared evaluator.
 3. **§3** — API changes with a settled precedent; unblocks part of §2's `ActivityFeed`.
 4. **§2** — the real work, and the only section that changes what a user experiences.
 5. **§8** — widen coverage once the bindings worth covering are honest.

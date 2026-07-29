@@ -12,7 +12,11 @@
       "success": { "root": "border-success text-success" },
       "warning": { "root": "border-warning text-warning" },
       "danger":  { "root": "border-error text-error" }
+    },
+    "disabled": {
+      "true": { "close": "cursor-not-allowed text-base-content/40" },
+      "false": {}
     }
   },
-  "defaultVariants": { "tone": "neutral" }
+  "defaultVariants": { "tone": "neutral", "disabled": false }
 }

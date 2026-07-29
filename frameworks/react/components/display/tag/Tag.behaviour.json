@@ -8,9 +8,6 @@
     { "name": "removable",
       "when": "removable is true -- a real <button> renders inside the tag",
       "pattern": "button",
-      "exceptions": [
-        { "requirement": "states.disabled",
-          "reason": "The remove button has no disabled concept at all -- aria-disabled is never set, and there is no prop to make removal unavailable while the tag stays visible. A real gap rather than a description problem, and it survives this batch on purpose." }
-      ] }
+      "exceptions": [] }
   ]
 }

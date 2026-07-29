@@ -289,10 +289,41 @@ test('evaluate credits native checked-ness for states.checked', () => {
   assert.equal(evaluate(el('input', { type: 'text' }), 'states.checked', '', 'checkbox'), false);
 });
 
-test('evaluate decides states.multiline from a textarea or the explicit attribute', () => {
+test('evaluate credits a native element for states.multiline, as it already does for states.checked', () => {
   assert.equal(evaluate(el('textarea'), 'states.multiline', '', 'textbox'), true);
   assert.equal(evaluate(el('div', { role: 'textbox', 'aria-multiline': 'false' }), 'states.multiline', '', 'textbox'), true);
-  assert.equal(evaluate(el('input'), 'states.multiline', '', 'textbox'), false);
+
+  assert.equal(evaluate(el('input'), 'states.multiline', '', 'textbox'), true,
+    'a text input reflects single-line-ness by being one; demanding aria-multiline="false" would '
+    + 'require a redundant attribute the platform already implies');
+  assert.equal(evaluate(el('input', { type: 'search' }), 'states.multiline', '', 'textbox'), true);
+
+  assert.equal(evaluate(el('input', { type: 'checkbox' }), 'states.multiline', '', 'textbox'), false,
+    'only the text-entry input roles carry the state at all');
+  assert.equal(evaluate(el('div', { role: 'textbox' }), 'states.multiline', '', 'textbox'), false,
+    'a div taking the role by hand has no native reflection to inherit');
+});
+
+test('evaluate resolves roles.label through a <label for>, the platform route for a form control', () => {
+  const input = el('input', { id: 'in-project' });
+  const label = el('label', { for: 'in-project' }, 'Project');
+
+  assert.equal(evaluate(input, 'roles.label', '', 'textbox', null, () => label), true);
+  assert.equal(evaluate(input, 'roles.label', '', 'textbox', null, () => null), false,
+    'no label element in the tree means no name');
+  assert.equal(evaluate(input, 'roles.label', '', 'textbox', null, () => el('label', { for: 'in-project' })), false,
+    'an empty label names nothing');
+});
+
+test('a labelable control carrying an id THROWS when no label resolver is supplied', () => {
+  assert.throws(
+    () => evaluate(el('input', { id: 'x' }), 'roles.label', '', 'textbox'),
+    /resolveLabelFor/,
+  );
+  assert.equal(evaluate(el('input'), 'roles.label', '', 'textbox'), false,
+    'with no id nothing can name it by reference, so there is nothing to resolve and nothing to throw about');
+  assert.equal(evaluate(el('div', { id: 'x' }), 'roles.label', '', 'textbox'), false,
+    'a div is not labelable, so the route does not apply and no resolver is needed');
 });
 
 test('evaluate decides live.politeness from an implicit or explicit live region', () => {
