@@ -13,7 +13,8 @@
  * and of ' ' at the close button and asserting `event.defaultPrevented` stays
  * false -- ported from frameworks/react/components/display/TagAndChipCases.dom.test.jsx's
  * `assertKeysUnintercepted`, itself ported from
- * side-nav-disclosure.test.jsx's trigger test. That is the non-vacuous half:
+ * frameworks/react/components/navigation/side-nav/SideNav.disclosure.dom.test.jsx's
+ * trigger test. That is the non-vacuous half:
  * an `(keydown)` of ours calling `preventDefault()` would suppress the
  * platform's own activation, and only dispatching and observing catches that
  * -- the element merely being a native <button> does not. A `keydown` does

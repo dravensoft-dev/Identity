@@ -15,7 +15,7 @@
  * at 99.98% uptime is healthy whether or not it improved this week, so a
  * `danger` value tone with a `positive` delta tone in the same tile is a
  * real, expected combination, not a contradiction -- React's own
- * display.card.html demoes exactly that ("Open incidents", tone="danger",
+ * components/display/Display.card.html demoes exactly that ("Open incidents", tone="danger",
  * improving). Both a `danger` value tone and a `negative` delta tone
  * render outline-only: `tone` colors text on the
  * `value` slot, which carries no background at all, and `delta`'s pill is

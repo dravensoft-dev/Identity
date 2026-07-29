@@ -263,7 +263,7 @@ test('MEASURE_SCRIPT still requires three consecutive identical reads, rendered 
 
 /* fontsSettled() is the fix for a real regression this change first
  * introduced and then closed (see its comment in check-card-viewports.mjs):
- * document.fonts.ready resolves once, but forms.card.html and
+ * document.fonts.ready resolves once, but Forms.card.html and
  * ConfirmDialog.card.html both request a font face — an icon glyph, a
  * monospace label — only after that promise has already settled, so a fast
  * frame-cadence loop could lock onto three identical reads of the
@@ -429,11 +429,18 @@ test('summarizeCards on a clean sweep says so and fails nothing', () => {
   assert.match(s.text, /1 page/);
 });
 
-/* menu-pagination.card.html under-runs by 131px and is deliberately not
- * being corrected yet, so this is the exact combination the first clean run
- * after it lands in check-all will print: no clip, no unrendered page, but
- * a warning. The old tail claimed "every one fits" directly under a list of
- * under-runs — a contradiction of the block it sits right below. */
+/* WHY THIS TEST EXISTS, stated as history because its subject has moved twice.
+ * When it was written, menu-pagination.card.html under-ran by 131px and was
+ * deliberately not being corrected, so this was the exact combination the first
+ * clean run in check-all would print: no clip, no unrendered page, but a warning.
+ * The old tail claimed "every one fits" directly under a list of under-runs — a
+ * contradiction of the block it sits right below. Neither half of that motivation
+ * is current: the page is MenuPagination.card.html since the structure refactor's
+ * batch 3, and `bun run check:cards` reports every page fitting today, so no real
+ * page produces this combination any more. The fixture below is synthetic and
+ * always was; it keeps the old filename because it is naming the case, not a file,
+ * and the invariant it pins — a summary must not contradict its own warning block
+ * — is independent of whether any page is currently warning. */
 test('summarizeCards does not claim a clean sweep when it just printed under-run warnings', () => {
   const s = summarizeCards([
     { file: 'a.html', status: 'ok', message: '' },

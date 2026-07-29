@@ -1458,8 +1458,10 @@ scheduled for deletion the same week.
   no test's strategy; recorded here rather than fixed so the false
   prose has a pointer and the reopened question is not lost with it.
 - **Comments in EVERY migrated layer still cite siblings by their pre-move
-  filenames, and nothing resolves them.** Each batch of the structure refactor renamed a
-  layer's files and moved most of its suites; each rewrote every **import specifier**, which
+  filenames, and nothing resolves them.** Batches 2 and 3 of the structure refactor each
+  renamed a layer's files and moved most of its suites (batch 1's layer, Tailwind, has no
+  suites to move, which is why this class starts at batch 2); each rewrote every
+  **import specifier**, which
   a compiler or a test runner checks — but a bare filename in a sentence is not one. So
   `host-class-binding.test.ts`, `testbed-env.ts`,
   `tag-variants.test.ts`, `skeleton-dimensions.test.ts`, `bar-chart-geometry.test.ts` and
@@ -1473,33 +1475,59 @@ scheduled for deletion the same week.
   ```bash
   # Angular: a kebab stem before .ts
   grep -rnE "[a-z][a-z0-9]*(-[a-z0-9]+)+\.(test\.)?ts" --include='*.ts' frameworks/angular/
-  # React: a lowercase-initial stem before .test.jsx / .card.html
-  grep -rnE "\b[a-z][a-z0-9-]*\.(test\.jsx|card\.html)" --include='*.jsx' --include='*.md' \
-      --include='*.json' frameworks/react/
+  # React: a lowercase-initial stem before .jsx / .test.jsx / .card.html, cited ANYWHERE
+  grep -rnP "(?<![A-Za-z0-9.])[a-z][a-z0-9]*(-[a-z0-9]+)*\.(test\.jsx|jsx|card\.html)\b" \
+      --include='*.md' --include='*.json' --include='*.mjs' --include='*.jsx' --include='*.ts' \
+      --include='*.html' \
+      CLAUDE.md README.md SKILL.md components-divergences.md api/ behaviour/ docs/ frameworks/ \
+      scripts/ tokens/
   ```
 
+  **Two things about the React one are load-bearing.** Its path list is the whole repo, not
+  `frameworks/react/` — **the class is "a comment cites a moved file by its old name", and the
+  citing file can live in any layer**, which a React-scoped search cannot see by construction;
+  the live proof is that a React-scoped sweep reported this half clean while
+  `frameworks/angular/components/display/tag/Tag.cases.test.ts` and two paragraphs of this very
+  file were still citing pre-move React names. And the negative lookbehind
+  `(?<![A-Za-z0-9.])` is what makes the result readable: without it every lowercase *secondary*
+  segment matches its own filename — `Tooltip.timer.dom.test.jsx` hits on `timer.dom.test.jsx`
+  — and the output goes from about 50 lines to about 230, nearly all of them noise.
+  **Neither command carries a `| grep -v` and neither should**: `CHANGELOG.md` is excluded by
+  not being in the path list, which is the only safe way, since a content filter on `-n` output
+  drops hits by their *text* — the trap recorded in the cross-file entry above.
+
   Read each hit — both over-report, because a lowercase stem before an extension is also how
-  these files legitimately name a *component directory*, a still-correct history clause, or a
-  genuinely deleted file (`grid-keyboard.test.jsx` is the standing example, and it must stay).
+  these files legitimately name a *component directory*, a still-correct history clause, a
+  synthetic test fixture (`scanFile('a.jsx', …)`, `covered: { 'Dialog:react': 'dialog-modal.test.jsx' }`),
+  or a genuinely deleted file (`grid-keyboard.test.jsx` is the standing example, and it must stay).
   Count by reading, not by piping to `wc -l`. **It is a citation swap and
   nothing more** — unlike the seven-suite entry above, which needs a design decision — so it
   is the cheapest entry in this section to close and the easiest to close wrongly: a name is
   only worth rewriting once you have opened the file it now names and confirmed the sentence
   around it is still true.
 
-  **The React half is CLOSED and the Angular half is not, which is why both commands are
-  above.** Batch 3's close-out swept the React layer with the second command and repointed
-  **fourteen** files: `test/UseDialogModal.dom.test.jsx`, `test/PlacementAndBranches.dom.test.jsx`,
+  **The React half is CLOSED, against the widened command above and nothing narrower** — which
+  is worth saying that precisely, because it was declared closed once already against a
+  React-scoped search that could not reach three live instances. Batch 3's close-out repointed
+  **fifteen** files: `test/UseDialogModal.dom.test.jsx`, `test/PlacementAndBranches.dom.test.jsx`,
   `components/feedback/DialogModal.dom.test.jsx` (×4), `components/feedback/Behavioural.dom.test.jsx`
   (×4), `components/feedback/onboarding/Onboarding.dom.test.jsx` (×4),
   `components/feedback/tooltip/Tooltip.keyboard.dom.test.jsx` (×4),
   `components/feedback/tooltip/Tooltip.test.jsx`, `components/navigation/menu/Menu.dom.test.jsx`,
   `components/display/table/Table.test.jsx` (×2), `components/display/calendar/Calendar.test.jsx`,
   `components/display/TagAndChipCases.dom.test.jsx`,
-  `components/navigation/side-nav/SideNavInject.jsx`, `components/forms/switch/Switch.test.jsx`
-  and `components/navigation/side-nav-collapsible/SideNavCollapsible.prompt.md`. Each target
+  `components/navigation/side-nav/SideNavInject.jsx`, `components/forms/switch/Switch.test.jsx`,
+  `components/navigation/tabs/Tabs.prompt.md`
+  and `components/navigation/side-nav-collapsible/SideNavCollapsible.prompt.md` — **plus four
+  outside the React layer that only the widened command reaches**:
+  `frameworks/angular/components/display/tag/Tag.cases.test.ts`,
+  `frameworks/angular/components/display/stat-card/StatCard.variants.test.ts`,
+  `scripts/check-card-viewports.mjs` (four card pages) and `scripts/check-card-viewports.test.mjs`,
+  and two paragraphs of this file citing `tabs.test.jsx`. Each target
   was opened first and the surrounding claim confirmed still true. Re-run the command rather
-  than trusting that list.
+  than trusting that list; everything it returns today is history, a synthetic fixture, or a
+  hit under `docs/superpowers/`, where the executed plan and the two unexecuted specs are
+  already recorded as carrying pre-move paths.
   **On the Angular side four are CLOSED and the rest are not.** Batch 3 fixed the
   `chart-internals.test.ts` citations in
   `components/charts/bar-chart/BarChart.geometry.test.ts`,
@@ -1951,7 +1979,7 @@ scheduled for deletion the same week.
   throw is about a reference that exists and cannot be checked, never about a missing one.
   **And *each* is quantified rather than sampled** — a subject may be an array, every element
   in it must meet the requirement, and a quantified requirement handed a single element throws
-  as well. `tabs.test.jsx` hands over every tab **as well as** keeping its own hand-resolution
+  as well. `Tabs.dom.test.jsx` hands over every tab **as well as** keeping its own hand-resolution
   test, which the layer does not supersede: that test also asserts the reverse `aria-labelledby`
   wiring — each panel labelled by the tab that controls it — and that exactly one panel is
   unhidden while the rest are hidden rather than absent. Neither is a requirement key, so no
@@ -1990,7 +2018,7 @@ scheduled for deletion the same week.
   over at all; and one that quantifies over a *page* rather than over what the component
   renders, which a component suite cannot satisfy without faking a second landmark.
   **What quantifying buys is bounded by the selector that builds the collection**, and that
-  boundary is the mechanism's real edge rather than a defect in it. `tabs.test.jsx` passes
+  boundary is the mechanism's real edge rather than a defect in it. `Tabs.dom.test.jsx` passes
   `querySelectorAll('[role="tab"]')`, so a tab rendered *without* `role="tab"` leaves the
   collection silently and takes its dangling `aria-controls` with it, while every element that
   remains still passes. Not live — `Tabs.jsx` renders the role uniformly — but the rule makes
