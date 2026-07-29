@@ -469,6 +469,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   rebuilt because the header they carry names the new source directory. `check:api` additionally
   fails on an empty contract or type directory and prints its type count — with `api/components/`
   moved aside it used to exit 0 reporting zero contracts.
+- **`behaviour/patterns/` is now `contracts/behaviour/`.** The second contract level moves under
+  the `contracts/` roof, and the `patterns/` directory is flattened away — it separated the pattern
+  files from nothing but the README beside them. `check:behaviour` now names an empty catalogue in
+  one line instead of failing about a hundred times with `unknown pattern`.
 - **BREAKING (paths, in all three layers) — every framework layer now has one shape, and almost
   every documented path moved.** The rule: **directories are `kebab-case` and lowercase; a file
   name begins with a capital, and a multi-word stem is `PascalCase` with hyphens removed; a

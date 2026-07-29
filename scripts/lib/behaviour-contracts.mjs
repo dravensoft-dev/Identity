@@ -4,9 +4,11 @@
  * where focus goes. A BINDING says which pattern a component implements, and
  * which of that pattern's requirements it does not yet meet.
  *
- * These live in behaviour/ at the repo root rather than under tokens/ because a
- * contract is not a value and DTCG does not model one. tokens/ answers "what is
- * this value"; behaviour/ answers "what must this component do".
+ * These live in contracts/behaviour/ beside the other two contract levels, and
+ * are a separate level rather than a corner of the design one because a
+ * contract is not a value and DTCG does not model one. contracts/design/
+ * answers "what is this value"; contracts/behaviour/ answers "what must this
+ * component do".
  *
  * Everything here is pure. scripts/check-behaviour.mjs does the filesystem walk
  * and the reporting; this module is what its suite can import. */

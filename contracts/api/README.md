@@ -1,7 +1,7 @@
 # Arena API capability contracts
 
 Arena states three contracts. `tokens/` is the normative source for design values.
-`behaviour/patterns/` states what a kind of component must do. This directory is the
+`contracts/behaviour/` states what a kind of component must do. This directory is the
 third and youngest: **the API capability contract** — one neutral statement per
 component of the members its API presents, which every layer implementing that
 component implements exactly.
@@ -17,7 +17,7 @@ before adding one to the token layer.
 
 Two of Arena's three contracts were settled before this one and are **not reopened by it**.
 The **token** contract (`tokens/`) is the design-value layer. The **behaviour** contract
-(`behaviour/patterns/`) states what each kind of component must do, adopted from the WAI-ARIA
+(`contracts/behaviour/`) states what each kind of component must do, adopted from the WAI-ARIA
 Authoring Practices Guide — and, where APG has no page, from the ARIA 1.2 role reference or WCAG.
 This API capability layer was added last, and it is **orthogonal and additive**: bringing a
 component under contract may not weaken, remove, or contradict its behaviour binding or the

@@ -4,8 +4,8 @@
  * four members the evaluator is allowed to touch. That constraint is the reason
  * the evaluator takes an element rather than a selector.
  *
- * It also reads behaviour/patterns/ directly. That is allowed and deliberate:
- * behaviour/ is framework-agnostic JSON, not a framework layer, and the whole
+ * It also reads contracts/behaviour/ directly. That is allowed and deliberate:
+ * contracts/behaviour/ is framework-agnostic JSON, not a framework layer, and the whole
  * class of defect this suite was rewritten to catch was the evaluator's maps
  * disagreeing with the real pattern files while every stub-based test stayed
  * green. The module under test still contains no node:fs — the reading happens
@@ -194,7 +194,7 @@ test('isFocusable rejects a disabled native control and a negative tabindex', ()
  *
  * These are the tests that would have caught the whole class of defect
  * this file was rewritten for: the evaluator's view of what a pattern
- * requires drifting from what behaviour/patterns/ actually says, with
+ * requires drifting from what contracts/behaviour/ actually says, with
  * every stub-based test still green.
  * ------------------------------------------------------------------ */
 
@@ -882,7 +882,7 @@ test('an empty array reads as a missing subject, not as vacuously met', () => {
 
 /* The curated maps carry EXEMPT's discipline: an entry that no longer names a
    real pattern requirement fails this suite rather than rotting quietly. This
-   suite already reads behaviour/patterns/ once, into PATTERNS (see the top of
+   suite already reads contracts/behaviour/ once, into PATTERNS (see the top of
    this file) -- that map is reused here rather than adding a second reader. */
 test('every QUANTIFIED and NOT_QUANTIFIED key names a real pattern requirement', () => {
   for (const map of [QUANTIFIED, NOT_QUANTIFIED]) {

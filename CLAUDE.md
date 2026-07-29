@@ -117,12 +117,12 @@ of that is expressible as a token, none of it lives in `tokens/`, and DTCG does 
 model it. That layer lives beside the components instead, and the next paragraph is
 what got built.
 
-**Behaviour also has contracts, and they are not tokens.** `behaviour/patterns/*.json`
+**Behaviour also has contracts, and they are not tokens.** `contracts/behaviour/*.json`
 states what a kind of component must do — roles, keys, focus, dismissal — one file per
 pattern, each citing the source it was adopted from. **Most cite the WAI-ARIA APG page
 they were adopted from — count them rather than trusting a figure here, which moves
-whenever a batch adds a pattern** (`ls behaviour/patterns/ | wc -l` for the total, and
-`grep -l 'apg/' behaviour/patterns/*.json | wc -l` for the APG-derived share; note
+whenever a batch adds a pattern** (`ls contracts/behaviour/*.json | wc -l` for the total, and
+`grep -l 'apg/' contracts/behaviour/*.json | wc -l` for the APG-derived share; note
 `navigation` cites an APG *practices* page rather than a *patterns* one, so a grep on
 `apg/patterns` alone undercounts by one). This paragraph read *fifteen* until plan 8C5
 added `disclosure`, the first new pattern since the layer was built. The exceptions to
@@ -273,7 +273,7 @@ emitted **per layer** by `bun run build:api` into the committed
 `frameworks/react/Api.generated.d.ts` and `frameworks/angular/Api.generated.ts`, so a
 component's import never crosses the `contracts/api/` ↔ `frameworks/` boundary. The word *prop* never
 appears in a contract: it is React's vocabulary, and a neutral contract using it would
-already have chosen a layer. **The structural difference from `behaviour/` is one file, not
+already have chosen a layer. **The structural difference from `contracts/behaviour/` is one file, not
 one per layer** — behaviour files a binding beside each layer's source and has a gate
 compare them, which admits two files that disagree and makes the gate's job to notice; a
 contract that forbids divergence has nowhere for a second opinion to live, and
@@ -1105,7 +1105,7 @@ scheduled for deletion the same week.
   X=Skeleton   # the component you just changed
   grep -rn --binary-files=without-match "\b$X\b" \
       --include='*.md' --include='*.json' --include='*.mjs' --include='*.jsx' --include='*.ts' \
-      CLAUDE.md components-divergences.md contracts/api/ behaviour/ docs/ frameworks/ scripts/
+      CLAUDE.md components-divergences.md contracts/api/ contracts/behaviour/ docs/ frameworks/ scripts/
   ```
 
   and read every hit as a claim about `X` that you may have just falsified. Two kinds are then
@@ -1479,7 +1479,7 @@ scheduled for deletion the same week.
   grep -rnP "(?<![A-Za-z0-9.])[a-z][a-z0-9]*(-[a-z0-9]+)*\.(test\.jsx|jsx|card\.html)\b" \
       --include='*.md' --include='*.json' --include='*.mjs' --include='*.jsx' --include='*.ts' \
       --include='*.html' \
-      CLAUDE.md README.md SKILL.md components-divergences.md contracts/api/ behaviour/ docs/ frameworks/ \
+      CLAUDE.md README.md SKILL.md components-divergences.md contracts/api/ contracts/behaviour/ docs/ frameworks/ \
       scripts/ tokens/
   ```
 
@@ -2045,7 +2045,7 @@ scheduled for deletion the same week.
   takes the resolver too, because a `<section>` exposes `role="region"` only when it is named, so
   a labelledby resolving to nothing takes the role with it. The reach is not marginal — most of
   the patterns declare `roles.label`; count them with `grep -l '"roles.label"'
-  behaviour/patterns/*.json | wc -l` against `ls behaviour/patterns/*.json | wc -l`.
+  contracts/behaviour/*.json | wc -l` against `ls contracts/behaviour/*.json | wc -l`.
 
   **The induction, because a check nobody has watched fail is a check nobody knows works.**
   Deleting `id={titleId}` from `Dialog.jsx` leaves a dangling `aria-labelledby` on a dialog with
@@ -2173,7 +2173,7 @@ scheduled for deletion the same week.
   treeview. What that costs a screen-reader user is real.** With arbitrary nesting the rendered
   structure looks exactly like a tree, and APG's treeview would demand `aria-level` on every
   node, a roving tab stop and four-direction arrow navigation. None of it is designed, none of
-  it is bound, and the refusal lives in `behaviour/patterns/disclosure.json`'s **own
+  it is bound, and the refusal lives in `contracts/behaviour/disclosure.json`'s **own
   description** rather than only in the binding — so every future component binding this pattern
   inherits the refusal and a reader of any one binding meets it. The concrete cost: in a deeply
   nested sidebar a screen-reader user is told a group is expanded and is told nothing about how
