@@ -565,9 +565,14 @@ stale-proof; a present-tense component name is not.
   they cite — extracting the logic and testing it directly, rather than driving the real
   component. Correcting only the false clause and leaving the extraction in place is defensible
   on its own terms — a pure function is often the right thing to test directly regardless of what
-  the harness can drive — but it is a design choice now, not a forced one, and nobody has revisited
-  whether these seven should instead render a real tree the way `HarnessCapabilities.test.ts`
-  and the migrated `HostClassBinding.test.ts` fixtures now do. Rewriting seven suites' test
+  the harness can drive — but it is a design choice now, not a forced one, and six of the seven
+  have not been revisited against the question of whether they should instead render a real tree
+  the way `HarnessCapabilities.test.ts` and the migrated `HostClassBinding.test.ts` fixtures now
+  do. The seventh, `ConfirmDialog.focusTrap.test.ts`, was answered **by addition rather than by
+  rewrite**: `ConfirmDialog.compliance.test.ts` now renders the real component beside it, so the
+  helper suite keeps testing helpers and no longer stands in for a render. Its own prose still
+  carries the false clause, so it remains on this list; what changed is that the strategy question
+  behind it has an answer for one component. Rewriting seven suites' test
   strategy was judged out of scope for 8C11, a close-out batch whose subject was the harness, and
   out of scope again for the structure refactor, which moved files and renamed them and changed
   no test's strategy; recorded here rather than fixed so the false
@@ -1991,9 +1996,10 @@ secondary action is projected, on each.
 > restore and no Escape. All of that is now met in both layers:
 > `frameworks/react/UseDialogModal.js` is a deliberate port of
 > `frameworks/angular/FocusTrap.ts`, `ConfirmDialog.title` is required and guarded in
-> both layers with `aria-labelledby` pointing at it, and `ConfirmDialog.behaviour.json` retains a
-> single exception — `roles.element`, which is `role="alertdialog"` and which **both** layers
-> declare, so it is a shared deviation from the pattern rather than a divergence between layers.
+> both layers with `aria-labelledby` pointing at it, and `ConfirmDialog.behaviour.json` declares
+> `exceptions: []` in both layers against the `alertdialog` pattern — the single exception it used
+> to retain, `roles.element`, was never a defect but a catalogue gap, closed by adding the pattern
+> the component already implements rather than by changing the component.
 > What is left of the entry is one real difference and one shared limit.
 
 **React:** the require-text `<input>` carries `outline: 'none'` in its inline style object and
@@ -2029,10 +2035,16 @@ actually-open dialog. Batch 8C11 moved this harness to AOT and retired that limi
 `setInput('open', true)` on a directly created fixture and asserts `[role="alertdialog"]` renders.
 This suite still tests the helpers directly rather than rendering the real component, which is now
 a design choice and not a forced one — see section 1's entry on the seven files that
-still justify a testing strategy by the retired limitation. **Tested how (React):**
+still justify a testing strategy by the retired limitation. **It no longer stands alone, and this
+is the first of those seven to gain a real-tree sibling rather than a rewrite:**
+`ConfirmDialog.compliance.test.ts` renders `<arena-confirm-dialog>` through TestBed and proves
+focus-on-open, both trap boundaries, Escape and restore-on-close against the rendered component,
+so the helper suite and the render suite now say different things instead of one standing in for
+the other. **Tested how (React):**
 `frameworks/react/components/feedback/Behavioural.dom.test.jsx` and
 `frameworks/react/components/feedback/DialogModal.dom.test.jsx`, which render the real
-component; `ConfirmDialog:react` is in `check:compliance`'s `COVERED`.
+component. Both layers are in `check:compliance`'s `COVERED` — `ConfirmDialog:react` and
+`ConfirmDialog:angular`.
 
 #### ErrorState — Angular announces itself, React is silent
 

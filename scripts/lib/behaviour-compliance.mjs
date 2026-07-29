@@ -43,6 +43,7 @@ const NATIVELY_FOCUSABLE = new Set(['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'
 
 export const ELEMENT_ROLE = {
   alert: 'alert',
+  alertdialog: 'alertdialog',
   button: 'button',
   checkbox: 'checkbox',
   combobox: 'combobox',

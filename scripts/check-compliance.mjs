@@ -38,6 +38,7 @@ export const COVERED = {
   'CalendarEvent:react': 'TagAndChipCases.dom.test.jsx',
   'Alert:angular': 'Alert.roleTones.test.ts',
   'BarChart:angular': 'ChartDataTable.test.ts',
+  'ConfirmDialog:angular': 'ConfirmDialog.compliance.test.ts',
   'Tag:angular': 'Tag.cases.test.ts',
 };
 
