@@ -215,6 +215,23 @@ test('a real mismatch with no divergesFrom on either side disagrees', () => {
   assert.equal(crossLayerAgrees({ pattern: 'grid' }, { pattern: 'none' }), false);
 });
 
+test('divergesFrom can name a pattern the other side binds in ONE of its cases', () => {
+  const cased = { cases: [
+    { name: 'row', when: 'wide', pattern: 'none', exceptions: [] },
+    { name: 'card', when: 'narrow', pattern: 'button', exceptions: [] },
+  ] };
+
+  assert.equal(crossLayerAgrees(cased, { pattern: 'none', divergesFrom: 'button' }), true,
+    'a flat layer may diverge from a render only the cased layer has');
+  assert.equal(crossLayerAgrees({ pattern: 'none', divergesFrom: 'button' }, cased), true,
+    'and in the other direction');
+
+  assert.equal(crossLayerAgrees(cased, { pattern: 'none', divergesFrom: 'grid' }), false,
+    'naming a pattern the other side binds nowhere is not a divergence, it is a typo');
+  assert.equal(crossLayerAgrees(cased, { pattern: 'none' }), false,
+    'without divergesFrom the case names still have to match');
+});
+
 test('absent on either side is skipped even with no divergesFrom declared', () => {
   assert.equal(crossLayerAgrees({ pattern: 'grid' }, { pattern: 'absent' }), true);
   assert.equal(crossLayerAgrees({ pattern: 'absent' }, { pattern: 'grid' }), true);

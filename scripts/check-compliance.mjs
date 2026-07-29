@@ -36,6 +36,7 @@ export const COVERED = {
   'Spinner:react': 'Spinner.dom.test.jsx',
   'Tag:react': 'TagAndChipCases.dom.test.jsx',
   'CalendarEvent:react': 'TagAndChipCases.dom.test.jsx',
+  'TableRow:react': 'TableRow.cases.dom.test.jsx',
   'Input:react': 'TextboxStates.dom.test.jsx',
   'Textarea:react': 'TextboxStates.dom.test.jsx',
   'RadioGroup:react': 'RadioGroupPattern.dom.test.jsx',

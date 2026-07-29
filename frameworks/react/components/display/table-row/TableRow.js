@@ -5,6 +5,7 @@ import React from "react";
 export function TableRow({
   children,
   onClick,
+  disabled = false,
   rowIndex = 0,
   columns = [],
   layout = "table",
@@ -19,9 +20,20 @@ export function TableRow({
     focused: layout !== "card" && ci === cursorCol && gridFocused,
     onCellFocus: layout === "card" || !onCellFocus ? undefined : () => onCellFocus(rowIndex, ci)
   }) : child);
+  const activate = onClick && !disabled ? onClick : undefined;
+  const cursor = onClick ? disabled ? "not-allowed" : "pointer" : "default";
   if (layout === "card") {
     return React.createElement("div", {
-      onClick,
+      onClick: activate,
+      role: onClick ? "button" : undefined,
+      tabIndex: onClick ? 0 : undefined,
+      "aria-disabled": onClick && disabled ? "true" : undefined,
+      onKeyDown: activate ? (e) => {
+        if (e.key !== "Enter" && e.key !== " ")
+          return;
+        e.preventDefault();
+        activate();
+      } : undefined,
       style: {
         background: "var(--surface-card)",
         border: "var(--bw) solid var(--color-base-300)",
@@ -30,19 +42,20 @@ export function TableRow({
         display: "flex",
         flexDirection: "column",
         gap: "var(--dz-stack)",
-        cursor: onClick ? "pointer" : "default"
+        cursor
       }
     }, cells);
   }
   return React.createElement("tr", {
     role: "row",
-    onClick,
+    onClick: activate,
+    "aria-disabled": onClick && disabled ? "true" : undefined,
     style: {
       borderTop: rowIndex <= 1 ? "none" : "var(--bw) solid var(--color-base-300)",
-      cursor: onClick ? "pointer" : "default",
+      cursor,
       transition: "background var(--dur-fast) var(--ease-out)"
     },
-    onMouseEnter: onClick ? (e) => e.currentTarget.style.background = "var(--panel)" : undefined,
-    onMouseLeave: onClick ? (e) => e.currentTarget.style.background = "transparent" : undefined
+    onMouseEnter: activate ? (e) => e.currentTarget.style.background = "var(--panel)" : undefined,
+    onMouseLeave: activate ? (e) => e.currentTarget.style.background = "transparent" : undefined
   }, cells);
 }
