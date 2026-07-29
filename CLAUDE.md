@@ -2269,13 +2269,16 @@ scheduled for deletion the same week.
   reading either spec.
 
   Re-derive with `grep -nE '(^|[^a-zA-Z/])(api|behaviour|tokens)/' docs/superpowers/specs/*.md`
-  and, run today, it returns **three** files, not two. The third is this refactor's own
-  design spec, `2026-07-29-contracts-directory-design.md` (30 hits), and it needs no
-  "left that way on purpose" treatment at all: it is the document that specifies the move,
-  so its `api/`/`behaviour/`/`tokens/` citations are the correct BEFORE-state of the
-  migration it argues for, never a claim about today's tree — the same reading that applies
-  to the plan itself, `docs/superpowers/plans/2026-07-29-contracts-directory.md`, which the
-  path-existence sweep matches the same way and for the same reason. A **fourth** file
+  and, run today, it returns **two** files — the same two left alone above. A **third** file
+  matched until this batch's own close-out deleted it: this refactor's own design spec,
+  `2026-07-29-contracts-directory-design.md` (30 hits), needed no "left that way on purpose"
+  treatment while it existed — it was the document that specified the move, so its
+  `api/`/`behaviour/`/`tokens/` citations were the correct BEFORE-state of the migration it
+  argued for, never a claim about the tree at the time. The plan itself,
+  `docs/superpowers/plans/2026-07-29-contracts-directory.md` — outside this grep's `specs/`
+  scope, but matched the same way and for the same reason by the path-existence sweep — was
+  deleted alongside it, per this repo's convention that an executed plan and its spec are
+  removed once their content is migrated into this file. A **fourth** file
   matched until this same batch closed it:
   `2026-07-29-calendar-chip-box-and-header-gap-pending-1.md` carried one live, present-tense
   citation — *"not in `styles.css`, not in `tokens/`"* — with no historical reading available,
@@ -2308,10 +2311,10 @@ scheduled for deletion the same week.
   `MenuItem.json` would break nothing. That is exactly what this entry is about: the exemption
   is written down only here, in the entry that says nothing enforces it, and `menu-item.json`
   is the case where nothing enforces the CONTENT of the exemption either — it just happens not
-  to have been renamed. **The batch's own design spec promised five zero-guards, at
-  `docs/superpowers/specs/2026-07-29-contracts-directory-design.md:143-153`, and
-  `contracts/README.md:52-60` is the other place the decision is recorded — the "green
-  run is only as good as what the gate looked at" entry at the head of this section names
+  to have been renamed. **The batch's own design spec promised five zero-guards;
+  `contracts/README.md:52-61` is where that decision is recorded now that the spec is
+  gone — the "green run is only as good as what the gate looked at" entry at the head of
+  this section names
   only `check:tailwind`, `check:radius` and `check:structure`, a different rule about a
   different set of gates, and does not promise anything about these five. Four of the five
   exist**: `zeroContractProblems` (`check-api.mjs`), `zeroPatternProblems`
