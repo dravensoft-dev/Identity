@@ -1,6 +1,7 @@
 export * from './Api.generated';
 export * from './components';
 export * from './ContainerSize';
+export * from './DataVisuals';
 export * from './FocusTrap';
 export * from './ProjectionMarkers';
 export * from './theme/ThemeService';

@@ -14,7 +14,7 @@
  * produces and the one `arcPath` has to split in two. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CHART_HEIGHT, arcPath } from '../ChartInternals';
+import { CHART_HEIGHT, arcPath } from '../../../DataVisuals';
 import {
   doughnutSlices, doughnutLegendWidth, doughnutPlotWidth, doughnutRadii,
 } from './DoughnutChart';

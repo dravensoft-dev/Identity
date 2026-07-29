@@ -1,6 +1,15 @@
-/* Shared internals for Arena's chart family — the Angular port of
- * frameworks/react/components/charts/chart-internals.js. NOT a component: no quartet,
- * no manifest, no selector.
+/* Shared data-visualisation internals — the Angular port of
+ * frameworks/react/DataVisuals.js. NOT a component: no quartet, no manifest, no
+ * selector. Renamed from ChartInternals: a module a schedule grid consumes is not
+ * "chart internals" -- it bundles the data-colour contract (catColor, toneColor,
+ * resolveColors, CAT_SLOTS), the chart geometry (niceMax, ticks, barPath, arcPath,
+ * PAD, CHART_HEIGHT) and the visually-hidden idiom. It sits at the layer root,
+ * beside ContainerSize, FocusTrap and ProjectionMarkers, rather than inside
+ * components/charts/, because its real consumer set crosses categories: React's
+ * Calendar already imports catColor from its sibling, and Angular's own Calendar
+ * -- absent today only because that component is delegated to Material -- would
+ * make this file's Angular consumer set cross the same boundary the moment that
+ * delegation is retired.
  *
  * Why hand-written SVG and not a charting library: a <canvas> cannot inherit CSS, and
  * that inability is the ONLY reason a "chart palette" contract would need to exist. An
@@ -11,8 +20,8 @@
 
 import {
   chartHeight, chartPadTop, chartPadRight, chartPadBottom, chartPadLeft, catSlots,
-} from '../../Tokens.generated';
-import type { SeriesTone } from '../../Api.generated';
+} from './Tokens.generated';
+import type { SeriesTone } from './Api.generated';
 
 /** How many identity slots the categorical ramp defines. Assigned in order,
  *  never cycled. Derived from the ramp itself, so adding a slot needs no edit here. */
@@ -23,7 +32,7 @@ export const CHART_HEIGHT = chartHeight;
 
 /** Plot padding in px. Left pad holds the value labels; bottom pad holds the
  *  category labels. From tokens/src/chart.json -- these were declared here AND
- *  in React's chart-internals.js, identically, which is the duplication the
+ *  in React's DataVisuals.js, identically, which is the duplication the
  *  script-readable target exists to end. */
 export const PAD = {
   t: chartPadTop, r: chartPadRight, b: chartPadBottom, l: chartPadLeft,

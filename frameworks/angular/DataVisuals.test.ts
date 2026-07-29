@@ -1,13 +1,15 @@
-/* chart-internals is the one file in this layer that is pure maths and a colour
- * contract -- no component, no recipe, no Angular runtime. Five chart slices consume
- * it unchanged, so its behaviour is asserted here rather than five times over. */
+/* DataVisuals (renamed from ChartInternals) is the one file in this layer that is
+ * pure maths and a colour contract -- no component, no recipe, no Angular runtime.
+ * Three chart components consume it unchanged today, so its behaviour is asserted
+ * here rather than three times over; its real consumer set is not chart-only --
+ * see the module's own header. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   CAT_SLOTS, CHART_HEIGHT, PAD, SR_ONLY,
   catColor, toneColor, resolveColors, niceMax, ticks, barPath, arcPath,
-} from './ChartInternals';
-import type { SeriesTone } from '../../Api.generated';
+} from './DataVisuals';
+import type { SeriesTone } from './Api.generated';
 
 // --- niceMax --------------------------------------------------------------
 
@@ -163,7 +165,7 @@ test('the mutually-exclusive warning fires once, and only when both are passed',
   // resolves it to the module beside it and gives back a fresh instance, while
   // TypeScript has no way to resolve the string at all. A wildcard module
   // declaration would silence every unresolvable import in the layer to fix one.
-  const fresh = await import('./ChartInternals?warn-once-probe');
+  const fresh = await import('./DataVisuals?warn-once-probe');
   const clean = captureWarnings(() => {
     fresh.resolveColors({ count: 1, tone: 'danger' });
     fresh.resolveColors({ count: 1, slot: 2 });

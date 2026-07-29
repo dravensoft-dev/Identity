@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { containerWidth } from '../../../ContainerSize';
-import { CHART_HEIGHT, PAD, SR_ONLY, barPath, niceMax, resolveColors, ticks } from '../ChartInternals';
+import { CHART_HEIGHT, PAD, SR_ONLY, barPath, niceMax, resolveColors, ticks } from '../../../DataVisuals';
 import type { SeriesTone } from '../../../Api.generated';
 import { chartBarGap, chartBarRadius } from '../../../Tokens.generated';
 

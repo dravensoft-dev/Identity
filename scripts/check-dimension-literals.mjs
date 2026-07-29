@@ -69,7 +69,9 @@ const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
  * `cx`, `cy`, `x1`, `x2`, `y1`, `y2` are one- and two-letter names that
  * collide with ordinary object keys having nothing to do with CSS, and
  * governing them today would cost something real, not a hypothetical one:
- * `frameworks/angular/components/charts/ChartInternals.ts` carries
+ * `frameworks/angular/DataVisuals.ts` (renamed from `ChartInternals.ts`, and
+ * moved from `components/charts/` to the layer root, when a display component
+ * turned out to consume it too) carries
  * `PAD = { t: 8, r: 8, b: 28, l: 44 } as const` — a `.ts` file, which
  * EXTENSIONS does include, so PROP_COLON already reaches its `r: 8` object
  * key. Adding `r` to PROPS today would immediately flag that object as a
@@ -143,11 +145,11 @@ export const EXEMPT = new Map([
    'y(m) projects a clock minute onto the visible hour range, itself driven by the dayStart/dayEnd props — a time-to-pixel projection, not a design dimension; there is no token for an arbitrary minute of the day'],
   ['frameworks/react/components/display/Calendar.jsx:height:`max(calc(var(--sp-1) * 4.5), ${rawH}px)`',
    'the max()\'s floor, calc(var(--sp-1) * 4.5), already reads a token, and stays governed — only the computed arm is exempt: rawH is an event\'s duration in minutes projected to pixels, the same data-to-pixel category as the two chart entries above, never a fixed dimension'],
-  ['frameworks/angular/components/charts/ChartInternals.ts:width:\'1px\'',
+  ['frameworks/angular/DataVisuals.ts:width:\'1px\'',
    'SR_ONLY is the standard visually-hidden idiom, and its 1px box is not a design dimension — it is the smallest non-zero footprint that keeps the element in the accessibility tree, paired with clip:rect(0 0 0 0) to hide it regardless of box size. 0 would drop it from the tree in some engines and defeat the whole point. Nothing in tokens/src/ could stand in for it: the number is a constraint of the a11y idiom, and it must be a fixed literal for the negative margin below to cancel exactly'],
-  ['frameworks/angular/components/charts/ChartInternals.ts:height:\'1px\'',
+  ['frameworks/angular/DataVisuals.ts:height:\'1px\'',
    'the other axis of the same 1px visually-hidden box as the width entry above'],
-  ['frameworks/angular/components/charts/ChartInternals.ts:margin:\'-1px\'',
+  ['frameworks/angular/DataVisuals.ts:margin:\'-1px\'',
    'the same idiom\'s negative pull, which must cancel exactly the 1px box above so the hidden table shifts no sibling — it is bound to that literal, not to Arena\'s spacing scale, and a token here would break the cancellation'],
   // Skeleton's API contract (api/components/Skeleton.json, Plan 8B1 Task 3) made
   // width/height/radius plain CSS strings a CONSUMER supplies per instance.
