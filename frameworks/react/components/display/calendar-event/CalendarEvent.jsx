@@ -1,6 +1,8 @@
 import React from 'react';
 import { IconButton } from '../../forms/icon-button/IconButton.jsx';
 
+const KEBAB_RESERVE = 'calc(var(--dz-ctl-h-sm) + var(--bw) * 2)';
+
 export const CalendarEvent = React.forwardRef(function CalendarEvent({
   id, title, start, end, colorId, onClick, actionsEnabled = false, actions,
   box, color, timeLabel, dateLabel, showTime, tabIndex, defaultPanelOpen,
@@ -74,11 +76,12 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
           e.preventDefault(); e.stopPropagation(); focusableRef.current.focus();
         }
       } : undefined}
-      style={{ position: 'absolute', ...box,
+      style={{ position: 'absolute', ...box, boxSizing: 'border-box',
         display: 'flex', flexDirection: 'column', gap: 0,
 
         overflow: panelOpen ? 'visible' : 'hidden',
         textAlign: 'left', padding: 'calc(var(--sp-1) * 1) calc(var(--sp-1) * 1.5)',
+        paddingRight: hasPanel ? KEBAB_RESERVE : 'calc(var(--sp-1) * 1.5)',
         background: `color-mix(in oklab, ${color} 16%, var(--surface-card))`,
         borderLeft: `var(--bw-strong) solid ${color}`, borderTop: 'none', borderRight: 'none', borderBottom: 'none',
         borderRadius: 'var(--r-sm)', cursor: onClick ? 'pointer' : 'default',

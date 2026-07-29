@@ -73,7 +73,21 @@ Serve the tree with `bun run demos`, open
    costs none of the RAM the grid rule exists to avoid.
 4. Escape with the panel open CLOSES the panel and puts focus back on the
    kebab — not on the document, which is what would happen if nothing caught
-   the control being unmounted under it. A second Escape returns focus to the
-   hour cell.
+   the control being unmounted under it. A second Escape does **not** currently
+   return focus to the hour cell — it is a dead key on the kebab, and the route
+   back is ArrowLeft to the chip body and then Escape. That is a known defect,
+   not the intended behaviour; see `DOUBTS.md`.
 5. Arrow keys still move by day and hour from an hour cell, and clamp at all
    four edges — the first day, the last day, the first hour and the last.
+6. Every chip sits inside its own day column, with an even gutter each side, and
+   the full-width ones especially — a chip whose event overlaps nothing is the
+   case that overruns. The chip is `box-sizing: border-box`, so the width
+   `Calendar` injects is its outer edge; if you ever see a chip cross a column
+   border, that property is the first thing to check.
+7. On a chip carrying a kebab, the title stops before the button and ellipsises
+   there rather than running underneath it. Check a full-width chip and a
+   half-width one: the half-width case has very little title left once the
+   kebab's band is reserved, and it is the one worth an opinion.
+8. A short event — 30 minutes or less — still shows its whole title. Its chip is
+   at the height floor, and under `border-box` that floor is the chip's outer
+   height, so a floor set too low clips the title with nothing failing.

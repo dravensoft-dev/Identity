@@ -35,6 +35,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `[Unreleased]` entry's previous contents, which recorded the process of reaching this
   release rather than its result.
 
+### Fixed
+
+- **`Calendar` chips are `border-box`**, so the width and height `Calendar` injects are the
+  chip's outer edge, which is what both already read as. A full-width chip no longer overruns
+  its day column by 12px, and no chip stands 8px taller than its own time range. The chip's
+  height floor moves with it, from `calc(var(--sp-1) * 4.5)` to `* 6.5`, which is the value
+  that leaves the shortest chip rendering at exactly the size it rendered at before.
+- **A `CalendarEvent` carrying a kebab reserves that button's width**, so its title ellipsises
+  before the button instead of running 26px underneath it. The reserve is padding, derived from
+  the control it reserves for, so it re-densifies with it.
+- **The day header cells no longer pad their own bottom**, halving the dead space above the
+  first hour line from 16px to 8px. The scroll area's top padding stays: the hour labels are
+  centred on their line and the first is clipped without it.
+
 ## [4.0.0] — 2026-07-18
 
 ### Changed

@@ -201,7 +201,7 @@ export function Calendar({
       style: {
         flex: 1,
         minWidth: 0,
-        padding: "calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2) calc(var(--sp-1) * 2)",
+        padding: "calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2) 0",
         textAlign: "center",
         cursor: onDateClick ? "pointer" : "default"
       }
@@ -284,7 +284,7 @@ export function Calendar({
     const color = catColor(p.ev.colorId ?? 1);
     const top = y(p.startMin);
     const rawH = y(p.endMin) - top;
-    const h = `max(calc(var(--sp-1) * 4.5), ${rawH}px)`;
+    const h = `max(calc(var(--sp-1) * 6.5), ${rawH}px)`;
     return React.cloneElement(elementOf.get(p.ev), {
       ref: (node) => {
         if (node)

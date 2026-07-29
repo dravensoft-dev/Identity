@@ -171,7 +171,7 @@ export function Calendar({
           const isToday = d === today;
           return (
             <div key={d} onClick={onDateClick ? () => onDateClick(d) : undefined}
-              style={{ flex: 1, minWidth: 0, padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2) calc(var(--sp-1) * 2)', textAlign: 'center',
+              style={{ flex: 1, minWidth: 0, padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2) 0', textAlign: 'center',
                 cursor: onDateClick ? 'pointer' : 'default' }}>
               <div style={label}>{formatDate(d, { weekday: 'short' })}</div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text)', fontWeight: 'var(--fw-bold)', marginTop: 'calc(var(--sp-1) * 0.5)',
@@ -243,7 +243,7 @@ export function Calendar({
                   const top = y(p.startMin);
                   const rawH = y(p.endMin) - top;
 
-                  const h = `max(calc(var(--sp-1) * 4.5), ${rawH}px)`;
+                  const h = `max(calc(var(--sp-1) * 6.5), ${rawH}px)`;
                   return React.cloneElement(elementOf.get(p.ev), {
                     ref: (node) => {
                       if (node) eventRefs.current.set(p.ev.id, node);

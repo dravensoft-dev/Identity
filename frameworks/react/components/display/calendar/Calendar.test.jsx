@@ -205,3 +205,39 @@ test('the chip lifts its clip while the panel is open, and only then', () => {
   assert.match(chip({}), /text-overflow:ellipsis/,
     'the title span lost the ellipsis the chip clip was standing in for');
 });
+
+test('a chip is border-box, so the injected width is its outer edge', () => {
+  const html = render({});
+  assert.match(html, /width:calc\(100% - var\(--sp-1\)\);box-sizing:border-box/,
+    'the chip is still content-box -- its padding and border are added past the width Calendar injected, and a full-width chip overruns its day column');
+});
+
+test('the chip height floor clears the title line once the height is an outer height', () => {
+  const html = render({});
+  assert.match(html, /height:max\(calc\(var\(--sp-1\) \* 6\.5\), \d+px\)/,
+    'the height floor is still stated as a content height -- under border-box it leaves too little content box for the title line');
+  assert.doesNotMatch(html, /calc\(var\(--sp-1\) \* 4\.5\)/,
+    'the old content-box floor survived somewhere in the render');
+});
+
+test('a chip carrying a kebab reserves the width the kebab occupies', () => {
+  const html = render({}, { actionsEnabled: true, actions: <b>act</b> });
+  assert.match(html, /padding-right:calc\(var\(--dz-ctl-h-sm\) \+ var\(--bw\) \* 2\)/,
+    'a panelled chip reserves nothing for its kebab, so the title is drawn underneath it');
+});
+
+test('a chip with no kebab reserves nothing, and keeps its ordinary right padding', () => {
+  const html = render({});
+  assert.doesNotMatch(html, /var\(--dz-ctl-h-sm\)/,
+    'a chip with no kebab reserved a gutter for a button it never renders');
+  assert.match(html, /padding:calc\(var\(--sp-1\) \* 1\) calc\(var\(--sp-1\) \* 1\.5\);padding-right:calc\(var\(--sp-1\) \* 1\.5\)/,
+    'the unpanelled chip lost its ordinary right padding');
+});
+
+test('a day header cell has no bottom padding, and the scroller keeps its top padding', () => {
+  const html = render({});
+  assert.match(html, /padding:calc\(var\(--sp-1\) \* 1\.5\) calc\(var\(--sp-1\) \* 2\) 0;text-align:center/,
+    'the day header cell still pads its own bottom, doubling the gap under the header');
+  assert.match(html, /overflow-y:auto;padding-top:calc\(var\(--sp-1\) \* 2\)/,
+    'the scroll area lost its top padding -- the first hour label is centred on its line and is clipped by the header without it');
+});

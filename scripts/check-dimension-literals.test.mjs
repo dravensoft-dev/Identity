@@ -276,7 +276,7 @@ test('EXEMPT records the four data-to-pixel projections this task newly exempts,
   assert.ok(EXEMPT.has('frameworks/react/components/charts/bar-chart/BarChart.jsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`'));
   assert.ok(EXEMPT.has('frameworks/react/components/charts/line-chart/LineChart.jsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`'));
   assert.ok(EXEMPT.has('frameworks/react/components/display/calendar/Calendar.jsx:top:`calc(${y(m)}px - var(--sp-1))`'));
-  assert.ok(EXEMPT.has('frameworks/react/components/display/calendar/Calendar.jsx:height:`max(calc(var(--sp-1) * 4.5), ${rawH}px)`'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/calendar/Calendar.jsx:height:`max(calc(var(--sp-1) * 6.5), ${rawH}px)`'));
   assert.ok(!EXEMPT.has('frameworks/react/components/display/avatar/Avatar.jsx:fontSize:d * 0.4'));
 });
 
