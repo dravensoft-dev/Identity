@@ -1,8 +1,8 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { AppLogo } from './AppLogo.jsx';
-const CRIMSON = <img src="../../../../assets/rotor-crimson.svg" alt=""/>;
-const BONE = <img src="../../../../assets/rotor-bone.svg" alt=""/>;
+const CRIMSON = <img src="../../../../../assets/rotor-crimson.svg" alt=""/>;
+const BONE = <img src="../../../../../assets/rotor-bone.svg" alt=""/>;
 function Demo(){return(<div>
   <div className="sub">AppLogo — the four steps of the scale</div>
   <div className="row"><AppLogo size="xl" mark={CRIMSON} name="Draven" dim="soft"/></div>

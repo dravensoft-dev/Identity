@@ -5,11 +5,11 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { AppLogo } from "./AppLogo.js";
 const CRIMSON = React.createElement("img", {
-  src: "../../../../assets/rotor-crimson.svg",
+  src: "../../../../../assets/rotor-crimson.svg",
   alt: ""
 });
 const BONE = React.createElement("img", {
-  src: "../../../../assets/rotor-bone.svg",
+  src: "../../../../../assets/rotor-bone.svg",
   alt: ""
 });
 function Demo() {

@@ -16,7 +16,7 @@ function Demo() {
     brand: React.createElement(AppLogo, {
       size: "md",
       mark: React.createElement("img", {
-        src: "../../../../assets/rotor-crimson.svg",
+        src: "../../../../../assets/rotor-crimson.svg",
         alt: ""
       }),
       name: "Draven",

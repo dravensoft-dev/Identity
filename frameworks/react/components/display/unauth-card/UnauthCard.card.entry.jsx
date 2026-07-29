@@ -10,7 +10,7 @@ function Demo(){
   /* The three-line centring wrapper the component deliberately does not impose. */
   return(<div style={{minHeight:'100%',display:'flex',alignItems:'center',justifyContent:'center'}}>
     <UnauthCard
-      brand={<AppLogo size="md" mark={<img src="../../../../assets/rotor-crimson.svg" alt=""/>} name="Draven" dim="soft"/>}
+      brand={<AppLogo size="md" mark={<img src="../../../../../assets/rotor-crimson.svg" alt=""/>} name="Draven" dim="soft"/>}
       eyebrow="Delivery console" title="Welcome back"
       footer={<span>Forgot your password?</span>}>
       <div style={{display:'flex',flexDirection:'column',gap:'calc(var(--sp-1) * 4)'}}>

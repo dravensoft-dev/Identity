@@ -74,8 +74,12 @@ export const ROOTS = ['frameworks/react/components', 'frameworks/react/ui-kits/c
  *  `.test.js` sibling `bun test`'s default suite discovery then picked up as
  *  a second copy of the same tests -- inflating the file/pass counts and,
  *  for a DOM suite compiled without its directory's exclusion, failing
- *  outright. */
-function findJsxFiles(dir) {
+ *  outright. Exported so build-demos.test.mjs can pin the exclusion directly,
+ *  rather than only through the two baselines' file counts -- the over-broad
+ *  direction (a real entry silently dropped) is already netted by
+ *  check-demos-generated.mjs's orphan check, but the under-broad direction (a
+ *  stray `.test.js` coming back) had no guard of its own. */
+export function findJsxFiles(dir) {
   const found = [];
   const walk = (d) => {
     for (const entry of readdirSync(d, { withFileTypes: true })) {
