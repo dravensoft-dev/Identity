@@ -1045,9 +1045,12 @@ serving byte-identical binaries.
 
 The emitter is now a pure function over an ordered face list, and --css-only
 derives that list from assets/fonts/, which is already committed. A declared
-weight with no binary on disk is a hard error rather than a silently dropped
-@font-face -- the same shape of silent gap this script's own header records
-about a family declared with no face at all.
+weight with no binary is skipped rather than an error, because families()
+hands every family the same weight list while Google Fonts serves Archivo at
+400-900 and Familjen Grotesk / Spline Sans Mono at 400-700 -- demanding one
+would refuse the tree as it has always stood. A family that ends up with no
+face at all is what does throw: that is the silent-failure shape check:fonts
+exists to catch.
 
 The emitted header and url() already name contracts/design-generated/, one task
 ahead of the move that puts them there.
