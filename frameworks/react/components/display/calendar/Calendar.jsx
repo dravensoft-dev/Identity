@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.js';
 import { catColor } from '../../../DataVisuals.js';
-import { calendarHourH } from '../../../Tokens.generated.js';
+import { calendarGutterW, calendarHourH } from '../../../Tokens.generated.js';
 import {
   addDays, defaultDayStart, formatHM, layoutDay, nowMinutes, parseHM,
-  placeEvents, rangeTitle, startOfWeek, todayIso, weekdayOf, formatDate,
+  placeEvents, rangeTitle, showsTime, startOfWeek, todayIso, weekdayOf, formatDate,
 } from './CalendarInternals.js';
 
-const GUTTER = 'calc(var(--sp-1) * 14)';
+const GUTTER = 'var(--calendar-gutter-w)';
 
 export function Calendar({
   children, timeZone, anchorDate, view,
@@ -66,6 +66,9 @@ export function Calendar({
   const slots = hours
     .map((m, i) => ({ start: m, end: i + 1 < hours.length ? hours[i + 1] : endMin }))
     .filter((s) => s.end > s.start);
+
+  const slotFor = (cols) =>
+    (width === null ? null : (width - calendarGutterW) / days.length / cols);
 
   const today = todayIso(zone);
   const nowMin = useMemo(() => nowMinutes(zone), [zone, tick]);
@@ -252,7 +255,7 @@ export function Calendar({
                     color,
                     timeLabel: `${formatHM(p.startMin)} – ${formatHM(p.endMin)}`,
                     dateLabel: formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' }),
-                    showTime: rawH >= 32,
+                    showTime: showsTime(rawH, slotFor(p.cols)),
                   });
                 })}
               </div>

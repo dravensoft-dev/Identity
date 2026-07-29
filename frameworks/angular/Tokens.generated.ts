@@ -18,6 +18,30 @@ export const sp4 = 16;
  */
 export const calendarHourH = 44;
 /*
+   The width of the hour-label gutter down the left of the grid.
+   Script-readable because the width term of showsTime() subtracts it from the
+   measured container to get the grid's width, and no CSS expression hands a
+   number to JS. It was calc(var(--sp-1) * 14) rendered inline: the same value in
+   two idioms with nothing holding them in step. One token now, read both ways.
+ */
+export const calendarGutterW = 56;
+/*
+   The shortest chip that still draws its time label. Below it there is no
+   room for a second line. Script-readable because it is compared against a
+   projected pixel height; it was a bare 32 in the render body, invisible to
+   check:dimensions, which reads governed CSS properties and never a comparison.
+ */
+export const calendarTimeMinH = 32;
+/*
+   The narrowest column share a chip may occupy and still draw its time
+   label. Measured: the label is 78.02px at --dz-text-2xs, and a chip's content box
+   is its share less 18px -- 4px of gutter to its neighbour, 12px of its own
+   padding, 2px of its left border -- so 96.02px, rounded up to the 4px scale. The
+   threshold is on the share rather than on the chip so that Calendar never has to
+   know CalendarEvent's padding.
+ */
+export const calendarTimeMinW = 100;
+/*
    The popover's width. Script-readable because Math.min/Math.max compare it
    against window.innerWidth. This ALSO replaces the calc(var(--sp-1) * 80) the
    component rendered: the value existed twice in two idioms, held in step by a

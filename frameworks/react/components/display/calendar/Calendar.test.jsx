@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Calendar } from './Calendar.jsx';
 import { CalendarEvent } from '../calendar-event/CalendarEvent.jsx';
+import { showsTime } from './CalendarInternals.js';
 
 const EVENTS = [
   { id: 'a', title: 'Standup', start: '2026-07-20T09:00:00Z', end: '2026-07-20T09:30:00Z', colorId: 1 },
@@ -240,4 +241,28 @@ test('a day header cell has no bottom padding, and the scroller keeps its top pa
     'the day header cell still pads its own bottom, doubling the gap under the header');
   assert.match(html, /overflow-y:auto;padding-top:calc\(var\(--sp-1\) \* 2\)/,
     'the scroll area lost its top padding -- the first hour label is centred on its line and is clipped by the header without it');
+});
+
+test('a chip draws its time label only when it has room in both axes', () => {
+  assert.equal(showsTime(66, 166), true, 'a tall chip in a full-width slot drew no time label');
+  assert.equal(showsTime(22, 166), false, 'a 30-minute chip drew a time label it has no height for');
+  assert.equal(showsTime(66, 83), false, 'a tall chip in a half-width slot drew a label that cannot fit on one line');
+  assert.equal(showsTime(22, 83), false, 'a chip failing both terms drew a time label');
+});
+
+test('the thresholds are inclusive, so a chip exactly at one still draws', () => {
+  assert.equal(showsTime(32, 100), true, 'a chip exactly at both thresholds was refused its time label');
+  assert.equal(showsTime(31.9, 100), false, 'the height threshold is not being applied');
+  assert.equal(showsTime(32, 99.9), false, 'the width threshold is not being applied');
+});
+
+test('an unmeasured container satisfies the width term, so the static render is unchanged', () => {
+  assert.equal(showsTime(66, null), true, 'a server render lost its time label');
+  assert.equal(showsTime(22, null), false, 'the height term stopped applying when the width is unknown');
+});
+
+test('the static render still draws its time labels, because nothing has measured yet', () => {
+  const html = render({});
+  assert.match(html, /14:00 – 15:00/,
+    'the server render lost a time label -- the width term is being applied before anything measured');
 });
