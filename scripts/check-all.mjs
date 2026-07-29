@@ -6,8 +6,8 @@
  *
  * The twenty-two gates in GATES below, plus the test suite: one more step under
  * node (scripts/ only), three more under bun (the ngc emit of the Angular test
- * surface, then the merged framework suites, then frameworks/react/test-dom in
- * a process of its own -- see testStep).
+ * surface, then the merged framework suites, then the `.dom.test.jsx` suites
+ * in a process of their own -- see testStep).
  *
  * Three gates can report a third status. check:cards needs a headless
  * browser, and check:vendor and check:demos each need a Bun-only builder

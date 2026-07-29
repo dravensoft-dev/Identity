@@ -20,9 +20,10 @@ test('testStep runs every suite under bun, with the DOM harness isolated in its 
   // forces the split any more -- frameworks/angular/test/TestbedEnv.ts is the
   // only registration site left in that directory, it is guarded
   // (`if (!GlobalRegistrator.isRegistered)`), and it is emitted JavaScript now,
-  // so a single invocation is not even a path frameworks/react/test-dom/preload.js
-  // could reach a second time. What still forces the split is scripts/ and
-  // frameworks/react/test/, which are meant to run DOM-free: a happy-dom
+  // so a single invocation is not even a path ./frameworks/react/test/Preload.js
+  // could reach a second time. What still forces the split is scripts/ and the
+  // DOM-free React suites -- every suite except the `.dom.test.jsx` ones,
+  // wherever they sit -- which are meant to run DOM-free: a happy-dom
   // installed process-wide for the whole invocation changes what they prove
   // without failing loudly to say so -- measured, merging all four turns a
   // passing scripts/lib/static-server.test.mjs fetch assertion into a
@@ -31,7 +32,7 @@ test('testStep runs every suite under bun, with the DOM harness isolated in its 
   //
   // The --preload is load-bearing, not cosmetic: react-dom latches its legacy
   // change detection unless a DOM exists before it evaluates, and nothing later
-  // than a preload is early enough. harness.jsx throws when it is missing.
+  // than a preload is early enough. Harness.jsx throws when it is missing.
   //
   // The build leads, and its position is part of the assertion. The Angular
   // suites are emitted JavaScript now, so a stale or absent emit must fail as
