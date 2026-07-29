@@ -1,7 +1,12 @@
 Arena breadcrumb trail. Mono, wide-tracked, with the last crumb as the current page --
 not a link, and carrying `aria-current="page"`. The host itself is the `nav` landmark
-(`role="navigation"`, `aria-label="Breadcrumb"`); no wrapper element is rendered inside it.
-Use it where a hierarchy is deeper than tabs can show.
+(`role="navigation"`, with `aria-label` bound to the required `ariaLabel` input); no wrapper
+element is rendered inside it. Use it where a hierarchy is deeper than tabs can show.
+
+`ariaLabel` is **required** — `input.required`, so Angular throws when it is missing. It used
+to be the constant `"Breadcrumb"` written straight into the `host` block, which named the
+WIDGET rather than the trail and left two of these on one page indistinguishable as
+landmarks. Say which hierarchy this is a trail through ("Project navigation").
 
 A crumb renders as a real `<a href>`, so a plain click still navigates the browser.
 `navigate` reports the clicked `Crumb` alone -- the native `MouseEvent` is not forwarded,

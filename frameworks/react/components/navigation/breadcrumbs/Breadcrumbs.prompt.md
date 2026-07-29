@@ -8,6 +8,11 @@ Breadcrumb navigation (H3). Gives an explicit return path when the hierarchy is 
 ]} onNavigate={(crumb) => go(crumb)} />
 ```
 
+`ariaLabel` names the landmark and is **required**, throwing when absent. It used to be the
+constant `"Breadcrumb"` with no way to override it, which named the WIDGET rather than the
+trail — two of these on one page were indistinguishable landmarks while the requirement read
+as met. Say which hierarchy this is a trail through ("Project navigation").
+
 A non-current crumb's click reports `onNavigate(crumb)` -- the crumb alone, with no DOM
 event. The anchor still navigates natively, so ctrl-click, middle-click and
 open-in-new-tab keep working for a consumer who wires nothing, but intercepting a plain
