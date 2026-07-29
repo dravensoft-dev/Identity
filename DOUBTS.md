@@ -868,8 +868,10 @@ stale-proof; a present-tense component name is not.
   `663b2e4` closed. `check-compliance.mjs`'s own comment beside `SUITE_DIRS` and `COVERED`
   carries the full history.
 - **Some exceptions rest on a `behavioural` verdict no suite in either layer
-  declares.** `ActivityFeed`'s `posinset`/`busy` and Angular `activity-feed`'s
-  `posinset`/`busy` are requirements no single element can decide from the DOM, so
+  declares — RETIRED as a live list, kept for the lesson.** The last four were
+  `ActivityFeed`'s `posinset`/`busy` in both layers, and both bindings now have cases
+  suites. What the entry describes is still real: some requirements no single element can
+  decide from the DOM, so
   the suite asserts each by acting on the tree and records the verdict in
   `behavioural`. That verdict is trusted, not re-derived: a suite that declares the
   wrong verdict pins a false claim exactly as a scan would have. And `comparePattern`
@@ -877,12 +879,12 @@ stale-proof; a present-tense component name is not.
   bad key aborts the whole test rather than reporting one problem, so a suite's
   wrapper (`frameworks/react/test/AssertPattern.jsx`,
   `frameworks/angular/test/Compliance.ts`) must expect the throw, not only a
-  returned problem list. **None of the four named above is pinned by a suite today, in
-  either layer** — verified by grep, and re-run it rather than trusting the list:
-  `grep -rln "posinset\|'states.busy'\|states.readonly" --include='*.dom.test.jsx'
-  --include='*.test.ts' frameworks/react/ frameworks/angular/` returns
-  `TextboxStates.dom.test.jsx` and nothing else, which is `readonly` — the two entries that
-  left this set. **Both
+  returned problem list. **The set is empty as written, and the way to check is a grep
+  rather than this sentence**: `grep -rln "posinset\|'states.busy'\|states.readonly"
+  --include='*.dom.test.jsx' --include='*.test.ts' frameworks/react/ frameworks/angular/`
+  returns the suites that PIN these; compare it against the bindings that declare them.
+  It will refill: every batch that writes an exception on a BEHAVIOURAL requirement without
+  a suite puts an entry back. **Both
   halves of that command are now a whole layer, and the two `--include`s are what keep it
   honest**: the suites moved out of `frameworks/angular/test/` in the structure refactor's
   batch 2 and out of `frameworks/react/test-dom/` in batch 3, so neither directory bounds
@@ -1055,6 +1057,21 @@ stale-proof; a present-tense component name is not.
   primitive. Adding `disabled` to `Tag` is what surfaced it: `Tag` moved from the second list
   to the first mid-batch. The thirteen were left alone deliberately, because changing them
   fixes nothing measurable and no gate would hold the fix in place.
+
+- **`ActivityFeed`'s articles carry `tabindex="0"` on recollection, not on a re-read of APG.**
+  The `feed` pattern's own file in `contracts/behaviour/` states seven requirements and says
+  nothing about tabindex, so nothing in this repository decides the value — but a feed whose
+  articles cannot receive focus has no way to satisfy `keyboard.PageDown` either, so the
+  implementation had to pick one. It picked `0`, making each article a tab stop, on the reading
+  that a feed is a **browse** structure rather than a composite widget with one roving stop.
+  **www.w3.org is unreachable from the environment this was written in** — WebFetch is refused at
+  the domain level — so the APG feed example's markup was not re-read. A web search did confirm
+  the keyboard half in APG's own words (Page Down → next article, Page Up → previous, and a
+  Control+End the repo's pattern file does not require and neither layer implements). What is
+  unverified is narrow and specific: whether APG's example uses `tabindex="0"` per article or
+  `-1` with the feed itself focusable. Both suites assert `0` today, so a correction means
+  changing the suites as well as the components. Re-read
+  `https://www.w3.org/WAI/ARIA/apg/patterns/feed/` from an environment that can reach it.
 
 - **Plan D owes `functionInput` an Angular implementation. The spelling is no longer open;
   only the implementation is.** `Input.validate` is the repo's only `functionInput` and
@@ -1973,7 +1990,7 @@ regardless of whether the component host-binds it), and `ActivityFeed.manifest.j
 weakened by this carve-out — it was never conditioned on host-binding in the first place.
 
 **No API divergence left to record:** both layers are under the API contract
-(`contracts/api/components/ActivityFeed.json`), whose single member is `items`. The `style` prop
+(`contracts/api/components/ActivityFeed.json`), whose members are `label`, `items` and `busy`. The `style` prop
 and `{...rest}` spread that once lived only on the React side were removed when the
 component was brought under contract — which is what makes the consequence above the
 whole story rather than half of it. A consumer attribute still lands on the inert host

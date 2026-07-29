@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A read-only visual state on `Input` and `Textarea`. It is deliberately not `disabled`'s
   treatment: a read-only field stays at full contrast, because its value is the point, and
   drops to the panel surface so it reads as a fact rather than somewhere to type.
+- `ActivityFeed.label` (**required**) and `ActivityFeed.busy`. The feed now carries
+  `role="feed"`, one `role="article"` per row with `aria-posinset`/`aria-setsize`, and
+  PageUp/PageDown moving focus between articles — it previously met none of the pattern's
+  seven requirements and had no keyboard handling at all.
 - `TableRow.disabled` — a row drawn but not activatable, announced through `aria-disabled`.
 - `contracts/behaviour/alertdialog.json`, the pattern `ConfirmDialog` already implemented.
 - `DOUBTS.md` at the repository root — everything Arena knows is wrong, incomplete or
