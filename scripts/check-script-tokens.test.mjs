@@ -55,9 +55,6 @@ test('catSlots is derived from the ramp and equals its slot count', async () => 
   assert.match(body, /^export const catSlots = 8;$/m);
 });
 
-/* CatSlot is the only contract type restating a token-derived bound, and this
- * assertion is the tie back to the palette that contracts/api/README.md's "A closed set of
- * values is not always an enum" passage requires of it. */
 test('catSlotEnumProblems accepts 1..N in order', () => {
   assert.deepEqual(catSlotEnumProblems(8, [1, 2, 3, 4, 5, 6, 7, 8]), []);
 });
@@ -87,13 +84,6 @@ test('the committed CatSlot matches the ramp the tokens are built from', async (
   assert.deepEqual(catSlotEnumProblems(catSlots, catSlot.values), []);
 });
 
-/* Moving contracts/design-generated/ aside on 2026-07-29 did not fail this gate
- * through a guard at all -- it failed through a 21-line cascade, one line per
- * script-readable token, each reading "exported to JS but --X is not in any
- * contracts/design-generated/*.css". None of those 21 lines names the actual
- * problem, which is that the walk over contracts/design-generated/ found no
- * .css files to compare against -- exactly the shape zeroPatternProblems and
- * zeroSourceProblems already guard against in the other two contract gates. */
 test('zero generated CSS files is one named failure, not a 21-line cascade', () => {
   const problems = zeroGeneratedCssProblems(0);
   assert.equal(problems.length, 1);
@@ -105,14 +95,6 @@ test('a populated design-generated directory has no zero problem', () => {
   assert.deepEqual(zeroGeneratedCssProblems(5), []);
 });
 
-/* cssDiscoveryProblems is the interaction a reviewer caught by hand: main()'s
- * section 1 (drift) fills `problems` before this guard runs, and the guard
- * used to report and exit on its own disconnected array, so a real drift
- * finding was silently dropped whenever contracts/design-generated/ was also
- * empty. Every case below is one of the four combinations of "section 1 found
- * something" x "the CSS directory is empty" -- none of these four would tell
- * the broken and fixed versions apart on its own except the last, which is
- * exactly the one the review reproduced by hand against the real tree. */
 test('cssDiscoveryProblems: no prior problems, populated directory -- continue', () => {
   assert.deepEqual(cssDiscoveryProblems([], 5), []);
 });

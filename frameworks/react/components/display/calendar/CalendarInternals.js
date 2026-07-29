@@ -1,18 +1,3 @@
-/* Shared internals for Arena's Calendar. NOT a component — no quartet.
- *
- * Everything here is pure: dates and events in, numbers and strings out. No
- * React, no DOM. The calendar's weight was never the markup — it is (a) reading
- * wall-clock time in an arbitrary IANA zone and (b) laying out events that
- * overlap. Both are easier to reason about, and easier to be wrong about, away
- * from the JSX.
- *
- * Why Intl and not a date library: a copy-in kit has no package.json to add a
- * dependency to, and `Intl.DateTimeFormat.formatToParts` already answers the
- * only question we have — "what hour is this instant in that zone?" — against
- * the platform's own tz database. Same instinct that has the charts drawing
- * their own SVG instead of pulling in Chart.js.
- */
-
 const warned = new Set();
 function warnOnce(message) {
   if (warned.has(message) || typeof console === 'undefined') return;
@@ -25,8 +10,7 @@ function partsFormatter(timeZone) {
   if (formatters.has(timeZone)) return formatters.get(timeZone);
   let f;
   try {
-    /* h23 and not hour12:false — the latter still reports midnight as hour 24
-       in some engines, which would place a 00:15 event off the bottom. */
+
     f = new Intl.DateTimeFormat('en-US', {
       timeZone, hourCycle: 'h23',
       year: 'numeric', month: '2-digit', day: '2-digit',
@@ -41,8 +25,6 @@ function partsFormatter(timeZone) {
   return f;
 }
 
-/** Wall-clock fields of an instant, as read in `timeZone`. Null when `iso` is
- *  not a date the platform can parse. */
 export function zonedParts(iso, timeZone) {
   const at = new Date(iso);
   if (Number.isNaN(at.getTime())) return null;
@@ -59,8 +41,6 @@ export const isoDateOf = (p) => `${String(p.y).padStart(4, '0')}-${p2(p.m)}-${p2
 export const minutesOf = (p) => p.hh * 60 + p.mm;
 export const formatHM = (min) => `${p2(Math.floor(min / 60) % 24)}:${p2(Math.round(min) % 60)}`;
 
-/** 'HH:MM' → minutes past midnight. `fallback` for anything unparseable, so a
- *  typo'd prop degrades to the default instead of collapsing the grid. */
 export function parseHM(value, fallback) {
   const m = /^(\d{1,2}):(\d{2})$/.exec(String(value ?? ''));
   if (!m) return fallback;
@@ -68,8 +48,6 @@ export function parseHM(value, fallback) {
   return min >= 0 && min <= 24 * 60 ? min : fallback;
 }
 
-/* Calendar-date arithmetic runs at UTC: these are already zone-resolved dates,
- * and a local Date would let a DST jump move the day by one. */
 function asUtcDate(isoDate) {
   const [y, m, d] = isoDate.split('-').map(Number);
   return new Date(Date.UTC(y, m - 1, d));
@@ -81,7 +59,6 @@ export function addDays(isoDate, n) {
   return isoDateOf({ y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate() });
 }
 
-/** 0 = Sunday … 6 = Saturday. */
 export const weekdayOf = (isoDate) => asUtcDate(isoDate).getUTCDay();
 
 export function startOfWeek(isoDate, weekStartsOn = 1) {
@@ -91,13 +68,6 @@ export function startOfWeek(isoDate, weekStartsOn = 1) {
 export const todayIso = (timeZone) => isoDateOf(zonedParts(new Date().toISOString(), timeZone));
 export const nowMinutes = (timeZone) => minutesOf(zonedParts(new Date().toISOString(), timeZone));
 
-/** Resolve every event to a day column and a wall-clock span in `timeZone`.
- *
- *  An event is placed on the day its start falls in and clamped to the end of
- *  that day. Arena's calendar has no all-day row and no multi-day bar, so an
- *  event running past midnight is shown to the end of the day it began on
- *  rather than silently dropped. Unparseable dates are skipped with a warning:
- *  one bad row should not blank the whole schedule. */
 export function placeEvents(events, timeZone) {
   const out = [];
   for (const ev of events || []) {
@@ -115,17 +85,6 @@ export function placeEvents(events, timeZone) {
   return out;
 }
 
-/** Column assignment for one day's placements.
- *
- *  Events that overlap share the width of the day instead of covering each
- *  other: a schedule where one booking can hide another is worse than no
- *  calendar at all. A cluster is a run of events connected by overlap — if A
- *  overlaps B and B overlaps C, all three split the width even when A and C
- *  never touch, because anything else would leave the columns unaligned. Within
- *  a cluster each event takes the first column free at its start.
- *
- *  Returns each placement with `col` (its column) and `cols` (how many its
- *  cluster needs). */
 export function layoutDay(placements) {
   const sorted = [...placements].sort((a, b) => a.startMin - b.startMin || b.endMin - a.endMin);
   const out = [];
@@ -156,32 +115,11 @@ export function layoutDay(placements) {
   return out;
 }
 
-/** Where the grid starts when the consumer does not say: the hour the earliest
- *  visible event begins, floored, or 08:00 when there is nothing to show.
- *  Rendering empty small hours is the fastest way to make a schedule look
- *  broken — the user scrolls past six blank rows to reach the day. */
 export function defaultDayStart(placements, fallback = 8 * 60) {
   if (!placements.length) return fallback;
   return Math.max(0, Math.floor(Math.min(...placements.map((p) => p.startMin)) / 60) * 60);
 }
 
-/* Dates reaching the formatters are already resolved to the target zone, so
- * they are formatted as UTC — re-applying the zone would shift them twice.
- *
- * Cached per option shape, the way partsFormatter above is cached per zone, and
- * for a sharper reason than tidiness: an Intl.DateTimeFormat is not a plain
- * object. Each one holds an ICU formatter in NATIVE memory, which the collector
- * reclaims only when it reclaims the JS wrapper — so allocating them in a render
- * path shows up as resident memory long after the values are dead, while the JS
- * heap still looks small. Calendar calls this around two dozen times per render
- * (both day-header lines, every row's accessible name, every event's, and
- * rangeTitle three times over) and re-renders on every arrow key of its grid
- * cursor, which turned one keypress into two dozen native allocations.
- *
- * The key is the option literal. Every call site passes a fixed one, so the map
- * holds one entry per shape the component actually asks for and never grows with
- * the data. Two sites spelling the same options in a different order get two
- * entries, which costs one formatter and stays correct. */
 const dateFormatters = new Map();
 function dateFormatter(opts) {
   const key = JSON.stringify(opts ?? {});
@@ -195,9 +133,6 @@ function dateFormatter(opts) {
 
 export const formatDate = (isoDate, opts) => dateFormatter(opts).format(asUtcDate(isoDate));
 
-/** "Fri, 17 Jul 2026" · "13 – 19 Jul 2026" · "29 Jun – 5 Jul 2026" · across a year
- *  boundary, both years. The month and year are printed once when the range
- *  shares them, twice only when it does not. */
 export function rangeTitle(days) {
   if (!days.length) return '';
   const a = days[0];

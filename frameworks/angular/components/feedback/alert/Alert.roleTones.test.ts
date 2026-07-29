@@ -1,20 +1,3 @@
-/* arena-alert binds its host role conditionally:
- *   '[attr.role]': "tone() === 'danger' ? 'alert' : 'status'"
- * and Alert.behaviour.json excepts `roles.element` saying exactly that. A text
- * scan reads the string 'alert' in the source and calls the requirement met,
- * which retires a true exception -- the exact failure mode the spec's proposed
- * scan was measured against and cut for. Rendering once per tone settles it, and
- * settles it in the only way that can be settled: the value differs per render,
- * not per file.
- *
- * It is also why Angular's three ways of authoring an attribute -- a template
- * literal, `[attr.role]`, and a `host` object entry, all three of which this
- * component uses -- are invisible to the shared evaluator. In a rendered tree
- * they are one attribute.
- *
- * `tone` is driven through `componentRef.setInput()` before the first
- * `detectChanges()`, so each tone below is a real render of that tone rather
- * than a render of the default. */
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 useTestEnvironment();
 
@@ -23,12 +6,10 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { Alert } from './Alert';
-// `isFocusable` comes from the shared evaluator, re-exported by compliance.ts so
-// the specifier resolves from the emitted tree as well as from source.
+
 import { assertPatternCases, ANGULAR_COMPONENTS, isFocusable } from '../../../test/Compliance';
 const BINDING = join(ANGULAR_COMPONENTS, 'feedback/alert/Alert.behaviour.json');
 
-/** Every tone `Alert.ts`'s own `AlertTone` (from Api.generated) admits. `info` is the default. */
 const TONES = ['info', 'success', 'warning', 'danger', 'neutral'] as const;
 
 function renderAlert(tone: (typeof TONES)[number]) {
@@ -57,12 +38,6 @@ test('arena-alert exposes role=alert only for the danger tone -- every other ton
   });
 });
 
-/* `focus.unaffected` -- "an alert must not receive or move keyboard focus" --
- * is BEHAVIOURAL in the shared evaluator, so a suite must act on the tree rather
- * than read one element. Two things are asserted, because the requirement is two
- * claims: the host itself cannot take focus (no tabindex, and `<arena-alert>` is
- * not a natively focusable tag), and mounting one does not move focus away from
- * wherever it already was. The second is the half a snapshot cannot see. */
 test('arena-alert neither takes focus nor moves it -- focus.unaffected, proved by acting on the tree', () => {
   const anchor = document.createElement('button');
   document.body.appendChild(anchor);
@@ -85,35 +60,11 @@ test('arena-alert neither takes focus nor moves it -- focus.unaffected, proved b
       fixture.destroy();
     }
   } finally {
-    // On the shared document (testbed-env.ts) an undestroyed fixture is not the
-    // only thing that would outlive this test -- this anchor would too, and it
-    // is exactly the kind of stray focusable element the assertion above is
-    // checking for. A failed assertion must not leave it behind for the next file.
+
     anchor.remove();
   }
 });
 
-/* `content.noAutoDismiss` -- "an alert must not disappear on a timer" -- is a
- * claim about the passage of time, which is why the evaluator returns null for it
- * and a suite has to act rather than read.
- *
- * Waiting is not the way to act on it. The shortest value the system would use to
- * retire a transient notice is `--dismiss-default`, 4200ms (contracts/design/behaviour.
- * json), and a suite that sat out 4.2 real seconds would still only have proved
- * the alert outlived *that* timer. So this fires the clock forward instead: every
- * callback scheduled while the alert is constructed and first rendered is
- * captured, then invoked immediately, regardless of the delay it asked for. That
- * is strictly stronger than waiting -- a 4.2s dismissal and a 0ms one are treated
- * the same -- and it costs milliseconds.
- *
- * Counting the schedule calls and asserting zero was tried first and is WRONG
- * here: Angular's own zoneless change detection schedules a `setTimeout` and a
- * `requestAnimationFrame` per render, so the count is never zero and says nothing
- * about the component. What matters is not that nothing was scheduled but that
- * nothing scheduled takes the alert away.
- *
- * The `dismissible` branch is the one rendered, since a hypothetical auto-dismiss
- * would live beside the manual one. */
 test('arena-alert survives every timer its own render schedules, fired early -- content.noAutoDismiss', () => {
   const globals = globalThis as unknown as Record<string, unknown>;
   const names = ['setTimeout', 'setInterval', 'requestAnimationFrame'] as const;
@@ -147,8 +98,6 @@ test('arena-alert survives every timer its own render schedules, fired early -- 
     for (const fire of captured) fire();
     fixture!.detectChanges();
 
-    // Still here, role intact, dismiss control intact. An alert goes away when the
-    // consumer acts on `close`, never on its own clock.
     assert.equal(host.getAttribute('role'), 'alert', 'the alert must still be a live region after every timer has fired');
     assert.ok(
       host.querySelector('button[aria-label="Dismiss"]'),
@@ -159,20 +108,6 @@ test('arena-alert survives every timer its own render schedules, fired early -- 
   }
 });
 
-/* Batch 8C9: Alert.behaviour.json now declares two CASES rather than one flat
- * `alert` binding with a `roles.element` exception. The exception was never a
- * defect -- role is `alert` only when tone is danger, and every other tone
- * renders `role="status"` correctly and completely, matching a different
- * pattern rather than falling short of this one. `assertPatternCases` renders
- * both branches and measures each against the pattern its own case names,
- * which is what lets both come out empty instead of one exception standing in
- * for a render that never happens.
- *
- * This is additional to the hand-written test above, not a replacement for
- * it: that test asserts the exact ROLE each tone renders (`alert` for danger,
- * `status` for every other tone, tone by tone), which is a stronger claim
- * than "some case matches some pattern" -- it pins the one-to-one mapping no
- * requirement key can state, so no evaluator can decide it either. */
 test('arena-alert meets both of its declared cases', () => {
   const fixtures: ReturnType<typeof renderAlert>[] = [];
   try {
@@ -201,4 +136,3 @@ test('arena-alert meets both of its declared cases', () => {
     for (const fixture of fixtures) fixture.destroy();
   }
 });
-

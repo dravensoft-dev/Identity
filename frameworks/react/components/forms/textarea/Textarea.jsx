@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-/** Multi-line text field. Same states as Input (neutral, gold focus, crimson error).
- * `autoResize` grows with the content; `counter` with `maxLength` shows the count. */
+
 export function Textarea({
   label, id, hint, error, required = false, rows = 4, maxLength, counter = false,
   disabled = false, readOnly = false, autoResize = false, placeholder, name, value, onChange,

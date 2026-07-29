@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '../../forms/button/Button.jsx';
-/** Section/screen-level error state, with recovery (Retry) and optional detail. */
+
 export function ErrorState({ icon, title = 'Something went wrong', message, code, retryLabel, onRetry, secondaryAction }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 'calc(var(--sp-1) * 3)',

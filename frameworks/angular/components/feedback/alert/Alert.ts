@@ -10,12 +10,6 @@ const TONE_ICONS: Record<AlertTone, string> = {
   neutral: 'ph-fill ph-note',
 };
 
-/** Persistent in-page message; unlike a toast it stays until the condition it
- *  reports is resolved. The host itself is the recipe's `root` — it is the
- *  flex item a parent lays out, so root-level classes and the `role` they
- *  imply must live on the host, not one element inside it. `tone="danger"`
- *  renders `role="alert"`, which interrupts a screen reader; every other
- *  tone renders `role="status"`. */
 @Component({
   selector: 'arena-alert',
   standalone: true,

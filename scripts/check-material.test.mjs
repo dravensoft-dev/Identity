@@ -60,18 +60,6 @@ test('a bridge whose every name resolves reports nothing', () => {
   assert.deepEqual(errs, []);
 });
 
-/* The oracle reads two directories because NEITHER ALONE holds every name, and
- * both sentinels below were picked by set difference against the pinned
- * @angular/material rather than by looking plausible: 102 names appear only in
- * prebuilt-themes/*.css, and 17 only in fesm2022/*.mjs. These two assertions are
- * what keep the oracle widened — narrow it back to fesm2022 and the first fails,
- * drop fesm2022 and the second does.
- *
- * Do not swap either sentinel for a name that merely looks representative. The
- * obvious pick for the first, --mat-sys-primary, is NOT prebuilt-only: it occurs
- * 204 times in fesm2022, so a test using it passes with the oracle narrowed and
- * proves nothing. That mistake was made here and caught by narrowing the oracle
- * on purpose and watching the test pass anyway. Re-derive by set difference. */
 test('the oracle sees a property declared only in the prebuilt themes', () => {
   const props = materialProperties(MATERIAL_PKG);
   assert.ok(

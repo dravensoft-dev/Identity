@@ -1,59 +1,8 @@
-/* The DOM-generic half of the behaviour compliance layer: given one element and
- * one of a pattern's requirement keys, decide whether that element meets it.
- *
- * Three return values, and the third is the point. `true` and `false` are a
- * verdict; `null` means "no single element can decide this" — focus behaviour,
- * key handling, the auto-dismiss claim and every CONDITIONAL state are
- * behaviours, not attributes, and a suite must assert them by acting on the tree
- * rather than by reading it. `scripts/check-compliance.mjs` holds every suite to
- * that: a requirement whose evaluate() is null must be named in a behavioural
- * test or the gate fails.
- *
- * `null` is never a fallthrough. Every requirement key is in exactly one of two
- * exported sets — DECIDABLE or BEHAVIOURAL — and a key in neither throws. It used
- * to fall off the end of evaluate() and return null, which had a failure mode
- * worth naming because it is silent in both directions: a typo in a pattern file
- * ("states.chekced") returned null, comparePattern told the suite author to
- * declare it behavioural, the author did, and from then on the misspelt
- * requirement passed forever while the real one was never checked at all. A
- * throw turns that into a loud error at the only moment anyone is looking.
- *
- * Requirement semantics key off the requirement KEY and the PATTERN NAME, never
- * off the requirement's value. This is the correction that matters most in this
- * file. The values in contracts/behaviour/*.json are human prose written for a
- * reader — navigation's roles.element is a whole sentence ("navigation (native
- * nav, or role=navigation when nav cannot be used)"), and button's roles.label is
- * a list of three alternatives. The first implementation compared
- * `roleOf(el) === String(value)`, which made a real <nav> fail its own pattern
- * and reported false OVERCLAIMs against seven components that were correct
- * (SideNav, Button, Checkbox, Switch, IconButton, Tag, ThemeToggle). That is
- * worse than a missed defect: the cheapest way to silence a false OVERCLAIM is to
- * write a fabricated exception into the binding, which corrupts the exact debt
- * record this layer exists to keep honest and inverts the gate's meaning. The
- * prose stays prose; the machine reads ELEMENT_ROLE and LABEL_ACCEPTS_TEXT.
- *
- * Why this file is DOM-generic rather than DOM-typed: it is consumed from three
- * runtimes — bun+happy-dom on the React side, bun+happy-dom under Angular's
- * TestBed, and plain node in its own test suite, which has no DOM at all. It
- * therefore touches exactly four members: `tagName`, `getAttribute`,
- * `hasAttribute`, `textContent`. Anything richer (querySelector, matches,
- * closest) belongs to the caller, which knows its own tree.
- *
- * Why a real DOM at all, rather than the text scan the spec proposed: a text
- * scan was built and measured against the whole tree before this file existed.
- * It reported 60 of 118 true "claimed met" requirements as unmet (native <button>
- * satisfies roles.element and keyboard.Space while leaving nothing to grep), and
- * wrongly retired 18 of 94 live exceptions (an attribute on the wrong element, in
- * three of four branches, or behind a ternary reads identically to a correct one).
- * The DOM resolves all three: an implicit role is a role, an assertion names its
- * element, and a suite renders every branch.
- */
+/* Decides whether one element meets one requirement key. Three return values, and
+ * `null` is the point: no single element can decide it, so a suite must assert it by
+ * acting on the tree. A key in neither DECIDABLE nor BEHAVIOURAL throws.
+ * DOM-generic on purpose: consumed from three runtimes, one with no DOM. */
 
-/** Implicit ARIA roles, tag -> role, for the tags Arena's components actually
- *  render. Deliberately not exhaustive: an unlisted tag returns null, which
- *  reads as "no role", which is the safe direction — it can fail a true claim
- *  loudly, never pass a false one silently. Extend it when a component needs it.
- *  @type {Record<string, string>} */
 export const IMPLICIT_ROLE = {
   A: 'link',
   ARTICLE: 'article',
@@ -82,7 +31,6 @@ export const IMPLICIT_ROLE = {
   UL: 'list',
 };
 
-/** `<input>` has no single implicit role; it depends on `type`. */
 const INPUT_ROLE = {
   button: 'button', submit: 'button', reset: 'button',
   checkbox: 'checkbox',
@@ -91,31 +39,17 @@ const INPUT_ROLE = {
   search: 'searchbox',
 };
 
-/** Tags that take focus with no `tabindex` of their own. */
 const NATIVELY_FOCUSABLE = new Set(['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA']);
 
-/** Pattern name -> the ARIA role its `roles.element` requirement asks for.
- *
- *  This map exists because the requirement's own value cannot be used. Compare
- *  navigation's value — "navigation (native nav, or role=navigation when nav
- *  cannot be used)" — with dialog-modal's, which is the bare word "dialog". Both
- *  are correct prose for a human; only one happens to be a role token, and
- *  depending on that coincidence is what made a real <nav> fail.
- *
- *  It must cover every pattern carrying a `roles.element` requirement, and name
- *  no pattern that does not exist. Both directions are asserted in
- *  scripts/behaviour-compliance.test.mjs against the real files, so this map
- *  cannot silently drift from contracts/behaviour/.
- *  @type {Record<string, string>} */
 export const ELEMENT_ROLE = {
   alert: 'alert',
   button: 'button',
   checkbox: 'checkbox',
   combobox: 'combobox',
   'dialog-modal': 'dialog',
-  disclosure: 'button',      // the button IS the widget; the region it controls carries no role
+  disclosure: 'button',
   listbox: 'listbox',
-  'menu-button': 'button',   // the trigger is a button; the popup it owns is the menu
+  'menu-button': 'button',
   navigation: 'navigation',
   status: 'status',
   switch: 'switch',
@@ -124,29 +58,8 @@ export const ELEMENT_ROLE = {
   tooltip: 'tooltip',
 };
 
-/** The patterns whose `roles.label` prose admits an element's own text content as
- *  its accessible name: "text content, aria-labelledby, or aria-label".
- *
- *  This is a whitelist rather than a blanket rule, and the blanket rule is the
- *  bug it prevents. radiogroup's roles.label says nothing about text content,
- *  and RadioGroup.behaviour.json's own exception records exactly that: the group
- *  div carries no aria-label and no aria-labelledby at all, so it has no
- *  accessible name of any kind — even though its options render plenty of text.
- *  If text content were credited everywhere, that true exception would be
- *  reported STALE and deleted, and a real accessibility defect would leave the
- *  debt record.
- *
- *  Asserted against the real pattern files: every name here must have a
- *  roles.label value that actually mentions text content.
- *  @type {Set<string>} */
 export const LABEL_ACCEPTS_TEXT = new Set(['button', 'checkbox', 'disclosure', 'switch']);
 
-/** The element's ARIA role: explicit if authored, else implicit, else null.
- *  @param {{tagName: string, getAttribute: (n: string) => string | null}} el
- *  @param {(id: string) => object | null} [resolveId] threaded to
- *    hasAccessibleName for the one case that needs it: a <section> exposes
- *    role="region" only when it is named, so a labelledby resolving to nothing
- *    takes the role with it. */
 export function roleOf(el, resolveId) {
   const explicit = el.getAttribute('role');
   if (explicit) return explicit.trim().split(/\s+/)[0];
@@ -155,32 +68,11 @@ export function roleOf(el, resolveId) {
     const type = (el.getAttribute('type') || 'text').toLowerCase();
     return INPUT_ROLE[type] ?? 'textbox';
   }
-  // A <section> is only a region when it is named; unnamed it exposes no role.
-  // Text content never names a section, hence the explicit `false`.
+
   if (tag === 'SECTION') return hasAccessibleName(el, false, resolveId) ? 'region' : null;
   return IMPLICIT_ROLE[tag] ?? null;
 }
 
-/** Whether the element carries an accessible name.
- *
- *  Three routes satisfy the requirement and they are ALTERNATIVES, so the answer
- *  is a disjunction and the order below is free. What the order buys is that
- *  `resolveId` is consulted only where it can change the answer -- a button
- *  carrying both its own text and an aria-labelledby never needs one. It also
- *  matches the real name computation: an aria-labelledby resolving to nothing
- *  falls through to the next route rather than nulling the name.
- *
- *  `acceptsText` decides whether the element's own text content counts, and the
- *  caller must pass it deliberately — it defaults to false, the stricter answer,
- *  so a new call site cannot accidentally widen the rule. Only the patterns in
- *  LABEL_ACCEPTS_TEXT say text content is enough.
- *  @param {{getAttribute: (n: string) => string | null, textContent?: string | null}} el
- *  @param {boolean} [acceptsText]
- *  @param {(id: string) => object | null} [resolveId] required when the element's
- *    ONLY remaining route is aria-labelledby — see the throw below.
- *  @throws {Error} when aria-labelledby is the deciding route and no resolver was
- *    supplied. Counting the attribute instead would report a dangling reference
- *    as a name, which is the defect this parameter exists to catch. */
 export function hasAccessibleName(el, acceptsText = false, resolveId) {
   if (el.getAttribute('aria-label')) return true;
   if (acceptsText && (el.textContent ?? '').trim()) return true;
@@ -198,10 +90,6 @@ export function hasAccessibleName(el, acceptsText = false, resolveId) {
   return referenceResolves('aria-labelledby', raw, resolveId);
 }
 
-/** Whether the element can take keyboard focus. Not a claim about focus *order*
- *  — happy-dom does not implement sequential navigation and this layer never
- *  asserts it.
- *  @param {{tagName: string, getAttribute: (n: string) => string | null, hasAttribute: (n: string) => boolean}} el */
 export function isFocusable(el) {
   if (el.hasAttribute('disabled')) return false;
   const ti = el.getAttribute('tabindex');
@@ -209,11 +97,6 @@ export function isFocusable(el) {
   return NATIVELY_FOCUSABLE.has(el.tagName.toUpperCase());
 }
 
-/** Requirement key -> the ARIA attribute that satisfies it, for the requirements
- *  that are pure, unconditional attribute presence.
- *
- *  Several keys were removed from this map and moved to BEHAVIOURAL, because
- *  their prose is conditional and presence is the wrong question — see that set. */
 export const ATTRIBUTE_FOR = {
   'roles.aria-modal': 'aria-modal',
   'roles.haspopup': 'aria-haspopup',
@@ -224,24 +107,6 @@ export const ATTRIBUTE_FOR = {
   'states.selected': 'aria-selected',
 };
 
-/** The reference attributes this file resolves, and HOW STRICT each one is.
- *
- *  Strictness belongs to the ATTRIBUTE rather than to the requirement key, for
- *  two reasons. It is a fact about what the attribute MEANS: aria-labelledby
- *  concatenates the text of everything it names into one accessible name, so an
- *  id that resolves to nothing truncates that name in silence, where
- *  aria-describedby merely contributes one description among several. And it is
- *  the only place aria-labelledby can be governed at all -- roles.label has no
- *  ATTRIBUTE_FOR entry and never reaches the branch that reads this.
- *
- *  `some` is the exception and carries the reason; `every` is the rule. 8C7
- *  applied `some` to all three keys it knew about on a justification that belongs
- *  to exactly one of them, so aria-controls spent a batch holding a concession
- *  earned by aria-describedby.
- *
- *  Same staleness discipline as QUANTIFIED and EXEMPT: an entry naming an
- *  attribute no branch of this file consults fails the suite rather than rotting.
- *  @type {Map<string, {match: 'every' | 'some', reason: string}>} */
 export const IDREF_ATTRIBUTES = new Map([
   ['aria-labelledby', {
     match: 'every',
@@ -261,43 +126,21 @@ export const IDREF_ATTRIBUTES = new Map([
   }],
 ]);
 
-/** Whether a space-separated IDREF list satisfies its attribute's rule. The ONE
- *  place either branch decides that, so IDREF_ATTRIBUTES is the authority rather
- *  than a table two call sites happen to agree with. */
 function referenceResolves(attr, raw, resolveId) {
   const ids = raw.split(/\s+/).filter(Boolean);
-  /* An attribute holding only whitespace names nothing, and `every` over an empty
-   * list is vacuously TRUE -- so without this the emptiest possible reference
-   * would report as met, which is the shape of failure this file exists to refuse. */
+
   if (!ids.length) return false;
   return IDREF_ATTRIBUTES.get(attr).match === 'every'
     ? ids.every((id) => resolveId(id) != null)
     : ids.some((id) => resolveId(id) != null);
 }
 
-/** The requirement keys whose ATTRIBUTE_FOR attribute is a reference. DERIVED
- *  from IDREF_ATTRIBUTES rather than written beside it, so this set cannot drift
- *  out of scope again.
- *
- *  Be exact about what "again" means, because the obvious reading is wrong.
- *  Before 8C8 there was exactly ONE hand-written list here -- three requirement
- *  keys, with nothing anywhere to disagree with it. What it got wrong was REACH,
- *  not agreement: a list of requirement KEYS can never name aria-labelledby at
- *  all, because roles.label carries no ATTRIBUTE_FOR entry and never reaches the
- *  branch that reads this set. It also held one strictness rule for all three
- *  keys, on a justification belonging to one of them. Deriving from a map keyed
- *  by ATTRIBUTE fixes both at once: strictness lives with the attribute that
- *  earns it, and an attribute no requirement key can name is still governed.
- *  @type {Set<string>} */
 export const IDREF = new Set(
   Object.entries(ATTRIBUTE_FOR)
     .filter(([, attr]) => IDREF_ATTRIBUTES.has(attr))
     .map(([key]) => key),
 );
 
-/** Requirement keys naming a role the element itself must expose. `roles.element`
- *  is excluded because its required role comes from ELEMENT_ROLE, keyed by the
- *  pattern, not from the key. */
 const ROLE_NAMED_BY_KEY = {
   'roles.grid': 'grid',
   'roles.row': 'row',
@@ -313,10 +156,6 @@ const ROLE_NAMED_BY_KEY = {
   'roles.graphic': 'img',
 };
 
-/** The requirement keys evaluate() can decide from one element, derived from the
- *  maps above rather than restated. A hand-written second list is a second place
- *  for the rule to live, and it was already out of step with evaluate() once.
- *  @type {Set<string>} */
 export const DECIDABLE = new Set([
   'roles.element',
   'roles.label',
@@ -327,80 +166,24 @@ export const DECIDABLE = new Set([
   'live.politeness',
 ]);
 
-/** The requirement keys that are genuinely behaviours rather than attributes, for
- *  which evaluate() returns null and a suite must assert by acting on the tree.
- *
- *  Two families and a tail. `focus.*` and `keyboard.*` are behaviours by nature.
- *  `content.noAutoDismiss` is a claim about the passage of time; `alternative.table`
- *  is a claim about a sibling subtree, outside the one-element surface.
- *
- *  The tail is the correction. Six CONDITIONAL states live here that a presence
- *  check used to answer wrongly, because their prose carries a "when": disabled is
- *  "aria-disabled set to true WHEN the action is unavailable", and likewise
- *  required, readonly, multiselectable, busy and posinset. A snapshot of one
- *  element cannot decide a conditional claim — an enabled <button> correctly
- *  carries no aria-disabled, and reading that as unmet produced
- *  "Button, enabled: states.disabled: OVERCLAIM" against a component doing exactly
- *  the right thing. Only a suite that renders the condition and then asserts can
- *  answer these, which is precisely what "behavioural" means here.
- *
- *  `states.checked` deliberately did NOT move: "aria-checked set to true, false,
- *  or mixed" is unconditional — a checkbox always has a checked state.
- *  @type {Set<string>} */
 export const BEHAVIOURAL = new Set([
-  // focus.*
+
   'focus.unaffected', 'focus.onOpen', 'focus.onClose', 'focus.trap', 'focus.roving', 'focus.never',
-  // keyboard.*
+
   'keyboard.Space', 'keyboard.Enter', 'keyboard.Escape',
   'keyboard.ArrowKeys', 'keyboard.ArrowUp', 'keyboard.ArrowDown',
   'keyboard.ArrowLeft', 'keyboard.ArrowRight',
   'keyboard.Home', 'keyboard.End',
   'keyboard.PageUp', 'keyboard.PageDown',
   'keyboard.TypeAhead',
-  // claims outside one element's snapshot
+
   'content.noAutoDismiss',
   'alternative.table',
-  // conditional states — see the note above
+
   'states.disabled', 'states.required', 'states.readonly',
   'states.multiselectable', 'states.busy', 'states.posinset',
 ]);
 
-/** Decide one requirement against one element.
- *  @param {object} el
- *  @param {string} key dotted requirement key, e.g. 'roles.element'
- *  @param {unknown} value the pattern's declared prose for that key. Reported in
- *    an OVERCLAIM message so a reader sees what was asked for; never parsed.
- *  @param {string} patternName the owning pattern's name, which is what selects
- *    the semantics for roles.element and roles.label
- *  @param {(id: string) => object | null} [resolveId] looks an id up in the
- *    rendered tree and returns the element it names, or null when nothing
- *    carries it. Each wrapper builds one scoped to its own render; this file
- *    never has the tree to resolve one itself.
- *
- *    TWO DISJOINT cases owe one, and reading only the first is how a caller ends
- *    up with a throw instead of a verdict. It is required when `key` is in
- *    IDREF; and, separately, when `key` is `roles.label` and the subject's only
- *    remaining naming route is aria-labelledby. Most of the patterns declaring
- *    roles.label carry no ATTRIBUTE_FOR reference requirement whatsoever —
- *    dialog-modal, the pattern behind the covered Dialog and ConfirmDialog
- *    bindings, is one of them — so IDREF is empty for them and a caller
- *    consulting it alone concludes, wrongly, that no resolver is owed. Measure
- *    the overlap rather than trusting a figure: compare
- *    `grep -l '"roles.label"' contracts/behaviour/*.json` against those files
- *    also matching `"roles\.(controls|describedby|activedescendant)"`.
- *  @returns {true | false | null} null = undecidable from this element alone
- *  @throws {Error} on a key in neither DECIDABLE nor BEHAVIOURAL, on a
- *    roles.element requirement whose pattern has no ELEMENT_ROLE entry, on an
- *    IDREF requirement given no resolveId, on a roles.label requirement
- *    whose deciding route is aria-labelledby and no resolveId was given, and —
- *    the path easiest to miss — on ANY key routed through roleOf() whose subject
- *    is a <section> named only by aria-labelledby, since a section exposes
- *    role=region only when named. That last one reaches roles.element, every
- *    ROLE_NAMED_BY_KEY key, states.checked and live.politeness; the final two
- *    read as entirely unrelated to naming, which is exactly why it is written
- *    down. All of them are programming errors — a typo in a pattern file, a map
- *    left un-extended, or a caller that forgot to thread the resolver — not
- *    verdicts about a component, so none may be returned as one. */
 export function evaluate(el, key, value, patternName, resolveId) {
   if (key === 'roles.element') {
     const wanted = ELEMENT_ROLE[patternName];
@@ -437,10 +220,7 @@ export function evaluate(el, key, value, patternName, resolveId) {
   }
 
   if (key === 'states.checked') {
-    // A native checkbox or radio exposes checked-ness through the platform, with
-    // no aria-checked to read. Crediting only the attribute applied the
-    // implicit-semantics principle to roles and withheld it from states, which is
-    // the same defect in a different place.
+
     if (el.getAttribute('aria-checked') !== null) return true;
     const role = roleOf(el, resolveId);
     return el.tagName.toUpperCase() === 'INPUT' && (role === 'checkbox' || role === 'radio');
@@ -449,8 +229,7 @@ export function evaluate(el, key, value, patternName, resolveId) {
     return el.tagName.toUpperCase() === 'TEXTAREA' || el.getAttribute('aria-multiline') !== null;
   }
   if (key === 'live.politeness') {
-    // role=status and role=alert carry an implicit live region; an explicit
-    // aria-live satisfies it directly.
+
     if (el.getAttribute('aria-live') !== null) return true;
     return ['status', 'alert', 'log'].includes(roleOf(el, resolveId));
   }
@@ -465,22 +244,6 @@ export function evaluate(el, key, value, patternName, resolveId) {
   );
 }
 
-/** Requirements whose prose quantifies over EVERY matching element, so a suite
- *  must hand over a collection and one element is not an answer. Keyed
- *  `pattern:requirement`.
- *
- *  HAND-CURATED, NEVER DERIVED. A scan for the word "each" finds fewer
- *  requirements than a reader does: the prose says "false on the REST" and "one
- *  per unit of content" just as readily. Deriving this would rebuild the
- *  false-negative class this file's header already rejected once. Semantics key
- *  off the requirement KEY and the PATTERN NAME, never off the human prose.
- *
- *  What quantifying buys is bounded by the SELECTOR the suite builds its
- *  collection with. A tab rendered without `role="tab"` leaves a
- *  `querySelectorAll('[role="tab"]')` collection silently, taking its dangling
- *  reference with it, and every element that remains still passes. This rule
- *  makes "the first element answered for the collection" impossible; it cannot
- *  make a suite's selector match the elements the pattern is about. */
 export const QUANTIFIED = new Map([
   ['feed:roles.article',
     'one article per unit of content, so a feed whose third row lost its role is unmet however correct the first row is. Decidable per element through ROLE_NAMED_BY_KEY, and quantified over elements the component renders itself -- which is what separates it from the two entries in NOT_QUANTIFIED below.'],
@@ -494,10 +257,6 @@ export const QUANTIFIED = new Map([
     'true on the active tab and false on the rest -- the same quantification listbox states, written as "the rest".'],
 ]);
 
-/** Requirements whose prose quantifies but which are deliberately NOT in the map
- *  above, each with the reason. They are listed rather than merely absent so the
- *  next reader meets the decision instead of the silence, and so the staleness
- *  test can prove they still name real requirements. */
 export const NOT_QUANTIFIED = new Map([
   ['feed:states.posinset',
     'BEHAVIOURAL rather than decidable: its prose carries a "when" (-1 for setsize when the total is unknown), so a snapshot of one element cannot answer it and evaluate() returns null. There is no per-element verdict to quantify over.'],
@@ -505,88 +264,6 @@ export const NOT_QUANTIFIED = new Map([
     'quantifies over navigation landmarks on a PAGE, and only when more than one exists. A component suite renders one component; requiring a collection would force fixtures to render two landmarks to satisfy a rule that is not a claim about the component.'],
 ]);
 
-/**
- * Compare one component's rendered subject elements against its binding, in both
- * directions, and return one message per disagreement.
- *
- * This is the whole assertion, and it lives here — framework-agnostic, no fs, no
- * DOM beyond what evaluate() touches — so that React's and Angular's suites share
- * it rather than each carrying a copy. Two copies of a comparison is two places
- * for the rule to drift, and this rule is the layer's only real guarantee.
- *
- * Both directions in one statement, because the asymmetry is what made the
- * contract layer unverifiable: a binding could overclaim (a requirement not
- * excepted that is not met) or underclaim (an exception kept after the source was
- * fixed), and only the second is the property the layer was modelled on. Checking
- * one and not the other is how EXEMPT maps rot.
- *
- * `subjects` exists because a text scan cannot tell which element carries an
- * attribute and a human can. Menu.jsx puts aria-haspopup on a wrapping <span>
- * rather than the focusable trigger; judged against the wrapper the exception
- * looks stale, judged against the trigger it is true. Naming the element the
- * requirement is *about* is stated once per suite rather than inferred forever.
- *
- * `behavioural` is a MAP of verdicts, not a list of keys, and that is the second
- * correction this file has needed. It used to be `string[]`: naming a key there
- * meant only "my suite asserts this somehow", and the undecidable branch did
- * `used.add(key); continue;` without ever consulting the binding's exceptions. So
- * for every behavioural key the layer's one real property — that an exception can
- * expire — simply did not hold. Measured against the real tree when this was
- * found: 48 of the 94 live exceptions sat on keys that path skipped (focus.roving,
- * keyboard.Escape, focus.onOpen/onClose/trap, the arrow keys, the six conditional
- * states). The sharp form returned `[]` in silence — a binding excepting
- * `states.disabled` ("we do not implement this") beside a suite declaring
- * `states.disabled` behavioural ("my own test asserts this") is flatly
- * contradictory, and the comparison said nothing about it.
- *
- * So a suite now declares the VERDICT its behavioural test established — `true`
- * = my test proved the requirement met, `false` = my test proved it unmet — and
- * that verdict flows into exactly the same bidirectional rule as a DOM-derived
- * one: met + excepted is a STALE EXCEPTION, unmet + unexcepted is an OVERCLAIM.
- *
- * Be clear about what this does and does not establish. It does NOT make this
- * module prove the behaviour — nothing here traps focus or presses a key; the
- * suite's own test does that, and the declaration is only the wire carrying that
- * test's result to the binding. That wire was the missing half. A declaration is
- * still a claim by the suite author, exactly as `check:behaviour`'s green run is
- * "a coverage claim, never an accessibility one".
- *
- * @param {object} o
- * @param {{name: string, requires: Record<string, unknown>}} o.pattern
- * @param {{pattern: string, exceptions?: {requirement: string, reason: string}[]}} o.binding
- * @param {Record<string, object|object[]|null>} [o.subjects] requirement key -> the
- *   element that must carry it, or an ARRAY of every element the requirement is
- *   about. A requirement in QUANTIFIED demands the array and throws on one element;
- *   every other requirement accepts either.
- * @param {object|null} [o.fallback] the element used for any requirement not named in `subjects`
- * @param {Record<string, boolean>} [o.behavioural] requirement key -> the verdict the
- *   caller's own behavioural test established, for requirements that must be asserted
- *   by acting on the tree rather than by reading it. Every undecidable requirement must
- *   appear as a key or this reports it — silence about an unverifiable claim is what
- *   this layer exists to remove.
- * @param {(id: string) => object | null} [o.resolveId] looks an id up in the SAME
- *   rendered tree `subjects`/`fallback` came from and returns the element it names, or
- *   null when nothing carries it. TWO DISJOINT cases require one, and a suite that
- *   reads only the first gets a throw where it expected a verdict. It is required
- *   whenever the pattern carries an IDREF requirement (see the IDREF set); and,
- *   separately, whenever the pattern requires `roles.label` and the subject is named by
- *   aria-labelledby — most of the patterns declaring roles.label carry no
- *   ATTRIBUTE_FOR reference requirement at all, `dialog-modal` among them, so IDREF is
- *   empty for them while a resolver is still owed. evaluate() throws in both rather
- *   than degrading to a presence check, which would report a dangling reference as met.
- *   The simplest correct habit is to pass one always: a resolver is consulted only
- *   where it can change the answer.
- * @returns {string[]} one message per problem, empty when clean
- * @throws {Error} whatever evaluate() throws — an unrecognised requirement key, a
- *   roles.element requirement on a pattern with no ELEMENT_ROLE entry, an IDREF
- *   requirement given no resolveId, a roles.label requirement whose deciding route is
- *   aria-labelledby with no resolveId, or any requirement routed through roleOf() whose
- *   subject is a <section> named only by aria-labelledby with no resolveId. All are
- *   programming errors rather than verdicts, so
- *   they are not returned as problems. In a render suite that means the whole test
- *   aborts instead of reporting this component's problems beside the others; that is
- *   intended, but callers should know it can happen.
- */
 export function comparePattern({
   pattern, binding, subjects = {}, fallback = null, behavioural = {}, resolveId,
 }) {
@@ -594,22 +271,14 @@ export function comparePattern({
   const declared = new Map(Object.entries(behavioural));
   const used = new Set();
   const problems = [];
-  // Finding 3: when a subject was missing, every requirement is skipped, so every
-  // declared key also goes unused. Reporting those as "the pattern no longer
-  // requires it, or it is now decidable" states two causes that are both false in
-  // that state, and an author who follows the instruction deletes a correct
-  // declaration and gets the opposite error next run. The report stays — silence
-  // would hide a real stale declaration — but it must name the real cause.
+
   let missedSubject = false;
 
   for (const [key, value] of Object.entries(pattern.requires)) {
     const subject = key in subjects ? subjects[key] : fallback;
     const quantified = QUANTIFIED.has(`${pattern.name}:${key}`);
     if (quantified && !Array.isArray(subject)) {
-      // The remedy is the same either way, but the state is not: `null` is a
-      // selector that matched nothing, and telling that author their subject is
-      // "a single element" sends them looking for a second one they already have
-      // none of.
+
       const got = subject == null
         ? 'its subject is null -- a selector matched nothing, or none was passed'
         : 'its subject is a single element';
@@ -626,11 +295,9 @@ export function comparePattern({
       continue;
     }
     const verdicts = els.map((one) => evaluate(one, key, value, pattern.name, resolveId));
-    /* One undecidable element makes the whole requirement undecidable: a
-       collection cannot be half-behavioural. */
+
     const domVerdict = verdicts.includes(null) ? null : verdicts.every(Boolean);
 
-    // Where the verdict comes from decides the wording, never the rule.
     let verdict = domVerdict;
     let source = 'the rendered DOM';
     if (domVerdict === null) {

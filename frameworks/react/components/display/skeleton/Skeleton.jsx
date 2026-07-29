@@ -1,8 +1,5 @@
 import React, { useEffect } from 'react';
 
-/** Loading placeholder for asynchronous data (H1). Reserves the space for the real
- * content —tables, dashboards, cards— with a warm sweep instead of a blank jump.
- * variant: 'text' | 'line' | 'block' | 'circle'. `lines` repeats a stack of text lines. */
 let injected = false;
 function useShimmer() {
   useEffect(() => {

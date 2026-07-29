@@ -1,48 +1,3 @@
-/* Plan 8C2 turned every form control's native onChange into an event carrying a
- * VALUE rather than the DOM event -- string for Input, Select, Textarea and
- * RadioGroup, boolean for Checkbox, and Input's blur likewise. The six suites
- * under frameworks/react/test/ assert the SHAPE of that, and four of them say in
- * their own header that they cannot assert the event FIRES: renderToStaticMarkup
- * has no DOM. This file is that debt paid.
- *
- * Every test asserts the payload's TYPE before its value, and the order is
- * load-bearing. node:assert throws on the first failure, so a typeof assertion
- * placed second would never be reached once the equality assertion had already
- * failed -- and the whole point is to watch the TYPE assertion fail when a
- * component regresses to handing back the DOM event. Checkbox is the sharpest of
- * the six because boolean and "an event object" are unmistakably different
- * things; for the four string controls the type assertion is what states, in the
- * test itself, that `e.target.value` is not an acceptable stand-in for the value.
- *
- * ---------------------------------------------------------------------------
- * WHICH DOM EVENT DRIVES EACH CONTROL.
- *
- * These are real browser semantics -- ../../test/Preload.js installs the DOM before
- * react-dom evaluates, so React runs its normal event path rather than the legacy
- * change-detection polyfill it falls back to when it believes `input` is
- * unsupported. Each row below was measured against this harness.
- *
- *   Input       set the value through the native setter,
- *   Textarea    then dispatch 'input' (bubbles)          -> onChange
- *   Select      set the value, then dispatch 'change'    -> onChange
- *   Checkbox    element.click()                          -> onChange
- *   RadioGroup  element.click() on a child radio         -> onChange
- *   Input blur  element.focus(), then element.blur()     -> onBlur
- *
- * Two of those are worth explaining, and neither is a workaround.
- *
- * (1) Checkbox and radio are driven by 'click', not 'change'. That is React's
- * own choice in every browser, not something about this harness:
- * shouldUseClickEvent() in react-dom routes an <input type="checkbox"|"radio">
- * through getTargetInstForClickEvent, so a dispatched 'change' on one is
- * ignored outright. click() is also what a user does to a checkbox.
- *
- * (2) The value must be written through the prototype's own setter, not through
- * `el.value = x`. React installs a value tracker as an own property of the node
- * and skips an event whose value it believes it already knows; assigning through
- * that tracker updates its bookkeeping, so React concludes nothing changed and
- * the handler never runs. Going around it via the prototype descriptor is what
- * leaves the tracker stale, which is exactly what a real keystroke does. */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
@@ -56,16 +11,11 @@ import { Radio } from './radio/Radio.jsx';
 
 afterEach(cleanup);
 
-/** Write a value the way a keystroke does: through the element prototype's own
- *  setter, leaving React's instance-level value tracker stale so React agrees
- *  something changed. See note (2) in this file's header. */
 function setNativeValue(el, next) {
   const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set;
   setter.call(el, next);
 }
 
-/** Type into a text-like control: change its value and emit the `input` event a
- *  browser emits for a keystroke. */
 function typeInto(el, next) {
   act(() => {
     setNativeValue(el, next);

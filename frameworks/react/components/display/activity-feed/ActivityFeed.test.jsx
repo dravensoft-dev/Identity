@@ -19,8 +19,8 @@ test('each part of the grammar takes its own ink', () => {
   const html = renderToStaticMarkup(<ActivityFeed items={[ITEMS[0]]} />);
   assert.match(html, /ana@/);
   assert.match(html, /approved the release/);
-  assert.match(html, /var\(--gold\)/);   // the target, in mono gold
-  assert.match(html, /var\(--mute\)/);   // the time, pushed right
+  assert.match(html, /var\(--gold\)/);
+  assert.match(html, /var\(--mute\)/);
 });
 
 test('tone drives the dot and defaults to accent', () => {

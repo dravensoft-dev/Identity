@@ -80,15 +80,14 @@ each bare, with no `arena-` prefix, because the attribute is the contract member
 name, per `contracts/api/README.md`'s binding table) all have consumers in more than one category,
 so they sit at the layer root and `frameworks/angular/index.ts` names each of them
 directly. `DataVisuals.ts` (the chart maths and the identity-or-meaning colour contract)
-sits at the layer root beside them, and it is the one that got there by decision rather
-than by the rule: it was `components/charts/ChartInternals.ts`, and in this layer its
-consumers really are the three charts alone. The structure refactor's batch 3 moved it
-because that narrow consumer set is an artifact of Angular's `Calendar` being delegated
-to Material — React's `Calendar` imports `catColor` from the same module, so React's copy
-belonged at the layer root by the rule, and leaving the two layers spelling one module at
-two different paths would have made the eventual Plan D move a second migration instead
-of an import. The name changed with the placement: a module a schedule grid consumes is
-not "chart internals".
+sits at the layer root beside them, and it is the one that is there by decision rather
+than by the rule: in this layer its consumers really are the three charts alone, so
+`components/charts/` would satisfy the rule. That narrow consumer set is an artifact of
+Angular's `Calendar` being delegated to Material — React's `Calendar` imports `catColor`
+from the same module, so React's copy belongs at the layer root by the rule, and leaving
+the two layers spelling one module at two different paths would make the eventual Plan D
+move a second migration instead of an import. The name matches the placement: a module a
+schedule grid consumes is not "chart internals".
 
 A primitive defines no styling of its own. Its recipe lives in
 `frameworks/tailwind/components/<category>/<component-kebab>/<Component>.manifest.json`
@@ -194,32 +193,22 @@ never the *component*: it hand-builds the DOM from the manifest, so a component-
 bug can render correctly in the card while being broken in the primitive. The three SVG
 charts have no specimen at all, by the same exception that gives them no manifest.
 
-## One trap this layer's idiom used to set, and one it still does
+## Two traps this layer's idiom sets
 
-Both are layer-wide and silent; the first is closed, the second has bitten during implementation.
+Both are layer-wide and silent, and both are recorded in
+[`DOUBTS.md`](../../DOUBTS.md) section 4 with the full list of affected primitives.
 
-**A bare boolean attribute used to read as `false` — fixed.** Every boolean input here — `alert`'s
-`dismissible`, `confirm-dialog`'s `open`/`destructive`, `line-chart`'s `area`, and `open` on
-`command-palette` and `onboarding` — is now a signal `input(false, { transform: booleanAttribute })`,
-so `<arena-alert dismissible>` now resolves to `true`, where it used to resolve to the empty
-string and read as false: `booleanAttribute` treats a present-but-empty attribute string as
-`true` rather than as a falsy empty string. The equivalence to a native HTML boolean attribute
-stops there, though — `booleanAttribute` also special-cases the literal string `"false"` as
-`false`, where a native attribute (`<details open="false">`) stays open on any present value
-regardless of what it says. Binding still works (`[dismissible]="true"`) and remains the
-clearer form in a component's own prompt docs, but the bare form is no longer a silent no-op.
+**A bare boolean attribute resolves to `true`.** Every boolean input here is a signal
+`input(false, { transform: booleanAttribute })`, so `<arena-alert dismissible>` is `true`.
+The equivalence to a native HTML boolean attribute stops there: `booleanAttribute`
+special-cases the literal string `"false"` as `false`, where a native attribute stays set
+on any present value. Binding (`[dismissible]="true"`) is the clearer form.
 
 **An input named after a native attribute leaves the native attribute behind.** Angular
 writes a static attribute to the DOM during the creation pass whether or not it also
-matches an input, so `<arena-page-head title="Projects">` leaves a real `title` on the
-host and the browser draws a tooltip over the whole header. Nine primitives are affected —
-`title` on `alert`, `chart-card`, `confirm-dialog`, `empty-state`, `error-state`,
-`page-head` and `unauth-card`, and `name` on `app-logo` and `avatar`. `confirm-dialog` is
-the worst case by a distance: its host is the fixed full-viewport scrim, so
-`<arena-confirm-dialog title="Delete?">` paints a tooltip over the *entire viewport* while
-the dialog is open. Binding the input (`[title]="…"`) avoids it, and so would a host
-binding of `'[attr.title]': 'null'` — which, if taken, must be applied to all nine at once
-rather than one primitive at a time, or the layer becomes unpredictable. Not yet done.
+matches an input, so `<arena-page-head title="Projects">` leaves a real `title` on the host
+and the browser draws a tooltip over the whole header. Nine primitives are affected. Bind
+the input (`[title]="…"`) rather than setting it as an attribute.
 
 ## Adopting it
 

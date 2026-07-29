@@ -8,12 +8,6 @@ export interface ActivityFeedRow {
   dotClass: string;
 }
 
-/** Resolves every item's tone and divider position into its recipe classes
- *  once, independent of Angular so it is directly testable with no DOM: the
- *  first row never carries the divider and every tone resolves to its own
- *  dot colour. `arena-activity-feed`'s `rows` computed calls this rather
- *  than re-resolving `activityFeedStyles` per row on every change-detection
- *  pass, the way a plain arrow/method reached from the template would. */
 export function resolveActivityFeedRows(items: readonly ActivityItem[]): ActivityFeedRow[] {
   return items.map((item, index) => {
     const resolved = activityFeedStyles({ tone: item.tone ?? 'accent', divided: index > 0 });
@@ -21,11 +15,6 @@ export function resolveActivityFeedRows(items: readonly ActivityItem[]): Activit
   });
 }
 
-/** An event feed: someone did something to something, then. Its root is a
- *  real `<ul>` — an `<li>` must be a child of a list element, so unlike
- *  every other primitive in this layer it does not host-bind its root (see
- *  components-divergences.md). Arena draws every row; there is no per-item
- *  projection binding. */
 @Component({
   selector: 'arena-activity-feed',
   standalone: true,

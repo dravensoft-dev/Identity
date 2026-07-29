@@ -1,6 +1,6 @@
 import * as React from 'react';
 import type { AlertTone } from '../../../Api.generated';
-/** Persistent message embedded in the page (inline banner). */
+
 export interface AlertProps {
   tone?: AlertTone;
   title?: string; children?: React.ReactNode; icon?: string;

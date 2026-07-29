@@ -1,30 +1,3 @@
-/* Render assertions for `width`/`height`/`radius`, added under Skeleton's API
- * contract task (8B1 Task 3, Reshape B): the three inputs bind onto the host
- * via `[style.width]` / `[style.height]` / `[style.borderRadius]`, and that
- * binding form is invisible to `check:dimensions`' scanners regardless of how
- * this harness compiles (see CLAUDE.md's `check:dimensions` paragraph,
- * "Angular's `[style.x]` binding form is invisible to all four scanners too").
- * Only a real render proves they reach the DOM, and that the
- * per-variant gating in `Skeleton.ts` (radius only for `block`, `text`/`line`
- * ignore it, `circle` uses height||width as one diameter) matches the table in
- * the task brief and `Skeleton.jsx`.
- *
- * `width`/`height`/`radius`/`variant` are all `input()` signal fields, driven
- * through `componentRef.setInput()` before the first `detectChanges()` -- the
- * technique every directly-created fixture in this directory uses -- and then
- * read back off the real host's inline style.
- *
- * `renderSkeleton` takes its dimensions POSITIONALLY, not as an `{ width:
- * '160px', ... }` options object, and that is deliberate rather than a style
- * preference: `check:dimensions`' PROP_COLON scanner reads ANY `width:`/
- * `height:` object-literal key text anywhere under frameworks/, with no
- * notion of "this is a test fixture's own argument bag, not CSS" -- an
- * options object at the call site would read exactly like a real style
- * declaration and fail that gate. Positional args carry no colon-adjacent
- * property name at all, sidestepping the collision entirely rather than
- * asking `check:dimensions` to special-case it (also matches this
- * directory's existing idiom -- `renderActivityFeed(items)`,
- * `renderStatCard(label, value, delta, icon)` -- so it is not a one-off). */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { TestBed } from '@angular/core/testing';

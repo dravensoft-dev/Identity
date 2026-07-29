@@ -1,38 +1,3 @@
-/* CommandPalette's behaviour IS the component: filter as you type, arrow to
- * move the active row, Enter to run it, Escape to close, hover to select.
- * `CommandPalette.ts` was written the way `ConfirmDialog.ts` was -- the
- * behaviour that does not need Angular's own component instance lives in
- * plain exported functions, so it is testable with no `TestBed` at all.
- *
- * This does NOT render `<arena-command-palette>` through TestBed, for the
- * same confirmed reason `confirm-dialog-focus-trap.test.ts` documents -- and
- * the two ways `open` cannot be set fail DIFFERENTLY, which is the part that
- * bites: `[open]="true"` THROWS NG0303, while `componentRef.setInput('open',
- * true)` logs NG0303 and then silently NO-OPS. `open` became
- * `input.required<boolean, unknown>({ transform: booleanAttribute })` under the API contract
- * (`contracts/api/components/CommandPalette.json`), so a silent no-op now leaves it
- * genuinely unset rather than sitting on a default value -- the next read of
- * `open()` during change detection throws NG0950 instead of quietly passing
- * against a stale default. A throw announces itself either way; the point
- * that matters here is unchanged: no binding path reliably renders an
- * actually-open palette under this harness. Both failure modes stem from the
- * same cause -- only `ngtsc` (never run here) discovers a class's `input()`
- * fields into `ɵcmp.inputs`. Since `open` can never become `true` here, no
- * TestBed-based test can render an actually-open palette; `filterCommands`,
- * `nextActiveIndex` and `scrollRowIntoView` are exported precisely so they
- * stay testable despite that.
- *
- * `scrollRowIntoView` needs `document.createElement`, so this file asks for
- * the directory's shared happy-dom global (`ensureDom()`, testbed-env.ts).
- * There is exactly one document for the whole process and it is never torn
- * down -- that file's header explains why a per-file register/unregister pair,
- * which is what this suite used to carry, is not merely wasteful but breaks
- * the TestBed suites outright. happy-dom's own `Element.scrollIntoView`
- * is a documented no-op (see `node_modules/happy-dom/lib/nodes/element/
- * Element.js`), so what is asserted below is that the right element is
- * asked to scroll, not that a real browser's scroll position changes --
- * `bun run check:cards` is the one path in this repo that renders a real
- * browser at all. */
 import { ensureDom } from '../../../test/TestbedEnv';
 ensureDom();
 
@@ -135,4 +100,3 @@ test('activeOptionId is undefined, not dangling, when the filtered list is empty
 test('activeOptionId is undefined when the active index is out of range for a non-empty list', () => {
   assert.equal(activeOptionId('arena-command-palette-0', 5, 3), undefined);
 });
-

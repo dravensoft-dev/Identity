@@ -1,8 +1,3 @@
-/* scripts/fetch-fonts.mjs
-   Downloads the latin-subset woff2 binaries for Arena's three families into
-   assets/fonts/ and (re)generates contracts/design-generated/fonts.css with
-   local url()s only — no CDN request, CSP-clean. assets/fonts/ is the single
-   source of truth, shared by every framework layer. Run: bun scripts/fetch-fonts.mjs */
 import { writeFileSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,18 +7,10 @@ const root = join(here, '..');
 const fontsDir = join(root, 'assets', 'fonts');
 const cssPath = join(root, 'contracts', 'design-generated', 'fonts.css');
 
-/* A modern-browser UA makes Google Fonts serve woff2 (not ttf). */
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
   '(KHTML, like Gecko) Chrome/120.0 Safari/537.36';
 
-/* The family list is derived from contracts/design/typography.json, not
- * declared here. When it was declared here, a variant author who changed
- * font.display to "Inter" got --font-display: Inter with no @font-face for
- * Inter, and fell through to system-ui with no error at all -- the worst
- * shape a broken promise can take. The weights stop being declared twice for
- * the same reason: FAMILIES.weights and the fw tokens agreed by discipline,
- * which is not a mechanism. */
 export function families(root) {
   const src = JSON.parse(readFileSync(join(root, 'contracts/design/typography.json'), 'utf8'));
   const weights = Object.entries(src.fw)
@@ -46,8 +33,6 @@ async function google(css, weights) {
   return res.text();
 }
 
-/* Pull the latin-subset @font-face blocks: each carries a font-weight and a
-   woff2 src url and is tagged by Google Fonts with a "latin" subset comment. */
 function latinFaces(cssText) {
   const faces = [];
   const re = /\/\*\s*latin\s*\*\/\s*@font-face\s*{([^}]*)}/g;
@@ -67,10 +52,6 @@ async function download(url) {
   return Buffer.from(await res.arrayBuffer());
 }
 
-/** The whole emitted file, from an ordered face list. Pure: no network, no
- *  filesystem. The url() is two hops because fonts.css lives in
- *  contracts/design-generated/ and the binaries stay in assets/ at the root --
- *  the design level moved under contracts/, the binaries did not. */
 export function fontsCss(faces) {
   const header =
     `/* contracts/design-generated/fonts.css — self-hosted, CSP-clean webfonts.\n` +
@@ -88,20 +69,6 @@ export function fontsCss(faces) {
   return `${header}\n${rules.join('\n\n')}\n`;
 }
 
-/** The face list derived from what is on disk, for regenerating the CSS without
- *  re-downloading anything.
- *
- *  A declared weight with no binary is SKIPPED rather than refused, because
- *  families() hands every family the same weight list -- every fw-* token --
- *  and Google Fonts does not serve every weight for every family. Archivo has
- *  400-900; Familjen Grotesk and Spline Sans Mono have 400-700, and
- *  familjen-grotesk-800.woff2 has never existed. Demanding one would refuse the
- *  tree as it has always stood.
- *
- *  A family with NO face is a different matter and does throw: that is the
- *  silent-failure shape check:fonts exists to catch -- a --font-display naming
- *  a family with no @font-face behind it, falling through to system-ui with no
- *  error at all. */
 export function facesFromDisk(root) {
   const present = new Set(readdirSync(join(root, 'assets', 'fonts')));
   const faces = [];

@@ -1,5 +1,3 @@
-/* The Angular layer's test suite. See tag-variants.test.ts for why this
- * asserts the recipe directly rather than through a rendered component. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { appLogoStyles } from './AppLogo.variants';
@@ -21,8 +19,7 @@ test('size moves the mark box and the wordmark together -- they are one decision
   const xl = appLogoStyles({ size: 'xl' });
   assert.notEqual(sm.mark(), xl.mark(), 'the mark box did not change between sm and xl');
   assert.notEqual(sm.name(), xl.name(), 'the wordmark size did not change between sm and xl');
-  // Changing only size must never move root or dim -- those are orientation's and the
-  // static slot's job respectively, not size's.
+
   assert.equal(sm.root(), xl.root(), 'size must not change the root slot');
   assert.equal(sm.dim(), xl.dim(), 'size must not change the dim slot');
 });
@@ -39,7 +36,7 @@ test('orientation changes the axis and the gap, nothing else', () => {
   assert.match(horizontal.root(), /gap-2\.5/);
   assert.match(vertical.root(), /flex-col/);
   assert.match(vertical.root(), /gap-3\b/);
-  // Orientation must not reach into the mark or the wordmark sizing.
+
   assert.equal(horizontal.mark(), vertical.mark());
   assert.equal(horizontal.name(), vertical.name());
 });

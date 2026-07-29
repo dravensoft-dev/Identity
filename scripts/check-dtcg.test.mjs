@@ -59,11 +59,6 @@ test('rejects a token name containing a dot', () => {
   fails({ 'a.b': { $type: 'number', $value: 1 } }, /name/);
 });
 
-/* This gate has refused an empty tokens/src/ since before the contracts/ move,
- * and that guard is the reason the design level is the one that fails cleanly
- * rather than through a stack trace or a cascade. It was inline in main(),
- * which is to say untested, which is to say removable with every suite still
- * green. */
 test('zero source files is a named failure', () => {
   const problems = zeroSourceProblems(0);
   assert.equal(problems.length, 1);

@@ -1,9 +1,3 @@
-/* Plan 5a's Onboarding slice, added beside confirm-dialog-variants.test.ts per
- * this directory's own header comment: what is worth asserting is the recipe.
- * Onboarding shares ConfirmDialog's overlay resolution (root IS the recipe's
- * fixed scrim, host-bound, `open` driving it between the overlay and
- * `hidden`) but not its centering: the panel positions itself, so `root`
- * carries no `flex` -- these tests pin that shape rather than assuming it. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { onboardingStyles } from './Onboarding.variants';
@@ -27,7 +21,7 @@ test('anchored contributes no corner classes, so the clamp\'s inline top/left is
   const anchored = tokens(onboardingStyles({ placement: 'anchored' }).panel());
   assert.ok(!anchored.includes('right-6'));
   assert.ok(!anchored.includes('bottom-6'));
-  // Anchored keeps every base class floating also has; only the corner is removed.
+
   for (const cls of floating) {
     if (cls === 'right-6' || cls === 'bottom-6') continue;
     assert.ok(anchored.includes(cls), `anchored is missing base class "${cls}"`);
@@ -49,9 +43,7 @@ test('the closed default keeps the root hidden -- open defaults to false, matchi
 });
 
 test('the root slot carries a display utility in its own base string, independent of the open variant', () => {
-  // This is the property frameworks/angular/test/HostClassBinding.test.ts
-  // machine-checks against every primitive's manifest on disk; this asserts
-  // the same thing against the recipe's own default output.
+
   assert.match(onboardingStyles({ open: true }).root(), /\bblock\b/);
 });
 

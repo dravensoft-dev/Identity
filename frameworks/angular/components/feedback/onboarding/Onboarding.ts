@@ -17,34 +17,6 @@ import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../
 import { onboardingWidth, sp3, sp4 } from '../../../Tokens.generated';
 import type { OnboardingAnchor, OnboardingStep } from '../../../Api.generated';
 
-/** Guided coachmark tour (H10). Presents features within the product with
- *  progress dots, "Skip" and "Next" -- controlled: the host owns `index` and
- *  answers `next`, `back`, `skip` and `done`. Floats bottom-right over an
- *  unblurred scrim by default, or anchors next to `anchor` (an
- *  `OnboardingAnchor`; a `DOMRect` is structurally assignable, so
- *  `getBoundingClientRect()` still passes directly), clamped inside the
- *  viewport. The host is the recipe's `root`, the fixed full-viewport scrim
- *  -- `open` drives it between the overlay and `hidden` rather than a
- *  wrapper element omitting itself, matching `arena-confirm-dialog`. Unlike
- *  that dialog, this scrim IS dismissible: clicking it reports `skip`, the
- *  same as React's `onClick={onSkip}` on its own scrim div. Because the
- *  panel is a descendant of the host here (React renders scrim and panel as
- *  siblings), a click inside the panel stops its own propagation so it
- *  never reaches the host's scrim listener.
- *
- *  Modal by assertion and by behaviour, not just by assertion: because the
- *  panel carries `aria-modal="true"`, focus moves into it on open and is
- *  restored to whatever held it beforehand on close, Tab/Shift+Tab cycle
- *  within the panel rather than walking into the page behind the scrim, and
- *  Escape reports dismissal through the same `skip` output the scrim click
- *  and the Skip button already use. This reuses `arena-confirm-dialog`'s
- *  focus contract through the shared
- *  `frameworks/angular/FocusTrap.ts`
- *  (`handleOpenTransition`, `trapTabKey`) rather than a second
- *  implementation. React's `Onboarding.jsx` had none of it until plan 8C4, which
- *  gave it `UseDialogModal.js` -- a port of this same module, consumed by all
- *  three React overlays. The divergence that recorded the gap is retired; see
- *  `components-divergences.md`. */
 @Component({
   selector: 'arena-onboarding',
   standalone: true,
@@ -106,17 +78,6 @@ export class Onboarding {
   protected readonly step = computed<OnboardingStep>(() => this.steps()[this.index()] ?? {});
   protected readonly last = computed(() => this.index() === this.steps().length - 1);
 
-  /** The dialog's accessible name. Falls back through `title` to `eyebrow` to a
-   *  generic step count, so a step that omits `title` still names the dialog.
-   *  This chain was this layer's alone until plan 8C4, when `Onboarding.jsx`
-   *  ported it verbatim rather than `OnboardingStep.title` being made required --
-   *  which would have broken a shipped two-layer contract to buy the same result.
-   *  The two layers now agree by construction; keep them that way.
-   *
-   *  Known and accepted: on a step with neither `title` nor `eyebrow`, this
-   *  produces the same string as the progress dots' own `aria-label` below, so a
-   *  screen reader announces the two identically. A positional name is a floor,
-   *  not a substitute for one the caller writes. */
   protected readonly label = computed(() => {
     const current = this.step();
     return current.title ?? current.eyebrow ?? `Step ${this.index() + 1} of ${this.steps().length}`;
@@ -127,10 +88,6 @@ export class Onboarding {
     open: this.open(),
   }));
 
-  /** Clamped against the viewport, or null when the coachmark floats. `W`
-   *  and `EDGE` are still real numbers, the same reason `Onboarding.jsx`
-   *  states: `Math.min`/`Math.max` need real numbers. Both are authored once
-   *  in contracts/design/ now instead of here and in React's copy. */
   protected readonly position = computed(() => {
     const rect = this.anchor();
     if (!rect) return null;
@@ -142,18 +99,11 @@ export class Onboarding {
     return { top, left: Math.max(EDGE, left) };
   });
 
-  /** Bookkeeping `handleOpenTransition` mutates across renders -- a plain
-   *  object rather than a signal, matching `arena-confirm-dialog`'s and
-   *  `arena-command-palette`'s own field, for the identical reason: reading
-   *  it inside the effect below must never register as a dependency, or
-   *  writing it there would make the effect re-run itself. */
   private readonly focusTrap: FocusTrapState = { wasOpen: false, restoreTo: null };
 
   constructor() {
     afterRenderEffect(() => {
-      // `visible()`, not `open()`: an `open` tour with no steps renders no
-      // panel at all, so there is nothing to move focus into and nothing
-      // for the user to have escaped from on the way back out.
+
       const isOpen = this.visible();
       untracked(() => {
         handleOpenTransition(this.focusTrap, isOpen, this.panel()?.nativeElement ?? null, this.doc.activeElement);
@@ -165,9 +115,6 @@ export class Onboarding {
     if (this.visible()) this.skip.emit();
   }
 
-  /** Escape routes to `skip` -- the tour's existing dismissal, the same one
-   *  the scrim click and the Skip button report -- rather than inventing a
-   *  second close path the host would have to wire separately. */
   protected onKeydown(event: KeyboardEvent): void {
     if (!this.visible()) return;
     if (event.key === 'Escape') {

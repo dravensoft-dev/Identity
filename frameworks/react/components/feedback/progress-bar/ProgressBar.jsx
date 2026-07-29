@@ -1,10 +1,5 @@
 import React, { useEffect } from 'react';
 
-/** Progress bar (H1). Prefer *determinate* mode (`progressPercentage` 0–100) for measurable
- * processes —deployments, uploads, migrations— and reserve `indeterminate` for waits with
- * no known percentage. `tone` aligns the color with the state (accent by default).
- * `label` is a plain string: it is drawn above the bar AND is the bar's accessible name,
- * so a node here would leave the bar named "Progress" and nothing else. */
 let injected = false;
 function useIndeterminate() {
   useEffect(() => {

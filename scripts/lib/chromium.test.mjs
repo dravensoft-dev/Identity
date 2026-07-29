@@ -7,31 +7,19 @@ import { execFileSync } from 'node:child_process';
 import { CANDIDATES, findChromium, launchChromium } from './chromium.mjs';
 import { createDispatcher } from './cdp.mjs';
 
-/** The set of arena-chromium-* temp profile dirs mkdtempSync has left behind. */
 function chromiumTempDirs() {
   return new Set(readdirSync(tmpdir()).filter((n) => n.startsWith('arena-chromium-')));
 }
 
-/** pids of every process (the launched one and any descendant) whose command
- *  line still names this profile dir — empty once nothing is left of it.
- *  execFileSync runs pgrep directly, with no wrapping shell: pgrep already
- *  excludes its own pid from a -f match, but a `sh -c "pgrep -f ...pattern"`
- *  would still match the wrapping shell itself, since that shell's own
- *  command line contains the very pattern being searched for. */
 function processesNaming(profilePath) {
   try {
     return execFileSync('pgrep', ['-f', `user-data-dir=${profilePath}`], { stdio: ['ignore', 'pipe', 'ignore'] })
       .toString().trim().split('\n').filter(Boolean);
   } catch {
-    return []; // pgrep exits 1 when nothing matches
+    return [];
   }
 }
 
-/** Poll `predicate` until it is true or `timeoutMs` elapses, rather than
- *  sleeping a fixed guess — cleanup here is asynchronous (a killed process
- *  group takes the kernel a moment to actually reap), and a fixed sleep
- *  would either flake under load or hide a real regression by being long
- *  enough to always pass. @returns {Promise<boolean>} */
 async function waitUntil(predicate, { timeoutMs = 5000, intervalMs = 100 } = {}) {
   const deadline = Date.now() + timeoutMs;
   for (;;) {
@@ -139,9 +127,6 @@ test('kill() reaps the whole process group: no descendant survives it and no tem
   assert.equal(created.length, 1, 'launchChromium should have made exactly one new temp profile dir');
   const profilePath = join(tmpdir(), created[0]);
 
-  /* Confirm this browser really did fork descendants sharing the profile
-     dir before asserting kill() reaps them — otherwise the assertion below
-     would pass vacuously on a build that forks nothing. */
   const beforeKill = processesNaming(profilePath);
   assert.ok(beforeKill.length > 1,
     `expected Chromium to have forked at least one subprocess sharing ${profilePath}, found ${beforeKill.length}`);

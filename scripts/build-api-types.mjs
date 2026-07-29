@@ -1,30 +1,9 @@
-/* Emits the per-layer API type modules from contracts/api/types/.
- *
- * contracts/api/types/*.json declares every predefined object and enum an API contract
- * names -- once, platform-neutrally. This renders them as TypeScript and writes
- * the SAME body into both layers:
- *
- *   frameworks/react/Api.generated.d.ts
- *   frameworks/angular/Api.generated.ts
- *
- * Two files rather than one shared module, for the reason the script-readable
- * token target established: a component's import must never cross the
- * contracts/api/ <-> frameworks/ boundary. The bodies are identical because both are
- * type-only TypeScript; only the extension differs, because React's layer ships
- * declarations and Angular's is compiled by ngc.
- *
- * The output is COMMITTED. scripts/check-api.mjs asserts it matches the source,
- * the same guard check-tokens-generated.mjs is for the CSS.
- *
- *   bun scripts/build-api-types.mjs   -> writes both modules
- */
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** Repo-relative output paths, in emission order. */
 export const API_TARGETS = [
   'frameworks/react/Api.generated.d.ts',
   'frameworks/angular/Api.generated.ts',
@@ -39,11 +18,8 @@ const HEADER =
   + ' * tokens.generated.* already carries. scripts/check-api.mjs asserts the\n'
   + ' * committed files match contracts/api/types/. See contracts/api/README.md for the vocabulary. */';
 
-/** The TypeScript spelling of each primitive the vocabulary admits. */
 const PRIMITIVE_TS = { string: 'string', number: 'number', boolean: 'boolean' };
 
-/** Every declared type, in file-name order. Order is by filename rather than by
- *  declaration so the output is stable no matter what order a filesystem walks. */
 export function loadTypes(dir = join(root, 'contracts/api/types')) {
   return readdirSync(dir)
     .filter((f) => f.endsWith('.json'))
@@ -51,18 +27,12 @@ export function loadTypes(dir = join(root, 'contracts/api/types')) {
     .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')));
 }
 
-/** A single-line description is one `/** … *\/`; a multi-line one is a block, so
- *  no prose is lost -- the hole contracts/design/'s own generator leaves for group-level
- *  descriptions and that CLAUDE.md records as debt. */
 export function docComment(text, indent = '') {
   const lines = text.split('\n');
   if (lines.length === 1) return `${indent}/** ${text} */`;
   return [`${indent}/**`, ...lines.map((l) => `${indent} *  ${l}`), `${indent} */`].join('\n');
 }
 
-/** One field's TypeScript type. R1 lives here: a predefined object is pure data,
- *  so a field may only be a primitive or an enum. Anything else is refused at
- *  build time rather than emitted and caught later. */
 export function fieldType(field) {
   if (field.form === 'primitive') {
     const ts = PRIMITIVE_TS[field.type];
@@ -73,18 +43,10 @@ export function fieldType(field) {
   throw new Error(`fieldType: form "${field.form}" is not allowed inside a predefined object — R1, an object is pure data`);
 }
 
-/** One enum value as a TypeScript literal. The quoting depends on the value's
- *  TYPE, not on the position: a number is a numeric literal and quoting it
- *  would emit a union of strings that compiles and is wrong. Every enum in
- *  contracts/api/types/ was a string set until `CatSlot`, so this quoted unconditionally
- *  and nothing noticed -- the failure would not have been a build error but a
- *  generated `'1' | '2'` disagreeing with the layer's own `1 | 2`, visible only
- *  to check:api. */
 export function enumLiteral(value) {
   return typeof value === 'number' ? String(value) : `'${value}'`;
 }
 
-/** @param {Array<object>} types @returns {string} the module body */
 export function renderApiModule(types) {
   const out = [HEADER];
   for (const type of types) {
@@ -107,7 +69,6 @@ export function renderApiModule(types) {
   return `${out.join('\n')}\n`;
 }
 
-/** @returns {Map<string,string>} repo-relative path -> module source */
 export function buildApiModules() {
   const body = renderApiModule(loadTypes());
   return new Map(API_TARGETS.map((path) => [path, body]));

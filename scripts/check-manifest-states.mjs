@@ -1,54 +1,3 @@
-/* Fails when a Tailwind manifest under frameworks/tailwind/components/ carries a
- * hover:/focus:-family Tailwind state modifier that the component it mirrors
- * implements nowhere -- no `onMouseEnter`/`onMouseLeave`, no `onFocus`/`onBlur`,
- * no `useState` hover/focus tracking, no `:hover`/`:focus` in an injected style
- * string (or the Angular event-binding equivalents). This is the machine form
- * of frameworks/tailwind/README.md's P1 rule ("invented states"): a manifest
- * authored by copying a neighbouring manifest, rather than by reading the
- * component's own source, is how a hover or focus modifier the source never
- * implements enters this layer and survives -- undetected, because no other
- * gate compares a manifest against the component it mirrors (see CLAUDE.md).
- *
- * It found this shape twice on this branch: `Tabs`' `selected: false` branch
- * once carried a `hover:` copied from `SegmentedControl`'s near-identical
- * variant, and `Pagination.manifest.json` shipped three (`nav`/`pageOther`'s
- * `hover:bg-base-200`, `pageCurrent`'s `hover:shadow-2`) one commit after the
- * rule was written down in prose for the first defect. Prose did not stop a
- * second occurrence; this gate is the mechanization.
- *
- * SCOPE: states only. This does not attempt the general "does this manifest
- * still match the component it mirrors" question -- CLAUDE.md is explicit that
- * nothing closes that -- it is narrowly the hover/focus-invention shape both
- * defects share. A crude, whole-file text scan, on purpose: it answers "does
- * this file mention a hover/focus affordance anywhere", not "does this exact
- * slot's exact class have a corresponding handler on this exact element".
- *
- * MAPPING. Most manifests mirror a same-named React component 1:1
- * (`Pagination.manifest.json` <-> `Pagination.jsx`, found by a recursive
- * filename search under frameworks/react/components/). Two things do not
- * reduce to that search:
- *
- *   - SOURCE_OVERRIDES corrects a mapping the naive search gets wrong outright.
- *     `Tag.manifest.json` mirrors the Angular primitive `arena-tag`
- *     (frameworks/angular/components/display/tag/Tag.ts), a different component from
- *     React's `Tag.jsx` -- CLAUDE.md says this explicitly. A same-name search
- *     would find `Tag.jsx` and silently check the wrong file.
- *
- *   - EXEMPT is for a specific slot's state family that a whole-file scan of
- *     the *correctly resolved* source still cannot verify, because the
- *     affordance is real but lives one level away from where this gate reads
- *     -- delegated to a different component the resolved file renders, or
- *     added deliberately on the Angular side as documented, undebated debt
- *     against React. Keyed `<Component>:<slot>:<family>`, same shape
- *     check-dimension-literals.mjs's EXEMPT uses, and for the same reason: a
- *     correct site can look exactly like a defect, so it is named rather than
- *     inferred. A stale entry -- one naming a component/slot/family that no
- *     longer carries that state family at all -- fails the gate, exactly as
- *     it does there.
- *
- *   bun scripts/check-manifest-states.mjs           -> exit 0 clean, 1 otherwise
- *   node scripts/check-manifest-states.mjs           -> same, runtime-portable
- */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { basename, join, relative } from 'node:path';
@@ -57,54 +6,25 @@ import { manifestFiles, repoRoot } from './lib/tailwind-compile.mjs';
 const COMPONENTS_DIR = join(repoRoot, 'frameworks/tailwind/components');
 const REACT_COMPONENTS_DIR = join(repoRoot, 'frameworks/react/components');
 
-/** Component name -> source file(s), relative to repoRoot, to check INSTEAD
- *  of the default same-name search under frameworks/react/components/.
- *  A manifest not listed here resolves by filename search; see
- *  `resolveDefaultSource`. */
 export const SOURCE_OVERRIDES = new Map([
   ['Tag', ['frameworks/angular/components/display/tag/Tag.ts']],
-  /* Table is a COMPOUND component: the manifest's `rowInteractive` slot mirrors
-     a row, and a row is `TableRow.jsx`, not `Table.jsx`. The naive same-name
-     search finds only `Table.jsx` -- which owns the grid, the header and the
-     keyboard and implements no hover at all -- and would report the row hover as
-     invented. Both files are listed because the manifest covers both: `Table`'s
-     own slots (the wrapper, the header cell) and the row's. */
+
   ['Table', [
     'frameworks/react/components/display/table/Table.jsx',
     'frameworks/react/components/display/table-row/TableRow.jsx',
   ]],
-  /* SideNav is a COMPOUND component too, and the naive search is wrong here in a
-     sharper way than it is for Table: `SideNav.jsx` renders the <nav> and nothing
-     else, so of the manifest's nine slots it accounts for exactly one (`root`).
-     Every slot a hover or focus modifier could plausibly land on -- `item`,
-     `trigger`, `icon`, `caret` -- is rendered by one of the other three files. No
-     slot carries a state modifier today, so this entry changes no verdict; it is
-     here because the mapping is already wrong, not in anticipation of one. Without
-     it, the first `hover:` added to `item` alongside a real `onMouseEnter` in
-     SideNavItem.jsx would be scanned against a file that cannot implement it and
-     reported as invented -- a false failure on a correct change, and the exact
-     inverse of the defect this gate exists to catch. */
+
   ['SideNav', [
     'frameworks/react/components/navigation/side-nav/SideNav.jsx',
     'frameworks/react/components/navigation/side-nav-item/SideNavItem.jsx',
     'frameworks/react/components/navigation/side-nav-section/SideNavSection.jsx',
     'frameworks/react/components/navigation/side-nav-collapsible/SideNavCollapsible.jsx',
   ]],
-  /* Tabs is a COMPOUND component: the manifest's `tab` slot mirrors a tab, and a
-     tab is `Tab.jsx`, not `Tabs.jsx` -- which owns the strip, the panel and the
-     keyboard and implements no focus state of its own. The naive same-name search
-     finds only the parent and would report the tab's focus ring as invented. */
+
   ['Tabs', ['frameworks/react/components/navigation/tabs/Tabs.jsx',
             'frameworks/react/components/navigation/tab/Tab.jsx']],
 ]);
 
-/** A specific `<Component>:<slot>:<family>` this crude, single-file scan
- *  cannot verify even against the *correctly resolved* source, with the
- *  reason it is legitimate anyway. Read the file before adding an entry --
- *  this map is for a real divergence between "the resolved source has no
- *  hover/focus text in it" and "the affordance genuinely does not exist",
- *  not a way to quiet a hit that is actually the invented-state bug this
- *  gate exists to catch. */
 export const EXEMPT = new Map([
   ['ConfirmDialog:confirm:hover',
    "ConfirmDialog.jsx renders its confirm/cancel actions as React's own <Button> " +
@@ -113,7 +33,7 @@ export const EXEMPT = new Map([
    'A single-file scan of ConfirmDialog.jsx alone cannot see across that composition.'],
   ['ConfirmDialog:input:focus',
    "the require-text input's focus-visible ring is a documented, deliberate Angular " +
-   "accessibility fix ConfirmDialog.jsx does not have -- see components-divergences.md, " +
+   "accessibility fix ConfirmDialog.jsx does not have -- see DOUBTS.md section 3, " +
    '"ConfirmDialog -- the require-text input loses its focus ring in React" (renamed from ' +
    '"ConfirmDialog -- Angular is accessible, React is not yet" by plan 8C4, which closed the ' +
    'accessibility half of that entry and left this focus ring as the whole of it). React implements no focus ' +
@@ -127,28 +47,16 @@ export const EXEMPT = new Map([
    "ConfirmDialog:confirm:hover above is exempt for."],
 ]);
 
-/** Tailwind state-modifier families this gate looks for, and the regex that
- *  finds a class token carrying one. `(?:^|:)` requires the family to start
- *  right after a `:` boundary (or the start of the token), so a stacked
- *  modifier (`sm:hover:...`) still matches and an unrelated class containing
- *  the substring elsewhere does not. */
 const FAMILY_PATTERNS = {
   hover: /(?:^|:)hover:/,
   focus: /(?:^|:)focus(?:-visible|-within)?:/,
 };
 
-/** Text signals that a source file itself implements the given family,
- *  crude and intentionally so: a plain substring/regex search over the
- *  whole file, not an AST read of which element owns which handler. Angular
- *  event-binding syntax (`(mouseenter)`, `(focus)`, ...) is included for
- *  symmetry with SOURCE_OVERRIDES resolving to a `.ts` file. */
 const IMPLEMENTS_PATTERNS = {
   hover: /\bonMouseEnter\b|\bonMouseLeave\b|:hover\b|\(mouseenter\)|\(mouseleave\)/,
   focus: /\bonFocus\b|\bonBlur\b|:focus(?:-visible|-within)?\b|\(focus\)|\(blur\)/,
 };
 
-/** @param {string} classString one slot's class-list value
- *  @returns {Set<'hover'|'focus'>} every state family a class token in it belongs to */
 export function stateFamilies(classString) {
   const families = new Set();
   for (const token of classString.split(/\s+/).filter(Boolean))
@@ -157,8 +65,6 @@ export function stateFamilies(classString) {
   return families;
 }
 
-/** @param {string} sourceText the concatenated text of a component's resolved source(s)
- *  @returns {{hover: boolean, focus: boolean}} which families the source implements anywhere */
 export function sourceImplements(sourceText) {
   return {
     hover: IMPLEMENTS_PATTERNS.hover.test(sourceText),
@@ -166,11 +72,6 @@ export function sourceImplements(sourceText) {
   };
 }
 
-/** @param {object} manifest a parsed manifest.json
- *  @returns {Map<string, string[]>} slot name -> every class string that slot
- *  carries, from `slots` and from every `variants` branch. A slot named the
- *  same in `slots` and in a variant branch is the same slot -- both
- *  contribute to the same array. */
 export function classStringsBySlot(manifest) {
   const bySlot = new Map();
   const add = (slot, cls) => {
@@ -193,9 +94,6 @@ function* walk(dir) {
   }
 }
 
-/** @param {string} name a manifest's `component` value, e.g. "Pagination"
- *  @returns {string|null} repoRoot-relative path to `<name>.jsx` found
- *  anywhere under frameworks/react/components/, or null if none exists. */
 export function findReactSource(name) {
   const target = `${name}.jsx`;
   for (const file of walk(REACT_COMPONENTS_DIR))
@@ -204,12 +102,6 @@ export function findReactSource(name) {
   return null;
 }
 
-/** @param {string} name a manifest's `component` value
- *  @returns {string[]} repoRoot-relative source path(s) whose text governs
- *  what states that component implements -- SOURCE_OVERRIDES if the name has
- *  one, else the default same-name search. Throws if neither resolves,
- *  since an unresolvable manifest is a gate bug (a new manifest with no
- *  matching component and no override), not a silent skip. */
 export function resolveSources(name) {
   if (SOURCE_OVERRIDES.has(name)) return SOURCE_OVERRIDES.get(name);
   const found = findReactSource(name);
@@ -221,21 +113,11 @@ export function resolveSources(name) {
   return [found];
 }
 
-/** @param {string[]} matchedKeys every `<Component>:<slot>:<family>` this run's
- *  scan actually produced as a candidate violation, before EXEMPT filtering
- *  @returns {string[]} EXEMPT keys that matched nothing this run */
 export function staleExemptions(matchedKeys) {
   const matched = new Set(matchedKeys);
   return [...EXEMPT.keys()].filter((k) => !matched.has(k));
 }
 
-/** The gate's one decision, isolated so a test can call it directly on a
- *  fabricated manifest and a hand-written source string, rather than having
- *  to re-derive the verdict from the lower-level primitives itself.
- *  @param {object} manifest a parsed manifest.json (must carry `component`)
- *  @param {string} sourceText the concatenated text of its resolved source(s)
- *  @param {string[]} sources the resolved source path(s), for the finding's message
- *  @returns {{findings: {component: string, slot: string, family: string, sources: string[]}[], matchedKeys: string[]}} */
 export function evaluateManifest(manifest, sourceText, sources) {
   const name = manifest.component;
   const capability = sourceImplements(sourceText);
@@ -248,12 +130,7 @@ export function evaluateManifest(manifest, sourceText, sources) {
     for (const family of families) {
       const key = `${name}:${slot}:${family}`;
       sites += 1;
-      // matchedKeys is pushed only AFTER the capability check, so an exemption
-      // whose source has since GAINED the affordance goes stale and fails --
-      // which is what the staleness message promises. Pushing before made that
-      // clause unreachable: the key stayed fresh as long as the slot kept the
-      // modifier, however the source changed. `sites` stays the honest count of
-      // everything examined, which is what the summary line reports.
+
       if (capability[family]) continue;
       matchedKeys.push(key);
       if (EXEMPT.has(key)) continue;
@@ -263,7 +140,6 @@ export function evaluateManifest(manifest, sourceText, sources) {
   return { findings, matchedKeys, sites };
 }
 
-/** @returns {{findings: {component: string, slot: string, family: string, sources: string[]}[], matchedKeys: string[]}} */
 export function collect() {
   const findings = [];
   const matchedKeys = [];

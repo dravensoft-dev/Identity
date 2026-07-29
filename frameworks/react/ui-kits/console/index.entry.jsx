@@ -14,12 +14,7 @@ function App(){
   const pushToast = (t) => {
     const id = Math.random();
     setToasts((ts) => [...ts, { ...t, id }]);
-    /* A toast carrying a button asks the reader to DECIDE, not only to read, and
-     * gets longer for it (WCAG 2.2.1). `persist` overrides both and never
-     * auto-dismisses -- mandatory in critical states, per README H1.
-     * The test is `actionLabel`, because that is what makes Toast render a button:
-     * `onAction` is an event handler and a toast can carry one with no label and
-     * no button, which would buy the longer clock for a toast nobody can act on. */
+
     if (t.persist) return;
     setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)),
       t.actionLabel ? dismissActionable : dismissDefault);
@@ -27,7 +22,7 @@ function App(){
 
   const nav = (id) => {
     if (id === 'dashboard') { setScreen('dashboard'); setProject(null); }
-    else setScreen('dashboard'); // other sections not implemented in the demo
+    else setScreen('dashboard');
   };
 
   let view;

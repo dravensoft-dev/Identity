@@ -6,11 +6,6 @@ import { Tag } from '../../components/display/tag/Tag.jsx';
 import { StatCard } from '../../components/display/stat-card/StatCard.jsx';
 import { Button } from '../../components/forms/button/Button.jsx';
 
-/* Two of the four carry a tone and two do not, which is the ratio the prop is
- * for: a project count is neither good nor bad, and the color only reads as a
- * signal while most of the row stays uncoloured. Incidents is `danger`, not
- * `accent` — it was --crimson here before StatCard could express state, and
- * crimson is the brand, not a warning. */
 const METRICS = [
   { k: 'Active projects', v: '12' },
   { k: 'Deployments (7d)', v: '48' },

@@ -1,24 +1,13 @@
-/* Renders a strict DTCG 2025.10 value back to the CSS string Arena ships.
- *
- * Style Dictionary v4 is never allowed to transform these values — its built-in
- * CSS transforms predate 2025.10 and do not understand structured colors or
- * {value,unit} dimensions. Everything below is Arena's own rendering, and the
- * golden gate (scripts/check-tokens-generated.mjs) is what holds it honest. */
-
 const EXT = 'com.dravensoft.arena';
 
-/** CSS generic font families, which are keywords and must not be quoted. */
 const GENERIC_FAMILIES = new Set([
   'serif', 'sans-serif', 'monospace', 'cursive', 'fantasy',
   'system-ui', 'ui-serif', 'ui-sans-serif', 'ui-monospace', 'ui-rounded',
   'math', 'emoji', 'fangsong',
 ]);
 
-/** Strips the leading zero of a sub-unit number: 0.6 -> ".6". Used only where
- *  Arena's shipped CSS does so — cubic-bezier components and rgba alpha. */
 const trim = (n) => String(n).replace(/^(-?)0\./, '$1.');
 
-/** A dimension renders bare at zero, matching `--sp-0:0`. */
 const dim = (d) => (d.value === 0 ? '0' : `${d.value}${d.unit}`);
 
 const color = (c) => {
@@ -28,7 +17,6 @@ const color = (c) => {
   return a === 1 ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${trim(a)})`;
 };
 
-/** @param {{ $type?: string, $value: unknown, $extensions?: Record<string, any> }} token */
 export function serialize(token) {
   const v = token.$value;
   switch (token.$type) {

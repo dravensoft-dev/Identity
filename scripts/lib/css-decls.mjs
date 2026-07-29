@@ -1,9 +1,3 @@
-/* Parses a token CSS file into its declaration sets, one per selector.
- * These files contain no nested braces and no at-rules, so a flat scan is
- * exact here — this is deliberately not a general CSS parser. */
-
-/** @param {string} cssText
- *  @returns {Map<string, Map<string, string>>} selector → (custom property name without `--`) → value */
 export function parseDecls(cssText) {
   const stripped = cssText.replace(/\/\*[\s\S]*?\*\//g, '');
   const out = new Map();

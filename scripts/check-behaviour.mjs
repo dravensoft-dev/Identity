@@ -1,18 +1,3 @@
-/* Asserts every component declares a behaviour contract, in every layer, and
- * that every declaration is coherent.
- *
- * WHAT THIS PROVES: that a contract was DECLARED, that it names a pattern and
- * requirements that exist, and that the two framework layers agree or their
- * difference is written down.
- *
- * WHAT THIS DOES NOT PROVE, and the distinction matters more than the gate does:
- * that a component actually behaves as it declares. A component can bind
- * dialog-modal here and trap no focus at all. Verifying compliance is a later
- * plan's work -- a static scan of what the source implements, and render suites
- * that drive it. Do not read a green run as "the layers are accessible".
- *
- *   bun scripts/check-behaviour.mjs   -> exit 0 if every component declares
- */
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -27,29 +12,12 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 
-/** Render a binding as its case list, for the cross-layer disagreement
- *  message below: a flat binding prints its bare pattern name, a cased
- *  binding prints each case as "name:pattern" joined by " + ". A
- *  disagreement can be about case NAMES as well as patterns, and a message
- *  naming only patterns would send the reader looking at the wrong field.
- *  Exported and hoisted to module scope -- not redefined per loop iteration
- *  -- so this exact rendering is the one a test can pin directly rather
- *  than one that has to be traced by hand at review time. */
 export function describeBinding(binding) {
   return bindingCases(binding)
     .map((c) => (c.name ? `${c.name}:${c.pattern}` : c.pattern))
     .join(' + ');
 }
 
-/** An empty catalogue is a failure, and it has to be reported as ONE problem.
- *  Emptying the directory already fails this gate -- but as a cascade of
- *  `unknown pattern "<name>"`, one line per binding, every one of them naming a
- *  consequence rather than the cause. Measured on 2026-07-29 by moving
- *  behaviour/patterns/ aside: roughly a hundred such lines, none of which named
- *  the actual problem. This is the guard the pattern directory did not have --
- *  the same shape check-api.mjs's zeroContractProblems and
- *  check-structure.mjs's zeroLayerProblems already carry.
- *  @param {number} count @returns {string[]} */
 export function zeroPatternProblems(count) {
   if (count > 0) return [];
   return [`found 0 patterns in ${PATTERN_DIR} — an empty result set is a failure, not a clean pass; check the discovery path`];
@@ -65,14 +33,11 @@ async function main() {
     process.exit(1);
   }
 
-  /* 1. Every pattern is well formed. */
   for (const [stem, pattern] of patterns) problems.push(...validatePattern(stem, pattern));
 
-  /* 2. Every React component declares. */
   const react = new Map();
   for (const component of reactComponents(root)) {
-    /* The binding sits at components/<category>/<kebab>/<Pascal>.behaviour.json;
-     * reactBindingPath is the one place that path is built. */
+
     const found = reactBindingPath(root, kebab(component));
     if (!found) {
       problems.push(`react/${component}: no ${component}.behaviour.json — every component declares, including a presentational one`);
@@ -83,11 +48,9 @@ async function main() {
     react.set(component, binding);
   }
 
-  /* 3. Every Angular primitive declares. */
   const angular = new Map();
   for (const name of angularPrimitives(root)) {
-    /* The binding sits at components/<category>/<name>/<Pascal>.behaviour.json;
-     * angularBindingPath is the one place that path is built. */
+
     const found = angularBindingPath(root, name);
     if (!found) {
       problems.push(`angular/${name}: no ${pascal(name)}.behaviour.json`);
@@ -101,19 +64,6 @@ async function main() {
     angular.set(binding.component ?? name, binding);
   }
 
-  /* 4. Every React component Angular does NOT implement as a primitive is
-   *    declared in the delegated file -- as provided by Material, or as
-   *    genuinely absent. Coverage is EVERY layer, never "at least one": a
-   *    component nobody declares for Angular is exactly the silence this gate
-   *    exists to end.
-   *
-   *    "Angular does not implement it" and "Angular's binding for it did not
-   *    parse" are different questions -- a primitive whose directory exists
-   *    but has no behaviour.json yet is already reported by step 3's "no
-   *    <name>.behaviour.json"; it must not ALSO be reported here as though no
-   *    primitive existed at all. Every Angular primitive directory is bound
-   *    now, so `angular` already carries every one of them by the time this
-   *    step runs. */
   const delegatedPath = join(root, 'frameworks/angular/BehaviourDelegated.json');
   const delegated = existsSync(delegatedPath) ? read(delegatedPath) : {};
   for (const [component] of react) {
@@ -126,8 +76,6 @@ async function main() {
     problems.push(...validateBinding(component, 'angular-delegated', entry, patterns));
   }
 
-  /* 5. Stale delegated entries: an entry for a component that now HAS a
-   *    primitive, or that no longer exists in React at all. */
   for (const component of Object.keys(delegated)) {
     if (angular.has(component)) {
       problems.push(`angular/${component}: delegated entry is stale — an arena-* primitive now exists for it`);
@@ -136,13 +84,6 @@ async function main() {
     }
   }
 
-  /* 6. The two layers agree, or the difference is declared. Skip the comparison
-   *    when either side binds "absent" -- a layer with no such component at all
-   *    has no surface for a pattern to hold or fail against, so there is nothing
-   *    to compare its (nonexistent) behaviour to, and no divergesFrom could ever
-   *    be true of it either: you cannot diverge from a pattern you do not exist
-   *    to implement. crossLayerAgrees carries that rule so this step's own
-   *    behaviour is importable and testable. */
   for (const [component, reactBinding] of react) {
     const other = angular.get(component) ?? delegated[component];
     if (!other) continue;

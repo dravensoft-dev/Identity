@@ -1,66 +1,14 @@
-/* The Angular layer's binding to comparePattern(): path constants, the two file
- * reads, and throwing on the result. The React wrapper at
- * frameworks/react/test/AssertPattern.jsx is its mirror, and the comparison
- * itself is in neither of them -- it lives in
- * scripts/lib/behaviour-compliance.mjs, shared by both, because two copies of
- * this rule would be two places for it to drift and it is the layer's only real
- * guarantee.
- *
- * Only three things genuinely differ between the two wrappers, and all three are
- * here: where this layer's bindings live, the TypeScript typing, and the default
- * subject. An Angular primitive host-binds its root (`host: { '[class]':
- * 'styles().root()' }`), so the host element IS the styled and measured root --
- * the fixture's `nativeElement` itself, not its first element child, which is
- * what React's container-mounted tree makes the right default there.
- *
- * The shared evaluator is DOM-generic, which is what makes Angular's three ways
- * of authoring an attribute -- a template literal, `[attr.role]`, and a host
- * object entry -- indistinguishable here. In a rendered tree they are one
- * attribute. That is the whole reason this layer is a render suite and not the
- * text scan the spec proposed: check-dimension-literals.mjs still cannot see
- * `[style.x]`, and a behaviour scan would have inherited that blind spot.
- *
- * Both reads go through scripts/lib/behaviour-contracts.mjs rather than a local
- * JSON.parse, for the reason that file's own loadBinding comment gives: those are
- * the functions check:behaviour reads the same files with, and a suite reading
- * them a second way could pass while asserting against a shape the gate has
- * stopped agreeing with. */
+/* The shared evaluator is reached by DYNAMIC import of an absolute file URL, computed
+ * from REPO above. A static relative specifier resolves against the importing FILE, so
+ * it points at the source tree from here and at nothing from build/angular-test/ — and a
+ * suite that fails to LOAD turns the run red without naming what dropped. */
+
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 import { existsSync } from 'node:fs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-/** The repository root, found by walking up from this file to the directory holding
- *  `package.json`, rather than by counting `../` hops.
- *
- *  A fixed hop count is correct for exactly one location, and this suite has two:
- *  `frameworks/angular/test/` in source, and `build/angular-test/angular/test/` once
- *  `ngc` has emitted it -- and since the structure refactor's batch 2 a suite is no
- *  longer confined to those two, because most of them now sit beside the component they
- *  cover, at a depth that varies by category. The emitted tree holds the compiled `.js`
- *  and NONE of the `.json` data these suites read -- measured with
- *  `find build/angular-test -name '*.json'`, which returns nothing -- so a hop count
- *  resolves there to a
- *  directory that exists, contains the wrong things, and fails as ENOENT rather
- *  than as anything a reader would recognise. Walking to a marker resolves to the
- *  real source tree from every one of them -- but that only fixes the DATA paths, and is not enough on its
- *  own to make a render suite runnable from source. `setInput()` and a template property
- *  binding now reach a real signal input (HarnessCapabilities.test.ts), and that only compiles
- *  against a real component under `ngc`: run a render suite straight from its source
- *  directory and `bun test` transpiles the `.ts` by stripping types rather than
- *  compiling it, producing a component TestBed cannot instantiate the way these suites expect.
- *  Measured, not assumed: `bun test frameworks/angular/test/HarnessCapabilities.test.ts` from
- *  source is 0 pass / 5 fail; `bun test
- *  frameworks/angular/components/charts/ChartDataTable.test.ts` is 0 pass / 6 fail (NG0303 then
- *  NG0950). Those failures read like a broken component, not like a wrong run target -- they are
- *  the second. Run a render suite from the emit instead: `bun run test:angular`, or `bun test`
- *  over the suite's own path under `build/angular-test/angular/` -- which mirrors its source
- *  path with `.ts` emitted as `.js` -- after `bun run build:angular-tests`. A
- *  DOM-free recipe suite -- asserting a `tailwind-variants` recipe or a plain exported function,
- *  never mounting a component -- has no such dependency and still runs from source unchanged:
- *  `bun test frameworks/angular/components/display/tag/Tag.variants.test.ts` is **4 pass**
- *  either way. */
 function findRepoRoot(from: string): string {
   let dir = from;
   while (!existsSync(join(dir, 'package.json'))) {
@@ -73,61 +21,20 @@ function findRepoRoot(from: string): string {
 
 const REPO = findRepoRoot(here);
 
-/* The two shared `.mjs` helpers are reached through REPO for the same reason every
- * data path above is, and the reason bites harder here: a module specifier is
- * resolved against the importing FILE, so a static `../../../scripts/lib/...`
- * points at the source tree from `frameworks/angular/test/` and at a directory
- * that does not exist from `build/angular-test/angular/test/`. That is not an
- * assertion failure -- the module never loads, so the whole suite file and every
- * suite importing it drops out of the run. Measured, not assumed: breaking the
- * specifier this way turns a clean run RED, not merely one failing assertion --
- * `bun run test:angular` reports the affected files failing to load, each with its own
- * "Unhandled error between tests" block, and the printed pass/fail/file counts drop with them.
- * Break one specifier by hand and re-run `bun run test:angular` to see the current numbers
- * rather than trusting a figure written here, which moves every time a suite is added or
- * removed -- an induction run against this tree once reported a clean run going from 341
- * passing to 269 pass / 5 fail / 5 errors across 32 files, and five tests landing in this
- * directory since then already make both halves of that stale. What stays silent regardless of
- * the count is WHICH tests are missing: nothing in that output names the dropped tests or the
- * suite files that never loaded, so a reader sees a failing run and has to go find what else it
- * dropped. A dynamic
- * import of an absolute file URL is resolved at call time from a path this
- * module computed, so both locations reach the one real copy of the evaluator.
- *
- * They stay untyped, as they were when they were static imports carrying
- * `@ts-expect-error`: these are plain `.mjs` helpers with JSDoc types only, and no
- * declaration file is generated for them anywhere. A computed specifier yields
- * `any` rather than an error, so the suppression comments are gone and nothing is
- * suppressed that was previously checked. */
+
 export const SCRIPTS = join(REPO, 'scripts');
 export const LIB = join(SCRIPTS, 'lib');
 const { comparePattern, isFocusable } = await import(pathToFileURL(join(LIB, 'behaviour-compliance.mjs')).href);
 const { loadBinding, loadPatterns, bindingCases } = await import(pathToFileURL(join(LIB, 'behaviour-contracts.mjs')).href);
 
-/** Re-exported so a suite needing the evaluator's own focusability rule reaches the
- *  same copy through the same resolution, rather than repeating the walk to the
- *  repository root. */
 export { isFocusable };
 
-/** Absolute path of frameworks/angular/components, so a suite can name a binding
- *  without counting `../` hops -- a wrong import depth has already cost this
- *  chain one review cycle. Each component now sits one level deeper, under its
- *  category (`<category>/<kebab>/<Pascal>.behaviour.json`), so a caller must name
- *  the category too -- see the callers in Alert.roleTones.test.ts,
- *  Tag.cases.test.ts and ChartDataTable.test.ts. */
 export const ANGULAR_COMPONENTS = join(REPO, 'frameworks', 'angular', 'components');
 
-/** Absolute path of frameworks/tailwind/components, where the `*.manifest.json`
- *  files live. Exported here rather than recomputed by each suite, because the
- *  hop count from a suite is one of the two things that breaks once the suite runs
- *  from the emitted tree. */
 export const TAILWIND_COMPONENTS = join(REPO, 'frameworks', 'tailwind', 'components');
 
-/** Absolute path of contracts/behaviour. */
 export const PATTERN_DIR = join(REPO, 'contracts', 'behaviour');
 
-/** Every pattern, read once. `loadPatterns()` re-reads the whole directory per
- *  call and patterns do not change mid-process. */
 let patternCache: Map<string, PatternFile> | null = null;
 
 interface PatternFile {
@@ -136,56 +43,16 @@ interface PatternFile {
 }
 
 export interface AssertPatternOptions {
-  /** The fixture's `nativeElement` -- the host, which for a primitive IS the
-   *  styled root. */
+
   root: Element;
-  /** Absolute path to the component's `*.behaviour.json`. */
+
   bindingPath: string;
-  /** Requirement key -> the element that must carry it, or -- for a requirement
-   *  in QUANTIFIED -- every element it is about. The key `default` sets the
-   *  element used for every requirement not named individually.
-   *
-   *  The array form is not a convenience: a requirement whose prose quantifies
-   *  over each of something THROWS when handed one element, because answering for
-   *  a collection from its first member is the defect batch 8C7 exists to close.
-   *  Note what the array does not buy — the check reaches exactly the elements the
-   *  suite's own selector collected, so one that renders without the attribute the
-   *  selector keys on leaves the collection silently.
-   *
-   *  The absence of that key and a `null` value under it are different claims and
-   *  must stay different: omit `default` to fall back to the host, pass
-   *  `default: someQuerySelectorResult` to use a real selector, and when that
-   *  selector matched nothing (`null`) the `null` must reach `comparePattern`
-   *  unchanged so its own "no subject element" diagnostic fires. Collapsing it to
-   *  the host here would compare the wrong element and misreport a missed
-   *  selector as an OVERCLAIM against it -- which invites fabricating an
-   *  exception to silence it. React's wrapper shipped that defect with `??` and
-   *  it is called out in its own comment; `'default' in subjects` is the fix, and
-   *  this wrapper starts from it. */
+
   subjects?: Record<string, Element | Element[] | null>;
-  /** Requirement key -> the verdict this suite's own behavioural test
-   *  established: `true` = my test proved it met, `false` = proved unmet. */
+
   behavioural?: Record<string, boolean>;
 }
 
-/** Resolve an id WITHIN the rendered tree, which is what an IDREF requirement
- *  claims -- resolving against the whole document would also find a fixture an
- *  earlier test left behind, since this directory shares one document across
- *  its whole run (see testbed-env.ts).
- *
- *  It walks `[id]` and compares in JavaScript rather than building `#${id}`, and
- *  that is a correctness choice before it is a cost one: an id is legal in HTML in
- *  shapes that are a SyntaxError inside a CSS selector -- the colons React's
- *  `useId()` returns are the case this repo already paid for, and nothing stops an
- *  Angular fixture authoring one. Do not "optimise" this into a selector. The cost
- *  argument only says the walk is affordable: a test tree is small enough that it
- *  costs nothing worth a bug.
- *
- *  `root` itself is searched as well as its descendants, and here that is not
- *  optional: this wrapper's default subject IS the host (`root` is the
- *  fixture's `nativeElement`, not a container's first child the way React's
- *  is), so an id can sit on `root` itself rather than only ever appearing
- *  among its descendants. */
 function resolverFor(root: Element): (id: string) => Element | null {
   return (id: string) => {
     if (root.getAttribute && root.getAttribute('id') === id) return root;
@@ -204,22 +71,6 @@ interface CompareOneOptions {
   binding: { exceptions?: unknown[] };
 }
 
-/** Shared by `assertPattern` and `assertPatternCases`: compute the fallback
- *  subject and call `comparePattern` once. Extracted because both call sites
- *  repeated this block near-verbatim -- a port of the same extraction in the
- *  React wrapper (AssertPattern.jsx's compareOne).
- *
- *  The `'default' in subjects` distinction must survive here exactly as it did
- *  at each call site: a present-but-null `default` means a selector matched
- *  nothing and must reach `comparePattern` as `null` unchanged, so its own "no
- *  subject element" diagnostic fires -- collapsing it to the fallback (e.g.
- *  with `??`) would misreport a missed selector as an OVERCLAIM against the
- *  wrong element.
- *
- *  The fallback is `root` itself, not `root.firstElementChild` the way the
- *  React wrapper's compareOne reads: an Angular primitive host-binds its root,
- *  so the host IS the styled and measured element -- the same reason
- *  `assertPattern` above already defaults to `root` rather than a child. */
 function compareOne({ root, subjects, behavioural, pattern, binding }: CompareOneOptions): string[] {
   const { default: fallbackSubject, ...perRequirement } = subjects;
   const fallback = 'default' in subjects ? fallbackSubject : root;
@@ -233,18 +84,12 @@ function compareOne({ root, subjects, behavioural, pattern, binding }: CompareOn
   });
 }
 
-/**
- * Assert a rendered Angular tree against its behaviour binding, in both
- * directions. Throws with every disagreement listed, not just the first.
- */
 export function assertPattern({ root, bindingPath, subjects = {}, behavioural = {} }: AssertPatternOptions): void {
   const binding = loadBinding(bindingPath);
   patternCache ??= loadPatterns(REPO) as Map<string, PatternFile>;
   const pattern = patternCache.get(binding.pattern);
   if (!pattern) {
-    // check:behaviour would catch this too, but it would catch it later and
-    // elsewhere; a suite that silently compared against `undefined.requires`
-    // would throw something far less legible than the binding's own name.
+
     throw new Error(`${bindingPath}\n  names pattern "${binding.pattern}", which has no file in ${PATTERN_DIR}`);
   }
   const problems = compareOne({ root, subjects, behavioural, pattern, binding });
@@ -263,47 +108,19 @@ interface BindingCase {
 }
 
 export interface AssertPatternCasesOptions {
-  /** Absolute path to the component's `*.behaviour.json`. */
+
   bindingPath: string;
-  /** Case name -> a thunk that renders that case and returns its root (and,
-   *  optionally, its subjects/behavioural maps). A thunk rather than a
-   *  rendered root so nothing is mounted until its case is reached and the
-   *  key sets have already been checked.
-   *
-   *  `subjects` is typed the same as `CompareOneOptions.subjects` --
-   *  `Record<string, Element | Element[] | null>`, not `unknown` -- because
-   *  that is what a subject actually is: the element (or elements, or
-   *  deliberate absence) a requirement is checked against, never anything
-   *  else. `unknown` here would only have deferred the mismatch to
-   *  `compareOne`'s call site and made `tsc --strict` fail on line 251
-   *  instead of describing the true type up front. */
+
   cases: Record<string, () => { root: Element; subjects?: Record<string, Element | Element[] | null>; behavioural?: Record<string, boolean> }>;
 }
 
-/** Assert a CASED binding, one call per declared case.
- *
- *  A port of the React wrapper's `assertPatternCases`, not a second design.
- *  The wrapper drives the loop rather than counting calls afterwards, and
- *  that is the whole mechanism: a suite handed the responsibility of calling
- *  once per case can forget, which is exactly how Skeleton verified its
- *  circle variant and claimed the component. Here a missing key is a missing
- *  key before anything renders.
- *
- *  `comparePattern` is called with a SYNTHESIZED binding carrying only this
- *  case's exceptions. The shared evaluator never learns what a case is -- it
- *  reads `binding.exceptions` and nothing else, so there was nothing there to
- *  teach. */
 export function assertPatternCases({ bindingPath, cases }: AssertPatternCasesOptions): void {
   const binding = loadBinding(bindingPath);
   const declared: BindingCase[] = bindingCases(binding);
   if (declared.length === 1 && declared[0].name === null) {
     throw new Error(`${bindingPath}\n  declares no cases — assert it with assertPattern instead.`);
   }
-  // validateBinding permits a binding to declare the same case name twice; the
-  // gate-side fix for that is still owed. Object.keys(cases) can never carry a
-  // duplicate, so comparing against a duplicated `want` list would produce a
-  // confusing missing/unknown diff instead of naming the real problem. Catch
-  // it here, before that comparison.
+
   const want = declared.map((c) => c.name);
   const seen = new Set<string | null>();
   const dupes = new Set<string | null>();
@@ -315,17 +132,7 @@ export function assertPatternCases({ bindingPath, cases }: AssertPatternCasesOpt
     throw new Error(`${bindingPath}\n  declares the same case name more than once: ${[...dupes].join(', ')}`);
   }
   const got = Object.keys(cases);
-  // `n as string`: bindingCases() types a case's name as `string | null`. The
-  // `declared.length === 1 && declared[0].name === null` guard above refuses only
-  // ONE shape where `name` is null -- the anonymous, flat-binding case -- and it
-  // is NOT what makes this cast safe: validateBinding does not enforce that a
-  // `cases[]` entry names itself, so a nameless entry in a multi-entry `cases[]`
-  // reaches here as `name: null` (tracked as owed in CLAUDE.md, not fixed here).
-  // What actually protects the cast is the missing/unknown throw immediately
-  // below: `got` holds real string keys from a JS object, so a null name can
-  // never match one, and such an entry is reported as an always-missing case and
-  // aborts before any consumer of the cast value runs. The cast is safe because
-  // this comparison fails loudly, never because null cannot arrive.
+
   const missing = want.filter((n) => !got.includes(n as string));
   const unknown = got.filter((n) => !want.includes(n));
   if (missing.length || unknown.length) {
@@ -344,9 +151,7 @@ export function assertPatternCases({ bindingPath, cases }: AssertPatternCasesOpt
     if (!pattern) {
       throw new Error(`${bindingPath}\n  case "${c.name}" names pattern "${c.pattern}", which has no file in ${PATTERN_DIR}`);
     }
-    // `c.name as string`: same guarantee as the cast above -- `declared` cannot
-    // hold a null name past the no-cases guard, since that guard is the only
-    // place a null name is produced, and it already returned.
+
     const { root, subjects = {}, behavioural = {} } = cases[c.name as string]();
     const found = compareOne({ root, subjects, behavioural, pattern, binding: { exceptions: c.exceptions } });
     for (const p of found) problems.push(`case "${c.name}" (${c.when}): ${p}`);

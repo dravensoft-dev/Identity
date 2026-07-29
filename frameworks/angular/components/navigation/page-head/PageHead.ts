@@ -4,16 +4,6 @@ import { ArenaActions } from '../../../ProjectionMarkers';
 import { pageHeadStyles } from './PageHead.variants';
 import { PageHeadAlign } from '../../../Api.generated';
 
-/** Page header: the display-weight title, an optional subtitle, and the page's
- *  actions. It stacks below `--bp-sm`, measured on ITSELF rather than on the
- *  viewport, so a page head inside a narrow panel stacks there too on any screen.
- *  The width is `null` until the first measure and the wide layout is what `null`
- *  renders, so the narrow branch never flashes. The host is the recipe's `root` —
- *  it is the flex item a parent lays out, and it is also the element
- *  `containerWidth()` measures, so what is styled and what is measured are the
- *  same box. The actions wrapper renders only when a `[actions]` element was
- *  actually projected: it is a slot in a `gap`-bearing flex parent, so an
- *  unprojected one would ship dead space to every page with no actions. */
 @Component({
   selector: 'arena-page-head',
   standalone: true,

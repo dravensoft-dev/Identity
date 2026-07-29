@@ -64,7 +64,7 @@ substitute for this: it is invisible to a *sighted* keyboard user, who can see t
 legend and, before this fix, could not reach it. This closes the Angular half of the
 gap only — `DoughnutChart.jsx`'s legend has the identical `overflow: auto` with no
 `tabindex`, `role` or `aria-label`, and still needs the same treatment (see
-`components-divergences.md`). It was never needed on the other two charts: neither
+DOUBTS.md section 3). It was never needed on the other two charts: neither
 BarChart nor LineChart has a legend column at all, and their plot boxes are
 `overflow: visible` — re-derive with `grep -n 'overflow:visible'
 frameworks/angular/components/charts/bar-chart/BarChart.ts

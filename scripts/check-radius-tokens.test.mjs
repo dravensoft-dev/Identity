@@ -15,9 +15,7 @@ test('rounded-pill does not false-positive as rounded-full', () => {
 });
 
 test('a word-boundary near-miss does not false-positive', () => {
-  // No real Tailwind class looks like this, but the regex must still be
-  // anchored on both sides the way check-manifest-states.mjs's stateFamilies
-  // is, rather than matching a rounded-full substring inside a longer token.
+
   assert.equal(hasRoundedFull('not-rounded-full-ish'), false);
 });
 

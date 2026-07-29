@@ -4,44 +4,19 @@ import { CHART_HEIGHT, PAD, SR_ONLY, niceMax, resolveColors, ticks } from '../..
 import type { SeriesTone } from '../../../Api.generated';
 import { chartPointR, chartPointRHover } from '../../../Tokens.generated';
 
-/** The plot width assumed for the first paint, before `containerWidth()` has
- *  measured anything. Wide on purpose — a chart that starts narrow and widens
- *  flashes, where one that starts wide and settles does not. */
 const ASSUMED_WIDTH = 600;
 
-/** The point marker's radius in px: the larger one is the hovered point. Both are
- *  SVG user units on a mark, not a CSS length on Arena's dimension scale, and the
- *  token layer models neither — `LineChart.jsx` writes the same two numbers, from
- *  contracts/design/chart.json. */
 const POINT_R = chartPointR;
 const POINT_R_HOVER = chartPointRHover;
 
-/* Every static style below is a camelCase object bound with `[style]`, never a
- * `style="a-b:c"` string in the template, for the reason BarChart.ts records at
- * length: check-dimension-literals.mjs finds a governed property by an unbroken
- * run of letters before a colon, so a kebab-case declaration in a template string
- * is either invisible to it (`font-size:` reads as a property named `size`) or
- * actively misread (`stroke-width:` reads as `width`, then runs the value scan off
- * into the rest of the template). An object gives the gate the same view of this
- * component that it has of React's `LineChart.jsx`, where every one of these is an
- * inline style object key. */
-
-/** The grid lines, the baseline and the hover crosshair: a hairline at the token
- *  border width. */
 const LINE_STYLE = { strokeWidth: 'var(--bw)' } as const satisfies Readonly<Record<string, string>>;
 
-/** The series' own stroke weight, shared by the polyline and by the halo that rings
- *  each point in the card surface. One weight, so the marks read as one series. */
 const SERIES_STROKE_STYLE = { strokeWidth: 'var(--bw-strong)' } as const satisfies Readonly<Record<string, string>>;
 
-/** The value-axis tick labels, in mono at the micro size. */
 const TICK_LABEL_STYLE = { fontSize: 'var(--dz-text-2xs)' } as const satisfies Readonly<Record<string, string>>;
 
-/** The point labels along the bottom, in the body face one step up from the ticks. */
 const POINT_LABEL_STYLE = { fontSize: 'var(--fs-xs)' } as const satisfies Readonly<Record<string, string>>;
 
-/** The hover tooltip's surface. `left` and `top` are bound separately, because they
- *  are the only part of it computed from the data. */
 const TOOLTIP_STYLE = {
   position: 'absolute', transform: 'translate(-50%,-100%)', pointerEvents: 'none',
   whiteSpace: 'nowrap', background: 'var(--bg-raised)',
@@ -49,49 +24,29 @@ const TOOLTIP_STYLE = {
   boxShadow: 'var(--shadow-2)', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)',
 } as const satisfies Readonly<Record<string, string>>;
 
-/** The tooltip's point line — the quieter of its two rows. */
 const TOOLTIP_LABEL_STYLE = {
   fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)',
 } as const satisfies Readonly<Record<string, string>>;
 
-/** The tooltip's value line, in mono so digits align between hovers. */
 const TOOLTIP_VALUE_STYLE = {
   fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)',
 } as const satisfies Readonly<Record<string, string>>;
 
-/** A plotted point's position in SVG coordinates. */
 export interface ArenaLinePoint {
-  /** Horizontal position, padding included — the same origin the SVG uses. */
+
   x: number;
-  /** Vertical position, top-down. */
+
   y: number;
 }
 
-/** Where point `index` of `count` sits horizontally. A lone point centres in the
- *  plot rather than pinning to the left edge, which would read as a series that
- *  starts and stops immediately.
- *  @param index the 0-based point @param count how many points there are
- *  @param innerWidth the plot width in px, padding already removed
- *  @returns the x coordinate, measured from the SVG's own origin */
 export function lineX(index: number, count: number, innerWidth: number): number {
   return PAD.l + (count <= 1 ? innerWidth / 2 : (innerWidth / (count - 1)) * index);
 }
 
-/** Projects a value onto the plot's pixel height, top-down: `0` lands on the
- *  baseline and `max` lands on the plot's top edge. Negative values clamp to the
- *  baseline, because a one-axis line chart has no room below it.
- *  @param value the datum @param max the axis top (always > 0, per `niceMax`)
- *  @param innerHeight the plot height in px, padding already removed
- *  @returns the y coordinate of the value */
 export function lineValueY(value: number, max: number, innerHeight: number): number {
   return PAD.t + innerHeight - (Math.max(0, value) / max) * innerHeight;
 }
 
-/** The index of the point nearest a pointer position. One overlay owns the pointer,
- *  so the crosshair snaps to a real datum instead of drifting between two; per-point
- *  hit targets would leave dead gaps between them. Ties go to the earlier point.
- *  @param points the plotted points @param x the pointer's x, in SVG coordinates
- *  @returns the winning index, or -1 when there are no points */
 export function nearestPointIndex(points: readonly ArenaLinePoint[], x: number): number {
   if (points.length === 0) return -1;
   let best = 0;
@@ -101,36 +56,16 @@ export function nearestPointIndex(points: readonly ArenaLinePoint[], x: number):
   return best;
 }
 
-/** The series as an SVG `points` list for `<polyline>`.
- *  @param points the plotted points @returns the space-separated coordinate pairs */
 export function linePoints(points: readonly ArenaLinePoint[]): string {
   return points.map((point) => `${point.x},${point.y}`).join(' ');
 }
 
-/** The filled area under the series: the line itself, closed down to the baseline at
- *  each end. Empty for an empty series, so nothing is painted rather than a stray
- *  `M`-only path.
- *  @param points the plotted points @param baseline the baseline's y coordinate
- *  @returns an SVG path `d`, or `''` when there is nothing to fill */
 export function lineAreaPath(points: readonly ArenaLinePoint[], baseline: number): string {
   if (points.length === 0) return '';
   const line = points.map((point) => `${point.x},${point.y}`).join(' L');
   return `M${points[0].x},${baseline} L${line} L${points[points.length - 1].x},${baseline} Z`;
 }
 
-/** One series over time, with an optional area tint under it. Identity by `slot`, or
- *  meaning by `tone` — never both. One of the three hand-written SVG charts, so unlike
- *  every other primitive in this layer it carries styling of its own: a chart's visual
- *  identity is path data and presentation attributes, which a class string cannot
- *  hold. Every value in it is still a token.
- *
- *  The host is both the box `containerWidth()` measures and the containing block the
- *  tooltip is positioned against, so it declares `display:block` explicitly:
- *  `<arena-line-chart>` is an unknown element whose UA default is `display:inline`,
- *  and a non-replaced inline box has no content width for a `ResizeObserver` to
- *  report — every point would be laid out against the wrong number. This is the same
- *  hazard the manifest-driven display utility guards for every other primitive; a
- *  chart has no manifest, so it states the display itself. */
 @Component({
   selector: 'arena-line-chart',
   standalone: true,
@@ -228,18 +163,14 @@ export class LineChart {
   protected readonly pointLabelY = CHART_HEIGHT - 8;
   protected readonly hover = signal<number | null>(null);
 
-  /** The unit appended to every number this chart draws — the axis ticks, the
-   *  tooltip and the accessible table alike. Appended verbatim: the caller owns
-   *  the leading space. `private`, so the reader never sees it as a member. */
   private readonly suffix = computed(() => this.valueSuffix() ?? '');
 
   private readonly measured = containerWidth();
-  /** Wide first paint, then measured — the narrow branch never flashes. */
+
   protected readonly width = computed(() => this.measured() ?? ASSUMED_WIDTH);
 
-  /** One series, one colour — `resolveColors` still owns the identity/meaning rule. */
   protected readonly color = computed(() => resolveColors({ slot: this.slot(), tone: this.tone(), count: 1 })[0]);
-  /** The area is the series colour at 18% — a tint of the line, never a gradient. */
+
   protected readonly areaFill = computed(() => `color-mix(in oklab, ${this.color()} 18%, transparent)`);
 
   protected readonly name = computed(() => {
@@ -282,12 +213,8 @@ export class LineChart {
     return index === null ? null : this.points()[index] ?? null;
   });
 
-  /** Snaps the crosshair to the point nearest the pointer.
-   *  @param event the pointer move over the plot overlay */
   protected onMove(event: MouseEvent): void {
-    // Measured against the SVG's box, not the overlay rect's: `point.x` already
-    // carries PAD.l, so comparing it to a rect-relative x would snap a whole left
-    // pad early. React measures against the rect and has exactly that bug.
+
     const box = (event.currentTarget as SVGRectElement).ownerSVGElement?.getBoundingClientRect();
     if (!box) return;
     const index = nearestPointIndex(this.points(), event.clientX - box.left);

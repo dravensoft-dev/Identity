@@ -4,11 +4,6 @@ export interface ArenaIcon {
   weight: 'bold' | 'fill' | 'duotone';
 }
 
-/**
- * Canonical role > Phosphor glyph map. Seed a consumer's icon registry from this
- * instead of guessing. Bold is the default weight; Fill = active/selected;
- * Duotone = onboarding only. Glyph names are Phosphor webfont classes (`ph-*`).
- */
 export const ARENA_ICONS: ArenaIcon[] = [
   { role: 'nav-home',      phosphor: 'ph-house',           weight: 'bold' },
   { role: 'nav-active',    phosphor: 'ph-house',           weight: 'fill' },

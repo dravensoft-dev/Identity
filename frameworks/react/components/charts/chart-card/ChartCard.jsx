@@ -1,9 +1,5 @@
 import React from 'react';
 
-/* The card a chart sits on. `title` is an uppercase muted microlabel, NOT a
- * heading element: a dashboard is a grid of tiles, and emitting an h2 per tile
- * would fabricate a document outline nobody asked for. The chart's own
- * role="img" carries the accessible name. */
 export function ChartCard({ title, actions, children }) {
   return (
     <div style={{

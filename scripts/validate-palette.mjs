@@ -1,61 +1,17 @@
-/* Vendored from the `dataviz` Agent Skill (scripts/validate_palette.js), 2026-07-16.
- * Kept verbatim except for the CLI filename guard and usage string. Do not "improve"
- * the thresholds or the CVD matrices: they are calibrated to the
- * Machado-Oliveira-Fernandes (2009) severity-1.0 model and changing one silently
- * invalidates the measured numbers in README.md.
- * Upstream is the authority; re-vendor rather than patch. */
-/**
- * Validate a categorical chart palette against the computable data-viz checks.
- *
- * Design-system-agnostic: feed it ANY palette's hex values plus the mode and
- * surface, and it computes — never eyeballs — the five checks that can be
- * measured from color alone:
- *
- *   2. Lightness band   — OKLCH L within the mode's band
- *   3. Chroma floor     — OKLCH C >= floor (below it a hue reads as gray)
- *   4. CVD separation   — OKLab ΔE (×100) between slots under simulated protan/deutan
- *                         (tritan reported); adjacent pairs by default, pairs:"all"
- *                         for scatter/bubble/maps
- *   4b. Normal-vision floor — worst OKLab ΔE (×100) on the active pairlist
- *       (adjacent by default; all pairs with --pairs all) under unsimulated vision;
- *                         full-color readers must be able to tell neighbors apart too
- *   5. Contrast vs surface — WCAG ratio of each mark against the chart surface
- *
- * Checks 1 (fixed hue order) and 6 (values are from the documented palette) are
- * structural rules the skill enforces, not measurable from hexes alone.
- *
- * Usage (node):
- *   bun validate-palette.mjs "#2a78d6,#008300,#e87ba4,#eda100,#1baf7a,#eb6834,#4a3aa7,#e34948" --mode light
- *   bun validate-palette.mjs "#256abf,#199e70,..." --mode dark --surface "#1a1a19"
- *   bun validate-palette.mjs "#86b6ef,#5598e7,#256abf,#104281" --ordinal
- *
- * Usage (browser — as a module script):
- *   <body data-palette="#2a78d6,#008300,..." data-mode="light">
- *   <script type="module" src="validate_palette.js"></script>
- *   → logs a console.table of the report and console.warn on any FAIL.
- *
- * Exit code 0 unless a check hard-FAILs; 1 on any FAIL. WARN bands do not fail:
- * adjacent CVD in the 6–8 floor band, and contrast in the sub-3:1 relief band,
- * are reported as WARNs and still exit 0 (each is legal only with mandatory
- * secondary encoding: direct labels, gaps, or texture). The normal-vision floor
- * is a hard gate: a worst unsimulated pair below 15 FAILs the run.
- */
+/* Vendored verbatim from the `dataviz` Agent Skill. Re-vendor rather than patch:
+ * the thresholds and CVD matrices are calibrated to the Machado-Oliveira-Fernandes
+ * (2009) severity-1.0 model, and editing one invalidates published measurements. */
 
-// ── thresholds ────────────────────────────────────────────────────────────────
-const BAND = { light: [0.43, 0.77], dark: [0.48, 0.67] }; // OKLCH L
-const CHROMA_FLOOR = 0.10; // OKLCH C
-// ΔE is Euclidean distance in OKLab ×100. The CVD thresholds are calibrated to
-// the Machado-Oliveira-Fernandes (2009) severity-1.0 simulation below — the sim
-// model is part of the standard, not an implementation detail (swapping in e.g.
-// Viénot-1999 moves borderline pairs and would require recalibrating these).
-const CVD_TARGET = 8.0, CVD_FLOOR = 6.0; // OKLab ΔE×100, min(protan, deutan), adjacent pairs
-const NORMAL_FLOOR = 15.0; // OKLab ΔE×100, worst pair on the active pairlist, unsimulated vision
-const CONTRAST_MIN = 3.0; // WCAG vs surface
+const BAND = { light: [0.43, 0.77], dark: [0.48, 0.67] };
+const CHROMA_FLOOR = 0.10;
+
+const CVD_TARGET = 8.0, CVD_FLOOR = 6.0;
+const NORMAL_FLOOR = 15.0;
+const CONTRAST_MIN = 3.0;
 const DEFAULT_SURFACE = { light: "#fcfcfb", dark: "#1a1a19" };
-const ORDINAL_MIN_DL = 0.06; // min OKLCH ΔL between adjacent steps
-const ORDINAL_LIGHT_FLOOR = 2.0; // lightest step: WCAG contrast vs surface
+const ORDINAL_MIN_DL = 0.06;
+const ORDINAL_LIGHT_FLOOR = 2.0;
 
-// Machado, Oliveira & Fernandes (2009) CVD transforms at severity 1.0 (linear RGB).
 const MACHADO = {
   protan: [[0.152286, 1.052583, -0.204868],
            [0.114503, 0.786281, 0.099216],
@@ -68,19 +24,8 @@ const MACHADO = {
            [0.004733, 0.691367, 0.303900]],
 };
 
-// ── color conversions ──────────────────────────────────────────────────────────
 const hex2srgb = (h) => { h = h.trim().replace(/^#/, ""); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) / 255); };
 
-// ── input boundary ── EVERY user-supplied color string (palette entries AND
-// the surface, CLI and browser alike) passes these before any math:
-// unguarded, parseInt propagates NaN through every check and the run fails
-// OPEN. Normalization is spelled out rather than engine-native: JS trim()
-// and Python str.strip() differ at the edges (trim() strips U+FEFF;
-// str.strip() strips U+001C–U+001F and U+0085), so the shared set is their
-// intersection — ASCII whitespace plus the Unicode space/separator
-// characters both engines strip, which also covers the NBSP/em-space
-// padding picked up when copy-pasting hex lists from rendered pages. Keep
-// these three definitions in lockstep with the Python twin.
 const WS_RUN = "[ \\t\\n\\v\\f\\r\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+";
 const stripWs = (v) => v.replace(new RegExp(`^${WS_RUN}|${WS_RUN}$`, "g"), "");
 const splitColors = (raw) => (raw || "").split(",").map(stripWs).filter(Boolean);
@@ -96,9 +41,9 @@ function oklabFromLin([r, g, b]) {
   const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
   const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
   return [
-    0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s, // L
-    1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s, // a
-    0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s, // b
+    0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s,
   ];
 }
 const oklab = (h) => oklabFromLin(lin(h));
@@ -115,33 +60,29 @@ function simulate(h, kind) {
   ];
 }
 function deltaE(h1, h2, kind) {
-  // Euclidean distance in OKLab, ×100. No kind → unsimulated (normal) vision.
+
   const a = oklabFromLin(kind ? simulate(h1, kind) : lin(h1));
   const b = oklabFromLin(kind ? simulate(h2, kind) : lin(h2));
   return 100 * Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 }
 
-// ── checks ─────────────────────────────────────────────────────────────────────
 export function validate(palette, { mode = "light", surface, pairs = "adjacent" } = {}) {
   surface ??= DEFAULT_SURFACE[mode];
   const [lo, hi] = BAND[mode];
   const report = [];
   let ok = true;
 
-  // 2. lightness band
   const offband = palette.filter(c => { const L = oklch(c)[0]; return L < lo || L > hi; })
     .map(c => [c, +oklch(c)[0].toFixed(3)]);
   if (offband.length) ok = false;
   report.push(["Lightness band", !offband.length,
     offband.length ? `outside band: ${JSON.stringify(offband)}` : `all ${palette.length} inside L ${lo}–${hi}`]);
 
-  // 3. chroma floor
   const lowc = palette.filter(c => oklch(c)[1] < CHROMA_FLOOR).map(c => [c, +oklch(c)[1].toFixed(3)]);
   if (lowc.length) ok = false;
   report.push(["Chroma floor", !lowc.length,
     lowc.length ? `below floor (reads gray): ${JSON.stringify(lowc)}` : `all ${palette.length} >= ${CHROMA_FLOOR}`]);
 
-  // 4. CVD separation — adjacent for stacks/bars/lines; ALL pairs for scatter/bubble/maps/small-multiples
   const n = palette.length;
   const pairlist = pairs === "all"
     ? Array.from({ length: n }, (_, i) => Array.from({ length: n - i - 1 }, (_, k) => [i, i + 1 + k])).flat()
@@ -161,12 +102,6 @@ export function validate(palette, { mode = "light", surface, pairs = "adjacent" 
   report.push(["CVD separation", cvdState,
     worst ? `worst ${label} ${worst[3]}↔${worst[2]} ΔE ${wd.toFixed(1)} (${worst[1]}) · tritan ${tri.toFixed(1)}` : "n/a"]);
 
-  // 4b. Normal-vision floor. The CVD gate protects dichromat readers; this one
-  //     protects everyone else — neighbors must stay easy to tell apart under
-  //     unsimulated vision too. A hard gate: secondary encoding does not
-  //     excuse it, and weak pairs are not masked to keep an existing palette
-  //     validating (this floor is what forced the July 2026 re-order
-  //     of the shipped set: same steps, re-ordered, clears 19.6/19.3).
   let nworst = null;
   for (const [i, j] of pairlist) {
     const d = deltaE(palette[i], palette[j]);
@@ -179,7 +114,6 @@ export function validate(palette, { mode = "light", surface, pairs = "adjacent" 
     nworst ? `worst ${label} ${nworst[2]}↔${nworst[1]} ΔE ${nd.toFixed(1)} (normal)`
       + (nd >= NORMAL_FLOOR ? "" : ` — below ${NORMAL_FLOOR.toFixed(0)}, hard to tell apart even with full color vision`) : "n/a"]);
 
-  // 5. contrast vs surface — sub-3:1 is a documented conditional relax (visible labels / table view), not a hard fail
   const low = palette.filter(c => contrast(c, surface) < CONTRAST_MIN).map(c => [c, +contrast(c, surface).toFixed(2)]);
   report.push(["Contrast vs surface", low.length ? "relief" : "pass",
     low.length ? `below ${CONTRAST_MIN}:1 — relief required (visible labels or table view): ${JSON.stringify(low)}`
@@ -189,18 +123,12 @@ export function validate(palette, { mode = "light", surface, pairs = "adjacent" 
 }
 
 export function validateOrdinal(palette, { mode = "light", surface } = {}) {
-  /* Ordered categories (funnel stages, size tiers, time buckets rendered as
-     discrete marks) take a one-hue ramp, not categorical hues. The categorical
-     checks FAIL a correct ramp by design (it spans the lightness band; light
-     steps drop below the chroma floor). The ordinal checks instead verify the
-     ramp reads *as a ramp*: one hue, monotone lightness with visible gaps
-     between steps, and a lightest step that still clears the surface. */
+
   surface ??= DEFAULT_SURFACE[mode];
   const report = [];
   let ok = true;
   const Ls = palette.map(c => oklch(c)[0]);
 
-  // Monotone lightness — sorted by L must match input order (or its reverse).
   const order = [...Ls.keys()].sort((a, b) => Ls[a] - Ls[b]);
   const fwd = order.every((v, i) => v === i);
   const rev = order.every((v, i) => v === Ls.length - 1 - i);
@@ -209,16 +137,13 @@ export function validateOrdinal(palette, { mode = "light", surface } = {}) {
   report.push(["Lightness monotone", mono,
     mono ? "steps read light→dark" : `out of order — L values ${JSON.stringify(Ls.map(l => +l.toFixed(3)))}`]);
 
-  // Adjacent ΔL — each step must be visibly distinct from its neighbour.
   const gaps = Ls.slice(1).map((l, i) => Math.abs(l - Ls[i]));
-  // Filter on the RAW gap, then round for display — filtering the rounded
-  // value passes raw gaps in [0.0595, 0.06) that the Python twin fails.
+
   const thin = gaps.map((g, i) => [palette[i], palette[i + 1], g]).filter(([, , g]) => g < ORDINAL_MIN_DL).map(([a, b, g]) => [a, b, +g.toFixed(3)]);
   if (thin.length) ok = false;
   report.push(["Adjacent ΔL", !thin.length,
     thin.length ? `steps too close: ${JSON.stringify(thin)}` : `all gaps >= ${ORDINAL_MIN_DL}`]);
 
-  // Lightest step vs surface — the pale end must still read as a mark.
   const byL = [...palette].sort((a, b) => oklch(a)[0] - oklch(b)[0]);
   const lightest = mode === "light" ? byL[byL.length - 1] : byL[0];
   const cr = contrast(lightest, surface);
@@ -226,7 +151,6 @@ export function validateOrdinal(palette, { mode = "light", surface } = {}) {
   report.push(["Light-end contrast", cr >= ORDINAL_LIGHT_FLOOR,
     `${lightest} at ${cr.toFixed(2)}:1 vs surface` + (cr >= ORDINAL_LIGHT_FLOOR ? "" : ` — below ${ORDINAL_LIGHT_FLOOR}:1 floor`)]);
 
-  // Single hue — an ordinal ramp is one hue; a hue jump means it's categorical.
   const hues = palette.map(okhue);
   let spread = hues.length ? Math.max(...hues) - Math.min(...hues) : 0;
   if (spread > 180) spread = 360 - spread;
@@ -238,7 +162,6 @@ export function validateOrdinal(palette, { mode = "light", surface } = {}) {
   return { report, ok };
 }
 
-// ── entrypoints ────────────────────────────────────────────────────────────────
 const GLYPH = { true: "PASS", false: "FAIL", pass: "PASS", floor: "WARN", fail: "FAIL", relief: "WARN" };
 
 function printReport({ report, ok }, { mode, surface, ordinal, n }) {
@@ -258,7 +181,6 @@ function printReport({ report, ok }, { mode, surface, ordinal, n }) {
   }
 }
 
-// Node CLI
 if (typeof process !== "undefined" && process.argv && process.argv[1] && process.argv[1].endsWith("validate-palette.mjs")) {
   const args = process.argv.slice(2);
   const VALUE_FLAGS = new Set(["--mode", "--surface", "--pairs"]);
@@ -281,8 +203,7 @@ if (typeof process !== "undefined" && process.argv && process.argv[1] && process
   const palette = splitColors(positional);
   if (!palette.length) { console.error("usage: bun validate-palette.mjs \"#hex,#hex,...\" [--mode light|dark] [--surface #hex] [--pairs adjacent|all] [--ordinal]"); process.exit(2); }
   const mode = opts.mode || "light";
-  // An empty/whitespace-only surface counts as absent (falls back to the
-  // default), preserving the pre-boundary falsy behavior.
+
   const rawSurface = opts.surface != null ? stripWs(opts.surface) : "";
   const surface = rawSurface || DEFAULT_SURFACE[mode];
   const badHex = [...palette, surface].filter((c) => !isHexColor(c));
@@ -293,8 +214,6 @@ if (typeof process !== "undefined" && process.argv && process.argv[1] && process
   process.exit(result.ok ? 0 : 1);
 }
 
-// Browser auto-run (as a <script type="module">). Fires whenever the page has a
-// data-palette attribute on <body>; omit it to import the module without auto-running.
 if (typeof document !== "undefined") {
   const b = document.body;
   if (b?.dataset.palette) {
@@ -304,14 +223,12 @@ if (typeof document !== "undefined") {
     const rawSurface = b.dataset.surface != null ? stripWs(b.dataset.surface) : "";
     const surface = rawSurface || DEFAULT_SURFACE[mode];
     const ordinal = "ordinal" in b.dataset;
-    // Same input boundary as the CLI (stripWs/splitColors/isHexColor), plus
-    // the CLI's enum choices: a bad data-mode otherwise throws at BAND[mode],
-    // and a bad data-pairs silently downgrades to the weaker adjacent check.
+
     const badEnum = !["light", "dark"].includes(mode) ? `data-mode ${JSON.stringify(mode)}`
       : !["adjacent", "all"].includes(pairs) ? `data-pairs ${JSON.stringify(pairs)}` : null;
     const badHex = [...palette, surface].filter((c) => !isHexColor(c));
     if (!palette.length || badEnum || badHex.length) {
-      // Module top level — no `return` here; skip validating instead.
+
       console.warn(`validate_palette: ${!palette.length ? "empty palette" : badEnum ? `unrecognized ${badEnum}` : `invalid hex value(s): ${badHex.join(", ")} — expected #rrggbb`} — not validating`);
     } else {
       const result = ordinal ? validateOrdinal(palette, { mode, surface }) : validate(palette, { mode, surface, pairs });

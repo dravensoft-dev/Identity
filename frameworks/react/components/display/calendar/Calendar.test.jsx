@@ -5,57 +5,16 @@ import React from 'react';
 import { Calendar } from './Calendar.jsx';
 import { CalendarEvent } from '../calendar-event/CalendarEvent.jsx';
 
-/* WHAT THIS DIRECTORY CAN SHOW, AND WHAT NOW GOES UNSHOWN.
- *
- * This suite renders with renderToStaticMarkup and has no DOM, by design. So it
- * owns what a static render settles: the chip body, the required-ness guards on
- * both components, and the R4 escapes on both roots. It asserts nothing about
- * focus, keys or the roving tab stop.
- *
- * NOTHING ELSE DOES EITHER, AND THAT IS THE SHARPEST GAP THIS REPO CARRIES.
- * The deleted `grid-keyboard.test.jsx` owned the roving tab stop, the
- * four-edge clamp, Home/End and Enter/Escape into an event chip. It lived in
- * frameworks/react/test-dom/, the directory the React DOM suites had then; that
- * directory was deleted for its RAM cost and restored without this one suite, and
- * the structure refactor's batch 3 later removed the directory itself by colocating
- * what remained of it. The suite stays out under
- * a standing rule -- a component whose behaviour binding names the `grid` pattern is
- * DOM-tested by hand, because it alone cost more RAM than the six other suites that
- * directory then held, combined.
- * (`git show edb9f3e^:frameworks/react/test-dom/grid-keyboard.test.jsx` is the file;
- * the path in that command is the one it had at that revision and must stay so.) Calendar.behaviour.json retired all
- * eight of its `grid` exceptions when the navigation shipped, so the binding now
- * claims FULL compliance with the pattern and no test anywhere checks the claim.
- * Keyboard navigation is verified by hand: serve the tree with `bun run demos`, open
- * Calendar.card.html, beside this file, and drive the grid from the keyboard. See CLAUDE.md's Known debt.
- *
- * `view="week"` is passed everywhere below. Without a DOM the container measures
- * null, which is already the wide branch, but pinning it keeps these assertions
- * about the API rather than about what an unmeasured container happens to do. */
-
 const EVENTS = [
   { id: 'a', title: 'Standup', start: '2026-07-20T09:00:00Z', end: '2026-07-20T09:30:00Z', colorId: 1 },
   { id: 'b', title: 'Review', start: '2026-07-21T14:00:00Z', end: '2026-07-21T15:00:00Z', colorId: 2 },
 ];
 
-/* The events are the CONTENT slot now: one <CalendarEvent> per event, whose
- * props are what Calendar reads. `eventExtra` goes on every chip, `calendarExtra`
- * on the Calendar itself -- the two are separate because the R4 tests below
- * assert about the CALENDAR's root and must not be able to reach it through a
- * chip by accident. */
 const chips = (eventExtra) => EVENTS.map((e) => <CalendarEvent key={e.id} {...e} {...eventExtra} />);
 const render = (calendarExtra, eventExtra) => renderToStaticMarkup(
   <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week" {...calendarExtra}>{chips(eventExtra)}</Calendar>,
 );
 
-/* renderEvent is gone, removed by the per-item convention that had already
- * removed ActivityFeed.renderItem -- not because it broke R3 (it filled the chip
- * rather than replacing it, which R3 permits) but because per-item projection has
- * no Angular answer short of a structural directive and ngTemplateOutlet. The chip
- * body is Arena's alone now, so the assertion is that the default body renders and
- * a stray renderEvent reaches nothing. A removal nothing asserts is a removal that
- * can come back: check:api reads the .d.ts and would stay green if the .jsx kept
- * honouring it. */
 test('the chip body is Arena own, and a consumer renderer reaches nothing', () => {
   const html = render({ renderEvent: (e) => <em>{e.title.toUpperCase()}</em> });
   assert.match(html, /Standup/, 'the default chip body did not render');
@@ -63,13 +22,6 @@ test('the chip body is Arena own, and a consumer renderer reaches nothing', () =
   assert.doesNotMatch(html, /STANDUP/, 'the consumer renderer ran');
 });
 
-/* The throw is GONE, and its absence is the assertion. `events` was a required
- * array member and failed hard when omitted, which was right while omitting it
- * meant a caller had forgotten their data. As the content slot it means
- * something else entirely: a week with nothing booked in it. There is no member
- * left to be missing, so an empty Calendar renders an empty grid -- with its
- * hours, its day columns and its cells all present, which is what makes it an
- * empty SCHEDULE rather than an empty box. */
 test('a Calendar with no children renders an empty schedule rather than throwing', () => {
   const html = renderToStaticMarkup(<Calendar timeZone="UTC" anchorDate="2026-07-20" view="week" />);
   assert.match(html, /role="grid"/, 'an eventless Calendar drew no grid at all');
@@ -77,10 +29,6 @@ test('a Calendar with no children renders an empty schedule rather than throwing
   assert.doesNotMatch(html, /Standup/, 'the fixture leaked an event into a Calendar with no children');
 });
 
-/* Required-ness governs runtime, and it moved down a layer with the members:
- * CalendarEvent owns id/title/start/end now, and each is required. Asserted
- * against the WHOLE quartet in one test rather than four, because they are one
- * guard idiom; the message names which one, so a failure still says. */
 test('a CalendarEvent missing a required member throws', () => {
   const full = { id: 'a', title: 'Standup', start: '2026-07-20T09:00:00Z', end: '2026-07-20T09:30:00Z' };
   for (const missing of ['id', 'title', 'start', 'end']) {
@@ -93,27 +41,6 @@ test('a CalendarEvent missing a required member throws', () => {
   }
 });
 
-/* `timeZone` is deliberately NOT required, and this pair is the argument.
- *
- * The default it replaced was the literal 'UTC' -- arbitrary, and wrong for
- * almost every reader. The reader's own RESOLVED zone is a different kind of
- * value: right whenever the schedule belongs to whoever is looking at it, which
- * is the common case, and every consumer was writing that same line at the call
- * site to obtain it.
- *
- * THE RESOLVED ZONE MUST BE STUBBED, and the reason is worth writing down because
- * the obvious test is vacuous and looks fine. `bun test` runs with the resolved
- * zone forced to UTC -- measured: inside the runner
- * `Intl.DateTimeFormat().resolvedOptions().timeZone` is 'UTC' with TZ unset,
- * while the same expression in a plain `bun` process reports the machine's real
- * zone. So a test comparing "omitted" against "passed resolvedOptions()"
- * compares UTC with UTC and passes just as happily against the literal 'UTC'
- * fallback this replaced. It was written that way first and proved to pass with
- * the old fallback restored, which is the only reason this comment exists.
- *
- * Stubbing the ZERO-ARGUMENT call alone keeps it surgical: that form is used
- * only by the component's default, while CalendarInternals always constructs
- * its formatters with arguments and so still gets the real ones. */
 test('an omitted timeZone resolves to the reader own zone, exactly', () => {
   const Real = Intl.DateTimeFormat;
   Intl.DateTimeFormat = function (...args) {
@@ -137,9 +64,6 @@ test('an omitted timeZone resolves to the reader own zone, exactly', () => {
   }
 });
 
-/* And the member still governs when passed, or the default would be the only
- * behaviour there is. 09:00Z is 18:00 in Tokyo, and dayStart follows the
- * earliest event, so the two renders start their grids nine hours apart. */
 test('an explicit timeZone still decides the wall clock', () => {
   const utc = renderToStaticMarkup(
     <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">{chips()}</Calendar>,
@@ -152,10 +76,6 @@ test('an explicit timeZone still decides the wall clock', () => {
   assert.doesNotMatch(tokyo, /09:00/, 'the Tokyo render still shows the UTC hour -- timeZone was ignored');
 });
 
-/* R4: asserted in two separate tests -- node:assert aborts on the first failure, so
- * one body asserting both escapes cannot say which of them came back. `color` is
- * used rather than a dimension because check:dimensions walks the test directories
- * too, and a bare px here would fail that gate instead of this one. */
 test('Calendar drops a consumer style object -- the ...style escape is gone', () => {
   const html = render({ style: { color: '#ff00ff' } });
   assert.doesNotMatch(html, /#ff00ff/, 'a consumer style reached the rendered root -- the R4 escape is back');
@@ -166,11 +86,6 @@ test('Calendar drops a consumer attribute -- no {...rest} spread reaches the roo
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- a {...rest} escape is back');
 });
 
-/* CalendarEvent is a NEW root a consumer writes directly, so it is a new place
- * for both escapes to appear. It has never carried either; these two exist so
- * that stays true, since check:api reads the .d.ts and a spread restored to the
- * .jsx alone would leave the gate green. The chips are the escape's carrier
- * here, not the Calendar, so `render`'s second argument is what they use. */
 test('CalendarEvent drops a consumer style object -- no ...style escape on the chip', () => {
   const html = render({}, { style: { color: '#ff00ff' } });
   assert.doesNotMatch(html, /#ff00ff/, 'a consumer style reached the chip -- an R4 escape opened');
@@ -181,10 +96,6 @@ test('CalendarEvent drops a consumer attribute -- no {...rest} spread on the chi
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the chip -- a {...rest} escape opened');
 });
 
-/* The one CalendarEvent field this migration renamed. `slot` became `colorId`
- * when the type moved to api/types/, and a component still reading the old name
- * would draw every chip in ramp slot 1 -- silently, since catColor clamps. Slot 2
- * is the marker: it appears in the markup only if the field was read. */
 test('an event colours its chip from colorId, not from the old slot field', () => {
   const html = render({});
   const two = 'var(--color-cat-2)';
@@ -197,14 +108,6 @@ test('an event colours its chip from colorId, not from the old slot field', () =
   assert.ok(!stale.includes(two), 'the old `slot` field still picks a ramp colour -- the rename did not land');
 });
 
-/* A grid is ONE tab stop. This assertion opened the deleted grid-keyboard suite
- * and it needs no DOM: the cursor initialises to {day: 0, hour: 0}, so a static
- * render carries exactly one cell with tabindex="0". It is a property of the
- * markup, not of behaviour.
- *
- * It matters more than it looks. Calendar's binding claims "exceptions": []
- * with no render suite behind it, by the grid rule, and a control that leaked
- * into the Tab sequence would falsify that claim silently. This is the guard. */
 test('a Calendar renders exactly one tab stop, kebab or no kebab', () => {
   const plain = renderToStaticMarkup(
     <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">
@@ -242,9 +145,6 @@ test('the kebab renders only when actionsEnabled, and never as a tab stop', () =
     'the kebab is not out of the Tab sequence');
 });
 
-/* The slot is closed by default, so the consumer's markup is not in the tree at
- * all. That is what keeps their buttons -- which Arena cannot reach to silence,
- * because it is their markup -- from being permanent tab stops in the grid. */
 test('the action panel content is absent while the panel is closed', () => {
   const html = renderToStaticMarkup(
     <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">
@@ -255,9 +155,6 @@ test('the action panel content is absent while the panel is closed', () => {
   assert.doesNotMatch(html, /Delete/, 'the panel rendered its content while closed');
 });
 
-/* Nested <button> is invalid HTML and browsers restructure it silently, which
- * is the kind of defect that only shows up as "the click handler stopped
- * firing" months later. */
 test('a chip carrying a kebab is not a button inside a button', () => {
   const html = renderToStaticMarkup(
     <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">
@@ -269,23 +166,6 @@ test('a chip carrying a kebab is not a button inside a button', () => {
     'a kebab was nested inside the chip button -- invalid HTML');
 });
 
-/* THE DEFECT THIS EXISTS FOR: a paneled chip shipped with `tabindex` on
- * NEITHER the chip root nor anything Calendar could focus, so Enter from the
- * hour cell called focus() on a plain <div> and moved focus nowhere. It went
- * unnoticed by everything -- the one-tab-stop count above PASSED BECAUSE OF the
- * bug, and happy-dom focuses non-focusable elements, so the deleted grid suite
- * would not have caught it either. Only a real browser did.
- *
- * What a static render can still settle is the structure that makes the route
- * possible: a paneled chip must carry a focusable descendant, and the roving
- * `tabindex="-1"` Calendar injects must land on a real <button> rather than on
- * a bare box. That is asserted here.
- *
- * WHAT IT CANNOT SETTLE, said plainly: refs do not attach under
- * renderToStaticMarkup, so nothing here proves the ref Calendar holds points at
- * THIS button rather than at the chip root, and nothing here proves focus()
- * moves. Both are on the by-hand checklist in CalendarEvent.prompt.md, by the
- * grid rule. */
 test('a paneled chip carries a focusable body for Enter to land on', () => {
   const html = renderToStaticMarkup(
     <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">
@@ -293,9 +173,7 @@ test('a paneled chip carries a focusable body for Enter to land on', () => {
         onClick={() => {}} actionsEnabled actions={<button type="button">Delete</button>} />
     </Calendar>,
   );
-  /* The body button is the one carrying the chip's accessible name; the kebab
-     carries "Actions". Naming it is what keeps this from passing on the kebab,
-     which is focusable too but is not where Enter should land. */
+
   assert.match(
     html,
     /<button[^>]*aria-label="Standup,[^"]*"[^>]*tabindex="-1"|<button[^>]*tabindex="-1"[^>]*aria-label="Standup,[^"]*"/,
@@ -303,11 +181,6 @@ test('a paneled chip carries a focusable body for Enter to land on', () => {
   );
 });
 
-/* Rendered on its own rather than inside a Calendar: `open` is internal state
- * and renderToStaticMarkup cannot click. What this pins is the branch -- that
- * an open panel puts the consumer's markup in the tree and a closed one does
- * not -- which is the half that decides whether the grid keeps one tab stop.
- * That the button OPENS it is verified by hand, by the grid rule. */
 test('CalendarEvent renders its panel content when the panel is open', () => {
   const html = renderToStaticMarkup(
     <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z"
@@ -318,13 +191,6 @@ test('CalendarEvent renders its panel content when the panel is open', () => {
   assert.match(html, /Delete/, 'an open panel did not render its content');
 });
 
-/* The chip is the containing block for its own panel, so its `overflow: hidden`
- * -- the clip that ellipsises a long title -- also CLIPPED THE PANEL. Measured
- * in a browser on a 30-minute chip: the panel's bottom sat 43px below the
- * chip's, and elementFromPoint at the Delete button returned the background.
- * The clip is therefore lifted while the panel is open and only then, so no
- * other chip's rendering moves. The title's own span keeps
- * nowrap/hidden/ellipsis either way, which is why the truncation survives. */
 test('the chip lifts its clip while the panel is open, and only then', () => {
   const chip = (extra) => renderToStaticMarkup(
     <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z"

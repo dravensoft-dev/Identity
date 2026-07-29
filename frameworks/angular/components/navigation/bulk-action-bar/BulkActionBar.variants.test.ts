@@ -1,6 +1,3 @@
-/* See tag-variants.test.ts for why this suite lives here rather than under
- * scripts/: node cannot resolve the extensionless imports this layer's
- * recipes use. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Injector, runInInjectionContext } from '@angular/core';
@@ -8,14 +5,6 @@ import { bulkActionBarStyles } from './BulkActionBar.variants';
 import { BulkActionBar } from './BulkActionBar';
 import type { BulkAction } from '../../../Api.generated';
 
-/* This suite asserts against the plain-TypeScript recipe and stays a
- * recipe suite, not a render suite (host-class-binding.test.ts owns the one
- * DOM render this primitive gets) -- but `output()` and `input()` both
- * throw NG0203 ("can only be used within an injection context") the moment
- * they are read outside one, which a bare `new BulkActionBar()` is. A
- * `runInInjectionContext` over an empty `Injector` supplies just enough
- * context to construct the real class and inspect its fields -- no
- * `TestBed`, no template compilation, no DOM. */
 function constructBulkActionBar() {
   const injector = Injector.create({ providers: [] });
   return runInInjectionContext(injector, () => new BulkActionBar());
@@ -61,9 +50,7 @@ test('the hidden default matches the component\'s own default state -- count def
 });
 
 test('the root slot carries a display utility in its own base string, independent of the open variant', () => {
-  // This is the property frameworks/angular/test/HostClassBinding.test.ts
-  // machine-checks against every primitive's manifest on disk; this asserts
-  // the same thing against the recipe's own default output.
+
   assert.match(bulkActionBarStyles({ open: true }).root(), /\bflex\b/);
 });
 
@@ -87,14 +74,8 @@ test('the Clear output was renamed from `cleared` to `clear`, per the API contra
 
 test('classesFor still resolves a destructive action\'s classes to the same recipe output after the BulkAction retype', () => {
   const instance = constructBulkActionBar();
-  /* `classesFor` is `protected`, and it stays protected -- a component's surface
-     does not widen to serve its own suite. A TYPED cast rather than
-     @ts-expect-error, because this test exists to catch a `BulkAction` retype:
-     a directive suppresses every error on the line, including a genuinely wrong
-     argument, which would blind the exact thing the test is named for. The cast
-     keeps the argument checked against the real `BulkAction`. */
-  const reachable = instance as unknown as { classesFor(action: BulkAction): { action(): string } };
-  const viaMethod = reachable.classesFor({ id: 'delete', label: 'Delete', destructive: true }).action();
+  const typedCastKeepsTheArgumentChecked = instance as unknown as { classesFor(action: BulkAction): { action(): string } };
+  const viaMethod = typedCastKeepsTheArgumentChecked.classesFor({ id: 'delete', label: 'Delete', destructive: true }).action();
   const viaRecipe = bulkActionBarStyles({ destructive: true }).action();
   assert.equal(viaMethod, viaRecipe);
 });

@@ -4,20 +4,6 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Textarea } from './Textarea.jsx';
 
-/* This suite carries no `.dom.` infix, so it renders with renderToStaticMarkup and has
- * no DOM, and no test here fires a change. The `change` event's payload -- the new text as a string -- is
- * therefore NOT verified by this suite; it is verified where a DOM exists, in
- * ../FormControlEvents.dom.test.jsx, which dispatches a real
- * input event and asserts the payload's TYPE before its value. What IS verified here is
- * the half SSR can see:
- * that the native members the flattened heritage clause kept (placeholder, name,
- * readOnly, rows, maxLength, disabled, required, value) are forwarded explicitly now
- * that {...rest} is gone, that the counter is gated on maxLength, and that the label
- * still wires htmlFor to the id the component generates.
- *
- * React's SSR does not emit attributes in source order, so each attribute is asserted
- * on its own rather than as one adjacent run. */
-
 test('placeholder, name, readOnly and rows each reach the native textarea', () => {
   const html = renderToStaticMarkup(
     <Textarea label="Notes" placeholder="Say something" name="notes" readOnly rows={5} />,
@@ -30,7 +16,7 @@ test('placeholder, name, readOnly and rows each reach the native textarea', () =
 
 test('maxLength, disabled and required each reach the native textarea', () => {
   const html = renderToStaticMarkup(<Textarea label="Notes" maxLength={280} disabled required />);
-  /* React emits maxLength camelCased on a <textarea>, unlike readonly/disabled. */
+
   assert.match(html, /maxLength="280"/);
   assert.match(html, /disabled=""/);
   assert.match(html, /required=""/);
@@ -64,10 +50,6 @@ test('error renders below the field and marks the control invalid', () => {
   assert.doesNotMatch(html, /Ignored/);
 });
 
-/* R4: style and {...rest} left the component. Asserted in two separate tests --
- * a component that stopped spreading ...rest but still merged ...style passes a
- * single combined assertion, because node:assert throws on the first failure and
- * the second one is never reached. */
 test('Textarea drops a consumer style object -- the ...style escape is gone', () => {
   const html = renderToStaticMarkup(<Textarea label="A" style={{ color: '#ff00ff' }} />);
   assert.doesNotMatch(html, /#ff00ff/, 'a consumer style reached the rendered root -- the R4 escape is back');
@@ -78,10 +60,6 @@ test('Textarea drops a consumer attribute -- the {...rest} escape is gone', () =
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered textarea -- the {...rest} escape is back');
 });
 
-/* id is a contracted member as of plan 8C3, and it is the ONE global attribute
- * that is. The component still generates one from the label to wire its own
- * htmlFor; a consumer id overrides that, because a host pointing an external
- * <label> or an aria-describedby at this field had no path at all otherwise. */
 test('a consumer id overrides the one generated from the label', () => {
   const html = renderToStaticMarkup(<Textarea label="Email" id="signup-email" />);
   assert.match(html, /<textarea id="signup-email"/);

@@ -32,10 +32,7 @@ test('escapes the characters Tailwind escapes in a selector', () => {
 });
 
 test('hex-escapes a leading digit instead of backslash-escaping it', () => {
-  // Verified against the real Tailwind v4 CLI: `2xl:hidden` compiles to the
-  // selector `.\32 xl\:hidden` — a leading digit cannot appear literally in a
-  // CSS identifier, so it is hex-escaped (backslash + lowercase code point +
-  // one trailing space) while the rest of the class keeps the normal rule.
+
   assert.equal(escapeClass('2xl:hidden'), '\\32 xl\\:hidden');
 });
 

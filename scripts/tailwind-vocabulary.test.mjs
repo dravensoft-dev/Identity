@@ -1,13 +1,3 @@
-/* Every utility class the manifests rely on, compiled for real.
- *
- * The Arena token -> Tailwind utility mapping was first written as a ledger in
- * plan 5a, which has since been deleted along with the other executed plans;
- * this file is now the mapping's only executable statement. It asserts the
- * claim against the compiler rather than against the preset's source text: a
- * theme key can exist and still emit nothing (a cleared namespace, a name that
- * shadows a built-in), and that failure is invisible until a specimen renders
- * unstyled.
- */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -15,7 +5,6 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { compileLayer, escapeClass } from './lib/tailwind-compile.mjs';
 
-/** Utilities the ledger promises, grouped by the token family behind them. */
 const VOCABULARY = {
   colour: ['bg-base-100', 'bg-base-200', 'bg-base-300', 'border-base-300', 'border-neutral',
     'text-base-content', 'text-base-content/82', 'text-base-content/62', 'text-base-content/40',
@@ -53,7 +42,6 @@ const VOCABULARY = {
     'disabled:cursor-not-allowed', 'border-dashed', 'tabular-nums', 'sr-only'],
 };
 
-/** Compile the layer with one extra content file declaring `classes`. */
 function compileWith(classes) {
   const dir = mkdtempSync(join(tmpdir(), 'arena-vocab-'));
   try {

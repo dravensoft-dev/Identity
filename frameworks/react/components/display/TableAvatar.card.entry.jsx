@@ -11,18 +11,14 @@ function Demo(){
     {build:'#4820',project:'Payment Gateway',status:'fail',p95:'340 ms'},
     {build:'#4819',project:'Internal Dashboard',status:'ok',p95:'96 ms'},
   ];
-  // Configuration only: a column heads and sets its cells, never says what is in them.
+
   const columns=[
     {header:'Build',mono:true,width:'calc(var(--sp-1) * 22.5)'},
     {header:'Project'},
     {header:'Status'},
     {header:'p95',align:'right',mono:true},
   ];
-  /* One TableRow per row, one TableCell per cell — which is how the Badge gets
-     into the status cell without Arena ever calling a render function. `key` is
-     React's own reconciliation; there is no `getRowKey` member any more. Both
-     tables wire `onClick`, so the by-hand keyboard checklist in Table.prompt.md
-     has a live activation to test in each layout. */
+
   const body = (onClick) => rows.map((r)=>(
     <TableRow key={r.build} onClick={onClick}>
       <TableCell>{r.build}</TableCell>
@@ -44,7 +40,7 @@ function Demo(){
       <Table columns={columns} label="Recent builds">{body(()=>{})}</Table>
       <div className="sub" style={{marginTop:'var(--sp-5)',marginBottom:'var(--sp-3)'}}>Card mode — the SAME table in a 340px container</div>
       <div style={{width:'calc(var(--sp-1) * 85)',border:'var(--bw) dashed var(--border-strong)',borderRadius:'var(--r-lg)',padding:'var(--sp-3)'}}>
-        {/* same columns/rows as above — the container is narrow, the viewport is not */}
+        {}
         <Table columns={columns} label="Recent builds, card mode">{body(()=>{})}</Table>
       </div>
     </div>

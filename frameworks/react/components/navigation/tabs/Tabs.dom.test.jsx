@@ -1,21 +1,3 @@
-/* The DOM half of Tabs' proof. Everything here needs a real event to have
- * happened and a real attribute or a real focus to have moved as a result.
- *
- * What this suite may and may not claim, because happy-dom bounds it:
- *   - a dispatched `click` runs React's handler, and our own `.focus()` moves
- *     document.activeElement: PROVABLE, and the arrow-key tests rest on both.
- *   - `document.activeElement` after a Tab keypress: NEVER asserted. happy-dom has
- *     no sequential focus navigation, so such a test passes identically against a
- *     correct implementation and none. The roving tab stop is asserted as
- *     `tabindex` instead -- structure, not sequence -- and the panel being
- *     reachable by Tab is checked by a person against Tabs.prompt.md's checklist.
- *   - a keydown of Enter or Space on a native <button> does NOT synthesise a click
- *     here. No test below depends on one; a tab is activated by click and by arrow.
- *
- * Every tab has a panel, and the inactive ones are HIDDEN rather than absent, so
- * that every tab's aria-controls resolves. `panelOf` therefore means "the panel
- * without `hidden`" and never "the first panel".
- */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
@@ -36,8 +18,7 @@ const three = (props = {}) => (
 );
 
 const tabsOf = (root) => [...root.querySelectorAll('[role="tab"]')];
-/* Every tab has a panel and the inactive ones are HIDDEN rather than absent, so
-   "the panel" is the one panel without `hidden` -- never simply the first. */
+
 const panelsOf = (root) => [...root.querySelectorAll('[role="tabpanel"]')];
 const panelOf = (root) => panelsOf(root).find((p) => !p.hasAttribute('hidden'));
 const stopsOf = (root) => tabsOf(root).filter((t) => t.getAttribute('tabindex') === '0');
@@ -71,8 +52,6 @@ test('change reported exactly one value per selection', () => {
   assert.deepEqual(seen, ['dp', 'ac']);
 });
 
-/* focus.roving, the half a DOM can hold: ONE tab stop, and it moves. The other
-   half -- that Tab from the strip leaves it -- is the browser's, not ours. */
 test('exactly one tab is in the tab sequence, before and after a move', () => {
   const root = mount(three());
   assert.equal(stopsOf(root).length, 1);
@@ -81,12 +60,6 @@ test('exactly one tab is in the tab sequence, before and after a move', () => {
   assert.equal(stopsOf(root)[0].textContent, 'Deployments');
 });
 
-/* THE MIS-INITIALISED STRIP, in the DOM. The DOM-free suite pins the structure
- * -- one tab stop, nothing selected; what only a real event can show is that the
- * strip still WORKS: an arrow moves from that stop and reports a value. A
- * controlled `value` naming no child is the reachable route (a stale route
- * param, an async swap), and it stays controlled, so what the arrow changes is
- * the consumer's business and the assertion is on `change` and on focus. */
 test('a value naming no tab is still operable: an arrow moves from the tab stop', () => {
   const seen = [];
   const root = mount(
@@ -103,10 +76,6 @@ test('a value naming no tab is still operable: an arrow moves from the tab stop'
   assert.equal(document.activeElement, tabsOf(root)[1], 'the arrow did not move focus');
 });
 
-/* The uncontrolled half of the same defect, and the commonest way to meet it:
- * useState's initialiser runs once, on a first render that had no children to
- * take a first value from, so `internal` latches undefined and stays there when
- * the tabs arrive. This is the {cond && <Tab/>} idiom, one render later. */
 test('tabs that arrive after mount are still operable, though nothing is selected', () => {
   let reveal;
   function Late() {
@@ -131,12 +100,6 @@ test('tabs that arrive after mount are still operable, though nothing is selecte
     'an arrow key did not select -- the strip is keyboard-dead');
 });
 
-/* Since 8C7 the evaluator resolves roles.controls, and across every tab rather
- * than the one the suite hands it, so the dangling-reference half of this no
- * longer lives only here. What still does: the REVERSE wiring -- each panel
- * labelled by the tab that controls it -- and that exactly one panel is unhidden
- * while the rest are hidden rather than absent. Neither is a requirement key, so
- * no pattern can ask for them. */
 test('every tab controls a panel that exists, not only the selected one', () => {
   const root = mount(three());
   const ids = new Set(panelsOf(root).map((p) => p.getAttribute('id')));
@@ -155,7 +118,7 @@ test('ArrowRight moves selection and focus to the next tab', () => {
   const root = mount(three());
   arrow(root, 'ArrowRight');
   assert.equal(tabsOf(root)[1].getAttribute('aria-selected'), 'true');
-  /* Our own .focus() call, which happy-dom honours -- not a claim about Tab. */
+
   assert.equal(document.activeElement, tabsOf(root)[1]);
   assert.match(panelOf(root).textContent, /deployments body/);
 });
@@ -182,19 +145,10 @@ test('the selected tab and its panel reference each other in the real DOM', () =
   const panel = panelOf(root);
   assert.equal(selected.getAttribute('aria-controls'), panel.getAttribute('id'));
   assert.equal(panel.getAttribute('aria-labelledby'), selected.getAttribute('id'));
-  /* And the ids are selectable, which is why the colons useId() returns are stripped. */
+
   assert.equal(root.querySelector(`#${panel.getAttribute('id')}`), panel);
 });
 
-/* THE IDENTITY BUG: the tablist clones each child with cloneElement, which
- * PRESERVES the child's own key, while the panel list used to write `key={i}` --
- * an index into the array AFTER filtering, which shifts when an earlier tab
- * drops out. The two lists then disagree about which panel IS which tab, so
- * React reuses the DOM subtree that sat at the shifted index rather than
- * mounting a fresh one -- and a subtree's own DOM state (what is typed into an
- * uncontrolled <input>) rides along with the reuse even though every PROP on it
- * updates correctly. `data-for` is a prop and always ends up right; the
- * input's value is DOM state and is exactly what migrates. */
 test('dropping a tab does not migrate a surviving panel\'s typed input into the wrong tab', () => {
   function IdentityHarness() {
     const [keys, setKeys] = React.useState(['a', 'b', 'c']);
@@ -208,8 +162,7 @@ test('dropping a tab does not migrate a surviving panel\'s typed input into the 
     );
   }
   const root = mount(<IdentityHarness />);
-  /* Every tab's panel is mounted regardless of selection (THE PRICE, above), so
-     every input exists to be typed into even though only one is visible. */
+
   act(() => {
     for (const input of root.querySelectorAll('input[data-for]')) {
       input.value = `typed-${input.dataset.for}`;
@@ -231,18 +184,12 @@ test('the binding is honest: every `tabs` requirement, in both directions', () =
     subjects: {
       default: root.querySelector('[role="tablist"]'),
       'roles.tab': root.querySelector('[role="tab"]'),
-      /* Quantified: the pattern says EACH tab references its tabpanel, and
-         aria-selected is true on the active one and false on the rest. Handing
-         over the selected tab alone is what let a strip with N-1 dangling
-         references pass in 8C6 -- the one tab whose reference resolved was the
-         one the fixture put first. */
+
       'roles.controls': [...root.querySelectorAll('[role="tab"]')],
       'states.selected': [...root.querySelectorAll('[role="tab"]')],
       'roles.tabpanel': root.querySelector('[role="tabpanel"]'),
     },
-    /* focus.* and keyboard.* return null from the shared evaluator -- no single
-       element can decide them -- so each must be named here and each is proved by
-       one of the tests above, which act on the tree rather than reading it. */
+
     behavioural: {
       'focus.roving': true,
       'keyboard.ArrowLeft': true,

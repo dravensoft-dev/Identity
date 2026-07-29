@@ -1,13 +1,3 @@
-/* Asserts the shipped categorical ramp clears every measurable gate, in BOTH
- * themes, against the real chart surface (--color-base-200 — charts sit on the
- * card, not on the page background).
- *
- * The ramp is read from contracts/design-generated/palette.css, never
- * hardcoded here: swapping the skin and re-running this is the whole point
- * (see README → Theming).
- *
- *   bun scripts/check-ramp.mjs      → exit 0 if both themes pass, 1 otherwise
- */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -18,8 +8,6 @@ const css = readFileSync(join(root, 'contracts/design-generated/palette.css'), '
 
 const SLOTS = 8;
 
-/** Pull one theme block out of palette.css. The blocks contain no nested
- *  braces, so a non-greedy [^}]* is exact here — not a general CSS parser. */
 function block(selector) {
   const re = new RegExp(`${selector}\\s*\\{([^}]*)\\}`);
   const m = css.match(re);
@@ -51,9 +39,7 @@ for (const t of THEMES) {
     const glyph = state === true || state === 'pass' ? 'PASS' : state === 'floor' || state === 'relief' ? 'WARN' : 'FAIL';
     console.log(`  [${glyph.padEnd(4)}] ${name.padEnd(22)} ${detail}`);
   }
-  // Arena holds a harder line than the validator's own exit code: the shipped
-  // ramp needs NO relief rule and NO CVD floor-band warning. Every gate is a
-  // hard gate here, so a swap that merely squeaks by does not pass silently.
+
   const warned = result.report.filter(([, s]) => s === 'floor' || s === 'relief');
   if (!result.ok || warned.length) {
     ok = false;

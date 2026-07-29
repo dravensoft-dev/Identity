@@ -1,6 +1,3 @@
-/* See tag-variants.test.ts for why this suite lives here rather than under
- * scripts/: node cannot resolve the extensionless imports this layer's
- * recipes use. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { chartCardStyles } from './ChartCard.variants';
@@ -18,11 +15,6 @@ test('the root is a bordered tile, not a heading-bearing panel -- background, bo
   assert.doesNotMatch(root, /error/, 'a chart tile is neutral chrome, never a danger surface');
 });
 
-/* The design point Resolution H is explicit about: `title` is a microlabel,
- * deliberately NOT a heading. PageHead's own `title` slot is the layer's
- * example of what a real heading looks like (font-display, text-h1) --
- * asserting ChartCard's title carries neither is a real structural check
- * that the two cannot be confused, not a restatement of one manifest string. */
 test('the title slot is an uppercase mono microlabel, never heading typography', () => {
   const title = chartCardStyles().title();
   assert.match(title, /\bfont-mono\b/);

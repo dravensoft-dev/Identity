@@ -5,12 +5,6 @@ export type ArenaTheme = 'dark' | 'light';
 const STORAGE_KEY = 'arena-theme';
 const LIGHT_CLASS = 'arena-light';
 
-/**
- * Arena's dark-first theme service. Default is dark (`:root`); light toggles the
- * `.arena-light` class on `<html>`. Persists to `localStorage` (key `arena-theme`)
- * and falls back to `prefers-color-scheme`. Pair with `no-fouc.html` (same key) to
- * apply the stored theme before first paint.
- */
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
   private readonly doc = inject(DOCUMENT);

@@ -1,10 +1,6 @@
 import React from 'react';
 import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.js';
 
-/* Below --bp-sm the row stacks and the actions go full width. Measured on the
- * container, not the viewport: a PageHead inside a narrow panel should stack
- * there too. Width is null until first measure, so the wide layout is the
- * first paint — the narrow branch never flashes. */
 export function PageHead({ title, subtitle, actions, align = 'start' }) {
   if (!title) throw new Error('PageHead: `title` is required');
   const [ref, width] = useContainerWidth();

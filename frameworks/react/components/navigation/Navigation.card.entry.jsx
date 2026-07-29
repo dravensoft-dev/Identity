@@ -36,15 +36,13 @@ function Demo(){const[v,setV]=React.useState('Overview');const[range,setRange]=R
     <Breadcrumbs items={[{label:'Projects',href:'#'},{label:'Client Portal',href:'#'},{label:'Deployments'}]} />
   </div>
   <div className="sub">SideNav — sections group, collapsibles disclose, the active item is aria-current</div>
-  {/* Not `.row`: that class is a flex container, where the nav sized to its own
-      content and needed a width of its own to fill the sidebar. `style` is gone
-      under R4, so the wrapper is a plain block and the nav — itself a flex
-      container, so block-level in normal flow — fills it with no member at all. */}
+  {
+
+}
   <div style={{width:'var(--layout-sidebar)',marginBottom:'var(--sp-4)'}}>
-    {/* `active` names the item INSIDE the collapsible, so the card shows the
-        auto-expand of decision (d) rather than only describing it: the group is
-        open on first paint with no defaultExpanded and no effect having been
-        wired by the consumer. */}
+    {
+
+}
     <SideNav ariaLabel="Primary" active="prod">
       <SideNavItem id="dashboard" icon="ph-bold ph-squares-four" label="Projects" href="#projects"/>
       <SideNavSection label="Workspace">

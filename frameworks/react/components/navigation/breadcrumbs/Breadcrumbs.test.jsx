@@ -1,13 +1,3 @@
-/* `onNavigate` (`contracts/api/components/Breadcrumbs.json`) is new wiring this branch
- * added and left untested. This suite carries no `.dom.` infix, so it runs in
- * the DOM-free invocation and asserts on `renderToStaticMarkup`; it cannot
- * dispatch a synthetic click and
- * observe `onNavigate` fire -- that would need a real DOM, which belongs in a
- * `.dom.test.jsx` suite, not here, and no suite anywhere in this repo
- * currently renders Breadcrumbs with a DOM. What IS provable without one:
- * the trail renders in order, the last crumb is not a link and carries
- * `aria-current="page"`, and every non-current crumb is a real anchor
- * (`onNavigate`'s own call site). */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -46,10 +36,6 @@ test('with no onNavigate at all, a non-current crumb still renders as an anchor 
   assert.match(html, /<a href="\/clients"[^>]*>Clients<\/a>/);
 });
 
-/* Per contracts/api/README.md's "Required-ness governs the implementation and the
- * runtime" clause, an absent `items` fails hard, matching Angular's
- * `input.required`. An empty-but-supplied `items={[]}` is a different case --
- * truthy, so it stays legal, and renders an empty trail rather than throwing. */
 test('throws when items is absent', () => {
   assert.throws(() => renderToStaticMarkup(<Breadcrumbs />), /items.*required/);
 });

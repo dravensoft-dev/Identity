@@ -1,8 +1,3 @@
-/* fontsCss is the emitter, split out from the downloader so the file can be
- * regenerated offline. That mattered the moment fonts.css moved into
- * contracts/design-generated/ and its relative url() to assets/fonts/ gained a
- * hop: a generated file is regenerated, never hand-edited, and regenerating it
- * used to mean re-downloading every binary from a third party. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { fontsCss, facesFromDisk } from './fetch-fonts.mjs';
@@ -37,11 +32,6 @@ test('rules are separated by a blank line and the file ends in one newline', () 
   assert.ok(css.endsWith('}\n'));
 });
 
-/* families() hands every family the same weight list -- every fw-* token --
- * and Google Fonts does not serve every one of them for every family. Archivo
- * has 400-900 on disk; Familjen Grotesk and Spline Sans Mono have 400-700, and
- * familjen-grotesk-800.woff2 has never existed. A crossing of families with
- * weights would refuse the tree as it has always stood. */
 test('facesFromDisk skips a declared weight with no binary', () => {
   const faces = facesFromDisk(repoRoot);
   const familjen = faces.filter((f) => f.family === 'Familjen Grotesk').map((f) => f.weight);
@@ -61,13 +51,6 @@ test('facesFromDisk emits family by family, ascending weight within each', () =>
       assert.ok(faces[i].weight > faces[i - 1].weight);
 });
 
-/* A family that ends up with NO face at all is a different matter from a
- * skipped weight -- it is the silent-failure shape check:fonts exists to
- * catch, a --font-display naming a family with no @font-face behind it,
- * falling through to system-ui with no error at all. facesFromDisk refuses
- * it outright rather than emitting a font-family the CSS never backs. Built
- * against a synthetic root so it exercises the throw without touching the
- * real assets/fonts/ tree. */
 test('facesFromDisk throws naming a family with no binary at all', () => {
   const root = mkdtempSync(join(tmpdir(), 'fetch-fonts-test-'));
   try {
@@ -80,8 +63,7 @@ test('facesFromDisk throws naming a family with no binary at all', () => {
         fw: { regular: { $value: 400 }, bold: { $value: 700 } },
       })
     );
-    // assets/fonts/ stays empty -- no binary for any weight of the one
-    // declared family.
+
     assert.throws(() => facesFromDisk(root), (err) => {
       assert.match(err.message, /"Nonexistent Family"/);
       assert.match(err.message, /no assets\/fonts\//);

@@ -59,13 +59,6 @@ test('every pattern but none and absent cites a w3.org source', () => {
   }
 });
 
-/* Confirmed against the live APG pattern index (https://www.w3.org/WAI/ARIA/apg/patterns/),
- * not assumed: APG has no pattern page for textbox or status, so both cite the ARIA 1.2
- * role reference instead. figure-with-data-table is Arena's own, cited from WCAG because
- * APG has no chart pattern at all. tooltip DOES have an APG pattern page -- despite an
- * earlier draft of this plan assuming otherwise -- and cites it, so it is not in this list.
- * absent cites nothing, the same as none, and for the same reason -- there is nothing to
- * adopt when there is no component. */
 test('none aside, exactly the patterns with no APG pattern page cite something else', () => {
   const nonApg = [...loadPatterns('.')]
     .filter(([stem, p]) => stem !== 'none' && !p.source.includes('/ARIA/apg/'))
@@ -110,11 +103,6 @@ test('binding absent with a reason is valid', () => {
   );
 });
 
-/* This is the finding IMPORTANT-2 fixed: "renders but does nothing" (none) and
- * "there is no such component here" (absent) used to collapse onto the same
- * "none" value, distinguishable only by prose in the reason field. They are
- * now different pattern names, so a tool -- not just a reader -- can tell a
- * Card (renders, inert) from a Calendar (Angular has none) apart. */
 test('none and absent are distinct patterns, not the same fact spelled two ways', () => {
   const renders = { pattern: 'none', reason: 'a presentational surface that renders' };
   const doesNotExist = { pattern: 'absent', reason: 'no such component exists in this layer' };
@@ -138,11 +126,6 @@ test('a delegated binding must name what provides the behaviour', () => {
   assert.match(validateBinding('Dialog', 'angular', b, patterns)[0], /delegatedTo/);
 });
 
-/* An Angular primitive's directory is kebab-case (stat-card) and its React
- * counterpart is Pascal (StatCard). Deriving one from the other is the same
- * unsafe round-trip that bit the script-readable gate -- so the binding CARRIES
- * the counterpart's name instead. Without it the cross-layer assertion silently
- * never fires, which would quietly disable the one check this plan exists for. */
 test('an angular binding must name its React counterpart', () => {
   const b = { pattern: 'dialog-modal' };
   assert.match(validateBinding('stat-card', 'angular', b, patterns)[0], /must declare "component"/);
@@ -153,23 +136,6 @@ test('an angular binding that names its counterpart is valid', () => {
   assert.deepEqual(validateBinding('stat-card', 'angular', b, patterns), []);
 });
 
-/* The literal count is deliberate here and is not the derived-figure smell
- * CLAUDE.md warns about: an assertion that fails loudly the moment the tree
- * moves is the point of it, unlike a number written into prose that goes stale
- * in silence. It moves by one whenever a component is added -- 43 -> 44 when
- * `CalendarEvent` became a component of its own rather than a predefined
- * object, 44 -> 46 when `Table` became a compound component and grew
- * `TableRow` and `TableCell` in one change, 46 -> 47 when `SideNav` became
- * one and grew `SideNavItem`, 47 -> 48 when `SideNavSection` gave it its
- * first named group, 48 -> 49 when `SideNavCollapsible` gave it its first
- * `disclosure`, and 49 -> 50 when `Tabs` became a compound component and grew
- * `Tab`. Update it with the change that moves it.
- *
- * It did NOT move when the structure refactor's batch 3 rewrote this walk to
- * key on directories instead of on capital-initial `.jsx` filenames, and that
- * is exactly what the number is doing here: the same fifty, found a different
- * way. A rewrite that found a different set of the same size would be
- * indistinguishable from a correct one without the name assertions below. */
 test('the React inventory finds every component, no category and no loose file', () => {
   const found = reactComponents('.');
   assert.equal(found.length, 50);
@@ -180,46 +146,16 @@ test('the React inventory finds every component, no category and no loose file',
   assert.ok(found.includes('SideNavItem'));
   assert.ok(found.includes('SideNavSection'));
   assert.ok(found.includes('SideNavCollapsible'));
-  /* A COMPONENT IS A DIRECTORY, so everything this walk must not return is a
-   * FILE, and files sit in two places. A helper module sits INSIDE a component's
-   * own directory -- `SideNavInject.jsx` is in `side-nav/`, and is `.jsx` rather
-   * than `.js` so it stays inside check:dimensions' EXTENSIONS. A category-wide
-   * demo page's composition script sits BESIDE the directories, one level up --
-   * `Display.card.entry.jsx` is directly in `display/`. The walk reads directory
-   * entries at both levels, so neither can reach the result. */
+
   assert.ok(!found.includes('SideNavInject'));
-  /* The kebab spelling is a REGRESSION PIN against the retired heuristic, not a
-   * claim about the tree: no `side-nav-inject.jsx` exists any more, and this walk
-   * derives every name through pascal(), so nothing can make this fail today. It
-   * is kept because that file is why the old capital-initial rule had a
-   * carve-out, and because it is the shape a walk reaching back into a pre-batch-3
-   * tree would return. Delete it if the pre-move tree stops being interesting;
-   * do not leave it here unexplained. */
+
   assert.ok(!found.includes('side-nav-inject'));
   assert.ok(!found.some((c) => c.endsWith('.card.entry')));
-  /* A category is not a component either: the walk's outer level must not leak
-   * into its result the way the Angular walk's own test pins below. */
+
   for (const category of ['brand', 'charts', 'display', 'feedback', 'forms', 'navigation'])
     assert.ok(!found.includes(pascal(category)), `${category} is a category, not a component`);
 });
 
-/* The layer is components/<category>/<kebab>/ as of the structure refactor's
- * batch 2, so this walk is two levels deep and has two ways to go wrong that a
- * flat one did not: it can return the CATEGORY names, and it can return a bare
- * `.ts` FILE that sits one level in. Both are pinned below.
- * `ChartDataTable.test.ts` is the live instance of the second -- beside the four
- * chart directories -- today. `ChartInternals.ts` was the PRIOR live instance
- * of that same shape; batch 3 moved it to the layer root and renamed it
- * `DataVisuals.ts`, so its pre-move spelling is kept below purely as history,
- * guarding against a walk that reached back into an old tree.
- *
- * THE SPELLINGS BELOW ARE THE REAL FILENAMES, and that matters. The walk pushes
- * `dir.name`, so a version of it with the `isDirectory()` guard removed would
- * return `ChartDataTable.test.ts`, never a stem `ChartDataTable` -- an assertion
- * against the stem could not fail however the walk broke, which is what these
- * two used to be. The last assertion is the general form of the same guard: a
- * walk that starts returning files rather than directories fails it whatever
- * the file happens to be called. */
 test('the Angular inventory finds every component, no category and no bare module', () => {
   const found = angularPrimitives('.');
   assert.equal(found.length, 20);
@@ -252,12 +188,6 @@ test('an Angular binding path resolves the category by looking and the stem as P
   assert.equal(angularBindingPath('.', 'no-such-component'), null);
 });
 
-/* The React twin, and the tail is the interesting half rather than the path:
- * since batch 3 gave React the same kebab-directory shape, a component bound in
- * both layers spells a byte-identical tail on both sides. That is asserted
- * directly below rather than left implied, because check:compliance's layer
- * discrimination had to stop relying on the tail differing (see SUITE_DIRS in
- * check-compliance.mjs) and this is the fact that forced it. */
 test('a React binding path resolves the category by looking and the stem as Pascal', () => {
   assert.deepEqual(reactBindingPath('.', 'bar-chart'), {
     path: 'frameworks/react/components/charts/bar-chart/BarChart.behaviour.json',
@@ -272,11 +202,6 @@ test('a component bound in both layers now spells the same tail on both sides', 
   assert.equal(reactBindingPath('.', 'tag').tail, 'display/tag/Tag.behaviour.json');
 });
 
-/* crossLayerAgrees carries check-behaviour.mjs's step 6 -- "the two layers agree,
- * or the difference is declared" -- so it can be tested without a filesystem walk.
- * The absent clauses are the point: Calendar is the one binding in the repo that
- * needs them, and they must fire on absent specifically, not paper over every
- * mismatch. */
 test('two bindings naming the same pattern agree', () => {
   assert.equal(crossLayerAgrees({ pattern: 'grid' }, { pattern: 'grid' }), true);
 });
@@ -295,10 +220,6 @@ test('absent on either side is skipped even with no divergesFrom declared', () =
   assert.equal(crossLayerAgrees({ pattern: 'absent' }, { pattern: 'grid' }), true);
 });
 
-/* Against the real file rather than a fixture, because the thing worth proving is
- * that the compliance suites and check:behaviour read the same bytes off disk.
- * Path is relative to the repo root, as every other on-disk assertion in this
- * suite is -- loadPatterns('.') above sets that convention. */
 test('loadBinding reads a real binding from disk', () => {
   const b = loadBinding('./frameworks/react/components/feedback/dialog/Dialog.behaviour.json');
   assert.equal(b.pattern, 'dialog-modal');
@@ -320,8 +241,7 @@ test('a flat binding is one anonymous case', () => {
 });
 
 test('a flat binding with no exceptions still yields an exceptions array', () => {
-  // comparePattern does `binding.exceptions ?? []` itself, but every OTHER
-  // consumer would have to repeat that guard. Normalising once is the point.
+
   assert.deepEqual(bindingCases({ pattern: 'none' })[0].exceptions, []);
 });
 
@@ -336,15 +256,6 @@ test('a cased binding yields one entry per case, in order', () => {
   assert.deepEqual(cases.map((c) => c.pattern), ['alert', 'status']);
 });
 
-/* `none` and `absent` REQUIRE a reason, so a case binding one must carry it or
-   inherit the binding's -- otherwise a case binding either could not be written
-   at all, and every existing flat `none` binding would need rewriting. The case
-   this comment used to name as the one that "cannot be written at all" was
-   Skeleton's circle, and 8C10 retired it by fixing the defect it scoped: the
-   rule outlived its motivating case. Kept as HISTORY rather than re-pointed at
-   whichever case binds `none` today, because a component name written into
-   another file's prose is a claim no gate reads -- see CLAUDE.md's Known debt.
-   The bindings below are synthetic, so this test depends on no real component. */
 test('a case inherits the binding reason and may override it', () => {
   const [inherited] = bindingCases({ reason: 'from the binding',
     cases: [{ name: 'a', when: 'x', pattern: 'none', exceptions: [] }] });
@@ -355,8 +266,6 @@ test('a case inherits the binding reason and may override it', () => {
   assert.equal(bindingCases({ pattern: 'status' })[0].reason, null);
 });
 
-/* The two shapes are alternatives. Carrying both is two places for one fact,
-   which is the defect deriving IDREF from IDREF_ATTRIBUTES already fixed once. */
 test('a binding declaring both pattern and cases is rejected by validateBinding', () => {
   const problems = validateBinding('Alert', 'react',
     { pattern: 'alert', cases: [{ name: 'x', when: 'y', pattern: 'alert', exceptions: [] }] },
@@ -364,12 +273,6 @@ test('a binding declaring both pattern and cases is rejected by validateBinding'
   assert.ok(problems.some((p) => /both .*pattern.* and .*cases/i.test(p)), problems.join('\n'));
 });
 
-/* Fix round 1: matching case NAMES is not enough -- two cased bindings whose
- * `danger` case binds different patterns must disagree. crossLayerAgrees'
- * fallback (`a.pattern === b.pattern`) is `undefined === undefined` for two
- * cased bindings, since the both-fields rejection means neither has a
- * top-level `pattern` -- trivially true unless each case's pattern is also
- * compared, by name, not by position. */
 test('two cased bindings whose case names match but a case pattern disagrees do not agree', () => {
   const react = { cases: [
     { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
@@ -394,15 +297,6 @@ test('two cased bindings whose case names and per-case patterns all match agree'
   assert.equal(crossLayerAgrees(react, angular), true);
 });
 
-/* Fix round 2 (8C9 task 5): the cased branch above returns before either escape
- * below it ever runs -- not just divergesFrom, but ABSENT too, which is the
- * clause Calendar's own binding depends on. A cased binding could until now
- * neither declare a divergence nor be compared against a layer that has no such
- * component at all. These three pin the fix; the third is the one that must NOT
- * change -- it is the counterexample two tests above, repeated here as a guard
- * against the exact way a naive fix breaks it: `a.divergesFrom === b.pattern`
- * with neither side declaring one is `undefined === undefined`, true by
- * accident, for any two ordinary cased bindings with no divergesFrom at all. */
 test('a cased binding against an absent binding agrees, both directions', () => {
   const cased = { cases: [
     { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },

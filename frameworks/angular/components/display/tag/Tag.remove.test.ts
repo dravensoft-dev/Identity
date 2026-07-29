@@ -1,8 +1,3 @@
-/* arena-tag gained a dismiss affordance in the reconciliation to a shared
- * Tag contract (contracts/api/components/Tag.json): `removable` gates an Arena-drawn
- * `×` button the same way React's does, and `remove` fires on click. Both are
- * asserted against a real render, with `removable` driven through
- * `componentRef.setInput()` before the first `detectChanges()`. */
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 useTestEnvironment();
 

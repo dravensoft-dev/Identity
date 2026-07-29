@@ -1,6 +1,3 @@
-/* The wrapper's own failure paths. These write bindings that are deliberately
-   wrong to a temp file and prove the diagnostic fires -- a check nobody has
-   watched fail is a check nobody knows works. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { writeFileSync, mkdtempSync } from 'node:fs';
@@ -50,12 +47,6 @@ test('a flat binding cannot be asserted through the cases entry point', () => {
   );
 });
 
-/* validateBinding permits a binding to declare the same case name twice
-   (Task 1's review left this open). Object.keys(cases) can never carry a
-   duplicate, so comparing the declared-name list against the suite's keys
-   would produce a confusing missing/unknown diff rather than naming the
-   real problem -- the wrapper must catch this itself, before that
-   comparison, and name the duplicate. */
 test('a binding declaring the same case name twice is refused, not diffed', () => {
   const p = bindingFile({
     cases: [

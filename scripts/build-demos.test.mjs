@@ -1,11 +1,3 @@
-/* findJsxFiles() is module-local to build-demos.mjs and, until this suite, was
- * proved only indirectly -- by the two React test-suite baselines' file counts.
- * That direction (a stray .test.jsx sneaking back into the compiled output) had
- * no guard of its own; the opposite direction (a real entry dropped) is already
- * caught by check-demos-generated.mjs's orphan check, since a dropped entry
- * would leave its committed .js sibling unaccounted for. This pins the
- * exclusion directly, against a real temp directory rather than the repo tree,
- * so it does not depend on any particular component existing. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';

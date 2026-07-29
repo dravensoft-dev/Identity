@@ -1,10 +1,6 @@
 import React from 'react';
 const TOAST_TONES = { neutral: 'var(--line-strong)', success: 'var(--success)', danger: 'var(--danger)', gold: 'var(--gold)' };
-/** Ephemeral notification. `actionLabel` + `onAction` add a button (Undo / Retry /
- * View logs); `dismissible` shows the × and `onClose` handles it — the same shape
- * `Alert` uses, because a listener's presence is not something every layer can detect.
- * `persist` (H1): disables the host's auto-dismiss — mandatory in critical/error states
- * so they don't disappear before being read; they only close via the × or an action. */
+
 export function Toast({ title, message, tone = 'neutral', actionLabel, onAction, dismissible = false, onClose, persist = false }) {
   return (
     <div role={tone === 'danger' ? 'alert' : 'status'} aria-live={tone === 'danger' ? 'assertive' : 'polite'} data-persist={persist ? '' : undefined}

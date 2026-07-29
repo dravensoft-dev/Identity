@@ -2,24 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 import { bulkActionBarStyles } from './BulkActionBar.variants';
 import type { BulkAction } from '../../../Api.generated';
 
-/** Appears when rows are selected, and operates on the selection as a set.
- *  The host itself is the recipe's `root` -- it is the flex item a parent row
- *  lays out, so root-level classes and the `region` landmark they imply must
- *  live on the host, not one element inside it. Because the bar's whole
- *  presence is driven by `count` alone (React's `BulkActionBar.jsx` returns
- *  `null` at zero), wrapping the host in an `@if` was not an option -- the
- *  resolution `ConfirmDialog` and `Onboarding` settled on applies here too:
- *  the host stays permanently in the DOM and an `open` variant toggles
- *  `hidden` (the same name, the same mechanism), while the
- *  interactive content is gated by its own `@if` so nothing focusable exists
- *  while the bar is hidden. Whether Clear is drawn is governed by
- *  `clearable` (default `true`) -- both layers gate the button on it,
- *  because Angular cannot detect a `clear` listener the way React can detect
- *  a passed callback. That default preserves this component's own prior
- *  behaviour, where Clear was unconditional; `contracts/api/components/BulkActionBar.json`
- *  is the authority for the member, and it replaced the
- *  `components-divergences.md` entry that used to record the two layers
- *  disagreeing about whether Clear could be hidden at all. */
 @Component({
   selector: 'arena-bulk-action-bar',
   standalone: true,

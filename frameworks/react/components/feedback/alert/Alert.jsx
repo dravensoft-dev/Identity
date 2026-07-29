@@ -6,10 +6,7 @@ const TONES = {
   danger:  { color: 'var(--danger)',  soft: 'var(--danger-soft)',  icon: 'ph-fill ph-warning-octagon' },
   neutral: { color: 'var(--line-strong)', soft: 'var(--panel)',    icon: 'ph-fill ph-note' },
 };
-/** Persistent message embedded in the page (not ephemeral). Unlike Toast, it stays
- * until the condition is resolved. Use `tone` for severity; `actionLabel` +
- * `onAction` add an inline action; `dismissible` shows the × (single Phosphor
- * ph-x close icon) and `onClose` handles it. */
+
 export function Alert({ tone = 'info', title, children, icon, actionLabel, onAction, dismissible, onClose }) {
   const t = TONES[tone] || TONES.info;
   return (

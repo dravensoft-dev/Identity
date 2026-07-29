@@ -1,9 +1,3 @@
-/* frameworks/Components.json is the one place a component's category is
- * declared. Every framework layer places its component directory in the
- * category this file names, and check:structure (scripts/check-structure.mjs)
- * is what holds them to it. This suite guards the file's own shape -- that it
- * is well-formed and internally consistent -- which check:structure assumes
- * rather than re-derives. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';

@@ -1,7 +1,5 @@
 import React from 'react';
-/** One option inside a RadioGroup. Selected = crimson dot inside the ring.
- * `name`, `checked` and `onSelect` are injected by `RadioGroup` and are not
- * part of Radio's public API. */
+
 export function Radio({ value, label, hint, name, checked = false, onSelect, disabled = false }) {
   if (!value) throw new Error('Radio: `value` is required');
   return (

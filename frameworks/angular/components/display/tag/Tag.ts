@@ -2,10 +2,6 @@ import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, 
 import type { TagTone } from '../../../Api.generated';
 import { tagStyles } from './Tag.variants';
 
-/** Arena status/emphasis tag — pill, tone taxonomy per the Badge/Tag rule.
- *  The host itself is the recipe's `root` — it is the flex item a parent row lays
- *  out, so root-level classes must live on the host, not one element inside it.
- *  `removable` shows an Arena-drawn dismiss `×` that emits `remove` on click. */
 @Component({
   selector: 'arena-tag',
   standalone: true,

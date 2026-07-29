@@ -9,7 +9,7 @@ test('RadioGroup marks the child whose value matches, and only it', () => {
   const html = renderToStaticMarkup(
     <RadioGroup value="b"><Radio value="a" label="A" /><Radio value="b" label="B" /></RadioGroup>,
   );
-  // The selected dot is a bare crimson span; exactly one appears.
+
   assert.equal(html.match(/border-radius:50%;background:var\(--crimson\)/g)?.length, 1);
 });
 
@@ -33,10 +33,6 @@ test('Radio throws when value is absent -- the fail-hard guard', () => {
   );
 });
 
-/* R4: style and {...rest} left both components. Asserted in two separate tests --
- * a component that stopped spreading ...rest but still merged ...style passes a
- * single combined assertion, because node:assert throws on the first failure and
- * the second one is never reached. RadioGroup is the root that took both escapes. */
 test('RadioGroup drops a consumer style object -- the ...style escape is gone', () => {
   const html = renderToStaticMarkup(
     <RadioGroup style={{ color: '#ff00ff' }}><Radio value="a" label="A" /></RadioGroup>,

@@ -11,7 +11,7 @@ export function BarChart({
   const [ref, measured] = useContainerWidth();
   const [hover, setHover] = useState(null);
 
-  const width = measured ?? 600;              // wide first paint, then measured
+  const width = measured ?? 600;
   const height = CHART_HEIGHT;
   const n = values.length;
   const fmt = (v) => `${v}${valueSuffix ?? ''}`;
@@ -31,7 +31,7 @@ export function BarChart({
     <div ref={ref} style={{ position: 'relative', width: '100%', height }}>
       <svg width="100%" height={height} role="img" aria-label={name}
         onMouseLeave={() => setHover(null)} style={{ display: 'block', overflow: 'visible' }}>
-        {/* grid + value axis */}
+        {}
         {ticks(max).map((t, i) => (
           <g key={i}>
             <line x1={PAD.l} x2={width - PAD.r} y1={yOf(t)} y2={yOf(t)}
@@ -51,18 +51,17 @@ export function BarChart({
               <path d={barPath(x, y, bw, baseline - y, chartBarRadius)} fill={colors[i]}
                 opacity={hover === null || hover === i ? 1 : 0.55}
                 style={{ transition: 'opacity var(--dur-fast) var(--ease-out)' }} />
-              {/* Hit target spans the whole column — larger than the mark, so a
-                  1px-tall bar is still hoverable. */}
+              {
+}
               <rect x={PAD.l + i * step} y={PAD.t} width={step} height={ih}
                 fill="transparent" onMouseEnter={() => setHover(i)} />
             </g>
           );
         })}
 
-        {/* Category axis — one label per bar, taken by index. The bar is the
-            thing being labelled, so a label with no value at its index is
-            dropped rather than drawn over empty plot, and a bar with no label
-            renders an empty string. */}
+        {
+
+}
         {values.map((_, i) => (
           <text key={i} x={PAD.l + i * step + step / 2} y={height - 8} textAnchor="middle"
             fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{labels[i] ?? ''}</text>
@@ -81,7 +80,7 @@ export function BarChart({
         </div>
       )}
 
-      {/* The numbers, reachable. */}
+      {}
       <table style={srOnly}>
         <caption>{name}</caption>
         <thead><tr><th>Category</th><th>{seriesLabel || 'Value'}</th></tr></thead>

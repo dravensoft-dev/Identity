@@ -23,13 +23,6 @@ test('divided="true" carries the top border, divided="false" carries none', () =
   assert.match(activityFeedStyles({ divided: false }).item(), /border-t-0/);
 });
 
-/* Resolution D of task 25's brief: the brief's own `row(item, first)` was a
- * method re-invoked from the template on every change-detection pass, which
- * re-resolves tailwind-variants for every row every time. `resolveActivityFeedRows`
- * is the pure function `arena-activity-feed`'s `rows` computed calls instead,
- * so it can be pinned directly against real item arrays with no DOM and no
- * Angular runtime involved -- this is the resolved, composed behaviour
- * (which row gets which class), not a restatement of the manifest string. */
 test('the first row carries no divider and every later row does, resolved from a real items array', () => {
   const items: ActivityItem[] = [
     { actor: 'Marta', action: 'deployed', tone: 'success' },

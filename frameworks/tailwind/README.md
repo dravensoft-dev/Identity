@@ -83,8 +83,8 @@ second `duration-` utility to layer on for just one property. Expressing the
 split would mean writing the whole `transition` declaration as one raw arbitrary
 **property** (`[transition:background_var(--dur-fast)_var(--ease-out),…]`,
 no `utility-` prefix) — a fourth bracket shape outside the three this file
-documents, so it stays undone rather than reached for quietly: Primary's hover
-shadow arrives about 100ms early against React, left as known debt.
+documents, so it stays undone rather than reached for quietly. What that costs
+is recorded in [`DOUBTS.md`](../../DOUBTS.md) section 4.
 
 The gate scans `.md` too, because a `.prompt.md`'s Don't block is exactly
 where a bad example belongs, and an unflagged one is a bad example someone
@@ -125,17 +125,16 @@ components/display/badge/
 The category comes from `frameworks/Components.json`, which declares it once for all three
 framework layers, and `bun run check:structure` fails a component directory that sits
 anywhere else. That gate says nothing about whether the category is the *right* one — that
-is editorial judgement and no gate has it. **This was the FIRST layer migrated to that shape;
-all three are migrated now**, Angular in the refactor's batch 2 and React in batch 3, so the
-gate reads every layer unconditionally and its `MIGRATED` list — which used to be where you
-read which layers it was claiming anything about — was deleted with the last one. What it
-enumerates instead is `LAYERS`. The root `CLAUDE.md` carries the rule and its
-mechanical naming exceptions in full; count them there rather than here, since this sentence
-said *four* while the set was five and then six.
+is editorial judgement and no gate has it. **All three framework layers share this shape**,
+so the gate reads every layer unconditionally; `LAYERS` in `scripts/check-structure.mjs` is
+the exhaustive enumeration, deliberately not a walk of `frameworks/`, so a layer renamed or
+removed wholesale becomes loud rather than quietly leaving the gate's scope. The root
+`CLAUDE.md` carries the naming rule and its mechanical exceptions in full; count them there
+rather than here.
 
-A specimen sits **two** directories deeper than the flat layout it replaced, so every
-reference it makes out of its own directory — the repo-root `styles.css`, and this layer's
-`Utilities.css`, `Specimen.css` and `Specimen.js` — gained two `../` segments.
+A specimen sits two directories below the layer root, so every reference it makes out of
+its own directory — the repo-root `styles.css`, and this layer's `Utilities.css`,
+`Specimen.css` and `Specimen.js` — carries two `../` segments.
 
 **Be exact about what catches a miscount, because `check:cards` catches less of it than
 it looks.** That gate loads each declaring page in headless Chromium, and the only status
@@ -232,12 +231,12 @@ class on the same property, always**, both on specificity — a pseudo-class add
 a selector, so `focus-within:border-secondary` compiles to `(0,2,0)` against a
 variant's plain `border-error` at `(0,1,0)` — and on source order. A state
 modifier left on a slot's **base** string therefore leaks through every variant
-built on that slot, including the ones that must lose to it. `Input.manifest.json`
-shipped exactly this: `focus-within:border-secondary` / `focus-within:ring-secondary/16`
-sat on the base `field` slot, so all three `state` values (`neutral`, `error`,
-`valid`) inherited it. `error`'s own `border-error`/`ring-error` are plain classes
-with lower specificity, so focusing an errored field always turned it gold —
-the validation signal disappeared exactly when the user tried to fix it, even
+built on that slot, including the ones that must lose to it. The failure is concrete:
+put `focus-within:border-secondary` / `focus-within:ring-secondary/16`
+on `Input`'s base `field` slot and all three `state` values (`neutral`, `error`,
+`valid`) inherit it. `error`'s own `border-error`/`ring-error` are plain classes
+with lower specificity, so focusing an errored field turns it gold —
+the validation signal disappears exactly when the user tries to fix it, even
 though React's own precedence (`shownError ? danger : focus ? gold : isValid ?
 success : …`) says error must win.
 
@@ -304,17 +303,17 @@ side by side.
 ## A co-varying value belongs in the variant it co-varies with
 
 A value that must track another prop can look, briefly, like a constant — don't
-flatten it to the constant of the "middle" case. `IconButton.manifest.json`'s
-`showLabel: false` compound shipped `w-ctl-h` (the `md` height, 40px) as the
-icon-only width for every `size`. It isn't constant: React sets `width:
-showLabel ? 'auto' : d` where `d` is the *size-specific* height (`sm` 32, `md`
-40, `lg` 48) — so `sm` rendered 40×32, and only `lg` happened to look square,
-by accident, because its own `min-w-ctl-h-lg` (48) outranked the wrong 40px
-width. The fix dropped `w-*` from the `showLabel` compound entirely: `size`
-already carries the correct `min-w-ctl-h-{sm,md,lg}` per size, and with `p-0`
-alongside it, an icon glyph narrower than every size's minimum floors the box
-at exactly the control height — square, at all three sizes, with no second
-width class to conflict with it. Before flattening a value that varies with a
+flatten it to the constant of the "middle" case. `IconButton` is the worked example: an
+icon-only width looks like one number, but React sets `width: showLabel ? 'auto' : d`
+where `d` is the *size-specific* height (`sm` 32, `md` 40, `lg` 48). Pinning the `md`
+value as `w-ctl-h` on the `showLabel: false` compound would render `sm` at 40×32, and
+only `lg` would look square — by accident, because its own `min-w-ctl-h-lg` (48)
+outranks the wrong 40px width.
+
+So the compound carries no `w-*` at all. `size` already carries the correct
+`min-w-ctl-h-{sm,md,lg}` per size, and with `p-0` alongside it, an icon glyph narrower
+than every size's minimum floors the box at exactly the control height — square, at all
+three sizes, with no second width class to conflict with it. Before flattening a value that varies with a
 prop to one class, ask which *other* variant group it actually co-varies with,
 and put it there instead.
 
@@ -334,7 +333,7 @@ though React's equivalent, unless it opts into `box-sizing: border-box`
 itself, renders 22×22 for the same nominal size — and the same holds for
 `Switch.manifest.json`'s `track` (`w-10 h-5.5 p-0.5`, no border at all: the
 padding alone is what shrinks its content box under border-box). See
-`components-divergences.md` → "The Tailwind layer is border-box; React is
+[`DOUBTS.md`](../../DOUBTS.md) section 3 → "The Tailwind layer is border-box; React is
 content-box" for the numbers this produced in Checkbox's `box`, Radio's
 `ring`, Select's `field` and Switch's `track`, and for why the fix is
 documentation, not a value change, in either layer.
@@ -342,8 +341,6 @@ documentation, not a value change, in either layer.
 **Corollary:** never add a `box-border` class to a manifest slot expecting it to
 change anything — every slot is already border-box from the preflight, so the
 class is a no-op that only reads as if some *other* slot were missing it.
-`Input.manifest.json` shipped exactly that on its `field` slot before this rule
-was written down.
 
 ## P1 — invented states
 
@@ -351,21 +348,12 @@ Before adding any state modifier a brief does not contain, cite the line of the
 mirrored React component that implements it. "Every other component has one"
 is not evidence — it is the failure mode.
 
-This has produced the exact same defect twice on this branch: `Tabs`'
-`selected: false` branch carried a `hover:` copied from `SegmentedControl`'s
-near-identical variant (removed, and written down above), and
-`Pagination.manifest.json` shipped three (`nav`'s and `pageOther`'s
-`hover:bg-base-200`, `pageCurrent`'s `hover:shadow-2`) in the very next batch —
-one commit after the rule was first stated in prose. `Pagination.jsx` has no
-`useState`, no `onMouseEnter`/`onMouseLeave`, no hover branch anywhere; the
-justification offered was the same "every other clickable primitive in this
-layer has one" reasoning the Tabs entry above already names as the failure
-mode, not a defense against it. A manifest authored by reading a neighbour
-instead of the component it mirrors is how this keeps happening. `bun run
-check:states` (`scripts/check-manifest-states.mjs`) now catches the shape
-this rule describes — see below — but citing the source line is still the
-right first move, since the gate is crude by design and does not replace
-reading the component.
+A manifest authored by reading a neighbour instead of the component it mirrors
+is how this defect arrives; [`DOUBTS.md`](../../DOUBTS.md) section 4 records the
+two occurrences that produced the rule. `bun run check:states`
+(`scripts/check-manifest-states.mjs`) catches the shape this rule describes —
+see below — but citing the source line is still the right first move, since the
+gate is crude by design and does not replace reading the component.
 
 ## P2 — hover on a disableable slot
 
@@ -374,9 +362,8 @@ Any `hover:` on a slot that can also be `:disabled` must be guarded
 it. `:hover` matches a disabled element's pseudo-class in Chrome and Firefox —
 they suppress the *events* a disabled control would otherwise dispatch, not
 selector matching — so an unguarded `hover:bg-*` still paints on a disabled
-button, including the exact case `Pagination.manifest.json`'s `nav` slot
-shipped: a disabled prev/next arrow, rendered dim and `not-allowed` by design,
-tinting on hover anyway.
+button: a disabled prev/next arrow, rendered dim and `not-allowed` by design,
+tints on hover anyway.
 
 `IconButton.manifest.json` gets away with an unguarded `hover:bg-base-200`
 only because its `disabled:opacity-45` mutes *everything* the element renders,
@@ -388,16 +375,15 @@ free; guard it explicitly.
 ## P3 — border-box is a table entry, not a paragraph
 
 For every slot combining an explicit size with border or padding, both
-numbers go into `components-divergences.md`'s border-box table as part of the
+numbers go into the border-box table in [`DOUBTS.md`](../../DOUBTS.md) section 3, as part of the
 task that touches that slot. The table entry is the deliverable; the prose
 reasoning is not — and a conclusion of "does not apply" still requires
 computing and recording the same two numbers, not asserting the conclusion.
 
-Three passes over this exact rule got the numbers wrong, and got them wrong
-the same way each time: by reasoning in prose and dropping padding from the
-computation. Padding carves out of a border-box total exactly the way a
-border does — the rule earlier in this file says so explicitly — and a prose
-summary is where that term quietly goes missing. Compute both totals
+**Padding carves out of a border-box total exactly the way a border does** — the rule
+earlier in this file says so explicitly — and a prose summary is where that term quietly
+goes missing, which is why the table entry rather than the paragraph is the
+deliverable. Compute both totals
 (content-box outer, border-box outer) from the actual utility values and the
 actual component source before writing the sentence that describes them, and
 put the two numbers in the table first.
