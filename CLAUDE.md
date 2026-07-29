@@ -2253,19 +2253,37 @@ scheduled for deletion the same week.
   were forced to supply. **`id` stays required — that is the approved spec's decision and 8C5 did not
   reopen it.** The question is recorded, not the answer.
 
-- **Two unexecuted specs cite the pre-`contracts/` paths, and are left that way on
-  purpose.** `docs/superpowers/specs/2026-07-23-8-api-contracts-design.md` (36 hits) and
+- **Two specs cite the pre-`contracts/` paths and are left that way on purpose — but the
+  re-derive command returns more than two files, and both of the others need their own
+  accounting rather than being folded silently into "two."**
+  `docs/superpowers/specs/2026-07-23-8-api-contracts-design.md` (36 hits) and
   `2026-07-18-9-four-package-build-publish-design.md` (8) name `api/`, `behaviour/` and
-  `tokens/` throughout. Re-derive with `grep -nE '(^|[^a-zA-Z/])(api|behaviour|tokens)/'
-  docs/superpowers/specs/*.md`. Both mix historical uses — a path inside a `>` block
-  recording what a shipped plan settled, correct **as history** — with normative text that
-  a reader would follow today, and separating the two is a reading of each spec's argument
-  rather than a find-and-replace. The four-package spec is the sharper case: it is *about*
-  where files live, so its paths are load-bearing to its argument, and its own header
-  already warns they are stale in the other direction (the pre-refactor
+  `tokens/` throughout and are the two left alone. Both mix historical uses — a path inside
+  a `>` block recording what a shipped plan settled, correct **as history** — with normative
+  text that a reader would follow today, and separating the two is a reading of each spec's
+  argument rather than a find-and-replace. The four-package spec is the sharper case: it is
+  *about* where files live, so its paths are load-bearing to its argument, and its own
+  header already warns they are stale in the other direction (the pre-refactor
   `frameworks/tailwind/` layout). This is the same treatment the first of them already
   carries for its pre-move `frameworks/` paths, recorded above; read this paragraph before
   reading either spec.
+
+  Re-derive with `grep -nE '(^|[^a-zA-Z/])(api|behaviour|tokens)/' docs/superpowers/specs/*.md`
+  and, run today, it returns **three** files, not two. The third is this refactor's own
+  design spec, `2026-07-29-contracts-directory-design.md` (30 hits), and it needs no
+  "left that way on purpose" treatment at all: it is the document that specifies the move,
+  so its `api/`/`behaviour/`/`tokens/` citations are the correct BEFORE-state of the
+  migration it argues for, never a claim about today's tree — the same reading that applies
+  to the plan itself, `docs/superpowers/plans/2026-07-29-contracts-directory.md`, which the
+  path-existence sweep matches the same way and for the same reason. A **fourth** file
+  matched until this same batch closed it:
+  `2026-07-29-calendar-chip-box-and-header-gap-pending-1.md` carried one live, present-tense
+  citation — *"not in `styles.css`, not in `tokens/`"* — with no historical reading available,
+  the same false claim already fixed in `frameworks/tailwind/README.md` and
+  `components-divergences.md`. Unlike the two specs left alone above, that one was a plain
+  defect rather than an argument needing to stay intact, so it was fixed in place — both
+  current directories now stand in for the one that no longer exists — rather than recorded
+  as debt.
 
 - **Nothing checks that `contracts/` has the shape `contracts/README.md` describes.** A
   stray file in `contracts/`, a level missing its `README.md`, a fourth directory added
@@ -2273,12 +2291,30 @@ scheduled for deletion the same week.
   `frameworks/` and has no counterpart here, and a `check:contracts` was judged out of
   scope for a batch whose subject was moving files. Related and also open: the
   capital-initial naming rule is declared for the framework layers and does not reach
-  `contracts/`, so `button.json`, `palette.dark.json` and `menu-item.json` keep lowercase
-  stems. That is **correct** — those stems are identifiers, a pattern's being the value a
-  binding writes into `"pattern"` and a token source's deciding the name of the CSS it
-  emits — but the exemption is written down only here, in the entry that says nothing
-  enforces it. **The zero-guard rule recorded at the head of this section promised five
-  gates and four exist**: `zeroContractProblems` (`check-api.mjs`), `zeroPatternProblems`
+  `contracts/`, so `button.json` and `palette.dark.json` keep lowercase stems. That is
+  **correct**, for two different reasons and neither is "identifiers stay lowercase" in
+  general: `button.json` is a pattern's own identifier, the literal value a binding writes
+  into `"pattern"`, so renaming it breaks every binding citing `"button"`. `palette.dark.json`
+  is a token source `build-tokens.mjs`'s hardcoded `FILES` table names literally
+  (`source: 'palette.dark.json'`) — true of all eleven sources, so all eleven are identifiers
+  in that sense, but **not** because the stem decides its own output CSS name: `icon.json`,
+  `component.json` and `density.compact.json` all emit into `spacing.css`, and `layering.json`,
+  `chart.json` and `behaviour.json` all emit into `effects.css`, so at most five of the eleven
+  — the `palette.*`, `typography`, `spacing` and `effects` sources — actually name the file
+  they produce. **Not every lowercase stem under `contracts/` has a reason this solid.**
+  `contracts/api/types/menu-item.json` declares its own identity inside itself
+  (`"name": "MenuItem"`, read by `build-api-types.mjs`), which reads the directory only to
+  order its output — nothing anywhere depends on the string `menu-item`, so renaming it to
+  `MenuItem.json` would break nothing. That is exactly what this entry is about: the exemption
+  is written down only here, in the entry that says nothing enforces it, and `menu-item.json`
+  is the case where nothing enforces the CONTENT of the exemption either — it just happens not
+  to have been renamed. **The batch's own design spec promised five zero-guards, at
+  `docs/superpowers/specs/2026-07-29-contracts-directory-design.md:143-153`, and
+  `contracts/README.md:52-60` is the other place the decision is recorded — the "green
+  run is only as good as what the gate looked at" entry at the head of this section names
+  only `check:tailwind`, `check:radius` and `check:structure`, a different rule about a
+  different set of gates, and does not promise anything about these five. Four of the five
+  exist**: `zeroContractProblems` (`check-api.mjs`), `zeroPatternProblems`
   (`check-behaviour.mjs`), `zeroSourceProblems` (`check-dtcg.mjs`), and
   `zeroGeneratedCssProblems` plus `cssDiscoveryProblems` (`check-script-tokens.mjs`). The
   fifth, `check:tokens`, deliberately has none, and that is a decision rather than a gap
@@ -2288,7 +2324,7 @@ scheduled for deletion the same week.
   build it depends on having nothing to read, just not via a guard shaped like the other
   four's.
 
-- **Two lessons this batch paid for, and both generalise past this one refactor.** A moved
+- **Three lessons this batch paid for, and all three generalise past this one refactor.** A moved
   level's own normative README needs a direct read, not a grep. `contracts/behaviour/README.md`
   shipped citing "One file per pattern in `patterns/`" — a directory flattened away one commit
   earlier — and arguing "It is a sibling of `tokens/`, not a child" — describing the old
@@ -2314,8 +2350,9 @@ scheduled for deletion the same week.
   levels of one hierarchy, false the moment the move merged them into one `contracts/design/` and
   the sentence started contradicting its own subject two clauses earlier in the same paragraph.
   Three sentences of this exact shape shipped in one sweep before review caught them: that one,
-  its sibling exclusion for the behaviour contract three lines further down in the same file, and
-  the matching clause this file's own *Architecture* section carried before this batch.
+  its sibling exclusion for the behaviour contract at line 33 of the same file — roughly
+  thirty lines *above* the clause it contradicts, not below it — and the matching clause this
+  file's own *Architecture* section carried before this batch.
 
 ### Where the rest of the debt lives
 
