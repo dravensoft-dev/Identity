@@ -162,9 +162,11 @@ stale-proof; a present-tense component name is not.
   consumer's own buttons, which is exactly what a `mobileLayout: 'block'` column draws
   inside it), which is why it is recorded rather than done — and the exception reads as
   unconditional and is not. A binding **can** scope a requirement now, since 8C9 built
-  `cases`, but `Table` was deliberately left flat: card mode's interactivity is the
-  consumer's choice rather than a prop of `Table`, and the grid hand-test rule means any
-  case it declared could carry no suite. The reasons are in the conditionality entry
+  `cases`, and `Table` HAS been converted since — `wide` → `grid`, `card` → `none`, both
+  rendered by `Table.cases.dom.test.jsx`. Two things had blocked it: card mode's
+  interactivity looked like the consumer's choice rather than a prop, and the grid hand-test
+  rule meant any case it declared could carry no suite. The rule is retired, and the
+  interactivity question turned out to belong to `TableRow` rather than to `Table`. The reasons are in the conditionality entry
   below, and `Table.behaviour.json`'s own reason string now carries them too. **That reason
   string cited a component twice and was wrong twice, and it now cites no exemplar.** It first named
   `Skeleton` as proving a limit — that the schema could not scope a requirement to a variant —
@@ -176,11 +178,10 @@ stale-proof; a present-tense component name is not.
   rest are the entry directly below this one. 8C10 removed the exemplar rather than replacing it
   with a third, and left the capability stated on its own with a pointer to the command that
   lists the cased bindings. **What stays true of both is the
-  verification, not the
-  behaviour**: `grid-keyboard.test.jsx` is the one suite the grid rule excludes, so
-  neither component can appear in `COVERED`, both are DOM-tested by hand, and
-  `Calendar`'s now-exceptionless binding and `Table`'s surviving exception are alike
-  unverified claims. See the grid-rule entry below.
+  verification, and it is no longer true**: `Calendar` and `Table` were both unverified
+  because the grid rule kept them out of `COVERED`. The rule is retired, both have render
+  suites, and both claims are backed. See the grid-rule entry below for the measurement that
+  retired it and for what the method costs.
 - **A component name written into ANOTHER file's prose is a cross-file claim no gate checks,
   and it rots silently while every gate stays green.** This is a standing hazard rather than a
   list of defects, and it was diagnosed the hard way: `Table.behaviour.json`'s `focus.roving`
@@ -426,10 +427,11 @@ stale-proof; a present-tense component name is not.
   **`Table` was deliberately NOT converted, and the reason is the first of those three.**
   Its card mode is a variant, so it looks convertible; but whether a card is interactive
   depends on the consumer, and declaring `card` → `none` would assert an inertness a
-  clickable card row contradicts. `Table` is also under the grid hand-test rule, so it can
-  carry no render suite and any case declaration would be unverified — trading an accurate
-  exception for an unverified claim, which is the trade batches 8C6 through 8C8 were spent
-  refusing. **`TableRow` is the second deliberate non-conversion, and it is convertible
+  clickable card row contradicts — which turned out to be the wrong reading: the clickable
+  card row is `TableRow`'s `card-interactive` case, not a clause of `Table`'s, and once that
+  was seen `card` → `none` became exactly true. The grid hand-test rule, which had also kept
+  any case it declared unverifiable, is retired. Both are converted now.
+  **`TableRow` was the second deliberate non-conversion, and it was convertible
   where `Table` is not**: `onClick` is `TableRow`'s own member, so an interactive case and
   an inert one name renders this component's own props produce — exactly what a case is
   for. What stops it is the second half of `Table`'s argument alone: `TableRow` is in no
@@ -460,9 +462,9 @@ stale-proof; a present-tense component name is not.
   same shape), or *semantic completeness* (`Menu`'s Enter opens the menu but never
   moves focus). A rendered DOM resolves all three at once, which is why the render
   suites absorbed the stale-exception check instead of sharing it with a scan.
-  **This is still the reason not to re-propose a scan**, including as the cheap tier
-  beneath the grid rule, where a scan looks superficially attractive because the hand
-  check it would supplement is not machine-checked at all: a scan's measured error rate
+  **This is still the reason not to re-propose a scan.** It once looked attractive as a
+  cheap tier beneath the grid hand-test rule; that rule is retired and the grids have real
+  suites, so even that opening is gone: a scan's measured error rate
   is what it is regardless of what sits above or below it, and a 51% false-unmet rate
   is worse than an honest hole.
 - **Converting ONE layer to cases surfaces every place the two layers were quietly
@@ -778,83 +780,66 @@ stale-proof; a present-tense component name is not.
   `roles.label` are recorded case by case instead, and finding the next one means
   reading a component's implementation against its binding, not searching for a
   phrase.
-- **A grid component's DOM behaviour is checked by eye, and that is a rule with a
-  price.** The React DOM suites' own directory — `frameworks/react/test-dom/`, which the
-  structure refactor's batch 3 later removed by colocating those suites with their
-  components — was deleted whole for its RAM cost and
-  restored minus one suite, so the standing rule is narrow: **a component whose
-  behaviour binding names the `grid` pattern is DOM-tested by hand — serve the tree
-  with `bun run demos` and operate the component on its `*.card.html` page.** It is
-  tied to the binding rather than to a judgement about what looks like a grid, so it
-  is a grep rather than an argument, and a component that becomes a grid later
-  inherits it without anyone remembering. Today it selects exactly `Calendar` and
-  `Table`.
+- **The grid hand-test rule is RETIRED, and what replaces it is a measurement plus a
+  method.** `Calendar` and `Table` bound `grid` and were DOM-tested by hand — serve the
+  tree, operate the component on its `*.card.html` page — because the React DOM suites'
+  own directory had once been deleted whole for its RAM cost and restored minus one
+  suite. Both have render suites now
+  (`components/display/calendar/Calendar.gridKeyboard.dom.test.jsx`,
+  `components/display/table/Table.cases.dom.test.jsx`) and both are in `COVERED`.
 
-  The rule is a measurement, not a preference: `grid-keyboard.test.jsx` alone peaked
-  at 164 MiB — 194 before its two performance fixes — while the six other suites
-  that directory then held peaked at 109 together and the whole directory at 171. The grid cost more than
-  everything else combined, because its fixture is 6 days × 14 hour cells = 84 cells
-  per mount, mounted eight times, with 160 key events dispatched through `act()`.
-  Cutting there cuts exactly where the cost is; the directory was never the problem.
+  **The old figure is not comparable to the new one, and that is the first thing to know.**
+  The retired rule cited `grid-keyboard.test.jsx` at 164 MiB against 109 for the six other
+  suites of that directory and 171 for the whole of it. Those numbers were taken on another
+  machine, with other versions of bun, React and happy-dom, against a harness baseline nobody
+  recorded — so "164" cannot be compared with anything measured today. Only a before/after
+  pair taken in one sitting means anything. Taken that way, sampling `VmHWM` of the process
+  tree:
 
-  **What the rule costs, and it is one thing rather than a list.** `Calendar`'s
-  keyboard navigation is not machine-checked: `grid-keyboard.test.jsx` was the only
-  proof of the roving tab stop, the four-edge clamp, Home/End within a day column,
-  and Enter/Escape into and out of an event chip, and the binding retired all eight
-  `grid` exceptions in the same batch — so it claims **full** compliance with the
-  `grid` pattern with nothing rendering it, and `Calendar:react` cannot appear in
-  `COVERED`. `Table` is in the same rule and has always been uncovered; what stands
-  unverified there is its **one** surviving exception — `focus.roving`, true of card mode
-  alone — plus the seven requirements it now claims to meet, so it is a claim of
-  near-compliance rather than of nothing.
-  What partly guards `Calendar` instead is a **static** tab-stop count in
-  `frameworks/react/components/display/calendar/Calendar.test.jsx` — a grid is one tab stop, and that count
-  is a property of the markup rather than of behaviour, so a DOM-free suite can hold
-  it. It catches a second tab stop appearing inside the grid. It does not catch an
-  arrow key that stops moving, and it is the whole of what stands in for a suite.
+  | what | peak RSS |
+  |---|---|
+  | harness baseline — one tiny DOM suite alone | 89 MiB |
+  | the Calendar grid suite alone | 128 MiB |
+  | the whole DOM invocation, without it | ~143 MiB |
+  | the whole DOM invocation, with it | ~158 MiB |
 
-  **What the restore bought back**, all of it green again and none of it worth
-  re-deriving from scratch if these suites are ever touched: that the six form
-  controls' events *fire* at all (`components/forms/FormControlEvents.dom.test.jsx` dispatches real
-  events and proves `Input`, `Textarea`, `Select`, `Checkbox` and `RadioGroup` hand
-  the consumer a **value** rather than the DOM event — the DOM-free suites assert
-  only the *shape* of that and say so in their own headers); `Tooltip`'s
-  single-timer rule, cancel-on-transition and unmount cleanup; the stale-exception
-  rule in behavioural form, where `components/feedback/Behavioural.dom.test.jsx` pinned four live defects of
-  `Dialog`/`ConfirmDialog` — no Escape, no focus on open, no restore on close — by
-  asserting they were *still broken*, **and where plan 8C4 then INVERTED every one of
-  those assertions in the change that fixed the defects**, which is the mechanism
-  working end to end rather than an exception quietly outliving its subject; `Menu`'s
-  misplaced `aria-haspopup` and
-  `Skeleton`'s `circle` branch, the two mistakes the rejected text scan got
-  backwards — and the `Skeleton` half is now pinned as the **fix** rather than the defect,
-  since 8C10 gave the circle its siblings' role and the suite asserts all four announce; the
-  suite's own header keeps the original branch shape on record, because the lesson about what
-  a scan cannot see outlives the branch that demonstrated it. Also
-  restored: the failure path of the compliance wrapper on the React side, four
-  tests that write deliberately false bindings to a temp file and prove STALE
-  EXCEPTION, OVERCLAIM, "no subject element" and "not declared behavioural" actually
-  fire.
+  The rule's own justification was that the grid cost more than every other suite combined.
+  It does not: 39 MiB above baseline against roughly 54 for the other nineteen together. That
+  is what retires it, on its own terms.
 
-  If the grid suite is ever wanted back — which would mean paying the 164 MiB and
-  retiring this rule — it does not need rewriting:
-  `git show edb9f3e^:frameworks/react/test-dom/grid-keyboard.test.jsx` is the file,
-  and it would need `Calendar:react` restored to `COVERED` alongside it. **Do not
-  modernise the path in that command.** `git show <rev>:<path>` resolves the path
-  *inside that revision's* tree, where the file really was
-  `frameworks/react/test-dom/grid-keyboard.test.jsx`; rewriting it to today's layout
-  makes the command fail with "path does not exist in HEAD". Where the restored file
-  would go is a separate question, and the answer is
-  `frameworks/react/components/display/calendar/Calendar.gridKeyboard.dom.test.jsx`.
+  **What actually costs memory is the number of key presses, not the grid.** Measured
+  separately: mounting the 84-cell fixture is +15 MiB over baseline, walking it is +60 more.
+  Each press re-renders the whole grid through `act()`, and the garbage is not collected
+  during the run. So the sequential cell-by-cell walk — which is the method now, and which
+  proves strictly more than the old suite's sampled assertions — did **not** make the suite
+  cheap by itself. What makes it affordable is a small fixture: the Calendar suite renders a
+  6×5 grid by setting `dayStart`/`dayEnd` explicitly rather than taking the default 6×14, and
+  every invariant it asserts holds at any size from 2×2 up. Halving the cells roughly halved
+  the bill.
+
+  **The method, so a future grid inherits it rather than re-deriving it.** One mount per
+  scenario, kept in a module-level variable and cleaned up once in an `after()`. A walk that
+  visits every cell with one press per step, asserting at each that focus landed on the
+  expected cell **and** that exactly one `tabindex="0"` exists and is that cell. Edge clamps
+  as one extra press per edge, never a loop of forty. `Home`/`End` asserted inside the same
+  walk. `git show edb9f3e^:frameworks/react/test-dom/grid-keyboard.test.jsx` is still the
+  deleted original and is worth reading for the transposed-grid explanation, but its fixture
+  no longer matches `Calendar`'s API — it passes `events`/`onEventClick`, which are now
+  `CalendarEvent` children. **Do not modernise the path in that command**: `git show
+  <rev>:<path>` resolves inside that revision's tree.
+
+  **What is still checked by eye**, and this is unchanged: the interior of a focus trap, and
+  anything needing a real browser's sequential focus navigation, which happy-dom does not
+  implement.
 - **Compliance coverage is a small fraction of the bindings and nothing schedules the
   rest.** `bun run check:compliance` prints the live pair; do not trust a figure written
   here, which has drifted once already — every batch that adds a component adds a binding
   and moves the denominator without touching this line.
-  `COVERED` guards the accuracy of what it claims, never the completeness of it, so
-  the uncovered bindings — including `Table`'s seven newly-met `grid` requirements and
-  its one surviving `focus.roving` exception, **and `Calendar`'s claim of full `grid`
-  compliance, which the grid rule keeps out of a suite permanently** — remain
-  exactly as unverified as they were before this gate existed. The gate was built
+  `COVERED` guards the accuracy of what it claims, never the completeness of it, so the
+  uncovered bindings remain exactly as unverified as they were before this gate existed.
+  `Table` and `Calendar` used to head that list — the grid rule kept them out of a suite
+  permanently — and both are covered now, which moved them out of it rather than changing
+  what the gate promises. The gate was built
   that way on purpose: one demanding a suite per binding on day one would have been
   switched
   off. The consequence is that the layer's headline property, *an exception can
@@ -3307,8 +3292,9 @@ The consequence to remember is on the height: because the floor is now an **oute
 leaves the shortest chip rendering at exactly the size it rendered at before the change
 (18px content + 8px padding), and it is the floor that keeps a 12px `--dz-text-sm` title line
 inside a chip whose content box is now the declared height minus 8px. Lowering it re-clips
-short chips; there is no gate that would notice, because `Calendar` binds the `grid` pattern
-and is DOM-tested by hand.
+short chips; there is no gate that would notice. `Calendar`'s grid suite walks the cells and
+asserts the keyboard, not the geometry of a chip inside one — the retired hand-test rule is not
+what leaves this uncovered, and covering it would need a real browser's layout.
 
 The alternative — subtracting `CalendarEvent`'s padding and border inside `Calendar`'s own
 `calc()` — was rejected rather than overlooked. It re-encodes one component's padding inside
@@ -3337,9 +3323,11 @@ and return focus to the kebab rather than jumping straight out to the hour cell.
 `stopPropagation` is load-bearing for this clause's correctness, and removing it would turn one
 Escape into two behaviours at once.
 
-No gate covers any of this. `Calendar` binds the `grid` pattern, so it is DOM-tested by hand and
-cannot appear in `COVERED`, and the retired grid-keyboard suite is not coming back at 164 MiB.
-The verification is `CalendarEvent.prompt.md`'s checklist, driven in a real browser.
+No gate covers any of this, and `Calendar`'s grid suite does not change that: it walks the
+cells and asserts arrow navigation, the roving tab stop, Home and End. Enter into an
+intersecting event chip and Escape back out are a clause of `CalendarEvent`, not of the `grid`
+pattern's eight requirements, so no assertPattern verdict rests on them. The verification is
+`CalendarEvent.prompt.md`'s checklist, driven in a real browser.
 
 ### `frameworks/react/components/display/calendar/CalendarInternals.js` — why `showsTime` takes a slot and not a width
 

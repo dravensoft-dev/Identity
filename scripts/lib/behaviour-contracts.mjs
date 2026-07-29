@@ -104,11 +104,14 @@ export function validateBinding(component, layer, binding, patterns) {
 
 export function crossLayerAgrees(a, b) {
   if (a.pattern === ABSENT || b.pattern === ABSENT) return true;
-  if (a.divergesFrom && a.divergesFrom === b.pattern) return true;
-  if (b.divergesFrom && b.divergesFrom === a.pattern) return true;
 
   const mine = bindingCases(a);
   const theirs = bindingCases(b);
+
+  const patternsOf = (cs) => new Set(cs.map((c) => c.pattern));
+  if (a.divergesFrom && patternsOf(theirs).has(a.divergesFrom)) return true;
+  if (b.divergesFrom && patternsOf(mine).has(b.divergesFrom)) return true;
+
   const names = (cs) => cs.map((c) => c.name).sort().join(',');
   if (names(mine) !== names(theirs)) return false;
 

@@ -1,7 +1,7 @@
 /* The coverage record for the behaviour render suites. COVERED is keyed
  * <component>:<layer>, and the layer is decided structurally from the SUITE_DIRS
- * tree a suite was found under, never from its text. A component binding the `grid`
- * pattern is DOM-tested by hand and cannot appear here. */
+ * tree a suite was found under, never from its text. No pattern is excluded: `grid`
+ * components were, on a memory measurement that no longer holds. */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -36,6 +36,9 @@ export const COVERED = {
   'Spinner:react': 'Spinner.dom.test.jsx',
   'Tag:react': 'TagAndChipCases.dom.test.jsx',
   'CalendarEvent:react': 'TagAndChipCases.dom.test.jsx',
+  'Calendar:react': 'Calendar.gridKeyboard.dom.test.jsx',
+  'Table:react': 'Table.cases.dom.test.jsx',
+  'TableRow:react': 'TableRow.cases.dom.test.jsx',
   'Input:react': 'TextboxStates.dom.test.jsx',
   'Textarea:react': 'TextboxStates.dom.test.jsx',
   'RadioGroup:react': 'RadioGroupPattern.dom.test.jsx',

@@ -161,6 +161,7 @@
   },
   "Table": {
     "pattern": "grid",
+    "divergesFrom": "none",
     "delegatedTo": "Angular Material MatTable",
     "dressedBy": "frameworks/angular/theme/arena-material.css",
     "exceptions": [
@@ -197,7 +198,7 @@
         "reason": "Same as ArrowKeys -- Material supplies no keyboard handling of the grid, with either role."
       }
     ],
-    "reason": "MatTable provides the row/column definition machinery (matColumnDef, mat-header-row, mat-row) and a real data-bound table, rather than a bespoke Arena re-implementation of table layout. The bridge dresses its background and row hairline colour, and gives the header cell the mono uppercase micro-label treatment. Arena has no arena-table primitive and should not grow one."
+    "reason": "MatTable provides the row/column definition machinery (matColumnDef, mat-header-row, mat-row) and a real data-bound table, rather than a bespoke Arena re-implementation of table layout. The bridge dresses its background and row hairline colour, and gives the header cell the mono uppercase micro-label treatment. Arena has no arena-table primitive and should not grow one. React's own Table declares TWO cases -- a wide `grid` and, below --bp-md, a `card` shape bound to `none` where no table element is rendered at all. `divergesFrom` names that second one: MatTable has a single shape and no responsive card layout, so there is no render here for it to describe. That is a capability difference rather than a defect, and it leaves this entry measured against `grid` alone, which is what the exceptions below are about."
   },
   "TableCell": {
     "pattern": "none",
@@ -207,31 +208,11 @@
     "exceptions": []
   },
   "TableRow": {
-    "pattern": "button",
+    "pattern": "none",
+    "divergesFrom": "button",
     "delegatedTo": "Angular Material MatTable (mat-row / matRowDef, mat-header-row / matHeaderRowDef)",
-    "reason": "React's Table became a compound component and TableRow is the row that shape needs; Angular needs no counterpart primitive, because MatTable's own row definitions already produce the rows and a consumer wiring row activation writes (click) on matRowDef's row. The pattern is bound rather than `none` for the same reason React's own TableRow binds it -- a row a consumer has made activatable is not presentational -- and every one of its requirements is unmet here, exactly as React's are, so the whole list below mirrors that binding rather than claiming Material closes any of it. The row's hairline colour is set from a custom property on the table host (--mat-table-row-item-outline-color on .mat-mdc-table), not by any rule targeting the row, so no dressedBy is claimed for it.",
-    "exceptions": [
-      {
-        "requirement": "roles.element",
-        "reason": "A mat-row renders a <tr> (or a role=\"row\" element in the flex table), never a <button> -- Material offers no activatable-row control at all. A consumer who wants one binds (click) on the row, which is exactly React's `onClick` and exactly as far from a button element. Mirrors React's own roles.element exception, including its conditional-pattern limit: without a (click) the row is inert and the pattern does not apply to that shape."
-      },
-      {
-        "requirement": "roles.label",
-        "reason": "Material gives the row no accessible name of its own -- no aria-label and no aria-labelledby -- and nothing in this delegation supplies one. A row is named by its cells to a screen reader reading the table, which is correct for a row and is not what this requirement asks for. Mirrors React's own exception."
-      },
-      {
-        "requirement": "keyboard.Space",
-        "reason": "Angular Material's own accessibility docs are explicit that MatTable adds no keyboard input handling, with either the table or the grid role. Space is unhandled on a row and keeps its native page-scroll meaning. This is the same claim the Table entry above records for ArrowKeys/Home/End, one element down."
-      },
-      {
-        "requirement": "keyboard.Enter",
-        "reason": "Unmet, and MORE unmet than React's, which is why the reason differs from its counterpart there rather than mirroring it. React's Enter activation exists and merely lives in the enclosing grid's handler; Material supplies no keyboard handling of the table at all, so there is no Enter route to a row from anywhere -- a consumer's (click) on a row is reachable by pointer only."
-      },
-      {
-        "requirement": "states.disabled",
-        "reason": "There is no disabled concept for a Material table row: aria-disabled is never set and MatTable exposes no member that makes a row unactivatable while still drawn. Mirrors React's own exception."
-      }
-    ]
+    "reason": "MatTable's row definitions produce the rows, and every requirement that applies to one is a clause of the `grid` pattern the Table entry above binds -- where Material's shortcomings are already recorded, in eight exceptions covering the row and cell roles, the roving tab stop and the arrow keys. Recording them again here was duplication: five exceptions restating what the Table entry says, on an element that owns none of the behaviour. This mirrors React's own TableRow, whose `row` case binds `none` for exactly that reason, and it is the same shape as Tab under `tabs` and SideNavItem under `navigation`. `divergesFrom` names `button` because React's TableRow declares a case this layer has no counterpart for: below --bp-md React renders each row as a <div>, which CAN carry role=\"button\" and does. MatTable has one shape and no responsive card layout, so there is no render here for that case to describe -- a real capability difference, not a defect in either layer. The row's hairline colour is set from a custom property on the table host (--mat-table-row-item-outline-color on .mat-mdc-table), not by any rule targeting the row, so no dressedBy is claimed for it.",
+    "exceptions": []
   },
   "Tabs": {
     "pattern": "tabs",

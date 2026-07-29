@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- A clickable `Table` row is reachable by keyboard on a narrow viewport. Below `--bp-md` the
+  row rendered as a plain `<div>` with a click handler and no role, no tab stop and no key
+  handling, so it could be operated by pointer alone; it now carries `role="button"`,
+  `tabIndex` and Enter/Space. The wide layout, which is what a developer usually sees, was
+  never affected.
 - **Breaking.** `Breadcrumbs.ariaLabel`, `Pagination.ariaLabel` and `RadioGroup.ariaLabel` are
   required and guarded at runtime, following `Table.label`. `Breadcrumbs` hardcoded
   `"Breadcrumb"` with no override and `Pagination` defaulted to `"Pagination"`, so two of
@@ -23,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A read-only visual state on `Input` and `Textarea`. It is deliberately not `disabled`'s
   treatment: a read-only field stays at full contrast, because its value is the point, and
   drops to the panel surface so it reads as a fact rather than somewhere to type.
+- `TableRow.disabled` — a row drawn but not activatable, announced through `aria-disabled`.
 - `contracts/behaviour/alertdialog.json`, the pattern `ConfirmDialog` already implemented.
 - `DOUBTS.md` at the repository root — everything Arena knows is wrong, incomplete or
   unverified, in one explanatory document. It is the only `.md` exempt from the

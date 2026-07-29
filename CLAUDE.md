@@ -194,8 +194,7 @@ cover, with the handful belonging to no one component in `frameworks/<layer>/tes
 trees are `SUITE_DIRS` in `scripts/check-compliance.mjs`. They assert, per requirement of a
 component's bound pattern, that the rendered DOM either meets it with no exception declared, or
 fails it with one declared. That single bidirectional statement is the stale-exception rule:
-**an exception can expire.** The hole is by rule and not by omission — a component binding the
-`grid` pattern is DOM-tested by hand, so `Calendar` and `Table` are outside `COVERED`.
+**an exception can expire.** No pattern is excluded: `grid` was, and is not now.
 
 The shared evaluator is `scripts/lib/behaviour-compliance.mjs`, DOM-generic on purpose — it
 touches only `tagName`, `getAttribute`, `hasAttribute` and `textContent`, because it is
@@ -356,12 +355,12 @@ merging it into the preloaded invocation does not itself collide. But a happy-do
 process-wide for the whole invocation replaces Bun's own `fetch`, which turns a passing
 `scripts/lib/static-server.test.mjs` fetch assertion into a cross-origin failure.
 
-**A component whose behaviour binding names the `grid` pattern is DOM-tested by hand**, with
-`bun run demos` and the component's own `*.card.html` page. It is tied to the binding rather
-than to a judgement about what looks like a grid, so it is a grep rather than an argument, and
-a component that becomes a grid later inherits it without anyone remembering; today it selects
-exactly `Calendar` and `Table`. What that rule costs is in `DOUBTS.md`, and it is a real cost,
-not a formality.
+**A grid is verified by walking its cells, one key press per step.** `Calendar` and `Table` were
+hand-tested for one reason — memory — and both have suites now. A grid suite asserts at every cell
+that focus landed where the arrow should take it and that exactly one `tabindex="0"` exists and is
+that cell; each edge clamp is one extra press, never a blind loop. **The bill is the press count,
+not what is asserted** — each press re-renders the grid through `act()` — so the fixture stays
+small and explicitly sized. `DOUBTS.md` has the measurement.
 
 **The `.dom.test.jsx` suites must be run through `--preload ./frameworks/react/test/Preload.js`,
 and that is not a convenience.** react-dom decides **once, at its own module evaluation**,
@@ -594,7 +593,7 @@ CommonJS only and the importmap needs real ES modules (`bun run build:vendor`, g
 DOM suites import the `.jsx` directly, so every test stays green with the `.js` sibling stale, and
 it is easy to conclude the rebuild is unnecessary. It is not — the demo pages load the `.js`, so a
 stale sibling means **`bun run demos` shows the pre-fix component while the suites prove the
-fix**, which is exactly the by-hand check the grid rule and every `.prompt.md` checklist depend on.
+fix**, which is exactly the by-hand check every `.prompt.md` checklist depends on.
 
 `support.js` is a generated bundle (`dc-runtime`, whose source is not in this repo) used only by
 the root `*.dc.html` pages. Do not edit it.
