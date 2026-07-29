@@ -4,7 +4,7 @@ import { IconButton } from '../../forms/icon-button/IconButton.jsx';
 const KEBAB_RESERVE = 'calc(var(--dz-ctl-h-sm) + var(--bw) * 2)';
 
 export const CalendarEvent = React.forwardRef(function CalendarEvent({
-  id, title, start, end, colorId, onClick, actionsEnabled = false, actions,
+  id, title, start, end, colorId, onClick, disabled = false, actionsEnabled = false, actions,
   box, color, timeLabel, dateLabel, showTime, actionsBelow, tabIndex, defaultPanelOpen,
 }, ref) {
 
@@ -57,8 +57,9 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
 
       type={onClick && !hasPanel ? 'button' : undefined}
       tabIndex={bodyIsButton ? undefined : tabIndex}
-      onClick={onClick && !hasPanel ? (e) => { e.stopPropagation(); onClick(); } : undefined}
+      onClick={onClick && !hasPanel && !disabled ? (e) => { e.stopPropagation(); onClick(); } : undefined}
       aria-label={onClick && !hasPanel ? `${title}, ${dateLabel}, ${timeLabel}` : undefined}
+      aria-disabled={onClick && !hasPanel && disabled ? 'true' : undefined}
       onKeyDown={hasPanel ? (e) => {
 
         if (e.key === 'Escape' && panelOpen) {
@@ -84,18 +85,21 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
         paddingRight: hasPanel && !actionsBelow ? KEBAB_RESERVE : 'calc(var(--sp-1) * 1.5)',
         background: `color-mix(in oklab, ${color} 16%, var(--surface-card))`,
         borderLeft: `var(--bw-strong) solid ${color}`, borderTop: 'none', borderRight: 'none', borderBottom: 'none',
-        borderRadius: 'var(--r-sm)', cursor: onClick ? 'pointer' : 'default',
+        borderRadius: 'var(--r-sm)', cursor: onClick ? (disabled ? 'not-allowed' : 'pointer') : 'default',
+        opacity: onClick && disabled ? 0.5 : 1,
         font: 'inherit' }}>
       {hasPanel ? (
         <>
           {onClick ? (
             <button type="button" ref={setFocusable} tabIndex={tabIndex}
-              onClick={(e) => { e.stopPropagation(); onClick(); }}
+              onClick={disabled ? undefined : (e) => { e.stopPropagation(); onClick(); }}
               aria-label={`${title}, ${dateLabel}, ${timeLabel}`}
+              aria-disabled={disabled ? 'true' : undefined}
 
               style={{ display: 'flex', flexDirection: 'column', gap: 0,
                 background: 'none', border: 'none', padding: 0, margin: 0,
-                font: 'inherit', color: 'inherit', textAlign: 'left', cursor: 'pointer' }}>
+                font: 'inherit', color: 'inherit', textAlign: 'left',
+                cursor: disabled ? 'not-allowed' : 'pointer' }}>
               {body}
             </button>
           ) : body}

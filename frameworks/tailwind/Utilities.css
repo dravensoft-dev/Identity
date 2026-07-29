@@ -1364,6 +1364,12 @@
   .text-base-content {
     color: var(--color-base-content);
   }
+  .text-base-content\/40 {
+    color: var(--color-base-content);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-base-content) 40%, transparent);
+    }
+  }
   .text-base-content\/62 {
     color: var(--color-base-content);
     @supports (color: color-mix(in lab, red, red)) {

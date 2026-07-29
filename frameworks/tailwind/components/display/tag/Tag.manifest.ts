@@ -23,9 +23,16 @@ export default {
       "danger": {
         "root": "border-error text-error"
       }
+    },
+    "disabled": {
+      "true": {
+        "close": "cursor-not-allowed text-base-content/40"
+      },
+      "false": {}
     }
   },
   "defaultVariants": {
-    "tone": "neutral"
+    "tone": "neutral",
+    "disabled": false
   }
 } as const;
