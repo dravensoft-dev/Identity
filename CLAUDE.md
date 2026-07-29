@@ -799,7 +799,7 @@ manifest — `frameworks/angular/components/display/tag/` is the reference shape
 three have it.** The rule:
 **directories are `kebab-case` and lowercase; a file name begins with a capital, and a
 multi-word stem is `PascalCase` with hyphens removed; a secondary dotted segment stays
-`lowerCamelCase`** — `Badge.manifest.json`, `BarChart.variants.ts`. Capital-initial is the
+`lowerCamelCase`** — `Badge.manifest.json`, `StatCard.variants.ts`. Capital-initial is the
 rule and PascalCase is how a multi-word stem is *formed* under it, which is why a
 conventional all-caps document name needs no dispensation: `README.md` and `ADOPTION.md`
 comply as they stand. A layer lays its components out as

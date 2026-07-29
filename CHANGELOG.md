@@ -468,7 +468,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   every documented path moved.** The rule: **directories are `kebab-case` and lowercase; a file
   name begins with a capital, and a multi-word stem is `PascalCase` with hyphens removed; a
   secondary dotted segment stays `lowerCamelCase`** — so `Badge.manifest.json` and
-  `BarChart.variants.ts`. A layer lays its components out as
+  `StatCard.variants.ts`. A layer lays its components out as
   `frameworks/<layer>/components/<category>/<component-kebab>/`, and **everything belonging to one
   component lives in that one directory** — its source, its types, its behaviour binding, its
   prompt, its demo page, its tests. A file that is not one component's rises to the narrowest
@@ -482,18 +482,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     shared layer-root modules are capitalised — `use-container-width.js` → `UseContainerWidth.js`,
     `use-dialog-modal.js` → `UseDialogModal.js`, `tokens.generated.js` → `Tokens.generated.js`,
     `api.generated.d.ts` → `Api.generated.d.ts` — and the categorical-ramp helper both moved and
-    was renamed, from `components/charts/chart-internals.js` to `frameworks/react/DataVisuals.js`,
-    because `Calendar` consumes it as well as the charts and the narrowest level containing both
-    is the layer root. `ui_kits/` is `ui-kits/`, the demo importmap's vendor bundles are
+    was renamed, in **both** layers: React's from `components/charts/chart-internals.js` to
+    `frameworks/react/DataVisuals.js`, Angular's from `primitives/chart-internals.ts` (by way of
+    `components/charts/ChartInternals.ts`) to `frameworks/angular/DataVisuals.ts`, because
+    `Calendar` consumes it as well as the charts and the narrowest level containing both is the
+    layer root. `ui_kits/` is `ui-kits/`, the demo importmap's vendor bundles are
     `vendor/React.js`, `vendor/ReactDomClient.js` and `vendor/ReactJsxRuntime.js`, and the
     Tailwind layer's preset import is `@import "./Theme.css";` where it was `theme.css`, with each
     manifest now at `components/<category>/<component-kebab>/<Component>.manifest.json`. Angular's
     `primitives/` is gone into `components/<category>/<component-kebab>/`; its barrel is still
-    `frameworks/angular/index.ts` and **its export surface did not shrink**, because the three
-    shared internals that rose to the layer root (`ContainerSize.ts`, `FocusTrap.ts`,
-    `ProjectionMarkers.ts`) are named there directly. `README.md` and `SKILL.md` were rewritten
-    for all of it; this entry is the record the CHANGELOG owed and did not have while batches 1
-    and 2 were merging.
+    `frameworks/angular/index.ts` and **its export surface did not shrink**, because the four
+    shared internals that rose to the layer root (`ContainerSize.ts`, `DataVisuals.ts`,
+    `FocusTrap.ts`, `ProjectionMarkers.ts`) are named there directly. `README.md` and `SKILL.md`
+    were rewritten for all of it; this entry is the record the CHANGELOG owed and did not have
+    while batches 1 and 2 were merging.
   - **What deliberately did NOT move, because renaming it would break an app that has already
     adopted Arena.** `frameworks/angular/theme/arena-tailwind.css` and `arena-material.css` are
     named verbatim inside an adopter's own `styles.css` — `ADOPTION.md` steps 1 and 2 give those
