@@ -1463,6 +1463,41 @@ stale-proof; a present-tense component name is not.
   thirty lines *above* the clause it contradicts, not below it — and the matching clause this
   file's own *Architecture* section carried before this batch.
 
+- **`Textarea` overruns its container by 26px, and it is the only React component left that
+  does.** `Calendar`'s chip was one — measured overrunning its day column by 12px and fixed by
+  opting that one element into `border-box` — and the spec that produced that fix asked
+  whether any other component sets a percentage `width` on a padded box and has the same latent
+  overrun. Three candidates read that way in the source:
+  `frameworks/react/components/forms/textarea/Textarea.jsx:25`,
+  `frameworks/react/components/forms/select/Select.jsx:11` and
+  `frameworks/react/components/navigation/menu/Menu.jsx:59`, each `width: '100%'` on an element
+  carrying its own horizontal padding and a border.
+
+  **Measured, and only one of the three is real.** On
+  `frameworks/react/components/forms/RadioTextarea.card.html` at its declared 720×340, the
+  `<textarea>` computes `box-sizing: content-box` and its border box lands **26px** past its
+  parent's content edge — exactly its 12px of padding a side plus its 1px border a side. On
+  `frameworks/react/components/forms/Forms.card.html` at 700×660 the `<select>` computes
+  `border-box` and overruns by **0**; on
+  `frameworks/react/components/navigation/MenuPagination.card.html` at 720×200, with the menu
+  opened, every item `<button>` computes `border-box` and overruns by **0**.
+
+  **The reason the other two are safe is the UA stylesheet, not anything Arena wrote**, which
+  is why reading the source alone gets this wrong: Chromium's UA stylesheet declares
+  `box-sizing: border-box` for `<button>` and `<select>`, and does **not** for `<textarea>` or
+  `<input type="text">`. That is also why `Input.jsx` has always had to opt in explicitly and
+  `Select.jsx` never did. Depending on a UA default is a thin guarantee — it is not part of
+  any spec Arena controls — but it is the *current* behaviour, and the entry records which
+  claim rests on it.
+
+  `Textarea` is left unfixed on purpose. The general answer is the repo-wide
+  `box-sizing: border-box` reset that the `Calendar` spec put out of scope: it would fix this
+  and probably several things nobody has measured, and it would silently change the rendered
+  width of every padded, explicitly-sized box in three framework layers. That is a system
+  change with its own spec, not a rider on a Calendar fix. Related and adjacent: *The Tailwind
+  layer is border-box; React is content-box*, in section 3, whose table this same measurement
+  pass found to be wrong in several rows for the same UA-stylesheet reason.
+
 
 ## 2. Where the rest of the debt lives
 
