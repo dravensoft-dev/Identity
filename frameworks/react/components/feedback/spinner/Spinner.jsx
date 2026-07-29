@@ -29,7 +29,7 @@ export function Spinner({ size = 'md', tone = 'accent', label = 'Loading' }) {
   const d = SIZES[size] || SIZES.md;
   const color = TONES[tone] || TONES.accent;
   return (
-    <span role="status" aria-label={label} style={{ display: 'inline-flex', color }}>
+    <span role="progressbar" aria-live="polite" aria-label={label} style={{ display: 'inline-flex', color }}>
       <span className="arena-spinner" aria-hidden="true" style={{
         width: d, height: d, boxSizing: 'border-box',
         border: 'var(--bw-strong) solid currentColor', borderTopColor: 'transparent',

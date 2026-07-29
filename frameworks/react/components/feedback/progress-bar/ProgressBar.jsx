@@ -29,7 +29,7 @@ export function ProgressBar({ progressPercentage = 0, indeterminate = false, ton
           {showPercentage && !indeterminate && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{pct}%</span>}
         </div>
       )}
-      <div role="progressbar" aria-valuenow={indeterminate ? undefined : pct} aria-valuemin={0} aria-valuemax={100} aria-label={label || 'Progress'}
+      <div role="progressbar" aria-live="polite" aria-valuenow={indeterminate ? undefined : pct} aria-valuemin={0} aria-valuemax={100} aria-label={label || 'Progress'}
         className={indeterminate ? 'arena-prog-ind' : undefined}
         style={{ position: 'relative', height: h, borderRadius: 'var(--r-pill)', background: 'var(--color-base-300)', overflow: 'hidden', color }}>
         {!indeterminate && (
