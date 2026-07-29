@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- A `danger` `Toast` cannot be un-pinned: `persist={false}` is ignored for that tone, so a
+  critical message no longer vanishes on the host's timer. The Pinned marker follows.
+- `Select` associates its label with the control. It rendered the label above the `<select>`
+  with nothing tying the two together, so the control had no accessible name at all.
+- `Tooltip` and `Menu` throw when handed a child or trigger that cannot carry attributes — a
+  fragment or a bare string. Both used to lose the ARIA silently.
 - `BulkActionBar` is a `toolbar` with one roving tab stop and arrow-key navigation, in both
   layers; it rendered `role="region"` with every control in the Tab sequence. The Angular host
   also announced that region and its label while the selection was empty and nothing was
@@ -48,7 +54,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   PageUp/PageDown moving focus between articles — it previously met none of the pattern's
   seven requirements and had no keyboard handling at all.
 - `TableRow.disabled` — a row drawn but not activatable, announced through `aria-disabled`.
-- `contracts/behaviour/alertdialog.json`, the pattern `ConfirmDialog` already implemented.
+- `contracts/behaviour/alertdialog.json` and `contracts/behaviour/select.json` — the patterns
+  `ConfirmDialog` and `Select` already implemented, each of which had been measured against a
+  neighbouring pattern that did not fit and had exceptions recording a correct component as a
+  defect.
 - `DOUBTS.md` at the repository root — everything Arena knows is wrong, incomplete or
   unverified, in one explanatory document. It is the only `.md` exempt from the
   60,000-character limit.

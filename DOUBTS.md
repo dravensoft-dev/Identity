@@ -755,33 +755,30 @@ stale-proof; a present-tense component name is not.
   failure-path tests exercise the loop **body**, so the per-case binding synthesis and the
   `case "<name>" (<when>): ` message prefixing are proved only by the real component suites
   and by nothing that would survive their deletion.
-- **`Tooltip.behaviour.json` claims `roles.describedby` unconditionally, and the
-  implementation only meets it for some children.** `aria-describedby` is added
-  by `cloneElement` onto the consumer's own child, which only works when that
-  child is a single element that accepts and forwards props. A reader of the
-  clean `"exceptions": []` would conclude the requirement always holds, and it
-  does not: a bare string or other non-element child leaves `React.isValidElement`
-  false, so the prop is never added and nothing warns; a component that ignores
-  the prop drops it just as silently; and a **fragment is the trap** —
-  `React.isValidElement` is true for a fragment, so the clone succeeds, but a
-  fragment renders its own children and ignores every other prop, so the
-  attribute never reaches the DOM with nothing announcing the loss. Today the
-  only place a consumer is warned is `Tooltip.prompt.md`'s Do/Don't, and nothing
-  machine-checks it: the compliance suite renders a prop-accepting child by
-  construction, so it proves the good case and can never exercise the bad ones.
-  **This is the live instance of the one conditionality level `cases` did not
-  close**, per the entry above: `Tag` and `Skeleton` were the two the schema could
-  not express, and both have since left the problem — `Tag` by being expressed as cases,
-  `Skeleton` by having its defect fixed in 8C10, after which nothing was left to scope and
-  its binding went flat. This one is neither: it depends on what a
-  consumer hands in rather than on any prop of `Tooltip`, so no case can name it.
-  There is no grep for the set of instances, because a
-  requirement holding only for some inputs is a property of the implementation,
-  not a string in the binding — that absence is exactly why the schema cannot
-  express it. This entry, `Table`'s `focus.roving` and `Pagination`'s
-  `roles.label` are recorded case by case instead, and finding the next one means
-  reading a component's implementation against its binding, not searching for a
-  phrase.
+- **`Tooltip`'s `roles.describedby` is guarded at the two detectable ends, and the third is
+  still open.** `aria-describedby` is added by `cloneElement` onto the consumer's own child,
+  which only works when that child is a single element that accepts and forwards props. Two
+  of the three failing shapes now THROW: a bare string, and — the trap — a **fragment**, for
+  which `React.isValidElement` is true, so the clone succeeded and the attribute reached
+  nothing at all, in silence. `Menu.trigger` had the identical hole and took the identical
+  guard in the same programme.
+
+  **What is still undetectable is a component that accepts the prop and drops it.** Nothing
+  distinguishes that from one that forwards it, at any point React can observe, so the
+  binding's `exceptions: []` remains slightly stronger than the implementation can promise.
+  `Tooltip.prompt.md`'s Do/Don't is still where a consumer is warned; the difference is that
+  the two shapes a warning could not catch are now errors rather than warnings.
+
+  **This was the live instance of the one conditionality level `cases` did not close**, and
+  the level is now empty of live instances rather than solved. `Tag` and `Skeleton` left it
+  by other routes — one expressed as cases, one by having its defect fixed. `Table`'s
+  `focus.roving` turned out to be misfiled: the clickable card row is `TableRow`'s own case,
+  not a clause of `Table`'s binding. `Pagination`'s `roles.label` was designed away by making
+  the member required. And this one is guarded at both detectable ends. **The level is real
+  and will refill**: a requirement holding only for some consumer inputs is a property of the
+  implementation, not a string in a binding, so there is no grep for it — finding the next one
+  means reading an implementation against its binding.
+
 - **The grid hand-test rule is RETIRED, and what replaces it is a measurement plus a
   method.** `Calendar` and `Table` bound `grid` and were DOM-tested by hand — serve the
   tree, operate the component on its `*.card.html` page — because the React DOM suites'
