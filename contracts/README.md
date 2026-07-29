@@ -49,15 +49,16 @@ nothing left to separate once it moved.
 
 ## What checks each level
 
-`bun run check:api` and `bun run check:behaviour` each fail on an empty directory rather
-than reporting zero violations over a tree they never opened — `zeroContractProblems` in
-`check-api.mjs` and `zeroPatternProblems` in `check-behaviour.mjs` are the guards, by
-name. `design/` carries the same guard under a different name: `bun run check:dtcg` walks
-`contracts/design/` itself and fails the same way on zero token files. `check:tokens` and
-`check:script-tokens` don't walk the directory — they compare the committed generated
-output against what `contracts/design/` builds — so a source file gone missing fails
-them too, just not silently: the build they depend on has nothing to read and stops
-rather than reporting a clean pass.
+`bun run check:api`, `bun run check:behaviour` and `bun run check:script-tokens` each fail
+on an empty directory rather than reporting zero violations over a tree they never opened —
+`zeroContractProblems` in `check-api.mjs`, `zeroPatternProblems` in `check-behaviour.mjs`
+and `zeroGeneratedCssProblems` in `check-script-tokens.mjs` are the guards, by name.
+`design/` carries the same guard under a different name: `bun run check:dtcg` walks
+`contracts/design/` itself and fails the same way on zero token files. `check:tokens` alone
+walks no directory — it compares the committed generated CSS against what `contracts/design/`
+builds from `build-tokens.mjs`'s hardcoded file list, so there is no result set discovery
+could find empty — but a source file gone missing still fails it, just not silently: the
+build it depends on has nothing to read and stops rather than reporting a clean pass.
 
 None of the five is a claim that a component is correct: `check:behaviour`'s green run is
 a coverage claim and never an accessibility one, and `check:api` says nothing about what

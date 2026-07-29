@@ -99,6 +99,36 @@ export function zeroGeneratedCssProblems(count) {
   return ['found 0 .css files in contracts/design-generated — an empty result set is a failure, not a clean pass; check the discovery path'];
 }
 
+/** Whether the CSS-discovery guard fires, and what to report if it does.
+ *
+ *  This exists because of a defect a reviewer caught: `main()`'s section 1 (the
+ *  drift check against the committed Tokens.generated.*) fills `problems`
+ *  BEFORE this guard runs, and the guard used to report and exit on its own
+ *  freshly-allocated `zeroCss` array without ever looking at `problems` --
+ *  so a run where BOTH section 1's drift and an empty
+ *  contracts/design-generated/ were true at once printed only the CSS-discovery
+ *  line and silently dropped the real drift finding. Exit code stayed 1, so it
+ *  was never a false pass, only lost diagnostic signal -- the same family of
+ *  harm the cascade this guard replaces was, just quieter.
+ *
+ *  The fix merges rather than moving the guard ahead of section 1: moving it
+ *  first was the other option on the table, and it is worse, not merely
+ *  different -- it would skip section 1 outright whenever the guard fires,
+ *  which trades today's loss for the identical shape one section earlier.
+ *  Keying the exit on `zeroCss.length` rather than on `existingProblems.length`
+ *  matters too: a run where section 1 alone found a stale Tokens.generated.*
+ *  and contracts/design-generated/ is otherwise fine must still fall through to
+ *  sections 3 and 4 exactly as it always has, not stop early on a finding this
+ *  guard had nothing to do with.
+ *  @param {string[]} existingProblems @param {number} cssFileCount
+ *  @returns {string[]} empty when the guard does not fire and main() should
+ *  continue; otherwise existingProblems plus the CSS-discovery finding,
+ *  ready to report and exit on. */
+export function cssDiscoveryProblems(existingProblems, cssFileCount) {
+  const zeroCss = zeroGeneratedCssProblems(cssFileCount);
+  return zeroCss.length ? [...existingProblems, ...zeroCss] : [];
+}
+
 const SCAN_EXT = new Set(['.js', '.jsx', '.ts', '.tsx']);
 
 function* sourceFiles(dir) {
@@ -140,10 +170,10 @@ async function main() {
    * build-tokens.mjs into one of the generated files, never into the
    * hand-authored colors.css. */
   const cssFiles = readdirSync(join(root, 'contracts', 'design-generated')).filter((f) => extname(f) === '.css');
-  const zeroCss = zeroGeneratedCssProblems(cssFiles.length);
-  if (zeroCss.length) {
-    console.error(`check-script-tokens: ${zeroCss.length} problem(s)\n`);
-    for (const z of zeroCss) console.error(`  ${z}`);
+  const gated = cssDiscoveryProblems(problems, cssFiles.length);
+  if (gated.length) {
+    console.error(`check-script-tokens: ${gated.length} problem(s)\n`);
+    for (const g of gated) console.error(`  ${g}`);
     process.exit(1);
   }
   const cssValues = new Map();

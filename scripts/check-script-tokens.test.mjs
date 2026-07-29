@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { cssCounterpart, importedNames, catSlotEnumProblems, zeroGeneratedCssProblems } from './check-script-tokens.mjs';
+import { cssCounterpart, importedNames, catSlotEnumProblems, zeroGeneratedCssProblems, cssDiscoveryProblems } from './check-script-tokens.mjs';
 import { buildScriptModules } from './build-tokens.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -103,4 +103,35 @@ test('zero generated CSS files is one named failure, not a 21-line cascade', () 
 
 test('a populated design-generated directory has no zero problem', () => {
   assert.deepEqual(zeroGeneratedCssProblems(5), []);
+});
+
+/* cssDiscoveryProblems is the interaction a reviewer caught by hand: main()'s
+ * section 1 (drift) fills `problems` before this guard runs, and the guard
+ * used to report and exit on its own disconnected array, so a real drift
+ * finding was silently dropped whenever contracts/design-generated/ was also
+ * empty. Every case below is one of the four combinations of "section 1 found
+ * something" x "the CSS directory is empty" -- none of these four would tell
+ * the broken and fixed versions apart on its own except the last, which is
+ * exactly the one the review reproduced by hand against the real tree. */
+test('cssDiscoveryProblems: no prior problems, populated directory -- continue', () => {
+  assert.deepEqual(cssDiscoveryProblems([], 5), []);
+});
+
+test('cssDiscoveryProblems: a prior drift problem, populated directory -- still continue, not gated by an unrelated finding', () => {
+  assert.deepEqual(cssDiscoveryProblems(['frameworks/react/Tokens.generated.js: stale — run bun run build:tokens'], 5), []);
+});
+
+test('cssDiscoveryProblems: no prior problems, empty directory -- the CSS-discovery line alone', () => {
+  assert.deepEqual(
+    cssDiscoveryProblems([], 0),
+    ['found 0 .css files in contracts/design-generated — an empty result set is a failure, not a clean pass; check the discovery path'],
+  );
+});
+
+test('cssDiscoveryProblems: a prior drift problem AND an empty directory -- both are reported, not just the CSS-discovery line', () => {
+  const drift = 'frameworks/react/Tokens.generated.js: stale — run bun run build:tokens';
+  const result = cssDiscoveryProblems([drift], 0);
+  assert.equal(result.length, 2);
+  assert.equal(result[0], drift);
+  assert.match(result[1], /found 0 .css files/);
 });
