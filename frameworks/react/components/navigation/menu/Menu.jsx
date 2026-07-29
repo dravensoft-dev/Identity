@@ -17,23 +17,56 @@ function useMenuKeyframes() {
 export function Menu({ trigger, items, align = 'start', onSelect }) {
 
   if (items == null) throw new Error('Menu: `items` is required');
+  if (!React.isValidElement(trigger) || trigger.type === React.Fragment) {
+    throw new Error(
+      'Menu: `trigger` must be a single element that forwards props to its focusable control. '
+      + 'A fragment or a bare string takes aria-haspopup and aria-expanded nowhere.',
+    );
+  }
   useMenuKeyframes();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const panelRef = useRef(null);
+
+  const triggerEl = () => ref.current && ref.current.firstElementChild;
+  const close = (restoreFocus) => {
+    setOpen(false);
+    const el = triggerEl();
+    if (restoreFocus && el && typeof el.focus === 'function') el.focus();
+  };
+
   useEffect(() => {
     if (!open) return;
     const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') close(true); };
     document.addEventListener('mousedown', onDoc);
     document.addEventListener('keydown', onKey);
     return () => { document.removeEventListener('mousedown', onDoc); document.removeEventListener('keydown', onKey); };
   }, [open]);
-  const run = (it) => { if (it.disabled) return; setOpen(false); onSelect && onSelect(it); };
+
+  useEffect(() => {
+    if (!open) return;
+    const first = panelRef.current
+      && panelRef.current.querySelector('[role="menuitem"]:not([disabled])');
+    if (first) first.focus();
+  }, [open]);
+
+  const run = (it) => { if (it.disabled) return; close(true); onSelect && onSelect(it); };
+
+  const decoratedTrigger = React.cloneElement(trigger, {
+    'aria-haspopup': 'menu',
+    'aria-expanded': open,
+    onClick: (e) => {
+      if (trigger.props.onClick) trigger.props.onClick(e);
+      setOpen((v) => !v);
+    },
+  });
+
   return (
     <div ref={ref} style={{ position: 'relative', display: 'inline-flex' }}>
-      <span onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open}>{trigger}</span>
+      {decoratedTrigger}
       {open && (
-        <div role="menu" style={{ position: 'absolute', top: 'calc(100% + calc(var(--sp-1) * 1.5))', [align === 'end' ? 'right' : 'left']: 0, zIndex: 'var(--z-dropdown)',
+        <div role="menu" ref={panelRef} style={{ position: 'absolute', top: 'calc(100% + calc(var(--sp-1) * 1.5))', [align === 'end' ? 'right' : 'left']: 0, zIndex: 'var(--z-dropdown)',
           minWidth: 'calc(var(--sp-1) * 50)', padding: 'calc(var(--sp-1) * 1.5)', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)',
           borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-2)', animation: 'arena-menu var(--dur-fast) var(--ease-out)' }}>
           {items.map((it, i) => {

@@ -30,8 +30,7 @@ test('secondaryAction renders the projected node', () => {
   assert.match(html, /View logs/);
 });
 
-test('the root renders a plain div with no role attribute -- pins the roles.element exception', () => {
+test('the root announces itself -- the failure is heard, not only read', () => {
   const html = renderToStaticMarkup(<ErrorState title="Failed" />);
-  assert.match(html, /^<div /);
-  assert.doesNotMatch(html, /role="/);
+  assert.match(html, /^<div role="alert"/);
 });
