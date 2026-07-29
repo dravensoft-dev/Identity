@@ -2,15 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, contentChild, input } fro
 import { ArenaBrand, ArenaFooter } from '../../../ProjectionMarkers';
 import { unauthCardStyles } from './UnauthCard.variants';
 
-/** The panel a signed-out screen needs — a frame, never the form. It knows nothing
- *  about credentials, so one component serves sign-in, "check your inbox", "this
- *  link expired" and two-factor entry; fields are composed inside it from
- *  Material's form controls. It does NOT centre itself — the product owns the
- *  page. The host is the recipe's `root`, the flex item a parent lays out; the
- *  `[brand]` and `[footer]` wrappers each carry their own margin and render only
- *  when something was actually projected into them, matching React's own
- *  `{brand && <div>...}` / `{footer && <div>...}` gates — the same fix
- *  `EmptyState`/`ErrorState` shipped for their action slot. */
 @Component({
   selector: 'arena-unauth-card',
   standalone: true,

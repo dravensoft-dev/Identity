@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-/** Command palette (Cmd/Ctrl+K). Power-user accelerator: search and run actions without a mouse. */
+
 export function CommandPalette({ open, commands, placeholder = 'Search for an action or project…', onClose, onRun }) {
   if (open == null) throw new Error('CommandPalette: `open` is required');
   if (commands == null) throw new Error('CommandPalette: `commands` is required');

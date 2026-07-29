@@ -1,9 +1,5 @@
 import React from 'react';
 
-/** Breadcrumb navigation (H3). Explicit return path in hierarchies deeper than tabs.
- * `items`: [{ label, href? }]. The last one is the current location (not navigable).
- * A non-current crumb's click reports `onNavigate(crumb)`; the anchor's own navigation
- * still fires -- ctrl-click, middle-click and open-in-new-tab keep working. */
 export function Breadcrumbs({ items, separator = '/', onNavigate }) {
   if (!items) throw new Error('Breadcrumbs: `items` is required');
   return (

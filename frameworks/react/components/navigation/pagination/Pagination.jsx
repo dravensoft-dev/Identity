@@ -1,18 +1,8 @@
 import React from 'react';
 import { pageWindow } from './PaginationWindow.js';
-/** Navigation between pages of a large set (tables, lists). Numbers in mono;
- * active page in crimson. `ariaLabel` names the landmark — two paginated tables
- * on one page need two names. For infinite scroll or "load more" don't use
- * Pagination. */
+
 export function Pagination({ page, pageCount, ariaLabel = 'Pagination', onChange }) {
-  /* `page` and `pageCount` are required in contracts/api/components/Pagination.json, and
-   * contracts/api/README.md's required-ness rule says the implementation fails hard rather
-   * than rendering with a missing value. Neither had a sensible default to keep:
-   * the old `pageCount = 1` drew a one-page control over a set of unknown size,
-   * and the old `page = 1` claimed the caller was on the first one. Absence only,
-   * `== null` rather than `!page`, on Dialog.jsx's precedent for `open` — a
-   * caller passing 0 is passing a value this component will reject on its own
-   * terms, not omitting one, and required-ness is about omission. */
+
   if (page == null) throw new Error('Pagination: `page` is required');
   if (pageCount == null) throw new Error('Pagination: `pageCount` is required');
   const go = (p) => { if (p >= 1 && p <= pageCount && p !== page) onChange && onChange(p); };

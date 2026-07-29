@@ -2,11 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, contentChild, input } fro
 import { ArenaAction } from '../../../ProjectionMarkers';
 import { emptyStateStyles } from './EmptyState.variants';
 
-/** Section- or screen-level empty state, with one clear way forward. The
- *  action is projected rather than owned — a real `mat-button` wearing
- *  Arena, not a second button implementation — so the host renders the slot
- *  that wraps it only when an action was actually projected. The host
- *  itself is the recipe's `root`, the flex item a parent lays out. */
 @Component({
   selector: 'arena-empty-state',
   standalone: true,

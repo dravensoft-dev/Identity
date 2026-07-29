@@ -1,17 +1,5 @@
 import React, { useEffect, useState } from 'react';
-/**
- * Text field with validation (H5). Visual states: neutral, focus (gold ring),
- * `error` (crimson border + message) and `valid` (green border/check). Pass `required`
- * to mark the field; `validate(value)` returns an error string or null and is evaluated
- * according to `validateOn` ('blur' by default | 'change' for live validation).
- */
 
-/* The native date/time picker indicator is a vendor pseudo-element: an inline
- * style cannot reach it, and it ships near-black — invisible on Arena's dark
- * input surface. This is the one sanctioned exception to "components carry no
- * CSS": it targets a vendor pseudo-element, never a class of ours. Same
- * injected <style> pattern as ProgressBar. --picker-invert is theme polarity
- * (1 dark / 0 light), defined in contracts/design/colors.css. */
 let injected = false;
 function usePickerIndicator() {
   useEffect(() => {
@@ -43,10 +31,6 @@ export function Input({
   const shownError = error != null ? error : (touched ? localErr : null);
   const isValid = !shownError && (valid || (touched && validate && localErr === null));
 
-  /* The consumer-facing handlers carry the VALUE, never the DOM event: a platform
-   * event type is an R4 violation inside a payload, so `change` and `blur` are
-   * declared with a `string` payload. The DOM event still arrives here, because
-   * the internal validation engine reads `e.target.value` off it. */
   const runValidate = (v) => { if (validate) setLocalErr(validate(v) || null); };
   const handleChange = (e) => { onChange && onChange(e.target.value); if (validateOn === 'change') { setTouched(true); runValidate(e.target.value); } };
   const handleBlur = (e) => { setFocus(false); setTouched(true); runValidate(e.target.value); onBlur && onBlur(e.target.value); };

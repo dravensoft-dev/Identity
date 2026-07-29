@@ -2,17 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, contentChild, input, outp
 import { ArenaSecondaryAction } from '../../../ProjectionMarkers';
 import { errorStateStyles } from './ErrorState.variants';
 
-/** Section- or screen-level failure, with recovery and an optional support
- *  code. The host itself is the recipe's `root`, the flex item a parent
- *  lays out. Under the API contract (`contracts/api/components/ErrorState.json`) Arena
- *  draws the primary retry itself, from data (`retryLabel` gates the button;
- *  activating it emits `retry`) rather than leaving it to a consumer to
- *  project — the same `retryLabel`-gated shape `Alert`'s `actionLabel` uses.
- *  The `[secondaryAction]` slot stays a projection, for whatever a consumer
- *  wants beside the retry (a link to logs, say). The actions wrapper renders
- *  only when a retry or a secondary action actually exists, so a consumer
- *  who offers neither ships no dead space — the same fix `EmptyState`
- *  shipped for its action slot. */
 @Component({
   selector: 'arena-error-state',
   standalone: true,

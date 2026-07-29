@@ -15,8 +15,7 @@ export function LineChart({
   const height = CHART_HEIGHT;
   const n = values.length;
   const fmt = (v) => `${v}${valueSuffix ?? ''}`;
-  // A line is one series, so one color — resolveColors still owns the
-  // identity/meaning collision rule.
+
   const color = resolveColors({ slot, tone, count: 1 })[0];
 
   const max = niceMax(Math.max(0, ...values));
@@ -33,7 +32,6 @@ export function LineChart({
 
   const name = seriesLabel ? `${seriesLabel} — line chart` : 'Line chart';
 
-  // Nearest point to the pointer, so the crosshair snaps instead of drifting.
   const onMove = (e) => {
     if (!n) return;
     const box = e.currentTarget.getBoundingClientRect();
@@ -55,7 +53,7 @@ export function LineChart({
         ))}
         <line x1={PAD.l} x2={width - PAD.r} y1={baseline} y2={baseline} stroke="var(--line-strong)" style={{ strokeWidth: 'var(--bw)' }} />
 
-        {/* The area is the series color at 18% — a tint of the line, never a gradient. */}
+        {}
         {area && n > 0 && (
           <path d={areaPath} fill={`color-mix(in oklab, ${color} 18%, transparent)`} stroke="none" />
         )}
@@ -73,17 +71,16 @@ export function LineChart({
             fill={color} stroke="var(--surface-card)" style={{ strokeWidth: 'var(--bw-strong)' }} />
         ))}
 
-        {/* Point axis — one label per point, taken by index. The point is the
-            thing being labelled, so a label with no value at its index is
-            dropped rather than drawn over empty plot, and a point with no label
-            renders an empty string. */}
+        {
+
+}
         {values.map((_, i) => (
           <text key={i} x={xOf(i)} y={height - 8} textAnchor="middle"
             fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{labels[i] ?? ''}</text>
         ))}
 
-        {/* One overlay owns the pointer: per-point hit targets would leave dead
-            gaps between the points. */}
+        {
+}
         <rect x={PAD.l} y={PAD.t} width={iw} height={ih} fill="transparent"
           onMouseMove={onMove} onMouseLeave={() => setHover(null)} />
       </svg>

@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
-/* Same density tokens as Button — the two sit side by side in toolbars and must
- * re-densify together. */
+
 const SZ = { sm: 'var(--dz-ctl-h-sm)', md: 'var(--dz-ctl-h)', lg: 'var(--dz-ctl-h-lg)' };
-/** Icon-only button. `label` is required (accessible name in ALL states, not just hover).
- * `showLabel` (H6): shows the text next to the icon where there's room — don't rely only on the tooltip
- * on touch or keyboard surfaces. */
+
 export function IconButton({
   icon, label, size = 'md', variant = 'ghost', showLabel = false, disabled = false,
   type = 'button', name, value, autoFocus = false, form, onClick, tabStop = true,
@@ -19,9 +16,7 @@ export function IconButton({
   const color = variant === 'solid' ? 'var(--on-accent)' : 'var(--bone-dim)';
   return (
     <button type={type} name={name} value={value} autoFocus={autoFocus} form={form} onClick={onClick}
-      /* undefined rather than 0: a native <button> is already reachable, and an
-         explicit tabindex="0" would be an attribute that means nothing and that
-         every assertion about this markup would have to step around. */
+
       tabIndex={tabStop ? undefined : -1}
       aria-label={label} title={showLabel ? undefined : label} disabled={disabled}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}

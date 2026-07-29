@@ -1,20 +1,5 @@
 import React, { useState } from 'react';
 
-/**
- * Compact inline filter over a set of mutually exclusive options.
- *
- * Deliberately not a Tabs look-alike: Tabs navigates between views and marks the
- * active one with the crimson underline; this marks the selected option with a
- * neutral raised thumb inside an enclosed track. A filter must not spend the
- * view's single primary accent (see README → VISUAL FOUNDATIONS), and the solid
- * crimson fill stays reserved for the primary action.
- *
- * Semantics are a real radio group — a hidden native input per segment inside a
- * `role="radiogroup"` track. The browser then owns the keyboard (one tab stop,
- * arrows move and select) and focus always coincides with selection, which is
- * why the gold focus ring can sit on the track the way Input and Select wear it.
- */
-
 const SIZES = {
   sm: { height: 'calc(var(--sp-1) * 7)', padding: '0 calc(var(--sp-1) * 2.5)', fontSize: 'var(--dz-text-sm)' },
   md: { height: 'calc(var(--sp-1) * 8.5)', padding: '0 calc(var(--sp-1) * 3.5)', fontSize: 'var(--dz-text-md)' },

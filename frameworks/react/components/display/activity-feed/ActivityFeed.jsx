@@ -1,16 +1,10 @@
 import React from 'react';
 
-/* Badge's vocabulary, taken rather than restated -- Badge defines it, StatCard
- * took it for its value, and this is the third. A fourth list that is nearly
- * the same as the first is how they drift apart. Only the foreground of each
- * pair is used here: the dot is a mark, not a chip. */
 const TONES = {
   neutral: 'var(--bone-dim)', accent: 'var(--crimson)', gold: 'var(--gold)',
   success: 'var(--success)', warning: 'var(--warning)', danger: 'var(--danger)', info: 'var(--info)',
 };
 
-/** An event feed: someone did something to something, then. Arena draws every
- *  row — there is no per-item projection, because Angular has no binding for one. */
 export function ActivityFeed({ items }) {
   if (items == null) throw new Error('ActivityFeed: `items` is required');
   return (

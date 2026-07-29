@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-/* The loading spin is keyframes, which an inline style object cannot express, so
- * it ships as a <style> injected once into the head — the pattern ProgressBar
- * establishes and Spinner follows. It used to render inline inside every
- * <button>, which duplicated the tag once per instance and leaked the CSS into
- * the button's textContent. Reduced motion slows the spin rather than stopping
- * it, as Spinner does: a frozen spinner reads as a hung process. */
 let injected = false;
 function useSpinKeyframes() {
   useEffect(() => {
@@ -21,8 +15,6 @@ function useSpinKeyframes() {
   }, []);
 }
 
-/* Heights come from the density tokens, so inside `.arena-compact` the button
- * re-densifies with the rows around it instead of towering over them. */
 const SIZES = {
   sm: { padding: '0 calc(var(--sp-1) * 3)', height: 'var(--dz-ctl-h-sm)', fontSize: 'var(--dz-text-md)' },
   md: { padding: '0 calc(var(--sp-1) * 4.5)', height: 'var(--dz-ctl-h)', fontSize: 'var(--dz-text)' },
@@ -68,9 +60,7 @@ export function Button({
       autoFocus={autoFocus}
       form={form}
       onClick={onClick}
-      /* undefined rather than 0: a native <button> is already reachable, and an
-         explicit tabindex="0" would be an attribute that means nothing and that
-         every assertion about this markup would have to step around. */
+
       tabIndex={tabStop ? undefined : -1}
       disabled={disabled || loading}
       onMouseEnter={() => setHover(true)}

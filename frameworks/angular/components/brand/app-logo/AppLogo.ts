@@ -2,13 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { appLogoStyles } from './AppLogo.variants';
 import type { LogoSize, Orientation } from '../../../Api.generated';
 
-/** Brand lock-up: a mark projected into the `mark` slot, beside (horizontal)
- *  or above (vertical) a product name. `name` is required and the `mark`
- *  slot is content the consumer must supply — nothing defaults, so an empty
- *  call site is a bug at the call site, not a variant this component renders
- *  around. The host itself is the recipe's `root` — it is the flex item a
- *  parent row lays out, so root-level classes must live on the host, not one
- *  element inside it. */
 @Component({
   selector: 'arena-app-logo',
   standalone: true,

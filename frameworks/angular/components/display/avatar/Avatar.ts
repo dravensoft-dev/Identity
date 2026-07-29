@@ -2,9 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { avatarStyles } from './Avatar.variants';
 import { AvatarSize, AvatarShape, AvatarStatus } from '../../../Api.generated';
 
-/** Person or entity mark — the image when `src` is set, initials from `name` otherwise.
- *  The host itself is the recipe's `root` — it is the flex item a parent row lays
- *  out, so the root's `shrink-0` must live on the host, not one element inside it. */
 @Component({
   selector: 'arena-avatar',
   standalone: true,

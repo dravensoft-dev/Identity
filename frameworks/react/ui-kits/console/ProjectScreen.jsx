@@ -19,34 +19,14 @@ const DEPLOYS = [
   { build: '#4818', env: 'Production', status: ['neutral', 'Rolled back'], author: 'CI · main', dur: '4m 02s' },
   { build: '#4815', env: 'QA', status: ['danger', 'Failed'], author: 'diego@', dur: '1m 08s' },
 ];
-/* Deployments reads Table rather than a hand-rolled grid. It used to be six
- * spans per row inside their own `display:grid`, one container per row — and
- * grid sizes its columns per container, never across siblings. The header's
- * trailing `auto` column held an empty span and each body row's held a
- * button, so the header's five `1fr` columns split ~75px more free space than
- * the body's did and every label drifted right of its data, cumulatively. A
- * <table> shares column widths by definition, so the bug cannot come back.
- *
- * `mono` is the component's rule for identifiers and numeric data, and it
- * carries --gold: the build number and the duration take it, the author does
- * not — a name is neither a code nor a measurement.
- *
- * A COLUMN IS CONFIGURATION ONLY NOW. It used to carry `key` (which field of
- * the row to read) and `render` (what markup to put in the cell); both are
- * gone, and the rows below are written as <TableRow>/<TableCell> instead. That
- * is what keeps the Badge in the status cell and the Details button in the
- * actions cell: a `render` function was per-item projection, which the library
- * does not do, but a cell the consumer instantiates is just an element they
- * wrote. Cells are POSITIONAL — the nth <TableCell> takes the nth column. */
+
 const DEPLOY_COLUMNS = [
   { header: 'Build', mono: true, width: 'calc(var(--sp-1) * 24)' },
   { header: 'Environment' },
   { header: 'Status' },
   { header: 'Author' },
   { header: 'Duration', mono: true },
-  /* No header: the button names itself, and an "ACTIONS" label above it would
-     say less than the button does. mobileLayout:'block' drops the label row
-     entirely when the table collapses to cards. */
+
   { header: '', mobileLayout: 'block' },
 ];
 const ACTIVITY = [
@@ -90,8 +70,8 @@ export function ProjectScreen({ onNav, project, onToast }) {
         </Tab>
         <Tab value="Deployments" label="Deployments">
           <Table columns={DEPLOY_COLUMNS} label="Deployments">
-            {/* `key` is React's own reconciliation, not an Arena member — the
-                `getRowKey` prop that used to compute it is gone. */}
+            {
+}
             {DEPLOYS.map((d) => (
               <TableRow key={d.build}>
                 <TableCell>{d.build}</TableCell>

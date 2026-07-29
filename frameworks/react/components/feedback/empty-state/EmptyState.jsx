@@ -1,5 +1,5 @@
 import React from 'react';
-/** Section/screen-level empty state, with a clear action to move forward. */
+
 export function EmptyState({ icon, title, message, action }) {
   if (!title) throw new Error('EmptyState: `title` is required');
   return (

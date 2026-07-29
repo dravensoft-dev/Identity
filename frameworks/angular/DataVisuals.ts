@@ -1,57 +1,21 @@
-/* Shared data-visualisation internals — the Angular port of
- * frameworks/react/DataVisuals.js. NOT a component: no quartet, no manifest, no
- * selector. Renamed from ChartInternals: a module a schedule grid consumes is not
- * "chart internals" -- it bundles the data-colour contract (catColor, toneColor,
- * resolveColors, CAT_SLOTS), the chart geometry (niceMax, ticks, barPath, arcPath,
- * PAD, CHART_HEIGHT) and the visually-hidden idiom. It sits at the layer root,
- * beside ContainerSize, FocusTrap and ProjectionMarkers, rather than inside
- * components/charts/, because its real consumer set crosses categories: React's
- * Calendar already imports catColor from its sibling, and Angular's own Calendar
- * -- absent today only because that component is delegated to Material -- would
- * make this file's Angular consumer set cross the same boundary the moment that
- * delegation is retired.
- *
- * Why hand-written SVG and not a charting library: a <canvas> cannot inherit CSS, and
- * that inability is the ONLY reason a "chart palette" contract would need to exist. An
- * <svg> reads var(--color-cat-N) directly and re-themes with no code at all, and it
- * costs zero dependencies. The price is that the tooltip, the legend and the axes are
- * ours to write.
- */
-
 import {
   chartHeight, chartPadTop, chartPadRight, chartPadBottom, chartPadLeft, catSlots,
 } from './Tokens.generated';
 import type { SeriesTone } from './Api.generated';
 
-/** How many identity slots the categorical ramp defines. Assigned in order,
- *  never cycled. Derived from the ramp itself, so adding a slot needs no edit here. */
 export const CAT_SLOTS = catSlots;
 
-/** The chart plot's height in px, before padding. From contracts/design/chart.json. */
 export const CHART_HEIGHT = chartHeight;
 
-/** Plot padding in px. Left pad holds the value labels; bottom pad holds the
- *  category labels. From contracts/design/chart.json -- these were declared here AND
- *  in React's DataVisuals.js, identically, which is the duplication the
- *  script-readable target exists to end. */
 export const PAD = {
   t: chartPadTop, r: chartPadRight, b: chartPadBottom, l: chartPadLeft,
 } as const;
 
-/** Visually hidden, still read aloud. Every chart pairs role="img" with a real <table>
- *  of its numbers: a picture no one can read is not an alternative. Bind it with
- *  `[style]="SR_ONLY"`. Values carry their units because Angular's style binding, unlike
- *  React's, never appends one — a bare `1` would be dropped as an invalid length. */
 export const SR_ONLY = {
   position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px',
   overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: '0',
 } as const satisfies Readonly<Record<string, string>>;
 
-/** Identity colour for slot N (1-based, clamped to the ramp). Slots are assigned IN
- *  ORDER and NEVER cycled: a 9th series folds to "Other", small multiples, or direct
- *  labels. Wrapping back to slot 1 would silently claim two different series are the
- *  same one.
- *  @param slot the 1-based ramp slot @returns a `var(--color-cat-N)` reference */
 export function catColor(slot: number): string {
   const n = Math.min(CAT_SLOTS, Math.max(1, Math.round(slot) || 1));
   return `var(--color-cat-${n})`;
@@ -64,8 +28,6 @@ const TONE_VARS: Record<SeriesTone, string> = {
   info: 'var(--info)',
 };
 
-/** Semantic colour, for when a series IS a state.
- *  @param tone the state the series reports @returns the matching token reference */
 export function toneColor(tone: SeriesTone): string {
   return TONE_VARS[tone];
 }
@@ -77,14 +39,6 @@ function warnOnce(message: string): void {
   console.warn(`[arena] ${message}`);
 }
 
-/** The colour contract, made enforceable. Identity (slot/slots) and meaning (tone) are
- *  never both in one chart: a series painted --danger reads as an error, so mixing the
- *  two makes the chart lie. Passing both warns at development time and `tone` wins.
- *  The `|| catColor(1)` fallback is not dead code: `tone` arrives from a template binding
- *  or from parsed JSON, so a value outside the union is a real runtime possibility that
- *  the type alone does not prevent.
- *  @param options the series count plus at most one of `tone`, `slot`, `slots`
- *  @returns exactly `count` colour references, one per series */
 export function resolveColors(options: {
   slot?: number;
   slots?: number[];
@@ -103,8 +57,6 @@ export function resolveColors(options: {
   return Array.from({ length: count }, () => catColor(slot ?? 1));
 }
 
-/** Round a max up to a readable axis top (1, 2, 2.5, 5 or 10 × a power of ten).
- *  @param max the largest value the axis must hold @returns the axis top, always > 0 */
 export function niceMax(max: number): number {
   if (!(max > 0)) return 1;
   const mag = Math.pow(10, Math.floor(Math.log10(max)));
@@ -113,28 +65,16 @@ export function niceMax(max: number): number {
   return step * mag;
 }
 
-/** Evenly spaced axis values from 0 to `max` inclusive.
- *  @param max the axis top @param count how many intervals @returns `count + 1` values */
 export function ticks(max: number, count = 4): number[] {
   return Array.from({ length: count + 1 }, (_, i) => (max / count) * i);
 }
 
-/** A bar: rounded at the DATA END only, square where it meets the baseline. A plain rect
- *  with rx would round all four corners and lift the bar off its own axis, which
- *  misreads the value. Degrades cleanly when h < r.
- *  @param x left edge @param y data end @param w width @param h height
- *  @param r corner radius at the data end @returns an SVG path `d` */
 export function barPath(x: number, y: number, w: number, h: number, r: number): string {
   const rr = Math.max(0, Math.min(r, w / 2, h));
   return `M${x},${y + h} L${x},${y + rr} Q${x},${y} ${x + rr},${y}`
     + ` L${x + w - rr},${y} Q${x + w},${y} ${x + w},${y + rr} L${x + w},${y + h} Z`;
 }
 
-/** A doughnut segment between two angles (radians, 0 = 3 o'clock). A single 100% slice
- *  would start and end on the same point, which collapses the arc to nothing, so it is
- *  drawn as two halves instead.
- *  @param cx centre x @param cy centre y @param rOuter outer radius @param rInner inner
- *  radius @param a0 start angle @param a1 end angle @returns an SVG path `d` */
 export function arcPath(cx: number, cy: number, rOuter: number, rInner: number, a0: number, a1: number): string {
   if (a1 - a0 >= Math.PI * 2 - 1e-6) {
     const mid = a0 + Math.PI;

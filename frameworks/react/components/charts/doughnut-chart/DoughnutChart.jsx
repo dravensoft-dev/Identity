@@ -13,12 +13,10 @@ export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix 
   const height = CHART_HEIGHT;
   const n = values.length;
   const fmt = (v) => `${v}${valueSuffix ?? ''}`;
-  const colors = resolveColors({ slots: slots ?? Array.from({ length: n }, (_, i) => i + 1), count: n });   // identity only — slices ARE categories
+  const colors = resolveColors({ slots: slots ?? Array.from({ length: n }, (_, i) => i + 1), count: n });
 
   const total = values.reduce((a, b) => a + Math.max(0, b), 0);
-  // 0.34 stays a plain number: the repo's position is that a multiplier which
-  // derives one dimension from another is not itself a design value. Same for
-  // rInner's 0.62 below, and for contracts/design/README.md's note on Avatar's 0.4 and 0.28.
+
   const legendW = Math.min(chartLegendMax, Math.max(chartLegendMin, width * 0.34));
   const plotW = Math.max(1, width - legendW - chartLegendGap);
   const cx = plotW / 2;
@@ -28,7 +26,7 @@ export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix 
 
   const name = seriesLabel ? `${seriesLabel} — doughnut chart` : 'Doughnut chart';
 
-  let angle = -Math.PI / 2;                    // start at 12 o'clock
+  let angle = -Math.PI / 2;
   const segments = values.map((v, i) => {
     const share = total > 0 ? Math.max(0, v) / total : 0;
     const a0 = angle;
@@ -43,7 +41,7 @@ export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix 
         onMouseLeave={() => setHover(null)} style={{ display: 'block', flexShrink: 0 }}>
         {segments.map(({ i, a0, a1 }) => a1 > a0 && (
           <path key={i} d={arcPath(cx, cy, rOuter, rInner, a0, a1)} fill={colors[i]}
-            /* The 2px gap between slices is the card surface showing through. */
+
             stroke="var(--surface-card)"
             opacity={hover === null || hover === i ? 1 : 0.55}
             onMouseEnter={() => setHover(i)}
@@ -57,10 +55,9 @@ export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix 
         )}
       </svg>
 
-      {/* A legend, always — the slices are the series, and identity is never
-          color-alone. One row per slice, its label taken by index: a label with
-          no value at its index is dropped rather than drawn beside a colourless
-          swatch, and a slice with no label renders an empty string. */}
+      {
+
+}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 'calc(var(--sp-1) * 1.5)', overflow: 'auto' }}>
         {values.map((_, i) => (
           <div key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}

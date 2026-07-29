@@ -1,8 +1,7 @@
 import React from 'react';
 const SIZES = { xs: 'var(--avatar-xs)', sm: 'var(--avatar-sm)', md: 'var(--avatar-md)', lg: 'var(--avatar-lg)' };
 const STATUS = { online: 'var(--success)', busy: 'var(--danger)', away: 'var(--warning)', offline: 'var(--status-offline)' };
-/** Representation of a person or entity. `src` for image; without it, initials on panel.
- * `shape` circle (people) or rounded (teams/orgs). `status` adds a presence dot. */
+
 export function Avatar({ src, name = '', size = 'md', shape = 'circle', status }) {
   const d = SIZES[size] || SIZES.md;
   const radius = shape === 'rounded' ? 'var(--r-md)' : '50%';

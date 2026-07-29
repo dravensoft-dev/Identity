@@ -1,13 +1,5 @@
 import React from 'react';
 
-/* Every field is a calc() over --sp-1 (Arena's 4px spacing unit), never a bare
- * px — check:dimensions scans this file. `track` is the control's long axis,
- * `cross` its short one; orientation swaps which is width and which is height
- * rather than introducing a second map. There is no separate "travel"
- * distance: the knob is a track-relative flex child and moves by 100% of its
- * OWN box — a percentage, not a length, so it needs no per-size value at all
- * and is exactly one knob-width by construction (track = 2*knob + 2*pad), the
- * same relationship the pre-redesign file's single md size already had. */
 const SIZES = {
   sm:  { track: 'calc(var(--sp-1) * 8)',  cross: 'calc(var(--sp-1) * 4.5)', knob: 'calc(var(--sp-1) * 3.5)', icon: 'calc(var(--sp-1) * 2.25)' },
   md:  { track: 'calc(var(--sp-1) * 10)', cross: 'calc(var(--sp-1) * 5.5)', knob: 'calc(var(--sp-1) * 4.5)', icon: 'calc(var(--sp-1) * 2.75)' },
@@ -17,12 +9,6 @@ const SIZES = {
 };
 const PAD = 'calc(var(--sp-1) * 0.5)';
 
-/** A controlled on/off switch showing an icon per state. On = crimson.
- * `confirm` (H5): a high-impact change is not applied on the fly — activation
- * calls `onRequestChange()` instead of flipping anything, so the host can open
- * a ConfirmDialog and push the new `state` itself; `onFuncOn`/`onFuncOff` do
- * not fire while guarded. Without `confirm`, an activate fires `onFuncOn()` or
- * `onFuncOff()` per the intent, and the host is expected to push `state` back. */
 export function Switch({
   state = false, orientation = 'horizontal', size = 'md',
   iconOn, iconOff, label, disabled = false, confirm = false,

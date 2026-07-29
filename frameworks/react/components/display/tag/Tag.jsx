@@ -1,7 +1,5 @@
 import React from 'react';
-/** Per-tone border/text colour, mirroring Tag.manifest.json's `tone` variant
- *  (`border-X text-X`; neutral matches the manifest's `text-base-content/70`
- *  exactly — see `.text-base-content\/70` in frameworks/tailwind/Utilities.css). */
+
 const TONES = {
   neutral: 'color-mix(in oklab, var(--color-base-content) 70%, transparent)',
   primary: 'var(--color-primary)',

@@ -1,26 +1,11 @@
 import React from 'react';
 
-/* The delta pill's color says whether the change is GOOD, not which way it
- * points. Direction and sentiment are separate props because they are separate
- * facts: revenue down is bad, latency down is good, and a component cannot
- * know which metric it is showing. Both signs are outline — filled red belongs
- * to ConfirmDialog's final confirmation and nowhere else. */
 const DELTA_TONES = {
   neutral: { border: 'var(--border-strong)', color: 'var(--text-muted)' },
   positive: { border: 'var(--success)', color: 'var(--success)' },
   negative: { border: 'var(--danger)', color: 'var(--danger)' },
 };
 
-/* The value's own tone, and it answers a different question from the delta's.
- * `delta.tone` says whether the number MOVED in a good direction; this says
- * what state the number IS in right now. A service at 99.98% uptime is
- * healthy whether or not it improved this week, and two open incidents are
- * two open incidents even when that is down from five. Same distinction the
- * component already draws between direction and sentiment, one level up.
- *
- * The vocabulary is Badge's, deliberately — one set of tone names across the
- * system beats a second set that is nearly the same. Here they are the solid
- * colors rather than the -soft pairs: this tints a glyph, not a surface. */
 const VALUE_TONES = {
   neutral: 'var(--bone)',
   accent: 'var(--crimson)',

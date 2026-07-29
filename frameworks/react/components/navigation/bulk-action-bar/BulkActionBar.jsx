@@ -1,9 +1,5 @@
 import React from 'react';
 
-/** Bulk actions bar (H7). Appears when rows are selected and offers to operate on the set.
- * `count`: number of selected items (does not render if 0). `actions`: [{ label, icon?, destructive? }],
- * where `icon` is a Phosphor class name Arena draws. Activating one emits `onRun` with the action.
- * `clearable` (default true) gates the Clear control. */
 export function BulkActionBar({ count, noun = 'items', actions, onRun, onClear, clearable = true }) {
   if (count == null) throw new Error('BulkActionBar: `count` is required');
   if (actions == null) throw new Error('BulkActionBar: `actions` is required');
