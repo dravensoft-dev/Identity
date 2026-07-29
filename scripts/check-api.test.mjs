@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   bindingName, validateTypes, validateContract, compareSurface,
-  resolveAngularImplementations, resolveReactImplementations,
+  resolveAngularImplementations, resolveReactImplementations, zeroContractProblems,
 } from './check-api.mjs';
 import { pascal } from './check-structure.mjs';
 import { buildApiModules } from './build-api-types.mjs';
@@ -858,4 +858,32 @@ test('validateContract still rejects an event payload naming no declared type', 
     new Map([['LogoSize', 'enum']]),
   );
   assert.ok(problems.some((p) => /Nope/.test(p)));
+});
+
+/* The one measured false green in this repository: with api/components/ moved
+ * aside, main() used to print "0 contract(s) hold across 0 layer
+ * implementation(s)" and exit 0, because its readdirSync was wrapped in an
+ * existsSync ternary that cannot tell "absent" from "not found". That is the
+ * same shape behind check:tailwind's zero-manifest run and check:api's own
+ * silent skip of every Angular comparison. */
+test('zero contracts is a failure, not a clean pass', () => {
+  const problems = zeroContractProblems({ contracts: 0, types: 40 });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /0 contract/);
+  assert.match(problems[0], /api\/components/);
+});
+
+test('zero types is a failure too, named separately', () => {
+  const problems = zeroContractProblems({ contracts: 50, types: 0 });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /0 type/);
+  assert.match(problems[0], /api\/types/);
+});
+
+test('both empty are reported as two problems, not one', () => {
+  assert.equal(zeroContractProblems({ contracts: 0, types: 0 }).length, 2);
+});
+
+test('a populated tree has no zero problems', () => {
+  assert.deepEqual(zeroContractProblems({ contracts: 50, types: 40 }), []);
 });

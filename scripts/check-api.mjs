@@ -95,6 +95,23 @@ const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);
  * a re-export would leave check-api.test.mjs pinning another module's function
  * through a gate that never uses it. */
 
+/** A gate that finds nothing reports zero violations either way, so an empty
+ *  result set is a failure rather than a clean pass. This is the guard the
+ *  contract directory did not have: `main()` resolved it through
+ *  `existsSync(dir) ? readdirSync(dir) : []`, a lookup that cannot distinguish
+ *  "this directory is absent" from "this gate did not find it", and a moved
+ *  api/ therefore printed `0 contract(s) hold across 0 layer implementation(s)`
+ *  and exited 0. Measured, not supposed.
+ *  @param {{contracts: number, types: number}} counts @returns {string[]} */
+export function zeroContractProblems({ contracts, types }) {
+  const problems = [];
+  if (contracts === 0)
+    problems.push('found 0 contracts in api/components — an empty result set is a failure, not a clean pass; check the discovery path');
+  if (types === 0)
+    problems.push('found 0 types in api/types — an empty result set is a failure, not a clean pass; check the discovery path');
+  return problems;
+}
+
 /** A contract member's name as one layer binds it. The contract governs the
  *  member surface, never the syntax a platform expresses it in. See the binding
  *  table in api/README.md -- this function IS that table. */
@@ -632,6 +649,7 @@ function main() {
 
   const contractDir = join(root, 'api/components');
   const files = existsSync(contractDir) ? readdirSync(contractDir).filter((f) => f.endsWith('.json')).sort() : [];
+  problems.push(...zeroContractProblems({ contracts: files.length, types: types.length }));
   /* Both layers are discovered by walking, once, before the contract loop --
    * never probed per contract. A contract naming a component a layer does not
    * implement simply misses the map, which is absence and correctly silent; a
@@ -690,7 +708,7 @@ function main() {
     for (const p of problems) console.error(`  ${p}`);
     process.exit(1);
   }
-  console.log(`check-api: ${files.length} contract(s) hold across ${layersChecked} layer implementation(s)`);
+  console.log(`check-api: ${files.length} contract(s) and ${types.length} type(s) hold across ${layersChecked} layer implementation(s)`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();
