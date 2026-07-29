@@ -270,14 +270,19 @@ stale-proof; a present-tense component name is not.
   **An unexecuted spec is inside the reach and is a real member of the class.** A spec is deleted
   only once executed, and until then it is what drives a batch, so a claim it makes about a
   component's current state misdirects that batch rather than merely aging.
-  `docs/superpowers/specs/2026-07-26-progressbar-pattern-design-pending-1.md` is the live
-  instance: `:99-100` says `Skeleton`'s "two are true of the `circle` variant and false of the
-  other three" and `:140-142` says "its two React exceptions belong to the variant-scoped family
-  above" — both present tense, both falsified by 8C10, which left `Skeleton.behaviour.json` flat
-  with no exceptions at all. It is **recorded here rather than corrected**, because the fix is not
-  a citation swap: that spec's §2 reasons from three open faces of the conditionality question,
-  one of which `cases` has since closed, and re-deriving that argument belongs to whoever plans
-  the batch. Read this paragraph before reading that spec.
+  **The worked example of this class is now closed, and how it closed is the useful part.** The
+  `progressbar` spec was the live instance: it claimed in the present tense that `Skeleton`'s
+  "two are true of the `circle` variant and false of the other three" and that "its two React
+  exceptions belong to the variant-scoped family above" — both falsified by 8C10, which left
+  `Skeleton.behaviour.json` flat with no exceptions at all. This entry recorded it **rather than
+  correcting it**, on the grounds that the fix was not a citation swap: that spec's §2 reasoned
+  from three open faces of the conditionality question, one of which `cases` had since closed, so
+  re-deriving the argument belonged to whoever planned the batch. That is exactly how it was
+  discharged — §2 was rewritten around `cases` before a plan was written, the two `Skeleton`
+  sentences went with it, and the spec was deleted when the batch shipped. **The lesson that
+  survives is the deferral, not the defect:** a stale claim in an unexecuted spec is correctly
+  left to the batch that will reason from it, because correcting the sentence without re-deriving
+  the argument produces a spec that reads current and reasons from a premise nobody re-checked.
 
   **A second live instance, and it is a whole file rather than two sentences.**
   `docs/superpowers/specs/2026-07-23-8-api-contracts-design.md` is unexecuted — Plan D has not
@@ -939,6 +944,30 @@ stale-proof; a present-tense component name is not.
   check that cannot tell a useful name from a present one. `Table.label` and
   `SegmentedControl.ariaLabel` are what the fix looks like when it is taken: required and
   guarded at runtime rather than defaulted.
+
+- **Whether the explicit `aria-live` on `ProgressBar` and `Spinner` causes any real
+  announcement is UNVERIFIED, and the batch that added it over-claimed.** Both components
+  now carry `aria-live="polite"`, and the `progressbar` pattern requires it because that
+  role — unlike `status` — carries no implicit live region. What is verified is exactly
+  that: the attribute is present, and the requirement is met by a render suite. **What is
+  not verified is the thing the attribute is for.** A live region is specified to announce
+  changes to the region's *content*; `ProgressBar` reports progress by mutating the
+  **attribute** `aria-valuenow`, and its visible percentage text sits in a sibling element
+  *outside* the region. Whether a screen reader announces an attribute-only change in a
+  polite region is not something this repository has tested with a real one, and it varies
+  by AT. So the claim in the batch's own commit message — that `ProgressBar` "announces
+  value changes where before it announced nothing" — is stronger than the evidence: what
+  changed for certain is that the widget now satisfies its pattern.
+
+  **Two things this entry deliberately does not do.** It does not argue for removing the
+  attribute: the role genuinely has no implicit politeness, and for `Spinner` — whose label
+  IS inside the region — the announcement is the ordinary content case and the attribute
+  preserves exactly what `role="status"` used to provide implicitly. And it does not
+  propose a gate: no gate in this repository can test a screen reader, which is the same
+  boundary the focus-trap interior and the `grid` pattern both sit on. Closing it means a
+  person with NVDA, JAWS and VoiceOver in front of them, and the likely fix if it is real
+  is moving the percentage text inside the live region or announcing at thresholds rather
+  than continuously.
 
 - **Every claim the delegated declarations make about Angular Material is unpinned.**
   `frameworks/angular/BehaviourDelegated.json` asserts what Material's controls do —
