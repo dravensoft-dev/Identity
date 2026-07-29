@@ -103,7 +103,7 @@
     "pattern": "navigation",
     "delegatedTo": "Angular Material mat-nav-list",
     "dressedBy": "frameworks/angular/theme/arena-material.css",
-    "reason": "mat-nav-list already provides the anchor-or-button distinction, the active state and the keyboard behaviour. The bridge declares colour, weight, font and shape and deliberately no geometry -- re-specifying Material's list metrics is the duplication the bridge exists to avoid. See components-divergences.md's SideNav entry for the full three-way comparison."
+    "reason": "mat-nav-list already provides the anchor-or-button distinction, the active state and the keyboard behaviour. The bridge declares colour, weight, font and shape and deliberately no geometry -- re-specifying Material's list metrics is the duplication the bridge exists to avoid. See DOUBTS.md section 3's SideNav entry for the full three-way comparison."
   },
   "SideNavCollapsible": {
     "pattern": "disclosure",
