@@ -12,8 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   critical message no longer vanishes on the host's timer. The Pinned marker follows.
 - `Select` associates its label with the control. It rendered the label above the `<select>`
   with nothing tying the two together, so the control had no accessible name at all.
-- `Tooltip` and `Menu` throw when handed a child or trigger that cannot carry attributes — a
-  fragment or a bare string. Both used to lose the ARIA silently.
+- `Tooltip` and `Menu` get their ARIA onto the real control even when the slot they are
+  handed drops undeclared props — which is what Arena's own `Button` does, and what both demo
+  pages did, so a tooltip's bubble had been pointing at nothing and a menu trigger had
+  announced no popup at all. They also throw now when handed a fragment or a bare string,
+  which can carry no attribute anywhere.
 - `BulkActionBar` is a `toolbar` with one roving tab stop and arrow-key navigation, in both
   layers; it rendered `role="region"` with every control in the Tab sequence. The Angular host
   also announced that region and its label while the selection was empty and nothing was
