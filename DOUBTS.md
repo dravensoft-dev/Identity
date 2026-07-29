@@ -2400,129 +2400,49 @@ shipped the same gap into a second layer.
 `--danger-soft` hover to match `Menu.jsx` and the README. **Open debt on the React
 layer.**
 
-#### CommandPalette — Angular is an accessible combobox, React sets no roles at all
+#### CommandPalette — RESOLVED: both layers are accessible comboboxes
 
-**React:** `CommandPalette.jsx` renders `role="dialog" aria-modal="true"` on the panel
-and nothing else — the search `<input>` carries no `role`, no `aria-expanded`, no
-`aria-controls` and no `aria-activedescendant`, and each row is a plain `<button>` with
-no `role="option"` and no `aria-selected`. A screen reader user gets no indication that
-the input drives a filtered list, or which row is currently active as arrow keys move
-through it. It does, however, focus its input explicitly on open
-(`setTimeout(() => inputRef.current.focus(), 0)`), and it does not restore focus to
-whatever opened it once it closes.
+> **This entry is closed.** React converged onto the Angular template rather than the other way
+> round, because Angular's was already right. Both bindings read `exceptions: []` and both layers
+> have a compliance suite.
 
-**Angular:** `arena-command-palette` implements the ARIA 1.2 editable-combobox-with-
-listbox-popup pattern: the input carries `role="combobox"`, `aria-autocomplete="list"`,
-`aria-haspopup="listbox"`, `aria-expanded="true"` and `aria-controls` pointing at the
-row list's id; the row list itself carries `role="listbox"`; and `aria-activedescendant`
-on the input tracks the active row's id, computed from a per-instance unique id
-(a module-level counter, matching `arena-confirm-dialog`'s `nextId` shape, so two
-palettes on one page never collide). Each row carries `role="option"`, `aria-selected`
-and `tabindex="-1"`. The "No results" message is a sibling of the listbox, not a child
-of it — a listbox's children must be `option`/`group`, and a bare `div` inside one is
-undefined content. `aria-expanded` stays statically `true`: the popup is mounted and
-visible for as long as the combobox itself is open, including with zero matching rows,
-so there is no collapsed state for it to report.
+**What React was missing:** the search `<input>` carried no `role`, no `aria-expanded`, no
+`aria-controls` and no `aria-activedescendant`, and each row was a plain `<button>` with no
+`role="option"` and no `aria-selected`. A screen reader user got no indication that the input drove
+a filtered list, or which row the arrow keys had moved to — the highlight existed only as a
+background colour and a number in component state.
 
-DOM focus is moved into the search input explicitly on open, and restored to whatever
-held it beforehand on close, reusing `arena-confirm-dialog`'s own focus contract —
-`handleOpenTransition` and `trapTabKey`, generalized out of `ConfirmDialog.ts` into
-`frameworks/angular/FocusTrap.ts` so this component did not need a second
-implementation. Every row stays `tabindex="-1"`, so the search input is the panel's
-only legal Tab stop; Tab and Shift+Tab are trapped there — with exactly one focusable
-element the trap simply re-focuses it and consumes the key — so focus can never escape
-past the palette to the page behind the scrim.
+**The part worth keeping is why the id plumbing is not optional.** `roles.controls` and
+`roles.activedescendant` carry `match: 'every'` in `IDREF_ATTRIBUTES`, so the evaluator RESOLVES
+them against the rendered tree: an id pointing at a row that is not rendered counts as unmet, not
+as met-with-a-typo. Both layers therefore emit the active-descendant id only while the index is in
+range, and both suites render a query matching nothing to prove the empty case leaves nothing
+dangling. That is the case a naive implementation gets wrong.
 
-*Corrects an earlier version of this entry*, which claimed that because DOM focus never
-leaves the input, "there is no separate focus trap to build." That reasoning does not
-follow: a focus trap stops focus escaping *outward*, not just cycling inward, and with
-every row `tabindex="-1"` and no `keydown` branch for Tab, the browser's own default
-handling would have moved focus to whatever came next in document order — a control on
-the page behind the `fixed inset-0` scrim, while the palette stayed open and still
-asserted `aria-modal="true"`. The trap above closes that gap; this entry now describes
-what the component actually does.
+**Still true and not part of this:** React focuses its input on open and does NOT restore focus to
+whatever opened it when it closes; Angular does, through `handleOpenTransition`. That divergence
+has its own entry.
 
-**Also unlike React:** the earlier `autofocus` attribute this component shipped with
-never reliably worked. Per the HTML autofocus processing model, an `autofocus` element
-inserted after the document's autofocus-processed flag is set is skipped — and that
-flag is set by any user interaction, so a palette opened by Cmd/Ctrl+K (itself a user
-interaction) had the flag already set by the time `@if (open())` inserted the input.
-DOM focus stayed wherever the page had it, every keydown handler was bound to the
-input, and the palette was mouse-only. The explicit `handleOpenTransition` wiring above
-replaced it. Angular also gains a capability React never had: focus is restored to
-whatever opened the palette once it closes, which React's `CommandPalette.jsx` does not
-do.
+#### CommandPalette — RESOLVED: running a command closes the palette in both layers
 
-**The search input keeps `outline-none` with no substituted focus ring**, unlike
-`ConfirmDialog.manifest.json`'s require-text input, which was corrected to add one (see
-above). The case differs: the search input is the palette's *only* focusable element,
-and the new focus contract guarantees it holds DOM focus for the entire time the
-palette is open — a ring's usual job, disambiguating which of several controls is
-focused, has no ambiguity to resolve here. The input is also a flush, borderless
-segment of one compound single-row control (icon, input, `ESC` badge) laid out with
-only a `gap-2.5` between them inside a panel that itself clips overflow
-(`overflow-hidden`); a ring drawn tight to just the input would crowd its neighbors and
-risks being clipped at the panel edge, neither of which `ConfirmDialog`'s stand-alone,
-block-level bordered input has to contend with. Left as `outline-none` on purpose, not
-by omission.
+> **This entry is closed**, and how it closed is the useful part: the Angular idiom was kept, not
+> abandoned. `open` is still an input the component never writes. What changed is that Enter and a
+> row click now emit `close` BEFORE `run`, which is the same event the scrim click already emitted
+> — so the host still decides, it is simply told.
 
-**Why:** the same category of gap `ConfirmDialog`, `ErrorState` and `Onboarding`
-already closed — an interactive, keyboard-driven list with no roles and no active-item
-announcement is not usable with a screen reader, and mirroring the gap would have
-shipped it into a second layer. This is also the task brief's own explicit ask: "A
-combobox/listbox pattern wants role, aria-activedescendant or managed focus, and an
-accessible name." The focus-management gap (bare `autofocus`, no Tab trap) was caught
-in review as the second occurrence of the exact trap `ConfirmDialog` hit first.
+**What it was:** `run.emit(command)` reported the command alone and nothing closed the palette, so
+a host that listened only to `run` was left with the palette sitting over the result it had just
+produced. The prompt file's own example wired `(run)="paletteOpen.set(false); dispatch($event)"`,
+which made the omission easy to copy.
 
-**Tested how:** `frameworks/angular/components/navigation/command-palette/CommandPalette.focusTrap.test.ts` exercises
-the shared `handleOpenTransition`/`trapTabKey` helpers against a hand-built DOM tree
-shaped like the palette's panel (one real `<input>`, several `tabindex="-1"` row
-buttons) — real focus movement, real `document.activeElement`, and a Tab that must not
-reach a control placed behind the scrim. It does not render `<arena-command-palette>`
-through TestBed. **That used to be forced**: `CommandPalette.keyboard.test.ts` documented
-`open` as unable to become `true` under this repo's then-JIT-only harness. Batch 8C11 moved
-this harness to AOT and retired that limitation — `frameworks/angular/test/HarnessCapabilities.test.ts`
-now drives `CommandPalette.open` through `setInput('open', true)` on a directly created fixture
-and asserts its search input renders. `CommandPalette.focusTrap.test.ts` and
-`CommandPalette.keyboard.test.ts` still test the helpers directly rather than the real
-component, which is now a design choice rather than a forced one — both are among the seven
-files section 1 records as still citing the retired limitation in their own
-prose. So this is not proof
-that the component's own `afterRenderEffect`/`onKey` wiring calls these functions at
-the right time — `ngc --strictTemplates` (`check:angular`) is what proves that wiring
-compiles against the component's real `viewChild`/`inject(DOCUMENT)` types.
-`activeOptionId`, the function `aria-activedescendant` is computed from, is asserted
-directly in `CommandPalette.keyboard.test.ts`: it always resolves to a real row's id,
-and is `undefined` rather than dangling when the filtered list is empty or the active
-index is out of range.
+**Why it was not simply a bug:** every other controlled Angular primitive here puts the
+`open`-mutating decision on the host, matching `arena-confirm-dialog`'s confirm/cancel and
+`arena-onboarding`'s skip/done. Auto-closing would have made this the one primitive in the layer
+that manages its own visibility. Emitting `close` avoids that entirely — it is a report, not a
+write — which is why this resolved without either layer giving up its idiom.
 
-**Converges:** yes — React should gain the same roles, `aria-activedescendant` wiring,
-Tab trap and focus restore-on-close. **Open debt on the React layer.**
-
-#### CommandPalette — running a command does not close the palette in Angular
-
-**React:** `CommandPalette.jsx`'s internal `run(c)` helper calls `onClose()`
-unconditionally before invoking the command, for both a row click and Enter — so
-running a command always closes the palette, even when the host's own `onClose`
-forgets to, and even when Enter is pressed with an empty filtered list.
-
-**Angular:** `run.emit(command)` reports the command alone; nothing in the component
-closes it. The host is expected to react the same way it already does to
-`arena-confirm-dialog`'s `confirm`/`cancel` and `arena-onboarding`'s
-`skip`/`done` — by setting `open` to `false` itself, as `CommandPalette.prompt.md`'s
-own example shows: `(run)="paletteOpen.set(false); dispatch($event)"`.
-
-**Why:** every other controlled Angular primitive in this layer already puts the
-`open`-mutating decision on the host, since `open` is an input the component itself
-never owns or writes. Auto-closing here would have been the one primitive in the layer
-that manages its own visibility, inconsistent with its siblings for no stated reason.
-Not treated as a defect in either layer — a considered idiom difference, not a bug —
-but recorded because it is a real behavioural gap a consumer could get wrong: a `run`
-handler that forgets to close the palette leaves it open after running.
-
-**Converges:** no — this is the correct Angular idiom, matching `ConfirmDialog` and
-`Onboarding`. Low priority for React, since React's self-closing behaviour is also
-defensible on its own.
+The API contract already said `run` is "emitted after close". The Angular suite asserts the ORDER
+rather than only that both fire, because the order is the half a consumer can observe.
 
 #### PageHead — behaviour matches React; the measurement helper is shared
 

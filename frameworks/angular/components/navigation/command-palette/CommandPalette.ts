@@ -69,7 +69,7 @@ export function activeOptionId(uid: string, active: number, rowCount: number): s
           @for (command of filtered(); track command.id ?? command.label; let i = $index) {
             <button type="button" [id]="optionId(i)" role="option" [attr.aria-selected]="i === active()" tabindex="-1"
                     [class]="styles().row() + ' ' + (i === active() ? styles().rowActive() : styles().rowDefault())"
-                    (mouseenter)="onHover(i)" (click)="run.emit(command)">
+                    (mouseenter)="onHover(i)" (click)="onRun(command)">
               @if (command.icon; as glyph) {
                 <span [class]="styles().rowIcon()"><i [class]="glyph" aria-hidden="true"></i></span>
               }
@@ -152,7 +152,7 @@ export class CommandPalette {
     } else if (event.key === 'Enter') {
       event.preventDefault();
       const command = this.filtered()[this.active()];
-      if (command) this.run.emit(command);
+      if (command) this.onRun(command);
     } else if (event.key === 'Escape') {
       event.preventDefault();
       this.close.emit();
@@ -160,6 +160,11 @@ export class CommandPalette {
       const panel = this.panel()?.nativeElement;
       if (panel) trapTabKey(panel, event, this.doc.activeElement);
     }
+  }
+
+  protected onRun(command: Command): void {
+    this.close.emit();
+    this.run.emit(command);
   }
 
   protected onScrimClick(): void {

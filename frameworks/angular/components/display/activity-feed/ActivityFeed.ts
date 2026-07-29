@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  booleanAttribute,
-  computed,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input } from '@angular/core';
 import type { ActivityItem } from '../../../Api.generated';
 import { activityFeedStyles } from './ActivityFeed.variants';
 
@@ -54,15 +46,14 @@ export class ActivityFeed {
   readonly items = input.required<readonly ActivityItem[]>();
   readonly busy = input(false, { transform: booleanAttribute });
 
-  private readonly host = inject(ElementRef<HTMLElement>);
-
   protected readonly base = computed(() => activityFeedStyles());
   protected readonly rows = computed(() => resolveActivityFeedRows(this.items()));
 
   protected onKeydown(event: KeyboardEvent): void {
     if (event.key !== 'PageDown' && event.key !== 'PageUp') return;
-    const root = this.host.nativeElement as HTMLElement;
-    const articles = Array.from(root.querySelectorAll<HTMLElement>('[role="article"]'));
+    const articles = Array.from(
+      (event.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('[role="article"]'),
+    );
     if (articles.length === 0) return;
     const target = event.target as Element | null;
     const here = articles.indexOf(target?.closest('[role="article"]') as HTMLElement);

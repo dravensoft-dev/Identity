@@ -36,8 +36,8 @@ first command counts declarations and the second counts distinct defects. `CLAUD
 same rule; use the second whenever a section below reasons about how much work is left, and never
 report a drop in the first as "N defects removed".
 
-As written: **14** declarations / **14** distinct pairs in component bindings, **12** in the
-delegated file, **31 of 70** bindings covered. The two figures are equal again, which is itself
+As written: **1** declaration / **1** distinct pair in component bindings, **12** in the
+delegated file, **35 of 70** bindings covered. The two figures are equal again, which is itself
 informative: the one binding that declared a requirement twice was `CalendarEvent`, and both of its
 `states.disabled` declarations were retired together. Seven component bindings are cased (count them with
 `grep -rl '"cases"' --include='*.behaviour.json' frameworks/`, which does not reach the delegated
@@ -90,7 +90,7 @@ makes every later section's numbers honest. It also shows where the cross-file s
 of the four claims this batch falsified were written in terms of the *pattern*, not the component,
 so a grep for `ConfirmDialog` finds none of them.
 
-## §2 — Real accessibility defects
+## §2 — Real accessibility defects — **CLOSED**
 
 **The bulk of the work, and the only section where a screen-reader user is actually better off at
 the end.** These components do not do what their pattern requires, and closing them means writing
@@ -99,13 +99,23 @@ roles, keyboard handlers and focus management.
 | subject | pattern | what is missing |
 |---|---|---|
 | `TableRow:react` | `button` | 5, and the pattern may be the wrong one — a `<tr>` cannot become a `<button>` |
-| `BulkActionBar:react`, `bulk-action-bar:angular` | `toolbar` | 4 each: renders `role="region"`, no roving tab stop, no arrow keys |
-| `CommandPalette:react`, `command-palette:angular` | `combobox` | 5 between them: no `aria-expanded`, no `aria-controls`, the active row is state-only with no `aria-activedescendant` |
 
 `TableRow` deserves a design decision before an implementation: its own reason says *"a row is a
 `<tr role="row">`, and it never becomes a `<button>`"*, which reads as a binding that chose the
 wrong pattern rather than a component that fell short. Decide that first; the other five are
 implementation.
+
+**`BulkActionBar` and `CommandPalette` are closed, and each left a rule behind.**
+`BulkActionBar` rendered `role="region"` in both layers, and Angular announced that region *and its
+label* while the count was zero and the body rendered nothing — a labelled landmark over an empty
+element. Gate the role on the content, not only the content on the content.
+
+`CommandPalette` converged React onto the Angular template rather than the reverse, because
+Angular's was already right. The rule it leaves is about IDREF requirements: `roles.controls` and
+`roles.activedescendant` carry `match: 'every'`, so the evaluator **resolves** them and an id
+pointing at a row that is not rendered counts as unmet. Emit an active-descendant id only while the
+index is in range, and render the empty-result case in the suite — that is the one a naive
+implementation gets wrong.
 
 **`Menu` and `ErrorState` are closed too, and both fixes were inversions of tests that PINNED the
 defect.** `ErrorState` cost one attribute; the assertion `doesNotMatch(/role="/)` became
@@ -326,7 +336,8 @@ survives into every section above.
    real, and writing the suite that proved it also fixed two false negatives in the shared
    evaluator.
 3. ~~**§3**~~ — **done.**
-4. **§2** — the real work, and the only section that changes what a user experiences.
+4. ~~**§2**~~ — **done.** The real work, and the only section that changed what a user
+   experiences.
 5. **§8** — widen coverage once the bindings worth covering are honest.
 6. **§6** — Plan D, which is a programme rather than a batch.
 7. ~~**§7**~~ — **done.** The cost was measured and it was worth paying. **§5** has two rows left,
