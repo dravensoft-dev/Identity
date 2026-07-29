@@ -1,0 +1,53 @@
+import test, { afterEach } from 'node:test';
+import assert from 'node:assert/strict';
+import { join } from 'node:path';
+import React from 'react';
+import { mount, cleanup } from '../../../test/Harness.jsx';
+import { assertPatternCases, REACT_COMPONENTS } from '../../../test/AssertPattern.jsx';
+import { ProgressBar } from './ProgressBar.jsx';
+
+afterEach(cleanup);
+
+const BINDING = join(REACT_COMPONENTS, 'feedback/progress-bar/ProgressBar.behaviour.json');
+
+function bar(root) {
+  const el = root.querySelector('[role="progressbar"]');
+  assert.ok(el, 'sanity: nothing rendered the progressbar element');
+  return el;
+}
+
+test('ProgressBar meets the progressbar pattern in both of its declared cases', () => {
+  assertPatternCases({
+    bindingPath: BINDING,
+    cases: {
+
+      determinate: () => {
+        const root = mount(<ProgressBar label="Deploying build #4821" progressPercentage={64} />);
+        const el = bar(root);
+        assert.equal(el.getAttribute('aria-valuenow'), '64',
+          'a determinate bar must report its rounded percentage');
+        assert.equal(el.getAttribute('aria-valuemin'), '0');
+        assert.equal(el.getAttribute('aria-valuemax'), '100');
+        return {
+          root,
+          subjects: { default: el },
+          behavioural: { 'states.valuenow': true, 'states.valuemin': true, 'states.valuemax': true },
+        };
+      },
+
+      indeterminate: () => {
+        const root = mount(<ProgressBar indeterminate label="Connecting" />);
+        const el = bar(root);
+        assert.equal(el.hasAttribute('aria-valuenow'), false,
+          'an indeterminate bar reports no value, and ARIA expresses that by omitting the attribute');
+        assert.equal(el.getAttribute('aria-valuemin'), '0');
+        assert.equal(el.getAttribute('aria-valuemax'), '100');
+        return {
+          root,
+          subjects: { default: el },
+          behavioural: { 'states.valuenow': true, 'states.valuemin': true, 'states.valuemax': true },
+        };
+      },
+    },
+  });
+});
