@@ -71,6 +71,15 @@ interface CompareOneOptions {
   binding: { exceptions?: unknown[] };
 }
 
+function labelResolverFor(root: Element): (id: string) => Element | null {
+  return (id: string) => {
+    for (const el of Array.from(root.querySelectorAll('label[for]'))) {
+      if (el.getAttribute('for') === id) return el;
+    }
+    return null;
+  };
+}
+
 function compareOne({ root, subjects, behavioural, pattern, binding }: CompareOneOptions): string[] {
   const { default: fallbackSubject, ...perRequirement } = subjects;
   const fallback = 'default' in subjects ? fallbackSubject : root;
@@ -81,6 +90,7 @@ function compareOne({ root, subjects, behavioural, pattern, binding }: CompareOn
     fallback,
     behavioural,
     resolveId: resolverFor(root),
+    resolveLabelFor: labelResolverFor(root),
   });
 }
 

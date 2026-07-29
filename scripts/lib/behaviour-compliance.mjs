@@ -75,11 +75,30 @@ export function roleOf(el, resolveId) {
   return IMPLICIT_ROLE[tag] ?? null;
 }
 
-export function hasAccessibleName(el, acceptsText = false, resolveId) {
+const LABELABLE = new Set(['INPUT', 'SELECT', 'TEXTAREA']);
+
+function namedByLabelElement(el, resolveLabelFor) {
+  if (!LABELABLE.has(el.tagName.toUpperCase())) return false;
+  const id = el.getAttribute('id');
+  if (!id) return false;
+  if (typeof resolveLabelFor !== 'function') {
+    throw new Error(
+      'hasAccessibleName: this is a labelable form control carrying an id, so a <label for> ' +
+      'elsewhere in the tree may be its name, and no resolveLabelFor was supplied to decide. ' +
+      'Pass one to comparePattern -- each wrapper builds one scoped to the rendered tree. ' +
+      'Returning false instead would report every correctly labelled native control as ' +
+      'unnamed, which is the commonest way a control is named on the platform.',
+    );
+  }
+  const label = resolveLabelFor(id);
+  return label !== null && (label.textContent ?? '').trim() !== '';
+}
+
+export function hasAccessibleName(el, acceptsText = false, resolveId, resolveLabelFor) {
   if (el.getAttribute('aria-label')) return true;
   if (acceptsText && (el.textContent ?? '').trim()) return true;
   const raw = el.getAttribute('aria-labelledby');
-  if (!raw) return false;
+  if (!raw) return namedByLabelElement(el, resolveLabelFor);
   if (typeof resolveId !== 'function') {
     throw new Error(
       'hasAccessibleName: this element is named only by aria-labelledby and no resolveId was ' +
@@ -187,7 +206,7 @@ export const BEHAVIOURAL = new Set([
   'states.valuenow', 'states.valuemin', 'states.valuemax',
 ]);
 
-export function evaluate(el, key, value, patternName, resolveId) {
+export function evaluate(el, key, value, patternName, resolveId, resolveLabelFor) {
   if (key === 'roles.element') {
     const wanted = ELEMENT_ROLE[patternName];
     if (!wanted) {
@@ -198,7 +217,9 @@ export function evaluate(el, key, value, patternName, resolveId) {
     }
     return roleOf(el, resolveId) === wanted;
   }
-  if (key === 'roles.label') return hasAccessibleName(el, LABEL_ACCEPTS_TEXT.has(patternName), resolveId);
+  if (key === 'roles.label') {
+    return hasAccessibleName(el, LABEL_ACCEPTS_TEXT.has(patternName), resolveId, resolveLabelFor);
+  }
 
   const attr = ATTRIBUTE_FOR[key];
   if (attr) {
@@ -229,7 +250,12 @@ export function evaluate(el, key, value, patternName, resolveId) {
     return el.tagName.toUpperCase() === 'INPUT' && (role === 'checkbox' || role === 'radio');
   }
   if (key === 'states.multiline') {
-    return el.tagName.toUpperCase() === 'TEXTAREA' || el.getAttribute('aria-multiline') !== null;
+    if (el.getAttribute('aria-multiline') !== null) return true;
+    const tag = el.tagName.toUpperCase();
+    if (tag === 'TEXTAREA') return true;
+    if (tag !== 'INPUT') return false;
+    const role = roleOf(el, resolveId);
+    return role === 'textbox' || role === 'searchbox';
   }
   if (key === 'live.politeness') {
 
@@ -268,7 +294,7 @@ export const NOT_QUANTIFIED = new Map([
 ]);
 
 export function comparePattern({
-  pattern, binding, subjects = {}, fallback = null, behavioural = {}, resolveId,
+  pattern, binding, subjects = {}, fallback = null, behavioural = {}, resolveId, resolveLabelFor,
 }) {
   const excepted = new Map((binding.exceptions ?? []).map((e) => [e.requirement, e.reason]));
   const declared = new Map(Object.entries(behavioural));
@@ -297,7 +323,7 @@ export function comparePattern({
       problems.push(`${key}: no subject element — nothing was rendered, or the selector matched nothing.`);
       continue;
     }
-    const verdicts = els.map((one) => evaluate(one, key, value, pattern.name, resolveId));
+    const verdicts = els.map((one) => evaluate(one, key, value, pattern.name, resolveId, resolveLabelFor));
 
     const domVerdict = verdicts.includes(null) ? null : verdicts.every(Boolean);
 

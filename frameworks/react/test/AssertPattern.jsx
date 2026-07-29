@@ -23,6 +23,15 @@ function resolverFor(root) {
   };
 }
 
+function labelResolverFor(root) {
+  return (id) => {
+    for (const el of root.querySelectorAll('label[for]')) {
+      if (el.getAttribute('for') === id) return el;
+    }
+    return null;
+  };
+}
+
 function compareOne({ root, subjects, behavioural, pattern, binding }) {
   const { default: fallbackSubject, ...perRequirement } = subjects;
   const fallback = 'default' in subjects ? fallbackSubject : root.firstElementChild;
@@ -33,6 +42,7 @@ function compareOne({ root, subjects, behavioural, pattern, binding }) {
     fallback,
     behavioural,
     resolveId: resolverFor(root),
+    resolveLabelFor: labelResolverFor(root),
   });
 }
 
