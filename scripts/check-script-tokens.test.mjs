@@ -56,7 +56,7 @@ test('catSlots is derived from the ramp and equals its slot count', async () => 
 });
 
 /* CatSlot is the only contract type restating a token-derived bound, and this
- * assertion is the tie back to the palette that api/README.md's "A closed set of
+ * assertion is the tie back to the palette that contracts/api/README.md's "A closed set of
  * values is not always an enum" passage requires of it. */
 test('catSlotEnumProblems accepts 1..N in order', () => {
   assert.deepEqual(catSlotEnumProblems(8, [1, 2, 3, 4, 5, 6, 7, 8]), []);

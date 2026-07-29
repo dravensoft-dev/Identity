@@ -71,7 +71,7 @@ export function catSlotEnumProblems(catSlots, values) {
   const actual = Array.isArray(values) ? values : [];
   const matches = actual.length === expected.length && expected.every((v, i) => actual[i] === v);
   if (matches) return [];
-  return [`api/types/cat-slot.json: CatSlot is [${actual.join(', ')}], but the --color-cat-* ramp in tokens/src/palette.dark.json has ${catSlots} slot(s), so it must be [${expected.join(', ')}] — the contract type restates the ramp and has to follow it`];
+  return [`contracts/api/types/cat-slot.json: CatSlot is [${actual.join(', ')}], but the --color-cat-* ramp in tokens/src/palette.dark.json has ${catSlots} slot(s), so it must be [${expected.join(', ')}] — the contract type restates the ramp and has to follow it`];
 }
 
 const SCAN_EXT = new Set(['.js', '.jsx', '.ts', '.tsx']);
