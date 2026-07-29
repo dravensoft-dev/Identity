@@ -151,3 +151,29 @@ test('the binding is honest: every `tooltip` requirement, in both directions', (
     },
   });
 });
+
+/* The same hole Menu had, and it was live on the Feedback card: Arena's own
+ * <Button> drops every prop it does not declare, so cloneElement's
+ * aria-describedby reached nothing and the bubble named nothing. Every other
+ * assertion in this file uses a raw <button>, the one shape the clone works for. */
+function DropsProps({ children }) {
+  return <button type="button">{children}</button>;
+}
+
+test('the description reaches a child that drops every prop it is handed', () => {
+  const root = mount(
+    <Tooltip label="Roll back to the previous release"><DropsProps>Hover here</DropsProps></Tooltip>,
+  );
+  assert.equal(trigger(root).hasAttribute('aria-describedby'), false,
+    'nothing is described while the bubble is closed');
+
+  focusIn(root);
+  const open = bubble(root);
+  assert.ok(open, 'the bubble did not open on focus');
+  assert.equal(trigger(root).getAttribute('aria-describedby'), open.getAttribute('id'),
+    'a prop-dropping child left the description nowhere, which is what the demo page did');
+
+  focusOut(root);
+  assert.equal(trigger(root).hasAttribute('aria-describedby'), false,
+    'the reference outlived the bubble it named');
+});

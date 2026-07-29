@@ -62,6 +62,13 @@ export function Menu({ trigger, items, align = "start", onSelect }) {
     close(true);
     onSelect && onSelect(it);
   };
+  useEffect(() => {
+    const el = triggerEl();
+    if (!el || typeof el.setAttribute !== "function")
+      return;
+    el.setAttribute("aria-haspopup", "menu");
+    el.setAttribute("aria-expanded", String(open));
+  }, [open]);
   const decoratedTrigger = React.cloneElement(trigger, {
     "aria-haspopup": "menu",
     "aria-expanded": open,
