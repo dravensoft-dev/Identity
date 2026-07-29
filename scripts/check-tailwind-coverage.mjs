@@ -103,7 +103,7 @@ export function checkCoverage(tokens, exposed, excluded) {
   for (const t of [...excluded.keys()].sort())
     if (!tokens.has(t)) errs.push(`--${t} is excluded but no such token exists — drop the exclusion`);
   for (const t of [...exposed].sort())
-    if (!tokens.has(t)) errs.push(`the preset references --${t} — no such token in contracts/design/`);
+    if (!tokens.has(t)) errs.push(`the preset references --${t} — no such token in contracts/design-generated/`);
   return errs;
 }
 

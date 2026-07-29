@@ -116,7 +116,7 @@ mechanism** — `--delay-open` is how long a tooltip waits, and that is a design
 decision; a debounce interval on a synchronous in-memory filter is not, which is why
 `debounce` was proposed and deliberately not shipped. And **a value is not a
 contract**: which keys a dialog answers, where focus lands, what dismisses it — none
-of that is expressible as a token, none of it lives in `contracts/design/`, and DTCG does not
+of that is expressible as a token, none of it lives in `contracts/design/` or `contracts/design-generated/`, and DTCG does not
 model it. That layer lives beside the components instead, and the next paragraph is
 what got built.
 

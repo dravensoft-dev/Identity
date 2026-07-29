@@ -321,7 +321,7 @@ and put it there instead.
 ## This layer is border-box; React is content-box, and that is expected
 
 `Utilities.css`'s preflight sets `box-sizing: border-box` on every element (`@layer
-base`). Nothing in `contracts/design/` or `styles.css` does, so a React component is
+base`). Nothing in `contracts/design/`, `contracts/design-generated/` or `styles.css` does, so a React component is
 content-box unless it opts in itself — most do not. **A slot that combines an
 explicit size with a border, or an explicit size with padding, therefore
 renders a different total box in the two layers** — border-box subtracts
