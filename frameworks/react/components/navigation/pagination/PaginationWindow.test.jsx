@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pageWindow } from '../components/navigation/pagination-window.js';
-import { limitPaginationSiblings } from '../tokens.generated.js';
+import { pageWindow } from './PaginationWindow.js';
+import { limitPaginationSiblings } from '../../../Tokens.generated.js';
 
 /* The pins below are written for one sibling either side. If this fails, the token
  * moved and the expected windows must be re-derived BY HAND, not by importing the

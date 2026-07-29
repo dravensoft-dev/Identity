@@ -3,10 +3,10 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { ChartCard } from "../../components/charts/ChartCard.js";
-import { BarChart } from "../../components/charts/BarChart.js";
-import { LineChart } from "../../components/charts/LineChart.js";
-import { DoughnutChart } from "../../components/charts/DoughnutChart.js";
+import { ChartCard } from "./chart-card/ChartCard.js";
+import { BarChart } from "./bar-chart/BarChart.js";
+import { LineChart } from "./line-chart/LineChart.js";
+import { DoughnutChart } from "./doughnut-chart/DoughnutChart.js";
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 function Demo() {
   return React.createElement("div", null, React.createElement("div", {

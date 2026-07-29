@@ -2,8 +2,8 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useId, useRef, useState } from "react";
-import { Button } from "../forms/Button.js";
-import { useDialogModal } from "../../use-dialog-modal.js";
+import { Button } from "../../forms/button/Button.js";
+import { useDialogModal } from "../../../UseDialogModal.js";
 export function ConfirmDialog({
   open = false,
   onCancel,

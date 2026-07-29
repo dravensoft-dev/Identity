@@ -3,10 +3,10 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Menu } from "../../components/navigation/Menu.js";
-import { Pagination } from "../../components/navigation/Pagination.js";
-import { IconButton } from "../../components/forms/IconButton.js";
-import { Button } from "../../components/forms/Button.js";
+import { Menu } from "./menu/Menu.js";
+import { Pagination } from "./pagination/Pagination.js";
+import { IconButton } from "../forms/icon-button/IconButton.js";
+import { Button } from "../forms/button/Button.js";
 function Demo() {
   const [p, setP] = React.useState(3);
   return React.createElement("div", null, React.createElement("div", {

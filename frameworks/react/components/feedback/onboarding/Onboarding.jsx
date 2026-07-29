@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
-import { onboardingWidth, sp3, sp4 } from '../../tokens.generated.js';
-import { useDialogModal } from '../../use-dialog-modal.js';
+import { onboardingWidth, sp3, sp4 } from '../../../Tokens.generated.js';
+import { useDialogModal } from '../../../UseDialogModal.js';
 
 /** Guided onboarding (H10). Step-by-step coachmark: presents features within the product
  * with progress, "Skip", and "Next". Controlled: the host keeps `index`.

@@ -2,7 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useEffect, useId, useRef } from "react";
-import { useDialogModal } from "../../use-dialog-modal.js";
+import { useDialogModal } from "../../../UseDialogModal.js";
 let injected = false;
 function usePopKeyframes() {
   useEffect(() => {

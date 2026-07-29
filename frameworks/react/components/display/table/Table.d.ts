@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { TableColumn } from '../../api.generated';
+import type { TableColumn } from '../../../Api.generated';
 
 /* `TableColumn` was declared and exported locally by the pre-migration file, so
  * it keeps a re-export. It is no longer generic: `TableColumn<Deploy>` is a

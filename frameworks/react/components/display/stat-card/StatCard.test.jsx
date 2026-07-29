@@ -12,7 +12,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { StatCard } from '../components/display/StatCard.jsx';
+import { StatCard } from './StatCard.jsx';
 
 test('a delta with a value renders the pill', () => {
   const html = renderToStaticMarkup(

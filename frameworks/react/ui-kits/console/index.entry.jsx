@@ -1,10 +1,10 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { dismissDefault, dismissActionable } from '../../tokens.generated.js';
+import { dismissDefault, dismissActionable } from '../../Tokens.generated.js';
 import { LoginScreen } from './LoginScreen.jsx';
 import { DashboardScreen } from './DashboardScreen.jsx';
 import { ProjectScreen } from './ProjectScreen.jsx';
-import { Toast } from '../../components/feedback/Toast.jsx';
+import { Toast } from '../../components/feedback/toast/Toast.jsx';
 
 function App(){
   const [screen, setScreen] = React.useState('login');

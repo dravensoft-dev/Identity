@@ -50,9 +50,9 @@ import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { join } from 'node:path';
-import { mount, cleanup, act } from './harness.jsx';
-import { assertPattern, REACT_COMPONENTS } from './assert-pattern.jsx';
-import { Onboarding } from '../components/feedback/Onboarding.jsx';
+import { mount, cleanup, act } from '../../../test/Harness.jsx';
+import { assertPattern, REACT_COMPONENTS } from '../../../test/AssertPattern.jsx';
+import { Onboarding } from './Onboarding.jsx';
 
 afterEach(cleanup);
 
@@ -114,7 +114,7 @@ test('Onboarding matches its dialog-modal binding, in both directions', () => {
   );
   assertPattern({
     root: container,
-    bindingPath: join(REACT_COMPONENTS, 'feedback/Onboarding.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'feedback/onboarding/Onboarding.behaviour.json'),
     // The coachmark renders a fragment — scrim first, panel second — so the
     // container's first element child is the scrim, which carries neither role
     // nor aria-modal. The subject has to be named by selector.

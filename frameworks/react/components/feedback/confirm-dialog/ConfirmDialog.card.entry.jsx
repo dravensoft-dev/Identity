@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { ConfirmDialog } from '../../components/feedback/ConfirmDialog.jsx';
-import { Button } from '../../components/forms/Button.jsx';
+import { ConfirmDialog } from './ConfirmDialog.jsx';
+import { Button } from '../../forms/button/Button.jsx';
 function Demo(){
   const [hard,setHard]=React.useState(true);
   const [soft,setSoft]=React.useState(false);

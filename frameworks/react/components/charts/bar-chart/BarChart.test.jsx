@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { BarChart } from '../components/charts/BarChart.jsx';
+import { BarChart } from './BarChart.jsx';
 
 const LABELS = ['Mon', 'Tue', 'Wed'];
 const VALUES = [12, 30, 7];

@@ -2,7 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-import { Card } from "./Card.js";
+import { Card } from "../card/Card.js";
 export function UnauthCard({ brand, eyebrow, title, footer, children }) {
   return React.createElement("div", {
     style: { width: "100%", maxWidth: "calc(var(--sp-1) * 95 + var(--sp-1) * 18 + var(--bw) * 2)", borderRadius: "var(--r-lg)", boxShadow: "var(--shadow-3)" }

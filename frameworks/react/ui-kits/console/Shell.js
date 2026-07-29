@@ -2,13 +2,13 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useEffect, useState } from "react";
-import { AppLogo } from "../../components/brand/AppLogo.js";
-import { Avatar } from "../../components/display/Avatar.js";
-import { IconButton } from "../../components/forms/IconButton.js";
-import { Switch } from "../../components/forms/Switch.js";
-import { PageHead } from "../../components/navigation/PageHead.js";
-import { SideNav } from "../../components/navigation/SideNav.js";
-import { SideNavItem } from "../../components/navigation/SideNavItem.js";
+import { AppLogo } from "../../components/brand/app-logo/AppLogo.js";
+import { Avatar } from "../../components/display/avatar/Avatar.js";
+import { IconButton } from "../../components/forms/icon-button/IconButton.js";
+import { Switch } from "../../components/forms/switch/Switch.js";
+import { PageHead } from "../../components/navigation/page-head/PageHead.js";
+import { SideNav } from "../../components/navigation/side-nav/SideNav.js";
+import { SideNavItem } from "../../components/navigation/side-nav-item/SideNavItem.js";
 const THEME_STORAGE_KEY = "draven-theme";
 const isDarkNow = () => typeof document !== "undefined" && !document.documentElement.classList.contains("arena-light");
 function flipTheme() {

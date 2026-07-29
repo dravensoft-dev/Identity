@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { CommandPalette } from '../../components/navigation/CommandPalette.jsx';
-import { Button } from '../../components/forms/Button.jsx';
+import { CommandPalette } from './CommandPalette.jsx';
+import { Button } from '../../forms/button/Button.jsx';
 const commands = [
   {id:'deploy',label:'Deploy to production',hint:'client portal',icon:'ph-bold ph-rocket-launch',shortcut:'⌘D'},
   {id:'logs',label:'View build logs',hint:'build 4821',icon:'ph-bold ph-terminal-window'},

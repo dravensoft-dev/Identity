@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { MenuItem, MenuAlign } from '../../api.generated';
+import type { MenuItem, MenuAlign } from '../../../Api.generated';
 
 /* The pre-migration file declared and exported the item type locally, under the
  * name `MenuItemDef`, so it keeps a re-export — of the contract's name. There is

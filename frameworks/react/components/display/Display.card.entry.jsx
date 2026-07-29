@@ -1,9 +1,9 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Card } from '../../components/display/Card.jsx';
-import { Badge } from '../../components/display/Badge.jsx';
-import { Tag } from '../../components/display/Tag.jsx';
-import { StatCard } from '../../components/display/StatCard.jsx';
+import { Card } from './card/Card.jsx';
+import { Badge } from './badge/Badge.jsx';
+import { Tag } from './tag/Tag.jsx';
+import { StatCard } from './stat-card/StatCard.jsx';
 function Demo(){return (<div>
   <div className="sub">Badge — tones</div>
   <div className="row">

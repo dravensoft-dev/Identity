@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { ControlSize, ProgressTone } from '../../api.generated';
+import type { ControlSize, ProgressTone } from '../../../Api.generated';
 /** Progress bar (H1). Determinate by default (`progressPercentage` 0–100); `indeterminate` for waits without a percentage. */
 export interface ProgressBarProps {
   /** How far along, 0–100. Clamped and rounded. Ignored when `indeterminate`. */

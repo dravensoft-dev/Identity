@@ -3,11 +3,11 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { dismissDefault, dismissActionable } from "../../tokens.generated.js";
+import { dismissDefault, dismissActionable } from "../../Tokens.generated.js";
 import { LoginScreen } from "./LoginScreen.js";
 import { DashboardScreen } from "./DashboardScreen.js";
 import { ProjectScreen } from "./ProjectScreen.js";
-import { Toast } from "../../components/feedback/Toast.js";
+import { Toast } from "../../components/feedback/toast/Toast.js";
 function App() {
   const [screen, setScreen] = React.useState("login");
   const [project, setProject] = React.useState(null);

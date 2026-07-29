@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Dialog } from '../components/feedback/Dialog.jsx';
+import { Dialog } from './Dialog.jsx';
 
 /* This directory renders with renderToStaticMarkup and has no DOM, so nothing here
  * presses a key or clicks the scrim. The `close` event's two triggers -- Escape and

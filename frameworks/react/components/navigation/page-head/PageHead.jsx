@@ -1,5 +1,5 @@
 import React from 'react';
-import { useContainerWidth, readBreakpoint } from '../../use-container-width.js';
+import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.js';
 
 /* Below --bp-sm the row stacks and the actions go full width. Measured on the
  * container, not the viewport: a PageHead inside a narrow panel should stack

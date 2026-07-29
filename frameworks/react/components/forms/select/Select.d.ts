@@ -1,4 +1,4 @@
-import type { SelectOption } from '../../api.generated';
+import type { SelectOption } from '../../../Api.generated';
 /** Styled native dropdown selector. */
 export type { SelectOption };
 export interface SelectProps {

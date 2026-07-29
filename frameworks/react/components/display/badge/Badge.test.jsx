@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Badge } from '../components/display/Badge.jsx';
+import { Badge } from './Badge.jsx';
 
 test('Badge renders its content slot', () => {
   assert.match(renderToStaticMarkup(<Badge>DRAFT</Badge>), /DRAFT/);

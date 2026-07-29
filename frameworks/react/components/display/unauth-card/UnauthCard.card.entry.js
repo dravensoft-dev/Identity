@@ -3,10 +3,10 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { UnauthCard } from "../../components/display/UnauthCard.js";
-import { AppLogo } from "../../components/brand/AppLogo.js";
-import { Input } from "../../components/forms/Input.js";
-import { Button } from "../../components/forms/Button.js";
+import { UnauthCard } from "./UnauthCard.js";
+import { AppLogo } from "../../brand/app-logo/AppLogo.js";
+import { Input } from "../../forms/input/Input.js";
+import { Button } from "../../forms/button/Button.js";
 function Demo() {
   const [email, setEmail] = React.useState("ana@dravensoft.dev");
   const [password, setPassword] = React.useState("dravensoft");

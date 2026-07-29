@@ -2,7 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-import { pageWindow } from "./pagination-window.js";
+import { pageWindow } from "./PaginationWindow.js";
 export function Pagination({ page, pageCount, ariaLabel = "Pagination", onChange }) {
   if (page == null)
     throw new Error("Pagination: `page` is required");

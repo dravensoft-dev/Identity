@@ -2,10 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Table } from '../components/display/Table.jsx';
-import { TableRow } from '../components/display/TableRow.jsx';
-import { TableCell } from '../components/display/TableCell.jsx';
-import { Badge } from '../components/display/Badge.jsx';
+import { Table } from './Table.jsx';
+import { TableRow } from '../table-row/TableRow.jsx';
+import { TableCell } from '../table-cell/TableCell.jsx';
+import { Badge } from '../badge/Badge.jsx';
 
 /* WHAT THIS SUITE OWNS, AND WHAT NOTHING OWNS.
  *

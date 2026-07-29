@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { ToastTone } from '../../api.generated';
+import type { ToastTone } from '../../../Api.generated';
 /** Ephemeral notification. Side bar colored by tone; `actionLabel` + `onAction` add a button (Undo / Retry / View logs). */
 export interface ToastProps {
   /** The bold lead line. */

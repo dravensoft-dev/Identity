@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { RadioGroup } from '../components/forms/RadioGroup.jsx';
-import { Radio } from '../components/forms/Radio.jsx';
+import { RadioGroup } from './RadioGroup.jsx';
+import { Radio } from '../radio/Radio.jsx';
 
 test('RadioGroup marks the child whose value matches, and only it', () => {
   const html = renderToStaticMarkup(

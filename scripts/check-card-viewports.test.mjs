@@ -372,7 +372,7 @@ test('content that fits exactly is ok', () => {
 
 test('content taller than the declared box clips, and the message names both numbers and the fix', () => {
   const r = classify({
-    file: 'frameworks/react/components/charts/charts.card.html',
+    file: 'frameworks/react/components/charts/Charts.card.html',
     declared: { width: 900, height: 760 },
     measured: { scrollWidth: 900, scrollHeight: 1345, clientWidth: 900, clientHeight: 760, contentHeight: 1345, rendered: true, timedOut: false },
   });
@@ -384,7 +384,7 @@ test('content taller than the declared box clips, and the message names both num
 
 test('content wider than the declared box clips too', () => {
   const r = classify({
-    file: 'frameworks/react/components/brand/brand.card.html',
+    file: 'frameworks/react/components/brand/app-logo/AppLogo.card.html',
     declared: { width: 700, height: 660 },
     measured: { scrollWidth: 732, scrollHeight: 660, clientWidth: 700, clientHeight: 660, contentHeight: 660, rendered: true, timedOut: false },
   });
@@ -464,7 +464,7 @@ test('a page that never rendered is a skip-class condition, not a pass', () => {
  * a timed-out measurement is untrustworthy regardless of what it says. */
 test('a page that timed out without ever stabilizing is a skip-class condition, not a pass', () => {
   const r = classify({
-    file: 'frameworks/react/components/feedback/feedback.card.html',
+    file: 'frameworks/react/components/feedback/Feedback.card.html',
     declared: { width: 900, height: 460 },
     // Numbers chosen so that, if this were wrongly treated as a normal
     // reading, it would classify 'ok' (nothing over-runs, nothing under-runs
@@ -474,7 +474,7 @@ test('a page that timed out without ever stabilizing is a skip-class condition, 
   });
   assert.equal(r.status, 'unrendered');
   assert.match(r.message, /never stabilized/i, 'the message says plainly that the page never settled');
-  assert.match(r.message, /feedback\.card\.html/, 'the message names the page');
+  assert.match(r.message, /Feedback\.card\.html/, 'the message names the page');
 });
 
 test('skipExitCode is 2 normally and 1 under strict', () => {
@@ -486,7 +486,7 @@ test('skipExitCode is 2 normally and 1 under strict', () => {
 test('findCardPages finds every page that declares, and nothing that does not', () => {
   const pages = findCardPages(join(import.meta.dirname, '..'));
   assert.ok(pages.includes('guidelines/icons.html'));
-  assert.ok(pages.includes('frameworks/react/components/charts/charts.card.html'));
+  assert.ok(pages.includes('frameworks/react/components/charts/Charts.card.html'));
   assert.ok(!pages.includes('Arena - Overview.html'), 'the Overview is not a card');
   assert.ok(!pages.includes('Dravensoft Identity.dc.html'), 'the brand manual is not a card');
   assert.ok(pages.every((p) => !p.includes('node_modules')));

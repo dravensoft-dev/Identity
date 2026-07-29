@@ -2,7 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-import { rowStyle, rowGlyph } from "./side-nav-inject.js";
+import { rowStyle, rowGlyph } from "../side-nav/SideNavInject.js";
 export function SideNavItem({
   id,
   label,

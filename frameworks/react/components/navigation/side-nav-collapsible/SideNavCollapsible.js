@@ -2,8 +2,8 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useEffect, useState } from "react";
-import { injectInto, COLUMN, rowStyle, rowGlyph } from "./side-nav-inject.js";
-import { SideNavItem } from "./SideNavItem.js";
+import { injectInto, COLUMN, rowStyle, rowGlyph } from "../side-nav/SideNavInject.js";
+import { SideNavItem } from "../side-nav-item/SideNavItem.js";
 export function subtreeHasItem(children, id) {
   if (!id)
     return false;

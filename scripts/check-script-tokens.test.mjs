@@ -51,7 +51,7 @@ test('importedNames ignores an import from anything else', () => {
 
 test('catSlots is derived from the ramp and equals its slot count', async () => {
   const modules = await buildScriptModules();
-  const body = modules.get('frameworks/react/tokens.generated.js');
+  const body = modules.get('frameworks/react/Tokens.generated.js');
   assert.match(body, /^export const catSlots = 8;$/m);
 });
 
@@ -81,7 +81,7 @@ test('catSlotEnumProblems rejects a non-array', () => {
 
 test('the committed CatSlot matches the ramp the tokens are built from', async () => {
   const modules = await buildScriptModules();
-  const body = modules.get('frameworks/react/tokens.generated.js');
+  const body = modules.get('frameworks/react/Tokens.generated.js');
   const catSlots = Number(/^export const catSlots = (\d+);$/m.exec(body)[1]);
   const catSlot = JSON.parse(readFileSync(join(root, 'api/types/cat-slot.json'), 'utf8'));
   assert.deepEqual(catSlotEnumProblems(catSlots, catSlot.values), []);

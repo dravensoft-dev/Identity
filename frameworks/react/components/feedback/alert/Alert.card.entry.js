@@ -3,7 +3,7 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Alert } from "../../components/feedback/Alert.js";
+import { Alert } from "./Alert.js";
 function Demo() {
   return React.createElement("div", {
     style: { display: "flex", flexDirection: "column", gap: "calc(var(--sp-1) * 3.5)", maxWidth: "calc(var(--sp-1) * 130)" }

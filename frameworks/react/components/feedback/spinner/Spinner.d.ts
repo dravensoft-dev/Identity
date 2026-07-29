@@ -1,4 +1,4 @@
-import type { ControlSize, SpinnerTone } from '../../api.generated';
+import type { ControlSize, SpinnerTone } from '../../../Api.generated';
 
 /** Indeterminate wait indicator. For a measurable process use ProgressBar instead. */
 export interface SpinnerProps {

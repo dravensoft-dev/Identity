@@ -11,7 +11,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { AppLogo } from '../components/brand/AppLogo.jsx';
+import { AppLogo } from './AppLogo.jsx';
 
 const MARK = <img src="../../../../assets/rotor-crimson.svg" alt="" />;
 

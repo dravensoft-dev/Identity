@@ -3,18 +3,18 @@
  * for the full rationale. */
 import React, { useState } from "react";
 import { Shell } from "./Shell.js";
-import { Card } from "../../components/display/Card.js";
-import { Badge } from "../../components/display/Badge.js";
-import { Tag } from "../../components/display/Tag.js";
-import { Table } from "../../components/display/Table.js";
-import { TableRow } from "../../components/display/TableRow.js";
-import { TableCell } from "../../components/display/TableCell.js";
-import { ActivityFeed } from "../../components/display/ActivityFeed.js";
-import { Tabs } from "../../components/navigation/Tabs.js";
-import { Tab } from "../../components/navigation/Tab.js";
-import { Button } from "../../components/forms/Button.js";
-import { Switch } from "../../components/forms/Switch.js";
-import { Dialog } from "../../components/feedback/Dialog.js";
+import { Card } from "../../components/display/card/Card.js";
+import { Badge } from "../../components/display/badge/Badge.js";
+import { Tag } from "../../components/display/tag/Tag.js";
+import { Table } from "../../components/display/table/Table.js";
+import { TableRow } from "../../components/display/table-row/TableRow.js";
+import { TableCell } from "../../components/display/table-cell/TableCell.js";
+import { ActivityFeed } from "../../components/display/activity-feed/ActivityFeed.js";
+import { Tabs } from "../../components/navigation/tabs/Tabs.js";
+import { Tab } from "../../components/navigation/tab/Tab.js";
+import { Button } from "../../components/forms/button/Button.js";
+import { Switch } from "../../components/forms/switch/Switch.js";
+import { Dialog } from "../../components/feedback/dialog/Dialog.js";
 const DEPLOYS = [
   { build: "#4821", env: "Production", status: ["success", "Active"], author: "CI · main", dur: "3m 41s" },
   { build: "#4820", env: "Staging", status: ["success", "OK"], author: "ana@", dur: "3m 12s" },

@@ -3,8 +3,8 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Onboarding } from "../../components/feedback/Onboarding.js";
-import { Button } from "../../components/forms/Button.js";
+import { Onboarding } from "./Onboarding.js";
+import { Button } from "../../forms/button/Button.js";
 const steps = [
   { eyebrow: "Welcome", title: "Your first deployment", body: "From here you will deploy and roll back with one click." },
   { title: "Command palette", body: "Press Cmd/Ctrl+K to run any action without the mouse." },

@@ -64,10 +64,10 @@ import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import React from 'react';
-import { mount, cleanup, act } from './harness.jsx';
-import { assertPatternCases, REACT_COMPONENTS } from './assert-pattern.jsx';
-import { Tag } from '../components/display/Tag.jsx';
-import { CalendarEvent } from '../components/display/CalendarEvent.jsx';
+import { mount, cleanup, act } from '../../test/Harness.jsx';
+import { assertPatternCases, REACT_COMPONENTS } from '../../test/AssertPattern.jsx';
+import { Tag } from './tag/Tag.jsx';
+import { CalendarEvent } from './calendar-event/CalendarEvent.jsx';
 
 afterEach(cleanup);
 
@@ -86,7 +86,7 @@ function assertKeysUnintercepted(el) {
 
 test('Tag meets both of its declared cases', () => {
   assertPatternCases({
-    bindingPath: join(REACT_COMPONENTS, 'display/Tag.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'display/tag/Tag.behaviour.json'),
     cases: {
       // `none` has no requirements, so there is nothing to point at -- the
       // container's own first child (the label <span>) is never inspected.
@@ -125,7 +125,7 @@ const CHIP = {
 
 test('CalendarEvent meets all three of its declared shapes', () => {
   assertPatternCases({
-    bindingPath: join(REACT_COMPONENTS, 'display/CalendarEvent.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'display/calendar-event/CalendarEvent.behaviour.json'),
     cases: {
       // onClick set, no action panel -- the chip root itself is the <button>,
       // so the default fallback (root.firstElementChild) already names it.

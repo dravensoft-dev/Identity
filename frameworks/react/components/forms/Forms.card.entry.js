@@ -3,12 +3,12 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Button } from "../../components/forms/Button.js";
-import { IconButton } from "../../components/forms/IconButton.js";
-import { Input } from "../../components/forms/Input.js";
-import { Select } from "../../components/forms/Select.js";
-import { Checkbox } from "../../components/forms/Checkbox.js";
-import { Switch } from "../../components/forms/Switch.js";
+import { Button } from "./button/Button.js";
+import { IconButton } from "./icon-button/IconButton.js";
+import { Input } from "./input/Input.js";
+import { Select } from "./select/Select.js";
+import { Checkbox } from "./checkbox/Checkbox.js";
+import { Switch } from "./switch/Switch.js";
 function Demo() {
   const [chk, setChk] = React.useState(true);
   const [sw, setSw] = React.useState(true);

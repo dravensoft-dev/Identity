@@ -1,4 +1,4 @@
-import type { SkeletonVariant } from '../../api.generated';
+import type { SkeletonVariant } from '../../../Api.generated';
 /** Loading placeholder for asynchronous data (H1). Reserves the layout for the real content. */
 export interface SkeletonProps {
   variant?: SkeletonVariant;

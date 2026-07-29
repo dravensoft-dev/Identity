@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
-import { delayOpen, delayClose } from '../../tokens.generated.js';
+import { delayOpen, delayClose } from '../../../Tokens.generated.js';
 
 /* Keyframes cannot be expressed in an inline style object, so they ship as a
  * <style> injected once into the head — the pattern ProgressBar establishes.

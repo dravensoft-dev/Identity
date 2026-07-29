@@ -2,9 +2,9 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useState } from "react";
-import { useContainerWidth } from "../../use-container-width.js";
-import { resolveColors, niceMax, ticks, srOnly, PAD, CHART_HEIGHT } from "./chart-internals.js";
-import { chartPointR, chartPointRHover } from "../../tokens.generated.js";
+import { useContainerWidth } from "../../../UseContainerWidth.js";
+import { resolveColors, niceMax, ticks, srOnly, PAD, CHART_HEIGHT } from "../../../DataVisuals.js";
+import { chartPointR, chartPointRHover } from "../../../Tokens.generated.js";
 export function LineChart({
   labels,
   values,

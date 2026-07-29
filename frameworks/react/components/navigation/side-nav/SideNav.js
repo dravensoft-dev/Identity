@@ -2,7 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-import { injectInto, COLUMN } from "./side-nav-inject.js";
+import { injectInto, COLUMN } from "./SideNavInject.js";
 export function SideNav({ children, active, ariaLabel, indentStep = 3, onNav }) {
   if (!ariaLabel)
     throw new Error("SideNav: `ariaLabel` is required");

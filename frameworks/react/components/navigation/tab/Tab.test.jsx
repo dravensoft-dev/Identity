@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Tab } from '../components/navigation/Tab.jsx';
+import { Tab } from './Tab.jsx';
 
 /* This directory has no DOM and renders with renderToStaticMarkup, so nothing here
  * fires a click. What it CAN see is the whole of Tab's markup contract: the element,

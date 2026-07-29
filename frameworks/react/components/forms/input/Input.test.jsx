@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Input } from '../components/forms/Input.jsx';
+import { Input } from './Input.jsx';
 
 /* This directory renders with renderToStaticMarkup and has no DOM, so no test here
  * fires a change or a blur. Two things are therefore NOT verified by this suite:

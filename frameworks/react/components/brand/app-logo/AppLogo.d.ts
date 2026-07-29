@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { LogoSize, Orientation } from '../../api.generated';
+import type { LogoSize, Orientation } from '../../../Api.generated';
 /** Brand lock-up — a mark paired with a product name.
  *
  *  `mark` and `name` are required on purpose: Arena ships MIT and a consumer

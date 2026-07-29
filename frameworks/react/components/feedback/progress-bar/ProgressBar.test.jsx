@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { ProgressBar } from '../components/feedback/ProgressBar.jsx';
+import { ProgressBar } from './ProgressBar.jsx';
 
 /* This directory renders with renderToStaticMarkup and has no DOM, so nothing here
  * observes the indeterminate sweep -- that is a keyframe animation on an injected

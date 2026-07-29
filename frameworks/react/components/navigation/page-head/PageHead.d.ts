@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { PageHeadAlign } from '../../api.generated';
+import type { PageHeadAlign } from '../../../Api.generated';
 
 /** The title block at the top of a page: h1, optional subtitle, optional actions.
  *  Stacks below --bp-sm, measured on its own container rather than the viewport. */

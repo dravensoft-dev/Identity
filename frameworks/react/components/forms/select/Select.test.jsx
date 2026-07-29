@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Select } from '../components/forms/Select.jsx';
+import { Select } from './Select.jsx';
 
 /* This directory renders with renderToStaticMarkup and has no DOM, so no test here
  * fires a change. The `change` event's payload -- the chosen option's value as a

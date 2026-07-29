@@ -1,8 +1,8 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Calendar } from '../../components/display/Calendar.jsx';
-import { CalendarEvent } from '../../components/display/CalendarEvent.jsx';
-import { Button } from '../../components/forms/Button.jsx';
+import { Calendar } from './Calendar.jsx';
+import { CalendarEvent } from '../calendar-event/CalendarEvent.jsx';
+import { Button } from '../../forms/button/Button.jsx';
 
 /* Built around the real current week so the "now" line and today's column are
    always in shot. `timeZone` is deliberately NOT passed: omitted, it resolves to

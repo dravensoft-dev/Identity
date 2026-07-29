@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { CalendarView, CatSlot } from '../../api.generated';
+import type { CalendarView, CatSlot } from '../../../Api.generated';
 
 /* `CatSlot` was declared and exported locally by the pre-migration file, so it
  * keeps a re-export. `CalendarView` gets none — the old file spelled it as the
@@ -7,7 +7,7 @@ import type { CalendarView, CatSlot } from '../../api.generated';
  *
  * `CalendarEvent` no longer has one either, and that is a REMOVAL rather than an
  * omission: it stopped being a type when it became a component, so
- * `import type { CalendarEvent } from '.../Calendar'` no longer resolves. There
+ * `import type { CalendarEvent } from './Calendar'` no longer resolves. There
  * is nothing to re-export — the name now belongs to a component, and its props
  * type is `CalendarEventProps` in `./CalendarEvent`. */
 export type { CatSlot };

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { injectInto, COLUMN, rowStyle, rowGlyph } from './side-nav-inject.jsx';
-import { SideNavItem } from './SideNavItem.jsx';
+import { injectInto, COLUMN, rowStyle, rowGlyph } from '../side-nav/SideNavInject.jsx';
+import { SideNavItem } from '../side-nav-item/SideNavItem.jsx';
 
 /** Whether `id` names a SideNavItem anywhere in this subtree.
  *

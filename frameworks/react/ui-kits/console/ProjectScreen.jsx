@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Shell } from './Shell.jsx';
-import { Card } from '../../components/display/Card.jsx';
-import { Badge } from '../../components/display/Badge.jsx';
-import { Tag } from '../../components/display/Tag.jsx';
-import { Table } from '../../components/display/Table.jsx';
-import { TableRow } from '../../components/display/TableRow.jsx';
-import { TableCell } from '../../components/display/TableCell.jsx';
-import { ActivityFeed } from '../../components/display/ActivityFeed.jsx';
-import { Tabs } from '../../components/navigation/Tabs.jsx';
-import { Tab } from '../../components/navigation/Tab.jsx';
-import { Button } from '../../components/forms/Button.jsx';
-import { Switch } from '../../components/forms/Switch.jsx';
-import { Dialog } from '../../components/feedback/Dialog.jsx';
+import { Card } from '../../components/display/card/Card.jsx';
+import { Badge } from '../../components/display/badge/Badge.jsx';
+import { Tag } from '../../components/display/tag/Tag.jsx';
+import { Table } from '../../components/display/table/Table.jsx';
+import { TableRow } from '../../components/display/table-row/TableRow.jsx';
+import { TableCell } from '../../components/display/table-cell/TableCell.jsx';
+import { ActivityFeed } from '../../components/display/activity-feed/ActivityFeed.jsx';
+import { Tabs } from '../../components/navigation/tabs/Tabs.jsx';
+import { Tab } from '../../components/navigation/tab/Tab.jsx';
+import { Button } from '../../components/forms/button/Button.jsx';
+import { Switch } from '../../components/forms/switch/Switch.jsx';
+import { Dialog } from '../../components/feedback/dialog/Dialog.jsx';
 
 const DEPLOYS = [
   { build: '#4821', env: 'Production', status: ['success', 'Active'], author: 'CI · main', dur: '3m 41s' },

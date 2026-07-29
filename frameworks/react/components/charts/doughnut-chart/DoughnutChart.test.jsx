@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { DoughnutChart } from '../components/charts/DoughnutChart.jsx';
+import { DoughnutChart } from './DoughnutChart.jsx';
 
 const LABELS = ['Web', 'API', 'Worker'];
 const VALUES = [420, 310, 140];

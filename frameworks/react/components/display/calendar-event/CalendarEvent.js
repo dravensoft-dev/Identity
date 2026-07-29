@@ -2,7 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-import { IconButton } from "../forms/IconButton.js";
+import { IconButton } from "../../forms/icon-button/IconButton.js";
 export const CalendarEvent = React.forwardRef(function CalendarEvent({
   id,
   title,

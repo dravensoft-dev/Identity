@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Skeleton } from '../components/display/Skeleton.jsx';
+import { Skeleton } from './Skeleton.jsx';
 
 test('a text skeleton renders `lines` rows, the last one short', () => {
   const html = renderToStaticMarkup(<Skeleton variant="text" lines={3} />);

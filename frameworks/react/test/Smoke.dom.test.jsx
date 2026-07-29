@@ -13,7 +13,7 @@
  * reason for this one directory to speak a second test idiom. */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mount, cleanup } from './harness.jsx';
+import { mount, cleanup } from './Harness.jsx';
 import React from 'react';
 
 afterEach(cleanup);

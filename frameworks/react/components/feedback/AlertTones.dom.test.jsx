@@ -17,10 +17,10 @@ import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import React from 'react';
-import { mount, cleanup, act } from './harness.jsx';
-import { assertPatternCases, REACT_COMPONENTS } from './assert-pattern.jsx';
-import { Alert } from '../components/feedback/Alert.jsx';
-import { Toast } from '../components/feedback/Toast.jsx';
+import { mount, cleanup, act } from '../../test/Harness.jsx';
+import { assertPatternCases, REACT_COMPONENTS } from '../../test/AssertPattern.jsx';
+import { Alert } from './alert/Alert.jsx';
+import { Toast } from './toast/Toast.jsx';
 
 afterEach(cleanup);
 
@@ -120,7 +120,7 @@ test('Alert survives every timer its own render schedules, fired early -- conten
 // timer test above proves; it is not a bare assertion.
 test('Alert meets both of its declared cases', () => {
   assertPatternCases({
-    bindingPath: join(REACT_COMPONENTS, 'feedback/Alert.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'feedback/alert/Alert.behaviour.json'),
     cases: {
       danger: () => ({
         root: mount(<Alert tone="danger" title="Failed" />),
@@ -136,7 +136,7 @@ test('Alert meets both of its declared cases', () => {
 
 test('Toast meets both of its declared cases, and content.noAutoDismiss stays unmet on danger alone', () => {
   assertPatternCases({
-    bindingPath: join(REACT_COMPONENTS, 'feedback/Toast.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'feedback/toast/Toast.behaviour.json'),
     cases: {
       danger: () => ({
         root: mount(<Toast tone="danger" message="Failed" />),

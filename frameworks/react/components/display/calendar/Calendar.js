@@ -2,9 +2,9 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useContainerWidth, readBreakpoint } from "../../use-container-width.js";
-import { catColor } from "../charts/chart-internals.js";
-import { calendarHourH } from "../../tokens.generated.js";
+import { useContainerWidth, readBreakpoint } from "../../../UseContainerWidth.js";
+import { catColor } from "../../../DataVisuals.js";
+import { calendarHourH } from "../../../Tokens.generated.js";
 import {
   addDays,
   defaultDayStart,
@@ -18,7 +18,7 @@ import {
   todayIso,
   weekdayOf,
   formatDate
-} from "./calendar-internals.js";
+} from "./CalendarInternals.js";
 const GUTTER = "calc(var(--sp-1) * 14)";
 export function Calendar({
   children,

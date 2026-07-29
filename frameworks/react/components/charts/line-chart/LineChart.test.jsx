@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { LineChart } from '../components/charts/LineChart.jsx';
+import { LineChart } from './LineChart.jsx';
 
 const LABELS = ['Mon', 'Tue', 'Wed'];
 const VALUES = [120, 138, 131];

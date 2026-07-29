@@ -1,10 +1,10 @@
 import React from 'react';
 import { Shell } from './Shell.jsx';
-import { Card } from '../../components/display/Card.jsx';
-import { Badge } from '../../components/display/Badge.jsx';
-import { Tag } from '../../components/display/Tag.jsx';
-import { StatCard } from '../../components/display/StatCard.jsx';
-import { Button } from '../../components/forms/Button.jsx';
+import { Card } from '../../components/display/card/Card.jsx';
+import { Badge } from '../../components/display/badge/Badge.jsx';
+import { Tag } from '../../components/display/tag/Tag.jsx';
+import { StatCard } from '../../components/display/stat-card/StatCard.jsx';
+import { Button } from '../../components/forms/button/Button.jsx';
 
 /* Two of the four carry a tone and two do not, which is the ratio the prop is
  * for: a project count is neither good nor bad, and the color only reads as a

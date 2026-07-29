@@ -3,12 +3,12 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Dialog } from "../../components/feedback/Dialog.js";
-import { Toast } from "../../components/feedback/Toast.js";
-import { Tooltip } from "../../components/feedback/Tooltip.js";
-import { ProgressBar } from "../../components/feedback/ProgressBar.js";
-import { Spinner } from "../../components/feedback/Spinner.js";
-import { Button } from "../../components/forms/Button.js";
+import { Dialog } from "./dialog/Dialog.js";
+import { Toast } from "./toast/Toast.js";
+import { Tooltip } from "./tooltip/Tooltip.js";
+import { ProgressBar } from "./progress-bar/ProgressBar.js";
+import { Spinner } from "./spinner/Spinner.js";
+import { Button } from "../forms/button/Button.js";
 function Demo() {
   const [o, setO] = React.useState(false);
   return React.createElement("div", null, React.createElement("div", {

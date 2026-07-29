@@ -1,4 +1,4 @@
-import type { InputType, ValidateOn } from '../../api.generated';
+import type { InputType, ValidateOn } from '../../../Api.generated';
 /** Text field with validation. Focus is a gold ring; error crimson; valid green with a check. */
 export interface InputProps {
   /** Field label above the control. */

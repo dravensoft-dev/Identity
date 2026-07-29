@@ -1,8 +1,8 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { RadioGroup } from '../../components/forms/RadioGroup.jsx';
-import { Radio } from '../../components/forms/Radio.jsx';
-import { Textarea } from '../../components/forms/Textarea.jsx';
+import { RadioGroup } from './radio-group/RadioGroup.jsx';
+import { Radio } from './radio/Radio.jsx';
+import { Textarea } from './textarea/Textarea.jsx';
 function Demo(){
   const [env,setEnv]=React.useState('staging');
   const [notes,setNotes]=React.useState('');

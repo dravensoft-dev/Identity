@@ -3,8 +3,8 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Skeleton } from "../../components/display/Skeleton.js";
-import { Card } from "../../components/display/Card.js";
+import { Skeleton } from "./Skeleton.js";
+import { Card } from "../card/Card.js";
 function Demo() {
   return React.createElement("div", null, React.createElement("div", {
     className: "sub"

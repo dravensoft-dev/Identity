@@ -2,7 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-import { useContainerWidth, readBreakpoint } from "../../use-container-width.js";
+import { useContainerWidth, readBreakpoint } from "../../../UseContainerWidth.js";
 export function PageHead({ title, subtitle, actions, align = "start" }) {
   if (!title)
     throw new Error("PageHead: `title` is required");

@@ -3,11 +3,11 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Table } from "../../components/display/Table.js";
-import { TableRow } from "../../components/display/TableRow.js";
-import { TableCell } from "../../components/display/TableCell.js";
-import { Avatar } from "../../components/display/Avatar.js";
-import { Badge } from "../../components/display/Badge.js";
+import { Table } from "./table/Table.js";
+import { TableRow } from "./table-row/TableRow.js";
+import { TableCell } from "./table-cell/TableCell.js";
+import { Avatar } from "./avatar/Avatar.js";
+import { Badge } from "./badge/Badge.js";
 function Demo() {
   const rows = [
     { build: "#4821", project: "Client Portal", status: "ok", p95: "128 ms" },

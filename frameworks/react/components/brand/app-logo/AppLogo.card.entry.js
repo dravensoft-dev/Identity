@@ -3,7 +3,7 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { AppLogo } from "../../components/brand/AppLogo.js";
+import { AppLogo } from "./AppLogo.js";
 const CRIMSON = React.createElement("img", {
   src: "../../../../assets/rotor-crimson.svg",
   alt: ""

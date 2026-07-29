@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { CatSlot } from '../../api.generated';
+import type { CatSlot } from '../../../Api.generated';
 
 /** One event on a `Calendar`'s schedule. Write one per event as a child of
  * `Calendar`.

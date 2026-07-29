@@ -1,4 +1,4 @@
-import type { ActivityItem } from '../../api.generated';
+import type { ActivityItem } from '../../../Api.generated';
 
 export type { ActivityItem };
 

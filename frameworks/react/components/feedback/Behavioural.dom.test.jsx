@@ -75,9 +75,9 @@
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
-import { mount, cleanup, act } from './harness.jsx';
-import { Dialog } from '../components/feedback/Dialog.jsx';
-import { ConfirmDialog } from '../components/feedback/ConfirmDialog.jsx';
+import { mount, cleanup, act } from '../../test/Harness.jsx';
+import { Dialog } from './dialog/Dialog.jsx';
+import { ConfirmDialog } from './confirm-dialog/ConfirmDialog.jsx';
 
 afterEach(cleanup);
 

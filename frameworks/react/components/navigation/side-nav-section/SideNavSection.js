@@ -2,7 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useId } from "react";
-import { injectInto, indentFor, COLUMN } from "./side-nav-inject.js";
+import { injectInto, indentFor, COLUMN } from "../side-nav/SideNavInject.js";
 export function SideNavSection({
   label,
   children,

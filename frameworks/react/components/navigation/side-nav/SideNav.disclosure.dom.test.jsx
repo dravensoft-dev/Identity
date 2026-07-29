@@ -25,12 +25,12 @@ import React from 'react';
 import { join } from 'node:path';
 // mount() RETURNS THE CONTAINER; cleanup() is a separate export that unmounts
 // everything mount() created. Call it from an afterEach, never destructure it.
-import { mount, cleanup, act } from './harness.jsx';
-import { assertPattern, REACT_COMPONENTS } from './assert-pattern.jsx';
-import { SideNav } from '../components/navigation/SideNav.jsx';
-import { SideNavItem } from '../components/navigation/SideNavItem.jsx';
-import { SideNavSection } from '../components/navigation/SideNavSection.jsx';
-import { SideNavCollapsible } from '../components/navigation/SideNavCollapsible.jsx';
+import { mount, cleanup, act } from '../../../test/Harness.jsx';
+import { assertPattern, REACT_COMPONENTS } from '../../../test/AssertPattern.jsx';
+import { SideNav } from './SideNav.jsx';
+import { SideNavItem } from '../side-nav-item/SideNavItem.jsx';
+import { SideNavSection } from '../side-nav-section/SideNavSection.jsx';
+import { SideNavCollapsible } from '../side-nav-collapsible/SideNavCollapsible.jsx';
 
 afterEach(cleanup);
 
@@ -264,7 +264,7 @@ test('SideNavCollapsible meets the disclosure pattern it binds', () => {
 
   assertPattern({
     root,
-    bindingPath: join(REACT_COMPONENTS, 'navigation', 'SideNavCollapsible.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'navigation', 'side-nav-collapsible', 'SideNavCollapsible.behaviour.json'),
     // Every requirement of this pattern is about the button: roles.element,
     // roles.label, roles.expanded and roles.controls all live on it, and the two
     // keyboard keys are declared behavioural below.

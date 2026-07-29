@@ -2,8 +2,8 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useRef } from "react";
-import { onboardingWidth, sp3, sp4 } from "../../tokens.generated.js";
-import { useDialogModal } from "../../use-dialog-modal.js";
+import { onboardingWidth, sp3, sp4 } from "../../../Tokens.generated.js";
+import { useDialogModal } from "../../../UseDialogModal.js";
 export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onDone, anchor }) {
   if (open == null)
     throw new Error("Onboarding: `open` is required");

@@ -44,9 +44,9 @@
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
-import { mount, cleanup, act } from './harness.jsx';
-import { Tooltip } from '../components/feedback/Tooltip.jsx';
-import { delayOpen, delayClose } from '../tokens.generated.js';
+import { mount, cleanup, act } from '../../../test/Harness.jsx';
+import { Tooltip } from './Tooltip.jsx';
+import { delayOpen, delayClose } from '../../../Tokens.generated.js';
 
 afterEach(cleanup);
 

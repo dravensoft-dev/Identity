@@ -3,11 +3,11 @@
  * for the full rationale. */
 import React from "react";
 import { Shell } from "./Shell.js";
-import { Card } from "../../components/display/Card.js";
-import { Badge } from "../../components/display/Badge.js";
-import { Tag } from "../../components/display/Tag.js";
-import { StatCard } from "../../components/display/StatCard.js";
-import { Button } from "../../components/forms/Button.js";
+import { Card } from "../../components/display/card/Card.js";
+import { Badge } from "../../components/display/badge/Badge.js";
+import { Tag } from "../../components/display/tag/Tag.js";
+import { StatCard } from "../../components/display/stat-card/StatCard.js";
+import { Button } from "../../components/forms/button/Button.js";
 const METRICS = [
   { k: "Active projects", v: "12" },
   { k: "Deployments (7d)", v: "48" },

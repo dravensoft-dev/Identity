@@ -1,9 +1,9 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { UnauthCard } from '../../components/display/UnauthCard.jsx';
-import { AppLogo } from '../../components/brand/AppLogo.jsx';
-import { Input } from '../../components/forms/Input.jsx';
-import { Button } from '../../components/forms/Button.jsx';
+import { UnauthCard } from './UnauthCard.jsx';
+import { AppLogo } from '../../brand/app-logo/AppLogo.jsx';
+import { Input } from '../../forms/input/Input.jsx';
+import { Button } from '../../forms/button/Button.jsx';
 function Demo(){
   const [email,setEmail]=React.useState('ana@dravensoft.dev');
   const [password,setPassword]=React.useState('dravensoft');

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Pagination } from '../components/navigation/Pagination.jsx';
+import { Pagination } from './Pagination.jsx';
 
 /* One SSR suite is enough for this component, and that is a fact about it rather
  * than a shortcut. Menu needed two -- an SSR file and a DOM file -- because its

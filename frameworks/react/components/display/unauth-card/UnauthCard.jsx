@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from './Card.jsx';
+import { Card } from '../card/Card.jsx';
 
 /** The panel every signed-out screen needs — sign in, check your
  *  inbox, this link expired, enter your code. It knows nothing about

@@ -1,5 +1,5 @@
 import React from 'react';
-import { pageWindow } from './pagination-window.js';
+import { pageWindow } from './PaginationWindow.js';
 /** Navigation between pages of a large set (tables, lists). Numbers in mono;
  * active page in crimson. `ariaLabel` names the landmark — two paginated tables
  * on one page need two names. For infinite scroll or "load more" don't use

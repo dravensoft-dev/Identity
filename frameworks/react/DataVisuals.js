@@ -10,7 +10,7 @@
 
 import {
   chartHeight, chartPadTop, chartPadRight, chartPadBottom, chartPadLeft, catSlots,
-} from '../../tokens.generated.js';
+} from './Tokens.generated.js';
 
 export const CAT_SLOTS = catSlots;
 

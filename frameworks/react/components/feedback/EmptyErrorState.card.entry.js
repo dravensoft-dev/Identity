@@ -3,9 +3,9 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { EmptyState } from "../../components/feedback/EmptyState.js";
-import { ErrorState } from "../../components/feedback/ErrorState.js";
-import { Button } from "../../components/forms/Button.js";
+import { EmptyState } from "./empty-state/EmptyState.js";
+import { ErrorState } from "./error-state/ErrorState.js";
+import { Button } from "../forms/button/Button.js";
 function Demo() {
   return React.createElement("div", null, React.createElement("div", {
     className: "sub"

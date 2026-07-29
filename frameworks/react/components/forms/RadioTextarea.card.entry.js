@@ -3,9 +3,9 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { RadioGroup } from "../../components/forms/RadioGroup.js";
-import { Radio } from "../../components/forms/Radio.js";
-import { Textarea } from "../../components/forms/Textarea.js";
+import { RadioGroup } from "./radio-group/RadioGroup.js";
+import { Radio } from "./radio/Radio.js";
+import { Textarea } from "./textarea/Textarea.js";
 function Demo() {
   const [env, setEnv] = React.useState("staging");
   const [notes, setNotes] = React.useState("");

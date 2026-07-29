@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useRef } from 'react';
-import { useDialogModal } from '../../use-dialog-modal.js';
+import { useDialogModal } from '../../../UseDialogModal.js';
 
 /* Keyframes cannot be expressed in an inline style object, so they ship as a
  * <style> injected once into the head — the pattern ProgressBar establishes.

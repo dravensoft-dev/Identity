@@ -20,10 +20,10 @@ import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { join } from 'node:path';
-import { mount, cleanup, act } from './harness.jsx';
-import { assertPattern, REACT_COMPONENTS } from './assert-pattern.jsx';
-import { Tabs } from '../components/navigation/Tabs.jsx';
-import { Tab } from '../components/navigation/Tab.jsx';
+import { mount, cleanup, act } from '../../../test/Harness.jsx';
+import { assertPattern, REACT_COMPONENTS } from '../../../test/AssertPattern.jsx';
+import { Tabs } from './Tabs.jsx';
+import { Tab } from '../tab/Tab.jsx';
 
 afterEach(cleanup);
 
@@ -227,7 +227,7 @@ test('the binding is honest: every `tabs` requirement, in both directions', () =
   const root = mount(three());
   assertPattern({
     root,
-    bindingPath: join(REACT_COMPONENTS, 'navigation', 'Tabs.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'navigation', 'tabs', 'Tabs.behaviour.json'),
     subjects: {
       default: root.querySelector('[role="tablist"]'),
       'roles.tab': root.querySelector('[role="tab"]'),

@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { SideNav } from '../components/navigation/SideNav.jsx';
-import { SideNavItem } from '../components/navigation/SideNavItem.jsx';
-import { indentFor } from '../components/navigation/side-nav-inject.jsx';
+import { SideNav } from './SideNav.jsx';
+import { SideNavItem } from '../side-nav-item/SideNavItem.jsx';
+import { indentFor } from './SideNavInject.jsx';
 
 /* One SSR suite is enough for this pair, and that is a fact about them rather
  * than a shortcut. Menu needed two files -- an SSR one and a DOM one -- because

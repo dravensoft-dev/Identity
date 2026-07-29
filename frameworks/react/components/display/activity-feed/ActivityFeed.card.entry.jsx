@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { ActivityFeed } from '../../components/display/ActivityFeed.jsx';
-import { Card } from '../../components/display/Card.jsx';
+import { ActivityFeed } from './ActivityFeed.jsx';
+import { Card } from '../card/Card.jsx';
 const ITEMS = [
   {id:'1',actor:'ana@',action:'approved the release',target:'build #4821',time:'2h ago',tone:'success'},
   {id:'2',actor:'CI',action:'deployed to production',target:'build #4821',time:'2h ago'},

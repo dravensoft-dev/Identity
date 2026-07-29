@@ -21,10 +21,10 @@ import React from 'react';
 import { join } from 'node:path';
 import { writeFileSync, unlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { mount, cleanup } from './harness.jsx';
-import { assertPattern, REACT_COMPONENTS } from './assert-pattern.jsx';
-import { Dialog } from '../components/feedback/Dialog.jsx';
-import { ConfirmDialog } from '../components/feedback/ConfirmDialog.jsx';
+import { mount, cleanup } from '../../test/Harness.jsx';
+import { assertPattern, REACT_COMPONENTS } from '../../test/AssertPattern.jsx';
+import { Dialog } from './dialog/Dialog.jsx';
+import { ConfirmDialog } from './confirm-dialog/ConfirmDialog.jsx';
 
 afterEach(cleanup);
 
@@ -135,7 +135,7 @@ test('Dialog matches its dialog-modal binding, in both directions', () => {
   );
   assertPattern({
     root: container,
-    bindingPath: join(REACT_COMPONENTS, 'feedback/Dialog.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'feedback/dialog/Dialog.behaviour.json'),
     subjects: { default: container.querySelector('[role="dialog"], dialog') },
     behavioural: DIALOG_BEHAVIOURAL,
   });
@@ -153,7 +153,7 @@ test('ConfirmDialog matches its dialog-modal binding, in both directions', () =>
   );
   assertPattern({
     root: container,
-    bindingPath: join(REACT_COMPONENTS, 'feedback/ConfirmDialog.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'feedback/confirm-dialog/ConfirmDialog.behaviour.json'),
     // ConfirmDialog renders role="alertdialog"; its binding excepts roles.element
     // for exactly that, so the subject is located by either role.
     subjects: { default: container.querySelector('[role="dialog"], [role="alertdialog"]') },
@@ -218,7 +218,7 @@ test('assertPattern reports a missed selector as "no subject element", not as an
   const container = mount(<Dialog open onClose={() => {}} title="t"><p>b</p></Dialog>);
   assert.throws(() => assertPattern({
     root: container,
-    bindingPath: join(REACT_COMPONENTS, 'feedback/Dialog.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'feedback/dialog/Dialog.behaviour.json'),
     subjects: { default: container.querySelector('[role="nonexistent"]') },
     behavioural: ALL_UNMET,
   }), (err) => {

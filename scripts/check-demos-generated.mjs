@@ -1,5 +1,5 @@
 /* Asserts every committed .js sibling under frameworks/react/components/ and
- * frameworks/react/ui_kits/console/ — every .js with a .jsx of the same name
+ * frameworks/react/ui-kits/console/ — every .js with a .jsx of the same name
  * next to it — is what build-demos.mjs produces from that sibling right now,
  * and that no such .js is left behind after its .jsx sibling is gone.
  *
@@ -79,7 +79,7 @@ async function main() {
   // script's own BANNER — so it was generated once, from a *.jsx that has
   // since been renamed or deleted, and never cleaned up. The BANNER check is
   // what tells that apart from a hand-authored plain-JS helper in the same
-  // tree (chart-internals.js, calendar-internals.js) that never had a *.jsx
+  // tree (DataVisuals.js, CalendarInternals.js) that never had a *.jsx
   // counterpart and is not this gate's to own. Left behind, an orphan would
   // sit there silently — a stale compiled module a page might still load —
   // and nothing would ever flag it as wrong.

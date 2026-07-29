@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Alert } from '../../components/feedback/Alert.jsx';
+import { Alert } from './Alert.jsx';
 function Demo(){
   return (
     <div style={{display:'flex',flexDirection:'column',gap:'calc(var(--sp-1) * 3.5)',maxWidth:'calc(var(--sp-1) * 130)'}}>

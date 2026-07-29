@@ -1,6 +1,6 @@
 import React, { useId, useRef, useState } from 'react';
-import { Button } from '../forms/Button.jsx';
-import { useDialogModal } from '../../use-dialog-modal.js';
+import { Button } from '../../forms/button/Button.jsx';
+import { useDialogModal } from '../../../UseDialogModal.js';
 /** Confirmation of high-consequence actions. Does NOT close on click-outside (avoids losses).
  * `requireText` forces typing a word to enable the destructive action.
  *

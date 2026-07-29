@@ -3,10 +3,10 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Card } from "../../components/display/Card.js";
-import { Badge } from "../../components/display/Badge.js";
-import { Tag } from "../../components/display/Tag.js";
-import { StatCard } from "../../components/display/StatCard.js";
+import { Card } from "./card/Card.js";
+import { Badge } from "./badge/Badge.js";
+import { Tag } from "./tag/Tag.js";
+import { StatCard } from "./stat-card/StatCard.js";
 function Demo() {
   return React.createElement("div", null, React.createElement("div", {
     className: "sub"

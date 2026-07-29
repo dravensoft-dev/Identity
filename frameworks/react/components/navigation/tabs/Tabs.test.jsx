@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Tabs } from '../components/navigation/Tabs.jsx';
-import { Tab } from '../components/navigation/Tab.jsx';
+import { Tabs } from './Tabs.jsx';
+import { Tab } from '../tab/Tab.jsx';
 
 /* This directory has no DOM, so no test here fires a click or an arrow key -- the
  * roving tab stop MOVING, and `change`'s payload, are asserted in

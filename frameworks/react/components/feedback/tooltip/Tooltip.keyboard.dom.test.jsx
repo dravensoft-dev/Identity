@@ -21,10 +21,10 @@ import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { join } from 'node:path';
-import { mount, cleanup, act } from './harness.jsx';
-import { assertPattern, REACT_COMPONENTS } from './assert-pattern.jsx';
-import { Tooltip } from '../components/feedback/Tooltip.jsx';
-import { delayOpen } from '../tokens.generated.js';
+import { mount, cleanup, act } from '../../../test/Harness.jsx';
+import { assertPattern, REACT_COMPONENTS } from '../../../test/AssertPattern.jsx';
+import { Tooltip } from './Tooltip.jsx';
+import { delayOpen } from '../../../Tokens.generated.js';
 
 afterEach(cleanup);
 
@@ -176,7 +176,7 @@ test('the binding is honest: every `tooltip` requirement, in both directions', (
   focusIn(root);
   assertPattern({
     root,
-    bindingPath: join(REACT_COMPONENTS, 'feedback', 'Tooltip.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'feedback', 'tooltip', 'Tooltip.behaviour.json'),
     subjects: {
       default: root.querySelector('[role="tooltip"]'),
       /* roles.describedby is a claim about the TRIGGER, not the bubble. */

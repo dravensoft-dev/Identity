@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { BulkActionBar } from '../components/navigation/BulkActionBar.jsx';
+import { BulkActionBar } from './BulkActionBar.jsx';
 
 test('an action renders its icon as a Phosphor class and its label as text', () => {
   const html = renderToStaticMarkup(

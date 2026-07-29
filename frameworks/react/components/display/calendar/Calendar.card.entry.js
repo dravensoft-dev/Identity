@@ -3,9 +3,9 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Calendar } from "../../components/display/Calendar.js";
-import { CalendarEvent } from "../../components/display/CalendarEvent.js";
-import { Button } from "../../components/forms/Button.js";
+import { Calendar } from "./Calendar.js";
+import { CalendarEvent } from "../calendar-event/CalendarEvent.js";
+import { Button } from "../../forms/button/Button.js";
 const now = new Date;
 const monday = new Date(now);
 monday.setDate(now.getDate() - (now.getDay() + 6) % 7);

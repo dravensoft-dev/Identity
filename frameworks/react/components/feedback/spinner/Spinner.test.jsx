@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Spinner } from '../components/feedback/Spinner.jsx';
+import { Spinner } from './Spinner.jsx';
 
 test('Spinner announces its label through the status role', () => {
   const html = renderToStaticMarkup(<Spinner label="Loading deploys" />);

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { IconButton } from '../components/forms/IconButton.jsx';
+import { IconButton } from './IconButton.jsx';
 
 test('IconButton draws the Phosphor class it is given and hides it from assistive technology', () => {
   const html = renderToStaticMarkup(<IconButton icon="ph-bold ph-plus" label="New" />);

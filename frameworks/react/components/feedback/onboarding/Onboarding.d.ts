@@ -1,4 +1,4 @@
-import type { OnboardingStep, OnboardingAnchor } from '../../api.generated';
+import type { OnboardingStep, OnboardingAnchor } from '../../../Api.generated';
 
 export type { OnboardingStep };
 

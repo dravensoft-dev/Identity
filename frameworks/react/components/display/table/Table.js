@@ -2,8 +2,8 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useEffect, useRef, useState } from "react";
-import { useContainerWidth, readBreakpoint } from "../../use-container-width.js";
-import { HEADER_LABEL, CELL_BASE } from "./TableCell.js";
+import { useContainerWidth, readBreakpoint } from "../../../UseContainerWidth.js";
+import { HEADER_LABEL, CELL_BASE } from "../table-cell/TableCell.js";
 export function Table({ columns, children, empty = "No data.", responsive = true, label }) {
   if (!label)
     throw new Error("Table: `label` is required");

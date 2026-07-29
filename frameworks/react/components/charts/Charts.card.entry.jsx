@@ -1,9 +1,9 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { ChartCard } from '../../components/charts/ChartCard.jsx';
-import { BarChart } from '../../components/charts/BarChart.jsx';
-import { LineChart } from '../../components/charts/LineChart.jsx';
-import { DoughnutChart } from '../../components/charts/DoughnutChart.jsx';
+import { ChartCard } from './chart-card/ChartCard.jsx';
+import { BarChart } from './bar-chart/BarChart.jsx';
+import { LineChart } from './line-chart/LineChart.jsx';
+import { DoughnutChart } from './doughnut-chart/DoughnutChart.jsx';
 const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function Demo(){return (<div>
   <div className="sub">Identity — the categorical ramp, assigned in order</div>

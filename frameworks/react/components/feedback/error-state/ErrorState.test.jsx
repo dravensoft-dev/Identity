@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { ErrorState } from '../components/feedback/ErrorState.jsx';
+import { ErrorState } from './ErrorState.jsx';
 
 test('title defaults to "Something went wrong" when omitted', () => {
   const html = renderToStaticMarkup(<ErrorState />);

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { Tone } from '../../api.generated';
+import type { Tone } from '../../../Api.generated';
 
 /** Status label (mono uppercase, short). Taxonomy of `tone` (H4):
  *  · System STATUS tones — success / warning / danger / info: reflect the actual state of

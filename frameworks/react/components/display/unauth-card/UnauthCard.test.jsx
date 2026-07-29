@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { UnauthCard } from '../components/display/UnauthCard.jsx';
+import { UnauthCard } from './UnauthCard.jsx';
 
 test('it renders its slots and its children', () => {
   const html = renderToStaticMarkup(

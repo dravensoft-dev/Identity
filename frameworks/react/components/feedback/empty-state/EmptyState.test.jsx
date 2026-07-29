@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { EmptyState } from '../components/feedback/EmptyState.jsx';
+import { EmptyState } from './EmptyState.jsx';
 
 test('EmptyState renders the icon as an aria-hidden <i> Arena draws, from a Phosphor class name', () => {
   const html = renderToStaticMarkup(

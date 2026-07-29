@@ -35,12 +35,12 @@ import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { join } from 'node:path';
-import { mount, cleanup, act } from './harness.jsx';
-import { assertPattern, REACT_COMPONENTS } from './assert-pattern.jsx';
+import { mount, cleanup, act } from './Harness.jsx';
+import { assertPattern, REACT_COMPONENTS } from './AssertPattern.jsx';
 import { isFocusable } from '../../../scripts/lib/behaviour-compliance.mjs';
-import { Menu } from '../components/navigation/Menu.jsx';
-import { Skeleton } from '../components/display/Skeleton.jsx';
-import { CalendarEvent } from '../components/display/CalendarEvent.jsx';
+import { Menu } from '../components/navigation/menu/Menu.jsx';
+import { Skeleton } from '../components/display/skeleton/Skeleton.jsx';
+import { CalendarEvent } from '../components/display/calendar-event/CalendarEvent.jsx';
 
 afterEach(cleanup);
 
@@ -68,7 +68,7 @@ test('Menu matches its menu-button binding when the subject is the focusable tri
   const trigger = container.querySelector('button');
   assertPattern({
     root: container,
-    bindingPath: join(REACT_COMPONENTS, 'navigation/Menu.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'navigation/menu/Menu.behaviour.json'),
     // Every role/state requirement is about the element focus reaches. Naming it
     // is what makes the haspopup and expanded exceptions verifiably true rather
     // than verifiably false.
@@ -109,7 +109,7 @@ test('Skeleton matches its status binding, block and circle both', () => {
   const placeholder = mount(<Skeleton variant="block" />);
   assertPattern({
     root: placeholder,
-    bindingPath: join(REACT_COMPONENTS, 'display/Skeleton.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'display/skeleton/Skeleton.behaviour.json'),
     behavioural: { 'focus.unaffected': true },
   });
   cleanup();
@@ -117,7 +117,7 @@ test('Skeleton matches its status binding, block and circle both', () => {
   const circle = mount(<Skeleton variant="circle" />);
   assertPattern({
     root: circle,
-    bindingPath: join(REACT_COMPONENTS, 'display/Skeleton.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'display/skeleton/Skeleton.behaviour.json'),
     behavioural: { 'focus.unaffected': true },
   });
 });

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useContainerWidth } from '../../use-container-width.js';
-import { resolveColors, niceMax, ticks, barPath, srOnly, PAD, CHART_HEIGHT } from './chart-internals.js';
-import { chartBarGap, chartBarRadius } from '../../tokens.generated.js';
+import { useContainerWidth } from '../../../UseContainerWidth.js';
+import { resolveColors, niceMax, ticks, barPath, srOnly, PAD, CHART_HEIGHT } from '../../../DataVisuals.js';
+import { chartBarGap, chartBarRadius } from '../../../Tokens.generated.js';
 
 export function BarChart({
   labels, values, seriesLabel, slot, slots, tone, valueSuffix,

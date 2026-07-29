@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useContainerWidth } from '../../use-container-width.js';
-import { resolveColors, arcPath, srOnly, CHART_HEIGHT } from './chart-internals.js';
-import { chartLegendMin, chartLegendMax, chartLegendGap } from '../../tokens.generated.js';
+import { useContainerWidth } from '../../../UseContainerWidth.js';
+import { resolveColors, arcPath, srOnly, CHART_HEIGHT } from '../../../DataVisuals.js';
+import { chartLegendMin, chartLegendMax, chartLegendGap } from '../../../Tokens.generated.js';
 
 export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix }) {
   if (!labels) throw new Error('DoughnutChart: `labels` is required');

@@ -19,8 +19,8 @@
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
-import { mount, cleanup, act } from './harness.jsx';
-import { Menu } from '../components/navigation/Menu.jsx';
+import { mount, cleanup, act } from '../../../test/Harness.jsx';
+import { Menu } from './Menu.jsx';
 
 afterEach(cleanup);
 

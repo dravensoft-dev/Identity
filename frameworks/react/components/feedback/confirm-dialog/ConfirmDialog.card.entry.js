@@ -3,8 +3,8 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { ConfirmDialog } from "../../components/feedback/ConfirmDialog.js";
-import { Button } from "../../components/forms/Button.js";
+import { ConfirmDialog } from "./ConfirmDialog.js";
+import { Button } from "../../forms/button/Button.js";
 function Demo() {
   const [hard, setHard] = React.useState(true);
   const [soft, setSoft] = React.useState(false);

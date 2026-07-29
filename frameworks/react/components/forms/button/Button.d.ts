@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { ButtonType, ButtonVariant, ControlSize } from '../../api.generated';
+import type { ButtonType, ButtonVariant, ControlSize } from '../../../Api.generated';
 
 /**
  * Arena action button. Primary crimson for the main action (one per view);

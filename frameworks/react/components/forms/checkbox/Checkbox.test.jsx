@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Checkbox } from '../components/forms/Checkbox.jsx';
+import { Checkbox } from './Checkbox.jsx';
 
 /* This directory renders with renderToStaticMarkup and has no DOM, so no test here
  * fires a change. The `change` event's payload -- the new checked state as a boolean --

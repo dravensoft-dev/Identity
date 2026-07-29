@@ -3,8 +3,8 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { CommandPalette } from "../../components/navigation/CommandPalette.js";
-import { Button } from "../../components/forms/Button.js";
+import { CommandPalette } from "./CommandPalette.js";
+import { Button } from "../../forms/button/Button.js";
 const commands = [
   { id: "deploy", label: "Deploy to production", hint: "client portal", icon: "ph-bold ph-rocket-launch", shortcut: "⌘D" },
   { id: "logs", label: "View build logs", hint: "build 4821", icon: "ph-bold ph-terminal-window" },

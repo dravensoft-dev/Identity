@@ -1,4 +1,4 @@
-import type { SeriesTone } from '../../api.generated';
+import type { SeriesTone } from '../../../Api.generated';
 
 export type { SeriesTone };
 

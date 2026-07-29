@@ -1,8 +1,8 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { EmptyState } from '../../components/feedback/EmptyState.jsx';
-import { ErrorState } from '../../components/feedback/ErrorState.jsx';
-import { Button } from '../../components/forms/Button.jsx';
+import { EmptyState } from './empty-state/EmptyState.jsx';
+import { ErrorState } from './error-state/ErrorState.jsx';
+import { Button } from '../forms/button/Button.jsx';
 function Demo(){return(<div>
   <div className="sub">Neither state is a dead end — each one names the way out</div>
   <div className="row">

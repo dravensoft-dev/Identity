@@ -1,4 +1,4 @@
-import type { Crumb } from '../../api.generated';
+import type { Crumb } from '../../../Api.generated';
 /** Breadcrumb navigation (H3). Return path in deep hierarchies; the last item is the current location. */
 export type { Crumb };
 export interface BreadcrumbsProps {

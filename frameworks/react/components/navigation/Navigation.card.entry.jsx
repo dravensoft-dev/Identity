@@ -1,16 +1,16 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Tabs } from '../../components/navigation/Tabs.jsx';
-import { Tab } from '../../components/navigation/Tab.jsx';
-import { SegmentedControl } from '../../components/navigation/SegmentedControl.jsx';
-import { PageHead } from '../../components/navigation/PageHead.jsx';
-import { Breadcrumbs } from '../../components/navigation/Breadcrumbs.jsx';
-import { SideNav } from '../../components/navigation/SideNav.jsx';
-import { SideNavItem } from '../../components/navigation/SideNavItem.jsx';
-import { SideNavSection } from '../../components/navigation/SideNavSection.jsx';
-import { SideNavCollapsible } from '../../components/navigation/SideNavCollapsible.jsx';
-import { BulkActionBar } from '../../components/navigation/BulkActionBar.jsx';
-import { Button } from '../../components/forms/Button.jsx';
+import { Tabs } from './tabs/Tabs.jsx';
+import { Tab } from './tab/Tab.jsx';
+import { SegmentedControl } from './segmented-control/SegmentedControl.jsx';
+import { PageHead } from './page-head/PageHead.jsx';
+import { Breadcrumbs } from './breadcrumbs/Breadcrumbs.jsx';
+import { SideNav } from './side-nav/SideNav.jsx';
+import { SideNavItem } from './side-nav-item/SideNavItem.jsx';
+import { SideNavSection } from './side-nav-section/SideNavSection.jsx';
+import { SideNavCollapsible } from './side-nav-collapsible/SideNavCollapsible.jsx';
+import { BulkActionBar } from './bulk-action-bar/BulkActionBar.jsx';
+import { Button } from '../forms/button/Button.jsx';
 function Demo(){const[v,setV]=React.useState('Overview');const[range,setRange]=React.useState('7d');const[sel,setSel]=React.useState(3);return(<div>
   <Tabs value={v} onChange={setV}>
     <Tab value="Overview" label="Overview">

@@ -1,11 +1,11 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Dialog } from '../../components/feedback/Dialog.jsx';
-import { Toast } from '../../components/feedback/Toast.jsx';
-import { Tooltip } from '../../components/feedback/Tooltip.jsx';
-import { ProgressBar } from '../../components/feedback/ProgressBar.jsx';
-import { Spinner } from '../../components/feedback/Spinner.jsx';
-import { Button } from '../../components/forms/Button.jsx';
+import { Dialog } from './dialog/Dialog.jsx';
+import { Toast } from './toast/Toast.jsx';
+import { Tooltip } from './tooltip/Tooltip.jsx';
+import { ProgressBar } from './progress-bar/ProgressBar.jsx';
+import { Spinner } from './spinner/Spinner.jsx';
+import { Button } from '../forms/button/Button.jsx';
 function Demo(){const[o,setO]=React.useState(false);return(<div>
   <div className="sub">Toast</div>
   <div className="row" style={{alignItems:'flex-start'}}>

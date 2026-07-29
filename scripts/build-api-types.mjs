@@ -4,7 +4,7 @@
  * names -- once, platform-neutrally. This renders them as TypeScript and writes
  * the SAME body into both layers:
  *
- *   frameworks/react/api.generated.d.ts
+ *   frameworks/react/Api.generated.d.ts
  *   frameworks/angular/Api.generated.ts
  *
  * Two files rather than one shared module, for the reason the script-readable
@@ -26,7 +26,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** Repo-relative output paths, in emission order. */
 export const API_TARGETS = [
-  'frameworks/react/api.generated.d.ts',
+  'frameworks/react/Api.generated.d.ts',
   'frameworks/angular/Api.generated.ts',
 ];
 

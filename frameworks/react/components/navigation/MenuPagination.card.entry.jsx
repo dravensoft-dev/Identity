@@ -1,9 +1,9 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Menu } from '../../components/navigation/Menu.jsx';
-import { Pagination } from '../../components/navigation/Pagination.jsx';
-import { IconButton } from '../../components/forms/IconButton.jsx';
-import { Button } from '../../components/forms/Button.jsx';
+import { Menu } from './menu/Menu.jsx';
+import { Pagination } from './pagination/Pagination.jsx';
+import { IconButton } from '../forms/icon-button/IconButton.jsx';
+import { Button } from '../forms/button/Button.jsx';
 function Demo(){
   const [p,setP]=React.useState(3);
   return (

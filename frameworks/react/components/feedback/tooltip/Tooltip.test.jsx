@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Tooltip } from '../components/feedback/Tooltip.jsx';
+import { Tooltip } from './Tooltip.jsx';
 
 /* WHAT SSR CAN AND CANNOT SHOW HERE, because for this component the gap is wide.
  *

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Button } from '../../components/forms/Button.jsx';
-import { Input } from '../../components/forms/Input.jsx';
-import { AppLogo } from '../../components/brand/AppLogo.jsx';
-import { UnauthCard } from '../../components/display/UnauthCard.jsx';
+import { Button } from '../../components/forms/button/Button.jsx';
+import { Input } from '../../components/forms/input/Input.jsx';
+import { AppLogo } from '../../components/brand/app-logo/AppLogo.jsx';
+import { UnauthCard } from '../../components/display/unauth-card/UnauthCard.jsx';
 
 export function LoginScreen({ onLogin }) {
   const [email, setEmail] = useState('ana@dravensoft.dev');

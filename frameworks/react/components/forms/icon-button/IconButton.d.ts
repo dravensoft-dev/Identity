@@ -1,4 +1,4 @@
-import type { ButtonType, ControlSize, IconButtonVariant } from '../../api.generated';
+import type { ButtonType, ControlSize, IconButtonVariant } from '../../../Api.generated';
 
 /** Icon-only button. Requires `label` for accessibility. */
 export interface IconButtonProps {

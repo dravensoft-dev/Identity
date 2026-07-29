@@ -12,7 +12,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Card } from '../components/display/Card.jsx';
+import { Card } from './Card.jsx';
 
 test('Card renders its children', () => {
   const html = renderToStaticMarkup(<Card>hello</Card>);

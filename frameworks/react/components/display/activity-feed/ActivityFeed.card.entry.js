@@ -3,8 +3,8 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { ActivityFeed } from "../../components/display/ActivityFeed.js";
-import { Card } from "../../components/display/Card.js";
+import { ActivityFeed } from "./ActivityFeed.js";
+import { Card } from "../card/Card.js";
 const ITEMS = [
   { id: "1", actor: "ana@", action: "approved the release", target: "build #4821", time: "2h ago", tone: "success" },
   { id: "2", actor: "CI", action: "deployed to production", target: "build #4821", time: "2h ago" },

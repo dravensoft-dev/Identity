@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { PageHead } from '../components/navigation/PageHead.jsx';
+import { PageHead } from './PageHead.jsx';
 
 test('PageHead renders the title and subtitle text', () => {
   const html = renderToStaticMarkup(

@@ -2,7 +2,7 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React from "react";
-import { Button } from "../forms/Button.js";
+import { Button } from "../../forms/button/Button.js";
 export function ErrorState({ icon, title = "Something went wrong", message, code, retryLabel, onRetry, secondaryAction }) {
   return React.createElement("div", {
     style: {

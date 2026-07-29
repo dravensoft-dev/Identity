@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Alert } from '../components/feedback/Alert.jsx';
+import { Alert } from './Alert.jsx';
 
 test('tone=danger renders role=alert; every other tone renders role=status', () => {
   const danger = renderToStaticMarkup(<Alert tone="danger">Renew the certificate</Alert>);

@@ -2,10 +2,10 @@
  * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs
  * for the full rationale. */
 import React, { useState } from "react";
-import { Button } from "../../components/forms/Button.js";
-import { Input } from "../../components/forms/Input.js";
-import { AppLogo } from "../../components/brand/AppLogo.js";
-import { UnauthCard } from "../../components/display/UnauthCard.js";
+import { Button } from "../../components/forms/button/Button.js";
+import { Input } from "../../components/forms/input/Input.js";
+import { AppLogo } from "../../components/brand/app-logo/AppLogo.js";
+import { UnauthCard } from "../../components/display/unauth-card/UnauthCard.js";
 export function LoginScreen({ onLogin }) {
   const [email, setEmail] = useState("ana@dravensoft.dev");
   const [password, setPassword] = useState("dravensoft");

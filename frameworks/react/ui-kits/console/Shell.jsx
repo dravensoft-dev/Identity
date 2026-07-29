@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { AppLogo } from '../../components/brand/AppLogo.jsx';
-import { Avatar } from '../../components/display/Avatar.jsx';
-import { IconButton } from '../../components/forms/IconButton.jsx';
-import { Switch } from '../../components/forms/Switch.jsx';
-import { PageHead } from '../../components/navigation/PageHead.jsx';
-import { SideNav } from '../../components/navigation/SideNav.jsx';
-import { SideNavItem } from '../../components/navigation/SideNavItem.jsx';
+import { AppLogo } from '../../components/brand/app-logo/AppLogo.jsx';
+import { Avatar } from '../../components/display/avatar/Avatar.jsx';
+import { IconButton } from '../../components/forms/icon-button/IconButton.jsx';
+import { Switch } from '../../components/forms/switch/Switch.jsx';
+import { PageHead } from '../../components/navigation/page-head/PageHead.jsx';
+import { SideNav } from '../../components/navigation/side-nav/SideNav.jsx';
+import { SideNavItem } from '../../components/navigation/side-nav-item/SideNavItem.jsx';
 
 /* Owns no theme state of its own: the truth is the `arena-light` class on
  * <html>, and this reads it. The MutationObserver below is what keeps that

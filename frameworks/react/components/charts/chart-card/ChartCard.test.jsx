@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { ChartCard } from '../components/charts/ChartCard.jsx';
+import { ChartCard } from './ChartCard.jsx';
 
 test('ChartCard renders the title and its children', () => {
   const html = renderToStaticMarkup(

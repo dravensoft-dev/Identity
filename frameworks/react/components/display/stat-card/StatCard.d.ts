@@ -1,4 +1,4 @@
-import type { StatDelta, Tone } from '../../api.generated';
+import type { StatDelta, Tone } from '../../../Api.generated';
 
 export type { StatDelta };
 

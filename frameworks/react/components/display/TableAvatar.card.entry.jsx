@@ -1,10 +1,10 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Table } from '../../components/display/Table.jsx';
-import { TableRow } from '../../components/display/TableRow.jsx';
-import { TableCell } from '../../components/display/TableCell.jsx';
-import { Avatar } from '../../components/display/Avatar.jsx';
-import { Badge } from '../../components/display/Badge.jsx';
+import { Table } from './table/Table.jsx';
+import { TableRow } from './table-row/TableRow.jsx';
+import { TableCell } from './table-cell/TableCell.jsx';
+import { Avatar } from './avatar/Avatar.jsx';
+import { Badge } from './badge/Badge.jsx';
 function Demo(){
   const rows=[
     {build:'#4821',project:'Client Portal',status:'ok',p95:'128 ms'},

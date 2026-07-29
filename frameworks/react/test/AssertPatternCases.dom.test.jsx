@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { writeFileSync, mkdtempSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { assertPatternCases } from './assert-pattern.jsx';
+import { assertPatternCases } from './AssertPattern.jsx';
 
 function bindingFile(binding) {
   const dir = mkdtempSync(join(tmpdir(), 'arena-cases-'));

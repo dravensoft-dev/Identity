@@ -1,4 +1,4 @@
-import type { SegmentOption, SegmentedControlSize } from '../../api.generated';
+import type { SegmentOption, SegmentedControlSize } from '../../../Api.generated';
 /** A compact inline filter over mutually exclusive options. A real radio group,
  *  never a tab list, and it carries no crimson. */
 export type { SegmentOption };

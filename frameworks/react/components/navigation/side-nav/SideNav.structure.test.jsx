@@ -2,10 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { SideNav } from '../components/navigation/SideNav.jsx';
-import { SideNavItem } from '../components/navigation/SideNavItem.jsx';
-import { SideNavSection } from '../components/navigation/SideNavSection.jsx';
-import { SideNavCollapsible, subtreeHasItem } from '../components/navigation/SideNavCollapsible.jsx';
+import { SideNav } from './SideNav.jsx';
+import { SideNavItem } from '../side-nav-item/SideNavItem.jsx';
+import { SideNavSection } from '../side-nav-section/SideNavSection.jsx';
+import { SideNavCollapsible, subtreeHasItem } from '../side-nav-collapsible/SideNavCollapsible.jsx';
 
 const section = (extra = {}) => (
   <SideNav ariaLabel="Primary" active="prod" {...extra}>

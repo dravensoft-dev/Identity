@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { AppLogo } from '../../components/brand/AppLogo.jsx';
+import { AppLogo } from './AppLogo.jsx';
 const CRIMSON = <img src="../../../../assets/rotor-crimson.svg" alt=""/>;
 const BONE = <img src="../../../../assets/rotor-bone.svg" alt=""/>;
 function Demo(){return(<div>

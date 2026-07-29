@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Skeleton } from '../../components/display/Skeleton.jsx';
-import { Card } from '../../components/display/Card.jsx';
+import { Skeleton } from './Skeleton.jsx';
+import { Card } from '../card/Card.jsx';
 function Demo(){return (<div>
   <div className="sub">Variants</div>
   <div className="row" style={{alignItems:'flex-start'}}>

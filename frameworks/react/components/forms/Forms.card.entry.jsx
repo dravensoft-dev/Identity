@@ -1,11 +1,11 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Button } from '../../components/forms/Button.jsx';
-import { IconButton } from '../../components/forms/IconButton.jsx';
-import { Input } from '../../components/forms/Input.jsx';
-import { Select } from '../../components/forms/Select.jsx';
-import { Checkbox } from '../../components/forms/Checkbox.jsx';
-import { Switch } from '../../components/forms/Switch.jsx';
+import { Button } from './button/Button.jsx';
+import { IconButton } from './icon-button/IconButton.jsx';
+import { Input } from './input/Input.jsx';
+import { Select } from './select/Select.jsx';
+import { Checkbox } from './checkbox/Checkbox.jsx';
+import { Switch } from './switch/Switch.jsx';
 function Demo(){
   const [chk,setChk]=React.useState(true);
   const [sw,setSw]=React.useState(true);

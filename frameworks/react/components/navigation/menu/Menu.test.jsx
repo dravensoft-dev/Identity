@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Menu } from '../components/navigation/Menu.jsx';
+import { Menu } from './Menu.jsx';
 
 /* This directory renders with renderToStaticMarkup and has no DOM, and a Menu's
  * panel only exists after its trigger has been clicked -- `open` is internal

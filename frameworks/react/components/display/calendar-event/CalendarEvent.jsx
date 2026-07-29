@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconButton } from '../forms/IconButton.jsx';
+import { IconButton } from '../../forms/icon-button/IconButton.jsx';
 
 /** One event on a `Calendar`'s schedule. Write one per event as a child of
  * `Calendar`; it never stands alone, because everything about WHERE it goes is

@@ -1,4 +1,4 @@
-import type { Command } from '../../api.generated';
+import type { Command } from '../../../Api.generated';
 
 export type { Command };
 

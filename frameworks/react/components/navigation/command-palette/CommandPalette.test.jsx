@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { CommandPalette } from '../components/navigation/CommandPalette.jsx';
+import { CommandPalette } from './CommandPalette.jsx';
 
 test('a closed palette renders nothing', () => {
   assert.equal(renderToStaticMarkup(<CommandPalette open={false} commands={[]} />), '');

@@ -49,13 +49,13 @@ const EXT = 'com.dravensoft.arena';
 /** The generated JS modules, one per framework layer. Emission is per-layer
  *  rather than once into tokens/ so that a component's import never crosses the
  *  tokens/ <-> frameworks/ boundary: the import is intra-layer, the same shape
- *  as the ../charts/chart-internals.js that Calendar already carries, and the
+ *  as the ../../../DataVisuals.js that Calendar already carries, and the
  *  copy-in kit gains one entry in README.md's dependency list rather than a new
  *  concept. Both files carry identical bodies; only the extension differs,
  *  because React does not compile TypeScript and Angular needs a .ts to
  *  typecheck the import. */
 export const SCRIPT_TARGETS = [
-  'frameworks/react/tokens.generated.js',
+  'frameworks/react/Tokens.generated.js',
   'frameworks/angular/Tokens.generated.ts',
 ];
 

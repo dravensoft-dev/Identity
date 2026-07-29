@@ -3,17 +3,17 @@
  * for the full rationale. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Tabs } from "../../components/navigation/Tabs.js";
-import { Tab } from "../../components/navigation/Tab.js";
-import { SegmentedControl } from "../../components/navigation/SegmentedControl.js";
-import { PageHead } from "../../components/navigation/PageHead.js";
-import { Breadcrumbs } from "../../components/navigation/Breadcrumbs.js";
-import { SideNav } from "../../components/navigation/SideNav.js";
-import { SideNavItem } from "../../components/navigation/SideNavItem.js";
-import { SideNavSection } from "../../components/navigation/SideNavSection.js";
-import { SideNavCollapsible } from "../../components/navigation/SideNavCollapsible.js";
-import { BulkActionBar } from "../../components/navigation/BulkActionBar.js";
-import { Button } from "../../components/forms/Button.js";
+import { Tabs } from "./tabs/Tabs.js";
+import { Tab } from "./tab/Tab.js";
+import { SegmentedControl } from "./segmented-control/SegmentedControl.js";
+import { PageHead } from "./page-head/PageHead.js";
+import { Breadcrumbs } from "./breadcrumbs/Breadcrumbs.js";
+import { SideNav } from "./side-nav/SideNav.js";
+import { SideNavItem } from "./side-nav-item/SideNavItem.js";
+import { SideNavSection } from "./side-nav-section/SideNavSection.js";
+import { SideNavCollapsible } from "./side-nav-collapsible/SideNavCollapsible.js";
+import { BulkActionBar } from "./bulk-action-bar/BulkActionBar.js";
+import { Button } from "../forms/button/Button.js";
 function Demo() {
   const [v, setV] = React.useState("Overview");
   const [range, setRange] = React.useState("7d");

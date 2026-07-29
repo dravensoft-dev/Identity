@@ -17,7 +17,7 @@
  * exported as pure functions of a container rather than living inside the hook. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { focusableElements, focusFirstFocusable, trapTabKey } from '../use-dialog-modal.js';
+import { focusableElements, focusFirstFocusable, trapTabKey } from '../UseDialogModal.js';
 
 /* Hand-built trees, no render. This is the technique Angular's
  * Onboarding.focusTrap.test.ts uses, and it is why the helpers are exported as

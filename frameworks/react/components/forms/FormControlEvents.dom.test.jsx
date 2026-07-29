@@ -46,13 +46,13 @@
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
-import { mount, cleanup, act } from './harness.jsx';
-import { Input } from '../components/forms/Input.jsx';
-import { Checkbox } from '../components/forms/Checkbox.jsx';
-import { Select } from '../components/forms/Select.jsx';
-import { Textarea } from '../components/forms/Textarea.jsx';
-import { RadioGroup } from '../components/forms/RadioGroup.jsx';
-import { Radio } from '../components/forms/Radio.jsx';
+import { mount, cleanup, act } from '../../test/Harness.jsx';
+import { Input } from './input/Input.jsx';
+import { Checkbox } from './checkbox/Checkbox.jsx';
+import { Select } from './select/Select.jsx';
+import { Textarea } from './textarea/Textarea.jsx';
+import { RadioGroup } from './radio-group/RadioGroup.jsx';
+import { Radio } from './radio/Radio.jsx';
 
 afterEach(cleanup);
 

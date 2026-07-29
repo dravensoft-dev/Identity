@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useContainerWidth, readBreakpoint } from '../../use-container-width.js';
-import { HEADER_LABEL, CELL_BASE } from './TableCell.jsx';
+import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.js';
+import { HEADER_LABEL, CELL_BASE } from '../table-cell/TableCell.jsx';
 
 /** Data table. A COMPOUND component: `columns` says how each column is headed
  * and set, and the consumer writes one `<TableRow>` per row with one

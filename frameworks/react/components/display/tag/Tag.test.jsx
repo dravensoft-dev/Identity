@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Tag } from '../components/display/Tag.jsx';
+import { Tag } from './Tag.jsx';
 
 test('a tone renders its dot and the tone colour; default is neutral', () => {
   const html = renderToStaticMarkup(<Tag tone="success">Shipped</Tag>);

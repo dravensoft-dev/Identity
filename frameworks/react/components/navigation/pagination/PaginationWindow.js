@@ -6,7 +6,7 @@
  * function is easier to reason about, and easier to be wrong about, away
  * from the JSX.
  */
-import { limitPaginationSiblings } from '../../tokens.generated.js';
+import { limitPaginationSiblings } from '../../../Tokens.generated.js';
 
 /* How many slots the elided form occupies: first + last + the current page and
  * its siblings on each side + two ellipses. Derived, never authored -- widen

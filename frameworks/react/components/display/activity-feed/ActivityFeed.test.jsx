@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { ActivityFeed } from '../components/display/ActivityFeed.jsx';
+import { ActivityFeed } from './ActivityFeed.jsx';
 
 const ITEMS = [
   { id: '1', actor: 'ana@', action: 'approved the release', target: 'build #4821', time: '2h ago' },

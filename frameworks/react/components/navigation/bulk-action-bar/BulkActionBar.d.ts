@@ -1,4 +1,4 @@
-import type { BulkAction } from '../../api.generated';
+import type { BulkAction } from '../../../Api.generated';
 
 export type { BulkAction };
 

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Switch } from '../components/forms/Switch.jsx';
+import { Switch } from './Switch.jsx';
 
 test('on renders iconOn and aria-checked="true"', () => {
   const html = renderToStaticMarkup(<Switch state iconOn="ph-bold ph-sun" iconOff="ph-bold ph-moon" label="Dark theme" />);

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Avatar } from '../components/display/Avatar.jsx';
+import { Avatar } from './Avatar.jsx';
 
 test('renders initials from name when there is no src', () => {
   const html = renderToStaticMarkup(<Avatar name="Ada Lovelace" />);

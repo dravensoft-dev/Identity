@@ -2,12 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Onboarding } from '../components/feedback/Onboarding.jsx';
+import { Onboarding } from './Onboarding.jsx';
 // sp3/sp4 stand in for two arbitrary viewport coordinates below -- not the
 // values' design meaning, just real numbers pulled from a token rather than
 // bare literals, which check:dimensions governs at `left`/`bottom` the same
 // as any other framework source under `frameworks/`.
-import { sp3, sp4 } from '../tokens.generated.js';
+import { sp3, sp4 } from '../../../Tokens.generated.js';
 
 test('a closed tour renders nothing', () => {
   assert.equal(renderToStaticMarkup(<Onboarding open={false} steps={[{ title: 'One' }]} />), '');

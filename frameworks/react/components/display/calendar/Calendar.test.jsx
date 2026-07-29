@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Calendar } from '../components/display/Calendar.jsx';
-import { CalendarEvent } from '../components/display/CalendarEvent.jsx';
+import { Calendar } from './Calendar.jsx';
+import { CalendarEvent } from '../calendar-event/CalendarEvent.jsx';
 
 /* WHAT THIS DIRECTORY CAN SHOW, AND WHAT NOW GOES UNSHOWN.
  *

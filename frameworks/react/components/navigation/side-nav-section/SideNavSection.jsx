@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import { injectInto, indentFor, COLUMN } from './side-nav-inject.jsx';
+import { injectInto, indentFor, COLUMN } from '../side-nav/SideNavInject.jsx';
 
 /** A named group of navigation items. It WRAPS -- it never replaces what a
  *  consumer wrote -- and its accessible name is the same heading a sighted user

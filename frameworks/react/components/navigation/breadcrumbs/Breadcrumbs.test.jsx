@@ -11,7 +11,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Breadcrumbs } from '../components/navigation/Breadcrumbs.jsx';
+import { Breadcrumbs } from './Breadcrumbs.jsx';
 
 const ITEMS = [
   { label: 'Clients', href: '/clients' },

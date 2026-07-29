@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '../forms/Button.jsx';
+import { Button } from '../../forms/button/Button.jsx';
 /** Section/screen-level error state, with recovery (Retry) and optional detail. */
 export function ErrorState({ icon, title = 'Something went wrong', message, code, retryLabel, onRetry, secondaryAction }) {
   return (

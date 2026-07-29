@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Button } from '../components/forms/Button.jsx';
+import { Button } from './Button.jsx';
 
 test('Button renders its content slot', () => {
   assert.match(renderToStaticMarkup(<Button>Deploy</Button>), /Deploy/);
