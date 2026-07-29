@@ -19,6 +19,8 @@ The members are `label`, `id`, `hint`, `error`, `valid`, `required`, `validate`,
 
 **`id` is the one global attribute that survived as a member**, because the component generates one from `label` to wire the label's `htmlFor` and a consumer had no way to override it — which left an external `<label>`, an `aria-describedby` or a form library addressing the field by name with no path at all. Pass it and it wins; omit it and the label-derived value is still generated.
 
+**`readOnly` and `disabled` look different because they mean different things.** A disabled field is dimmed and out of the conversation. A read-only field is at **full contrast** — its value is the point — and drops to the panel surface so it reads as a fact rather than a well you can type into. Reach for `readOnly` whenever the value must stay legible and copyable, and for `disabled` only when the field is genuinely inapplicable right now.
+
 ### Dates and times
 
 Use the native types. Arena deliberately ships **no `DatePicker` and no `TimePicker`** — the native control is the sanctioned approach: it is keyboard accessible, localized, and it is what a phone user already knows how to drive. Arena's job is to make it look like Arena, which it does, in both themes.

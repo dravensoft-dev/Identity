@@ -57,7 +57,8 @@ export function Textarea({
     style: {
       width: "100%",
       padding: "calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 3)",
-      background: "var(--surface-input)",
+      background: readOnly ? "var(--panel)" : "var(--surface-input)",
+      cursor: readOnly ? "default" : "text",
       border: "var(--bw) solid " + borderColor,
       borderRadius: "var(--r-sm)",
       boxShadow: ring,

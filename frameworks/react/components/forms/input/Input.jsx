@@ -46,7 +46,7 @@ export function Input({
         </label>
       )}
       <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', height: 'var(--dz-ctl-h)', boxSizing: 'border-box', padding: '0 calc(var(--sp-1) * 3)',
-        background: 'var(--surface-input)', border: 'var(--bw) solid ' + borderColor,
+        background: readOnly ? 'var(--panel)' : 'var(--surface-input)', border: 'var(--bw) solid ' + borderColor,
         borderRadius: 'var(--r-sm)', boxShadow: ring, opacity: disabled ? 0.5 : 1,
         transition: 'border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)' }}>
         {icon && <i className={icon} aria-hidden="true" style={{ color: 'var(--mute)' }} />}
@@ -57,6 +57,7 @@ export function Input({
           min={min} max={max} step={step} maxLength={maxLength} pattern={pattern}
           onFocus={() => setFocus(true)} onBlur={handleBlur} onChange={handleChange}
           style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none',
+            cursor: readOnly ? 'default' : 'text',
             color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)' }} />
         {shownError && <i className="ph-fill ph-warning-circle" style={{ color: 'var(--danger)', fontSize: 'var(--icon-md)' }} />}
         {isValid && <i className="ph-fill ph-check-circle" style={{ color: 'var(--success)', fontSize: 'var(--icon-md)' }} />}

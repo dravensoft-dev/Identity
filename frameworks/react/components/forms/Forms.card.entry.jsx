@@ -40,6 +40,9 @@ function Demo(){
         <div style={{width:'calc(var(--sp-1) * 45)'}}>
           <Select label="Environment" options={[{value:'Production',label:'Production'},{value:'Staging',label:'Staging'},{value:'QA',label:'QA'}]} />
         </div>
+        <div style={{width:'calc(var(--sp-1) * 45)'}}>
+          <Input label="Cluster" value="eu-west-1" readOnly hint="Set at project creation" />
+        </div>
       </div>
       <div className="sub">Input — native date and time</div>
       <div className="row" style={{alignItems:'flex-start'}}>

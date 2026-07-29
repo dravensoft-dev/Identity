@@ -81,7 +81,7 @@ export function Input({
       height: "var(--dz-ctl-h)",
       boxSizing: "border-box",
       padding: "0 calc(var(--sp-1) * 3)",
-      background: "var(--surface-input)",
+      background: readOnly ? "var(--panel)" : "var(--surface-input)",
       border: "var(--bw) solid " + borderColor,
       borderRadius: "var(--r-sm)",
       boxShadow: ring,
@@ -120,6 +120,7 @@ export function Input({
       background: "transparent",
       border: "none",
       outline: "none",
+      cursor: readOnly ? "default" : "text",
       color: "var(--bone)",
       fontFamily: "var(--font-body)",
       fontSize: "var(--dz-text)"

@@ -75,6 +75,13 @@ function Demo() {
   }, React.createElement(Select, {
     label: "Environment",
     options: [{ value: "Production", label: "Production" }, { value: "Staging", label: "Staging" }, { value: "QA", label: "QA" }]
+  })), React.createElement("div", {
+    style: { width: "calc(var(--sp-1) * 45)" }
+  }, React.createElement(Input, {
+    label: "Cluster",
+    value: "eu-west-1",
+    readOnly: true,
+    hint: "Set at project creation"
   }))), React.createElement("div", {
     className: "sub"
   }, "Input — native date and time"), React.createElement("div", {

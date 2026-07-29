@@ -756,6 +756,9 @@
   .arena-pop {
     animation: arena-pop var(--dur-mid) var(--ease-emphatic);
   }
+  .cursor-default {
+    cursor: default;
+  }
   .cursor-not-allowed {
     cursor: not-allowed;
   }
