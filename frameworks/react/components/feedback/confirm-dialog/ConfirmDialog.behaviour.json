@@ -1,7 +1,4 @@
 {
-  "pattern": "dialog-modal",
-  "exceptions": [
-    { "requirement": "roles.element",
-      "reason": "Renders role=\"alertdialog\", not \"dialog\" -- arguably the more correct choice for a destructive-action confirmation (APG treats alertdialog as dialog's specialisation for exactly this case), but it is a real deviation from this pattern's literal requirement, which the shared dialog-modal contract does not carve out. The Angular primitive makes the same choice and declares the same exception, so the two layers agree." }
-  ]
+  "pattern": "alertdialog",
+  "exceptions": []
 }

@@ -43,7 +43,7 @@ test('Dialog matches its dialog-modal binding, in both directions', () => {
   });
 });
 
-test('ConfirmDialog matches its dialog-modal binding, in both directions', () => {
+test('ConfirmDialog matches its alertdialog binding, in both directions', () => {
   const container = mount(
     <ConfirmDialog
       open
