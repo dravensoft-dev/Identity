@@ -21,7 +21,7 @@ import {
   QUANTIFIED, NOT_QUANTIFIED, IDREF, IDREF_ATTRIBUTES, ATTRIBUTE_FOR,
 } from './lib/behaviour-compliance.mjs';
 
-const PATTERN_DIR = join(dirname(dirname(fileURLToPath(import.meta.url))), 'behaviour', 'patterns');
+const PATTERN_DIR = join(dirname(dirname(fileURLToPath(import.meta.url))), 'contracts', 'behaviour');
 
 /** name -> pattern, read from the real files. */
 const PATTERNS = new Map(

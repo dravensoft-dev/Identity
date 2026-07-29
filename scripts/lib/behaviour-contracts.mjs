@@ -14,7 +14,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, basename, extname } from 'node:path';
 import { pascal } from '../check-structure.mjs';
 
-export const PATTERN_DIR = 'behaviour/patterns';
+export const PATTERN_DIR = 'contracts/behaviour';
 
 /** The two patterns allowed to require nothing, and binding either REQUIRES a
  *  reason -- a component that carries no interactive affordance at all
