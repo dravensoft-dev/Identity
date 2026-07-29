@@ -57,19 +57,32 @@
     "reason": "MatPaginator already renders a labelled control set for moving between pages of a data set. arena-material.css does not dress it -- no .mat-mdc-paginator rule exists in the bridge today -- so its colours are Material's own defaults, not Arena's tokens."
   },
   "ProgressBar": {
-    "pattern": "status",
-    "delegatedTo": "Angular Material MatProgressBar",
-    "dressedBy": "frameworks/angular/theme/arena-material.css",
-    "exceptions": [
+    "cases": [
       {
-        "requirement": "roles.element",
-        "reason": "MatProgressBar implements the ARIA role=\"progressbar\" pattern (per Angular Material's own accessibility docs), not this pattern's literal role=\"status\" -- the same divergence React's own ProgressBar binding already records against this same pattern, for the same reason: the catalogue has no dedicated progressbar pattern."
+        "name": "determinate",
+        "when": "mode is determinate or buffer -- MatProgressBar reports a value and sets aria-valuenow, aria-valuemin and aria-valuemax from it",
+        "pattern": "progressbar",
+        "exceptions": [
+          {
+            "requirement": "live.politeness",
+            "reason": "MatProgressBar sets no aria-live at all, and role=\"progressbar\" carries no implicit politeness the way role=\"status\" does, so a screen reader is not guaranteed to announce value changes. Arena's own React ProgressBar sets aria-live=\"polite\" explicitly; this is where the two layers genuinely differ, and it is a real gap for an Angular user rather than a description problem."
+          }
+        ]
       },
       {
-        "requirement": "live.politeness",
-        "reason": "role=\"progressbar\" carries no implicit aria-live politeness the way role=\"status\" does, and MatProgressBar sets none explicitly -- a screen reader is not guaranteed to announce value changes automatically, the same gap React's own binding records."
+        "name": "indeterminate",
+        "when": "mode is indeterminate or query -- MatProgressBar reports that work is under way without a value, and the three value attributes are correctly absent",
+        "pattern": "progressbar",
+        "exceptions": [
+          {
+            "requirement": "live.politeness",
+            "reason": "The same gap as the determinate case, and declared again because an exception names one requirement in one case: MatProgressBar sets no aria-live in either mode. This is one defect declared twice, not two defects."
+          }
+        ]
       }
     ],
+    "delegatedTo": "Angular Material MatProgressBar",
+    "dressedBy": "frameworks/angular/theme/arena-material.css",
     "reason": "MatProgressBar renders the indicator, its determinate/indeterminate/buffer/query modes and its value plumbing (aria-valuenow, aria-valuemin, aria-valuemax). The bridge dresses its active-indicator and track colour on the brand and border tokens. Arena has no arena-progress-bar primitive and should not grow one."
   },
   "Radio": {
@@ -125,17 +138,13 @@
     "exceptions": []
   },
   "Spinner": {
-    "pattern": "status",
+    "pattern": "progressbar",
     "delegatedTo": "Angular Material MatProgressSpinner",
     "dressedBy": "frameworks/angular/theme/arena-material.css",
     "exceptions": [
       {
-        "requirement": "roles.element",
-        "reason": "MatProgressSpinner implements the ARIA role=\"progressbar\" pattern (per Angular Material's own accessibility docs), not this pattern's literal role=\"status\". Unlike Angular's ProgressBar, this is a divergence React's own Spinner binding does NOT carry -- React's Spinner fully implements role=\"status\" with no exceptions -- so the two layers read the same pattern differently for this one component."
-      },
-      {
         "requirement": "live.politeness",
-        "reason": "role=\"progressbar\" carries no implicit aria-live politeness the way role=\"status\" does, and MatProgressSpinner sets none explicitly, unlike React's Spinner which this pattern records as fully compliant."
+        "reason": "MatProgressSpinner sets no aria-live, and role=\"progressbar\" carries no implicit politeness the way role=\"status\" does. Arena's own React Spinner sets aria-live=\"polite\" explicitly, so this is where the two layers genuinely differ."
       }
     ],
     "reason": "MatProgressSpinner renders the indicator and its determinate/indeterminate/buffer/query modes, with aria-valuenow mirrored from value. The bridge dresses its active-indicator colour on the brand. Arena has no arena-spinner primitive and should not grow one."
