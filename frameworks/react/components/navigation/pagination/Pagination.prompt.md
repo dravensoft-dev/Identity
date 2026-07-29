@@ -8,11 +8,14 @@ Jumps between pages of a large set (accompanies `Table` or long lists). Collapse
 a default worth keeping, since a `Pagination` that assumes page 1 of 1 draws a
 one-page control over a set whose size nobody told it.
 
-`ariaLabel` names the landmark and defaults to `"Pagination"`. Pass it whenever a
-page carries more than one of these — two paginated tables in one dashboard is a
-routine layout, and two landmarks called "Pagination" are not distinguishable to
-a screen-reader user moving between them. Name what is being paged
-("Deployments"), never the widget ("Pages").
+`ariaLabel` names the landmark and is **required**, throwing when absent — the
+same shape as `Table.label` and `SegmentedControl.ariaLabel`. It carried a
+`"Pagination"` default for one batch, and that turned out to narrow the gap
+rather than close it: two paginated tables in one dashboard is a routine layout,
+and a caller who omits the name still leaves two landmarks called "Pagination"
+that a screen-reader user cannot tell apart. Nothing can derive it, so nothing
+defaults it. Name what is being paged ("Deployments"), never the widget
+("Pages").
 
 **Do / Don't**
 - Place it under the table/list, aligned to the right or centered.

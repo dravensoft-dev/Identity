@@ -36,8 +36,8 @@ first command counts declarations and the second counts distinct defects. `CLAUD
 same rule; use the second whenever a section below reasons about how much work is left, and never
 report a drop in the first as "N defects removed".
 
-As written: **46** declarations / **46** distinct pairs in component bindings, **17** in the
-delegated file, **20 of 70** bindings covered. The two figures are equal again, which is itself
+As written: **41** declarations / **41** distinct pairs in component bindings, **17** in the
+delegated file, **25 of 70** bindings covered. The two figures are equal again, which is itself
 informative: the one binding that declared a requirement twice was `CalendarEvent`, and both of its
 `states.disabled` declarations were retired together. Seven component bindings are cased (count them with
 `grep -rl '"cases"' --include='*.behaviour.json' frameworks/`, which does not reach the delegated
@@ -52,9 +52,9 @@ nothing more.
 **The sections below are causes, not a partition — do not add them up.** Three exceptions appear
 twice on purpose, because closing them needs work from two sections: `ActivityFeed`'s `roles.label`
 is one of its seven in §2 *and* an instance of §3's naming problem; `TableRow`'s `states.disabled`
-is one of its five in §2 *and* an instance of §4; and `Pagination`'s `roles.label` is in §3 *and* is
-the clearest example of §5's consumer-conditionality. Each is listed where a reader looking for that
-cause would expect it.
+is one of its five in §2 *and* an instance of §4. `Pagination`'s `roles.label` was the third, in §3
+*and* as §5's clearest consumer-conditionality; §3 closed it, and it left both sections at once —
+which is the argument for listing a cause twice rather than picking one home for it.
 
 ## §1 — Patterns the catalogue is missing — **CLOSED**
 
@@ -117,29 +117,41 @@ implementation, because no single render decides it. `BulkActionBar` is the same
 hidden when the selection is empty. And the all-cases-or-fail rule means whoever implements these
 inherits a suite that cannot quietly verify one configuration and claim the component.
 
-## §3 — A name only a human can supply
+## §3 — A name only a human can supply — **one row left**
 
 **Every one of these is an API change before it is a behaviour change**, which is why they are their
 own section rather than part of §2.
 
 | subject | today |
 |---|---|
-| `Breadcrumbs:react`, `breadcrumbs:angular` | `aria-label` hardcoded to `"Breadcrumb"`, **no prop to override** — two on a page are indistinguishable landmarks |
-| `Pagination:react` | reads an optional `ariaLabel` defaulting to the constant `"Pagination"` |
-| `RadioGroup:react`, `Radio:react` | no `aria-label` and no `aria-labelledby` **at all** |
 | `ActivityFeed` (both layers) | the `roles.label` third of its seven |
 
-The precedent is settled and it is `Table.label`: a member only a human can supply is
-`required: true` and **guarded at runtime**, never defaulted. `SegmentedControl.ariaLabel` is the
-same shape. A constant fallback was rejected on the charts' own evidence — a name that is present
-but only says what the component *is* satisfies `roles.label` mechanically while telling a
-screen-reader user nothing — and that is exactly what `"Breadcrumb"` and `"Pagination"` do today.
+That row waits on §2 rather than on this section: `ActivityFeed` needs six other things at the same
+time, and adding its `label` alone would leave the binding excepting the rest.
 
-**What binding cases give this section.** Almost nothing mechanically, and knowing that is the
-useful part: `Pagination`'s exception is conditional on the **consumer**, not on the component's own
-props — its reason says *"met when the caller supplies a name, unmet when they don't"* — so it is a
-§5 problem, not a case. Making the member required and guarded is what removes the conditionality
-altogether, which is the cheaper fix and the reason this section exists separately.
+**The other four are closed, on the precedent this section named.** `Table.label` is the shape and
+it was followed to the letter — `required: true` with no default, a non-optional `.d.ts`,
+`input.required` on the Angular side, and a guard that throws as the first statement of the body.
+`Breadcrumbs` (both layers), `Pagination`, `RadioGroup` and `Radio` all take a caller-supplied name
+now, and none of them hardcodes anything.
+
+**Two things are worth carrying forward.**
+
+`Pagination` is the proof that a member is not the same as a fix. It had `ariaLabel` already,
+optional with a `"Pagination"` default, and its own contract description argued for keeping it that
+way — which **narrowed** the gap and left the exception standing, since a caller who omits the
+member still gets the constant. Only making it required closed it. Prefer removing a condition to
+expressing it, and prefer it early: the optional member was one batch of work that had to be redone.
+
+And a suite for this requirement must render **two** instances. `navigation` asks for a *unique*
+label per landmark on a page, so a suite rendering one component would have gone green against the
+old hardcoded `"Breadcrumb"` as readily as against the fix. All three suites assert that two
+instances carry different names, which is the only assertion here that could ever have failed.
+
+**What binding cases gave this section.** Nothing mechanically, and that was the right answer:
+`Pagination`'s exception was conditional on the **consumer** rather than on the component's own
+props, so no case could have expressed it. Making the member required removed the conditionality
+instead, which is why this section was separate from §5 and why its row there is gone too.
 
 ## §4 — States the components have no concept of — **one row left**
 
@@ -195,8 +207,14 @@ calls the component.
 |---|---|
 | `Table:react` `focus.roving` | true in card mode only, and only when a consumer put an `onClick` on a `TableRow` |
 | `Toast:react` `content.noAutoDismiss` | the host owns the timer; `persist` is documented as mandatory for critical states and enforced nowhere |
-| `Pagination:react` `roles.label` | met only when the caller supplies the optional member |
 | `Tooltip:react` `roles.describedby` | holds only when the consumer's child accepts and forwards props; **a fragment defeats it silently, and the binding reads `exceptions: []`** |
+
+`Pagination`'s `roles.label` was the fourth row and it is **gone rather than solved**: §3 made the
+member required and guarded, which removed the conditionality instead of expressing it. Prefer that
+wherever it is available — a condition that can be designed away should not be modelled — and note
+that it was available here only because the condition was "did the caller pass a value", which an
+API change can reach. The three left are conditional on how a consumer *assembles* components,
+which no member can settle.
 
 `Tooltip` is the one to be most careful with: it is the only entry here whose binding looks *clean*
 today, so this section is the only record that it is not.
@@ -204,9 +222,7 @@ today, so this section is the only record that it is not.
 **What binding cases give this section.** The shape to extend, and a warning about the cost. A
 consumer-usage case would need the suite to construct the usage rather than configure the component,
 which the `when` prose can already describe — the mechanism may need nothing new beyond a decision
-that such cases are legitimate. But note what §3 shows: `Pagination` is better fixed by removing the
-conditionality (make the member required) than by expressing it. Prefer that wherever it is
-available; a condition that can be designed away should not be modelled.
+that such cases are legitimate.
 
 ## §6 — Angular Material, which is Plan D
 
@@ -269,7 +285,8 @@ survives into every section above.
 2. ~~**§4**~~ — **done but for `TableRow`**, which §2 settles. It was not free: two of its six
    declarations were stale rather than real, and writing the suite that proved it also fixed two
    false negatives in the shared evaluator.
-3. **§3** — API changes with a settled precedent; unblocks part of §2's `ActivityFeed`.
+3. ~~**§3**~~ — **done but for `ActivityFeed`**, whose `roles.label` waits on §2 rather than the
+   other way round: it needs six other things in the same change.
 4. **§2** — the real work, and the only section that changes what a user experiences.
 5. **§8** — widen coverage once the bindings worth covering are honest.
 6. **§6** — Plan D, which is a programme rather than a batch.

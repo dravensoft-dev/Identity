@@ -3,7 +3,9 @@
  * for the full rationale. */
 import React from "react";
 import { pageWindow } from "./PaginationWindow.js";
-export function Pagination({ page, pageCount, ariaLabel = "Pagination", onChange }) {
+export function Pagination({ page, pageCount, ariaLabel, onChange }) {
+  if (!ariaLabel)
+    throw new Error("Pagination: `ariaLabel` is required");
   if (page == null)
     throw new Error("Pagination: `page` is required");
   if (pageCount == null)

@@ -4,7 +4,7 @@ export interface PaginationProps {
 
   pageCount: number;
 
-  ariaLabel?: string;
+  ariaLabel: string;
 
   onChange?: (page: number) => void;
 }

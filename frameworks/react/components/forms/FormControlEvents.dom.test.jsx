@@ -86,7 +86,7 @@ test('Textarea change hands the consumer the new text as a string', () => {
 test("RadioGroup change hands the consumer the selected option's value as a string", () => {
   const seen = [];
   const root = mount(
-    <RadioGroup value="prod" name="env" onChange={(v) => seen.push(v)}>
+    <RadioGroup ariaLabel="Deployment target" value="prod" name="env" onChange={(v) => seen.push(v)}>
       <Radio value="prod" label="Production" />
       <Radio value="stage" label="Staging" />
     </RadioGroup>,

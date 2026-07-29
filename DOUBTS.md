@@ -348,9 +348,15 @@ stale-proof; a present-tense component name is not.
   both layers and `Input`'s `readonly` exception turned out to have been stale for some time —
   so the citing text and the cited text went false together, in the batch that was supposed to
   touch only one of them. That is the whole hazard: the cross-reference was the reason the
-  second file needed editing, and nothing but this entry said so. Still standing:
-  `RadioGroup`/`Radio` cite `Breadcrumbs` and `Pagination` as at least hardcoding a label, which
-  is one batch away from the same fate and is exactly what the command above is for. A scan for the class as a whole over-reports badly — a naive
+  second file needed editing, and nothing but this entry said so.
+
+  **The second member went the same way one batch later, and it was predicted here in those
+  words.** `RadioGroup`/`Radio` cited `Breadcrumbs` and `Pagination` as at least hardcoding a
+  label; all four now require a caller-supplied name and none of them hardcodes anything, so
+  the citation and its two subjects went false together again. **Nothing is left standing in
+  this entry**, which is not a reason to delete it: the pattern it records — a binding's prose
+  reaching across to another component to say what it does BETTER — recurred twice in
+  consecutive batches, and the cross-file command above is the only thing that finds it. A scan for the class as a whole over-reports badly — a naive
   name grep flags "normal **Tab** order" and HTML "**tag**" — so the change-time procedure is the
   usable form and a repo-wide list is not.
 - **The conditionality gap is closed at ONE of its three levels, and the other two are
@@ -377,8 +383,11 @@ stale-proof; a present-tense component name is not.
   what they pass in. The live instances are `Table`'s `focus.roving` (true of card mode,
   and there only when a consumer put an `onClick` on a `TableRow`), `Tooltip`'s
   `roles.describedby` (holds only when the consumer's child accepts and forwards props —
-  its own entry below), and `Pagination`'s `roles.label` (met when the caller supplies
-  `ariaLabel`, unmet when they take the default). **`Tooltip` is the one to state most
+  its own entry below). **`Pagination`'s `roles.label` used to be the third, and how it left
+  this list is the useful part**: it was conditional on whether the caller supplied
+  `ariaLabel`, and making the member **required and guarded** removed the conditionality
+  rather than expressing it. A condition that can be designed away should not be modelled,
+  and this is the worked example. **`Tooltip` is the one to state most
   carefully: its binding reads `"exceptions": []`, so it is the live instance whose
   binding looks completely clean.** And `comparePattern`'s stale-exception message still
   has no vocabulary for "true for some inputs" — it offers only "delete it or name a

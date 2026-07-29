@@ -1,7 +1,7 @@
 One option inside a `RadioGroup`. Selected shows a crimson dot inside the ring. `value` is required and matched against the group's; `label` names the option and `hint` adds a line of help under it.
 
 ```jsx
-<RadioGroup value={env} onChange={setEnv}>
+<RadioGroup ariaLabel="Deployment target" value={env} onChange={setEnv}>
   <Radio value="prod" label="Production" hint="Real users — requires approval" />
   <Radio value="staging" label="Staging" />
   <Radio value="qa" label="QA" disabled />

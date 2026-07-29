@@ -10,7 +10,7 @@ function Demo(){
     <div className="row" style={{gap:'var(--sp-10)'}}>
       <div style={{width:'calc(var(--sp-1) * 70)'}}>
         <div className="sub" style={{marginBottom:'var(--sp-3)'}}>RadioGroup</div>
-        <RadioGroup value={env} onChange={setEnv}>
+        <RadioGroup ariaLabel="Deployment target" value={env} onChange={setEnv}>
           <Radio value="prod" label="Production" hint="Real users — requires approval" />
           <Radio value="staging" label="Staging" />
           <Radio value="qa" label="QA" />

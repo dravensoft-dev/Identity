@@ -2,6 +2,8 @@ import * as React from 'react';
 
 export interface RadioGroupProps {
 
+  ariaLabel: string;
+
   children?: React.ReactNode;
 
   value?: string;

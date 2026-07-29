@@ -3,6 +3,8 @@ import type { Crumb } from '../../../Api.generated';
 export type { Crumb };
 export interface BreadcrumbsProps {
 
+  ariaLabel: string;
+
   items: Crumb[];
 
   separator?: string;

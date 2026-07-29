@@ -18,6 +18,7 @@ function Demo() {
     className: "sub",
     style: { marginBottom: "var(--sp-3)" }
   }, "RadioGroup"), React.createElement(RadioGroup, {
+    ariaLabel: "Deployment target",
     value: env,
     onChange: setEnv
   }, React.createElement(Radio, {

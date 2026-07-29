@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking.** `Breadcrumbs.ariaLabel`, `Pagination.ariaLabel` and `RadioGroup.ariaLabel` are
+  required and guarded at runtime, following `Table.label`. `Breadcrumbs` hardcoded
+  `"Breadcrumb"` with no override and `Pagination` defaulted to `"Pagination"`, so two of
+  either on one page were indistinguishable landmarks; `RadioGroup` had no accessible name at
+  all. Nothing can derive these names, so nothing defaults them — pass what is being paged, or
+  chosen, or navigated.
+
 ### Added
 
 - `Tag.disabled` and `CalendarEvent.disabled` — the action stays drawn and announces itself
