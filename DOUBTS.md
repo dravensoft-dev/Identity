@@ -1463,30 +1463,6 @@ stale-proof; a present-tense component name is not.
   thirty lines *above* the clause it contradicts, not below it — and the matching clause this
   file's own *Architecture* section carried before this batch.
 
-- **Escape is a dead key on a `CalendarEvent`'s kebab, so the documented second Escape does
-  not return focus to the hour cell.** Driven in real Chromium on `Calendar.card.html`:
-  Escape from a chip's **body** returns focus to the hour cell; Escape from the **kebab**,
-  with the panel already closed, leaves focus exactly where it was. The escape route exists
-  but takes two different keys — ArrowLeft to the chip body, then Escape — and that does work.
-
-  The cause is in `Calendar.jsx`'s `onGridKeyDown`: its fallback clause is
-  `e.key === 'Escape' && isEventNode(t)`, and `isEventNode` tests the target against the
-  values of `eventRefs`, which hold each chip's **focusable body** — the inner `<button>` that
-  `setFocusable` is attached to. The kebab is never in that map, so the clause never fires for
-  it. `CalendarEvent`'s own handler catches Escape only while `panelOpen`, so with the panel
-  closed nothing handles the key at either level.
-
-  It is **pre-existing** and was found by driving the by-hand checklist rather than by any
-  gate — no gate can see it, because `Calendar` binds the `grid` pattern and is DOM-tested by
-  hand. `frameworks/react/components/display/calendar-event/CalendarEvent.prompt.md`'s
-  checklist asserted the working behaviour as fact; it now records the defect instead.
-
-  Not fixed here because the fix is not the one-liner it looks like: widening `isEventNode` to
-  match the kebab, or handling Escape in `CalendarEvent` when the panel is closed, both touch
-  the component's focus contract and its `focus.roving` claim, and the choice between them is
-  about which component owns the key. That deserves its own change with its own reasoning, not
-  a rider on a geometry fix.
-
 - **A half-width chip carrying a kebab has almost no title left.** Reserving the kebab's 34px
   band is what stopped the title being drawn underneath it, and on a full-width chip it costs
   nothing. On a chip sharing its slot — `cols: 2`, about 78px outer — the content box comes out
@@ -3215,3 +3191,28 @@ The alternative — subtracting `CalendarEvent`'s padding and border inside `Cal
 the other, so the two would have to move together forever, against the division of labour the
 pair is built around: `Calendar` owns *where* a chip goes and `CalendarEvent` owns what it
 *looks like*.
+
+### `frameworks/react/components/display/calendar/Calendar.jsx` — why the Escape clause carries no guard
+
+`onGridKeyDown`'s last clause is a bare `if (e.key === 'Escape')`, with no test of what the
+target is, and narrowing it is how the one defect this handler has ever had was introduced.
+
+It used to read `e.key === 'Escape' && isEventNode(t)`, where `isEventNode` compared the target
+by identity against the values of `eventRefs`. Those values are each chip's **focusable body** —
+the inner `<button>` that `setFocusable` attaches to — and a chip's kebab is never among them.
+So Escape from the kebab matched nothing at either level, since `CalendarEvent`'s own handler
+catches Escape only while its panel is open. The key was dead there, and the only route back to
+the grid was ArrowLeft to the chip body and then Escape. Driven in real Chromium, not inferred.
+
+The guard is unnecessary because the clause is already unreachable for anything else. The
+branch above it returns for every `role="gridcell"` target, and the handler is bound to the grid
+itself, so what reaches this line is a focusable descendant of the grid that is not a cell —
+a chip body, or a kebab. **An open panel's controls cannot reach it**: `CalendarEvent` calls
+`e.stopPropagation()` on Escape while `panelOpen`, which is what makes Escape close the panel
+and return focus to the kebab rather than jumping straight out to the hour cell. That
+`stopPropagation` is load-bearing for this clause's correctness, and removing it would turn one
+Escape into two behaviours at once.
+
+No gate covers any of this. `Calendar` binds the `grid` pattern, so it is DOM-tested by hand and
+cannot appear in `COVERED`, and the retired grid-keyboard suite is not coming back at 164 MiB.
+The verification is `CalendarEvent.prompt.md`'s checklist, driven in a real browser.

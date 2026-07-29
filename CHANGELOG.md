@@ -48,6 +48,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The day header cells no longer pad their own bottom**, halving the dead space above the
   first hour line from 16px to 8px. The scroll area's top padding stays: the hour labels are
   centred on their line and the first is clipped without it.
+- **Escape is no longer a dead key on a `CalendarEvent`'s kebab.** `Calendar` tested the key's
+  target by identity against each chip's focusable body, which a kebab never is, so Escape
+  from a kebab did nothing and the documented second Escape never reached the hour cell. The
+  clause now fires for any target inside the grid that is not a cell; an open panel's Escape
+  still closes the panel first, because `CalendarEvent` stops it propagating.
 
 ## [4.0.0] — 2026-07-18
 
