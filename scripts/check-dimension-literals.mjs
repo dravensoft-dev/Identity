@@ -83,7 +83,7 @@ const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
  * which this decision leans on: `frameworks/angular/DataVisuals.ts` spells
  * `PAD = { t: chartPadTop, r: chartPadRight, … } as const`, imported
  * script-readable token identifiers rather than the literals it carried before
- * contracts/design/chart.json existed, and an imported identifier is outside what the
+ * tokens/src/chart.json existed, and an imported identifier is outside what the
  * dataflow rule traces; and React's copy, `frameworks/react/DataVisuals.js`,
  * is spelled identically AND is a `.js` file, which EXTENSIONS never includes.
  * (The two are not siblings in any directory: each sits at its own layer's
