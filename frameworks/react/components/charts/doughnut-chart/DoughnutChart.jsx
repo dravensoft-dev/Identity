@@ -18,7 +18,7 @@ export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix 
   const total = values.reduce((a, b) => a + Math.max(0, b), 0);
   // 0.34 stays a plain number: the repo's position is that a multiplier which
   // derives one dimension from another is not itself a design value. Same for
-  // rInner's 0.62 below, and for TYPE-MAP's note on Avatar's 0.4 and 0.28.
+  // rInner's 0.62 below, and for contracts/design/README.md's note on Avatar's 0.4 and 0.28.
   const legendW = Math.min(chartLegendMax, Math.max(chartLegendMin, width * 0.34));
   const plotW = Math.max(1, width - legendW - chartLegendGap);
   const cx = plotW / 2;

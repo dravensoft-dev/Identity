@@ -27,11 +27,11 @@ import type { SeriesTone } from './Api.generated';
  *  never cycled. Derived from the ramp itself, so adding a slot needs no edit here. */
 export const CAT_SLOTS = catSlots;
 
-/** The chart plot's height in px, before padding. From tokens/src/chart.json. */
+/** The chart plot's height in px, before padding. From contracts/design/chart.json. */
 export const CHART_HEIGHT = chartHeight;
 
 /** Plot padding in px. Left pad holds the value labels; bottom pad holds the
- *  category labels. From tokens/src/chart.json -- these were declared here AND
+ *  category labels. From contracts/design/chart.json -- these were declared here AND
  *  in React's DataVisuals.js, identically, which is the duplication the
  *  script-readable target exists to end. */
 export const PAD = {

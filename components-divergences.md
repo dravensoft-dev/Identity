@@ -1,7 +1,7 @@
 # Component divergences between framework layers
 
 Arena's design language is one thing; its framework layers are several. **For component design,
-`tokens/` and `tokens/src/` are the only source of truth.** A layer that disagrees with the token
+`contracts/design/` and `contracts/design-generated/` are the only source of truth.** A layer that disagrees with the token
 layer is wrong, and that is not negotiable.
 
 Behaviour is different. Arena is in an implementation phase across frameworks, and the layers will
@@ -112,7 +112,7 @@ to 121 by the time anyone read it again: the stylesheet is generated output and 
 whenever a token is added, so a line number in it is exactly the kind of figure this
 repository's own rules say to derive with a command instead.
 
-**React** sets no such rule anywhere in `tokens/` or `styles.css`, so every React
+**React** sets no such rule anywhere in `contracts/design/` or `styles.css`, so every React
 component is `content-box` — the CSS default — unless it opts in itself. Only four do:
 `Input.jsx`, `Button.jsx`, `Spinner.jsx` and `ConfirmDialog.jsx` each set `boxSizing:
 'border-box'` locally; every other component, including every other form control, is

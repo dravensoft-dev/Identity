@@ -7,12 +7,12 @@ import { chartBarGap, chartBarRadius } from '../../../Tokens.generated';
 /** The gap between two adjacent bars, in px. It is the plot surface showing
  *  through rather than a stroke on the bar: a stroke would sit inside the
  *  bar's own colour and read as a border, where this reads as breathing room
- *  the card's background provides. From tokens/src/chart.json. */
+ *  the card's background provides. From contracts/design/chart.json. */
 const BAR_GAP = chartBarGap;
 
 /** The corner radius at a bar's data end, in px. Passed to `barPath`, which
  *  rounds that end only and leaves the baseline end square. From
- *  tokens/src/chart.json. */
+ *  contracts/design/chart.json. */
 const BAR_RADIUS = chartBarRadius;
 
 /** The plot width assumed for the first paint, before `containerWidth()` has

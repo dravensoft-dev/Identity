@@ -130,7 +130,7 @@ export class Onboarding {
   /** Clamped against the viewport, or null when the coachmark floats. `W`
    *  and `EDGE` are still real numbers, the same reason `Onboarding.jsx`
    *  states: `Math.min`/`Math.max` need real numbers. Both are authored once
-   *  in tokens/src/ now instead of here and in React's copy. */
+   *  in contracts/design/ now instead of here and in React's copy. */
   protected readonly position = computed(() => {
     const rect = this.anchor();
     if (!rect) return null;

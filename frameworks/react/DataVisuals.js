@@ -16,7 +16,7 @@ export const CAT_SLOTS = catSlots;
 
 /* CHART_HEIGHT and PAD keep their names and shapes -- the call sites read
  * PAD.l, and renaming them would be churn on top of a relocation. What changed
- * is where the numbers come from: tokens/src/chart.json, via the generated
+ * is where the numbers come from: contracts/design/chart.json, via the generated
  * module. Do not reintroduce a literal here; check-script-tokens.mjs asserts
  * the token and the custom property agree, and a literal is outside that. */
 export const CHART_HEIGHT = chartHeight;

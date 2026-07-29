@@ -1,6 +1,6 @@
 # Arena API capability contracts
 
-Arena states three contracts. `tokens/` is the normative source for design values.
+Arena states three contracts. `contracts/design/` is the normative source for design values.
 `contracts/behaviour/` states what a kind of component must do. This directory is the
 third and youngest: **the API capability contract** — one neutral statement per
 component of the members its API presents, which every layer implementing that
@@ -10,13 +10,13 @@ It is orthogonal to the other two. A green `check:api` says the surface matches.
 nothing about what the component does with it, exactly as `check:behaviour` is a
 coverage claim and never an accessibility one.
 
-Read this before adding a platform target, the way `tokens/src/TYPE-MAP.md` is read
+Read this before adding a platform target, the way `contracts/design/README.md` is read
 before adding one to the token layer.
 
 ## The other two contracts are firm; this layer is additive
 
 Two of Arena's three contracts were settled before this one and are **not reopened by it**.
-The **token** contract (`tokens/`) is the design-value layer. The **behaviour** contract
+The **token** contract (`contracts/design/`) is the design-value layer. The **behaviour** contract
 (`contracts/behaviour/`) states what each kind of component must do, adopted from the WAI-ARIA
 Authoring Practices Guide — and, where APG has no page, from the ARIA 1.2 role reference or WCAG.
 This API capability layer was added last, and it is **orthogonal and additive**: bringing a
@@ -457,7 +457,7 @@ Declared once, in `contracts/api/types/`, one file per type:
 authored in the contract and owned by it — `Tone` above — and it is not automatically right
 when the set merely restates a value the token layer already derives. The charts' categorical
 ramp slot is the case that decided that rule and then tested it. It is a bounded 1..N whose
-bound lives in exactly one authoritative place — `tokens/src/palette.dark.json`'s
+bound lives in exactly one authoritative place — `contracts/design/palette.dark.json`'s
 `--color-cat-*` ramp — reaching the components as the derived `catSlots` constant in
 `tokens.generated.*`, where `catColor()`'s `Math.min(CAT_SLOTS, …)` clamp enforces it at
 runtime on both layers and re-derives itself the day the ramp gains or loses a colour. The
@@ -483,7 +483,7 @@ for it.
 
 A `description` on a type or on one of its fields is carried into the generated modules
 as a doc comment — `build-api-types.mjs` reads `contracts/api/types/` only. Group-level prose is
-lost in `tokens/`'s generator and that is recorded as debt in `CLAUDE.md`; this generator
+lost in `contracts/design/`'s generator and that is recorded as debt in `CLAUDE.md`; this generator
 carries descriptions on every node it emits from `contracts/api/types/`, including type-level ones,
 so that hole is not reopened here.
 

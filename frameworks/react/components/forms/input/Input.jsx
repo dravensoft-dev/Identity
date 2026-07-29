@@ -11,7 +11,7 @@ import React, { useEffect, useState } from 'react';
  * input surface. This is the one sanctioned exception to "components carry no
  * CSS": it targets a vendor pseudo-element, never a class of ours. Same
  * injected <style> pattern as ProgressBar. --picker-invert is theme polarity
- * (1 dark / 0 light), defined in tokens/colors.css. */
+ * (1 dark / 0 light), defined in contracts/design/colors.css. */
 let injected = false;
 function usePickerIndicator() {
   useEffect(() => {

@@ -1,8 +1,8 @@
 /* Asserts every Arena token either reaches a Tailwind utility or is excluded
- * on the record. A token added to tokens/src/ that nobody wires into the
+ * on the record. A token added to contracts/design/ that nobody wires into the
  * preset fails here rather than quietly never reaching the Tailwind layer.
  *
- * The inventory is the four GENERATED files only. tokens/colors.css is
+ * The inventory is the four GENERATED files only. contracts/design/colors.css is
  * excluded as a category: those ~40 composition-layer aliases (--crimson,
  * --mute, --danger-soft, --text-strong…) alias tokens the preset already
  * exposes, and giving every colour two utility names would give it two ways
@@ -103,7 +103,7 @@ export function checkCoverage(tokens, exposed, excluded) {
   for (const t of [...excluded.keys()].sort())
     if (!tokens.has(t)) errs.push(`--${t} is excluded but no such token exists — drop the exclusion`);
   for (const t of [...exposed].sort())
-    if (!tokens.has(t)) errs.push(`the preset references --${t} — no such token in tokens/`);
+    if (!tokens.has(t)) errs.push(`the preset references --${t} — no such token in contracts/design/`);
   return errs;
 }
 

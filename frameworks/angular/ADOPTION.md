@@ -36,7 +36,7 @@ light is the `.arena-light` class (not `html.dark`).
 ## 4. Fonts
 
 Nothing extra to run. The token import from step 1
-(`arena-tailwind.css` → `styles.css` → `tokens/fonts.css`) already declares the
+(`arena-tailwind.css` → `styles.css` → `contracts/design-generated/fonts.css`) already declares the
 self-hosted `@font-face`; the `.woff2` binaries ship in Arena's `assets/fonts/`.
 Ensure your build serves `assets/fonts/` so the `url('../assets/fonts/…')`
 references resolve. No CDN request. (Regenerate binaries with

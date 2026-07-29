@@ -3,7 +3,7 @@
  * The gates compile the layer into a temp dir and throw it away — that is right
  * for a gate and useless for a specimen page, which is static HTML and cannot
  * run a compiler. So the compiled utilities are build output in the tree, on
- * exactly the terms tokens/*.css already are: authored source (Theme.css + the
+ * exactly the terms contracts/design-generated/*.css already are: authored source (Theme.css + the
  * manifests), a build script, committed output, and check-tailwind-generated.mjs
  * failing the day the two disagree.
  *

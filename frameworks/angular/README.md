@@ -4,7 +4,7 @@ Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
 
 **Bridge (foundation) — make an existing Angular/Material app wear Arena:**
 - `theme/arena-tailwind.css` — one import that brings Arena's tokens (including
-  the self-hosted fonts declared in `tokens/fonts.css`, binaries in `assets/fonts/`)
+  the self-hosted fonts declared in `contracts/design-generated/fonts.css`, binaries in `assets/fonts/`)
   + the shared `frameworks/tailwind/Theme.css` `@theme` preset into scope.
 - `theme/arena-material.css` — maps Arena tokens onto Angular Material's
   `--mat-*` custom properties so the components below render in Arena. What it covers:

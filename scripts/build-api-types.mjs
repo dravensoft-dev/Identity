@@ -52,7 +52,7 @@ export function loadTypes(dir = join(root, 'contracts/api/types')) {
 }
 
 /** A single-line description is one `/** … *\/`; a multi-line one is a block, so
- *  no prose is lost -- the hole tokens/'s own generator leaves for group-level
+ *  no prose is lost -- the hole contracts/design/'s own generator leaves for group-level
  *  descriptions and that CLAUDE.md records as debt. */
 export function docComment(text, indent = '') {
   const lines = text.split('\n');

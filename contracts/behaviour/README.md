@@ -1,13 +1,13 @@
 # Arena behaviour contracts
 
-`tokens/` answers *what is this value*. This directory answers *what must this
+`contracts/design/` answers *what is this value*. This directory answers *what must this
 component do* — which roles it carries, which keys it answers, where focus goes,
 what dismisses it.
 
 It is a level under `contracts/`, beside `contracts/api/` — not a corner of the
 design one, and deliberately so. A contract is not a value: DTCG models colours,
 dimensions and durations, and does not model "Escape closes this". Putting a
-pattern under `tokens/src/` would mean relaxing `scripts/check-dtcg.mjs`, which
+pattern under `contracts/design/` would mean relaxing `scripts/check-dtcg.mjs`, which
 is one of the cleanest gates in the repo.
 
 ## Patterns
