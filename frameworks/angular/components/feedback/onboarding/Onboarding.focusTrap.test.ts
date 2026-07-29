@@ -1,38 +1,3 @@
-/* `arena-onboarding` renders `role="dialog" aria-modal="true"`, and until the
- * final whole-branch review it asserted that with no focus management at all:
- * no trap, no focus moved into the panel on open, no restore on close, no
- * Escape. `aria-modal="true"` tells assistive technology the rest of the page
- * is unavailable, so leaving Tab free to walk into it is a contradiction the
- * user experiences directly -- and with focus never moved in, a keyboard user
- * had to tab the entire page behind the scrim to reach "Next".
- *
- * This is the third occurrence of the same defect on this branch
- * (`arena-confirm-dialog` first, `arena-command-palette` second). Onboarding
- * was written before the shared helper existed, which is why it was missed.
- * The fix reuses `frameworks/angular/FocusTrap.ts` unchanged
- * rather than adding a fourth implementation, so this suite exercises the same
- * functions the component's own constructor and `onKeydown` call, against a
- * hand-built DOM tree shaped like Onboarding's panel.
- *
- * This does NOT render `<arena-onboarding>` through TestBed, for the reason
- * `confirm-dialog-focus-trap.test.ts` and `host-class-binding.test.ts` both
- * document at length: this harness runs bun's TypeScript stripping plus
- * `@angular/compiler`'s runtime JIT and never `ngtsc`, so a signal `input()`
- * is never discovered into `ɵcmp.inputs` and neither a template binding nor
- * `componentRef.setInput()` can drive `open` -- NG0303 on the former, a silent
- * no-op on the latter. `open` can never become `true` here, so `@if
- * (visible())` can never render the panel, and no TestBed-based test of this
- * component can exercise an actually-open tour. What that leaves unproven is
- * stated in `components-divergences.md`: that the component's own
- * `afterRenderEffect` and `onKeydown` call these functions at the right
- * moment. `ngc --strictTemplates` (`bun run check:angular`) is what proves
- * that wiring compiles against the component's real `viewChild` and
- * `inject(DOCUMENT)` types.
- *
- * No TestBed here, so nothing to initialise -- only a DOM, taken from the
- * directory's shared one (`ensureDom()`, testbed-env.ts) rather than
- * registered and unregistered per file, matching the two sibling focus-trap
- * suites. See that file for why the document has to be shared. */
 import { ensureDom } from '../../../test/TestbedEnv';
 ensureDom();
 
@@ -46,9 +11,6 @@ import {
   trapTabKey,
 } from '../../../FocusTrap';
 
-/** A page behind the scrim, with a real focusable control on it. Every trap
- *  assertion below is ultimately about this button: an `aria-modal` overlay
- *  must never hand it focus while it is open. */
 function buildPageBehind(): HTMLElement {
   const behind = document.createElement('button');
   behind.textContent = 'a control on the page behind the scrim';
@@ -56,9 +18,6 @@ function buildPageBehind(): HTMLElement {
   return behind;
 }
 
-/** Onboarding's panel as its template renders it on a middle step: the dots
- *  (a non-focusable div), then Back, Skip and Next. The panel itself carries
- *  `tabindex="-1"`, as the component now does. */
 function buildPanel(): { panel: HTMLElement; back: HTMLElement; skip: HTMLElement; next: HTMLElement } {
   const panel = document.createElement('div');
   panel.setAttribute('tabindex', '-1');
@@ -75,8 +34,6 @@ function buildPanel(): { panel: HTMLElement; back: HTMLElement; skip: HTMLElemen
   return { panel, back, skip, next };
 }
 
-/** The first step's panel: `@if (index() > 0)` omits Back, so the first
- *  focusable is Skip rather than Back. */
 function buildFirstStepPanel(): { panel: HTMLElement; skip: HTMLElement; next: HTMLElement } {
   const panel = document.createElement('div');
   panel.setAttribute('tabindex', '-1');
@@ -148,8 +105,6 @@ test('advancing a step re-runs the transition with open unchanged, and must not 
   const state: FocusTrapState = { wasOpen: false, restoreTo: null };
   handleOpenTransition(state, true, panel, document.activeElement);
 
-  // The user has tabbed to Next and pressed it; the host bumps `index`, which
-  // re-renders the panel with `open` still true.
   next.focus();
   handleOpenTransition(state, true, panel, document.activeElement);
 
@@ -192,4 +147,3 @@ test('Tab from Skip, a middle control, is left to the browser -- the trap only a
   assert.equal(document.activeElement, skip, 'the trap must not move focus away from a non-boundary control');
   assert.ok(!event.defaultPrevented);
 });
-

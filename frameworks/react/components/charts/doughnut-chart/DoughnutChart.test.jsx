@@ -13,24 +13,16 @@ test('DoughnutChart appends valueSuffix to the legend value and to the accessibl
   );
   for (const v of VALUES) {
     assert.match(html, new RegExp(`<td>${v} rps</td>`), `the ${v} table row carries the suffix`);
-    // The legend renders the same formatted value in its own <span>, so each
-    // number appears twice. A suffix reaching only the table would fail here.
+
     assert.equal((html.match(new RegExp(`${v} rps`, 'g')) ?? []).length, 2, `${v} should appear in both the legend and the table`);
   }
 });
 
-/* The centre label is a PERCENTAGE, not a value, so it must never take the
- * suffix (contracts/api/README.md: the suffix is appended to every number the chart
- * DRAWS as a value). It only renders on hover, so static markup cannot show
- * it -- what this pins instead is that the suffix has not leaked into the
- * share arithmetic, which would surface as a stray suffix anywhere a percent
- * is computed. */
 test('DoughnutChart does not append valueSuffix to anything that is not a plotted value', () => {
   const html = renderToStaticMarkup(
     <DoughnutChart labels={LABELS} values={VALUES} valueSuffix=" rps" />
   );
-  // Six occurrences total: three legend values and three table cells. Any
-  // seventh means the suffix reached something that is not a drawn value.
+
   assert.equal((html.match(/ rps/g) ?? []).length, 6);
 });
 
@@ -62,10 +54,6 @@ test('DoughnutChart throws when values is absent, matching Angular input.require
   assert.throws(() => renderToStaticMarkup(<DoughnutChart labels={LABELS} />), /DoughnutChart: `values` is required/);
 });
 
-/* R4: `style?: React.CSSProperties` and the `{...rest}` spread both left this
- * component. check:api reads the .d.ts and never opens the .jsx, so a test is
- * the ONLY regression guard. Asserted SEPARATELY: a component that stopped
- * spreading ...rest but still merged ...style would pass a combined assertion. */
 test('DoughnutChart drops a consumer style object and a consumer attribute, each independently', () => {
   const html = renderToStaticMarkup(
     <DoughnutChart labels={LABELS} values={VALUES} style={{ color: '#ff00ff' }} data-stray="x" />
@@ -74,13 +62,6 @@ test('DoughnutChart drops a consumer style object and a consumer attribute, each
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- the {...rest} escape is back');
 });
 
-/* The slice is the thing being named, so the legend iterates `values` and takes
- * `labels[i]`, matching what `arena-doughnut-chart` already did
- * (`labels()[index] ?? ''`). Before this, React iterated `labels`, and a
- * surplus label was the worst case of the three charts: `colors` has length
- * `values.length`, so `colors[i]` came back undefined and the row rendered a
- * COLOURLESS swatch beside the literal string "undefined". The contract states
- * it plainly: "A label with no value at its index is dropped." */
 test('DoughnutChart drops a label with no value at its index, rather than drawing a colourless swatch beside "undefined"', () => {
   const html = renderToStaticMarkup(
     <DoughnutChart labels={['Alpha', 'Beta', 'SURPLUS']} values={[10, 20]} valueSuffix=" rps" />

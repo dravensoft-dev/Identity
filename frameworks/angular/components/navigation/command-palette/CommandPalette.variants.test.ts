@@ -1,11 +1,3 @@
-/* Plan 5a's CommandPalette slice, added beside onboarding-variants.test.ts per
- * this directory's own header comment: what is worth asserting is the
- * recipe. CommandPalette shares ConfirmDialog's overlay resolution (root IS
- * the recipe's fixed scrim, host-bound, `open` driving it between the
- * overlay and `hidden`) and its centering (the brief's own `scrim` slot
- * already carried `flex items-start justify-center`, so renaming it to
- * `root` changed nothing about that layout) -- these tests pin that shape
- * rather than assuming it. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { commandPaletteStyles } from './CommandPalette.variants';
@@ -24,19 +16,12 @@ test('open=false hides the root overlay; open=true renders it as the fixed, top-
   assert.ok(!open.includes('hidden'));
 });
 
-/* `open` became `input.required<boolean>()` under the API contract
- * (`contracts/api/components/CommandPalette.json`), so the component itself no longer
- * defaults it -- only the recipe's own `tv()` variant does. This asserts the
- * recipe alone: calling `commandPaletteStyles()` with no argument resolves
- * the same classes as passing `{ open: false }` explicitly. */
 test('the recipe\'s own unset-argument default resolves the same classes as an explicit open: false', () => {
   assert.equal(commandPaletteStyles().root(), commandPaletteStyles({ open: false }).root());
 });
 
 test('the root slot carries a display utility in its own base string, independent of the open variant', () => {
-  // This is the property frameworks/angular/test/HostClassBinding.test.ts
-  // machine-checks against every primitive's manifest on disk; this asserts
-  // the same thing against the recipe's own default output.
+
   assert.match(commandPaletteStyles({ open: true }).root(), /\bflex\b/);
 });
 

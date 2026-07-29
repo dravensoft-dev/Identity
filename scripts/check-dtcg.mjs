@@ -1,12 +1,3 @@
-/* Asserts every token in contracts/design/ is valid DTCG 2025.10 — the first stable
- * Format Module (W3C, Oct 2025).
- *
- * Following the repo's check-*.mjs convention this encodes the 2025.10 rules
- * directly rather than pulling a validator dependency. It is the machine proof
- * that Arena's token layer is DTCG in full, not merely DTCG-shaped.
- *
- *   bun scripts/check-dtcg.mjs      -> exit 0 if every token validates, 1 otherwise
- */
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -79,8 +70,6 @@ function checkValue(type, v, at, errs) {
   }
 }
 
-/** Walks a parsed token file, returning every conformance violation found.
- *  @param {object} tree  @param {string} file  @returns {string[]} */
 export function validateTree(tree, file) {
   const errs = [];
   const walk = (node, path, inheritedType) => {
@@ -92,7 +81,7 @@ export function validateTree(tree, file) {
     }
     if (node.$value !== undefined) {
       const at = `${file}:${path.join('.')}`;
-      if (typeof node.$value === 'string' && /^\{[^{}]+\}$/.test(node.$value)) return; // pure alias, typed by its referent
+      if (typeof node.$value === 'string' && /^\{[^{}]+\}$/.test(node.$value)) return;
       if (!type) return errs.push(`${at}: token has no $type (own or inherited) — invalid under DTCG 2025.10`);
       checkValue(type, node.$value, at, errs);
       return;
@@ -108,11 +97,6 @@ export function validateTree(tree, file) {
   return errs;
 }
 
-/** An empty source directory is a failure rather than a clean pass. This is the
- *  oldest of the repository's zero guards and was inline in main() until the
- *  contracts/ move -- exported here so it has a suite, because a guard nothing
- *  tests is a guard that can be deleted with every gate still green.
- *  @param {number} count @returns {string[]} */
 export function zeroSourceProblems(count) {
   if (count > 0) return [];
   return ['found 0 token files in contracts/design — an empty result set is a failure, not a clean pass; check the discovery path'];

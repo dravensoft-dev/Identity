@@ -10,9 +10,7 @@ test('an action renders its icon as a Phosphor class and its label as text', () 
   );
   assert.ok(html.includes('class="ph-bold ph-archive"'), 'the icon is drawn from the class name');
   assert.ok(html.includes('Archive'), 'the label is rendered');
-  /* The count sits inside its own <b>, so "3 items selected" is never one
-   * contiguous run of text in the markup -- assert on the two pieces either
-   * side of that tag instead of a substring that can never match. */
+
   assert.match(html, /<b[^>]*>3<\/b> items selected/, 'the count and default noun are rendered');
 });
 

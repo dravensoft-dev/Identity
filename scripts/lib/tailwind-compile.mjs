@@ -1,18 +1,3 @@
-/* Compiles Arena's Tailwind layer the way a consumer would, and takes apart a
- * component manifest. Shared by check-tailwind.mjs and any gate that needs the
- * real emitted CSS rather than a restatement of it.
- *
- * The CLI is spawned as `process.execPath <bin>.mjs` rather than through a
- * shell or a package runner, so the gate behaves identically under bun and
- * node. The entry stylesheet is fed on stdin with absolute paths, so nothing
- * temporary is written into the repository.
- *
- * The preset import carries `source(none)`, which disables Tailwind v4's
- * automatic content detection — without it the CLI also scans the whole repo
- * for class-shaped strings, so a gate result would depend on unrelated text
- * (a prop value, a comment, anything matching a utility's shape) anywhere in
- * the tree rather than on the Tailwind layer itself. The explicit `@source`
- * line is what still puts the manifests in scope. */
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -22,8 +7,6 @@ import { basename, dirname, join, relative } from 'node:path';
 const here = dirname(fileURLToPath(import.meta.url));
 export const repoRoot = join(here, '..', '..');
 
-/** Every class candidate a manifest declares, deduped and sorted.
- *  @param {object} manifest @returns {string[]} */
 export function manifestClasses(manifest) {
   const out = new Set();
   const eat = (v) => {
@@ -35,11 +18,6 @@ export function manifestClasses(manifest) {
   return [...out].sort();
 }
 
-/** A class as it appears in Tailwind's compiled selector, minus the leading dot.
- *  Tailwind escapes every character that is not [A-Za-z0-9_-] with a backslash,
- *  except a *leading* digit: CSS identifiers cannot start with one, so it is
- *  hex-escaped instead — a backslash, the code point in lowercase hex, and a
- *  single trailing space (e.g. `2xl:hidden` -> `\32 xl\:hidden`). */
 export function escapeClass(cls) {
   const backslash = (s) => s.replace(/[^A-Za-z0-9_-]/g, (ch) => `\\${ch}`);
   if (/^[0-9]/.test(cls))
@@ -47,14 +25,6 @@ export function escapeClass(cls) {
   return backslash(cls);
 }
 
-/** Every manifest under the Tailwind components tree, as absolute paths, sorted.
- *
- *  This replaced a single `readdirSync(components)` when the layer moved to
- *  components/<category>/<component>/. It is exported rather than repeated
- *  because three other gates found manifests by their own readdirSync of that
- *  one directory, and three spellings of the same walk is how one of them ends
- *  up missing a category nobody remembers to add.
- *  @param {string} componentsDir @returns {string[]} */
 export function manifestFiles(componentsDir) {
   const out = [];
   const walk = (dir) => {
@@ -68,27 +38,11 @@ export function manifestFiles(componentsDir) {
   return out.sort();
 }
 
-/** The stdin entry stylesheet: the preset with automatic content detection
- *  disabled (`source(none)`), plus the component manifests registered as the
- *  only explicit source. Without `source(none)` the CLI additionally scans
- *  the whole repository for class-shaped strings, so the compiled CSS — and
- *  every gate reading it — would depend on unrelated text anywhere in the
- *  tree instead of on the preset and the manifests alone.
- *  `extra`, when given, registers one more glob as content — used by
- *  scripts/tailwind-vocabulary.test.mjs to compile a throwaway manifest
- *  without writing it into the repository.
- *  @param {string} preset absolute path to the preset CSS
- *  @param {string} components absolute path to the manifests directory
- *  @param {string} [extra] absolute glob of additional content
- *  @returns {string} */
 export function entryStylesheet(preset, components, extra) {
   return `@import '${preset}' source(none);\n@source '${components}/**/*.manifest.json';\n`
     + (extra ? `@source '${extra}';\n` : '');
 }
 
-/** Compile the preset together with every component manifest as content.
- *  @param {{root?: string, extraSource?: string}} [opts]
- *  @returns {{css: string, manifests: Map<string, object>}} */
 export function compileLayer(opts = {}) {
   const root = opts.root ?? repoRoot;
   const preset = join(root, 'frameworks/tailwind/Theme.css');

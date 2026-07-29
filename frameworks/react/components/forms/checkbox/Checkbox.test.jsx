@@ -4,17 +4,6 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Checkbox } from './Checkbox.jsx';
 
-/* This suite carries no `.dom.` infix, so it renders with renderToStaticMarkup and has
- * no DOM, and no test here fires a change. The `change` event's payload -- the new checked state as a boolean --
- * is therefore NOT verified by this suite; it is verified where a DOM exists, in
- * ../FormControlEvents.dom.test.jsx, which clicks the real
- * checkbox and asserts the payload is a boolean before asserting what it equals --
- * the sharpest of the six, because a DOM event and a boolean are unmistakably
- * different things. What IS verified here is the half SSR can see:
- * that `checked` reaches the native input and drives the drawn box, and that the
- * native members the flattened heritage clause kept (name, value, required) are
- * forwarded explicitly now that {...rest} is gone. */
-
 test('the native input carries checked when checked is true', () => {
   const html = renderToStaticMarkup(<Checkbox checked label="Notify" />);
   assert.match(html, /<input type="checkbox"[^>]*checked=""/);
@@ -44,10 +33,6 @@ test('label renders beside the box', () => {
   assert.match(html, /Notify on approval/);
 });
 
-/* R4: style and {...rest} left the component. Asserted in two separate tests --
- * a component that stopped spreading ...rest but still merged ...style passes a
- * single combined assertion, because node:assert throws on the first failure and
- * the second one is never reached. */
 test('Checkbox drops a consumer style object -- the ...style escape is gone', () => {
   const html = renderToStaticMarkup(<Checkbox label="A" style={{ color: '#ff00ff' }} />);
   assert.doesNotMatch(html, /#ff00ff/, 'a consumer style reached the rendered root -- the R4 escape is back');

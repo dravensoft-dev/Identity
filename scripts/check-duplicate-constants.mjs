@@ -1,53 +1,17 @@
-/* Fails when the same named numeric constant is declared in BOTH framework
- * layers, which is how chart geometry drifted before the script-readable token
- * target existed: CAT_SLOTS, CHART_HEIGHT and PAD were declared identically in
- * frameworks/react/DataVisuals.js (which was
- * frameworks/react/components/charts/chart-internals.js when this happened) and
- * frameworks/angular/DataVisuals.ts (which was
- * frameworks/angular/components/charts/ChartInternals.ts, and before that
- * frameworks/angular/primitives/chart-internals.ts, when this happened).
- * Those three would have
- * failed here the day the second one was written -- but W and EDGE, in the two
- * Onboarding implementations, would NOT have: both were declared inside a
- * function body (React's Onboarding component; Angular's computed(() => {...}))
- * rather than at module level, and numericConstants' regex is ^-anchored under
- * /m, so it only matches column-zero declarations. Three of the five, not all
- * five.
- *
- * WHAT THIS DOES NOT CATCH, stated so nobody reads it as more than it is: a
- * design value declared in ONE layer only, and a constant declared inside a
- * function body in EITHER layer (see W/EDGE above) -- module-level-in-both is
- * a narrower shape than "duplicated," and the two layers do not share an
- * idiom for where a design number lives: React tends to write it inline in a
- * function body, Angular tends to name it at module level, so a real
- * cross-layer duplicate escapes whenever either side uses the inline idiom.
- * Deciding whether a bare number in a JS object is a design value needs
- * judgement no scanner has -- a number in an object is not a dimension until
- * something uses it as one, which is exactly why check-dimension-literals.mjs
- * cannot reach these. This gate takes the decidable half: module-level
- * cross-layer duplication, no judgement call, near-zero false positives.
- *
- *   bun scripts/check-duplicate-constants.mjs   -> exit 0 if clean, 1 on duplication
- */
+/* Fails when the same module-level named numeric constant is declared in BOTH
+ * framework layers. Module-level-in-both is narrower than "duplicated" — DOUBTS.md
+ * section 5 states what escapes it and why. */
+
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, extname, relative } from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/* A constant that is legitimately the same in both layers because it is the
- * same external fact, not an Arena design decision. Each entry carries a
- * reason, and a stale entry -- one naming a constant no longer duplicated --
- * fails this gate, the same invariant check-dimension-literals.mjs's EXEMPT
- * holds. */
 const EXEMPT = new Map([
-  // (empty today; add with a reason when a genuine shared constant appears)
+
 ]);
 
-/** Module-level `const NAME = <number>` and `const NAME = { k: <number>, ... }`.
- *  Deliberately only module level: a constant inside a function body is local
- *  reasoning, not a shared value, and Onboarding's own W/EDGE lived in a
- *  function before this plan moved them out. */
 export function numericConstants(source) {
   const found = new Map();
   const re = /^(?:export\s+)?const\s+([A-Za-z_$][\w$]*)\s*=\s*([^;]+);/gm;
@@ -73,15 +37,14 @@ function* sourceFiles(dir) {
     if (statSync(path).isDirectory()) { yield* sourceFiles(path); continue; }
     if (!SCAN_EXT.has(extname(entry))) continue;
     if (/^tokens\.generated\./i.test(entry)) continue;
-    // A compiled .js sibling restates its .jsx source; scanning both would
-    // report every constant as duplicated with itself.
+
     if (extname(entry) === '.js' && readdirSync(dir).includes(`${entry.slice(0, -3)}.jsx`)) continue;
     yield path;
   }
 }
 
 function collect() {
-  /** name -> layer -> [{ file, value }] */
+
   const byName = new Map();
   for (const layer of ['react', 'angular']) {
     const dir = join(root, 'frameworks', layer);

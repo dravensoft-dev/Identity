@@ -1,15 +1,6 @@
-/* Tests check:behaviour's pure half. main() itself is not imported --
- * running it would walk the real tree and call process.exit(1) on any
- * problem, which has killed a test process in this repo before. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { describeBinding, zeroPatternProblems } from './check-behaviour.mjs';
-
-/* describeBinding() is what the cross-layer disagreement message renders
- * each side through. Its three shape combinations -- flat/flat, cased/cased
- * and mixed -- are the one behaviour this task changed with no other
- * machine-checked coverage; a reviewer traced them by hand once already,
- * and this pins the result so the next reader does not have to. */
 
 const flatAlert = { pattern: 'alert', exceptions: [] };
 const flatStatus = { pattern: 'status', exceptions: [] };
@@ -41,11 +32,6 @@ test('describeBinding renders a mixed flat/cased disagreement correctly on each 
   assert.equal(describeBinding(casedAlert), 'danger:alert + advisory:status');
 });
 
-/* Emptying behaviour/patterns/ does not pass this gate -- it fails it about a
- * hundred times, once per binding, each line reading `unknown pattern "alert"`
- * and none of them naming the actual problem. Measured on 2026-07-29 by moving
- * the directory aside. A gate that cannot say "I found nothing" says something
- * else instead, at length. */
 test('zero patterns is one named failure, not a cascade', () => {
   const problems = zeroPatternProblems(0);
   assert.equal(problems.length, 1);

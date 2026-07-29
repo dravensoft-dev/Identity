@@ -40,7 +40,7 @@ test('a compoundVariant applies only when every variant it names matches', () =>
 });
 
 test('a compoundVariant matches the defaulted variant value, not only a chosen one', () => {
-  // tag's default tone is neutral, so a bare classesFor() must satisfy the condition.
+
   const withCompound = { ...tag, compoundVariants: [{ tone: 'neutral', class: { root: 'ring-2' } }] };
   assert.ok(classesFor(withCompound).root.includes('ring-2'), 'the default value satisfies the condition');
 });

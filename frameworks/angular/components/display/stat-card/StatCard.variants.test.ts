@@ -1,26 +1,3 @@
-/* Plan 5a's StatCard slice, added beside tag-variants.test.ts per this
- * directory's own header comment: what is worth asserting is the recipe.
- *
- * StatCard carries two independent tone dimensions, and this suite pins that
- * they stay independent. `tone` says what state the number IS in right now
- * (colors the `value` slot); the delta's own tone says whether the number's
- * last change was good (colors the `delta` pill), and the delta's direction
- * (a separate, untested-here template concern -- it only picks an icon glyph,
- * not a class) says which way it pointed. Note the two live at different
- * levels since the API contract landed: `tone` is a component member, while
- * the delta's tone and direction are fields of the one `delta` object member
- * (`delta.tone`, `delta.direction`). The recipe below still takes them as
- * flat `tone` and `deltaTone` variants, because a tailwind-variants recipe
- * has no nesting -- `StatCard.ts` is what maps one onto the other. A service
- * at 99.98% uptime is healthy whether or not it improved this week, so a
- * `danger` value tone with a `positive` delta tone in the same tile is a
- * real, expected combination, not a contradiction -- React's own
- * components/display/Display.card.html demoes exactly that ("Open incidents", tone="danger",
- * improving). Both a `danger` value tone and a `negative` delta tone
- * render outline-only: `tone` colors text on the
- * `value` slot, which carries no background at all, and `delta`'s pill is
- * `bg-transparent`, the same property tag-variants.test.ts pins for
- * `tone="danger"`. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { statCardStyles } from './StatCard.variants';

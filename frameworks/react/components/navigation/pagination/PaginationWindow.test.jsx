@@ -3,9 +3,6 @@ import assert from 'node:assert/strict';
 import { pageWindow } from './PaginationWindow.js';
 import { limitPaginationSiblings } from '../../../Tokens.generated.js';
 
-/* The pins below are written for one sibling either side. If this fails, the token
- * moved and the expected windows must be re-derived BY HAND, not by importing the
- * implementation's formula -- which would make every assertion below tautological. */
 test('the pinned windows are written for a sibling count of one', () => {
   assert.equal(limitPaginationSiblings, 1);
 });

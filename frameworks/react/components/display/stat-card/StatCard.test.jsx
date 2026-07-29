@@ -1,13 +1,3 @@
-/* The CHANGELOG advertises that the delta pill now gates on `delta.value` in
- * BOTH layers -- fixing React's own old empty-pill defect, where a delta
- * carrying a tone and a direction but an empty (falsy) `value` still rendered
- * an outline pill with nothing inside it. `frameworks/angular/test/
- * HostClassBinding.test.ts` got a render test for exactly this
- * (`arena-stat-card: a delta with a value renders the pill; a delta with a
- * tone but no value renders nothing`); `StatCard.jsx` is the file that
- * changed on the React side, and it had none. This is that test, in this
- * layer's own DOM-free idiom -- `renderToStaticMarkup`, no fake event, no
- * DOM. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -36,10 +26,6 @@ test('no delta at all renders no pill either -- the same gate, at its other edge
   assert.doesNotMatch(html, /ph-arrow-down/);
 });
 
-/* `icon` is a Phosphor class-name string, not a slot, per the "Conventions the
- * audits settled" section of `contracts/api/README.md` and `contracts/api/components/StatCard.json`.
- * Arena draws the `<i>` and its aria-hidden wrapper; an absent icon renders
- * neither -- not an empty wrapper. */
 test('an icon renders the glyph Arena draws, inside the aria-hidden wrapper', () => {
   const html = renderToStaticMarkup(<StatCard label="Deploys" value="128" icon="ph-bold ph-rocket" />);
   assert.match(html, /aria-hidden="true"/);
@@ -51,9 +37,6 @@ test('no icon renders no wrapper at all -- not an empty one', () => {
   assert.doesNotMatch(html, /aria-hidden="true"/);
 });
 
-/* Per contracts/api/README.md's "Required-ness governs the implementation and the
- * runtime" clause, `label` and `value` fail hard when absent, matching
- * Angular's `input.required` -- not the earlier fail-soft `undefined` render. */
 test('throws when a required member is absent', () => {
   assert.throws(() => renderToStaticMarkup(<StatCard value="128" />), /label.*required/);
   assert.throws(() => renderToStaticMarkup(<StatCard label="Deploys" />), /value.*required/);

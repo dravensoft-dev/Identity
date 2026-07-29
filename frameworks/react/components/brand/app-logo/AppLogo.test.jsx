@@ -1,23 +1,9 @@
-/* AppLogo ships with no defaults for `mark` and `name`, and that is a
- * licensing decision rather than a style one: Arena is MIT and a consumer
- * copies this tree into their own product, so a component that rendered
- * Dravensoft's mark when passed nothing would ship someone else's trademark
- * by omission. The argument is only true if the absence is enforced, which is
- * what these first three tests are for -- a comment claiming it would not be.
- * Per contracts/api/README.md's "Required-ness governs the implementation and the
- * runtime" clause, enforcement is now a throw (fail-hard), matching
- * Angular's `input.required`, rather than the earlier fail-soft empty render. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { AppLogo } from './AppLogo.jsx';
 
-/* Five hops to the repo root from this directory, matching the same asset
- * reference in AppLogo.card.entry.jsx next door. Nothing here fetches it --
- * renderToStaticMarkup only serialises the attribute -- but the two files
- * describing the same path differently is a trap for whoever reads one and
- * copies it into the other. */
 const MARK = <img src="../../../../../assets/rotor-crimson.svg" alt="" />;
 
 test('throws without a mark', () => {
@@ -43,16 +29,7 @@ test('every step in the repertoire resolves, and none writes a number', () => {
     const html = renderToStaticMarkup(<AppLogo size={size} mark={MARK} name="Draven" />);
     assert.match(html, new RegExp(`var\\(--logo-mark-${size}\\)`));
     assert.match(html, new RegExp(`var\\(--logo-text-${size}\\)`));
-    // The regex below is what makes "none writes a number" true rather than
-    // asserted-but-untested: it fails on a numeric width the way a stray
-    // `width: 30` would fail it. The negative lookahead excludes `%` --
-    // the cloned mark's fill style legitimately writes `width:100%`, and a
-    // percentage is not the dimension literal this test is guarding
-    // against (the token layer's own gate tolerates `%` for the same
-    // reason: DTCG has no percentage dimension to hold it as a token).
-    // Checked once against a scratch string carrying a hardcoded numeric
-    // px width, which the regex did catch, and against `width:100%`,
-    // which it correctly left alone.
+
     assert.doesNotMatch(html, /width:\s*\d+(?:\.\d+)?(?!\d*%)/);
   }
 });

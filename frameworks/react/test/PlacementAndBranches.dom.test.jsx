@@ -1,36 +1,3 @@
-/* The two mistakes a text scan cannot catch, pinned against a real tree.
- *
- * A static scan over these sources was built and measured before this layer
- * existed, and it got both of these components backwards. The reason is the same
- * in each case: the text a scan matches is identical whether the code is right or
- * wrong, and only a rendered tree tells the two apart.
- *
- *   Placement. Menu.jsx:41 renders
- *     <span onClick={…} aria-haspopup="menu" aria-expanded={open}>{trigger}</span>
- *   The attributes ARE in the source, spelled exactly as a correct implementation
- *   would spell them — so a scan reports roles.haspopup and roles.expanded met and
- *   retires two true exceptions. What is wrong is not the attribute but the element
- *   under it: a <span> takes no focus, and ARIA state on an ancestor is not
- *   inherited by the focused descendant. A screen reader sitting on the real
- *   trigger <button> is told nothing. The DOM settles it in one line — the carrier
- *   is a SPAN and isFocusable() says false, while the button focus actually reaches
- *   carries neither attribute.
- *
- *   Branches. Skeleton.jsx used to render role="status" aria-label="Loading" for
- *   the block, line and multi-line text variants, and aria-hidden="true" with no
- *   role at all for circle -- the one branch a scan would have gotten wrong. A
- *   scan sees role="status" present in the file and would have reported the
- *   circle branch compliant on the strength of text sitting elsewhere in the same
- *   file, which is exactly backwards: that branch was the one variant that
- *   announced nothing. Rendering all four variants is what separates "the file
- *   contains this" from "this component produces this", and it is what caught the
- *   defect this batch fixed -- the circle now renders the same role and name as
- *   its three siblings, and the lesson stands even though its subject no longer
- *   does.
- *
- * These are not hypothetical failure modes. They are the two mistakes 7b's review
- * found by hand, and the reason a scan was measured and then cut in favour of a
- * DOM. */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
@@ -50,11 +17,10 @@ test('Menu carries aria-haspopup on an element that cannot take focus — the ex
   );
   const carrier = container.querySelector('[aria-haspopup]');
   assert.notEqual(carrier, null);
-  // This is the assertion a text scan cannot make: the attribute exists, and the
-  // element holding it is not the one a screen reader lands on.
+
   assert.equal(carrier.tagName, 'SPAN');
   assert.equal(isFocusable(carrier), false);
-  // ...while the real trigger, which focus does reach, carries neither state.
+
   const trigger = container.querySelector('button');
   assert.equal(isFocusable(trigger), true);
   assert.equal(trigger.getAttribute('aria-haspopup'), null);
@@ -69,9 +35,7 @@ test('Menu matches its menu-button binding when the subject is the focusable tri
   assertPattern({
     root: container,
     bindingPath: join(REACT_COMPONENTS, 'navigation/menu/Menu.behaviour.json'),
-    // Every role/state requirement is about the element focus reaches. Naming it
-    // is what makes the haspopup and expanded exceptions verifiably true rather
-    // than verifiably false.
+
     subjects: { default: trigger },
     behavioural: { 'focus.onOpen': false, 'keyboard.Enter': false, 'keyboard.Space': false, 'keyboard.Escape': false },
   });
@@ -98,14 +62,7 @@ test('Skeleton circle carries the role and a name, like its siblings', () => {
 });
 
 test('Skeleton matches its status binding, block and circle both', () => {
-  // status requires focus.unaffected, which is undecidable from the DOM alone:
-  // the div carries no tabIndex and nothing auto-focuses it, so a status
-  // update never receives or moves keyboard focus. Checked against block --
-  // the subject the old "placeholder" case rendered -- and against circle,
-  // since the binding is flat again and claims the whole component rather
-  // than one variant of it; testing block alone would repeat the exact
-  // mistake this file's own comment records Skeleton making before `cases`
-  // existed.
+
   const placeholder = mount(<Skeleton variant="block" />);
   assertPattern({
     root: placeholder,
@@ -122,21 +79,6 @@ test('Skeleton matches its status binding, block and circle both', () => {
   });
 });
 
-/* A THIRD PLACEMENT DEFECT, and the one the React DOM suites were restored just in
- * time to catch. `Calendar` keeps a map of event id -> the chip's forwarded ref and
- * calls node.focus() on it when Enter steps in from an hour cell. A chip
- * carrying an action panel is a <div> — the chip cannot be a <button> with a
- * kebab inside it — so the interactive attributes move down to a body <button>,
- * and the ref has to move with them. It did not: the ref stayed on the root, the
- * root carried no tabindex, and Enter focused a <div> that cannot take focus.
- * Measured in Chromium; the chip looked and behaved correctly to a mouse.
- *
- * Every other guard is blind to it. The static one-tab-stop count in
- * Calendar.test.jsx PASSED BECAUSE OF the bug. And happy-dom's focus() focuses
- * non-focusable elements, so asserting that focus moves would pass here whether
- * the ref were right or wrong — which is why this asserts the IDENTITY of the
- * element the ref landed on instead, and why `Calendar`'s own Enter route stays
- * on the by-hand checklist in CalendarEvent.prompt.md under the grid rule. */
 test('CalendarEvent hands its ref to the element that takes focus, panel or no panel', () => {
   const injected = {
     box: {}, color: 'var(--color-cat-1)', timeLabel: '09:00 – 09:30',
@@ -157,24 +99,11 @@ test('CalendarEvent hands its ref to the element that takes focus, panel or no p
     'a paneled chip forwarded its ref to an element Calendar cannot focus');
   assert.equal(paneled.current.getAttribute('tabindex'), '-1',
     'the paneled chip body cannot be focused programmatically');
-  /* The body, not the kebab: the kebab is focusable too, and a ref pointing at
-     it would land focus on the wrong control while passing every check above. */
+
   assert.match(paneled.current.getAttribute('aria-label'), /^Standup,/,
     'the ref landed on the kebab rather than on the chip body');
 });
 
-/* THE KEYBOARD ROUTE TO THE KEBAB, pinned here rather than by hand.
- *
- * Calendar binds `grid` and is therefore hand-tested under this repo's grid
- * rule, but CalendarEvent binds `button` and is not -- so a chip mounted on its
- * own costs none of the RAM the rule exists to avoid, and the whole route lives
- * inside the chip. What still belongs on the by-hand checklist is the part that
- * needs Calendar around it: that Enter from an hour cell arrives here at all.
- *
- * Arrows and not Tab, because Tab must LEAVE a composite -- making the kebab
- * tabbable is exactly what would falsify Calendar's `focus.roving`. Calendar's
- * own handler ignores anything whose target is not a gridcell, so arrows inside
- * a chip cannot collide with arrows inside a cell. */
 const CHIP = {
   box: {}, color: 'var(--color-cat-1)', timeLabel: '09:00 – 09:30',
   dateLabel: 'Monday 20 July', tabIndex: -1,
@@ -213,15 +142,13 @@ test('opening the panel moves focus into it, and Escape closes it and returns to
   act(() => { kebab.focus(); kebab.click(); });
   const del = [...c.querySelectorAll('button')].find((b) => b.textContent === 'Delete');
   assert.ok(del, 'activating the kebab did not open the panel');
-  /* Landing ON the opener is the defect CLAUDE.md records of Menu; a keyboard
-     user left there has no way in, because Tab leaves the grid. */
+
   assert.equal(document.activeElement, del, 'the panel opened without taking focus');
 
   press(del, 'Escape');
   assert.equal([...c.querySelectorAll('button')].some((b) => b.textContent === 'Delete'), false,
     'Escape did not close the panel');
-  /* Not <body>: the focused control was just unmounted, and letting focus fall
-     to the document would throw the user out of the grid entirely. */
+
   assert.equal(document.activeElement, kebab, 'Escape dropped focus instead of returning it to the kebab');
 });
 

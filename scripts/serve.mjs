@@ -1,13 +1,3 @@
-/* Serves the repo root over HTTP so the demo pages work.
- *
- * The pages load styles.css, assets/ and contracts/design/*.json by relative path,
- * and the Overview fetches its token source — none of which works under
- * file://. This is the one genuinely Bun-specific script in the repo; every
- * gate stays runtime-portable.
- *
- *   bun run demos            -> serves on 8000
- *   PORT=9000 bun run demos  -> serves on 9000
- */
 import { readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, normalize } from 'node:path';
@@ -21,7 +11,6 @@ const PAGES = [
   ['Guidelines', '/guidelines/'],
 ];
 
-/** Resolves a URL path to a path inside root, or null if it escapes root. */
 function resolve(pathname) {
   const rel = normalize(decodeURIComponent(pathname)).replace(/^(\.\.[/\\])+/, '');
   const path = join(root, rel);
@@ -30,9 +19,6 @@ function resolve(pathname) {
 
 const isDir = (path) => { try { return statSync(path).isDirectory(); } catch { return false; } };
 
-/* guidelines/ holds 15 specimen cards and no index.html. The python3 -m
- * http.server this replaces listed directories, so dropping that would be a
- * regression for anyone browsing them. */
 function listing(path, pathname) {
   const entries = readdirSync(path).sort();
   const items = entries
@@ -55,13 +41,7 @@ Bun.serve({
     const path = resolve(pathname);
     if (!path) return new Response('Forbidden', { status: 403 });
     if (isDir(path)) {
-      /* Redirect to the trailing slash before serving anything. Without it the
-         browser resolves the page's relative URLs against the PARENT
-         directory, so `./Screen.jsx` in ui-kits/console/index.html asks for
-         ui-kits/Screen.jsx and 404s — the page loads, renders nothing, and
-         shows only the dark background. Every static server does this; ours
-         did not, so the console app was reachable only at its full
-         .../console/ or .../console/index.html URL. */
+
       if (!pathname.endsWith('/'))
         return Response.redirect(`${pathname}/`, 301);
       const index = Bun.file(join(path, 'index.html'));

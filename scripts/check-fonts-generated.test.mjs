@@ -27,11 +27,7 @@ test('a declared family with no face fails, naming the family and the fix', () =
 });
 
 test('a generic fallback like system-ui is never in the declared list, so it is never required to have a face', () => {
-  // families() (fetch-fonts.mjs) reads only the first $value entry per
-  // font token — "system-ui", "sans-serif", "monospace" never reach
-  // checkFonts's `declared` argument at all. Modeled here directly: an
-  // empty faces set with a declared list that omits the fallbacks still
-  // passes.
+
   const faces = new Set(['Archivo']);
   assert.deepEqual(checkFonts(['Archivo'], faces), []);
 });

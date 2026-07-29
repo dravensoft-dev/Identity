@@ -1,53 +1,7 @@
-/* Fails on a bare dimension literal in a token-governed property anywhere under
- * frameworks/. This is the machine form of the rule CLAUDE.md states in prose:
- * a dimension in a framework layer is a token or a derivation of tokens, and a
- * bare literal is a bug.
- *
- * It is not a tidiness check. Zero bare literals means every rendered value
- * resolves from contracts/design/, which is exactly the claim that changing a value
- * there moves every layer. This gate is the proof of that promise.
- *
- * It is the complement of check-arbitrary-values.mjs: that one keys on
- * Tailwind's bracket syntax, this one on literals in inline style objects.
- * Together they close both idioms.
- *
- * ARCHITECTURE. Earlier passes added one regex per syntactic shape (a
- * ternary branch, an arithmetic expression, a call argument) and each new
- * shape kept finding a shape the others could not see. This version instead
- * separates "where is a value" from "what is in it": readValue/expressionLeaves
- * find every terminal sub-expression a governed property's value (or a local
- * declaration's initializer) can bottom out at -- a ternary branch, an `||`/`??`
- * fallback, a plain leaf -- using balanced-text scanning rather than a single
- * regex, so nesting (`a ? (b ? 12 : 14) : 16`) is read correctly instead of
- * garbled. scanLeaf then judges each leaf once, the same way regardless of
- * which shape produced it.
- *
- * BLIND SPOT, and it is not the SVG one. This gate anchors on governed property
- * SITES, so a value a FUNCTION RETURNS is invisible to it under EVERY extension.
- * `indentFor()` in frameworks/react/components/navigation/side-nav/SideNavInject.jsx
- * produces a padding-inline-start, and both of its call sites -- one in that
- * file and one in SideNavSection.jsx, counted rather than recalled -- read
- * `paddingInlineStart: indentFor(indentStep, depth)` -- a call, which
- * expressionLeaves bottoms out at and scanLeaf then declines to judge, exactly
- * as it declines every other call. A helper returning a bare '12px' would leave
- * this gate green at every one of those sites.
- *
- * So moving such a helper out of `.js` and into an extension EXTENSIONS does
- * open is necessary and NOT sufficient -- it only buys the gate a look at the
- * helper's own body, never at what it hands back. The second half is that the
- * helper's OUTPUT is asserted directly in its layer's test suite. That is how
- * `indentFor` is pinned: see "indentFor returns token arithmetic at every
- * depth, never a bare length" in
- * frameworks/react/components/navigation/side-nav/SideNav.test.jsx, which
- * asserts the exact string at three depths and then, for every depth in a
- * range, that no bare px/rem/em survives in it. A helper that produces a
- * governed dimension and has no such test is outside this gate no matter where
- * it lives.
- *
- *   bun scripts/check-dimension-literals.mjs                 -> exit 0 if none, 1 otherwise
- *   bun scripts/check-dimension-literals.mjs --report        -> the census, grouped
- *   bun scripts/check-dimension-literals.mjs --report=sites  -> one line per site: file:line  prop: raw
- */
+/* Fails on a bare dimension literal in a framework layer. EXEMPT and PASSTHROUGH are
+ * asserted by name in the paired suite, so changing either is a change to both.
+ * Two blind spots — kebab-case SVG attributes, Angular [style.x] — are in DOUBTS.md. */
+
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
@@ -55,63 +9,11 @@ import { repoRoot } from './lib/tailwind-compile.mjs';
 
 const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
 
-/** Properties whose value Arena's token layer governs.
- *
- * boxShadow and transform join late and for one reason each: a focus ring is a
- * spread radius (--focus-width) written inside a shorthand, and a travel is a
- * distance written inside a function. Both were invisible while the properties
- * were ungoverned, which is how seven hand-written `2px` rings and a
- * translateX(18px) survived a gate that reports the tree clean. Neither
- * property needed a rule change to work: a percentage, a ratio inside scale()
- * and an angle already pass.
- *
- * strokeWidth joins for the attribute-form task below (Task 6): an SVG line's
- * stroke width is a border width in every sense the token layer cares about.
- * The rest of SVG_ATTRS deliberately does NOT join this set — `r`, `x`, `y`,
- * `cx`, `cy`, `x1`, `x2`, `y1`, `y2` are one- and two-letter names that
- * collide with ordinary object keys having nothing to do with CSS, and
- * governing them today would cost something real, not a hypothetical one.
- * The chart layers carry a plot padding named `PAD`, whose `r` key is a plot
- * RIGHT pad and has nothing to do with an SVG radius, and one spelling of it
- * is a bare number inside an extension EXTENSIONS opens: measured by adding
- * `r` to this set and running the gate, the hit is
- * `frameworks/angular/DataVisuals.test.ts`'s
- * `assert.deepEqual({ ...PAD }, { t: 8, r: 8, b: 28, l: 44 })` — a `.ts` file,
- * so PROP_COLON reaches its `r: 8` straight away, and a test's expected value
- * is exactly where a token cannot stand in.
- * The two SOURCES escape for reasons that are each their own and neither of
- * which this decision leans on: `frameworks/angular/DataVisuals.ts` spells
- * `PAD = { t: chartPadTop, r: chartPadRight, … } as const`, imported
- * script-readable token identifiers rather than the literals it carried before
- * tokens/src/chart.json existed, and an imported identifier is outside what the
- * dataflow rule traces; and React's copy, `frameworks/react/DataVisuals.js`,
- * is spelled identically AND is a `.js` file, which EXTENSIONS never includes.
- * (The two are not siblings in any directory: each sits at its own layer's
- * root, having moved there — and been renamed from `ChartInternals` — when a
- * display component turned out to consume the chart internals too.) The
- * Angular test alone already makes the collision real, not academic.
- * Adding these nine later is a judgment call that needs the tree
- * re-checked at that time, not a decision this comment can make
- * permanent. Those SVG_ATTRS members stay listed for documentation and
- * for the day a real quoted-literal site needs one of them, but
- * scanValue's gate means none of them is judged anywhere today — every
- * current chart/Checkbox site this task closes is fontSize, strokeWidth,
- * width, or height, all already governed. */
 const PROPS = new Set([
   'fontSize', 'lineHeight', 'letterSpacing', 'fontWeight',
   'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
   'paddingInline', 'paddingBlock',
-  /* The LOGICAL sides, added by plan 8C5. The physical four and the two logical
-   * AXES were already here; the four logical SIDES were not, so `padding-inline-
-   * start` was ungoverned while `padding-left` was governed -- the same property
-   * under the other writing-mode spelling. That was not theoretical: 8C5 split
-   * SideNavItem's governed `padding` shorthand into paddingBlock (governed) plus
-   * paddingInlineEnd and paddingInlineStart (both ungoverned at the time), and a
-   * bare '12px' at either passed this gate. The margin siblings join for the same
-   * reason rather than for symmetry alone: marginInline/marginBlock were missing
-   * too, so the whole logical family is enumerated here now and none of it is one
-   * spelling away from invisible. Verified against the tree when added: the only
-   * sites in frameworks/ using any of them are SideNavItem's own two. */
+
   'paddingInlineStart', 'paddingInlineEnd', 'paddingBlockStart', 'paddingBlockEnd',
   'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
   'marginInline', 'marginBlock',
@@ -119,11 +21,7 @@ const PROPS = new Set([
   'gap', 'rowGap', 'columnGap',
   'border', 'borderTop', 'borderRight', 'borderBottom', 'borderLeft',
   'borderWidth', 'borderRadius',
-  /* The logical BORDER and INSET sides, added for the reason their padding and
-   * margin counterparts were: a logical spelling was one word away from being
-   * invisible to this gate while its physical twin was governed. Verified against
-   * the tree when added: ZERO sites in frameworks/ use any of them, so this is a
-   * ratchet rather than a fix, and the suite above is what proves it works. */
+
   'borderInline', 'borderBlock',
   'borderInlineStart', 'borderInlineEnd', 'borderBlockStart', 'borderBlockEnd',
   'insetInline', 'insetBlock',
@@ -133,14 +31,6 @@ const PROPS = new Set([
   'boxShadow', 'transform', 'strokeWidth',
 ]);
 
-/* Some correct sites look exactly like defects, so they are named rather than
- * inferred — the same discipline check-tailwind-coverage.mjs applies to its
- * token exclusions. Keyed "<path>:<prop>:<raw>". staleExemptions() below is
- * what keeps this map honest as the code around it changes.
- *
- * Deliberately not stating a count here: this comment said "two" while the map
- * held five, which is the exact prose-drift this gate exists to prevent. Read
- * the entries. */
 export const EXEMPT = new Map([
   ['frameworks/react/components/display/calendar/Calendar.jsx:zIndex:1',
    'local stacking inside a positioned container; does not join the global z order'],
@@ -160,54 +50,23 @@ export const EXEMPT = new Map([
    'the other axis of the same 1px visually-hidden box as the width entry above'],
   ['frameworks/angular/DataVisuals.ts:margin:\'-1px\'',
    'the same idiom\'s negative pull, which must cancel exactly the 1px box above so the hidden table shifts no sibling — it is bound to that literal, not to Arena\'s spacing scale, and a token here would break the cancellation'],
-  // Skeleton's API contract (contracts/api/components/Skeleton.json, Plan 8B1 Task 3) made
-  // width/height/radius plain CSS strings a CONSUMER supplies per instance.
-  // scanAttributes' `prop="value"` match has no notion of which element it is
-  // styling — built for an SVG glyph's presentation attributes (BarChart's own
-  // `<svg width="100%">`), it reads this component's own contract member the
-  // same way. Most of the demo's sizes DO fall on Arena's 4px spacing scale
-  // (var(--sp-1) = 4px) and were rewritten as token arithmetic instead of
-  // exempted — see Skeleton.card.entry.jsx. These two do not: they are
-  // arbitrary demo placeholder heights (11px, 90px), the same tolerated
-  // demo-harness sizing the `.card.html` specimens carry un-gated elsewhere.
+
   ['frameworks/react/components/display/skeleton/Skeleton.card.entry.jsx:height:11px',
    'Skeleton.card.entry.jsx\'s `variant="line"` example paired with `width="45%"` — an arbitrary demo placeholder height, not on Arena\'s 4px spacing scale'],
   ['frameworks/react/components/display/skeleton/Skeleton.card.entry.jsx:height:90px',
    'Skeleton.card.entry.jsx\'s closing `variant="block"` example — an arbitrary demo placeholder height, not on Arena\'s 4px spacing scale'],
 ]);
 
-/** Units the token layer genuinely does not model, and that no token could
- *  usefully carry — a prose measure in `ch`, a share of a container in `%`, a
- *  grid track in `fr`, a viewport fraction, an angle. DTCG 2025.10 admits only
- *  px and rem in a dimension, so these are not expressible as tokens at all.
- *  Exported because check-arbitrary-values.mjs answers the same question about
- *  a Tailwind bracket and two lists would drift. `s`/`ms` stay local to
- *  FREE_UNITS below: this gate tolerates them, but --dur-* and --loop-* DO
- *  model duration, so a bracket carrying one is drift and must keep failing. */
 export const UNMODELLED_UNITS = ['%', 'ch', 'fr', 'vh', 'vw', 'vmin', 'vmax', 'deg'];
 const FREE_UNITS = [...UNMODELLED_UNITS, 's', 'ms'];
 const FREE_UNIT = new RegExp(`^\\s*'?-?\\d*\\.?\\d+(${FREE_UNITS.join('|')})'?\\s*$`);
-/** A number immediately carrying a unit — a candidate dimension literal,
- *  judged against FREE_UNITS above rather than against a fixed "bad" list.
- *  Whitespace between the digits and the letters is allowed here — CSS
- *  itself never has one, so `'4 px'` is not a legal length, it is a typo
- *  for `'4px'` that still asserts a bare dimension and must still fail.
- *  What whitespace must not do is let a *function name* stand in as a
- *  bogus unit: a naive `\d+\s*[a-z]+` reads `'0 calc(var(--sp-1) * 3)'` as
- *  `0` + unit `calc`, when "0" and the calc() are two different values in
- *  the same shorthand, not one value with a gap in it. The `(?!\()` guard
- *  is what tells the two apart — a real unit is never followed by `(`,
- *  only a function call is, so excluding that one shape keeps `calc(`,
- *  `min(`, `max(`, `rgba(` and friends from ever being misread as a unit
- *  while still catching a spaced-out `px`, `pt`, `em`. */
+
 const UNIT_LITERAL = /\d*\.?\d+\s*(%|[a-z]+)\b(?!\()/g;
-/** The whole value is a bare number (quoted or not). */
+
 const BARE_NUMBER = /^\s*'?-?\d*\.?\d+'?\s*$/;
-/** Zero, in the forms the layer writes it. */
+
 const ZERO = /^\s*'?-?0(px|rem|em|%)?'?\s*$/;
 
-/** A template interpolation, read with balanced braces so a nested `{}` inside
- *  the expression does not end it early. */
 function stripInterpolations(raw) {
   let out = '';
   for (let i = 0; i < raw.length; i++) {
@@ -218,9 +77,7 @@ function stripInterpolations(raw) {
         if (raw[j] === '{') depth++;
         else if (raw[j] === '}') depth--;
       }
-      // `9`, not `0`: the marker stands where a rendered number will, and it
-      // must not read as the zero the ZERO rule forgives — `${d * 0.28}px`
-      // renders a dimension, and that is exactly what has to be caught.
+
       out += '9';
       i = j - 1;
       continue;
@@ -230,43 +87,24 @@ function stripInterpolations(raw) {
   return out;
 }
 
-/** @param {string} prop @param {string} rawValue
- *  @returns {{reason: string} | null} null when the value is legal */
 export function scanValue(prop, rawValue) {
   if (!PROPS.has(prop)) return null;
   const raw = stripInterpolations(rawValue);
   if (ZERO.test(raw)) return null;
   if (FREE_UNIT.test(raw)) return null;
 
-  // A var() is a token. Remove every one, then judge what is left: a
-  // multiplier inside calc() is not a literal, a unit is.
   const withoutTokens = raw.replace(/var\(\s*--[a-z0-9-]+\s*\)/g, '');
 
-  // A number carrying any unit is a dimension literal unless that unit is
-  // on the free list above.
   for (const m of withoutTokens.matchAll(UNIT_LITERAL))
     if (!FREE_UNITS.includes(m[1]))
       return { reason: `a raw ${m[1]}, not a token` };
 
-  // A bare number standing as the entire value asserts a dimension the
-  // language never declared — fontSize: 13, zIndex: 1000, lineHeight: 1.
   if (!raw.includes('var(') && BARE_NUMBER.test(raw))
     return { reason: 'a bare number, not a token' };
 
   return null;
 }
 
-// --- Balanced-text reading -------------------------------------------
-// Every function below scans character-by-character rather than with a
-// single regex, because the thing they are bounding — a value, a ternary,
-// an `||` chain — can nest arbitrarily, and a regex that assumes one level
-// of nesting is exactly the bug findings 1 and 3 of fix pass 2 were: a
-// value like `Math.max(8, d * 0.28)` or a chained ternary
-// `a ? 4 : b ? 10 : 6` both defeated a purely regex-shaped scanner.
-
-/** Advances past a string literal starting at `text[i]` (the opening
- *  `quote`), honoring backslash escapes. @returns the index of the closing
- *  quote (or the last index, if the string is unterminated). */
 function skipString(text, i, quote) {
   for (let j = i + 1; j < text.length; j++) {
     if (text[j] === '\\') { j++; continue; }
@@ -275,20 +113,6 @@ function skipString(text, i, quote) {
   return text.length - 1;
 }
 
-/** Replaces every `//` and `/* *\/` comment in `text` with spaces (newlines
- *  stay newlines), so every scanner below sees only real code — string
- *  literals are respected the same way readValue respects them, so a `//`
- *  or `/*` inside a string is never mistaken for a comment start. This
- *  runs first, before any other scan, because this codebase's own house
- *  style backtick-quotes code references in prose comments (`` `width:` ``,
- *  `` `--sp-1` ``): a governed prop name followed by a colon and a stray
- *  backtick, sitting in a comment, is indistinguishable from a real
- *  `prop:` site to a scanner that does not know comments exist — it sends
- *  the balanced-text reader hunting for a closing backtick anywhere later
- *  in the file, and everything in between reads as one garbled value.
- *  Length and line numbers are preserved exactly (every replaced character
- *  becomes exactly one space, `\n` stays `\n`), so lineOf() stays correct
- *  on the blanked text. */
 function blankComments(text) {
   let out = '';
   for (let i = 0; i < text.length; i++) {
@@ -318,13 +142,6 @@ function blankComments(text) {
   return out;
 }
 
-/** Reads a value starting at `text[start]` up to the first top-level
- *  character in `stopChars` — "top-level" meaning outside any
- *  `()`/`[]`/`{}` nesting and outside any string literal. This is what
- *  lets a value like `Math.max(8, d * 0.28)` (an inner comma) or a
- *  template string containing `{`/`}` be read whole, where a fixed-shape
- *  regex either stops too early or too late.
- *  @returns {{text: string, end: number}} */
 function readValue(text, start, stopChars) {
   let i = start, depth = 0;
   for (; i < text.length; i++) {
@@ -338,10 +155,6 @@ function readValue(text, start, stopChars) {
   return { text: text.slice(start, i), end: i };
 }
 
-/** `text` wrapped in one redundant pair of parens, stripped — `(b ? 12 :
- *  14)` becomes `b ? 12 : 14` so the ternary inside is reachable. Declines
- *  if the leading `(` does not close at the very end (`(a) + (b)` is not a
- *  single wrapped expression). */
 function stripOuterParens(text) {
   const t = text.trim();
   if (t[0] !== '(' || t[t.length - 1] !== ')') return t;
@@ -355,17 +168,6 @@ function stripOuterParens(text) {
   return t;
 }
 
-/** Splits `text` on its first top-level `?`/`:` ternary pair, tracking
- *  ternary depth the same way parens are tracked (each top-level `?`
- *  increments, each top-level `:` decrements; the outer pair is the one
- *  that brings the count back to zero) — so a nested ternary's own `:`
- *  is never mistaken for the outer one's, the exact bug in
- *  `a ? (b ? 12 : 14) : 16` and in `size==='sm'?4:size==='lg'?10:6`
- *  (right-chained, no parens — the same shape, one fewer character).
- *  `?.` and `??` are excluded from starting a ternary. Object literals
- *  and type annotations never appear in a value position here, so every
- *  top-level `:` at this depth belongs to a ternary, not a key.
- *  @returns {{cond: string, a: string, b: string} | null} */
 function splitTernary(text) {
   let depth = 0, qDepth = 0, qStart = -1;
   for (let i = 0; i < text.length; i++) {
@@ -386,10 +188,6 @@ function splitTernary(text) {
   return null;
 }
 
-/** Splits `text` on every top-level occurrence of `||` or `??` — the one
- *  other place this layer's literals hide behind an operator:
- *  `height || 12` and `height || width || 40`. Same depth/string
- *  discipline as splitTernary. */
 function splitFallback(text) {
   const parts = [];
   let depth = 0, start = 0;
@@ -408,11 +206,6 @@ function splitFallback(text) {
   return parts;
 }
 
-/** Flattens a value expression into every terminal leaf it can bottom out
- *  at, recursing through nested ternaries and `||`/`??` chains. A leaf is
- *  whatever is left once no more top-level `?:`/`||`/`??` can be found —
- *  a literal, a token, an identifier, a call, an arithmetic expression.
- *  @returns {string[]} */
 export function expressionLeaves(text) {
   const stripped = stripOuterParens(text);
   const ternary = splitTernary(stripped);
@@ -422,10 +215,6 @@ export function expressionLeaves(text) {
   return [stripped.trim()];
 }
 
-/** Splits a call's argument list on top-level commas, tracking `[`/`]`
- *  depth so a bracketed index like `values[hover]` never causes a false
- *  split. Parens are excluded from the input by construction (see
- *  scanLeaf's single-level call match). */
 function splitArgs(text) {
   const args = [];
   let depth = 0, start = 0;
@@ -442,21 +231,6 @@ function splitArgs(text) {
 const CALL_SHAPE = /^([a-zA-Z_$][\w.$]*)\(([^()]*)\)$/;
 const ARITH_SHAPE = /^[a-zA-Z_$][\w.$]*(?:\([^()]*\))?\s*[*+/-]\s*-?\d*\.?\d+$/;
 
-/** Scans one leaf's text for every bare-literal sub-value it carries.
- *  Three shapes, tried in order: the leaf itself is a literal (direct,
- *  via scanValue — handles a plain value, quoted or not, and a raw unit
- *  anywhere in a shorthand string); the leaf is a single flat call, whose
- *  arguments are judged one at a time (`Math.max(8, d * 0.28)` flags `8`,
- *  leaves `d * 0.28` alone the same way a lone ratio would be); the leaf
- *  is an identifier (optionally with a single-level call prefix) combined
- *  arithmetically with a trailing number (`d * 0.4`, `y(m) - 5`) — always
- *  a violation, since that whole shape only exists to carry a literal.
- *  A nested-parens call (`Math.max(8, Math.min(d, 40))`) is deliberately
- *  out of scope for the same reason ARITH stays single-level: no real
- *  site has that shape, and a wider class needs real parsing, not a
- *  wider regex. Anything else — a plain identifier, a var() token, a
- *  legal free-unit value — returns no hits.
- *  @returns {{raw: string, reason: string}[]} */
 function scanLeaf(prop, leaf) {
   const trimmed = leaf.trim();
   if (!trimmed) return [];
@@ -480,27 +254,14 @@ function scanLeaf(prop, leaf) {
   return [];
 }
 
-/** @param {string} text @param {number} index
- *  @returns {number} 1-based line, counted by newlines up to `index`. */
 function lineOf(text, index) {
   return text.slice(0, index).split('\n').length;
 }
 
 const COLON_STOP = new Set([',', '}']);
-/** Finds every `<governed-prop>:` in `text` (object-literal position, not
- *  preceded by a word character or `.`) and returns its name and the
- *  index right after the colon, so the caller can read the value from
- *  there. Intentionally unfiltered by PROPS at the regex level, same as
- *  every scanner before this one — the filter happens once, by name,
- *  against PROPS, rather than duplicating that set into the regex. */
+
 const PROP_COLON = /(?<![\w.])([a-zA-Z]+)\s*:\s*/g;
 
-/** The colon-level scan alone, over already-blanked `text`: every
- *  `<governed-prop>:` value, flattened into leaves, each leaf judged by
- *  scanLeaf. Shared by scanText (the public entry point) and scanDataflow
- *  below, which needs the same pass to find which identifiers are used
- *  bare at a governed colon before it can trace them back to a
- *  declaration. */
 function scanColonValues(text) {
   const out = [];
   for (const m of text.matchAll(PROP_COLON)) {
@@ -516,44 +277,15 @@ function scanColonValues(text) {
   return out;
 }
 
-/** @param {string} text
- *  @returns {{prop: string, raw: string, reason: string, line: number}[]}
- *  `line` is 1-based, counted by newlines up to the match — it is what
- *  --report=sites and Task 3's classification pass locate a site by.
- *  Combines the direct colon-level scan with the dataflow rule below (a
- *  literal reached through an intermediate variable) — both need the same
- *  view of the file, so a caller gets the complete answer from one call
- *  rather than needing to know to call scanDataflow separately too. */
 export function scanText(rawText) {
   const text = blankComments(rawText);
   return [...scanColonValues(text), ...scanDataflow(text)];
 }
 
-// --- Dataflow: a literal reached through a local variable ----------------
-// `const h = size === 'sm' ? 4 : size === 'lg' ? 10 : 6;` then `height: h`
-// elsewhere in the file breaks every scanner above, which all require the
-// literal to sit at (or be reachable from) a governed prop's own colon.
-// Deliberately narrow, per the same review that asked for it: an
-// identifier only qualifies if (a) it is declared with `const`/`let` and
-// its initializer carries at least one genuine literal per the same
-// leaf-scanning rules used at a colon, AND (b) that exact identifier later
-// appears as a *bare* leaf — the whole value, or a whole ternary/fallback
-// branch, with no member access, no call, no arithmetic — at a governed
-// prop's colon in the same file. Both conditions are required: this layer
-// carries roughly forty local `const x = ...<number>...` declarations, and
-// most are indices, lengths and counts (`const n = values.length`, `const
-// pct = Math.max(0, Math.min(100, ...))`) whose name never reaches a
-// governed colon bare — condition (b) is what leaves them alone, not a
-// guess about what a number "means".
 const LOCAL_DECL = /(?<![\w.])(?:const|let)\s+([a-zA-Z_$][\w$]*)\s*=\s*/g;
 const STATEMENT_STOP = new Set([',', ';', '}']);
 const BARE_IDENTIFIER = /^[a-zA-Z_$][\w$]*$/;
 
-/** @param {string} text
- *  @returns {Map<string, {rhs: string, line: number}[]>} every local
- *  `const`/`let` declaration in the file, by name. A name can have more
- *  than one declaration (block-scoped shadowing, or a second variable of
- *  the same name in a different function) — every one is scanned. */
 function localDeclarations(text) {
   const decls = new Map();
   for (const m of text.matchAll(LOCAL_DECL)) {
@@ -566,13 +298,8 @@ function localDeclarations(text) {
   return decls;
 }
 
-/** @param {string} text
- *  @returns {{prop: string, raw: string, reason: string, line: number}[]}
- *  One entry per literal found in a qualifying declaration's initializer —
- *  reported at the declaration's own line (where the fix actually lands),
- *  not at the colon that revealed it reaches a governed property. */
 function scanDataflow(text) {
-  const bareUsages = new Map(); // identifier name -> governing prop (first one wins; see note below)
+  const bareUsages = new Map();
   for (const m of text.matchAll(PROP_COLON)) {
     const prop = m[1];
     if (!PROPS.has(prop)) continue;
@@ -598,37 +325,10 @@ function scanDataflow(text) {
   return out;
 }
 
-// --- Injected CSS: a <style> string, not a JS object literal --------------
-// Every @keyframes in this layer ships inside `s.textContent = '...'`,
-// because an inline style object cannot express a keyframe. The scanners
-// above are shaped for a JS object literal -- PROP_COLON only matches an
-// unbroken run of letters (so CSS `box-shadow:` reads as a property named
-// `shadow`, invisible, and `border-width:`/`margin-top:` misattribute to
-// `width`/`top`), and readValue stops at `,` or `}` (right for a JS value,
-// wrong for a `;`-terminated CSS declaration). `transform:translateY(8px)`
-// in Dialog/Menu was caught before this task only by coincidence: `transform`
-// has no hyphen in either grammar, and it happened to be the last
-// declaration before a `}`.
-
-/** CSS property names, kebab-case, mapped to the camelCase key PROPS uses.
- *  Only the governed ones are worth converting — anything else is skipped. */
 function camel(prop) {
   return prop.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 }
 
-/** Every maximal run of string literals joined end-to-end by `+`, read as one
- *  body. Every injected `<style>` in this layer is actually built this way —
- *  Skeleton's shimmer is the real example, four literals deep
- *  (`'.arena-skeleton{background-image:...;' + 'background-size:...;animation:...}' + ...`)
- *  — so a rule's opening `{` and the declaration that follows it routinely
- *  sit in different literals. Judging one literal at a time is what let a
- *  brace-less fragment vanish from the shape test in scanInjectedCss below
- *  even though the concatenated whole is unmistakably CSS; this reassembles
- *  the run first so the shape test sees what the browser will.
- *  @param {string} text
- *  @returns {{body: string, index: number}[]} `index` is the run's first
- *  opening quote, which is what a reported hit's line number is measured
- *  from. */
 function stringLiteralRuns(text) {
   const runs = [];
   let i = 0;
@@ -656,29 +356,6 @@ function stringLiteralRuns(text) {
   return runs;
 }
 
-/** Declarations inside a string literal (or a `+`-joined run of them) that is
- *  really CSS.
- *
- *  Keyframes are the one thing an inline style object cannot express, so every
- *  animation in the layer ships as a <style> injected once — which put its
- *  dimensions outside every scanner here, because they sit in a string rather
- *  than at a `prop: value` site. A travel of `translateY(8px)` is the same
- *  literal whether it is written in JS or in CSS, and the gate now says so.
- *
- *  A run counts as CSS when its reassembled body contains a `{`, a `:` and a
- *  `;` or `}` — the shape of a rule. That is deliberately loose: a false
- *  positive costs a declaration being judged that did not need to be, and
- *  every judged declaration is judged by the same scanValue as the rest of
- *  the file. It is deliberately reassembled first, rather than just dropping
- *  `{` from the test: dropping it would let any string containing a bare
- *  `prop: value`-shaped fragment (a sentence with a colon in it, say) pass as
- *  CSS with no rule-shape evidence at all, which trades one miss for a wider
- *  one. Reassembling costs nothing a real site needs — a stray `+` between
- *  two unrelated strings never resolves to a `{`/`:`/`;`/`}` shape by
- *  accident — and keeps the shape test exactly as strict, just applied to
- *  the string the runtime actually builds instead of to an arbitrary slice
- *  of it.
- *  @param {string} rawText @returns {{prop: string, raw: string, reason: string, line: number}[]} */
 export function scanInjectedCss(rawText) {
   const text = blankComments(rawText);
   const out = [];
@@ -695,32 +372,8 @@ export function scanInjectedCss(rawText) {
   return out;
 }
 
-// --- SVG presentation attributes: prop="value", not prop: value ----------
-// An SVG glyph is styled by attributes as often as by CSS -- `fontSize="10"`
-// is the same literal as `fontSize: '10'`, which scanValue already flags,
-// but DECL/PROP_COLON both require a colon, and a JSX attribute uses `=`.
-// The value was always catchable; the position was not.
-
-/** SVG presentation attributes that carry a dimension, read in `prop="value"`
- *  position as well as `prop: value`. An SVG glyph is styled by attributes as
- *  often as by CSS, and `fontSize="10"` is the same literal as
- *  `fontSize: '10'` — which scanValue already flags. Only the quoted-literal
- *  form is in scope: `r={hover ? 5 : 4}` is an expression binding, judged the
- *  same way every other expression in this file is, which is to say not at all
- *  unless it reaches a governed declaration.
- *
- *  strokeDasharray is deliberately absent. Its value is a rhythm of on/off
- *  runs, not a dimension, and there is no token family for a rhythm — adding
- *  one for the single `3 3` in LineChart would be worse than the literal.
- *
- *  Listing a name here does not put it in scope: scanAttributes routes
- *  through scanValue below, which gates on PROPS, so only the members that
- *  are ALSO in PROPS (fontSize, strokeWidth, width, height) can ever flag.
- *  The other nine are listed but currently inert — see the PROPS comment
- *  above for why they stay out and what would have to be true to add them. */
 const SVG_ATTRS = new Set(['fontSize', 'strokeWidth', 'width', 'height', 'r', 'x', 'y', 'cx', 'cy', 'x1', 'x2', 'y1', 'y2']);
 
-/** @param {string} rawText @returns {{prop: string, raw: string, reason: string, line: number}[]} */
 export function scanAttributes(rawText) {
   const text = blankComments(rawText);
   const out = [];
@@ -733,42 +386,13 @@ export function scanAttributes(rawText) {
   return out;
 }
 
-/** A prop name that is not itself a governed CSS property, but that a named
- *  component assigns unmodified into one, one line away, in the same file
- *  — verified by reading the component, not inferred. This is deliberately
- *  a short, hand-curated list rather than a scan of every JSX attribute on
- *  every element: a generic scan cannot tell `<Icon size={16} />` (a
- *  rendered dimension) from `<Textarea rows={3} />` or `<input
- *  maxLength={20} />` (ordinary numeric props Arena's token layer has no
- *  opinion about) without the same "does this actually reach a governed
- *  CSS property" read this map already encodes by name. Growing this list
- *  costs the same review Calendar's zIndex EXEMPT entry costs — it is not
- *  free, and that is the point. `stalePassthrough()` is EXEMPT's own
- *  discipline applied here: a renamed component or prop must fail loudly,
- *  not match nothing in silence. */
-/* `Icon` was the second entry until plan 8C4 deleted
- * frameworks/react/ui_kits/console/Icon.jsx: the single-icon convention made a
- * per-item icon a Phosphor class-name string that the component itself draws, so
- * Shell dropped the last import and the component had no consumers left. Its
- * entry then matched nothing, and stalePassthrough() failed the build — which is
- * this map's own discipline working, and the reason the entry is gone rather
- * than quietly kept. */
 const PASSTHROUGH = new Map([
   ['AppLogo', { prop: 'size', governs: 'width' }],
 ]);
 
-/** A component's own default value for a passthrough prop or for a prop
- *  that is itself a governed CSS property name — `function Icon({ size =
- *  18 })` and `function Dialog({ width = 480 })` are the same blind spot:
- *  DECL requires `:`, and a destructured default uses `=`. Scoped to the
- *  text between a function's `({` and the matching `}) {` so a plain
- *  variable assignment elsewhere in the file (`const top = Math.min(...)`)
- *  is never in scope — only the parameter list itself is. */
 const COMPONENT_PARAMS = /function\s+([A-Za-z_]\w*)\s*\(\{([\s\S]*?)\}\)\s*\{/g;
 const PARAM_DEFAULT = /(?<![\w.])([a-zA-Z]+)\s*=\s*('[^']*'|"[^"]*"|`[^`]*`|[-\w.%]+)(?=[,\s]|$)/g;
 
-/** @param {string} text
- *  @returns {{prop: string, raw: string, reason: string, line: number}[]} */
 export function scanDefaultsAndCallSites(rawText) {
   const text = blankComments(rawText);
   const out = [];
@@ -795,12 +419,6 @@ export function scanDefaultsAndCallSites(rawText) {
   return out;
 }
 
-/** @param {string} text
- *  @returns {{name: boolean, prop: boolean}} whether this file defines the
- *  component (`function <Name>`) and whether it defines or calls it with
- *  the registered prop — the two signals `stalePassthrough()` needs to
- *  tell "this component/prop still exists somewhere in the tree" from
- *  "this entry now matches nothing". */
 function passthroughSightings(rawText) {
   const text = blankComments(rawText);
   const seen = new Set();
@@ -810,12 +428,6 @@ function passthroughSightings(rawText) {
   return seen;
 }
 
-/** @param {Set<string>} seenComponents — every `PASSTHROUGH` key seen
- *  anywhere in the tree this run, as either a `function <Name>` or a
- *  `<Name` JSX tag.
- *  @returns {string[]} `PASSTHROUGH` keys that matched neither — the
- *  component (or its registered prop) was renamed or removed and the
- *  entry is now silently inert. */
 export function stalePassthrough(seenComponents) {
   return [...PASSTHROUGH.keys()].filter((k) => !seenComponents.has(k));
 }
@@ -824,24 +436,12 @@ function* walk(dir) {
   for (const entry of readdirSync(dir).sort()) {
     const p = join(dir, entry);
     if (statSync(p).isDirectory()) { yield* walk(p); continue; }
-    // A .d.ts renders nothing at runtime -- there is no value here to be a
-    // token or a literal. It would pass today by coincidence (TypeScript's
-    // `prop?: type` breaks DECL on the `?`), which is the wrong reason for
-    // a scanner whose job is to fail closed. Skipped explicitly instead.
+
     if (entry.endsWith('.d.ts')) continue;
     if (EXTENSIONS.some((e) => entry.endsWith(e))) yield p;
   }
 }
 
-/** @param {Set<string>} matchedKeys — every `<path>:<prop>:<raw>` a scan
- *  actually produced this run, before EXEMPT filtering.
- *  @returns {string[]} EXEMPT keys that matched nothing — a named
- *  exemption for a site that no longer produces a violation, because it
- *  was fixed, deleted, or its raw text changed shape. Named exemptions
- *  are only honest if a stale one is loud: `EXEMPT` is how `Calendar`'s
- *  local `zIndex` and the chart/`Calendar` data-to-pixel projections stay
- *  legal on purpose, and the same map going quietly out of date would let
- *  a real regression hide behind an entry nobody is reading anymore. */
 export function staleExemptions(matchedKeys) {
   return [...EXEMPT.keys()].filter((k) => !matchedKeys.has(k));
 }
@@ -865,9 +465,6 @@ function collect() {
   return { found, stale: staleExemptions(matchedKeys), stalePassthrough: stalePassthrough(seenComponents) };
 }
 
-/** The census: every violation grouped by property, then by value, with the
- *  files that carry it. This output is the authority for the classification
- *  pass — the spec's own counts are indicative and are superseded by it. */
 function report(found) {
   const byProp = new Map();
   for (const f of found) {
@@ -885,11 +482,6 @@ function report(found) {
   console.log(`\ntotal: ${found.length} site(s)`);
 }
 
-/** One line per violation: file:line  prop: raw. The grouped report answers
- *  what to fix; this answers where — Task 3 assigns each of these to a
- *  family, and the eleven editing tasks after it need to find the exact
- *  line rather than re-deriving it through scanText by hand. Exactly one
- *  line per site, nothing else, so a plain line count is the site count. */
 function reportSites(found) {
   const sorted = [...found].sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line);
   for (const f of sorted) console.log(`${f.file}:${f.line}  ${f.prop}: ${f.raw}`);

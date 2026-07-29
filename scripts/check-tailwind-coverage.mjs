@@ -1,25 +1,9 @@
-/* Asserts every Arena token either reaches a Tailwind utility or is excluded
- * on the record. A token added to contracts/design/ that nobody wires into the
- * preset fails here rather than quietly never reaching the Tailwind layer.
- *
- * The inventory is the four GENERATED files only. contracts/design/colors.css is
- * excluded as a category: those ~40 composition-layer aliases (--crimson,
- * --mute, --danger-soft, --text-strong…) alias tokens the preset already
- * exposes, and giving every colour two utility names would give it two ways
- * to be wrong. --picker-invert, also in that file, belongs to a second
- * category — not expressible as a utility — which is what keeps the four
- * charts and Calendar out of this layer too.
- *
- *   bun scripts/check-tailwind-coverage.mjs   -> exit 0 if declared, 1 otherwise
- */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { arenaTokens } from './check-tailwind.mjs';
 import { repoRoot } from './lib/tailwind-compile.mjs';
 
-/** Tokens deliberately not exposed, and why. Adding an entry here is a design
- *  decision; the gate only asserts the entry is honest. */
 export const EXCLUDED = new Map([
   ['sp-0', 'p-0 compiles to a literal 0px in v4 regardless of the theme'],
   ['bp-sm', 'read by JS through getComputedStyle, never a media query'],
@@ -59,29 +43,17 @@ export const EXCLUDED = new Map([
   ['limit-pagination-siblings', 'script-readable: an array bound, and the elision threshold derives from it in JS'],
 ]);
 
-/** The Arena token names a preset's @theme block references.
- *  @param {string} css @returns {Set<string>} */
 export function presetTokens(css) {
   const out = new Set();
   const m = css.match(/@theme\s*\{([\s\S]*)\}/);
   if (!m) return out;
-  // Strip /* ... */ comments before splitting on `;`. A comment that sits
-  // between two declarations shares its semicolon-delimited chunk with the
-  // following declaration (there is no `;` of its own), so left in place its
-  // text gets prepended to that declaration's key and fails the `--` check
-  // below — silently dropping a token the preset does expose. Comments can
-  // also contain a stray `:` or `;` of their own (the spacing block's
-  // comment mentions `calc(var(--spacing) * N)` and `0.25rem`), so a per-line
-  // removal would not be enough; the whole comment, however many lines it
-  // spans, has to go first.
+
   const body = m[1].replace(/\/\*[\s\S]*?\*\//g, '');
   for (const line of body.split(';')) {
     const i = line.indexOf(':');
     if (i === -1) continue;
     const key = line.slice(0, i).trim();
-    // --default-* wires a Tailwind default to a token; it is not a utility
-    // surface, so it does not count as exposing that token. --dur-fast is
-    // reached that way and stays in EXCLUDED for exactly that reason.
+
     if (!key.startsWith('--') || key.startsWith('--default-')) continue;
     const ref = line.slice(i + 1).match(/^\s*var\(--([a-z0-9-]+)\)\s*$/);
     if (ref) out.add(ref[1]);
@@ -89,8 +61,6 @@ export function presetTokens(css) {
   return out;
 }
 
-/** @param {Set<string>} tokens @param {Set<string>} exposed @param {Map<string,string>} excluded
- *  @returns {string[]} violations */
 export function checkCoverage(tokens, exposed, excluded) {
   const errs = [];
   for (const t of [...tokens].sort()) {

@@ -58,13 +58,6 @@ test('an unknown type still yields a renderable shape rather than undefined', ()
   assert.equal(previewFor('brandnew', 'gradient'), 'value');
 });
 
-/** Regroups build-tokens.mjs's own FILES (one entry per output file, each
- *  carrying an ordered list of {selector, source} blocks — some output files
- *  have two blocks sharing one selector, e.g. effects.css's :root fed by both
- *  effects.json and layering.json) into (sources[], css, selector) triples.
- *  Deriving this from FILES, rather than re-declaring the mapping by hand
- *  below, is the point: a new source file wired into the build is picked up
- *  here automatically, with no matching edit needed in this test. */
 function deriveCases(files) {
   const cases = [];
   for (const file of files) {
@@ -78,8 +71,6 @@ function deriveCases(files) {
   return cases;
 }
 
-/* The page looks tokens up as --<name> via getComputedStyle. If this module derived
- * names differently from the build, every lookup would silently return "". */
 test('derived names match the custom properties the build actually emits', () => {
   const cases = deriveCases(FILES);
   assert.ok(cases.length >= 4, 'expected at least one case per output file');

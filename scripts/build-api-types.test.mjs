@@ -1,7 +1,3 @@
-/* The renderer is a pure function of the declared types, so this suite hands it
- * type objects directly rather than reading contracts/api/types/ -- the same shape
- * serialize-token.test.mjs and serialize-script.test.mjs use, and the reason
- * they run identically under bun and plain node. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderApiModule, docComment, fieldType, API_TARGETS, buildApiModules } from './build-api-types.mjs';
@@ -11,11 +7,6 @@ test('an enum renders as a string-literal union', () => {
   assert.match(out, /export type Direction = 'up' \| 'down';/);
 });
 
-/* An enum's values are rendered as TypeScript literals, and a NUMBER is not a
- * string. Every enum in contracts/api/types/ was a string set until CatSlot, so the
- * emitter quoted unconditionally and nothing noticed. A quoted numeric set is
- * worse than a build error: it emits a union of strings that compiles, and the
- * layer's own `1 | 2 | 3` then disagrees with it in a way only check:api sees. */
 test('renderApiModule emits a numeric enum unquoted', () => {
   const out = renderApiModule([{ name: 'CatSlot', kind: 'enum', description: 'x', values: [1, 2, 3] }]);
   assert.match(out, /export type CatSlot = 1 \| 2 \| 3;/);

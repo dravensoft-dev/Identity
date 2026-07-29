@@ -4,26 +4,6 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Input } from './Input.jsx';
 
-/* This suite carries no `.dom.` infix, so it renders with renderToStaticMarkup and has
- * no DOM, and no test here fires a change or a blur. Two things are therefore NOT verified by this suite:
- * the `change` and `blur` payloads -- the value as a string, which is the whole of
- * decision DA -- and the validate-on-blur path, since `validate` runs only once the
- * field has been touched and nothing here can touch it. Both need a real DOM; no grep
- * of the source stands in for a render assertion, so they are simply absent here
- * rather than faked. Both are now verified where a DOM exists:
- * ../FormControlEvents.dom.test.jsx dispatches a real input
- * event and a real blur and asserts each payload's TYPE before its value.
- *
- * What IS verified is the half SSR can see: that `validate` is accepted and shows
- * nothing before interaction, that the flattened natives reach the control now that
- * {...rest} is gone, that `icon` and `prefix` are strings Arena draws, and that the
- * two R4 escapes are gone.
- *
- * React's SSR does not emit attributes in source order -- `value` comes out after
- * `style`, which is declared before it -- so each attribute is asserted on its own
- * rather than as one adjacent run. It also emits `autoComplete` and `maxLength`
- * camelCased on an <input> while lowercasing `readonly`, `disabled` and `required`. */
-
 test('validate is accepted and shows no message before the field has been touched', () => {
   const html = renderToStaticMarkup(
     <Input label="Email" validate={() => 'Bad email'} value="x" />,
@@ -53,7 +33,7 @@ test('placeholder, name and autoComplete each reach the native input', () => {
   );
   assert.match(html, /placeholder="you@example.com"/);
   assert.match(html, /name="email"/);
-  /* React emits autoComplete camelCased on an <input>, unlike readonly/disabled. */
+
   assert.match(html, /autoComplete="email"/);
 });
 
@@ -92,19 +72,12 @@ test('error renders below the field and marks the control invalid', () => {
   assert.doesNotMatch(html, /Ignored/);
 });
 
-/* className left the API (decision DE): the component keeps its own class and no
- * longer merges a consumer's into it. Nothing else guards that removal -- check:api
- * reads the .d.ts and the .jsx could start merging again with the gate still green. */
 test('a consumer className does not reach the input -- its class is exactly arena-input', () => {
   const html = renderToStaticMarkup(<Input label="A" className="mine" />);
   assert.match(html, /class="arena-input"/);
   assert.doesNotMatch(html, /mine/, 'a consumer className was merged into the input class');
 });
 
-/* R4: style and {...rest} left the component. Asserted in two separate tests --
- * a component that stopped spreading ...rest but still merged ...style passes a
- * single combined assertion, because node:assert throws on the first failure and
- * the second one is never reached. */
 test('Input drops a consumer style object -- the ...style escape is gone', () => {
   const html = renderToStaticMarkup(<Input label="A" style={{ color: '#ff00ff' }} />);
   assert.doesNotMatch(html, /#ff00ff/, 'a consumer style reached the rendered root -- the R4 escape is back');
@@ -115,10 +88,6 @@ test('Input drops a consumer attribute -- the {...rest} escape is gone', () => {
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered input -- the {...rest} escape is back');
 });
 
-/* id is a contracted member as of plan 8C3, and it is the ONE global attribute
- * that is. The component still generates one from the label to wire its own
- * htmlFor; a consumer id overrides that, because a host pointing an external
- * <label> or an aria-describedby at this field had no path at all otherwise. */
 test('a consumer id overrides the one generated from the label', () => {
   const html = renderToStaticMarkup(<Input label="Email" id="signup-email" />);
   assert.match(html, /id="signup-email"/);

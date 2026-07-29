@@ -1,21 +1,3 @@
-/* One test per assertion the gate makes, driven through the gate's exported
- * pure helpers rather than through main(). main() reads the filesystem and
- * exits the process; the helpers are what actually decide, so they are what is
- * worth pinning -- the idiom check-script-tokens.test.mjs and
- * check-dimension-literals.test.mjs already use.
- *
- * The five assertions, and where each is covered:
- *   1 coverage         -> resolveReactImplementations and
- *                         resolveAngularImplementations, plus the path-shape
- *                         test below. pascal() lives in check-structure.mjs
- *                         and is pinned by its own suite -- alongside kebab(),
- *                         its inverse -- and is imported here only to build the
- *                         fixtures.
- *   2 form             -> compareSurface on a platform/union member
- *   3 agreement        -> compareSurface, both directions, plus the optional rule
- *   4 derived rules    -> validateTypes (R1) and compareSurface (R4, R5)
- *   5 generated drift  -> buildApiModules against the committed files
- * plus the loud failure on a member shape the reader cannot read at all. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -42,31 +24,8 @@ const CONTRACT = {
   },
 };
 
-/* 1 — coverage.
- *
- * Coverage is decided by resolveAngularImplementations: which Angular
- * components this gate can read is what "the contract holds across N layer
- * implementations" is a claim about. Its two problem rules are guards against
- * a SILENT failure -- this gate once printed
- * "50 contract(s) hold across 50 layer implementation(s)" and exited 0 while
- * every one of twenty real Angular implementations went unread, because
- * absence and unfindability were the same value (null). A guard with no test
- * behind it would survive its own deletion, which is the one thing a guard
- * against silence must not do, so both messages are pinned below and each is
- * pinned firing ALONE. */
-
-/** The layer tree this gate really walks, in miniature. */
 const TREE = { charts: ['bar-chart'], display: ['tag', 'unauth-card'] };
 
-/** An `exists` predicate over a fixture: every directory in `tree` holds its
- *  own <Pascal>.<ext> under `frameworks/<layer>/components/`, minus the ones
- *  named in `missing`. Built from the same pascal() the gate's own path shape
- *  is derived from, so a fixture cannot drift from the rule.
- *
- *  Layer and extension are parameters because the two resolvers differ in
- *  exactly those two things and in nothing else -- Angular reads a component's
- *  `<Pascal>.ts`, React its `<Pascal>.d.ts` -- so one fixture rule serves both
- *  and neither half can be corrected without the other. */
 const layerExists = (layer, ext) => (tree, missing = []) => {
   const gone = new Set(missing);
   const present = new Set();
@@ -87,10 +46,7 @@ test('a complete layer resolves every component to its own PascalCase file and r
 });
 
 test('a component directory whose PascalCase file is missing is a problem, not a skip -- and the rest of the layer still resolves', () => {
-  // The per-directory guard, firing ALONE: the walk is non-empty, so the
-  // zero-total rule below has nothing to say. This is what one renamed or
-  // moved component directory looks like, and it is exactly the case a
-  // zero-total guard by itself cannot see.
+
   const { implementations, problems } = resolveAngularImplementations(TREE, treeExists(TREE, ['tag']));
   assert.equal(problems.length, 1);
   assert.match(problems[0], /frameworks\/angular\/components\/display\/tag\/: is a component directory with no Tag\.ts/);
@@ -100,12 +56,7 @@ test('a component directory whose PascalCase file is missing is a problem, not a
 });
 
 test('a layer that yields zero implementations is a failure, not a clean pass', () => {
-  // The zero-total guard, firing ALONE: readLayer() returns {} for a moved or
-  // renamed frameworks/angular/components, so there is no directory for a
-  // per-directory problem to be about. This is what the whole layer moving
-  // looks like -- the failure this gate actually shipped -- and it is the same
-  // shape as zeroLayerProblems in check-structure.mjs and the zero-manifest
-  // guards in check-tailwind.mjs and check-radius-tokens.mjs.
+
   const { implementations, problems } = resolveAngularImplementations({}, () => false);
   assert.equal(implementations.size, 0);
   assert.equal(problems.length, 1);
@@ -114,9 +65,7 @@ test('a layer that yields zero implementations is a failure, not a clean pass', 
 });
 
 test('a layer whose every component file is unreadable reports both rules, because both are true', () => {
-  // Not a third rule: the two are independent, so a tree with directories and
-  // no readable file in any of them trips each of them once. Pinned so nobody
-  // "tidies" the zero-total check into an else-branch of the per-directory one.
+
   const { problems } = resolveAngularImplementations(TREE, () => false);
   assert.equal(problems.length, 4);
   assert.equal(problems.filter((p) => /is a component directory with no/.test(p)).length, 3);
@@ -130,17 +79,6 @@ test('a category holding no directories contributes nothing and is not itself a 
   assert.match(problems[0], /found 0 Angular component implementations/);
 });
 
-/* The React half of assertion 1, and it carries the same two guards for the
- * same reason. React was a hardcoded group list probed with existsSync and
- * resolved to null on a miss until the structure refactor's batch 3 -- the last
- * lookup of that shape in the repo, and the one whose own comment named that
- * batch as the one that owed it a walk. Its failure mode looked louder than
- * Angular's only because React holds the majority of the contracts, so a broken
- * lookup skipped nearly all of them at once and the printed count collapsed
- * visibly; that is a property of how the contracts happen to be distributed
- * today, not of the probe, and it would have gone quiet the moment the balance
- * moved. Both messages are pinned below, each firing ALONE. */
-
 const REACT_TREE = { charts: ['bar-chart'], display: ['tag', 'unauth-card'] };
 
 test('a complete React layer resolves every component to its own .d.ts and reports nothing', () => {
@@ -152,9 +90,7 @@ test('a complete React layer resolves every component to its own .d.ts and repor
 });
 
 test('a React component directory whose .d.ts is missing is a problem, not a skip -- and the rest of the layer still resolves', () => {
-  // The per-directory guard, firing ALONE: the walk is non-empty, so the
-  // zero-total rule has nothing to say. One renamed or moved component
-  // directory looks exactly like this, and a zero-total guard cannot see it.
+
   const { implementations, problems } = resolveReactImplementations(REACT_TREE, reactTreeExists(REACT_TREE, ['tag']));
   assert.equal(problems.length, 1);
   assert.match(problems[0], /frameworks\/react\/components\/display\/tag\/: is a component directory with no Tag\.d\.ts/);
@@ -164,9 +100,7 @@ test('a React component directory whose .d.ts is missing is a problem, not a ski
 });
 
 test('a React layer that yields zero implementations is a failure, not a clean pass', () => {
-  // The zero-total guard, firing ALONE: readLayer() returns {} for a moved or
-  // renamed frameworks/react/components, so there is no directory for a
-  // per-directory problem to be about.
+
   const { implementations, problems } = resolveReactImplementations({}, () => false);
   assert.equal(implementations.size, 0);
   assert.equal(problems.length, 1);
@@ -175,15 +109,12 @@ test('a React layer that yields zero implementations is a failure, not a clean p
 });
 
 test('a React layer whose every .d.ts is unreadable reports both rules, because both are true', () => {
-  // Not a third rule: the two are independent, so a tree with directories and
-  // no readable file in any of them trips each of them once.
+
   const { problems } = resolveReactImplementations(REACT_TREE, () => false);
   assert.equal(problems.length, 4);
   assert.equal(problems.filter((p) => /is a component directory with no/.test(p)).length, 3);
   assert.equal(problems.filter((p) => /found 0 React component implementations/.test(p)).length, 1);
 });
-
-/* the binding table */
 
 test('the binding table is mechanical: content is children, an event x is onX', () => {
   assert.equal(bindingName('content', 'slot', 'react'), 'children');
@@ -194,8 +125,6 @@ test('the binding table is mechanical: content is children, an event x is onX', 
     assert.equal(bindingName(n, f, 'angular'), n);
   }
 });
-
-/* 2 — form, and 4 — R4/R5 */
 
 test('a platform type is reported as an R4 violation, naming the rule', () => {
   const problems = compareSurface(
@@ -226,8 +155,6 @@ test('an event payload that is a platform type is an R4 violation of its own', (
   );
   assert.ok(problems.some((p) => /R4/.test(p) && /MouseEvent/.test(p)));
 });
-
-/* 3 — agreement */
 
 test('a layer declaring exactly the contract agrees, in both idioms', () => {
   const angular = [
@@ -291,13 +218,6 @@ test('an array of the wrong element type fails', () => {
   assert.ok(compareSurface(CONTRACT, members, 'angular').some((p) => /items/.test(p)));
 });
 
-/* A primitive member's TYPE was the last unguarded type position in the whole
- * contract layer: the gate compared name, form, required-ness and an event's
- * payload, validated that a contract's primitive type IS a primitive, and never
- * compared the two. `Dialog.width` (a .d.ts saying number against a contract
- * saying string) and `SideNav.indentStep` (whose contract argues at length for
- * why a string is wrong) are the two live examples the debt record names; both
- * agree today, and both would have gone unnoticed if they had not. */
 test('a primitive member typed differently in the layer is a problem', () => {
   const problems = compareSurface(
     { component: 'Breadcrumbs', api: { separator: { form: 'primitive', type: 'string' } } },
@@ -317,9 +237,6 @@ test('a primitive member typed the same in both is not a problem', () => {
   );
   assert.deepEqual(problems, []);
 });
-
-/* 3b — required-ness. The contract governs a member's required-ness too, for
- * the five inbound non-slot forms; `slot` and `event` are carved out below. */
 
 test('a contract member required: true implemented as optional by a layer is reported', () => {
   const problems = compareSurface(
@@ -380,12 +297,6 @@ test('an event with mismatched required-ness reports nothing -- an outbound memb
   assert.deepEqual(problems, []);
 });
 
-/* Corollary of the CRITICAL fix to templateSlots(): compareSurface must
- * detect a member name declared TWICE in one layer's own surface. Before
- * this, the AGREEMENT loop re-`seen.add()`d the same bound name silently --
- * a duplicate matching the contract passed with zero problems, which is
- * exactly how the stale duplicate `icon` slot (doc comment + real template)
- * slipped through StatCard's real contract check. */
 test('a member name declared twice in one layer\'s surface is reported as a duplicate', () => {
   const contract = { component: 'X', api: { icon: { form: 'slot' } } };
   const members = [
@@ -398,13 +309,6 @@ test('a member name declared twice in one layer\'s surface is reported as a dupl
   assert.match(problems[0], /twice/);
 });
 
-/* IMPORTANT: an inline literal union (`'sm' | 'md'`) classifies as
- * {form:'enum', values:[...]} with no `type` -- compareSurface's own type
- * comparison guarded on `m.type &&`, so it never ran for this shape, and an
- * inline union matched a contract enum member on form alone regardless of
- * its actual values. `types` is the fourth parameter carrying every declared
- * contracts/api/types/ type, resolved OUTSIDE compareSurface (main() reads the
- * filesystem, compareSurface stays string-in/data-out). */
 const LOGO_SIZE_TYPES = new Map([
   ['LogoSize', { name: 'LogoSize', kind: 'enum', values: ['sm', 'md', 'lg', 'xl'] }],
 ]);
@@ -428,9 +332,6 @@ test('an inline literal union naming an enum absent from the types map reports n
   const members = [{ name: 'size', form: 'enum', values: ['sm', 'md'], required: false }];
   assert.deepEqual(compareSurface(contract, members, 'react'), []);
 });
-
-/* the `named` form: an identifier the reader could not resolve on its own --
- * it resolves ONLY against a contract `enum` or `object` member. */
 
 test('a named member resolves against an enum contract member, and a type mismatch still fails', () => {
   const contract = { component: 'X', api: { tone: { form: 'enum', type: 'Tone' } } };
@@ -486,9 +387,6 @@ test('a named member against an event contract member is reported, not coerced i
   assert.match(problems[0], /event/);
 });
 
-/* bindingName collisions: two distinct contract members that bind to the
- * same name in one layer must not silently overwrite each other. */
-
 test('two contract members binding to the same name in one layer is reported as a collision', () => {
   const contract = {
     component: 'X',
@@ -503,11 +401,6 @@ test('two contract members binding to the same name in one layer is reported as 
   assert.match(problems[0], /children/);
   assert.match(problems[0], /collide/);
 });
-
-/* Regression: the collision skip must not swallow a member's OWN form
- * validity. R4 and R5 judge a member on its own, with no reference to any
- * contract spec, so they must still fire even when the member's bound name
- * is also the site of a contract-authoring collision. */
 
 test('a collided bound name still reports the member\'s own R4 violation (platform type)', () => {
   const contract = {
@@ -545,10 +438,6 @@ test('a collided bound name still reports the member\'s own R5 violation (union)
   assert.ok(problems.some((p) => /R5/.test(p)));
 });
 
-/* The second collision shape the previous fix left untested: an event
- * contract member binds in React by prefixing "on" + capitalised name, which
- * can collide with a contract member that is literally named that way. */
-
 test('an event member colliding with a literally-named onX member is reported, naming both', () => {
   const contract = {
     component: 'X',
@@ -568,8 +457,6 @@ test('an event member colliding with a literally-named onX member is reported, n
   assert.match(problems[0], /"onX"/);
 });
 
-/* 4 — the derived rules, on the type side */
-
 test('R1: a predefined object may not carry a slot or an event field', () => {
   const problems = validateTypes([{
     name: 'Crumb', kind: 'object',
@@ -580,12 +467,6 @@ test('R1: a predefined object may not carry a slot or an event field', () => {
   assert.match(problems[0], /onClick/);
 });
 
-/* MINOR: an object field's enum type name was never checked against the
- * declared type list. {form:'enum', type:'Nonexistent'} would emit an
- * unresolvable TypeScript reference into BOTH generated modules -- caught
- * downstream by ngc only because frameworks/angular/index.ts re-exports
- * ./Api.generated and tsconfig.check.json pulls it in, which is luck, not
- * design (React's own .d.ts has nothing that would catch it at all). */
 test('an object field naming an enum type nobody declared fails', () => {
   const problems = validateTypes([{
     name: 'Widget', kind: 'object',
@@ -626,11 +507,6 @@ test('a contract member with a form outside the eight encoded values fails', () 
   assert.ok(problems.some((p) => /callback/.test(p)));
 });
 
-/* An event payload resolves like an array's `of`: primitive, consumerData, or
- * a declared object. The first of those three was refused until the form
- * controls needed it -- their `change` carries the VALUE, which is a primitive.
- * The reader had always produced that shape; only the contract could not say it. */
-
 test('validateContract accepts an event payload that is a primitive type name', () => {
   const problems = validateContract(
     { component: 'X', api: { change: { form: 'event', payload: 'string' } } }, TYPES,
@@ -652,27 +528,17 @@ test('an enum member must name a declared enum, not a declared object', () => {
   assert.ok(problems.some((p) => /Crumb/.test(p)));
 });
 
-/* 5 — generated drift */
-
 test('the committed generated modules are what contracts/api/types/ generates', () => {
   for (const [path, expected] of buildApiModules()) {
     assert.equal(readFileSync(join(root, path), 'utf8'), expected, `${path} is stale — run bun run build:api`);
   }
 });
 
-/* the loud failure */
-
 test('a member shape the reader cannot read throws rather than reporting no members', () => {
   const src = 'export interface XProps { weird: { [k: string]: unknown }; }';
   assert.throws(() => reactSurface(src, 'XProps'), UnrecognisedShape);
 });
 
-/* the eighth form — consumer data */
-
-/* R1 extended. An object is pure data with known fields, so consumer data --
- * whose fields are by construction unknown -- cannot be one of them. This is
- * what deletes Calendar's `meta`: it is a field of the CalendarEvent object,
- * and after this rule it cannot live there at all. */
 test('validateTypes rejects consumer data inside a predefined object', () => {
   const problems = validateTypes([
     { name: 'Row', kind: 'object', fields: { meta: { form: 'consumerData' } } },
@@ -680,8 +546,6 @@ test('validateTypes rejects consumer data inside a predefined object', () => {
   assert.ok(problems.some((p) => /Row\.meta/.test(p) && /consumer data/i.test(p)));
 });
 
-/* A consumer-data member Arena can never surface is dead API: Arena holds data
- * with no route back out. The route is a slot parameter or an event payload. */
 test('validateContract rejects a consumer-data member with no consumer', () => {
   const problems = validateContract(
     { component: 'X', api: { rows: { form: 'array', of: 'consumerData' } } },
@@ -712,11 +576,6 @@ test('validateContract accepts consumer data routed back out through an event pa
   assert.deepEqual(problems, []);
 });
 
-/* the ninth form — functionInput */
-
-/* functionInput is legal only in a contract that declares itself an input
- * control. The mark is checkable, so "input controls only" is enforced rather
- * than merely written down -- the maintainer's decision, made mechanical. */
 test('validateContract accepts a functionInput in a kind:input contract', () => {
   const problems = validateContract(
     { component: 'Input', kind: 'input',
@@ -735,11 +594,6 @@ test('validateContract rejects a functionInput outside a kind:input contract', (
   assert.ok(problems.some((p) => /fmt/.test(p) && /kind.*input/i.test(p)));
 });
 
-/* R4 inside the signature: a param or return naming a type contracts/api/types/ does not
- * declare is reported, exactly as an object member's enum type is. BOTH halves
- * are pinned -- the parameter loop was already there (it runs for any member
- * carrying `params`), the return check was not, so a test on the parameter
- * alone would have shipped the return check unproven. */
 test('validateContract checks a functionInput signature type against contracts/api/types', () => {
   const problems = validateContract(
     { component: 'Input', kind: 'input',
@@ -765,10 +619,6 @@ test('validateContract checks a functionInput RETURN type against contracts/api/
   assert.ok(missing.some((p) => /validate/.test(p) && /returns/.test(p)));
 });
 
-/* The signature is COMPARED, not only declared. A layer whose validator takes a
- * number where the contract says string implements a different member; without
- * this, a functionInput matched on form alone and the modelled signature was
- * documented and read by nothing -- the hole `default` still has. */
 test('a functionInput whose layer parameter type differs from the contract is reported', () => {
   const contract = {
     component: 'Input', kind: 'input',
@@ -815,15 +665,11 @@ test('a functionInput matching the contract exactly reports nothing, and binds t
     ),
     [],
   );
-  /* No binding-table row changes: a functionInput is neither a slot nor an
-   * event, so bindingName returns the member's own name in both layers. */
+
   assert.equal(bindingName('validate', 'functionInput', 'react'), 'validate');
   assert.equal(bindingName('validate', 'functionInput', 'angular'), 'validate');
 });
 
-/* Required-ness is contracted for the SIX inbound non-slot forms now: a
- * functionInput is inbound data-shaped API like the other five, and both
- * platforms can express whether a consumer must supply it. */
 test('a functionInput required by the contract and optional in the layer is reported', () => {
   const contract = {
     component: 'Input', kind: 'input',
@@ -839,11 +685,6 @@ test('a functionInput required by the contract and optional in the layer is repo
   assert.match(problems[0], /optional/);
 });
 
-/* An event payload resolves as a primitive, consumerData, a declared object OR a
- * declared enum. The enum arm is the last of the four: plan 8C2 admitted the
- * first three and stopped one type-kind short, so a contract declaring an enum
- * payload read as "an enum, used where an object belongs" while classify() read
- * the arrow without complaint. */
 test('validateContract accepts an event payload naming a declared enum', () => {
   const problems = validateContract(
     { component: 'X', api: { pick: { form: 'event', payload: 'LogoSize' } } },
@@ -860,12 +701,6 @@ test('validateContract still rejects an event payload naming no declared type', 
   assert.ok(problems.some((p) => /Nope/.test(p)));
 });
 
-/* The one measured false green in this repository: with api/components/ moved
- * aside, main() used to print "0 contract(s) hold across 0 layer
- * implementation(s)" and exit 0, because its readdirSync was wrapped in an
- * existsSync ternary that cannot tell "absent" from "not found". That is the
- * same shape behind check:tailwind's zero-manifest run and check:api's own
- * silent skip of every Angular comparison. */
 test('zero contracts is a failure, not a clean pass', () => {
   const problems = zeroContractProblems({ contracts: 0, types: 40 });
   assert.equal(problems.length, 1);

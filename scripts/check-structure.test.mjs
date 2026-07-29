@@ -1,15 +1,3 @@
-/* check:structure asserts that every framework layer places a component
- * directory in the category frameworks/Components.json assigns it. It does
- * NOT assert the category is the right one -- that is editorial judgement and
- * no gate has it. A green run is a consistency claim, never a taxonomy one.
- *
- * A second thing it does NOT assert: that two different PascalCase names never
- * derive the same kebab directory. kebab() is deterministic but not injective,
- * and validateStructure's `declared` map is keyed on the kebab derivation, so a
- * second colliding name silently overwrites the first entry in that map rather
- * than failing -- unlike two categories both naming the SAME PascalCase name,
- * which the duplicate-name assertion below catches explicitly. This is a
- * different property from that one, and it stays unguarded. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
@@ -44,14 +32,6 @@ test('a layer carrying only some categories is fine -- Angular has no forms/', (
   assert.deepEqual(validateStructure({ categories, layers }), []);
 });
 
-/* Rule 4, and as of batch 3 of the structure refactor this is the rule main()
- * actually runs: MIGRATED is gone, every layer is read, and main() passes
- * `complete: true` unconditionally -- because it passes every layer in LAYERS,
- * and LAYERS is pinned exhaustive by the pair further down. The rule was held
- * back for the whole refactor, so this pair is what stands behind a rule that
- * has only just started firing against the real tree. Both directions, because
- * the parameter is the whole difference, and the false direction is the one
- * main() never produces -- it exists for callers of this pure function. */
 test('a declared component missing from every layer is a problem once every layer is in', () => {
   const layers = { tailwind: { display: ['badge', 'tag'] } };
   const problems = validateStructure({ categories, layers, complete: true });
@@ -72,11 +52,7 @@ test('a directory that is not kebab-case is a problem, even in the right categor
 });
 
 test('a component name declared in two categories is a problem, naming both -- and no layer tree is needed to find it', () => {
-  // layers: {} means the only possible source of a problem is the
-  // categories file itself, so this fails if the duplicate-name rule is
-  // ever deleted rather than passing vacuously through the layer-comparison
-  // codepath, which produces its own (different) message for this same
-  // input once a layer tree is involved.
+
   const dupCategories = { display: ['Badge', 'Tag'], forms: ['Button', 'Tag'] };
   const problems = validateStructure({ categories: dupCategories, layers: {} });
   assert.equal(problems.length, 1);
@@ -85,20 +61,6 @@ test('a component name declared in two categories is a problem, naming both -- a
   assert.match(problems[0], /forms/);
 });
 
-/* MIGRATED is gone, and this pair replaces the assertion that pinned it by
- * value. There is nothing left to pin a partial scope to: main() passes every
- * layer and `complete: true` unconditionally, so what is worth asserting is
- * that LAYERS is exhaustive rather than what its current members happen to be.
- * The second test is the one that would catch a fourth layer being added to
- * frameworks/ and not to LAYERS. That is how a LAYER falls out of the gate's
- * scope -- a layer that MOVES is caught by zeroLayerProblems instead -- and it
- * is deliberately not written as the only way anything can: main() derived
- * `complete` from `LAYERS.length` for one commit, and under that derivation a
- * fourth layer added correctly to BOTH this assertion and LAYERS would have
- * switched rule 4 off entirely with every test still green. That is a RULE
- * leaving scope rather than a layer, and it is why `complete` is a bare `true`
- * again -- see the comment at main()'s own call. This pair is what that `true`
- * rests on, so the two are one argument and must move together. */
 test('LAYERS names every framework layer, all of them migrated', () => {
   assert.deepEqual([...LAYERS].sort(), ['angular', 'react', 'tailwind']);
 });
@@ -112,11 +74,6 @@ test('LAYERS is exhaustive against frameworks/ as it stands on disk', () => {
     'a layer directory exists that LAYERS does not name -- check:structure would skip it entirely');
 });
 
-/* kebab() is asserted DIRECTLY here as well as through the round trip below,
- * because a round trip passes whenever pascal() inverts whatever kebab() did --
- * including a wrong kebab. This is the one suite that owns the pair, and
- * check-api.test.mjs's header says so, so the direct assertions belong here
- * rather than in the file that merely imports them to build fixtures. */
 test('kebab turns a component name into the Angular directory name', () => {
   assert.equal(kebab('AppLogo'), 'app-logo');
   assert.equal(kebab('StatCard'), 'stat-card');
@@ -132,11 +89,7 @@ test('pascal is kebab run backwards, for every directory name the tree carries',
 });
 
 test('a layer with zero component directories is a failure, not a clean pass', () => {
-  // The regression this guards: readLayer() returns {} for a missing
-  // frameworks/<layer>/components, and validateStructure({categories, layers: {tailwind: {}}})
-  // returns [] for that empty tree -- so main() would print OK and exit 0 over a
-  // layer it never looked at, exactly the failure check-tailwind.mjs's own
-  // zero-manifest guard exists to catch.
+
   const problems = zeroLayerProblems({ tailwind: {} });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /0 component director/);

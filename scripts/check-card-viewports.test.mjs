@@ -12,234 +12,8 @@ import {
   measurePage, measureCardPage, mapWithConcurrency, interleaveForDispatch, MEASURE_SCRIPT,
 } from './check-card-viewports.mjs';
 
-/* The only test here that needs a browser. It skips — loudly, in the
- * runner's output — where there is none, for the same reason the gate does. */
 const browser = findChromium();
 
-// PLAN-E-SUSPENDED — commented out to keep the suite fast while plans A-D reshape the repo.
-// Cost when live: 33.59s. Reason: each test launches headless Chromium over CDP; the ~20 pure-function tests in this file stay live.
-// Restore in Plan E: delete these five header lines and strip the leading "// " from
-// lines below until the next PLAN-E-SUSPENDED-END marker. See
-// docs/superpowers/specs/2026-07-23-8-api-contracts-design.md
-// const page = (bodyStyle) => `<!doctype html><html><head><meta charset="utf-8">
-// <style>html,body{margin:0;padding:0}#box{${bodyStyle}}</style></head>
-// <body><div id="box"></div></body></html>`;
-//
-// test('measurePage reports content that fits, and content that over-runs', { skip: browser.path ? false : browser.reason }, async () => {
-//   const root = mkdtempSync(join(tmpdir(), 'arena-cards-'));
-//   writeFileSync(join(root, 'fits.html'), page('width:300px;height:150px'));
-//   writeFileSync(join(root, 'tall.html'), page('width:300px;height:300px'));
-//   writeFileSync(join(root, 'wide.html'), page('width:600px;height:100px'));
-//
-//   const server = await startStaticServer(root);
-//   const chrome = await launchChromium(browser.path);
-//   const cdp = await connect(chrome.wsUrl);
-//   const at = (name) => `http://127.0.0.1:${server.port}/${name}`;
-//
-//   try {
-//     const fits = await measurePage(cdp, at('fits.html'), { width: 400, height: 200 });
-//     assert.equal(fits.scrollHeight, 200, 'a page that fits reports the viewport height');
-//     assert.equal(fits.scrollWidth, 400);
-//     assert.equal(fits.contentHeight, 150, 'contentHeight is the real content bottom, not the clamped scrollHeight');
-//     assert.equal(fits.timedOut, false);
-//
-//     const tall = await measurePage(cdp, at('tall.html'), { width: 400, height: 200 });
-//     assert.equal(tall.scrollHeight, 300);
-//     assert.equal(tall.clientHeight, 200);
-//
-//     const wide = await measurePage(cdp, at('wide.html'), { width: 400, height: 200 });
-//     assert.equal(wide.scrollWidth, 600);
-//     assert.equal(wide.clientWidth, 400);
-//   } finally {
-//     cdp.close();
-//     chrome.kill();
-//     await server.close();
-//   }
-// });
-//
-// /* Reproduces Arena's own dropdown pattern (Menu.jsx, Select's open state): a
-//  * position:relative wrapper, itself a direct child of #root, holding a
-//  * position:absolute overlay that extends past the wrapper's own bottom.
-//  * contentHeight used to inspect only document.body.children — i.e. #root —
-//  * whose rendered height follows the wrapper's in-flow height (20px) because
-//  * an absolutely positioned descendant contributes nothing to an ancestor's
-//  * height. The overlay's true bottom (320px) never entered the scan. */
-// const nestedAbsolutePage = `<!doctype html><html><head><meta charset="utf-8">
-// <style>html,body{margin:0;padding:0}</style></head>
-// <body><div id="root"><div id="wrapper" style="position:relative;height:20px">
-// <div id="overlay" style="position:absolute;top:0;left:0;width:100px;height:320px"></div>
-// </div></div></body></html>`;
-//
-// test('contentHeight follows an absolutely positioned descendant at any depth', { skip: browser.path ? false : browser.reason }, async () => {
-//   const root = mkdtempSync(join(tmpdir(), 'arena-cards-'));
-//   writeFileSync(join(root, 'nested-absolute.html'), nestedAbsolutePage);
-//
-//   const server = await startStaticServer(root);
-//   const chrome = await launchChromium(browser.path);
-//   const cdp = await connect(chrome.wsUrl);
-//
-//   try {
-//     const result = await measurePage(cdp, `http://127.0.0.1:${server.port}/nested-absolute.html`, { width: 400, height: 200 });
-//     assert.equal(result.contentHeight, 320, 'the overlay is nested two levels deep and out of flow, but it is still the true content bottom');
-//   } finally {
-//     cdp.close();
-//     chrome.kill();
-//     await server.close();
-//   }
-// });
-//
-// /* Reproduces the real card harness: Specimen.css's body carries its own
-//  * padding (var(--sp-6), 24px — modelled here as a literal since this fixture
-//  * is not itself an Arena page), and that padding is exactly what stops the
-//  * last in-flow child's bottom margin from collapsing through to the
-//  * document's own margin — the standard CSS collapsing-margins rule, since a
-//  * parent's bottom padding sits between the child's margin and the parent's
-//  * own border edge. So the margin stays inside the flow and pushes the
-//  * document's real, rendered bottom edge down by exactly itself. Nothing in
-//  * the old contentHeight formula ever added it: getBoundingClientRect never
-//  * includes an element's own margin, only its border box, and the formula's
-//  * one margin-adjacent term (`padding`) reads the *body's* paddingBottom, not
-//  * any child's margin. #box is 100px tall with margin-bottom:16px inside a
-//  * 24px-padded body — the true bottom is 24 (top padding) + 100 (box) + 16
-//  * (its margin) + 24 (bottom padding) = 164, not 148. This is the exact shape
-//  * that made four consecutive real specimens each need 16px more than the
-//  * gate suggested: every one of them ends its last section in a `.row`, and
-//  * `.row`'s own margin-bottom in Specimen.css is var(--sp-4) — 16px. */
-// const trailingMarginPage = `<!doctype html><html><head><meta charset="utf-8">
-// <style>html,body{margin:0}body{padding:24px}#box{height:100px;margin-bottom:16px}</style></head>
-// <body><div id="box"></div></body></html>`;
-//
-// test('contentHeight follows a trailing block margin the body\'s own padding stops from collapsing away', { skip: browser.path ? false : browser.reason }, async () => {
-//   const root = mkdtempSync(join(tmpdir(), 'arena-cards-'));
-//   writeFileSync(join(root, 'trailing-margin.html'), trailingMarginPage);
-//
-//   const server = await startStaticServer(root);
-//   const chrome = await launchChromium(browser.path);
-//   const cdp = await connect(chrome.wsUrl);
-//
-//   try {
-//     const result = await measurePage(cdp, `http://127.0.0.1:${server.port}/trailing-margin.html`, { width: 400, height: 200 });
-//     assert.equal(result.contentHeight, 164, 'the true bottom includes #box\'s own trailing margin, not just the body\'s padding');
-//   } finally {
-//     cdp.close();
-//     chrome.kill();
-//     await server.close();
-//   }
-// });
-//
-// /* A raw TCP listener that accepts the connection and then says nothing —
-//  * no response, ever. Confirmed by hand against this exact fixture: Chromium's
-//  * Page.navigate does not settle even at 8s against it. It reproduces the same
-//  * failure shape the reviewer hit pointing at an address whose TCP connect
-//  * times out (a dropped SYN), without needing the OS's own multi-minute
-//  * connect timeout to prove the gate's bound, not Chromium's, is what fires. */
-// test('measurePage rejects instead of hanging when a page never answers', { skip: browser.path ? false : browser.reason, timeout: 20_000 }, async () => {
-//   // Tracked so the fixture's own teardown can force them shut: node's
-//   // net.Server#close only invokes its callback once every connection has
-//   // ended, and Chromium's socket into this listener stays open (nothing
-//   // here ever told it to go away) until something destroys it — otherwise
-//   // this test's own cleanup would hang, independent of measurePage.
-//   const sockets = new Set();
-//   const silent = net.createServer((socket) => {
-//     sockets.add(socket);
-//     socket.on('close', () => sockets.delete(socket));
-//   });
-//   await new Promise((resolve) => silent.listen(0, '127.0.0.1', resolve));
-//   const url = `http://127.0.0.1:${silent.address().port}/never-answers.html`;
-//
-//   const chrome = await launchChromium(browser.path);
-//   const cdp = await connect(chrome.wsUrl);
-//
-//   try {
-//     await assert.rejects(
-//       measurePage(cdp, url, { width: 400, height: 200 }),
-//       (err) => {
-//         assert.match(err.message, /did not settle/, 'the rejection names the timeout, not just "it failed"');
-//         assert.ok(err.message.includes(url), 'the rejection names the page that would not load');
-//         return true;
-//       },
-//     );
-//   } finally {
-//     cdp.close();
-//     chrome.kill();
-//     for (const socket of sockets) socket.destroy();
-//     await new Promise((resolve) => silent.close(resolve));
-//   }
-// });
-//
-// /* Models the reviewer's exact repro: window.arenaReady resolves slowly
-//  * (12s), and content the stability loop watches keeps changing for a while
-//  * after that — well past the honest single 20s budget the script computes
-//  * before either await, so the loop never gets to see three identical reads
-//  * in a row and must report its own timedOut: true.
-//  *
-//  * Confirmed by hand against the unfixed (pre-deadline) script: measurePage
-//  * rejected at 30152ms with "Runtime.evaluate did not settle within 30000ms"
-//  * — the outer CDP timeout fired first because the in-page one never had a
-//  * chance to. Against the fix it resolves at ~20.1s with timedOut: true.
-//  *
-//  * The mutation is driven by requestAnimationFrame, chained indefinitely,
-//  * rather than a millisecond tick — the same primitive the settling loop
-//  * itself now polls on (see FRAME_FALLBACK_MS's comment in
-//  * check-card-viewports.mjs). Incrementing on every real frame, starting well
-//  * before the loop ever takes its first read at 12s, means no two of the
-//  * loop's reads can straddle a real frame without this fixture having changed
-//  * the box's height at least once in between — unlike a fixed-interval tick,
-//  * which would need retuning any time the loop's own polling interval changed
-//  * to keep proving the same thing. The only way two reads could coincide on a
-//  * stale value is the loop's own frame wait resolving through its fallback
-//  * timer with no real frame firing at all in between, which does not happen
-//  * against a live, foregrounded Chromium target. */
-// const slowReadinessPage = `<!doctype html><html><head><meta charset="utf-8">
-// <script>
-// window.arenaReady = () => new Promise((resolve) => setTimeout(resolve, 12000));
-// </script>
-// <style>html,body{margin:0;padding:0}</style></head>
-// <body><div id="root"><div id="box" style="height:10px"></div></div>
-// <script>
-// setTimeout(() => {
-//   const box = document.getElementById('box');
-//   let n = 0;
-//   const grow = () => {
-//     n += 1;
-//     box.style.height = (10 + n) + 'px';
-//     if (n < 3000) requestAnimationFrame(grow); // keeps changing well past the 20s deadline
-//   };
-//   requestAnimationFrame(grow);
-// }, 12000);
-// </script>
-// </body></html>`;
-//
-// test('a slow-but-honest page times out inside the script instead of past the outer CDP bound', { skip: browser.path ? false : browser.reason, timeout: 30_000 }, async () => {
-//   const root = mkdtempSync(join(tmpdir(), 'arena-cards-'));
-//   writeFileSync(join(root, 'slow-readiness.html'), slowReadinessPage);
-//
-//   const server = await startStaticServer(root);
-//   const chrome = await launchChromium(browser.path);
-//   const cdp = await connect(chrome.wsUrl);
-//
-//   try {
-//     const result = await measurePage(cdp, `http://127.0.0.1:${server.port}/slow-readiness.html`, { width: 400, height: 200 });
-//     assert.equal(result.timedOut, true, 'the script must report its own honest timeout, not let the outer CDP bound reject first');
-//   } finally {
-//     cdp.close();
-//     chrome.kill();
-//     await server.close();
-//   }
-// });
-// PLAN-E-SUSPENDED-END
-
-/* MEASURE_SCRIPT is a string evaluated inside the page, so its runtime
- * behaviour — does a settled page actually confirm across real frames, does
- * a starved rAF actually fall back, does the deadline actually hold — can
- * only be proven against a real browser, which the tests above already do
- * (measurePage, and the slow-readiness timeout test in particular). What
- * follows is what a plain string check on the source can still catch: that
- * the shape the browser tests exercise is still there at all, so a future
- * edit that silently drops the fallback timer, the frame wait, or the
- * three-reads threshold fails here even when nobody runs the browser suite
- * for it. This is not a substitute for the browser-backed tests — it is a
- * cheap trip-wire for the same properties they verify at runtime. */
 test('MEASURE_SCRIPT settles on requestAnimationFrame instead of a fixed interval', () => {
   assert.match(MEASURE_SCRIPT, /requestAnimationFrame\(finish\)/, 'the stability loop must wait on a real frame');
   assert.match(MEASURE_SCRIPT, /await nextFrame\(\);/, 'the loop\'s own wait must be the frame helper, not an inline sleep');
@@ -261,16 +35,6 @@ test('MEASURE_SCRIPT still requires three consecutive identical reads, rendered 
   assert.match(MEASURE_SCRIPT, /stable >= 2 && now\.rendered && fontsSettled\(\)/, 'the confirming-read count did not change along with the polling cadence, and the font-race gate must be part of the same accept check, not a separate one that could be skipped');
 });
 
-/* fontsSettled() is the fix for a real regression this change first
- * introduced and then closed (see its comment in check-card-viewports.mjs):
- * document.fonts.ready resolves once, but Forms.card.html and
- * ConfirmDialog.card.html both request a font face — an icon glyph, a
- * monospace label — only after that promise has already settled, so a fast
- * frame-cadence loop could lock onto three identical reads of the
- * fallback-glyph layout before the real font ever swaps in. This is a plain
- * string check on the guard existing at all; the browser-backed regression
- * itself is what the before/after measurement diff in the report proves, not
- * this test. */
 test('MEASURE_SCRIPT re-checks document.fonts.status rather than trusting a single await', () => {
   assert.match(MEASURE_SCRIPT, /fontsSettled = \(\) => !document\.fonts \|\| document\.fonts\.status === 'loaded'/);
 });
@@ -279,10 +43,6 @@ test('MEASURE_SCRIPT still reports timedOut: true on exhaustion, never a passing
   assert.match(MEASURE_SCRIPT, /return \{ \.\.\.read\(\), timedOut: true \};/);
 });
 
-/* Fakes the CDP transport, not the browser — measureCardPage's job is to
- * catch whatever measurePage rejects with, and measurePage rejects purely
- * off what cdp.send does, so no real Chromium is needed to prove it. This
- * runs even where the browser-backed tests above skip. */
 function fakeCdp(failingUrls) {
   return {
     send: async (method, params) => {
@@ -429,18 +189,6 @@ test('summarizeCards on a clean sweep says so and fails nothing', () => {
   assert.match(s.text, /1 page/);
 });
 
-/* WHY THIS TEST EXISTS, stated as history because its subject has moved twice.
- * When it was written, menu-pagination.card.html under-ran by 131px and was
- * deliberately not being corrected, so this was the exact combination the first
- * clean run in check-all would print: no clip, no unrendered page, but a warning.
- * The old tail claimed "every one fits" directly under a list of under-runs — a
- * contradiction of the block it sits right below. Neither half of that motivation
- * is current: the page is MenuPagination.card.html since the structure refactor's
- * batch 3, and `bun run check:cards` reports every page fitting today, so no real
- * page produces this combination any more. The fixture below is synthetic and
- * always was; it keeps the old filename because it is naming the case, not a file,
- * and the invariant it pins — a summary must not contradict its own warning block
- * — is independent of whether any page is currently warning. */
 test('summarizeCards does not claim a clean sweep when it just printed under-run warnings', () => {
   const s = summarizeCards([
     { file: 'a.html', status: 'ok', message: '' },
@@ -463,20 +211,11 @@ test('a page that never rendered is a skip-class condition, not a pass', () => {
   assert.match(r.message, /did not render/i);
 });
 
-/* Distinct from the test above: here #root filled in (rendered: true) but
- * the stability loop never saw two identical reads before its 20s deadline —
- * the shape a page still carrying a live animation left after freezeAnimations
- * would have. classify must not fall through to the ok/clip/under branches
- * and score whatever `measured` happened to hold at that arbitrary instant;
- * a timed-out measurement is untrustworthy regardless of what it says. */
 test('a page that timed out without ever stabilizing is a skip-class condition, not a pass', () => {
   const r = classify({
     file: 'frameworks/react/components/feedback/Feedback.card.html',
     declared: { width: 900, height: 460 },
-    // Numbers chosen so that, if this were wrongly treated as a normal
-    // reading, it would classify 'ok' (nothing over-runs, nothing under-runs
-    // by more than UNDER_RUN_SLACK) — proving the timedOut branch is what
-    // catches it, not an incidental clip or under-run.
+
     measured: { scrollWidth: 900, scrollHeight: 460, clientWidth: 900, clientHeight: 460, contentHeight: 400, rendered: true, timedOut: true },
   });
   assert.equal(r.status, 'unrendered');
@@ -500,14 +239,6 @@ test('findCardPages finds every page that declares, and nothing that does not', 
   assert.deepEqual(pages, [...pages].sort(), 'pages come back sorted, so output is stable');
 });
 
-/* main() feeds mapWithConcurrency the sorted output of findCardPages, so
- * this is the guarantee the whole sweep's output ordering rests on: results
- * land in `items` order, never in the order calls happen to settle. Delays
- * are deliberately not in file order, and at least 15ms apart pairwise, so
- * timer jitter cannot flip their completion order by accident —
- * `completions` is a real, not incidental, check that the calls really did
- * finish out of order, proving the assertion on `results` is testing the
- * ordering guarantee and not just restating the input. */
 test('mapWithConcurrency keeps results in filename order even when a later file answers first', async () => {
   const files = ['a.html', 'b.html', 'c.html', 'd.html'];
   const delayMs = { 'a.html': 120, 'b.html': 5, 'c.html': 80, 'd.html': 35 };
@@ -543,23 +274,10 @@ test('mapWithConcurrency never runs more than `limit` calls at once', async () =
 test('interleaveForDispatch reads a row-major grid back out column-major', () => {
   const items = Array.from({ length: 12 }, (_, i) => i);
   const out = interleaveForDispatch(items, 4);
-  // Row-major into 4 rows then read column-major: row0=[0,4,8], row1=[1,5,9],
-  // row2=[2,6,10], row3=[3,7,11] -> flat = [0,4,8,1,5,9,2,6,10,3,7,11].
+
   assert.deepEqual(out, [0, 4, 8, 1, 5, 9, 2, 6, 10, 3, 7, 11]);
 });
 
-/* The property that actually matters, at the scale check-card-viewports.mjs
- * runs at: with 45 pages and PAGE_CONCURRENCY 5, each row holds
- * ceil(45/5) = 9 items, so two items that started fewer than 5 apart always
- * land at least 9 dispatch positions apart — comfortably outside any single
- * 5-wide wave mapWithConcurrency could draw from. (The guarantee is really
- * "at least a row's length apart", which only clears `groups` once there are
- * enough items per row; a tiny input with few items per group would not get
- * this, but 45 pages at PAGE_CONCURRENCY 5 does, which is the only case this
- * file ever runs.) This reproduces the exact regression found by hand: pages
- * 0-3 in findCardPages' sorted order (brand, charts, activity-feed,
- * calendar) are the four heaviest to paint, and under the old identity
- * dispatch order they were always each other's first wave. */
 test('interleaveForDispatch spreads originally-adjacent items out of the first wave, at this file\'s real scale', () => {
   const items = Array.from({ length: 45 }, (_, i) => i);
   const groups = 5;
@@ -568,8 +286,7 @@ test('interleaveForDispatch spreads originally-adjacent items out of the first w
 
   for (const item of [0, 1, 2, 3]) assert.ok(positionOf.has(item));
   const positions = [0, 1, 2, 3].map((item) => positionOf.get(item));
-  // No two of the four land within `groups` positions of each other, so no
-  // wave of `groups` concurrent workers can ever draw two of them together.
+
   for (let a = 0; a < positions.length; a += 1) {
     for (let b = a + 1; b < positions.length; b += 1) {
       assert.ok(Math.abs(positions[a] - positions[b]) >= groups, `items ${a} and ${b} landed too close: positions ${positions[a]} and ${positions[b]}`);

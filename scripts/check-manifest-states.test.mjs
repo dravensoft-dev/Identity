@@ -32,9 +32,7 @@ test('a stacked modifier still matches its family', () => {
 });
 
 test('a substring that is not modifier-shaped does not false-positive', () => {
-  // "shadow-2" contains no "hover:"/"focus:" boundary; a naive substring
-  // search on the whole class list must not confuse "overflow-hidden" or
-  // similar unrelated tokens for a state family either.
+
   assert.deepEqual([...stateFamilies('overflow-hidden shadow-2')], []);
 });
 
@@ -102,20 +100,13 @@ test('staleExemptions reports every EXEMPT key when matchedKeys is empty', () =>
 
 test('staleExemptions reports only the keys missing from matchedKeys, not the ones present', () => {
   const keys = [...EXEMPT.keys()];
-  if (keys.length < 1) return; // nothing to partition if EXEMPT is ever emptied
+  if (keys.length < 1) return;
   const [first, ...rest] = keys;
   assert.deepEqual(staleExemptions(rest), [first]);
 });
 
 test('THE CORE CLAIM: the gate rejects a fabricated manifest carrying a hover its component does not implement', () => {
-  // Regression guard for the exact defect this gate exists to catch:
-  // Pagination.manifest.json shipped hover:bg-base-200 on `nav` when
-  // Pagination.jsx has no onMouseEnter/onMouseLeave anywhere. Reproduce
-  // that shape with a fabricated manifest and a fabricated source that
-  // mirrors Pagination.jsx's real shape (a plain <button disabled={dis}>,
-  // no mouse handler at all), calling the gate's own decision function --
-  // not re-deriving the verdict from lower-level primitives by hand -- so
-  // this is a real test of evaluateManifest, not of the test file's own logic.
+
   const fabricatedManifest = {
     component: 'Pagination',
     slots: { nav: 'inline-flex items-center hover:bg-base-200' },
@@ -135,13 +126,12 @@ test('evaluateManifest does NOT flag a state family the source genuinely impleme
 });
 
 test('evaluateManifest honours an EXEMPT entry by key, and still records the matchedKey', () => {
-  // Uses a real EXEMPT key from the module so this stays true to the actual
-  // map rather than asserting against one this test invents.
+
   const [key] = [...EXEMPT.keys()];
-  if (!key) return; // nothing to assert if EXEMPT is ever emptied
+  if (!key) return;
   const [component, slot, family] = key.split(':');
   const manifest = { component, slots: { [slot]: `${family}:something` } };
-  const source = 'function X(){ return <div />; }'; // implements nothing
+  const source = 'function X(){ return <div />; }';
   const { findings, matchedKeys } = evaluateManifest(manifest, source, ['<fabricated>']);
   assert.deepEqual(findings, [], `${key} should have been exempted, not flagged`);
   assert.ok(matchedKeys.includes(key), 'an exempted hit must still count as matched, so staleExemptions can see it was exercised');
@@ -163,13 +153,6 @@ test('every EXEMPT entry is exercised by the real tree (none is dead weight)', (
   assert.deepEqual(stale, []);
 });
 
-/* A key is recorded as "matched" only when it was a real exemption CANDIDATE --
- * i.e. the source does NOT implement the family. If the source later gains the
- * affordance, the key stops being matched, any EXEMPT entry naming it goes
- * stale, and the gate fails so the now-unnecessary exemption gets removed.
- * Pushing the key before the capability check made that unreachable: the entry
- * stayed fresh forever as long as the slot kept the modifier, however the
- * source changed -- while the failure message promised exactly this case. */
 test('a key stops being matched once its source implements the family', () => {
   const manifest = { component: 'Fab', slots: { root: 'inline-flex hover:bg-primary' } };
 

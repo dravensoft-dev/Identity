@@ -1,6 +1,3 @@
-/* See tag-variants.test.ts for why this suite lives here rather than under
- * scripts/: node cannot resolve the extensionless imports this layer's
- * recipes use. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { breadcrumbsStyles } from './Breadcrumbs.variants';

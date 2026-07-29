@@ -5,21 +5,6 @@ import React from 'react';
 import { Tabs } from './Tabs.jsx';
 import { Tab } from '../tab/Tab.jsx';
 
-/* This suite carries no `.dom.` infix, so it runs in the DOM-free invocation and no
- * test here fires a click or an arrow key -- the
- * roving tab stop MOVING, and `change`'s payload, are asserted in
- * Tabs.dom.test.jsx, beside this file. What SSR can hold is the structure:
- * that a tablist and one tabpanel per tab are rendered with exactly one of the
- * panels visible, that every piece of wiring between them resolves, that the
- * degenerate cases -- no children, and an active value naming none of them --
- * stay operable, and the R4 escapes.
- *
- * Every fixture's value and label DIFFER on purpose: a same-string fixture cannot
- * discriminate a component that keys the selection off the label.
- *
- * React's SSR does not emit attributes in source order, so nothing below assumes
- * adjacency; the wiring tests read the two ids out and compare them instead. */
-
 const three = (props = {}) => (
   <Tabs {...props}>
     <Tab value="ov" label="Overview"><p>overview body</p></Tab>
@@ -27,14 +12,9 @@ const three = (props = {}) => (
   </Tabs>
 );
 
-/** Every rendered tabpanel's opening tag, and the subset of them a user can see.
- *  An inactive panel is RENDERED and HIDDEN rather than absent, so that every
- *  tab's aria-controls resolves; `hidden` is what separates the two states. */
 const panelTags = (html) => (html.match(/<div\b[^>]*>/g) || []).filter((t) => t.includes('role="tabpanel"'));
 const visiblePanels = (html) => panelTags(html).filter((t) => !t.includes(' hidden='));
-/** The tabs' own opening tags. The tab-stop count is read from THESE and never
- *  from the whole document: the visible tabpanel is a tab stop of its own, and
- *  counting `tabindex="0"` across the markup would conflate the two. */
+
 const tabTags = (html) => (html.match(/<button\b[^>]*>/g) || []).filter((t) => t.includes('role="tab"'));
 
 test('one tabpanel per tab is rendered, and exactly one of them is visible', () => {
@@ -50,8 +30,7 @@ test('one tabpanel per tab is rendered, and exactly one of them is visible', () 
 test('the selected tab\'s panel is the visible one, and no other tab\'s is', () => {
   const html = renderToStaticMarkup(three({ defaultValue: 'dp' }));
   assert.match(html, /deployments body/);
-  /* The unselected tab's content is MOUNTED and hidden -- the price of every
-     aria-controls resolving, and stated in Tabs.prompt.md and the contract. */
+
   assert.match(html, /overview body/);
   const shown = visiblePanels(html);
   assert.equal(shown.length, 1);
@@ -61,10 +40,6 @@ test('the selected tab\'s panel is the visible one, and no other tab\'s is', () 
     'the visible panel is not the selected tab\'s');
 });
 
-/* roles.controls says EACH tab has aria-controls referencing its tabpanel, and
- * a reference to an id nothing renders is not a reference. Asserted by resolving
- * every one of them against the ids actually in the markup, never against a
- * literal: useId()'s value is not ours to predict. */
 test('every tab\'s aria-controls resolves to an id that exists in the same markup', () => {
   const html = renderToStaticMarkup(three({ defaultValue: 'ov' }));
   const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
@@ -75,13 +50,6 @@ test('every tab\'s aria-controls resolves to an id that exists in the same marku
     `aria-controls pointing at nothing: ${dangling.join(', ')} -- a dangling reference is not a reference`);
 });
 
-/* THE MIS-INITIALISED STRIP, and it is reachable two ways: a controlled `value`
- * from a stale route param or an async swap, and the uncontrolled case where the
- * children arrive after mount, because useState's initialiser latched `undefined`
- * on the first render. SELECTION and the ROVING TAB STOP are two different
- * things, and only the first of them may be empty -- a controlled component may
- * not select what the consumer did not ask for, but a widget nobody can Tab into
- * is a defect either way. */
 test('a value naming no tab selects nothing and still leaves exactly one tab stop', () => {
   const html = renderToStaticMarkup(three({ value: 'nope' }));
   assert.equal((html.match(/aria-selected="true"/g) || []).length, 0,
@@ -99,9 +67,6 @@ test('a value naming no tab shows no panel and dangles no label', () => {
   }
 });
 
-/* roles.controls and the panel's own labelling, asserted by RESOLVING the ids
- * rather than by matching a literal: useId()'s value is not ours to predict, and
- * a test that hard-coded one would pin React's internals instead of our wiring. */
 test('the selected tab and its panel reference each other', () => {
   const html = renderToStaticMarkup(three({ defaultValue: 'ov' }));
   const panelId = /role="tabpanel"[^>]*id="([^"]+)"|id="([^"]+)"[^>]*role="tabpanel"/.exec(html);
@@ -113,9 +78,7 @@ test('the selected tab and its panel reference each other', () => {
 });
 
 test('an id Arena renders is usable in a CSS selector', () => {
-  /* useId() returns a value containing colons (`:r0:`), which is legal in an id
-     attribute and a SyntaxError inside a selector. The ids are stripped of them
-     so the suites -- and a consumer -- can address what Arena rendered. */
+
   const html = renderToStaticMarkup(three({ defaultValue: 'ov' }));
   const ids = [...html.matchAll(/id="([^"]+)"/g)].map((m) => m[1]);
   assert.ok(ids.length > 0);
@@ -132,11 +95,6 @@ test('with neither value nor defaultValue the first tab is selected', () => {
   assert.match(html, /overview body/);
 });
 
-/* The degenerate case. An empty collection is a caller saying "no tabs right now"
- * -- the stance this component already held and this suite already pinned -- so it
- * renders rather than throwing. What it must NOT do is render a tabpanel whose
- * aria-labelledby points at a tab that does not exist: a dangling label is worse
- * than an absent one, and an accessibility batch may not ship it. */
 test('no children renders an empty tablist and no tabpanel at all', () => {
   const html = renderToStaticMarkup(<Tabs />);
   assert.match(html, /role="tablist"/);
@@ -145,9 +103,7 @@ test('no children renders an empty tablist and no tabpanel at all', () => {
 });
 
 test('a conditionally-rendered tab that is false is absent, not counted', () => {
-  /* toArray() drops a bare `false` where count() would count it as one child --
-     the idiom {cond && <Tab/>} writes exactly that. If Tabs counted with count()
-     it would believe it has a tab it will never render, and select it. */
+
   const html = renderToStaticMarkup(
     <Tabs>{false}<Tab value="dp" label="Deployments"><p>deployments body</p></Tab></Tabs>,
   );
@@ -155,7 +111,6 @@ test('a conditionally-rendered tab that is false is absent, not counted', () => 
   assert.equal((html.match(/role="tab"/g) || []).length, 1);
 });
 
-/* R4, in two separate bodies -- node:assert aborts on the first failure. */
 test('Tabs drops a consumer style object', () => {
   const html = renderToStaticMarkup(
     <Tabs style={{ color: '#ff00ff' }}><Tab value="ov" label="Overview" /></Tabs>,

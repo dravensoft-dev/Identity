@@ -1,21 +1,3 @@
-/* Menu's contract lives inside a panel that only exists after a click, so this
- * is the half Menu.test.jsx, beside this file, says in its own header it
- * cannot reach: `open` is internal state starting false, and renderToStaticMarkup
- * has no way to press the trigger.
- *
- * Two members are pinned here and nowhere else.
- *
- *   select. An entry no longer carries its own onClick -- R1 admits only
- *   primitives and enums as fields of a predefined object -- so an activated
- *   entry is reported by the component, carrying the WHOLE item. The identity
- *   assertion is the load-bearing one: === against the exact object the caller
- *   passed in proves the item travelled rather than a copy of some of it, and
- *   proves a DOM event is not travelling in its place.
- *
- *   icon. It is a Phosphor class-name string now, and Arena draws the <i>. A
- *   test asserting only that the class is present would pass against a component
- *   that printed the string as text, so the class and the absence of the text are
- *   asserted together. */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
@@ -24,10 +6,6 @@ import { Menu } from './Menu.jsx';
 
 afterEach(cleanup);
 
-/** Press the trigger. The click bubbles from the consumer's own button to the
- *  wrapping span that owns the open state -- which is exactly the placement
- *  Menu.behaviour.json's roles.haspopup exception is about, and nothing here
- *  claims otherwise. */
 function open(root) {
   act(() => { root.querySelector('button').click(); });
   return root.querySelector('[role="menu"]');
@@ -46,12 +24,6 @@ test('activating an entry reports the whole item, not a key and not a DOM event'
   assert.equal(seen[0].preventDefault, undefined, 'a DOM event is travelling in the payload');
 });
 
-/* The menu closes on its own when an entry is activated, so a caller wiring
- * onSelect never has to. Only the closing is asserted, not the order the two
- * happen in: `run` calls setOpen(false) before onSelect, but React batches the
- * state update until the event handler has returned, so the panel is still in
- * the DOM while the caller runs and a test claiming otherwise would be claiming
- * something React does not do. */
 test('activating an entry closes the menu', () => {
   const root = mount(<Menu trigger={<button type="button">Open</button>} items={[{ label: 'Rename' }]} />);
   const panel = open(root);
@@ -82,13 +54,6 @@ test('icon is a class name Arena draws, and never reaches the page as text', () 
   assert.equal(panel.textContent, 'View logs', 'the icon class name was drawn as text');
 });
 
-/* R4, the half the SSR suite cannot reach. `style` and a {...rest} spread are
- * both gone from Menu, and the SSR suite watches the ROOT for them -- which is
- * where they were and where they would come back first. It cannot watch the
- * PANEL, because a closed Menu renders none of it, so an escape merged into the
- * panel's own style object would pass there unseen. Each escape is asserted in
- * its own test: node:assert aborts on the first failure, so one body asserting
- * both cannot discriminate which came back. */
 test('a consumer style object reaches no part of the opened panel', () => {
   const root = mount(
     <Menu trigger={<button type="button">Open</button>} items={[{ label: 'Rename' }]} style={{ color: '#ff00ff' }} />,

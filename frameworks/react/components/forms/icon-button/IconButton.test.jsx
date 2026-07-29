@@ -10,10 +10,6 @@ test('IconButton draws the Phosphor class it is given and hides it from assistiv
   assert.match(html, /aria-hidden="true"/);
 });
 
-/* `label` must be the single accessible name. With showLabel unset the title
- * carries it too; with showLabel set the title is dropped, because a visible
- * label plus a title announces twice. Both branches are asserted because a
- * component that always rendered the title would pass the first alone. */
 test('IconButton names itself with label, and drops the title once the label is visible', () => {
   const hidden = renderToStaticMarkup(<IconButton icon="ph-bold ph-plus" label="New" />);
   assert.match(hidden, /aria-label="New"/);
@@ -23,8 +19,6 @@ test('IconButton names itself with label, and drops the title once the label is 
   assert.doesNotMatch(shown, /title="New"/);
 });
 
-/* Defaults to type="button" so an icon button inside a form does not submit
- * it -- the footgun ButtonType exists to make explicit. */
 test('IconButton defaults its native type to button and honours an override', () => {
   assert.match(renderToStaticMarkup(<IconButton icon="ph-x" label="L" />), /type="button"/);
   assert.match(renderToStaticMarkup(<IconButton icon="ph-x" label="L" type="submit" />), /type="submit"/);
@@ -44,10 +38,6 @@ test('IconButton throws when label is absent, matching the contract required fla
   );
 });
 
-/* R4: the extends React.ButtonHTMLAttributes heritage clause and the {...rest}
- * spread both left this component, and `style` went with the heritage.
- * check:api reads the .d.ts and never opens the .jsx, so a test is the ONLY
- * regression guard. Asserted separately -- see Spinner. */
 test('IconButton drops a consumer style object and a consumer attribute, each independently', () => {
   const html = renderToStaticMarkup(
     <IconButton icon="ph-x" label="L" style={{ color: '#ff00ff' }} data-stray="x" />
@@ -56,14 +46,6 @@ test('IconButton drops a consumer style object and a consumer attribute, each in
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- the {...rest} escape is back');
 });
 
-/* `tabStop` is the second global attribute Arena admits as a member, after
- * `id`, and it passes the same test contracts/api/README.md states for that one: the D1
- * flatten removed the capability, and there is no other surface a host can
- * write it on. An <arena-icon-button> host attribute would land on the custom
- * element, not on the <button> inside it.
- *
- * check:api reads the .d.ts and never opens the .jsx, so these three tests are
- * the ONLY guard that the attribute is really written. */
 test('tabStop defaults to true and emits no tabindex at all', () => {
   const html = renderToStaticMarkup(<IconButton icon="ph-bold ph-plus" label="Add" />);
   assert.doesNotMatch(html, /tabindex/i, 'a default IconButton wrote a tabindex it does not need');

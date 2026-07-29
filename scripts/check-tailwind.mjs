@@ -1,10 +1,3 @@
-/* Compiles Arena's Tailwind layer and asserts the whole chain resolves —
- * manifest class -> emitted rule -> theme key -> Arena token. Compiling is not
- * the assertion; a layer that compiles and silently resolves to Tailwind's own
- * defaults is exactly the failure this exists to catch.
- *
- *   bun scripts/check-tailwind.mjs      -> exit 0 if the layer resolves, 1 otherwise
- */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
@@ -13,7 +6,6 @@ import { compileLayer, manifestClasses, escapeClass, repoRoot } from './lib/tail
 
 const GENERATED = ['palette.css', 'typography.css', 'spacing.css', 'effects.css'];
 
-/** Every Arena token name (without `--`) declared in the four generated files. */
 export function arenaTokens(root = repoRoot) {
   const names = new Set();
   for (const f of GENERATED)
@@ -22,8 +14,6 @@ export function arenaTokens(root = repoRoot) {
   return names;
 }
 
-/** The theme keys the compiled output emits into :root, mapped to their values.
- *  @param {string} css @returns {Map<string,string>} */
 export function themeKeys(css) {
   const out = new Map();
   const m = css.match(/@layer theme\s*\{\s*:root[^{]*\{([\s\S]*?)\n\s*\}/);
@@ -38,26 +28,17 @@ export function themeKeys(css) {
   return out;
 }
 
-/** @param {string} css @param {Map<string,object>} manifests @param {Set<string>} tokens
- *  @returns {string[]} violations */
 export function checkCompiled(css, manifests, tokens) {
   const errs = [];
 
-  // A gate that iterates zero manifests finds zero violations by construction
-  // and would otherwise report a clean pass over a layer it never looked at —
-  // exactly what happened when discovery went flat against a moved, nested
-  // tree and this gate printed "0 manifest(s) ... all resolve" and exited 0.
   if (manifests.size === 0)
     errs.push('found 0 manifests — an empty result set is a failure, not a clean pass; check the discovery path');
 
-  // Every class a manifest declares must have produced a rule. This is what
-  // holds up a manifest with no consumer anywhere in the repo.
   for (const [file, manifest] of manifests)
     for (const cls of manifestClasses(manifest))
       if (!css.includes(`.${escapeClass(cls)}`))
         errs.push(`${file}: \`${cls}\` produced no rule — the utility does not exist`);
 
-  // Every theme key must be a var() into a token that really exists.
   for (const [key, value] of themeKeys(css)) {
     if (key.startsWith('tw-') || key.startsWith('default-')) continue;
     const ref = value.match(/^var\(--([a-z0-9-]+)\)$/);
@@ -65,7 +46,6 @@ export function checkCompiled(css, manifests, tokens) {
     if (!tokens.has(ref[1])) errs.push(`--${key}: --${ref[1]} is no such Arena token`);
   }
 
-  // Tailwind's default --spacing must be unreachable (see the spec, 1b).
   if (css.includes('0.25rem'))
     errs.push("the compiled layer contains `0.25rem` — Tailwind's default --spacing is reachable; set `--spacing: var(--sp-1)`");
 

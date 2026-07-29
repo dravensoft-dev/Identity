@@ -1,14 +1,3 @@
-/* Asserts the committed contracts/design-generated/*.css are what
- * contracts/design/ generates.
- *
- * The generated files are committed (the plugin is served from the release tag
- * and the copy-in kit reads them directly), so a stale committed file is a
- * silent failure — exactly the class of bug check-release.mjs exists for. This
- * script is the guard: it builds in memory and compares declaration sets.
- * Comments are not asserted, only `--name: value;` pairs and their selectors.
- *
- *   bun scripts/check-tokens-generated.mjs   -> exit 0 if in sync, 1 on drift
- */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';

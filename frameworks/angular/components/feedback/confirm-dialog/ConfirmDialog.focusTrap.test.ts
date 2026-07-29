@@ -1,44 +1,3 @@
-/* ConfirmDialog's accessibility fix wave (plan 5a, Task 8 review) added a
- * real focus trap: focus moves into the panel on open, Tab/Shift+Tab cycle
- * within it, and focus is restored to whatever held it beforehand on close.
- * Plan 5a's Task 14 review generalized that trap's mechanics out of
- * `ConfirmDialog.ts` into `frameworks/angular/FocusTrap.ts`, so
- * `arena-command-palette` could reuse it instead of writing a second
- * implementation -- `ConfirmDialog.ts` still re-exports the same names for
- * any caller that reached them there, which is why importing from either
- * module works, but this file was pointed at the canonical module.
- *
- * This does NOT render `<arena-confirm-dialog>` through TestBed. Probed by
- * hand before writing this file: `[open]="true"` on the component and
- * `fixture.componentRef.setInput('open', true)` are both unusable under this
- * repo's test toolchain, but NOT in the same way, and the difference is the
- * dangerous part: the template binding throws NG0303 ("Can't bind to 'open'
- * since it isn't a known property"), while `setInput` logs NG0303 and then
- * SILENTLY NO-OPS, leaving the render on its default. A throw announces
- * itself; a silent no-op lets a suite pass vacuously against default data.
- * Re-probed with a throwaway host component and deleted after.
- * host-class-binding.test.ts's own header comment documents the same root
- * cause for Skeleton's `variant="text"`: this harness runs `bun`'s TypeScript
- * stripping plus `@angular/compiler`'s runtime JIT, never `ngtsc`, and only
- * `ngtsc` discovers a class's `input()` fields into `ɵcmp.inputs` -- without
- * that transform, neither a template binding nor `setInput()` can drive a
- * signal input at all. Since `open` can never become `true` here, the `@if
- * (open())` block can never render the panel, so no TestBed-based test of
- * this component can exercise an actually-open dialog.
- *
- * `ConfirmDialog.ts` was written to route around exactly this: the trap's
- * mechanics (`focusableElements`, `focusFirstFocusable`, `trapTabKey`,
- * `handleOpenTransition`) are exported as plain functions of a real
- * `HTMLElement`, with no Angular dependency, so they are testable against a
- * hand-built DOM tree -- real elements, real `.focus()`, real
- * `document.activeElement` -- independent of whether Angular's own input
- * binding works in this harness. This is what the component's constructor
- * actually calls, not a reimplementation that could drift from it.
- *
- * No TestBed here, so nothing to initialise -- only a DOM, taken from the
- * directory's shared one (`ensureDom()`, testbed-env.ts) rather than
- * registered and unregistered per file. See that file for why the document
- * has to be shared. */
 import { ensureDom } from '../../../test/TestbedEnv';
 ensureDom();
 
@@ -53,10 +12,6 @@ import {
 } from '../../../FocusTrap';
 import { isConfirmLocked } from './ConfirmDialog';
 
-/** Builds a panel with the same focusable shape ConfirmDialog's template
- *  renders when `requireText` is set: an input, then two buttons (cancel,
- *  confirm) -- plus one disabled button to prove the trap skips it, and one
- *  plain non-interactive div to prove it is not treated as a stop. */
 function buildPanel(): { panel: HTMLElement; input: HTMLElement; cancel: HTMLElement; confirm: HTMLElement } {
   const panel = document.createElement('div');
   panel.setAttribute('tabindex', '-1');
@@ -165,7 +120,6 @@ test('handleOpenTransition: closing restores focus to the element remembered at 
   const state: FocusTrapState = { wasOpen: false, restoreTo: null };
   handleOpenTransition(state, true, panel, document.activeElement);
 
-  // Simulate the user tabbing to a different control while the dialog is open.
   confirm.focus();
   assert.equal(document.activeElement, confirm);
 
@@ -186,8 +140,6 @@ test('handleOpenTransition: a re-run with isOpen unchanged does not re-steal foc
   handleOpenTransition(state, true, panel, document.activeElement);
   assert.equal(document.activeElement, input);
 
-  // The user tabs on to Confirm; a later render (e.g. caused by typing)
-  // re-runs the effect with the same isOpen=true it already saw.
   confirm.focus();
   handleOpenTransition(state, true, panel, document.activeElement);
 
@@ -210,4 +162,3 @@ test('isConfirmLocked: locks until the trimmed typed value matches exactly', () 
   assert.equal(isConfirmLocked('Ardennes', 'Ardennes'), false);
   assert.equal(isConfirmLocked('Ardennes', '  Ardennes  '), false, 'surrounding whitespace in what was typed must be trimmed');
 });
-

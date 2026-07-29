@@ -1,72 +1,8 @@
-/* check:api — Arena's third contract, the API capability contract.
- *
- * contracts/api/components/<Name>.json states, once and neutrally, the members that
- * component's API presents. Every layer implementing it implements exactly
- * those members -- same name, same form, not fewer and not more. This gate
- * makes five assertions:
- *
- *   1. COVERAGE.        Every contract names a component at least one layer
- *                       implements. The contract's existence IS the coverage
- *                       claim, so no separate record can go stale against it.
- *   2. FORM.            No member uses anything outside the nine forms, and the
- *                       ninth -- functionInput -- only in a contract declaring
- *                       `"kind": "input"`, with its modelled signature's own
- *                       types resolved the same way any other type name is.
- *   3. AGREEMENT.       Every implementing layer declares exactly the contract's
- *                       members, same name, same form, same required-ness, same
- *                       type for a primitive. An
- *                       OPTIONAL member is still a declared member: `required:
- *                       false` governs whether a CONSUMER must supply it, never
- *                       whether a LAYER must offer it. Required-ness itself is
- *                       compared only for the six inbound non-slot forms
- *                       (primitive, enum, object, array, consumerData,
- *                       functionInput) -- a
- *                       slot's and an event's required-ness is not comparable
- *                       across layers,
- *                       because neither platform pair can express it: Angular's
- *                       `<ng-content>` cannot declare projected content
- *                       mandatory, and an outbound event is never "required" on
- *                       either platform. See the comment beside the comparison
- *                       in compareSurface(). A member name declared TWICE in one
- *                       layer's own surface is reported too -- a duplicate is
- *                       "not fewer, not more" failing silently otherwise, the
- *                       shape a slot mentioned in a doc comment as well as the
- *                       real template exposed.
- *   4. DERIVED RULES.   R1, R4 and R5, against the declared types. R1 also
- *                       covers a field's OWN reference: an object field naming
- *                       an enum checks that the named type is declared and is
- *                       itself an enum, not only that primitives are spelled
- *                       correctly -- and, since the eighth form landed, that no
- *                       field is consumer data, whose fields are unknown by
- *                       construction. The eighth form's own second guard is
- *                       that a consumer-data member must have a consumer: a
- *                       slot parameter or an event payload that hands it back.
- *                       Those two are ALL that is mechanical about the form;
- *                       everything else about it is an authoring rule with the
- *                       same status R2 and R3 carry.
- *   5. GENERATED DRIFT. The committed api.generated.* match contracts/api/types/.
- *
- * THERE IS NO EXCEPTION MAP, and that is not an oversight. Every other record in
- * this repository -- EXEMPT, EXCLUDED, COVERED -- exists because the thing it
- * excuses is a difference someone may reasonably want. An API divergence is a
- * defect; a place to write one down is the whole thing this layer removes.
- *
- * TWO OF THE FIVE RULES ARE NOT ASSERTED HERE, and pretending otherwise would be
- * worse than saying so. R2 ("who draws decides data versus slot") is a fact about
- * markup ownership, and R3 ("a parameterised slot fills, never replaces") is a
- * fact about the rendered tree. Neither is visible in a member list. They are
- * authoring rules the audit protocol applies, recorded in contracts/api/README.md and in
- * CLAUDE.md's Known debt. A green run means R1, R4 and R5 hold.
- *
- * COVERAGE IS PARTIAL BY DESIGN and grows one component at a time, the same
- * charter COVERED carries in check-compliance.mjs. This gate never demands
- * totality -- only that every contract in the directory is true of every layer
- * implementing it. A green run is a claim about the contracted components and
- * says nothing about the rest, and -- being orthogonal to behaviour -- nothing
- * about what any of them does either.
- *
- *   bun scripts/check-api.mjs   -> exit 0 if every contract holds, 1 otherwise
- */
+/* Asserts each API contract against every layer implementing it. There is no
+ * exception map, and that is deliberate: a contract forbids divergence, so it has
+ * nowhere for a second opinion to live. R2 and R3 are authoring rules no gate
+ * asserts — see DOUBTS.md section 4. */
+
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -76,33 +12,9 @@ import { pascal, readLayer } from './check-structure.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** The eight encoded `form` values, covering the vocabulary's nine forms:
- *  `array` covers both array forms, discriminated by `of` -- a representation
- *  choice, not a narrowing of the vocabulary. `consumerData` is the eighth
- *  form, and it is the only one whose `of`/`params`/`payload` position carries
- *  a FORM name where the others carry a declared TYPE name, because there is
- *  nothing to declare: the contract does not describe the element at all.
- *  `functionInput` is the ninth, and the only one this gate restricts by
- *  CONTRACT rather than by member: it is legal only where the contract declares
- *  `"kind": "input"` -- see validateContract below. */
 const FORMS = new Set(['primitive', 'enum', 'object', 'array', 'slot', 'event', 'consumerData', 'functionInput']);
 const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);
 
-/* This gate carried its own copy of the "AppLogo" -> "app-logo" derivation
- * until the structure refactor gave check-structure.mjs the same mapping and
- * its inverse. It is gone rather than re-exported: nothing here derives a path
- * per contract any more, since BOTH layers are discovered by WALKING them, and
- * a re-export would leave check-api.test.mjs pinning another module's function
- * through a gate that never uses it. */
-
-/** A gate that finds nothing reports zero violations either way, so an empty
- *  result set is a failure rather than a clean pass. This is the guard the
- *  contract directory did not have: `main()` resolved it through
- *  `existsSync(dir) ? readdirSync(dir) : []`, a lookup that cannot distinguish
- *  "this directory is absent" from "this gate did not find it", and a moved
- *  api/ therefore printed `0 contract(s) hold across 0 layer implementation(s)`
- *  and exited 0. Measured, not supposed.
- *  @param {{contracts: number, types: number}} counts @returns {string[]} */
 export function zeroContractProblems({ contracts, types }) {
   const problems = [];
   if (contracts === 0)
@@ -112,9 +24,6 @@ export function zeroContractProblems({ contracts, types }) {
   return problems;
 }
 
-/** A contract member's name as one layer binds it. The contract governs the
- *  member surface, never the syntax a platform expresses it in. See the binding
- *  table in contracts/api/README.md -- this function IS that table. */
 export function bindingName(name, form, layer) {
   if (layer !== 'react') return name;
   if (form === 'slot') return name === 'content' ? 'children' : name;
@@ -122,14 +31,10 @@ export function bindingName(name, form, layer) {
   return name;
 }
 
-/** @returns {string[]} problems */
 export function validateTypes(types) {
   const problems = [];
   const seen = new Set();
-  /* Built from ALL types up front, not filled in as the loop below reaches
-   * each one -- a field may name an enum declared later in file-name order
-   * (loadTypes()'s own contract is alphabetical-by-filename, not
-   * dependency order), and this must resolve either way. */
+
   const kindByName = new Map();
   for (const type of types) {
     if (type.name) kindByName.set(type.name, type.kind);
@@ -149,25 +54,14 @@ export function validateTypes(types) {
       if (spec.form === 'primitive') {
         if (!PRIMITIVE_TYPES.has(spec.type)) problems.push(`${type.name}.${field}: "${spec.type}" is not a primitive`);
       } else if (spec.form === 'enum') {
-        /* An object field's enum type name was previously never checked
-         * against the declared type list -- {form:'enum', type:'Nonexistent'}
-         * would emit an unresolvable TypeScript reference into BOTH generated
-         * modules (renderApiModule emits `field.type` verbatim, undeclared or
-         * not). Caught downstream today only because
-         * frameworks/angular/index.ts re-exports ./Api.generated and
-         * tsconfig.check.json pulls it in -- luck, not design; React's own
-         * .d.ts has no such backstop at all. */
+
         if (!kindByName.has(spec.type)) {
           problems.push(`${type.name}.${field}: names enum type "${spec.type}", which contracts/api/types/ does not declare`);
         } else if (kindByName.get(spec.type) !== 'enum') {
           problems.push(`${type.name}.${field}: "${spec.type}" is a ${kindByName.get(spec.type)}, used where an enum belongs`);
         }
       } else if (spec.form === 'consumerData') {
-        /* R1 extended by the eighth form. An object is pure data with KNOWN
-         * fields; consumer data is a record whose fields are unknown by
-         * construction, so it can never be one of them. Reported separately
-         * from the catch-all below because the reason is its own -- this is
-         * the rule that forbids a `meta` bag hidden inside a declared type. */
+
         problems.push(`${type.name}.${field}: consumer data may not be a field of a predefined object — R1, an object is pure data with known fields`);
       } else {
         problems.push(`${type.name}.${field}: form "${spec.form}" is not allowed inside a predefined object — R1, an object is pure data`);
@@ -177,7 +71,6 @@ export function validateTypes(types) {
   return problems;
 }
 
-/** @param {Map<string,'enum'|'object'>} typeNames @returns {string[]} problems */
 export function validateContract(contract, typeNames) {
   const problems = [];
   const where = contract.component ?? '(unnamed)';
@@ -186,10 +79,7 @@ export function validateContract(contract, typeNames) {
     if (typeNames.get(name) !== kind) return `${where}: "${name}" is a ${typeNames.get(name)}, used where a ${kind} belongs`;
     return null;
   };
-  /* The eighth form declares no type, so every position that would normally
-   * resolve a name against contracts/api/types/ has to admit it by form name instead --
-   * there is deliberately nothing in that directory to resolve it to, which is
-   * what keeps the directory from filling with fieldless types. */
+
   const CONSUMER_DATA = 'consumerData';
   const held = [];
   const routes = [];
@@ -206,55 +96,20 @@ export function validateContract(contract, typeNames) {
     if (spec.form === 'array' && !PRIMITIVE_TYPES.has(spec.of) && spec.of !== CONSUMER_DATA) {
       problems.push(...[declared(spec.of, 'object')].filter(Boolean));
     }
-    /* A payload resolves as a primitive, consumerData, a declared object or a
-     * declared ENUM -- all four, because classify() produces all four and a
-     * contract that cannot state what the reader reads is a gap, not a rule.
-     * It once admitted only the declared object, which made a payload of
-     * "string" unstateable -- while `classify()` had always READ one, reducing
-     * `(value: string) => void` to {form:'event', payload:'string'}. So the
-     * reader could produce a payload the contract could not declare, and the
-     * form-4 comparison below would then have matched them. The form controls
-     * are where that gap became load-bearing: every one of them turns a native
-     * onChange into an event carrying the VALUE (a platform event type is an R4
-     * violation inside a payload -- Breadcrumbs settled that), and a value is a
-     * primitive, not an object. Plan 8C2 widened it to the first three and
-     * stopped one type-kind short: `(v: SomeEnum) => void` reads as
-     * {payload:'SomeEnum'} just as cleanly, and the contract declaring it read
-     * as "an enum, used where an object belongs". This is that fourth arm.
-     * `declared()` takes one kind, so the enum arm is tried first and only a
-     * name that is neither falls through to the object message, which stays the
-     * default because an object payload is by far the commoner case. */
+
     if (spec.form === 'event' && spec.payload
         && !PRIMITIVE_TYPES.has(spec.payload) && spec.payload !== CONSUMER_DATA) {
       if (typeNames.get(spec.payload) !== 'enum') {
         problems.push(...[declared(spec.payload, 'object')].filter(Boolean));
       }
     }
-    /* The parameter loop runs for ANY member carrying `params` -- a slot's and,
-     * since the ninth form, a functionInput's, which is why the message names
-     * which one it is reading rather than calling every parameter a slot's. */
+
     const paramOf = spec.form === 'functionInput' ? 'functionInput parameter' : 'slot parameter';
     for (const [param, type] of Object.entries(spec.params ?? {})) {
       if (PRIMITIVE_TYPES.has(type) || type === CONSUMER_DATA) continue;
       if (!typeNames.has(type)) problems.push(`${where}.${member}: ${paramOf} "${param}" names undeclared type "${type}"`);
     }
 
-    /* The ninth form, and both of its mechanical guards.
-     *
-     * The first is the CONTRACT-level one: a functionInput is legal only in a
-     * data-entry control, and the contract says so by carrying `"kind":
-     * "input"` at top level. That makes the maintainer's restriction checkable
-     * rather than a prose convention with R2 and R3's status -- a chart
-     * declaring a formatter fails here, by name.
-     *
-     * The second is the signature. A functionInput models its own signature --
-     * `params` (name -> type) and `returns` -- and R4 holds INSIDE it: every
-     * type named there is a primitive or a type contracts/api/types/ declares, so no
-     * platform type can enter through a parameter or a return. The parameters
-     * are checked by the loop above; the return is checked here. A functionInput
-     * with no `returns` at all is not modelled: an inbound function whose result
-     * the component uses must say what that result is, or the form is
-     * indistinguishable from an event. */
     if (spec.form === 'functionInput') {
       if (contract.kind !== 'input') {
         problems.push(
@@ -274,13 +129,6 @@ export function validateContract(contract, typeNames) {
     if (spec.form === 'event' && spec.payload === CONSUMER_DATA) routes.push(member);
   }
 
-  /* Consumer data Arena can never surface is dead API: Arena holds a record it
-   * is forbidden to inspect and has no way to hand back. The only two routes
-   * out are a slot parameter (the consumer draws it) and an event payload (the
-   * consumer receives it), so a contract taking consumer data in must declare
-   * at least one of them. This is one of exactly two mechanical guards on the
-   * form -- the other is the R1 extension above; everything else about it is an
-   * authoring rule with R2 and R3's status. See contracts/api/README.md. */
   if (held.length && !routes.length) {
     for (const member of held) {
       problems.push(
@@ -292,13 +140,6 @@ export function validateContract(contract, typeNames) {
   return problems;
 }
 
-/** Assertions 2, 3 and the layer half of 4, for one layer of one component.
- *  @param {Map<string,object>} [types] every declared contracts/api/types/ type, keyed
- *  by name, resolved by the CALLER (main() reads the filesystem once; this
- *  function stays pure and string-in/data-out, same as every other export
- *  here). Needed only to resolve an inline literal union's VALUES against a
- *  contract enum member -- see the comment beside that comparison below.
- *  @returns {string[]} problems */
 export function compareSurface(contract, members, layer, types = new Map()) {
   const problems = [];
   const where = `${layer}/${contract.component}`;
@@ -308,13 +149,7 @@ export function compareSurface(contract, members, layer, types = new Map()) {
   for (const [name, spec] of Object.entries(contract.api ?? {})) {
     const bound = bindingName(name, spec.form, layer);
     if (expected.has(bound)) {
-      /* Two distinct contract members bound to the same name in this layer --
-       * a contract-authoring error, not a layer defect. The first spec stays
-       * in `expected`; the collision problem below is what matters, and
-       * neither member is compared against `members` afterwards -- with two
-       * contract members claiming one bound name, there is no way to know
-       * which one a layer member matching that name is meant to satisfy, so
-       * verification of either is not possible while they collide. */
+
       problems.push(
         `${where}: contract members "${expected.get(bound).member}" and "${name}" both bind to "${bound}" `
         + `in ${layer} -- rename one; verification of either against the layer is not possible while they collide`,
@@ -328,16 +163,7 @@ export function compareSurface(contract, members, layer, types = new Map()) {
   const seen = new Set();
   const rawSeen = new Set();
   for (const m of members) {
-    /* Duplicate detection is on the RAW member name, before any contract
-     * binding is consulted -- two identical `icon` slots (StatCard.ts's own
-     * doc comment quoting the real template, before the templateSlots() fix
-     * above) must be caught even though both bind to a name the contract
-     * does declare, which is exactly the shape that made `seen.add()` alone
-     * silently swallow the second one: a Set add is a no-op on a name
-     * already present, so nothing distinguished "declared once, matched"
-     * from "declared twice, matched twice". This still falls through to
-     * every check below for the duplicate itself -- R4/R5/agreement judge a
-     * member on its own regardless of how many times its name repeats. */
+
     if (rawSeen.has(m.name)) {
       problems.push(`${where}.${m.name}: declared twice in this layer's own surface -- a slot mentioned in a doc comment as well as the real template is the known case`);
     } else {
@@ -355,14 +181,7 @@ export function compareSurface(contract, members, layer, types = new Map()) {
       problems.push(`${where}.${m.name}: the event payload "${m.payload}" is a platform type — R4`);
       continue;
     }
-    /* Only NOW, after a member's own form validity (R4, R5) has already been
-     * judged unconditionally, does a collided bound name stop the check. A
-     * collision means two distinct contract members claim this one bound
-     * name, so there is no way to know which one this layer member is meant
-     * to satisfy -- the AGREEMENT comparison below is impossible while they
-     * collide. That is not true of the checks above: R4 and R5 judge a
-     * member entirely on its own, with no reference to any contract spec, so
-     * they must still fire even at a collided name. */
+
     if (collided.has(m.name)) { seen.add(m.name); continue; }
     const spec = expected.get(m.name);
     if (!spec) {
@@ -370,13 +189,7 @@ export function compareSurface(contract, members, layer, types = new Map()) {
       continue;
     }
     seen.add(m.name);
-    /* A `named` form is the reader saying "an identifier I cannot resolve".
-     * It resolves ONLY against a contract `enum` or `object` member -- those
-     * are the two forms a declared type name can carry; the contract's own
-     * type name is what decides which, and validateContract already proved
-     * that name is declared and of the right kind. Against any other
-     * contract form (primitive, slot, array, event) a bare type reference
-     * cannot satisfy it, so it is a mismatch like any other form disagreement. */
+
     if (m.form === 'named') {
       if (spec.form !== 'enum' && spec.form !== 'object') {
         problems.push(`${where}.${m.name}: declared as named type "${m.type}", contract says ${spec.form}`);
@@ -386,25 +199,7 @@ export function compareSurface(contract, members, layer, types = new Map()) {
       problems.push(`${where}.${m.name}: declared as ${m.form}, contract says ${spec.form}`);
       continue;
     }
-    /* Required-ness is contracted, and compared, for the five inbound
-     * non-slot forms only -- `slot` and `event` are excluded because neither
-     * platform pair can express the concept, not because a divergence there
-     * is excused. A required SLOT is not comparable: React can express one
-     * (`children: React.ReactNode`, no `?`), but Angular's `<ng-content>` has
-     * no way to declare projected content mandatory -- `templateSlots()`
-     * always reports `required: false`, so comparing would fail every
-     * contract that declares a required slot against Angular forever, for a
-     * platform syntax limit and not a real divergence. An EVENT's
-     * required-ness is not comparable either: an outbound member is never
-     * "required" on either platform -- a consumer is always free not to
-     * listen, React binds it as an optional function prop and Angular as an
-     * `output()`, and neither has a notion of a mandatory listener. Both
-     * sides are normalised to a boolean before comparing, so a contract with
-     * no `required` key (optional) reads the same as a layer's explicit
-     * `required: false`. This runs only once the form itself already agrees
-     * (the branch above already `continue`d otherwise), so a member whose
-     * form is wrong reports that, not a second problem about the same
-     * defect. */
+
     if (spec.form === 'primitive' || spec.form === 'enum' || spec.form === 'object'
       || spec.form === 'array' || spec.form === 'consumerData' || spec.form === 'functionInput') {
       const contractRequired = Boolean(spec.required);
@@ -422,12 +217,7 @@ export function compareSurface(contract, members, layer, types = new Map()) {
     if (spec.form === 'event' && (m.payload ?? null) !== (spec.payload ?? null)) {
       problems.push(`${where}.${m.name}: payload ${m.payload ?? 'none'}, contract says ${spec.payload ?? 'none'}`);
     }
-    /* The ninth form's signature is COMPARED, not merely declared. The whole
-     * claim the form makes is that its signature is modelled; matching on FORM
-     * alone would let a layer take a number where the contract says string and
-     * call that agreement, which is exactly the hole `default` still has --
-     * documented in the contract format and read by nothing. Compared key by
-     * key in both directions, and the return alongside it. */
+
     if (spec.form === 'functionInput') {
       const layerParams = m.params ?? {};
       const contractParams = spec.params ?? {};
@@ -448,28 +238,11 @@ export function compareSurface(contract, members, layer, types = new Map()) {
     if ((spec.form === 'enum' || spec.form === 'object') && m.type && m.type !== spec.type) {
       problems.push(`${where}.${m.name}: typed ${m.type}, contract says ${spec.type}`);
     }
-    /* The last unguarded type position. It can only run when both sides are
-     * already `primitive`, because the form mismatch above `continue`s; and
-     * neither side can be undefined, because validateContract() asserts a
-     * contract primitive's type is one of string|number|boolean and classify()
-     * returns a type for exactly those three. So this needs no normalisation
-     * and no exception map -- which matters, because this is the one gate in
-     * the repo that deliberately has none. It is a pure ratchet: measured
-     * against the finished tree it flags nothing that exists today (238
-     * contract/layer primitive pairs, 0 mismatches), and forbids the next one. */
+
     if (spec.form === 'primitive' && m.type !== spec.type) {
       problems.push(`${where}.${m.name}: typed ${m.type}, contract says ${spec.type}`);
     }
-    /* An INLINE literal union (`'sm' | 'md'`) classifies as {form:'enum',
-     * values:[...]} with no `type` -- classify() has nothing to name it
-     * with, unlike a named identifier (`LogoSize`), which comes back as
-     * `form: 'named'` and is resolved above. That absence of `m.type` is
-     * exactly why the check above never ran for this shape: its guard is
-     * `m.type &&`, so a layer spelling the contract's enum as an inline
-     * union always matched on FORM alone, with its actual values compared
-     * to nothing. Resolve the contract's own enum by name against `types`
-     * (the caller's contracts/api/types/ map) and compare the two VALUE SETS,
-     * membership only -- order carries no meaning in either union. */
+
     if (spec.form === 'enum' && m.form === 'enum' && Array.isArray(m.values)) {
       const declared = types.get(spec.type);
       if (declared?.kind === 'enum' && Array.isArray(declared.values)) {
@@ -496,22 +269,6 @@ export function compareSurface(contract, members, layer, types = new Map()) {
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 
-/** Which React components this gate can read, and what it must complain about,
- *  from the layer tree as `category -> kebab directory names` and a predicate
- *  saying whether a repo-relative path exists. The exact mirror of
- *  resolveAngularImplementations below, and pure for the same reason: both rules
- *  are guards against a SILENT failure, so a guard with no suite behind it would
- *  survive its own deletion.
- *
- *  It replaces an existsSync probe over a hardcoded group list that returned
- *  null on a miss -- the same shape that made the Angular half of this gate
- *  print "50 contract(s) hold across 50 layer implementation(s)" while twenty
- *  real implementations went unread. React's failure mode was loud rather than
- *  silent only because React holds the majority of the contracts, so a broken
- *  lookup skipped nearly all of them at once; that is a property of today's
- *  contract distribution and never a property of the probe.
- *  @param {Record<string,string[]>} tree @param {(p: string) => boolean} exists
- *  @returns {{implementations: Map<string,string>, problems: string[]}} */
 export function resolveReactImplementations(tree, exists) {
   const implementations = new Map();
   const problems = [];
@@ -529,9 +286,6 @@ export function resolveReactImplementations(tree, exists) {
   return { implementations, problems };
 }
 
-/** resolveReactImplementations above, wired to the real tree: the only things
- *  this adds are readLayer('react'), an existsSync against the repo root, and
- *  the resolution of each relative path to an absolute one. */
 function reactImplementations() {
   const { implementations, problems } = resolveReactImplementations(
     readLayer('react'),
@@ -543,52 +297,6 @@ function reactImplementations() {
   };
 }
 
-/** Decide which Angular components this gate can read, and what it must
- *  complain about, from the layer tree as `category -> kebab directory names`
- *  and a predicate saying whether a repo-relative path exists. Pure, and
- *  exported for that reason: both rules below are guards against a SILENT
- *  failure, so a guard with no suite behind it would itself survive its own
- *  deletion -- which is how this gate came to need them in the first place.
- *  Every sibling zero-result guard in this repo is an exported pure function
- *  with a suite (zeroLayerProblems in check-structure.mjs, checkCompiled's
- *  manifest count in check-tailwind.mjs, zeroManifestProblem in
- *  check-radius-tokens.mjs); this is the same shape.
- *
- *  THE GUARDS ARE THE POINT, and they exist because this gate shipped the exact
- *  failure they now refuse. angularPath() used to build
- *  `frameworks/angular/primitives/<kebab>/<kebab>.ts` per contract and wrap the
- *  lookup in existsSync, returning null on a miss; when the structure refactor
- *  moved the layer to `components/<category>/<kebab>/<Pascal>.ts` every lookup
- *  missed, main()'s `if (!path) continue` skipped the Angular half of
- *  compareSurface for all fifty contracts, and the gate printed
- *  "50 contract(s) hold across 50 layer implementation(s)" and exited 0 while
- *  twenty real Angular implementations went unread. A gate that resolves an
- *  implementation to null cannot tell "this layer does not implement it" from
- *  "this gate cannot find it", and the second one is silent by construction.
- *
- *  So absence is decided by WALKING the layer, and two things are reported
- *  rather than skipped. A directory the tree really has whose component file
- *  this gate cannot open is a problem -- that is the per-component half, and it
- *  is what a rename or a single moved directory looks like. Zero directories
- *  altogether is a problem too -- that is the whole-layer half, the same shape
- *  as check-tailwind.mjs's "found 0 manifests" and check-structure.mjs's
- *  zero-directory guard, and it is what a moved or renamed LAYER looks like.
- *  Neither can be reached by a component that Angular genuinely does not
- *  implement, which simply has no directory and is correctly silent.
- *
- *  The two rules are DISTINCT, not one rule stated twice, and each fires
- *  alone: a renamed component file leaves the walk non-empty and produces the
- *  per-directory problem only, while a moved layer makes readLayer() return {}
- *  so there is no directory for a per-directory problem to be about and the
- *  zero-total one fires by itself.
- *
- *  Paths are repo-RELATIVE both in and out; the caller resolves them against
- *  its own root. That is what lets the whole decision be tested against a Set
- *  rather than a filesystem, and it keeps the problem message -- which quotes
- *  the relative path -- exactly what a reader sees.
- *  @param {Record<string, string[]>} tree category -> kebab directory names
- *  @param {(path: string) => boolean} exists predicate on a repo-relative path
- *  @returns {{implementations: Map<string, string>, problems: string[]}} */
 export function resolveAngularImplementations(tree, exists) {
   const implementations = new Map();
   const problems = [];
@@ -606,9 +314,6 @@ export function resolveAngularImplementations(tree, exists) {
   return { implementations, problems };
 }
 
-/** resolveAngularImplementations above, wired to the real tree: the only
- *  things this adds are readLayer('angular'), an existsSync against the repo
- *  root, and the resolution of each relative path to an absolute one. */
 function angularImplementations() {
   const { implementations, problems } = resolveAngularImplementations(
     readLayer('angular'),
@@ -623,11 +328,6 @@ function angularImplementations() {
 function main() {
   const problems = [];
 
-  /* 5. Generated drift, first -- not because any later assertion depends on
-   *    it (typeNames below is built straight from contracts/api/types/, never from the
-   *    generated modules; the two read independent sources), but because a
-   *    stale generated module is the problem most likely to explain every
-   *    other one, so it should head the list. */
   for (const [path, expected] of buildApiModules()) {
     let actual;
     try { actual = readFileSync(join(root, path), 'utf8'); }
@@ -635,33 +335,17 @@ function main() {
     if (actual !== expected) problems.push(`${path}: stale — run bun run build:api`);
   }
 
-  /* 4a. The type declarations themselves, R1 included. */
   const typeDir = join(root, 'contracts/api/types');
   const types = readdirSync(typeDir).filter((f) => f.endsWith('.json')).sort().map((f) => read(join(typeDir, f)));
   problems.push(...validateTypes(types));
   const typeNames = new Map(types.map((t) => [t.name, t.kind]));
-  /* compareSurface's fourth parameter -- the FULL declared type (values
-   * included, not just its kind), so it can resolve an inline literal
-   * union's value set against the enum its contract member names. Built
-   * here, once, from the same contracts/api/types/ read `typeNames` already uses --
-   * compareSurface itself never touches the filesystem. */
+
   const typesByName = new Map(types.map((t) => [t.name, t]));
 
   const contractDir = join(root, 'contracts/api/components');
   const files = existsSync(contractDir) ? readdirSync(contractDir).filter((f) => f.endsWith('.json')).sort() : [];
   problems.push(...zeroContractProblems({ contracts: files.length, types: types.length }));
-  /* Both layers are discovered by walking, once, before the contract loop --
-   * never probed per contract. A contract naming a component a layer does not
-   * implement simply misses the map, which is absence and correctly silent; a
-   * directory the walk really found but whose surface file is unopenable is a
-   * problem the walk itself reports, which is what "absent" and "not found"
-   * being one value used to hide. Every component directory contributes to the
-   * map whether a contract names it or not, so the map never has to know what
-   * is contracted -- coverage here is partial by design, and the lookups below
-   * take from it only the names contracts/api/components/ asks for. A directory no
-   * contract names is simply never looked up; it is not a problem, and the
-   * per-directory guard above is about a directory whose SURFACE FILE is
-   * missing, which is a different question and true regardless. */
+
   const reactLayer = reactImplementations();
   problems.push(...reactLayer.problems);
   const angularLayer = angularImplementations();
@@ -672,7 +356,6 @@ function main() {
     const contract = read(join(contractDir, file));
     problems.push(...validateContract(contract, typeNames));
 
-    /* 1. Coverage, resolved structurally rather than from a list. */
     const react = reactLayer.implementations.get(contract.component) ?? null;
     const angular = angularLayer.implementations.get(contract.component) ?? null;
     if (!react && !angular) {
@@ -680,8 +363,6 @@ function main() {
       continue;
     }
 
-    /* 2, 3, 4b. Each implementing layer, and only those: a component in one
-     *           layer only is absence, not divergence. */
     for (const [layer, path, readSurface, symbol] of [
       ['react', react, reactSurface, `${contract.component}Props`],
       ['angular', angular, angularSurface, contract.component],

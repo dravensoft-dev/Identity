@@ -1,15 +1,3 @@
-/* Unit tests for the DOM-generic requirement evaluator. This suite runs under
- * plain node as well as bun (check-all.mjs runs scripts/ both ways), and plain
- * node has no DOM — so every element here is a hand-built stub implementing the
- * four members the evaluator is allowed to touch. That constraint is the reason
- * the evaluator takes an element rather than a selector.
- *
- * It also reads contracts/behaviour/ directly. That is allowed and deliberate:
- * contracts/behaviour/ is framework-agnostic JSON, not a framework layer, and the whole
- * class of defect this suite was rewritten to catch was the evaluator's maps
- * disagreeing with the real pattern files while every stub-based test stayed
- * green. The module under test still contains no node:fs — the reading happens
- * here, where it belongs. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
@@ -23,7 +11,6 @@ import {
 
 const PATTERN_DIR = join(dirname(dirname(fileURLToPath(import.meta.url))), 'contracts', 'behaviour');
 
-/** name -> pattern, read from the real files. */
 const PATTERNS = new Map(
   readdirSync(PATTERN_DIR)
     .filter((f) => extname(f) === '.json')
@@ -31,8 +18,6 @@ const PATTERNS = new Map(
     .map((f) => [basename(f, '.json'), JSON.parse(readFileSync(join(PATTERN_DIR, f), 'utf8'))]),
 );
 
-/** A minimal stand-in for a DOM element. `text` becomes textContent, the fourth
- *  and newest member of the surface the evaluator may touch. */
 function el(tagName, attrs = {}, text = '') {
   return {
     tagName: tagName.toUpperCase(),
@@ -47,9 +32,7 @@ test('roleOf prefers an explicit role', () => {
 });
 
 test('roleOf takes the first token of a multi-token role', () => {
-  // ARIA allows a fallback list; roleOf takes the first token and trims
-  // surrounding whitespace. That is all this pins — whether any Arena component
-  // actually authors such a list is not checked anywhere.
+
   assert.equal(roleOf(el('div', { role: 'doc-abstract  region' })), 'doc-abstract');
   assert.equal(roleOf(el('div', { role: '  button ' })), 'button');
 });
@@ -70,8 +53,7 @@ test('roleOf gives a section a role only when it is named', () => {
 });
 
 test('roleOf does not let text content name a section', () => {
-  // The section branch passes acceptsText:false on purpose — text content never
-  // names a landmark, and a widened hasAccessibleName must not leak in here.
+
   assert.equal(roleOf(el('section', {}, 'Schedule')), null);
 });
 
@@ -81,9 +63,7 @@ test('roleOf returns null for an element with no role of any kind', () => {
 });
 
 test('hasAccessibleName accepts aria-label, and returns false with no naming route', () => {
-  // The aria-labelledby half of this test used to sit here too, asserting the OLD
-  // presence-only semantics -- it now resolves rather than merely existing, and
-  // moves into its own tests below.
+
   assert.equal(hasAccessibleName(el('div', { 'aria-label': 'Loading' })), true);
   assert.equal(hasAccessibleName(el('div')), false);
 });
@@ -93,12 +73,6 @@ test('hasAccessibleName credits text content only when asked to', () => {
   assert.equal(hasAccessibleName(el('button', {}, 'Save')), false, 'strict by default');
   assert.equal(hasAccessibleName(el('button', {}, '   '), true), false, 'whitespace is not a name');
 });
-
-/* aria-labelledby must RESOLVE, not merely be present -- the commonest reference
- * of all, and the one 8C7 left ungoverned because roles.label never reaches
- * ATTRIBUTE_FOR. Deleting id={titleId} from Dialog.jsx used to leave a dangling
- * reference on a dialog with no accessible name at all, and dialog-modal.test.jsx
- * still reported 6 pass / 0 fail. These tests close that. */
 
 test('aria-label alone names the element without consulting the resolver', () => {
   let asked = false;
@@ -115,8 +89,6 @@ test('a dangling aria-labelledby does NOT name the element', () => {
   assert.equal(hasAccessibleName(el('div', { 'aria-labelledby': 'gone' }), false, () => null), false);
 });
 
-/* aria-labelledby concatenates, so EVERY id must resolve -- unlike
-   aria-describedby, whose rule and reason live in IDREF_ATTRIBUTES. */
 test('every id in an aria-labelledby list must resolve', () => {
   const d = el('div', { 'aria-labelledby': 'a b' });
   const onlyA = (id) => (id === 'a' ? el('span') : null);
@@ -124,10 +96,6 @@ test('every id in an aria-labelledby list must resolve', () => {
   assert.equal(hasAccessibleName(d, false, () => el('span')), true);
 });
 
-/* The three routes are ALTERNATIVES, so a dangling reference falls through to
-   the next one rather than nulling the name -- which is also what a real
-   accessible-name computation does. The resolver is never consulted here,
-   because text answered first, and that is what the order is for. */
 test('text content still names an element whose aria-labelledby dangles', () => {
   let asked = false;
   const b = el('button', { 'aria-labelledby': 'gone' }, 'Save');
@@ -152,19 +120,11 @@ test('an element with no naming route at all needs no resolver', () => {
   assert.equal(hasAccessibleName(el('button', {}, 'Save'), true), true);
 });
 
-/* roleOf asks the same question for a <section>: unnamed, it exposes no role at
-   all, so a labelledby that resolves to nothing must take the role with it. */
 test('roleOf refuses region to a section whose aria-labelledby dangles', () => {
   assert.equal(roleOf(el('section', { 'aria-labelledby': 'gone' }), () => null), null);
   assert.equal(roleOf(el('section', { 'aria-labelledby': 'h1' }), () => el('h2')), 'region');
 });
 
-/* And roleOf inherits the throw, which is the reach worth pinning: every key
-   routed through roleOf() can raise it, and two of those branches --
-   states.checked and live.politeness -- read as entirely unrelated to naming, so
-   a caller has no reason to expect a naming error from them. The two roleOf
-   tests above both return before the throw: one supplies a resolver, the other
-   uses a section with no aria-labelledby at all. */
 test('a section named only by aria-labelledby THROWS through roleOf with no resolver', () => {
   assert.throws(
     () => roleOf(el('section', { 'aria-labelledby': 'x' })),
@@ -189,15 +149,6 @@ test('isFocusable rejects a disabled native control and a negative tabindex', ()
   assert.equal(isFocusable(el('span', { tabindex: '-1' })), false);
 });
 
-/* ------------------------------------------------------------------ *
- * The maps against the real pattern files.
- *
- * These are the tests that would have caught the whole class of defect
- * this file was rewritten for: the evaluator's view of what a pattern
- * requires drifting from what contracts/behaviour/ actually says, with
- * every stub-based test still green.
- * ------------------------------------------------------------------ */
-
 test('every requirement key in every pattern is DECIDABLE or BEHAVIOURAL', () => {
   const unclassified = [];
   for (const [name, pattern] of PATTERNS) {
@@ -209,9 +160,7 @@ test('every requirement key in every pattern is DECIDABLE or BEHAVIOURAL', () =>
 });
 
 test('DECIDABLE and BEHAVIOURAL name no key that no pattern uses', () => {
-  // The stale-entry rule, in the direction that rots silently — the same
-  // invariant check-dimension-literals.mjs's EXEMPT carries, and the reason it
-  // is trusted rather than merely present.
+
   const used = new Set();
   for (const pattern of PATTERNS.values()) for (const key of Object.keys(pattern.requires ?? {})) used.add(key);
   const stale = [...DECIDABLE, ...BEHAVIOURAL].filter((k) => !used.has(k));
@@ -239,17 +188,7 @@ test('ELEMENT_ROLE names no pattern that does not require roles.element', () => 
 });
 
 test('every ELEMENT_ROLE value is the role its own pattern names', () => {
-  // The keys of this map were checked in both directions and its VALUES were not,
-  // which left the map one typo away from the exact defect the previous fix round
-  // existed to remove: `toolbar: 'toolbr'` satisfied every other test here and
-  // would report a false OVERCLAIM against a correct <div role="toolbar">, whose
-  // cheapest cure is a fabricated exception in the binding.
-  //
-  // The tie is that all 13 roles appear verbatim inside their own pattern's
-  // roles.element prose — even navigation's, which is a whole sentence wrapped
-  // around the word. That is the only machine-checkable link between this map and
-  // the source of truth; a value that is a real role but the WRONG one for the
-  // pattern is still out of reach here, and only a rendered component catches it.
+
   for (const [name, role] of Object.entries(ELEMENT_ROLE)) {
     const prose = String(PATTERNS.get(name)?.requires?.['roles.element'] ?? '');
     assert.match(prose, new RegExp(`\\b${role}\\b`, 'i'),
@@ -266,8 +205,7 @@ test('every pattern in LABEL_ACCEPTS_TEXT really admits text content as its name
 });
 
 test('no pattern outside LABEL_ACCEPTS_TEXT admits text content', () => {
-  // The converse, so a pattern file reworded to allow text content cannot leave
-  // the whitelist behind and quietly start producing false OVERCLAIMs.
+
   for (const [name, pattern] of PATTERNS) {
     const value = pattern.requires?.['roles.label'];
     if (!value || LABEL_ACCEPTS_TEXT.has(name)) continue;
@@ -282,21 +220,14 @@ test('the disclosure pattern is bound to the button role', () => {
   assert.equal(ELEMENT_ROLE.disclosure, 'button');
   assert.ok(LABEL_ACCEPTS_TEXT.has('disclosure'),
     'a disclosure button is named by its own text content');
-  // Every key it requires must already be decidable or behavioural: this pattern
-  // deliberately introduces no new requirement vocabulary.
+
   for (const key of Object.keys(pattern.requires)) {
     assert.ok(DECIDABLE.has(key) || BEHAVIOURAL.has(key), `${key} is in neither set`);
   }
 });
 
-/* ------------------------------------------------------------------ *
- * evaluate — regressions for the three defects that made correct
- * components report OVERCLAIM.
- * ------------------------------------------------------------------ */
-
 test('evaluate resolves roles.element from the pattern, not from its prose', () => {
-  // navigation's value is a whole sentence. Comparing against it made a real
-  // <nav> — SideNav's root — fail its own pattern.
+
   const prose = PATTERNS.get('navigation').requires['roles.element'];
   assert.match(String(prose), /^navigation \(native nav/, 'the prose is still a sentence, so this test still means something');
   assert.equal(evaluate(el('nav', { 'aria-label': 'Main' }), 'roles.element', prose, 'navigation'), true);
@@ -335,7 +266,7 @@ test('evaluate decides the aria-state requirements by attribute presence', () =>
 test('evaluate resolves the role-named-by-key requirements, single and array', () => {
   assert.equal(evaluate(el('div', { role: 'grid' }), 'roles.grid', '', 'grid'), true);
   assert.equal(evaluate(el('tr'), 'roles.row', '', 'grid'), true);
-  // roles.cell accepts any of four roles; roles.group and roles.item likewise.
+
   for (const role of ['gridcell', 'columnheader', 'rowheader']) {
     assert.equal(evaluate(el('div', { role }), 'roles.cell', '', 'grid'), true, role);
   }
@@ -350,9 +281,7 @@ test('evaluate resolves the role-named-by-key requirements, single and array', (
 });
 
 test('evaluate credits native checked-ness for states.checked', () => {
-  // The implicit-semantics principle the module already applied to roles and had
-  // failed to apply to states: a native checkbox exposes checked-ness through the
-  // platform and has no aria-checked to read.
+
   assert.equal(evaluate(el('input', { type: 'checkbox' }), 'states.checked', '', 'checkbox'), true);
   assert.equal(evaluate(el('input', { type: 'radio' }), 'states.checked', '', 'radiogroup'), true);
   assert.equal(evaluate(el('div', { role: 'checkbox', 'aria-checked': 'false' }), 'states.checked', '', 'checkbox'), true);
@@ -382,9 +311,7 @@ test('evaluate returns null for a requirement no single element can decide', () 
 });
 
 test('evaluate treats the conditional states as behavioural, not as presence', () => {
-  // An enabled button correctly carries no aria-disabled. Reading that as unmet
-  // is what produced "Button, enabled: states.disabled: OVERCLAIM" against a
-  // component doing exactly the right thing.
+
   assert.equal(evaluate(el('button', {}, 'Save'), 'states.disabled', '', 'button'), null);
   for (const key of ['states.required', 'states.readonly', 'states.multiselectable', 'states.busy', 'states.posinset']) {
     assert.equal(evaluate(el('div'), key, '', 'textbox'), null, key);
@@ -392,9 +319,7 @@ test('evaluate treats the conditional states as behavioural, not as presence', (
 });
 
 test('evaluate throws on an unrecognised requirement key', () => {
-  // The typo case. This used to return null, comparePattern told the author to
-  // declare it behavioural, and once declared the misspelt key passed forever
-  // while the real requirement was never checked.
+
   assert.throws(() => evaluate(el('div'), 'states.chekced', '', 'checkbox'), /states\.chekced/);
   assert.throws(() => evaluate(el('div'), 'nonsense', '', 'checkbox'), /nonsense/);
 });
@@ -419,15 +344,6 @@ test('DECIDABLE omits every behavioural family', () => {
   }
 });
 
-/* comparePattern — the bidirectional comparison both layers share.
- *
- * It is tested here, against stub elements, rather than through a rendered React
- * tree or an Angular fixture. That is deliberate: the comparison is pure logic
- * over a parsed pattern, a parsed binding and an element, and testing it through
- * a render would make the slowest harness in the repo responsible for proving
- * the cheapest function in it. The render suites then test what only they can —
- * that a real component's DOM says what its binding claims. */
-
 const DIALOG_MODAL = {
   name: 'dialog-modal',
   requires: {
@@ -439,9 +355,6 @@ const DIALOG_MODAL = {
   },
 };
 
-/** The shape `behavioural` takes now: key -> the verdict the caller's own
- *  behavioural test established. Both of DIALOG_MODAL's undecidable requirements,
- *  declared met, which is what a passing focus-trap and Escape test would report. */
 const BEHAVIOURAL_MET = { 'focus.trap': true, 'keyboard.Escape': true };
 
 test('comparePattern is silent when the DOM and the binding agree', () => {
@@ -456,10 +369,10 @@ test('comparePattern is silent when the DOM and the binding agree', () => {
 });
 
 test('comparePattern treats a binding with no exceptions field as having none', () => {
-  const subject = el('div', { role: 'dialog', 'aria-modal': 'true' });   // no name
+  const subject = el('div', { role: 'dialog', 'aria-modal': 'true' });
   const problems = comparePattern({
     pattern: DIALOG_MODAL,
-    binding: { pattern: 'dialog-modal' },   // no `exceptions` key at all
+    binding: { pattern: 'dialog-modal' },
     fallback: subject,
     behavioural: BEHAVIOURAL_MET,
   });
@@ -494,10 +407,7 @@ test('comparePattern reports an overclaim when a requirement is unmet and unexce
 });
 
 test('comparePattern is silent for a correct button, which is the case it used to fail', () => {
-  // Every one of these requirements is met by a plain native <button> with a
-  // text label, and Button's binding declares no exception. Before ELEMENT_ROLE
-  // and LABEL_ACCEPTS_TEXT this produced three false OVERCLAIMs, and the cheapest
-  // way to silence them would have been to fabricate exceptions into the binding.
+
   const button = PATTERNS.get('button');
   const problems = comparePattern({
     pattern: button,
@@ -533,14 +443,6 @@ test('comparePattern reports a behavioural declaration the pattern no longer has
   assert.match(problems[0], /focus\.roving/);
 });
 
-/* The four branches of a declared behavioural verdict.
- *
- * These exist because the old `string[]` shape had no branches at all: a declared
- * key did `used.add(key); continue;` and the binding's exceptions were never
- * consulted, so an exception on a behavioural key could rot forever — 48 of the 94
- * live exceptions in the tree at the time sat on exactly such keys. The first two
- * cases below both returned `[]` in silence. */
-
 const EXCEPTS_TRAP = {
   pattern: 'dialog-modal',
   exceptions: [{ requirement: 'focus.trap', reason: 'no focus trap is implemented' }],
@@ -548,9 +450,7 @@ const EXCEPTS_TRAP = {
 const NAMED_DIALOG = () => el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Delete' });
 
 test('comparePattern reports a stale exception on a behavioural key declared met', () => {
-  // The contradiction this whole change exists for: the binding says "we do not
-  // implement this", the suite's own test says it proved it met. One of the two is
-  // wrong and the layer must say so rather than pass both.
+
   const problems = comparePattern({
     pattern: DIALOG_MODAL,
     binding: EXCEPTS_TRAP,
@@ -577,8 +477,7 @@ test('comparePattern reports an overclaim on a behavioural key declared unmet', 
 });
 
 test('comparePattern is silent when a behavioural verdict of false matches an exception', () => {
-  // The honest state, and the common one: the component does not do it, the
-  // suite's test confirms it does not, the binding records why. Nothing to report.
+
   const problems = comparePattern({
     pattern: DIALOG_MODAL,
     binding: EXCEPTS_TRAP,
@@ -599,9 +498,7 @@ test('comparePattern is silent when a behavioural verdict of true has no excepti
 });
 
 test('comparePattern still refuses an undecidable key absent from the map', () => {
-  // Present-with-a-false-verdict and absent are different states, and only the
-  // second is a hole in the suite. Declaring `false` is an assertion; omitting the
-  // key is silence, which is what this layer exists to remove.
+
   const problems = comparePattern({
     pattern: DIALOG_MODAL,
     binding: EXCEPTS_TRAP,
@@ -614,9 +511,7 @@ test('comparePattern still refuses an undecidable key absent from the map', () =
 });
 
 test('comparePattern uses a per-requirement subject over the fallback', () => {
-  // The Menu case in miniature: the attribute is present in the tree, but on an
-  // element that is not the one the requirement is about. Naming the subject is
-  // the whole difference between a true exception and a falsely retired one.
+
   const wrapper = el('span', { 'aria-haspopup': 'menu' });
   const trigger = el('button');
   const pattern = { name: 'menu-button', requires: { 'roles.haspopup': 'menu' } };
@@ -646,28 +541,15 @@ test('comparePattern reports a missing subject once per requirement', () => {
     fallback: null,
     behavioural: BEHAVIOURAL_MET,
   });
-  // The exact count, not `> 0` — one message per requirement, plus one per
-  // declared behavioural key, because a requirement skipped for want of a
-  // subject never marks its key used. Both halves are correct and both are worth
-  // pinning: a rendered-nothing suite should hear about everything at once
-  // rather than one requirement per run.
+
   const missing = problems.filter((p) => /no subject element/.test(p));
   const unreached = problems.filter((p) => /never reached/.test(p));
   assert.equal(missing.length, Object.keys(DIALOG_MODAL.requires).length);
   assert.equal(unreached.length, Object.keys(BEHAVIOURAL_MET).length);
-  // And the wording names the real cause. The generic message tells the author the
-  // pattern no longer requires it or it has become decidable; both are false here,
-  // and following it deletes a correct declaration.
+
   for (const p of unreached) assert.match(p, /because a subject element above was missing/);
   assert.equal(problems.length, missing.length + unreached.length);
 });
-
-/* An IDREF requirement must RESOLVE its reference, not merely find the
- * attribute present. 8C6 shipped exactly the gap these tests close: a Tabs
- * strip where every unselected tab's aria-controls pointed at an id nothing
- * rendered, and the presence-only check reported roles.controls met anyway.
- * These reuse the file's own `el()` stub — it already implements the four
- * members the evaluator may touch, which is all a resolver test needs. */
 
 test('an IDREF that resolves meets the requirement', () => {
   const tab = el('button', { 'aria-controls': 'panel-1' });
@@ -688,11 +570,6 @@ test('a missing IDREF attribute is unmet without consulting the resolver', () =>
   assert.equal(asked, false, 'the resolver was consulted for an absent attribute');
 });
 
-/* aria-describedby holds a SPACE-SEPARATED LIST, and Tooltip merges the
- * consumer's own description with the bubble's id. A consumer's id may name an
- * element outside the component's own rendered tree, which is legitimate -- so
- * the requirement is met when the reference to OUR element lands, not when every
- * id in the list does. */
 test('one resolving id in a list is enough', () => {
   const trigger = el('button', { 'aria-describedby': 'consumer-hint tooltip-1' });
   const resolve = (id) => (id === 'tooltip-1' ? el('span') : null);
@@ -717,8 +594,6 @@ test('a non-IDREF attribute requirement still needs no resolver', () => {
   assert.equal(evaluate(t, 'states.selected', 'x', 'tabs'), true);
 });
 
-/* Strictness is a fact about the ATTRIBUTE. 8C7 applied `some` to all three keys
-   it knew about, on a justification that belongs to exactly one of them. */
 test('an aria-controls list is met only when EVERY id resolves', () => {
   const tab = el('button', { 'aria-controls': 'panel-1 panel-2' });
   const both = (id) => (id === 'panel-1' || id === 'panel-2' ? el('div') : null);
@@ -734,16 +609,11 @@ test('aria-describedby keeps the one-resolving-id rule, and keeps its reason', (
   assert.equal(IDREF_ATTRIBUTES.get('aria-describedby').match, 'some');
 });
 
-/* `every` over an empty list is vacuously TRUE, which would report the emptiest
-   possible reference as met -- the exact shape of failure this file refuses. */
 test('a reference attribute holding only whitespace names nothing', () => {
   const tab = el('button', { 'aria-controls': '   ' });
   assert.equal(evaluate(tab, 'roles.controls', 'x', 'tabs', () => el('div')), false);
 });
 
-/* Membership only. This would pass identically against a hand-written set, so it
-   pins WHAT IDREF holds and says nothing about where it comes from; the two
-   IDREF_ATTRIBUTES staleness tests below are what hold the derivation honest. */
 test('IDREF holds exactly the reference keys that reach ATTRIBUTE_FOR', () => {
   assert.deepEqual(
     [...IDREF].sort(),
@@ -751,8 +621,6 @@ test('IDREF holds exactly the reference keys that reach ATTRIBUTE_FOR', () => {
   );
 });
 
-/* The staleness discipline QUANTIFIED and EXEMPT carry: an entry naming an
-   attribute no branch of this file reads fails the suite rather than rotting. */
 test('every IDREF_ATTRIBUTES entry names an attribute the evaluator actually consults', () => {
   const consulted = new Set([...Object.values(ATTRIBUTE_FOR), 'aria-labelledby']);
   for (const attr of IDREF_ATTRIBUTES.keys()) {
@@ -799,11 +667,6 @@ test('a resolving reference with an exception declared is a STALE EXCEPTION', ()
   assert.match(problems[0], /STALE EXCEPTION/);
 });
 
-/* A requirement quantified over "each" must be checked against each. 8C6 shipped
- * a Tabs strip where checking only the selected tab's aria-controls passed while
- * N-1 unselected tabs referenced a panel that did not exist -- the same defect
- * the IDREF tests above close for a single element, one level up: a collection. */
-
 test('an array subject is met only when every element meets it', () => {
   const ok = el('button', { 'aria-selected': 'false' });
   const bad = el('button');
@@ -842,10 +705,6 @@ test('a quantified requirement given ONE element throws', () => {
   );
 });
 
-/* Same throw, different state, and the message must not conflate them:
-   Array.isArray(null) is false, so a `default` selector that matched nothing used
-   to be reported as "a single element" and sent its author hunting for a second
-   element they had none of. */
 test('a quantified requirement given a NULL subject says so, not "a single element"', () => {
   assert.throws(
     () => comparePattern({
@@ -880,10 +739,6 @@ test('an empty array reads as a missing subject, not as vacuously met', () => {
   assert.match(problems[0], /no subject element/);
 });
 
-/* The curated maps carry EXEMPT's discipline: an entry that no longer names a
-   real pattern requirement fails this suite rather than rotting quietly. This
-   suite already reads contracts/behaviour/ once, into PATTERNS (see the top of
-   this file) -- that map is reused here rather than adding a second reader. */
 test('every QUANTIFIED and NOT_QUANTIFIED key names a real pattern requirement', () => {
   for (const map of [QUANTIFIED, NOT_QUANTIFIED]) {
     for (const key of map.keys()) {

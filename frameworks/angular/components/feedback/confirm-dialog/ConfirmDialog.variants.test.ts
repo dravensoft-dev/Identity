@@ -1,8 +1,3 @@
-/* Plan 5a's ConfirmDialog slice, added beside tag-variants.test.ts per this
- * directory's own header comment: what is worth asserting is the recipe.
- * This is the one component in the whole system allowed a filled danger
- * surface, and only on its final confirmation -- the tests below exist to
- * pin that boundary exactly, not just to exercise the recipe. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { confirmDialogStyles } from './ConfirmDialog.variants';
@@ -76,8 +71,6 @@ test('the closed default keeps the root hidden -- open defaults to false, matchi
 });
 
 test('the root slot carries a display utility in its own base string, independent of the open variant', () => {
-  // This is the property frameworks/angular/test/HostClassBinding.test.ts
-  // machine-checks against every primitive's manifest on disk; this asserts
-  // the same thing against the recipe's own default output.
+
   assert.match(confirmDialogStyles({ open: true }).root(), /\bflex\b/);
 });
