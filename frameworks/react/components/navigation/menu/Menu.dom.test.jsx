@@ -1,3 +1,9 @@
+/* `DropsProps` below is the load-bearing fixture: Arena's own components forward
+ * the props they DECLARE and drop the rest, since the API contract flattened
+ * their {...rest} spreads, so `onClick` arrives and aria-haspopup does not.
+ * That is the DEFAULT usage on the demo page, where the trigger is <Button>,
+ * and every other assertion here uses a raw <button> -- the one shape a
+ * cloneElement injection reaches. It fails without the DOM guarantee. */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
@@ -140,12 +146,6 @@ test('Menu meets the menu-button pattern it binds', () => {
   });
 });
 
-/* Arena's own components forward the props they DECLARE and drop the rest -- the
- * API contract flattened their {...rest} spreads -- so `onClick` arrives and
- * aria-haspopup does not. That is the DEFAULT usage on the demo page, where the
- * trigger is <Button>, and every assertion above passes with a raw <button>, the
- * one shape a cloneElement injection works for. This fixture mimics that split
- * exactly, and it fails without the DOM guarantee the component now carries. */
 function DropsProps({ children, onClick }) {
   return <button type="button" onClick={onClick}>{children}</button>;
 }

@@ -1,3 +1,8 @@
+/* `DropsProps` below is the load-bearing fixture, and the hole it covers was live
+ * on the Feedback card: Arena's own <Button> drops every prop it does not
+ * declare, so cloneElement's aria-describedby reached nothing and the bubble
+ * named nothing. Every other assertion here uses a raw <button>, the one shape
+ * the clone works for. Timings come from --delay-open, never from a literal. */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
@@ -152,10 +157,6 @@ test('the binding is honest: every `tooltip` requirement, in both directions', (
   });
 });
 
-/* The same hole Menu had, and it was live on the Feedback card: Arena's own
- * <Button> drops every prop it does not declare, so cloneElement's
- * aria-describedby reached nothing and the bubble named nothing. Every other
- * assertion in this file uses a raw <button>, the one shape the clone works for. */
 function DropsProps({ children }) {
   return <button type="button">{children}</button>;
 }
