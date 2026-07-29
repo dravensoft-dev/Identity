@@ -36,12 +36,16 @@ first command counts declarations and the second counts distinct defects. `CLAUD
 same rule; use the second whenever a section below reasons about how much work is left, and never
 report a drop in the first as "N defects removed".
 
-As written: **56** declarations / **55** distinct pairs in component bindings, **18** in the
-delegated file, **15 of 70** bindings covered — post-8C9, which converted seven bindings to cases
-(count them with `grep -rl '"cases"' --include='*.behaviour.json' frameworks/`) and took coverage
-from 10 to 15. An earlier revision of this line said 8C9 "takes the first to 55", which was the
-declarations-vs-distinct-pairs confusion above reproduced in the index attached to the command that
-returns 56.
+As written: **54** declarations / **53** distinct pairs in component bindings, **17** in the
+delegated file, **17 of 70** bindings covered. Seven component bindings are cased (count them with
+`grep -rl '"cases"' --include='*.behaviour.json' frameworks/`, which does not reach the delegated
+file, where one entry is cased too).
+
+**The `progressbar` batch is where the declarations-vs-pairs distinction earns its keep.** It
+removed four declarations and added three, and one of the three is the *same* defect as another —
+the delegated `ProgressBar` meets `live.politeness` in neither of its modes, so one defect is
+correctly declared once per case. Read a drop in the first figure as a drop in declarations and
+nothing more.
 
 **The sections below are causes, not a partition — do not add them up.** Three exceptions appear
 twice on purpose, because closing them needs work from two sections: `ActivityFeed`'s `roles.label`
@@ -58,16 +62,23 @@ catalogue offers no better fit.
 
 | subject | renders | needs |
 |---|---|---|
-| `ProgressBar:react` + 2 delegated | `role="progressbar"` | a `progressbar` pattern |
 | `ConfirmDialog:react`, `confirm-dialog:angular` | `role="alertdialog"` | an `alertdialog` pattern |
 
-`ProgressBar`'s spec is **already written and deferred** at
-`2026-07-26-progressbar-pattern-design-pending-1.md`; it also folds `Spinner` in and carries a
-decision that `Spinner` unifies onto `progressbar` with an explicit `aria-live`. `ConfirmDialog`'s
-own reason concedes the same shape — *"arguably the more correct choice for a destructive-action
-confirmation (APG treats alertdialog as dialog's specialisation for exactly this case)"* — and
-unlike `progressbar`, APG **does** publish a pattern page here ("Alert and Message Dialogs"), so the
-new pattern gets a real APG source rather than the ARIA role reference.
+**One row of this section is closed, and it is worth saying what closing it looked like.**
+`progressbar` is a pattern in the catalogue, sourced from ARIA 1.2's role reference because APG
+publishes no pattern page for it — the third such pattern, after `status` and `textbox`. It carries
+three CONDITIONAL value requirements, in `BEHAVIOURAL` because ARIA expresses indeterminacy by
+*omitting* `aria-valuenow` and no snapshot of one element can tell a legitimately indeterminate bar
+from a broken determinate one. `ProgressBar` binds it as two cases and `Spinner` flat, in React and
+in the delegated declarations alike; `Spinner` unified onto the same role and both components gained
+an explicit `aria-live="polite"`, because `progressbar` carries no implicit live region where
+`status` does. Three of the four exceptions were catalogue artefacts and vanished; the fourth was
+retired by fixing the component, and both React bindings are now backed by a render suite.
+
+`ConfirmDialog`'s own reason concedes the same shape — *"arguably the more correct choice for a
+destructive-action confirmation (APG treats alertdialog as dialog's specialisation for exactly this
+case)"* — and unlike `progressbar`, APG **does** publish a pattern page here ("Alert and Message
+Dialogs"), so the new pattern gets a real APG source rather than the ARIA role reference.
 
 **What binding cases give this section.** The reasoning, more than the mechanism: 8C9 established
 that a binding should measure a render against *the pattern it actually implements*, and adding a
@@ -169,7 +180,7 @@ available; a condition that can be designed away should not be modelled.
 
 ## §6 — Angular Material, which is Plan D
 
-The **18** exceptions in `BehaviourDelegated.json` cannot be closed by editing anything in this
+The **17** exceptions in `BehaviourDelegated.json` cannot be closed by editing anything in this
 repository — they are claims about `MatProgressBar`, `MatTable`, `MatButtonToggleGroup` and their
 siblings. Emptying them means replacing Material with Arena primitives on the CDK, which is Plan D
 in `2026-07-23-8-api-contracts-design.md`.
@@ -202,7 +213,7 @@ first time the hand check has had a written, machine-readable definition of what
 
 ## §8 — Coverage, which gates the whole goal
 
-`check:compliance` reports **15 of 70** today, up from 10 before 8C9. Every section above produces
+`check:compliance` reports **17 of 70** today. Every section above produces
 `exceptions: []` on bindings that are mostly **outside `COVERED`**, and an unverified `exceptions: []`
 is a stronger claim with less behind it than the exception it replaced.
 
