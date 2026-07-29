@@ -20,7 +20,7 @@ test('DoughnutChart appends valueSuffix to the legend value and to the accessibl
 });
 
 /* The centre label is a PERCENTAGE, not a value, so it must never take the
- * suffix (api/README.md: the suffix is appended to every number the chart
+ * suffix (contracts/api/README.md: the suffix is appended to every number the chart
  * DRAWS as a value). It only renders on hover, so static markup cannot show
  * it -- what this pins instead is that the suffix has not leaked into the
  * share arithmetic, which would surface as a stray suffix anywhere a percent

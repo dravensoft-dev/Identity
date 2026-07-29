@@ -123,8 +123,8 @@ export const ANGULAR_COMPONENTS = join(REPO, 'frameworks', 'angular', 'component
  *  from the emitted tree. */
 export const TAILWIND_COMPONENTS = join(REPO, 'frameworks', 'tailwind', 'components');
 
-/** Absolute path of behaviour/patterns. */
-export const PATTERN_DIR = join(REPO, 'behaviour', 'patterns');
+/** Absolute path of contracts/behaviour. */
+export const PATTERN_DIR = join(REPO, 'contracts', 'behaviour');
 
 /** Every pattern, read once. `loadPatterns()` re-reads the whole directory per
  *  call and patterns do not change mid-process. */

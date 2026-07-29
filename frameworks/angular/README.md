@@ -4,7 +4,7 @@ Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
 
 **Bridge (foundation) — make an existing Angular/Material app wear Arena:**
 - `theme/arena-tailwind.css` — one import that brings Arena's tokens (including
-  the self-hosted fonts declared in `tokens/fonts.css`, binaries in `assets/fonts/`)
+  the self-hosted fonts declared in `contracts/design-generated/fonts.css`, binaries in `assets/fonts/`)
   + the shared `frameworks/tailwind/Theme.css` `@theme` preset into scope.
 - `theme/arena-material.css` — maps Arena tokens onto Angular Material's
   `--mat-*` custom properties so the components below render in Arena. What it covers:
@@ -77,7 +77,7 @@ used by it, `command-palette` and `onboarding`) and `ProjectionMarkers.ts` (the 
 `[actions]`, `[brand]` and `[footer]` marker directives that let a component
 detect whether an optional slot was projected, so its spacing wrapper can be gated —
 each bare, with no `arena-` prefix, because the attribute is the contract member's
-name, per `api/README.md`'s binding table) all have consumers in more than one category,
+name, per `contracts/api/README.md`'s binding table) all have consumers in more than one category,
 so they sit at the layer root and `frameworks/angular/index.ts` names each of them
 directly. `DataVisuals.ts` (the chart maths and the identity-or-meaning colour contract)
 sits at the layer root beside them, and it is the one that got there by decision rather

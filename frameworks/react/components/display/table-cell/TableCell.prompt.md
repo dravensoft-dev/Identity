@@ -15,4 +15,4 @@ One cell of a `TableRow`. It draws the cell box — the padding, the alignment a
 
 ### What is injected, and therefore not yours
 
-`column`, `layout`, `tabIndex`, `focused` and `onCellFocus` arrive from `TableRow` (fed by `Table`) through `cloneElement`. They are not part of this component's API, are not in `api/components/TableCell.json`, and a consumer never writes one — the same shape as `RadioGroup` injecting `name`/`checked`/`onSelect` into each `Radio`.
+`column`, `layout`, `tabIndex`, `focused` and `onCellFocus` arrive from `TableRow` (fed by `Table`) through `cloneElement`. They are not part of this component's API, are not in `contracts/api/components/TableCell.json`, and a consumer never writes one — the same shape as `RadioGroup` injecting `name`/`checked`/`onSelect` into each `Radio`.

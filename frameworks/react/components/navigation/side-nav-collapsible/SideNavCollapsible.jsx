@@ -59,7 +59,7 @@ export function SideNavCollapsible({
    * of those and be unaddressable from outside, which is the secondary reason;
    * the first is simply that a group is a thing the consumer names.
    *
-   * NOT the api/README.md `id`-member rule, which points the other way: that rule
+   * NOT the contracts/api/README.md `id`-member rule, which points the other way: that rule
    * is about a component that GENERATES an id and thereby takes the consumer's
    * only path to the element away, and its remedy is an OPTIONAL `id?: string`
    * with the generated value as fallback (the Input/Textarea shape). This

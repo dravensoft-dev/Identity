@@ -4,7 +4,7 @@
  * Dravensoft's mark when passed nothing would ship someone else's trademark
  * by omission. The argument is only true if the absence is enforced, which is
  * what these first three tests are for -- a comment claiming it would not be.
- * Per api/README.md's "Required-ness governs the implementation and the
+ * Per contracts/api/README.md's "Required-ness governs the implementation and the
  * runtime" clause, enforcement is now a throw (fail-hard), matching
  * Angular's `input.required`, rather than the earlier fail-soft empty render. */
 import test from 'node:test';

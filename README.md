@@ -35,7 +35,7 @@ This registers the `design` skill under the `arena` plugin. Invoke it explicitly
 ### Use in a project (copy-in kit)
 To use the tokens and components directly in an app:
 
-1. **Copy** `tokens/`, `assets/`, `styles.css`, `frameworks/react/UseContainerWidth.js` and `frameworks/react/Tokens.generated.js` into your app (e.g. under `/arena`). `UseContainerWidth.js` is the shared hook `Table` (and any responsive component) imports; copy it whenever you copy one of those. `Tokens.generated.js` is the design values JavaScript reads as numbers rather than through CSS; it is generated from `tokens/src/`, so never edit it.
+1. **Copy** `contracts/design/`, `contracts/design-generated/`, `assets/`, `styles.css`, `frameworks/react/UseContainerWidth.js` and `frameworks/react/Tokens.generated.js` into your app (e.g. under `/arena`). **Breaking change if you have already adopted Arena:** this used to be one directory to copy, `tokens/`; it is now two — `contracts/design/` (the DTCG source and the hand-authored `colors.css`) and `contracts/design-generated/` (the five built CSS files) — so update both paths in your app rather than only renaming one. Keep both under a shared `contracts/` parent — `/arena/contracts/design/` and `/arena/contracts/design-generated/`, never `/arena/design/` and `/arena/design-generated/` — because `styles.css` resolves them as `./contracts/design/colors.css` and `./contracts/design-generated/…` by that relative path; drop the parent and every import resolves to nothing, so the page renders **unstyled with no console error**. If your app's layout can't keep that parent, edit `styles.css`'s six `@import` lines to match your own layout instead. `UseContainerWidth.js` is the shared hook `Table` (and any responsive component) imports; copy it whenever you copy one of those. `Tokens.generated.js` is the design values JavaScript reads as numbers rather than through CSS; it is generated from `contracts/design/`, so never edit it.
 2. **Link the entry point.** `styles.css` only `@import`s the token files, exposing every design token as a CSS custom property (`--color-*`, `--font-*`, `--r-*`, `--shadow-*`, …) and loading the fonts:
    ```html
    <link rel="stylesheet" href="/arena/styles.css" />
@@ -49,13 +49,13 @@ To use the tokens and components directly in an app:
    ```
    Every component ships a `.d.ts` (types) and a `.prompt.md` (usage, examples, Do/Don't).
 
-   A few components build on another one rather than restating it, so copy the dependency with them: `ConfirmDialog` and `ErrorState` need `forms/button/Button.jsx`, and `Calendar` needs `frameworks/react/DataVisuals.js` for the categorical ramp. The charts, `Calendar` and `Onboarding` also need `frameworks/react/Tokens.generated.js` — the design values JavaScript reads as numbers rather than through CSS (a chart's plot height, an hour's height on the time grid, the coachmark's width). Copy it beside `UseContainerWidth.js`; it is generated from `tokens/src/`, so never edit it.
+   A few components build on another one rather than restating it, so copy the dependency with them: `ConfirmDialog` and `ErrorState` need `forms/button/Button.jsx`, and `Calendar` needs `frameworks/react/DataVisuals.js` for the categorical ramp. The charts, `Calendar` and `Onboarding` also need `frameworks/react/Tokens.generated.js` — the design values JavaScript reads as numbers rather than through CSS (a chart's plot height, an hour's height on the time grid, the coachmark's width). Copy it beside `UseContainerWidth.js`; it is generated from `contracts/design/`, so never edit it.
 
 ### How components are styled
 Components render with **inline `style` objects that read the CSS custom properties** (e.g. `background: 'var(--crimson)'`). They do **not** expose utility classes — there is no `class="btn"`. `styles.css` provides only the token variables and fonts; all component logic lives in the `.jsx`. This keeps each component self-contained and fully themeable: change a token and every component follows.
 
 ### Dependencies
-- **Fonts — self-hosted (bundled).** Arena ships the Archivo / Familjen Grotesk / Spline Sans Mono `.woff2` binaries in `assets/fonts/`; `tokens/fonts.css` declares them with `@font-face`. No CDN request — copy `assets/` (which now includes `fonts/`) with the kit and fonts load from your own origin.
+- **Fonts — self-hosted (bundled).** Arena ships the Archivo / Familjen Grotesk / Spline Sans Mono `.woff2` binaries in `assets/fonts/`; `contracts/design-generated/fonts.css` declares them with `@font-face`. No CDN request — copy `assets/` (which now includes `fonts/`) with the kit and fonts load from your own origin.
 - **Icons — [Phosphor Icons](https://phosphoricons.com) (MIT).** Not bundled. **Install the official package by default** — `@phosphor-icons/web` (webfont) or `@phosphor-icons/react` — for full weight/tree-shaking flexibility. The CDN is a prototype-only convenience, not the default. See the [ICONOGRAPHY](#iconography) section.
 - **React** — the primitives in `frameworks/react/components/` are React (JSX). Tokens, guidelines and assets are framework-agnostic and can be used without React.
 
@@ -87,13 +87,13 @@ Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default
 - **Microcopy:** concrete action verbs ("Deploy", "Approve delivery", "Roll back"). Errors are helpful and blame-free ("We couldn't connect to the server. Retry.").
 
 ## VISUAL FOUNDATIONS
-- **Color — token architecture (daisyUI structure):** the source of truth is a set of `--color-*` tokens paired with their `-content` counterpart (the legible color on top), defined per theme in `tokens/src/palette.dark.json` and `tokens/src/palette.light.json`, from which `tokens/palette.css` is generated. On top of them, a **compatibility layer** in `tokens/colors.css` maps Arena's legacy aliases (`--bg`, `--surface-card`, `--crimson`, `--gold`, `--danger`, `--mute`…) to the daisyUI tokens, so existing components don't break. Muted text levels (`--bone-dim`, `--mute`) and `--status-offline` are derived from `--color-base-content` with `color-mix`, not fixed hex values.
+- **Color — token architecture (daisyUI structure):** the source of truth is a set of `--color-*` tokens paired with their `-content` counterpart (the legible color on top), defined per theme in `contracts/design/palette.dark.json` and `contracts/design/palette.light.json`, from which `contracts/design-generated/palette.css` is generated. On top of them, a **compatibility layer** in `contracts/design/colors.css` maps Arena's legacy aliases (`--bg`, `--surface-card`, `--crimson`, `--gold`, `--danger`, `--mute`…) to the daisyUI tokens, so existing components don't break. Muted text levels (`--bone-dim`, `--mute`) and `--status-offline` are derived from `--color-base-content` with `color-mix`, not fixed hex values.
   - **One token breaks the pairing, on purpose: `--color-error-fill`** (alias `--danger-fill`). It has no `-content` of its own — it *is* a second fill for `--color-error`'s content, because danger is worn two ways and one hex cannot do both. See [Danger convention](#danger-convention-destructive-actions-and-risk-indicators). Pinning it is **optional**: `--danger-fill` falls back to `color-mix(in oklab, var(--color-error) 85%, black)`, so a palette copied without it still gets a filled danger dark enough for white text. Pin it to override the derived tone (the Dravensoft skin pins `#ce3838`); `check-text-contrast.mjs` gates both the pin and the fallback.
 - **The muted text scale**, every level AA on both surfaces in both themes — `--text-strong` (100%, 15.23:1 dark / 15.86:1 light on the card), `--text-body` (82%, 10.46 / 9.28), `--text-muted` (62%, 6.52 / 4.71). `--text-muted` in light is the tightest survivor: it clears AA, and it is the reason nothing fits below it. **Removed in 2.0.0:** `--mute-2` / `--text-faint` — the faint level failed AA in light (3.46:1) and could not be repaired, since clearing it there needs 61% while `--mute` already sits at 62%. Use `--text-muted`.
 - **`--status-offline`** (52%, 4.93:1 dark / 3.46:1 light on the card) is **presence only** — `Avatar`'s offline dot. It clears WCAG 1.4.11's 3:1 for graphical objects. It is *not* `--mute-2-disabled` (40%), which dresses disabled controls: that one is low **by design** and exempt under 1.4.3/1.4.11's inactive-component carve-out. Do not raise it, and do not reach for it to render presence.
-- **Verifying it:** `bun scripts/check-text-contrast.mjs` measures every level against the real surfaces in both themes and exits non-zero on failure. Run it after touching `tokens/colors.css`, or after rebuilding a change to `tokens/src/palette.dark.json` / `palette.light.json`. The claim above is machine-checkable — which is the point: the previous one was not, and was false for a whole theme for three releases.
+- **Verifying it:** `bun scripts/check-text-contrast.mjs` measures every level against the real surfaces in both themes and exits non-zero on failure. Run it after touching `contracts/design/colors.css`, or after rebuilding a change to `contracts/design/palette.dark.json` / `palette.light.json`. The claim above is machine-checkable — which is the point: the previous one was not, and was false for a whole theme for three releases.
 - **Themes:** the language is **dark-first** but supports two switchable themes — **dark** (`:root`, default) and **light** (`.arena-light`, warm inverse). The same tokens change value per theme; components are never rewritten. (The Overview includes the toggle in its header.)
-- **Key values:** a warm black background (`--color-base-100`) under elevated surfaces (`--color-base-200` for cards, `--color-base-300` for panels and borders) and bone text (`--color-base-content`). A single primary accent (crimson, `--color-primary`) per view; gold (`--color-secondary`) reserved for focus, distinction and highlighted data. At most one dominant accent per screen. The literal values live in `tokens/src/palette.dark.json` and `tokens/src/palette.light.json`, from which `tokens/palette.css` is generated — see [Theming](#theming): the scale is the language, the hexes are the skin.
+- **Key values:** a warm black background (`--color-base-100`) under elevated surfaces (`--color-base-200` for cards, `--color-base-300` for panels and borders) and bone text (`--color-base-content`). A single primary accent (crimson, `--color-primary`) per view; gold (`--color-secondary`) reserved for focus, distinction and highlighted data. At most one dominant accent per screen. The literal values live in `contracts/design/palette.dark.json` and `contracts/design/palette.light.json`, from which `contracts/design-generated/palette.css` is generated — see [Theming](#theming): the scale is the language, the hexes are the skin.
 - **Typography:** Archivo (display/headlines, 800–900), Familjen Grotesk (body, 400–600), Spline Sans Mono (data, labels, code). Negative tracking on display (`-0.02em`), wide tracking on mono labels (`0.22em`).
 
 ### Type scale (`fs`)
@@ -141,7 +141,7 @@ To tell **destructive / risk actions and indicators** apart from the primary act
 - **"Danger is outline" governs controls and surfaces, not presence or identity marks.** `Avatar`'s presence dot (online/busy/away/offline) is a different semantic family — a status taxonomy, like the chart `tone` colors, not a destructive affordance — and it is filled: `--color-success`, `--color-warning` and `--color-error` for the three live states, `--status-offline` for the fourth. An outline dot at that size (`max(8px, diameter * 0.28)`) would not read at all. The same carve-out covers any other small identifying dot at that size, filled via `currentColor` from a `tone`/status token: `Tag`'s leading dot and `ActivityFeed`'s per-row tone dot are both `bg-current`, and both fill with `text-error` for their danger tone — a tag or a feed row is naming *what kind of thing this is*, the same taxonomy Avatar's presence is, not asking to be read as a risk trigger. Nothing here contradicts the rule above: the rule is about *danger*, and a dot filled in `--color-error` at this size is identity/status borrowing the error hue for "this one," not a risk indicator.
 
 ### Layering (stacking order)
-What covers what is a system-wide invariant, not a per-component choice, so it is a token family — `z` (`tokens/src/layering.json`, generated into `tokens/effects.css`) — rather than a literal chosen anew in each overlay component. **The family declares the order; the values only have to preserve it.** From least to most interruptible:
+What covers what is a system-wide invariant, not a per-component choice, so it is a token family — `z` (`contracts/design/layering.json`, generated into `contracts/design-generated/effects.css`) — rather than a literal chosen anew in each overlay component. **The family declares the order; the values only have to preserve it.** From least to most interruptible:
 
 | Token | Value | Carried by |
 |---|---|---|
@@ -160,7 +160,7 @@ Before this family existed, layering was five magic numbers in five files, encod
 Exposed in the Tailwind layer as `.z-dropdown` / `.z-tooltip` / `.z-modal` / `.z-modal-nested` / `.z-palette` / `.z-onboarding` / `.z-toast` (`frameworks/tailwind/Theme.css`, `--z-index-*`). **A consumer embedding Arena inside an app that has its own stacking context should read this table rather than guess at a number**: Arena's overlay components render in place (none of the seven uses a React portal), so the global order above governs any of them mounted as siblings — but if the host app's own chrome (a nav bar, a modal from a different library) needs to interleave with Arena's, the host's own `z-index` values need to be chosen against this scale, not against whatever the host already had lying around. `display/Calendar.jsx`'s `zIndex: 1` is not part of this family — it is local stacking inside a positioned container, scoped entirely inside one component, and stays a hand-written literal.
 
 ### Quantity invariants (`limit`)
-System-wide bounds on how much is shown — the twin of `z`: same `$type` (`number`), same character. `z` declares the stacking order; `limit` declares the invariant, and a component derives its own consequences from it — `tokens/src/behaviour.json`, generated into `tokens/effects.css`.
+System-wide bounds on how much is shown — the twin of `z`: same `$type` (`number`), same character. `z` declares the stacking order; `limit` declares the invariant, and a component derives its own consequences from it — `contracts/design/behaviour.json`, generated into `contracts/design-generated/effects.css`.
 
 | Token | Value | Role |
 |---|---|---|
@@ -169,7 +169,7 @@ System-wide bounds on how much is shown — the twin of `z`: same `$type` (`numb
 **Script-readable, not Tailwind-exposed**: unlike `z`, `limit`'s consumer is an array bound in JavaScript, not a CSS property, so it carries no utility class. It reaches React as the bare number `limitPaginationSiblings` (`frameworks/react/Tokens.generated.js`) and is named in `check:coverage`'s `EXCLUDED` map for that reason rather than reaching a utility.
 
 ### Control density type scale (`dz`)
-Chrome text — a button label, an input's value, a hint, a validation error, a badge, a table cell — is governed by how dense the surrounding controls are, not by the prose scale (`fs`). `dz` already declared control heights, row padding and stack gap; it now carries its own five-step text scale, generated into `tokens/spacing.css` from `tokens/src/spacing.json` (base) and `tokens/src/density.compact.json` (the `.arena-compact` override):
+Chrome text — a button label, an input's value, a hint, a validation error, a badge, a table cell — is governed by how dense the surrounding controls are, not by the prose scale (`fs`). `dz` already declared control heights, row padding and stack gap; it now carries its own five-step text scale, generated into `contracts/design-generated/spacing.css` from `contracts/design/spacing.json` (base) and `contracts/design/density.compact.json` (the `.arena-compact` override):
 
 | Token | Value | Compact (`.arena-compact`) | Role |
 |---|---|---|---|
@@ -186,7 +186,7 @@ Chrome text — a button label, an input's value, a hint, a validation error, a 
 Exposed in the Tailwind layer under a `ctl` infix — `--text-ctl` / `--text-ctl-md` / `--text-ctl-sm` / `--text-ctl-xs` / `--text-ctl-2xs` — because the natural `--text-*` keys already belong to `fs`, and two collide on value as well as name (`fs.sm` / `dz.text-md` are both 13px; `fs.xs` / `dz.text-xs` are both 11px). `--text-base`, the one `--text-*` key that pointed at `dz` under an `fs`-shaped name, is retired along with it.
 
 ### Tracking scale (`ls`)
-Letter-spacing across the system was four declared tokens covering a handful of sites while 34 real uses read a scatter of undeclared literals. Sorted by value, those sites already formed a role hierarchy nobody had named — **tracking decreases as the text gets longer**, from the shortest mono micro-labels down through prose-adjacent chrome to the tightest display headings. The family below is that hierarchy, generated into `tokens/typography.css` from `tokens/src/typography.json`:
+Letter-spacing across the system was four declared tokens covering a handful of sites while 34 real uses read a scatter of undeclared literals. Sorted by value, those sites already formed a role hierarchy nobody had named — **tracking decreases as the text gets longer**, from the shortest mono micro-labels down through prose-adjacent chrome to the tightest display headings. The family below is that hierarchy, generated into `contracts/design-generated/typography.css` from `contracts/design/typography.json`:
 
 | Token | Value | Role |
 |---|---|---|
@@ -205,7 +205,7 @@ Letter-spacing across the system was four declared tokens covering a handful of 
 Exposed in the Tailwind layer as `.tracking-tight` / `.tracking-normal` / `.tracking-mono-nav` / `.tracking-uppercase-status` / `.tracking-badge` / `.tracking-column-header` / `.tracking-field-label` / `.tracking-label` / `.tracking-wide` (`frameworks/tailwind/Theme.css`, `--tracking-*`).
 
 ### Line-height scale (`lh` / `dz.lh`)
-Line height splits editorial from control exactly the way `fs`/`dz` split font size. Prose that wraps needs breathing room between its own lines — that's `lh`, in `tokens/src/typography.json`. A box built around a single glyph — an icon inside a button, a standalone status icon, an icon-only close or remove control — needs the opposite: a line box that is *exactly* its glyph, so the extra space above and below a normal line height never throws the surrounding control out of alignment. That reset is a density/control concern, not an editorial one, so it lives in `dz` (`tokens/src/spacing.json`) alongside the rest of the control scale, carrying its own token-level `$type: "number"` override — a line height is unitless, unlike every other `dz` member.
+Line height splits editorial from control exactly the way `fs`/`dz` split font size. Prose that wraps needs breathing room between its own lines — that's `lh`, in `contracts/design/typography.json`. A box built around a single glyph — an icon inside a button, a standalone status icon, an icon-only close or remove control — needs the opposite: a line box that is *exactly* its glyph, so the extra space above and below a normal line height never throws the surrounding control out of alignment. That reset is a density/control concern, not an editorial one, so it lives in `dz` (`contracts/design/spacing.json`) alongside the rest of the control scale, carrying its own token-level `$type: "number"` override — a line height is unitless, unlike every other `dz` member.
 
 | Token | Value | Role |
 |---|---|---|
@@ -219,7 +219,7 @@ No new prose steps were needed to cover the census: every site that reads prose 
 Exposed in the Tailwind layer as `.leading-tight` / `.leading-snug` / `.leading-body` (`frameworks/tailwind/Theme.css`, `--leading-*`). `--dz-lh` is exposed as `.leading-ctl`, not `.leading-none` — after this token, the `--leading-*` namespace holds three editorial steps (`tight`, `snug`, `body`) plus this one control token, and a name indistinguishable from its editorial neighbours is the exact `--text-base` mistake the `fs`/`dz` split retired: a `dz` token wearing an `lh`-shaped name. The `ctl` infix keeps it visibly a density role, consistent with `--text-ctl`.
 
 ### Motion scale (`dur` / `loop`)
-Two families, one `$type: duration`, two roles that must not merge. `dur` is the transition scale: a response to an action, over in the low hundreds of milliseconds. `loop` is cyclical motion: it reports that work is *ongoing*, and is measured in seconds, not milliseconds — a spinner or an indeterminate progress sweep is not "responding" to anything, it is signaling that something is still running. Merging the two would repeat the `fs`/`dz` mistake the type scale already retired: one scale asked to carry two roles at once. Both live in `tokens/src/effects.json`, generated into `tokens/effects.css`.
+Two families, one `$type: duration`, two roles that must not merge. `dur` is the transition scale: a response to an action, over in the low hundreds of milliseconds. `loop` is cyclical motion: it reports that work is *ongoing*, and is measured in seconds, not milliseconds — a spinner or an indeterminate progress sweep is not "responding" to anything, it is signaling that something is still running. Merging the two would repeat the `fs`/`dz` mistake the type scale already retired: one scale asked to carry two roles at once. Both live in `contracts/design/effects.json`, generated into `contracts/design-generated/effects.css`.
 
 | Token | Value | Role |
 |---|---|---|
@@ -238,7 +238,7 @@ Two families, one `$type: duration`, two roles that must not merge. `dur` is the
 Exposed in the Tailwind layer as an arbitrary value against each token — `duration-[var(--loop-spin)]` and so on — rather than as a named utility: Tailwind v4 has no duration namespace of its own for either family to extend.
 
 ### Behaviour timing (`delay` / `dismiss`)
-Two more `$type: duration` families, deliberately not part of `dur` or `loop` above. `dur` measures how long a transition takes *once it has been decided*; `delay` measures how long we wait *before deciding* — pointer intent, not motion. `dismiss` measures how long a transient notice is left alone before it withdraws itself, which is a permanence decision, not a transition either. Both live in `tokens/src/behaviour.json`, generated into `tokens/effects.css`.
+Two more `$type: duration` families, deliberately not part of `dur` or `loop` above. `dur` measures how long a transition takes *once it has been decided*; `delay` measures how long we wait *before deciding* — pointer intent, not motion. `dismiss` measures how long a transient notice is left alone before it withdraws itself, which is a permanence decision, not a transition either. Both live in `contracts/design/behaviour.json`, generated into `contracts/design-generated/effects.css`.
 
 | Token | Value | Role |
 |---|---|---|
@@ -258,7 +258,7 @@ Two more `$type: duration` families, deliberately not part of `dur` or `loop` ab
   - **Fill** (`.ph-fill`) — active/selected state (e.g. the active navigation item, a toggle that's on).
   - **Duotone** (`.ph-duotone`) — only to highlight features/onboarding, with the crimson accent on the primary layer. Premium two-tone effect; use sparingly.
 - **Loading (default — install the package):** install `@phosphor-icons/web` and import its weight stylesheets, or `@phosphor-icons/react` (`<Rocket weight="bold"/>`), then apply the weight class plus the icon class: `<i class="ph-bold ph-rocket-launch"></i>`. **Prototype-only:** the CDN, e.g. `https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css`.
-- **Sizes** — a token family, `icon` (`tokens/src/icon.json`, generated into `tokens/spacing.css`), applied via `fontSize` since Phosphor renders as a webfont:
+- **Sizes** — a token family, `icon` (`contracts/design/icon.json`, generated into `contracts/design-generated/spacing.css`), applied via `fontSize` since Phosphor renders as a webfont:
 
   | Token | Value | Role |
   |---|---|---|
@@ -278,12 +278,12 @@ Two more `$type: duration` families, deliberately not part of `dur` or `loop` ab
 
 Arena's identity lives in **shape**, not in its hexes. Crimson and gold are Dravensoft's skin; a different product can wear a different one and still be unmistakably Arena. This was always true of the architecture — it was never declared. It is now.
 
-**The public swap surface is `tokens/src/palette.dark.json` and `tokens/src/palette.light.json`: the `--color-*` set plus `--color-cat-*`.** Everything else derives. Swap those two files, run `bun run build:tokens`, and the whole system follows: the generated `tokens/palette.css` re-emits, the aliases in `tokens/colors.css` (`--bg`, `--crimson`, `--danger`, `--mute`…) re-point, the muted text levels re-derive through `color-mix`, and every component re-colors, because components read tokens and never hold a value of their own.
+**The public swap surface is `contracts/design/palette.dark.json` and `contracts/design/palette.light.json`: the `--color-*` set plus `--color-cat-*`.** Everything else derives. Swap those two files, run `bun run build:tokens`, and the whole system follows: the generated `contracts/design-generated/palette.css` re-emits, the aliases in `contracts/design/colors.css` (`--bg`, `--crimson`, `--danger`, `--mute`…) re-point, the muted text levels re-derive through `color-mix`, and every component re-colors, because components read tokens and never hold a value of their own.
 
 ### The layer contract
 
 **Standardized (the DTCG layer).** Every token *value* — colors, dimensions, font
-attributes, durations, easings, shadows — is authored once in `tokens/src/**/*.json` as
+attributes, durations, easings, shadows — is authored once in `contracts/design/**/*.json` as
 strictly-conformant DTCG 2025.10, the platform-neutral contract. A new framework target
 consumes that JSON directly, or through a Style Dictionary platform emitting CSS, JS,
 iOS, Android or SCSS. Nothing in it is Arena-specific, and
@@ -294,16 +294,16 @@ and that therefore live in each platform's own idiom:
 
 1. **Runtime color derivations** — the muted-text levels and `*-soft` accents, expressed
    in CSS as `color-mix(in oklab, var(--…) N%, transparent)` so they re-derive when the
-   skin swaps. In CSS they live in the hand-authored `tokens/colors.css`. A new framework
+   skin swaps. In CSS they live in the hand-authored `contracts/design/colors.css`. A new framework
    rebuilds this thin layer in its idiom (Tailwind `color-mix` utilities, a JS token
    helper) **on top of the same standard values** — it never re-defines a value.
 2. **`@font-face` bundling** — generated by `scripts/fetch-fonts.mjs` into
-   `tokens/fonts.css`, pointing at the self-hosted `assets/fonts/` binaries.
+   `contracts/design-generated/fonts.css`, pointing at the self-hosted `assets/fonts/` binaries.
 
 The dividing line: **DTCG owns values; the composition layer owns how values are combined
-at runtime.** `tokens/colors.css` therefore holds no skin value — only references
+at runtime.** `contracts/design/colors.css` therefore holds no skin value — only references
 (`var(--color-primary)`) and `color-mix` compositions. The full `$type` table is
-`tokens/src/TYPE-MAP.md`.
+`contracts/design/README.md`.
 
 **A swap is not done until it is measured**, and two scripts measure it. `bun scripts/check-ramp.mjs` holds the categorical ramp; `bun scripts/check-text-contrast.mjs` holds the text: the levels derived from `--color-base-content`, every `--color-*` / `--color-*-content` pair (all seven, at 4.5:1 — the pair is the contract a skin defines, so an illegible one fails before a component can inherit it), and the accents painted straight onto the base surfaces (`--color-error` as the danger outline). Both read the values out of `palette.css` and hardcode nothing, so a new skin is one edit and two commands away from a real answer.
 
@@ -355,7 +355,7 @@ It was derived by enumeration against the validator, not chosen by eye: candidat
 
 ### Re-check after you swap
 
-The promise above is only worth the validator that backs it. After changing anything in `tokens/src/`, rebuild (`bun run build:tokens`) and then:
+The promise above is only worth the validator that backs it. After changing anything in `contracts/design/`, rebuild (`bun run build:tokens`) and then:
 
 ```bash
 bun scripts/check-ramp.mjs
@@ -365,14 +365,16 @@ It reads the ramp straight out of `palette.css`, which the build regenerates fro
 
 ## Index / manifest
 - `styles.css` — global entry point (only @imports). Consumers link this file.
-- `tokens/` — `src/` (the DTCG 2025.10 source of every token value, plus `TYPE-MAP.md`), then the CSS: `fonts.css` (generated by `fetch-fonts.mjs`), `palette.css`, `typography.css`, `spacing.css`, `effects.css` (all four generated by `build-tokens.mjs` — do not edit), and `colors.css` (hand-authored: aliases and `color-mix` derivations).
-- `frameworks/react/UseContainerWidth.js` — shared `useContainerWidth` hook and `readBreakpoint`; responsive components import it. `frameworks/react/Tokens.generated.js` — design values JavaScript reads as numbers rather than through CSS; generated from `tokens/src/`, so never edit it. `theme.js` — theme toggle helper. `frameworks/react/vendor/` — a committed, generated CommonJS→ESM bundle of React for the demo pages' importmap (`build-vendor.mjs`); every component `.jsx` and demo `.entry.jsx` has a compiled `.js` sibling the pages actually load (`build-demos.mjs`, `check:demos`).
-- `scripts/` — `validate-palette.mjs` (the data-viz palette validator, vendored), `check-ramp.mjs` (asserts the shipped ramp clears every gate in both themes), `check-text-contrast.mjs` (measures every text level against the real surfaces in both themes) and `check-release.mjs` (asserts the version, the marketplace `ref` and the tag agree, and that the pinned tag actually hands out the version being advertised), `build-tokens.mjs` (generates the four token CSS files from `tokens/src/`), `check-dtcg.mjs` (asserts the DTCG source conforms to 2025.10), `check-tokens-generated.mjs` (asserts the committed CSS matches the source) and `serve.mjs` (`bun run demos`).
+- `contracts/README.md` — the index for Arena's three contract levels: `contracts/api/` (the members a component's API presents), `contracts/behaviour/` (what a kind of component must do — roles, keys, focus, dismissal) and `contracts/design/` (what a value is, detailed next).
+- `contracts/design/` — the DTCG 2025.10 source of every token value (`*.json`), `README.md` (the normative `$type` table, formerly `tokens/src/TYPE-MAP.md`), and `colors.css` (hand-authored: aliases and `color-mix` derivations).
+- `contracts/design-generated/` — the five built CSS files: `fonts.css` (generated by `fetch-fonts.mjs`), `palette.css`, `typography.css`, `spacing.css`, `effects.css` (these four generated by `build-tokens.mjs`) — do not edit any of them.
+- `frameworks/react/UseContainerWidth.js` — shared `useContainerWidth` hook and `readBreakpoint`; responsive components import it. `frameworks/react/Tokens.generated.js` — design values JavaScript reads as numbers rather than through CSS; generated from `contracts/design/`, so never edit it. `theme.js` — theme toggle helper. `frameworks/react/vendor/` — a committed, generated CommonJS→ESM bundle of React for the demo pages' importmap (`build-vendor.mjs`); every component `.jsx` and demo `.entry.jsx` has a compiled `.js` sibling the pages actually load (`build-demos.mjs`, `check:demos`).
+- `scripts/` — `validate-palette.mjs` (the data-viz palette validator, vendored), `check-ramp.mjs` (asserts the shipped ramp clears every gate in both themes), `check-text-contrast.mjs` (measures every text level against the real surfaces in both themes) and `check-release.mjs` (asserts the version, the marketplace `ref` and the tag agree, and that the pinned tag actually hands out the version being advertised), `build-tokens.mjs` (generates the four token CSS files from `contracts/design/`), `check-dtcg.mjs` (asserts the DTCG source conforms to 2025.10), `check-tokens-generated.mjs` (asserts the committed CSS matches the source) and `serve.mjs` (`bun run demos`).
 - `assets/` — `rotor-crimson/bone/ink.svg`, `app-icon.svg`, and `fonts/` (the bundled self-hosted `.woff2` binaries).
 - `guidelines/` — specimen cards (`@dsCard`): typography (`type-display`, `type-body`, `type-mono`), color (`colors-neutrals`, `colors-accents`, `colors-status`, `colors-categorical`), spacing (`spacing-scale`, `spacing-density`), effects (`effects-radius`, `effects-shadow`), iconography (`icons`), brand (`brand-logo`) and the **danger convention** (`components-danger`).
 - `frameworks/react/components/` — React primitives, each in its own directory under `<category>/<component-kebab>/` and each a quartet (`<Name>.jsx`, `<Name>.d.ts`, `<Name>.prompt.md`, a `*.card.html` demo) alongside its own colocated suites: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox, Radio/RadioGroup, Switch), `display/` (Card, Badge, Tag, Avatar, Table/TableRow/TableCell, Skeleton, StatCard, Calendar/CalendarEvent, ActivityFeed, UnauthCard), `navigation/` (Tabs/Tab, SegmentedControl, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar, PageHead, SideNav/SideNavItem/SideNavSection/SideNavCollapsible), `feedback/` (Alert, Dialog, ConfirmDialog, Toast, Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding, Spinner), `charts/` (ChartCard, BarChart, LineChart, DoughnutChart — dependency-free SVG), `brand/` (AppLogo).
 - `frameworks/react/ui-kits/console/` — recreation of the Delivery Console (an example internal product).
-- `Arena - Overview.html` (repo root) — the token language, generated at runtime from `tokens/src/` and `tokens/colors.css`. Serve it: `bun run demos`.
+- `Arena - Overview.html` (repo root) — the token language, generated at runtime from `contracts/design/` and `contracts/design/colors.css`. Serve it: `bun run demos`.
 - `Dravensoft Identity.dc.html` (repo root) — the approved identity manual. It sits at the root because it loads `support.js`, `styles.css` and `assets/` by relative path.
 - `SKILL.md` — plugin-root Agent Skill (also usable standalone).
 - `.claude-plugin/` — Claude Code plugin manifest (`plugin.json`) and marketplace catalog (`marketplace.json`).
@@ -380,7 +382,8 @@ It reads the ramp straight out of `palette.css`, which the build regenerates fro
 
 ### Framework layers (`frameworks/`)
 
-Arena's pure design language — `tokens/`, `guidelines/`, `assets/`, `scripts/`,
+Arena's pure design language — `contracts/` (all three contract levels: `api/`,
+`behaviour/`, `design/`, plus `design-generated/`), `guidelines/`, `assets/`, `scripts/`,
 `styles.css` — lives at the repo root and is framework-agnostic. Everything
 framework-bound lives under `frameworks/`, so a new framework is added without
 touching the language:
@@ -413,7 +416,7 @@ Pick the layer you need: raw tokens, a framework's primitives, or the Tailwind
 layer on top.
 
 ## Intentional additions
-- **Consistency tokens (shipped in v1.0.0):** `--danger-strong` (symmetric to `--crimson-strong`/`--gold-strong`) and `--scrim`/`--scrim-blur` (unified modal backdrop, in `tokens/effects.css`). With these, no hardcoded colors (`#fff`, `rgba(20,16,16,.6)`) remain in the components: everything goes through a token, including `--on-accent`. *Current status:* after the migration to daisyUI tokens, the `*-strong` variants **alias to their accent's base color**; they're kept as an extension point in case a theme defines a distinct pressed tone.
+- **Consistency tokens (shipped in v1.0.0):** `--danger-strong` (symmetric to `--crimson-strong`/`--gold-strong`) and `--scrim`/`--scrim-blur` (unified modal backdrop, in `contracts/design-generated/effects.css`). With these, no hardcoded colors (`#fff`, `rgba(20,16,16,.6)`) remain in the components: everything goes through a token, including `--on-accent`. *Current status:* after the migration to daisyUI tokens, the `*-strong` variants **alias to their accent's base color**; they're kept as an extension point in case a theme defines a distinct pressed tone.
 - **`AppLogo`** (brand) — the lock-up: a mark paired with a product name, at four steps
   of the `--logo-*` scale. It exists because two screens assembled the same figure by
   hand and one of them got it wrong — a crimson mark beside an undivided `DRAVENSOFT`,

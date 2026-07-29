@@ -34,7 +34,7 @@ Nothing here is published to npm. It ships as three things at once from
 the same tree:
 
 - a **Claude Code plugin** (`.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`, registering the `design` skill defined by the root `SKILL.md`);
-- a **copy-in kit** (consumers copy `tokens/`, `assets/`, `styles.css` and the `.jsx` files they need);
+- a **copy-in kit** (consumers copy `contracts/design/`, `contracts/design-generated/`, `assets/`, `styles.css` and the `.jsx` files they need);
 - a standalone **Agent Skill** (`SKILL.md`).
 
 `README.md` is the normative design specification (voice, color, spacing, danger convention, iconography). Treat it as the source of truth for any design decision, and update it in the same change whenever a token, component, or convention changes.
@@ -50,44 +50,47 @@ bun run demos   # serves the repo root on :8000 and prints the entry points
 - `guidelines/*.html` — token specimen cards (type, color, spacing, effects, icons, brand, danger convention).
 - `frameworks/react/components/**/*.card.html` — live component demos. A page sits either **inside one component's own directory** (`display/skeleton/Skeleton.card.html`) or **beside the directories at its category level** when it composes several components onto one card (`display/Display.card.html`, `navigation/MenuPagination.card.html`). List them with `find frameworks/react/components -name '*.card.html'`.
 - `frameworks/react/ui-kits/console/index.html` — the Delivery Console example app (login → dashboard → project).
-- `Arena - Overview.html` (repo root) — the token language: every token Arena defines, generated at runtime from `tokens/src/*.json` and `tokens/colors.css`. **It shows no components on purpose** — those belong to the framework layers, and a root-level copy of them was a second implementation that drifted. It lives at the root because it loads `styles.css`, `theme.js`, `assets/`, `scripts/lib/` and `tokens/src/` by relative path, and it must be served over HTTP because it fetches its own source.
+- `Arena - Overview.html` (repo root) — the token language: every token Arena defines, generated at runtime from `contracts/design/*.json` and `contracts/design/colors.css`. **It shows no components on purpose** — those belong to the framework layers, and a root-level copy of them was a second implementation that drifted. It lives at the root because it loads `styles.css`, `theme.js`, `assets/`, `scripts/lib/` and `contracts/design/` by relative path, and it must be served over HTTP because it fetches its own source.
 - `Dravensoft Identity.dc.html` (repo root) — the approved brand manual, and the only remaining `dc-runtime` page. It loads `support.js`, `styles.css` and `assets/` by relative path. From a subdirectory it 404s, no token resolves, and the page renders unstyled. Do not move it.
 
 ## Architecture
 
 **Tokens are the only styling layer, and their values are DTCG JSON.** `styles.css` does
-nothing but `@import` the six files in `tokens/`. Four of those six —
-`tokens/palette.css`, `typography.css`, `spacing.css`, `effects.css` — are **generated
-build output**: their values are authored in strictly-conformant DTCG 2025.10 JSON under
-`tokens/src/` and emitted by `bun scripts/build-tokens.mjs` (`bun run build:tokens`).
+nothing but `@import` six files split across two directories: `contracts/design-generated/`,
+which holds five CSS files, and `contracts/design/`, which holds one
+hand-authored file, `colors.css`. Four of those five —
+`contracts/design-generated/palette.css`, `typography.css`, `spacing.css`, `effects.css`
+— are **generated build output**: their values are authored in strictly-conformant DTCG
+2025.10 JSON under `contracts/design/` and emitted by `bun scripts/build-tokens.mjs`
+(`bun run build:tokens`).
 **Never edit those four CSS files** — edit the JSON and rebuild.
-`tokens/src/TYPE-MAP.md` is the normative table of which DTCG `$type` every token group
-uses, and it is the first thing a new platform target should read.
+`contracts/design/README.md` is the normative table of which DTCG `$type` every token
+group uses, and it is the first thing a new platform target should read.
 
-The split still matters: **`tokens/src/palette.{dark,light}.json` is the skin** — the
+The split still matters: **`contracts/design/palette.{dark,light}.json` is the skin** — the
 daisyUI-structured `--color-*` / `--color-*-content` pairs per theme (dark on `:root`,
 light on `.arena-light`) plus the 8-slot categorical chart ramp (`--color-cat-1..8`) —
-and it is what a consumer swaps to re-skin Arena. **`tokens/colors.css` is the
+and it is what a consumer swaps to re-skin Arena. **`contracts/design/colors.css` is the
 structure**, and stays hand-authored — the compatibility layer mapping Arena's legacy
 aliases (`--bg`, `--surface-card`, `--crimson`, `--gold`, `--danger`, `--mute`…) onto
 those tokens, plus the `color-mix` derivations of the muted text levels from
 `--color-base-content`. `colors.css` never defines a skin value; `palette.css` is
-imported before it. `tokens/fonts.css` likewise stays generated by
+imported before it. `contracts/design-generated/fonts.css` likewise stays generated by
 `scripts/fetch-fonts.mjs`.
 
 **The layer contract.** DTCG owns *values*; the composition layer owns *how values are
 combined at runtime*. Two things DTCG deliberately does not model, and that therefore
 live in each platform's own idiom: the runtime colour derivations (`color-mix`, in
-`tokens/colors.css`) and `@font-face` bundling (`tokens/fonts.css`). A new framework
+`contracts/design/colors.css`) and `@font-face` bundling (`contracts/design-generated/fonts.css`). A new framework
 target rebuilds that thin layer in its idiom on top of the same standard values — it
 never re-defines a value.
 
 **A third thing lives in the composition layer as of the script-readable
 target: a token whose consumer is JavaScript rather than CSS.** A token flagged
-`$extensions["com.dravensoft.arena"].script: true` in `tokens/src/` emits twice —
+`$extensions["com.dravensoft.arena"].script: true` in `contracts/design/` emits twice —
 the custom property it always would have, and a bare number exported from
 `frameworks/react/Tokens.generated.js` and `frameworks/angular/Tokens.generated.ts`.
-Emission is **per layer** so a component's import never crosses the `tokens/` ↔
+Emission is **per layer** so a component's import never crosses the `contracts/design/` ↔
 `frameworks/` boundary. Flag a token only when JS arithmetic must consume it to
 produce a position — an SVG `y` from a data value, a clamp against
 `window.innerWidth`. The price, and it is not negotiable: a value bound at
@@ -97,14 +100,14 @@ asserts the modules match the source and the CSS and that no flag is orphaned;
 layers, which is how chart geometry drifted before this existed.
 
 **That gate now also reaches across into the API layer, for exactly one type.**
-`api/types/cat-slot.json` declares `CatSlot` as the literal set `1 | … | 8`, and the 8
+`contracts/api/types/cat-slot.json` declares `CatSlot` as the literal set `1 | … | 8`, and the 8
 is not authored there — it is the count of `--color-cat-*` slots in
-`tokens/src/palette.dark.json`, reaching the layers as the derived `catSlots` constant.
+`contracts/design/palette.dark.json`, reaching the layers as the derived `catSlots` constant.
 `catSlotEnumProblems()` in `scripts/check-script-tokens.mjs` asserts the set is exactly
 `1..catSlots` **in order**, so a ninth colour in the ramp fails the build until the
 contract type follows. It is deliberately that one named case and not a mechanism.
 
-**Behaviour has values, and they are tokens like any other.** `tokens/src/behaviour.json`
+**Behaviour has values, and they are tokens like any other.** `contracts/design/behaviour.json`
 holds `delay` (pointer intent), `dismiss` (how long a transient notice lives) and
 `limit` (quantity invariants). All are script-readable, because their consumers are
 `setTimeout` arguments and array bounds rather than CSS properties. Two rules govern
@@ -113,16 +116,16 @@ mechanism** — `--delay-open` is how long a tooltip waits, and that is a design
 decision; a debounce interval on a synchronous in-memory filter is not, which is why
 `debounce` was proposed and deliberately not shipped. And **a value is not a
 contract**: which keys a dialog answers, where focus lands, what dismisses it — none
-of that is expressible as a token, none of it lives in `tokens/`, and DTCG does not
+of that is expressible as a token, none of it lives in `contracts/design/` or `contracts/design-generated/`, and DTCG does not
 model it. That layer lives beside the components instead, and the next paragraph is
 what got built.
 
-**Behaviour also has contracts, and they are not tokens.** `behaviour/patterns/*.json`
+**Behaviour also has contracts, and they are not tokens.** `contracts/behaviour/*.json`
 states what a kind of component must do — roles, keys, focus, dismissal — one file per
 pattern, each citing the source it was adopted from. **Most cite the WAI-ARIA APG page
 they were adopted from — count them rather than trusting a figure here, which moves
-whenever a batch adds a pattern** (`ls behaviour/patterns/ | wc -l` for the total, and
-`grep -l 'apg/' behaviour/patterns/*.json | wc -l` for the APG-derived share; note
+whenever a batch adds a pattern** (`ls contracts/behaviour/*.json | wc -l` for the total, and
+`grep -l 'apg/' contracts/behaviour/*.json | wc -l` for the APG-derived share; note
 `navigation` cites an APG *practices* page rather than a *patterns* one, so a grep on
 `apg/patterns` alone undercounts by one). This paragraph read *fifteen* until plan 8C5
 added `disclosure`, the first new pattern since the layer was built. The exceptions to
@@ -225,7 +228,7 @@ gate never demands totality, only that every claim in the record is true. A gree
 suite asserting all four of a component's exceptions are still true passes while
 the component stays exactly as broken.
 
-**Arena's third contract is the API, and it lives at `api/`.** `api/components/<Name>.json`
+**Arena's third contract is the API.** `contracts/api/components/<Name>.json`
 states, once and neutrally, the members that component's API presents; every layer
 implementing it implements exactly those members. A member is one of **nine forms** —
 primitive, enum, predefined object, array of primitives, array of predefined objects,
@@ -237,7 +240,7 @@ record whose keys the *consumer* names, which Arena routes and never inspects. I
 because the vocabulary said *seven* and was false; `Table.rows` was a member and was none
 of them. **Both members that motivated it have since been removed** — `Table.rows` when
 `Table` became a compound component, `CalendarEvent.meta` under the per-item renderer
-convention — so `grep -rn consumerData api/components/` is **empty** and the form has zero
+convention — so `grep -rn consumerData contracts/api/components/` is **empty** and the form has zero
 live instances in any shipped contract. That is a fact about the vocabulary and **not** a
 reason to retire the form: the next reader will wonder, and the answer is that the form is
 what a contract must reach for the moment a member is a record whose keys the consumer
@@ -264,16 +267,16 @@ is Angular, which has no answer for per-item projection short of a structural di
 `ngTemplateOutlet`, a binding no row of the table covers and no reader function reads. That
 convention removed `ActivityFeed.renderItem`, then `Calendar.renderEvent` and
 `TableColumn.render`, so no contract may declare such a member and refusing every one the
-reader meets is correct rather than provisional. **This checks a form, not R3** — `api/README.md`
+reader meets is correct rather than provisional. **This checks a form, not R3** — `contracts/api/README.md`
 carries the rule and the capability it costs.
-`api/README.md` is the normative
-statement and the first thing a new platform target reads, the way `tokens/src/TYPE-MAP.md`
-is for the token layer. Shared objects and enums are declared once in `api/types/` and
+`contracts/api/README.md` is the normative
+statement and the first thing a new platform target reads, the way `contracts/design/README.md`
+is for the token layer. Shared objects and enums are declared once in `contracts/api/types/` and
 emitted **per layer** by `bun run build:api` into the committed
 `frameworks/react/Api.generated.d.ts` and `frameworks/angular/Api.generated.ts`, so a
-component's import never crosses the `api/` ↔ `frameworks/` boundary. The word *prop* never
+component's import never crosses the `contracts/api/` ↔ `frameworks/` boundary. The word *prop* never
 appears in a contract: it is React's vocabulary, and a neutral contract using it would
-already have chosen a layer. **The structural difference from `behaviour/` is one file, not
+already have chosen a layer. **The structural difference from `contracts/behaviour/` is one file, not
 one per layer** — behaviour files a binding beside each layer's source and has a gate
 compare them, which admits two files that disagree and makes the gate's job to notice; a
 contract that forbids divergence has nowhere for a second opinion to live, and
@@ -287,7 +290,7 @@ brought the six form controls (`RadioGroup`, `Radio`, `Checkbox`, `Textarea`, `S
 throw before it existed — and its third brought `Tabs`, `SegmentedControl`, `ProgressBar`,
 `Toast`, `Tooltip`, `Calendar`, `CalendarEvent`, `Table`, `TableRow` and `TableCell`.
 **To know what is contracted, run `bun run check:api` and read
-the contract/layer pair it prints, or list `api/components/`** — a count written here
+the contract/layer pair it prints, or list `contracts/api/components/`** — a count written here
 would drift the first time a batch lands, which is why none is.
 
 **When a consumer needs their own content inside ONE item of something Arena draws, make
@@ -307,7 +310,7 @@ otherwise have cost. The price is that the compound shape is breaking at every c
 and for `Table` it was the widest breaking change in the batch.
 
 **A compound parent's content slot is OPTIONAL, and the one exception is a named group.**
-Measure it rather than trusting this — `grep -rn '"form": "slot"' api/components/` and read the
+Measure it rather than trusting this — `grep -rn '"form": "slot"' contracts/api/components/` and read the
 `required` flags — but as written, every compound ROOT declares its children optional and guards
 nothing (`RadioGroup`, `SideNav`, `Table`, `Calendar`, `Tabs`), and so does a container that
 merely nests (`SideNavCollapsible`). Only `SideNavSection` requires and guards, and the
@@ -367,12 +370,12 @@ is present but only says what the component *is* satisfies `roles.label` mechani
 telling a screen-reader user nothing — and nothing can derive it, because a data table's
 subject is editorial. `SegmentedControl.ariaLabel` is the same shape.
 
-**`api/README.md`'s *"a closed set of values is not always an enum"* rule now carries a
+**`contracts/api/README.md`'s *"a closed set of values is not always an enum"* rule now carries a
 condition, and the condition is a gate rather than a judgement.** A closed set that merely
 restates a value the token layer already derives may be an enum **only while something
 machine-checks the restatement** — otherwise the contract hand-copies a derived N and
 becomes exactly the stale-assertion surface this layer exists to remove. `CatSlot` is the
-one type in `api/types/` that does this, `check:script-tokens` is what ties it back to the
+one type in `contracts/api/types/` that does this, `check:script-tokens` is what ties it back to the
 `--color-cat-*` ramp (see the script-readable section above), and the assertion is written
 as that single named case: **a second such type would need its own tie before it may be an
 enum at all.**
@@ -503,7 +506,7 @@ set rather than a count written here, which would drift: `Calendar`'s local `zIn
 runtime projection of data onto a screen position — a chart tooltip's offset derived
 from a hovered value, an hour label's offset derived from a clock minute, an event
 block's height derived from its duration — where the literal is the true value at
-that site because nothing in `tokens/src/` could stand in for a number computed from
+that site because nothing in `contracts/design/` could stand in for a number computed from
 data at runtime; and, since the module now called `DataVisuals.ts` (`ChartInternals.ts` when
 the category was added), the **visually-hidden idiom** —
 `SR_ONLY`'s 1px box and the −1px margin that must cancel it exactly, where the number
@@ -568,21 +571,21 @@ or slot structure still match the component it mirrors, which is the open proble
 paragraph above describes and remains unclosed.
 
 **The Overview generates itself, and that is the point.** `Arena - Overview.html` reads
-names and `$description`s from `tokens/src/*.json` and the alias names from
-`tokens/colors.css` (with `scripts/lib/css-decls.mjs`, the same parser the drift gate
+names and `$description`s from `contracts/design/*.json` and the alias names from
+`contracts/design/colors.css` (with `scripts/lib/css-decls.mjs`, the same parser the drift gate
 uses), but it reads **values** from `getComputedStyle` on the live document. So it
 exercises the whole chain — JSON, build, CSS, browser — instead of restating the JSON, and
 a token that resolves empty is flagged as stale rather than shown as if it were in effect.
-Add a token to `tokens/src/` and it appears there with no edit to the page. The
+Add a token to `contracts/design/` and it appears there with no edit to the page. The
 group-to-preview mapping lives in `scripts/lib/token-preview.mjs` and **never** in the
 token source, which stays platform-neutral.
 
-When adding a colour, define the daisyUI token in `tokens/src/palette.dark.json` and
+When adding a colour, define the daisyUI token in `contracts/design/palette.dark.json` and
 `palette.light.json` first, rebuild, then alias to it in `colors.css` — never introduce a
-raw hex in a component. After any `tokens/src/` edit: rebuild, then run
+raw hex in a component. After any `contracts/design/` edit: rebuild, then run
 `bun scripts/check-dtcg.mjs` (source is valid DTCG 2025.10),
 `bun scripts/check-tokens-generated.mjs` (committed CSS matches the source), and
-`bun scripts/check-ramp.mjs` (the ramp still clears every gate). In `tokens/src/`,
+`bun scripts/check-ramp.mjs` (the ramp still clears every gate). In `contracts/design/`,
 colours are structured sRGB objects, dimensions and durations are `{value,unit}` objects,
 and letter spacing is a `number` carrying an `em` render hint in `$extensions`.
 
@@ -715,7 +718,8 @@ a reader sees a failing run and has to go find what else it dropped.
 `support.js` is a generated bundle (`dc-runtime`, whose source is not in this repo) used only by the root `*.dc.html` pages. Do not edit it.
 
 **Framework layers live under `frameworks/`.** The root holds only the
-framework-agnostic language (`tokens/`, `guidelines/`, `assets/`, `scripts/`,
+framework-agnostic language (`contracts/` — all three contract levels, `api/`,
+`behaviour/` and `design/`, plus `design-generated/` — `guidelines/`, `assets/`, `scripts/`,
 `styles.css`) plus the demo runtime (`theme.js`, `support.js`)
 and brand (`*.dc.html`). React lives in `frameworks/react/`, and since the structure
 refactor's batch 3 it has the same shape as the other two: components under
@@ -1008,7 +1012,7 @@ scheduled for deletion the same week.
   `limit.results` would introduce a palette result cap that does not exist
   today, which is a product decision with a UX consequence rather than a
   tokenization of an existing value.
-- **A group-level `$description` in `tokens/src/` never reaches the generated JS
+- **A group-level `$description` in `contracts/design/` never reaches the generated JS
   modules.** `collectScriptTokens()` in `scripts/build-tokens.mjs` skips group
   nodes (`if (item.group || !isScript(item.token)) continue;`), so only a
   leaf token's own description is carried into
@@ -1105,7 +1109,7 @@ scheduled for deletion the same week.
   X=Skeleton   # the component you just changed
   grep -rn --binary-files=without-match "\b$X\b" \
       --include='*.md' --include='*.json' --include='*.mjs' --include='*.jsx' --include='*.ts' \
-      CLAUDE.md components-divergences.md api/ behaviour/ docs/ frameworks/ scripts/
+      CLAUDE.md components-divergences.md contracts/api/ contracts/behaviour/ docs/ frameworks/ scripts/
   ```
 
   and read every hit as a claim about `X` that you may have just falsified. Two kinds are then
@@ -1479,8 +1483,8 @@ scheduled for deletion the same week.
   grep -rnP "(?<![A-Za-z0-9.])[a-z][a-z0-9]*(-[a-z0-9]+)*\.(test\.jsx|jsx|card\.html)\b" \
       --include='*.md' --include='*.json' --include='*.mjs' --include='*.jsx' --include='*.ts' \
       --include='*.html' \
-      CLAUDE.md README.md SKILL.md components-divergences.md api/ behaviour/ docs/ frameworks/ \
-      scripts/ tokens/
+      CLAUDE.md README.md SKILL.md components-divergences.md contracts/api/ contracts/behaviour/ docs/ frameworks/ \
+      scripts/ contracts/design/
   ```
 
   **Two things about the React one are load-bearing.** Its path list is the whole repo, not
@@ -1849,7 +1853,7 @@ scheduled for deletion the same week.
   did, because the per-item convention removed it rather than modelling it, and the
   reader refuses that shape on the convention's authority and not R3's. **No shipped
   contract declares a parameterised slot** — verify with `grep -rn '"params"'
-  api/components/`, whose only hit is `Input.validate`'s `functionInput` — so R3 is
+  contracts/api/components/`, whose only hit is `Input.validate`'s `functionInput` — so R3 is
   today unchecked and also unexercised. That is not a mitigation: the moment a
   contract does declare one, the rule is exactly as unverifiable as this entry says.
   Two more gaps, neither an authoring rule and both closeable in
@@ -1892,7 +1896,7 @@ scheduled for deletion the same week.
   the obstacle: `angularSurface()` has read `readonly validate = input<(value: string) =>
   string>()` as `{form:'functionInput', params:{value:'string'}, returns:'string'}` since the
   ninth form landed, and that bare arrow — with required-ness carried by `.required`, never by
-  a `| undefined` arm — is the spelling `api/README.md` now states normatively and
+  a `| undefined` arm — is the spelling `contracts/api/README.md` now states normatively and
   `scripts/api-surface.test.mjs` pins. What did fail was the *optional* spelling
   `input<((value: string) => string) | undefined>()`, and it failed on parse ORDER rather than
   on any rule: `classify()` tested its arrow pattern before reducing the annotation, backtracked
@@ -1902,12 +1906,12 @@ scheduled for deletion the same week.
   Angular `Input` that declares the member; no Angular component was touched, here or in 8C2.
 
 - **`ControlSize`'s description is inaccurate for two of its four consumers, and the
-  reuse is still correct.** `api/types/control-size.json` says *"Heights come from the
+  reuse is still correct.** `contracts/api/types/control-size.json` says *"Heights come from the
   density tokens, so a control inside `.arena-compact` re-densifies with the rows around
   it."* True of `Button` and `IconButton`. False of `ProgressBar`, whose thickness is
   `--sp-1`, `calc(var(--sp-1) * 1.5)` and `calc(var(--sp-1) * 2.5)`, and of `Spinner`,
   whose diameters are `--icon-sm`, `--sp-5` and `--sp-8`. `.arena-compact` redefines only
-  the `--dz-*` family (`tokens/spacing.css`), so neither re-densifies. **The shared enum is
+  the `--dz-*` family (`contracts/design-generated/spacing.css`), so neither re-densifies. **The shared enum is
   the right one either way** — both implement all three steps, and the alternative is a
   fourth `sm md lg` enum with an identical value set, which is exactly the duplication the
   enum-reuse rule exists to prevent. Only the description is wrong, and a description is
@@ -2045,7 +2049,7 @@ scheduled for deletion the same week.
   takes the resolver too, because a `<section>` exposes `role="region"` only when it is named, so
   a labelledby resolving to nothing takes the role with it. The reach is not marginal — most of
   the patterns declare `roles.label`; count them with `grep -l '"roles.label"'
-  behaviour/patterns/*.json | wc -l` against `ls behaviour/patterns/*.json | wc -l`.
+  contracts/behaviour/*.json | wc -l` against `ls contracts/behaviour/*.json | wc -l`.
 
   **The induction, because a check nobody has watched fail is a check nobody knows works.**
   Deleting `id={titleId}` from `Dialog.jsx` leaves a dangling `aria-labelledby` on a dialog with
@@ -2157,7 +2161,7 @@ scheduled for deletion the same week.
   a slot both declared required and enforced. Note what the correction proves: **no gate saw
   either the understatement or the fix**, because `compareSurface` excludes slots from
   required-ness comparison, which is the same exclusion that lets both camps pass. **Count the
-  required slots (`grep -rn '"form": "slot", "required": true' api/components/`) rather than
+  required slots (`grep -rn '"form": "slot", "required": true' contracts/api/components/`) rather than
   trusting an ordinal here** — this entry's own "THIRD" went stale in one batch.
 
 - **`ConfirmDialog.open` is the one modal of four that is neither required nor guarded.**
@@ -2173,7 +2177,7 @@ scheduled for deletion the same week.
   treeview. What that costs a screen-reader user is real.** With arbitrary nesting the rendered
   structure looks exactly like a tree, and APG's treeview would demand `aria-level` on every
   node, a roving tab stop and four-direction arrow navigation. None of it is designed, none of
-  it is bound, and the refusal lives in `behaviour/patterns/disclosure.json`'s **own
+  it is bound, and the refusal lives in `contracts/behaviour/disclosure.json`'s **own
   description** rather than only in the binding — so every future component binding this pattern
   inherits the refusal and a reader of any one binding meets it. The concrete cost: in a deeply
   nested sidebar a screen-reader user is told a group is expanded and is told nothing about how
@@ -2232,7 +2236,7 @@ scheduled for deletion the same week.
   quietly become false while the whole suite stays green.
 
 - **`SideNavCollapsible.id` is required, and the alternative was never properly weighed.** The
-  contract originally justified required-ness by citing `api/README.md`'s `id`-member rule, which
+  contract originally justified required-ness by citing `contracts/api/README.md`'s `id`-member rule, which
   says the *opposite*: that rule is about a component that **generates** an id and thereby takes
   away the consumer's only path to the element, and its remedy is an **optional** `id?: string`
   with the generated value as fallback — never a required member. The false citation was removed
@@ -2248,6 +2252,110 @@ scheduled for deletion the same week.
   several collapsibles wiring one handler cannot tell which fired without closing over the id they
   were forced to supply. **`id` stays required — that is the approved spec's decision and 8C5 did not
   reopen it.** The question is recorded, not the answer.
+
+- **Two specs cite the pre-`contracts/` paths and are left that way on purpose — but the
+  re-derive command returns more than two files, and both of the others need their own
+  accounting rather than being folded silently into "two."**
+  `docs/superpowers/specs/2026-07-23-8-api-contracts-design.md` (36 hits) and
+  `2026-07-18-9-four-package-build-publish-design.md` (8) name `api/`, `behaviour/` and
+  `tokens/` throughout and are the two left alone. Both mix historical uses — a path inside
+  a `>` block recording what a shipped plan settled, correct **as history** — with normative
+  text that a reader would follow today, and separating the two is a reading of each spec's
+  argument rather than a find-and-replace. The four-package spec is the sharper case: it is
+  *about* where files live, so its paths are load-bearing to its argument, and its own
+  header already warns they are stale in the other direction (the pre-refactor
+  `frameworks/tailwind/` layout). This is the same treatment the first of them already
+  carries for its pre-move `frameworks/` paths, recorded above; read this paragraph before
+  reading either spec.
+
+  Re-derive with `grep -nE '(^|[^a-zA-Z/])(api|behaviour|tokens)/' docs/superpowers/specs/*.md`
+  and, run today, it returns **two** files — the same two left alone above. A **third** file
+  matched until this batch's own close-out deleted it: this refactor's own design spec,
+  `2026-07-29-contracts-directory-design.md` (30 hits), needed no "left that way on purpose"
+  treatment while it existed — it was the document that specified the move, so its
+  `api/`/`behaviour/`/`tokens/` citations were the correct BEFORE-state of the migration it
+  argued for, never a claim about the tree at the time. The plan itself,
+  `docs/superpowers/plans/2026-07-29-contracts-directory.md` — outside this grep's `specs/`
+  scope, but matched the same way and for the same reason by the path-existence sweep — was
+  deleted alongside it, per this repo's convention that an executed plan and its spec are
+  removed once their content is migrated into this file. A **fourth** file
+  matched until this same batch closed it:
+  `2026-07-29-calendar-chip-box-and-header-gap-pending-1.md` carried one live, present-tense
+  citation — *"not in `styles.css`, not in `tokens/`"* — with no historical reading available,
+  the same false claim already fixed in `frameworks/tailwind/README.md` and
+  `components-divergences.md`. Unlike the two specs left alone above, that one was a plain
+  defect rather than an argument needing to stay intact, so it was fixed in place — both
+  current directories now stand in for the one that no longer exists — rather than recorded
+  as debt.
+
+- **Nothing checks that `contracts/` has the shape `contracts/README.md` describes.** A
+  stray file in `contracts/`, a level missing its `README.md`, a fourth directory added
+  beside the three — all pass every gate. `check:structure` is the analogue for
+  `frameworks/` and has no counterpart here, and a `check:contracts` was judged out of
+  scope for a batch whose subject was moving files. Related and also open: the
+  capital-initial naming rule is declared for the framework layers and does not reach
+  `contracts/`, so `button.json` and `palette.dark.json` keep lowercase stems. That is
+  **correct**, for two different reasons and neither is "identifiers stay lowercase" in
+  general: `button.json` is a pattern's own identifier, the literal value a binding writes
+  into `"pattern"`, so renaming it breaks every binding citing `"button"`. `palette.dark.json`
+  is a token source `build-tokens.mjs`'s hardcoded `FILES` table names literally
+  (`source: 'palette.dark.json'`) — true of all eleven sources, so all eleven are identifiers
+  in that sense, but **not** because the stem decides its own output CSS name: `icon.json`,
+  `component.json` and `density.compact.json` all emit into `spacing.css`, and `layering.json`,
+  `chart.json` and `behaviour.json` all emit into `effects.css`, so at most five of the eleven
+  — the `palette.*`, `typography`, `spacing` and `effects` sources — actually name the file
+  they produce. **Not every lowercase stem under `contracts/` has a reason this solid.**
+  `contracts/api/types/menu-item.json` declares its own identity inside itself
+  (`"name": "MenuItem"`, read by `build-api-types.mjs`), which reads the directory only to
+  order its output — nothing anywhere depends on the string `menu-item`, so renaming it to
+  `MenuItem.json` would break nothing. That is exactly what this entry is about: the exemption
+  is written down only here, in the entry that says nothing enforces it, and `menu-item.json`
+  is the case where nothing enforces the CONTENT of the exemption either — it just happens not
+  to have been renamed. **The batch's own design spec promised five zero-guards;
+  `contracts/README.md:52-61` is where that decision is recorded now that the spec is
+  gone — the "green run is only as good as what the gate looked at" entry at the head of
+  this section names
+  only `check:tailwind`, `check:radius` and `check:structure`, a different rule about a
+  different set of gates, and does not promise anything about these five. Four of the five
+  exist**: `zeroContractProblems` (`check-api.mjs`), `zeroPatternProblems`
+  (`check-behaviour.mjs`), `zeroSourceProblems` (`check-dtcg.mjs`), and
+  `zeroGeneratedCssProblems` plus `cssDiscoveryProblems` (`check-script-tokens.mjs`). The
+  fifth, `check:tokens`, deliberately has none, and that is a decision rather than a gap
+  left by this batch: `check-tokens-generated.mjs` builds from `build-tokens.mjs`'s
+  hardcoded `FILES` list and walks no directory of its own, so it has no result set that
+  discovery could ever find empty — a missing source file still fails it, through the
+  build it depends on having nothing to read, just not via a guard shaped like the other
+  four's.
+
+- **Three lessons this batch paid for, and all three generalise past this one refactor.** A moved
+  level's own normative README needs a direct read, not a grep. `contracts/behaviour/README.md`
+  shipped citing "One file per pattern in `patterns/`" — a directory flattened away one commit
+  earlier — and arguing "It is a sibling of `tokens/`, not a child" — describing the old
+  root-level layout rather than a level nested under `contracts/`. No keyword query would ever
+  have found either, because a document describes itself in the first person and a search has to
+  already know what it is looking for. `contracts/design/README.md` had the matching defect: its
+  own exclusion clause read "never in `tokens/src/`" and, carried through the move unexamined,
+  became the self-contradicting "never in `contracts/design/`" two clauses after that same
+  paragraph had just placed `colors.css` inside `contracts/design/`. Both were found by a
+  reviewer reading the file end to end, not by any sweep. And a worklist must be scoped by path
+  list only, never by piping `grep -n` output through `grep -v`: `grep -n` prints
+  `path:line:content`, so a `grep -v` after it filters by the line's *text*, not by the path, and
+  drops any hit whose content merely mentions the excluded string. This batch's behaviour sweep
+  piped its query through `| grep -v 'contracts/behaviour/'` right after moving the patterns into
+  that same directory, and silently excluded the directory it had just moved. `CLAUDE.md` already
+  records this exact trap for a different command, in the entry about cross-file citations of a
+  component's name above — this is a second instance of the same mistake, not a new one, and the
+  fix both times is the same: scope the `git ls-files`/`grep -rn` input by a path list before the
+  content match, never by filtering the output afterward. **A third, narrower lesson belongs
+  beside these two**: collapsing two directories into one can make a sentence that was true
+  become false without a word of it changing. The `contracts/design/README.md` exclusion clause
+  two sentences above is the worked example — true while `tokens/src/` and `colors.css` were two
+  levels of one hierarchy, false the moment the move merged them into one `contracts/design/` and
+  the sentence started contradicting its own subject two clauses earlier in the same paragraph.
+  Three sentences of this exact shape shipped in one sweep before review caught them: that one,
+  its sibling exclusion for the behaviour contract at line 33 of the same file — roughly
+  thirty lines *above* the clause it contradicts, not below it — and the matching clause this
+  file's own *Architecture* section carried before this batch.
 
 ### Where the rest of the debt lives
 
@@ -2282,7 +2390,7 @@ count written here, which would drift.
   They stay as prose alongside the structural half. A migration that deletes a cited
   section without redirecting the citation breaks it, so **measure the citing set
   rather than trusting a list written here** — a list of it was carried in this file
-  and in `api/README.md`, and both were wrong in **both** directions:
+  and in `contracts/api/README.md`, and both were wrong in **both** directions:
   `frameworks/angular/components/feedback/onboarding/Onboarding.ts` was named as a citer to
   protect and names no section at all, while
   `frameworks/angular/test/HostClassBinding.test.ts` and

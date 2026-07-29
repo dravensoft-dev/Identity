@@ -430,7 +430,7 @@ test('a class with no template literal at all (templateUrl, or no @Component) ha
   assert.deepEqual(angularSurface(withNoDecoratorAtAll, 'X').members.map((m) => m.name), ['label']);
 });
 
-/* The eighth form. api/README.md's own worked example for a parameterised slot
+/* The eighth form. contracts/api/README.md's own worked example for a parameterised slot
  * names a row type that cannot be declared -- a declared type is an object of
  * primitives/enums (R1) or an enum, and Arena does not know a consumer row's
  * fields. Table.jsx:28 states what the form actually is: `row[c.key]` indexes

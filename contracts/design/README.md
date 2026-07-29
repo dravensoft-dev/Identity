@@ -1,7 +1,7 @@
 # Arena token type map (DTCG 2025.10)
 
 Normative. This table states the DTCG `$type` of every token group in
-`tokens/src/`. It is the contract a new platform target reads first: consume
+`contracts/design/`. It is the contract a new platform target reads first: consume
 these values, do not re-derive them.
 
 | Token group | Source file | DTCG `$type` | Notes |
@@ -28,9 +28,9 @@ these values, do not re-derive them.
 | Loop durations (`loop-spin/sweep/shimmer/brand/reduced/brand-reduced`) | `effects.json` | `duration` | ms; cyclical motion, deliberately separate from `dur`'s transition range |
 | Easings (`ease-*`) | `effects.json` | `cubicBezier` | `[x1,y1,x2,y2]` |
 | Layering (`z-*`) | `layering.json` | `number` | unitless integers; the family declares the order, the values only preserve it |
-| Chart geometry (`chart-*`) | `chart.json` | `dimension` | px; **script-readable** — emitted to `frameworks/*/tokens.generated.*` as bare numbers as well as to CSS, because JS arithmetic computes SVG positions from them. Does not re-densify: a value bound at import time cannot respond to `.arena-compact` |
+| Chart geometry (`chart-*`) | `chart.json` | `dimension` | px; **script-readable** — emitted to `frameworks/*/Tokens.generated.*` as bare numbers as well as to CSS, because JS arithmetic computes SVG positions from them. Does not re-densify: a value bound at import time cannot respond to `.arena-compact` |
 | Component geometry (`calendar-hour-h`, `onboarding-width`) | `component.json` | `dimension` | px; **script-readable**. Named after a component rather than a role, like `avatar-*` and `logo-*`. `onboarding-width` also replaces a `calc(var(--sp-1) * 80)` the component rendered — one value that existed in two idioms |
-| Behaviour (`delay-*`, `dismiss-*`, `limit-*`) | `behaviour.json` | `duration`, except `limit-*` | ms, and `limit-*` is a bare `number` like `z-*`. **Script-readable** — the consumer is a `setTimeout` argument or an array bound, so these are read as numbers in JS as well as emitted to CSS. Behaviour VALUES only; the behaviour CONTRACT (which keys, which roles, where focus goes) is not a token and lives outside `tokens/` |
+| Behaviour (`delay-*`, `dismiss-*`, `limit-*`) | `behaviour.json` | `duration`, except `limit-*` | ms, and `limit-*` is a bare `number` like `z-*`. **Script-readable** — the consumer is a `setTimeout` argument or an array bound, so these are read as numbers in JS as well as emitted to CSS. Behaviour VALUES only; the behaviour CONTRACT (which keys, which roles, where focus goes) is not a token and lives outside `contracts/design/` and `contracts/design-generated/` |
 
 ## Value formats are strict 2025.10
 
@@ -63,6 +63,7 @@ number.
 ## What is not in this map
 
 Tokens absent from this table are, by definition, part of the per-platform
-composition layer: they live in `tokens/colors.css` (aliases and `color-mix`
-derivations) or `tokens/fonts.css` (`@font-face`), never in `tokens/src/`.
+composition layer: they live in `contracts/design/colors.css` (aliases and `color-mix`
+derivations) or `contracts/design-generated/fonts.css` (`@font-face`), never in the DTCG
+`*.json` sources this table covers.
 DTCG owns values; the composition layer owns how values are combined at runtime.

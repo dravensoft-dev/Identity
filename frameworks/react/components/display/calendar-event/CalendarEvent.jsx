@@ -25,7 +25,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
   id, title, start, end, colorId, onClick, actionsEnabled = false, actions,
   box, color, timeLabel, dateLabel, showTime, tabIndex, defaultPanelOpen,
 }, ref) {
-  /* Required-ness governs runtime, not only the declaration (api/README.md).
+  /* Required-ness governs runtime, not only the declaration (contracts/api/README.md).
      Inside a Calendar an event with an unreadable start/end is dropped with a
      console warning by placeEvents before it ever renders; these guards are what
      a chip written by hand, or built from a half-filled record, hits instead. */

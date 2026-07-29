@@ -4,9 +4,11 @@
  * where focus goes. A BINDING says which pattern a component implements, and
  * which of that pattern's requirements it does not yet meet.
  *
- * These live in behaviour/ at the repo root rather than under tokens/ because a
- * contract is not a value and DTCG does not model one. tokens/ answers "what is
- * this value"; behaviour/ answers "what must this component do".
+ * These live in contracts/behaviour/ beside the other two contract levels, and
+ * are a separate level rather than a corner of the design one because a
+ * contract is not a value and DTCG does not model one. contracts/design/
+ * answers "what is this value"; contracts/behaviour/ answers "what must this
+ * component do".
  *
  * Everything here is pure. scripts/check-behaviour.mjs does the filesystem walk
  * and the reporting; this module is what its suite can import. */
@@ -14,7 +16,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, basename, extname } from 'node:path';
 import { pascal } from '../check-structure.mjs';
 
-export const PATTERN_DIR = 'behaviour/patterns';
+export const PATTERN_DIR = 'contracts/behaviour';
 
 /** The two patterns allowed to require nothing, and binding either REQUIRES a
  *  reason -- a component that carries no interactive affordance at all

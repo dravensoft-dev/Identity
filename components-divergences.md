@@ -1,7 +1,7 @@
 # Component divergences between framework layers
 
 Arena's design language is one thing; its framework layers are several. **For component design,
-`tokens/` and `tokens/src/` are the only source of truth.** A layer that disagrees with the token
+`contracts/design/` and `contracts/design-generated/` are the only source of truth.** A layer that disagrees with the token
 layer is wrong, and that is not negotiable.
 
 Behaviour is different. Arena is in an implementation phase across frameworks, and the layers will
@@ -13,7 +13,7 @@ recorded here rather than treated as a defect in whichever layer was written sec
 This file is the record. A divergence that is not written down is a bug; a divergence that is
 written down, with its reason, is a decision.
 
-**The "no absolute authority" claim above is superseded.** `behaviour/patterns/*.json` now
+**The "no absolute authority" claim above is superseded.** `contracts/behaviour/*.json` now
 settles the authority question this file leaves open: the pattern is the authority, and a
 component's gap against it is a defect or a declared exception, not a symmetric difference
 between equally-valid layers. The per-component entries below predate that layer and are
@@ -112,7 +112,7 @@ to 121 by the time anyone read it again: the stylesheet is generated output and 
 whenever a token is added, so a line number in it is exactly the kind of figure this
 repository's own rules say to derive with a command instead.
 
-**React** sets no such rule anywhere in `tokens/` or `styles.css`, so every React
+**React** sets no such rule anywhere in `contracts/design/`, `contracts/design-generated/` or `styles.css`, so every React
 component is `content-box` — the CSS default — unless it opts in itself. Only four do:
 `Input.jsx`, `Button.jsx`, `Spinner.jsx` and `ConfirmDialog.jsx` each set `boxSizing:
 'border-box'` locally; every other component, including every other form control, is
@@ -243,7 +243,7 @@ regardless of whether the component host-binds it), and `ActivityFeed.manifest.j
 weakened by this carve-out — it was never conditioned on host-binding in the first place.
 
 **No API divergence left to record:** both layers are under the API contract
-(`api/components/ActivityFeed.json`), whose single member is `items`. The `style` prop
+(`contracts/api/components/ActivityFeed.json`), whose single member is `items`. The `style` prop
 and `{...rest}` spread that once lived only on the React side were removed when the
 component was brought under contract — which is what makes the consequence above the
 whole story rather than half of it. A consumer attribute still lands on the inert host
@@ -266,7 +266,7 @@ component needing footer buttons styles them itself from its own manifest.
 control with no feedback. This was missed once on `ConfirmDialog` and corrected.
 
 **`ErrorState` was a divergence here and no longer is.** Under the API contract
-(`api/components/ErrorState.json`) both layers draw the retry the same way: React's
+(`contracts/api/components/ErrorState.json`) both layers draw the retry the same way: React's
 `ErrorState.jsx` draws it from `retryLabel`/`onRetry`, and `arena-error-state` draws its own
 `<button>` styled by its manifest's `retry` slot — exactly the pattern this section describes —
 projecting only a `[secondaryAction]` slot beside it. The former divergence (React drew a button
@@ -779,7 +779,7 @@ the same gate, reached the only way an `ng-content` slot can report whether anyt
 projected. The responsive branch is identical in substance: both measure the component's own
 box, both compare against `--bp-sm` read off the document root, and both render the wide layout
 while the width is still `null` so the narrow branch never flashes. Both layers are under the API
-contract (`api/components/PageHead.json`) with no API divergence: `title` (required), `subtitle`,
+contract (`contracts/api/components/PageHead.json`) with no API divergence: `title` (required), `subtitle`,
 `actions` and `align` are the same members in each — the `style`/`{...rest}` escape that once
 lived only on the React side was removed when the component was brought under contract, its
 alignment intent re-expressed as the shared `align` enum and its bottom margin dropped so the
@@ -949,7 +949,7 @@ compile-time/runtime contract violation at the call site, not a variant to rende
 per a standing ruling AppLogo must never render mark-only. Dropping the guard is deliberate, not
 a gap.
 
-**Why:** this is a rendering divergence, not an API one — the API contract (`api/components/
+**Why:** this is a rendering divergence, not an API one — the API contract (`contracts/api/components/
 AppLogo.json`) already states `mark` and `name` as required members in both layers, and
 `check:api` holds that. What differs is what happens at the one call site that violates it
 anyway: React's guard is a runtime check, reachable because a consumer can still call the
@@ -1015,7 +1015,7 @@ React's own `&&` checks perform, reached the only way an `ng-content` slot can r
 whether anything was projected (the fix `EmptyState`/`ErrorState` already shipped for
 their own action slot).
 
-Both layers are under the API contract (`api/components/UnauthCard.json`) with no API
+Both layers are under the API contract (`contracts/api/components/UnauthCard.json`) with no API
 divergence: `brand`, `eyebrow`, `title`, `content` and `footer` are the same members in
 each — the `style`/`{...rest}` escape that once lived only on the React side was removed
 when the component was brought under contract, the same way `PageHead`'s was.

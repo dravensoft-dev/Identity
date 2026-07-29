@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   bindingName, validateTypes, validateContract, compareSurface,
-  resolveAngularImplementations, resolveReactImplementations,
+  resolveAngularImplementations, resolveReactImplementations, zeroContractProblems,
 } from './check-api.mjs';
 import { pascal } from './check-structure.mjs';
 import { buildApiModules } from './build-api-types.mjs';
@@ -403,7 +403,7 @@ test('a member name declared twice in one layer\'s surface is reported as a dupl
  * comparison guarded on `m.type &&`, so it never ran for this shape, and an
  * inline union matched a contract enum member on form alone regardless of
  * its actual values. `types` is the fourth parameter carrying every declared
- * api/types/ type, resolved OUTSIDE compareSurface (main() reads the
+ * contracts/api/types/ type, resolved OUTSIDE compareSurface (main() reads the
  * filesystem, compareSurface stays string-in/data-out). */
 const LOGO_SIZE_TYPES = new Map([
   ['LogoSize', { name: 'LogoSize', kind: 'enum', values: ['sm', 'md', 'lg', 'xl'] }],
@@ -654,7 +654,7 @@ test('an enum member must name a declared enum, not a declared object', () => {
 
 /* 5 — generated drift */
 
-test('the committed generated modules are what api/types/ generates', () => {
+test('the committed generated modules are what contracts/api/types/ generates', () => {
   for (const [path, expected] of buildApiModules()) {
     assert.equal(readFileSync(join(root, path), 'utf8'), expected, `${path} is stale — run bun run build:api`);
   }
@@ -735,12 +735,12 @@ test('validateContract rejects a functionInput outside a kind:input contract', (
   assert.ok(problems.some((p) => /fmt/.test(p) && /kind.*input/i.test(p)));
 });
 
-/* R4 inside the signature: a param or return naming a type api/types/ does not
+/* R4 inside the signature: a param or return naming a type contracts/api/types/ does not
  * declare is reported, exactly as an object member's enum type is. BOTH halves
  * are pinned -- the parameter loop was already there (it runs for any member
  * carrying `params`), the return check was not, so a test on the parameter
  * alone would have shipped the return check unproven. */
-test('validateContract checks a functionInput signature type against api/types', () => {
+test('validateContract checks a functionInput signature type against contracts/api/types', () => {
   const problems = validateContract(
     { component: 'Input', kind: 'input',
       api: { validate: { form: 'functionInput', params: { value: 'Nope' }, returns: 'string' } } },
@@ -750,7 +750,7 @@ test('validateContract checks a functionInput signature type against api/types',
   assert.ok(problems.some((p) => /functionInput parameter/.test(p)));
 });
 
-test('validateContract checks a functionInput RETURN type against api/types too', () => {
+test('validateContract checks a functionInput RETURN type against contracts/api/types too', () => {
   const problems = validateContract(
     { component: 'Input', kind: 'input',
       api: { validate: { form: 'functionInput', params: { value: 'string' }, returns: 'Nope' } } },
@@ -858,4 +858,32 @@ test('validateContract still rejects an event payload naming no declared type', 
     new Map([['LogoSize', 'enum']]),
   );
   assert.ok(problems.some((p) => /Nope/.test(p)));
+});
+
+/* The one measured false green in this repository: with api/components/ moved
+ * aside, main() used to print "0 contract(s) hold across 0 layer
+ * implementation(s)" and exit 0, because its readdirSync was wrapped in an
+ * existsSync ternary that cannot tell "absent" from "not found". That is the
+ * same shape behind check:tailwind's zero-manifest run and check:api's own
+ * silent skip of every Angular comparison. */
+test('zero contracts is a failure, not a clean pass', () => {
+  const problems = zeroContractProblems({ contracts: 0, types: 40 });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /0 contract/);
+  assert.match(problems[0], /contracts\/api\/components/);
+});
+
+test('zero types is a failure too, named separately', () => {
+  const problems = zeroContractProblems({ contracts: 50, types: 0 });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /0 type/);
+  assert.match(problems[0], /contracts\/api\/types/);
+});
+
+test('both empty are reported as two problems, not one', () => {
+  assert.equal(zeroContractProblems({ contracts: 0, types: 0 }).length, 2);
+});
+
+test('a populated tree has no zero problems', () => {
+  assert.deepEqual(zeroContractProblems({ contracts: 50, types: 40 }), []);
 });

@@ -1,8 +1,8 @@
 /* frameworks/tailwind/Theme.css
    Arena's Tailwind v4 preset. Consume AFTER Arena's tokens are in scope
-   (import ../../styles.css, or the individual tokens/*.css, first).
+   (import ../../styles.css, or the individual contracts/design-generated/*.css, first).
    Every value here is a var() into an existing Arena token — no literals,
-   no new hex, no new value. Re-skinning Arena (swap tokens/palette.css)
+   no new hex, no new value. Re-skinning Arena (swap contracts/design-generated/palette.css)
    re-skins these utilities for free.
 
    Two things below look wrong and are not.
@@ -30,7 +30,7 @@
 @import './Animations.css';
 
 @theme {
-  /* ---- colour → tokens/palette.css ------------------------------------- */
+  /* ---- colour → contracts/design-generated/palette.css ------------------ */
   --color-*: initial;
 
   /* surfaces + base content */
@@ -72,10 +72,10 @@
   --color-cat-7: var(--color-cat-7);
   --color-cat-8: var(--color-cat-8);
 
-  /* overlay scrim → tokens/effects.css */
+  /* overlay scrim → contracts/design-generated/effects.css */
   --color-scrim: var(--scrim);
 
-  /* ---- type → tokens/typography.css ------------------------------------ */
+  /* ---- type → contracts/design-generated/typography.css ----------------- */
   --font-*: initial;
   --font-display: var(--font-display);
   --font-body: var(--font-body);
@@ -105,7 +105,7 @@
   --text-ctl-xs: var(--dz-text-xs);
   --text-ctl-2xs: var(--dz-text-2xs);
 
-  /* brand wordmark → tokens/spacing.css. A wordmark is set type, so its half
+  /* brand wordmark → contracts/design-generated/spacing.css. A wordmark is set type, so its half
      of the logo scale belongs to the font-size namespace even though the
      family is authored in spacing.json beside the mark it is paired with —
      the pairing is the point, and splitting the family across two source
@@ -146,7 +146,7 @@
   --tracking-label: var(--ls-label);
   --tracking-wide: var(--ls-wide);
 
-  /* ---- spacing → tokens/spacing.css ------------------------------------ */
+  /* ---- spacing → contracts/design-generated/spacing.css ----------------- */
   /* The base unit, and the reason every numeric utility lands on Arena's
      grid. Without it v4 emits an unnamed step as calc(var(--spacing) * N)
      against its own 0.25rem default — a value that coincides with Arena's
@@ -168,7 +168,7 @@
   --spacing-20: var(--sp-20);
   --spacing-24: var(--sp-24);
 
-  /* density → tokens/spacing.css, so .arena-compact re-densifies utilities
+  /* density → contracts/design-generated/spacing.css, so .arena-compact re-densifies utilities
      the same way it re-densifies components. The key is the token's suffix
      verbatim, which makes py-row-py read redundantly and makes the
      utility-to-token mapping mechanical. */
@@ -187,7 +187,7 @@
   --container-*: initial;
   --container-page: var(--container-max);
 
-  /* icon size → tokens/spacing.css. A glyph rendered as a webfont is an icon,
+  /* icon size → contracts/design-generated/spacing.css. A glyph rendered as a webfont is an icon,
      not type, so it does not live in the --text-* namespace — that argument
      is Rule 2's, made one level up at the classification stage. `--size-*`
      is what an icon *is*: `.size-icon-md` sets both width and height. */
@@ -197,7 +197,7 @@
   --size-icon-lg: var(--icon-lg);
   --size-icon-xl: var(--icon-xl);
 
-  /* avatar diameter → tokens/spacing.css. Same namespace as the icon sizes and
+  /* avatar diameter → contracts/design-generated/spacing.css. Same namespace as the icon sizes and
      for the same reason: `.size-avatar-md` sets both width and height, which is
      what a diameter is. */
   --size-avatar-xs: var(--avatar-xs);
@@ -205,7 +205,7 @@
   --size-avatar-md: var(--avatar-md);
   --size-avatar-lg: var(--avatar-lg);
 
-  /* brand lock-up mark slot → tokens/spacing.css. The --size-* namespace for
+  /* brand lock-up mark slot → contracts/design-generated/spacing.css. The --size-* namespace for
      the same reason the icon and avatar sizes use it: `.size-logo-mark-md`
      sets both width and height, which is what a square slot is. The wordmark's
      half of the scale is a font size and lives in --text-* below. */
@@ -214,7 +214,7 @@
   --size-logo-mark-lg: var(--logo-mark-lg);
   --size-logo-mark-xl: var(--logo-mark-xl);
 
-  /* ---- effects → tokens/effects.css ------------------------------------ */
+  /* ---- effects → contracts/design-generated/effects.css ----------------- */
   --radius-*: initial;
   --radius-xs: var(--r-xs);
   --radius-sm: var(--r-sm);
@@ -237,7 +237,7 @@
   --blur-*: initial;
   --blur-scrim: var(--scrim-blur);
 
-  /* layering → tokens/effects.css. The family declares the order; a consumer
+  /* layering → contracts/design-generated/effects.css. The family declares the order; a consumer
      embedding Arena in an app with its own stacking context reads these
      rather than guessing at a magic number. */
   --z-index-*: initial;

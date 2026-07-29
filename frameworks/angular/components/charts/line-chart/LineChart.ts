@@ -12,7 +12,7 @@ const ASSUMED_WIDTH = 600;
 /** The point marker's radius in px: the larger one is the hovered point. Both are
  *  SVG user units on a mark, not a CSS length on Arena's dimension scale, and the
  *  token layer models neither — `LineChart.jsx` writes the same two numbers, from
- *  tokens/src/chart.json. */
+ *  contracts/design/chart.json. */
 const POINT_R = chartPointR;
 const POINT_R_HOVER = chartPointRHover;
 

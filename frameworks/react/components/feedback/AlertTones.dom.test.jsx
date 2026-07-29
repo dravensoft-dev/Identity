@@ -36,7 +36,7 @@ afterEach(cleanup);
  * replaces with evidence.
  *
  * Waiting is not the way to act on it. The shortest value the system would use to
- * retire a transient notice is `--dismiss-default`, 4200ms (tokens/src/behaviour.
+ * retire a transient notice is `--dismiss-default`, 4200ms (contracts/design/behaviour.
  * json), and a suite that sat out 4.2 real seconds would still only have proved
  * the alert outlived *that* timer. So this fires the clock forward instead: every
  * callback scheduled while the alert mounts is captured, then invoked

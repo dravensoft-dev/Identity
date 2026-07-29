@@ -1,7 +1,7 @@
 # Arena API capability contracts
 
-Arena states three contracts. `tokens/` is the normative source for design values.
-`behaviour/patterns/` states what a kind of component must do. This directory is the
+Arena states three contracts. `contracts/design/` is the normative source for design values.
+`contracts/behaviour/` states what a kind of component must do. This directory is the
 third and youngest: **the API capability contract** — one neutral statement per
 component of the members its API presents, which every layer implementing that
 component implements exactly.
@@ -10,14 +10,14 @@ It is orthogonal to the other two. A green `check:api` says the surface matches.
 nothing about what the component does with it, exactly as `check:behaviour` is a
 coverage claim and never an accessibility one.
 
-Read this before adding a platform target, the way `tokens/src/TYPE-MAP.md` is read
+Read this before adding a platform target, the way `contracts/design/README.md` is read
 before adding one to the token layer.
 
 ## The other two contracts are firm; this layer is additive
 
 Two of Arena's three contracts were settled before this one and are **not reopened by it**.
-The **token** contract (`tokens/`) is the design-value layer. The **behaviour** contract
-(`behaviour/patterns/`) states what each kind of component must do, adopted from the WAI-ARIA
+The **token** contract (`contracts/design/`) is the design-value layer. The **behaviour** contract
+(`contracts/behaviour/`) states what each kind of component must do, adopted from the WAI-ARIA
 Authoring Practices Guide — and, where APG has no page, from the ARIA 1.2 role reference or WCAG.
 This API capability layer was added last, and it is **orthogonal and additive**: bringing a
 component under contract may not weaken, remove, or contradict its behaviour binding or the
@@ -90,7 +90,7 @@ vocabulary absorbs once. Two mechanical guards keep it narrow, and both are enfo
   member anywhere else fails the gate, by name. A chart declaring a formatter still fails, exactly
   as it did before this form existed.
 - **Its signature is modelled, not free TypeScript.** A `functionInput` declares `params` (a map of
-  parameter name → type name) and `returns` (a type name), each a primitive or a type `api/types/`
+  parameter name → type name) and `returns` (a type name), each a primitive or a type `contracts/api/types/`
   declares. **R4 holds inside the signature**: no `React.*` type in a parameter or in the return,
   and the reader surfaces one as a platform type so the gate reports the rule. The reader reduces
   a `string | null | undefined` return to `string` — the message, or none.
@@ -385,7 +385,7 @@ strings is rewritten, and that is the price.
 
 ## Contract format
 
-`api/components/<Component>.json`:
+`contracts/api/components/<Component>.json`:
 
 ```json
 {
@@ -425,7 +425,7 @@ A `functionInput` declares its whole signature, and the contract carrying it dec
 **Consumer data is spelled by form name in every position, because there is nothing to
 declare.** `{"form": "array", "of": "consumerData"}` for a row list, `{"form": "consumerData"}`
 for a single record, `"params": { "row": "consumerData" }` for a slot parameter and
-`"payload": "consumerData"` for an event. **Nothing is declared in `api/types/` for it** — a
+`"payload": "consumerData"` for an event. **Nothing is declared in `contracts/api/types/` for it** — a
 type there states its fields, and this form's whole content is that its fields are the
 consumer's. That is what keeps the directory from filling with fieldless types, and it is why
 the `cell` example above no longer names a `TableRow`: a `TableRow` cannot be declared, so a
@@ -438,7 +438,7 @@ divergence is a defect; that is the point of this layer.
 
 ## Types
 
-Declared once, in `api/types/`, one file per type:
+Declared once, in `contracts/api/types/`, one file per type:
 
 ```json
 { "name": "Crumb", "kind": "object",
@@ -457,16 +457,16 @@ Declared once, in `api/types/`, one file per type:
 authored in the contract and owned by it — `Tone` above — and it is not automatically right
 when the set merely restates a value the token layer already derives. The charts' categorical
 ramp slot is the case that decided that rule and then tested it. It is a bounded 1..N whose
-bound lives in exactly one authoritative place — `tokens/src/palette.dark.json`'s
+bound lives in exactly one authoritative place — `contracts/design/palette.dark.json`'s
 `--color-cat-*` ramp — reaching the components as the derived `catSlots` constant in
-`tokens.generated.*`, where `catColor()`'s `Math.min(CAT_SLOTS, …)` clamp enforces it at
+`Tokens.generated.*`, where `catColor()`'s `Math.min(CAT_SLOTS, …)` clamp enforces it at
 runtime on both layers and re-derives itself the day the ramp gains or loses a colour. The
 objection to modelling it as an enum was that doing so hand-copies that derived N into a
 contract as a literal set with **nothing tying the copy back to the palette** — a
 stale-assertion surface of exactly the kind this layer exists to remove.
 
 **It is an enum today, and what made that legitimate is a gate rather than a change of mind.**
-`api/types/cat-slot.json` declares `CatSlot = 1 | … | 8`, and `check:script-tokens`
+`contracts/api/types/cat-slot.json` declares `CatSlot = 1 | … | 8`, and `check:script-tokens`
 (`catSlotEnumProblems()` in `scripts/check-script-tokens.mjs`) asserts that set is exactly
 1..`catSlots` in order — add a ninth colour to the ramp and the gate fails until the contract
 type follows. The copy is tied back to the palette, so the objection no longer holds. The
@@ -476,21 +476,21 @@ every value and a numeric enum would not have rendered at all.
 
 So the rule survives with its test attached: a closed set that restates a token-derived value
 may be an enum **only** while something machine-checks the restatement. `CatSlot` is the only
-type in `api/types/` that does this, and the assertion is written as that one named case
+type in `contracts/api/types/` that does this, and the assertion is written as that one named case
 rather than as a mechanism — a second such type would need its own tie, and deciding whether
 a general mechanism is worth building is that batch's problem, not a facility already waiting
 for it.
 
 A `description` on a type or on one of its fields is carried into the generated modules
-as a doc comment — `build-api-types.mjs` reads `api/types/` only. Group-level prose is
-lost in `tokens/`'s generator and that is recorded as debt in `CLAUDE.md`; this generator
-carries descriptions on every node it emits from `api/types/`, including type-level ones,
+as a doc comment — `build-api-types.mjs` reads `contracts/api/types/` only. Group-level prose is
+lost in `contracts/design/`'s generator and that is recorded as debt in `CLAUDE.md`; this generator
+carries descriptions on every node it emits from `contracts/api/types/`, including type-level ones,
 so that hole is not reopened here.
 
 **A member's own `description` — the one written on a contract member in
-`api/components/<Component>.json`, as `separator`'s is in the example above — is not one
+`contracts/api/components/<Component>.json`, as `separator`'s is in the example above — is not one
 of those nodes, and nothing reads it for emission.** Nothing in `scripts/` reads
-`api/components/*.json` to generate anything; the contract exists to be read by
+`contracts/api/components/*.json` to generate anything; the contract exists to be read by
 `check:api` and by whoever migrates a component, not to be built from. So a member
 description lives in the contract only, and each layer's own doc comment
 (`AppLogoProps`'s JSDoc, `arena-app-logo`'s class comment) restates it by hand — today
@@ -502,7 +502,7 @@ nothing here will notice. This is a known limit, not a gap left to close quietly
 `bun run build:api` emits `frameworks/react/Api.generated.d.ts` and
 `frameworks/angular/Api.generated.ts` from these files. Both are committed and both carry
 the same body; emission is **per layer** so a component's import never crosses the
-`api/` ↔ `frameworks/` boundary — the rule the script-readable token target established,
+`contracts/api/` ↔ `frameworks/` boundary — the rule the script-readable token target established,
 for the same reason.
 
 ## What the gate asserts, and what it cannot
@@ -551,8 +551,8 @@ rather than as any single form.
 **An event's `payload` resolves as one of exactly four things, and stating it as four
 rather than as "a declared type" is the point.** `validateContract` accepts a payload that
 is (1) a primitive type name — `"string"`, `"number"`, `"boolean"`; (2) the form name
-`"consumerData"`; (3) the name of an **object** `api/types/` declares; or (4) the name of an
-**enum** `api/types/` declares. Anything else is reported — a name `api/types/` does not
+`"consumerData"`; (3) the name of an **object** `contracts/api/types/` declares; or (4) the name of an
+**enum** `contracts/api/types/` declares. Anything else is reported — a name `contracts/api/types/` does not
 declare at all, and an object name used where the fourth arm does not apply. The four exist
 because `classify()` produces all four from a real signature: it reduces
 `(v: string) => void`, `(v: Crumb) => void` and `(v: LogoSize) => void` alike, so a contract
@@ -571,7 +571,7 @@ form's authoring rules:
   does not declare itself an input control, naming the member. "Input controls only" is a checked
   restriction, not a convention.
 - **The signature's types.** Every name in `params` and the `returns` name must be a primitive or
-  a type `api/types/` declares, resolved exactly as an object member's enum type is — so **R4
+  a type `contracts/api/types/` declares, resolved exactly as an object member's enum type is — so **R4
   holds inside the signature**, and a `functionInput` with no `returns` at all is reported rather
   than admitted as half a model.
 - **The signature is compared, not only declared.** `compareSurface` matches each layer's

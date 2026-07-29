@@ -37,7 +37,7 @@ test('no delta at all renders no pill either -- the same gate, at its other edge
 });
 
 /* `icon` is a Phosphor class-name string, not a slot, per the "Conventions the
- * audits settled" section of `api/README.md` and `api/components/StatCard.json`.
+ * audits settled" section of `contracts/api/README.md` and `contracts/api/components/StatCard.json`.
  * Arena draws the `<i>` and its aria-hidden wrapper; an absent icon renders
  * neither -- not an empty wrapper. */
 test('an icon renders the glyph Arena draws, inside the aria-hidden wrapper', () => {
@@ -51,7 +51,7 @@ test('no icon renders no wrapper at all -- not an empty one', () => {
   assert.doesNotMatch(html, /aria-hidden="true"/);
 });
 
-/* Per api/README.md's "Required-ness governs the implementation and the
+/* Per contracts/api/README.md's "Required-ness governs the implementation and the
  * runtime" clause, `label` and `value` fail hard when absent, matching
  * Angular's `input.required` -- not the earlier fail-soft `undefined` render. */
 test('throws when a required member is absent', () => {

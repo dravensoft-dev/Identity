@@ -10,11 +10,11 @@ how a class string reaches the element — lives in each `frameworks/<fw>/` fold
 
 Every utility here resolves to an existing Arena token via `var()`. There is no
 new hex and no new value in this folder. Re-skin Arena by swapping
-`tokens/palette.css`; these utilities re-skin with it.
+`contracts/design-generated/palette.css`; these utilities re-skin with it.
 
 ## What the preset exposes
 
-Every token in `tokens/palette.css`, `typography.css`, `spacing.css` and
+Every token in `contracts/design-generated/palette.css`, `typography.css`, `spacing.css` and
 `effects.css` reaches a utility, except seventeen that cannot — `--sp-0` (`p-0`
 is a literal `0px` in v4), the three `--bp-*` (read by JS, never a media
 query), the three `--dur-*`, the six `--loop-*`, and the two `--bw-*` and the
@@ -22,7 +22,7 @@ two `--focus-*` (v4 has no namespace for any of the five). Those seventeen are
 listed with their reason in `EXCLUDED` in `scripts/check-tailwind-coverage.mjs`,
 and that gate fails the build if a token is added and reaches nothing.
 
-`tokens/colors.css` is excluded as a category. Its aliases (`--crimson`,
+`contracts/design/colors.css` is excluded as a category. Its aliases (`--crimson`,
 `--mute`, `--danger-soft`, `--text-strong`…) alias tokens the preset already
 exposes; a second utility name for the same colour is a second way to be
 wrong. Reach one as `bg-[var(--danger-soft)]` when you genuinely need it.
@@ -69,7 +69,7 @@ inventing one would be worse than the literal.
 `px`, `rem`, `ms` and `s` are **not** in that set: tokens model those, so
 `text-[13px]`, `duration-[200ms]` and `w-[calc(var(--sp-4)+8px)]` all still fail.
 If a manifest needs a value with no token behind it, the token is what is
-missing — add it to `tokens/src/` first.
+missing — add it to `contracts/design/` first.
 
 <!-- check-arbitrary-values allow: text-[13px] bg-[#b52a20] duration-[200ms] w-[calc(var(--sp-4)+8px)] -->
 
@@ -100,7 +100,7 @@ extension, it is itself a failure.
 ## Consumption order
 
 1. Bring Arena's tokens into scope — `@import "../../styles.css";` (or the
-   individual `tokens/*.css`).
+   individual `contracts/design-generated/*.css`).
 2. `@import "./Theme.css";` — the Tailwind `@theme` preset.
 3. Consume a component manifest from
    `./components/<category>/<component-kebab>/<Component>.manifest.json`.
@@ -321,7 +321,7 @@ and put it there instead.
 ## This layer is border-box; React is content-box, and that is expected
 
 `Utilities.css`'s preflight sets `box-sizing: border-box` on every element (`@layer
-base`). Nothing in `tokens/` or `styles.css` does, so a React component is
+base`). Nothing in `contracts/design/`, `contracts/design-generated/` or `styles.css` does, so a React component is
 content-box unless it opts in itself — most do not. **A slot that combines an
 explicit size with a border, or an explicit size with padding, therefore
 renders a different total box in the two layers** — border-box subtracts

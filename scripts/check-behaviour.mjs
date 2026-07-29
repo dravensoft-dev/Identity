@@ -19,7 +19,7 @@ import { dirname, join } from 'node:path';
 import {
   loadPatterns, validatePattern, validateBinding,
   reactComponents, reactBindingPath, angularPrimitives, angularBindingPath,
-  crossLayerAgrees, bindingCases,
+  crossLayerAgrees, bindingCases, PATTERN_DIR,
 } from './lib/behaviour-contracts.mjs';
 import { pascal, kebab } from './check-structure.mjs';
 
@@ -41,9 +41,29 @@ export function describeBinding(binding) {
     .join(' + ');
 }
 
+/** An empty catalogue is a failure, and it has to be reported as ONE problem.
+ *  Emptying the directory already fails this gate -- but as a cascade of
+ *  `unknown pattern "<name>"`, one line per binding, every one of them naming a
+ *  consequence rather than the cause. Measured on 2026-07-29 by moving
+ *  behaviour/patterns/ aside: roughly a hundred such lines, none of which named
+ *  the actual problem. This is the guard the pattern directory did not have --
+ *  the same shape check-api.mjs's zeroContractProblems and
+ *  check-structure.mjs's zeroLayerProblems already carry.
+ *  @param {number} count @returns {string[]} */
+export function zeroPatternProblems(count) {
+  if (count > 0) return [];
+  return [`found 0 patterns in ${PATTERN_DIR} — an empty result set is a failure, not a clean pass; check the discovery path`];
+}
+
 async function main() {
   const problems = [];
   const patterns = loadPatterns(root);
+  problems.push(...zeroPatternProblems(patterns.size));
+  if (patterns.size === 0) {
+    console.error(`check-behaviour: ${problems.length} problem(s)\n`);
+    for (const p of problems) console.error(`  ${p}`);
+    process.exit(1);
+  }
 
   /* 1. Every pattern is well formed. */
   for (const [stem, pattern] of patterns) problems.push(...validatePattern(stem, pattern));

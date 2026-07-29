@@ -4,7 +4,7 @@ import { errorStateStyles } from './ErrorState.variants';
 
 /** Section- or screen-level failure, with recovery and an optional support
  *  code. The host itself is the recipe's `root`, the flex item a parent
- *  lays out. Under the API contract (`api/components/ErrorState.json`) Arena
+ *  lays out. Under the API contract (`contracts/api/components/ErrorState.json`) Arena
  *  draws the primary retry itself, from data (`retryLabel` gates the button;
  *  activating it emits `retry`) rather than leaving it to a consumer to
  *  project — the same `retryLabel`-gated shape `Alert`'s `actionLabel` uses.

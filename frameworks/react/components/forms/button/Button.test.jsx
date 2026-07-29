@@ -60,7 +60,7 @@ test('Button drops a consumer style object and a consumer attribute, each indepe
 });
 
 /* `tabStop` is the second global attribute Arena admits as a member, after
- * `id`, and it passes the same test api/README.md states for that one: the D1
+ * `id`, and it passes the same test contracts/api/README.md states for that one: the D1
  * flatten removed the capability, and there is no other surface a host can
  * write it on. Button's half of that reason is its own: Angular delegates it to
  * MatButton and there is no arena-button primitive -- BehaviourDelegated.json

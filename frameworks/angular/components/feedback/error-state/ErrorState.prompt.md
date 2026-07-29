@@ -1,5 +1,5 @@
 Arena failure state — something did not load, and there is a way to try again. Under
-the API contract (`api/components/ErrorState.json`) Arena draws the primary retry
+the API contract (`contracts/api/components/ErrorState.json`) Arena draws the primary retry
 itself, from `retryLabel`/`retry` — the same drawn-from-data shape `Alert`'s
 `actionLabel`/`action` uses — rather than leaving it to a consumer to project. The
 `[secondaryAction]` slot stays projected, for whatever a consumer wants beside the

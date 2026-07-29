@@ -464,6 +464,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **`api/` is now `contracts/api/`.** The first of Arena's three contract levels moves under a
+  single `contracts/` roof. No contract changed; the generated `Api.generated.*` modules were
+  rebuilt because the header they carry names the new source directory. `check:api` additionally
+  fails on an empty contract or type directory and prints its type count — with `api/components/`
+  moved aside it used to exit 0 reporting zero contracts.
+- **`behaviour/patterns/` is now `contracts/behaviour/`.** The second contract level moves under
+  the `contracts/` roof, and the `patterns/` directory is flattened away — it separated the pattern
+  files from nothing but the README beside them. `check:behaviour` now names an empty catalogue in
+  one line instead of failing about a hundred times with `unknown pattern`.
+- **`tokens/` is now `contracts/design/` and `contracts/design-generated/`**, completing the move of
+  all three contract levels under one roof. The DTCG sources and the hand-authored `colors.css` are
+  the design contract; the five generated CSS files are its output. `tokens/src/TYPE-MAP.md` is now
+  `contracts/design/README.md`, so each level's normative document is its own README. **Breaking for
+  the copy-in kit:** consumers copied `tokens/` and now copy `contracts/design/` and
+  `contracts/design-generated/`. `styles.css` stays at the repository root and is unchanged as an
+  entry point.
 - **BREAKING (paths, in all three layers) — every framework layer now has one shape, and almost
   every documented path moved.** The rule: **directories are `kebab-case` and lowercase; a file
   name begins with a capital, and a multi-word stem is `PascalCase` with hyphens removed; a

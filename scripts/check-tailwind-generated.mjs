@@ -1,6 +1,6 @@
 /* Asserts the committed frameworks/tailwind/Utilities.css, and every
  * committed *.manifest.ts, are what the current preset and manifests compile
- * to. The same contract check-tokens-generated.mjs holds for tokens/*.css:
+ * to. The same contract check-tokens-generated.mjs holds for contracts/design-generated/*.css:
  * build output in the tree is only trustworthy while something fails when it
  * goes stale.
  *

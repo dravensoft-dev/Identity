@@ -20,7 +20,7 @@
  *
  * Requirement semantics key off the requirement KEY and the PATTERN NAME, never
  * off the requirement's value. This is the correction that matters most in this
- * file. The values in behaviour/patterns/*.json are human prose written for a
+ * file. The values in contracts/behaviour/*.json are human prose written for a
  * reader — navigation's roles.element is a whole sentence ("navigation (native
  * nav, or role=navigation when nav cannot be used)"), and button's roles.label is
  * a list of three alternatives. The first implementation compared
@@ -105,7 +105,7 @@ const NATIVELY_FOCUSABLE = new Set(['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'
  *  It must cover every pattern carrying a `roles.element` requirement, and name
  *  no pattern that does not exist. Both directions are asserted in
  *  scripts/behaviour-compliance.test.mjs against the real files, so this map
- *  cannot silently drift from behaviour/patterns/.
+ *  cannot silently drift from contracts/behaviour/.
  *  @type {Record<string, string>} */
 export const ELEMENT_ROLE = {
   alert: 'alert',
@@ -386,7 +386,7 @@ export const BEHAVIOURAL = new Set([
  *    bindings, is one of them — so IDREF is empty for them and a caller
  *    consulting it alone concludes, wrongly, that no resolver is owed. Measure
  *    the overlap rather than trusting a figure: compare
- *    `grep -l '"roles.label"' behaviour/patterns/*.json` against those files
+ *    `grep -l '"roles.label"' contracts/behaviour/*.json` against those files
  *    also matching `"roles\.(controls|describedby|activedescendant)"`.
  *  @returns {true | false | null} null = undecidable from this element alone
  *  @throws {Error} on a key in neither DECIDABLE nor BEHAVIOURAL, on a

@@ -16,7 +16,7 @@ const START_ANGLE = -Math.PI / 2;
  *  the labels ellipsis away to nothing; above the ceiling the ring starves. These
  *  are SVG-adjacent layout arithmetic on a measured pixel width, not CSS lengths on
  *  Arena's dimension scale — `DoughnutChart.jsx` writes the same three numbers, from
- *  tokens/src/chart.json. The 0.34 share stays a literal: a ratio deriving one
+ *  contracts/design/chart.json. The 0.34 share stays a literal: a ratio deriving one
  *  dimension from another is not itself a design value. */
 const LEGEND_MIN = chartLegendMin;
 const LEGEND_MAX = chartLegendMax;
@@ -25,7 +25,7 @@ const LEGEND_SHARE = 0.34;
 /** The flex gap between the ring and the legend, in px. The SVG is sized in user
  *  units, so the gap has to be subtracted from the plot as a number, read from the
  *  same `--chart-legend-gap` token the host's `gap` reads as a custom property —
- *  one token, two readings. From tokens/src/chart.json. */
+ *  one token, two readings. From contracts/design/chart.json. */
 const LEGEND_GAP = chartLegendGap;
 
 /** How far the ring's outer edge sits inside the plot box, in px. Breathing room so a

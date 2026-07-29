@@ -4,7 +4,7 @@
  * bare literal is a bug.
  *
  * It is not a tidiness check. Zero bare literals means every rendered value
- * resolves from tokens/src/, which is exactly the claim that changing a value
+ * resolves from contracts/design/, which is exactly the claim that changing a value
  * there moves every layer. This gate is the proof of that promise.
  *
  * It is the complement of check-arbitrary-values.mjs: that one keys on
@@ -147,7 +147,7 @@ export const EXEMPT = new Map([
   ['frameworks/react/components/display/calendar-event/CalendarEvent.jsx:zIndex:1',
    'local stacking inside a positioned container; does not join the global z order'],
   ['frameworks/react/components/charts/bar-chart/BarChart.jsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`',
-   'yOf(values[hover]) projects the hovered data point onto the chart\'s own measured inner height — a runtime data-to-pixel projection, not a design dimension. Unlike Avatar\'s ratio (this same task turns that operand into a token), there is no token to give this one: the series values, their max, and the container\'s measured width all change at runtime, so nothing in tokens/src/ could stand in for it'],
+   'yOf(values[hover]) projects the hovered data point onto the chart\'s own measured inner height — a runtime data-to-pixel projection, not a design dimension. Unlike Avatar\'s ratio (this same task turns that operand into a token), there is no token to give this one: the series values, their max, and the container\'s measured width all change at runtime, so nothing in contracts/design/ could stand in for it'],
   ['frameworks/react/components/charts/line-chart/LineChart.jsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`',
    'the same yOf(values[hover]) projection as BarChart\'s own exemption above — a data point\'s value mapped onto the chart\'s measured pixel height, not a token'],
   ['frameworks/react/components/display/calendar/Calendar.jsx:top:`calc(${y(m)}px - var(--sp-1))`',
@@ -155,12 +155,12 @@ export const EXEMPT = new Map([
   ['frameworks/react/components/display/calendar/Calendar.jsx:height:`max(calc(var(--sp-1) * 4.5), ${rawH}px)`',
    'the max()\'s floor, calc(var(--sp-1) * 4.5), already reads a token, and stays governed — only the computed arm is exempt: rawH is an event\'s duration in minutes projected to pixels, the same data-to-pixel category as the two chart entries above, never a fixed dimension'],
   ['frameworks/angular/DataVisuals.ts:width:\'1px\'',
-   'SR_ONLY is the standard visually-hidden idiom, and its 1px box is not a design dimension — it is the smallest non-zero footprint that keeps the element in the accessibility tree, paired with clip:rect(0 0 0 0) to hide it regardless of box size. 0 would drop it from the tree in some engines and defeat the whole point. Nothing in tokens/src/ could stand in for it: the number is a constraint of the a11y idiom, and it must be a fixed literal for the negative margin below to cancel exactly'],
+   'SR_ONLY is the standard visually-hidden idiom, and its 1px box is not a design dimension — it is the smallest non-zero footprint that keeps the element in the accessibility tree, paired with clip:rect(0 0 0 0) to hide it regardless of box size. 0 would drop it from the tree in some engines and defeat the whole point. Nothing in contracts/design/ could stand in for it: the number is a constraint of the a11y idiom, and it must be a fixed literal for the negative margin below to cancel exactly'],
   ['frameworks/angular/DataVisuals.ts:height:\'1px\'',
    'the other axis of the same 1px visually-hidden box as the width entry above'],
   ['frameworks/angular/DataVisuals.ts:margin:\'-1px\'',
    'the same idiom\'s negative pull, which must cancel exactly the 1px box above so the hidden table shifts no sibling — it is bound to that literal, not to Arena\'s spacing scale, and a token here would break the cancellation'],
-  // Skeleton's API contract (api/components/Skeleton.json, Plan 8B1 Task 3) made
+  // Skeleton's API contract (contracts/api/components/Skeleton.json, Plan 8B1 Task 3) made
   // width/height/radius plain CSS strings a CONSUMER supplies per instance.
   // scanAttributes' `prop="value"` match has no notion of which element it is
   // styling — built for an SVG glyph's presentation attributes (BarChart's own
@@ -922,7 +922,7 @@ function main() {
     for (const f of found) console.error(`  ${f.file}: ${f.prop}: ${f.raw} — ${f.reason}`);
     console.error('\nA dimension is a token or a derivation of tokens. Use var(--token), or');
     console.error('calc() over one where the scale is numeric. If neither fits, the token is');
-    console.error('what is missing — add it to tokens/src/ first.');
+    console.error('what is missing — add it to contracts/design/ first.');
   }
   if (failed) process.exit(1);
   console.log('check-dimension-literals: no bare literals under frameworks/, no stale exemptions');

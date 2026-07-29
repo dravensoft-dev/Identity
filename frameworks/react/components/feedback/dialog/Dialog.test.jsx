@@ -10,7 +10,7 @@ import { Dialog } from './Dialog.jsx';
  * a scrim click -- are therefore NOT verified by this suite; they are pinned against
  * a real tree in ../DialogModal.dom.test.jsx and ../Behavioural.dom.test.jsx.
  * What IS verified here is the contract SHAPE that SSR can see: that every member
- * api/components/Dialog.json declares reaches its declared place in the markup, that
+ * contracts/api/components/Dialog.json declares reaches its declared place in the markup, that
  * `width` is a CSS string rather than the number the .d.ts used to declare, that the
  * two required members fail hard when absent, and that neither R4 escape is present.
  *
@@ -119,7 +119,7 @@ test('Dialog drops a consumer attribute -- no {...rest} spread reaches the panel
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered panel -- a {...rest} escape is back');
 });
 
-/* Both members the contract marks required, and api/README.md's rule that the
+/* Both members the contract marks required, and contracts/api/README.md's rule that the
  * implementation fails hard rather than rendering with a missing value. */
 test('title is required and its absence throws', () => {
   assert.throws(

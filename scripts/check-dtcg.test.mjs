@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateTree } from './check-dtcg.mjs';
+import { validateTree, zeroSourceProblems } from './check-dtcg.mjs';
 
 const ok = (tree) => assert.deepEqual(validateTree(tree, 'f.json'), []);
 const fails = (tree, re) => {
@@ -57,4 +57,20 @@ test('rejects a non reverse-DNS $extensions key', () => {
 
 test('rejects a token name containing a dot', () => {
   fails({ 'a.b': { $type: 'number', $value: 1 } }, /name/);
+});
+
+/* This gate has refused an empty tokens/src/ since before the contracts/ move,
+ * and that guard is the reason the design level is the one that fails cleanly
+ * rather than through a stack trace or a cascade. It was inline in main(),
+ * which is to say untested, which is to say removable with every suite still
+ * green. */
+test('zero source files is a named failure', () => {
+  const problems = zeroSourceProblems(0);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /0 /);
+  assert.match(problems[0], /design/);
+});
+
+test('a populated source directory has no zero problem', () => {
+  assert.deepEqual(zeroSourceProblems(11), []);
 });

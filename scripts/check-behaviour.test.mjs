@@ -3,7 +3,7 @@
  * problem, which has killed a test process in this repo before. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { describeBinding } from './check-behaviour.mjs';
+import { describeBinding, zeroPatternProblems } from './check-behaviour.mjs';
 
 /* describeBinding() is what the cross-layer disagreement message renders
  * each side through. Its three shape combinations -- flat/flat, cased/cased
@@ -39,4 +39,20 @@ test('describeBinding renders a cased/cased disagreement as "name:pattern" pairs
 test('describeBinding renders a mixed flat/cased disagreement correctly on each side', () => {
   assert.equal(describeBinding(flatAlert), 'alert');
   assert.equal(describeBinding(casedAlert), 'danger:alert + advisory:status');
+});
+
+/* Emptying behaviour/patterns/ does not pass this gate -- it fails it about a
+ * hundred times, once per binding, each line reading `unknown pattern "alert"`
+ * and none of them naming the actual problem. Measured on 2026-07-29 by moving
+ * the directory aside. A gate that cannot say "I found nothing" says something
+ * else instead, at length. */
+test('zero patterns is one named failure, not a cascade', () => {
+  const problems = zeroPatternProblems(0);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /0 pattern/);
+  assert.match(problems[0], /behaviour/);
+});
+
+test('a populated catalogue has no zero problem', () => {
+  assert.deepEqual(zeroPatternProblems(21), []);
 });

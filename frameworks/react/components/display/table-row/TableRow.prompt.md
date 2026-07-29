@@ -18,4 +18,4 @@ One row of a `Table`. Write one per row, with one `TableCell` inside it per cell
 
 ### What is injected, and therefore not yours
 
-`rowIndex`, `columns`, `layout`, `cursorCol`, `gridFocused` and `onCellFocus` arrive from `Table` through `cloneElement`. They are not part of this component's API, are not in `api/components/TableRow.json`, and a consumer never writes one — the same shape as `RadioGroup` injecting `name`/`checked`/`onSelect` into each `Radio`.
+`rowIndex`, `columns`, `layout`, `cursorCol`, `gridFocused` and `onCellFocus` arrive from `Table` through `cloneElement`. They are not part of this component's API, are not in `contracts/api/components/TableRow.json`, and a consumer never writes one — the same shape as `RadioGroup` injecting `name`/`checked`/`onSelect` into each `Radio`.

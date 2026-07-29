@@ -143,7 +143,7 @@ test('Table throws when `label` is absent', () => {
 
 /* `columns` is declared required too, and until now it defaulted to `[]` and drew
  * an empty header row -- rendering with a missing value, which is exactly what
- * api/README.md's required-ness rule forbids. It guards absence only; an empty
+ * contracts/api/README.md's required-ness rule forbids. It guards absence only; an empty
  * array is a caller saying "no columns right now", the same reading every other
  * required-array guard in the layer takes. */
 test('Table throws when `columns` is absent', () => {

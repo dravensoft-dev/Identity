@@ -26,7 +26,7 @@ function useMenuKeyframes() {
  * is reported through `onSelect`, which carries the whole item. Closes with Esc
  * or an outside click. */
 export function Menu({ trigger, items, align = 'start', onSelect }) {
-  /* `items` is required in api/components/Menu.json, and api/README.md's
+  /* `items` is required in contracts/api/components/Menu.json, and contracts/api/README.md's
    * required-ness rule says the implementation fails hard rather than rendering
    * with a missing value. Absence only — an empty array is a caller saying "no
    * entries right now", which every other required-array guard in this layer

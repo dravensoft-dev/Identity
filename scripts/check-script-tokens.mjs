@@ -1,5 +1,5 @@
 /* Asserts the committed frameworks/<layer>/tokens.generated.* are what
- * tokens/src/ generates, that each export agrees with its CSS counterpart, that
+ * contracts/design/ generates, that each export agrees with its CSS counterpart, that
  * no token is flagged script-readable without anything importing it, and that
  * `CatSlot` — the one contract type restating a token-derived bound — still
  * matches the ramp it restates.
@@ -51,16 +51,16 @@ export function importedNames(source) {
 /** The one contract type that restates a token-derived bound, checked here and
  *  nowhere else.
  *
- *  `api/types/cat-slot.json` declares `CatSlot` as the literal set 1..8, and
+ *  `contracts/api/types/cat-slot.json` declares `CatSlot` as the literal set 1..8, and
  *  that 8 is not authored there: it is the count of `--color-cat-*` slots in
- *  `tokens/src/palette.dark.json`, which reaches JS as the derived `catSlots`
- *  export in the modules this gate already builds. `api/README.md`'s "A closed
+ *  `contracts/design/palette.dark.json`, which reaches JS as the derived `catSlots`
+ *  export in the modules this gate already builds. `contracts/api/README.md`'s "A closed
  *  set of values is not always an enum" passage permits that copy to exist only
  *  because this assertion ties it back to the palette — add a ninth colour to
  *  the ramp and the contract type must follow or the gate fails.
  *
  *  This is deliberately the single named case and not a mechanism: `CatSlot` is
- *  today the only type in `api/types/` whose values restate something the token
+ *  today the only type in `contracts/api/types/` whose values restate something the token
  *  layer derives, and nothing here generalises to a second one. If a second ever
  *  appears, that is the moment to decide whether a mechanism is worth building —
  *  do not read this as one that already exists.
@@ -71,7 +71,64 @@ export function catSlotEnumProblems(catSlots, values) {
   const actual = Array.isArray(values) ? values : [];
   const matches = actual.length === expected.length && expected.every((v, i) => actual[i] === v);
   if (matches) return [];
-  return [`api/types/cat-slot.json: CatSlot is [${actual.join(', ')}], but the --color-cat-* ramp in tokens/src/palette.dark.json has ${catSlots} slot(s), so it must be [${expected.join(', ')}] — the contract type restates the ramp and has to follow it`];
+  return [`contracts/api/types/cat-slot.json: CatSlot is [${actual.join(', ')}], but the --color-cat-* ramp in contracts/design/palette.dark.json has ${catSlots} slot(s), so it must be [${expected.join(', ')}] — the contract type restates the ramp and has to follow it`];
+}
+
+/** An empty contracts/design-generated/ is a failure, and it has to be reported
+ *  as ONE problem rather than as the cascade every downstream check produces
+ *  when it finds the lookup table empty.
+ *
+ *  There are two candidate zero counts here, and they fail differently: the
+ *  number of .css files the walk below finds, and the number of custom
+ *  properties parsed out of them. This guards the FILE count, not the
+ *  property count, because the file count is what the walk itself discovers --
+ *  the direct analogue of zeroSourceProblems' files.length in check-dtcg.mjs,
+ *  zeroPatternProblems' patterns.size in check-behaviour.mjs and
+ *  zeroContractProblems' files.length in check-api.mjs, all three of
+ *  which guard what a directory listing (or, for check-api.mjs, a filtered
+ *  readdirSync) returns, not a quantity computed from
+ *  parsing what it returns. "Files present but every one of them declares
+ *  nothing" is a real, different failure -- but it is a content problem, not a
+ *  discovery one, and content is check-tokens-generated.mjs's job: it diffs
+ *  every declaration against a fresh build and would name that exact failure
+ *  by itself. Measured on 2026-07-29 by moving contracts/design-generated/
+ *  aside: 21 lines, one per script-readable token, each reading "exported to
+ *  JS but --X is not in any contracts/design-generated/*.css" -- a cascade
+ *  naming a consequence 21 times over and the cause never.
+ *  @param {number} count @returns {string[]} */
+export function zeroGeneratedCssProblems(count) {
+  if (count > 0) return [];
+  return ['found 0 .css files in contracts/design-generated — an empty result set is a failure, not a clean pass; check the discovery path'];
+}
+
+/** Whether the CSS-discovery guard fires, and what to report if it does.
+ *
+ *  This exists because of a defect a reviewer caught: `main()`'s section 1 (the
+ *  drift check against the committed Tokens.generated.*) fills `problems`
+ *  BEFORE this guard runs, and the guard used to report and exit on its own
+ *  freshly-allocated `zeroCss` array without ever looking at `problems` --
+ *  so a run where BOTH section 1's drift and an empty
+ *  contracts/design-generated/ were true at once printed only the CSS-discovery
+ *  line and silently dropped the real drift finding. Exit code stayed 1, so it
+ *  was never a false pass, only lost diagnostic signal -- the same family of
+ *  harm the cascade this guard replaces was, just quieter.
+ *
+ *  The fix merges rather than moving the guard ahead of section 1: moving it
+ *  first was the other option on the table, and it is worse, not merely
+ *  different -- it would skip section 1 outright whenever the guard fires,
+ *  which trades today's loss for the identical shape one section earlier.
+ *  Keying the exit on `zeroCss.length` rather than on `existingProblems.length`
+ *  matters too: a run where section 1 alone found a stale Tokens.generated.*
+ *  and contracts/design-generated/ is otherwise fine must still fall through to
+ *  sections 3 and 4 exactly as it always has, not stop early on a finding this
+ *  guard had nothing to do with.
+ *  @param {string[]} existingProblems @param {number} cssFileCount
+ *  @returns {string[]} empty when the guard does not fire and main() should
+ *  continue; otherwise existingProblems plus the CSS-discovery finding,
+ *  ready to report and exit on. */
+export function cssDiscoveryProblems(existingProblems, cssFileCount) {
+  const zeroCss = zeroGeneratedCssProblems(cssFileCount);
+  return zeroCss.length ? [...existingProblems, ...zeroCss] : [];
 }
 
 const SCAN_EXT = new Set(['.js', '.jsx', '.ts', '.tsx']);
@@ -109,11 +166,21 @@ async function main() {
     if (actual !== expected) problems.push(`${path}: stale — run bun run build:tokens`);
   }
 
-  /* 2. Parity against the CSS. */
+  /* 2. Parity against the CSS. Reads only contracts/design-generated/, where
+   * it used to read tokens/ and pick up colors.css alongside the generated
+   * four -- harmless, because a script-readable token is emitted by
+   * build-tokens.mjs into one of the generated files, never into the
+   * hand-authored colors.css. */
+  const cssFiles = readdirSync(join(root, 'contracts', 'design-generated')).filter((f) => extname(f) === '.css');
+  const gated = cssDiscoveryProblems(problems, cssFiles.length);
+  if (gated.length) {
+    console.error(`check-script-tokens: ${gated.length} problem(s)\n`);
+    for (const g of gated) console.error(`  ${g}`);
+    process.exit(1);
+  }
   const cssValues = new Map();
-  for (const file of readdirSync(join(root, 'tokens'))) {
-    if (extname(file) !== '.css') continue;
-    for (const [, decls] of parseDecls(readFileSync(join(root, 'tokens', file), 'utf8'))) {
+  for (const file of cssFiles) {
+    for (const [, decls] of parseDecls(readFileSync(join(root, 'contracts', 'design-generated', file), 'utf8'))) {
       for (const [prop, value] of decls) if (!cssValues.has(prop)) cssValues.set(prop, value);
     }
   }
@@ -125,7 +192,7 @@ async function main() {
 
   for (const { cssName, jsName, value } of flagged) {
     if (!cssValues.has(cssName)) {
-      problems.push(`${jsName}: exported to JS but --${cssName} is not in any tokens/*.css`);
+      problems.push(`${jsName}: exported to JS but --${cssName} is not in any contracts/design-generated/*.css`);
       continue;
     }
     const css = cssCounterpart(cssValues.get(cssName));
@@ -150,17 +217,18 @@ async function main() {
   /* 4. The one contract type that restates a token-derived bound. See
    * catSlotEnumProblems above for why this lives in this gate. The count is
    * read from the freshly built module rather than the committed one, so this
-   * is an assertion against tokens/src/ even when step 1 is already failing. */
+   * is an assertion against contracts/design/ even when step 1 is already
+   * failing. */
   const [, freshModule] = built.entries().next().value;
   const catSlots = Number(/^export const catSlots = (\d+);$/m.exec(freshModule)?.[1]);
   if (!Number.isInteger(catSlots)) {
     problems.push('catSlots: the generated module no longer exports a numeric catSlots — CatSlot cannot be checked against the ramp');
   } else {
     try {
-      const catSlot = JSON.parse(readFileSync(join(root, 'api/types/cat-slot.json'), 'utf8'));
+      const catSlot = JSON.parse(readFileSync(join(root, 'contracts/api/types/cat-slot.json'), 'utf8'));
       problems.push(...catSlotEnumProblems(catSlots, catSlot.values));
     } catch (err) {
-      problems.push(`api/types/cat-slot.json: unreadable (${err.message}) — CatSlot restates the --color-cat-* ramp and must exist`);
+      problems.push(`contracts/api/types/cat-slot.json: unreadable (${err.message}) — CatSlot restates the --color-cat-* ramp and must exist`);
     }
   }
 

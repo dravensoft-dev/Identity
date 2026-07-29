@@ -101,13 +101,13 @@ export function materialProperties(pkgDir) {
   return out;
 }
 
-/** The four generated token files plus tokens/colors.css, whose hand-authored
- *  aliases (--crimson, --mute, --surface-card, --border) the bridge reads and
- *  which arenaTokens() deliberately excludes.
+/** The four generated token files plus contracts/design/colors.css, whose
+ *  hand-authored aliases (--crimson, --mute, --surface-card, --border) the
+ *  bridge reads and which arenaTokens() deliberately excludes.
  *  @param {string} root @returns {Set<string>} */
 export function arenaTokenNames(root) {
   const names = arenaTokens(root);
-  const colors = parseDecls(readFileSync(join(root, 'tokens', 'colors.css'), 'utf8'));
+  const colors = parseDecls(readFileSync(join(root, 'contracts', 'design', 'colors.css'), 'utf8'));
   for (const decls of colors.values()) for (const name of decls.keys()) names.add(name);
   return names;
 }

@@ -1,24 +1,29 @@
 # Arena behaviour contracts
 
-`tokens/` answers *what is this value*. This directory answers *what must this
+`contracts/design/` answers *what is this value*. This directory answers *what must this
 component do* — which roles it carries, which keys it answers, where focus goes,
 what dismisses it.
 
-It is a sibling of `tokens/`, not a child, and deliberately so. A contract is not
-a value: DTCG models colours, dimensions and durations, and does not model "Escape
-closes this". Putting a pattern under `tokens/src/` would mean relaxing
-`scripts/check-dtcg.mjs`, which is one of the cleanest gates in the repo.
+It is a level under `contracts/`, beside `contracts/api/` — not a corner of the
+design one, and deliberately so. A contract is not a value: DTCG models colours,
+dimensions and durations, and does not model "Escape closes this". Putting a
+pattern under `contracts/design/` would mean relaxing `scripts/check-dtcg.mjs`, which
+is one of the cleanest gates in the repo.
 
 ## Patterns
 
-One file per pattern in `patterns/`, each citing the source it was adopted from.
-Fifteen cite an actual [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/patterns/)
-page. Two cite the ARIA 1.2 role reference instead — `status` and `textbox` — because
-APG has no pattern page for either role. The remaining three say why in their own
-`source`: `figure-with-data-table`, which cites WCAG because APG has no chart pattern,
-`none`, which cites nothing at all because the absence of a pattern is not adopted
-from anywhere, and `absent`, for the same reason `none` cites nothing — see below for
-why they are two different patterns and not one.
+One file per pattern in this directory, each citing the source it was adopted
+from. Most cite an actual [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/patterns/)
+page — count them rather than trusting a figure here, which moves whenever a
+batch adds a pattern (`ls *.json | wc -l` for the total, run from this
+directory, and `grep -l 'apg/' *.json | wc -l` for the APG-derived share; note
+`navigation` cites an APG *practices* page rather than a *patterns* one, so a
+grep on `apg/patterns` alone undercounts by one). The exceptions are stable:
+two, `status` and `textbox`, cite the ARIA 1.2 role reference instead, because
+APG has no pattern page for either role; `figure-with-data-table` cites WCAG
+because APG has no chart pattern; `none` and `absent` cite nothing, because
+there is nothing to adopt from when the claim is that no pattern applies — see
+below for why they are two different patterns and not one.
 
 `none` and `absent` look alike — both cite nothing, both require nothing — but they
 answer different questions, and collapsing them was the exact bug this layer once

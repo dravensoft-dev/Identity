@@ -23,7 +23,7 @@ import { Tooltip } from './Tooltip.jsx';
  *
  * What IS verifiable statically is exactly what this migration changed:
  *
- *   The bubble became a PRIMITIVE. api/README.md settles the collision the binding
+ *   The bubble became a PRIMITIVE. contracts/api/README.md settles the collision the binding
  *   table creates -- a component declaring both a `content` member and children has
  *   two candidates for one default slot, and the trigger is the one genuinely
  *   projected. So the trigger keeps `children` (contract slot `content`) and the

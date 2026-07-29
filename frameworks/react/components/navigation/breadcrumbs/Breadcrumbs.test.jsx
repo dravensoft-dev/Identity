@@ -1,4 +1,4 @@
-/* `onNavigate` (`api/components/Breadcrumbs.json`) is new wiring this branch
+/* `onNavigate` (`contracts/api/components/Breadcrumbs.json`) is new wiring this branch
  * added and left untested. This suite carries no `.dom.` infix, so it runs in
  * the DOM-free invocation and asserts on `renderToStaticMarkup`; it cannot
  * dispatch a synthetic click and
@@ -46,7 +46,7 @@ test('with no onNavigate at all, a non-current crumb still renders as an anchor 
   assert.match(html, /<a href="\/clients"[^>]*>Clients<\/a>/);
 });
 
-/* Per api/README.md's "Required-ness governs the implementation and the
+/* Per contracts/api/README.md's "Required-ness governs the implementation and the
  * runtime" clause, an absent `items` fails hard, matching Angular's
  * `input.required`. An empty-but-supplied `items={[]}` is a different case --
  * truthy, so it stays legal, and renders an empty trail rather than throwing. */

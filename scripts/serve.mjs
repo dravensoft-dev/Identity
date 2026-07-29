@@ -1,6 +1,6 @@
 /* Serves the repo root over HTTP so the demo pages work.
  *
- * The pages load styles.css, assets/ and tokens/src/*.json by relative path,
+ * The pages load styles.css, assets/ and contracts/design/*.json by relative path,
  * and the Overview fetches its token source — none of which works under
  * file://. This is the one genuinely Bun-specific script in the repo; every
  * gate stays runtime-portable.

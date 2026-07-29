@@ -18,8 +18,9 @@ have to re-derive them.
 column ends at **743.7px**.
 
 **The mechanism is `box-sizing`, and it is not local to `Calendar`.** There is no
-`box-sizing` reset anywhere in the repo — not in `styles.css`, not in `tokens/`,
-not in any card page — so every element in the React layer is `content-box`.
+`box-sizing` reset anywhere in the repo — not in `styles.css`, not in
+`contracts/design/` or `contracts/design-generated/`, not in any card page — so
+every element in the React layer is `content-box`.
 `Calendar.jsx` injects
 
 ```js

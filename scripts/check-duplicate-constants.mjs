@@ -104,7 +104,7 @@ function collect() {
     if (EXEMPT.has(name)) continue;
     const where = [...layers].map(([layer, decls]) =>
       decls.map((d) => `${d.file} = ${d.value}`).join(', ')).join('  and  ');
-    problems.push(`${name}: declared in both layers — ${where}\n    Author it in tokens/src/ with the script flag instead.`);
+    problems.push(`${name}: declared in both layers — ${where}\n    Author it in contracts/design/ with the script flag instead.`);
   }
 
   for (const name of EXEMPT.keys()) {

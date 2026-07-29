@@ -54,7 +54,7 @@ test('Pagination drops a consumer attribute -- no {...rest} spread reaches the r
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- a {...rest} escape is back');
 });
 
-/* `page` and `pageCount` are declared required in the contract, and api/README.md's
+/* `page` and `pageCount` are declared required in the contract, and contracts/api/README.md's
  * required-ness rule says the implementation fails hard rather than rendering with
  * a missing value. Both previously defaulted -- to 1 and 1 -- which drew a one-page
  * control over a set whose size nobody had stated. */

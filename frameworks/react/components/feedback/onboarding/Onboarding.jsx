@@ -42,9 +42,9 @@ export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onD
    * agreement that is the whole reason `title` stayed optional. A caller who
    * wants a useful name supplies a step title. */
   const label = step.title ?? step.eyebrow ?? `Step ${index + 1} of ${steps.length}`;
-  // The popover's own geometry, from tokens/src/. These were plain constants
+  // The popover's own geometry, from contracts/design/. These were plain constants
   // because Math.min/Math.max need real numbers; they are still real numbers,
-  // but authored once in tokens/src/ instead of here and in Angular's copy.
+  // but authored once in contracts/design/ instead of here and in Angular's copy.
   const W = onboardingWidth;
   const EDGE = sp4;
 

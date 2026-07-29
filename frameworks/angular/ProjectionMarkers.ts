@@ -1,5 +1,5 @@
 /** Projection marker directives. Naming rule for a new one: **the attribute IS the contract
- *  member's name, with no prefix.** `api/README.md`'s binding table is normative and
+ *  member's name, with no prefix.** `contracts/api/README.md`'s binding table is normative and
  *  mechanical -- a slot named `x` binds to `<ng-content select="[x]" />` -- so a prefixed
  *  attribute would declare a member literally named `arena-x`, which is not a member name any
  *  contract can carry. (This inverts the rule that stood until plan 8B0: the prefix was the
@@ -44,7 +44,7 @@ export class ArenaBrand {}
 export class ArenaFooter {}
 
 /** Marks the element a consumer projects into `arena-error-state`'s `[secondaryAction]`
- *  slot, matching the `secondaryAction` contract member (`api/components/ErrorState.json`).
+ *  slot, matching the `secondaryAction` contract member (`contracts/api/components/ErrorState.json`).
  *  Declared once here for the same reason `ArenaAction` is. Arena draws the primary retry
  *  button itself from `retryLabel`/`retry`; this slot is only for what is projected beside
  *  it. A consumer wiring a secondary action imports `ArenaSecondaryAction` alongside

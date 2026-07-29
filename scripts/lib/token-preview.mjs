@@ -3,9 +3,9 @@
  * Pure: no I/O, no DOM, no Style Dictionary. It runs in the browser (imported
  * by overview.js) and under bun test alike.
  *
- * The group-to-preview mapping lives HERE and not in tokens/src/, because the
+ * The group-to-preview mapping lives HERE and not in contracts/design/, because the
  * DTCG source is documented as platform-neutral and must not carry HTML
- * presentation concerns. See tokens/src/TYPE-MAP.md and README's layer contract.
+ * presentation concerns. See contracts/design/README.md and README's layer contract.
  */
 
 /* $type alone cannot choose a drawing: --fs-display and --sp-16 are both
@@ -35,7 +35,7 @@ const BY_GROUP = {
 };
 
 /* A group nobody has styled yet still has to appear, so that adding a token to
- * tokens/src/ shows up here with no edit to this file. */
+ * contracts/design/ shows up here with no edit to this file. */
 const BY_TYPE = {
   color: 'swatch',
   dimension: 'bar',
