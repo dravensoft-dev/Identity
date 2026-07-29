@@ -57,8 +57,8 @@ bun run demos   # serves the repo root on :8000 and prints the entry points
 
 **Tokens are the only styling layer, and their values are DTCG JSON.** `styles.css` does
 nothing but `@import` six files split across two directories: `contracts/design-generated/`,
-which holds five generated CSS files, and `contracts/design/`, which holds one
-hand-authored file, `colors.css`. Four of those five generated files —
+which holds five CSS files, and `contracts/design/`, which holds one
+hand-authored file, `colors.css`. Four of those five —
 `contracts/design-generated/palette.css`, `typography.css`, `spacing.css`, `effects.css`
 — are **generated build output**: their values are authored in strictly-conformant DTCG
 2025.10 JSON under `contracts/design/` and emitted by `bun scripts/build-tokens.mjs`
