@@ -97,7 +97,7 @@ asserts the modules match the source and the CSS and that no flag is orphaned;
 layers, which is how chart geometry drifted before this existed.
 
 **That gate now also reaches across into the API layer, for exactly one type.**
-`api/types/cat-slot.json` declares `CatSlot` as the literal set `1 | … | 8`, and the 8
+`contracts/api/types/cat-slot.json` declares `CatSlot` as the literal set `1 | … | 8`, and the 8
 is not authored there — it is the count of `--color-cat-*` slots in
 `tokens/src/palette.dark.json`, reaching the layers as the derived `catSlots` constant.
 `catSlotEnumProblems()` in `scripts/check-script-tokens.mjs` asserts the set is exactly
@@ -225,7 +225,7 @@ gate never demands totality, only that every claim in the record is true. A gree
 suite asserting all four of a component's exceptions are still true passes while
 the component stays exactly as broken.
 
-**Arena's third contract is the API, and it lives at `api/`.** `api/components/<Name>.json`
+**Arena's third contract is the API, and it lives at `contracts/api/`.** `contracts/api/components/<Name>.json`
 states, once and neutrally, the members that component's API presents; every layer
 implementing it implements exactly those members. A member is one of **nine forms** —
 primitive, enum, predefined object, array of primitives, array of predefined objects,
@@ -237,7 +237,7 @@ record whose keys the *consumer* names, which Arena routes and never inspects. I
 because the vocabulary said *seven* and was false; `Table.rows` was a member and was none
 of them. **Both members that motivated it have since been removed** — `Table.rows` when
 `Table` became a compound component, `CalendarEvent.meta` under the per-item renderer
-convention — so `grep -rn consumerData api/components/` is **empty** and the form has zero
+convention — so `grep -rn consumerData contracts/api/components/` is **empty** and the form has zero
 live instances in any shipped contract. That is a fact about the vocabulary and **not** a
 reason to retire the form: the next reader will wonder, and the answer is that the form is
 what a contract must reach for the moment a member is a record whose keys the consumer
@@ -264,14 +264,14 @@ is Angular, which has no answer for per-item projection short of a structural di
 `ngTemplateOutlet`, a binding no row of the table covers and no reader function reads. That
 convention removed `ActivityFeed.renderItem`, then `Calendar.renderEvent` and
 `TableColumn.render`, so no contract may declare such a member and refusing every one the
-reader meets is correct rather than provisional. **This checks a form, not R3** — `api/README.md`
+reader meets is correct rather than provisional. **This checks a form, not R3** — `contracts/api/README.md`
 carries the rule and the capability it costs.
-`api/README.md` is the normative
+`contracts/api/README.md` is the normative
 statement and the first thing a new platform target reads, the way `tokens/src/TYPE-MAP.md`
-is for the token layer. Shared objects and enums are declared once in `api/types/` and
+is for the token layer. Shared objects and enums are declared once in `contracts/api/types/` and
 emitted **per layer** by `bun run build:api` into the committed
 `frameworks/react/Api.generated.d.ts` and `frameworks/angular/Api.generated.ts`, so a
-component's import never crosses the `api/` ↔ `frameworks/` boundary. The word *prop* never
+component's import never crosses the `contracts/api/` ↔ `frameworks/` boundary. The word *prop* never
 appears in a contract: it is React's vocabulary, and a neutral contract using it would
 already have chosen a layer. **The structural difference from `behaviour/` is one file, not
 one per layer** — behaviour files a binding beside each layer's source and has a gate
@@ -287,7 +287,7 @@ brought the six form controls (`RadioGroup`, `Radio`, `Checkbox`, `Textarea`, `S
 throw before it existed — and its third brought `Tabs`, `SegmentedControl`, `ProgressBar`,
 `Toast`, `Tooltip`, `Calendar`, `CalendarEvent`, `Table`, `TableRow` and `TableCell`.
 **To know what is contracted, run `bun run check:api` and read
-the contract/layer pair it prints, or list `api/components/`** — a count written here
+the contract/layer pair it prints, or list `contracts/api/components/`** — a count written here
 would drift the first time a batch lands, which is why none is.
 
 **When a consumer needs their own content inside ONE item of something Arena draws, make
@@ -307,7 +307,7 @@ otherwise have cost. The price is that the compound shape is breaking at every c
 and for `Table` it was the widest breaking change in the batch.
 
 **A compound parent's content slot is OPTIONAL, and the one exception is a named group.**
-Measure it rather than trusting this — `grep -rn '"form": "slot"' api/components/` and read the
+Measure it rather than trusting this — `grep -rn '"form": "slot"' contracts/api/components/` and read the
 `required` flags — but as written, every compound ROOT declares its children optional and guards
 nothing (`RadioGroup`, `SideNav`, `Table`, `Calendar`, `Tabs`), and so does a container that
 merely nests (`SideNavCollapsible`). Only `SideNavSection` requires and guards, and the
@@ -367,12 +367,12 @@ is present but only says what the component *is* satisfies `roles.label` mechani
 telling a screen-reader user nothing — and nothing can derive it, because a data table's
 subject is editorial. `SegmentedControl.ariaLabel` is the same shape.
 
-**`api/README.md`'s *"a closed set of values is not always an enum"* rule now carries a
+**`contracts/api/README.md`'s *"a closed set of values is not always an enum"* rule now carries a
 condition, and the condition is a gate rather than a judgement.** A closed set that merely
 restates a value the token layer already derives may be an enum **only while something
 machine-checks the restatement** — otherwise the contract hand-copies a derived N and
 becomes exactly the stale-assertion surface this layer exists to remove. `CatSlot` is the
-one type in `api/types/` that does this, `check:script-tokens` is what ties it back to the
+one type in `contracts/api/types/` that does this, `check:script-tokens` is what ties it back to the
 `--color-cat-*` ramp (see the script-readable section above), and the assertion is written
 as that single named case: **a second such type would need its own tie before it may be an
 enum at all.**
@@ -1105,7 +1105,7 @@ scheduled for deletion the same week.
   X=Skeleton   # the component you just changed
   grep -rn --binary-files=without-match "\b$X\b" \
       --include='*.md' --include='*.json' --include='*.mjs' --include='*.jsx' --include='*.ts' \
-      CLAUDE.md components-divergences.md api/ behaviour/ docs/ frameworks/ scripts/
+      CLAUDE.md components-divergences.md contracts/api/ behaviour/ docs/ frameworks/ scripts/
   ```
 
   and read every hit as a claim about `X` that you may have just falsified. Two kinds are then
@@ -1479,7 +1479,7 @@ scheduled for deletion the same week.
   grep -rnP "(?<![A-Za-z0-9.])[a-z][a-z0-9]*(-[a-z0-9]+)*\.(test\.jsx|jsx|card\.html)\b" \
       --include='*.md' --include='*.json' --include='*.mjs' --include='*.jsx' --include='*.ts' \
       --include='*.html' \
-      CLAUDE.md README.md SKILL.md components-divergences.md api/ behaviour/ docs/ frameworks/ \
+      CLAUDE.md README.md SKILL.md components-divergences.md contracts/api/ behaviour/ docs/ frameworks/ \
       scripts/ tokens/
   ```
 
@@ -1849,7 +1849,7 @@ scheduled for deletion the same week.
   did, because the per-item convention removed it rather than modelling it, and the
   reader refuses that shape on the convention's authority and not R3's. **No shipped
   contract declares a parameterised slot** — verify with `grep -rn '"params"'
-  api/components/`, whose only hit is `Input.validate`'s `functionInput` — so R3 is
+  contracts/api/components/`, whose only hit is `Input.validate`'s `functionInput` — so R3 is
   today unchecked and also unexercised. That is not a mitigation: the moment a
   contract does declare one, the rule is exactly as unverifiable as this entry says.
   Two more gaps, neither an authoring rule and both closeable in
@@ -1892,7 +1892,7 @@ scheduled for deletion the same week.
   the obstacle: `angularSurface()` has read `readonly validate = input<(value: string) =>
   string>()` as `{form:'functionInput', params:{value:'string'}, returns:'string'}` since the
   ninth form landed, and that bare arrow — with required-ness carried by `.required`, never by
-  a `| undefined` arm — is the spelling `api/README.md` now states normatively and
+  a `| undefined` arm — is the spelling `contracts/api/README.md` now states normatively and
   `scripts/api-surface.test.mjs` pins. What did fail was the *optional* spelling
   `input<((value: string) => string) | undefined>()`, and it failed on parse ORDER rather than
   on any rule: `classify()` tested its arrow pattern before reducing the annotation, backtracked
@@ -1902,7 +1902,7 @@ scheduled for deletion the same week.
   Angular `Input` that declares the member; no Angular component was touched, here or in 8C2.
 
 - **`ControlSize`'s description is inaccurate for two of its four consumers, and the
-  reuse is still correct.** `api/types/control-size.json` says *"Heights come from the
+  reuse is still correct.** `contracts/api/types/control-size.json` says *"Heights come from the
   density tokens, so a control inside `.arena-compact` re-densifies with the rows around
   it."* True of `Button` and `IconButton`. False of `ProgressBar`, whose thickness is
   `--sp-1`, `calc(var(--sp-1) * 1.5)` and `calc(var(--sp-1) * 2.5)`, and of `Spinner`,
@@ -2157,7 +2157,7 @@ scheduled for deletion the same week.
   a slot both declared required and enforced. Note what the correction proves: **no gate saw
   either the understatement or the fix**, because `compareSurface` excludes slots from
   required-ness comparison, which is the same exclusion that lets both camps pass. **Count the
-  required slots (`grep -rn '"form": "slot", "required": true' api/components/`) rather than
+  required slots (`grep -rn '"form": "slot", "required": true' contracts/api/components/`) rather than
   trusting an ordinal here** — this entry's own "THIRD" went stale in one batch.
 
 - **`ConfirmDialog.open` is the one modal of four that is neither required nor guarded.**
@@ -2232,7 +2232,7 @@ scheduled for deletion the same week.
   quietly become false while the whole suite stays green.
 
 - **`SideNavCollapsible.id` is required, and the alternative was never properly weighed.** The
-  contract originally justified required-ness by citing `api/README.md`'s `id`-member rule, which
+  contract originally justified required-ness by citing `contracts/api/README.md`'s `id`-member rule, which
   says the *opposite*: that rule is about a component that **generates** an id and thereby takes
   away the consumer's only path to the element, and its remedy is an **optional** `id?: string`
   with the generated value as fallback — never a required member. The false citation was removed
@@ -2282,7 +2282,7 @@ count written here, which would drift.
   They stay as prose alongside the structural half. A migration that deletes a cited
   section without redirecting the citation breaks it, so **measure the citing set
   rather than trusting a list written here** — a list of it was carried in this file
-  and in `api/README.md`, and both were wrong in **both** directions:
+  and in `contracts/api/README.md`, and both were wrong in **both** directions:
   `frameworks/angular/components/feedback/onboarding/Onboarding.ts` was named as a citer to
   protect and names no section at all, while
   `frameworks/angular/test/HostClassBinding.test.ts` and

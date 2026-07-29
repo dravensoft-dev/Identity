@@ -165,7 +165,7 @@ function createBreadcrumbsHost(items: Crumb[] = []) {
   return fixture;
 }
 
-/* `label` and `value` are `input.required<string>()` (`api/components/StatCard.json`),
+/* `label` and `value` are `input.required<string>()` (`contracts/api/components/StatCard.json`),
  * and the static literals below satisfy both. This host is the second of the two
  * static-attribute proofs in this file, mirroring `AppLogoStaticAttributeHost`. */
 @Component({
@@ -224,7 +224,7 @@ class BulkActionBarHost {
 }
 
 /* `count` and `actions` are `input.required<number>()` /
- * `input.required<BulkAction[]>()` (`api/components/BulkActionBar.json`),
+ * `input.required<BulkAction[]>()` (`contracts/api/components/BulkActionBar.json`),
  * satisfied by `BulkActionBarHost`'s own two bindings. Its fields hold `0` and
  * `[]` -- the same values `input(0)`/`input([])` used to default to -- so every
  * assertion below keeps proving what it proved before. */
@@ -268,7 +268,7 @@ class PageHeadWithoutActionsHost {
   title = '';
 }
 
-/* `title` is `input.required<string>()` (`api/components/PageHead.json`),
+/* `title` is `input.required<string>()` (`contracts/api/components/PageHead.json`),
  * satisfied by `PageHeadWithoutActionsHost`'s own `[title]="title"` binding.
  * The title text itself is irrelevant to every assertion below -- only the
  * class/DOM shape is checked -- so any non-empty string will do. */
@@ -687,7 +687,7 @@ test('arena-breadcrumbs: the host itself carries the nav landmark, not a wrapper
 });
 
 /* `navigate` carries the clicked `Crumb` alone -- the API contract
- * (`api/components/Breadcrumbs.json`) deliberately does not forward the
+ * (`contracts/api/components/Breadcrumbs.json`) deliberately does not forward the
  * native `MouseEvent`, so a listener can no longer call `preventDefault()`
  * to substitute SPA routing; the anchor's own navigation always fires
  * alongside the emission (ctrl-click, middle-click and open-in-new-tab keep
@@ -763,8 +763,8 @@ test('arena-stat-card: a delta with a value renders the pill; a delta with a ton
   emptyValue.destroy();
 });
 
-/* Real coverage of `icon` as a Phosphor class name (`api/components/StatCard.json`,
- * per the "Conventions the audits settled" section of `api/README.md`), replacing the
+/* Real coverage of `icon` as a Phosphor class name (`contracts/api/components/StatCard.json`,
+ * per the "Conventions the audits settled" section of `contracts/api/README.md`), replacing the
  * old slot-projection test: `icon` gates the wrapper on `@if (icon(); as glyph)`, so
  * an unfilled icon must render no wrapper at all rather than an empty one. */
 test('arena-stat-card: an icon class name renders the <i> inside the aria-hidden wrapper', () => {
@@ -882,7 +882,7 @@ test('arena-chart-card: the head row is entirely absent when there is neither a 
  * positive case could now be rendered here is untested; no test in this file
  * projects into `[action]`.
  *
- * `title` is `input.required<string>()` (`api/components/EmptyState.json`),
+ * `title` is `input.required<string>()` (`contracts/api/components/EmptyState.json`),
  * driven through `setInput()` on a directly-created fixture -- `EmptyState`
  * itself is the fixture's root, so there is no host wrapper here. */
 function renderEmptyState(title: string) {
@@ -916,7 +916,7 @@ test('arena-error-state: the root recipe classes land on the host element itself
   assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
 });
 
-/* Under the contract (`api/components/ErrorState.json`, Reshape A) Arena draws its own
+/* Under the contract (`contracts/api/components/ErrorState.json`, Reshape A) Arena draws its own
  * retry `<button>` from `retryLabel`/`retry`; the projected `[secondaryAction]` slot
  * (`ArenaSecondaryAction`) is only for what a consumer adds beside it. The actions
  * wrapper is now gated on `retryLabel() || secondaryAction()` rather than a single
@@ -1213,7 +1213,7 @@ test('every Angular primitive\'s root slot carries a display utility, so host-bi
 
 /* The four tests below are the manifest guard's counterpart for a primitive
  * that has no manifest to guard. `labels` and `values` became required signal
- * inputs under the API contract (`api/components/BarChart.json`), and
+ * inputs under the API contract (`contracts/api/components/BarChart.json`), and
  * `createBarChartHost()` carries them in on `BarChartHost`'s own two template
  * bindings. The host's fields are EMPTY arrays:
  * everything asserted here -- the host box, the style-object binding, the
@@ -1287,7 +1287,7 @@ test('arena-bar-chart: the picture carries an accessible name and the numbers ca
 
 /* The same four assertions, ported to the second hand-written chart. `labels` and
  * `values` became required signal inputs under the API contract
- * (`api/components/LineChart.json`), and `createLineChartHost()` carries them in
+ * (`contracts/api/components/LineChart.json`), and `createLineChartHost()` carries them in
  * on `LineChartHost`'s own two template bindings. The host's fields are EMPTY
  * arrays, and everything asserted here
  * still renders: an empty `values` draws the value axis anyway (`ticks` always
@@ -1362,7 +1362,7 @@ test('arena-line-chart: the picture carries an accessible name and the numbers c
  * empty inputs and their token styles can be read off the real DOM. A doughnut has no
  * axis -- with an empty `values` there is no slice and no centre label. `labels` and
  * `values` became required signal inputs under the API contract
- * (`api/components/DoughnutChart.json`), and all five tests below take them from
+ * (`contracts/api/components/DoughnutChart.json`), and all five tests below take them from
  * `DoughnutChartHost`'s own two template bindings; its fields are EMPTY arrays
  * deliberately, keeping these five about the no-data render. So the `<path>`'s `strokeWidth: 'var(--bw-strong)'` and the centre
  * label's `fontSize: 'var(--dz-text-lg)'` are NOT render-provable here, and nothing
@@ -1441,7 +1441,7 @@ test('arena-doughnut-chart: the picture carries an accessible name and the numbe
   assert.equal(svg.getAttribute('role'), 'img');
   // No seriesLabel is set on the fixture, so this is the FALLBACK name rather than a
   // constant: the doughnut gained a `seriesLabel` under the API contract
-  // (`api/components/DoughnutChart.json`), and `name()` reads
+  // (`contracts/api/components/DoughnutChart.json`), and `name()` reads
   // `<seriesLabel> — doughnut chart` when one is given. Pinning the fallback is
   // deliberate -- a role="img" with no name announces as an unlabeled graphic, so the
   // unnamed case is the one that must never regress to empty.

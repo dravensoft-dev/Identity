@@ -57,7 +57,7 @@ test('IconButton drops a consumer style object and a consumer attribute, each in
 });
 
 /* `tabStop` is the second global attribute Arena admits as a member, after
- * `id`, and it passes the same test api/README.md states for that one: the D1
+ * `id`, and it passes the same test contracts/api/README.md states for that one: the D1
  * flatten removed the capability, and there is no other surface a host can
  * write it on. An <arena-icon-button> host attribute would land on the custom
  * element, not on the <button> inside it.

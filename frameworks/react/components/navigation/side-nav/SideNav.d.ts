@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 /* NO RE-EXPORT. The pre-migration file re-exported the item TYPE under the name
- * `SideNavItem`, on api/README.md's back-compat rule that a migrated `.d.ts`
+ * `SideNavItem`, on contracts/api/README.md's back-compat rule that a migrated `.d.ts`
  * re-exports whatever the old one named. That rule is deliberately broken here,
  * and this is its one exception: `SideNavItem` is a COMPONENT in this directory
  * now, with its own contract and its own `.d.ts`, and one name cannot mean both

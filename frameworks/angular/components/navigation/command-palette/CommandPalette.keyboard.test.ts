@@ -10,7 +10,7 @@
  * bites: `[open]="true"` THROWS NG0303, while `componentRef.setInput('open',
  * true)` logs NG0303 and then silently NO-OPS. `open` became
  * `input.required<boolean, unknown>({ transform: booleanAttribute })` under the API contract
- * (`api/components/CommandPalette.json`), so a silent no-op now leaves it
+ * (`contracts/api/components/CommandPalette.json`), so a silent no-op now leaves it
  * genuinely unset rather than sitting on a default value -- the next read of
  * `open()` during change detection throws NG0950 instead of quietly passing
  * against a stale default. A throw announces itself either way; the point

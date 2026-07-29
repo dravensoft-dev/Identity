@@ -622,7 +622,7 @@ refactor: move behaviour/ to contracts/behaviour/, flattening patterns/
 
 The second contract level. `patterns/` is flattened away: it separated the 21
 pattern files from nothing but the README beside them, so the directory carried
-no information. api/ keeps its components/ and types/ for the opposite reason --
+no information. contracts/api/ keeps its components/ and types/ for the opposite reason --
 those are two different vocabularies and check:api reads them as two sets.
 
 PATTERN_DIR is declared four times, once per consumer, because each counts hops
@@ -820,7 +820,7 @@ git commit -q -F - <<'MSG'
 refactor: check:dtcg's zero guard becomes an exported function with a suite
 
 This is the only one of the five contract gates that already refused an empty
-directory, and it is why the design level fails cleanly where api/ passed in
+directory, and it is why the design level fails cleanly where contracts/api/ passed in
 green and behaviour/ produced a hundred-line cascade. The guard was inline in
 main(), which is to say untested, which is to say removable with every suite
 still green.
@@ -1400,7 +1400,7 @@ is most of what this repository's Known debt section is made of.
 It is an index and not a summary: it routes to each level's own normative
 document and states the two things the directory listing does not explain. Why
 only design has a -generated sibling (it is the one level that emits anything
-outside frameworks/; contracts/api-generated/ would be empty), and why api/
+outside frameworks/; contracts/api-generated/ would be empty), and why contracts/api/
 keeps components/ and types/ while the other two are flat (an inner directory
 earns its place when it separates two vocabularies, and patterns/ and src/
 separated their contents from nothing but the README beside them).

@@ -160,7 +160,7 @@ export const EXEMPT = new Map([
    'the other axis of the same 1px visually-hidden box as the width entry above'],
   ['frameworks/angular/DataVisuals.ts:margin:\'-1px\'',
    'the same idiom\'s negative pull, which must cancel exactly the 1px box above so the hidden table shifts no sibling — it is bound to that literal, not to Arena\'s spacing scale, and a token here would break the cancellation'],
-  // Skeleton's API contract (api/components/Skeleton.json, Plan 8B1 Task 3) made
+  // Skeleton's API contract (contracts/api/components/Skeleton.json, Plan 8B1 Task 3) made
   // width/height/radius plain CSS strings a CONSUMER supplies per instance.
   // scanAttributes' `prop="value"` match has no notion of which element it is
   // styling — built for an SVG glyph's presentation attributes (BarChart's own

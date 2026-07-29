@@ -10,7 +10,7 @@ questions about the same number, and neither implies the other:
   down is good, and the tile cannot know which metric it is showing.
 
 `delta` is one object (`StatDelta`), not three flat inputs — the same object React's
-`StatCard` takes, per the API capability contract (`api/components/StatCard.json`). The
+`StatCard` takes, per the API capability contract (`contracts/api/components/StatCard.json`). The
 pill renders only when `delta.value` is truthy; a `delta` carrying a `tone`/`direction`
 but an empty `value` renders no pill at all, matching React exactly.
 

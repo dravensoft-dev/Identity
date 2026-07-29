@@ -5,8 +5,8 @@ import { pageWindow } from './PaginationWindow.js';
  * on one page need two names. For infinite scroll or "load more" don't use
  * Pagination. */
 export function Pagination({ page, pageCount, ariaLabel = 'Pagination', onChange }) {
-  /* `page` and `pageCount` are required in api/components/Pagination.json, and
-   * api/README.md's required-ness rule says the implementation fails hard rather
+  /* `page` and `pageCount` are required in contracts/api/components/Pagination.json, and
+   * contracts/api/README.md's required-ness rule says the implementation fails hard rather
    * than rendering with a missing value. Neither had a sensible default to keep:
    * the old `pageCount = 1` drew a one-page control over a set of unknown size,
    * and the old `page = 1` claimed the caller was on the first one. Absence only,

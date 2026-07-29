@@ -25,7 +25,7 @@ test('open=false hides the root overlay; open=true renders it as the fixed, top-
 });
 
 /* `open` became `input.required<boolean>()` under the API contract
- * (`api/components/CommandPalette.json`), so the component itself no longer
+ * (`contracts/api/components/CommandPalette.json`), so the component itself no longer
  * defaults it -- only the recipe's own `tv()` variant does. This asserts the
  * recipe alone: calling `commandPaletteStyles()` with no argument resolves
  * the same classes as passing `{ open: false }` explicitly. */

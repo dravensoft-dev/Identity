@@ -46,7 +46,7 @@ test('Menu drops a consumer attribute -- no {...rest} spread reaches the root', 
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- a {...rest} escape is back');
 });
 
-/* `items` is declared required in the contract, and api/README.md's required-ness
+/* `items` is declared required in the contract, and contracts/api/README.md's required-ness
  * rule says the implementation fails hard rather than rendering with a missing
  * value. Before this it defaulted to `[]` and a Menu with no entries opened onto
  * an empty panel. It guards absence only, the shape Tabs already uses for the

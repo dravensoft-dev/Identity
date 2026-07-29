@@ -1,6 +1,6 @@
-/* Emits the per-layer API type modules from api/types/.
+/* Emits the per-layer API type modules from contracts/api/types/.
  *
- * api/types/*.json declares every predefined object and enum an API contract
+ * contracts/api/types/*.json declares every predefined object and enum an API contract
  * names -- once, platform-neutrally. This renders them as TypeScript and writes
  * the SAME body into both layers:
  *
@@ -9,7 +9,7 @@
  *
  * Two files rather than one shared module, for the reason the script-readable
  * token target established: a component's import must never cross the
- * api/ <-> frameworks/ boundary. The bodies are identical because both are
+ * contracts/api/ <-> frameworks/ boundary. The bodies are identical because both are
  * type-only TypeScript; only the extension differs, because React's layer ships
  * declarations and Angular's is compiled by ngc.
  *
@@ -76,7 +76,7 @@ export function fieldType(field) {
 /** One enum value as a TypeScript literal. The quoting depends on the value's
  *  TYPE, not on the position: a number is a numeric literal and quoting it
  *  would emit a union of strings that compiles and is wrong. Every enum in
- *  api/types/ was a string set until `CatSlot`, so this quoted unconditionally
+ *  contracts/api/types/ was a string set until `CatSlot`, so this quoted unconditionally
  *  and nothing noticed -- the failure would not have been a build error but a
  *  generated `'1' | '2'` disagreeing with the layer's own `1 | 2`, visible only
  *  to check:api. */

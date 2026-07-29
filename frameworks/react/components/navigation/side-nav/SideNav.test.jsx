@@ -130,7 +130,7 @@ test('SideNav drops a consumer attribute -- no {...rest} spread reaches the root
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- a {...rest} escape is back');
 });
 
-/* `ariaLabel` is declared required in the contract, and api/README.md's
+/* `ariaLabel` is declared required in the contract, and contracts/api/README.md's
  * required-ness rule says the implementation fails hard rather than rendering
  * with a missing value. It previously defaulted to the constant "Primary", which
  * is the defect rather than a convenience: it names every unlabelled nav on a

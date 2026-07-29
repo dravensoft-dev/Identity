@@ -403,7 +403,7 @@ test('a member name declared twice in one layer\'s surface is reported as a dupl
  * comparison guarded on `m.type &&`, so it never ran for this shape, and an
  * inline union matched a contract enum member on form alone regardless of
  * its actual values. `types` is the fourth parameter carrying every declared
- * api/types/ type, resolved OUTSIDE compareSurface (main() reads the
+ * contracts/api/types/ type, resolved OUTSIDE compareSurface (main() reads the
  * filesystem, compareSurface stays string-in/data-out). */
 const LOGO_SIZE_TYPES = new Map([
   ['LogoSize', { name: 'LogoSize', kind: 'enum', values: ['sm', 'md', 'lg', 'xl'] }],
@@ -654,7 +654,7 @@ test('an enum member must name a declared enum, not a declared object', () => {
 
 /* 5 — generated drift */
 
-test('the committed generated modules are what api/types/ generates', () => {
+test('the committed generated modules are what contracts/api/types/ generates', () => {
   for (const [path, expected] of buildApiModules()) {
     assert.equal(readFileSync(join(root, path), 'utf8'), expected, `${path} is stale — run bun run build:api`);
   }
@@ -735,12 +735,12 @@ test('validateContract rejects a functionInput outside a kind:input contract', (
   assert.ok(problems.some((p) => /fmt/.test(p) && /kind.*input/i.test(p)));
 });
 
-/* R4 inside the signature: a param or return naming a type api/types/ does not
+/* R4 inside the signature: a param or return naming a type contracts/api/types/ does not
  * declare is reported, exactly as an object member's enum type is. BOTH halves
  * are pinned -- the parameter loop was already there (it runs for any member
  * carrying `params`), the return check was not, so a test on the parameter
  * alone would have shipped the return check unproven. */
-test('validateContract checks a functionInput signature type against api/types', () => {
+test('validateContract checks a functionInput signature type against contracts/api/types', () => {
   const problems = validateContract(
     { component: 'Input', kind: 'input',
       api: { validate: { form: 'functionInput', params: { value: 'Nope' }, returns: 'string' } } },
@@ -750,7 +750,7 @@ test('validateContract checks a functionInput signature type against api/types',
   assert.ok(problems.some((p) => /functionInput parameter/.test(p)));
 });
 
-test('validateContract checks a functionInput RETURN type against api/types too', () => {
+test('validateContract checks a functionInput RETURN type against contracts/api/types too', () => {
   const problems = validateContract(
     { component: 'Input', kind: 'input',
       api: { validate: { form: 'functionInput', params: { value: 'string' }, returns: 'Nope' } } },

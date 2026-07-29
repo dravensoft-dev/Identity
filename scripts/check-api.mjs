@@ -1,6 +1,6 @@
 /* check:api — Arena's third contract, the API capability contract.
  *
- * api/components/<Name>.json states, once and neutrally, the members that
+ * contracts/api/components/<Name>.json states, once and neutrally, the members that
  * component's API presents. Every layer implementing it implements exactly
  * those members -- same name, same form, not fewer and not more. This gate
  * makes five assertions:
@@ -44,7 +44,7 @@
  *                       Those two are ALL that is mechanical about the form;
  *                       everything else about it is an authoring rule with the
  *                       same status R2 and R3 carry.
- *   5. GENERATED DRIFT. The committed api.generated.* match api/types/.
+ *   5. GENERATED DRIFT. The committed api.generated.* match contracts/api/types/.
  *
  * THERE IS NO EXCEPTION MAP, and that is not an oversight. Every other record in
  * this repository -- EXEMPT, EXCLUDED, COVERED -- exists because the thing it
@@ -55,7 +55,7 @@
  * worse than saying so. R2 ("who draws decides data versus slot") is a fact about
  * markup ownership, and R3 ("a parameterised slot fills, never replaces") is a
  * fact about the rendered tree. Neither is visible in a member list. They are
- * authoring rules the audit protocol applies, recorded in api/README.md and in
+ * authoring rules the audit protocol applies, recorded in contracts/api/README.md and in
  * CLAUDE.md's Known debt. A green run means R1, R4 and R5 hold.
  *
  * COVERAGE IS PARTIAL BY DESIGN and grows one component at a time, the same
@@ -114,7 +114,7 @@ export function zeroContractProblems({ contracts, types }) {
 
 /** A contract member's name as one layer binds it. The contract governs the
  *  member surface, never the syntax a platform expresses it in. See the binding
- *  table in api/README.md -- this function IS that table. */
+ *  table in contracts/api/README.md -- this function IS that table. */
 export function bindingName(name, form, layer) {
   if (layer !== 'react') return name;
   if (form === 'slot') return name === 'content' ? 'children' : name;
@@ -158,7 +158,7 @@ export function validateTypes(types) {
          * tsconfig.check.json pulls it in -- luck, not design; React's own
          * .d.ts has no such backstop at all. */
         if (!kindByName.has(spec.type)) {
-          problems.push(`${type.name}.${field}: names enum type "${spec.type}", which api/types/ does not declare`);
+          problems.push(`${type.name}.${field}: names enum type "${spec.type}", which contracts/api/types/ does not declare`);
         } else if (kindByName.get(spec.type) !== 'enum') {
           problems.push(`${type.name}.${field}: "${spec.type}" is a ${kindByName.get(spec.type)}, used where an enum belongs`);
         }
@@ -182,12 +182,12 @@ export function validateContract(contract, typeNames) {
   const problems = [];
   const where = contract.component ?? '(unnamed)';
   const declared = (name, kind) => {
-    if (!typeNames.has(name)) return `${where}: names type "${name}", which api/types/ does not declare`;
+    if (!typeNames.has(name)) return `${where}: names type "${name}", which contracts/api/types/ does not declare`;
     if (typeNames.get(name) !== kind) return `${where}: "${name}" is a ${typeNames.get(name)}, used where a ${kind} belongs`;
     return null;
   };
   /* The eighth form declares no type, so every position that would normally
-   * resolve a name against api/types/ has to admit it by form name instead --
+   * resolve a name against contracts/api/types/ has to admit it by form name instead --
    * there is deliberately nothing in that directory to resolve it to, which is
    * what keeps the directory from filling with fieldless types. */
   const CONSUMER_DATA = 'consumerData';
@@ -195,7 +195,7 @@ export function validateContract(contract, typeNames) {
   const routes = [];
   for (const [member, spec] of Object.entries(contract.api ?? {})) {
     if (!FORMS.has(spec.form)) {
-      problems.push(`${where}.${member}: form "${spec.form}" is none of the nine — see api/README.md`);
+      problems.push(`${where}.${member}: form "${spec.form}" is none of the nine — see contracts/api/README.md`);
       continue;
     }
     if (spec.form === 'primitive' && !PRIMITIVE_TYPES.has(spec.type)) {
@@ -249,7 +249,7 @@ export function validateContract(contract, typeNames) {
      *
      * The second is the signature. A functionInput models its own signature --
      * `params` (name -> type) and `returns` -- and R4 holds INSIDE it: every
-     * type named there is a primitive or a type api/types/ declares, so no
+     * type named there is a primitive or a type contracts/api/types/ declares, so no
      * platform type can enter through a parameter or a return. The parameters
      * are checked by the loop above; the return is checked here. A functionInput
      * with no `returns` at all is not modelled: an inbound function whose result
@@ -259,7 +259,7 @@ export function validateContract(contract, typeNames) {
       if (contract.kind !== 'input') {
         problems.push(
           `${where}.${member}: a functionInput is legal only in a contract with "kind": "input" — `
-          + `the ninth form is for data-entry controls (api/README.md)`,
+          + `the ninth form is for data-entry controls (contracts/api/README.md)`,
         );
       }
       if (spec.returns === undefined) {
@@ -280,7 +280,7 @@ export function validateContract(contract, typeNames) {
    * consumer receives it), so a contract taking consumer data in must declare
    * at least one of them. This is one of exactly two mechanical guards on the
    * form -- the other is the R1 extension above; everything else about it is an
-   * authoring rule with R2 and R3's status. See api/README.md. */
+   * authoring rule with R2 and R3's status. See contracts/api/README.md. */
   if (held.length && !routes.length) {
     for (const member of held) {
       problems.push(
@@ -293,7 +293,7 @@ export function validateContract(contract, typeNames) {
 }
 
 /** Assertions 2, 3 and the layer half of 4, for one layer of one component.
- *  @param {Map<string,object>} [types] every declared api/types/ type, keyed
+ *  @param {Map<string,object>} [types] every declared contracts/api/types/ type, keyed
  *  by name, resolved by the CALLER (main() reads the filesystem once; this
  *  function stays pure and string-in/data-out, same as every other export
  *  here). Needed only to resolve an inline literal union's VALUES against a
@@ -468,7 +468,7 @@ export function compareSurface(contract, members, layer, types = new Map()) {
      * `m.type &&`, so a layer spelling the contract's enum as an inline
      * union always matched on FORM alone, with its actual values compared
      * to nothing. Resolve the contract's own enum by name against `types`
-     * (the caller's api/types/ map) and compare the two VALUE SETS,
+     * (the caller's contracts/api/types/ map) and compare the two VALUE SETS,
      * membership only -- order carries no meaning in either union. */
     if (spec.form === 'enum' && m.form === 'enum' && Array.isArray(m.values)) {
       const declared = types.get(spec.type);
@@ -624,7 +624,7 @@ function main() {
   const problems = [];
 
   /* 5. Generated drift, first -- not because any later assertion depends on
-   *    it (typeNames below is built straight from api/types/, never from the
+   *    it (typeNames below is built straight from contracts/api/types/, never from the
    *    generated modules; the two read independent sources), but because a
    *    stale generated module is the problem most likely to explain every
    *    other one, so it should head the list. */
@@ -643,7 +643,7 @@ function main() {
   /* compareSurface's fourth parameter -- the FULL declared type (values
    * included, not just its kind), so it can resolve an inline literal
    * union's value set against the enum its contract member names. Built
-   * here, once, from the same api/types/ read `typeNames` already uses --
+   * here, once, from the same contracts/api/types/ read `typeNames` already uses --
    * compareSurface itself never touches the filesystem. */
   const typesByName = new Map(types.map((t) => [t.name, t]));
 
@@ -658,7 +658,7 @@ function main() {
    * being one value used to hide. Every component directory contributes to the
    * map whether a contract names it or not, so the map never has to know what
    * is contracted -- coverage here is partial by design, and the lookups below
-   * take from it only the names api/components/ asks for. A directory no
+   * take from it only the names contracts/api/components/ asks for. A directory no
    * contract names is simply never looked up; it is not a problem, and the
    * per-directory guard above is about a directory whose SURFACE FILE is
    * missing, which is a different question and true regardless. */

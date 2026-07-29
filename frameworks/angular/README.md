@@ -77,7 +77,7 @@ used by it, `command-palette` and `onboarding`) and `ProjectionMarkers.ts` (the 
 `[actions]`, `[brand]` and `[footer]` marker directives that let a component
 detect whether an optional slot was projected, so its spacing wrapper can be gated —
 each bare, with no `arena-` prefix, because the attribute is the contract member's
-name, per `api/README.md`'s binding table) all have consumers in more than one category,
+name, per `contracts/api/README.md`'s binding table) all have consumers in more than one category,
 so they sit at the layer root and `frameworks/angular/index.ts` names each of them
 directly. `DataVisuals.ts` (the chart maths and the identity-or-meaning colour contract)
 sits at the layer root beside them, and it is the one that got there by decision rather

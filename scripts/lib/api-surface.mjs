@@ -18,7 +18,7 @@
  * missing from the list. That is why every unreadable branch below throws
  * instead of returning early or skipping the line.
  *
- * See api/README.md for the vocabulary and the per-layer binding table.
+ * See contracts/api/README.md for the vocabulary and the per-layer binding table.
  *
  * THREE KNOWN BLIND SPOTS, dormant against today's corpus and not fixed here:
  * `splitTopLevel` tracks bracket nesting only and is not string-literal
@@ -77,7 +77,7 @@ function wrapsWhole(ts) {
 
 /** One TypeScript type annotation, as one of the reader's outcomes.
  *  `form: 'named'` is not a verdict -- it is "an identifier I read but cannot
- *  resolve on my own"; the gate resolves it against api/types/ into an enum or
+ *  resolve on my own"; the gate resolves it against contracts/api/types/ into an enum or
  *  an object, and reports it as undeclared if it is neither. */
 export function classify(raw) {
   const ts = raw.trim();
@@ -150,7 +150,7 @@ export function classify(raw) {
   }
 
   /* An anonymous inline object type is not a predefined object -- a predefined
-   * object is declared in api/types/ and has a name. It is the same ad hoc
+   * object is declared in contracts/api/types/ and has a name. It is the same ad hoc
    * escape `Record<string, unknown>` is, and R4 forbids both. Reporting it as
    * a platform type lets the gate name the rule; throwing would only say the
    * reader gave up. (Alert.d.ts's `action: { label: string; onClick: () =>
@@ -172,7 +172,7 @@ export function classify(raw) {
      * would have let a contract declare a formatter, both layers agree with it,
      * and check:api call it green. The return type is right there in the
      * declaration, so this is one of the few vocabulary edges the reader can
-     * actually hold. See api/README.md, "The vocabulary: nine forms". */
+     * actually hold. See contracts/api/README.md, "The vocabulary: nine forms". */
     const returns = arrow[2].trim();
     if (returns !== 'void') {
       /* The NINTH form. An inbound function that returns a value is a
@@ -203,14 +203,14 @@ export function classify(raw) {
        * answer short of a structural directive and ngTemplateOutlet, which no
        * binding-table row covers and no reader function reads. No contract may
        * declare such a member, so refusing every one is correct rather than
-       * provisional -- see api/README.md. */
+       * provisional -- see contracts/api/README.md. */
       const nonNull = returns.split('|').map((s) => s.trim()).filter((s) => s !== 'null' && s !== 'undefined');
       const retType = nonNull.length === 1 ? classify(nonNull[0]) : { form: 'union' };
       if (retType.form === 'platform') return retType;
       if (retType.form === 'slot') {
         throw new UnrecognisedShape(
           `a function returning a node is a per-item renderer, and a per-item renderer is not a member: `
-          + `the convention that removed ActivityFeed.renderItem removes it too (api/README.md). `
+          + `the convention that removed ActivityFeed.renderItem removes it too (contracts/api/README.md). `
           + `It IS a parameterised slot and R3 permits it -- Angular is what does not, because per-item `
           + `projection needs ngTemplateOutlet, which no binding-table row covers and no reader function reads: ${ts}`,
         );
@@ -231,7 +231,7 @@ export function classify(raw) {
          * subject: by declared TYPE name where there is one, and by FORM name
          * for consumer data, which has nothing to declare. An inline literal
          * union has neither, so its own text stands in -- no contract can name
-         * it, which is the correct outcome: an enum belongs in api/types/. */
+         * it, which is the correct outcome: an enum belongs in contracts/api/types/. */
         params[part.slice(0, colon).trim()] = pType.type
           ?? (pType.form === 'consumerData' ? 'consumerData' : part.slice(colon + 1).trim());
       }
@@ -564,7 +564,7 @@ function componentTemplate(source) {
 /** Angular's slots live in the template, not in a declaration. A bare
  *  <ng-content /> is the default slot, which the contract names `content`; an
  *  attribute selector names its own. Any other selector is refused: the binding
- *  table in api/README.md defines exactly these two forms.
+ *  table in contracts/api/README.md defines exactly these two forms.
  *
  *  Takes the TEMPLATE TEXT itself -- a direct fragment in this module's own
  *  tests, or `componentTemplate(source)`'s extraction in `angularSurface`
@@ -580,7 +580,7 @@ export function templateSlots(source) {
     if (!select) { out.push({ name: 'content', form: 'slot', required: false }); continue; }
     const attribute = /^\[([\w-]+)\]$/.exec(select[1].trim());
     if (!attribute) {
-      throw new UnrecognisedShape(`ng-content select="${select[1]}" is not an attribute selector — see the binding table in api/README.md`);
+      throw new UnrecognisedShape(`ng-content select="${select[1]}" is not an attribute selector — see the binding table in contracts/api/README.md`);
     }
     out.push({ name: attribute[1], form: 'slot', required: false });
   }
