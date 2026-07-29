@@ -1463,11 +1463,35 @@ stale-proof; a present-tense component name is not.
   thirty lines *above* the clause it contradicts, not below it — and the matching clause this
   file's own *Architecture* section carried before this batch.
 
+- **A chip that carries a kebab can still wrap its time label, in a band about 32px wide.**
+  `showsTime()` compares a chip's column share against one threshold and does not ask whether
+  the chip has actions. A chip without them has a content box of its share less 18px; one with
+  them has its share less 46px, because the kebab's 34px reserve comes out too. So the
+  kebab-safe threshold is 124.02px where the plain one is 96.02px, and `calendar.time-min-w` is
+  set at the plain one.
+
+  Measured on `Calendar.card.html`, driving the viewport and reading the container beneath it —
+  the container is the viewport less the card's 24px body padding a side, and `--bp-md` is
+  compared against the **container**, so week view only begins at a 768px container. At a 782px
+  container a day column is 120.16px, `Release window`'s chip is 116.2px, and its time label
+  wraps onto **two lines**; at an 812px container the column is 125.16px, the chip 121.2px, and
+  the label fits on one. The arithmetic boundary is a container of about 800px. So the band is
+  roughly **a 768px to an 800px container**, in week view, on a chip that has actions.
+
+  It is deliberate rather than overlooked. Setting the threshold at the kebab-safe value would
+  suppress the label on every ordinary chip through that band and well past it, which loses
+  information in the common case to serve the rare one. Making the threshold kebab-aware would
+  put `CalendarEvent`'s 34px reserve back inside `Calendar` — laundered through a second token,
+  but still a number that silently goes wrong if the reserve ever changes. What survives in the
+  band is the pre-existing behaviour, not a new defect.
+
 - **A half-width chip carrying a kebab has almost no title left.** Reserving the kebab's 34px
   band is what stopped the title being drawn underneath it, and on a full-width chip it costs
   nothing. On a chip sharing its slot — `cols: 2`, about 78px outer — the content box comes out
-  at **36.58px** measured, which renders `Client review — Northwind` as `Clien…` and wraps its
-  `10:00 – 11:30` time label onto three lines. Before the reserve the same chip drew more of
+  at **36.58px** measured, which renders `Client review — Northwind` as `Clien…`. It used to
+  wrap its `10:00 – 11:30` time label onto three lines as well; it now draws no time label,
+  because a chip sharing its slot has no room for one on a single line. Before the reserve the
+  same chip drew more of
   its title, but drew it *under* an opaque button, so this is a legibility trade rather than a
   regression; it is recorded because the trade is real and nobody has ruled on it.
 
@@ -3216,3 +3240,30 @@ Escape into two behaviours at once.
 No gate covers any of this. `Calendar` binds the `grid` pattern, so it is DOM-tested by hand and
 cannot appear in `COVERED`, and the retired grid-keyboard suite is not coming back at 164 MiB.
 The verification is `CalendarEvent.prompt.md`'s checklist, driven in a real browser.
+
+### `frameworks/react/components/display/calendar/CalendarInternals.js` — why `showsTime` takes a slot and not a width
+
+`showsTime(chipHeight, slotWidth)` compares against a chip's **column share** — the day column
+divided by how many overlapping events share it — and not against the chip's own outer width or
+its content box. Both of the closer quantities would have been wrong to use.
+
+The content box would require `Calendar` to know `CalendarEvent`'s padding, its border and its
+kebab reserve. That is the coupling rejected when the chip's box model was fixed, and for the
+same reason: `Calendar` owns where a chip goes and how big it is, `CalendarEvent` owns what it
+looks like. The chip's outer width would require `--sp-1` as a number in JS, to subtract the
+gutter that the injected `width: calc(100%/cols - var(--sp-1))` already accounts for.
+
+So the 18px between a slot and the content inside it is folded into the token's value instead,
+and `calendar.time-min-w` is 100px rather than the label's own measured 78.02px. **The
+consequence is that the token's value is not independent of `CalendarEvent`'s padding** — it is
+78.02 + 4 + 12 + 2, rounded up to the 4px scale — so a change to the chip's padding or border
+makes the threshold quietly conservative or quietly short. Nothing checks that. It is the price
+of keeping the arithmetic on the side of the boundary that owns the layout.
+
+**A second consequence is that all three of the group's tokens had to land in one commit.**
+`check:script-tokens`' orphan rule is *flagged and imported by at least one layer*, so a
+script-flagged token with no JS consumer yet fails the gate — and a CSS use does not count.
+`calendar.gutter-w` is the sharp case: it is rendered as `var(--calendar-gutter-w)` and would
+look like a self-contained refactor, but its JS consumer is the width term itself, so it cannot
+be landed ahead of it. Any plan that sequences a script-flagged token before its consumer is
+wrong about this gate.
