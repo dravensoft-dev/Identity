@@ -183,10 +183,13 @@ test('the React inventory finds every component and no demo entry', () => {
  * batch 2, so this walk is two levels deep and has two ways to go wrong that a
  * flat one did not: it can return the CATEGORY names, and it can return a
  * shared internal that now sits one level in. Both are pinned below.
- * `ChartInternals.ts` is the live instance of the second -- a bare `.ts` beside
- * the four chart directories -- and its pre-move spelling, `chart-internals`,
- * is kept in the assertion because a walk that reached back to the old tree
- * would find that name and not the new one. */
+ * `ChartDataTable.test.ts` is the live instance of the second -- a bare `.ts`
+ * beside the four chart directories -- today. `ChartInternals.ts` was the
+ * PRIOR live instance of that same shape; it has since moved to the layer
+ * root and been renamed `DataVisuals.ts`, so `chart-internals` (its pre-move
+ * spelling, from before the structure refactor) is kept below purely as
+ * history, guarding against a walk that reached back into an old tree and
+ * found that name rather than the current one. */
 test('the Angular inventory finds every component, no category and no bare module', () => {
   const found = angularPrimitives('.');
   assert.equal(found.length, 20);
@@ -194,7 +197,7 @@ test('the Angular inventory finds every component, no category and no bare modul
   assert.ok(found.includes('bar-chart'));
   for (const category of ['brand', 'charts', 'display', 'feedback', 'navigation'])
     assert.ok(!found.includes(category), `${category} is a category, not a component`);
-  assert.ok(!found.includes('ChartInternals'));
+  assert.ok(!found.includes('ChartDataTable'));
   assert.ok(!found.includes('chart-internals'));
 });
 

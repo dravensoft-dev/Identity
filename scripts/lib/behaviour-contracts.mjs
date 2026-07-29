@@ -281,10 +281,12 @@ export function reactComponents(root) {
  *  The layer is `frameworks/angular/components/<category>/<kebab>/` as of the
  *  structure refactor's batch 2, so the walk is two levels deep. What has not
  *  changed is that a bare `.ts` file is a shared internal rather than a
- *  component -- `components/charts/ChartInternals.ts` sits beside the four
- *  chart directories, and `ContainerSize.ts`, `FocusTrap.ts` and
- *  `ProjectionMarkers.ts` sit at the layer root -- so both levels of the walk
- *  key on directories.
+ *  component -- `components/charts/ChartDataTable.test.ts` sits beside the four
+ *  chart directories today (ChartInternals.ts, the prior worked example, moved
+ *  to the layer root and was renamed DataVisuals.ts when a display component
+ *  turned out to consume it too), and `ContainerSize.ts`, `FocusTrap.ts`,
+ *  `ProjectionMarkers.ts` and `DataVisuals.ts` sit at the layer root -- so both
+ *  levels of the walk key on directories.
  *
  *  It returns the KEBAB directory names, not the PascalCase component names,
  *  and both callers key on that: check-behaviour.mjs reports `angular/<dir>`
