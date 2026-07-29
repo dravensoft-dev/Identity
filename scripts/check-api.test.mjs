@@ -870,14 +870,14 @@ test('zero contracts is a failure, not a clean pass', () => {
   const problems = zeroContractProblems({ contracts: 0, types: 40 });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /0 contract/);
-  assert.match(problems[0], /api\/components/);
+  assert.match(problems[0], /contracts\/api\/components/);
 });
 
 test('zero types is a failure too, named separately', () => {
   const problems = zeroContractProblems({ contracts: 50, types: 0 });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /0 type/);
-  assert.match(problems[0], /api\/types/);
+  assert.match(problems[0], /contracts\/api\/types/);
 });
 
 test('both empty are reported as two problems, not one', () => {

@@ -51,16 +51,16 @@ export function importedNames(source) {
 /** The one contract type that restates a token-derived bound, checked here and
  *  nowhere else.
  *
- *  `api/types/cat-slot.json` declares `CatSlot` as the literal set 1..8, and
+ *  `contracts/api/types/cat-slot.json` declares `CatSlot` as the literal set 1..8, and
  *  that 8 is not authored there: it is the count of `--color-cat-*` slots in
  *  `tokens/src/palette.dark.json`, which reaches JS as the derived `catSlots`
- *  export in the modules this gate already builds. `api/README.md`'s "A closed
+ *  export in the modules this gate already builds. `contracts/api/README.md`'s "A closed
  *  set of values is not always an enum" passage permits that copy to exist only
  *  because this assertion ties it back to the palette — add a ninth colour to
  *  the ramp and the contract type must follow or the gate fails.
  *
  *  This is deliberately the single named case and not a mechanism: `CatSlot` is
- *  today the only type in `api/types/` whose values restate something the token
+ *  today the only type in `contracts/api/types/` whose values restate something the token
  *  layer derives, and nothing here generalises to a second one. If a second ever
  *  appears, that is the moment to decide whether a mechanism is worth building —
  *  do not read this as one that already exists.
@@ -157,10 +157,10 @@ async function main() {
     problems.push('catSlots: the generated module no longer exports a numeric catSlots — CatSlot cannot be checked against the ramp');
   } else {
     try {
-      const catSlot = JSON.parse(readFileSync(join(root, 'api/types/cat-slot.json'), 'utf8'));
+      const catSlot = JSON.parse(readFileSync(join(root, 'contracts/api/types/cat-slot.json'), 'utf8'));
       problems.push(...catSlotEnumProblems(catSlots, catSlot.values));
     } catch (err) {
-      problems.push(`api/types/cat-slot.json: unreadable (${err.message}) — CatSlot restates the --color-cat-* ramp and must exist`);
+      problems.push(`contracts/api/types/cat-slot.json: unreadable (${err.message}) — CatSlot restates the --color-cat-* ramp and must exist`);
     }
   }
 

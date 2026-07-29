@@ -106,9 +106,9 @@ const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);
 export function zeroContractProblems({ contracts, types }) {
   const problems = [];
   if (contracts === 0)
-    problems.push('found 0 contracts in api/components — an empty result set is a failure, not a clean pass; check the discovery path');
+    problems.push('found 0 contracts in contracts/api/components — an empty result set is a failure, not a clean pass; check the discovery path');
   if (types === 0)
-    problems.push('found 0 types in api/types — an empty result set is a failure, not a clean pass; check the discovery path');
+    problems.push('found 0 types in contracts/api/types — an empty result set is a failure, not a clean pass; check the discovery path');
   return problems;
 }
 
@@ -135,7 +135,7 @@ export function validateTypes(types) {
     if (type.name) kindByName.set(type.name, type.kind);
   }
   for (const type of types) {
-    if (!type.name) { problems.push('api/types: a type has no name'); continue; }
+    if (!type.name) { problems.push('contracts/api/types: a type has no name'); continue; }
     if (seen.has(type.name)) problems.push(`${type.name}: declared twice`);
     seen.add(type.name);
     if (type.kind === 'enum') {
@@ -636,7 +636,7 @@ function main() {
   }
 
   /* 4a. The type declarations themselves, R1 included. */
-  const typeDir = join(root, 'api/types');
+  const typeDir = join(root, 'contracts/api/types');
   const types = readdirSync(typeDir).filter((f) => f.endsWith('.json')).sort().map((f) => read(join(typeDir, f)));
   problems.push(...validateTypes(types));
   const typeNames = new Map(types.map((t) => [t.name, t.kind]));
@@ -647,7 +647,7 @@ function main() {
    * compareSurface itself never touches the filesystem. */
   const typesByName = new Map(types.map((t) => [t.name, t]));
 
-  const contractDir = join(root, 'api/components');
+  const contractDir = join(root, 'contracts/api/components');
   const files = existsSync(contractDir) ? readdirSync(contractDir).filter((f) => f.endsWith('.json')).sort() : [];
   problems.push(...zeroContractProblems({ contracts: files.length, types: types.length }));
   /* Both layers are discovered by walking, once, before the contract loop --

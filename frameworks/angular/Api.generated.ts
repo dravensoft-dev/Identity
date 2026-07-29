@@ -4,7 +4,7 @@
  * contract names. The same body is emitted into both layers so a component's
  * import never crosses the api/ <-> frameworks/ boundary — the rule
  * tokens.generated.* already carries. scripts/check-api.mjs asserts the
- * committed files match api/types/. See api/README.md for the vocabulary. */
+ * committed files match contracts/api/types/. See contracts/api/README.md for the vocabulary. */
 
 /** One event in a feed: someone did something to something, then. Arena draws every field — a consumer cannot place their own markup inside a row. */
 export interface ActivityItem {

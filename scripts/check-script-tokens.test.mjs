@@ -83,6 +83,6 @@ test('the committed CatSlot matches the ramp the tokens are built from', async (
   const modules = await buildScriptModules();
   const body = modules.get('frameworks/react/Tokens.generated.js');
   const catSlots = Number(/^export const catSlots = (\d+);$/m.exec(body)[1]);
-  const catSlot = JSON.parse(readFileSync(join(root, 'api/types/cat-slot.json'), 'utf8'));
+  const catSlot = JSON.parse(readFileSync(join(root, 'contracts/api/types/cat-slot.json'), 'utf8'));
   assert.deepEqual(catSlotEnumProblems(catSlots, catSlot.values), []);
 });

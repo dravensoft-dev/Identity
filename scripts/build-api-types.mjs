@@ -37,14 +37,14 @@ const HEADER =
   + ' * contract names. The same body is emitted into both layers so a component\'s\n'
   + ' * import never crosses the api/ <-> frameworks/ boundary — the rule\n'
   + ' * tokens.generated.* already carries. scripts/check-api.mjs asserts the\n'
-  + ' * committed files match api/types/. See api/README.md for the vocabulary. */';
+  + ' * committed files match contracts/api/types/. See contracts/api/README.md for the vocabulary. */';
 
 /** The TypeScript spelling of each primitive the vocabulary admits. */
 const PRIMITIVE_TS = { string: 'string', number: 'number', boolean: 'boolean' };
 
 /** Every declared type, in file-name order. Order is by filename rather than by
  *  declaration so the output is stable no matter what order a filesystem walks. */
-export function loadTypes(dir = join(root, 'api/types')) {
+export function loadTypes(dir = join(root, 'contracts/api/types')) {
   return readdirSync(dir)
     .filter((f) => f.endsWith('.json'))
     .sort()
