@@ -36,8 +36,8 @@ first command counts declarations and the second counts distinct defects. `CLAUD
 same rule; use the second whenever a section below reasons about how much work is left, and never
 report a drop in the first as "N defects removed".
 
-As written: **21** declarations / **21** distinct pairs in component bindings, **12** in the
-delegated file, **30 of 70** bindings covered. The two figures are equal again, which is itself
+As written: **14** declarations / **14** distinct pairs in component bindings, **12** in the
+delegated file, **31 of 70** bindings covered. The two figures are equal again, which is itself
 informative: the one binding that declared a requirement twice was `CalendarEvent`, and both of its
 `states.disabled` declarations were retired together. Seven component bindings are cased (count them with
 `grep -rl '"cases"' --include='*.behaviour.json' frameworks/`, which does not reach the delegated
@@ -98,16 +98,24 @@ roles, keyboard handlers and focus management.
 
 | subject | pattern | what is missing |
 |---|---|---|
-| `Menu:react` | `menu-button` | 6: `aria-haspopup` on the wrong element, no `aria-expanded`, focus never enters the menu on open, Enter/Space/Escape incomplete |
 | `TableRow:react` | `button` | 5, and the pattern may be the wrong one — a `<tr>` cannot become a `<button>` |
 | `BulkActionBar:react`, `bulk-action-bar:angular` | `toolbar` | 4 each: renders `role="region"`, no roving tab stop, no arrow keys |
 | `CommandPalette:react`, `command-palette:angular` | `combobox` | 5 between them: no `aria-expanded`, no `aria-controls`, the active row is state-only with no `aria-activedescendant` |
-| `ErrorState:react` | `alert` | 1: a plain `<div>`, nothing announces the error |
 
 `TableRow` deserves a design decision before an implementation: its own reason says *"a row is a
 `<tr role="row">`, and it never becomes a `<button>`"*, which reads as a binding that chose the
 wrong pattern rather than a component that fell short. Decide that first; the other five are
 implementation.
+
+**`Menu` and `ErrorState` are closed too, and both fixes were inversions of tests that PINNED the
+defect.** `ErrorState` cost one attribute; the assertion `doesNotMatch(/role="/)` became
+`/^<div role="alert"/`. `Menu` cost more, and the shape is worth carrying: its `aria-haspopup` and
+`aria-expanded` sat on a wrapping `<span>`, and because `trigger` is an opaque **slot** the fix is
+to clone it — which brings the compound-family hazard along, since a fragment passes
+`isValidElement`, `cloneElement` succeeds, and the attributes reach nothing. `Menu` throws on that
+now. Opening moves focus to the first item and Escape restores it to the trigger; Enter and Space
+are the platform's, so the suite asserts Menu does not INTERCEPT them rather than dispatching a key
+happy-dom will never turn into a click.
 
 **`ActivityFeed` is closed, and it was the largest single row here — fourteen declarations, seven
 per layer, on a component that met not one of the seven.** It now carries `role="feed"` and

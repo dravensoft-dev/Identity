@@ -17,9 +17,20 @@ function useMenuKeyframes() {
 export function Menu({ trigger, items, align = "start", onSelect }) {
   if (items == null)
     throw new Error("Menu: `items` is required");
+  if (!React.isValidElement(trigger) || trigger.type === React.Fragment) {
+    throw new Error("Menu: `trigger` must be a single element that forwards props to its focusable control. " + "A fragment or a bare string takes aria-haspopup and aria-expanded nowhere.");
+  }
   useMenuKeyframes();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const panelRef = useRef(null);
+  const triggerEl = () => ref.current && ref.current.firstElementChild;
+  const close = (restoreFocus) => {
+    setOpen(false);
+    const el = triggerEl();
+    if (restoreFocus && el && typeof el.focus === "function")
+      el.focus();
+  };
   useEffect(() => {
     if (!open)
       return;
@@ -29,7 +40,7 @@ export function Menu({ trigger, items, align = "start", onSelect }) {
     };
     const onKey = (e) => {
       if (e.key === "Escape")
-        setOpen(false);
+        close(true);
     };
     document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onKey);
@@ -38,21 +49,34 @@ export function Menu({ trigger, items, align = "start", onSelect }) {
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
+  useEffect(() => {
+    if (!open)
+      return;
+    const first = panelRef.current && panelRef.current.querySelector('[role="menuitem"]:not([disabled])');
+    if (first)
+      first.focus();
+  }, [open]);
   const run = (it) => {
     if (it.disabled)
       return;
-    setOpen(false);
+    close(true);
     onSelect && onSelect(it);
   };
+  const decoratedTrigger = React.cloneElement(trigger, {
+    "aria-haspopup": "menu",
+    "aria-expanded": open,
+    onClick: (e) => {
+      if (trigger.props.onClick)
+        trigger.props.onClick(e);
+      setOpen((v) => !v);
+    }
+  });
   return React.createElement("div", {
     ref,
     style: { position: "relative", display: "inline-flex" }
-  }, React.createElement("span", {
-    onClick: () => setOpen((v) => !v),
-    "aria-haspopup": "menu",
-    "aria-expanded": open
-  }, trigger), open && React.createElement("div", {
+  }, decoratedTrigger, open && React.createElement("div", {
     role: "menu",
+    ref: panelRef,
     style: {
       position: "absolute",
       top: "calc(100% + calc(var(--sp-1) * 1.5))",

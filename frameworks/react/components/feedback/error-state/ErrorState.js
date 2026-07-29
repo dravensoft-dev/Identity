@@ -5,6 +5,7 @@ import React from "react";
 import { Button } from "../../forms/button/Button.js";
 export function ErrorState({ icon, title = "Something went wrong", message, code, retryLabel, onRetry, secondaryAction }) {
   return React.createElement("div", {
+    role: "alert",
     style: {
       display: "flex",
       flexDirection: "column",

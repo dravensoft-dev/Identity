@@ -5,41 +5,10 @@ import { join } from 'node:path';
 import { mount, cleanup, act } from './Harness.jsx';
 import { assertPattern, REACT_COMPONENTS } from './AssertPattern.jsx';
 import { isFocusable } from '../../../scripts/lib/behaviour-compliance.mjs';
-import { Menu } from '../components/navigation/menu/Menu.jsx';
 import { Skeleton } from '../components/display/skeleton/Skeleton.jsx';
 import { CalendarEvent } from '../components/display/calendar-event/CalendarEvent.jsx';
 
 afterEach(cleanup);
-
-test('Menu carries aria-haspopup on an element that cannot take focus — the exception stands', () => {
-  const container = mount(
-    <Menu trigger={<button type="button">Open</button>} items={[{ label: 'Rename' }]} />,
-  );
-  const carrier = container.querySelector('[aria-haspopup]');
-  assert.notEqual(carrier, null);
-
-  assert.equal(carrier.tagName, 'SPAN');
-  assert.equal(isFocusable(carrier), false);
-
-  const trigger = container.querySelector('button');
-  assert.equal(isFocusable(trigger), true);
-  assert.equal(trigger.getAttribute('aria-haspopup'), null);
-  assert.equal(trigger.getAttribute('aria-expanded'), null);
-});
-
-test('Menu matches its menu-button binding when the subject is the focusable trigger', () => {
-  const container = mount(
-    <Menu trigger={<button type="button">Open</button>} items={[{ label: 'Rename' }]} />,
-  );
-  const trigger = container.querySelector('button');
-  assertPattern({
-    root: container,
-    bindingPath: join(REACT_COMPONENTS, 'navigation/menu/Menu.behaviour.json'),
-
-    subjects: { default: trigger },
-    behavioural: { 'focus.onOpen': false, 'keyboard.Enter': false, 'keyboard.Space': false, 'keyboard.Escape': false },
-  });
-});
 
 const VARIANTS = ['block', 'line', 'text', 'circle'];
 

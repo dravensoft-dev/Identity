@@ -8,7 +8,9 @@ test('a closed Menu draws its trigger and no panel', () => {
   const html = renderToStaticMarkup(
     <Menu trigger={<button type="button">Open</button>} items={[{ label: 'Rename' }]} />,
   );
-  assert.match(html, /<button type="button">Open<\/button>/);
+  assert.match(html, /<button type="button" aria-haspopup="menu" aria-expanded="false">Open<\/button>/,
+    'the popup state must sit on the real trigger button -- ARIA is not inherited from an ancestor');
+  assert.doesNotMatch(html, /<span[^>]*aria-haspopup/, 'the wrapping span that used to carry it is gone');
   assert.doesNotMatch(html, /role="menu"/, 'the panel rendered before anything opened it');
 
   assert.equal((html.match(/Rename/g) || []).length, 0, 'an entry was drawn while the menu was closed');
@@ -38,5 +40,17 @@ test('items is required and its absence throws', () => {
 test('an empty items array renders rather than throwing', () => {
   assert.doesNotThrow(
     () => renderToStaticMarkup(<Menu trigger={<button type="button">Open</button>} items={[]} />),
+  );
+});
+
+test('a trigger that cannot carry attributes throws rather than silently losing them', () => {
+  assert.throws(
+    () => renderToStaticMarkup(<Menu trigger={<>Open</>} items={[]} />),
+    /Menu: `trigger` must be a single element/,
+    'a fragment passes isValidElement and swallows the clone, which is the silent half',
+  );
+  assert.throws(
+    () => renderToStaticMarkup(<Menu trigger="Open" items={[]} />),
+    /Menu: `trigger` must be a single element/,
   );
 });

@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import React from 'react';
 import { mount, cleanup, act } from '../../test/Harness.jsx';
-import { assertPatternCases, REACT_COMPONENTS } from '../../test/AssertPattern.jsx';
+import { assertPattern, assertPatternCases, REACT_COMPONENTS } from '../../test/AssertPattern.jsx';
 import { Alert } from './alert/Alert.jsx';
 import { Toast } from './toast/Toast.jsx';
+import { ErrorState } from './error-state/ErrorState.jsx';
 
 afterEach(cleanup);
 
@@ -85,5 +86,43 @@ test('Toast meets both of its declared cases, and content.noAutoDismiss stays un
         behavioural: { 'focus.unaffected': true },
       }),
     },
+  });
+});
+
+test('ErrorState meets the alert pattern -- the failure announces itself', () => {
+  const globals = globalThis;
+  const names = ['setTimeout', 'setInterval', 'requestAnimationFrame'];
+  const saved = new Map(names.map((n) => [n, globals[n]]));
+  const scheduled = [];
+
+  for (const name of names) {
+    const original = saved.get(name);
+    if (typeof original !== 'function') continue;
+    globals[name] = (callback, ...rest) => {
+      scheduled.push(name);
+      return original(callback, ...rest);
+    };
+  }
+
+  const before = document.activeElement;
+  let root;
+  try {
+    root = mount(
+      <ErrorState title="Deploy failed" message="The cluster refused the image." code="E_IMAGE_PULL"
+        retryLabel="Try again" onRetry={() => {}} />,
+    );
+  } finally {
+    for (const [name, original] of saved) globals[name] = original;
+  }
+
+  assert.deepEqual(scheduled, [],
+    'ErrorState scheduled a timer -- an alert that can disappear on its own fails content.noAutoDismiss');
+  assert.equal(document.activeElement, before,
+    'rendering the error moved focus, which an alert must never do');
+
+  assertPattern({
+    root,
+    bindingPath: join(REACT_COMPONENTS, 'feedback/error-state/ErrorState.behaviour.json'),
+    behavioural: { 'focus.unaffected': true, 'content.noAutoDismiss': true },
   });
 });
