@@ -104,6 +104,8 @@ test('suiteMentions accepts a tail spelled as join() arguments', () => {
  * so a bare STEM search discriminated between the layers by accident and nobody
  * had to say so. Batch 2 spelled both stems Pascal and that accident ended: with
  * both files named `Alert.behaviour.json`, `'Alert:angular': 'alert-tones.test.jsx'`
+ * (that suite's name at the time -- batch 3 renamed it `AlertTones.dom.test.jsx`,
+ * and this line quotes the map as it then read, so do not update it)
  * -- React's own suite, naming React's own binding -- validated CLEAN, which was
  * the defect commit `663b2e4` closed by moving the check to the path TAIL instead
  * of the bare stem. That tail match then discriminated correctly only because
@@ -141,16 +143,16 @@ test('a suite from the sibling layer cannot satisfy a coverage claim', () => {
   ];
   // React's suite names React's binding -> the react claim holds.
   assert.deepEqual(
-    validateCoverage({ bindings, covered: { 'Alert:react': 'alert-tones.test.jsx' },
-      suites: { 'alert-tones.test.jsx': { source: "join(R, 'feedback/alert/Alert.behaviour.json')", layer: 'react' } } }),
+    validateCoverage({ bindings, covered: { 'Alert:react': 'AlertTones.dom.test.jsx' },
+      suites: { 'AlertTones.dom.test.jsx': { source: "join(R, 'feedback/alert/Alert.behaviour.json')", layer: 'react' } } }),
     [],
   );
   // The SAME suite, offered for the ANGULAR key. It is tagged `react` -- the
   // tree collectSuites() found it under -- so the layer check rejects it
   // before the tail is ever compared; both stems being `Alert` never gets a
   // chance to matter.
-  const stale = validateCoverage({ bindings, covered: { 'Alert:angular': 'alert-tones.test.jsx' },
-    suites: { 'alert-tones.test.jsx': { source: "join(R, 'feedback/alert/Alert.behaviour.json')", layer: 'react' } } });
+  const stale = validateCoverage({ bindings, covered: { 'Alert:angular': 'AlertTones.dom.test.jsx' },
+    suites: { 'AlertTones.dom.test.jsx': { source: "join(R, 'feedback/alert/Alert.behaviour.json')", layer: 'react' } } });
   assert.equal(stale.length, 1);
   assert.match(stale[0], /react layer/);
 

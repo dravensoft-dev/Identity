@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   loadPatterns, validatePattern, validateBinding,
-  reactComponents, reactBindingPath, angularPrimitives, angularBindingPath, PATTERN_DIR,
+  reactComponents, reactBindingPath, angularPrimitives, angularBindingPath,
   crossLayerAgrees, bindingCases,
 } from './lib/behaviour-contracts.mjs';
 import { pascal, kebab } from './check-structure.mjs';

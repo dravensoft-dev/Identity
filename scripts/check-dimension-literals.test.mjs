@@ -393,7 +393,9 @@ test('EXEMPT records the three SR_ONLY visually-hidden literals, by name', () =>
 // `<svg width="100%">`. Review round 1 found five of the original seven
 // demo values fell on Arena's 4px spacing scale and rewrote them as token
 // arithmetic (`calc(var(--sp-1) * N)` or a named `var(--sp-N)`) instead of
-// exempting them -- see skeleton.card.entry.jsx. Only two remain exempt:
+// exempting them -- see
+// frameworks/react/components/display/skeleton/Skeleton.card.entry.jsx, whose
+// path and stem both moved in the structure refactor's batch 3. Only two remain exempt:
 // arbitrary demo placeholder heights that do not fall on that scale.
 
 test('EXEMPT records the two demo-entry height literals that are not on the 4px spacing scale, by name', () => {

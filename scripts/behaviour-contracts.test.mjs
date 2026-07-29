@@ -178,15 +178,21 @@ test('the React inventory finds every component, no category and no loose file',
   assert.ok(found.includes('SideNavItem'));
   assert.ok(found.includes('SideNavSection'));
   assert.ok(found.includes('SideNavCollapsible'));
-  /* A COMPONENT IS A DIRECTORY, so the two things this walk must not return are
-   * both FILES sitting beside the directories. A helper module is one --
-   * `SideNavInject.jsx`, which lives inside `side-nav/` and is `.jsx` rather
-   * than `.js` so it stays inside check:dimensions' EXTENSIONS; it is the file
-   * that broke the old capital-initial heuristic outright, since the naming rule
-   * spells it capital-initial today. A category-wide demo page's composition
-   * script is the other -- `Display.card.entry.jsx` sits directly in `display/`.
-   * Neither is a directory, and neither can be. */
+  /* A COMPONENT IS A DIRECTORY, so everything this walk must not return is a
+   * FILE, and files sit in two places. A helper module sits INSIDE a component's
+   * own directory -- `SideNavInject.jsx` is in `side-nav/`, and is `.jsx` rather
+   * than `.js` so it stays inside check:dimensions' EXTENSIONS. A category-wide
+   * demo page's composition script sits BESIDE the directories, one level up --
+   * `Display.card.entry.jsx` is directly in `display/`. The walk reads directory
+   * entries at both levels, so neither can reach the result. */
   assert.ok(!found.includes('SideNavInject'));
+  /* The kebab spelling is a REGRESSION PIN against the retired heuristic, not a
+   * claim about the tree: no `side-nav-inject.jsx` exists any more, and this walk
+   * derives every name through pascal(), so nothing can make this fail today. It
+   * is kept because that file is why the old capital-initial rule had a
+   * carve-out, and because it is the shape a walk reaching back into a pre-batch-3
+   * tree would return. Delete it if the pre-move tree stops being interesting;
+   * do not leave it here unexplained. */
   assert.ok(!found.includes('side-nav-inject'));
   assert.ok(!found.some((c) => c.endsWith('.card.entry')));
   /* A category is not a component either: the walk's outer level must not leak

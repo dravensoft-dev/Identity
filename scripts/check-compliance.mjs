@@ -155,7 +155,9 @@ export const SUITE_DIRS = [
  * declared component "BarChart" while React's was `BarChart.behaviour.json` --
  * the two stems could not collide, and nobody had to say why. Batch 2 spelled
  * both stems Pascal and that accident ended: with `Alert` on both sides,
- * `'Alert:angular': 'alert-tones.test.jsx'` -- React's own suite -- validated
+ * `'Alert:angular': 'alert-tones.test.jsx'` -- React's own suite, under the name
+ * it carried then; batch 3 renamed it `AlertTones.dom.test.jsx`, and this line
+ * quotes the map as it read at the time, so do not update it -- validated
  * clean, which was the defect commit `663b2e4` closed by moving the check from
  * the bare stem to the path tail. That tail match then discriminated correctly
  * only because Angular's tail carried a kebab directory and React's did not --
@@ -379,16 +381,30 @@ function collectBindings() {
   /** @type {Record<string, object>} "<name>:<layer>" -> binding, plus tail */
   const byKey = {};
 
+  /* BOTH SKIPS BELOW ARE SILENT, and this is the one place in this gate where
+   * "absent" and "I could not find it" are the same value -- feeding a printed
+   * count, which is exactly the shape this repo has been bitten by. It stands
+   * because the silence is COVERED ELSEWHERE rather than because it is harmless.
+   * A component whose binding does not resolve -- it has none, or its directory
+   * name did not round-trip through kebab()/pascal() -- drops out of the
+   * denominator here with no message; but check:behaviour walks the same two
+   * inventories through the same two path builders and reports that identical
+   * miss LOUDLY, as "no <Name>.behaviour.json", and `bun run check` runs both.
+   * So the miss cannot reach a green run: it fails one gate while merely
+   * shrinking the other's count. Duplicating the report here would give one
+   * defect two owners, which is what "check:behaviour owns 'every component
+   * declares'" means. What it does NOT protect against is this gate being run
+   * alone -- read the N of M as a coverage ratio, never as an inventory. */
   for (const name of reactComponents(repoRoot)) {
     const found = reactBindingPath(repoRoot, kebab(name));
-    if (!found) continue; // check:behaviour owns "every component declares"; this gate does not duplicate it.
+    if (!found) continue;
     const binding = loadBinding(found.path);
     byKey[`${name}:react`] = { ...binding, tail: found.tail };
   }
 
   for (const dir of angularPrimitives(repoRoot)) {
     const found = angularBindingPath(repoRoot, dir);
-    if (!found) continue; // check:behaviour owns "every component declares"; this gate does not duplicate it.
+    if (!found) continue;
     const binding = loadBinding(found.path);
     byKey[`${binding.component}:angular`] = { ...binding, tail: found.tail };
   }
