@@ -161,6 +161,7 @@
   },
   "Table": {
     "pattern": "grid",
+    "divergesFrom": "none",
     "delegatedTo": "Angular Material MatTable",
     "dressedBy": "frameworks/angular/theme/arena-material.css",
     "exceptions": [
@@ -197,7 +198,7 @@
         "reason": "Same as ArrowKeys -- Material supplies no keyboard handling of the grid, with either role."
       }
     ],
-    "reason": "MatTable provides the row/column definition machinery (matColumnDef, mat-header-row, mat-row) and a real data-bound table, rather than a bespoke Arena re-implementation of table layout. The bridge dresses its background and row hairline colour, and gives the header cell the mono uppercase micro-label treatment. Arena has no arena-table primitive and should not grow one."
+    "reason": "MatTable provides the row/column definition machinery (matColumnDef, mat-header-row, mat-row) and a real data-bound table, rather than a bespoke Arena re-implementation of table layout. The bridge dresses its background and row hairline colour, and gives the header cell the mono uppercase micro-label treatment. Arena has no arena-table primitive and should not grow one. React's own Table declares TWO cases -- a wide `grid` and, below --bp-md, a `card` shape bound to `none` where no table element is rendered at all. `divergesFrom` names that second one: MatTable has a single shape and no responsive card layout, so there is no render here for it to describe. That is a capability difference rather than a defect, and it leaves this entry measured against `grid` alone, which is what the exceptions below are about."
   },
   "TableCell": {
     "pattern": "none",

@@ -37,6 +37,7 @@ export const COVERED = {
   'Tag:react': 'TagAndChipCases.dom.test.jsx',
   'CalendarEvent:react': 'TagAndChipCases.dom.test.jsx',
   'Calendar:react': 'Calendar.gridKeyboard.dom.test.jsx',
+  'Table:react': 'Table.cases.dom.test.jsx',
   'TableRow:react': 'TableRow.cases.dom.test.jsx',
   'Input:react': 'TextboxStates.dom.test.jsx',
   'Textarea:react': 'TextboxStates.dom.test.jsx',
