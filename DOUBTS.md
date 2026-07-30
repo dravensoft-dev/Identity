@@ -3006,6 +3006,32 @@ it means giving `Switch.jsx` an explicit colour — a change to a shipped React 
 port. **The demo page is what found it**, which is the case for the harness in one sentence: five
 sizes rendered side by side with a glyph in each, and the `sm` one is where you look.
 
+#### Input — three differences, and the picker dressing moved into the shared layer
+
+**Status glyphs.** React's `Input.jsx` draws `ph-warning-circle` and `ph-check-circle` with a
+colour and no `aria-hidden`, while the leading `icon` beside them **is** hidden — an
+inconsistency inside one component. A Phosphor glyph is a font ligature, so an unhidden one is
+announced next to the error message it duplicates. `arena-input` hides all four.
+**Converges: no, and Angular is the better side.** One attribute on `Input.jsx` closes it.
+
+**The controlled value.** React re-renders the DOM value from the prop, so ignoring `onChange`
+visibly reverts the box. Angular's `[value]` binding writes only when the *bound* value changes,
+so ignoring `(change)` leaves what the user typed on screen while the signal says otherwise. That
+is Angular's binding model rather than a defect, and no `ControlValueAccessor` is involved
+(`arena-input` is not a forms control and does not claim to be). It is stated in
+`Input.prompt.md` because it is the one way a consumer can hold this component wrong.
+
+**The date picker indicator moved layers.** React injects a one-time
+`<style data-arena-input>` from a module-level `injected` guard to dress
+`::-webkit-calendar-picker-indicator`, because an inline style cannot reach a vendor
+pseudo-element. Angular components carry no `styles`, so the rule went into the shared
+manifest's `input` slot as arbitrary variants
+(`[&::-webkit-calendar-picker-indicator]:[filter:invert(var(--picker-invert))]` and its
+siblings), which `check:tailwind` proves emit and `check:arbitrary` passes. **That is strictly
+better placed** — it serves the Tailwind specimen too, and it is measured by the same gates as
+every other class. React's injection is now a duplicate of it and is left alone: removing it
+would change a shipped component for no behavioural gain, since React reads no manifest.
+
 ## 4. What the READMEs do not say
 
 The normative documents state rules. This section carries what those rules cost, what the

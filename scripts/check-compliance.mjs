@@ -77,6 +77,7 @@ export const COVERED = {
   'IconButton:angular': 'IconButton.compliance.test.ts',
   'Checkbox:angular': 'Checkbox.compliance.test.ts',
   'Switch:angular': 'Switch.compliance.test.ts',
+  'Input:angular': 'Input.compliance.test.ts',
 };
 
 export function suiteMentions(source, tail) {

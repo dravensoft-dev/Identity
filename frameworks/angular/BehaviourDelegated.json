@@ -24,12 +24,6 @@
     "dressedBy": "frameworks/angular/theme/arena-material.css",
     "reason": "MatDialog (the CDK dialog underneath it) provides the modal surface, aria-modal, first-focus-on-open, restore-focus-on-close and Escape-to-close -- the entire requirement list React's own Dialog binding records as unmet. The bridge dresses the surface colour and --r-lg radius on .mat-mdc-dialog-surface. Arena has no arena-dialog primitive and should not grow one."
   },
-  "Input": {
-    "pattern": "textbox",
-    "delegatedTo": "Angular Material matInput",
-    "dressedBy": "frameworks/angular/theme/arena-material.css",
-    "reason": "matInput provides the textbox role and reflects multiline/required/readonly state from the native element it directs. It is always composed inside <mat-form-field appearance=\"outline\">, and the bridge dresses that field -- outline colour, focus colour, --r-sm radius, label colour -- rather than the input element itself. Arena has no arena-input primitive and should not grow one."
-  },
   "Menu": {
     "pattern": "menu-button",
     "delegatedTo": "Angular Material MatMenu (matMenuTriggerFor, mat-menu-item)",
