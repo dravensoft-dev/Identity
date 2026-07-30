@@ -18,11 +18,6 @@
     "dressedBy": "frameworks/angular/theme/arena-material.css",
     "reason": "MatCard already provides the bordered surface and its header/content/actions slots; it manages no interactive state of its own, the same as React's Card. The bridge dresses its container colour (--surface-card) and --r-lg radius. Arena has no arena-card primitive and should not grow one."
   },
-  "Checkbox": {
-    "pattern": "checkbox",
-    "delegatedTo": "Angular Material MatCheckbox",
-    "reason": "MatCheckbox wraps a real native <input type=\"checkbox\">, which brings the checkbox role, label association and Space-to-toggle from the native element rather than an authored re-implementation. arena-material.css does not dress it -- no .mat-mdc-checkbox rule exists in the bridge today -- so its colours are Material's own defaults, not Arena's tokens."
-  },
   "Dialog": {
     "pattern": "dialog-modal",
     "delegatedTo": "Angular Material MatDialog",

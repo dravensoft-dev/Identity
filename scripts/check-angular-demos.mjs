@@ -17,6 +17,7 @@ export const PAGED = new Set([
   'Button',
   'Tooltip',
   'IconButton',
+  'Checkbox',
 ]);
 
 export function pageProblems(tree, read, paged = PAGED) {

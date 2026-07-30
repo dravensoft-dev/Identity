@@ -59,6 +59,25 @@ stale-proof; a present-tense component name is not.
 
 ## 1. Known debt
 
+- **`Checkbox` has no visible focus indicator, in either layer, and porting it to Angular did
+  not introduce that.** The control is a real `<input type="checkbox">` hidden with
+  `opacity-0 size-0` behind a decorative `<span>` box, which is the right structure — it keeps
+  the role, the name and Space-to-toggle from the platform, and it keeps the input focusable
+  where `display: none` would not. What neither layer does is paint anything on the box when the
+  input takes focus, so a keyboard user tabbing through a form sees **nothing move**. That is a
+  WCAG 2.4.7 failure and it is invisible to every gate here: the `checkbox` pattern requires
+  `roles.element`, `roles.label`, `keyboard.Space` and `states.checked`, and this control meets
+  all four, so `check:compliance` is correctly green over it.
+  **The fix is known and is deliberately not in this batch.** In Angular it is one utility on the
+  manifest's `box` slot — `has-[:focus-visible]:` reaching the sibling input, the same idea
+  `Input`'s `field` slot already uses with `focus-within:`. But the manifest is shared, so that
+  moves the Tailwind specimen too, and React reads no manifest at all: its `Checkbox.jsx` is
+  inline styles with no focus state to hook, so the layers would diverge on an accessibility
+  property rather than on a cosmetic one. Fixing it properly means fixing both, and that is a
+  change to a shipped React component rather than a port. **`Radio` is almost certainly the same
+  shape** and has not been looked at — it uses the same hidden-input structure and Plan D's batch
+  3 is where it lands.
+
 - **A green run is only as good as what the gate looked at, and a gate that finds nothing
   reports zero violations either way.** This is a rule rather than an anecdote, because it has
   now shipped three times in two batches of one refactor, each time in a different mechanism,
