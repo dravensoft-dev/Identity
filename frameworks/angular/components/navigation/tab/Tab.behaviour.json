@@ -1,0 +1,6 @@
+{
+  "component": "Tab",
+  "pattern": "none",
+  "reason": "Every requirement that applies to a tab is a clause of the `tabs` pattern its enclosing arena-tabs binds -- the roles, aria-controls, aria-selected, the roving stop and the arrow keys are all authored by the parent, because the parent is what draws the tab button. This component draws the tabpanel and its own id wiring, and carries no interactive affordance of its own. The same shape, and the same reason, as React's own Tab binding.",
+  "exceptions": []
+}

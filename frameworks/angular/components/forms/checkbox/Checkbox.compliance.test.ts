@@ -9,6 +9,7 @@ useTestEnvironment();
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { assertNoNode, assertSameNode } from '../../../test/NodeAssert';
 import { join } from 'node:path';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -58,7 +59,7 @@ test('the wrapping <label> is what names the input, so the box needs no aria of 
   try {
     const label = host.querySelector('label') as HTMLElement;
     assert.ok(label, 'the root is not a <label>, and the input then has no accessible name at all');
-    assert.equal(control.closest('label'), label);
+    assertSameNode(control.closest('label'), label);
     assert.equal(label.textContent?.trim(), 'Notify on failure');
     assert.equal(control.getAttribute('aria-label'), null,
       'an aria-label here would duplicate the name the wrapping label already supplies');
@@ -83,7 +84,7 @@ test('the host stays bare and out of layout -- the recipe classes land on the <l
 test('the tick is drawn only when checked, and the box is empty otherwise', () => {
   const off = render();
   try {
-    assert.equal(off.host.querySelector('svg'), null, 'an unchecked box drew a tick');
+    assertNoNode(off.host.querySelector('svg'), 'an unchecked box drew a tick');
   } finally {
     off.fixture.destroy();
   }

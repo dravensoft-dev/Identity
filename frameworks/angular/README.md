@@ -133,7 +133,7 @@ with event blocks, so there is no control for those two to delegate to.
 
 `arena-material.css` dresses only a subset of the delegated set:
 Select (outlined appearance only — a form field left on Material's default
-fill appearance keeps Material's own styling), Card, Table, Tabs, Dialog, Toast,
+fill appearance keeps Material's own styling), Card, Table, Dialog, Toast,
 ProgressBar, Spinner and SideNav. The rest still render with Material's own defaults. A
 `dressedBy` key on a delegated entry is the per-component record, and **nothing checks
 it** — `check:material` reads the CSS and never that file.

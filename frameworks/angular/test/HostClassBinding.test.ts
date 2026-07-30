@@ -1,6 +1,7 @@
 import '@angular/compiler';
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { assertNoNode } from './NodeAssert';
 import { readFileSync, readdirSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -522,9 +523,8 @@ test('arena-stat-card: a delta with a value renders the pill; a delta with a ton
 
   const emptyValue = renderStatCard('Deploys', '128', { value: '', direction: 'up', tone: 'positive' });
   emptyValue.detectChanges();
-  assert.equal(
+  assertNoNode(
     (emptyValue.nativeElement as HTMLElement).querySelector(`.${deltaClass}`),
-    null,
     'a delta with a tone/direction but an empty value must render no pill at all',
   );
   emptyValue.destroy();
@@ -547,7 +547,7 @@ test('arena-stat-card: no icon renders no wrapper at all -- not an empty one', (
   fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement;
   const iconClass = statCardStyles().icon().split(/\s+/)[0];
-  assert.equal(host.querySelector(`.${iconClass}`), null, 'no icon means no icon wrapper at all');
+  assertNoNode(host.querySelector(`.${iconClass}`), 'no icon means no icon wrapper at all');
   fixture.destroy();
 });
 
@@ -600,9 +600,8 @@ test('arena-chart-card: the head row is entirely absent when there is neither a 
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-chart-card') as HTMLElement;
   const headClass = chartCardStyles().head().split(/\s+/)[0];
-  assert.equal(
+  assertNoNode(
     host.querySelector(`.${headClass}`),
-    null,
     'an empty chart card (no title, no actions) must not render the head row at all',
   );
   assert.equal(host.children.length, 0, 'a bare chart card renders no children of its own');
@@ -618,11 +617,10 @@ test('arena-empty-state: the action wrapper is absent from the DOM when no [acti
   const fixture = renderEmptyState('No projects yet');
   fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement;
-  assert.equal(host.querySelector('button'), null, 'no action was projected, so no action markup should exist at all');
+  assertNoNode(host.querySelector('button'), 'no action was projected, so no action markup should exist at all');
   const actionClass = emptyStateStyles().action().split(/\s+/)[0];
-  assert.equal(
+  assertNoNode(
     host.querySelector(`:scope > .${actionClass}`),
-    null,
     'the action wrapper div must not render when the action slot is empty',
   );
   fixture.destroy();
@@ -644,11 +642,10 @@ test('arena-error-state: the actions wrapper is absent from the DOM when neither
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-error-state') as HTMLElement;
-  assert.equal(host.querySelector('button'), null, 'neither retryLabel nor a secondary action was supplied, so no action markup should exist at all');
+  assertNoNode(host.querySelector('button'), 'neither retryLabel nor a secondary action was supplied, so no action markup should exist at all');
   const actionsClass = errorStateStyles().actions().split(/\s+/)[0];
-  assert.equal(
+  assertNoNode(
     host.querySelector(`:scope > .${actionsClass}`),
-    null,
     'the actions wrapper div must not render when both retryLabel and secondaryAction are absent',
   );
 });
@@ -711,11 +708,10 @@ test('arena-page-head: the actions wrapper is absent from the DOM when no [actio
     fixture.detectChanges();
     await fixture.whenStable();
     const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
-    assert.equal(host.querySelector('button'), null, 'no actions were projected, so no action markup should exist at all');
+    assertNoNode(host.querySelector('button'), 'no actions were projected, so no action markup should exist at all');
     const actionsClass = pageHeadStyles().actions().split(/\s+/)[0];
-    assert.equal(
+    assertNoNode(
       host.querySelector(`:scope > .${actionsClass}`),
-      null,
       'the actions wrapper div must not render when the actions slot is empty',
     );
     assert.equal(host.children.length, 1, 'a page head with no actions renders the titles block and nothing else');
@@ -760,6 +756,7 @@ const NO_MANIFEST = new Set(['bar-chart', 'line-chart', 'doughnut-chart']);
 const HOST_SLOT: Record<string, { manifest?: string; slot: string }> = {
   'radio-group': { manifest: 'Radio.manifest.json', slot: 'group' },
   'segmented-control': { slot: 'track' },
+  tab: { manifest: 'Tabs.manifest.json', slot: 'panel' },
 };
 
 test('every Angular primitive host-binds a slot that carries a display utility, so the host never collapses to the UA-default inline box', () => {
@@ -1003,8 +1000,8 @@ test('arena-doughnut-chart: with no data it draws no slice at all, rather than a
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-doughnut-chart') as HTMLElement;
 
-  assert.equal(host.querySelector('path'), null, 'an empty doughnut must paint no slice');
-  assert.equal(host.querySelector('text'), null, 'the centre label must not render with nothing hovered');
+  assertNoNode(host.querySelector('path'), 'an empty doughnut must paint no slice');
+  assertNoNode(host.querySelector('text'), 'the centre label must not render with nothing hovered');
   assert.equal(host.querySelectorAll('tbody tr').length, 0, 'the numbers table must have no rows');
 });
 
@@ -1025,15 +1022,13 @@ test('arena-unauth-card: the brand and footer wrappers are both absent from the 
   const host = fixture.nativeElement.querySelector('arena-unauth-card') as HTMLElement;
 
   const brandClass = unauthCardStyles().brand().split(/\s+/)[0];
-  assert.equal(
+  assertNoNode(
     host.querySelector(`.${brandClass}`),
-    null,
     'the brand wrapper div must not render when the [brand] slot is empty',
   );
   const footerClass = unauthCardStyles().footer().split(/\s+/)[0];
-  assert.equal(
+  assertNoNode(
     host.querySelector(`.${footerClass}`),
-    null,
     'the footer wrapper div must not render when the [footer] slot is empty',
   );
 

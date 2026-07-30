@@ -82,6 +82,8 @@ export const COVERED = {
   'RadioGroup:angular': 'RadioGroup.compliance.test.ts',
   'Radio:angular': 'RadioGroup.compliance.test.ts',
   'SegmentedControl:angular': 'SegmentedControl.compliance.test.ts',
+  'Tabs:angular': 'Tabs.compliance.test.ts',
+  'Tab:angular': 'Tabs.compliance.test.ts',
 };
 
 export function suiteMentions(source, tail) {

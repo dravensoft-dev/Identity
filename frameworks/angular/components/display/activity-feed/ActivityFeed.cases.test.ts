@@ -8,6 +8,7 @@ useTestEnvironment();
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { assertSameNode } from '../../../test/NodeAssert';
 import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { ActivityFeed } from './ActivityFeed';
@@ -65,20 +66,20 @@ test('arena-activity-feed meets the feed pattern in both of its declared states'
 
           articles[0].focus();
           const down = press(articles[0], 'PageDown');
-          assert.equal(document.activeElement, articles[1], 'PageDown did not move to the next article');
+          assertSameNode(document.activeElement, articles[1], 'PageDown did not move to the next article');
           assert.equal(down.defaultPrevented, true, 'PageDown was not claimed, so the page scrolls as well');
 
           press(articles[1], 'PageDown');
           press(articles[2], 'PageDown');
-          assert.equal(document.activeElement, articles[2],
+          assertSameNode(document.activeElement, articles[2],
             'PageDown past the last article moved focus -- it must stop rather than wrap');
 
           const up = press(articles[2], 'PageUp');
-          assert.equal(document.activeElement, articles[1], 'PageUp did not move to the previous article');
+          assertSameNode(document.activeElement, articles[1], 'PageUp did not move to the previous article');
           assert.equal(up.defaultPrevented, true, 'PageUp was not claimed');
           press(articles[1], 'PageUp');
           press(articles[0], 'PageUp');
-          assert.equal(document.activeElement, articles[0],
+          assertSameNode(document.activeElement, articles[0],
             'PageUp past the first article moved focus -- it must stop rather than wrap');
 
           return {

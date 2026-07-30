@@ -65,6 +65,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   against `contracts/behaviour/`, and every dimension it draws against the token layer. Their
   entries leave `BehaviourDelegated.json`, and the `MatButton` dressing blocks in
   `arena-material.css` go with `IconButton`, the last entry that cited them.
+- **The roving-focus Angular composites** — `arena-radio-group`/`arena-radio`,
+  `arena-segmented-control` and `arena-tabs`/`arena-tab`. A compound family coordinates the
+  opposite way from React's: the parent provides an injectable state object and each child
+  injects it and pulls, because Angular has no `cloneElement` and because `check:api` would
+  read a public coordination member as API. Only `arena-tabs` earns `@angular/cdk/a11y` — the
+  rest get their roving stop and arrow keys from native radio inputs. `arena-segmented-control`
+  drops the `roles.group` exception Material's `MatButtonToggleGroup` forced, so it renders
+  `role="radiogroup"` and its binding has none.
+- **`frameworks/angular/test/NodeAssert.ts` and `check:assertions`.** `node:assert` renders both
+  operands into its diff when an assertion fails, and a connected happy-dom node reaches the whole
+  shared document from there — measured at 518,563 characters against a `<body>` holding three
+  elements, so a failing focus assertion exhausted the run instead of reporting the defect. The
+  helpers compare identity and render the operands themselves; the gate keeps the raw form out.
 - **Angular demo pages.** `<Component>.card.html` beside a primitive runs the real component in
   a real browser, which is the only place motion, focus rings and layout can be checked at all.
   `bun run build:angular-demo` builds them and `bun run demos` serves them; `check:angular-demos`

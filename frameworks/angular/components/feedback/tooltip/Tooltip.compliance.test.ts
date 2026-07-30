@@ -9,6 +9,7 @@ useTestEnvironment();
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { assertNoNode } from '../../../test/NodeAssert';
 import { join } from 'node:path';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -51,7 +52,7 @@ test('a pointer resting on the trigger reveals nothing yet -- the wait is what s
   try {
     wrapper.dispatchEvent(new PointerEvent('pointerenter', { bubbles: true }));
     fixture.detectChanges();
-    assert.equal(document.body.querySelector('[role="tooltip"]'), null,
+    assertNoNode(document.body.querySelector('[role="tooltip"]'),
       'the bubble appeared synchronously on pointerenter, so --delay-open is not being waited');
   } finally {
     fixture.destroy();
@@ -117,7 +118,7 @@ test('Escape dismisses, and the listener is on the document because a pointer le
     assert.ok(reveal(fixture, wrapper));
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     fixture.detectChanges();
-    assert.equal(document.body.querySelector('[role="tooltip"]'), null, 'Escape left the bubble on screen');
+    assertNoNode(document.body.querySelector('[role="tooltip"]'), 'Escape left the bubble on screen');
   } finally {
     fixture.destroy();
     disposeOverlays();
@@ -144,7 +145,7 @@ test('destroying the component disposes its overlay rather than leaking it into 
   try {
     assert.ok(reveal(fixture, wrapper));
     fixture.destroy();
-    assert.equal(document.body.querySelector('[role="tooltip"]'), null,
+    assertNoNode(document.body.querySelector('[role="tooltip"]'),
       'the bubble outlived its component, and one document is shared by the whole run');
   } finally {
     disposeOverlays();

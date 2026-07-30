@@ -9,6 +9,7 @@ useTestEnvironment();
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { assertNoNode } from '../../../test/NodeAssert';
 import { join } from 'node:path';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -180,7 +181,7 @@ test('disabled reflects onto the native attribute and blocks activation', () => 
 test('the confirm guard is drawn only under confirm, and it is decoration', () => {
   const plain = render();
   try {
-    assert.equal(plain.host.querySelector('i'), null, 'an unguarded switch with no icons drew a glyph');
+    assertNoNode(plain.host.querySelector('i'), 'an unguarded switch with no icons drew a glyph');
   } finally {
     plain.fixture.destroy();
   }

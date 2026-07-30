@@ -3419,6 +3419,58 @@ throws the second time it runs across files that share a process.
 creation that nothing resets — a second per-file document would render into a document the adapter
 no longer points at, and `getComputedStyle` reading the wrong document was the observed failure.
 
+### `frameworks/angular/test/NodeAssert.ts` — a failing node assertion is what ends the run
+
+`node:assert` renders **both** operands into its diff when an equality assertion fails, and a
+happy-dom node that is **connected** reaches the whole document from there. So the cost is set by
+the tree the node hangs in, not by what it is compared against — and the Angular suites share one
+document for the entire run (see `TestbedEnv.ts` above), which only ever grows, because a fixture
+left undestroyed keeps its nodes in it.
+
+Measured, with a `<body>` holding **three** elements, as the length of the `AssertionError` message:
+
+| assertion | message length |
+|---|---|
+| two **detached** `<button>`s | 1,441 |
+| two **connected** `<button>`s | 12,755 |
+| a connected `<button>` against `null` | 285,795 |
+| `document.body` against a connected `<button>` | 518,563 |
+
+Comparing against `null` is therefore **not** the safe case, which is the counter-intuitive part:
+`assert.equal(host.querySelector('button'), null)` costs 285k characters on a three-element body.
+A real run's body is orders of magnitude larger, and building that string is what exhausts memory
+and CPU — the failure never reaches a reader at all, so the suite looks like it hung rather than
+like it found a defect. It was found the day `arena-tabs` landed: the first focus assertion to
+fail took the whole process with it.
+
+`assertSameNode`/`assertNotSameNode`/`assertNoNode` compare identity and render the operands
+themselves, clipping text at 40 characters; `NodeAssert.test.ts` holds the failure messages under
+400. `check:assertions` is what keeps the raw form from coming back — it judges the **tail** of
+each operand expression, so `assert.equal(el.textContent, 'x')` stays allowed while
+`assert.equal(el.closest('label'), other)` does not.
+
+**Not covered, and deliberately:** the React layer. Its suites use `bun:test`'s `expect`, which did
+not reproduce the blow-up, and they do not share one document across the whole run the way
+Angular's do. If React ever moves to `node:assert`, `SUITE_ROOT` is the one line to widen.
+
+### `frameworks/angular/components/navigation/tabs/Tabs.compliance.test.ts` — the CDK reads `keyCode`, which happy-dom leaves 0
+
+`@angular/cdk/a11y`'s `ListKeyManager.onKeydown` switches on **`event.keyCode`**, the deprecated
+property — not on `event.key`. A browser still fills `keyCode` in, so `arena-tabs` works in real
+Chromium; happy-dom leaves it `0` when the event is built as
+`new KeyboardEvent('keydown', { key: 'ArrowRight' })`, so the manager falls to its `default:` arm
+and **ignores every key**. `press()` sets `keyCode` for that reason, and the map is beside it.
+
+Two things this cost, both worth remembering. Nothing moved focus, so `document.activeElement`
+stayed `<body>` and the focus assertion failed against the largest node in the document — which is
+how the entry above was found. And the sibling test asserting that the **vertical** arrows do
+nothing passed for the wrong reason: nothing was doing anything. A test that asserts an absence is
+the one that cannot tell a working mechanism from an absent one.
+
+Arena's own components read `event.key` and are unaffected — `activity-feed` and `bulk-action-bar`
+both walk with arrows under happy-dom today. `Tabs` is the only component that delegates its
+keyboard to the CDK, so it is the only one that needs this.
+
 ### `frameworks/angular/theme/arena-cdk.css` — one selector, and why the other four are left alone
 
 `@angular/cdk/overlay-prebuilt.css` hardcodes `z-index: 1000` in five places:

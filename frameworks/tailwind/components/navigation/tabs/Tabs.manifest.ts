@@ -4,7 +4,7 @@ export default {
   "slots": {
     "root": "flex gap-1 border-b-[length:var(--bw)] border-base-300",
     "tab": "relative px-4 py-2.5 bg-transparent border-none cursor-pointer font-body text-ctl transition-[color] duration-[var(--dur-fast)] ease-out focus-visible:shadow-[0_0_0_var(--focus-width)_var(--gold-soft)]",
-    "panel": "pt-[calc(var(--sp-1)*5.5)]"
+    "panel": "block pt-[calc(var(--sp-1)*5.5)]"
   },
   "variants": {
     "selected": {
@@ -12,7 +12,8 @@ export default {
         "tab": "font-semibold text-base-content shadow-[inset_0_calc(var(--bw-strong)*-1)_0_var(--crimson)]"
       },
       "false": {
-        "tab": "font-medium text-base-content/62 shadow-none"
+        "tab": "font-medium text-base-content/62 shadow-none",
+        "panel": "hidden"
       }
     }
   },

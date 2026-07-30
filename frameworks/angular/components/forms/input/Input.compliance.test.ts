@@ -9,6 +9,7 @@ useTestEnvironment();
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { assertNoNode } from '../../../test/NodeAssert';
 import { join } from 'node:path';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -84,7 +85,7 @@ test('an explicit id wins, and with neither id nor label the attribute is absent
   const bare = render({ label: undefined });
   try {
     assert.equal(bare.control.getAttribute('id'), null);
-    assert.equal(bare.host.querySelector('label'), null, 'no label was given and one was rendered anyway');
+    assertNoNode(bare.host.querySelector('label'), 'no label was given and one was rendered anyway');
   } finally {
     bare.fixture.destroy();
   }

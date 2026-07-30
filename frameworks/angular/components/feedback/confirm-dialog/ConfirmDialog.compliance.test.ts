@@ -10,6 +10,7 @@ useTestEnvironment();
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { assertNoNode, assertSameNode } from '../../../test/NodeAssert';
 import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -28,7 +29,7 @@ test('arena-confirm-dialog meets the alertdialog pattern it binds', () => {
   invoker.textContent = 'Delete project';
   document.body.appendChild(invoker);
   invoker.focus();
-  assert.equal(document.activeElement, invoker, 'sanity: the invoker must hold focus before the dialog opens');
+  assertSameNode(document.activeElement, invoker, 'sanity: the invoker must hold focus before the dialog opens');
 
   const fixture = TestBed.createComponent(ConfirmDialog);
   try {
@@ -44,17 +45,17 @@ test('arena-confirm-dialog meets the alertdialog pattern it binds', () => {
     assert.equal(focusables.length, 2, 'the fixture must offer cancel and confirm, and nothing else focusable');
     const [cancel, confirm] = focusables;
 
-    assert.equal(document.activeElement, cancel,
+    assertSameNode(document.activeElement, cancel,
       'focus.onOpen: opening did not move focus to the first focusable control inside the panel');
 
     confirm.focus();
     const forward = press(confirm, 'Tab');
     assert.equal(forward.defaultPrevented, true, 'focus.trap: Tab off the last control was not intercepted');
-    assert.equal(document.activeElement, cancel, 'focus.trap: Tab off the last control did not wrap to the first');
+    assertSameNode(document.activeElement, cancel, 'focus.trap: Tab off the last control did not wrap to the first');
 
     const backward = press(cancel, 'Tab', true);
     assert.equal(backward.defaultPrevented, true, 'focus.trap: Shift+Tab off the first control was not intercepted');
-    assert.equal(document.activeElement, confirm, 'focus.trap: Shift+Tab off the first control did not wrap to the last');
+    assertSameNode(document.activeElement, confirm, 'focus.trap: Shift+Tab off the first control did not wrap to the last');
 
     let cancelled = 0;
     fixture.componentInstance.cancel.subscribe(() => { cancelled += 1; });
@@ -76,8 +77,8 @@ test('arena-confirm-dialog meets the alertdialog pattern it binds', () => {
 
     fixture.componentRef.setInput('open', false);
     fixture.detectChanges();
-    assert.equal(host.querySelector('[role="alertdialog"]'), null, 'closing did not remove the panel');
-    assert.equal(document.activeElement, invoker, 'focus.onClose: closing did not restore focus to the invoker');
+    assertNoNode(host.querySelector('[role="alertdialog"]'), 'closing did not remove the panel');
+    assertSameNode(document.activeElement, invoker, 'focus.onClose: closing did not restore focus to the invoker');
   } finally {
     fixture.destroy();
     invoker.remove();

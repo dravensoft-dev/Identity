@@ -10,6 +10,7 @@ useTestEnvironment();
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { assertSameNode } from '../../../test/NodeAssert';
 import { join } from 'node:path';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -56,7 +57,7 @@ test('the group is the host itself, carrying the role and the name it is asked f
     assert.equal(radios.length, 3, 'sanity: the fixture must render three options');
     assert.equal(group.tagName, 'ARENA-RADIO-GROUP',
       'the role must be on the host, not on a wrapper inside it');
-    assert.equal(group, host.querySelector('arena-radio-group'));
+    assertSameNode(group, host.querySelector('arena-radio-group'));
     assert.equal(group.getAttribute('aria-label'), 'Deployment target',
       'the group names what is being chosen; each option names only itself');
     assert.match(group.getAttribute('class') ?? '', /flex-col/);

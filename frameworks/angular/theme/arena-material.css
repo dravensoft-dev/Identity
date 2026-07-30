@@ -36,13 +36,6 @@
   color: var(--mute);
 }
 
-/* Tabs — active label + indicator on the brand */
-.mat-mdc-tab-group {
-  --mat-tab-active-label-text-color: var(--color-primary);
-  --mat-tab-active-focus-label-text-color: var(--color-primary);
-  --mat-tab-active-indicator-color: var(--color-primary);
-}
-
 /* Snackbar / toast surface — medium radius */
 .mat-mdc-snack-bar-container {
   --mat-snack-bar-container-shape: var(--r-md);

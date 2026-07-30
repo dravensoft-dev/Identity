@@ -55,6 +55,7 @@
     "check:fonts": "bun scripts/check-fonts-generated.mjs",
     "check:angular": "bun scripts/check-angular.mjs",
     "check:angular-demos": "bun scripts/check-angular-demos.mjs",
+    "check:assertions": "bun scripts/check-assertions.mjs",
     "check:material": "bun scripts/check-material.mjs",
     "check:cdk": "bun scripts/check-cdk.mjs",
     "check:cards": "bun scripts/check-card-viewports.mjs",
