@@ -79,6 +79,8 @@ export const COVERED = {
   'Switch:angular': 'Switch.compliance.test.ts',
   'Input:angular': 'Input.compliance.test.ts',
   'Textarea:angular': 'Textarea.compliance.test.ts',
+  'RadioGroup:angular': 'RadioGroup.compliance.test.ts',
+  'Radio:angular': 'RadioGroup.compliance.test.ts',
 };
 
 export function suiteMentions(source, tail) {

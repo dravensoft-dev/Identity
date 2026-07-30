@@ -1,0 +1,50 @@
+Arena single-selection group — governs the value and distributes it to its `arena-radio`
+children. Standalone, `OnPush`, signal I/O. The host **is** the radiogroup: it carries the role,
+the accessible name and the column layout, so there is no wrapper inside it.
+
+```html
+<arena-radio-group ariaLabel="Deployment target" name="env" [value]="target()"
+                   (change)="target.set($event)">
+  <arena-radio value="production" label="Production" hint="Serves real traffic" />
+  <arena-radio value="staging" label="Staging" />
+  <arena-radio value="qa" label="QA" [disabled]="!canReachQa()" />
+</arena-radio-group>
+```
+
+**The children pull; the parent does not push.** React's `RadioGroup` clones each child and hands
+it `name`, `checked` and a callback. Angular has no `cloneElement`, so `arena-radio` injects a
+`RadioGroupState` the group provides and reads the shared name and the selected value from it,
+reporting a choice back through it. Nothing is injected into the option, which is why none of that
+coordination is a member of either contract and why an option outside a group is a DI error rather
+than a silently inert control.
+
+**Do / Don't**
+- **`ariaLabel` is required.** It names *what is being chosen* — "Deployment target", not
+  "Options". Each option's own label says what that option is, never what the set is for, so a
+  group without this is announced unlabelled.
+- `ariaLabel` is not `name`. `name` is the radios' shared form name and never reaches a screen
+  reader; it is generated per instance when omitted, which matters because **two groups sharing one
+  name rove as a single group**.
+- **The roving tab stop, the arrow keys and Space are the platform's, not Arena's.** The options
+  are native `<input type="radio">` sharing one `name`, and that is the entire mechanism: the
+  browser gives the group one tab stop, lands focus on the checked option, and moves selection with
+  the arrows. Arena authors **no `tabindex` anywhere** — doing so would fight it.
+- It works controlled or not. Pass `value` and it is yours; omit it and the group remembers the
+  last choice itself. `change` fires either way.
+- Wrapping an `arena-radio` in your own component or a `@for` block is fine — projection reaches
+  it however deep, because the child resolves the group through DI rather than by being a direct
+  child. That is the one place this family is *less* fragile than React's.
+- Don't put a lone `arena-radio` outside a group. A single radio is a checkbox with worse
+  semantics, and this one will throw for want of its provider.
+
+**By hand, in real Chromium** — the platform behaviour above is exactly what happy-dom cannot show,
+so this is the only place it is checked at all. Run `bun run demos` and open
+`/frameworks/angular/components/forms/radio-group/RadioGroup.card.html`:
+- Tab into the group **once**: focus lands on the checked option, and Tab again leaves the group
+  entirely rather than walking the other options.
+- Arrow Down/Right and Up/Left move the selection and wrap at both ends.
+- The disabled option is skipped while arrowing, and cannot be reached by Tab.
+- **Known gap, shared with `arena-checkbox` and with React**: the native input is
+  `opacity-0 size-0`, so keyboard focus paints no ring on the option's ring. Tab in and nothing
+  moves. Recorded in `DOUBTS.md`; the fix is a `has-[:focus-visible]:` treatment on the shared
+  manifest's `ring` slot, which moves React's parity with it.

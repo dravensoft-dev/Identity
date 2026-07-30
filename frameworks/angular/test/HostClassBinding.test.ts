@@ -757,6 +757,34 @@ function findManifestFile(componentsDir: string, filename: string): string | und
 
 const NO_MANIFEST = new Set(['bar-chart', 'line-chart', 'doughnut-chart']);
 
+const FAMILY_MANIFEST: Record<string, { manifest: string; slot: string }> = {
+  'radio-group': { manifest: 'Radio.manifest.json', slot: 'group' },
+};
+
+test('a compound member that shares its family\'s manifest host-binds a slot that carries a display utility', () => {
+  const entries = Object.entries(FAMILY_MANIFEST);
+  assert.ok(entries.length > 0, 'FAMILY_MANIFEST is empty -- the guard below would check nothing');
+
+  for (const [dir, { manifest: manifestName, slot }] of entries) {
+    const ownName = `${kebabToPascal(dir)}.manifest.json`;
+    assert.equal(
+      findManifestFile(TAILWIND_COMPONENTS, ownName), undefined,
+      `FAMILY_MANIFEST names "${dir}", but ${ownName} now exists -- it no longer shares its family's recipe, so the entry is stale`,
+    );
+
+    const familyPath = findManifestFile(TAILWIND_COMPONENTS, manifestName);
+    assert.ok(familyPath !== undefined, `${dir}: FAMILY_MANIFEST names ${manifestName}, which exists nowhere under ${TAILWIND_COMPONENTS}`);
+    const family = JSON.parse(readFileSync(familyPath as string, 'utf8')) as { slots?: Record<string, string> };
+    const classes = family.slots?.[slot];
+    assert.ok(typeof classes === 'string', `${dir}: ${manifestName} has no "slots.${slot}" string`);
+    assert.match(
+      classes as string,
+      DISPLAY_UTILITY,
+      `${dir}: the "${slot}" slot it host-binds carries no display utility -- the host would collapse to the UA-default inline box`,
+    );
+  }
+});
+
 test('every Angular primitive\'s root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
   const componentsDir = ANGULAR_COMPONENTS;
   const manifestsDir = TAILWIND_COMPONENTS;
@@ -781,7 +809,7 @@ test('every Angular primitive\'s root slot carries a display utility, so host-bi
   }
 
   for (const name of names) {
-    if (NO_MANIFEST.has(name)) continue;
+    if (NO_MANIFEST.has(name) || name in FAMILY_MANIFEST) continue;
     const manifestName = `${kebabToPascal(name)}.manifest.json`;
     const manifestPath = findManifestFile(manifestsDir, manifestName);
     assert.ok(manifestPath !== undefined, `${name}: no manifest named ${manifestName} found anywhere under ${manifestsDir}`);

@@ -3064,6 +3064,36 @@ because happy-dom has no layout and reports `scrollHeight` as `0`.
 porting back blind — React's content-box textarea does not have the second problem at all, so
 copying the `+ borderBoxSlack` term there would make its box two pixels too tall.
 
+#### A compound family coordinates in the opposite direction in each layer
+
+**React:** the parent clones each child and pushes `name`, `checked` and a callback into it
+(`RadioGroup` → `Radio`, `Table` → `TableRow` → `TableCell`, `SideNav` → its items). Injection is
+direct children only, one hop, which is why a consumer's own wrapper component or a `<>…</>`
+fragment between two levels silently breaks the chain.
+**Angular:** there is no `cloneElement`. The parent provides a small state object and the **child
+injects it and pulls** — `RadioGroupState` in `components/forms/radio-group/`. Nothing is pushed,
+so a wrapper component, a `@for`, or any depth of projection between the two is harmless, and an
+option outside a group is a DI error rather than a silently inert control.
+
+**Why the state object exists at all, rather than the child injecting the parent component.**
+`check:api` reads the Angular surface from the real `<Name>.ts` class and requires it to be exactly
+the contract's members — a public `select()` or a public `selected` signal on `RadioGroup` fails the
+gate, correctly, because a consumer could reach it. So the coordination cannot live on the
+component. It lives on a class the component `provides`, which no gate reads as a surface and no
+consumer can name. **That is the pattern for every remaining compound family**: `Tabs`/`Tab` in
+this batch, `Table`/`TableRow`/`TableCell` in batch 4, the `SideNav` family in batch 6.
+
+**Converges: no, and neither side is wrong.** Each is its framework's idiom. What both keep is the
+rule that the coordination is a member of no contract.
+
+**One consequence for the contracts themselves, and it is only half fixed.** Several `content`
+descriptions were written in React's mechanism — "RadioGroup injects each one's selected state" —
+which is the same defect as the word *prop* appearing in a contract. `RadioGroup` and `Tabs` are
+reworded to say what is true of both layers. **`SideNavItem`, `TableRow` and `TableCell` still say
+"injects", and `TableRow`'s and `TableCell`'s prose even names `cloneElement`**; they are left for
+the batches that implement them, because rewording a contract for a layer that does not exist yet
+is a guess about what that layer will do.
+
 ## 4. What the READMEs do not say
 
 The normative documents state rules. This section carries what those rules cost, what the

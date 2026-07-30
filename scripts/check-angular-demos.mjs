@@ -21,6 +21,7 @@ export const PAGED = new Set([
   'Switch',
   'Input',
   'Textarea',
+  'RadioGroup',
 ]);
 
 export function pageProblems(tree, read, paged = PAGED) {
