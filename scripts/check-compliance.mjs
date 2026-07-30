@@ -84,6 +84,7 @@ export const COVERED = {
   'SegmentedControl:angular': 'SegmentedControl.compliance.test.ts',
   'Tabs:angular': 'Tabs.compliance.test.ts',
   'Tab:angular': 'Tabs.compliance.test.ts',
+  'Pagination:angular': 'Pagination.compliance.test.ts',
 };
 
 export function suiteMentions(source, tail) {

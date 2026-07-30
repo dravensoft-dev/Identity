@@ -29,11 +29,6 @@
     "delegatedTo": "Angular Material MatMenu (matMenuTriggerFor, mat-menu-item)",
     "reason": "The matMenuTriggerFor directive sets aria-haspopup and aria-expanded on the actual focusable trigger element (not a wrapping node, which is exactly where React's own Menu binding records this as unmet), moves focus to the first item on open, and the CDK overlay under it implements Escape and arrow-key navigation inside the panel. arena-material.css has no rule for the menu panel or its items, so it renders in Material's own colours, not Arena's tokens, today."
   },
-  "Pagination": {
-    "pattern": "navigation",
-    "delegatedTo": "Angular Material MatPaginator",
-    "reason": "MatPaginator already renders a labelled control set for moving between pages of a data set. arena-material.css does not dress it -- no .mat-mdc-paginator rule exists in the bridge today -- so its colours are Material's own defaults, not Arena's tokens."
-  },
   "ProgressBar": {
     "cases": [
       {

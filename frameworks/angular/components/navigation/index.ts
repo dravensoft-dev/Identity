@@ -2,6 +2,7 @@ export * from './breadcrumbs';
 export * from './bulk-action-bar';
 export * from './command-palette';
 export * from './page-head';
+export * from './pagination';
 export * from './segmented-control';
 export * from './tab';
 export * from './tabs';
