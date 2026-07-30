@@ -3717,20 +3717,40 @@ keyboard to the CDK, so it is the only one that needs this.
 `@angular/cdk/overlay-prebuilt.css` hardcodes `z-index: 1000` in five places:
 `.cdk-overlay-container`, `.cdk-global-overlay-wrapper`, `.cdk-overlay-pane`,
 `.cdk-overlay-backdrop`, and the global wrapper's pane. Only the **container** is overridden, to
-`var(--z-dropdown)`.
+`calc(var(--z-toast) - 10)`.
 
-The container is the one that matters because it establishes the stacking context: at 1000 it sits
-exactly on `--z-modal` and above `--z-tooltip`, so a `z-tooltip` class on a pane inside it could
-never place that pane against Arena's in-flow overlays. The other four are **equal to each other on
-purpose** — inside the container the CDK layers by DOM order, which is what keeps a backdrop under
-its own pane. Lowering one relative to its siblings is how a backdrop ends up over the panel it
-dims.
+The container is the one that matters because it establishes the stacking context: a `z-*` utility
+on a pane inside it can never lift that pane past Arena's in-flow overlays. The other four are
+**equal to each other on purpose** — inside the container the CDK layers by DOM order, which is
+what keeps a backdrop under its own pane. Lowering one relative to its siblings is how a backdrop
+ends up over the panel it dims.
 
-Two consequences. Every CDK overlay shares one z slot, so a tooltip over a menu item wins by being
-appended later rather than by `--z-tooltip` being 950 — the outcome that token exists for, reached
-by a different mechanism, which means the token's own `$description` is now describing an intent
-rather than a computation. And while `Toast` is still in flow at `--z-toast` (1300), no
-CDK-positioned overlay can outrank it; that resolves itself when `arena-toast` becomes a primitive.
+**The container's own value was wrong for every in-flow overlay, and it was measured rather than
+reasoned.** The CDK's own 1000 **ties** with `--z-modal` and sits below `--z-modal-nested` (1050),
+`--z-palette` (1100) and `--z-onboarding` (1200); `var(--z-dropdown)` (900) was below all four. So
+a tooltip on a control inside an `arena-confirm-dialog` painted **behind the dialog**, and a menu
+opened from inside one would have too — against a modal by accident of mount order, against the
+three higher slots outright. That accident is precisely what the `z` family was built to remove,
+and its own `$description` says so about the pre-token state.
+
+The value it takes instead is `calc(var(--z-toast) - 10)`. A CDK overlay is always anchored to a
+trigger that already sits inside whatever is on top, so there is no case where it should paint
+below an in-flow overlay; and it must stay under `--z-toast`, which floats above everything. It is
+derived at the point of use rather than given a slot of its own, the way `--z-onboarding`'s scrim
+already is at `Onboarding.jsx:35` — one slot, two uses. A token would have bought nothing: the
+CDK layer is not a design decision about what covers what, it is one third-party container that
+must sit above the whole in-flow family.
+
+Two consequences remain. Every CDK overlay shares one z slot, so a tooltip over a menu item wins by
+being appended later rather than by `--z-tooltip` being 950 — the outcome that token exists for,
+reached by a different mechanism, which means the token's own `$description` is now describing an
+intent rather than a computation. And a toast outranks every CDK overlay, which is the order
+`--z-toast` declares rather than a cost: `arena-toast` is an in-flow card the host places, so it
+never enters this layer at all.
+
+**One page inlines this override instead of importing the bridge** — `Tooltip.card.html`, and every
+Angular card page for a CDK primitive after it — so the value lives in two kinds of place and a
+change to one is a change to both. Nothing checks that they agree.
 
 ### `frameworks/angular/test/Overlays.ts` — the container must survive the teardown
 
