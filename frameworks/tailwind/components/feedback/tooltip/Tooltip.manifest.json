@@ -1,7 +1,17 @@
 {
   "component": "Tooltip",
   "slots": {
-    "root": "relative inline-flex",
-    "bubble": "arena-fade absolute bottom-full left-1/2 -translate-x-1/2 -translate-y-2 z-tooltip whitespace-nowrap px-2.5 py-1.5 rounded-sm shadow-2 bg-base-content text-base-100 font-mono text-ctl-xs"
-  }
+    "root": "inline-flex",
+    "bubble": "arena-fade z-tooltip whitespace-nowrap px-2.5 py-1.5 rounded-sm shadow-2 bg-base-content text-base-100 font-mono text-ctl-xs"
+  },
+  "variants": {
+    "anchored": {
+      "false": {
+        "root": "relative",
+        "bubble": "absolute bottom-full left-1/2 -translate-x-1/2 -translate-y-2"
+      },
+      "true": {}
+    }
+  },
+  "defaultVariants": { "anchored": false }
 }

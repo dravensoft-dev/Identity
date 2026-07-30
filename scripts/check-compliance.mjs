@@ -70,8 +70,10 @@ export const COVERED = {
   'Breadcrumbs:angular': 'Breadcrumbs.compliance.test.ts',
   'BulkActionBar:angular': 'BulkActionBar.toolbar.test.ts',
   'CommandPalette:angular': 'CommandPalette.combobox.test.ts',
+  'Button:angular': 'Button.compliance.test.ts',
   'ConfirmDialog:angular': 'ConfirmDialog.compliance.test.ts',
   'Tag:angular': 'Tag.cases.test.ts',
+  'Tooltip:angular': 'Tooltip.compliance.test.ts',
 };
 
 export function suiteMentions(source, tail) {

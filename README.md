@@ -68,8 +68,8 @@ Components render with **inline `style` objects that read the CSS custom propert
   specification**: voice, type, color, spacing, motion, the danger convention, iconography
   and theming, plus the DTCG token type map.
 - [`frameworks/react/README.md`](./frameworks/react/README.md) — the React layer.
-- [`frameworks/angular/README.md`](./frameworks/angular/README.md) — the Angular layer;
-  [`ADOPTION.md`](./frameworks/angular/ADOPTION.md) is the step-by-step playbook.
+- [`frameworks/angular/README.md`](./frameworks/angular/README.md) — the Angular layer,
+  including how to adopt it and what is still bridged to Material.
 - [`frameworks/tailwind/README.md`](./frameworks/tailwind/README.md) — the shared
   Tailwind layer.
 - [`DOUBTS.md`](./DOUBTS.md) — everything Arena knows is wrong, incomplete, or unverified.

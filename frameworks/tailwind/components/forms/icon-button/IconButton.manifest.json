@@ -19,5 +19,5 @@
       "false": { "root": "p-0 gap-0" }
     }
   },
-  "defaultVariants": { "variant": "ghost", "size": "md", "showLabel": "false" }
+  "defaultVariants": { "variant": "ghost", "size": "md", "showLabel": false }
 }

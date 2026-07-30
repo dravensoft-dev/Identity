@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "devDependencies": {
+    "@angular/cdk": "22.0.5",
     "@angular/common": "22.0.7",
     "@angular/compiler": "22.0.7",
     "@angular/compiler-cli": "22.0.7",
@@ -53,6 +54,7 @@
     "check:fonts": "bun scripts/check-fonts-generated.mjs",
     "check:angular": "bun scripts/check-angular.mjs",
     "check:material": "bun scripts/check-material.mjs",
+    "check:cdk": "bun scripts/check-cdk.mjs",
     "check:cards": "bun scripts/check-card-viewports.mjs",
     "check": "bun scripts/check-all.mjs",
     "test:scripts": "bun test scripts",

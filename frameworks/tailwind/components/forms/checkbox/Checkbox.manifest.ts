@@ -27,7 +27,7 @@ export default {
     }
   },
   "defaultVariants": {
-    "checked": "false",
-    "disabled": "false"
+    "checked": false,
+    "disabled": false
   }
 } as const;

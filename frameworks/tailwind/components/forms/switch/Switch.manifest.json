@@ -48,7 +48,7 @@
     }
   },
   "defaultVariants": {
-    "size": "md", "orientation": "horizontal", "checked": "false", "disabled": "false",
+    "size": "md", "orientation": "horizontal", "checked": false, "disabled": false,
     "footprint": "horizontal-md", "thumb": "off-horizontal"
   }
 }

@@ -505,8 +505,8 @@ The Angular layer's quartet is the analogue, in
 `<Component>.prompt.md`, and an `index.ts` barrel — plus `<Component>.behaviour.json` and the
 component's own suites, `<Component>.<facet>.test.ts`, in the same directory. Dark-first
 (`.arena-light`), danger stays outline, Phosphor icons. The three SVG charts are the one
-exception and have no `<Component>.variants.ts`. Angular has **five** of the six categories the
-layout rule allows: there is no `forms/`, because every form control is delegated to Material.
+exception and have no `<Component>.variants.ts`. Angular has **all six** of the categories the
+layout rule allows; `forms/` is the newest, and fills as Plan D moves the delegated controls in.
 
 **A host-bound root is the Angular layer's default, and it has one carve-out.** A primitive
 binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than rendering
@@ -665,7 +665,7 @@ hard failure instead.
 file name begins with a capital, and a multi-word stem is `PascalCase` with hyphens removed; a
 secondary dotted segment stays `lowerCamelCase`** — `Badge.manifest.json`, `StatCard.variants.ts`.
 Capital-initial is the rule and PascalCase is how a multi-word stem is *formed* under it, which is
-why a conventional all-caps document name needs no dispensation: `README.md` and `ADOPTION.md`
+why a conventional all-caps document name needs no dispensation: `README.md` and `CHANGELOG.md`
 comply as they stand.
 
 A layer lays its components out as `frameworks/<layer>/components/<category>/<component-kebab>/`,
@@ -688,12 +688,12 @@ list** — `find frameworks -type f -printf '%f\n' | grep -E '^[^A-Z]' | sort -u
    toolchains recognise by convention. This is the softest of them, since `ngc -p <path>` is
    explicit and the rename would compile; the exception is for the reader.
 4. `.gitkeep` (`frameworks/angular/.gitkeep`), which has no stem to capitalise.
-5. **The four adopter-facing files under `frameworks/angular/theme/`** — `arena-tailwind.css`,
-   `arena-material.css`, `no-fouc.html` and `arena-material.prompt.md` — which do not share one
-   reason. **The first two are named inside an *adopter's own* source, verbatim**: `ADOPTION.md`
-   gives them as `@import` lines pasted into the host app's `styles.css`, so renaming either is a
-   breaking change to every app that has adopted Arena. **`no-fouc.html` is not a third instance
-   of that reason**: the adopter pastes the `<script>` tag's *contents* into their own
+5. **The five adopter-facing files under `frameworks/angular/theme/`** — `arena-tailwind.css`,
+   `arena-material.css`, `arena-cdk.css`, `no-fouc.html` and `arena-material.prompt.md` — which do
+   not share one reason. **The first three are named inside an *adopter's own* source, verbatim**:
+   each is an `@import` line in the host app's own `styles.css`, so renaming one is a breaking
+   change to every app that has adopted Arena — a fact about deployed apps, not about any document
+   here. **`no-fouc.html` is not a fourth instance of that reason**: the adopter pastes the `<script>` tag's *contents* into their own
    `index.html` and never references the file by name, so renaming it breaks a documentation line
    rather than any adopting app. `arena-material.prompt.md` is cited nowhere and takes the stem of
    the file it documents. **Not exempt:** `theme/ThemeService.ts` and `icons/IconManifest.ts` are

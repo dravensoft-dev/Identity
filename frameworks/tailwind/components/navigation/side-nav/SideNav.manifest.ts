@@ -23,6 +23,6 @@ export default {
     }
   },
   "defaultVariants": {
-    "active": "false"
+    "active": false
   }
 } as const;

@@ -35,6 +35,7 @@ export const GATES = [
   { name: 'check:cards', file: 'check-card-viewports.mjs' },
   { name: 'check:angular', file: 'check-angular.mjs' },
   { name: 'check:material', file: 'check-material.mjs' },
+  { name: 'check:cdk', file: 'check-cdk.mjs' },
 ];
 
 export function testStep({ isBun, testFiles }) {

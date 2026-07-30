@@ -35,7 +35,9 @@ Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
 - `theme/ThemeService.ts` + `theme/no-fouc.html` — dark-first signal theme
   service (light = `.arena-light`) and the pre-paint snippet.
 
-**Primitives — token-styled components Material does not provide.** Each lives in
+**Primitives — Arena's own token-styled components.** Most cover ground Material never did;
+two, `button` and `tooltip`, deliberately replace something Material does provide, because a
+delegated control sits outside three of Arena's gates. Each lives in
 `components/<category>/<component-kebab>/` and is a
 quartet: `<Component>.ts` (standalone, `OnPush`, signal I/O, `arena-` selector),
 `<Component>.variants.ts` (a `tailwind-variants` recipe built with the shared `tv`),
@@ -47,14 +49,15 @@ reference shape. The three SVG charts are the one exception and have no
 `CLAUDE.md` states: directories kebab-case, file names capital-initial. Each component's
 own tests sit in that same directory as `<Component>.<facet>.test.ts`.
 
-The layer ships **20 primitives**, in five categories — `brand`, `charts`, `display`,
-`feedback`, `navigation`; there is no `forms`, because every form control is delegated to
-Material. Count them with
+The layer ships **22 primitives**, across all six categories the layout rule allows —
+`brand`, `charts`, `display`, `feedback`, `forms`, `navigation`. `forms` is the newest and
+holds one so far, `button`; it exists because Plan D has begun moving the delegated
+controls into this layer, and it will fill as the batches land. Count them with
 `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l` rather than
 trusting this list: `activity-feed`, `alert`, `app-logo`, `avatar`,
-`bar-chart`, `breadcrumbs`, `bulk-action-bar`, `chart-card`, `command-palette`,
+`bar-chart`, `breadcrumbs`, `bulk-action-bar`, `button`, `chart-card`, `command-palette`,
 `confirm-dialog`, `doughnut-chart`, `empty-state`, `error-state`, `line-chart`,
-`onboarding`, `page-head`, `skeleton`, `stat-card`, `tag`, `unauth-card`.
+`onboarding`, `page-head`, `skeleton`, `stat-card`, `tag`, `tooltip`, `unauth-card`.
 
 **`SideNav` is not among them, and that is the rule working.** Material's `mat-nav-list`
 covers the item list, so Arena dresses it in `arena-material.css` (`.arena-side-nav`)
@@ -83,10 +86,12 @@ directly. `DataVisuals.ts` (the chart maths and the identity-or-meaning colour c
 sits at the layer root beside them, and it is the one that is there by decision rather
 than by the rule: in this layer its consumers really are the three charts alone, so
 `components/charts/` would satisfy the rule. That narrow consumer set is an artifact of
-Angular's `Calendar` being delegated to Material — React's `Calendar` imports `catColor`
-from the same module, so React's copy belongs at the layer root by the rule, and leaving
-the two layers spelling one module at two different paths would make the eventual Plan D
-move a second migration instead of an import. The name matches the placement: a module a
+Angular having no `Calendar` at all — React's `Calendar` imports `catColor` from the same
+module, so React's copy belongs at the layer root by the rule, and leaving the two layers
+spelling one module at two different paths would make the eventual move a second
+migration instead of an import. Angular's `Calendar` is `absent` rather than delegated, so
+this is a gap that Plan D deliberately does not close; when a schedule view is built, this
+module is already where it needs to be. The name matches the placement: a module a
 schedule grid consumes is not "chart internals".
 
 A primitive defines no styling of its own. Its recipe lives in
@@ -115,47 +120,63 @@ component `styles` (recipe owns styling), no comments beyond one JSDoc line,
 barrels with no `../` imports inside the layer. Dark-first (`.arena-light` for
 light). Danger is outline. Icons are Phosphor (Bold default). No gradients, no emoji.
 
-## What Material provides, and what Arena does
+## What Material provides, what Arena implements, and where that is going
 
 Parity here is parity of **outcome**, not of inventory: an Angular consumer can build
-every interface an Arena React consumer can. Roughly half of it they build with
-Material wearing Arena (`theme/arena-material.css`), the rest with Arena's own
-primitives.
+every interface an Arena React consumer can. Some of it they still build with Material
+wearing Arena (`theme/arena-material.css`), the rest with Arena's own primitives — and
+the balance is **moving**, one batch at a time, toward the primitives.
 
-**Material provides these 22; Arena implements none of them itself, and dresses only a
-subset:** Button and IconButton (`mat-button`, `mat-icon-button`), Input and Textarea
-(`mat-form-field` + `matInput`), Select (`mat-select`), Checkbox and Radio
-(`mat-checkbox`, `mat-radio-group`), Switch (`mat-slide-toggle`), SegmentedControl
-(`mat-button-toggle-group`), Card (`mat-card`), Badge (`matBadge`), Table
-(`mat-table`), Tabs (`mat-tab-group`), Dialog (`MatDialog`), Menu (`mat-menu`),
-Tooltip (`matTooltip`), Toast (`MatSnackBar`), Pagination (`mat-paginator`),
-ProgressBar (`mat-progress-bar`), Spinner (`mat-progress-spinner`), Calendar
-(`mat-datepicker`) and SideNav (`mat-nav-list` + `<a mat-list-item [activated]>`, scoped
-by `.arena-side-nav`). `arena-material.css` dresses Button (filled and outlined
-variants only; a plain text button gets nothing outside `.arena-danger`), Input and
-Textarea (outlined appearance only — a form field left on Material's default fill
-appearance keeps Material's own styling), Card, Table, Tabs, Dialog, Toast, ProgressBar, Spinner and SideNav;
-IconButton, Select, Checkbox, Radio, Switch, SegmentedControl, Badge, Menu, Tooltip,
-Pagination and Calendar still render with Material's own defaults.
+**What is still delegated is the key set of `BehaviourDelegated.json`, and that file is
+the only trustworthy statement of it** — `check:behaviour` fails the moment it disagrees
+with what this layer implements, where a list written here would rot in silence. Read it
+there, and count it with `python3 -c "import json;print(len(json.load(open('frameworks/angular/BehaviourDelegated.json'))))"`.
+Two of its entries are `absent` rather than delegated: `Calendar` and `CalendarEvent`.
+Material's datepicker is a month/date-selection grid, not Arena's day/hour schedule view
+with event blocks, so there is no control for those two to delegate to.
 
-Reimplementing them as `arena-*` would duplicate years of hardened keyboard
-accessibility, overlay positioning, i18n and focus management — badly — and would
-strip `arena-material.css` of most of its reason to exist.
+`arena-material.css` dresses only a subset of the delegated set: the Button family
+(filled and outlined variants; a plain text button gets nothing outside `.arena-danger`),
+Input and Textarea (outlined appearance only — a form field left on Material's default
+fill appearance keeps Material's own styling), Card, Table, Tabs, Dialog, Toast,
+ProgressBar, Spinner and SideNav. The rest still render with Material's own defaults. A
+`dressedBy` key on a delegated entry is the per-component record, and **nothing checks
+it** — `check:material` reads the CSS and never that file.
+
+**The direction is Arena's own primitives, built on the CDK.** `Button` and `Tooltip` are
+the first two, and they set the shape the rest follow: Arena writes the markup, the ARIA
+and the styling, and `@angular/cdk` supplies only what Arena should not hand-roll —
+overlay positioning for a surface anchored to a trigger, and the roving-focus key
+managers. Focus trapping stays Arena's own `FocusTrap.ts`, a deliberate port of React's
+`UseDialogModal.js`, so the two layers keep solving that contract with the same code.
+
+Delegation is not free, and the three prices are why this is moving. A delegated
+component sits outside `check:dimensions` and `check:tailwind`, because Material's
+compiled CSS is invisible to both; outside `check:compliance`, because there is no Arena
+render to verify; and outside the Angular arm of `check:api`, which skips a contract no
+layer implements there. A primitive is inside all three the day it is written. The
+argument in full is Plan D, in
+`docs/superpowers/specs/2026-07-23-8-api-contracts-design.md`.
 
 ### Material bridge: supported and verified
 
 **The primitives stand alone.** No file under `frameworks/angular/components/` imports
 `@angular/material` — verify with `grep -rn '@angular/material'
-frameworks/angular/components/`, which returns nothing, so a consumer can use all twenty
-with no Material installed at all. When
+frameworks/angular/components/`, which returns nothing, so a consumer can use every
+primitive with no Material installed at all. When
 the Angular layer is published (plan 6), `@angular/material` will be an **optional** peer
 dependency; nothing here requires it today.
 
-**Material is the recommended bridge for the rest.** Arena does not reimplement the
-components Material already provides — they carry overlay positioning, focus
-management, keyboard navigation and i18n, and duplicating that badly would be worse
-than bridging it. `arena-material.css` is that bridge for the ones it actually carries
-rules for: buttons (filled, outlined, and the outline-only danger variant), the
+**`@angular/cdk` is different, and is a declared dependency rather than an optional
+one.** A primitive that positions an overlay imports it, so it is pinned in the root
+`package.json` at the same exact version Material's own peer range names, and the app
+must import `theme/arena-cdk.css` once — see that file for why the container's z-index
+is overridden and why the four other hardcoded ones are left alone. `check:cdk` verifies
+the bridge the way `check:material` verifies the other, and additionally checks the
+selectors, which it can because the prebuilt sheet is the oracle.
+
+**Material remains the bridge for what is still delegated**, and `arena-material.css`
+carries rules for these: buttons (filled, outlined, and the outline-only danger variant), the
 outlined form field, cards, dialogs, tables (plus the header cell), tabs, the
 snackbar, the progress spinner and bar, and SideNav's nav list. It maps Arena tokens
 onto Angular Material's `--mat-*` custom properties so those render in Arena instead
@@ -212,4 +233,10 @@ the input (`[title]="…"`) rather than setting it as an attribute.
 
 ## Adopting it
 
-See [`ADOPTION.md`](./ADOPTION.md) for the step-by-step DAMA playbook.
+Adopt it in the order the layer is built. Import `theme/arena-tailwind.css` once from the
+app's global stylesheet for the tokens and the `@theme` preset; add `theme/arena-cdk.css`
+when you first use a primitive that positions an overlay; add `theme/arena-material.css`
+**after** Material's own theme for as long as the app still renders Material controls.
+Wire `ThemeService` and paste `theme/no-fouc.html`'s script contents into `index.html`.
+Then replace controls with `arena-*` primitives as you touch the files that use them —
+incrementally, never as a sweep.

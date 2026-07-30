@@ -17,5 +17,5 @@
       "false": { "root": "shadow-none" }
     }
   },
-  "defaultVariants": { "accent": "false", "floating": "false" }
+  "defaultVariants": { "accent": false, "floating": false }
 }

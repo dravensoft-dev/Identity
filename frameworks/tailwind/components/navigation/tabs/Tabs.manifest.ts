@@ -17,6 +17,6 @@ export default {
     }
   },
   "defaultVariants": {
-    "selected": "false"
+    "selected": false
   }
 } as const;

@@ -43,7 +43,7 @@ export default {
   },
   "defaultVariants": {
     "state": "neutral",
-    "disabled": "false",
-    "readonly": "false"
+    "disabled": false,
+    "readonly": false
   }
 } as const;

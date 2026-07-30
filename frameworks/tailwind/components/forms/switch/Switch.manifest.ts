@@ -106,8 +106,8 @@ export default {
   "defaultVariants": {
     "size": "md",
     "orientation": "horizontal",
-    "checked": "false",
-    "disabled": "false",
+    "checked": false,
+    "disabled": false,
     "footprint": "horizontal-md",
     "thumb": "off-horizontal"
   }

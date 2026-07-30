@@ -131,24 +131,28 @@ stale-proof; a present-tense component name is not.
 - **`delay` and `dismiss` govern React only, and Angular is not silently exempt
   — it just has no token-shaped seam yet.** Plan 7a's own Global Constraints
   first misstated this as the same "Angular has no primitive" asymmetry that
-  is correct for `debounce`-style speculation, when it is not: Angular has no
-  `Tooltip`, `Toast` or `Pagination` **primitive**, but it provides all three
+  is correct for `debounce`-style speculation, when it is not: Angular had no
+  `Tooltip`, `Toast` or `Pagination` **primitive**, but it provided all three
   through Angular Material, dressed by `arena-material.css` — the same
   "Material provides the control" bucket most Tailwind manifests
   belong to (`Tooltip.manifest.json`, `Toast.manifest.json` and
   `Pagination.manifest.json` all exist). `check:script-tokens` cannot see
   this — its orphan rule is "imported by at least one layer," and it is
   satisfied by React alone by construction, the same structural blind spot the
-  first bullet in this section describes for chart internals. So today:
-  React's `Tooltip` waits `--delay-open`/`--delay-close` before a pointer
-  reveals or withdraws it; Angular's `matTooltip` does not — `showDelay` and
-  `hideDelay` default to 0, so the exact flash-on-crossing defect plan 7a
-  fixed on the React side is still live on the Angular side. Likewise React's
-  Delivery Console runs the toast clock off `--dismiss-default` /
-  `--dismiss-actionable`; Angular has no consumer wiring `MatSnackBarConfig`'s
-  `duration` to either value at all. The seams a future pass would bind these
-  through are `MAT_TOOLTIP_DEFAULT_OPTIONS` (`showDelay`, `hideDelay`) and
-  `MatSnackBarConfig.duration` — neither is wired today.
+  first bullet in this section describes for chart internals.
+  **`delay` is paid, and the way it was paid is the point: the primitive, not the seam.**
+  `arena-tooltip` imports `delayOpen` and `delayClose` from `Tokens.generated` and waits both,
+  revealing immediately on keyboard focus as the token's own `$description` demands. So the
+  flash-on-crossing defect is now fixed in both layers, and `MAT_TOOLTIP_DEFAULT_OPTIONS` — the
+  seam this entry proposed — was never wired and never will be: writing the control was the
+  cheaper fix, because it also brought the component inside `check:dimensions`,
+  `check:compliance` and the Angular arm of `check:api`, which no amount of default-options
+  wiring could have done.
+  **`dismiss` is still unpaid.** React's Delivery Console runs the toast clock off
+  `--dismiss-default` / `--dismiss-actionable`; Angular has no consumer wiring
+  `MatSnackBarConfig.duration` to either value at all, and it will stay that way until
+  `arena-toast` exists — at which point the host owns the clock, as `Toast`'s contract already
+  says, and the seam is a consumer's `setTimeout` rather than a Material config token.
 - **Both grid components now navigate by keyboard, and neither claim has a suite behind
   it.** `Table` and `Calendar` each bound `grid` with an exception on **all eight**
   requirements — zero `role=`, zero `tabIndex`, zero key handling, in components that
@@ -298,9 +302,15 @@ stale-proof; a present-tense component name is not.
   where the gate looked when it silently checked nothing (the false-green entry at the head of
   this section is the same defect from the gate's side), so a reader could have rebuilt the
   defect straight from the spec. That line now names the walk and says why the probe is refused.
-  Everything else in that file stays as it was: separating the historical uses from the normative
-  ones is a reading of that spec's argument, not a find-and-replace, and it belongs to whoever
-  plans Plan D. Read this paragraph before reading that spec.
+  **The rest is done, and the reading that resolved it is recorded in the spec's own Plan D
+  section:** a path is *normative* when it tells a reader where something IS, and the fifteen of
+  those are corrected; a path inside a `>` block or inside one of the per-batch test-count records
+  near the end of the file is *history* and is correct as written, because rewriting it would make
+  the record lie. That distinction is the reading, and it is why this was never a find-and-replace.
+  **What stays open is the class of defect rather than this instance:** nothing checks a path in a
+  dated process document, so the next structural move re-creates the problem in whatever specs are
+  unexecuted then. The React pre-move paths listed below are in the historical set under that
+  reading and are deliberately left.
   **The structure refactor's batch 3 made it worse without touching it: React's pre-move paths
   joined the list.** That spec names `frameworks/react/test-dom/`,
   `frameworks/react/use-dialog-modal.js`, `frameworks/react/api.generated.d.ts` and
@@ -1638,6 +1648,43 @@ stale-proof; a present-tense component name is not.
   pass found to be wrong in several rows for the same UA-stylesheet reason.
 
 
+- **Twelve Tailwind manifests carried a type error nothing could see, and the reason is
+  structural rather than careless.** Every manifest with a boolean variant axis
+  (`true`/`false` keys) spelled its `defaultVariants` value as the **string** `"false"`, which
+  `tv()` rejects: the keys make the axis boolean, so the default must be boolean too. All twelve
+  were manifests whose mirrored component Angular **delegated**, so no `tv(manifest)` call ever
+  typechecked one — `check:tailwind` only asks whether each class resolves, and `classesFor()` in
+  the specimen coerces the key either way, so the specimens rendered correctly the whole time. The
+  twelve are fixed. **The lesson is the blind spot, not the typo:** a manifest for a delegated
+  component is untyped by construction, so the first compile of each remaining Plan D batch is
+  where that class of bug surfaces. Expect it; it is one line per manifest and changes no output.
+  Nothing gates it, because the gate is `ngc` and `ngc` cannot see a file no component imports.
+- **`CLAUDE.md` is 39 characters from its 60,000 limit, and every remaining Plan D batch must
+  touch it.** Each batch moves the Angular primitive count, the category sentence, or both.
+  There is no headroom left for an addition, so the next batch that needs one must first move
+  something out — the likeliest candidates are the Angular-layer paragraphs that
+  `frameworks/angular/README.md` already states in more detail, since `CLAUDE.md`'s job is the
+  cross-layer rule and not the layer's own tour. `check:docs` fails hard rather than warning, so
+  this surfaces as a red gate at the end of a batch rather than as a decision made calmly.
+
+- **Two Angular components now carry a by-hand checklist that nothing in this repo can run.**
+  `Button.prompt.md` and `Tooltip.prompt.md` each end with a "By hand, in real Chromium" block —
+  the reduced-motion spinner, the overlay flipping below a trigger, escaping an `overflow: hidden`
+  ancestor, the pointer-versus-focus delay asymmetry, the z-layering. Those are the right things to
+  name: happy-dom implements none of them, so they are genuinely the unverified part. But they are
+  the **only** two of the layer's 22 prompts that carry such a block, and unlike React's — which a
+  reader runs with `bun run demos` against a `*.card.html` page — **the Angular layer has no demo
+  page and no application at all**. `frameworks/tailwind/`'s specimen proves the *recipe*, never the
+  component. So the checklist names work no one in this repository can do; it is actionable only
+  inside an adopting app.
+  **Three resolutions exist and none is taken.** An Angular demo harness under
+  `frameworks/angular/` would be the real fix and is a batch of its own. A browser-driven gate would
+  cover the geometry but not the motion. Deleting the blocks would make the layer look more verified
+  than it is, which is the one option that is clearly wrong. Kept as written, because a named
+  unverified thing is worth more than a silent one — but a reader must not read the block as a step
+  that was performed. **Nothing about the CDK overlay's real positioning has been confirmed in a
+  browser**, only that it attaches, is anchored to the host, and carries the `--sp-2` offset.
+
 ## 2. Where the rest of the debt lives
 
 Each of these is a record with its own stale-entry rule: an entry that no longer
@@ -2011,17 +2058,29 @@ the no-host-bind decision, not from anything the contract could restate.
 **Converges:** no. This is the correct shape for a primitive whose root must be a real list
 element, per the carve-out rule stated above.
 
-#### The Angular layer has no Button primitive
+#### Both layers have a Button, and Angular's is the newer one
 
 **React:** `Button.jsx` is a component, and `ConfirmDialog.jsx` renders `<Button>` for its footer.
-**Angular:** there is no `arena-button`. Angular Material's `mat-button` fills that role, so a
-component needing footer buttons styles them itself from its own manifest.
+**Angular:** `arena-button` is a primitive, in `components/forms/button/`. It renders a real
+`<button>` inside a bare host — the carve-out above — and reads the same
+`Button.manifest.json` React's Tailwind mirror does.
 
-**Why:** the Angular layer is deliberately the set of primitives Material does not provide.
+**Converges:** yes, and this entry stays because two things it recorded are still live.
 
-**Consequence to know:** a hand-rolled button must still carry the interaction affordances
-`Button.manifest.json` defines — the gap, the transition, and the hover shadow — or it ships a
-control with no feedback. This was missed once on `ConfirmDialog` and corrected.
+**The first is that a component predating `arena-button` may still hand-roll its footer**, and a
+hand-rolled button must carry the interaction affordances `Button.manifest.json` defines — the gap,
+the transition, the hover shadow — or it ships a control with no feedback. That was missed once on
+`ConfirmDialog` and corrected. Nothing makes those components adopt `arena-button` now, and no gate
+would notice: `check:states` resolves a manifest to its *mirrored* source, never to every consumer.
+
+**The second is a real divergence the port introduced, and Angular is the correct side.** The API
+contract names the event `click`, and an Angular output named after a native DOM event gets **both**
+an output subscription and a host DOM listener, so a consumer's `(click)` fires twice on every
+press. `arena-button` calls `stopPropagation()` on the inner button to make it fire once — measured,
+not assumed, in `Button.compliance.test.ts`. The cost is that a click never reaches an ancestor, so
+click delegation past an `arena-button` does not work, where React's `onClick` leaves bubbling
+intact. Recorded in `Button.prompt.md`. **Every future primitive whose contract names an event after
+a native one inherits this** — `TableRow.click` is the next.
 
 **`ErrorState` was a divergence here and no longer is.** Under the API contract
 (`contracts/api/components/ErrorState.json`) both layers draw the retry the same way: React's
@@ -2833,6 +2892,32 @@ duplication the bridge exists to avoid. The section and disclosure shapes are op
 Plan D's level rather than this entry's. Recorded so that a reader comparing the three does not
 mistake the Material gap for drift.
 
+#### Angular's Tooltip is positioned by an overlay and React's is in flow
+
+**React:** `Tooltip.jsx` renders the bubble as an absolutely-positioned child of the wrapper span,
+so it is laid out against a `position: relative` ancestor.
+**Angular:** `arena-tooltip` renders it through a `TemplatePortal` into a `@angular/cdk/overlay`
+pane on `document.body`, positioned by `createFlexibleConnectedPositionStrategy` with a
+`reposition()` scroll strategy.
+
+**Why:** the CDK is the reason the Angular layer took a dependency at all — Arena should not
+hand-roll trigger-anchored positioning, viewport flipping and reposition-on-scroll. Focus and roles
+stay Arena's, which is why `FocusTrap.ts` is untouched.
+
+**Converges: no, and Angular is the better side.** React's bubble is clipped by any
+`overflow: hidden` ancestor and cannot leave a scroll container; Angular's escapes both. Fixing
+React means either a portal or a popover, and neither is scoped here. Recorded so that a reader
+comparing the two does not read the divergence as Angular drifting.
+
+**Two consequences worth carrying.** The shared `Tooltip.manifest.json` grew an `anchored` variant
+axis so one recipe serves both models: the wrapper-relative utilities live under
+`anchored: false` — which `classesFor()` applies by default, so the Tailwind specimen and React's
+mirror are untouched — and Angular asks for `anchored: true` and gets appearance only. Any future
+anchored primitive (`Menu`, `Select`) reuses that axis rather than inventing a second convention.
+And the compliance suite is the first in the layer to pass `root: document.body`, because
+`roles.describedby` resolves an IDREF and no element inside the fixture contains both the trigger
+and the bubble.
+
 ### How to add an entry
 
 When you find a behavioural difference between layers:
@@ -3167,6 +3252,54 @@ throws the second time it runs across files that share a process.
 `BrowserDomAdapter.makeCurrent()` installs a process-wide DOM adapter on the FIRST platform
 creation that nothing resets — a second per-file document would render into a document the adapter
 no longer points at, and `getComputedStyle` reading the wrong document was the observed failure.
+
+### `frameworks/angular/theme/arena-cdk.css` — one selector, and why the other four are left alone
+
+`@angular/cdk/overlay-prebuilt.css` hardcodes `z-index: 1000` in five places:
+`.cdk-overlay-container`, `.cdk-global-overlay-wrapper`, `.cdk-overlay-pane`,
+`.cdk-overlay-backdrop`, and the global wrapper's pane. Only the **container** is overridden, to
+`var(--z-dropdown)`.
+
+The container is the one that matters because it establishes the stacking context: at 1000 it sits
+exactly on `--z-modal` and above `--z-tooltip`, so a `z-tooltip` class on a pane inside it could
+never place that pane against Arena's in-flow overlays. The other four are **equal to each other on
+purpose** — inside the container the CDK layers by DOM order, which is what keeps a backdrop under
+its own pane. Lowering one relative to its siblings is how a backdrop ends up over the panel it
+dims.
+
+Two consequences. Every CDK overlay shares one z slot, so a tooltip over a menu item wins by being
+appended later rather than by `--z-tooltip` being 950 — the outcome that token exists for, reached
+by a different mechanism, which means the token's own `$description` is now describing an intent
+rather than a computation. And while `Toast` is still in flow at `--z-toast` (1300), no
+CDK-positioned overlay can outrank it; that resolves itself when `arena-toast` becomes a primitive.
+
+### `frameworks/angular/test/Overlays.ts` — the container must survive the teardown
+
+The first version of `disposeOverlays()` removed `.cdk-overlay-container`, and it broke every
+overlay test after the first two in a file — silently, with nothing to query. The CDK creates that
+container once and **caches the reference**, so removing the element leaves every later overlay
+attaching into a node that is no longer in the document. Measured, not reasoned.
+
+So the helper removes the panes and leaves the container. An empty container is already invisible
+(`overlay-prebuilt.css` carries `.cdk-overlay-container:empty { display: none }`), so leaving it
+costs nothing. This matters here specifically because `TestbedEnv.ts` shares one document across
+the whole `bun test build/angular-test/angular` run, so the hazard crosses files.
+
+### `scripts/check-cdk.mjs` — why it checks selectors where `check-material.mjs` cannot
+
+`check-material.mjs` deliberately never examines the selectors its properties sit in, and that is
+one of its two disclosed blind spots. `check-cdk.mjs` does check them, and the difference is that
+it **has an oracle**: the CDK bridge's whole job is overriding a class the prebuilt stylesheet
+defines, and that stylesheet is installed and readable, so `.cdk-overlay-kontainer` is decidably
+wrong. Material's bridge has no equivalent — a `--mat-*` property name can be verified against the
+package, but which selector *should* carry it is a judgement no file states.
+
+What this gate still cannot check is whether the override's **value** is right for that class. It
+also carries four zero-result guards, because a bridge that stops being a bridge — no rule, no
+`cdk-*` class, no `var()`, no `@import` — would otherwise pass by having nothing left to check.
+Its own suite exercises all four, and it caught a real defect while being written:
+`cdkClasses()` did not strip comments, so a class named in prose would have been checked as
+though it were an override.
 
 ### `scripts/check-card-viewports.mjs` — why the content height takes a max of two metrics
 

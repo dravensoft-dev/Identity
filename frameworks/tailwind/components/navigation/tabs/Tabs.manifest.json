@@ -11,5 +11,5 @@
       "false": { "tab": "font-medium text-base-content/62 shadow-none" }
     }
   },
-  "defaultVariants": { "selected": "false" }
+  "defaultVariants": { "selected": false }
 }

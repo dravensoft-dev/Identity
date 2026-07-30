@@ -27,5 +27,5 @@
       "false": {}
     }
   },
-  "defaultVariants": { "state": "neutral", "disabled": "false", "readonly": "false" }
+  "defaultVariants": { "state": "neutral", "disabled": false, "readonly": false }
 }
