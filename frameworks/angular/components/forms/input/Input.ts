@@ -4,7 +4,7 @@ import {
 import type { InputType, ValidateOn } from '../../../Api.generated';
 import { inputStyles } from './Input.variants';
 
-export function controlIdFor(id: string | undefined, label: string | undefined): string | null {
+export function inputIdFor(id: string | undefined, label: string | undefined): string | null {
   if (id) return id;
   return label ? `in-${label.replace(/\s+/g, '-').toLowerCase()}` : null;
 }
@@ -76,7 +76,7 @@ export class Input {
   private readonly localError = signal<string | null>(null);
   private readonly touched = signal(false);
 
-  protected readonly controlId = computed(() => controlIdFor(this.id(), this.label()));
+  protected readonly controlId = computed(() => inputIdFor(this.id(), this.label()));
 
   protected readonly shownError = computed(() => {
     const controlled = this.error();

@@ -3032,6 +3032,28 @@ better placed** — it serves the Tailwind specimen too, and it is measured by t
 every other class. React's injection is now a duplicate of it and is left alone: removing it
 would change a shipped component for no behavioural gain, since React reads no manifest.
 
+#### Textarea — autoResize measures on more occasions in Angular, and adds the border React forgets
+
+**React:** `Textarea.jsx` grows the box inside its own change handler and nowhere else, from
+`e.target.scrollHeight` exactly. So a value set programmatically — a draft loaded from a server, a
+template inserted by a button — leaves the box at its old height until the user types into it.
+**Angular:** `arena-textarea` runs the same measurement in an `afterRenderEffect` that reads
+`value()`, so mount and every programmatic change size it too, and the `(input)` path stays for
+the case where a consumer never wires `change` back.
+
+**And the formula differs by one term, because the two layers are not the same box model.**
+`scrollHeight` is content plus padding and **never the border**. React's textarea is content-box,
+where `height` means content alone, so its `scrollHeight` is already generous and no scrollbar
+appears. The Tailwind layer is border-box, where `height` must cover the border too — so the same
+formula lands two pixels short and the box keeps a permanent scrollbar. `borderBoxSlack()` adds
+`offsetHeight - clientHeight`. **The demo page is what found this**: the seeded long value showed
+a scrollbar on a box that was supposed to have grown past it, and no suite could have seen it
+because happy-dom has no layout and reports `scrollHeight` as `0`.
+
+**Converges: no, and Angular is the better side on both counts.** Neither difference is worth
+porting back blind — React's content-box textarea does not have the second problem at all, so
+copying the `+ borderBoxSlack` term there would make its box two pixels too tall.
+
 ## 4. What the READMEs do not say
 
 The normative documents state rules. This section carries what those rules cost, what the

@@ -194,12 +194,6 @@
     "dressedBy": "frameworks/angular/theme/arena-material.css",
     "reason": "MatTabGroup already provides the tablist/tab/tabpanel role triad, aria-selected, roving focus and Left/Right arrow-key navigation between tabs -- the entire list React's own Tabs binding records as unmet. The bridge dresses the active label and indicator colour on the brand. Arena has no arena-tabs primitive and should not grow one."
   },
-  "Textarea": {
-    "pattern": "textbox",
-    "delegatedTo": "Angular Material matInput",
-    "dressedBy": "frameworks/angular/theme/arena-material.css",
-    "reason": "The same matInput directive Input delegates to, applied to a <textarea> rather than an <input>, and composed the same way inside <mat-form-field appearance=\"outline\">. The bridge dresses that field, not the textarea element itself. Arena has no arena-textarea primitive and should not grow one."
-  },
   "Toast": {
     "pattern": "alert",
     "delegatedTo": "Angular Material MatSnackBar",

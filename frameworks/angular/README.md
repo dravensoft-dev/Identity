@@ -132,7 +132,7 @@ Material's datepicker is a month/date-selection grid, not Arena's day/hour sched
 with event blocks, so there is no control for those two to delegate to.
 
 `arena-material.css` dresses only a subset of the delegated set:
-Input and Textarea (outlined appearance only — a form field left on Material's default
+Select (outlined appearance only — a form field left on Material's default
 fill appearance keeps Material's own styling), Card, Table, Tabs, Dialog, Toast,
 ProgressBar, Spinner and SideNav. The rest still render with Material's own defaults. A
 `dressedBy` key on a delegated entry is the per-component record, and **nothing checks

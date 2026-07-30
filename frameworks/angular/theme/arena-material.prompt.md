@@ -23,10 +23,12 @@ the table micro-label. It does **not** replace Material's SCSS palette: you keep
 **One scope is narrower than it looks, and one is gone.** No Material button is dressed
 at all any more: `arena-button` and `arena-icon-button` are primitives, so the
 `.mat-mdc-unelevated-button`, `.mat-mdc-outlined-button` and `.arena-danger` blocks went
-with the last delegated entry that cited them. Use the primitives. The form field
-is dressed only under `.mat-form-field-appearance-outline`; `fill` is Material's
-default appearance, not `outline`, so an app that never opts into the outline
-appearance gets no Input/Textarea theming from this bridge at all.
+with the last delegated entry that cited them. Use the primitives, and note that the form
+field's remaining consumer is `MatSelect` alone -- `arena-input` and `arena-textarea` are
+primitives too, so the outlined-field block survives only for `Select`. It is dressed
+only under `.mat-form-field-appearance-outline`; `fill` is Material's default appearance,
+not `outline`, so an app that never opts into the outline appearance gets no theming for
+its selects from this bridge at all.
 
 **The bridge is verified, not rendered.** `bun run check:material` asserts every
 custom property the bridge sets is a name the installed Angular Material package

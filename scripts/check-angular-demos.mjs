@@ -20,6 +20,7 @@ export const PAGED = new Set([
   'Checkbox',
   'Switch',
   'Input',
+  'Textarea',
 ]);
 
 export function pageProblems(tree, read, paged = PAGED) {

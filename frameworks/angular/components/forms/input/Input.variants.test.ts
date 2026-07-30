@@ -5,7 +5,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { controlIdFor } from './Input';
+import { inputIdFor } from './Input';
 import { inputStyles } from './Input.variants';
 
 test('the default is a neutral, enabled, editable field', () => {
@@ -70,10 +70,10 @@ test('the root carries a display utility, because the host binds it', () => {
   assert.match(inputStyles().root(), /flex-col/);
 });
 
-test('controlIdFor prefers an explicit id and otherwise derives React\'s exact in- slug', () => {
-  assert.equal(controlIdFor('project-name', 'Project name'), 'project-name');
-  assert.equal(controlIdFor(undefined, 'Project name'), 'in-project-name');
-  assert.equal(controlIdFor(undefined, 'Repository   URL'), 'in-repository-url');
-  assert.equal(controlIdFor(undefined, undefined), null,
+test('inputIdFor prefers an explicit id and otherwise derives React\'s exact in- slug', () => {
+  assert.equal(inputIdFor('project-name', 'Project name'), 'project-name');
+  assert.equal(inputIdFor(undefined, 'Project name'), 'in-project-name');
+  assert.equal(inputIdFor(undefined, 'Repository   URL'), 'in-repository-url');
+  assert.equal(inputIdFor(undefined, undefined), null,
     'with neither, the label has nothing to point at and the attribute must be absent rather than empty');
 });
