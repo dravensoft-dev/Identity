@@ -31,14 +31,6 @@ export const EXEMPT = new Map([
    '(imported from forms/Button.jsx), so the hover comes from Button.jsx\'s own ' +
    'useState hover tracking, not from anything ConfirmDialog.jsx implements itself. ' +
    'A single-file scan of ConfirmDialog.jsx alone cannot see across that composition.'],
-  ['ConfirmDialog:input:focus',
-   "the require-text input's focus-visible ring is a documented, deliberate Angular " +
-   "accessibility fix ConfirmDialog.jsx does not have -- see DOUBTS.md section 3, " +
-   '"ConfirmDialog -- the require-text input loses its focus ring in React" (renamed from ' +
-   '"ConfirmDialog -- Angular is accessible, React is not yet" by plan 8C4, which closed the ' +
-   'accessibility half of that entry and left this focus ring as the whole of it). React implements no focus ' +
-   'tracking on this input at all; the divergence is named there as open debt on the React ' +
-   'layer, not an invented state on the Angular/Tailwind side.'],
   ['ErrorState:retry:hover',
    "ErrorState.jsx renders its retry action as React's own <Button> (imported from " +
    "forms/Button.jsx), so the hover comes from Button.jsx's own useState hover tracking, " +
