@@ -5,7 +5,7 @@ export default {
     "root": "inline-flex items-center gap-2.5",
     "track": "inline-flex items-center justify-start rounded-pill p-0.5 border-none cursor-pointer disabled:cursor-not-allowed transition-[background] duration-[var(--dur-mid)] ease-out",
     "knob": "inline-flex items-center justify-center shrink-0 rounded-pill bg-primary-content transition-[transform] duration-[var(--dur-mid)] ease-out",
-    "icon": "leading-none",
+    "icon": "leading-none text-primary",
     "label": "inline-flex items-center gap-1.5 font-body text-ctl text-base-content/82",
     "guard": "text-[length:var(--icon-sm)] text-base-content/62"
   },

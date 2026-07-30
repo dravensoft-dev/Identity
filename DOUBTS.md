@@ -59,6 +59,25 @@ stale-proof; a present-tense component name is not.
 
 ## 1. Known debt
 
+- **"Every animation answers `prefers-reduced-motion`" is true of every `@keyframes` and of no
+  `transition`, in either layer.** Measured while porting `Switch`, not inferred: every
+  reduced-motion answer Arena has is an `@media (prefers-reduced-motion: reduce)` block around a
+  `@keyframes` in `frameworks/tailwind/Animations.css` — `arena-shimmer`, `arena-pop`,
+  `arena-menu`, `arena-prog-indeterminate`, `arena-btn-spin`, `arena-spinner`. **No manifest uses
+  the `motion-reduce:` variant at all**, and no global rule shortens or drops a transition, so
+  every `transition-[…] duration-[var(--dur-*)]` in every recipe runs at full length regardless of
+  the preference. React is in the same position from the same cause, with the durations inline
+  instead of in a manifest.
+  **How much of this is a real defect depends on the motion, and the rule already says so.** A
+  background or border-colour crossfade is not travel and nothing in WCAG asks for it to stop.
+  `arena-switch`'s knob **is** travel — it translates the width of its own track — and so is
+  `arena-button`'s `active:scale-98`. Those are the two worth fixing. The fix is one
+  `motion-reduce:transition-none` per affected slot, but it is a sweep across the shared
+  manifests with a decision per transition, and doing it inside a port would have been an
+  unreviewed library-wide restyle. **What makes this cheap to leave open is also what makes it
+  easy to forget**: no gate reads a manifest for motion, `check:dimensions` tolerates `s`/`ms`
+  by design, and every prompt's reduced-motion line is a by-hand item.
+
 - **`Checkbox` has no visible focus indicator, in either layer, and porting it to Angular did
   not introduce that.** The control is a real `<input type="checkbox">` hidden with
   `opacity-0 size-0` behind a decorative `<span>` box, which is the right structure — it keeps
@@ -2964,6 +2983,28 @@ When you find a behavioural difference between layers:
 2. If one layer is simply wrong, fix it and add no entry.
 3. If both are defensible, or one leads and the other has debt, add an entry here with the reason
    and whether it is expected to converge.
+
+#### Switch — the knob glyph is inked in Angular and inherits the page ink in React
+
+**React:** `Switch.jsx` draws the per-state `<i>` with a font size and nothing else, so its colour
+inherits from the page. The knob under it is `var(--on-accent)` — near-white — and the page ink on
+a dark surface is near-white too, so **the glyph is all but invisible**, at every size. It is
+shipping: `frameworks/react/ui-kits/console/Shell.jsx` renders the theme toggle with
+`iconOn="ph-bold ph-sun"`. What kept it unseen is that the *specimen* pages did not — React's
+`Forms.card.html` passes neither icon, so the card a reviewer opens has no glyph in it at all.
+**Angular:** `arena-switch` reads the shared manifest, whose `icon` slot now carries
+`text-primary`. Crimson on the near-white knob, legible down to `sm`.
+
+**Why:** the fix is in the manifest, which Angular and the Tailwind specimen read and React does
+not — React's `Switch` is inline styles with no hook for it. It is one utility rather than a
+judgement: the knob is `bg-primary-content`, so the glyph must be `text-primary`, which is the
+same pair `check:text-contrast` already gates at 4.5 in its `primary`/`primary-content` row, read
+the other way round. No new gate entry is owed, and none was added.
+
+**Converges: no, and Angular is the better side.** React's is a real legibility defect and closing
+it means giving `Switch.jsx` an explicit colour — a change to a shipped React component, not a
+port. **The demo page is what found it**, which is the case for the harness in one sentence: five
+sizes rendered side by side with a glyph in each, and the `sm` one is where you look.
 
 ## 4. What the READMEs do not say
 

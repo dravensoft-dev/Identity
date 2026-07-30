@@ -83,7 +83,7 @@ const LEVELS = [
 const FILL_FALLBACK_KEEP = 0.85;
 
 const PAIRS = [
-  { fill: 'primary', content: 'primary-content', gate: 4.5, note: 'button text via --on-accent (Button, IconButton solid, Pagination active); Checkbox tick, Switch knob' },
+  { fill: 'primary', content: 'primary-content', gate: 4.5, note: 'button text via --on-accent (Button, IconButton solid, Pagination active); Checkbox tick, Switch knob, and Switch’s knob glyph read the other way round (text-primary on bg-primary-content)' },
 
   { fill: 'error-fill', content: 'error-content', gate: 4.5, deriveFrom: 'error', keep: FILL_FALLBACK_KEEP, note: "ConfirmDialog's final confirmation — Arena's only filled danger surface" },
   { fill: 'secondary', content: 'secondary-content', gate: 4.5, note: 'daisyUI pair — legible content on the fill' },

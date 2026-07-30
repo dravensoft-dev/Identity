@@ -134,11 +134,6 @@
     ],
     "reason": "MatProgressSpinner renders the indicator and its determinate/indeterminate/buffer/query modes, with aria-valuenow mirrored from value. The bridge dresses its active-indicator colour on the brand. Arena has no arena-spinner primitive and should not grow one."
   },
-  "Switch": {
-    "pattern": "switch",
-    "delegatedTo": "Angular Material MatSlideToggle",
-    "reason": "MatSlideToggle already renders role=\"switch\", label association and Space-to-toggle. arena-material.css does not dress it -- no .mat-mdc-slide-toggle rule exists in the bridge today -- so its colours are Material's own defaults, not Arena's tokens."
-  },
   "Tab": {
     "pattern": "none",
     "delegatedTo": "Angular Material MatTabGroup's own <mat-tab>",
