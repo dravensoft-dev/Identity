@@ -1,0 +1,6 @@
+{
+  "component": "Card",
+  "pattern": "none",
+  "reason": "arena-card renders a bordered surface with an optional eyebrow/title header and an `action` slot; it manages no state, adds no role, and owns no interactive element of its own -- any button or control inside comes from the content slot or from `[action]`, both caller-supplied, not from Card itself.",
+  "exceptions": []
+}

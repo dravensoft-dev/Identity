@@ -1884,12 +1884,28 @@ all** — R4 removed the last of them from `Dialog`, `Menu`, `Pagination` and `S
 conclusion holds either way; only components not yet under contract still rely on the
 destructure-first reason.
 
-**Nine primitives are affected, not the five an earlier version of this entry listed** —
-every host-bound primitive taking a `title` or `name` input:
+**Measure the set rather than trusting a list here — this entry has already gone stale
+twice**, once claiming five and once claiming nine, both times because the affected set
+grows every time a primitive lands:
 
-- `title`: `alert`, `chart-card`, `confirm-dialog`, `empty-state`, `error-state`,
-  `page-head`, `unauth-card` — seven.
-- `name`: `app-logo`, `avatar` — two.
+```bash
+for dir in frameworks/angular/components/*/*/; do
+  d=$(basename "$dir"); p=$(echo "$d" | sed -E 's/(^|-)([a-z])/\U\2/g'); f="$dir$p.ts"
+  [ -f "$f" ] || continue; grep -q "'\[class\]':" "$f" || continue
+  for w in title name; do grep -qE "^  readonly $w = input" "$f" && echo "$w $d"; done
+done
+```
+
+It returns **fourteen** today — eight `title` and six `name`. The four the "nine" version
+missed are `input`, `radio-group`, `segmented-control` and `textarea`, all of which took a
+`name` input during Plan D's own batches 2 and 3 while this entry sat unread; the eighth
+`title` is `card`, added by batch 4, which **knowingly** made the count worse rather than
+fixing one primitive out of fourteen.
+
+The command's exclusions are the interesting part, because the obvious one is wrong: a
+filter of `*State.ts` — meant to skip `TabsState.ts` and `RadioGroupState.ts` — silently
+eats `EmptyState.ts` and `ErrorState.ts`, two of the affected components. Match the file
+named after its own directory instead.
 
 `confirm-dialog` is the worst of them by a distance, and the reason the count is worth
 getting right: its host is the fixed full-viewport scrim, so
@@ -1897,9 +1913,11 @@ getting right: its host is the fixed full-viewport scrim, so
 viewport** for as long as the dialog is open, not over a header.
 
 A host binding of `'[attr.title]': 'null'` (and `'[attr.name]': 'null'`) would close it,
-and must then be applied to all nine at once rather than one primitive at a time — a fix
-that lands on five and is believed to have closed the problem leaves four primitives,
-including the viewport-wide one, still broken. **Not yet done.**
+and must then be applied to all fourteen at once rather than one primitive at a time — a
+fix that lands on five and is believed to have closed the problem leaves nine, including
+the viewport-wide one, still broken. **Not yet done**, and the right shape for it is a
+guard in `HostClassBinding.test.ts` driven by the command above, so the set cannot grow
+again without the gate saying so.
 
 **Converges:** no. This is the correct Angular idiom. The stray-attribute edge above is a
 defect within it and is expected to converge once fixed layer-wide.

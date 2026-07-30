@@ -2,7 +2,7 @@
 export default {
   "component": "Card",
   "slots": {
-    "root": "bg-base-200 border-[length:var(--bw)] rounded-lg overflow-hidden",
+    "root": "block bg-base-200 border-[length:var(--bw)] rounded-lg overflow-hidden",
     "head": "flex items-start justify-between px-5 pt-4.5",
     "eyebrow": "font-mono text-ctl-xs tracking-label uppercase text-primary mb-1.5",
     "title": "font-display font-extrabold text-h4 text-base-content",

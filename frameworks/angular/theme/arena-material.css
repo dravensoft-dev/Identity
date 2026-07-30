@@ -12,12 +12,6 @@
   --mat-form-field-outlined-label-text-color: var(--mute);
 }
 
-/* Card — elevated surface, large radius */
-.mat-mdc-card {
-  --mat-card-elevated-container-color: var(--surface-card);
-  --mat-card-elevated-container-shape: var(--r-lg);
-}
-
 /* Dialog — surface + large radius */
 .mat-mdc-dialog-surface {
   --mat-dialog-container-shape: var(--r-lg);

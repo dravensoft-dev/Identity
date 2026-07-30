@@ -7,12 +7,6 @@
     "pattern": "absent",
     "reason": "Absent for the same reason Calendar is, one level down: a CalendarEvent is a chip inside Arena's schedule grid, and Angular has no schedule grid for one to live in. It is not delegated -- Material has no per-event chip because it has no day/hour view, and arena-material.css dresses none. This entry exists because CalendarEvent became a React component in plan 8C3 (it had been a predefined object in api/types/), and every React component declares for every layer. It records the same open question Calendar's entry does and answers it no further: if Angular ever gains a schedule view, this is the second component that decision creates."
   },
-  "Card": {
-    "pattern": "none",
-    "delegatedTo": "Angular Material MatCard",
-    "dressedBy": "frameworks/angular/theme/arena-material.css",
-    "reason": "MatCard already provides the bordered surface and its header/content/actions slots; it manages no interactive state of its own, the same as React's Card. The bridge dresses its container colour (--surface-card) and --r-lg radius. Arena has no arena-card primitive and should not grow one."
-  },
   "Dialog": {
     "pattern": "dialog-modal",
     "delegatedTo": "Angular Material MatDialog",
