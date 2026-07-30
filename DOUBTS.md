@@ -1691,13 +1691,23 @@ stale-proof; a present-tense component name is not.
   component is untyped by construction, so the first compile of each remaining Plan D batch is
   where that class of bug surfaces. Expect it; it is one line per manifest and changes no output.
   Nothing gates it, because the gate is `ngc` and `ngc` cannot see a file no component imports.
-- **`CLAUDE.md` is 39 characters from its 60,000 limit, and every remaining Plan D batch must
-  touch it.** Each batch moves the Angular primitive count, the category sentence, or both.
-  There is no headroom left for an addition, so the next batch that needs one must first move
-  something out — the likeliest candidates are the Angular-layer paragraphs that
+- **`CLAUDE.md` is 28 characters from its 60,000 limit, and every remaining Plan D batch must
+  touch it.** Measure it (`wc -m CLAUDE.md`) rather than trusting this number, which batch 2
+  already moved once. Each batch moves the Angular primitive count, the category sentence, or
+  both. `check:docs` fails hard rather than warning, so this surfaces as a red gate at the end of
+  a batch rather than as a decision made calmly.
+  **Batch 2 bought its own room and spent all of it**, which is the shape of the problem rather
+  than a solution to it. Two claims in the file were measurably false and correcting them was
+  net-negative: the carve-out paragraph said the layer had *one* carve-out when `arena-button`
+  had already made a second, and the React-only-set paragraph said that set was
+  `BehaviourDelegated.json`'s key set *minus `Switch`* when the two sets are identical, 28 members
+  each. The `DataVisuals` placement paragraph then moved to this file wholesale — it is a
+  recorded decision with no gate behind it, which is this file's material. That bought about 600
+  characters and the harness and carve-out rules spent them.
+  **The candidates left are the same ones**: the Angular-layer paragraphs that
   `frameworks/angular/README.md` already states in more detail, since `CLAUDE.md`'s job is the
-  cross-layer rule and not the layer's own tour. `check:docs` fails hard rather than warning, so
-  this surfaces as a red gate at the end of a batch rather than as a decision made calmly.
+  cross-layer rule and not the layer's own tour. **Nothing at all is left for batch 3 to spend
+  before it moves something out first.**
 
 - **The Angular by-hand checklists named work nobody here could do, and batch 2 built the thing
   that does it.** This entry recorded that `Button.prompt.md` and `Tooltip.prompt.md` each ended
