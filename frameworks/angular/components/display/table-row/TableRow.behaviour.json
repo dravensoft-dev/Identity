@@ -1,0 +1,7 @@
+{
+  "component": "TableRow",
+  "pattern": "none",
+  "divergesFrom": "button",
+  "reason": "In the wide shape every requirement that applies to a row is a clause of the `grid` pattern arena-table binds -- the row role, the roving tab stop across the cells and the Enter that activates the row all live on the grid and are recorded there. The row owns none of them, which is the same shape Tab binds under `tabs`. `divergesFrom` names `button` because React's TableRow declares a `card-interactive` case this layer cannot express: React renders the card as a role=\"button\" tab stop when, and only when, `onClick` was passed, and Angular has no way to ask whether an output has subscribers -- `OutputEmitterRef.listeners` is private, and an `interactive` input would be a member no contract declares. Making every card row a button instead would put a dead tab stop on every row of every table that is not clickable, which is a worse defect than the one it fixes, so this layer's card row carries no role and no tab stop. The consequence is real and recorded in DOUBTS.md: a clickable card row is reachable by pointer and not by keyboard, below --bp-md only.",
+  "exceptions": []
+}

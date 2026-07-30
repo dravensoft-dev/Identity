@@ -18,18 +18,6 @@
   --mat-dialog-container-color: var(--surface-card);
 }
 
-/* Table — hairline rows; header is the mono uppercase micro-label */
-.mat-mdc-table {
-  --mat-table-background-color: var(--surface-card);
-  --mat-table-row-item-outline-color: var(--border);
-}
-.mat-mdc-header-cell {
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--mute);
-}
-
 /* Snackbar / toast surface — medium radius */
 .mat-mdc-snack-bar-container {
   --mat-snack-bar-container-shape: var(--r-md);

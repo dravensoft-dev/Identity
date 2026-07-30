@@ -757,6 +757,8 @@ const HOST_SLOT: Record<string, { manifest?: string; slot: string }> = {
   'radio-group': { manifest: 'Radio.manifest.json', slot: 'group' },
   'segmented-control': { slot: 'track' },
   tab: { manifest: 'Tabs.manifest.json', slot: 'panel' },
+  'table-cell': { manifest: 'Table.manifest.json', slot: 'td' },
+  'table-row': { manifest: 'Table.manifest.json', slot: 'row' },
 };
 
 test('every Angular primitive host-binds a slot that carries a display utility, so the host never collapses to the UA-default inline box', () => {
