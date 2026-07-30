@@ -2038,7 +2038,7 @@ secondary action is projected, on each.
 
 ### Per-component divergences
 
-#### ConfirmDialog — the require-text input loses its focus ring in React
+#### ConfirmDialog — RESOLVED: the require-text input rings in both layers
 
 > **The accessibility half of this entry is closed, and plan 8C4 closed it.** This section used to
 > be titled *"ConfirmDialog — Angular is accessible, React is not yet"* and recorded that React
@@ -2052,21 +2052,29 @@ secondary action is projected, on each.
 > the component already implements rather than by changing the component.
 > What is left of the entry is one real difference and one shared limit.
 
-**React:** the require-text `<input>` carries `outline: 'none'` in its inline style object and
-substitutes nothing, so a keyboard user typing the confirmation word gets no focus indication at
-all — on the one control that gates Arena's only filled danger surface.
+**What it was:** React's require-text `<input>` carried `outline: 'none'` and substituted nothing,
+so a keyboard user typing the confirmation word got no focus indication at all — on the one control
+that gates Arena's only filled danger surface. Angular had substituted a token-derived ring when the
+primitive was written; React was never touched, because plan 8C4 was about the `dialog-modal`
+pattern and a focus ring is not one of its seven requirements.
 
-**Angular:** the same control keeps `outline-none` but substitutes a token-derived visible ring,
-`focus-visible:ring-[length:var(--focus-width)] focus-visible:ring-error` in
-`ConfirmDialog.manifest.json`, rather than removing focus indication outright.
+**How it closed.** React converged on Angular's rule rather than inventing one:
+`.arena-confirm-input:focus-visible{box-shadow:0 0 0 var(--focus-width) var(--danger)}`, injected
+once into `<head>` behind a module-level guard. `:focus-visible` is a pseudo-class an inline style
+cannot express, which is exactly the carve-out CLAUDE.md grants the injected-`<style>` pattern, and
+it is the third use of it after `Input`'s picker indicator and the keyframes.
 
-**Why:** `outline: 'none'` with nothing in its place contradicts README's own normative rule
-("Focus: `--error` ring"). Angular fixed it when the primitive was written; React was not touched,
-because plan 8C4 was about the `dialog-modal` pattern and a focus ring is not one of its seven
-requirements — so no gate would have caught this and none does.
+**One thing measured rather than assumed, because the obvious reasoning is wrong here:**
+`:focus-visible` was chosen to match Angular's recipe verbatim, **not** to keep the ring off a mouse
+click. For a TEXT input Chromium matches `:focus-visible` after a plain click too — the element
+accepts keyboard input, so the modality heuristic does not apply — verified in real Chromium, where
+the ring is `rgb(232, 81, 81) 0 0 0 2px` whether the input was reached by Tab or by pointer. A
+comment claiming otherwise was written and then corrected.
 
-**Converges:** yes — React should substitute the same ring. **Open debt on the React layer**, and
-the only part of this entry that is still open.
+**What found it:** not a gate. `check:manifest-states` had this on its `EXEMPT` map, which recorded
+the divergence rather than flagging it, and no behaviour requirement covers a focus ring. It was
+seen by eye, in a by-hand pass in real Chromium. What DID bite, once React implemented it, was that
+same gate: a stale `EXEMPT` entry fails, so the record could not outlive the debt it described.
 
 **Also still missing, on BOTH layers, and therefore not a divergence:** `inert` on the background.
 The keyboard trap is what keeps focus in; a pointer-driven assistive technology that never goes

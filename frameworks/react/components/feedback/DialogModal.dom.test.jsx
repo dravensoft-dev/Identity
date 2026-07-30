@@ -129,3 +129,27 @@ test('assertPattern refuses an undeclared undecidable requirement', () => {
     unlinkSync(p);
   }
 });
+
+test('the require-text input substitutes a focus ring for the outline it removes', () => {
+  const container = mount(
+    <ConfirmDialog open onCancel={() => {}} onConfirm={() => {}} title="Delete project"
+      confirmLabel="Delete" requireText="DELETE" />,
+  );
+  const input = container.querySelector('input');
+  assert.ok(input, 'the requireText branch must render its input');
+  assert.match(input.style.outline, /none/,
+    'the outline is still removed -- what changed is that something takes its place');
+  assert.ok(input.className.includes('arena-confirm-input'),
+    'the input must carry the hook the injected rule selects, or the ring reaches nothing');
+
+  const tags = [...document.head.querySelectorAll('style[data-arena-confirm-dialog]')];
+  assert.equal(tags.length, 1, 'the rule is injected ONCE per process, not once per instance');
+  assert.match(tags[0].textContent, /\.arena-confirm-input:focus-visible/,
+    'the selector matches the Angular recipe verbatim, which is what convergence means here; '
+    + 'for a TEXT input :focus-visible also matches a mouse click, so this is not about hiding a ring');
+  assert.match(tags[0].textContent, /var\(--focus-width\)/, 'the ring width must be the token');
+  assert.match(tags[0].textContent, /var\(--danger\)/, 'and its colour the danger token, as Angular does');
+
+  assert.equal(container.querySelectorAll('style').length, 0,
+    'the tag belongs in <head>: rendered inline it ships one per instance and leaks into textContent');
+});

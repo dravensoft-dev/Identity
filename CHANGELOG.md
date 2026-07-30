@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   named by `aria-activedescendant` instead of only being coloured.
 - Angular's `CommandPalette` emits `close` before `run`, so a host that listens only to `run`
   is no longer left with the palette over the result it just produced.
+- `ConfirmDialog`'s require-text input shows a focus ring in React, matching Angular's own
+  recipe: it removed the outline and substituted nothing, so a keyboard user typing the
+  confirmation word had no focus indication on the one control that gates Arena's only filled
+  danger surface.
 - `ErrorState` renders `role="alert"`, so a failure that appears without a page reload is
   announced rather than only drawn. React was silent where Angular already announced.
 - `Menu` puts `aria-haspopup` and `aria-expanded` on the trigger itself instead of a wrapper
