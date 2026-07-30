@@ -40,3 +40,19 @@ test('arena-breadcrumbs is a named nav landmark, and two of them are told apart'
     other.destroy();
   }
 });
+
+test('an ariaLabel bound to nothing throws, because input.required only proves it was bound', () => {
+  const fixture = TestBed.createComponent(Breadcrumbs);
+  fixture.componentRef.setInput('ariaLabel', '   ');
+  fixture.componentRef.setInput('items', CRUMBS);
+  try {
+    assert.throws(() => fixture.detectChanges(), /Breadcrumbs: .ariaLabel. is required/,
+      'a whitespace name satisfies roles.label mechanically while leaving the landmark unnamed');
+  } finally {
+    try {
+      fixture.destroy();
+    } catch {
+      return;
+    }
+  }
+});

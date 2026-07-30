@@ -14,7 +14,7 @@ let nextId = 0;
   host: {
     '[class]': 'styles().group()',
     role: 'radiogroup',
-    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-label]': 'label()',
   },
   template: `<ng-content />`,
 })
@@ -23,6 +23,14 @@ export class RadioGroup {
   readonly value = input<string>();
   readonly name = input<string>();
   readonly change = output<string>();
+
+  protected readonly label = computed(() => {
+    const name = this.ariaLabel();
+    if (name.trim() === '') {
+      throw new Error('RadioGroup: `ariaLabel` is required, and names what is being chosen');
+    }
+    return name;
+  });
 
   protected readonly styles = computed(() => radioGroupStyles());
 

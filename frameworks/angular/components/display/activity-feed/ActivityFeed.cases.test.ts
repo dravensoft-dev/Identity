@@ -111,3 +111,19 @@ test('arena-activity-feed meets the feed pattern in both of its declared states'
     for (const fixture of fixtures) fixture.destroy();
   }
 });
+
+test('a label bound to nothing throws, because input.required only proves it was bound', () => {
+  const fixture = TestBed.createComponent(ActivityFeed);
+  fixture.componentRef.setInput('label', ' ');
+  fixture.componentRef.setInput('items', ITEMS);
+  try {
+    assert.throws(() => fixture.detectChanges(), /ActivityFeed: .label. is required/,
+      'a feed is a landmark a reader navigates BY, and a whitespace name leaves it unnavigable');
+  } finally {
+    try {
+      fixture.destroy();
+    } catch {
+      return;
+    }
+  }
+});

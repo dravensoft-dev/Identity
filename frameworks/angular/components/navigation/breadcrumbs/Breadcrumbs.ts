@@ -9,7 +9,7 @@ import { breadcrumbsStyles } from './Breadcrumbs.variants';
   host: {
     '[class]': 'styles().root()',
     role: 'navigation',
-    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-label]': 'label()',
   },
   template: `
     @for (crumb of items(); track crumb.label; let last = $last) {
@@ -27,6 +27,14 @@ export class Breadcrumbs {
   readonly items = input.required<Crumb[]>();
   readonly separator = input('/');
   readonly navigate = output<Crumb>();
+
+  protected readonly label = computed(() => {
+    const name = this.ariaLabel();
+    if (name.trim() === '') {
+      throw new Error('Breadcrumbs: `ariaLabel` is required, and names which hierarchy this trail runs through');
+    }
+    return name;
+  });
 
   protected readonly styles = computed(() => breadcrumbsStyles());
 
