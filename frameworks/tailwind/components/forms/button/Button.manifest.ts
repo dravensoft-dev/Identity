@@ -43,6 +43,6 @@ export default {
   "defaultVariants": {
     "variant": "primary",
     "size": "md",
-    "full": "false"
+    "full": false
   }
 } as const;

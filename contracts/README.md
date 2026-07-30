@@ -115,8 +115,8 @@ framework is added without touching the language.
 - [`frameworks/react/`](../frameworks/react/README.md) — the React primitives, the
   example Console app, and the shared layer-root modules.
 - [`frameworks/angular/`](../frameworks/angular/README.md) — the Angular layer for an
-  existing Angular 20+/Tailwind-v4/Material app, plus
-  [`ADOPTION.md`](../frameworks/angular/ADOPTION.md) for the adoption playbook.
+  existing Angular 20+/Tailwind-v4 app, with its own primitives on the CDK and a Material
+  bridge for what it still delegates.
 - [`frameworks/tailwind/`](../frameworks/tailwind/README.md) — a **shared**,
   token-derived Tailwind v4 layer, authored once rather than per framework because the
   token→utility mapping is pure CSS and a component's Tailwind recipe is data.

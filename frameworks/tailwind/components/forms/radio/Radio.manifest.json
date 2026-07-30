@@ -20,5 +20,5 @@
       "false": { "root": "cursor-pointer" }
     }
   },
-  "defaultVariants": { "checked": "false", "disabled": "false" }
+  "defaultVariants": { "checked": false, "disabled": false }
 }

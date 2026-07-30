@@ -34,7 +34,10 @@ export const GATES = [
   { name: 'check:demos', file: 'check-demos-generated.mjs' },
   { name: 'check:cards', file: 'check-card-viewports.mjs' },
   { name: 'check:angular', file: 'check-angular.mjs' },
+  { name: 'check:angular-demos', file: 'check-angular-demos.mjs' },
+  { name: 'check:assertions', file: 'check-assertions.mjs' },
   { name: 'check:material', file: 'check-material.mjs' },
+  { name: 'check:cdk', file: 'check-cdk.mjs' },
 ];
 
 export function testStep({ isBun, testFiles }) {

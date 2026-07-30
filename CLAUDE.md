@@ -267,8 +267,10 @@ element per item instead of handing Arena a render function, so Angular's missin
 `ngTemplateOutlet` binding stops being the obstacle. `RadioGroup`/`Radio`,
 `Calendar`/`CalendarEvent` and `Table`/`TableRow`/`TableCell` all follow it. The parent owns
 **where** an item goes and the item owns **what** it looks like; the parent reads its children's
-props and injects the rest with `cloneElement`, and **none of the injected props is a member of
-any contract**.
+props and injects the rest with `cloneElement`; Angular has no `cloneElement`, so the item
+injects the parent and pulls its signals instead, and nothing is pushed at all — which is why the
+fragment and wrapper hazards below are React's alone. **Neither layer's coordination is a member
+of any contract.**
 
 **A compound parent's content slot is OPTIONAL, and the one exception is a named group.**
 Measure it rather than trusting this — `grep -rn '"form": "slot"' contracts/api/components/`
@@ -320,7 +322,7 @@ The controls Angular delegates to Material exist in React alone, so **count them
 trusting a figure**: every component **directory** under
 `frameworks/react/components/<category>/` with no matching directory under
 `frameworks/angular/components/<category>/`, which is also the key set of
-`frameworks/angular/BehaviourDelegated.json` minus `Switch`. **A change that makes an item a
+`frameworks/angular/BehaviourDelegated.json`. **A change that makes an item a
 component enlarges that set while contracting it**, which is why the method above is the only
 thing worth trusting. Their APIs are settled and normative *before* Angular has an
 implementation to defend.
@@ -407,8 +409,8 @@ are judged as themselves, which is strictly more coverage than an attribute.
 
 **No gate compares a Tailwind manifest against the component it mirrors, and the mapping is not
 one-to-one**: some manifests mirror both a React component and an `arena-*` primitive; the rest
-mirror a React component alone, because Angular Material provides that control and
-`arena-material.css` dresses it. `check:tailwind` proves every class resolves; nothing proves a
+mirror a React component alone, because Angular still delegates that control.
+`check:tailwind` proves every class resolves; nothing proves a
 manifest still matches the component it was derived from, so check by hand when either has
 moved.
 
@@ -503,17 +505,19 @@ The Angular layer's quartet is the analogue, in
 `OnPush` component, `arena-` selector, signal I/O, no component `styles`),
 `<Component>.variants.ts` (a `tailwind-variants` recipe built with `frameworks/tailwind/Tv.ts`),
 `<Component>.prompt.md`, and an `index.ts` barrel — plus `<Component>.behaviour.json` and the
-component's own suites, `<Component>.<facet>.test.ts`, in the same directory. Dark-first
-(`.arena-light`), danger stays outline, Phosphor icons. The three SVG charts are the one
-exception and have no `<Component>.variants.ts`. Angular has **five** of the six categories the
-layout rule allows: there is no `forms/`, because every form control is delegated to Material.
+component's own suites, `<Component>.<facet>.test.ts`, in the same directory. The three SVG charts are the one
+exception and have no `<Component>.variants.ts`. Angular has **all six** of the categories the
+layout rule allows; `forms/` is the newest, and fills as Plan D moves the delegated controls in.
 
-**A host-bound root is the Angular layer's default, and it has one carve-out.** A primitive
-binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than rendering
-a wrapper div, so the host is the flex item its parent lays out and the measured element is the
-styled element. One primitive correctly does **not**: `activity-feed`, whose root must be a real
-`<ul>` with `<li>` rows. The rule targets elements that exist only to carry styling; when the
-root must be a specific semantic or interactive element, keep it. **A host-bound root must carry
+**A host-bound root is the Angular layer's default, and its carve-outs are a growing set.** A
+primitive binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than
+rendering a wrapper div, so the host is the flex item its parent lays out and the measured
+element is the styled element. The rule targets elements that exist only to carry styling; when
+the root must be a specific semantic or interactive element, keep it and leave the host bare.
+`activity-feed` needs a real `<ul>`; a form control needs its own `<button>`, `<input>` or
+`<label>`, or it forfeits the activation, labelling and `:disabled` semantics the browser
+already supplies. **A bare host still declares `display: contents`**, or as a flex item it
+shrinks to fit and a `w-full` inside measures the host, not the row. **A host-bound root must carry
 a display utility** — `<arena-x>` is an unknown element defaulting to `display:inline`, where
 width and height do not apply, so a root slot without one renders a zero-area host. That is
 machine-guarded by a manifest-driven assertion in
@@ -619,23 +623,18 @@ and standalone `OnPush` primitives under `components/<category>/<component-kebab
 exception — no manifest, no `.variants.ts`, token-valued camelCase `[style]` objects like
 React's, and reviewed against React's `components/charts/Charts.card.html`), each styled by the
 shared `frameworks/tailwind/` recipes through the configured `tv`. Count the components with
-`find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l`. Its layer root
-additionally holds the generated `Api.generated.ts` and `Tokens.generated.ts`, the
-`BehaviourDelegated.json` declaration, and four shared internals — `ContainerSize.ts`,
-`DataVisuals.ts`, `FocusTrap.ts` and `ProjectionMarkers.ts`, each named directly by
-`frameworks/angular/index.ts`.
-
-**`DataVisuals` sits at both layer roots.** In React, `Calendar` imports `catColor` from it, so a
-`display` component consumes it and the narrowest-common-level rule puts it at the layer root
-rather than in a category — verify with `grep -rln DataVisuals frameworks/react/components`,
-which returns the three charts **and** `display/calendar/`. Angular's consumers are the three
-charts alone, so its copy could sit in `components/charts/`; it is at the layer root by decision,
-because that narrower set is an artifact of Angular's `Calendar` being delegated to Material.
+`find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l`. A primitive whose
+behaviour only a browser can show also has `<Component>.card.html` + `.card.entry.ts` beside it,
+built by `bun run build:angular-demo` and recorded in `check:angular-demos`. Those pages carry
+**no** `@dsCard`: the bundle is git-ignored, and a blank page passes a viewport check by having
+nothing to overflow. Its layer root additionally holds the generated modules,
+`BehaviourDelegated.json`, and the internals belonging to no one category —
+`frameworks/angular/README.md` names each and says why.
 
 `frameworks/tailwind/` is a **single shared** Tailwind v4 layer (`@theme` preset + per-component
-manifests), authored once because the token→utility mapping is pure CSS. Its root holds `Tv.ts`,
-`ManifestClasses.js`, `Theme.css`, `Utilities.css`, `Animations.css`, `Specimen.css` and
-`Specimen.js`, and a component's three files — `<Name>.manifest.json`, the generated
+manifests), authored once because the token→utility mapping is pure CSS. Its root holds the
+preset, the generated `Utilities.css`, the shared `tv`, the animation utilities and the specimen
+harness; and a component's three files — `<Name>.manifest.json`, the generated
 `<Name>.manifest.ts` and the `<Name>.card.html` specimen — sit together in
 `components/<category>/<component-kebab>/`. Count the manifests with
 `find frameworks/tailwind/components -name '*.manifest.json' | wc -l`.
@@ -665,7 +664,7 @@ hard failure instead.
 file name begins with a capital, and a multi-word stem is `PascalCase` with hyphens removed; a
 secondary dotted segment stays `lowerCamelCase`** — `Badge.manifest.json`, `StatCard.variants.ts`.
 Capital-initial is the rule and PascalCase is how a multi-word stem is *formed* under it, which is
-why a conventional all-caps document name needs no dispensation: `README.md` and `ADOPTION.md`
+why a conventional all-caps document name needs no dispensation: `README.md` and `CHANGELOG.md`
 comply as they stand.
 
 A layer lays its components out as `frameworks/<layer>/components/<category>/<component-kebab>/`,
@@ -688,12 +687,12 @@ list** — `find frameworks -type f -printf '%f\n' | grep -E '^[^A-Z]' | sort -u
    toolchains recognise by convention. This is the softest of them, since `ngc -p <path>` is
    explicit and the rename would compile; the exception is for the reader.
 4. `.gitkeep` (`frameworks/angular/.gitkeep`), which has no stem to capitalise.
-5. **The four adopter-facing files under `frameworks/angular/theme/`** — `arena-tailwind.css`,
-   `arena-material.css`, `no-fouc.html` and `arena-material.prompt.md` — which do not share one
-   reason. **The first two are named inside an *adopter's own* source, verbatim**: `ADOPTION.md`
-   gives them as `@import` lines pasted into the host app's `styles.css`, so renaming either is a
-   breaking change to every app that has adopted Arena. **`no-fouc.html` is not a third instance
-   of that reason**: the adopter pastes the `<script>` tag's *contents* into their own
+5. **The five adopter-facing files under `frameworks/angular/theme/`** — `arena-tailwind.css`,
+   `arena-material.css`, `arena-cdk.css`, `no-fouc.html` and `arena-material.prompt.md` — which do
+   not share one reason. **The first three are named inside an *adopter's own* source, verbatim**:
+   each is an `@import` line in the host app's own `styles.css`, so renaming one is a breaking
+   change to every app that has adopted Arena — a fact about deployed apps, not about any document
+   here. **`no-fouc.html` is not a fourth instance of that reason**: the adopter pastes the `<script>` tag's *contents* into their own
    `index.html` and never references the file by name, so renaming it breaks a documentation line
    rather than any adopting app. `arena-material.prompt.md` is cited nowhere and takes the stem of
    the file it documents. **Not exempt:** `theme/ThemeService.ts` and `icons/IconManifest.ts` are

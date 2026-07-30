@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **`Switch`'s knob glyph is legible.** The shared manifest set the glyph's size and no colour,
+  so it inherited the page ink — near-white, on a near-white knob. It is `text-primary` now,
+  which is the pair `check:text-contrast` already gates read the other way round. React's
+  `Switch` reads no manifest and is unchanged; the divergence is recorded.
+- **A bare Angular host declares `display: contents`.** A primitive that keeps a native root
+  element leaves its host unstyled, and an unstyled `<arena-x>` blockifies to shrink-to-fit as a
+  flex item — so `arena-button`'s `full` measured the shrunk host instead of the row and did
+  nothing. Asserted layer-wide now, and `activity-feed` moves with it.
+
 - A `danger` `Toast` cannot be un-pinned: `persist={false}` is ignored for that tone, so a
   critical message no longer vanishes on the host's timer. The Pinned marker follows.
 - `Select` associates its label with the control. It rendered the label above the `<select>`
@@ -50,6 +59,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Five Angular primitives** — `arena-icon-button`, `arena-checkbox`, `arena-switch`,
+  `arena-input` and `arena-textarea`. Each satisfies all three contracts on its own rather than
+  through Angular Material, so its API is compared against `contracts/api/`, its rendered DOM
+  against `contracts/behaviour/`, and every dimension it draws against the token layer. Their
+  entries leave `BehaviourDelegated.json`, and the `MatButton` dressing blocks in
+  `arena-material.css` go with `IconButton`, the last entry that cited them.
+- **The Angular choice and navigation controls** — `arena-radio-group`/`arena-radio`,
+  `arena-segmented-control`, `arena-tabs`/`arena-tab` and `arena-pagination`. A compound family coordinates the
+  opposite way from React's: the parent provides an injectable state object and each child
+  injects it and pulls, because Angular has no `cloneElement` and because `check:api` would
+  read a public coordination member as API. Only `arena-tabs` earns `@angular/cdk/a11y` — the
+  rest get their roving stop and arrow keys from native radio inputs. `arena-segmented-control`
+  drops the `roles.group` exception Material's `MatButtonToggleGroup` forced, so it renders
+  `role="radiogroup"` and its binding has none. `arena-pagination` is neither compound nor
+  roving-focus: it renders a real `<nav>`, ports React's page window rather than re-deriving it,
+  and replaces the one delegated control `arena-material.css` never dressed — a `MatPaginator`
+  had been rendering in Material's own colours inside an Arena interface.
+- **A required member is guarded at runtime, not merely declared.** `input.required` proves a
+  binding exists and nothing about what it carries, so an empty `ariaLabel` left a landmark
+  unnamed while satisfying it. `arena-pagination`, `arena-breadcrumbs`, `arena-activity-feed` and
+  `arena-radio-group` now throw on one, matching what React's components have always done.
+- **`frameworks/angular/test/NodeAssert.ts` and `check:assertions`.** `node:assert` renders both
+  operands into its diff when an assertion fails, and a connected happy-dom node reaches the whole
+  shared document from there — measured at 518,563 characters against a `<body>` holding three
+  elements, so a failing focus assertion exhausted the run instead of reporting the defect. The
+  helpers compare identity and render the operands themselves; the gate keeps the raw form out.
+- **Angular demo pages.** `<Component>.card.html` beside a primitive runs the real component in
+  a real browser, which is the only place motion, focus rings and layout can be checked at all.
+  `bun run build:angular-demo` builds them and `bun run demos` serves them; `check:angular-demos`
+  is the coverage record. It found four defects on its own: `arena-button`'s `full` did nothing,
+  `Switch`'s knob glyph was invisible against the knob, `Textarea`'s `autoResize` left a
+  permanent scrollbar, and `Input`'s date-picker indicator had no dressing outside React.
 - `Tag.disabled` and `CalendarEvent.disabled` — the action stays drawn and announces itself
   as unavailable through `aria-disabled`, keeping its place in the tab order rather than
   vanishing from it the way the native `disabled` attribute would.

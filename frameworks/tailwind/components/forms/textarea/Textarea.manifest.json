@@ -29,5 +29,5 @@
       "false": {}
     }
   },
-  "defaultVariants": { "state": "neutral", "resize": "vertical", "disabled": "false", "readonly": "false" }
+  "defaultVariants": { "state": "neutral", "resize": "vertical", "disabled": false, "readonly": false }
 }

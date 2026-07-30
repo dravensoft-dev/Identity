@@ -15,5 +15,5 @@
       "false": { "segment": "bg-transparent text-base-content/62 font-medium hover:text-base-content/82" }
     }
   },
-  "defaultVariants": { "size": "md", "selected": "false" }
+  "defaultVariants": { "size": "md", "selected": false }
 }

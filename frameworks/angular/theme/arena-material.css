@@ -4,27 +4,6 @@
    tokens are dark-first. Radius: --r-sm for controls, --r-lg for cards/dialogs.
    Danger is OUTLINE (border + text in --color-error), never a fill. */
 
-/* Buttons — filled primary */
-.mat-mdc-unelevated-button {
-  --mat-button-filled-container-color: var(--color-primary);
-  --mat-button-filled-label-text-color: var(--color-primary-content);
-  --mat-button-filled-container-shape: var(--r-sm);
-}
-/* Buttons — outlined (default text/stroked) read the brand + hairline */
-.mat-mdc-outlined-button {
-  --mat-button-outlined-outline-color: var(--border);
-  --mat-button-outlined-label-text-color: var(--color-primary);
-  --mat-button-outlined-container-shape: var(--r-sm);
-}
-/* Danger button — outline only: border + text in --color-error, transparent fill.
-   Apply `class="arena-danger"` on the mat-button. Never a filled danger surface. */
-.mat-mdc-button.arena-danger,
-.mat-mdc-outlined-button.arena-danger {
-  --mat-button-text-label-text-color: var(--color-error);
-  --mat-button-outlined-label-text-color: var(--color-error);
-  --mat-button-outlined-outline-color: var(--color-error);
-}
-
 /* Form field — outline appearance */
 .mat-mdc-form-field.mat-form-field-appearance-outline {
   --mat-form-field-outlined-outline-color: var(--border);
@@ -55,13 +34,6 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--mute);
-}
-
-/* Tabs — active label + indicator on the brand */
-.mat-mdc-tab-group {
-  --mat-tab-active-label-text-color: var(--color-primary);
-  --mat-tab-active-focus-label-text-color: var(--color-primary);
-  --mat-tab-active-indicator-color: var(--color-primary);
 }
 
 /* Snackbar / toast surface — medium radius */

@@ -17,5 +17,5 @@
       "false": { "item": "bg-transparent text-base-content/62 font-medium" }
     }
   },
-  "defaultVariants": { "active": "false" }
+  "defaultVariants": { "active": false }
 }

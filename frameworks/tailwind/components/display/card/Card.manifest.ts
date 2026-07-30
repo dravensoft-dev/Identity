@@ -27,7 +27,7 @@ export default {
     }
   },
   "defaultVariants": {
-    "accent": "false",
-    "floating": "false"
+    "accent": false,
+    "floating": false
   }
 } as const;

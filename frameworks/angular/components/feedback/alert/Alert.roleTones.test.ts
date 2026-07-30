@@ -3,6 +3,7 @@ useTestEnvironment();
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { assertSameNode } from '../../../test/NodeAssert';
 import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { Alert } from './Alert';
@@ -43,7 +44,7 @@ test('arena-alert neither takes focus nor moves it -- focus.unaffected, proved b
   document.body.appendChild(anchor);
   try {
     anchor.focus();
-    assert.equal(document.activeElement, anchor, 'sanity: focus starts on the anchor button');
+    assertSameNode(document.activeElement, anchor, 'sanity: focus starts on the anchor button');
 
     const fixture = renderAlert('danger');
     try {
@@ -51,7 +52,7 @@ test('arena-alert neither takes focus nor moves it -- focus.unaffected, proved b
 
       assert.equal(host.getAttribute('tabindex'), null, 'an alert must not be placed in the tab order');
       assert.equal(isFocusable(host), false, 'an alert host must not be able to take focus');
-      assert.equal(
+      assertSameNode(
         document.activeElement,
         anchor,
         'rendering an alert must not steal focus from whatever the user was on',

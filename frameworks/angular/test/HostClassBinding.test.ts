@@ -1,6 +1,7 @@
 import '@angular/compiler';
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { assertNoNode } from './NodeAssert';
 import { readFileSync, readdirSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -522,9 +523,8 @@ test('arena-stat-card: a delta with a value renders the pill; a delta with a ton
 
   const emptyValue = renderStatCard('Deploys', '128', { value: '', direction: 'up', tone: 'positive' });
   emptyValue.detectChanges();
-  assert.equal(
+  assertNoNode(
     (emptyValue.nativeElement as HTMLElement).querySelector(`.${deltaClass}`),
-    null,
     'a delta with a tone/direction but an empty value must render no pill at all',
   );
   emptyValue.destroy();
@@ -547,7 +547,7 @@ test('arena-stat-card: no icon renders no wrapper at all -- not an empty one', (
   fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement;
   const iconClass = statCardStyles().icon().split(/\s+/)[0];
-  assert.equal(host.querySelector(`.${iconClass}`), null, 'no icon means no icon wrapper at all');
+  assertNoNode(host.querySelector(`.${iconClass}`), 'no icon means no icon wrapper at all');
   fixture.destroy();
 });
 
@@ -600,9 +600,8 @@ test('arena-chart-card: the head row is entirely absent when there is neither a 
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-chart-card') as HTMLElement;
   const headClass = chartCardStyles().head().split(/\s+/)[0];
-  assert.equal(
+  assertNoNode(
     host.querySelector(`.${headClass}`),
-    null,
     'an empty chart card (no title, no actions) must not render the head row at all',
   );
   assert.equal(host.children.length, 0, 'a bare chart card renders no children of its own');
@@ -618,11 +617,10 @@ test('arena-empty-state: the action wrapper is absent from the DOM when no [acti
   const fixture = renderEmptyState('No projects yet');
   fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement;
-  assert.equal(host.querySelector('button'), null, 'no action was projected, so no action markup should exist at all');
+  assertNoNode(host.querySelector('button'), 'no action was projected, so no action markup should exist at all');
   const actionClass = emptyStateStyles().action().split(/\s+/)[0];
-  assert.equal(
+  assertNoNode(
     host.querySelector(`:scope > .${actionClass}`),
-    null,
     'the action wrapper div must not render when the action slot is empty',
   );
   fixture.destroy();
@@ -644,11 +642,10 @@ test('arena-error-state: the actions wrapper is absent from the DOM when neither
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-error-state') as HTMLElement;
-  assert.equal(host.querySelector('button'), null, 'neither retryLabel nor a secondary action was supplied, so no action markup should exist at all');
+  assertNoNode(host.querySelector('button'), 'neither retryLabel nor a secondary action was supplied, so no action markup should exist at all');
   const actionsClass = errorStateStyles().actions().split(/\s+/)[0];
-  assert.equal(
+  assertNoNode(
     host.querySelector(`:scope > .${actionsClass}`),
-    null,
     'the actions wrapper div must not render when both retryLabel and secondaryAction are absent',
   );
 });
@@ -711,11 +708,10 @@ test('arena-page-head: the actions wrapper is absent from the DOM when no [actio
     fixture.detectChanges();
     await fixture.whenStable();
     const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
-    assert.equal(host.querySelector('button'), null, 'no actions were projected, so no action markup should exist at all');
+    assertNoNode(host.querySelector('button'), 'no actions were projected, so no action markup should exist at all');
     const actionsClass = pageHeadStyles().actions().split(/\s+/)[0];
-    assert.equal(
+    assertNoNode(
       host.querySelector(`:scope > .${actionsClass}`),
-      null,
       'the actions wrapper div must not render when the actions slot is empty',
     );
     assert.equal(host.children.length, 1, 'a page head with no actions renders the titles block and nothing else');
@@ -757,7 +753,13 @@ function findManifestFile(componentsDir: string, filename: string): string | und
 
 const NO_MANIFEST = new Set(['bar-chart', 'line-chart', 'doughnut-chart']);
 
-test('every Angular primitive\'s root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
+const HOST_SLOT: Record<string, { manifest?: string; slot: string }> = {
+  'radio-group': { manifest: 'Radio.manifest.json', slot: 'group' },
+  'segmented-control': { slot: 'track' },
+  tab: { manifest: 'Tabs.manifest.json', slot: 'panel' },
+};
+
+test('every Angular primitive host-binds a slot that carries a display utility, so the host never collapses to the UA-default inline box', () => {
   const componentsDir = ANGULAR_COMPONENTS;
   const manifestsDir = TAILWIND_COMPONENTS;
 
@@ -780,18 +782,64 @@ test('every Angular primitive\'s root slot carries a display utility, so host-bi
     );
   }
 
+  for (const dir of Object.keys(HOST_SLOT)) {
+    assert.ok(names.includes(dir), `HOST_SLOT names "${dir}", which is not a primitive directory -- stale entry`);
+  }
+
   for (const name of names) {
     if (NO_MANIFEST.has(name)) continue;
-    const manifestName = `${kebabToPascal(name)}.manifest.json`;
+    const override = HOST_SLOT[name];
+    const slot = override?.slot ?? 'root';
+    const manifestName = override?.manifest ?? `${kebabToPascal(name)}.manifest.json`;
+
+    if (override?.manifest !== undefined) {
+      const ownName = `${kebabToPascal(name)}.manifest.json`;
+      assert.equal(
+        findManifestFile(manifestsDir, ownName), undefined,
+        `HOST_SLOT sends "${name}" to ${manifestName}, but ${ownName} now exists -- it no longer shares its family's recipe, so the entry is stale`,
+      );
+    }
+
     const manifestPath = findManifestFile(manifestsDir, manifestName);
     assert.ok(manifestPath !== undefined, `${name}: no manifest named ${manifestName} found anywhere under ${manifestsDir}`);
     const manifest = JSON.parse(readFileSync(manifestPath as string, 'utf8')) as { slots?: Record<string, string> };
-    const root = manifest.slots?.['root'];
-    assert.ok(typeof root === 'string', `${name}: ${manifestPath} has no "slots.root" string`);
+    const classes = manifest.slots?.[slot];
+    assert.ok(typeof classes === 'string', `${name}: ${manifestPath} has no "slots.${slot}" string`);
     assert.match(
-      root as string,
+      classes as string,
       DISPLAY_UTILITY,
-      `${name}: root slot "${root}" carries no display utility -- host-binding it collapses to the UA-default inline box`,
+      `${name}: the "${slot}" slot it host-binds carries no display utility -- host-binding it collapses to the UA-default inline box`,
+    );
+  }
+});
+
+const HOST_BOUND_ROOT = /'\[class\]':/;
+const HOST_STATIC_DISPLAY = /host:\s*\{[^}]*\bstyle:\s*'[^']*display\s*:/s;
+
+test('a primitive that does not host-bind its root takes its host out of layout with display: contents', () => {
+  const componentsDir = ANGULAR_COMPONENTS;
+  const sources: Array<{ name: string; path: string; source: string }> = [];
+
+  for (const category of readdirSync(componentsDir, { withFileTypes: true })) {
+    if (!category.isDirectory()) continue;
+    for (const dir of readdirSync(join(componentsDir, category.name), { withFileTypes: true })) {
+      if (!dir.isDirectory()) continue;
+      const name = kebabToPascal(dir.name);
+      const path = join(componentsDir, category.name, dir.name, `${name}.ts`);
+      sources.push({ name, path, source: readFileSync(path, 'utf8') });
+    }
+  }
+  assert.ok(sources.length > 0, 'no primitive sources found -- the guard would silently check nothing');
+
+  for (const { name, path, source } of sources) {
+    if (HOST_BOUND_ROOT.test(source)) continue;
+    assert.match(
+      source,
+      HOST_STATIC_DISPLAY,
+      `${path}: ${name} leaves its host bare and declares no display on it. An <arena-x> with no `
+      + 'display is an inline box, and as a flex item it blockifies to shrink-to-fit -- so a '
+      + "w-full on the real element inside resolves against the shrunk host and does nothing. "
+      + 'Either host-bind the root slot, or take the host out of layout with display: contents.',
     );
   }
 });
@@ -952,8 +1000,8 @@ test('arena-doughnut-chart: with no data it draws no slice at all, rather than a
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-doughnut-chart') as HTMLElement;
 
-  assert.equal(host.querySelector('path'), null, 'an empty doughnut must paint no slice');
-  assert.equal(host.querySelector('text'), null, 'the centre label must not render with nothing hovered');
+  assertNoNode(host.querySelector('path'), 'an empty doughnut must paint no slice');
+  assertNoNode(host.querySelector('text'), 'the centre label must not render with nothing hovered');
   assert.equal(host.querySelectorAll('tbody tr').length, 0, 'the numbers table must have no rows');
 });
 
@@ -974,15 +1022,13 @@ test('arena-unauth-card: the brand and footer wrappers are both absent from the 
   const host = fixture.nativeElement.querySelector('arena-unauth-card') as HTMLElement;
 
   const brandClass = unauthCardStyles().brand().split(/\s+/)[0];
-  assert.equal(
+  assertNoNode(
     host.querySelector(`.${brandClass}`),
-    null,
     'the brand wrapper div must not render when the [brand] slot is empty',
   );
   const footerClass = unauthCardStyles().footer().split(/\s+/)[0];
-  assert.equal(
+  assertNoNode(
     host.querySelector(`.${footerClass}`),
-    null,
     'the footer wrapper div must not render when the [footer] slot is empty',
   );
 

@@ -197,8 +197,8 @@ Generated per layer, on the same committed-generated-output contract `tokens.gen
 and `tokens.generated.ts` already carry:
 
 ```
-frameworks/react/api.generated.d.ts
-frameworks/angular/api.generated.ts
+frameworks/react/Api.generated.d.ts
+frameworks/angular/Api.generated.ts
 ```
 
 Emission is **per layer** so a component's import never crosses the `api/` ↔
@@ -283,7 +283,7 @@ reopened.
    this assertion like any other. **There is no exception map here.** An API divergence is
    a defect; that is the point of the layer.
 4. **Derived rules.** R1 through R5, asserted against the declared types.
-5. **Generated drift.** `api.generated.d.ts` and `api.generated.ts` match `api/types/`,
+5. **Generated drift.** `Api.generated.d.ts` and `Api.generated.ts` match `api/types/`,
    the same assertion `check:tokens` makes for the token layer.
 
 Which layers implement a component is resolved structurally, not from a list:
@@ -343,7 +343,7 @@ paragraphs of the `Breadcrumbs` (`:1035`) and `AppLogo` (`:914`) entries.
 
 Three bindings cite this document as supporting evidence
 (`command-palette.behaviour.json`, the `SideNav` delegated entry, and
-`frameworks/angular/primitives/onboarding/onboarding.ts`). None of the three sections
+`frameworks/angular/components/feedback/onboarding/Onboarding.ts`). None of the three sections
 Plan A touches is cited, but any later plan deleting a cited section must redirect the
 citation in the same change.
 
@@ -365,7 +365,7 @@ register as the behaviour-contract paragraphs.
 ## A.2 — `api/types/` and the generator
 
 `scripts/build-api-types.mjs` reads `api/types/*.json` and emits
-`frameworks/react/api.generated.d.ts` and `frameworks/angular/api.generated.ts`. Objects
+`frameworks/react/Api.generated.d.ts` and `frameworks/angular/Api.generated.ts`. Objects
 become interfaces, enums become string-literal unions, descriptions become doc comments.
 Committed output, guarded by drift assertion 5.
 
@@ -789,11 +789,55 @@ transcription. `Table.getRowKey`'s return is `React.Key`; `Menu`'s `MenuItemDef.
 three R5 violations this spec names, and the reader already classifies each as a `union`
 and reports it — so for those three the gate is ready before the audit is.
 
-# Plan D — the twenty-two Angular primitives, built on the CDK
+# Plan D — an Angular primitive for every delegated control, built on the CDK
 
-**Objective.** Give Angular a real Arena primitive for each of the twenty-two controls it
-delegates today, satisfying all three contracts — design, behaviour and API — and remove
-Angular Material from the repository.
+> **Plan D has begun, and this section is its argument rather than its state.** Batch 1
+> landed the CDK foundation and the first two primitives, `Button` and `Tooltip`; its plan
+> is in `docs/superpowers/plans/`. Read the *set* from
+> `frameworks/angular/BehaviourDelegated.json` and never from a count written in this file:
+> `check:behaviour` fails the moment that file disagrees with what the layer implements,
+> which is why every count here was already replaced by the method once.
+>
+> Two decisions batch 1 took that this section did not anticipate. **`Calendar` and
+> `CalendarEvent` are out of Plan D** — they are the two `absent` entries, net-new
+> components carrying date arithmetic no CDK primitive covers, so `BehaviourDelegated.json`
+> survives Plan D holding exactly those two rather than disappearing. And **the CDK is used
+> for overlay POSITION only**: focus trapping stays Arena's `FocusTrap.ts`, because it is a
+> deliberate port of React's `UseDialogModal.js` and the symmetry is worth more than
+> `ConfigurableFocusTrap` would add.
+>
+> **The batch sequence, grouped so each batch's unknowns are already paid for.** Batch 1 was
+> `Button` (no CDK, and it created the `forms/` category) plus `Tooltip` (the smallest anchored
+> overlay). Then: **2** the rest of the form controls with no CDK — `IconButton`, `Checkbox`,
+> `Switch`, `Input`, `Textarea`, where `Input` owes the repo's only `functionInput` an Angular
+> implementation; **3** the choice and navigation controls — `Tabs`/`Tab`, `RadioGroup`/`Radio`,
+> `SegmentedControl`, `Pagination`, where `Tabs` is the only one that reaches for `cdk/a11y` and
+> `Pagination` is neither compound nor roving-focus at all (as line 871 below already says: it has
+> no headless CDK component, and its `navigation` pattern has no focus or keyboard clause to
+> implement); and `SegmentedControl`'s current `roles.group` exception is Material's defect and
+> must not be inherited; **4** display —
+> `Badge`, `Card`, `Table`/`TableRow`/`TableCell`, where Table carries eight exceptions a real
+> primitive should clear rather than port; **5** the remaining overlays — `Menu`, `Select`,
+> `Dialog`, `Toast`, and `Toast` owes `role` per tone so a danger toast interrupts rather than
+> queues; **6** the `SideNav` family, which inherits a decision rather than a task (see
+> `DOUBTS.md`); **7** cleanup — delete `arena-material.css`, `check:material` and the
+> `@angular/material` devDependency. `Dialog` and `Toast` are expected to need no overlay at
+> all: the CDK earns its place on surfaces anchored to a trigger, and Arena's three existing
+> modals already centre in flow.
+>
+> **A dressing block in `arena-material.css` dies when no delegated entry still needs it, not
+> when its own component lands.** Batch 1 hit this immediately: deleting the `MatButton` blocks
+> would have degraded an adopter's remaining Material buttons and falsified `IconButton`'s
+> still-live reason, which cites them. Batch 2 takes those blocks with `IconButton`.
+>
+> **On the pre-move paths this file names:** the reading `DOUBTS.md` asked Plan D to make has
+> been made. A path is *normative* when it tells a reader where something IS, and those are
+> corrected. A path in a `>` block, or in one of the per-batch test-count records near the
+> end, is *history* and is correct as written — rewriting those would make the record lie.
+
+**Objective.** Give Angular a real Arena primitive for each control it delegates today,
+satisfying all three contracts — design, behaviour and API — and remove Angular Material
+from the repository.
 
 Nothing is implemented from zero and no third-party source is copied into the tree.
 `@angular/cdk` — installed today only as a transitive dependency of Material — is promoted
@@ -817,7 +861,7 @@ Why this satisfies all three contracts, and why no other option did:
   With every visual decision in an Arena recipe, they come inside it, and
   `theme/arena-material.css` — which exists only to override Material's own visual CSS
   through `--mat-*` — dies with them.
-- **Behaviour.** The twenty-two live in `behaviour-delegated.json` today, outside the
+- **Behaviour.** The twenty-two live in `BehaviourDelegated.json` today, outside the
   compliance regime, and `CLAUDE.md` already records that every claim those declarations
   make about Material is unpinned and rots silently. With Arena rendering the DOM,
   `check:compliance` can verify them by render and that file disappears entirely.
@@ -846,14 +890,14 @@ arrived. **Both counts that stood here — *twenty-two* for Plan D's primitives 
 *twenty-one* for the components already in the tree — were measured stale on 2026-07-24
 and replaced by the method rather than by corrected numbers**; see the re-measurement
 blockquote under *The running count*. Plan D's set is the key set of
-`frameworks/angular/behaviour-delegated.json`; the existing set is that, minus `Switch`.
+`frameworks/angular/BehaviourDelegated.json`; the existing set is that, minus `Switch`.
 
 Three things to carry in:
 
 - **Required-ness is contracted**, so `input.required<T>()` versus `input<T>(default)` is
   no longer a free choice per primitive — the contract Plan C wrote decides it, and the
   gate compares it. Plan A hit this twice: making a member required is an NG0950 hazard
-  in the JIT test harness, and `frameworks/angular/test/host-class-binding.test.ts`
+  in the JIT test harness, and `frameworks/angular/test/HostClassBinding.test.ts`
   carries the query-child-and-overwrite bypass that works around it. Reuse it rather than
   rediscovering it.
 
@@ -876,11 +920,11 @@ Three things to carry in:
   primitives is the largest single batch of `<ng-content select>` this layer will ever
   gain; they must be written to whatever convention Plan B lands on, not to whatever each
   one's author prefers. **Settled: it is the bare attribute selector** (`select="[x]"` for a
-  slot named `x`), landed by B0 in `frameworks/angular/primitives/projection-markers.ts`;
+  slot named `x`), landed by B0 in `frameworks/angular/ProjectionMarkers.ts`;
   `templateSlots()` refuses any other form outright, so this is enforced rather than
   conventional.
 
-**`api.generated.ts` is already in `ngc`'s program.** `frameworks/angular/index.ts`
+**`Api.generated.ts` is already in `ngc`'s program.** `frameworks/angular/index.ts`
 re-exports it and `tsconfig.check.json`'s `files: ["./index.ts"]` pulls it in, so a
 contract type that fails to resolve breaks `check:angular`. That is currently luck rather
 than design — nothing states the dependency — but Plan D can rely on it, and should write
@@ -930,7 +974,7 @@ Plan 8C3 carried Plan C forward with its third batch: `Tabs`, `SegmentedControl`
 components, taking `check:api` from 32 contracts across 52 layer implementations to **42 across 62**.
 **Every contract is single-layer for the same reason 8C1's and 8C2's were**, though the reason has
 two halves here: Angular delegates `Tabs`, `SegmentedControl`, `ProgressBar`, `Toast`, `Tooltip` and
-`Table` to Material, and has no equivalent of `Calendar` at all — `behaviour-delegated.json` binds
+`Table` to Material, and has no equivalent of `Calendar` at all — `BehaviourDelegated.json` binds
 that one to pattern `absent`. So the batch moves the layer count by exactly as many contracts as it
 writes, ten and not twenty.
 
@@ -1009,7 +1053,7 @@ id, and a required `id` would have forced a meaningless one onto every divider.
 
 **The batch's other half is not an API story and is the larger one.** `Dialog`, `ConfirmDialog` and
 `Onboarding` met the `dialog-modal` pattern in React for the first time, through
-`frameworks/react/use-dialog-modal.js` — a deliberate port of the Angular layer's own
+`frameworks/react/UseDialogModal.js` — a deliberate port of the Angular layer's own
 `focus-trap.ts` rather than a second design. Eleven of the twelve exceptions those three carried are
 retired; the twelfth, `ConfirmDialog`'s `roles.element`, stayed at the time because
 `role="alertdialog"` is arguably more correct for a destructive confirmation and **both** layers
@@ -1025,8 +1069,8 @@ the three components binds `grid`, so the standing hand-test rule did not exclud
 
 **Plan C's subject set moved again, under this batch, and it is now twenty-FIVE.** Re-measured by the
 method above: 46 `.jsx` under `frameworks/react/components/` (excluding `*.card.entry.jsx`), 20 with
-a matching directory under `frameworks/angular/primitives/`, leaving 26 — exactly the key set of
-`frameworks/angular/behaviour-delegated.json` — minus `Switch`, contracted before Plan C began. The
+a matching directory under `frameworks/angular/components/`, leaving 26 — exactly the key set of
+`frameworks/angular/BehaviourDelegated.json` — minus `Switch`, contracted before Plan C began. The
 three additions are `CalendarEvent`, `TableRow` and `TableCell`, each a new React component and a new
 delegated entry in the same change, the identical drift `RadioGroup` caused inside 8C2. **Twenty-one
 of the twenty-five are now contracted; four remain** — `Dialog`, `Menu`, `Pagination`, `SideNav` —
@@ -1334,7 +1378,7 @@ thereby wrong — but Plan D must not read a Plan C contract as a specification 
 behaviour.
 
 **Removing Material is a one-way door.** Once `arena-material.css` and
-`behaviour-delegated.json` are gone and twenty-two primitives exist, returning to Material
+`BehaviourDelegated.json` are gone and twenty-two primitives exist, returning to Material
 means undoing all of it. The gate that makes this survivable is that Plan D happens last,
 after every contract it implements against is already settled and proven by Plans A
 through C.

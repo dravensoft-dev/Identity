@@ -8,7 +8,7 @@ export default {
     "field": "flex items-center gap-2 h-ctl-h px-3 bg-base-300 border-[length:var(--bw)] rounded-sm transition-[border-color,box-shadow] duration-[var(--dur-fast)] ease-out",
     "icon": "inline-flex text-base-content/62 text-[length:var(--icon-md)]",
     "prefix": "font-mono text-ctl-md text-base-content/62",
-    "input": "flex-1 min-w-0 bg-transparent border-none outline-none text-base-content font-body text-ctl",
+    "input": "flex-1 min-w-0 bg-transparent border-none outline-none text-base-content font-body text-ctl [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:[filter:invert(var(--picker-invert))] [&::-webkit-calendar-picker-indicator]:transition-opacity [&::-webkit-calendar-picker-indicator]:duration-[var(--dur-fast)] hover:[&::-webkit-calendar-picker-indicator]:opacity-100",
     "statusIcon": "text-[length:var(--icon-md)]",
     "hint": "font-body text-ctl-sm text-base-content/62",
     "error": "font-body text-ctl-sm text-error"
@@ -43,7 +43,7 @@ export default {
   },
   "defaultVariants": {
     "state": "neutral",
-    "disabled": "false",
-    "readonly": "false"
+    "disabled": false,
+    "readonly": false
   }
 } as const;

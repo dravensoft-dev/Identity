@@ -19,9 +19,9 @@ export function resolveActivityFeedRows(items: readonly ActivityItem[]): Activit
   selector: 'arena-activity-feed',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '(keydown)': 'onKeydown($event)' },
+  host: { style: 'display: contents', '(keydown)': 'onKeydown($event)' },
   template: `
-    <ul [class]="base().root()" role="feed" [attr.aria-label]="label()"
+    <ul [class]="base().root()" role="feed" [attr.aria-label]="labelText()"
         [attr.aria-busy]="busy() ? 'true' : 'false'">
       @for (row of rows(); track row.item.id ?? $index; let i = $index) {
         <li [class]="row.itemClass" role="article" tabindex="0"
@@ -45,6 +45,14 @@ export class ActivityFeed {
   readonly label = input.required<string>();
   readonly items = input.required<readonly ActivityItem[]>();
   readonly busy = input(false, { transform: booleanAttribute });
+
+  protected readonly labelText = computed(() => {
+    const name = this.label();
+    if (name.trim() === '') {
+      throw new Error('ActivityFeed: `label` is required, and names what the events are about');
+    }
+    return name;
+  });
 
   protected readonly base = computed(() => activityFeedStyles());
   protected readonly rows = computed(() => resolveActivityFeedRows(this.items()));

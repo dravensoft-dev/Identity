@@ -1660,6 +1660,29 @@
   .disabled\:opacity-45:disabled {
     opacity: 45%;
   }
+  .\[\&\:\:-webkit-calendar-picker-indicator\]\:cursor-pointer::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+  }
+  .\[\&\:\:-webkit-calendar-picker-indicator\]\:opacity-60::-webkit-calendar-picker-indicator {
+    opacity: 60%;
+  }
+  .\[\&\:\:-webkit-calendar-picker-indicator\]\:\[filter\:invert\(var\(--picker-invert\)\)\]::-webkit-calendar-picker-indicator {
+    filter: invert(var(--picker-invert));
+  }
+  .\[\&\:\:-webkit-calendar-picker-indicator\]\:transition-opacity::-webkit-calendar-picker-indicator {
+    transition-property: opacity;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .\[\&\:\:-webkit-calendar-picker-indicator\]\:duration-\[var\(--dur-fast\)\]::-webkit-calendar-picker-indicator {
+    --tw-duration: var(--dur-fast);
+    transition-duration: var(--dur-fast);
+  }
+  @media (hover: hover) {
+    .hover\:\[\&\:\:-webkit-calendar-picker-indicator\]\:opacity-100:hover::-webkit-calendar-picker-indicator {
+      opacity: 100%;
+    }
+  }
 }
 @keyframes arena-shimmer {
   0% {

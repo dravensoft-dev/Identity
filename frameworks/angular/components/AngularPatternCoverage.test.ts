@@ -9,6 +9,7 @@ useTestEnvironment();
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { assertSameNode } from '../test/NodeAssert';
 import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { Skeleton } from './display/skeleton/Skeleton';
@@ -45,7 +46,7 @@ test('arena-error-state announces itself and schedules nothing that could retrac
   try {
     const host = fixture.nativeElement as HTMLElement;
     assert.equal(host.getAttribute('role'), 'alert');
-    assert.equal(document.activeElement, before, 'rendering the error moved focus, which an alert must never do');
+    assertSameNode(document.activeElement, before, 'rendering the error moved focus, which an alert must never do');
 
     assertPattern({
       root: host,
@@ -86,7 +87,7 @@ test('arena-onboarding is a labelled modal that takes focus on open and gives it
 
     fixture.componentRef.setInput('open', false);
     fixture.detectChanges();
-    assert.equal(document.activeElement, invoker, 'closing did not restore focus to the invoker');
+    assertSameNode(document.activeElement, invoker, 'closing did not restore focus to the invoker');
   } finally {
     fixture.destroy();
     invoker.remove();

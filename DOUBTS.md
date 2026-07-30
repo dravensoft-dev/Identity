@@ -59,6 +59,44 @@ stale-proof; a present-tense component name is not.
 
 ## 1. Known debt
 
+- **"Every animation answers `prefers-reduced-motion`" is true of every `@keyframes` and of no
+  `transition`, in either layer.** Measured while porting `Switch`, not inferred: every
+  reduced-motion answer Arena has is an `@media (prefers-reduced-motion: reduce)` block around a
+  `@keyframes` in `frameworks/tailwind/Animations.css` — `arena-shimmer`, `arena-pop`,
+  `arena-menu`, `arena-prog-indeterminate`, `arena-btn-spin`, `arena-spinner`. **No manifest uses
+  the `motion-reduce:` variant at all**, and no global rule shortens or drops a transition, so
+  every `transition-[…] duration-[var(--dur-*)]` in every recipe runs at full length regardless of
+  the preference. React is in the same position from the same cause, with the durations inline
+  instead of in a manifest.
+  **How much of this is a real defect depends on the motion, and the rule already says so.** A
+  background or border-colour crossfade is not travel and nothing in WCAG asks for it to stop.
+  `arena-switch`'s knob **is** travel — it translates the width of its own track — and so is
+  `arena-button`'s `active:scale-98`. Those are the two worth fixing. The fix is one
+  `motion-reduce:transition-none` per affected slot, but it is a sweep across the shared
+  manifests with a decision per transition, and doing it inside a port would have been an
+  unreviewed library-wide restyle. **What makes this cheap to leave open is also what makes it
+  easy to forget**: no gate reads a manifest for motion, `check:dimensions` tolerates `s`/`ms`
+  by design, and every prompt's reduced-motion line is a by-hand item.
+
+- **`Checkbox` has no visible focus indicator, in either layer, and porting it to Angular did
+  not introduce that.** The control is a real `<input type="checkbox">` hidden with
+  `opacity-0 size-0` behind a decorative `<span>` box, which is the right structure — it keeps
+  the role, the name and Space-to-toggle from the platform, and it keeps the input focusable
+  where `display: none` would not. What neither layer does is paint anything on the box when the
+  input takes focus, so a keyboard user tabbing through a form sees **nothing move**. That is a
+  WCAG 2.4.7 failure and it is invisible to every gate here: the `checkbox` pattern requires
+  `roles.element`, `roles.label`, `keyboard.Space` and `states.checked`, and this control meets
+  all four, so `check:compliance` is correctly green over it.
+  **The fix is known and is deliberately not in this batch.** In Angular it is one utility on the
+  manifest's `box` slot — `has-[:focus-visible]:` reaching the sibling input, the same idea
+  `Input`'s `field` slot already uses with `focus-within:`. But the manifest is shared, so that
+  moves the Tailwind specimen too, and React reads no manifest at all: its `Checkbox.jsx` is
+  inline styles with no focus state to hook, so the layers would diverge on an accessibility
+  property rather than on a cosmetic one. Fixing it properly means fixing both, and that is a
+  change to a shipped React component rather than a port. **`Radio` is almost certainly the same
+  shape** and has not been looked at — it uses the same hidden-input structure and Plan D's batch
+  3 is where it lands.
+
 - **A green run is only as good as what the gate looked at, and a gate that finds nothing
   reports zero violations either way.** This is a rule rather than an anecdote, because it has
   now shipped three times in two batches of one refactor, each time in a different mechanism,
@@ -131,24 +169,36 @@ stale-proof; a present-tense component name is not.
 - **`delay` and `dismiss` govern React only, and Angular is not silently exempt
   — it just has no token-shaped seam yet.** Plan 7a's own Global Constraints
   first misstated this as the same "Angular has no primitive" asymmetry that
-  is correct for `debounce`-style speculation, when it is not: Angular has no
-  `Tooltip`, `Toast` or `Pagination` **primitive**, but it provides all three
-  through Angular Material, dressed by `arena-material.css` — the same
-  "Material provides the control" bucket most Tailwind manifests
-  belong to (`Tooltip.manifest.json`, `Toast.manifest.json` and
-  `Pagination.manifest.json` all exist). `check:script-tokens` cannot see
-  this — its orphan rule is "imported by at least one layer," and it is
-  satisfied by React alone by construction, the same structural blind spot the
-  first bullet in this section describes for chart internals. So today:
-  React's `Tooltip` waits `--delay-open`/`--delay-close` before a pointer
-  reveals or withdraws it; Angular's `matTooltip` does not — `showDelay` and
-  `hideDelay` default to 0, so the exact flash-on-crossing defect plan 7a
-  fixed on the React side is still live on the Angular side. Likewise React's
-  Delivery Console runs the toast clock off `--dismiss-default` /
-  `--dismiss-actionable`; Angular has no consumer wiring `MatSnackBarConfig`'s
-  `duration` to either value at all. The seams a future pass would bind these
-  through are `MAT_TOOLTIP_DEFAULT_OPTIONS` (`showDelay`, `hideDelay`) and
-  `MatSnackBarConfig.duration` — neither is wired today.
+  is correct for `debounce`-style speculation, when it is not: Angular had no
+  `Tooltip`, `Toast` or `Pagination` **primitive**, but it provided all three
+  through Angular Material — the same "Material provides the control" bucket
+  most Tailwind manifests belong to (`Tooltip.manifest.json`,
+  `Toast.manifest.json` and `Pagination.manifest.json` all exist). *"Dressed by
+  `arena-material.css`"* was true of two of the three and never of
+  `Pagination`: the bridge has no `.mat-mdc-paginator` rule and never had one,
+  so a delegated paginator rendered in Material's own colours the whole time.
+  `check:script-tokens` cannot see any of this — its orphan rule is "imported
+  by at least one layer," and it is satisfied by React alone by construction,
+  the same structural blind spot the first bullet in this section describes for
+  chart internals.
+  **`limit` is paid now, by the same route `delay` was.** `arena-pagination`
+  imports `limitPaginationSiblings` from `Tokens.generated` and derives its
+  window from it, so that token reaches both layers and the orphan rule is
+  satisfied by more than one of them for the first time. The blind spot is
+  unchanged — it is narrower by one token, not closed.
+  **`delay` is paid, and the way it was paid is the point: the primitive, not the seam.**
+  `arena-tooltip` imports `delayOpen` and `delayClose` from `Tokens.generated` and waits both,
+  revealing immediately on keyboard focus as the token's own `$description` demands. So the
+  flash-on-crossing defect is now fixed in both layers, and `MAT_TOOLTIP_DEFAULT_OPTIONS` — the
+  seam this entry proposed — was never wired and never will be: writing the control was the
+  cheaper fix, because it also brought the component inside `check:dimensions`,
+  `check:compliance` and the Angular arm of `check:api`, which no amount of default-options
+  wiring could have done.
+  **`dismiss` is still unpaid.** React's Delivery Console runs the toast clock off
+  `--dismiss-default` / `--dismiss-actionable`; Angular has no consumer wiring
+  `MatSnackBarConfig.duration` to either value at all, and it will stay that way until
+  `arena-toast` exists — at which point the host owns the clock, as `Toast`'s contract already
+  says, and the seam is a consumer's `setTimeout` rather than a Material config token.
 - **Both grid components now navigate by keyboard, and neither claim has a suite behind
   it.** `Table` and `Calendar` each bound `grid` with an exception on **all eight**
   requirements — zero `role=`, zero `tabIndex`, zero key handling, in components that
@@ -298,9 +348,15 @@ stale-proof; a present-tense component name is not.
   where the gate looked when it silently checked nothing (the false-green entry at the head of
   this section is the same defect from the gate's side), so a reader could have rebuilt the
   defect straight from the spec. That line now names the walk and says why the probe is refused.
-  Everything else in that file stays as it was: separating the historical uses from the normative
-  ones is a reading of that spec's argument, not a find-and-replace, and it belongs to whoever
-  plans Plan D. Read this paragraph before reading that spec.
+  **The rest is done, and the reading that resolved it is recorded in the spec's own Plan D
+  section:** a path is *normative* when it tells a reader where something IS, and the fifteen of
+  those are corrected; a path inside a `>` block or inside one of the per-batch test-count records
+  near the end of the file is *history* and is correct as written, because rewriting it would make
+  the record lie. That distinction is the reading, and it is why this was never a find-and-replace.
+  **What stays open is the class of defect rather than this instance:** nothing checks a path in a
+  dated process document, so the next structural move re-creates the problem in whatever specs are
+  unexecuted then. The React pre-move paths listed below are in the historical set under that
+  reading and are deliberately left.
   **The structure refactor's batch 3 made it worse without touching it: React's pre-move paths
   joined the list.** That spec names `frameworks/react/test-dom/`,
   `frameworks/react/use-dialog-modal.js`, `frameworks/react/api.generated.d.ts` and
@@ -1050,24 +1106,18 @@ stale-proof; a present-tense component name is not.
   previously written down **only inside plan 8B3**, which was deleted when that plan was
   executed. That is the exact failure mode this section's preamble names.
 
-- **A boolean variant's `defaultVariants` entry is written two different ways, and which way
-  a manifest uses is decided by whether anything typechecks it.** With `true`/`false` keys,
+- **RESOLVED: a boolean variant's `defaultVariants` entry was written two different ways, and
+  the split was a detection split rather than a style one.** With `true`/`false` keys,
   `tailwind-variants` infers a **boolean** variant, so the default must be `false`, not
-  `"false"`. Re-derive the split rather than trusting a list here: every manifest whose
-  component has an Angular `<Component>.variants.ts` consumer uses the boolean
-  (`ActivityFeed`, `PageHead`, `BulkActionBar`, `Alert`, `ConfirmDialog`, `Onboarding`,
-  `CommandPalette`, and `Tag` since this batch); every manifest without one uses the string
-  (`Card`, `SideNav`, `SegmentedControl`, `Tabs`, `Button`, `IconButton`, `Checkbox`,
-  `Radio`, `Switch`, `Select`, `Input`, `Textarea`). **That is not a style split, it is a
-  detection split** — `ngc --strictTemplates` rejects the string form, and a manifest with no
-  Angular consumer is never compiled by anything, so the wrong form is invisible. React does
-  not consume these recipes at all (its components are inline styles), and `check:tailwind`
-  asserts that classes resolve, not that defaults typecheck.
-  At runtime both work, because the lookup stringifies the key — so this costs nothing today
-  and costs a compile error the day a component in the second list gains an Angular
-  primitive. Adding `disabled` to `Tag` is what surfaced it: `Tag` moved from the second list
-  to the first mid-batch. The thirteen were left alone deliberately, because changing them
-  fixes nothing measurable and no gate would hold the fix in place.
+  `"false"`. Every manifest whose component had an Angular `<Component>.variants.ts` consumer
+  used the boolean; every manifest without one used the string, because `ngc --strictTemplates`
+  is what rejects the string form and a manifest no Angular component imports is compiled by
+  nothing. This entry recorded thirteen left alone deliberately, on the reasoning that changing
+  them fixed nothing measurable. **That reasoning expired the moment Plan D started**, and
+  batch 1 fixed all of them; the entry above under *Twelve Tailwind manifests carried a type
+  error nothing could see* is the live record, and it states the lesson — the blind spot, not
+  the typo. Kept here only so a reader who finds this paragraph quoted elsewhere knows it is
+  spent.
 
 - **`ActivityFeed`'s articles carry `tabindex="0"` on recollection, not on a re-read of APG.**
   The `feed` pattern's own file in `contracts/behaviour/` states seven requirements and says
@@ -1408,8 +1458,9 @@ stale-proof; a present-tense component name is not.
   alone now learns the option exists and that nothing has taken it.
   Converting it means writing a render suite for both shapes and adding `SideNavItem:react` to
   `COVERED`; nothing schedules that. What is genuinely still open is the third conditionality
-  level — conditional on **consumer** usage, with `Table`, `Tooltip` and `Pagination` as the live
-  instances — recorded in its own entry above. **Count the `none` bindings rather than writing an
+  level — conditional on **consumer** usage, whose live instance is `Tooltip` — recorded in its
+  own entry above, which is also where the other two named here went: `Table`'s was misfiled and
+  `Pagination`'s was designed away by making the member required and guarded. **Count the `none` bindings rather than writing an
   ordinal**, and note the count now includes `none` bound by a *case* rather than by a whole
   binding (`Tag`'s `plain` and `CalendarEvent`'s `inert`; `Skeleton`'s `circle` was a third
   until 8C10 retired that case, which is the count moving DOWN and another reason not to
@@ -1637,6 +1688,66 @@ stale-proof; a present-tense component name is not.
   layer is border-box; React is content-box*, in section 3, whose table this same measurement
   pass found to be wrong in several rows for the same UA-stylesheet reason.
 
+
+- **Twelve Tailwind manifests carried a type error nothing could see, and the reason is
+  structural rather than careless.** Every manifest with a boolean variant axis
+  (`true`/`false` keys) spelled its `defaultVariants` value as the **string** `"false"`, which
+  `tv()` rejects: the keys make the axis boolean, so the default must be boolean too. All twelve
+  were manifests whose mirrored component Angular **delegated**, so no `tv(manifest)` call ever
+  typechecked one — `check:tailwind` only asks whether each class resolves, and `classesFor()` in
+  the specimen coerces the key either way, so the specimens rendered correctly the whole time. The
+  twelve are fixed. **The lesson is the blind spot, not the typo:** a manifest for a delegated
+  component is untyped by construction, so the first compile of each remaining Plan D batch is
+  where that class of bug surfaces. Expect it; it is one line per manifest and changes no output.
+  Nothing gates it, because the gate is `ngc` and `ngc` cannot see a file no component imports.
+- **`CLAUDE.md` is 54 characters from its 60,000 limit.** Measure it rather than trusting this
+  number, which two batches have now moved — and measure it the way the gate does:
+  `node -e "console.log(require('fs').readFileSync('CLAUDE.md','utf8').length)"`. **`wc -m` is not
+  that measurement** and this entry used to prescribe it; the file is 60,282 *bytes* against 59,946
+  characters, so a byte count reads as 282 characters over a limit the file is comfortably under.
+  `check:docs` reads `.length`, which is UTF-16 code units. It fails hard rather than warning, so
+  this surfaces as a red gate at the end of a batch rather than as a decision made calmly.
+  **Batch 3 spent nothing**, which is the first useful data point this entry has: the assumption
+  that *every* remaining batch must touch the file is false. Landing `arena-pagination` moved no
+  claim in it, because the file carries no literal count of Angular primitives or delegated
+  entries — it names the `find` and the `python3 -c` that produce them — the six-category sentence
+  stayed true, and the React-only-set paragraph describes both sets by method rather than by
+  number, so they shrink together. `frameworks/angular/README.md` survived for the same reason.
+  **What would spend it is a new rule, not a new component.**
+  **Batch 2 bought its own room and spent all of it**, which is the shape of the problem rather
+  than a solution to it. Two claims in the file were measurably false and correcting them was
+  net-negative: the carve-out paragraph said the layer had *one* carve-out when `arena-button`
+  had already made a second, and the React-only-set paragraph said that set was
+  `BehaviourDelegated.json`'s key set *minus `Switch`* when the two sets are identical, 28 members
+  each. The `DataVisuals` placement paragraph then moved to this file wholesale — it is a
+  recorded decision with no gate behind it, which is this file's material. That bought about 600
+  characters and the harness and carve-out rules spent them.
+  **The candidates left are the same ones**: the Angular-layer paragraphs that
+  `frameworks/angular/README.md` already states in more detail, since `CLAUDE.md`'s job is the
+  cross-layer rule and not the layer's own tour. **54 characters is not a sentence, so the next
+  batch that does need to add a claim moves something out first.**
+
+- **The Angular by-hand checklists named work nobody here could do, and batch 2 built the thing
+  that does it.** This entry recorded that `Button.prompt.md` and `Tooltip.prompt.md` each ended
+  with a "By hand, in real Chromium" block against a layer with **no demo page and no application
+  at all**, and that of the three possible resolutions — a harness, a browser-driven gate, or
+  deleting the blocks — none was taken. **The harness is the one that was taken.**
+  `<Component>.card.html` beside each covered primitive runs the real component: `ngc` compiles the
+  templates AOT and `Bun.build` bundles that output for a browser, one shared Angular chunk across
+  every page, built by `bun run build:angular-demo` and chained ahead of `bun run demos`.
+  **It paid for itself before this batch's own components landed.** `arena-button`'s `full`
+  variant did nothing: the carve-out host is bare, so as a flex item it blockifies to
+  shrink-to-fit, and the inner button's `w-full` measured the shrunk host rather than the row. No
+  suite could see it — happy-dom has no layout. The fix is `display: contents` on every bare
+  carve-out host, now asserted for the whole layer in `HostClassBinding.test.ts`.
+  **What is still open is smaller and is named here rather than in the prompts.** The pages carry
+  no `@dsCard`, because their script is git-ignored build output and a blank page passes a
+  viewport-overflow check by having nothing to overflow — so Angular primitives get no *published*
+  specimen card, and the Tailwind specimen stays the published visual for the recipe.
+  `check:angular-demos` is structural only: it proves a page exists, loads its own bundle and
+  mounts a zoneless app, never that what it renders is right. And **the checklists remain
+  checklists** — running them is a person's job, and a green `bun run check` still says nothing
+  about whether anyone did.
 
 ## 2. Where the rest of the debt lives
 
@@ -1974,11 +2085,27 @@ keeps its fade and drops its travel, an opacity-only animation needs no clause.
 
 **Converges:** no. Each layer uses its own idiom over the same token values.
 
-#### ActivityFeed is the Angular primitive that does not host-bind its root
+#### ActivityFeed was the first Angular primitive not to host-bind its root, and the carve-out set has grown
 
-**Every other Angular primitive:** the recipe's `root` slot is
-bound onto the host — `host: { '[class]': 'styles().root()' }` — and no wrapper element is
-rendered.
+**The default:** the recipe's `root` slot is bound onto the host —
+`host: { '[class]': 'styles().root()' }` — and no wrapper element is rendered. **Count the two
+sets rather than trusting a figure here**, because this entry has already gone stale once by
+claiming `arena-activity-feed` was alone:
+
+```bash
+grep -Lr "'\[class\]':" --include='[A-Z]*.ts' frameworks/angular/components/*/*/ \
+  | grep -vE '\.(test|variants|card\.entry)\.ts$|(State|Window)\.ts$'
+```
+
+The carve-outs fall into three groups and each has its own reason. **The three SVG charts**
+(`bar-chart`, `line-chart`, `doughnut-chart`) have no manifest and no recipe at all, so there is
+no `root` slot to bind. **The form controls** (`button`, `icon-button`, `checkbox`, `radio`) each
+need their own `<button>`, `<input>` or `<label>`, or they forfeit the activation, labelling and
+`:disabled` semantics the browser already supplies. **And the rest keep a specific semantic or
+structural element**: `arena-activity-feed` a real `<ul>`, `arena-tabs` a `<div role="tablist">`
+with the panels as siblings outside it, `arena-pagination` a real `<nav>`. Every one of them
+declares `display: contents` on the bare host, and `HostClassBinding.test.ts` fails any that
+does not.
 
 **`arena-activity-feed`:** keeps the host a bare, unstyled `<arena-activity-feed>` and
 renders a real `<ul [class]="base().root()">` inside it, with each row a real `<li>`.
@@ -2011,17 +2138,29 @@ the no-host-bind decision, not from anything the contract could restate.
 **Converges:** no. This is the correct shape for a primitive whose root must be a real list
 element, per the carve-out rule stated above.
 
-#### The Angular layer has no Button primitive
+#### Both layers have a Button, and Angular's is the newer one
 
 **React:** `Button.jsx` is a component, and `ConfirmDialog.jsx` renders `<Button>` for its footer.
-**Angular:** there is no `arena-button`. Angular Material's `mat-button` fills that role, so a
-component needing footer buttons styles them itself from its own manifest.
+**Angular:** `arena-button` is a primitive, in `components/forms/button/`. It renders a real
+`<button>` inside a bare host — the carve-out above — and reads the same
+`Button.manifest.json` React's Tailwind mirror does.
 
-**Why:** the Angular layer is deliberately the set of primitives Material does not provide.
+**Converges:** yes, and this entry stays because two things it recorded are still live.
 
-**Consequence to know:** a hand-rolled button must still carry the interaction affordances
-`Button.manifest.json` defines — the gap, the transition, and the hover shadow — or it ships a
-control with no feedback. This was missed once on `ConfirmDialog` and corrected.
+**The first is that a component predating `arena-button` may still hand-roll its footer**, and a
+hand-rolled button must carry the interaction affordances `Button.manifest.json` defines — the gap,
+the transition, the hover shadow — or it ships a control with no feedback. That was missed once on
+`ConfirmDialog` and corrected. Nothing makes those components adopt `arena-button` now, and no gate
+would notice: `check:states` resolves a manifest to its *mirrored* source, never to every consumer.
+
+**The second is a real divergence the port introduced, and Angular is the correct side.** The API
+contract names the event `click`, and an Angular output named after a native DOM event gets **both**
+an output subscription and a host DOM listener, so a consumer's `(click)` fires twice on every
+press. `arena-button` calls `stopPropagation()` on the inner button to make it fire once — measured,
+not assumed, in `Button.compliance.test.ts`. The cost is that a click never reaches an ancestor, so
+click delegation past an `arena-button` does not work, where React's `onClick` leaves bubbling
+intact. Recorded in `Button.prompt.md`. **Every future primitive whose contract names an event after
+a native one inherits this** — `TableRow.click` is the next.
 
 **`ErrorState` was a divergence here and no longer is.** Under the API contract
 (`contracts/api/components/ErrorState.json`) both layers draw the retry the same way: React's
@@ -2493,6 +2632,26 @@ the global `document` directly and has no injection contract to keep consistent.
 primitive whose host classes depend on a runtime measurement, and the next five (the
 chart primitives) inherit the helper unchanged.
 
+#### DataVisuals sits at both layer roots, and only one layer's consumers put it there
+
+Moved out of `CLAUDE.md` on 2026-07-30 to make room under its 60,000-character limit. It is a
+placement *decision* with no gate behind it, which is this file's material rather than the
+cross-layer rule book's.
+
+**React:** `Calendar` imports `catColor` from it, so a `display` component consumes it and the
+narrowest-common-level rule puts the module at the layer root rather than in a category —
+verify with `grep -rln DataVisuals frameworks/react/components`, which returns the three charts
+**and** `display/calendar/`.
+
+**Angular:** the consumers are the three charts alone, so the same rule would put its copy in
+`components/charts/`. It is at the layer root **by decision**, because that narrower consumer
+set is an artifact of Angular's `Calendar` being delegated to Material rather than a real
+difference between the layers — and Plan D does not close it, since `Calendar` is one of the two
+`absent` entries that survive Plan D rather than a delegation Plan D removes.
+
+**Converges:** not by Plan D. It would converge only if Angular ever grew a schedule view, which
+nothing has decided.
+
 #### DataVisuals — the visually-hidden style carries its units in Angular
 
 (This module was `chart-internals.js`/`ChartInternals.ts` under each layer's `charts`
@@ -2833,6 +2992,32 @@ duplication the bridge exists to avoid. The section and disclosure shapes are op
 Plan D's level rather than this entry's. Recorded so that a reader comparing the three does not
 mistake the Material gap for drift.
 
+#### Angular's Tooltip is positioned by an overlay and React's is in flow
+
+**React:** `Tooltip.jsx` renders the bubble as an absolutely-positioned child of the wrapper span,
+so it is laid out against a `position: relative` ancestor.
+**Angular:** `arena-tooltip` renders it through a `TemplatePortal` into a `@angular/cdk/overlay`
+pane on `document.body`, positioned by `createFlexibleConnectedPositionStrategy` with a
+`reposition()` scroll strategy.
+
+**Why:** the CDK is the reason the Angular layer took a dependency at all — Arena should not
+hand-roll trigger-anchored positioning, viewport flipping and reposition-on-scroll. Focus and roles
+stay Arena's, which is why `FocusTrap.ts` is untouched.
+
+**Converges: no, and Angular is the better side.** React's bubble is clipped by any
+`overflow: hidden` ancestor and cannot leave a scroll container; Angular's escapes both. Fixing
+React means either a portal or a popover, and neither is scoped here. Recorded so that a reader
+comparing the two does not read the divergence as Angular drifting.
+
+**Two consequences worth carrying.** The shared `Tooltip.manifest.json` grew an `anchored` variant
+axis so one recipe serves both models: the wrapper-relative utilities live under
+`anchored: false` — which `classesFor()` applies by default, so the Tailwind specimen and React's
+mirror are untouched — and Angular asks for `anchored: true` and gets appearance only. Any future
+anchored primitive (`Menu`, `Select`) reuses that axis rather than inventing a second convention.
+And the compliance suite is the first in the layer to pass `root: document.body`, because
+`roles.describedby` resolves an IDREF and no element inside the fixture contains both the trigger
+and the bubble.
+
 ### How to add an entry
 
 When you find a behavioural difference between layers:
@@ -2842,6 +3027,157 @@ When you find a behavioural difference between layers:
 2. If one layer is simply wrong, fix it and add no entry.
 3. If both are defensible, or one leads and the other has debt, add an entry here with the reason
    and whether it is expected to converge.
+
+#### Switch — the knob glyph is inked in Angular and inherits the page ink in React
+
+**React:** `Switch.jsx` draws the per-state `<i>` with a font size and nothing else, so its colour
+inherits from the page. The knob under it is `var(--on-accent)` — near-white — and the page ink on
+a dark surface is near-white too, so **the glyph is all but invisible**, at every size. It is
+shipping: `frameworks/react/ui-kits/console/Shell.jsx` renders the theme toggle with
+`iconOn="ph-bold ph-sun"`. What kept it unseen is that the *specimen* pages did not — React's
+`Forms.card.html` passes neither icon, so the card a reviewer opens has no glyph in it at all.
+**Angular:** `arena-switch` reads the shared manifest, whose `icon` slot now carries
+`text-primary`. Crimson on the near-white knob, legible down to `sm`.
+
+**Why:** the fix is in the manifest, which Angular and the Tailwind specimen read and React does
+not — React's `Switch` is inline styles with no hook for it. It is one utility rather than a
+judgement: the knob is `bg-primary-content`, so the glyph must be `text-primary`, which is the
+same pair `check:text-contrast` already gates at 4.5 in its `primary`/`primary-content` row, read
+the other way round. No new gate entry is owed, and none was added.
+
+**Converges: no, and Angular is the better side.** React's is a real legibility defect and closing
+it means giving `Switch.jsx` an explicit colour — a change to a shipped React component, not a
+port. **The demo page is what found it**, which is the case for the harness in one sentence: five
+sizes rendered side by side with a glyph in each, and the `sm` one is where you look.
+
+#### Input — three differences, and the picker dressing moved into the shared layer
+
+**Status glyphs.** React's `Input.jsx` draws `ph-warning-circle` and `ph-check-circle` with a
+colour and no `aria-hidden`, while the leading `icon` beside them **is** hidden — an
+inconsistency inside one component. A Phosphor glyph is a font ligature, so an unhidden one is
+announced next to the error message it duplicates. `arena-input` hides all four.
+**Converges: no, and Angular is the better side.** One attribute on `Input.jsx` closes it.
+
+**The controlled value.** React re-renders the DOM value from the prop, so ignoring `onChange`
+visibly reverts the box. Angular's `[value]` binding writes only when the *bound* value changes,
+so ignoring `(change)` leaves what the user typed on screen while the signal says otherwise. That
+is Angular's binding model rather than a defect, and no `ControlValueAccessor` is involved
+(`arena-input` is not a forms control and does not claim to be). It is stated in
+`Input.prompt.md` because it is the one way a consumer can hold this component wrong.
+
+**The date picker indicator moved layers.** React injects a one-time
+`<style data-arena-input>` from a module-level `injected` guard to dress
+`::-webkit-calendar-picker-indicator`, because an inline style cannot reach a vendor
+pseudo-element. Angular components carry no `styles`, so the rule went into the shared
+manifest's `input` slot as arbitrary variants
+(`[&::-webkit-calendar-picker-indicator]:[filter:invert(var(--picker-invert))]` and its
+siblings), which `check:tailwind` proves emit and `check:arbitrary` passes. **That is strictly
+better placed** — it serves the Tailwind specimen too, and it is measured by the same gates as
+every other class. React's injection is now a duplicate of it and is left alone: removing it
+would change a shipped component for no behavioural gain, since React reads no manifest.
+
+#### Textarea — autoResize measures on more occasions in Angular, and adds the border React forgets
+
+**React:** `Textarea.jsx` grows the box inside its own change handler and nowhere else, from
+`e.target.scrollHeight` exactly. So a value set programmatically — a draft loaded from a server, a
+template inserted by a button — leaves the box at its old height until the user types into it.
+**Angular:** `arena-textarea` runs the same measurement in an `afterRenderEffect` that reads
+`value()`, so mount and every programmatic change size it too, and the `(input)` path stays for
+the case where a consumer never wires `change` back.
+
+**And the formula differs by one term, because the two layers are not the same box model.**
+`scrollHeight` is content plus padding and **never the border**. React's textarea is content-box,
+where `height` means content alone, so its `scrollHeight` is already generous and no scrollbar
+appears. The Tailwind layer is border-box, where `height` must cover the border too — so the same
+formula lands two pixels short and the box keeps a permanent scrollbar. `borderBoxSlack()` adds
+`offsetHeight - clientHeight`. **The demo page is what found this**: the seeded long value showed
+a scrollbar on a box that was supposed to have grown past it, and no suite could have seen it
+because happy-dom has no layout and reports `scrollHeight` as `0`.
+
+**Converges: no, and Angular is the better side on both counts.** Neither difference is worth
+porting back blind — React's content-box textarea does not have the second problem at all, so
+copying the `+ borderBoxSlack` term there would make its box two pixels too tall.
+
+#### A compound family coordinates in the opposite direction in each layer
+
+**React:** the parent clones each child and pushes `name`, `checked` and a callback into it
+(`RadioGroup` → `Radio`, `Table` → `TableRow` → `TableCell`, `SideNav` → its items). Injection is
+direct children only, one hop, which is why a consumer's own wrapper component or a `<>…</>`
+fragment between two levels silently breaks the chain.
+**Angular:** there is no `cloneElement`. The parent provides a small state object and the **child
+injects it and pulls** — `RadioGroupState` in `components/forms/radio-group/`. Nothing is pushed,
+so a wrapper component, a `@for`, or any depth of projection between the two is harmless, and an
+option outside a group is a DI error rather than a silently inert control.
+
+**Why the state object exists at all, rather than the child injecting the parent component.**
+`check:api` reads the Angular surface from the real `<Name>.ts` class and requires it to be exactly
+the contract's members — a public `select()` or a public `selected` signal on `RadioGroup` fails the
+gate, correctly, because a consumer could reach it. So the coordination cannot live on the
+component. It lives on a class the component `provides`, which no gate reads as a surface and no
+consumer can name. **That is the pattern for every remaining compound family**: `Tabs`/`Tab` in
+this batch, `Table`/`TableRow`/`TableCell` in batch 4, the `SideNav` family in batch 6.
+
+**Converges: no, and neither side is wrong.** Each is its framework's idiom. What both keep is the
+rule that the coordination is a member of no contract.
+
+**One consequence for the contracts themselves, and it is only half fixed.** Several `content`
+descriptions were written in React's mechanism — "RadioGroup injects each one's selected state" —
+which is the same defect as the word *prop* appearing in a contract. `RadioGroup` and `Tabs` are
+reworded to say what is true of both layers. **`SideNavItem`, `TableRow` and `TableCell` still say
+"injects", and `TableRow`'s and `TableCell`'s prose even names `cloneElement`**; they are left for
+the batches that implement them, because rewording a contract for a layer that does not exist yet
+is a guess about what that layer will do.
+
+#### Two Angular components bind `navigation` and reach the landmark two different ways
+
+`arena-pagination` renders a real `<nav>` and takes its host out of layout with
+`display: contents`. `arena-breadcrumbs` renders no `<nav>` at all: it host-binds its root slot and
+puts `role="navigation"` on the host. Both satisfy the pattern, because `navigation`'s
+`roles.element` admits either — *"navigation (native nav, or role=navigation when nav cannot be
+used)"* — and both suites pass the same `assertPattern` against the same requirement.
+
+**The reason for the difference is which rule each followed, not a judgement about the pattern.**
+`arena-breadcrumbs` followed the layer's default, which is that a primitive host-binds its root
+rather than rendering a wrapper. `arena-pagination` followed React, whose `Pagination.jsx` renders
+a `<nav>`, and took the carve-out the host rule already provides for an element that must be a
+specific semantic one.
+
+**Which is better is not settled, and the pattern's own wording leans the other way from
+`Breadcrumbs`**: it offers `role=navigation` for when `<nav>` *cannot* be used, and nothing stopped
+`arena-breadcrumbs` from using one. Converging means giving `arena-breadcrumbs` a real `<nav>`, a
+bare host with `display: contents`, and a rewrite of its compliance suite — whose subject is
+currently the fixture's own element and would become an element inside it. Nothing schedules that,
+and no gate notices: `check:behaviour` compares bindings and both bind `navigation` cleanly, while
+the evaluator asks whether there is a navigation landmark and never which element carries it.
+
+#### `input.required` is not the runtime guard, and four components now say so in code
+
+Six API contracts say a member is **"required, and guarded at runtime"**. Angular's
+`input.required` is not that guard: it throws when nothing was bound at all (NG0950) and says
+nothing about what was bound. `[ariaLabel]="row.title"` with an empty title satisfies it, and
+`[pageCount]="0"` satisfies it, and each leaves the component in exactly the state the member was
+made required to prevent — the first an unnamed landmark, the second a window over nothing.
+
+So the guard is a `computed` that validates and throws, placed where the template or the host
+binding already reads it, which is what makes it run on the first change detection instead of
+waiting for something to ask. `Pagination` (`ariaLabel`, `pageCount`), `Breadcrumbs`
+(`ariaLabel`), `ActivityFeed` (`label`) and `RadioGroup` (`ariaLabel`) carry it. The remaining
+three contracts with the phrase — `SideNav`, `SideNavSection`, `Table` — are still delegated and
+arrive with batches 4 and 6.
+
+**Two properties of this shape are worth knowing before extending it.** A signal caches a thrown
+error and re-throws it until a dependency changes, so a guard that fires once keeps firing for the
+right reason rather than resolving on the next tick. And under zoneless change detection the throw
+propagates out of `detectChanges()` — which is what makes it assertable with `assert.throws`, and
+also what makes an invalid configuration on a demo page render nothing at all rather than render
+badly.
+
+**One divergence from React, deliberate.** React tests falsiness (`if (!ariaLabel)`), this layer
+tests `trim()`. A name of nothing but spaces is refused here and accepted there. React's is the
+weaker of the two, and nothing schedules moving it.
+
+**Nothing gates any of this.** No check reads a contract's `description` prose, so a seventh
+contract could grow the phrase and no component would be obliged to notice.
 
 ## 4. What the READMEs do not say
 
@@ -3167,6 +3503,106 @@ throws the second time it runs across files that share a process.
 `BrowserDomAdapter.makeCurrent()` installs a process-wide DOM adapter on the FIRST platform
 creation that nothing resets — a second per-file document would render into a document the adapter
 no longer points at, and `getComputedStyle` reading the wrong document was the observed failure.
+
+### `frameworks/angular/test/NodeAssert.ts` — a failing node assertion is what ends the run
+
+`node:assert` renders **both** operands into its diff when an equality assertion fails, and a
+happy-dom node that is **connected** reaches the whole document from there. So the cost is set by
+the tree the node hangs in, not by what it is compared against — and the Angular suites share one
+document for the entire run (see `TestbedEnv.ts` above), which only ever grows, because a fixture
+left undestroyed keeps its nodes in it.
+
+Measured, with a `<body>` holding **three** elements, as the length of the `AssertionError` message:
+
+| assertion | message length |
+|---|---|
+| two **detached** `<button>`s | 1,441 |
+| two **connected** `<button>`s | 12,755 |
+| a connected `<button>` against `null` | 285,795 |
+| `document.body` against a connected `<button>` | 518,563 |
+
+Comparing against `null` is therefore **not** the safe case, which is the counter-intuitive part:
+`assert.equal(host.querySelector('button'), null)` costs 285k characters on a three-element body.
+A real run's body is orders of magnitude larger, and building that string is what exhausts memory
+and CPU — the failure never reaches a reader at all, so the suite looks like it hung rather than
+like it found a defect. It was found the day `arena-tabs` landed: the first focus assertion to
+fail took the whole process with it.
+
+`assertSameNode`/`assertNotSameNode`/`assertNoNode` compare identity and render the operands
+themselves, clipping text at 40 characters; `NodeAssert.test.ts` holds the failure messages under
+400. `check:assertions` is what keeps the raw form from coming back — it judges the **tail** of
+each operand expression, so `assert.equal(el.textContent, 'x')` stays allowed while
+`assert.equal(el.closest('label'), other)` does not.
+
+**Not covered, and deliberately:** the React layer. Its suites use `bun:test`'s `expect`, which did
+not reproduce the blow-up, and they do not share one document across the whole run the way
+Angular's do. If React ever moves to `node:assert`, `SUITE_ROOT` is the one line to widen.
+
+### `frameworks/angular/components/navigation/tabs/Tabs.compliance.test.ts` — the CDK reads `keyCode`, which happy-dom leaves 0
+
+`@angular/cdk/a11y`'s `ListKeyManager.onKeydown` switches on **`event.keyCode`**, the deprecated
+property — not on `event.key`. A browser still fills `keyCode` in, so `arena-tabs` works in real
+Chromium; happy-dom leaves it `0` when the event is built as
+`new KeyboardEvent('keydown', { key: 'ArrowRight' })`, so the manager falls to its `default:` arm
+and **ignores every key**. `press()` sets `keyCode` for that reason, and the map is beside it.
+
+Two things this cost, both worth remembering. Nothing moved focus, so `document.activeElement`
+stayed `<body>` and the focus assertion failed against the largest node in the document — which is
+how the entry above was found. And the sibling test asserting that the **vertical** arrows do
+nothing passed for the wrong reason: nothing was doing anything. A test that asserts an absence is
+the one that cannot tell a working mechanism from an absent one.
+
+Arena's own components read `event.key` and are unaffected — `activity-feed` and `bulk-action-bar`
+both walk with arrows under happy-dom today. `Tabs` is the only component that delegates its
+keyboard to the CDK, so it is the only one that needs this.
+
+### `frameworks/angular/theme/arena-cdk.css` — one selector, and why the other four are left alone
+
+`@angular/cdk/overlay-prebuilt.css` hardcodes `z-index: 1000` in five places:
+`.cdk-overlay-container`, `.cdk-global-overlay-wrapper`, `.cdk-overlay-pane`,
+`.cdk-overlay-backdrop`, and the global wrapper's pane. Only the **container** is overridden, to
+`var(--z-dropdown)`.
+
+The container is the one that matters because it establishes the stacking context: at 1000 it sits
+exactly on `--z-modal` and above `--z-tooltip`, so a `z-tooltip` class on a pane inside it could
+never place that pane against Arena's in-flow overlays. The other four are **equal to each other on
+purpose** — inside the container the CDK layers by DOM order, which is what keeps a backdrop under
+its own pane. Lowering one relative to its siblings is how a backdrop ends up over the panel it
+dims.
+
+Two consequences. Every CDK overlay shares one z slot, so a tooltip over a menu item wins by being
+appended later rather than by `--z-tooltip` being 950 — the outcome that token exists for, reached
+by a different mechanism, which means the token's own `$description` is now describing an intent
+rather than a computation. And while `Toast` is still in flow at `--z-toast` (1300), no
+CDK-positioned overlay can outrank it; that resolves itself when `arena-toast` becomes a primitive.
+
+### `frameworks/angular/test/Overlays.ts` — the container must survive the teardown
+
+The first version of `disposeOverlays()` removed `.cdk-overlay-container`, and it broke every
+overlay test after the first two in a file — silently, with nothing to query. The CDK creates that
+container once and **caches the reference**, so removing the element leaves every later overlay
+attaching into a node that is no longer in the document. Measured, not reasoned.
+
+So the helper removes the panes and leaves the container. An empty container is already invisible
+(`overlay-prebuilt.css` carries `.cdk-overlay-container:empty { display: none }`), so leaving it
+costs nothing. This matters here specifically because `TestbedEnv.ts` shares one document across
+the whole `bun test build/angular-test/angular` run, so the hazard crosses files.
+
+### `scripts/check-cdk.mjs` — why it checks selectors where `check-material.mjs` cannot
+
+`check-material.mjs` deliberately never examines the selectors its properties sit in, and that is
+one of its two disclosed blind spots. `check-cdk.mjs` does check them, and the difference is that
+it **has an oracle**: the CDK bridge's whole job is overriding a class the prebuilt stylesheet
+defines, and that stylesheet is installed and readable, so `.cdk-overlay-kontainer` is decidably
+wrong. Material's bridge has no equivalent — a `--mat-*` property name can be verified against the
+package, but which selector *should* carry it is a judgement no file states.
+
+What this gate still cannot check is whether the override's **value** is right for that class. It
+also carries four zero-result guards, because a bridge that stops being a bridge — no rule, no
+`cdk-*` class, no `var()`, no `@import` — would otherwise pass by having nothing left to check.
+Its own suite exercises all four, and it caught a real defect while being written:
+`cdkClasses()` did not strip comments, so a class named in prose would have been checked as
+though it were an override.
 
 ### `scripts/check-card-viewports.mjs` — why the content height takes a max of two metrics
 

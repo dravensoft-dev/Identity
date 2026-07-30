@@ -26,6 +26,6 @@ export default {
   },
   "defaultVariants": {
     "size": "md",
-    "selected": "false"
+    "selected": false
   }
 } as const;

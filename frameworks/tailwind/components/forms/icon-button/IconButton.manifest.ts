@@ -37,6 +37,6 @@ export default {
   "defaultVariants": {
     "variant": "ghost",
     "size": "md",
-    "showLabel": "false"
+    "showLabel": false
   }
 } as const;

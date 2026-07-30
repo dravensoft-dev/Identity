@@ -3,6 +3,7 @@ ensureDom();
 
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { assertNotSameNode, assertSameNode } from '../../../test/NodeAssert';
 import {
   type FocusTrapState,
   focusFirstFocusable,
@@ -45,9 +46,9 @@ test('focusableElements finds only real, enabled, tabbable elements, in DOM orde
 
 test('focusFirstFocusable moves DOM focus to the panel\'s first focusable descendant', () => {
   const { panel, input } = buildPanel();
-  assert.notEqual(document.activeElement, input, 'sanity: nothing is focused yet');
+  assertNotSameNode(document.activeElement, input, 'sanity: nothing is focused yet');
   focusFirstFocusable(panel);
-  assert.equal(document.activeElement, input);
+  assertSameNode(document.activeElement, input);
 });
 
 test('focusFirstFocusable falls back to the panel itself when it has no focusable descendant', () => {
@@ -55,26 +56,26 @@ test('focusFirstFocusable falls back to the panel itself when it has no focusabl
   panel.setAttribute('tabindex', '-1');
   document.body.appendChild(panel);
   focusFirstFocusable(panel);
-  assert.equal(document.activeElement, panel);
+  assertSameNode(document.activeElement, panel);
 });
 
 test('Tab from the last focusable wraps to the first, and the key is consumed', () => {
   const { panel, input, confirm } = buildPanel();
   confirm.focus();
-  assert.equal(document.activeElement, confirm);
+  assertSameNode(document.activeElement, confirm);
   const event = keydownTab(false);
   trapTabKey(panel, event, document.activeElement);
-  assert.equal(document.activeElement, input, 'Tab from the last element must wrap to the first');
+  assertSameNode(document.activeElement, input, 'Tab from the last element must wrap to the first');
   assert.ok(event.defaultPrevented, 'the boundary Tab must be prevented, or the browser would also move focus');
 });
 
 test('Shift+Tab from the first focusable wraps to the last, and the key is consumed', () => {
   const { panel, input, confirm } = buildPanel();
   input.focus();
-  assert.equal(document.activeElement, input);
+  assertSameNode(document.activeElement, input);
   const event = keydownTab(true);
   trapTabKey(panel, event, document.activeElement);
-  assert.equal(document.activeElement, confirm, 'Shift+Tab from the first element must wrap to the last');
+  assertSameNode(document.activeElement, confirm, 'Shift+Tab from the first element must wrap to the last');
   assert.ok(event.defaultPrevented);
 });
 
@@ -83,7 +84,7 @@ test('Tab away from a middle element is left alone -- the trap only intervenes a
   cancel.focus();
   const event = keydownTab(false);
   trapTabKey(panel, event, document.activeElement);
-  assert.equal(document.activeElement, cancel, 'the trap must not move focus away from a non-boundary element');
+  assertSameNode(document.activeElement, cancel, 'the trap must not move focus away from a non-boundary element');
   assert.ok(!event.defaultPrevented, 'a non-boundary Tab must be left to the browser\'s own default handling');
 });
 
@@ -100,13 +101,13 @@ test('handleOpenTransition: opening captures the previously-focused element and 
   trigger.textContent = 'Delete project';
   document.body.appendChild(trigger);
   trigger.focus();
-  assert.equal(document.activeElement, trigger);
+  assertSameNode(document.activeElement, trigger);
 
   const { panel, input } = buildPanel();
   const state: FocusTrapState = { wasOpen: false, restoreTo: null };
   handleOpenTransition(state, true, panel, document.activeElement);
 
-  assert.equal(document.activeElement, input, 'opening must move focus into the panel\'s first focusable element');
+  assertSameNode(document.activeElement, input, 'opening must move focus into the panel\'s first focusable element');
   assert.equal(state.restoreTo, trigger, 'the element that had focus before opening must be remembered');
   assert.equal(state.wasOpen, true);
 });
@@ -121,11 +122,11 @@ test('handleOpenTransition: closing restores focus to the element remembered at 
   handleOpenTransition(state, true, panel, document.activeElement);
 
   confirm.focus();
-  assert.equal(document.activeElement, confirm);
+  assertSameNode(document.activeElement, confirm);
 
   handleOpenTransition(state, false, panel, document.activeElement);
 
-  assert.equal(document.activeElement, trigger, 'closing must restore focus to the pre-open element, not to whatever was focused at close time');
+  assertSameNode(document.activeElement, trigger, 'closing must restore focus to the pre-open element, not to whatever was focused at close time');
   assert.equal(state.restoreTo, null, 'the remembered element must be cleared once restored, so a later close does not refocus it again');
   assert.equal(state.wasOpen, false);
 });
@@ -138,12 +139,12 @@ test('handleOpenTransition: a re-run with isOpen unchanged does not re-steal foc
   const { panel, input, confirm } = buildPanel();
   const state: FocusTrapState = { wasOpen: false, restoreTo: null };
   handleOpenTransition(state, true, panel, document.activeElement);
-  assert.equal(document.activeElement, input);
+  assertSameNode(document.activeElement, input);
 
   confirm.focus();
   handleOpenTransition(state, true, panel, document.activeElement);
 
-  assert.equal(document.activeElement, confirm, 'a same-state re-run must leave focus exactly where the user put it');
+  assertSameNode(document.activeElement, confirm, 'a same-state re-run must leave focus exactly where the user put it');
 });
 
 test('isConfirmLocked: unset requireText never locks', () => {

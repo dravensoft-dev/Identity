@@ -70,8 +70,21 @@ export const COVERED = {
   'Breadcrumbs:angular': 'Breadcrumbs.compliance.test.ts',
   'BulkActionBar:angular': 'BulkActionBar.toolbar.test.ts',
   'CommandPalette:angular': 'CommandPalette.combobox.test.ts',
+  'Button:angular': 'Button.compliance.test.ts',
   'ConfirmDialog:angular': 'ConfirmDialog.compliance.test.ts',
   'Tag:angular': 'Tag.cases.test.ts',
+  'Tooltip:angular': 'Tooltip.compliance.test.ts',
+  'IconButton:angular': 'IconButton.compliance.test.ts',
+  'Checkbox:angular': 'Checkbox.compliance.test.ts',
+  'Switch:angular': 'Switch.compliance.test.ts',
+  'Input:angular': 'Input.compliance.test.ts',
+  'Textarea:angular': 'Textarea.compliance.test.ts',
+  'RadioGroup:angular': 'RadioGroup.compliance.test.ts',
+  'Radio:angular': 'RadioGroup.compliance.test.ts',
+  'SegmentedControl:angular': 'SegmentedControl.compliance.test.ts',
+  'Tabs:angular': 'Tabs.compliance.test.ts',
+  'Tab:angular': 'Tabs.compliance.test.ts',
+  'Pagination:angular': 'Pagination.compliance.test.ts',
 };
 
 export function suiteMentions(source, tail) {

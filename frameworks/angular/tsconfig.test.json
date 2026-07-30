@@ -7,5 +7,6 @@
     "tsBuildInfoFile": "../../build/angular-test/.tsbuildinfo"
   },
   "files": [],
-  "include": ["./components/**/*.ts", "./test/**/*.ts", "./*.ts"]
+  "include": ["./components/**/*.ts", "./test/**/*.ts", "./*.ts"],
+  "exclude": ["./components/**/*.card.entry.ts"]
 }

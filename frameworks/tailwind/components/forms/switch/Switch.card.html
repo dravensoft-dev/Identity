@@ -15,9 +15,9 @@ const manifest = await (await fetch('./Switch.manifest.json')).json();
  * and orientation, and the knob's translate direction genuinely depends on
  * BOTH checked and orientation, so those two crossed pairs are flattened
  * into their own enumerated variants rather than declared as a compound.
- * A real tv() consumer would use compoundVariants instead; Switch has none
- * (React-only, no Angular primitive), so this demo computes the flattened
- * keys itself the same way a future Angular recipe would need to. */
+ * `arena-switch` is the real tv() consumer now, and it crosses the same two
+ * pairs in `footprintFor()` and `thumbFor()` -- the flattening stays because
+ * this harness still needs it, and both sides compute the key the same way. */
 function toggle({ label, size = 'md', orientation = 'horizontal', checked = false, disabled = false, confirm = false, iconOn, iconOff }) {
   const footprint = `${orientation}-${size}`;
   const thumb = `${checked ? 'on' : 'off'}-${orientation}`;
