@@ -56,6 +56,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   either on one page were indistinguishable landmarks; `RadioGroup` had no accessible name at
   all. Nothing can derive these names, so nothing defaults them — pass what is being paged, or
   chosen, or navigated.
+- **Two records that had gone stale unread are measured now rather than listed.** The Angular
+  layer's "an input named after a native attribute leaves the native attribute behind" note
+  claimed nine affected primitives; it is **fourteen**, because four `name` inputs landed during
+  Plan D's own earlier batches. And a `DOUBTS.md` entry about contract prose rotting had itself
+  rotted, asserting that two contracts named `cloneElement` when no contract ever has. Both now
+  carry the command that measures the set instead of a figure.
 
 ### Added
 
@@ -76,6 +82,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   roving-focus: it renders a real `<nav>`, ports React's page window rather than re-deriving it,
   and replaces the one delegated control `arena-material.css` never dressed — a `MatPaginator`
   had been rendering in Material's own colours inside an Arena interface.
+- **The Angular display controls** — `arena-badge`, `arena-card` and the
+  `arena-table`/`arena-table-row`/`arena-table-cell` family. `Table`'s delegated declaration
+  bound the `grid` pattern with **eight** exceptions — four roles, because `MatTable` renders
+  `role="table"`, and four keyboard and focus, because Material's own docs say changing that
+  role adds no keyboard handling; all eight are gone, and the wide shape now walks by arrow key,
+  `Home` and `End` with one tab stop for the whole grid. `responsive` is a contracted member, so
+  the card shape below `--bp-md` is real and is measured on the **container**, never the
+  viewport. `Table.label` joins the members guarded at runtime rather than merely declared.
+  `.mat-mdc-card`, `.mat-mdc-table` and `.mat-mdc-header-cell` leave `arena-material.css` with
+  the entries that cited them.
+- **The wide table is a role-based grid rather than a `<table>` element, and a compiler rule
+  chose that.** Angular hands projected content to the *first* matching `<ng-content>`, so a
+  wide branch and a card branch cannot each carry one — the rows are projected once, into a box
+  whose display and role change with the shape. React already put `role="grid"` on its
+  `<table>`, so no semantics are lost; `colspan` and the empty state's placement are what
+  differ, and both are recorded.
 - **A required member is guarded at runtime, not merely declared.** `input.required` proves a
   binding exists and nothing about what it carries, so an empty `ariaLabel` left a landmark
   unnamed while satisfying it. `arena-pagination`, `arena-breadcrumbs`, `arena-activity-feed` and

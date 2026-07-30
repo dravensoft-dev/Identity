@@ -71,7 +71,11 @@ carries `role="grid"`, so the native table role was overridden in both layers; w
 is the element and `colspan`. `DOUBTS.md` records it.
 
 **By hand, in a real browser** (`bun run build:angular-demo && bun run demos`, then
-`frameworks/angular/components/display/table/Table.card.html`):
+`frameworks/angular/components/display/table/Table.card.html`). Steps 1–5 were checked in real
+Chromium when this landed — one Tab in, the gold inset ring on the focused cell, the arrow walk,
+`Home`/`End` inside the row, `Enter` on a data row, one Tab out onto the actions button, and
+zero roles and zero tab stops in the squeezed card shape. Step 6 and every judgement about how
+it *looks* were not, and are why this list stays:
 1. Tab reaches the grid ONCE, and one more Tab leaves it. No cell is a stop of its own.
 2. From a cell, Tab reaches a control inside a cell in **one** press, not two. Two means the
    grid pulled focus back onto the cell — `focusin` bubbles, and this is the failure mode

@@ -65,15 +65,16 @@ The wide layout is a `role="grid"` with **one** tab stop. Tab reaches the grid, 
 
 The grid is **not assumed rectangular**. A row may carry fewer or more cells than there are columns, and the empty state is a single cell spanning the width; the cursor is clamped against the row it is actually in.
 
-Card mode answers none of this. A card is a list item, and a list is traversed with Tab — but a card whose row has `onClick` has no keyboard route at all, which is the one exception `Table.behaviour.json` still carries.
+Card mode answers none of this. A card is a list item, and a list is traversed with Tab, and a card whose row has `onClick` becomes a `role="button"` tab stop of its own — that is `TableRow`'s `card-interactive` case, not a clause of this component's binding, which carries no exception in either shape.
 
 ## Verifying the grid by hand
 
-`Table` binds the `grid` pattern, so by Arena's rule it is DOM-tested by hand rather
-than by a render suite — the measured RAM cost of a grid fixture is why. What is
-automatic is in `frameworks/react/components/display/table/Table.test.jsx` and covers the markup only:
-the roles, the name, the `label` guard, the tab-stop count, and that the removed
-members reach nothing. Everything below is behaviour and only a person checks it.
+`Table` has a render suite — `Table.cases.dom.test.jsx` walks the grid cell by cell and
+renders both declared shapes, and `Table.test.jsx` covers the markup: the roles, the
+name, the `label` guard, the tab-stop count, and that the removed members reach nothing.
+The rule that a `grid` component was hand-tested *instead* is retired; `DOUBTS.md` has
+the measurement that retired it. What is below is what no suite can reach — happy-dom
+implements no layout and no native sequential focus navigation — and only a person checks it.
 
 Serve the tree with `bun run demos`, open
 `frameworks/react/components/display/TableAvatar.card.html`, and check all of:
@@ -103,7 +104,10 @@ Serve the tree with `bun run demos`, open
    first row of the table. Walk a middle row, not only the first.
 5. `Enter` activates the row when the `TableRow` has `onClick`, and does nothing on
    the header row.
-6. Card mode answers none of it, and it is the surviving exception. That page renders
-   the SAME table twice, the second time in a 340px container, so card mode is
-   already on screen — check that a card whose row has `onClick` is still mouse-only,
-   and that nothing there took a `role`, a `tabindex` or a key handler by accident.
+6. Card mode answers none of the grid keyboard, and it is not supposed to. That page
+   renders the SAME table twice, the second time in a 340px container, so card mode is
+   already on screen — check that a card whose row has `onClick` is a single tab stop
+   that announces itself as a button and activates on Enter and Space, and that a card
+   whose row has none took no `role`, `tabindex` or key handler by accident. Angular
+   renders neither: it cannot see whether `onClick` was passed, so its card rows are
+   pointer-only, and `DOUBTS.md` carries that divergence.

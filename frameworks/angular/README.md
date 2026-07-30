@@ -133,8 +133,10 @@ with event blocks, so there is no control for those two to delegate to.
 
 `arena-material.css` dresses only a subset of the delegated set:
 Select (outlined appearance only — a form field left on Material's default
-fill appearance keeps Material's own styling), Card, Table, Dialog, Toast,
+fill appearance keeps Material's own styling), Dialog, Toast,
 ProgressBar, Spinner and SideNav. The rest still render with Material's own defaults. A
+dressing block dies when no delegated entry still needs it, not when its own primitive
+lands, so the list shrinks a batch behind the primitives. A
 `dressedBy` key on a delegated entry is the per-component record, and **nothing checks
 it** — `check:material` reads the CSS and never that file.
 
@@ -226,8 +228,9 @@ declared page that is missing both fail. Coverage is partial and grows one compo
 
 ## Two traps this layer's idiom sets
 
-Both are layer-wide and silent, and both are recorded in
-[`DOUBTS.md`](../../DOUBTS.md) section 4 with the full list of affected primitives.
+Both are layer-wide and silent, and both are recorded in [`DOUBTS.md`](../../DOUBTS.md) —
+the boolean one in section 4, the attribute one in section 3, alongside the command that
+measures which primitives it reaches.
 
 **A bare boolean attribute resolves to `true`.** Every boolean input here is a signal
 `input(false, { transform: booleanAttribute })`, so `<arena-alert dismissible>` is `true`.
@@ -238,8 +241,10 @@ on any present value. Binding (`[dismissible]="true"`) is the clearer form.
 **An input named after a native attribute leaves the native attribute behind.** Angular
 writes a static attribute to the DOM during the creation pass whether or not it also
 matches an input, so `<arena-page-head title="Projects">` leaves a real `title` on the host
-and the browser draws a tooltip over the whole header. Nine primitives are affected. Bind
-the input (`[title]="…"`) rather than setting it as an attribute.
+and the browser draws a tooltip over the whole header. **Count the affected set rather than
+trusting a figure — it grows with the layer, and the figure that stood here was already wrong
+by five.** `DOUBTS.md` carries the command. Bind the input (`[title]="…"`) rather than setting
+it as an attribute.
 
 ## Adopting it
 

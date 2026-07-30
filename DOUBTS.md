@@ -1749,6 +1749,33 @@ stale-proof; a present-tense component name is not.
   checklists** — running them is a person's job, and a green `bun run check` still says nothing
   about whether anyone did.
 
+- **`Table`'s header row and its row hover are invisible, in BOTH layers, and the cause is one
+  line of `colors.css`.** `--panel` and `--surface-card` are both `var(--color-base-200)`
+  (`contracts/design/colors.css:26` and `:71`). React's `Table.jsx` paints the frame
+  `--surface-card` and the header row `--panel`; it also paints an interactive row's hover
+  `--panel` against a transparent row on that same frame. All three resolve to the same colour,
+  so the header does not separate from the table and a clickable row gives no hover feedback at
+  all. `Table.manifest.json` mirrors it faithfully — `headRow` is `bg-base-200` on a `bg-base-200`
+  root, and `rowInteractive` is `hover:bg-base-200` — so the Angular layer inherited the defect by
+  being correct about the layer it mirrors.
+
+  **Measured in a real browser, not inferred from the token file.** Driving
+  `frameworks/angular/components/display/table/Table.card.html` in headless Chromium at a
+  1400px viewport, the header row's computed `background-color` and the table frame's are the
+  same value — `rgb(29, 23, 21)` — so there is nothing to see between them.
+
+  **It was found by porting rather than by looking**, which is the useful part: nothing gates it.
+  `check:tailwind` proves every class resolves to a token, `check:states` proves a `hover:`
+  modifier belongs to a component that implements hover, and both are satisfied by a hover that
+  paints a surface its own background already has. No gate compares two token values for being
+  distinct, and none could without knowing which pairs are meant to contrast.
+
+  **Not fixed here**, because the fix is a token decision rather than a component one: either
+  `--panel` stops being an alias of `--color-base-200` and takes `--color-base-300`, which moves
+  every other `--panel` consumer at once, or `Table` stops using `--panel` for these two jobs in
+  both layers. The first is the right shape and the larger blast radius; whoever takes it should
+  count the consumers first (`grep -rn 'var(--panel)' frameworks/ contracts/`).
+
 ## 2. Where the rest of the debt lives
 
 Each of these is a record with its own stale-entry rule: an entry that no longer
@@ -2115,15 +2142,30 @@ grep -Lr "'\[class\]':" --include='[A-Z]*.ts' frameworks/angular/components/*/*/
   | grep -vE '\.(test|variants|card\.entry)\.ts$|(State|Window)\.ts$'
 ```
 
-The carve-outs fall into three groups and each has its own reason. **The three SVG charts**
+The carve-outs fall into **four** groups and each has its own reason. **The three SVG charts**
 (`bar-chart`, `line-chart`, `doughnut-chart`) have no manifest and no recipe at all, so there is
 no `root` slot to bind. **The form controls** (`button`, `icon-button`, `checkbox`, `radio`) each
 need their own `<button>`, `<input>` or `<label>`, or they forfeit the activation, labelling and
-`:disabled` semantics the browser already supplies. **And the rest keep a specific semantic or
+`:disabled` semantics the browser already supplies. **Some keep a specific semantic or
 structural element**: `arena-activity-feed` a real `<ul>`, `arena-tabs` a `<div role="tablist">`
 with the panels as siblings outside it, `arena-pagination` a real `<nav>`. Every one of them
 declares `display: contents` on the bare host, and `HostClassBinding.test.ts` fails any that
 does not.
+
+**The fourth group has one member and a reason unlike the other three: `arena-table-row` needs
+an inner element to STOP AN EVENT AT.** Its root is neither a required semantic element nor a
+native control — a `display: table-row` box would sit on the host perfectly well. What forces
+the wrapper is that its contract names the event `click`, and an Angular output named after a
+native DOM event is delivered twice: once as the output, once as the bubbled DOM event Angular
+also listens for on the host. Measured on this component rather than carried over from
+`arena-button`: with the inner element's `stopPropagation()` removed, one pointer click reaches
+the consumer **2** times **and a `disabled` row activates**, because the native path never
+passes the guard. A host listener cannot fix it — `stopPropagation` does not reach a sibling
+listener on the same element, and `stopImmediatePropagation` would depend on which of the two
+was registered first. So the rule "host-bind unless the root must be a specific element" has a
+second clause now: **or unless the component owns an output named after a DOM event it must be
+able to refuse.** `Table.cases.test.ts` asserts the delivery count, so the wrapper cannot be
+optimised away without a red run.
 
 **`arena-activity-feed`:** keeps the host a bare, unstyled `<arena-activity-feed>` and
 renders a real `<ul [class]="base().root()">` inside it, with each row a real `<li>`.
@@ -3116,6 +3158,81 @@ because happy-dom has no layout and reports `scrollHeight` as `0`.
 porting back blind — React's content-box textarea does not have the second problem at all, so
 copying the `+ borderBoxSlack` term there would make its box two pixels too tall.
 
+#### Table — React's wide shape is a `<table>`, Angular's is a role-based grid, and a compiler rule forced it
+
+**React:** `Table.jsx` renders a real `<table role="grid">` with `<thead>`, `<tr>`, `<th>` and
+`<td>`, wrapped in a bordered frame `<div>`, and switches to a stack of card `<div>`s below
+`--bp-md`.
+**Angular:** `arena-table` host-binds its root, renders one box whose `display` and `role` change
+with the shape — `display: table` + `role="grid"` when wide, `display: contents` when narrow — and
+rows and cells are `display: table-row` / `display: table-cell` hosts carrying `role="row"` and
+`role="gridcell"`.
+
+**Why, and it is a property of the framework rather than a preference.** Angular's
+`ɵɵprojectionDef` indexes projection slots in template order and `matchingProjectionSlotIndex`
+returns the **first** slot a node matches, so two `<ng-content>` with the same selector cannot both
+receive content — the second gets nothing. A `wide` branch and a `card` branch each carrying their
+own `<ng-content>` would therefore leave one shape permanently empty, and the same applies to the
+`empty` slot. The rows must be projected exactly once, into a box that exists in both shapes, and a
+`<table>` element cannot be that box.
+
+**What actually differs is smaller than the markup suggests.** React already puts `role="grid"` on
+its `<table>`, so the native table role was being overridden in **both** layers and no
+accessibility semantics are lost — an AT reads a grid, rows and gridcells either way. Two real
+costs remain: `colspan` has no CSS equivalent, so Angular's empty state is a block **beside** the
+grid box rather than a cell spanning it, and the grid in that state holds only its header row; and
+`display: table` on the host means the measured `contentRect` excludes the frame border, so the
+narrow threshold trips a couple of pixels earlier than React's.
+
+**Converges:** no, and neither side is wrong. React should not be rewritten to match, and Angular
+cannot render the other shape without giving up the single `<ng-content>`.
+
+#### TableRow — a clickable card row is keyboard-reachable in React and pointer-only in Angular
+
+**React:** `TableRow.jsx` reads whether `onClick` was passed, and below `--bp-md` renders the card
+as `role="button"` with `tabIndex={0}` and an Enter/Space handler. Its binding declares three cases
+— `row`, `card-interactive`, `card-inert` — and the middle one binds `button` cleanly.
+**Angular:** the card carries no role and no tab stop, so a row with `(click)` is reachable by
+pointer and not by keyboard, below `--bp-md` only. Its binding is flat `none` with
+`divergesFrom: "button"`.
+
+**Why this is not a defect that can simply be fixed.** Angular has no way to ask whether an output
+has subscribers: `OutputEmitterRef.listeners` is `private`, and the consumer's `(click)` binding
+leaves nothing in the DOM to detect. An `interactive` input would close it, and `check:api` would
+reject it — the contract declares `content`, `disabled` and `click`, and a layer implements exactly
+those members. So the choice is between making **every** card row a button, which puts a dead tab
+stop on every row of every table that is not clickable, and making none of them one. The second is
+what shipped, on the grounds that noise scales with the common case and the gap does not.
+
+**What would close it** is either an Angular API for output subscription, or a contract member both
+layers implement — and the second is the honest one, because React derives interactivity from a
+prop it can see and the contract has simply never said so out loud. Nothing schedules either.
+
+**Worth knowing before reading React's side as the better one**: `DOUBTS.md` already records that
+`tabIndex={0}` plus `role="button"` on a card that also contains the consumer's own buttons — which
+is exactly what a `mobileLayout: 'block'` actions column draws — is invalid ARIA. React's
+`card-interactive` case is that shape.
+
+**Converges:** no, and this is the batch-4 divergence most worth revisiting.
+
+#### Table — React defaults the `empty` slot to a string, and a slot cannot carry a default in Angular
+
+**React:** `Table.jsx` declares `empty = 'No data.'`, so a table with no rows and no `empty` content
+still says something.
+**Angular:** `empty` is `<ng-content select="[empty]" />`, and a consumer who projects nothing gets
+an empty box.
+
+**The contract is silent, which is the part worth recording.** `contracts/api/components/Table.json`
+declares `empty` as a `slot` with no `default`, and the format's `default` field is read by nothing
+anyway — so React's string is undocumented rather than contradicted, and Angular's absence breaks no
+declared promise. A default is expressible in React because a slot there is a value; in Angular a
+slot is a projection site, and `<ng-content>` fallback content would be the counterpart. Nothing
+schedules adding it.
+
+**Converges:** not yet, and the cheap fix is real — `<ng-content select="[empty]">No data.</ng-content>`
+would do it. It is left alone because the two layers would then both hardcode a string that
+`Table.label`'s own reasoning says only a human can supply.
+
 #### A compound family coordinates in the opposite direction in each layer
 
 **React:** the parent clones each child and pushes `name`, `checked` and a callback into it
@@ -3132,19 +3249,29 @@ option outside a group is a DI error rather than a silently inert control.
 the contract's members — a public `select()` or a public `selected` signal on `RadioGroup` fails the
 gate, correctly, because a consumer could reach it. So the coordination cannot live on the
 component. It lives on a class the component `provides`, which no gate reads as a surface and no
-consumer can name. **That is the pattern for every remaining compound family**: `Tabs`/`Tab` in
-this batch, `Table`/`TableRow`/`TableCell` in batch 4, the `SideNav` family in batch 6.
+consumer can name. **That is the pattern for every remaining compound family**: `Tabs`/`Tab`,
+then `Table`/`TableRow`/`TableCell` (`TableState` and `TableRowState`, landed by batch 4 — the
+first family to need TWO state objects, because a cell's column index is its row's to know and
+its cursor position is the table's), and the `SideNav` family in batch 6.
 
 **Converges: no, and neither side is wrong.** Each is its framework's idiom. What both keep is the
 rule that the coordination is a member of no contract.
 
-**One consequence for the contracts themselves, and it is only half fixed.** Several `content`
-descriptions were written in React's mechanism — "RadioGroup injects each one's selected state" —
-which is the same defect as the word *prop* appearing in a contract. `RadioGroup` and `Tabs` are
-reworded to say what is true of both layers. **`SideNavItem`, `TableRow` and `TableCell` still say
-"injects", and `TableRow`'s and `TableCell`'s prose even names `cloneElement`**; they are left for
-the batches that implement them, because rewording a contract for a layer that does not exist yet
-is a guess about what that layer will do.
+**One consequence for the contracts themselves.** Several `content` descriptions were written in
+React's mechanism — "RadioGroup injects each one's selected state" — which is the same defect as
+the word *prop* appearing in a contract. `RadioGroup` and `Tabs` were reworded first; `Table`,
+`TableRow` and `TableCell` followed when batch 4 implemented them, on the principle that rewording
+a contract for a layer that does not exist yet is a guess about what that layer will do.
+**`SideNavItem` is the last one still saying "injects"**, and it is batch 6's.
+
+**Two claims this entry made about that set were false, and the correction is the point.** It said
+`TableRow`'s and `TableCell`'s prose "even names `cloneElement`". Neither did — **no contract has
+ever contained the string**, verifiable in one command:
+`grep -l cloneElement contracts/api/components/*.json` returns nothing. And `TableCell` was listed
+as a third offender on the strength of a single "injected", where `TableRow` really did carry both
+the verb and the word `props`. Written into an entry about prose rotting, in a file whose own rule
+is that a claim about another file goes stale unread — which is why it is corrected here in full
+rather than quietly dropped.
 
 #### Two Angular components bind `navigation` and reach the landmark two different ways
 
@@ -3179,9 +3306,15 @@ made required to prevent — the first an unnamed landmark, the second a window 
 So the guard is a `computed` that validates and throws, placed where the template or the host
 binding already reads it, which is what makes it run on the first change detection instead of
 waiting for something to ask. `Pagination` (`ariaLabel`, `pageCount`), `Breadcrumbs`
-(`ariaLabel`), `ActivityFeed` (`label`) and `RadioGroup` (`ariaLabel`) carry it. The remaining
-three contracts with the phrase — `SideNav`, `SideNavSection`, `Table` — are still delegated and
-arrive with batches 4 and 6.
+(`ariaLabel`), `ActivityFeed` (`label`), `RadioGroup` (`ariaLabel`) and `Table` (`label`) carry
+it. The remaining two contracts with the phrase — `SideNav` and `SideNavSection` — are still
+delegated and arrive with batch 6.
+
+`Table` is the one that shows what the guard buys, because its member is the hardest to derive:
+a grid's name is editorial, `input.required` is satisfied by `[label]="row.title"` over an empty
+title, and the result is a grid announced with no name at all. It guards `label` and **nothing
+else** — `columns` is required too, and takes no guard, because the contract attaches the phrase
+to `label` alone and inventing a second guard would diverge from React for no contracted reason.
 
 **Two properties of this shape are worth knowing before extending it.** A signal caches a thrown
 error and re-throws it until a dependency changes, so a guard that fires once keeps firing for the

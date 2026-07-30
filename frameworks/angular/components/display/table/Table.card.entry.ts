@@ -5,6 +5,7 @@ import {
 import { bootstrapApplication } from '@angular/platform-browser';
 import type { TableColumn } from '../../../Api.generated';
 import { Badge } from '../badge/Badge';
+import { Button } from '../../forms/button/Button';
 import { Table } from './Table';
 import { TableRow } from '../table-row/TableRow';
 import { TableCell } from '../table-cell/TableCell';
@@ -13,7 +14,7 @@ import { TableCell } from '../table-cell/TableCell';
   selector: 'demo-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Badge, Table, TableRow, TableCell],
+  imports: [Badge, Button, Table, TableRow, TableCell],
   template: `
     <p class="sub">Wide — Tab once into the grid, then walk it with the arrows, Home and End</p>
     <div class="box">
@@ -22,20 +23,30 @@ import { TableCell } from '../table-cell/TableCell';
           <arena-table-cell>checkout-api</arena-table-cell>
           <arena-table-cell>4f2a1c9</arena-table-cell>
           <arena-table-cell><arena-badge tone="success" dot>Live</arena-badge></arena-table-cell>
+          <arena-table-cell>
+            <arena-button variant="ghost" size="sm" (click)="details.set('checkout-api')">Details</arena-button>
+          </arena-table-cell>
         </arena-table-row>
         <arena-table-row (click)="opened.set('billing-worker')">
           <arena-table-cell>billing-worker</arena-table-cell>
           <arena-table-cell>9db3e07</arena-table-cell>
           <arena-table-cell><arena-badge tone="warning">Rolling out</arena-badge></arena-table-cell>
+          <arena-table-cell>
+            <arena-button variant="ghost" size="sm" (click)="details.set('billing-worker')">Details</arena-button>
+          </arena-table-cell>
         </arena-table-row>
         <arena-table-row disabled (click)="opened.set('auth-service')">
           <arena-table-cell>auth-service</arena-table-cell>
           <arena-table-cell>c1e8a44</arena-table-cell>
           <arena-table-cell><arena-badge tone="danger">Failed</arena-badge></arena-table-cell>
+          <arena-table-cell>
+            <arena-button variant="ghost" size="sm" (click)="details.set('auth-service')">Details</arena-button>
+          </arena-table-cell>
         </arena-table-row>
       </arena-table>
     </div>
     <p class="log">last activated: {{ opened() || '—' }} · the third row is disabled and must never appear here</p>
+    <p class="log">last details: {{ details() || '—' }} · a control in a cell keeps its own tab stop, and reaching it must cost ONE Tab</p>
 
     <p class="sub">The same table in a container below --bp-md — one card per row, measured on the container</p>
     <div class="squeezed">
@@ -44,11 +55,17 @@ import { TableCell } from '../table-cell/TableCell';
           <arena-table-cell>checkout-api</arena-table-cell>
           <arena-table-cell>4f2a1c9</arena-table-cell>
           <arena-table-cell><arena-badge tone="success" dot>Live</arena-badge></arena-table-cell>
+          <arena-table-cell>
+            <arena-button variant="ghost" size="sm">Details</arena-button>
+          </arena-table-cell>
         </arena-table-row>
         <arena-table-row>
           <arena-table-cell>billing-worker</arena-table-cell>
           <arena-table-cell>9db3e07</arena-table-cell>
           <arena-table-cell><arena-badge tone="warning">Rolling out</arena-badge></arena-table-cell>
+          <arena-table-cell>
+            <arena-button variant="ghost" size="sm">Details</arena-button>
+          </arena-table-cell>
         </arena-table-row>
       </arena-table>
     </div>
@@ -60,6 +77,9 @@ import { TableCell } from '../table-cell/TableCell';
           <arena-table-cell>checkout-api</arena-table-cell>
           <arena-table-cell>4f2a1c9</arena-table-cell>
           <arena-table-cell><arena-badge tone="success" dot>Live</arena-badge></arena-table-cell>
+          <arena-table-cell>
+            <arena-button variant="ghost" size="sm">Details</arena-button>
+          </arena-table-cell>
         </arena-table-row>
       </arena-table>
     </div>
@@ -77,9 +97,12 @@ class TableCard {
     { header: 'Service' },
     { header: 'Commit', mono: true },
     { header: 'Status', align: 'right' },
+    { header: '', mobileLayout: 'block' },
   ];
 
   protected readonly opened = signal('');
+
+  protected readonly details = signal('');
 }
 
 bootstrapApplication(TableCard, { providers: [provideZonelessChangeDetection()] });

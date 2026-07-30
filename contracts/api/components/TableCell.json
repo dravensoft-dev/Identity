@@ -1,6 +1,6 @@
 {
   "component": "TableCell",
-  "description": "One cell of a TableRow. It draws the cell box — the padding, the alignment and the mono/gold treatment its column asks for, and in card mode the label/value pair or the full-width block — and shows whatever the consumer put in it. Its column config, its layout and its place in the grid's keyboard order are injected by Table and TableRow and are not members of this contract.",
+  "description": "One cell of a TableRow. It draws the cell box — the padding, the alignment and the mono/gold treatment its column asks for, and in card mode the label/value pair or the full-width block — and shows whatever the consumer put in it. Its column config, its layout and its place in the grid's keyboard order come from Table and TableRow and are members of no contract.",
   "api": {
     "content": { "form": "slot",
                  "description": "What the cell shows: a value, or one of Arena's own components — a Badge for a status, a Button for an action. This is what the compound shape exists for. The consumer instantiates one element per cell, so nothing here is per-item projection." }
