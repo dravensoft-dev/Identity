@@ -25,6 +25,7 @@ export const PAGED = new Set([
   'SegmentedControl',
   'Tabs',
   'Pagination',
+  'Table',
 ]);
 
 export function pageProblems(tree, read, paged = PAGED) {

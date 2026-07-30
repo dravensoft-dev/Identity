@@ -25,8 +25,8 @@ function wide() {
   const head = el('tr', { class: c.headRow });
   for (const column of COLUMNS) head.append(el('th', { class: c.th, text: column.header }));
   const body = el('tbody');
-  for (const row of ROWS) {
-    const tr = el('tr', { class: `${c.row} ${c.rowInteractive}` });
+  for (const [index, row] of ROWS.entries()) {
+    const tr = el('tr', { class: `${c.row} ${index === 0 ? c.rowFirst : ''} ${c.rowInteractive}` });
     for (const column of COLUMNS) {
       tr.append(el('td', { class: column.mono ? c.tdMono : c.td, text: row[column.key] }));
     }

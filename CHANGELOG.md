@@ -56,6 +56,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   either on one page were indistinguishable landmarks; `RadioGroup` had no accessible name at
   all. Nothing can derive these names, so nothing defaults them — pass what is being paged, or
   chosen, or navigated.
+- **A `DOUBTS.md` entry about contract prose rotting had itself rotted**, asserting that two
+  contracts named `cloneElement` when no contract ever has. It carries the command that proves
+  it now, rather than a claim.
 
 ### Added
 
@@ -76,6 +79,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   roving-focus: it renders a real `<nav>`, ports React's page window rather than re-deriving it,
   and replaces the one delegated control `arena-material.css` never dressed — a `MatPaginator`
   had been rendering in Material's own colours inside an Arena interface.
+- **The Angular display controls** — `arena-badge`, `arena-card` and the
+  `arena-table`/`arena-table-row`/`arena-table-cell` family. `Table`'s delegated declaration
+  bound the `grid` pattern with **eight** exceptions — four roles, because `MatTable` renders
+  `role="table"`, and four keyboard and focus, because Material's own docs say changing that
+  role adds no keyboard handling; all eight are gone, and the wide shape now walks by arrow key,
+  `Home` and `End` with one tab stop for the whole grid. `responsive` is a contracted member, so
+  the card shape below `--bp-md` is real and is measured on the **container**, never the
+  viewport. `Table.label` joins the members guarded at runtime rather than merely declared.
+  `.mat-mdc-card`, `.mat-mdc-table` and `.mat-mdc-header-cell` leave `arena-material.css` with
+  the entries that cited them.
+- **The wide table is a role-based grid rather than a `<table>` element, and a compiler rule
+  chose that.** Angular hands projected content to the *first* matching `<ng-content>`, so a
+  wide branch and a card branch cannot each carry one — the rows are projected once, into a box
+  whose display and role change with the shape. React already put `role="grid"` on its
+  `<table>`, so no semantics are lost; `colspan` and the empty state's placement are what
+  differ, and both are recorded.
 - **A required member is guarded at runtime, not merely declared.** `input.required` proves a
   binding exists and nothing about what it carries, so an empty `ariaLabel` left a landmark
   unnamed while satisfying it. `arena-pagination`, `arena-breadcrumbs`, `arena-activity-feed` and
@@ -135,6 +154,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **An Angular input named after a global HTML attribute no longer leaves that attribute on the
+  host.** Angular writes a static attribute to the DOM during the creation pass whether or not it
+  also matches an input, so `<arena-page-head title="Projects">` left a real `title` behind and
+  the browser drew a tooltip over the whole header — worst on `arena-confirm-dialog`, whose host
+  is the full-viewport scrim, where the tooltip covered the viewport for as long as the dialog was
+  open. All **seventeen** affected primitives clear it, and `HostClassBinding.test.ts` holds it
+  both ways: taking the input without clearing fails, and clearing without the input fails.
+  The count is the story — it was recorded as five, then nine, then fourteen, and the last of
+  those was measured with a filter that only looked at host-bound primitives when the defect never
+  depended on host-binding. The guard found `arena-button`, `arena-icon-button` and
+  `arena-checkbox` in the minute after it was written.
 - **`Calendar` chips are `border-box`**, so the width and height `Calendar` injects are the
   chip's outer edge, which is what both already read as. A full-width chip no longer overruns
   its day column by 12px, and no chip stands 8px taller than its own time range. The chip's

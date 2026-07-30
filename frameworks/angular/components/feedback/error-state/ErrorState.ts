@@ -6,7 +6,11 @@ import { errorStateStyles } from './ErrorState.variants';
   selector: 'arena-error-state',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class]': 'styles().root()', role: 'alert' },
+  host: {
+    '[class]': 'styles().root()',
+    role: 'alert',
+    '[attr.title]': 'null',
+  },
   template: `
     @if (icon(); as glyph) {
       <div [class]="styles().icon()"><i [class]="glyph" aria-hidden="true"></i></div>

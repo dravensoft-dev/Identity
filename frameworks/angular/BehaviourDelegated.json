@@ -1,9 +1,4 @@
 {
-  "Badge": {
-    "pattern": "none",
-    "delegatedTo": "Angular Material MatBadge",
-    "reason": "matBadge is Material's small labelled/numeric indicator directive. React's Badge renders the same small labelled shape -- an optional dot plus text, no interactive affordance of its own -- and Arena has no arena-badge primitive and should not grow one. arena-material.css does not dress it: no .mat-badge-content rule exists in the bridge today, so its colours are Material's own defaults, not Arena's tokens."
-  },
   "Calendar": {
     "pattern": "absent",
     "reason": "This entry and CalendarEvent below are the only two in this file that are genuinely absent rather than delegated -- pattern \"absent\", not \"none\", because Angular has no such component at all, not a rendered-but-inert one. Arena's Calendar is a day/hour schedule grid with absolutely-positioned event blocks -- a scheduling view, not a date picker. Angular Material's calendar surface (mat-calendar, the view inside MatDatepicker) is a month/date-selection grid: a different widget solving a different problem, with no day/hour axis and no event blocks. There is no real Material control this delegates to, and arena-material.css dresses none. Whether Angular should gain a schedule view is a separate, open question this entry does not answer: it records that React has one and Angular does not, not a decision that Angular never will. Nothing has decided either way. Recorded in CLAUDE.md's Known debt."
@@ -11,12 +6,6 @@
   "CalendarEvent": {
     "pattern": "absent",
     "reason": "Absent for the same reason Calendar is, one level down: a CalendarEvent is a chip inside Arena's schedule grid, and Angular has no schedule grid for one to live in. It is not delegated -- Material has no per-event chip because it has no day/hour view, and arena-material.css dresses none. This entry exists because CalendarEvent became a React component in plan 8C3 (it had been a predefined object in api/types/), and every React component declares for every layer. It records the same open question Calendar's entry does and answers it no further: if Angular ever gains a schedule view, this is the second component that decision creates."
-  },
-  "Card": {
-    "pattern": "none",
-    "delegatedTo": "Angular Material MatCard",
-    "dressedBy": "frameworks/angular/theme/arena-material.css",
-    "reason": "MatCard already provides the bordered surface and its header/content/actions slots; it manages no interactive state of its own, the same as React's Card. The bridge dresses its container colour (--surface-card) and --r-lg radius. Arena has no arena-card primitive and should not grow one."
   },
   "Dialog": {
     "pattern": "dialog-modal",
@@ -101,61 +90,6 @@
       }
     ],
     "reason": "MatProgressSpinner renders the indicator and its determinate/indeterminate/buffer/query modes, with aria-valuenow mirrored from value. The bridge dresses its active-indicator colour on the brand. Arena has no arena-spinner primitive and should not grow one."
-  },
-  "Table": {
-    "pattern": "grid",
-    "divergesFrom": "none",
-    "delegatedTo": "Angular Material MatTable",
-    "dressedBy": "frameworks/angular/theme/arena-material.css",
-    "exceptions": [
-      {
-        "requirement": "roles.grid",
-        "reason": "MatTable defaults to role=\"table\", not role=\"grid\" (Angular Material's own accessibility docs). The role can be changed by hand, but nothing in Arena's usage does, so this stays unmet the same way React's own Table binding records it."
-      },
-      {
-        "requirement": "roles.row",
-        "reason": "Row role follows the table's own role -- with the default role=\"table\", rows carry row semantics appropriate to a table, not the grid pattern's roving-focus row, mirroring React's own exception."
-      },
-      {
-        "requirement": "roles.cell",
-        "reason": "Same as roles.row: cell roles follow the default table role, not the grid pattern's gridcell/columnheader/rowheader, mirroring React's own exception."
-      },
-      {
-        "requirement": "roles.label",
-        "reason": "Material's own docs say to always provide aria-label or aria-labelledby on the table element; nothing in this delegation supplies one, so it is unmet the same way React's own Table binding records it."
-      },
-      {
-        "requirement": "focus.roving",
-        "reason": "Angular Material's own accessibility docs are explicit: switching to role=\"grid\" or role=\"treegrid\" 'does not add keyboard input handling or focus management' -- there is no roving tab stop either way."
-      },
-      {
-        "requirement": "keyboard.ArrowKeys",
-        "reason": "Per the same Material docs quote: changing the role adds no keyboard input handling at all, so arrow-key navigation is unmet regardless of which role is set."
-      },
-      {
-        "requirement": "keyboard.Home",
-        "reason": "Same as ArrowKeys -- Material supplies no keyboard handling of the grid, with either role."
-      },
-      {
-        "requirement": "keyboard.End",
-        "reason": "Same as ArrowKeys -- Material supplies no keyboard handling of the grid, with either role."
-      }
-    ],
-    "reason": "MatTable provides the row/column definition machinery (matColumnDef, mat-header-row, mat-row) and a real data-bound table, rather than a bespoke Arena re-implementation of table layout. The bridge dresses its background and row hairline colour, and gives the header cell the mono uppercase micro-label treatment. Arena has no arena-table primitive and should not grow one. React's own Table declares TWO cases -- a wide `grid` and, below --bp-md, a `card` shape bound to `none` where no table element is rendered at all. `divergesFrom` names that second one: MatTable has a single shape and no responsive card layout, so there is no render here for it to describe. That is a capability difference rather than a defect, and it leaves this entry measured against `grid` alone, which is what the exceptions below are about."
-  },
-  "TableCell": {
-    "pattern": "none",
-    "delegatedTo": "Angular Material MatTable (mat-cell / matCellDef, mat-header-cell / matHeaderCellDef)",
-    "dressedBy": "frameworks/angular/theme/arena-material.css",
-    "reason": "React's Table became a compound component to keep a Badge in a status cell and a Button in an actions cell without per-item projection, and TableCell is the leaf that shape needs. Angular needs no counterpart primitive: MatTable already gives the consumer a per-cell template (matCellDef), so the same content is written inline in the column definition and no arena-table-cell would add anything. Like React's own TableCell it carries no interactive affordance of its own -- a control inside a Material cell comes from the consumer's template. The bridge dresses the HEADER cell specifically, with the mono uppercase micro-label treatment (.mat-mdc-header-cell); it adds no rule to a data cell.",
-    "exceptions": []
-  },
-  "TableRow": {
-    "pattern": "none",
-    "divergesFrom": "button",
-    "delegatedTo": "Angular Material MatTable (mat-row / matRowDef, mat-header-row / matHeaderRowDef)",
-    "reason": "MatTable's row definitions produce the rows, and every requirement that applies to one is a clause of the `grid` pattern the Table entry above binds -- where Material's shortcomings are already recorded, in eight exceptions covering the row and cell roles, the roving tab stop and the arrow keys. Recording them again here was duplication: five exceptions restating what the Table entry says, on an element that owns none of the behaviour. This mirrors React's own TableRow, whose `row` case binds `none` for exactly that reason, and it is the same shape as Tab under `tabs` and SideNavItem under `navigation`. `divergesFrom` names `button` because React's TableRow declares a case this layer has no counterpart for: below --bp-md React renders each row as a <div>, which CAN carry role=\"button\" and does. MatTable has one shape and no responsive card layout, so there is no render here for that case to describe -- a real capability difference, not a defect in either layer. The row's hairline colour is set from a custom property on the table host (--mat-table-row-item-outline-color on .mat-mdc-table), not by any rule targeting the row, so no dressedBy is claimed for it.",
-    "exceptions": []
   },
   "Toast": {
     "pattern": "alert",

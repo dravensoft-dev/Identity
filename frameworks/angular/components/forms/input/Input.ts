@@ -13,7 +13,10 @@ export function inputIdFor(id: string | undefined, label: string | undefined): s
   selector: 'arena-input',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class]': 'styles().root()' },
+  host: {
+    '[class]': 'styles().root()',
+    '[attr.name]': 'null',
+  },
   template: `
     @if (label(); as text) {
       <label [class]="styles().label()" [attr.for]="controlId()">{{ text }}@if (required()) {

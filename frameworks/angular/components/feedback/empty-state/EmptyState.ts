@@ -6,7 +6,10 @@ import { emptyStateStyles } from './EmptyState.variants';
   selector: 'arena-empty-state',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class]': 'styles().root()' },
+  host: {
+    '[class]': 'styles().root()',
+    '[attr.title]': 'null',
+  },
   template: `
     @if (icon(); as glyph) {
       <div [class]="styles().icon()"><i [class]="glyph" aria-hidden="true"></i></div>

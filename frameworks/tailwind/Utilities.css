@@ -405,8 +405,14 @@
   .block {
     display: block;
   }
+  .contents {
+    display: contents;
+  }
   .flex {
     display: flex;
+  }
+  .grid {
+    display: grid;
   }
   .hidden {
     display: none;
@@ -419,6 +425,12 @@
   }
   .table {
     display: table;
+  }
+  .table-cell {
+    display: table-cell;
+  }
+  .table-row {
+    display: table-row;
   }
   .size-0 {
     width: 0px;
@@ -696,6 +708,14 @@
   }
   .border-collapse {
     border-collapse: collapse;
+  }
+  .border-separate {
+    border-collapse: separate;
+  }
+  .border-spacing-0 {
+    --tw-border-spacing-x: 0px;
+    --tw-border-spacing-y: 0px;
+    border-spacing: var(--tw-border-spacing-x) var(--tw-border-spacing-y);
   }
   .-translate-x-1\/2 {
     --tw-translate-x: calc(calc(1 / 2 * 100%) * -1);
@@ -1552,10 +1572,6 @@
   :is(.\*\:w-full > *) {
     width: 100%;
   }
-  .first\:border-t-0:first-child {
-    border-top-style: var(--tw-border-style);
-    border-top-width: 0px;
-  }
   .focus-within\:border-secondary:focus-within {
     border-color: var(--color-secondary);
   }
@@ -1616,6 +1632,10 @@
   }
   .focus\:border-secondary:focus {
     border-color: var(--color-secondary);
+  }
+  .focus\:shadow-\[inset_0_0_0_var\(--focus-width\)_var\(--focus-ring\)\]:focus {
+    --tw-shadow: inset 0 0 0 var(--focus-width) var(--focus-ring);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
   .focus\:ring-\[length\:var\(--focus-width\)\]:focus {
     --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(var(--focus-width) + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
@@ -1755,6 +1775,16 @@
   to {
     transform: rotate(360deg);
   }
+}
+@property --tw-border-spacing-x {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0;
+}
+@property --tw-border-spacing-y {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0;
 }
 @property --tw-translate-x {
   syntax: "*";
@@ -1935,6 +1965,8 @@
 @layer properties {
   @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
     *, ::before, ::after, ::backdrop {
+      --tw-border-spacing-x: 0;
+      --tw-border-spacing-y: 0;
       --tw-translate-x: 0;
       --tw-translate-y: 0;
       --tw-translate-z: 0;

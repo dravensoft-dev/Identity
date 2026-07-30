@@ -9,7 +9,10 @@ import { iconButtonStyles } from './IconButton.variants';
   selector: 'arena-icon-button',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { style: 'display: contents' },
+  host: {
+    style: 'display: contents',
+    '[attr.name]': 'null',
+  },
   template: `
     <button #control [class]="styles().root()" [attr.type]="type()" [disabled]="disabled()"
             [attr.name]="name()" [attr.value]="value()" [attr.form]="form()"

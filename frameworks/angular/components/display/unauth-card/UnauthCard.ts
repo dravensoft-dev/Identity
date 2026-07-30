@@ -6,7 +6,10 @@ import { unauthCardStyles } from './UnauthCard.variants';
   selector: 'arena-unauth-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class]': 'styles().root()' },
+  host: {
+    '[class]': 'styles().root()',
+    '[attr.title]': 'null',
+  },
   template: `
     <div [class]="styles().panel()">
       <div [class]="styles().body()">

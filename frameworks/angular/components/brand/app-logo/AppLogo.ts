@@ -6,7 +6,10 @@ import type { LogoSize, Orientation } from '../../../Api.generated';
   selector: 'arena-app-logo',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class]': 'styles().root()' },
+  host: {
+    '[class]': 'styles().root()',
+    '[attr.name]': 'null',
+  },
   template: `
     <span [class]="styles().mark()"><ng-content select="[mark]" /></span>
     <span [class]="styles().name()">{{ name() }}@if (dim(); as tail) {<span [class]="styles().dim()">{{ tail }}</span>}</span>

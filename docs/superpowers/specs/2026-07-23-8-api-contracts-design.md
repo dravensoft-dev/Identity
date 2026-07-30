@@ -817,7 +817,14 @@ and reports it — so for those three the gate is ready before the audit is.
 > implement); and `SegmentedControl`'s current `roles.group` exception is Material's defect and
 > must not be inherited; **4** display —
 > `Badge`, `Card`, `Table`/`TableRow`/`TableCell`, where Table carries eight exceptions a real
-> primitive should clear rather than port; **5** the remaining overlays — `Menu`, `Select`,
+> primitive should clear rather than port — **all eight cleared**, and the clause was silent on
+> the three things that actually shaped the batch: `responsive` is a *contracted member*, so the
+> card shape below `--bp-md` is not optional and must be measured on the container; the three are
+> a compound family and needed the layer's first *pair* of state objects; and two of their
+> contracts were still written in React's verb, which this batch was the one authorised to fix.
+> **One thing the batch could not deliver and did not fake**: Angular cannot ask whether an output
+> has subscribers, so a clickable card row is pointer-only there, and `TableRow` keeps a
+> `divergesFrom` rather than claiming a `button` it does not render; **5** the remaining overlays — `Menu`, `Select`,
 > `Dialog`, `Toast`, and `Toast` owes `role` per tone so a danger toast interrupts rather than
 > queues; **6** the `SideNav` family, which inherits a decision rather than a task (see
 > `DOUBTS.md`); **7** cleanup — delete `arena-material.css`, `check:material` and the

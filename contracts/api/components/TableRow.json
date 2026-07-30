@@ -1,6 +1,6 @@
 {
   "component": "TableRow",
-  "description": "One row of a Table. The consumer writes one per row and one TableCell inside it per cell; Table injects where the row sits, the columns its cells are set against, and how the keyboard reaches them. Those injected props are not members of this contract, the same shape and for the same reason as RadioGroup injecting name/checked/onSelect into each Radio.",
+  "description": "One row of a Table. The consumer writes one per row and one TableCell inside it per cell. Where the row sits, the columns its cells are set against and how the keyboard reaches them are Table's, not this component's, and are members of no contract — the same shape, and for the same reason, as a RadioGroup and its Radios sharing which one is checked.",
   "api": {
     "content": { "form": "slot",
                  "description": "The row's cells. One TableCell per cell; a row may carry fewer or more than there are columns, and the grid's cursor is clamped against what is really there." },

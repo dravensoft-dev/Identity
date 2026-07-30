@@ -38,6 +38,7 @@ export function isConfirmLocked(required: string | undefined, typed: string): bo
   host: {
     '[class]': 'styles().root()',
     '(keydown)': 'onKeydown($event)',
+    '[attr.title]': 'null',
   },
   template: `
     @if (open()) {

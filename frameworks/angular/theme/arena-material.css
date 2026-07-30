@@ -12,28 +12,10 @@
   --mat-form-field-outlined-label-text-color: var(--mute);
 }
 
-/* Card — elevated surface, large radius */
-.mat-mdc-card {
-  --mat-card-elevated-container-color: var(--surface-card);
-  --mat-card-elevated-container-shape: var(--r-lg);
-}
-
 /* Dialog — surface + large radius */
 .mat-mdc-dialog-surface {
   --mat-dialog-container-shape: var(--r-lg);
   --mat-dialog-container-color: var(--surface-card);
-}
-
-/* Table — hairline rows; header is the mono uppercase micro-label */
-.mat-mdc-table {
-  --mat-table-background-color: var(--surface-card);
-  --mat-table-row-item-outline-color: var(--border);
-}
-.mat-mdc-header-cell {
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--mute);
 }
 
 /* Snackbar / toast surface — medium radius */
