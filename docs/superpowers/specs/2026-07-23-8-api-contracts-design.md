@@ -810,9 +810,12 @@ and reports it — so for those three the gate is ready before the audit is.
 > `Button` (no CDK, and it created the `forms/` category) plus `Tooltip` (the smallest anchored
 > overlay). Then: **2** the rest of the form controls with no CDK — `IconButton`, `Checkbox`,
 > `Switch`, `Input`, `Textarea`, where `Input` owes the repo's only `functionInput` an Angular
-> implementation; **3** the roving-focus composites on `cdk/a11y` alone — `Tabs`/`Tab`,
-> `RadioGroup`/`Radio`, `SegmentedControl`, `Pagination`, and `SegmentedControl`'s current
-> `roles.group` exception is Material's defect and must not be inherited; **4** display —
+> implementation; **3** the choice and navigation controls — `Tabs`/`Tab`, `RadioGroup`/`Radio`,
+> `SegmentedControl`, `Pagination`, where `Tabs` is the only one that reaches for `cdk/a11y` and
+> `Pagination` is neither compound nor roving-focus at all (as line 871 below already says: it has
+> no headless CDK component, and its `navigation` pattern has no focus or keyboard clause to
+> implement); and `SegmentedControl`'s current `roles.group` exception is Material's defect and
+> must not be inherited; **4** display —
 > `Badge`, `Card`, `Table`/`TableRow`/`TableCell`, where Table carries eight exceptions a real
 > primitive should clear rather than port; **5** the remaining overlays — `Menu`, `Select`,
 > `Dialog`, `Toast`, and `Toast` owes `role` per tone so a danger toast interrupts rather than

@@ -65,14 +65,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   against `contracts/behaviour/`, and every dimension it draws against the token layer. Their
   entries leave `BehaviourDelegated.json`, and the `MatButton` dressing blocks in
   `arena-material.css` go with `IconButton`, the last entry that cited them.
-- **The roving-focus Angular composites** — `arena-radio-group`/`arena-radio`,
-  `arena-segmented-control` and `arena-tabs`/`arena-tab`. A compound family coordinates the
+- **The Angular choice and navigation controls** — `arena-radio-group`/`arena-radio`,
+  `arena-segmented-control`, `arena-tabs`/`arena-tab` and `arena-pagination`. A compound family coordinates the
   opposite way from React's: the parent provides an injectable state object and each child
   injects it and pulls, because Angular has no `cloneElement` and because `check:api` would
   read a public coordination member as API. Only `arena-tabs` earns `@angular/cdk/a11y` — the
   rest get their roving stop and arrow keys from native radio inputs. `arena-segmented-control`
   drops the `roles.group` exception Material's `MatButtonToggleGroup` forced, so it renders
-  `role="radiogroup"` and its binding has none.
+  `role="radiogroup"` and its binding has none. `arena-pagination` is neither compound nor
+  roving-focus: it renders a real `<nav>`, ports React's page window rather than re-deriving it,
+  and replaces the one delegated control `arena-material.css` never dressed — a `MatPaginator`
+  had been rendering in Material's own colours inside an Arena interface.
+- **A required member is guarded at runtime, not merely declared.** `input.required` proves a
+  binding exists and nothing about what it carries, so an empty `ariaLabel` left a landmark
+  unnamed while satisfying it. `arena-pagination`, `arena-breadcrumbs`, `arena-activity-feed` and
+  `arena-radio-group` now throw on one, matching what React's components have always done.
 - **`frameworks/angular/test/NodeAssert.ts` and `check:assertions`.** `node:assert` renders both
   operands into its diff when an assertion fails, and a connected happy-dom node reaches the whole
   shared document from there — measured at 518,563 characters against a `<body>` holding three

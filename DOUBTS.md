@@ -171,13 +171,21 @@ stale-proof; a present-tense component name is not.
   first misstated this as the same "Angular has no primitive" asymmetry that
   is correct for `debounce`-style speculation, when it is not: Angular had no
   `Tooltip`, `Toast` or `Pagination` **primitive**, but it provided all three
-  through Angular Material, dressed by `arena-material.css` — the same
-  "Material provides the control" bucket most Tailwind manifests
-  belong to (`Tooltip.manifest.json`, `Toast.manifest.json` and
-  `Pagination.manifest.json` all exist). `check:script-tokens` cannot see
-  this — its orphan rule is "imported by at least one layer," and it is
-  satisfied by React alone by construction, the same structural blind spot the
-  first bullet in this section describes for chart internals.
+  through Angular Material — the same "Material provides the control" bucket
+  most Tailwind manifests belong to (`Tooltip.manifest.json`,
+  `Toast.manifest.json` and `Pagination.manifest.json` all exist). *"Dressed by
+  `arena-material.css`"* was true of two of the three and never of
+  `Pagination`: the bridge has no `.mat-mdc-paginator` rule and never had one,
+  so a delegated paginator rendered in Material's own colours the whole time.
+  `check:script-tokens` cannot see any of this — its orphan rule is "imported
+  by at least one layer," and it is satisfied by React alone by construction,
+  the same structural blind spot the first bullet in this section describes for
+  chart internals.
+  **`limit` is paid now, by the same route `delay` was.** `arena-pagination`
+  imports `limitPaginationSiblings` from `Tokens.generated` and derives its
+  window from it, so that token reaches both layers and the orphan rule is
+  satisfied by more than one of them for the first time. The blind spot is
+  unchanged — it is narrower by one token, not closed.
   **`delay` is paid, and the way it was paid is the point: the primitive, not the seam.**
   `arena-tooltip` imports `delayOpen` and `delayClose` from `Tokens.generated` and waits both,
   revealing immediately on keyboard focus as the token's own `$description` demands. So the
@@ -1450,8 +1458,9 @@ stale-proof; a present-tense component name is not.
   alone now learns the option exists and that nothing has taken it.
   Converting it means writing a render suite for both shapes and adding `SideNavItem:react` to
   `COVERED`; nothing schedules that. What is genuinely still open is the third conditionality
-  level — conditional on **consumer** usage, with `Table`, `Tooltip` and `Pagination` as the live
-  instances — recorded in its own entry above. **Count the `none` bindings rather than writing an
+  level — conditional on **consumer** usage, whose live instance is `Tooltip` — recorded in its
+  own entry above, which is also where the other two named here went: `Table`'s was misfiled and
+  `Pagination`'s was designed away by making the member required and guarded. **Count the `none` bindings rather than writing an
   ordinal**, and note the count now includes `none` bound by a *case* rather than by a whole
   binding (`Tag`'s `plain` and `CalendarEvent`'s `inert`; `Skeleton`'s `circle` was a third
   until 8C10 retired that case, which is the count moving DOWN and another reason not to
@@ -1691,11 +1700,20 @@ stale-proof; a present-tense component name is not.
   component is untyped by construction, so the first compile of each remaining Plan D batch is
   where that class of bug surfaces. Expect it; it is one line per manifest and changes no output.
   Nothing gates it, because the gate is `ngc` and `ngc` cannot see a file no component imports.
-- **`CLAUDE.md` is 28 characters from its 60,000 limit, and every remaining Plan D batch must
-  touch it.** Measure it (`wc -m CLAUDE.md`) rather than trusting this number, which batch 2
-  already moved once. Each batch moves the Angular primitive count, the category sentence, or
-  both. `check:docs` fails hard rather than warning, so this surfaces as a red gate at the end of
-  a batch rather than as a decision made calmly.
+- **`CLAUDE.md` is 54 characters from its 60,000 limit.** Measure it rather than trusting this
+  number, which two batches have now moved — and measure it the way the gate does:
+  `node -e "console.log(require('fs').readFileSync('CLAUDE.md','utf8').length)"`. **`wc -m` is not
+  that measurement** and this entry used to prescribe it; the file is 60,282 *bytes* against 59,946
+  characters, so a byte count reads as 282 characters over a limit the file is comfortably under.
+  `check:docs` reads `.length`, which is UTF-16 code units. It fails hard rather than warning, so
+  this surfaces as a red gate at the end of a batch rather than as a decision made calmly.
+  **Batch 3 spent nothing**, which is the first useful data point this entry has: the assumption
+  that *every* remaining batch must touch the file is false. Landing `arena-pagination` moved no
+  claim in it, because the file carries no literal count of Angular primitives or delegated
+  entries — it names the `find` and the `python3 -c` that produce them — the six-category sentence
+  stayed true, and the React-only-set paragraph describes both sets by method rather than by
+  number, so they shrink together. `frameworks/angular/README.md` survived for the same reason.
+  **What would spend it is a new rule, not a new component.**
   **Batch 2 bought its own room and spent all of it**, which is the shape of the problem rather
   than a solution to it. Two claims in the file were measurably false and correcting them was
   net-negative: the carve-out paragraph said the layer had *one* carve-out when `arena-button`
@@ -1706,8 +1724,8 @@ stale-proof; a present-tense component name is not.
   characters and the harness and carve-out rules spent them.
   **The candidates left are the same ones**: the Angular-layer paragraphs that
   `frameworks/angular/README.md` already states in more detail, since `CLAUDE.md`'s job is the
-  cross-layer rule and not the layer's own tour. **Nothing at all is left for batch 3 to spend
-  before it moves something out first.**
+  cross-layer rule and not the layer's own tour. **54 characters is not a sentence, so the next
+  batch that does need to add a claim moves something out first.**
 
 - **The Angular by-hand checklists named work nobody here could do, and batch 2 built the thing
   that does it.** This entry recorded that `Button.prompt.md` and `Tooltip.prompt.md` each ended
@@ -2067,11 +2085,27 @@ keeps its fade and drops its travel, an opacity-only animation needs no clause.
 
 **Converges:** no. Each layer uses its own idiom over the same token values.
 
-#### ActivityFeed is the Angular primitive that does not host-bind its root
+#### ActivityFeed was the first Angular primitive not to host-bind its root, and the carve-out set has grown
 
-**Every other Angular primitive:** the recipe's `root` slot is
-bound onto the host — `host: { '[class]': 'styles().root()' }` — and no wrapper element is
-rendered.
+**The default:** the recipe's `root` slot is bound onto the host —
+`host: { '[class]': 'styles().root()' }` — and no wrapper element is rendered. **Count the two
+sets rather than trusting a figure here**, because this entry has already gone stale once by
+claiming `arena-activity-feed` was alone:
+
+```bash
+grep -Lr "'\[class\]':" --include='[A-Z]*.ts' frameworks/angular/components/*/*/ \
+  | grep -vE '\.(test|variants|card\.entry)\.ts$|(State|Window)\.ts$'
+```
+
+The carve-outs fall into three groups and each has its own reason. **The three SVG charts**
+(`bar-chart`, `line-chart`, `doughnut-chart`) have no manifest and no recipe at all, so there is
+no `root` slot to bind. **The form controls** (`button`, `icon-button`, `checkbox`, `radio`) each
+need their own `<button>`, `<input>` or `<label>`, or they forfeit the activation, labelling and
+`:disabled` semantics the browser already supplies. **And the rest keep a specific semantic or
+structural element**: `arena-activity-feed` a real `<ul>`, `arena-tabs` a `<div role="tablist">`
+with the panels as siblings outside it, `arena-pagination` a real `<nav>`. Every one of them
+declares `display: contents` on the bare host, and `HostClassBinding.test.ts` fails any that
+does not.
 
 **`arena-activity-feed`:** keeps the host a bare, unstyled `<arena-activity-feed>` and
 renders a real `<ul [class]="base().root()">` inside it, with each row a real `<li>`.
@@ -3093,6 +3127,57 @@ reworded to say what is true of both layers. **`SideNavItem`, `TableRow` and `Ta
 "injects", and `TableRow`'s and `TableCell`'s prose even names `cloneElement`**; they are left for
 the batches that implement them, because rewording a contract for a layer that does not exist yet
 is a guess about what that layer will do.
+
+#### Two Angular components bind `navigation` and reach the landmark two different ways
+
+`arena-pagination` renders a real `<nav>` and takes its host out of layout with
+`display: contents`. `arena-breadcrumbs` renders no `<nav>` at all: it host-binds its root slot and
+puts `role="navigation"` on the host. Both satisfy the pattern, because `navigation`'s
+`roles.element` admits either — *"navigation (native nav, or role=navigation when nav cannot be
+used)"* — and both suites pass the same `assertPattern` against the same requirement.
+
+**The reason for the difference is which rule each followed, not a judgement about the pattern.**
+`arena-breadcrumbs` followed the layer's default, which is that a primitive host-binds its root
+rather than rendering a wrapper. `arena-pagination` followed React, whose `Pagination.jsx` renders
+a `<nav>`, and took the carve-out the host rule already provides for an element that must be a
+specific semantic one.
+
+**Which is better is not settled, and the pattern's own wording leans the other way from
+`Breadcrumbs`**: it offers `role=navigation` for when `<nav>` *cannot* be used, and nothing stopped
+`arena-breadcrumbs` from using one. Converging means giving `arena-breadcrumbs` a real `<nav>`, a
+bare host with `display: contents`, and a rewrite of its compliance suite — whose subject is
+currently the fixture's own element and would become an element inside it. Nothing schedules that,
+and no gate notices: `check:behaviour` compares bindings and both bind `navigation` cleanly, while
+the evaluator asks whether there is a navigation landmark and never which element carries it.
+
+#### `input.required` is not the runtime guard, and four components now say so in code
+
+Six API contracts say a member is **"required, and guarded at runtime"**. Angular's
+`input.required` is not that guard: it throws when nothing was bound at all (NG0950) and says
+nothing about what was bound. `[ariaLabel]="row.title"` with an empty title satisfies it, and
+`[pageCount]="0"` satisfies it, and each leaves the component in exactly the state the member was
+made required to prevent — the first an unnamed landmark, the second a window over nothing.
+
+So the guard is a `computed` that validates and throws, placed where the template or the host
+binding already reads it, which is what makes it run on the first change detection instead of
+waiting for something to ask. `Pagination` (`ariaLabel`, `pageCount`), `Breadcrumbs`
+(`ariaLabel`), `ActivityFeed` (`label`) and `RadioGroup` (`ariaLabel`) carry it. The remaining
+three contracts with the phrase — `SideNav`, `SideNavSection`, `Table` — are still delegated and
+arrive with batches 4 and 6.
+
+**Two properties of this shape are worth knowing before extending it.** A signal caches a thrown
+error and re-throws it until a dependency changes, so a guard that fires once keeps firing for the
+right reason rather than resolving on the next tick. And under zoneless change detection the throw
+propagates out of `detectChanges()` — which is what makes it assertable with `assert.throws`, and
+also what makes an invalid configuration on a demo page render nothing at all rather than render
+badly.
+
+**One divergence from React, deliberate.** React tests falsiness (`if (!ariaLabel)`), this layer
+tests `trim()`. A name of nothing but spaces is refused here and accepted there. React's is the
+weaker of the two, and nothing schedules moving it.
+
+**Nothing gates any of this.** No check reads a contract's `description` prose, so a seventh
+contract could grow the phrase and no component would be obliged to notice.
 
 ## 4. What the READMEs do not say
 
