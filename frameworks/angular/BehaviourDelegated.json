@@ -1,9 +1,4 @@
 {
-  "Badge": {
-    "pattern": "none",
-    "delegatedTo": "Angular Material MatBadge",
-    "reason": "matBadge is Material's small labelled/numeric indicator directive. React's Badge renders the same small labelled shape -- an optional dot plus text, no interactive affordance of its own -- and Arena has no arena-badge primitive and should not grow one. arena-material.css does not dress it: no .mat-badge-content rule exists in the bridge today, so its colours are Material's own defaults, not Arena's tokens."
-  },
   "Calendar": {
     "pattern": "absent",
     "reason": "This entry and CalendarEvent below are the only two in this file that are genuinely absent rather than delegated -- pattern \"absent\", not \"none\", because Angular has no such component at all, not a rendered-but-inert one. Arena's Calendar is a day/hour schedule grid with absolutely-positioned event blocks -- a scheduling view, not a date picker. Angular Material's calendar surface (mat-calendar, the view inside MatDatepicker) is a month/date-selection grid: a different widget solving a different problem, with no day/hour axis and no event blocks. There is no real Material control this delegates to, and arena-material.css dresses none. Whether Angular should gain a schedule view is a separate, open question this entry does not answer: it records that React has one and Angular does not, not a decision that Angular never will. Nothing has decided either way. Recorded in CLAUDE.md's Known debt."

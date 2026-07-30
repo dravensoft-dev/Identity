@@ -60,6 +60,7 @@ export const COVERED = {
   'Breadcrumbs:react': 'NavigationLandmarks.dom.test.jsx',
   'Pagination:react': 'NavigationLandmarks.dom.test.jsx',
   'Alert:angular': 'Alert.roleTones.test.ts',
+  'Badge:angular': 'Badge.compliance.test.ts',
   'BarChart:angular': 'ChartDataTable.test.ts',
   'ActivityFeed:angular': 'ActivityFeed.cases.test.ts',
   'DoughnutChart:angular': 'ChartDataTable.test.ts',
