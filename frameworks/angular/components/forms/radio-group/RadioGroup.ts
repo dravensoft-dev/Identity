@@ -15,6 +15,7 @@ let nextId = 0;
     '[class]': 'styles().group()',
     role: 'radiogroup',
     '[attr.aria-label]': 'label()',
+    '[attr.name]': 'null',
   },
   template: `<ng-content />`,
 })

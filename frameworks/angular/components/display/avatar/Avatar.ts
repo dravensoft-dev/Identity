@@ -6,7 +6,10 @@ import { AvatarSize, AvatarShape, AvatarStatus } from '../../../Api.generated';
   selector: 'arena-avatar',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class]': 'styles().root()' },
+  host: {
+    '[class]': 'styles().root()',
+    '[attr.name]': 'null',
+  },
   template: `
     <span [class]="styles().box()">
       @if (src(); as source) {

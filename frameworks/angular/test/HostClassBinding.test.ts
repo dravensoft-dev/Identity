@@ -294,11 +294,14 @@ test('arena-app-logo: with no dim, the wordmark renders the name alone and no di
   fixture.destroy();
 });
 
-test('arena-app-logo: a static "name" attribute satisfies the required input AND stays on the element', () => {
+test('arena-app-logo: a static "name" attribute satisfies the required input and is then cleared off the element', () => {
   const fixture = TestBed.createComponent(AppLogoStaticAttributeHost);
   fixture.detectChanges();
   const host = fixture.nativeElement.querySelector('arena-app-logo') as HTMLElement;
-  assert.equal(host.getAttribute('name'), 'Draven', 'the literal attribute should still land on the host element itself');
+  assert.equal(host.getAttribute('name'), null,
+    'the static attribute survived on the host. Angular writes it during the creation pass whether or not it '
+    + "also matches an input, which is what '[attr.name]': 'null' in the host block exists to undo — a stray "
+    + 'global attribute the consumer never meant to set, and for `title` a browser tooltip over the whole component.');
   assert.ok(host.classList.contains('consumer-class'), `sanity: the static class attribute survives the host [class] binding: "${host.className}"`);
   const nameClass = appLogoStyles().name().split(/\s+/)[0];
   assert.equal(
@@ -843,6 +846,109 @@ test('a primitive that does not host-bind its root takes its host out of layout 
       + "w-full on the real element inside resolves against the shrunk host and does nothing. "
       + 'Either host-bind the root slot, or take the host out of layout with display: contents.',
     );
+  }
+});
+
+const GLOBAL_ATTRIBUTE_INPUTS = ['title', 'name'] as const;
+
+function hostBlockOf(source: string): string {
+  const at = source.indexOf('host: {');
+  if (at === -1) return '';
+  let depth = 0;
+  for (let i = source.indexOf('{', at); i < source.length; i += 1) {
+    if (source[i] === '{') depth += 1;
+    else if (source[i] === '}') {
+      depth -= 1;
+      if (depth === 0) return source.slice(at, i + 1);
+    }
+  }
+  return '';
+}
+
+function primitiveSources(): Array<{ name: string; path: string; source: string }> {
+  const out: Array<{ name: string; path: string; source: string }> = [];
+  for (const category of readdirSync(ANGULAR_COMPONENTS, { withFileTypes: true })) {
+    if (!category.isDirectory()) continue;
+    for (const dir of readdirSync(join(ANGULAR_COMPONENTS, category.name), { withFileTypes: true })) {
+      if (!dir.isDirectory()) continue;
+      const name = kebabToPascal(dir.name);
+      const path = join(ANGULAR_COMPONENTS, category.name, dir.name, `${name}.ts`);
+      out.push({ name, path, source: readFileSync(path, 'utf8') });
+    }
+  }
+  return out;
+}
+
+test('a primitive whose input is named after a global HTML attribute clears that attribute off its host', () => {
+  const sources = primitiveSources();
+  assert.ok(sources.length > 0, 'no primitive sources found -- the guard would silently check nothing');
+
+  const problems: string[] = [];
+  let declared = 0;
+
+  for (const { name, path, source } of sources) {
+    const host = hostBlockOf(source);
+    for (const attribute of GLOBAL_ATTRIBUTE_INPUTS) {
+      const takesInput = new RegExp(`^  readonly ${attribute} = input`, 'm').test(source);
+      const clears = host.includes(`'[attr.${attribute}]': 'null'`);
+      if (takesInput) declared += 1;
+
+      if (takesInput && !clears) {
+        problems.push(
+          `${path}: ${name} takes a \`${attribute}\` input and does not clear the attribute. `
+          + 'Angular writes a static attribute to the DOM during the creation pass whether or not it '
+          + `also matches an input, so <arena-${name.toLowerCase()} ${attribute}="…"> leaves a real `
+          + `${attribute} on the host` + (attribute === 'title' ? ' and the browser draws a tooltip over it' : '')
+          + `. Add '[attr.${attribute}]': 'null' to the host block.`,
+        );
+      }
+      if (!takesInput && clears) {
+        problems.push(
+          `${path}: ${name} clears the ${attribute} attribute and declares no \`${attribute}\` input -- `
+          + 'stale, and it now removes an attribute a consumer may have meant to set.',
+        );
+      }
+    }
+  }
+
+  assert.ok(declared > 0, 'no primitive declares a title or name input -- the guard matched nothing, so it proves nothing');
+  assert.deepEqual(problems, [], `\n  ${problems.join('\n  ')}`);
+});
+
+@Component({
+  standalone: true,
+  imports: [PageHead, Avatar],
+  template: `
+    <arena-page-head title="Projects" />
+    <arena-page-head [title]="bound" />
+    <arena-avatar name="Ada Lovelace" />
+  `,
+})
+class StrayAttributeHost {
+  bound = 'Deployments';
+}
+
+test('the clearing binding removes a STATIC attribute and leaves the input holding its value', () => {
+  useTestEnvironment();
+  const fixture = TestBed.createComponent(StrayAttributeHost);
+  fixture.detectChanges();
+  try {
+    const [statik, bound] = [...fixture.nativeElement.querySelectorAll('arena-page-head')] as HTMLElement[];
+    const avatar = fixture.nativeElement.querySelector('arena-avatar') as HTMLElement;
+
+    assert.equal(statik.hasAttribute('title'), false,
+      'the static title survived on the host, so the browser draws a tooltip over the whole header');
+    assert.equal(statik.querySelector('h1')?.textContent?.trim(), 'Projects',
+      'clearing the attribute also took the value away from the input, which is the wrong half to remove');
+
+    assert.equal(bound.hasAttribute('title'), false, 'a bound title must never reach the DOM as an attribute');
+    assert.equal(bound.querySelector('h1')?.textContent?.trim(), 'Deployments');
+
+    assert.equal(avatar.hasAttribute('name'), false, 'the static name survived on the host');
+    assert.match(avatar.textContent ?? '', /AL/,
+      'the initials are derived from the `name` input, so clearing the attribute must not empty it');
+  } finally {
+    fixture.destroy();
   }
 });
 

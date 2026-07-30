@@ -9,7 +9,10 @@ import { buttonStyles } from './Button.variants';
   selector: 'arena-button',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { style: 'display: contents' },
+  host: {
+    style: 'display: contents',
+    '[attr.name]': 'null',
+  },
   template: `
     <button #control [class]="styles().root()" [attr.type]="type()" [disabled]="inert()"
             [attr.name]="name()" [attr.value]="value()" [attr.form]="form()"

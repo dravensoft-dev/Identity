@@ -238,13 +238,15 @@ The equivalence to a native HTML boolean attribute stops there: `booleanAttribut
 special-cases the literal string `"false"` as `false`, where a native attribute stays set
 on any present value. Binding (`[dismissible]="true"`) is the clearer form.
 
-**An input named after a native attribute leaves the native attribute behind.** Angular
-writes a static attribute to the DOM during the creation pass whether or not it also
-matches an input, so `<arena-page-head title="Projects">` leaves a real `title` on the host
-and the browser draws a tooltip over the whole header. **Count the affected set rather than
-trusting a figure — it grows with the layer, and the figure that stood here was already wrong
-by five.** `DOUBTS.md` carries the command. Bind the input (`[title]="…"`) rather than setting
-it as an attribute.
+**An input named after a native attribute leaves the native attribute behind — and every
+primitive that takes one now clears it.** Angular writes a static attribute to the DOM during
+the creation pass whether or not it also matches an input, so `<arena-page-head title="Projects">`
+left a real `title` on the host and the browser drew a tooltip over the whole header. Each
+affected primitive carries `'[attr.title]': 'null'` (or `'[attr.name]': 'null'`) in its host
+block, and `HostClassBinding.test.ts` asserts it both ways: a primitive that takes the input and
+does not clear it fails, and so does one that clears an attribute it takes no input for. **Read
+the guard, not a count** — the figure here was wrong three times, most recently by measuring only
+host-bound primitives when the defect never depended on host-binding.
 
 ## Adopting it
 

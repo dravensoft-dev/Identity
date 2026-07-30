@@ -14,6 +14,7 @@ let nextId = 0;
     '[class]': 'styles().track()',
     role: 'radiogroup',
     '[attr.aria-label]': 'ariaLabel()',
+    '[attr.name]': 'null',
   },
   template: `
     @for (option of options(); track option.value) {

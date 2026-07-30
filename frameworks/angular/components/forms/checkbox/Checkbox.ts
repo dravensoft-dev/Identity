@@ -10,7 +10,10 @@ export const CHECK_STROKE_STYLE = { strokeWidth: 'var(--bw-strong)' };
   selector: 'arena-checkbox',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { style: 'display: contents' },
+  host: {
+    style: 'display: contents',
+    '[attr.name]': 'null',
+  },
   template: `
     <label [class]="styles().root()">
       <span [class]="styles().box()">

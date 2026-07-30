@@ -6,7 +6,10 @@ import { chartCardStyles } from './ChartCard.variants';
   selector: 'arena-chart-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class]': 'styles().root()' },
+  host: {
+    '[class]': 'styles().root()',
+    '[attr.title]': 'null',
+  },
   template: `
     @if (title() || actions()) {
       <div [class]="styles().head()">

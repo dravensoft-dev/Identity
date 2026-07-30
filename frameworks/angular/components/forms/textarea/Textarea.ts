@@ -23,7 +23,10 @@ export function borderBoxSlack(element: HTMLElement): number {
   selector: 'arena-textarea',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class]': 'styles().root()' },
+  host: {
+    '[class]': 'styles().root()',
+    '[attr.name]': 'null',
+  },
   template: `
     @if (label(); as text) {
       <label [class]="styles().label()" [attr.for]="controlId()">{{ text }}@if (required()) {

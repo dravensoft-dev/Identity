@@ -17,6 +17,7 @@ const TONE_ICONS: Record<AlertTone, string> = {
   host: {
     '[class]': 'styles().root()',
     '[attr.role]': "tone() === 'danger' ? 'alert' : 'status'",
+    '[attr.title]': 'null',
   },
   template: `
     <i [class]="styles().icon() + ' ' + (icon() ?? toneIcon())" aria-hidden="true"></i>

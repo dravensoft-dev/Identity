@@ -8,7 +8,10 @@ import { cardStyles } from './Card.variants';
   selector: 'arena-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class]': 'styles().root()' },
+  host: {
+    '[class]': 'styles().root()',
+    '[attr.title]': 'null',
+  },
   template: `
     @if (headed()) {
       <div [class]="styles().head()">

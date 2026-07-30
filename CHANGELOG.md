@@ -56,12 +56,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   either on one page were indistinguishable landmarks; `RadioGroup` had no accessible name at
   all. Nothing can derive these names, so nothing defaults them — pass what is being paged, or
   chosen, or navigated.
-- **Two records that had gone stale unread are measured now rather than listed.** The Angular
-  layer's "an input named after a native attribute leaves the native attribute behind" note
-  claimed nine affected primitives; it is **fourteen**, because four `name` inputs landed during
-  Plan D's own earlier batches. And a `DOUBTS.md` entry about contract prose rotting had itself
-  rotted, asserting that two contracts named `cloneElement` when no contract ever has. Both now
-  carry the command that measures the set instead of a figure.
+- **A `DOUBTS.md` entry about contract prose rotting had itself rotted**, asserting that two
+  contracts named `cloneElement` when no contract ever has. It carries the command that proves
+  it now, rather than a claim.
 
 ### Added
 
@@ -157,6 +154,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **An Angular input named after a global HTML attribute no longer leaves that attribute on the
+  host.** Angular writes a static attribute to the DOM during the creation pass whether or not it
+  also matches an input, so `<arena-page-head title="Projects">` left a real `title` behind and
+  the browser drew a tooltip over the whole header — worst on `arena-confirm-dialog`, whose host
+  is the full-viewport scrim, where the tooltip covered the viewport for as long as the dialog was
+  open. All **seventeen** affected primitives clear it, and `HostClassBinding.test.ts` holds it
+  both ways: taking the input without clearing fails, and clearing without the input fails.
+  The count is the story — it was recorded as five, then nine, then fourteen, and the last of
+  those was measured with a filter that only looked at host-bound primitives when the defect never
+  depended on host-binding. The guard found `arena-button`, `arena-icon-button` and
+  `arena-checkbox` in the minute after it was written.
 - **`Calendar` chips are `border-box`**, so the width and height `Calendar` injects are the
   chip's outer edge, which is what both already read as. A full-width chip no longer overruns
   its day column by 12px, and no chip stands 8px taller than its own time range. The chip's

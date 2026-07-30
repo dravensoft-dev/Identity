@@ -8,7 +8,10 @@ import { PageHeadAlign } from '../../../Api.generated';
   selector: 'arena-page-head',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class]': 'styles().root()' },
+  host: {
+    '[class]': 'styles().root()',
+    '[attr.title]': 'null',
+  },
   template: `
     <div [class]="styles().titles()">
       <h1 [class]="styles().title()">{{ title() }}</h1>

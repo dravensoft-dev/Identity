@@ -1911,40 +1911,45 @@ all** — R4 removed the last of them from `Dialog`, `Menu`, `Pagination` and `S
 conclusion holds either way; only components not yet under contract still rely on the
 destructure-first reason.
 
-**Measure the set rather than trusting a list here — this entry has already gone stale
-twice**, once claiming five and once claiming nine, both times because the affected set
-grows every time a primitive lands:
+**FIXED, and the way the count moved is the lesson.** Every affected primitive clears the
+attribute off its own host — `'[attr.title]': 'null'` or `'[attr.name]': 'null'` in the host
+block — and `HostClassBinding.test.ts` holds it layer-wide and bidirectionally: a primitive
+that takes a `title`/`name` input and does not clear it fails, and so does one that clears an
+attribute it takes no input for.
 
-```bash
-for dir in frameworks/angular/components/*/*/; do
-  d=$(basename "$dir"); p=$(echo "$d" | sed -E 's/(^|-)([a-z])/\U\2/g'); f="$dir$p.ts"
-  [ -f "$f" ] || continue; grep -q "'\[class\]':" "$f" || continue
-  for w in title name; do grep -qE "^  readonly $w = input" "$f" && echo "$w $d"; done
-done
-```
+**This entry's count was wrong three times running**, and each version was wrong for its own
+reason. It claimed **five**, then **nine** (stale: four `name` inputs landed during Plan D's
+own batches 2 and 3 while nobody re-read it), then **fourteen** — and fourteen was wrong the
+moment it was measured, because the command used to measure it filtered on
+`grep -q "'\[class\]':"`, i.e. on the primitive being **host-bound**. The defect has nothing
+to do with host-binding: Angular writes the static attribute during the creation pass whatever
+the host does with classes, so `button`, `icon-button` and `checkbox` — three carve-outs with
+bare hosts — were affected all along and invisible to the filter.
 
-It returns **fourteen** today — eight `title` and six `name`. The four the "nine" version
-missed are `input`, `radio-group`, `segmented-control` and `textarea`, all of which took a
-`name` input during Plan D's own batches 2 and 3 while this entry sat unread; the eighth
-`title` is `card`, added by batch 4, which **knowingly** made the count worse rather than
-fixing one primitive out of fourteen.
+**The real number is seventeen: eight `title` and nine `name`.** The guard found the last three
+within a minute of being written, which is the argument for writing a guard instead of a
+command: a command is only as good as the filter its author reached for, and this entry has now
+produced a bad filter twice — once excluding host-bound (wrong axis) and once excluding
+`*State.ts`, which silently eats `EmptyState.ts` and `ErrorState.ts`, two of the affected
+components. **Do not re-derive the set by hand; read what the guard asserts.**
 
-The command's exclusions are the interesting part, because the obvious one is wrong: a
-filter of `*State.ts` — meant to skip `TabsState.ts` and `RadioGroupState.ts` — silently
-eats `EmptyState.ts` and `ErrorState.ts`, two of the affected components. Match the file
-named after its own directory instead.
+`confirm-dialog` was the worst of them by a distance, and it is why the count was worth getting
+right: its host is the fixed full-viewport scrim, so `<arena-confirm-dialog title="Delete?">`
+painted a browser tooltip over the **entire viewport** for as long as the dialog was open, not
+over a header.
 
-`confirm-dialog` is the worst of them by a distance, and the reason the count is worth
-getting right: its host is the fixed full-viewport scrim, so
-`<arena-confirm-dialog title="Delete?">` paints a browser tooltip over the **entire
-viewport** for as long as the dialog is open, not over a header.
+**Two things the fix does not do.** It does not stop a consumer from setting a genuine `title`
+tooltip on a primitive that takes no `title` input — `<arena-skeleton title="Loading">` still
+works, and the guard's stale direction is what keeps the clearing binding off components like
+it. And it does not reach an attribute whose name matches no input at all; nothing does, and
+nothing should — Angular composing a consumer's static attribute with the host bindings is the
+behaviour that makes `style` and ARIA attributes work on a host-bound primitive in the first
+place.
 
-A host binding of `'[attr.title]': 'null'` (and `'[attr.name]': 'null'`) would close it,
-and must then be applied to all fourteen at once rather than one primitive at a time — a
-fix that lands on five and is believed to have closed the problem leaves nine, including
-the viewport-wide one, still broken. **Not yet done**, and the right shape for it is a
-guard in `HostClassBinding.test.ts` driven by the command above, so the set cannot grow
-again without the gate saying so.
+**One existing test asserted the defect as a property** and had to be inverted:
+`arena-app-logo: a static "name" attribute satisfies the required input AND stays on the
+element`. Both halves were true and only the first was wanted. It now asserts that the input
+holds the value and the element does not.
 
 **Converges:** no. This is the correct Angular idiom. The stray-attribute edge above is a
 defect within it and is expected to converge once fixed layer-wide.
