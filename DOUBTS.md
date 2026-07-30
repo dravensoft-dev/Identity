@@ -1667,23 +1667,27 @@ stale-proof; a present-tense component name is not.
   cross-layer rule and not the layer's own tour. `check:docs` fails hard rather than warning, so
   this surfaces as a red gate at the end of a batch rather than as a decision made calmly.
 
-- **Two Angular components now carry a by-hand checklist that nothing in this repo can run.**
-  `Button.prompt.md` and `Tooltip.prompt.md` each end with a "By hand, in real Chromium" block —
-  the reduced-motion spinner, the overlay flipping below a trigger, escaping an `overflow: hidden`
-  ancestor, the pointer-versus-focus delay asymmetry, the z-layering. Those are the right things to
-  name: happy-dom implements none of them, so they are genuinely the unverified part. But they are
-  the **only** two of the layer's 22 prompts that carry such a block, and unlike React's — which a
-  reader runs with `bun run demos` against a `*.card.html` page — **the Angular layer has no demo
-  page and no application at all**. `frameworks/tailwind/`'s specimen proves the *recipe*, never the
-  component. So the checklist names work no one in this repository can do; it is actionable only
-  inside an adopting app.
-  **Three resolutions exist and none is taken.** An Angular demo harness under
-  `frameworks/angular/` would be the real fix and is a batch of its own. A browser-driven gate would
-  cover the geometry but not the motion. Deleting the blocks would make the layer look more verified
-  than it is, which is the one option that is clearly wrong. Kept as written, because a named
-  unverified thing is worth more than a silent one — but a reader must not read the block as a step
-  that was performed. **Nothing about the CDK overlay's real positioning has been confirmed in a
-  browser**, only that it attaches, is anchored to the host, and carries the `--sp-2` offset.
+- **The Angular by-hand checklists named work nobody here could do, and batch 2 built the thing
+  that does it.** This entry recorded that `Button.prompt.md` and `Tooltip.prompt.md` each ended
+  with a "By hand, in real Chromium" block against a layer with **no demo page and no application
+  at all**, and that of the three possible resolutions — a harness, a browser-driven gate, or
+  deleting the blocks — none was taken. **The harness is the one that was taken.**
+  `<Component>.card.html` beside each covered primitive runs the real component: `ngc` compiles the
+  templates AOT and `Bun.build` bundles that output for a browser, one shared Angular chunk across
+  every page, built by `bun run build:angular-demo` and chained ahead of `bun run demos`.
+  **It paid for itself before this batch's own components landed.** `arena-button`'s `full`
+  variant did nothing: the carve-out host is bare, so as a flex item it blockifies to
+  shrink-to-fit, and the inner button's `w-full` measured the shrunk host rather than the row. No
+  suite could see it — happy-dom has no layout. The fix is `display: contents` on every bare
+  carve-out host, now asserted for the whole layer in `HostClassBinding.test.ts`.
+  **What is still open is smaller and is named here rather than in the prompts.** The pages carry
+  no `@dsCard`, because their script is git-ignored build output and a blank page passes a
+  viewport-overflow check by having nothing to overflow — so Angular primitives get no *published*
+  specimen card, and the Tailwind specimen stays the published visual for the recipe.
+  `check:angular-demos` is structural only: it proves a page exists, loads its own bundle and
+  mounts a zoneless app, never that what it renders is right. And **the checklists remain
+  checklists** — running them is a person's job, and a green `bun run check` still says nothing
+  about whether anyone did.
 
 ## 2. Where the rest of the debt lives
 
@@ -2551,6 +2555,26 @@ the global `document` directly and has no injection contract to keep consistent.
 **Converges:** n/a — no behavioural divergence found. Recorded because this is the first
 primitive whose host classes depend on a runtime measurement, and the next five (the
 chart primitives) inherit the helper unchanged.
+
+#### DataVisuals sits at both layer roots, and only one layer's consumers put it there
+
+Moved out of `CLAUDE.md` on 2026-07-30 to make room under its 60,000-character limit. It is a
+placement *decision* with no gate behind it, which is this file's material rather than the
+cross-layer rule book's.
+
+**React:** `Calendar` imports `catColor` from it, so a `display` component consumes it and the
+narrowest-common-level rule puts the module at the layer root rather than in a category —
+verify with `grep -rln DataVisuals frameworks/react/components`, which returns the three charts
+**and** `display/calendar/`.
+
+**Angular:** the consumers are the three charts alone, so the same rule would put its copy in
+`components/charts/`. It is at the layer root **by decision**, because that narrower consumer
+set is an artifact of Angular's `Calendar` being delegated to Material rather than a real
+difference between the layers — and Plan D does not close it, since `Calendar` is one of the two
+`absent` entries that survive Plan D rather than a delegation Plan D removes.
+
+**Converges:** not by Plan D. It would converge only if Angular ever grew a schedule view, which
+nothing has decided.
 
 #### DataVisuals — the visually-hidden style carries its units in Angular
 

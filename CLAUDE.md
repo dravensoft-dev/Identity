@@ -320,7 +320,7 @@ The controls Angular delegates to Material exist in React alone, so **count them
 trusting a figure**: every component **directory** under
 `frameworks/react/components/<category>/` with no matching directory under
 `frameworks/angular/components/<category>/`, which is also the key set of
-`frameworks/angular/BehaviourDelegated.json` minus `Switch`. **A change that makes an item a
+`frameworks/angular/BehaviourDelegated.json`. **A change that makes an item a
 component enlarges that set while contracting it**, which is why the method above is the only
 thing worth trusting. Their APIs are settled and normative *before* Angular has an
 implementation to defend.
@@ -508,12 +508,15 @@ component's own suites, `<Component>.<facet>.test.ts`, in the same directory. Da
 exception and have no `<Component>.variants.ts`. Angular has **all six** of the categories the
 layout rule allows; `forms/` is the newest, and fills as Plan D moves the delegated controls in.
 
-**A host-bound root is the Angular layer's default, and it has one carve-out.** A primitive
-binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than rendering
-a wrapper div, so the host is the flex item its parent lays out and the measured element is the
-styled element. One primitive correctly does **not**: `activity-feed`, whose root must be a real
-`<ul>` with `<li>` rows. The rule targets elements that exist only to carry styling; when the
-root must be a specific semantic or interactive element, keep it. **A host-bound root must carry
+**A host-bound root is the Angular layer's default, and its carve-outs are a growing set.** A
+primitive binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than
+rendering a wrapper div, so the host is the flex item its parent lays out and the measured
+element is the styled element. The rule targets elements that exist only to carry styling; when
+the root must be a specific semantic or interactive element, keep it and leave the host bare.
+`activity-feed` needs a real `<ul>`; a form control needs its own `<button>`, `<input>` or
+`<label>`, or it forfeits the activation, labelling and `:disabled` semantics the browser
+already supplies. **A bare host still declares `display: contents`**, or as a flex item it
+shrinks to fit and a `w-full` inside measures the host, not the row. **A host-bound root must carry
 a display utility** — `<arena-x>` is an unknown element defaulting to `display:inline`, where
 width and height do not apply, so a root slot without one renders a zero-area host. That is
 machine-guarded by a manifest-driven assertion in
@@ -619,18 +622,15 @@ and standalone `OnPush` primitives under `components/<category>/<component-kebab
 exception — no manifest, no `.variants.ts`, token-valued camelCase `[style]` objects like
 React's, and reviewed against React's `components/charts/Charts.card.html`), each styled by the
 shared `frameworks/tailwind/` recipes through the configured `tv`. Count the components with
-`find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l`. Its layer root
+`find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l`. A primitive whose
+behaviour only a browser can show also has `<Component>.card.html` + `.card.entry.ts` beside it,
+built by `bun run build:angular-demo` and recorded in `check:angular-demos`. Those pages carry
+**no** `@dsCard`: the bundle is git-ignored, and a blank page passes a viewport check by having
+nothing to overflow. Its layer root
 additionally holds the generated `Api.generated.ts` and `Tokens.generated.ts`, the
 `BehaviourDelegated.json` declaration, and four shared internals — `ContainerSize.ts`,
 `DataVisuals.ts`, `FocusTrap.ts` and `ProjectionMarkers.ts`, each named directly by
 `frameworks/angular/index.ts`.
-
-**`DataVisuals` sits at both layer roots.** In React, `Calendar` imports `catColor` from it, so a
-`display` component consumes it and the narrowest-common-level rule puts it at the layer root
-rather than in a category — verify with `grep -rln DataVisuals frameworks/react/components`,
-which returns the three charts **and** `display/calendar/`. Angular's consumers are the three
-charts alone, so its copy could sit in `components/charts/`; it is at the layer root by decision,
-because that narrower set is an artifact of Angular's `Calendar` being delegated to Material.
 
 `frameworks/tailwind/` is a **single shared** Tailwind v4 layer (`@theme` preset + per-component
 manifests), authored once because the token→utility mapping is pure CSS. Its root holds `Tv.ts`,

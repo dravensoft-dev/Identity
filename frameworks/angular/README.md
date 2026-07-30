@@ -214,6 +214,21 @@ never the *component*: it hand-builds the DOM from the manifest, so a component-
 bug can render correctly in the card while being broken in the primitive. The three SVG
 charts have no specimen at all, by the same exception that gives them no manifest.
 
+**What proves the component is a demo page, and there is one per primitive that has earned
+it.** `<Component>.card.html` beside the component runs the real primitive in a real browser,
+which is where motion, focus rings and layout live — none of them observable in happy-dom.
+`bun run demos` builds the pages and serves them; the build is `bun run build:angular-demo`,
+two steps because neither tool does the other's job: `ngc -p tsconfig.demo.json` compiles the
+templates AOT, and `Bun.build` bundles that output for a browser, one shared Angular chunk
+across every page. An entry imports `@angular/compiler` because `@angular/*` ships partially
+compiled and its injectables need the JIT fallback; without it the page throws before mounting.
+
+The bundle is git-ignored build output, which is why **no Angular page declares `@dsCard`**: on
+a fresh clone the page renders blank, and `check:cards` would pass it for having nothing to
+overflow. `check:angular-demos` is the portable gate instead — it needs no browser and no
+bundler, and its `PAGED` set is the coverage record, so a page that exists undeclared and a
+declared page that is missing both fail. Coverage is partial and grows one component at a time.
+
 ## Two traps this layer's idiom sets
 
 Both are layer-wide and silent, and both are recorded in

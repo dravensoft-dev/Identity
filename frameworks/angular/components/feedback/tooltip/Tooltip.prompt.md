@@ -40,7 +40,9 @@ Arena does not hand-roll here — focus and roles stay Arena's. The app must imp
 - Don't set `label` to the trigger's own text. `aria-describedby` is read **in addition** to the
   name, so a bubble repeating the label just says everything twice.
 
-**By hand, in real Chromium** — none of these is provable in happy-dom:
+**By hand, in real Chromium** — none of these is provable in happy-dom. Run `bun run demos` and
+open `/frameworks/angular/components/feedback/tooltip/Tooltip.card.html`, which lays out one
+section per item below:
 - The bubble sits centred above the trigger with a `--sp-2` gap, and **flips below** when the
   trigger is near the top of the viewport.
 - It escapes a scrolling `overflow: hidden` container and stays anchored while that container

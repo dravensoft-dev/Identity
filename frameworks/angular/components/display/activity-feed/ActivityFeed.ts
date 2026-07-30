@@ -19,7 +19,7 @@ export function resolveActivityFeedRows(items: readonly ActivityItem[]): Activit
   selector: 'arena-activity-feed',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '(keydown)': 'onKeydown($event)' },
+  host: { style: 'display: contents', '(keydown)': 'onKeydown($event)' },
   template: `
     <ul [class]="base().root()" role="feed" [attr.aria-label]="label()"
         [attr.aria-busy]="busy() ? 'true' : 'false'">

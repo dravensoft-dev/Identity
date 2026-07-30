@@ -796,6 +796,37 @@ test('every Angular primitive\'s root slot carries a display utility, so host-bi
   }
 });
 
+const HOST_BOUND_ROOT = /'\[class\]':/;
+const HOST_STATIC_DISPLAY = /host:\s*\{[^}]*\bstyle:\s*'[^']*display\s*:/s;
+
+test('a primitive that does not host-bind its root takes its host out of layout with display: contents', () => {
+  const componentsDir = ANGULAR_COMPONENTS;
+  const sources: Array<{ name: string; path: string; source: string }> = [];
+
+  for (const category of readdirSync(componentsDir, { withFileTypes: true })) {
+    if (!category.isDirectory()) continue;
+    for (const dir of readdirSync(join(componentsDir, category.name), { withFileTypes: true })) {
+      if (!dir.isDirectory()) continue;
+      const name = kebabToPascal(dir.name);
+      const path = join(componentsDir, category.name, dir.name, `${name}.ts`);
+      sources.push({ name, path, source: readFileSync(path, 'utf8') });
+    }
+  }
+  assert.ok(sources.length > 0, 'no primitive sources found -- the guard would silently check nothing');
+
+  for (const { name, path, source } of sources) {
+    if (HOST_BOUND_ROOT.test(source)) continue;
+    assert.match(
+      source,
+      HOST_STATIC_DISPLAY,
+      `${path}: ${name} leaves its host bare and declares no display on it. An <arena-x> with no `
+      + 'display is an inline box, and as a flex item it blockifies to shrink-to-fit -- so a '
+      + "w-full on the real element inside resolves against the shrunk host and does nothing. "
+      + 'Either host-bind the root slot, or take the host out of layout with display: contents.',
+    );
+  }
+});
+
 test('arena-bar-chart: the host is a block-level box, so the width it measures is a real content width', async () => {
   const fixture = createBarChartHost();
   await fixture.whenStable();

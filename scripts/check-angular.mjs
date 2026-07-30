@@ -14,10 +14,15 @@ export function ngcBin(root = repoRoot) {
   return bin;
 }
 
+export const PROJECTS = [
+  { project: 'frameworks/angular/tsconfig.check.json', reaches: 'the layer, through its barrels' },
+  { project: 'frameworks/angular/tsconfig.demo.json', reaches: 'the demo page entries, which no barrel reaches' },
+];
+
 export function typecheck(opts = {}) {
   const root = opts.root ?? repoRoot;
   const bin = ngcBin(root);
-  const project = join(root, 'frameworks/angular/tsconfig.check.json');
+  const project = join(root, opts.project ?? PROJECTS[0].project);
   const out = mkdtempSync(join(tmpdir(), 'arena-ngc-'));
   try {
     const r = spawnSync(process.execPath, [bin, '-p', project, '--outDir', out], { encoding: 'utf8', maxBuffer: MAX_BUFFER });
@@ -29,20 +34,22 @@ export function typecheck(opts = {}) {
 }
 
 function main() {
-  let result;
-  try {
-    result = typecheck();
-  } catch (err) {
-    console.error(`check-angular: ${err.message}`);
-    process.exit(1);
+  for (const { project, reaches } of PROJECTS) {
+    let result;
+    try {
+      result = typecheck({ project });
+    } catch (err) {
+      console.error(`check-angular: ${err.message}`);
+      process.exit(1);
+    }
+    const { status, output } = result;
+    if (status !== 0) {
+      console.error(`check-angular: ${project} does not typecheck — it reaches ${reaches}\n`);
+      console.error(output.trim());
+      process.exit(1);
+    }
   }
-  const { status, output } = result;
-  if (status !== 0) {
-    console.error('check-angular: the Angular layer does not typecheck\n');
-    console.error(output.trim());
-    process.exit(1);
-  }
-  console.log('check-angular: the layer typechecks under strictTemplates');
+  console.log(`check-angular: ${PROJECTS.length} project(s) typecheck under strictTemplates`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

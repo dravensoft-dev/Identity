@@ -26,13 +26,14 @@
     "typescript": "6.0.3"
   },
   "scripts": {
-    "demos": "bun scripts/serve.mjs",
+    "demos": "bun scripts/build-angular-demo.mjs && bun scripts/serve.mjs",
     "build:tokens": "bun scripts/build-tokens.mjs",
     "build:tailwind": "bun scripts/build-tailwind.mjs",
     "build:vendor": "bun scripts/build-vendor.mjs",
     "build:demos": "bun scripts/build-demos.mjs",
     "build:api": "bun scripts/build-api-types.mjs",
     "build:angular-tests": "bun scripts/build-angular-tests.mjs",
+    "build:angular-demo": "bun scripts/build-angular-demo.mjs",
     "check:tokens": "bun scripts/check-tokens-generated.mjs",
     "check:script-tokens": "bun scripts/check-script-tokens.mjs",
     "check:duplicate-constants": "bun scripts/check-duplicate-constants.mjs",
@@ -53,6 +54,7 @@
     "check:api": "bun scripts/check-api.mjs",
     "check:fonts": "bun scripts/check-fonts-generated.mjs",
     "check:angular": "bun scripts/check-angular.mjs",
+    "check:angular-demos": "bun scripts/check-angular-demos.mjs",
     "check:material": "bun scripts/check-material.mjs",
     "check:cdk": "bun scripts/check-cdk.mjs",
     "check:cards": "bun scripts/check-card-viewports.mjs",
