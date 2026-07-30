@@ -63,17 +63,6 @@
     "dressedBy": "frameworks/angular/theme/arena-material.css",
     "reason": "MatProgressBar renders the indicator, its determinate/indeterminate/buffer/query modes and its value plumbing (aria-valuenow, aria-valuemin, aria-valuemax). The bridge dresses its active-indicator and track colour on the brand and border tokens. Arena has no arena-progress-bar primitive and should not grow one."
   },
-  "SegmentedControl": {
-    "pattern": "radiogroup",
-    "delegatedTo": "Angular Material MatButtonToggleGroup (mat-button-toggle)",
-    "exceptions": [
-      {
-        "requirement": "roles.group",
-        "reason": "Angular Material's own accessibility docs state that MatButtonToggleGroup applies role=\"group\", not role=\"radiogroup\" -- this pattern's literal requirement -- to the group element, even in its default single-selection (exclusive) mode. A consumer must still label the group with aria-label or aria-labelledby, which the docs also call out."
-      }
-    ],
-    "reason": "In its default (non-multiple) mode, MatButtonToggleGroup behaves like a radio-button group: exactly one toggle is selected, its value drives the group's own, and it supports ngModel the way a radio group does. arena-material.css does not dress it -- no .mat-button-toggle-group rule exists in the bridge today -- so its colours are Material's own defaults, not Arena's tokens."
-  },
   "Select": {
     "pattern": "combobox",
     "divergesFrom": "select",

@@ -22,6 +22,7 @@ export const PAGED = new Set([
   'Input',
   'Textarea',
   'RadioGroup',
+  'SegmentedControl',
 ]);
 
 export function pageProblems(tree, read, paged = PAGED) {

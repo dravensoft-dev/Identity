@@ -757,35 +757,12 @@ function findManifestFile(componentsDir: string, filename: string): string | und
 
 const NO_MANIFEST = new Set(['bar-chart', 'line-chart', 'doughnut-chart']);
 
-const FAMILY_MANIFEST: Record<string, { manifest: string; slot: string }> = {
+const HOST_SLOT: Record<string, { manifest?: string; slot: string }> = {
   'radio-group': { manifest: 'Radio.manifest.json', slot: 'group' },
+  'segmented-control': { slot: 'track' },
 };
 
-test('a compound member that shares its family\'s manifest host-binds a slot that carries a display utility', () => {
-  const entries = Object.entries(FAMILY_MANIFEST);
-  assert.ok(entries.length > 0, 'FAMILY_MANIFEST is empty -- the guard below would check nothing');
-
-  for (const [dir, { manifest: manifestName, slot }] of entries) {
-    const ownName = `${kebabToPascal(dir)}.manifest.json`;
-    assert.equal(
-      findManifestFile(TAILWIND_COMPONENTS, ownName), undefined,
-      `FAMILY_MANIFEST names "${dir}", but ${ownName} now exists -- it no longer shares its family's recipe, so the entry is stale`,
-    );
-
-    const familyPath = findManifestFile(TAILWIND_COMPONENTS, manifestName);
-    assert.ok(familyPath !== undefined, `${dir}: FAMILY_MANIFEST names ${manifestName}, which exists nowhere under ${TAILWIND_COMPONENTS}`);
-    const family = JSON.parse(readFileSync(familyPath as string, 'utf8')) as { slots?: Record<string, string> };
-    const classes = family.slots?.[slot];
-    assert.ok(typeof classes === 'string', `${dir}: ${manifestName} has no "slots.${slot}" string`);
-    assert.match(
-      classes as string,
-      DISPLAY_UTILITY,
-      `${dir}: the "${slot}" slot it host-binds carries no display utility -- the host would collapse to the UA-default inline box`,
-    );
-  }
-});
-
-test('every Angular primitive\'s root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
+test('every Angular primitive host-binds a slot that carries a display utility, so the host never collapses to the UA-default inline box', () => {
   const componentsDir = ANGULAR_COMPONENTS;
   const manifestsDir = TAILWIND_COMPONENTS;
 
@@ -808,18 +785,33 @@ test('every Angular primitive\'s root slot carries a display utility, so host-bi
     );
   }
 
+  for (const dir of Object.keys(HOST_SLOT)) {
+    assert.ok(names.includes(dir), `HOST_SLOT names "${dir}", which is not a primitive directory -- stale entry`);
+  }
+
   for (const name of names) {
-    if (NO_MANIFEST.has(name) || name in FAMILY_MANIFEST) continue;
-    const manifestName = `${kebabToPascal(name)}.manifest.json`;
+    if (NO_MANIFEST.has(name)) continue;
+    const override = HOST_SLOT[name];
+    const slot = override?.slot ?? 'root';
+    const manifestName = override?.manifest ?? `${kebabToPascal(name)}.manifest.json`;
+
+    if (override?.manifest !== undefined) {
+      const ownName = `${kebabToPascal(name)}.manifest.json`;
+      assert.equal(
+        findManifestFile(manifestsDir, ownName), undefined,
+        `HOST_SLOT sends "${name}" to ${manifestName}, but ${ownName} now exists -- it no longer shares its family's recipe, so the entry is stale`,
+      );
+    }
+
     const manifestPath = findManifestFile(manifestsDir, manifestName);
     assert.ok(manifestPath !== undefined, `${name}: no manifest named ${manifestName} found anywhere under ${manifestsDir}`);
     const manifest = JSON.parse(readFileSync(manifestPath as string, 'utf8')) as { slots?: Record<string, string> };
-    const root = manifest.slots?.['root'];
-    assert.ok(typeof root === 'string', `${name}: ${manifestPath} has no "slots.root" string`);
+    const classes = manifest.slots?.[slot];
+    assert.ok(typeof classes === 'string', `${name}: ${manifestPath} has no "slots.${slot}" string`);
     assert.match(
-      root as string,
+      classes as string,
       DISPLAY_UTILITY,
-      `${name}: root slot "${root}" carries no display utility -- host-binding it collapses to the UA-default inline box`,
+      `${name}: the "${slot}" slot it host-binds carries no display utility -- host-binding it collapses to the UA-default inline box`,
     );
   }
 });
