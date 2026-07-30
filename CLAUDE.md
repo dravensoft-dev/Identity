@@ -267,8 +267,10 @@ element per item instead of handing Arena a render function, so Angular's missin
 `ngTemplateOutlet` binding stops being the obstacle. `RadioGroup`/`Radio`,
 `Calendar`/`CalendarEvent` and `Table`/`TableRow`/`TableCell` all follow it. The parent owns
 **where** an item goes and the item owns **what** it looks like; the parent reads its children's
-props and injects the rest with `cloneElement`, and **none of the injected props is a member of
-any contract**.
+props and injects the rest with `cloneElement`; Angular has no `cloneElement`, so the item
+injects the parent and pulls its signals instead, and nothing is pushed at all — which is why the
+fragment and wrapper hazards below are React's alone. **Neither layer's coordination is a member
+of any contract.**
 
 **A compound parent's content slot is OPTIONAL, and the one exception is a named group.**
 Measure it rather than trusting this — `grep -rn '"form": "slot"' contracts/api/components/`
@@ -407,8 +409,8 @@ are judged as themselves, which is strictly more coverage than an attribute.
 
 **No gate compares a Tailwind manifest against the component it mirrors, and the mapping is not
 one-to-one**: some manifests mirror both a React component and an `arena-*` primitive; the rest
-mirror a React component alone, because Angular Material provides that control and
-`arena-material.css` dresses it. `check:tailwind` proves every class resolves; nothing proves a
+mirror a React component alone, because Angular still delegates that control.
+`check:tailwind` proves every class resolves; nothing proves a
 manifest still matches the component it was derived from, so check by hand when either has
 moved.
 
@@ -503,8 +505,7 @@ The Angular layer's quartet is the analogue, in
 `OnPush` component, `arena-` selector, signal I/O, no component `styles`),
 `<Component>.variants.ts` (a `tailwind-variants` recipe built with `frameworks/tailwind/Tv.ts`),
 `<Component>.prompt.md`, and an `index.ts` barrel — plus `<Component>.behaviour.json` and the
-component's own suites, `<Component>.<facet>.test.ts`, in the same directory. Dark-first
-(`.arena-light`), danger stays outline, Phosphor icons. The three SVG charts are the one
+component's own suites, `<Component>.<facet>.test.ts`, in the same directory. The three SVG charts are the one
 exception and have no `<Component>.variants.ts`. Angular has **all six** of the categories the
 layout rule allows; `forms/` is the newest, and fills as Plan D moves the delegated controls in.
 
@@ -626,16 +627,14 @@ shared `frameworks/tailwind/` recipes through the configured `tv`. Count the com
 behaviour only a browser can show also has `<Component>.card.html` + `.card.entry.ts` beside it,
 built by `bun run build:angular-demo` and recorded in `check:angular-demos`. Those pages carry
 **no** `@dsCard`: the bundle is git-ignored, and a blank page passes a viewport check by having
-nothing to overflow. Its layer root
-additionally holds the generated `Api.generated.ts` and `Tokens.generated.ts`, the
-`BehaviourDelegated.json` declaration, and four shared internals — `ContainerSize.ts`,
-`DataVisuals.ts`, `FocusTrap.ts` and `ProjectionMarkers.ts`, each named directly by
-`frameworks/angular/index.ts`.
+nothing to overflow. Its layer root additionally holds the generated modules,
+`BehaviourDelegated.json`, and the internals belonging to no one category —
+`frameworks/angular/README.md` names each and says why.
 
 `frameworks/tailwind/` is a **single shared** Tailwind v4 layer (`@theme` preset + per-component
-manifests), authored once because the token→utility mapping is pure CSS. Its root holds `Tv.ts`,
-`ManifestClasses.js`, `Theme.css`, `Utilities.css`, `Animations.css`, `Specimen.css` and
-`Specimen.js`, and a component's three files — `<Name>.manifest.json`, the generated
+manifests), authored once because the token→utility mapping is pure CSS. Its root holds the
+preset, the generated `Utilities.css`, the shared `tv`, the animation utilities and the specimen
+harness; and a component's three files — `<Name>.manifest.json`, the generated
 `<Name>.manifest.ts` and the `<Name>.card.html` specimen — sit together in
 `components/<category>/<component-kebab>/`. Count the manifests with
 `find frameworks/tailwind/components -name '*.manifest.json' | wc -l`.
