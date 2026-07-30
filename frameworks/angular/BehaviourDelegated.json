@@ -29,11 +29,6 @@
     "dressedBy": "frameworks/angular/theme/arena-material.css",
     "reason": "MatDialog (the CDK dialog underneath it) provides the modal surface, aria-modal, first-focus-on-open, restore-focus-on-close and Escape-to-close -- the entire requirement list React's own Dialog binding records as unmet. The bridge dresses the surface colour and --r-lg radius on .mat-mdc-dialog-surface. Arena has no arena-dialog primitive and should not grow one."
   },
-  "IconButton": {
-    "pattern": "button",
-    "delegatedTo": "Angular Material MatIconButton (matIconButton)",
-    "reason": "matIconButton is the icon-only sibling of the MatButton family, and provides the native <button> role and keyboard activation. arena-material.css dresses the filled and outlined text variants but has no rule for the icon-button host class, so its colour is Material's own default rather than Arena's tokens today. Note that Button itself is NO LONGER delegated -- arena-button is a primitive, built on nothing but the native element -- so this entry is the last claim in this file on the MatButton family, and those dressing blocks stay only for an adopter's own remaining Material buttons. IconButton is next in the same batch sequence, and the blocks go with it."
-  },
   "Input": {
     "pattern": "textbox",
     "delegatedTo": "Angular Material matInput",

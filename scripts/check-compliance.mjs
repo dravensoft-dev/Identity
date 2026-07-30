@@ -74,6 +74,7 @@ export const COVERED = {
   'ConfirmDialog:angular': 'ConfirmDialog.compliance.test.ts',
   'Tag:angular': 'Tag.cases.test.ts',
   'Tooltip:angular': 'Tooltip.compliance.test.ts',
+  'IconButton:angular': 'IconButton.compliance.test.ts',
 };
 
 export function suiteMentions(source, tail) {

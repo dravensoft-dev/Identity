@@ -1060,24 +1060,18 @@ stale-proof; a present-tense component name is not.
   previously written down **only inside plan 8B3**, which was deleted when that plan was
   executed. That is the exact failure mode this section's preamble names.
 
-- **A boolean variant's `defaultVariants` entry is written two different ways, and which way
-  a manifest uses is decided by whether anything typechecks it.** With `true`/`false` keys,
+- **RESOLVED: a boolean variant's `defaultVariants` entry was written two different ways, and
+  the split was a detection split rather than a style one.** With `true`/`false` keys,
   `tailwind-variants` infers a **boolean** variant, so the default must be `false`, not
-  `"false"`. Re-derive the split rather than trusting a list here: every manifest whose
-  component has an Angular `<Component>.variants.ts` consumer uses the boolean
-  (`ActivityFeed`, `PageHead`, `BulkActionBar`, `Alert`, `ConfirmDialog`, `Onboarding`,
-  `CommandPalette`, and `Tag` since this batch); every manifest without one uses the string
-  (`Card`, `SideNav`, `SegmentedControl`, `Tabs`, `Button`, `IconButton`, `Checkbox`,
-  `Radio`, `Switch`, `Select`, `Input`, `Textarea`). **That is not a style split, it is a
-  detection split** — `ngc --strictTemplates` rejects the string form, and a manifest with no
-  Angular consumer is never compiled by anything, so the wrong form is invisible. React does
-  not consume these recipes at all (its components are inline styles), and `check:tailwind`
-  asserts that classes resolve, not that defaults typecheck.
-  At runtime both work, because the lookup stringifies the key — so this costs nothing today
-  and costs a compile error the day a component in the second list gains an Angular
-  primitive. Adding `disabled` to `Tag` is what surfaced it: `Tag` moved from the second list
-  to the first mid-batch. The thirteen were left alone deliberately, because changing them
-  fixes nothing measurable and no gate would hold the fix in place.
+  `"false"`. Every manifest whose component had an Angular `<Component>.variants.ts` consumer
+  used the boolean; every manifest without one used the string, because `ngc --strictTemplates`
+  is what rejects the string form and a manifest no Angular component imports is compiled by
+  nothing. This entry recorded thirteen left alone deliberately, on the reasoning that changing
+  them fixed nothing measurable. **That reasoning expired the moment Plan D started**, and
+  batch 1 fixed all of them; the entry above under *Twelve Tailwind manifests carried a type
+  error nothing could see* is the live record, and it states the lesson — the blind spot, not
+  the typo. Kept here only so a reader who finds this paragraph quoted elsewhere knows it is
+  spent.
 
 - **`ActivityFeed`'s articles carry `tabindex="0"` on recollection, not on a re-read of APG.**
   The `feed` pattern's own file in `contracts/behaviour/` states seven requirements and says

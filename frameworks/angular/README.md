@@ -8,7 +8,7 @@ Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
   + the shared `frameworks/tailwind/Theme.css` `@theme` preset into scope.
 - `theme/arena-material.css` — maps Arena tokens onto Angular Material's
   `--mat-*` custom properties so the components below render in Arena. What it covers:
-  buttons (filled, outlined, and an outline-only `arena-danger`), the outlined form
+  the outlined form
   field, cards, dialogs, tables, tabs, the snackbar, spinner/progress-bar, and
   **SideNav** — `mat-nav-list` with `<a mat-list-item [activated]>`. **The bridge is
   verified against Angular Material 22.0.5 — read
@@ -36,7 +36,7 @@ Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
   service (light = `.arena-light`) and the pre-paint snippet.
 
 **Primitives — Arena's own token-styled components.** Most cover ground Material never did;
-two, `button` and `tooltip`, deliberately replace something Material does provide, because a
+a growing number deliberately replace something Material does provide, because a
 delegated control sits outside three of Arena's gates. Each lives in
 `components/<category>/<component-kebab>/` and is a
 quartet: `<Component>.ts` (standalone, `OnPush`, signal I/O, `arena-` selector),
@@ -49,15 +49,11 @@ reference shape. The three SVG charts are the one exception and have no
 `CLAUDE.md` states: directories kebab-case, file names capital-initial. Each component's
 own tests sit in that same directory as `<Component>.<facet>.test.ts`.
 
-The layer ships **22 primitives**, across all six categories the layout rule allows —
-`brand`, `charts`, `display`, `feedback`, `forms`, `navigation`. `forms` is the newest and
-holds one so far, `button`; it exists because Plan D has begun moving the delegated
-controls into this layer, and it will fill as the batches land. Count them with
-`find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l` rather than
-trusting this list: `activity-feed`, `alert`, `app-logo`, `avatar`,
-`bar-chart`, `breadcrumbs`, `bulk-action-bar`, `button`, `chart-card`, `command-palette`,
-`confirm-dialog`, `doughnut-chart`, `empty-state`, `error-state`, `line-chart`,
-`onboarding`, `page-head`, `skeleton`, `stat-card`, `tag`, `tooltip`, `unauth-card`.
+The layer spans all six categories the layout rule allows — `brand`, `charts`, `display`,
+`feedback`, `forms`, `navigation`. `forms` is the newest, and it fills as Plan D moves the
+delegated controls in, one batch at a time. **Read the set from the tree rather than from a
+list here**, because a list here rots with every batch and nothing checks it:
+`find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | sort`.
 
 **`SideNav` is not among them, and that is the rule working.** Material's `mat-nav-list`
 covers the item list, so Arena dresses it in `arena-material.css` (`.arena-side-nav`)
@@ -135,8 +131,7 @@ Two of its entries are `absent` rather than delegated: `Calendar` and `CalendarE
 Material's datepicker is a month/date-selection grid, not Arena's day/hour schedule view
 with event blocks, so there is no control for those two to delegate to.
 
-`arena-material.css` dresses only a subset of the delegated set: the Button family
-(filled and outlined variants; a plain text button gets nothing outside `.arena-danger`),
+`arena-material.css` dresses only a subset of the delegated set:
 Input and Textarea (outlined appearance only — a form field left on Material's default
 fill appearance keeps Material's own styling), Card, Table, Tabs, Dialog, Toast,
 ProgressBar, Spinner and SideNav. The rest still render with Material's own defaults. A
@@ -176,7 +171,7 @@ the bridge the way `check:material` verifies the other, and additionally checks 
 selectors, which it can because the prebuilt sheet is the oracle.
 
 **Material remains the bridge for what is still delegated**, and `arena-material.css`
-carries rules for these: buttons (filled, outlined, and the outline-only danger variant), the
+carries rules for these: the
 outlined form field, cards, dialogs, tables (plus the header cell), tabs, the
 snackbar, the progress spinner and bar, and SideNav's nav list. It maps Arena tokens
 onto Angular Material's `--mat-*` custom properties so those render in Arena instead

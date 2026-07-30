@@ -1,0 +1,144 @@
+/* Every verdict in the behavioural map below is earned by a named assertion in this file.
+ * keyboard.Space and keyboard.Enter are earned by the control being a real <button>: the UA
+ * activates it on both keys, and no test here can prove that because happy-dom synthesizes
+ * no click from a keydown. So the assertion is that the element is the one the browser
+ * already knows how to activate -- which is the whole reason the host stays bare. */
+
+import { useTestEnvironment } from '../../../test/TestbedEnv';
+useTestEnvironment();
+
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { join } from 'node:path';
+import { Component } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { IconButton } from './IconButton';
+import { assertPattern, ANGULAR_COMPONENTS } from '../../../test/Compliance';
+
+const BINDING = join(ANGULAR_COMPONENTS, 'forms/icon-button/IconButton.behaviour.json');
+
+@Component({
+  standalone: true,
+  imports: [IconButton],
+  template: `<arena-icon-button icon="ph-bold ph-trash" label="Delete project"
+                                [disabled]="disabled" [showLabel]="showLabel"
+                                (click)="clicks = clicks + 1" />`,
+})
+class IconButtonHost {
+  disabled = false;
+  showLabel = false;
+  clicks = 0;
+}
+
+function render(patch: Partial<IconButtonHost> = {}) {
+  const fixture = TestBed.createComponent(IconButtonHost);
+  Object.assign(fixture.componentInstance, patch);
+  fixture.detectChanges();
+  const host = fixture.nativeElement as HTMLElement;
+  const control = host.querySelector('button') as HTMLButtonElement;
+  return { fixture, host, control };
+}
+
+test('the recipe lands on a real <button>, which is what supplies Space and Enter activation', () => {
+  const { fixture, control } = render();
+  try {
+    assert.ok(control, 'arena-icon-button rendered no <button> -- nothing would be focusable or activatable');
+    assert.equal(control.tagName, 'BUTTON');
+    assert.equal(control.getAttribute('role'), null,
+      'a role override on a native button would replace the activation semantics this pattern relies on');
+    assert.equal(control.getAttribute('type'), 'button',
+      'the default must be button, or an icon button inside a form submits it by accident');
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('the host stays bare and out of layout -- the recipe classes land on the <button> inside it', () => {
+  const { fixture, host, control } = render();
+  try {
+    const inner = host.querySelector('arena-icon-button') as HTMLElement;
+    assert.equal(inner.getAttribute('class'), null);
+    assert.match(inner.getAttribute('style') ?? '', /display:\s*contents/,
+      'a bare host must leave layout, or as a flex item it shrinks to fit around the control');
+    assert.match(control.getAttribute('class') ?? '', /inline-flex/);
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('the glyph is drawn and hidden, and the accessible name comes from label rather than from it', () => {
+  const { fixture, control } = render();
+  try {
+    const glyph = control.querySelector('i') as HTMLElement;
+    assert.ok(glyph, 'no <i> was drawn for the icon');
+    assert.equal(glyph.getAttribute('class'), 'ph-bold ph-trash');
+    assert.equal(glyph.getAttribute('aria-hidden'), 'true',
+      'a Phosphor glyph is a font ligature; announced, it reads as noise');
+    assert.equal(control.getAttribute('aria-label'), 'Delete project');
+    assert.equal(control.textContent?.trim(), '',
+      'with showLabel unset the control has no text, which is exactly why aria-label is required here');
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('the title repeats the name only while the label is invisible, never alongside it', () => {
+  const { fixture, control } = render();
+  try {
+    assert.equal(control.getAttribute('title'), 'Delete project');
+  } finally {
+    fixture.destroy();
+  }
+
+  const shown = render({ showLabel: true });
+  try {
+    assert.equal(shown.control.getAttribute('title'), null,
+      'a title beside a visible label makes the browser draw a tooltip repeating what is already on screen');
+    assert.equal(shown.control.textContent?.trim(), 'Delete project');
+    assert.equal(shown.control.getAttribute('aria-label'), 'Delete project',
+      'the name must be present in every state, visible label or not');
+  } finally {
+    shown.fixture.destroy();
+  }
+});
+
+test('a click on the control emits click exactly once', () => {
+  const { fixture, control } = render();
+  try {
+    control.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    fixture.detectChanges();
+    assert.equal(fixture.componentInstance.clicks, 1,
+      'a consumer binding (click) must hear the output once -- twice would mean the native event reached them too');
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('disabled reflects onto the native attribute and blocks the emission', () => {
+  const { fixture, control } = render({ disabled: true });
+  try {
+    assert.equal(control.disabled, true);
+    assert.ok(control.hasAttribute('disabled'),
+      'the attribute is what the disabled: variants style and what removes the control from the Tab sequence');
+
+    control.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    fixture.detectChanges();
+    assert.equal(fixture.componentInstance.clicks, 0, 'a disabled icon button emitted click');
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('arena-icon-button meets the button pattern', () => {
+  const { fixture, host, control } = render();
+  try {
+    assertPattern({
+      root: host,
+      bindingPath: BINDING,
+      subjects: { default: control },
+      behavioural: { 'states.disabled': true, 'keyboard.Space': true, 'keyboard.Enter': true },
+    });
+  } finally {
+    fixture.destroy();
+  }
+});
