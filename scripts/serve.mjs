@@ -1,6 +1,6 @@
 import { readdirSync, statSync } from 'node:fs';
 import { join, normalize } from 'node:path';
-import { repoRoot as root } from './lib/repo-root.mjs';
+import { repoRoot as root } from './lib/arena/repo-root.mjs';
 
 const port = Number(process.env.PORT) || 8000;
 
