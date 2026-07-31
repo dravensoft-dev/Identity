@@ -88,10 +88,13 @@ framework is added without touching the language.
 **The language**
 
 - `intro/styles.css` — the global entry point, `@import`s only. Consumers link this file.
-  Its six `@import`s resolve as `../contracts/…`, so it stays one directory below that parent.
+  Its seven `@import`s resolve as `../contracts/…`, so it stays one directory below that parent.
 - `contracts/design/` — the DTCG 2025.10 source of every token value (`*.json`),
-  `README.md` (the normative design specification and `$type` table), and `colors.css`
-  (hand-authored: aliases and `color-mix` derivations).
+  `README.md` (the normative design specification and `$type` table), and two hand-authored
+  stylesheets: `colors.css` (aliases and `color-mix` derivations) and `reset.css`
+  (`box-sizing: border-box`, the box model both layers share). Neither is a value, which is why
+  neither is DTCG: values are what `design/` governs, and how a value is combined at runtime
+  belongs to each platform's own idiom.
 - `contracts/design-generated/` — the five built CSS files: `fonts.generated.css` (from
   `fetch-fonts.mjs`), plus `palette.generated.css`, `typography.generated.css`, `spacing.generated.css` and
   `effects.generated.css` (from `build-tokens.mjs`). Never edit any of them.

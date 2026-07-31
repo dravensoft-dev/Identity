@@ -60,8 +60,17 @@ test('a stray file inside a level is caught by extension, which is how every rea
   assert.match(problems[0], /contracts\/behaviour\/scratch\.txt is neither README\.md nor a \.json source/);
 });
 
-test('design keeps colors.css by name, because it is hand-authored and not a token source', () => {
-  assert.deepEqual(levelProblems('design', ['README.md', 'colors.css', 'palette.dark.json'], () => false), []);
+test('design keeps its two hand-authored stylesheets by name, because neither is a token source', () => {
+  assert.deepEqual(
+    levelProblems('design', ['README.md', 'colors.css', 'reset.css', 'palette.dark.json'], () => false),
+    [],
+  );
+});
+
+test('a third stylesheet is a problem until contracts/README.md names it, which is the point of listing them', () => {
+  const problems = levelProblems('design', ['README.md', 'colors.css', 'reset.css', 'motion.css'], () => false);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /contracts\/design\/motion\.css is neither README\.md nor colors\.css nor reset\.css/);
 });
 
 test('a generated stylesheet without the infix is a problem', () => {

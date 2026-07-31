@@ -1,11 +1,11 @@
 /* ============================================================
    Arena — Color structure.
    The skin (the --color-* values, per theme) lives in
-   palette.css, which is imported BEFORE this file. This file
+   palette.generated.css, imported BEFORE this file. This file
    never defines a skin value: it maps Arena's legacy aliases
    (--bg, --surface-card, --crimson, --gold, --danger, --mute…)
    onto the daisyUI tokens and derives the muted text levels.
-   Swapping the skin means swapping palette.css, not this file.
+   Swapping the skin means swapping the palette source, not this file.
    ============================================================ */
 
 /* Theme polarity — not a color, a direction. Read by the injected

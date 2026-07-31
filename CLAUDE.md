@@ -78,9 +78,10 @@ unstyled, **silently**.
 ## Architecture
 
 **Tokens are the only styling layer, and their values are DTCG JSON.** `intro/styles.css` does
-nothing but `@import` six files split across two directories: `contracts/design-generated/`,
-which holds five CSS files, and `contracts/design/`, which holds one hand-authored file,
-`colors.css`. Four of those five carry the `.generated.` infix, so the name says it: their
+nothing but `@import` seven files split across two directories: `contracts/design-generated/`,
+which holds five CSS files, and `contracts/design/`, which holds two hand-authored ones —
+`reset.css`, imported **first** so anything can override it, and `colors.css`. Four of those five
+carry the `.generated.` infix, so the name says it: their
 values are authored in strictly-conformant DTCG 2025.10 JSON under `contracts/design/` and
 emitted by `bun run generate:tokens`. Edit the JSON and rebuild.
 `contracts/design/README.md` is the normative table of

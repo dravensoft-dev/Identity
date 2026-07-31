@@ -31,7 +31,7 @@ export function Spinner({ size = 'md', tone = 'accent', label = 'Loading' }) {
   return (
     <span role="progressbar" aria-live="polite" aria-label={label} style={{ display: 'inline-flex', color }}>
       <span className="arena-spinner" aria-hidden="true" style={{
-        width: d, height: d, boxSizing: 'border-box',
+        width: d, height: d,
         border: 'var(--bw-strong) solid currentColor', borderTopColor: 'transparent',
         borderRadius: '50%', display: 'inline-block',
       }} />

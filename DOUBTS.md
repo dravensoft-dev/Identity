@@ -1779,41 +1779,26 @@ stale-proof; a present-tense component name is not.
   Accepting it is the current position, and it is defensible: the chip is a hit target, and the
   detail lives behind the kebab.
 
-- **`Textarea` overruns its container by 26px, and it is the only React component left that
-  does.** `Calendar`'s chip was one — measured overrunning its day column by 12px and fixed by
-  opting that one element into `border-box` — and the spec that produced that fix asked
-  whether any other component sets a percentage `width` on a padded box and has the same latent
-  overrun. Three candidates read that way in the source:
-  `frameworks/react/components/forms/textarea/Textarea.jsx:25`,
-  `frameworks/react/components/forms/select/Select.jsx:11` and
-  `frameworks/react/components/navigation/menu/Menu.jsx:59`, each `width: '100%'` on an element
-  carrying its own horizontal padding and a border.
+- **CLOSED: `Textarea` overran its container by 26px, and the fix was the system change this
+  entry put out of scope.** Three candidates read the same way in the source — `Textarea.jsx`,
+  `Select.jsx` and `Menu.jsx`, each `width: '100%'` on an element carrying its own horizontal
+  padding and a border — and **only one of the three was real**. Measured, the `<textarea>`
+  computed `content-box` and landed 26px past its parent's content edge, exactly its 12px of
+  padding a side plus its 1px border a side; the `<select>` and the menu's item `<button>`s
+  computed `border-box` and overran 0.
 
-  **Measured, and only one of the three is real.** On
-  `frameworks/react/components/forms/RadioTextarea.card.html` at its declared 720×340, the
-  `<textarea>` computes `box-sizing: content-box` and its border box lands **26px** past its
-  parent's content edge — exactly its 12px of padding a side plus its 1px border a side. On
-  `frameworks/react/components/forms/Forms.card.html` at 700×660 the `<select>` computes
-  `border-box` and overruns by **0**; on
-  `frameworks/react/components/navigation/MenuPagination.card.html` at 720×200, with the menu
-  opened, every item `<button>` computes `border-box` and overruns by **0**.
+  **The reason the other two were safe was the UA stylesheet, not anything Arena wrote** —
+  Chromium declares `box-sizing: border-box` for `<button>` and `<select>` and does not for
+  `<textarea>` or `<input type="text">`. That is why reading the source got this wrong, and it is
+  the same confounder that made the layer-divergence table in section 3 wrong in five rows.
 
-  **The reason the other two are safe is the UA stylesheet, not anything Arena wrote**, which
-  is why reading the source alone gets this wrong: Chromium's UA stylesheet declares
-  `box-sizing: border-box` for `<button>` and `<select>`, and does **not** for `<textarea>` or
-  `<input type="text">`. That is also why `Input.jsx` has always had to opt in explicitly and
-  `Select.jsx` never did. Depending on a UA default is a thin guarantee — it is not part of
-  any spec Arena controls — but it is the *current* behaviour, and the entry records which
-  claim rests on it.
-
-  `Textarea` is left unfixed on purpose. The general answer is the repo-wide
-  `box-sizing: border-box` reset that the `Calendar` spec put out of scope: it would fix this
-  and probably several things nobody has measured, and it would silently change the rendered
-  width of every padded, explicitly-sized box in three framework layers. That is a system
-  change with its own spec, not a rider on a Calendar fix. Related and adjacent: *The Tailwind
-  layer is border-box; React is content-box*, in section 3, whose table this same measurement
-  pass found to be wrong in several rows for the same UA-stylesheet reason.
-
+  This entry said the general answer was a repo-wide `box-sizing: border-box` reset, that it
+  "would fix this and probably several things nobody has measured", and that it was a system
+  change with its own spec rather than a rider on a Calendar fix. That was right on all three
+  counts, and it is taken now: `contracts/design/reset.css`, imported first by
+  `intro/styles.css`. The textarea overruns 0, all 71 `@dsCard` pages still fit their declared
+  viewports, and the guarantee stops resting on a vendor default. Section 3's border-box entry
+  carries the measurements and what the exercise taught about deriving a table by reading.
 
 - **Twelve Tailwind manifests carried a type error nothing could see, and the reason is
   structural rather than careless.** Every manifest with a boolean variant axis
@@ -2209,155 +2194,51 @@ guard still applies and still passes.
 
 **Converges:** no.
 
-#### The Tailwind layer is border-box; React is content-box
+#### RETIRED as a divergence: both layers are border-box, and reading the source got the table wrong in both directions
 
-**The Tailwind layer** — `frameworks/tailwind/`'s compiled `Utilities.generated.css`, consumed
-directly by every `*.card.html` specimen and, through `theme/arena-tailwind.css`'s
-preset import, by a real Tailwind-based Angular consumer app too — carries Tailwind
-v4's own preflight, inside `@layer base`: `*, ::after,
-::before, ::backdrop, ::file-selector-button { box-sizing: border-box; … }`. **Re-derive
-the line rather than trusting one written here** —
-`grep -n 'box-sizing: border-box' frameworks/tailwind/Utilities.generated.css`, which answers 123
-today. This file used to cite `:112`, which was true when written and had already drifted
-to 121 by the time anyone read it again: the stylesheet is generated output and grows
-whenever a token is added, so a line number in it is exactly the kind of figure this
-repository's own rules say to derive with a command instead.
+**This was the layer's largest recorded divergence, and it is closed by one file.**
+`contracts/design/reset.css` sets `box-sizing: border-box` on `*`, `intro/styles.css` imports it
+first, and every React page and every copied `.jsx` inherits it — the same rule Tailwind's
+preflight has always given the Angular layer through `theme/arena-tailwind.css`. The two layers
+now share the box model rather than agreeing element by element.
 
-**React** sets no such rule anywhere in `contracts/design/`, `contracts/design-generated/` or `intro/styles.css`, so every React
-component is `content-box` — the CSS default — unless it opts in itself, **or unless the UA
-stylesheet already made that element border-box** (see the correction below, which is the
-mechanism several rows of the table further down get wrong). Only five opt in explicitly:
-`Input.jsx`, `Button.jsx`, `Spinner.jsx`, `ConfirmDialog.jsx` and `CalendarEvent.jsx` each set
-`boxSizing: 'border-box'` locally; every other component that is not already border-box by UA
-default is content-box. `CalendarEvent`'s is the newest and the only one with no Tailwind
-counterpart to agree with — it opted in to fix a measured 12px overrun of its own day column,
-not to converge with anything.
+**Measured before and after, on the component the entry named as the last one still overrunning.**
+On `frameworks/react/components/forms/RadioTextarea.card.html` at its declared 720×340, the
+`<textarea>` computed `content-box` and its border box landed **26px** past its parent's content
+edge — its 12px of padding a side plus its 1px border a side, exactly. After the reset it computes
+`border-box` and overruns **0**, its width falling 346 → 320. All 71 `@dsCard` pages still fit
+their declared viewports.
 
-**What this means numerically:** a slot that combines an explicit size with a border, or
-an explicit size with padding, renders a box that is **smaller in the Tailwind layer by
-twice that border's or that padding's width** than the content-box React renders at the
-same nominal size utility — the size utility sets the same number either way, but
-content-box adds the border/padding *outside* it while border-box draws it *inside* it.
-Padding is not a special case of border here; it is the same subtraction, because
-border-box's whole rule is "the declared size is the outer edge, and everything between
-that edge and the content — border and padding alike — is carved out of it, not added
-past it." Verified against the current sources:
+**Five of the seven local `boxSizing: 'border-box'` opt-ins are gone**, because a redundant local
+declaration is how a reader concludes the systemic rule is not trusted. `Input`, `Button`,
+`Spinner` and `ConfirmDialog` dropped theirs and measure identically. **`CalendarEvent` keeps
+its, and the reason is the one that distinguishes it**: there the box model is load-bearing for
+layout arithmetic rather than for tidiness — `Calendar` injects `width: calc(100% - var(--sp-1))`
+and the chip must treat it as an outer edge — and a DOM-free suite can pin an inline declaration
+where it can never read a stylesheet. Removing it turned that suite red, which is the assertion
+doing its job. Re-measured after: every chip is `border-box` and sits inside its column with the
+2px gutter intact.
 
-| Slot | React (content-box) | Tailwind (border-box) |
-|---|---|---|
-| `Checkbox`'s `box` | 22×22 (`size-5`=20 content + 2×`--bw`=2) | 20×20 (`size-5`, border included) |
-| `Radio`'s `ring` | 22×22 (same derivation) | 20×20 (`size-5`, border included) |
-| `Select`'s `field` height | ~~42px (`--dz-ctl-h`=40 + 2×`--bw`)~~ **measured 40px** | 40px (`h-ctl-h`, border included) |
-| `Switch`'s `track` | ~~44×26 outer, 40×22 content~~ **measurement pending; the track is a `<button>`** | 40×22 outer, 36×18 content (`w-10 h-5.5 p-0.5`, padding included) |
-| `Toast`'s `root` | 375px outer (`w-85`=340 content + 2×`px-4`=32 + `--bw`=1 right + `--bw-strong`=2 left) | 340px outer (`w-85`, border and padding included) |
-| `Pagination`'s `nav`/`page` | ~~52×36 outer~~ **measured 34×34 on `nav`** | 34×34 outer (`h-8.5 min-w-8.5`, border and padding included) |
-| `Spinner`'s `circle` | **agrees** — 14×14, 20×20, 32×32 outer at sm/md/lg | same, 14×14 / 20×20 / 32×32 |
-| `Menu`'s `panel` | 214px min outer (`--sp-1`×50=200 min content + 2×`--sp-1`×1.5=12 padding + 2×`--bw`=2) | 200px (`min-w-50 p-1.5 border`, both included) |
-| `Button`'s `root` | ~~42px tall at `md`~~ **measured 40px** | 40px (`h-ctl-h`, border included) |
-| `IconButton`'s `root`, ghost only | ~~34/42/50 at sm/md/lg~~ **measured 32 at `sm`** | 32/40/48 (border included) |
-| `Dialog`'s `panel` | 482px (`--sp-1`×120=480 + 2×`--bw`) | 480px (`w-120`, border included) |
-| `SegmentedControl`'s `segment` | **agrees** — 28/34 tall at sm/md | same; the height axis carries no padding and the width is auto |
+**The lesson is worth more than the divergence, and it is about how the old table was built.**
+It was derived by reading each source and applying *"React declares no `box-sizing`, therefore
+content-box"*. That inference is invalid for a form control, because **Chromium's UA stylesheet
+declares `box-sizing: border-box` for `<button>` and `<select>` and does not for `<textarea>` or
+`<input type="text">`** — so the table was wrong in **both** directions at once: five rows
+claimed a divergence that did not exist (`Button`, `IconButton`, `Select`, `Pagination`'s `nav`,
+`Switch`'s track — all `<button>` or `<select>`), while the real overrun sat in `Textarea`, which
+had no row at all. A whole paragraph of thumb-inset arithmetic reasoned from a 22px content box
+its element never had. **Reading the source produced a table that was confidently wrong and
+internally consistent**, and only measurement separated it from the truth.
 
-**CORRECTION — five of those rows are wrong, and the reason is the UA stylesheet.** The table
-was derived by reading each source and applying "React declares no `box-sizing`, therefore
-content-box". That inference is invalid for a form control: **Chromium's UA stylesheet declares
-`box-sizing: border-box` for `<button>` and `<select>`**, so a React slot rendered as one of
-those elements is border-box whether or not Arena says so, and it agrees with the Tailwind
-layer instead of diverging from it. Measured in headless Chromium on the components' own card
-pages, at their declared viewports:
+The second half of that lesson is what the agreement used to rest on: for those five rows, "the
+layers agree here" was a fact about a **vendor default no specification Arena controls**, not
+about anything Arena had decided. It rests on `reset.css` now.
 
-| Slot | Element | Table claimed | Measured |
-|---|---|---|---|
-| `Button`'s `root` | `<button>` | 42px tall at `md` | **40px** |
-| `IconButton`'s `root` | `<button>` | 34px at `sm` | **32px** |
-| `Select`'s `field` | `<select>` | 42px tall | **40px** |
-| `Pagination`'s `nav` | `<button>` | 52×36 outer | **34×34** |
+**What the reset deliberately does NOT do** is copy the rest of Tailwind's preflight, which also
+zeroes margin, padding and border. That would restyle every page in `intro/` and every React
+demo, and it is a different change needing its own evidence.
 
-`Switch`'s `track` is the fifth: it is the `<button>` at `Switch.jsx:31`, not a `<span>`, so
-its declared `40×22` is an outer size and the row's `44×26` is wrong by the same mechanism —
-**and so is the thumb-inset paragraph derived from it below**, which reasons from a 22px
-content box the element does not have. It is listed as pending rather than measured because no
-probe was pointed at it.
 
-`SegmentedControl`'s `segment` row says the two layers "agree" and gives the reason as "the
-height axis carries no padding and the width is auto". The conclusion is right and the reason
-is not: segments are `<button>`s, so they would agree regardless.
-
-**The rows that stand** are the ones whose slot is a `<span>` or a `<div>`, which carry no UA
-`box-sizing`: `Checkbox`'s `box`, `Radio`'s `ring`, `Toast`'s `root`, `Menu`'s `panel`,
-`Dialog`'s `panel`, and `Spinner`'s `circle` (which agrees for the reason given — its own
-explicit opt-in).
-
-**This is open debt, not a finished correction.** The four measurements above are real; the
-`Switch` row was classified from its source and never measured; and no systematic re-derivation
-of the whole table has been run. Whoever re-derives it should measure rather than read, because
-reading is exactly what produced the error. Note also that "React agrees here" now rests on a
-UA default that no specification Arena controls guarantees — thinner ground than an explicit
-`boxSizing`, and an argument for the repo-wide reset the *Open item* below already names.
-
-`Switch` carries no border at all — `p-0.5` alone is enough to reproduce the same
-divergence *where the element is not already border-box*, which is why the rule above is
-stated for padding and not just border. **The `Switch` illustration itself no longer holds**:
-its track is the `<button>` at `Switch.jsx:31`, so the UA stylesheet already makes it
-border-box and there is no subtraction to cascade. The reasoning this paragraph used to carry
-— that React's track has 2px of slack inside a 22px content box after centring the 18px thumb,
-for a 4px inset against Tailwind's 2px — assumed a content box the element does not have, and
-is retained here only as the shape of the argument, not as a measurement of `Switch`. Neither
-the track nor the thumb has been re-measured.
-
-`Toast`'s `root` is the largest divergence in the layer so far by a distance: React's
-content-box outer width is `w-85` (340px content) plus both horizontal paddings
-(`px-4` = 16px a side = 32px) plus its two mismatched border widths (`--bw` = 1px on the
-right and top/bottom, `--bw-strong` = 2px on the left) = 375px, against Tailwind's 340px
-border-box outer — a 35px, ~9–10% divergence. It is not a `size-*`-style square target,
-but the rule draws no such exception: an explicit size combined with border or padding
-diverges either way, and `Toast` combines it with both.
-
-`Pagination`'s `nav` (the prev/next arrows) and `page` (a single-digit page number) repeat
-the same shape at a smaller scale, and on two axes at once because the slot pairs a fixed
-height with a `min-width`, each carrying its own padding and border — **or they would, if the
-slot were not a `<button>`.** React's outer was derived here as 52×36: `h-8.5`/`min-w-8.5`
-(34px content on both axes) plus `px-2` (8px a side, 16px total, added to width only) plus the
-`--bw` border (1px a side, 2px total, added to both axes) — width 34 + 16 + 2 = 52, height
-34 + 0 + 2 = 36 (there is no vertical padding). **That derivation is wrong**, and the `nav`
-measures **34×34** in Chromium: the UA stylesheet makes a `<button>` border-box, so the
-declared 34 is the outer figure on both axes and `px-2` is carved out of the width rather than
-added past it. Tailwind renders the same 34×34 for the same reason. The two layers agree on
-this slot; see the correction above the table.
-
-Four **elements** — not four components — agree because their React source opts into
-`border-box` at that element: `Input.jsx:48`'s field, `Button.jsx:85`'s spinner span,
-`ConfirmDialog.jsx`'s require-text input and `Spinner.jsx:33-38`'s circle all set
-`boxSizing: 'border-box'`. Read "because", not "only because": the correction above shows that
-several more elements agree without any opt-in, because the UA stylesheet already made them
-border-box. Four is also no longer the count of opt-ins — `CalendarEvent.jsx`'s chip is a
-fifth, and it has no Tailwind counterpart to agree with, so it appears in no row of the table. The distinction still matters — **the opt-in
-is per-element, so `Button`'s spinner agreeing tells you nothing about `Button`'s root** —
-but the example this sentence used to give was itself wrong: the root was said to set no
-`boxSizing` and therefore to diverge by 2px, and it measures 40px, agreeing, because it is a
-`<button>`. Per-element reasoning is right; "no opt-in, therefore content-box" is what is not.
-`Spinner` is the cleanest
-demonstration that the agreement is the opt-in and not luck: its `circle` slot combines
-an explicit size with a `--bw-strong` border — P3's trigger exactly — and still measures
-14×14, 20×20 and 32×32 in both layers at sm/md/lg, because React declared the same box
-model the preflight declares. Each manifest's matching slot —
-`Input.manifest.json`'s `field`, `Button.manifest.json`'s `spinner`,
-`ConfirmDialog.manifest.json`'s `input` — carried a (but, under preflight, redundant)
-`box-border` class; `Input`'s was removed in the change that added this entry, `Button`'s
-and `ConfirmDialog`'s in the close-out that followed, since every slot in this layer is
-already border-box without it.
-
-**Why:** Tailwind v4's own default is border-box, and it is the more common contemporary
-assumption; the divergence is best read as a pre-existing gap in React's four opted-in
-components rather than something for the Tailwind layer to correct by matching
-content-box. Fixing it by widening a Tailwind size utility per affected slot would just
-be the `+2px` compensation the layer's own README now warns against adding.
-
-**Converges:** not from this side. **Open item on the React layer**, low priority — React
-could set `box-sizing: border-box` globally (matching every other modern CSS reset,
-including Tailwind's own) rather than per-component, which would also make its four
-existing opt-ins redundant the same way `Input`'s Tailwind `box-border` just was. Doing so
-is out of scope here: this change touches no file under `frameworks/react/`.
 
 #### Animation CSS is compiled once for Angular, injected per component in React
 

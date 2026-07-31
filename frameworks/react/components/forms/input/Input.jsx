@@ -45,7 +45,7 @@ export function Input({
           {label}{required && <span style={{ color: 'var(--crimson)', marginLeft: 'calc(var(--sp-1) * 1)' }}>*</span>}
         </label>
       )}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', height: 'var(--dz-ctl-h)', boxSizing: 'border-box', padding: '0 calc(var(--sp-1) * 3)',
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', height: 'var(--dz-ctl-h)', padding: '0 calc(var(--sp-1) * 3)',
         background: readOnly ? 'var(--panel)' : 'var(--surface-input)', border: 'var(--bw) solid ' + borderColor,
         borderRadius: 'var(--r-sm)', boxShadow: ring, opacity: disabled ? 0.5 : 1,
         transition: 'border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)' }}>
