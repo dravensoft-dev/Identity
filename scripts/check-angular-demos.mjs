@@ -22,6 +22,7 @@ export const PAGED = new Set([
   'Menu',
   'ProgressBar',
   'Spinner',
+  'SideNav',
   'IconButton',
   'Checkbox',
   'Switch',

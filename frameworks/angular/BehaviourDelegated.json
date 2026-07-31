@@ -6,30 +6,5 @@
   "CalendarEvent": {
     "pattern": "absent",
     "reason": "Absent for the same reason Calendar is, one level down: a CalendarEvent is a chip inside Arena's schedule grid, and Angular has no schedule grid for one to live in. It is not delegated -- Material has no per-event chip because it has no day/hour view, and arena-material.css dresses none. This entry exists because CalendarEvent became a React component in plan 8C3 (it had been a predefined object in api/types/), and every React component declares for every layer. It records the same open question Calendar's entry does and answers it no further: if Angular ever gains a schedule view, this is the second component that decision creates."
-  },
-  "SideNav": {
-    "pattern": "navigation",
-    "delegatedTo": "Angular Material mat-nav-list",
-    "dressedBy": "frameworks/angular/theme/arena-material.css",
-    "reason": "mat-nav-list already provides the anchor-or-button distinction, the active state and the keyboard behaviour. The bridge declares colour, weight, font and shape and deliberately no geometry -- re-specifying Material's list metrics is the duplication the bridge exists to avoid. See DOUBTS.md section 3's SideNav entry for the full three-way comparison."
-  },
-  "SideNavCollapsible": {
-    "pattern": "disclosure",
-    "delegatedTo": "Angular Material MatExpansionPanel (mat-expansion-panel + mat-expansion-panel-header)",
-    "reason": "A consumer needing a collapsible group inside a mat-nav-list reaches for MatExpansionPanel, and it binds the same pattern React's own SideNavCollapsible binds rather than `none`, because the header IS the disclosure button. Every one of the six requirements is met by Material itself, verified against @angular/material 22.0.5's own expansion bundle rather than assumed: mat-expansion-panel-header carries a static role=\"button\" host attribute (it is not a native <button>, which is the pattern's own second clause), an attr.tabindex binding, [attr.aria-expanded] bound to the panel's expanded state and [attr.aria-controls] bound to the panel's id, and its _keydown handler switches on ENTER and SPACE from @angular/cdk/keycodes and toggles the panel. Its accessible name is the projected mat-panel-title text, which the disclosure pattern accepts as text content. NO dressedBy IS CLAIMED, and that is a real gap rather than an omission: arena-material.css has no rule for any .mat-expansion-* host class today, so a panel used in an Arena sidebar renders in Material's own surface, radius and typography instead of Arena's tokens -- the same honesty the SideNavSection and TableCell entries use where the bridge is silent. What Material adds beyond React's binding is an accordion mode (mat-accordion), where a header's other keys are forwarded to _handleHeaderKeydown for arrow navigation between panels; React's collapsibles are independent disclosures with no such mode, which is a capability difference and not a pattern disagreement -- the disclosure pattern requires neither. Nothing here is machine-checked: the Material version above is recorded in this reason string only, which is the gap CLAUDE.md's Known debt records for every delegated entry and this one inherits rather than closes.",
-    "exceptions": []
-  },
-  "SideNavItem": {
-    "pattern": "none",
-    "delegatedTo": "Angular Material mat-nav-list's own list item (mat-list-item)",
-    "dressedBy": "frameworks/angular/theme/arena-material.css",
-    "reason": "React's SideNav became a compound component so that sections and nested groups are expressible at all, and SideNavItem is the leaf that shape needs; Angular needs no counterpart primitive, because mat-nav-list's list item is the same anchor-or-button leaf and the consumer writes one per destination inside the list exactly as they now write one SideNavItem per destination in React. The pattern is `none` for the same reason React's own binding is: which element an item renders is decided per item, so no single interactive pattern always applies to it, and what the rendered element does carry comes from the platform and from the enclosing list's `navigation` binding -- which the SideNav entry above records and this one does not restate. What the bridge dresses at the ITEM level is checkable by selector rather than asserted in general: `.arena-side-nav.mat-mdc-nav-list` sets the item label's font, size, weight and colour and the active indicator's shape, and `.arena-side-nav .mdc-list-item--activated` sets the active item's indicator colour, label colour and label weight. Nothing here claims what Material version those hosts belong to; that gap is the one CLAUDE.md's Known debt records for every delegated entry, and this entry inherits it rather than closing it.",
-    "exceptions": []
-  },
-  "SideNavSection": {
-    "pattern": "none",
-    "delegatedTo": "Angular Material mat-nav-list's own <div mat-subheader> grouping",
-    "reason": "mat-nav-list groups items with the matSubheader directive applied to a heading element Material renders inside the list; the consumer writes one per group inside the list exactly as they now write one SideNavSection per group in React. It carries no interactive affordance of its own -- every control inside it is the list's own item, matching pattern `none` for the same reason React's own binding is. arena-material.css has no rule for the subheader host class today, so it renders in Material's own colours, not Arena's tokens -- no dressedBy is claimed, the same honesty the TableCell entry uses for its data cells.",
-    "exceptions": []
   }
 }

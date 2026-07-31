@@ -1,0 +1,59 @@
+import {
+  ChangeDetectionStrategy, Component, computed, contentChildren, forwardRef, inject, input,
+} from '@angular/core';
+import { SideNavChild, SideNavState, indentFor } from '../side-nav/SideNavState';
+import { sideNavStyles } from '../side-nav/SideNav.variants';
+
+let nextId = 0;
+
+@Component({
+  selector: 'arena-side-nav-section',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    SideNavState,
+    { provide: SideNavChild, useExisting: forwardRef(() => SideNavSection) },
+  ],
+  host: {
+    '[class]': 'styles().section()',
+    role: 'group',
+    '[attr.aria-labelledby]': 'labelId',
+  },
+  template: `
+    <div [id]="labelId" [class]="styles().sectionLabel()" [style.paddingInlineStart]="indent()">{{ heading() }}</div>
+    <ng-content />
+  `,
+})
+export class SideNavSection {
+  readonly label = input.required<string>();
+
+  private readonly parent = inject(SideNavState, { skipSelf: true });
+  private readonly own = inject(SideNavState);
+
+  protected readonly labelId = `arena-side-nav-section-${nextId++}`;
+  protected readonly children = contentChildren(SideNavChild);
+
+  protected readonly heading = computed(() => {
+    const text = this.label();
+    if (text.trim() === '') {
+      throw new Error('SideNavSection: `label` is required, and names the group its heading introduces');
+    }
+    return text;
+  });
+
+  protected readonly indent = computed(() => indentFor(this.parent.indentStep(), this.parent.depth()));
+  protected readonly styles = computed(() => sideNavStyles());
+
+  constructor() {
+    this.own.depth = computed(() => this.parent.depth() + 1);
+    this.own.activeId = this.parent.activeId;
+    this.own.indentStep = this.parent.indentStep;
+    this.own.activate = (id: string) => this.parent.activate(id);
+  }
+
+  protected ngAfterContentInit(): void {
+    if (this.children().length === 0) {
+      throw new Error('SideNavSection: a section with no children is not a legal shape — its heading would name nothing');
+    }
+  }
+}

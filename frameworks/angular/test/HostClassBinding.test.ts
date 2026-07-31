@@ -759,6 +759,9 @@ const NO_MANIFEST = new Set(['bar-chart', 'line-chart', 'doughnut-chart']);
 const HOST_SLOT: Record<string, { manifest?: string; slot: string }> = {
   dialog: { slot: 'scrim' },
   'radio-group': { manifest: 'Radio.manifest.json', slot: 'group' },
+  'side-nav-collapsible': { manifest: 'SideNav.manifest.json', slot: 'section' },
+  'side-nav-item': { manifest: 'SideNav.manifest.json', slot: 'item' },
+  'side-nav-section': { manifest: 'SideNav.manifest.json', slot: 'section' },
   'segmented-control': { slot: 'track' },
   tab: { manifest: 'Tabs.manifest.json', slot: 'panel' },
   'table-cell': { manifest: 'Table.manifest.json', slot: 'td' },

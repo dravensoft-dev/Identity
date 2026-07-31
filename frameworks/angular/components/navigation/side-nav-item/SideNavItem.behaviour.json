@@ -1,0 +1,6 @@
+{
+  "component": "SideNavItem",
+  "pattern": "none",
+  "reason": "An item renders an <a> when it has href and a <button> when it does not, so no single interactive pattern always applies to it -- the same reading React's own binding gives, and this layer keeps it rather than inventing a second one. What the element it renders does carry comes from the platform and from SideNav's own `navigation` binding: a link's or a button's implicit role, its native keyboard, and aria-current=\"page\" on the active one. React's binding records that the two shapes are expressible as `cases` and were simply never converted; that is true here too, and converting one layer alone would make the two disagree for no gain, so this binding stays flat until both move together.",
+  "exceptions": []
+}
