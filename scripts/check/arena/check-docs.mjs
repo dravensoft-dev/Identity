@@ -116,7 +116,7 @@ export function documentSizeProblems(root = ROOT) {
       problems.push(`${rel}: ${size} characters, over the ${MAX_DOCUMENT_CHARS} limit`);
     }
   }
-  return { problems, scanned: documents.length };
+  return { problems, scanned: scanned.length };
 }
 
 export function commentRuleProblems(root = ROOT) {

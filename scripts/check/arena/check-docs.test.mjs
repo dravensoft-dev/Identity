@@ -36,6 +36,13 @@ test('a document exactly at the limit passes', () => {
   rmSync(root, { recursive: true });
 });
 
+test('both document rules report how many documents they actually read', () => {
+  const root = tree({ 'README.md': 'a', 'docs/a.md': 'b', 'x/y/Z.md': 'c', 'notes.txt': 'd' });
+  assert.equal(documentSizeProblems(root).scanned, 3);
+  assert.equal(punctuationProblems(root).scanned, 3);
+  rmSync(root, { recursive: true });
+});
+
 test('DOUBTS.md, CHANGELOG.md and docs/ are exempt from the size limit', () => {
   const over = 'x'.repeat(MAX_DOCUMENT_CHARS + 1);
   const root = tree({
