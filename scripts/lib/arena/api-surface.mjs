@@ -1,6 +1,8 @@
 /* Reads a layer's declared API surface out of source text, by regex. A shape it
  * cannot read THROWS rather than going silently missing from the member list.
- * DOUBTS.md section 5 names three dormant blind spots. */
+ * Three blind spots are dormant against today's corpus and deliberately unfixed: splitTopLevel
+ * and braceBody count brackets without string awareness, and classify's index-signature
+ * carve-out tests only a literal's FIRST member. A quote-aware scanner is a larger change. */
 
 export class UnrecognisedShape extends Error {
   constructor(message) { super(message); this.name = 'UnrecognisedShape'; }

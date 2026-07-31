@@ -42,16 +42,25 @@ maps the rest of the repository.
 
 ## Documentation rules
 
-- **Every `.md` file stays under 60,000 characters.** The one exception is `DOUBTS.md`.
+- **Every `.md` file stays under 60,000 characters.** The one exception is `DOUBTS.md`. Measure
+  it the way the gate does — `node -e "console.log(require('fs').readFileSync('X','utf8').length)"`
+  — and never with `wc -m`, which counts bytes: a file once read 60,282 bytes against 59,946
+  characters and looked 282 over a limit it was comfortably under. `check:docs` fails hard rather
+  than warning, so an overrun surfaces at the end of a batch rather than as a calm decision. The
+  way it is bought back is always the same: move a layer's own tour into that layer's README and
+  leave the cross-layer rule with a pointer. What spends the budget is a new **rule**, not a new
+  component — this file carries no literal count of anything, only the commands that produce them.
 - **Documentation is written in the present tense** and describes what Arena is, never what
-  it was. A retired token, a fixed defect, a former directory layout and a batch number all
-  belong in `DOUBTS.md` or nowhere.
+  it was. A retired token, a fixed defect, a former directory layout and a batch number belong
+  in the commit log and `CHANGELOG.md`, which is where the history already is.
 - **The best comment is the one not written.** A method carries its own context through its
   name. The only exception is `scripts/` and test files, which may carry **one** comment —
   inline or block — as a file header, **at most 10 lines**. Files a script generates are
   outside the rule entirely and keep their comments.
 - Knowledge a rename cannot express — a measurement, a vendor's behaviour, a pinned version,
-  a constraint of a test environment — goes in `DOUBTS.md`, not in a comment.
+  a constraint of a test environment — goes in the one header `scripts/` and test files are
+  allowed, in a gate's own reason string, or in the component's `.prompt.md`. Somewhere a stale
+  copy of it fails something.
 
 `bun run check:docs` holds both rules. It finds comments by lexing, so a `//` inside a string,
 a regex or a template literal is never mistaken for one, and a `@ts-`/`eslint-` directive is a
@@ -332,8 +341,8 @@ Phosphor class-name string Arena draws, never a slot, so `IconButton` presents n
 and a per-item or single icon is one system across the library. The price is recorded rather
 than hidden: flattening each `<button>`'s heritage clause drops the five `form*` overrides and
 every global/ARIA attribute a `{...rest}` spread would forward, with no gate behind the loss —
-`check:api` reads the `.d.ts`, and a restored spread in the `.jsx` leaves it green. See
-`DOUBTS.md`.
+`check:api` reads both the `.d.ts` and the `.jsx` beside it, so a restored spread fails -- but
+nothing re-derives which native members the flattening dropped.
 
 **React's suites run in two `bun test` invocations that must not merge.** A `.dom.test.jsx`
 suite renders into a real DOM; every other `*.test.jsx` asserts on `renderToStaticMarkup` — no
@@ -353,7 +362,7 @@ hand-tested for one reason — memory — and both have suites in both layers no
 asserts at every cell that focus landed where the arrow should take it and that exactly one
 `tabindex="0"` exists and is that cell; each edge clamp is one extra press, never a blind loop.
 **The bill is the press count, not what is asserted** — each press re-renders the grid through
-`act()` — so the fixture stays small and explicitly sized. `DOUBTS.md` has the measurement.
+`act()` — so the fixture stays small and explicitly sized: three rows by two columns.
 
 **A dimension in a framework layer is a token or a derivation of tokens. A bare literal is a
 bug.** This is machine-checked: `bun run check:dimensions` scans `frameworks/` for literals in
@@ -380,7 +389,7 @@ so those pages stay clean only because they were tokenized by hand. The `*.card.
 specimens under `frameworks/tailwind/` are the one family of unscanned pages that stays clean
 structurally: every class they render comes from the manifest through `classesFor()`. **Two
 blind spots are known and neither is fixed** — a kebab-case SVG attribute, and Angular's
-`[style.x]` binding form; both are in `DOUBTS.md`. This is why the three SVG charts write their
+`[style.x]` binding form, which sits outside all four scanners. This is why the three SVG charts write their
 static styling as camelCase `[style]` **objects**: in that shape `strokeWidth` and `fontSize`
 are judged as themselves, which is strictly more coverage than an attribute.
 
@@ -665,7 +674,8 @@ one run per commit.
   `YYYY-MM-DD-<name>.md`. **A spec written ahead of its plan carries a `-pending-N` suffix until
   that plan exists**, because an unsuffixed spec sitting in `specs/` reads as work in flight; drop
   the suffix when the plan lands. They are deleted once executed, which is why debt filed in one
-  dies with it — debt goes in `DOUBTS.md`.
+  dies with it — debt goes to a gate, a suite, a normative README or a `.prompt.md`, as
+  `DOUBTS.md` sets out.
 - **No gradients** on any surface (the sole exception is `Skeleton`'s neutral shimmer). Depth comes
   from the `base-100`→`base-200`→`base-300` surface scale, the hairline border, and the warm shadow.
 - **No emoji**, in product or docs.
@@ -681,7 +691,10 @@ one run per commit.
   `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` and the README header; log the
   change in `CHANGELOG.md`; and because the plugin is served **from the tag**
   (`marketplace.json` → `source.ref`), that ref must name the release tag and the tag must exist on
-  the release commit. Do all of it in the release commit, then tag it.
+  the release commit. Do all of it in the release commit, then tag it. **Because a published tag
+  is a promise about the tree it resolves to, history is never rewritten** — `git filter-repo` and
+  every equivalent are refused outright, whatever a repository-size argument says, because every
+  published tag would stop resolving to what it resolved to when it was installed.
 - **Anything landing on `main` after a tag goes under `## [Unreleased]`**, and a release is cut by
   renaming that heading to the version. Filing it under the last version instead describes a tree
   nobody has — the plugin is served from the tag, so the release is frozen the moment it is cut.
@@ -699,19 +712,28 @@ one run per commit.
 - Responsive branches are JS, not media queries (inline styles cannot hold one), and measure the
   **container** via `useContainerWidth` — not the viewport.
 
-## Known debt
+## Debt
 
-Everything Arena knows is wrong, incomplete, or unverified lives in
-[`DOUBTS.md`](./DOUBTS.md) — the one file in this repository with no character limit, because
-debt is only useful when it is explained.
+**A debt is paid, or made loud, before it is written down.** [`DOUBTS.md`](./DOUBTS.md) states
+what counts as one and where the records that are not prose live: a reason-carrying map beside
+its gate, a suite assertion, a normative README, a component's `.prompt.md`. Prefer any of those
+to a paragraph — each of them fails when it stops being true, and a paragraph does not.
 
-It holds five sections: the known-debt entries themselves; where the rest of the debt lives (the
-reason-carrying maps in `scripts/`, which stay next to the code they burden because a stale entry
-fails its own gate); the divergences between the React and Angular layers; what the READMEs
-deliberately do not say; and the knowledge no identifier can carry.
+**A claim about a file you have not READ is how a document goes quietly false.** "I grepped it"
+is not sufficient evidence: the commit that first wrote this rule down broke it in the same
+breath, describing a test file whose third assertion its author never reached. Three shapes
+recur, and none is findable by a keyword query:
 
-**A component name written into ANOTHER file's prose is a cross-file claim no gate checks**, and it
-rots silently while every gate stays green. When you change component `X`, run:
+- **A document describing ITSELF** — a README naming its own directory layout, a clause excluding
+  a path that a move has since merged into the path two sentences above it. Only an end-to-end
+  read finds these.
+- **A component name written into ANOTHER file's prose**, which rots while every gate stays green.
+  A *structural* reference is fine and should not be hunted — this component's own render naming
+  what it draws. What rots is a citation asserting **another** component's current state.
+- **A sibling cited by its bare filename**, which a refactor rewrites in every import specifier
+  and nowhere in a sentence.
+
+When you change component `X`, read every hit of:
 
 ```bash
 X=Skeleton   # the component you just changed
@@ -720,8 +742,10 @@ grep -rn --binary-files=without-match "\b$X\b" \
     CLAUDE.md DOUBTS.md contracts/api/ contracts/behaviour/ docs/ frameworks/ scripts/
 ```
 
-and read every hit as a claim about `X` that you may have just falsified. Drop by hand the hits under
-`X`'s **own** files, which describe the component instead of claiming something about it, and the
-hits in `CHANGELOG.md`, which is a frozen record of what shipped at a tag. Add no content filter to
-that command — the path list is the only scoping it needs, because `grep -rn` prints
-`path:line:CONTENT` and a `grep -v` after it would drop hits by their *text*.
+Drop by hand the hits under `X`'s **own** files, and the hits in `CHANGELOG.md`, a frozen record
+of what shipped at a tag. **Scope a worklist by its path list and never by piping `grep -n`
+through `grep -v`**: `-n` prints `path:line:CONTENT`, so a filter after it drops hits by their
+*text* — which has silently excluded the very directory a sweep had just created, twice.
+
+**Prefer no exemplar, a command, or an explicitly past-tense one.** All three are stale-proof; a
+present-tense component name is not.

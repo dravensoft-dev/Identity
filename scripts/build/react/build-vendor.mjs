@@ -1,7 +1,8 @@
 /* Writes frameworks/react/vendor/*.generated.js. React 18 is CommonJS-only, so this bundles it
  * to ESM for the demo pages' importmap, appending named exports Bun's static
- * detection misses and keeping `react` external so it stays a singleton.
- * See DOUBTS.md section 5 before changing any of that. */
+ * detection misses and keeping `react` external so it stays a singleton: Bun sees only the
+ * `exports.x = y` assignments at the CJS wrapper's top level, and React's sit inside an IIFE,
+ * so the raw output is `export default` and nothing else. */
 
 import { writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';

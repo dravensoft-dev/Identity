@@ -6,20 +6,18 @@ import { breadcrumbsStyles } from './Breadcrumbs.variants';
   selector: 'arena-breadcrumbs',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    '[class]': 'styles().root()',
-    role: 'navigation',
-    '[attr.aria-label]': 'label()',
-  },
+  host: { style: 'display: contents' },
   template: `
-    @for (crumb of items(); track crumb.label; let last = $last) {
-      @if (last) {
-        <span [class]="styles().current()" aria-current="page">{{ crumb.label }}</span>
-      } @else {
-        <a [class]="styles().crumb()" [attr.href]="crumb.href ?? '#'" (click)="onCrumbClick(crumb)">{{ crumb.label }}</a>
-        <span [class]="styles().separator()" aria-hidden="true">{{ separator() }}</span>
+    <nav [class]="styles().root()" [attr.aria-label]="label()">
+      @for (crumb of items(); track crumb.label; let last = $last) {
+        @if (last) {
+          <span [class]="styles().current()" aria-current="page">{{ crumb.label }}</span>
+        } @else {
+          <a [class]="styles().crumb()" [attr.href]="crumb.href ?? '#'" (click)="onCrumbClick(crumb)">{{ crumb.label }}</a>
+          <span [class]="styles().separator()" aria-hidden="true">{{ separator() }}</span>
+        }
       }
-    }
+    </nav>
   `,
 })
 export class Breadcrumbs {

@@ -47,12 +47,11 @@ supplies the state.
 open `/frameworks/angular/components/forms/switch/Switch.card.html`:
 - The knob **slides** across the track over `--dur-mid` rather than jumping, and the track's
   colour crossfades with it.
-- Under `prefers-reduced-motion: reduce`, forced in DevTools' Rendering pane, **the knob still
-  slides** — and that is expected rather than a surprise. Arena's reduced-motion answers are all
-  written as `@media` blocks around `@keyframes` in `frameworks/tailwind/Animations.css`; nothing
-  in the layer touches a CSS `transition`, and no manifest uses `motion-reduce:`. React's
-  `Switch` has the same gap from the same cause. Recorded in `DOUBTS.md` as a layer-wide finding,
-  because it is one utility per manifest across the whole library rather than a Switch fix.
+- Under `prefers-reduced-motion: reduce`, forced in DevTools' Rendering pane, **the knob stops
+  travelling and the track colour still crossfades**. That is the intended answer for a state
+  change: the travel is decorative and the colour is the report. `motion-reduce:transition-none`
+  on the `knob` slot is what does it, and React's `Switch` answers the same way through its own
+  injected `@media` block.
 - At every size the knob clears the track's padding on both ends, and the vertical transpose
   travels down rather than across.
 - The glyph is legible inside the knob at `sm`, which is the size that decides whether per-state

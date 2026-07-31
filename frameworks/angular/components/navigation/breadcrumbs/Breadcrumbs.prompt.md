@@ -1,7 +1,12 @@
 Arena breadcrumb trail. Mono, wide-tracked, with the last crumb as the current page --
-not a link, and carrying `aria-current="page"`. The host itself is the `nav` landmark
-(`role="navigation"`, with `aria-label` bound to the required `ariaLabel` input); no wrapper
-element is rendered inside it. Use it where a hierarchy is deeper than tabs can show.
+not a link, and carrying `aria-current="page"`. The landmark is a real `<nav>` inside a bare
+`display: contents` host, with `aria-label` bound to the required `ariaLabel` input — the same
+carve-out `arena-pagination` takes, because the `navigation` pattern offers `role="navigation"`
+only for when a `<nav>` cannot be used. Use it where a hierarchy is deeper than tabs can show.
+
+**A consumer attribute written on `<arena-breadcrumbs>` lands on the inert host, not on the
+styled `<nav>`**, which is the price every carve-out pays and is why the default is to
+host-bind.
 
 `ariaLabel` is **required** — `input.required`, so Angular throws when it is missing. It used
 to be the constant `"Breadcrumb"` written straight into the `host` block, which named the

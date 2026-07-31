@@ -32,11 +32,16 @@ test('indeterminate ignores progressPercentage: no fill, no aria-valuenow', () =
   assert.match(html, /class="arena-prog-ind"/);
 });
 
-test('showPercentage draws the number in determinate mode and is silent when false', () => {
+test('showPercentage governs the VISIBLE number only, and never the one the live region announces', () => {
+  const count = (html) => html.split('>64%<').length - 1;
+
   const shown = renderToStaticMarkup(<ProgressBar label="Deploying" progressPercentage={64} />);
-  assert.match(shown, />64%</, 'the percentage was not drawn beside the label by default');
+  assert.equal(count(shown), 2, 'by default the percentage is drawn beside the label and announced inside the region');
+
   const hidden = renderToStaticMarkup(<ProgressBar label="Deploying" progressPercentage={64} showPercentage={false} />);
-  assert.doesNotMatch(hidden, />64%</, 'showPercentage={false} still drew the percentage');
+  assert.equal(count(hidden), 1,
+    'showPercentage={false} is a visual choice: it drops the number beside the label and must leave the '
+    + 'announcement inside the live region, which is the only content change a screen reader has to report');
   assert.match(hidden, />Deploying</, 'showPercentage={false} also removed the label');
 });
 

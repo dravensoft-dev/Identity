@@ -40,7 +40,8 @@ open `/frameworks/angular/components/forms/checkbox/Checkbox.card.html`:
 - Clicking the label text toggles the box, and so does Space with the control focused.
 - `disabled` dims the whole control to 50% and the cursor turns to not-allowed over the label
   as well as the box.
-- **Known gap, shared with React and not fixed here**: the native input is `opacity-0 size-0`,
-  so keyboard focus paints no visible ring on the box. Tab to the control and you will see
-  nothing move. Recorded in `DOUBTS.md`; the fix is a `has-[:focus-visible]:` treatment on the
-  box slot in the shared manifest, which would move React's parity and is not this batch's.
+- Tab to the control and the **box** takes a gold focus ring, even though the element the
+  browser focused is the `opacity-0 size-0` native input. The `box` slot carries
+  `[&:has(~input:focus-visible)]:shadow-[…]`, which reaches the input as a later sibling inside
+  the same `<label>` — so the input must stay after the box in the template, and moving it
+  removes the ring with nothing failing. React draws the identical ring from an injected rule.

@@ -100,3 +100,18 @@ implement. Serve the tree with `bun run demos`, open
     width above it. On a short one it stays top-right with the title stopping
     before it. Open the panel in the stacked case too: it hangs below the chip
     rather than over its own body, and every control in it is clickable.
+
+**One accepted limit, measured.** A **short, narrow** chip with actions has almost no title left.
+Reserving the kebab's 34px band is what stops the title being drawn underneath it, and on a
+full-width chip it costs nothing; on a chip sharing its slot (`cols: 2`, about 78px outer) it
+leaves a **36.58px** content box, which renders `Client review — Northwind` as `Clien…`. **A tall
+one no longer has this problem**: at 56px or more the kebab moves to the chip's bottom-right, the
+reserve is dropped, and the title gets the whole **64.6px** — truncation measured falling from 74%
+to 54%, not to the 18% its kebab-less neighbours show, because that figure belongs to their
+shorter titles. 56px is the sum that makes title and kebab fit without overlap, so it reaches
+events of roughly 75 minutes or more. What remains is a 30- or 60-minute event sharing its column,
+and both remaining options cost more than the gap: showing the kebab only on hover or focus fails
+a touch reader, and the chip is a `grid` cell whose hover is not a given; not rendering it below
+some width makes `actionsEnabled` a request rather than a guarantee and silently removes the only
+route to the consumer's actions. **A member that sometimes does nothing is worse than a truncated
+title.**

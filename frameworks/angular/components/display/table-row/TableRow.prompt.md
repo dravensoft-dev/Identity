@@ -52,7 +52,10 @@ Below `--bp-md` the row renders as a card with **no role and no tab stop**, so a
 an output has subscribers — `OutputEmitterRef.listeners` is private, and an `interactive`
 input would be a member no contract declares. Making every card row a button instead would
 put a dead tab stop on every row of every table that is not clickable. The binding declares
-`divergesFrom: "button"` and `DOUBTS.md` carries the consequence.
+`divergesFrom: "button"`, and the bounded consequence is that a card row with `(click)` bound
+is pointer-only below `--bp-md`. `arena-calendar-event` hit the same wall and resolved it the
+OPPOSITE way, which is the useful contrast: a chip is `tabindex="-1"` and never a page tab stop,
+so always-a-button costs no dead stop there, where always-a-div would delete Enter-into-the-chip.
 
 ### What is shared, and therefore not yours
 

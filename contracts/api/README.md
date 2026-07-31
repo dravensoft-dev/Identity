@@ -315,8 +315,9 @@ specification defines for that element**: they change what the control is or doe
 omitted them would be describing a narrower control than the one Arena ships. Global attributes,
 ARIA attributes and the generic DOM handlers are not members — in Angular a consumer writes those on
 the host directly, which is the same reason `style` and the `{...rest}` spread were deliberately not
-ported ([`DOUBTS.md`](../../DOUBTS.md) section 3, "An Angular primitive host-binds its root; a React
-component renders a wrapper", which states it once for every host-bound primitive). So `<button>` contributes `type`, `disabled`,
+ported: a consumer writes them on the `<arena-x>` host, which is the same element the recipe's
+`root` classes are bound to, and Angular composes a static attribute with a `[class]` binding
+rather than clobbering it. So `<button>` contributes `type`, `disabled`,
 `name`, `value`, `autoFocus` and the six `form*` overrides, plus a `click` event; `<span>` and
 `<div>` contribute nothing at all, and flattening a component built on one of those adds no member
 beyond the `content` slot it already accepted through `children`.
@@ -511,11 +512,12 @@ parameterised slot fills a cell or replaces a row — is a fact about the render
 `check:compliance` is the only layer that sees a rendered tree, and it does not read
 contracts.
 
-Two further things sit outside the gate's reach rather than outside machine-checking:
-`default` is part of the contract format and is read by nothing, and React's checked
-surface is its hand-written `.d.ts` rather than its `.jsx`. Both are recorded with their
-consequences in [`DOUBTS.md`](../../DOUBTS.md) — section 4 for the summary, section 1 for
-the full entries.
+**One thing sits outside the gate's reach rather than outside machine-checking:** `default` is
+part of the contract format and is read by nothing on its own. The comparison also refuses one
+direction on purpose — a contract default with no destructuring default is **not** reported,
+because the default may legitimately be applied downstream, and a source-reading gate cannot see
+that. React's surface is read from both files, so a restored `{...rest}` spread in the `.jsx`
+fails and a `spec.default` the implementation contradicts fails with it.
 
 R1, R4 and R5 *are* asserted: R1 by the type schema (a field may only be a primitive or an
 enum), R4 by the reader recognising platform types by name and reporting them, R5 by a
@@ -602,20 +604,13 @@ contract written by whoever migrates the component reproduces exactly that.
 Only after the decision: write the contract, migrate every layer, update the tests,
 manifests and demos that follow, and run the gates.
 
-### What happens to the recorded divergences
+### What happens to a divergence the contract settles
 
-The layer divergences live in [`DOUBTS.md`](../../DOUBTS.md) section 3. An entry whose
-entire content is an API divergence is **deleted** when the component comes under contract,
-not migrated — the contract replaces it, and the divergence stops existing to record.
-Entries covering rendering or behaviour stay.
+A difference between the layers that is **entirely** an API difference stops existing the moment
+the component comes under contract: the contract is the single statement of the members, and there
+is nowhere for a second opinion to live. Nothing is migrated — it is deleted, because there is no
+longer a divergence to record.
 
-**A change deleting a cited section must redirect the citation in the same change**, so
-measure the citing set rather than trusting a list written here:
-
-```bash
-grep -rn "DOUBTS.md" --include='*.json' --include='*.ts' --include='*.md' \
-    --include='*.jsx' --include='*.mjs' . | grep -v node_modules
-```
-
-Keep only the hits that quote a section **by name** — those are the ones a deletion breaks.
-A citation naming the file alone survives any edit to it.
+What survives a contract is the rest: which element a layer renders, how a compound family
+coordinates, what an idiom forces. That belongs in the component's own `.prompt.md` in each layer,
+beside the source it describes, where a reader of that component meets it.

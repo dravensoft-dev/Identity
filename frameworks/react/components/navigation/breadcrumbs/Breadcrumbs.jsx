@@ -1,7 +1,7 @@
 import React from 'react';
 
 export function Breadcrumbs({ items, ariaLabel, separator = '/', onNavigate }) {
-  if (!ariaLabel) throw new Error('Breadcrumbs: `ariaLabel` is required');
+  if (!ariaLabel?.trim()) throw new Error('Breadcrumbs: `ariaLabel` is required');
   if (!items) throw new Error('Breadcrumbs: `items` is required');
   return (
     <nav aria-label={ariaLabel} style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 'calc(var(--sp-1) * 2)' }}>

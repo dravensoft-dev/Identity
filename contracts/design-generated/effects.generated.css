@@ -92,12 +92,8 @@
      respond to .arena-compact. It never did.
    */
   --chart-height:280px; /* Plot height before padding. */
-  /*
-     Equals --sp-2. Authored rather than aliased: build-tokens.mjs loads one
-     source file per call, so a DTCG reference across files would not resolve.
-   */
-  --chart-pad-top:8px;
-  --chart-pad-right:8px; /* Equals --sp-2. See pad-top. */
+  --chart-pad-top:8px; /* The plot's top padding, one step of the base grid. */
+  --chart-pad-right:8px; /* The plot's right padding, one step of the base grid. */
   /*
      Holds the category labels. This is a CONSEQUENCE of the type scale, not a
      chosen dimension: it is enough room for a label at --dz-text-2xs. If the type
@@ -108,9 +104,8 @@
   /*
      Between an axis label and the plot it labels: a y-axis tick label ends this far
      left of pad-left, and an x-axis category label sits this far above the bottom
-     edge. Equals --sp-2, like pad-top. It is a spacing decision in px, so it is a
-     token by the same criterion the pads are -- it was left inline through several
-     batches because the arithmetic reads as an offset rather than as a value.
+     edge. It is a spacing decision, so it is a token by the same criterion the pads
+     are.
    */
   --chart-label-gap:8px;
   /*
@@ -135,7 +130,7 @@
   --chart-point-r-hover:5px;
   --chart-legend-min:120px; /* Doughnut legend, narrowest. */
   --chart-legend-max:180px; /* Doughnut legend, widest. */
-  --chart-legend-gap:16px; /* Between the doughnut plot and its legend. Equals --sp-4. */
+  --chart-legend-gap:16px; /* Between the doughnut plot and its legend. */
 }
 :root{
   /*

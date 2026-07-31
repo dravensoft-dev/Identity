@@ -3,7 +3,7 @@ import { pageWindow } from './PaginationWindow.js';
 
 export function Pagination({ page, pageCount, ariaLabel, onChange }) {
 
-  if (!ariaLabel) throw new Error('Pagination: `ariaLabel` is required');
+  if (!ariaLabel?.trim()) throw new Error('Pagination: `ariaLabel` is required');
   if (page == null) throw new Error('Pagination: `page` is required');
   if (pageCount == null) throw new Error('Pagination: `pageCount` is required');
   const go = (p) => { if (p >= 1 && p <= pageCount && p !== page) onChange && onChange(p); };

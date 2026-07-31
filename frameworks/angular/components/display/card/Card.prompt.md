@@ -22,8 +22,10 @@ render — the card is a plain surface.
 - **Bind `title`, don't write it as a static attribute.** `<arena-card title="X">`
   leaves a real `title` attribute on the host, and the browser draws a tooltip over
   the whole card. `[title]="'X'"` does not. This is layer-wide rather than Card's
-  own — `DOUBTS.md` names every primitive it reaches — and it is why the example
-  above binds both strings.
+  own: Angular writes a static attribute during the creation pass whether or not it
+  also matches an input. This host clears it (`'[attr.title]': 'null'`) and
+  `test/HostClassBinding.test.ts` holds that layer-wide in both directions, so the
+  binding above is the clearer spelling rather than a workaround.
 - Depth comes from `floating`'s warm shadow and the `base-100`→`base-200`→`base-300`
   surface scale. Never a gradient.
 - Reach for `accent` to mark one card among several as the current or featured one;

@@ -51,8 +51,7 @@ Return the message, or the empty string when the value is good.
   writing both would be two claims that can disagree.
 - `icon`, `prefix` and the status glyphs are decoration and all four are `aria-hidden`. The error
   message beside the glyph is what carries the state. **React leaves its two status glyphs
-  unhidden**, which announces a Phosphor ligature next to the message it duplicates; Angular
-  hides them. Recorded in `DOUBTS.md`.
+  hidden too**, so neither layer announces a Phosphor ligature beside the message it duplicates.
 - The error line **replaces** the hint rather than stacking under it. Two lines of guidance under
   one field is one too many.
 - `type` is the `InputType` enum. `checkbox` and `radio` are not among them — those are

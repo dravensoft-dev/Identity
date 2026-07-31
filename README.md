@@ -75,4 +75,4 @@ Components render with **inline `style` objects that read the CSS custom propert
   including how to adopt it.
 - [`frameworks/tailwind/README.md`](./frameworks/tailwind/README.md) — the shared
   Tailwind layer.
-- [`DOUBTS.md`](./DOUBTS.md) — everything Arena knows is wrong, incomplete, or unverified.
+- [`DOUBTS.md`](./DOUBTS.md) — what counts as a debt in Arena, and where the records live.

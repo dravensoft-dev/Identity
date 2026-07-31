@@ -3,8 +3,8 @@
  * and a real <table> of the same numbers that is HIDDEN VISUALLY rather than
  * removed. `alternative.table` is BEHAVIOURAL -- no single element decides it --
  * so each verdict below is earned by reading the table against the input data.
- * What no suite can check is whether the name is a GOOD one; that limit is the
- * charts' own entry in DOUBTS.md. */
+ * What no suite can check is whether the name is a GOOD one, which is why seriesLabel is
+ * required and guarded rather than defaulted. */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';

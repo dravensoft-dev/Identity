@@ -15,7 +15,33 @@ suites can assert on a gate's exception map by name without running the gate.
 **A reason-carrying map is part of the gate, not documentation of it.** `EXEMPT`,
 `PASSTHROUGH`, `EXCLUDED`, `COVERED`, `UNTRACKED` — each entry names a case and says why, and a
 **stale entry fails the gate itself**. That is what keeps the exception list from outliving the
-exception, and it is why this debt lives here rather than in `DOUBTS.md`.
+exception, and it is why a debt lives beside its gate rather than in prose.
+
+## A green run is only as good as what the gate looked at
+
+**A gate that finds nothing reports zero violations either way**, and that failure mode has
+shipped in four different mechanisms here, each time behind a plausible line of output: a
+manifest walk that iterated zero manifests after the layer went nested, a per-component path
+probe that wrapped `existsSync` and returned `null` so `if (!path) continue` skipped a whole
+layer, a verification command that named a directory holding a fraction of the suites it
+claimed, and a gate that was complete, passing, and registered nowhere.
+
+The shape is always one of two: **a lookup that cannot tell "absent" from "not found"**, or **a
+path that narrows a run without narrowing what the run claims**. Both have a remedy, and both
+are rules for a new gate rather than history:
+
+- **Decide absence by walking the tree**, so "this layer does not implement it" and "this gate
+  cannot find it" stop being the same value. Resolving by constructed path is what made the
+  per-component probe silent.
+- **Make a zero-result count an explicit failure** rather than a vacuous pass. `check:tailwind`,
+  `check:radius`, `check:structure`, `check:api`, `check:behaviour`, `check:dtcg` and
+  `check:script-tokens` each carry one, as an exported pure function with a suite.
+- **A gate has two existences — the file, and every place that invokes it — and only the second
+  is worth anything.** Adding a gate means adding it to `package.json` **and** to `GATES`.
+  Citing a gate as evidence means confirming it is in `GATES` first.
+
+When you write or move anything a gate resolves by path, the question is not "does it still
+pass" but "how many things did it look at, and is that the number I expect".
 
 ## Exit 2 means SKIP, and a skip is never green
 
@@ -56,5 +82,6 @@ Put it in `check/<domain>/`, add it to `GATES` with its domain in the path, give
 script, and add a row to that domain's table. `check-all.test.mjs` asserts the gate list by
 literal value, so the count and the order move in the same commit.
 
-Three gates have no npm script and are run by path: `check-ramp`, `check-text-contrast` and
-`check-release`.
+`check-release` is the one script with no npm entry and no place in `GATES`: it is run by path
+before publishing, because it asserts what the *tag* hands out and there is nothing to assert
+until one exists.

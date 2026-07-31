@@ -4,7 +4,7 @@
  * share one document for the entire run. A failing identity assertion over a node is what
  * exhausts the run rather than what reports the defect, so it never reaches a reader at all.
  * frameworks/angular/test/NodeAssert.ts compares identity and renders the operands itself;
- * this gate is what keeps the raw form from coming back. DOUBTS.md carries the measurement. */
+ * this gate is what keeps the raw form from coming back. NodeAssert.ts has the measurement. */
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

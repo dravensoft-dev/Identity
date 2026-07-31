@@ -7,7 +7,7 @@
  * No key event sets keyCode on purpose. Nothing here goes through a CDK key manager, so
  * nothing reads it; the grid's cursor is Arena's own and switches on event.key.
  * The walk is one press per step against a deliberately small fixture -- 3 rows by 2
- * columns -- because the bill is the press count. DOUBTS.md carries the measurement. */
+ * columns -- because the bill is the press count: each press re-renders the grid. */
 
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 useTestEnvironment();

@@ -44,3 +44,28 @@ The anchor is internal, so prev/Today/next work with nothing wired. `onRangeChan
 - Don't reach for `style` to place it. It takes none; wrap it in a `<div>` that owns the margin and the width.
 - Don't put anything but `CalendarEvent`s in it. Children are the event list, not a content area — anything else is skipped by the placement pipeline and never renders.
 - Don't wrap it to add a month view or a mini datepicker and call it Arena. Both are real components with real specs; a hand-rolled one in your product is exactly the `fullcalendar-overrides.css` story that put this component here.
+
+**Two accepted limits, both measured rather than argued.**
+
+`showsTime()` compares a chip's column share against **one** threshold and never asks whether the
+chip has a kebab. A chip without actions has a content box of its share less 18px; one with them
+has its share less 46px, because the kebab's 34px reserve comes out too. So the kebab-safe
+threshold is 124.02px where the plain one is 96.02px, and `--calendar-time-min-w` is set at the
+plain one. **In a band of roughly a 768px to an 800px container, in week view, a chip that has
+actions can still wrap its time label onto two lines** — measured on `Calendar.card.html` by
+driving the viewport and reading the container beneath it, which is the viewport less the card's
+24px body padding a side, and `--bp-md` is compared against the *container*. At an 812px container
+the label fits on one line. Both alternatives are worse: the kebab-safe threshold suppresses the
+label on every ordinary chip through that band and well past it, and a kebab-aware threshold puts
+`CalendarEvent`'s 34px reserve back inside `Calendar`, laundered through a second token but still
+a number that silently goes wrong if the reserve changes.
+
+**The chips are not inside their day columns in Angular, and `aria-owns` is what pays for it.**
+React distributes them with `cloneElement`, so a chip is a DOM child of its day's `role="row"` and
+its `left`/`width` are percentages of its own column. Angular projects once, into the grid, so a
+chip's percentages are of the whole grid and each column names its own chips through `aria-owns`
+— the accessibility tree matches either way. Two consequences follow: the Angular grid must use
+real equal tracks, because React's `flex: 1` columns differ by one border width and React does not
+care; and anything projected that is not a chip becomes a grid item there, where React's placement
+lookup silently skips it. **No gate sees either** — `check:dimensions` is blind to `[style.x]` and
+the grid suite asserts the keyboard rather than the geometry.

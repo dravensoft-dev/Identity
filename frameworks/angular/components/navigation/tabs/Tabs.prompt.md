@@ -45,7 +45,8 @@ is expensive, guard it inside the view rather than expecting the tab to defer it
   list nested near it.
 - **The CDK reads the deprecated `event.keyCode`, not `event.key`.** A browser fills it in, so this
   works in Chromium; a synthetic event that omits it is ignored entirely. Any suite dispatching a
-  key at this component must set `keyCode` — see `DOUBTS.md`.
+  key at this component must set `keyCode`; happy-dom leaves it `0`, so a suite that sets only
+  `key` asserts nothing and passes.
 - With no tabs at all it draws an **empty tablist and no tabpanel**, and guards nothing. A root
   promises nothing an empty render would break, but it must not ship an invalid one.
 - Don't use it for steps in a sequence, or for anything a person should be able to open in a new

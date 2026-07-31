@@ -6,7 +6,7 @@ export function SideNavSection({
   depth = 0, activeId, indentStep = 3, onActivate,
 }) {
 
-  if (!label) throw new Error('SideNavSection: `label` is required');
+  if (!label?.trim()) throw new Error('SideNavSection: `label` is required');
 
   if (React.Children.toArray(children).length === 0) {
     throw new Error('SideNavSection: a section with no children is not a legal shape');

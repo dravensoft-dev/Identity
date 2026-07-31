@@ -73,8 +73,11 @@ Card mode answers none of this. A card is a list item, and a list is traversed w
 `Table` has a render suite — `Table.cases.dom.test.jsx` walks the grid cell by cell and
 renders both declared shapes, and `Table.test.jsx` covers the markup: the roles, the
 name, the `label` guard, the tab-stop count, and that the removed members reach nothing.
-The rule that a `grid` component was hand-tested *instead* is retired; `DOUBTS.md` has
-the measurement that retired it. What is below is what no suite can reach — happy-dom
+The rule that a `grid` component was hand-tested *instead* is retired: a grid suite asserts at
+every cell that focus landed where the arrow should take it and that exactly one `tabindex="0"`
+exists and is that cell, with each edge clamp one extra press. **The bill is the press count**,
+since every press re-renders the grid through `act()`, which is why the fixture stays small and
+explicitly sized. What is below is what no suite can reach — happy-dom
 implements no layout and no native sequential focus navigation — and only a person checks it.
 
 Serve the tree with `bun run demos`, open
@@ -111,4 +114,4 @@ Serve the tree with `bun run demos`, open
    that announces itself as a button and activates on Enter and Space, and that a card
    whose row has none took no `role`, `tabindex` or key handler by accident. Angular
    renders neither: it cannot see whether `onClick` was passed, so its card rows are
-   pointer-only, and `DOUBTS.md` carries that divergence.
+   pointer-only, because it cannot ask whether an output has subscribers.

@@ -342,10 +342,10 @@ rendering or behaviour stay. Plan A deletes the `StatCard` entry (`:1058`) and t
 paragraphs of the `Breadcrumbs` (`:1035`) and `AppLogo` (`:914`) entries.
 
 Bindings cite this document as supporting evidence — count them rather than trusting a figure,
-since one citer already died with the `SideNav` delegated entry Plan D deleted, and the document
-itself is now section 3 of `DOUBTS.md`. None of the three sections
-Plan A touches is cited, but any later plan deleting a cited section must redirect the
-citation in the same change.
+since one citer already died with the `SideNav` delegated entry Plan D deleted. The layer
+divergences this document described are gone as a document: a difference the API contract settles
+stops existing, and the rest lives in each layer's README or in the component's own `.prompt.md`.
+Any plan deleting a cited section must redirect the citation in the same change.
 
 ---
 
@@ -838,7 +838,7 @@ and reports it — so for those three the gate is ready before the audit is.
 > with `--z-modal`; a tooltip inside an `arena-confirm-dialog` had been painting behind the dialog
 > the whole time. It takes `calc(var(--z-toast) - 10)` now, and a menu opened from inside a dialog
 > is what proves it; **6** the `SideNav` family, which inherits a decision rather than a task (see
-> `DOUBTS.md`); **7** cleanup — delete `arena-material.css`, `check:material` and the
+> the layer README); **7** cleanup — delete `arena-material.css`, `check:material` and the
 > `@angular/material` devDependency. `Dialog` and `Toast` are expected to need no overlay at
 > all: the CDK earns its place on surfaces anchored to a trigger, and Arena's three existing
 > modals already centre in flow.
@@ -862,8 +862,8 @@ and reports it — so for those three the gate is ready before the audit is.
 > would have degraded an adopter's remaining Material buttons and falsified `IconButton`'s
 > still-live reason, which cites them. Batch 2 takes those blocks with `IconButton`.
 >
-> **On the pre-move paths this file names:** the reading `DOUBTS.md` asked Plan D to make has
-> been made. A path is *normative* when it tells a reader where something IS, and those are
+> **On the pre-move paths this file names:** the normative/history reading Plan D was asked to
+> make has been made. A path is *normative* when it tells a reader where something IS, and those are
 > corrected. A path in a `>` block, or in one of the per-batch test-count records near the
 > end, is *history* and is correct as written — rewriting those would make the record lie.
 

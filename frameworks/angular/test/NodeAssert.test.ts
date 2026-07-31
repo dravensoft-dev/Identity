@@ -1,7 +1,7 @@
 /* This suite needs a real DOM but no TestBed: what it proves is that a FAILING node assertion
  * stays the size of a sentence. It deliberately does not compare that against node:assert's own
- * diff -- building the diff once per run is the cost this file exists to avoid. DOUBTS.md
- * carries the measurement instead. */
+ * diff -- building the diff once per run is the cost this file exists to avoid. The measured
+ * lengths are in NodeAssert.ts's own header. */
 
 import { ensureDom } from './TestbedEnv';
 ensureDom();

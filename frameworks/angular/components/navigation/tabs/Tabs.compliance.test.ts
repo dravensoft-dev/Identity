@@ -2,7 +2,7 @@
  * keyboard is asserted for real rather than argued from the platform. ArrowLeft and ArrowRight go
  * through @angular/cdk/a11y's FocusKeyManager, which switches on the deprecated event.keyCode --
  * a browser fills it in, happy-dom leaves it 0 -- so press() sets it or every key is ignored and
- * every focus assertion fails against a <body> too large to diff. See DOUBTS.md.
+ * every focus assertion fails against a <body> too large to diff (see NodeAssert.ts).
  * focus.roving is decided the same way: exactly one tab carries tabindex="0" and it is the
  * selected one. Tab binds `none` and is asserted here too, because the two are one render. */
 

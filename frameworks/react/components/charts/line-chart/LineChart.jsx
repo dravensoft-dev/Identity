@@ -35,7 +35,8 @@ export function LineChart({
 
   const onMove = (e) => {
     if (!n) return;
-    const box = e.currentTarget.getBoundingClientRect();
+    const box = e.currentTarget.ownerSVGElement?.getBoundingClientRect();
+    if (!box) return;
     const x = e.clientX - box.left;
     let best = 0;
     for (let i = 1; i < n; i++) if (Math.abs(xOf(i) - x) < Math.abs(xOf(best) - x)) best = i;

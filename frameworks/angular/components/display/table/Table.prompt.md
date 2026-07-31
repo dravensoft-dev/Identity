@@ -58,7 +58,8 @@ Card mode answers none of this, and this layer answers less of it than React doe
 row here carries no role and no tab stop, so a row with `(click)` is pointer-only below
 `--bp-md`. That is not a choice — Angular cannot ask whether an output has subscribers, and
 making every card row a button would put a dead tab stop on every row of every table that is
-not clickable. `TableRow.behaviour.json` states it and `DOUBTS.md` carries the consequence.
+not clickable. `TableRow.behaviour.json` states it. The bounded consequence: a consumer who
+binds `(click)` on a card row gets a row a keyboard user cannot reach below `--bp-md`.
 
 ### Why the wide shape is not a `<table>` element
 
@@ -68,7 +69,11 @@ matching one, so a `wide` branch and a `card` branch cannot each carry their own
 once, into a box whose display and role change with the shape, and the wide box is a
 `display: table` with `role="grid"` rather than a `<table>`. React's `<table>` already
 carries `role="grid"`, so the native table role was overridden in both layers; what differs
-is the element and `colspan`. `DOUBTS.md` records it.
+is the element and `colspan`. Two real costs follow: `colspan` has no CSS equivalent, so the
+empty state is a block **beside** the grid box rather than a cell spanning it, and the grid in
+that state holds only its header row; and `display: table` on the host means the measured
+`contentRect` excludes the frame border, so the narrow threshold trips a couple of pixels
+earlier than React's.
 
 **By hand, in a real browser** (`bun run build:angular-demo && bun run demos`, then
 `frameworks/angular/components/display/table/Table.card.html`). Steps 1–5 were checked in real

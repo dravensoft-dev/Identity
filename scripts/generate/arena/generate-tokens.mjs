@@ -30,6 +30,10 @@ export const FILES = [
   ] },
 ];
 
+export const RESOLVES_AGAINST = {
+  'chart.json': ['spacing.json'],
+};
+
 const EXT = 'com.dravensoft.arena';
 
 export const SCRIPT_TARGETS = [
@@ -103,12 +107,13 @@ export async function buildScriptModules() {
 }
 
 async function load(source) {
+  const path = (s) => join(root, 'contracts/design', s);
   const sd = new StyleDictionary({
-    source: [join(root, 'contracts/design', source)],
+    source: [...(RESOLVES_AGAINST[source] ?? []).map(path), path(source)],
     platforms: { css: { transforms: ['name/kebab'] } },
   }, { verbosity: 'silent' });
   const { tokens } = await sd.getPlatformTokens('css');
-  return tokens;
+  return { tokens, from: path(source) };
 }
 
 function comment(d) {
@@ -124,13 +129,25 @@ function render(token) {
   return `${comment(d)}\n${decl}`;
 }
 
-function* walk(node, groups = []) {
+function holdsA(node, from) {
   for (const [key, child] of Object.entries(node)) {
     if (key.startsWith('$') || child === null || typeof child !== 'object') continue;
-    if (child.$value !== undefined) { yield { group: false, token: child, groups }; continue; }
-    if (!child.$description) { yield* walk(child, groups); continue; }
+    if (child.$value !== undefined ? child.filePath === from : holdsA(child, from)) return true;
+  }
+  return false;
+}
+
+function* walk({ tokens, from }, groups = []) {
+  for (const [key, child] of Object.entries(tokens)) {
+    if (key.startsWith('$') || child === null || typeof child !== 'object') continue;
+    if (child.$value !== undefined) {
+      if (child.filePath === from) yield { group: false, token: child, groups };
+      continue;
+    }
+    if (!child.$description) { yield* walk({ tokens: child, from }, groups); continue; }
+    if (!holdsA(child, from)) continue;
     yield { group: true, description: child.$description };
-    yield* walk(child, [...groups, child.$description]);
+    yield* walk({ tokens: child, from }, [...groups, child.$description]);
   }
 }
 

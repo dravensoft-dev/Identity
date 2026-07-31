@@ -3,7 +3,7 @@ import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.js
 import { HEADER_LABEL, CELL_BASE } from '../table-cell/TableCell.jsx';
 
 export function Table({ columns, children, empty = 'No data.', responsive = true, label }) {
-  if (!label) throw new Error('Table: `label` is required');
+  if (!label?.trim()) throw new Error('Table: `label` is required');
   if (columns == null) throw new Error('Table: `columns` is required');
   const [ref, width] = useContainerWidth();
 

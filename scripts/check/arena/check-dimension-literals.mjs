@@ -1,6 +1,7 @@
 /* Fails on a bare dimension literal in a framework layer. EXEMPT and PASSTHROUGH are
  * asserted by name in the paired suite, so changing either is a change to both.
- * Two blind spots — kebab-case SVG attributes, Angular [style.x] — are in DOUBTS.md. */
+ * Two blind spots are known and unfixed: a kebab-case SVG attribute, and Angular's [style.x]
+ * binding form, which sits outside all four of the scanners below. */
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

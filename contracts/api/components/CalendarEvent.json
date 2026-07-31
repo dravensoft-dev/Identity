@@ -1,6 +1,6 @@
 {
   "component": "CalendarEvent",
-  "description": "One event on a Calendar's schedule. Times are ISO datetimes read in the calendar's timeZone, never the reader's. Calendar draws the chip; the consumer writes one of these per event and Calendar injects where it goes.",
+  "description": "One event on a Calendar's schedule. Times are ISO datetimes read in the calendar's timeZone, never the reader's. Calendar draws the chip; the consumer writes one of these per event and Calendar settles where it goes.",
   "api": {
     "id": { "form": "primitive", "type": "string", "required": true,
             "description": "Stable identity, so a host can switch on it rather than on the title." },

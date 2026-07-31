@@ -1,6 +1,7 @@
 /* Fails when the same module-level named numeric constant is declared in BOTH
- * framework layers. Module-level-in-both is narrower than "duplicated" — DOUBTS.md
- * section 5 states what escapes it and why. */
+ * framework layers. Module-level-in-both is narrower than "duplicated": a design value declared
+ * in ONE layer, and a constant declared inside a function body in EITHER, both escape. The two
+ * layers do not share an idiom for where a design number lives, so that happens often. */
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

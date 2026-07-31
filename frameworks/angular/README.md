@@ -181,6 +181,42 @@ overflow. `check:angular-demos` is the portable gate instead — it needs no bro
 bundler, and its `PAGED` set is the coverage record, so a page that exists undeclared and a
 declared page that is missing both fail. Coverage is partial and grows one component at a time.
 
+**`check:angular-demos` is structural only**, and the distinction is what the pages are for: it
+proves a page exists, loads its own bundle and mounts a zoneless app, never that what it renders
+is right. What the pages catch is what a suite cannot — `arena-button`'s `full` variant once did
+nothing at all, because a bare carve-out host blockified as a flex item and the inner button's
+`w-full` measured the shrunk host rather than the row, and happy-dom has no layout to see it.
+**A checklist line a real browser can decide belongs in a gate rather than in a checklist**,
+which is what `check:cards` and `check:focus-trap` between them took over. What is left for a
+person is what needs their **judgement**: whether a name is a good name, whether motion reads as
+intended, whether a colour carries the meaning it should. A green `bun run check` says nothing
+about whether anyone did that.
+
+## A projection marker the consumer forgets to import drops the whole slot in silence
+
+Every gated `<ng-content select="[x]">` is paired with a `contentChild(ArenaX)` from
+`ProjectionMarkers.ts`, because that query is the only way an `ng-content` slot can report
+whether anything was projected. The query resolves the **directive**, so it finds nothing unless
+the consumer's own component lists `ArenaX` in its `imports` — and with the query null the `@if`
+never renders, the `<ng-content>` is never instantiated, and the projected content vanishes. No
+error, no warning, no failing gate: `ngc --strictTemplates` is happy, because a bare `footer`
+attribute on a `<div>` is valid HTML whether or not a directive matches it. It was found by
+opening a page, not by reading one.
+
+**The component still cannot detect it** — it cannot distinguish "the marker was not imported"
+from "nothing was projected", which is the case the query exists for. What is checked is every
+consumer *inside this repository*: `test/ProjectionMarkers.test.ts` walks the layer, pairs each
+marker use with the **nearest enclosing** `arena-*` element, and fails when that host gates the
+slot by a `contentChild` query and the consumer does not import the directive. Two refinements
+were forced by real false positives and both make the rule more honest: marker words inside an
+**attribute value** are stripped before matching, and a slot gated by an **input** rather than by
+a query owes no import. The real rule is *"you projected into a slot whose host gates it on a
+query"*, not *"you used a marker attribute"*, and the nearest-enclosing walk is what expresses
+it, since `contentChild` reaches direct content only.
+
+**What stays uncovered is every consumer outside this repository.** A gate here cannot reach an
+adopter's app; it can only stop Arena's own pages from shipping the example.
+
 ## The test harness
 
 **It compiles ahead of the run — AOT, not JIT — and that is a different guarantee, not merely a
@@ -248,13 +284,37 @@ and a `w-full` inside measures the host, not the row. **A host-bound root must c
 utility** — `<arena-x>` is an unknown element defaulting to `display:inline`, where width and
 height do not apply, so a root slot without one renders a zero-area host. That is machine-guarded
 by a manifest-driven assertion in `test/HostClassBinding.test.ts`. Count the carve-outs rather
-than trusting a figure here; the command is in [`DOUBTS.md`](../../DOUBTS.md) section 3.
+than trusting a figure here:
+
+```bash
+grep -Lr "'\[class\]':" --include='[A-Z]*.ts' frameworks/angular/components/*/*/ \
+  | grep -vE '\.(test|variants|card\.entry)\.ts$|(State|Window)\.ts$'
+```
+
+They fall into **four** groups, each with its own reason. The **SVG charts** have no manifest and
+no recipe, so there is no `root` slot to bind. The **form controls** each need their own
+`<button>`, `<input>` or `<label>`. Some **keep a specific semantic or structural element** — a
+real `<ul>` for a feed, a `<div role="tablist">` whose panels are siblings outside it, a real
+`<nav>` for a navigation landmark, since the `navigation` pattern offers `role="navigation"` only
+for when a `<nav>` cannot be used. The fourth group has one member and a reason unlike the other
+three: **a component that owns an output named after a DOM event it must be able to refuse needs
+an inner element to stop the event at.** An Angular output named after a native DOM event is
+delivered twice — once as the output, once as the bubbled DOM event Angular also listens for on
+the host — so with `stopPropagation()` removed one pointer click reaches the consumer twice and a
+disabled row activates. A host listener cannot fix it: `stopPropagation` does not reach a sibling
+listener on the same element, and `stopImmediatePropagation` would depend on registration order.
+So the rule has a second clause: **host-bind unless the root must be a specific element, or unless
+the component owns an output named after a DOM event it must be able to refuse.** The suites
+assert the delivery count, so a wrapper cannot be optimised away without a red run.
+
+**The consequence a carve-out pays** is that a consumer attribute written on `<arena-x>` — a
+static `class`, an ARIA attribute — lands on the inert host and never on the styled element
+inside it, and neither layer offers a second route to it. That follows from the carve-out, not
+from anything a contract could restate, and it is the argument for host-binding being the default.
 
 ## Two traps this layer's idiom sets
 
-Both are layer-wide and silent, and both are recorded in [`DOUBTS.md`](../../DOUBTS.md) —
-the boolean one in section 4, the attribute one in section 3, alongside the command that
-measures which primitives it reaches.
+Both are layer-wide and silent.
 
 **A bare boolean attribute resolves to `true`.** Every boolean input here is a signal
 `input(false, { transform: booleanAttribute })`, so `<arena-alert dismissible>` is `true`.

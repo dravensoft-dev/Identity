@@ -84,12 +84,9 @@ export const onboardingHeightReserve = 220;
  */
 /* Plot height before padding. */
 export const chartHeight = 280;
-/*
-   Equals --sp-2. Authored rather than aliased: build-tokens.mjs loads one
-   source file per call, so a DTCG reference across files would not resolve.
- */
+/* The plot's top padding, one step of the base grid. */
 export const chartPadTop = 8;
-/* Equals --sp-2. See pad-top. */
+/* The plot's right padding, one step of the base grid. */
 export const chartPadRight = 8;
 /*
    Holds the category labels. This is a CONSEQUENCE of the type scale, not a
@@ -102,9 +99,8 @@ export const chartPadLeft = 44;
 /*
    Between an axis label and the plot it labels: a y-axis tick label ends this far
    left of pad-left, and an x-axis category label sits this far above the bottom
-   edge. Equals --sp-2, like pad-top. It is a spacing decision in px, so it is a
-   token by the same criterion the pads are -- it was left inline through several
-   batches because the arithmetic reads as an offset rather than as a value.
+   edge. It is a spacing decision, so it is a token by the same criterion the pads
+   are.
  */
 export const chartLabelGap = 8;
 /*
@@ -133,7 +129,7 @@ export const chartPointRHover = 5;
 export const chartLegendMin = 120;
 /* Doughnut legend, widest. */
 export const chartLegendMax = 180;
-/* Between the doughnut plot and its legend. Equals --sp-4. */
+/* Between the doughnut plot and its legend. */
 export const chartLegendGap = 16;
 
 /*

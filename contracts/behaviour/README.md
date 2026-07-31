@@ -75,8 +75,8 @@ is several renders, and no single flat exception list is correct for all of them
 
 **Name no component here as a present-tense example of carrying cases.** A component
 name written into another file's prose is a claim no gate reads, so it rots while every
-gate stays green — [`DOUBTS.md`](../../DOUBTS.md) carries the hazard and the change-time
-grep that finds it. `Alert` is the one present-tense name this page keeps, because the
+gate stays green — `CLAUDE.md` carries the hazard and the change-time grep that finds
+it. `Alert` is the one present-tense name this page keeps, because the
 paragraph on `when` below reasons from its `danger` case, so removing it would cost a
 worked example and buy nothing. For the live set, run the command at the end of this
 section rather than reading any name from this page.
@@ -116,6 +116,94 @@ churned to say so. Find the bindings that do declare `cases` with
 `grep -rl '"cases"' --include='*.behaviour.json' frameworks/` — read the list
 rather than a figure written here, which drifts the first time a batch converts
 another binding.
+
+### What this layer cannot express, and what a green run does not claim
+
+Four limits are structural. None is a defect waiting on a batch; each is a property of what a
+binding is, and knowing them is what stops a green run being read as more than it says.
+
+**Cases reach a component's own props and nothing further.** A requirement that holds only for
+some *consumer* usage — one that depends on how two components were assembled, or on what was
+passed in — is a different level, and a case cannot name it: a case describes a render the
+component's own API can produce. There is no grep for this class either, because it is a
+property of an implementation rather than a string in a binding; finding the next one means
+reading an implementation against its binding. `comparePattern`'s stale-exception message has
+no vocabulary for it, offering only "delete it or name a subject".
+
+**Nothing proves the declared cases are all the cases, or that a case's suite rendered every
+render its `when` admits.** A component with five meaningful renders may declare two and every
+gate stays green. `assertPatternCases` enforces one thunk per case *name*, never one render per
+configuration the prose names, so a `when` covering several shapes is proved by whichever one
+its suite mounted. Deriving cases from source was weighed and refused: a scan for prop branches
+finds fewer renders than a reader does, which rebuilds the false-negative class the evaluator's
+own design already rejected once.
+
+**A case bound to `none` verifies nothing**, because `none` has no requirements. The verdict can
+be correct — a label, or a chip with no click handler, has no interactive contract — but the
+suite can then only confirm the case was rendered, never that it is correctly inert.
+
+**A BEHAVIOURAL requirement with no suite to pin it is unfalsifiable, not merely unverified.**
+Some requirements no single element can decide from the DOM (`focus.*`, `keyboard.*`,
+`content.noAutoDismiss`, `alternative.table`); the evaluator returns `null` and the suite
+declares the verdict in its `behavioural` map. That verdict is trusted, never re-derived, so an
+unpinned one has nothing to compare against and stays green whatever the component does — which
+is how two exceptions once stayed false for several batches with nothing able to see it. Read
+the current set with
+
+```bash
+grep -rHo '"requirement": "[^"]*"' --include='*.behaviour.json' frameworks/ | sort -u
+```
+
+against `BEHAVIOURAL` in `scripts/lib/core/behaviour-compliance.mjs`, rather than any list
+written here.
+
+### A name that is PRESENT is never checked for being USEFUL
+
+`hasAccessibleName()` asks whether there is a name, through three ordered routes: `aria-label`;
+the element's own text, where the pattern is in `LABEL_ACCEPTS_TEXT`; then `aria-labelledby`,
+which names the element only when **every** id resolves. So a dangling reference reads as
+unnamed, and a requirement in `IDREF` that finds its attribute with no resolver supplied
+**throws** rather than degrading to a presence check.
+
+Two things stay beyond it, and both are limits rather than gaps. **A resolved `aria-labelledby`
+may name an EMPTY element** — the id resolves, the name reports as present, and the real
+accessible name is the empty string. Requiring text at the target was weighed and refused:
+`textContent` cannot see a name that legitimately comes from an image's `alt` or a nested
+`aria-label`, so the check would report correct components as unnamed, and the cheapest way to
+silence a false OVERCLAIM is a fabricated exception written into a binding. **And a resolved
+reference is no proof it landed on the RIGHT element**, because a pattern cannot say what *kind*
+of element a reference must reach.
+
+The only remedy either has is the one the API layer takes: a member that only a human can supply
+is **required and guarded at runtime** rather than defaulted, which moves the judgement to the
+consumer instead of removing it. Whether the names that produces are good ones is a question no
+assertion answers and no gate can — see the by-hand checklist in each component's `.prompt.md`.
+
+### A static text scan was built, measured and cut — do not re-propose one
+
+A scan of component sources was implemented as the cheap tier beneath the render suites and run
+against the whole tree before being rejected. In the "claimed met but no textual evidence"
+direction it reported **60 of 118 true claims as unmet**, because of **implicit ARIA**: a native
+`<button>` satisfies `roles.element`, `keyboard.Space` and `keyboard.Enter` while leaving nothing
+to grep, and `<input type="checkbox">` satisfies `states.checked`. A text scan penalises exactly
+the correctly-authored components. In the "exception is now stale" direction it wrongly retired
+**18 of 94 live exceptions**, and none of the eighteen was a regex that could be sharpened: each
+was a claim about *placement*, *branch*, *conditional value* or *semantic completeness*. A
+rendered DOM resolves all four at once, which is why the render suites absorbed the
+stale-exception check instead of sharing it with a scan. A 51% false-unmet rate is worse than an
+honest hole.
+
+### A claim about code this repository does not own cannot be checked here
+
+`BehaviourDelegated.json` once asserted what a third-party library's controls did — that a
+control applied one role rather than another, that a tooltip defaulted to no show-delay — with
+no record of the version verified against. `check:behaviour` verifies that a declaration names a
+pattern and a requirement that exist, never that a claim about somebody else's package is still
+true, so the suite stays green while the reason strings quietly become false. Pinning the
+verified version and gating every delegation path were both proposed; neither is what closed it.
+**Writing Arena's own control did**, which also brought the component inside `check:dimensions`,
+`check:compliance` and the Angular arm of `check:api`. Any future delegation reopens this whole
+paragraph.
 
 ### Native semantics vs. an absent capability
 

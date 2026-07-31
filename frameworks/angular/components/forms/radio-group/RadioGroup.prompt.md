@@ -44,7 +44,8 @@ so this is the only place it is checked at all. Run `bun run demos` and open
   entirely rather than walking the other options.
 - Arrow Down/Right and Up/Left move the selection and wrap at both ends.
 - The disabled option is skipped while arrowing, and cannot be reached by Tab.
-- **Known gap, shared with `arena-checkbox` and with React**: the native input is
-  `opacity-0 size-0`, so keyboard focus paints no ring on the option's ring. Tab in and nothing
-  moves. Recorded in `DOUBTS.md`; the fix is a `has-[:focus-visible]:` treatment on the shared
-  manifest's `ring` slot, which moves React's parity with it.
+- Tab in and the focused option's **ring** takes a gold focus ring, though the focused element
+  is the `opacity-0 size-0` native input. The `ring` slot carries
+  `[&:has(~input:focus-visible)]:shadow-[…]`, which reaches the input as a later sibling — so the
+  input must stay after the ring in the template, and moving it removes the ring silently.
+  `arena-checkbox` and React's `Radio` draw the identical ring the identical way.

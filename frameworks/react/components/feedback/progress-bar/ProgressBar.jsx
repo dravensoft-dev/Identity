@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { srOnly } from '../../../DataVisuals.js';
 
 let injected = false;
 function useIndeterminate() {
@@ -32,7 +33,10 @@ export function ProgressBar({ progressPercentage = 0, indeterminate = false, ton
         className={indeterminate ? 'arena-prog-ind' : undefined}
         style={{ position: 'relative', height: h, borderRadius: 'var(--r-pill)', background: 'var(--color-base-300)', overflow: 'hidden', color }}>
         {!indeterminate && (
-          <span style={{ position: 'absolute', inset: 0, width: pct + '%', background: color, borderRadius: 'inherit', transition: 'width var(--dur-mid) var(--ease-out)' }} />
+          <>
+            <span style={srOnly}>{pct}%</span>
+            <span style={{ position: 'absolute', inset: 0, width: pct + '%', background: color, borderRadius: 'inherit', transition: 'width var(--dur-mid) var(--ease-out)' }} />
+          </>
         )}
       </div>
     </div>

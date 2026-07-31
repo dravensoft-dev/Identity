@@ -7,7 +7,7 @@ const TONES = {
 };
 
 export function ActivityFeed({ items, label, busy = false }) {
-  if (!label) throw new Error('ActivityFeed: `label` is required');
+  if (!label?.trim()) throw new Error('ActivityFeed: `label` is required');
   if (items == null) throw new Error('ActivityFeed: `items` is required');
 
   const feedRef = React.useRef(null);

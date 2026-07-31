@@ -356,8 +356,10 @@ mirrored React component that implements it. "Every other component has one"
 is not evidence — it is the failure mode.
 
 A manifest authored by reading a neighbour instead of the component it mirrors
-is how this defect arrives; [`DOUBTS.md`](../../DOUBTS.md) section 4 records the
-two occurrences that produced the rule. `bun run check:states`
+is how this defect arrives, and it arrived twice: a `hover:` copied from a
+near-identical variant of another component, and then three more in the very next
+batch, one commit after this rule was first written down — which is the evidence
+that prose alone did not prevent the second occurrence. `bun run check:states`
 (`scripts/check/arena/check-manifest-states.mjs`) catches the shape this rule describes —
 see below — but citing the source line is still the right first move, since the
 gate is crude by design and does not replace reading the component.
@@ -379,18 +381,20 @@ the reduced opacity that a sighted user would read as feedback. A bare
 `hover:bg-*` with no such blanket disabled treatment does not get this for
 free; guard it explicitly.
 
-## P3 — border-box is a table entry, not a paragraph
+## P3 — border-box arithmetic is computed, never summarised
 
-For every slot combining an explicit size with border or padding, both
-numbers go into the border-box table in [`DOUBTS.md`](../../DOUBTS.md) section 3, as part of the
-task that touches that slot. The table entry is the deliverable; the prose
-reasoning is not — and a conclusion of "does not apply" still requires
-computing and recording the same two numbers, not asserting the conclusion.
+`contracts/design/reset.css` sets `box-sizing: border-box` on everything, in every layer, so an
+explicit size is the OUTER edge and border and padding carve out of it. **Padding carves out of a
+border-box total exactly the way a border does**, and a prose summary is exactly where that term
+goes quietly missing: three passes over this rule got the numbers wrong the same way each time,
+by reasoning in sentences and dropping padding from the computation.
 
-**Padding carves out of a border-box total exactly the way a border does** — the rule
-earlier in this file says so explicitly — and a prose summary is where that term quietly
-goes missing, which is why the table entry rather than the paragraph is the
-deliverable. Compute both totals
-(content-box outer, border-box outer) from the actual utility values and the
-actual component source before writing the sentence that describes them, and
-put the two numbers in the table first.
+So for every slot combining an explicit size with a border or a padding, compute the content box
+from the actual utility values and the actual component source **before** writing the sentence
+that describes it, and state the arithmetic rather than the conclusion. A verdict of "does not
+apply" needs the same computation, not an assertion.
+
+**The reset is what makes this one rule instead of two.** Before it, the layers disagreed about
+the box model and every argument resting on the old default had to name its layer. Both are
+border-box now — which is also the trap: a repo-wide reset invalidates every argument that rested
+on the default it replaced, and those arguments are in prose that no gate reads.

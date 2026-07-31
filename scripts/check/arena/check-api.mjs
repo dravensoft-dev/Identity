@@ -1,7 +1,7 @@
 /* Asserts each API contract against every layer implementing it. There is no
  * exception map, and that is deliberate: a contract forbids divergence, so it has
  * nowhere for a second opinion to live. R2 and R3 are authoring rules no gate
- * asserts — see DOUBTS.md section 4. */
+ * asserts, and neither is a fact about source text -- contracts/api/README.md states why. */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

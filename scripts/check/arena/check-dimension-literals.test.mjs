@@ -589,7 +589,7 @@ test('a governed property name at the tail of a longer one is not that property'
   assert.deepEqual(scanText("const a = { strokeWidth: 'var(--bw)' };"), []);
   assert.deepEqual(scanText('const a = `max-width: 13px`;'), [],
     'a kebab-case declaration in a bare string is nobody\'s: scanText reads camelCase and scanInjectedCss '
-    + 'requires a rule body, which is the blind spot DOUBTS.md already records rather than one this fix adds');
+    + 'requires a rule body, which is the kebab-case blind spot the gate header records rather than one this fix adds');
   assert.deepEqual(scanText('const a = { maxWidth: 13 };').map((f) => f.prop), ['maxWidth']);
 });
 

@@ -450,34 +450,42 @@ test('arena-skeleton: the host itself carries the loading status, not a wrapper 
   assert.equal(host.children.length, 0, 'the default (non-stacked) variant renders no children of its own');
 });
 
-test('arena-breadcrumbs: the root recipe classes land on the host element itself', async () => {
+test('arena-breadcrumbs: the root recipe classes land on the <nav>, which is the carve-out', async () => {
   const fixture = createBreadcrumbsHost();
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-breadcrumbs') as HTMLElement;
+  const nav = host.querySelector('nav') as HTMLElement;
+  assert.ok(nav, 'the trail must render a real <nav>');
   for (const cls of breadcrumbsStyles().root().split(/\s+/))
-    assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
+    assert.ok(nav.classList.contains(cls), `the nav is missing root class "${cls}"`);
   fixture.destroy();
 });
 
-test('arena-breadcrumbs: a consumer-supplied class on the host survives the [class] binding', async () => {
+test('arena-breadcrumbs: a consumer attribute lands on the inert host, not on the styled <nav>', async () => {
   const fixture = createBreadcrumbsHost();
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-breadcrumbs') as HTMLElement;
+  const nav = host.querySelector('nav') as HTMLElement;
   assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
+  assert.ok(!nav.classList.contains('consumer-class'),
+    'this is the price of the carve-out and it matches arena-activity-feed: a host that renders a required '
+    + 'semantic element inside it gives the consumer no route to that element');
   fixture.destroy();
 });
 
-test('arena-breadcrumbs: the host itself carries the nav landmark, not a wrapper inside it', async () => {
+test('arena-breadcrumbs: a real <nav> carries the landmark, rather than role="navigation" on the host', async () => {
   const fixture = createBreadcrumbsHost();
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-breadcrumbs') as HTMLElement;
-  assert.equal(host.getAttribute('role'), 'navigation');
-  assert.equal(host.getAttribute('aria-label'), 'Project navigation',
+  const nav = host.querySelector('nav') as HTMLElement;
+  assert.equal(host.getAttribute('role'), null,
+    'the pattern offers role="navigation" for when <nav> cannot be used, and here it can');
+  assert.equal(nav.getAttribute('aria-label'), 'Project navigation',
     'the landmark name must come from the ariaLabel input, not from a constant the component owns');
-  assert.equal(host.children.length, 0, 'with no items, the trail renders no crumbs of its own');
+  assert.equal(nav.children.length, 0, 'with no items, the trail renders no crumbs of its own');
   fixture.destroy();
 });
 

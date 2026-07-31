@@ -21,11 +21,9 @@ separate "dismiss" callback to wire.
 
 **The accessible name is a fallback chain**, `step.title ?? step.eyebrow ?? "Step N of M"`,
 matching what the Angular layer computes. **A caller who wants a useful name still supplies a
-step `title`** — a positional name is a floor, not a substitute. On a step with neither
-`title` nor `eyebrow` the dialog is announced as `Step 2 of 3`, which is the exact string the
-progress dots inside it already carry as their own `aria-label`, so a screen reader announces
-the two identically. That is the cost of keeping `OnboardingStep.title` optional and is
-mirrored from Angular deliberately, not an oversight.
+step `title`** — a positional name is a floor, not a substitute. The progress dots inside the
+panel carry a name of their own, `Progress: step N of M`, so an untitled step announces the
+dialog and its dots as two different things rather than as the same string twice.
 
 **Checked in Chromium by hand**, because native sequential focus navigation is the browser's
 and no suite in this repo drives one: with the tour open, Tab repeatedly through Back / Skip /

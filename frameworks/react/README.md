@@ -54,7 +54,28 @@ BarChart, LineChart, DoughnutChart — dependency-free SVG) and `brand/` (AppLog
 A file that is not one component's rises to the narrowest level containing all of its
 consumers, and a compound family counts as its parent rather than as the category. The
 layer root holds the generated `Api.generated.d.ts` and `Tokens.generated.js` plus three
-shared internals: `DataVisuals.js`, `UseContainerWidth.js` and `UseDialogModal.js`.
+shared internals: `DataVisuals.js`, `UseContainerWidth.js` and `UseDialogModal.js` — that
+last one because its suite counts as a consumer: its three component consumers are all in
+`feedback/`, but `test/UseDialogModal.dom.test.jsx` is one too.
+
+**`UseDialogModal.js` is a PORT of `frameworks/angular/FocusTrap.ts`, not a second design** —
+the same focusable selector, the same boundary-wrap rule, the same never-cache-the-focusables
+rule, the same open/close transition. It is one shape wider: Angular handles Tab only and keeps
+Escape in each component's own `onKeydown`, where this hook folds Escape into the handler it
+returns, always reporting through the component's **own** dismissal channel (`onClose`,
+`onCancel`, `onSkip`), so meeting the pattern adds no member anywhere.
+
+**Every natively-focusable clause in the selector carries its own `:not([tabindex="-1"])`**,
+because a selector list is OR'd: `button:not([disabled])` alone would pull a real
+`<button tabindex="-1">` back into the tab order. **The rule that a component is self-contained
+is about CSS classes, not about JS helpers.**
+
+**What a suite can prove about the trap, and what it cannot.** The boundary wrap is Arena's own
+`.focus()` call and happy-dom honours `.focus()`, so it is asserted for real. The **interior** —
+that Tab from a control in the middle reaches the next one — is the browser's native sequential
+focus navigation, which neither layer implements and happy-dom does not have; a test asserting it
+would pass identically against a perfect trap and against none. So the interior is checked by a
+person in real Chromium against the written checklist in each component's `.prompt.md`.
 
 - `ui-kits/console/` — the Delivery Console example app (login → dashboard → project).
 - `vendor/` — a committed, generated CommonJS→ESM bundle of React for the demo pages'

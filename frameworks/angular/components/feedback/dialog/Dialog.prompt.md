@@ -28,7 +28,10 @@ the action row is not rendered at all rather than rendered empty. **Import `Aren
 `frameworks/angular/ProjectionMarkers` in the component that writes the marker.** The gate is a
 `contentChild(ArenaFooter)`, which resolves the directive rather than the attribute, so an
 un-imported marker leaves the query null and the whole footer silently unrendered — no error, no
-template diagnostic. `DOUBTS.md` records it; nothing catches it.
+template diagnostic, since a bare `footer` attribute on a `<div>` is valid HTML whether or not a
+directive matches it. The component cannot detect it — it cannot tell "the marker was not
+imported" from "nothing was projected". `test/ProjectionMarkers.test.ts` catches every consumer
+inside this repository; nothing can reach one outside it.
 
 Focus is Arena's, in `frameworks/angular/FocusTrap.ts`, and it is a port of React's
 `UseDialogModal.js` rather than a second design. Opening moves focus to the first focusable

@@ -1,7 +1,7 @@
 /* Both requirements of `navigation` are decidable from one element, so there is
- * no behavioural map. The host IS the landmark -- the root slot is bound to the
- * host rather than rendered as a wrapper -- so the subject is the fixture's own
- * element and not something inside it. */
+ * no behavioural map. The landmark is a real <nav> INSIDE the fixture, taking the
+ * carve-out the host rule provides for a root that must be a specific semantic
+ * element -- so the subject is that element and not the fixture's own. */
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 useTestEnvironment();
 
@@ -24,20 +24,38 @@ function render(ariaLabel: string) {
   return fixture;
 }
 
+function landmark(fixture: ReturnType<typeof render>): Element {
+  const nav = (fixture.nativeElement as Element).querySelector('nav');
+  assert.ok(nav, 'the trail must render a real <nav>, which is what the pattern asks for when one can be used');
+  return nav;
+}
+
 test('arena-breadcrumbs is a named nav landmark, and two of them are told apart', () => {
   const fixture = render('Project navigation');
   const other = render('Client navigation');
   try {
-    const host = fixture.nativeElement as Element;
-    assert.equal(host.getAttribute('aria-label'), 'Project navigation',
+    const nav = landmark(fixture);
+    assert.equal(nav.getAttribute('aria-label'), 'Project navigation',
       'the name must come from the ariaLabel input, not a constant the component owns');
-    assert.notEqual((other.nativeElement as Element).getAttribute('aria-label'), host.getAttribute('aria-label'),
+    assert.equal(nav.getAttribute('role'), null,
+      'a real <nav> carries the landmark natively, so role="navigation" on top of it is noise');
+    assert.notEqual(landmark(other).getAttribute('aria-label'), nav.getAttribute('aria-label'),
       'two trails on one page must be distinguishable, which the retired hardcoded label made impossible');
 
-    assertPattern({ root: host, bindingPath: BINDING, subjects: { default: host } });
+    assertPattern({ root: fixture.nativeElement as Element, bindingPath: BINDING, subjects: { default: nav } });
   } finally {
     fixture.destroy();
     other.destroy();
+  }
+});
+
+test('the host is out of layout, so the <nav> is the box a parent row lays out', () => {
+  const fixture = render('Project navigation');
+  try {
+    assert.match((fixture.nativeElement as Element).getAttribute('style') ?? '', /display:\s*contents/,
+      'a bare host that is not display:contents lays out as an inline box between the parent and the nav');
+  } finally {
+    fixture.destroy();
   }
 });
 

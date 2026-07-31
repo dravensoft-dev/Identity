@@ -107,11 +107,15 @@ test('the accessible name comes from label alone, and a bar without one refuses 
   }
 });
 test('the head always carries the label, and never shows a percentage for a bar that has none', () => {
+  const head = (fixture: ReturnType<typeof renderBar>) =>
+    (fixture.nativeElement as Element).firstElementChild?.textContent ?? '';
+
   const bare = renderBar({ progressPercentage: 10, showPercentage: false, label: 'Uploading' });
   try {
-    const text = (bare.nativeElement as Element).textContent ?? '';
+    const text = head(bare);
     assert.ok(text.includes('Uploading'), 'label is required, so the head always has something to say');
-    assert.ok(!text.includes('%'), 'showPercentage false means no percentage, whatever the value is');
+    assert.ok(!text.includes('%'),
+      'showPercentage false means no VISIBLE percentage, whatever the value is -- the live region keeps its own');
   } finally {
     bare.destroy();
   }
@@ -154,5 +158,30 @@ test('arena-progress-bar meets both of its declared cases', () => {
     });
   } finally {
     for (const fixture of fixtures) fixture.destroy();
+  }
+});
+
+test('the value the live region announces is INSIDE the live region, not in a sibling outside it', () => {
+  const fixture = renderBar({ progressPercentage: 42, label: 'Uploading' });
+  try {
+    const region = track(fixture);
+    assert.equal(region.getAttribute('aria-live'), 'polite', 'precondition: the track is the live region');
+    assert.match(
+      region.textContent ?? '',
+      /42%/,
+      'the region announces changes to its CONTENT, and reporting progress by mutating aria-valuenow alone '
+      + 'leaves a polite region whose content never changes',
+    );
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('an indeterminate bar announces no value, so the region carries no percentage text either', () => {
+  const fixture = renderBar({ indeterminate: true, label: 'Uploading' });
+  try {
+    assert.equal((track(fixture).textContent ?? '').trim(), '', 'an indeterminate bar has no value to announce');
+  } finally {
+    fixture.destroy();
   }
 });

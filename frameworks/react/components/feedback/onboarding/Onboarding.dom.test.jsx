@@ -66,10 +66,26 @@ test('Onboarding still dismisses on a scrim click -- the mouse path Escape joins
   const container = mount(
     <Onboarding open steps={THREE_STEPS} index={1} onSkip={() => { skipped = true; }} />,
   );
-  const scrim = container.querySelector('[role="dialog"]').previousElementSibling;
-  assert.notEqual(scrim, null, 'precondition: the panel has a scrim sibling before it');
+  const scrim = container.querySelector('[role="dialog"]').parentElement;
+  assert.notEqual(scrim, null, 'precondition: the panel sits inside the scrim');
   click(scrim);
   assert.equal(skipped, true, 'the scrim click must still dismiss');
+});
+
+test('a click inside the panel does not reach the scrim, which is what stopPropagation buys once they share an ancestor', () => {
+  let skipped = false;
+  const container = mount(
+    <Onboarding open steps={THREE_STEPS} index={1} onSkip={() => { skipped = true; }} onBack={() => {}} onNext={() => {}} />,
+  );
+  const panel = container.querySelector('[role="dialog"]');
+  assert.equal(panel.parentElement.getAttribute('role'), null, 'precondition: the scrim is the panel\'s ancestor, not a sibling');
+
+  click(panel);
+  assert.equal(skipped, false, 'a click on the panel body dismissed the tour');
+
+  const back = [...panel.querySelectorAll('button')].find((b) => b.textContent === 'Back');
+  click(back);
+  assert.equal(skipped, false, 'a click on Back dismissed the tour through the scrim listener behind it');
 });
 
 test('Onboarding moves focus to the first focusable inside the panel on open -- focus.onOpen is met', () => {
@@ -115,7 +131,7 @@ test('Onboarding restores focus to the invoker on close -- focus.onClose is met'
 
   assert.equal(document.activeElement, panel.querySelector('button'), 'precondition: opening put focus inside the coachmark');
 
-  click(panel.previousElementSibling);
+  click(panel.parentElement);
   assert.equal(container.querySelector('[role="dialog"]'), null, 'precondition: the scrim click really closed the coachmark');
 
   assert.equal(document.activeElement, invoker, 'focus was not restored to the invoker that opened the coachmark');
@@ -165,6 +181,11 @@ test('Onboarding falls back to a positional name when the step has neither title
   );
   const panel = container.querySelector('[role="dialog"]');
   assert.equal(panel.getAttribute('aria-label'), 'Step 2 of 3', 'a step with no editorial text must still name the dialog positionally');
-  const dots = panel.querySelector('[aria-label="Step 2 of 3"]:not([role="dialog"])');
-  assert.notEqual(dots, null, 'the collision this fallback carries is with the dots label, and it is recorded rather than dodged');
+  const dots = panel.querySelector('[aria-label^="Progress"]');
+  assert.notEqual(dots, null, 'precondition: the progress dots carry a name of their own');
+  assert.notEqual(
+    dots.getAttribute('aria-label'),
+    panel.getAttribute('aria-label'),
+    'the dots and the panel that contains them announce identically, so a screen reader reads one name twice',
+  );
 });

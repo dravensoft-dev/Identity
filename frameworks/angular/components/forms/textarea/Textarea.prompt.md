@@ -28,11 +28,14 @@ a real `<textarea>`, named by a real `<label for>`.
   does not ask for the count to be shown. Past nine tenths of the cap the counter switches to the
   warning slot — a different slot, not a variant, which is why the manifest names two.
 - `autoResize` forces `resize: none` and grows the box from its own `scrollHeight`.
-  **This layer resizes on more occasions than React's does, deliberately.** React grows only in
-  its change handler, so a value set programmatically leaves the box its old height; Angular runs
-  the same measurement in an `afterRenderEffect` that reads `value()`, so mount and every
-  programmatic change size it too. That is a fix rather than a divergence to preserve, and it is
-  recorded in `DOUBTS.md` as such.
+  **It resizes on mount and on every programmatic change, not only while typing**, through an
+  `afterRenderEffect` that reads `value()` — so a draft loaded from a server or a template
+  inserted by a button sizes the box immediately. React runs the same measurement from a
+  `useEffect` on `value`. **`scrollHeight` is content plus padding and never the border**, so a
+  border-box element needs `offsetHeight - clientHeight` added or the box lands short and keeps a
+  permanent scrollbar: measured before the fix at 720x340, `scrollHeight` 199 set as the height
+  left `clientHeight` 197 and a scrollbar on a box just grown past it. Both layers carry the term,
+  and no suite can see it — happy-dom has no layout and reports `scrollHeight` as `0`.
 - `rows` is the *initial* height and still applies under `autoResize` — it is what the box is
   before it has content to measure.
 - `required` and `readOnly` land on the native attributes rather than on `aria-required` and

@@ -43,3 +43,21 @@ focus, but the description never reaches anyone.
   </>
 </Tooltip>
 ```
+
+**How `aria-describedby` reaches the trigger, and the one shape it still cannot.** The attribute
+is written twice on purpose: `cloneElement` puts it in the server-rendered HTML before hydration,
+and an effect writes it onto the **resolved node** afterwards. The effect is what covers a child
+that accepts the prop and drops it — invisible to a clone, and perfectly visible in the DOM.
+Arena's own components forward the props they *declare* and drop the rest, so every suite
+assertion using a raw `<button>` proved a case the demo pages did not have. Two failing shapes now
+throw outright: a bare string, and a **fragment** — the trap, because `React.isValidElement` is
+true for one, so the clone succeeded and the attribute reached nothing at all, in silence.
+**Unpromised:** a child rendering no DOM node of its own at the wrapper's first position, or one
+that re-parents its content, is outside what an effect reading `firstElementChild` can reach.
+
+**The bubble is in flow, so an ancestor with `overflow: hidden` clips it** and it cannot leave a
+scroll container. `arena-tooltip` renders through a `@angular/cdk/overlay` pane on `document.body`
+and escapes both — that layer took the CDK dependency precisely so trigger-anchored positioning,
+viewport flipping and reposition-on-scroll are not hand-rolled. Fixing React means a portal or a
+popover, which is a new capability rather than a defect: place a tooltip where its trigger is not
+inside a clipping ancestor, or move to the Angular layer where it matters.

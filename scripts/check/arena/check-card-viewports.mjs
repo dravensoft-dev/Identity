@@ -1,3 +1,10 @@
+/* Loads every @dsCard page at its declared width and fails when content over-runs the box,
+ * because the card is cropped to it and the overflow is lost silently.
+ * The content height takes the MAX of two metrics and neither alone is the content bottom:
+ * the descendant scan sees an absolutely-positioned overlay but never a trailing collapsed
+ * margin, and body's border-box bottom sees that margin -- it lands inside body's box only
+ * because the harness gives body bottom padding -- but never the out-of-flow overlay.
+ * Removing either term reopens one case silently, since the gate only fails on clip. */
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';

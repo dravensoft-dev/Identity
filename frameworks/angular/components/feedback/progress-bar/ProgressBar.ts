@@ -25,6 +25,7 @@ export function clampPercentage(value: number): number {
          aria-valuemin="0" aria-valuemax="100"
          [attr.aria-label]="label()">
       @if (!indeterminate()) {
+        <span [class]="styles().announcement()">{{ percentage() }}%</span>
         <span [class]="styles().fill()" [style.width.%]="percentage()"></span>
       }
     </div>

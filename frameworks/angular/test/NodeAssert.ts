@@ -3,7 +3,9 @@
  * cost is set by the tree the node hangs in, not by what it is compared against, and it is
  * what exhausts the run rather than what reports the defect. These compare identity and
  * render the operands themselves, so a failure names the node and stays one line.
- * DOUBTS.md carries the measurement. */
+ * Measured on a THREE-element body, as AssertionError message length: two detached buttons
+ * 1,441; two connected 12,755; a connected button against null 285,795; document.body against
+ * a connected button 518,563. Comparing against null is not the safe case. */
 
 import assert from 'node:assert/strict';
 

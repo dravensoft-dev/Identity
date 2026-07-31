@@ -11,7 +11,7 @@
     "defaultExpanded": { "form": "primitive", "type": "boolean", "default": false,
                          "description": "Whether the group starts open. It is a seed, not a control: after the first render the state is the component's, and the group also opens itself when it comes to hold the active destination." },
     "content": { "form": "slot",
-                 "description": "What the group holds -- items, sections, further collapsibles. Each is re-injected one nesting level deeper." },
+                 "description": "What the group holds -- items, sections, further collapsibles. Each sits one nesting level deeper." },
     "toggle": { "form": "event", "payload": "boolean",
                 "description": "The trigger was pressed, carrying the state it moved to. It fires on a press ONLY: the automatic expansion that follows the active destination is Arena's decision rather than the user's, and reporting it here would be a lie a consumer persists." }
   }

@@ -29,9 +29,10 @@ close, and Tab wraps at the panel's edges.
   `title` attribute, whose host here is the fixed full-viewport scrim, so the browser
   paints a tooltip over the **entire viewport** for as long as the dialog is open.
   `[title]="'Delete project X'"` or `[title]="projectName()"` sets the input alone.
-  This is a live defect of nine primitives, recorded in DOUBTS.md section 4;
-  the spelling above is the workaround until `'[attr.title]': 'null'` is applied
-  across all of them.
+  This host clears the attribute (`'[attr.title]': 'null'`) and
+  `test/HostClassBinding.test.ts` holds that layer-wide in both directions — a primitive
+  taking the input and not clearing it fails, and so does one clearing an attribute it
+  takes no input for. The binding above is the clearer spelling, not a workaround.
 - Use `requireText` when the action is genuinely irreversible, and use the name of the
   thing being destroyed as the word.
 - Don't reach for `destructive` on a merely inconvenient action. The filled red is the

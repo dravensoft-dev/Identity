@@ -7,6 +7,7 @@ export default {
     "label": "font-body text-ctl-md text-base-content/82",
     "value": "font-mono text-ctl-sm text-base-content/62",
     "track": "relative rounded-pill bg-base-300 overflow-hidden",
+    "announcement": "sr-only",
     "fill": "absolute inset-0 bg-current rounded-[inherit] transition-[width] duration-[var(--dur-mid)] ease-out",
     "indeterminate": "arena-prog-indeterminate"
   },

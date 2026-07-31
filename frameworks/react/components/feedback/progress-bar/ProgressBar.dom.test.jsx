@@ -51,3 +51,17 @@ test('ProgressBar meets the progressbar pattern in both of its declared cases', 
     },
   });
 });
+
+test('the value the live region announces is INSIDE the live region, not in a sibling outside it', () => {
+  const root = mount(<ProgressBar label="Deploying build #4821" progressPercentage={64} />);
+  const el = bar(root);
+  assert.equal(el.getAttribute('aria-live'), 'polite', 'precondition: the track is the live region');
+  assert.match(el.textContent, /64%/,
+    'the region announces changes to its CONTENT, and reporting progress by mutating aria-valuenow alone '
+    + 'leaves a polite region whose content never changes');
+});
+
+test('an indeterminate bar announces no value, so the region carries no percentage text either', () => {
+  const root = mount(<ProgressBar indeterminate label="Connecting" />);
+  assert.equal(bar(root).textContent.trim(), '', 'an indeterminate bar has no value to announce');
+});

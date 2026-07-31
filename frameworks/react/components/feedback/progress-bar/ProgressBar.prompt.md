@@ -22,8 +22,11 @@ which is what that name means everywhere else in this library. `showPercentage` 
 - Don't pass markup as `label`. It is a plain string, precisely so the accessible name is the
   same words the sighted reader sees.
 - Don't replace a result Toast with the bar; the bar reports progress, the Toast reports the outcome.
-- Don't rely on the bar to *speak* its progress. It carries `aria-live="polite"` because
-  `role="progressbar"` has no implicit live region, but it reports its value through the
-  `aria-valuenow` **attribute** while the percentage text sits outside that region — whether any
-  screen reader announces that is untested here and varies by AT. Announce a milestone that
-  matters with a `Toast`.
+- Don't expect the bar to narrate every step. It carries `aria-live="polite"` because
+  `role="progressbar"` has no implicit live region, and the percentage is repeated inside that
+  region as visually-hidden text so the announcement is an ordinary content change rather than
+  an attribute-only one — but a bar that ticks continuously is chatty by construction. Announce
+  a milestone that matters with a `Toast`.
+- Don't read `showPercentage={false}` as silence. It drops the number beside the label; the
+  region keeps its own copy, because hiding a number visually is a layout choice and not a
+  reason to stop reporting progress.

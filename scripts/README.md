@@ -67,7 +67,8 @@ because a domain is a statement about subject matter, not a visibility boundary.
 the same domain, not merely somewhere under `lib/`.
 
 **A file here may carry one header comment, at most ten lines** — the exception `check:docs`
-grants `scripts/` and test files. Everything else it has to say goes in `DOUBTS.md`.
+grants `scripts/` and test files. Anything that will not fit goes in the gate's own reason
+strings, which its paired suite already asserts by name.
 
 **A test under `scripts/` may not import a framework layer's `.ts` or `.jsx`.** `check-all.mjs`
 also runs these suites under plain node, which cannot resolve the extensionless imports those

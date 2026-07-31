@@ -18,10 +18,12 @@ reporting zero — zero is a determinate claim that no progress has been made. `
 `aria-valuemax` stay, because they are still true. It also hides the percentage whatever
 `showPercentage` says: there is no percentage to show.
 
-**The live region is explicit.** `role="progressbar"` carries no implicit politeness the way
-`role="status"` does, so the track sets `aria-live="polite"` itself. That is the one thing
-`MatProgressBar` never did — it set no `aria-live` at all — and it is why both of the delegated
-binding's cases carried an exception that this primitive clears.
+**The live region is explicit, and it has content to announce.** `role="progressbar"` carries no
+implicit politeness the way `role="status"` does, so the track sets `aria-live="polite"` itself.
+A live region reports changes to its **content**, so the percentage is repeated inside the track
+as visually-hidden text: reporting progress through the `aria-valuenow` attribute alone leaves a
+polite region whose content never changes, and whether an AT announces that at all varies by AT.
+`showPercentage` governs the visible number beside the label and never this copy.
 
 `label` names the bar for assistive technology and heads it visually. With none, the accessible
 name falls back to `Progress`, which is honest but says nothing about what is progressing —

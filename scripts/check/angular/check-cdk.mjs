@@ -2,8 +2,7 @@
  * that resolves to nothing, and a class the CDK renamed upstream leaving the override
  * matching nothing. This gate DOES examine the selectors — it can, because the bridge's whole
  * job is overriding a class the prebuilt sheet defines, and that sheet is the oracle.
- * What it still cannot check is whether the override is the RIGHT value for that class.
- * DOUBTS.md section 5 states that limit. */
+ * What it still cannot check is whether the override is the RIGHT value for that class. */
 
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

@@ -1,7 +1,7 @@
 import React from 'react';
 
 export function RadioGroup({ value, onChange, name, ariaLabel, children }) {
-  if (!ariaLabel) throw new Error('RadioGroup: `ariaLabel` is required');
+  if (!ariaLabel?.trim()) throw new Error('RadioGroup: `ariaLabel` is required');
   const gname = name || 'rg-' + Math.random().toString(36).slice(2, 7);
   const items = React.Children.map(children, (child) =>
     React.isValidElement(child)

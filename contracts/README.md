@@ -141,5 +141,5 @@ top.
 
 - `SKILL.md` — the plugin-root Agent Skill, also usable standalone.
 - `.claude-plugin/` — the Claude Code plugin manifest and marketplace catalog.
-- `DOUBTS.md` — everything Arena knows is wrong, incomplete, or unverified.
+- `DOUBTS.md` — what counts as a debt in Arena, and where the records live.
 - `CHANGELOG.md` — version history.

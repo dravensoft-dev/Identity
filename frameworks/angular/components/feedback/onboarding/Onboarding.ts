@@ -44,7 +44,7 @@ import type { OnboardingAnchor, OnboardingStep } from '../../../Api.generated';
           <div [class]="styles().body()">{{ body }}</div>
         }
         <div [class]="styles().foot()">
-          <div [class]="styles().dots()" [attr.aria-label]="'Step ' + (index() + 1) + ' of ' + steps().length">
+          <div [class]="styles().dots()" [attr.aria-label]="'Progress: step ' + (index() + 1) + ' of ' + steps().length">
             @for (dot of steps(); track $index) {
               <span [class]="styles().dot() + ' ' + ($index === index() ? styles().dotOn() : styles().dotOff())"></span>
             }
