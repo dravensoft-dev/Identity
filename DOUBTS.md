@@ -569,6 +569,28 @@ stale-proof; a present-tense component name is not.
   the suite first. `SideNavItem` is the third; see its own entry below. `Tab` is **not** one
   of these — its condition is being composed inside `Tabs` rather than any prop of its own,
   which is the parent-composition level `cases` do not reach.
+- **`check:dimensions` read a governed property out of the TAIL of a longer one, and the report
+  named a site that was not the defect.** `PROP_COLON` excluded a preceding word character or dot
+  and **not a hyphen**, so `stroke-width:` matched as `width`. Having matched, the value reader ran
+  past the closing quote of the string it was in and swallowed whatever followed — then judged
+  *that* as a bare literal. The reproduction is two lines:
+
+  ```js
+  const a = 'stroke-width: var(--bw);';
+  const b = 'p95 line chart';
+  ```
+
+  which reported `width` with a raw value of `var(--bw);';\nconst b = 'p95 line chart';`. Note
+  what it takes to surface: the second string must contain a digit, or the swallowed span holds
+  nothing the value scanner calls a literal and the whole thing passes silently. **So the defect
+  was latent for as long as no test file happened to put a number in a string near an SVG stroke
+  assertion** — it surfaced when a chart's demo series was named `p95 latency`.
+  `scanAttributes`, two functions below, already carried `(?<![\w.-])` with the hyphen: the
+  intended form was in the file the whole time and one of the two regexes had it. Fixed, with
+  both directions pinned — the tail case reports nothing, a real `{ width: 13 }` still reports.
+  **The lesson is about the message rather than the match**: a gate that mis-locates a defect is
+  worse than one that misses it, because the report sends a reader to a file that is correct.
+
 - **A behaviour text scan was designed, built, measured and rejected — do not
   re-propose it without reading this.** Plan 7c's spec proposed a static scan of
   component sources as the cheap tier beneath the render suites. It was
@@ -1076,37 +1098,30 @@ stale-proof; a present-tense component name is not.
   `frameworks/tailwind/`**, whose manifests are reached by glob rather than by a barrel, so
   there is nothing there to be missing from.
 
-- **A chart's `aria-label` is checked for existence, never for usefulness, and the
-  charts fall back to a name that is only their type.** `figure-with-data-table`'s
-  `roles.label` requires "aria-label naming the chart", and
-  `frameworks/angular/components/charts/ChartDataTable.test.ts` proves the three verifiable
-  parts of that pattern against a real render — the `<table>` exists, it is
-  visually hidden rather than absent, and its cells pair each category with its
-  plotted value. It cannot prove the fourth. All three charts now have a
-  consumer-supplied name path — `seriesLabel`, which `DoughnutChart` gained when the
-  charts came under the API contract, so the earlier worst case of a literal with no
-  caller path at all is closed — and all three still fall back to a name that is only
-  their type when none is given: `BarChart.ts` emits the constant `Bar chart`,
-  `LineChart.ts` and `DoughnutChart.ts` the same. **The debt that remains is the
-  harder half: a name that is *present* is never checked for being *useful*.** A
-  fallback satisfies the requirement mechanically while telling a screen-reader user
-  nothing — a page with two bar charts on it announces both identically — and a
-  `seriesLabel` of `"Chart"` would satisfy it just as mechanically. No assertion
-  separates a present name from a useful one; that is human judgement, and the suite
-  pins the fallback rather than faking a verdict on it. The React charts do the same
-  thing and are not covered by a suite at all.
+- **CLOSED: a name that is present is no longer allowed to be useless, for the charts and for
+  `ProgressBar`.** `figure-with-data-table`'s `roles.label` requires "aria-label naming the
+  chart", and a suite can assert a name resolves — never that it is a good one. All three charts
+  fell back to a name that was only their TYPE (`Bar chart`, `Line chart`, `Doughnut chart`) when
+  no `seriesLabel` was given, and `ProgressBar.jsx` fell back to `aria-label={label || 'Progress'}`.
+  Each satisfied its pattern mechanically while telling a screen-reader user only what the
+  component is: **two bar charts on one page announced identically, and so did two progress bars.**
 
-  **`ProgressBar` is the same defect outside the charts**, and it is worth naming here
-  rather than in a second entry because the mechanism is identical: `ProgressBar.jsx`
-  falls back to `aria-label={label || 'Progress'}`, which satisfies the `progressbar`
-  pattern's `roles.label` mechanically while telling a screen-reader user only what the
-  component is. Two progress bars on one page announce identically. Unlike the charts it
-  now IS covered by a suite —
-  `frameworks/react/components/feedback/progress-bar/ProgressBar.dom.test.jsx` — and that
-  changes nothing about this half: the suite proves a name resolves, which is exactly the
-  check that cannot tell a useful name from a present one. `Table.label` and
-  `SegmentedControl.ariaLabel` are what the fix looks like when it is taken: required and
-  guarded at runtime rather than defaulted.
+  `seriesLabel` and `ProgressBar.label` are **required and guarded** now, in both layers and in
+  the contract — the shape `Table.label` and `SegmentedControl.ariaLabel` already had, and which
+  this entry named as "what the fix looks like when it is taken". React throws with a message
+  saying what the member names and that nothing can derive it; Angular's `input.required` refuses
+  the render. The dead `?? 'Value'` fallback on each table's value-column header went with them.
+
+  **What made the change safe to take was the AOT compiler**, and it is worth recording as the
+  argument for that harness: making the input required turned every Angular call site that
+  omitted it into an NG8008 at **build** time, naming the file and the line, before a single test
+  ran. The React side had to be found by running suites. Same change, two very different
+  discovery costs.
+
+  **What is NOT closed is the general problem**, and it cannot be: no assertion separates a
+  present name from a useful one. A `seriesLabel` of `"Chart"` satisfies the requirement exactly
+  as the fallback did. What the change removes is Arena *shipping* the useless name by default;
+  the consumer can still supply one, and that is human judgement by construction.
 
 - **Whether the explicit `aria-live` on `ProgressBar` and `Spinner` causes any real
   announcement is UNVERIFIED, and the batch that added it over-claimed.** Both components
@@ -1306,16 +1321,24 @@ stale-proof; a present-tense component name is not.
   and read by no gate, so nothing would catch the contract and the implementation drifting apart
   again. That half is recorded with the rest of `check:api`'s reach.
 
-- **The two required slots in the repo are treated oppositely at runtime, and only one of
-  the two treatments has a stated reason.** `Tooltip.content` deliberately takes **no**
-  guard: `compareSurface` excludes slots from required-ness comparison, because Angular's
-  `<ng-content>` cannot express mandatory, so a `children` guard would enforce in React
-  something the contract can never hold Angular to. `AppLogo.mark` is the only other
-  required slot and **is** guarded — `if (!mark || !name) throw`. Both cannot be right. If
-  the `Tooltip` reasoning holds, `AppLogo` is now wrong and its guard is a React-only
-  invariant the contract does not carry; if `AppLogo` is right, the rule is that a required
-  slot is enforced per layer and `Tooltip` owes a guard. Nothing decides it, and no gate
-  can: the exclusion in `compareSurface` is what makes both pass.
+- **CLOSED: every required slot in the repo is guarded, and the "two-and-two split" this entry
+  described had already closed itself.** It recorded `Tooltip.content` as deliberately unguarded
+  and `AppLogo.mark` as guarded, called the two irreconcilable, and later added
+  `Menu.trigger` (unguarded) and `SideNavSection.content` (guarded) to make it two-and-two and
+  "settle nothing". **Rendered rather than read, all four throw.** `Tooltip` and `Menu` reject an
+  absent slot through `!React.isValidElement(children)`, because `React.isValidElement(undefined)`
+  is false — guards written to catch a *fragment*, which reject *absence* as a side effect.
+
+  So the rule holds by accident, and an accident is not a guarantee. It is one now:
+  `frameworks/react/test/RequiredSlots.test.jsx` **derives** the set from the contracts rather
+  than listing it, renders each component without its required slot, and asserts a throw whose
+  message names the component — so a fifth required slot joins by being declared, a retired one
+  cannot sit there unnoticed, and an empty set fails. Watched failing against a `Tooltip` whose
+  guard was made absence-tolerant.
+  **Why this needed a suite at all is the durable half**: `compareSurface` excludes slots from
+  its required-ness comparison, because Angular's `<ng-content>` cannot express mandatory. That
+  exclusion is correct and it means a contract declaring `"required": true` on a slot holds React
+  to something **no gate checks**. This is that check.
 
 - **`Tabs`'s total-exception `tabs` binding was paid down, and what that cost is worth
   recording.** The prior entry here named a deliberate asymmetry: `Calendar` and `Table`
@@ -1547,14 +1570,16 @@ stale-proof; a present-tense component name is not.
   required slots (`grep -rn '"form": "slot", "required": true' contracts/api/components/`) rather than
   trusting an ordinal here** — this entry's own "THIRD" went stale in one batch.
 
-- **`ConfirmDialog.open` is the one modal of four that is neither required nor guarded.**
-  `Dialog`, `Onboarding` and `CommandPalette` all declare `open` `required: true` and throw on
-  absence; `ConfirmDialog.json` declares `default: false` and its implementation destructures
-  `open = false` with no guard. 8C4 rewrote the `title` member on the adjacent line and left
-  this alone. Defensible — `false` is a sensible default for a dialog and the other three have
-  none — but nothing anywhere records it as a decision, and `Dialog.jsx`'s own guard comment
-  names `CommandPalette` and `Onboarding` as its precedent while pointedly omitting its nearest
-  sibling.
+- **CLOSED: `ConfirmDialog.open` is required and guarded, like the other three modals.** It was
+  the one modal of four that was neither: `Dialog`, `Onboarding` and `CommandPalette` all declared
+  `open` required and threw on absence, while `ConfirmDialog` declared `default: false` and
+  destructured `open = false` with no guard — **in both layers**, consistently, which is why
+  nothing had ever flagged it. It was defensible, and what it was not was written down anywhere as
+  a decision, while `Dialog.jsx`'s own guard comment named `CommandPalette` and `Onboarding` as
+  its precedent and pointedly omitted its nearest sibling.
+  The rule now applies to all four: **a modal's visibility is the host's state, and defaulting it
+  hides a wiring mistake** — a `ConfirmDialog` whose `open` was never wired renders nothing
+  forever and looks like a working closed dialog.
 
 - **`SideNavCollapsible` is a stack of independent disclosures and is deliberately NOT a
   treeview. What that costs a screen-reader user is real.** With arbitrary nesting the rendered
@@ -1928,27 +1953,19 @@ stale-proof; a present-tense component name is not.
   compares two token values for being distinct, and nothing could without knowing which pairs are
   meant to contrast.
 
-- **`Select.multiple` is a member no event can report on, and it is a CONTRACT defect rather
-  than an implementation one.** `contracts/api/components/Select.json` declares `multiple` as a
-  boolean and `change` as an event carrying a single `string`. A multi-selection is a *set* of
-  values, and no set can be expressed as one string, so a consumer who turns `multiple` on gets
-  the attribute on the element and an event reporting only `select.value` — the first selected
-  option. Both layers do exactly this: React's `onChange` unwraps `e.target.value`, and
-  `arena-select` emits the same. So the two agree, which is why this is **not** a section 3
-  divergence, and why nothing failed when the Angular primitive was written against the
-  contract.
-
-  **Nothing gates it and nothing could.** `check:api` compares a member's *form* between the
-  contract and each layer; it has no way to ask whether one member's type can carry what another
-  member's flag implies. Both readings — `multiple: false` and a scalar event, or `multiple:
-  true` and an array one — are internally consistent contracts.
-
-  **Not fixed here**, because it is a contract change and Plan D's authority is to implement the
-  contract rather than to rewrite it. Two shapes are available: drop `multiple` (a native
-  multi-select is a list box shown open, which is a different control from the one this contract
-  describes as a *"styled native dropdown selector"*), or give `change` an array payload and
-  accept that every single-select consumer now unwraps. The first is the smaller one and
-  probably right; neither is decided.
+- **CLOSED: `Select.multiple` is gone, which was the smaller of the two shapes and the right one.**
+  The contract declared `multiple` as a boolean and `change` as an event carrying a single
+  `string`. A multi-selection is a *set* of values and no set fits in one string, so a consumer
+  who turned it on got the attribute on the element and an event reporting only the first
+  selected option. Both layers did exactly that, which is why this was never a section-3
+  divergence and why nothing failed when the Angular primitive was written against the contract.
+  Nothing gated it and nothing could: `check:api` compares a member's *form* between the contract
+  and each layer, and has no way to ask whether one member's type can carry what another member's
+  flag implies. Both readings were internally consistent contracts.
+  Of the two available shapes — drop `multiple`, or give `change` an array payload and make every
+  single-select consumer unwrap — the first is taken. **A native multi-select is a list box shown
+  open, which is a different control from the "styled native dropdown selector" this contract
+  describes**, so the member was promising a control the component was never going to be.
 
 - **A projection marker the consumer forgets to import drops the whole slot in silence, and the
   guard for it had to go OUTSIDE the component.** Every gated `<ng-content select="[x]">` in the

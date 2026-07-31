@@ -18,8 +18,11 @@ platform event type is an R4 violation inside a payload, so the event does not t
 Read the value directly (`onChange={setEnv}`); there is no `e.target` and no
 `preventDefault()`.
 
-The members are `label`, `options`, `value`, `disabled`, `required`, `name` and
-`multiple`, plus `onChange`. That is the whole API: the `SelectHTMLAttributes` heritage
+The members are `label`, `options`, `value`, `disabled`, `required` and `name`, plus
+`onChange`. There is no `multiple`: a multi-selection is a *set* of values and `onChange`
+carries one `string`, so the attribute could reach the element while the event reported only
+the first selected option. A native multi-select is a list box shown open, which is a different
+control from the styled dropdown this component is. That is the whole API: the `SelectHTMLAttributes` heritage
 clause and the `{...rest}` spread are gone, so global attributes — `id`, `className`,
 `dir`, `tabIndex`, ARIA and `data-*` — no longer reach the `<select>`, and neither does
 a consumer `style` object.

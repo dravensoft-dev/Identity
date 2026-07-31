@@ -36,10 +36,10 @@ rather than asserting it in prose.
   `value` is matched against; `label` is free to read differently.
 - **Do** pair it with `name` when the control is inside a real form. The attribute lands on the
   control, never on `<arena-select>`.
-- **Don't** reach for `multiple` expecting a multi-selection to arrive. The contract's `change`
-  carries a single `string`, which cannot express one — the attribute reaches the element and the
-  event reports the first selected option, in **both** layers. `DOUBTS.md` records it as a
-  contract-level gap rather than an implementation one.
+- **There is no `multiple`, and that is a decision rather than an omission.** A multi-selection
+  is a *set* of values and `change` carries one `string`, so the member could only ever have set
+  an attribute whose result the event could not report. A native multi-select is a list box shown
+  open — a different control from the styled dropdown this is.
 - **Don't** put more than a handful of options in it. A long or searchable list is
   `arena-command-palette`'s job, and a set of three or four mutually exclusive choices already
   visible on the page is `arena-segmented-control`'s.

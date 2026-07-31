@@ -14,20 +14,16 @@ export function clampPercentage(value: number): number {
     '[class]': 'styles().root()',
   },
   template: `
-    @if (showsHead()) {
-      <div [class]="styles().head()">
-        @if (label(); as text) {
-          <span [class]="styles().label()">{{ text }}</span>
-        }
-        @if (showsValue()) {
-          <span [class]="styles().value()">{{ percentage() }}%</span>
-        }
-      </div>
-    }
+    <div [class]="styles().head()">
+      <span [class]="styles().label()">{{ label() }}</span>
+      @if (showsValue()) {
+        <span [class]="styles().value()">{{ percentage() }}%</span>
+      }
+    </div>
     <div [class]="trackClass()" role="progressbar" aria-live="polite"
          [attr.aria-valuenow]="indeterminate() ? null : percentage()"
          aria-valuemin="0" aria-valuemax="100"
-         [attr.aria-label]="label() ?? 'Progress'">
+         [attr.aria-label]="label()">
       @if (!indeterminate()) {
         <span [class]="styles().fill()" [style.width.%]="percentage()"></span>
       }
@@ -38,13 +34,12 @@ export class ProgressBar {
   readonly progressPercentage = input(0, { transform: numberAttribute });
   readonly indeterminate = input(false, { transform: booleanAttribute });
   readonly tone = input<ProgressTone>('accent');
-  readonly label = input<string>();
+  readonly label = input.required<string>();
   readonly showPercentage = input(true, { transform: booleanAttribute });
   readonly size = input<ControlSize>('md');
 
   protected readonly percentage = computed(() => clampPercentage(this.progressPercentage()));
   protected readonly showsValue = computed(() => this.showPercentage() && !this.indeterminate());
-  protected readonly showsHead = computed(() => this.label() !== undefined || this.showsValue());
 
   protected readonly styles = computed(() => progressBarStyles({ tone: this.tone(), size: this.size() }));
 

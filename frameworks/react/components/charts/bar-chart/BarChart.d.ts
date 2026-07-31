@@ -8,7 +8,7 @@ export interface BarChartProps {
 
   values: number[];
 
-  seriesLabel?: string;
+  seriesLabel: string;
 
   slot?: number;
 

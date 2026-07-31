@@ -19,28 +19,28 @@ test('BarChart appends valueSuffix to the axis ticks and to the accessible table
 });
 
 test('BarChart with no valueSuffix draws bare numbers, so the suffix is genuinely optional', () => {
-  const html = renderToStaticMarkup(<BarChart labels={LABELS} values={VALUES} />);
+  const html = renderToStaticMarkup(<BarChart seriesLabel="Deployments per week" labels={LABELS} values={VALUES} />);
   for (const v of VALUES) assert.match(html, new RegExp(`<td>${v}</td>`));
   assert.doesNotMatch(html, /undefined/, 'an absent suffix must not render the string "undefined"');
 });
 
 test('BarChart throws when labels is absent, matching Angular input.required', () => {
   assert.throws(
-    () => renderToStaticMarkup(<BarChart values={VALUES} />),
+    () => renderToStaticMarkup(<BarChart seriesLabel="Deployments per week" values={VALUES} />),
     /BarChart: `labels` is required/,
   );
 });
 
 test('BarChart throws when values is absent, matching Angular input.required', () => {
   assert.throws(
-    () => renderToStaticMarkup(<BarChart labels={LABELS} />),
+    () => renderToStaticMarkup(<BarChart seriesLabel="Deployments per week" labels={LABELS} />),
     /BarChart: `values` is required/,
   );
 });
 
 test('BarChart drops a consumer style object and a consumer attribute, each independently', () => {
   const html = renderToStaticMarkup(
-    <BarChart labels={LABELS} values={VALUES} style={{ color: '#ff00ff' }} data-stray="x" />
+    <BarChart seriesLabel="Deployments per week" labels={LABELS} values={VALUES} style={{ color: '#ff00ff' }} data-stray="x" />
   );
   assert.doesNotMatch(html, /#ff00ff/, 'a consumer style reached the rendered root -- the R4 escape is back');
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- the {...rest} escape is back');
@@ -48,7 +48,7 @@ test('BarChart drops a consumer style object and a consumer attribute, each inde
 
 test('BarChart drops a label with no value at its index, rather than drawing it over empty plot', () => {
   const html = renderToStaticMarkup(
-    <BarChart labels={['Alpha', 'Beta', 'SURPLUS']} values={[10, 20]} />
+    <BarChart seriesLabel="Deployments per week" labels={['Alpha', 'Beta', 'SURPLUS']} values={[10, 20]} />
   );
   assert.doesNotMatch(html, /SURPLUS/, 'a label with no value at its index reached the category axis');
 
@@ -57,7 +57,7 @@ test('BarChart drops a label with no value at its index, rather than drawing it 
 });
 
 test('BarChart draws an empty label for a bar with no label, rather than throwing or printing undefined', () => {
-  const html = renderToStaticMarkup(<BarChart labels={['Only']} values={[10, 20]} />);
+  const html = renderToStaticMarkup(<BarChart seriesLabel="Deployments per week" labels={['Only']} values={[10, 20]} />);
   assert.doesNotMatch(html, /undefined/, 'a bar with no label rendered the string "undefined"');
   assert.match(html, />Only</, 'the one supplied label still renders');
   assert.match(html, /<td>20<\/td>/, 'the unlabelled bar is still plotted and still in the table');

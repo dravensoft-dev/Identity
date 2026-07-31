@@ -6,6 +6,7 @@ import { chartBarGap, chartBarRadius, chartLabelGap } from '../../../Tokens.gene
 export function BarChart({
   labels, values, seriesLabel, slot, slots, tone, valueSuffix,
 }) {
+  if (!seriesLabel) throw new Error('BarChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('BarChart: `labels` is required');
   if (!values) throw new Error('BarChart: `values` is required');
   const [ref, measured] = useContainerWidth();
@@ -25,7 +26,7 @@ export function BarChart({
   const yOf = (v) => PAD.t + ih - (Math.max(0, v) / max) * ih;
   const baseline = PAD.t + ih;
 
-  const name = seriesLabel ? `${seriesLabel} — bar chart` : 'Bar chart';
+  const name = `${seriesLabel} — bar chart`;
 
   return (
     <div ref={ref} style={{ position: 'relative', width: '100%', height }}>
@@ -83,7 +84,7 @@ export function BarChart({
       {}
       <table style={srOnly}>
         <caption>{name}</caption>
-        <thead><tr><th>Category</th><th>{seriesLabel || 'Value'}</th></tr></thead>
+        <thead><tr><th>Category</th><th>{seriesLabel}</th></tr></thead>
         <tbody>
           {values.map((v, i) => <tr key={i}><th scope="row">{labels[i]}</th><td>{fmt(v)}</td></tr>)}
         </tbody>
