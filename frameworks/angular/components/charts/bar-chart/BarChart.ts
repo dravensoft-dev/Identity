@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
 import { containerWidth } from '../../../ContainerSize';
 import { CHART_HEIGHT, PAD, SR_ONLY, barPath, niceMax, resolveColors, ticks } from '../../../DataVisuals';
 import type { SeriesTone } from '../../../Api.generated';
-import { chartBarGap, chartBarRadius } from '../../../Tokens.generated';
+import { chartBarGap, chartBarRadius, chartLabelGap } from '../../../Tokens.generated';
 
 const BAR_GAP = chartBarGap;
 
@@ -139,8 +139,8 @@ export class BarChart {
   protected readonly tooltipStyle = TOOLTIP_STYLE;
   protected readonly tooltipLabelStyle = TOOLTIP_LABEL_STYLE;
   protected readonly tooltipValueStyle = TOOLTIP_VALUE_STYLE;
-  protected readonly tickLabelX = PAD.l - 8;
-  protected readonly categoryLabelY = CHART_HEIGHT - 8;
+  protected readonly tickLabelX = PAD.l - chartLabelGap;
+  protected readonly categoryLabelY = CHART_HEIGHT - chartLabelGap;
   protected readonly hover = signal<number | null>(null);
 
   private readonly suffix = computed(() => this.valueSuffix() ?? '');

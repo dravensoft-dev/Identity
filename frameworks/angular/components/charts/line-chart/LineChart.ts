@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, 
 import { containerWidth } from '../../../ContainerSize';
 import { CHART_HEIGHT, PAD, SR_ONLY, niceMax, resolveColors, ticks } from '../../../DataVisuals';
 import type { SeriesTone } from '../../../Api.generated';
-import { chartPointR, chartPointRHover } from '../../../Tokens.generated';
+import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.generated';
 
 const ASSUMED_WIDTH = 600;
 
@@ -159,8 +159,8 @@ export class LineChart {
   protected readonly tooltipValueStyle = TOOLTIP_VALUE_STYLE;
   protected readonly pointR = POINT_R;
   protected readonly pointRHover = POINT_R_HOVER;
-  protected readonly tickLabelX = PAD.l - 8;
-  protected readonly pointLabelY = CHART_HEIGHT - 8;
+  protected readonly tickLabelX = PAD.l - chartLabelGap;
+  protected readonly pointLabelY = CHART_HEIGHT - chartLabelGap;
   protected readonly hover = signal<number | null>(null);
 
   private readonly suffix = computed(() => this.valueSuffix() ?? '');

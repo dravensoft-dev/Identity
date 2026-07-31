@@ -10,7 +10,9 @@ function useSpinKeyframes() {
     s.textContent =
       '@keyframes arena-btn-spin{to{transform:rotate(360deg)}}' +
       '.arena-btn-spin{animation:arena-btn-spin var(--loop-spin) linear infinite}' +
-      '@media (prefers-reduced-motion:reduce){.arena-btn-spin{animation-duration:var(--loop-reduced)}}';
+      '@media (prefers-reduced-motion:reduce){.arena-btn-spin{animation-duration:var(--loop-reduced)}}' +
+      '.arena-btn-press{transform:scale(var(--press-scale))}' +
+      '@media (prefers-reduced-motion:reduce){.arena-btn-press{transform:none}}';
     document.head.appendChild(s);
   }, []);
 }
@@ -54,6 +56,7 @@ export function Button({
 
   return (
     <button
+      className={active ? 'arena-btn-press' : undefined}
       type={type}
       name={name}
       value={value}
@@ -77,7 +80,6 @@ export function Button({
         border: 'var(--bw) solid ' + p.border, borderRadius: 'var(--r-sm)',
         boxShadow: p.shadow, cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.45 : 1,
-        transform: active ? 'scale(0.98)' : 'none',
         transition: 'background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-mid) var(--ease-out)',
       }}
     >

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useContainerWidth } from '../../../UseContainerWidth.js';
 import { resolveColors, arcPath, srOnly, CHART_HEIGHT } from '../../../DataVisuals.js';
-import { chartLegendMin, chartLegendMax, chartLegendGap } from '../../../Tokens.generated.js';
+import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated.js';
 
 export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix }) {
   if (!labels) throw new Error('DoughnutChart: `labels` is required');
@@ -21,7 +21,7 @@ export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix 
   const plotW = Math.max(1, width - legendW - chartLegendGap);
   const cx = plotW / 2;
   const cy = height / 2;
-  const rOuter = Math.max(1, Math.min(plotW, height) / 2 - 8);
+  const rOuter = Math.max(1, Math.min(plotW, height) / 2 - chartRingInset);
   const rInner = rOuter * 0.62;
 
   const name = seriesLabel ? `${seriesLabel} — doughnut chart` : 'Doughnut chart';

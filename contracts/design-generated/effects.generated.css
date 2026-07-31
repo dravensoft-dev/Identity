@@ -48,6 +48,16 @@
   --loop-brand:8000ms; /* Rotor — slow enough to read as presence rather than progress */
   --loop-reduced:2400ms; /* What a working loop slows to under prefers-reduced-motion. Motion that reports work slows rather than stopping: a frozen spinner reads as a hung process. */
   --loop-brand-reduced:24000ms; /* Rotor's reduced step — the brand mark is three times slower again, because it is decoration that happens to also mean 'alive' */
+  /*
+     How far a control sinks under the pointer while it is held. Unitless on purpose:
+     it is a transform scale, not a length, so it carries no dimension type and does
+     not re-densify. Both layers press by the same amount and each used to spell it
+     as its own literal -- 0.98 inline in React, scale-98 in the Tailwind manifest --
+     which is one design decision written twice with nothing holding the copies in step.
+     NOT script-readable: nothing does arithmetic on it, both layers reference the custom
+     property directly, and the flag is only for a value JS must consume to produce a position.
+   */
+  --press-scale:0.98;
   --ease-out:cubic-bezier(.2,.7,.3,1);
   --ease-in-out:cubic-bezier(.4,0,.2,1);
   --ease-emphatic:cubic-bezier(.2,.9,.1,1); /* the "rotor" flourish */
@@ -95,6 +105,21 @@
    */
   --chart-pad-bottom:28px;
   --chart-pad-left:44px; /* Holds the value labels. A consequence of the type scale, like pad-bottom. */
+  /*
+     Between an axis label and the plot it labels: a y-axis tick label ends this far
+     left of pad-left, and an x-axis category label sits this far above the bottom
+     edge. Equals --sp-2, like pad-top. It is a spacing decision in px, so it is a
+     token by the same criterion the pads are -- it was left inline through several
+     batches because the arithmetic reads as an offset rather than as a value.
+   */
+  --chart-label-gap:8px;
+  /*
+     Breathing room between the doughnut's outer radius and its box, so a slice's
+     stroke is not clipped. Not a multiplier deriving one dimension from another --
+     those stay inline by the recorded criterion -- but a chosen gap, which is why
+     this one is a token and the 0.62 inner-radius ratio beside it is not.
+   */
+  --chart-ring-inset:8px;
   /*
      A bar's data end. Deliberately NOT --r-sm (6px): naming the value Arena
      already renders is free, snapping to the radius scale is a visible 2px design

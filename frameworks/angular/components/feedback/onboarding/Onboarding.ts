@@ -14,7 +14,9 @@ import {
 } from '@angular/core';
 import { onboardingStyles } from './Onboarding.variants';
 import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../FocusTrap';
-import { onboardingWidth, sp3, sp4 } from '../../../Tokens.generated';
+import { onboardingWidth, onboardingHeightReserve, sp3, sp4 } from '../../../Tokens.generated';
+
+const SSR_VIEWPORT_H = 900;
 import type { OnboardingAnchor, OnboardingStep } from '../../../Api.generated';
 
 @Component({
@@ -94,7 +96,7 @@ export class Onboarding {
     const view = this.doc.defaultView;
     const W = onboardingWidth;
     const EDGE = sp4;
-    const top = Math.min(rect.bottom + sp3, (view?.innerHeight ?? 900) - 220);
+    const top = Math.min(rect.bottom + sp3, (view?.innerHeight ?? SSR_VIEWPORT_H) - onboardingHeightReserve);
     const left = view ? Math.min(rect.left, view.innerWidth - W - EDGE) : rect.left;
     return { top, left: Math.max(EDGE, left) };
   });

@@ -59,24 +59,41 @@ stale-proof; a present-tense component name is not.
 
 ## 1. Known debt
 
-- **"Every animation answers `prefers-reduced-motion`" is true of every `@keyframes` and of no
-  `transition`, in either layer.** Measured while porting `Switch`, not inferred: every
-  reduced-motion answer Arena has is an `@media (prefers-reduced-motion: reduce)` block around a
-  `@keyframes` in `frameworks/tailwind/Animations.css` — `arena-shimmer`, `arena-pop`,
-  `arena-menu`, `arena-prog-indeterminate`, `arena-btn-spin`, `arena-spinner`. **No manifest uses
-  the `motion-reduce:` variant at all**, and no global rule shortens or drops a transition, so
-  every `transition-[…] duration-[var(--dur-*)]` in every recipe runs at full length regardless of
-  the preference. React is in the same position from the same cause, with the durations inline
-  instead of in a manifest.
-  **How much of this is a real defect depends on the motion, and the rule already says so.** A
-  background or border-colour crossfade is not travel and nothing in WCAG asks for it to stop.
-  `arena-switch`'s knob **is** travel — it translates the width of its own track — and so is
-  `arena-button`'s `active:scale-98`. Those are the two worth fixing. The fix is one
-  `motion-reduce:transition-none` per affected slot, but it is a sweep across the shared
-  manifests with a decision per transition, and doing it inside a port would have been an
-  unreviewed library-wide restyle. **What makes this cheap to leave open is also what makes it
-  easy to forget**: no gate reads a manifest for motion, `check:dimensions` tolerates `s`/`ms`
-  by design, and every prompt's reduced-motion line is a by-hand item.
+- **CLOSED: every travel now answers `prefers-reduced-motion`, and the sweep found less to do
+  than the entry predicted plus something it had not.** The claim was true of every `@keyframes`
+  and of no `transition`, in either layer: every reduced-motion answer Arena had was an
+  `@media (prefers-reduced-motion: reduce)` block around a keyframes rule in
+  `frameworks/tailwind/Animations.css`, no manifest used the `motion-reduce:` variant at all, and
+  React was in the same position with its durations inline.
+
+  **The rule the entry states is what bounded the work: how much of it is a defect depends on
+  the motion.** A background or border-colour crossfade is not travel and nothing asks for it to
+  stop, so `transition-[background]`, `transition-[color]` and `transition-[border-color,box-shadow]`
+  are all correct untouched — which is most of them. Only two sites travel, and both are answered:
+  `Button`'s press scale takes `motion-reduce:active:scale-100`, so the scale does not happen at
+  all rather than happening instantly, and `arena-switch`'s knob takes
+  `motion-reduce:transition-none`, so it jumps to its new position instead of sliding — the knob's
+  position IS its state, so it must still move.
+
+  **Three manifest slots declared a transition for a transform they never apply.**
+  `ErrorState.retry`, `ConfirmDialog.cancel` and `ConfirmDialog.confirm` each carried
+  `transition-[background,transform,box-shadow]` with no `scale-*` or `translate-*` anywhere in
+  the file — hand-rolled buttons that copied `Button`'s transition list without copying its
+  `active:scale-98`. The dead `transform` is dropped, which changes no rendering. What it leaves
+  is a real question this file already owns: three components hand-roll a button rather than
+  composing `Button`, so they do not press, and no gate compares a manifest against the component
+  it mirrors.
+
+  **React's answer moved the press scale INSIDE a gate that could not see it before.** The scale
+  was `transform: active ? 'scale(0.98)' : 'none'` — an expression binding, which
+  `check:dimensions` skips by design. Expressing the reduced-motion clause needs a media query,
+  which an inline style cannot hold, so it became an injected `.arena-btn-press` rule; and the
+  moment `0.98` was a literal in CSS text rather than in a ternary, the gate demanded a token for
+  it. It got one. `--press-scale` is a `number` (a transform scale is not a length, so it carries
+  no dimension type and does not re-densify), it is NOT script-readable because nothing does
+  arithmetic on it, and both layers read it as `var(--press-scale)` — React inside the injected
+  rule, the manifest as `active:scale-[var(--press-scale)]`. One design decision that used to be
+  written twice.
 
 - **`Checkbox` has no visible focus indicator, in either layer, and porting it to Angular did
   not introduce that.** The control is a real `<input type="checkbox">` hidden with
@@ -171,17 +188,30 @@ stale-proof; a present-tense component name is not.
   charts' pre-measurement fallback width, an SSR assumption rather than a decision. What survives
   as real is the **axis-label `8`**, which the chart-token entry above already owns, and
   `Onboarding`'s `(view?.innerHeight ?? 900) - 220` — where `900` is another SSR fallback and
-  **`220` is a genuine design value with no token**, a popover height reserve sitting beside
-  `onboardingWidth`, which IS one. That asymmetry is the live remainder.
-- **Two 8px insets meet the chart-token criterion and were left out.** The
-  doughnut's `rOuter` inset (`DoughnutChart.jsx`, `DoughnutChart.ts`), commented
-  as *"breathing room so a slice's stroke is not clipped"*, and the axis-label
-  offset in `PAD.l - 8` / `height - 8`, which appears six times across the two
-  layers. Both are spacing decisions in px, indistinguishable in kind from
-  `--chart-pad-top`, which **is** a token and is also 8. This is debt, not scope:
-  the recorded rationale for the other chart exclusions — *a multiplier that
-  derives one dimension from another is not itself a design value* — does not
-  cover either of them, so a reader applying it reaches the opposite conclusion.
+  **`220` was a genuine design value with no token**, a popover height reserve sitting beside
+  `onboardingWidth`, which is one. Both are paid: `220` is `--onboarding-height-reserve`,
+  script-readable and read by both layers, and `900` is now a NAMED `SSR_VIEWPORT_H` in each
+  layer with an entry in `check:duplicate-constants`' `EXEMPT` explaining why it is deliberately
+  not a token — it stands in for `window.innerHeight` where there is no window, which is a
+  rendering assumption rather than a decision anybody made, and putting it in the token layer
+  would show a number nobody chose in the Overview beside values that were chosen. **That gate's
+  summary line lied while the exemption was silent**: it printed *"no numeric constant is declared
+  in both framework layers"* over a tree where one was, exempted. It now says how many are
+  exempted, which is the difference between a gate reporting a fact and a gate reporting its own
+  configuration. The axis-label `8` went with the chart tokens above; nothing on the original
+  list is left.
+- **CLOSED: the two 8px chart insets are tokens, and one of them was caught by a gate built two
+  batches earlier.** The doughnut's `rOuter` inset and the axis-label offset (`PAD.l - 8`,
+  `height - 8`) were spacing decisions in px, indistinguishable in kind from `--chart-pad-top`,
+  which is a token and is also 8. They are `--chart-ring-inset` and `--chart-label-gap` now, both
+  script-readable, read by both layers at all eight sites — **eight, not the six this entry
+  claimed**: two per chart per layer for the label gap, plus the doughnut's inset in each.
+  **The interesting part is how the last one was found.** Angular named its copy
+  `const RING_INSET = 8` at module level, and the moment `--chart-ring-inset` existed,
+  `check:script-tokens`' per-layer shadow rule — added by the debt-payment programme's batch 2,
+  finding nothing at the time — failed the build naming the file, the constant and the token. A
+  ratchet built with no violations to catch caught one on its first real opportunity.
+
 - **Two behaviour families were proposed and not shipped**, and the reasons
   should be re-read before anyone adds them. `debounce` is speculative:
   `CommandPalette` filters a local array synchronously and `ResizeObserver`
@@ -1860,32 +1890,34 @@ stale-proof; a present-tense component name is not.
   checklists** — running them is a person's job, and a green `bun run check` still says nothing
   about whether anyone did.
 
-- **`Table`'s header row and its row hover are invisible, in BOTH layers, and the cause is one
-  line of `colors.css`.** `--panel` and `--surface-card` are both `var(--color-base-200)`
-  (`contracts/design/colors.css:26` and `:71`). React's `Table.jsx` paints the frame
-  `--surface-card` and the header row `--panel`; it also paints an interactive row's hover
-  `--panel` against a transparent row on that same frame. All three resolve to the same colour,
-  so the header does not separate from the table and a clickable row gives no hover feedback at
-  all. `Table.manifest.json` mirrors it faithfully — `headRow` is `bg-base-200` on a `bg-base-200`
-  root, and `rowInteractive` is `hover:bg-base-200` — so the Angular layer inherited the defect by
-  being correct about the layer it mirrors.
+- **CLOSED: `Table`'s header row and its row hover were invisible in BOTH layers, and counting the
+  consumers refuted the fix this entry preferred.** `--panel` and `--surface-card` are both
+  `var(--color-base-200)` (`contracts/design/colors.css:26` and `:71`). React painted the frame
+  `--surface-card` and the header row `--panel`, and painted an interactive row's hover `--panel`
+  against a transparent row on that same frame; `Table.manifest.json` mirrored it faithfully, so
+  the Angular layer inherited the defect by being correct about the layer it mirrors. All of it
+  resolved to one colour, so the header did not separate and a clickable row gave no feedback.
 
-  **Measured in a real browser, not inferred from the token file.** Driving
-  `frameworks/angular/components/display/table/Table.card.html` in headless Chromium at a
-  1400px viewport, the header row's computed `background-color` and the table frame's are the
-  same value — `rgb(29, 23, 21)` — so there is nothing to see between them.
+  **This entry proposed re-aliasing `--panel` to `--color-base-300` as "the right shape", and
+  told whoever took it to count the consumers first. Counting them is what killed it.** There
+  are twelve, and two make the alias impossible: `Button.jsx` uses `--panel` as a secondary
+  button's RESTING background and `--color-base-300` as its hover, and `Skeleton`'s shimmer is a
+  gradient FROM `--panel` THROUGH `--color-base-300` and back. Aliasing them collapses both — a
+  button whose hover is its rest, and a shimmer with nothing to shimmer between. The fix would
+  have moved the defect into two components rather than removing it. **A token whose consumers
+  use it in opposition to another token cannot be aliased to that token, however well its name
+  reads** — and `--color-base-300`'s own `$description` is *"panel / border"*, which is the trap:
+  the naming says the alias is right and the usage says it is not.
 
-  **It was found by porting rather than by looking**, which is the useful part: nothing gates it.
-  `check:tailwind` proves every class resolves to a token, `check:states` proves a `hover:`
-  modifier belongs to a component that implements hover, and both are satisfied by a hover that
-  paints a surface its own background already has. No gate compares two token values for being
-  distinct, and none could without knowing which pairs are meant to contrast.
-
-  **Not fixed here**, because the fix is a token decision rather than a component one: either
-  `--panel` stops being an alias of `--color-base-200` and takes `--color-base-300`, which moves
-  every other `--panel` consumer at once, or `Table` stops using `--panel` for these two jobs in
-  both layers. The first is the right shape and the larger blast radius; whoever takes it should
-  count the consumers first (`grep -rn 'var(--panel)' frameworks/ contracts/`).
+  So `Table` stops using `--panel` for these two jobs, in both layers: the header row and the
+  interactive row's hover are `--color-base-300` in React and `bg-base-300` / `hover:bg-base-300`
+  in the manifest. **Measured in real Chromium rather than inferred**, at a 1400px viewport: the
+  Angular table's frame reads `rgb(29, 23, 21)` and its header row `rgb(36, 28, 25)`, where both
+  read `rgb(29, 23, 21)` before; and on React's `TableAvatar.card.html`, moving a real pointer
+  over an interactive row takes it from `rgba(0, 0, 0, 0)` to `rgb(36, 28, 25)`, where it used to
+  paint the frame's own colour onto the frame. **What still has no gate is the class**: nothing
+  compares two token values for being distinct, and nothing could without knowing which pairs are
+  meant to contrast.
 
 - **`Select.multiple` is a member no event can report on, and it is a CONTRACT defect rather
   than an implementation one.** `contracts/api/components/Select.json` declares `multiple` as a
@@ -3679,17 +3711,34 @@ not prevent the second occurrence, and why `check:states` was built for P1's sha
 `components-divergences.md`'s border-box table; that file is now section 3 of this one, and
 the table lives under *The Tailwind layer is border-box; React is content-box*.
 
-### Tailwind cannot express Button's split transition timing
+### Tailwind CAN express Button's split transition timing, and this section said otherwise
 
-React gives `background` the fast duration and `box-shadow` the slower `--dur-mid`, because
-each CSS property gets its own line in the `transition` shorthand. `Button.manifest.json`'s
-`duration-[var(--dur-fast)]` cannot: Tailwind's `duration-` utility sets one
-`transition-duration` for the whole `transition-property` list, and there is no second
-`duration-` utility to layer on for just one property. Expressing the split would mean
-writing the whole `transition` declaration as one raw arbitrary **property**
-(`[transition:background_var(--dur-fast)_var(--ease-out),…]`, no `utility-` prefix) — a
-fourth bracket shape outside the three that layer documents. **Primary's hover shadow
-arrives about 100ms early against React**, left undone rather than reached for quietly.
+This read *"Tailwind cannot express Button's split transition timing"* and it was wrong — not
+about the mechanism, which it described correctly, but about the conclusion. React gives
+`background` and `transform` the fast duration and `box-shadow` the slower `--dur-mid`, because
+each property gets its own line in the `transition` shorthand. Tailwind's `duration-` utility
+writes one `transition-duration` for the whole `transition-property` list and there is no second
+one to layer on, so the `transition-[...]`/`duration-[...]` pair genuinely cannot do it. All of
+that is true.
+
+**What did not follow is that the split was inexpressible.** The section named the escape in its
+own last sentence — writing the declaration as one arbitrary **property**,
+`[transition:background_var(--dur-fast)_var(--ease-out),…]` with no `utility-` prefix — and then
+declined it as "a fourth bracket shape outside the three that layer documents". A shape being
+undocumented is a reason to document it, not evidence that a thing is impossible; the gap between
+*"we have not written this down"* and *"this cannot be done"* is where the false claim lived, and
+it survived several batches because the paragraph reads as a limitation rather than as a
+deferral.
+
+`Button.manifest.json` takes it now. Every operand is a `var()` into a token, so `check:arbitrary`
+holds over it exactly as over the other three shapes — the escape is the *property*, never the
+literal — and `check:tailwind`, `check:dimensions` and `check:angular` all pass.
+**Measured in real Chromium** on `Button.card.html` at 1200px: the rendered button reports
+`transition-property: background, transform, box-shadow` with
+`transition-duration: 0.12s, 0.12s, 0.22s`, against `--dur-fast: 120ms` and `--dur-mid: 220ms`.
+The ~100ms early shadow this section recorded as the accepted cost is gone.
+`frameworks/tailwind/README.md` now documents the fourth shape and, more importantly, when it is
+earned: only when no utility can express the declaration at all.
 
 ### An Angular input named after a native attribute leaves the native attribute behind
 

@@ -48,6 +48,11 @@
     "reduced": { "$value": { "value": 2400, "unit": "ms" }, "$description": "What a working loop slows to under prefers-reduced-motion. Motion that reports work slows rather than stopping: a frozen spinner reads as a hung process." },
     "brand-reduced": { "$value": { "value": 24000, "unit": "ms" }, "$description": "Rotor's reduced step — the brand mark is three times slower again, because it is decoration that happens to also mean 'alive'" }
   },
+  "press-scale": {
+    "$type": "number",
+    "$value": 0.98,
+    "$description": "How far a control sinks under the pointer while it is held. Unitless on purpose:\nit is a transform scale, not a length, so it carries no dimension type and does\nnot re-densify. Both layers press by the same amount and each used to spell it\nas its own literal -- 0.98 inline in React, scale-98 in the Tailwind manifest --\nwhich is one design decision written twice with nothing holding the copies in step.\nNOT script-readable: nothing does arithmetic on it, both layers reference the custom\nproperty directly, and the flag is only for a value JS must consume to produce a position."
+  },
   "ease": {
     "$type": "cubicBezier",
     "out": { "$value": [0.2, 0.7, 0.3, 1] },

@@ -106,7 +106,7 @@ export function Table({ columns, children, empty = 'No data.', responsive = true
             onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setGridFocused(false); }}
             style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-body)' }}>
             <thead>
-              <tr role="row" style={{ background: 'var(--panel)' }}>
+              <tr role="row" style={{ background: 'var(--color-base-300)' }}>
                 {columns.map((c, ci) => (
                   <th key={ci} role="columnheader" {...headerNav(ci)}
                     style={{ ...CELL_BASE, ...HEADER_LABEL, textAlign: c.align || 'left',

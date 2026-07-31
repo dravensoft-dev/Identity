@@ -73,18 +73,27 @@ missing — add it to `contracts/design/` first.
 
 <!-- check-arbitrary-values allow: text-[13px] bg-[#b52a20] duration-[200ms] w-[calc(var(--sp-4)+8px)] -->
 
-**A `transition-[...]`/`duration-[...]` pair is one duration for every listed
-property.** `Button.jsx` transitions `background` and `transform` at `--dur-fast`
-but `box-shadow` at the slower `--dur-mid` — React can do that because each CSS
-property gets its own line in the `transition` shorthand. `Button.manifest.json`'s
-`duration-[var(--dur-fast)]` cannot: Tailwind's `duration-` utility sets one
-`transition-duration` for the whole `transition-property` list, and there is no
-second `duration-` utility to layer on for just one property. Expressing the
-split would mean writing the whole `transition` declaration as one raw arbitrary
-**property** (`[transition:background_var(--dur-fast)_var(--ease-out),…]`,
-no `utility-` prefix) — a fourth bracket shape outside the three this file
-documents, so it stays undone rather than reached for quietly. What that costs
-is recorded in [`DOUBTS.md`](../../DOUBTS.md) section 4.
+**A fourth shape exists, and it is earned rather than general: an arbitrary
+PROPERTY, with no `utility-` prefix.** A `transition-[...]`/`duration-[...]` pair
+sets one duration for every listed property, because Tailwind's `duration-` utility
+writes a single `transition-duration` for the whole `transition-property` list and
+there is no second one to layer on for just one property. `Button` needs
+`background` and `transform` at `--dur-fast` and `box-shadow` at the slower
+`--dur-mid` — React expresses that freely, since each property gets its own line in
+the `transition` shorthand. `Button.manifest.json` writes the whole declaration as
+one bracket instead:
+
+```
+[transition:background_var(--dur-fast)_var(--ease-out),transform_var(--dur-fast)_var(--ease-out),box-shadow_var(--dur-mid)_var(--ease-out)]
+```
+
+Every operand is a `var()` into a token, so `check:arbitrary` holds over it exactly
+as it does over the other three shapes — the escape is the *property*, never the
+literal. **Reach for it only when a utility cannot express the declaration at all**,
+which here means a per-property duration; a value a normal utility could carry
+belongs in a normal utility. It was left undone for several batches on the reasoning
+that a fourth shape should not be reached for quietly; writing it down is what makes
+reaching for it not quiet.
 
 The gate scans `.md` too, because a `.prompt.md`'s Don't block is exactly
 where a bad example belongs, and an unflagged one is a bad example someone
