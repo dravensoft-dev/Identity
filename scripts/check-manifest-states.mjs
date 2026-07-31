@@ -23,6 +23,11 @@ export const SOURCE_OVERRIDES = new Map([
 
   ['Tabs', ['frameworks/react/components/navigation/tabs/Tabs.jsx',
             'frameworks/react/components/navigation/tab/Tab.jsx']],
+
+  ['Calendar', [
+    'frameworks/react/components/display/calendar/Calendar.jsx',
+    'frameworks/react/components/display/calendar-event/CalendarEvent.jsx',
+  ]],
 ]);
 
 export const EXEMPT = new Map([

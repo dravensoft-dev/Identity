@@ -38,7 +38,9 @@ answer different questions, and collapsing them was the exact bug this layer onc
 had. `none` binds a component that **renders**: it exists, a user can see it, and it
 simply offers no interactive affordance (Angular's Card, a bordered surface with
 nothing to act on). `absent` binds the fact that **no such component exists in this
-layer at all** — Angular's Calendar, which Arena has never built there. Before `absent` existed, both facts were recorded as `none`,
+layer at all**. Nothing binds it today — every component exists in both layers — which is
+exactly why the pattern has to stay: the next component one layer lands first has somewhere
+to record itself. Before `absent` existed, both facts were recorded as `none`,
 distinguishable only by reading the binding's prose `reason` rather than by anything
 a tool could check — the same "no entry means either verified-equivalent or nobody
 looked" ambiguity this whole layer exists to end, one level down. Use `none` for a
@@ -55,7 +57,9 @@ Every component declares, in every layer, beside its own source:
 - React: `frameworks/react/components/<group>/<Name>.behaviour.json`
 - Angular: `frameworks/angular/components/<category>/<component-kebab>/<Component>.behaviour.json`
 - Angular, absent: one entry in `frameworks/angular/BehaviourDelegated.json`,
-  because a component the layer does not have has no directory to sit beside.
+  because a component the layer does not have has no directory to sit beside. That
+  file does not exist today; `check:behaviour` reads it only when present, and names
+  any React component the Angular layer lacks and has not recorded there.
 
 A binding names a pattern and lists the requirements the component does not yet
 meet, each with a reason. `bun run check:behaviour` asserts that every component

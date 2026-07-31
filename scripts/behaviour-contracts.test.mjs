@@ -158,11 +158,15 @@ test('the React inventory finds every component, no category and no loose file',
 
 test('the Angular inventory finds every component, no category and no bare module', () => {
   const found = angularPrimitives('.');
-  assert.equal(found.length, 48);
+  assert.equal(found.length, 50);
   assert.ok(found.includes('tag'));
   assert.ok(found.includes('bar-chart'));
   assert.ok(found.includes('button'));
   assert.ok(found.includes('tooltip'));
+  assert.ok(found.includes('calendar'));
+  assert.ok(found.includes('calendar-event'));
+  assert.ok(!found.includes('CalendarInternals.ts'));
+  assert.ok(!found.includes('CalendarState.ts'));
   for (const category of ['brand', 'charts', 'display', 'feedback', 'forms', 'navigation'])
     assert.ok(!found.includes(category), `${category} is a category, not a component`);
   assert.ok(!found.includes('ChartDataTable.test.ts'));

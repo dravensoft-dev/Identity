@@ -147,11 +147,11 @@ is the one claim in this paragraph a grep for a component name can never catch, 
 written in terms of patterns. `requires` is a flat map of **dotted** keys, and that shape is load-bearing:
 an exception names exactly one requirement, so one entry cannot excuse a whole clause.
 
-Every component declares, in **every** layer, beside its own source — `<Name>.behaviour.json` —
-and what a layer has no component for at all in `frameworks/angular/BehaviourDelegated.json`.
-That file holds `Calendar` and `CalendarEvent`: Angular implements every other component itself,
-and those two carry date arithmetic no CDK primitive covers. They bind the `absent` pattern so
-the fact is machine-checkable rather than only stated in a `reason`.
+Every component declares, in **every** layer, beside its own source — `<Name>.behaviour.json`.
+A layer missing a component altogether records it in
+`frameworks/angular/BehaviourDelegated.json` binding `absent`, so the fact is machine-checkable
+rather than only stated in prose. **There is no such file today** — Angular implements every
+component React has — and the gate reads it only when present, so the next absence still fails.
 
 **A binding has two shapes, and the second exists because a binding describes a COMPONENT
 while the evaluator judges a RENDER.** A component that renders differently by its own props is
@@ -322,11 +322,9 @@ need its own tie before it may be an enum at all.**
 The set is React's alone, so **count it rather than trusting a figure**: every component
 **directory** under
 `frameworks/react/components/<category>/` with no matching directory under
-`frameworks/angular/components/<category>/`, which is also the key set of
-`frameworks/angular/BehaviourDelegated.json`. **A change that makes an item a
-component enlarges that set while contracting it**, which is why the method above is the only
-thing worth trusting. Their APIs are settled and normative *before* Angular has an
-implementation to defend.
+`frameworks/angular/components/<category>/`. **It is empty today** — the layers are 50/50 — and
+it refills whenever React lands a component first, which is the point of the arrangement: such
+an API is settled and normative *before* Angular has an implementation to defend.
 
 **The single-icon convention reaches `Button` and `IconButton`** — a component's icon is a
 Phosphor class-name string Arena draws, never a slot, so `IconButton` presents no slot at all
@@ -359,7 +357,7 @@ process-wide for the whole invocation replaces Bun's own `fetch`, which turns a 
 `scripts/lib/static-server.test.mjs` fetch assertion into a cross-origin failure.
 
 **A grid is verified by walking its cells, one key press per step.** `Calendar` and `Table` were
-hand-tested for one reason — memory — and both have suites now. A grid suite asserts at every cell
+hand-tested for one reason — memory — and both have suites in both layers now. A grid suite asserts at every cell
 that focus landed where the arrow should take it and that exactly one `tabindex="0"` exists and is
 that cell; each edge clamp is one extra press, never a blind loop. **The bill is the press count,
 not what is asserted** — each press re-renders the grid through `act()` — so the fixture stays
@@ -411,7 +409,7 @@ are judged as themselves, which is strictly more coverage than an attribute.
 **No gate compares a Tailwind manifest against the component it mirrors, and the mapping is not
 one-to-one**: a manifest mirrors a React component and an `arena-*` primitive at once, and a
 compound family's one manifest mirrors several of each. The only components with no manifest
-are `Calendar` and `CalendarEvent`. `check:tailwind` proves every class resolves; nothing proves a
+are the three SVG charts. `check:tailwind` proves every class resolves; nothing proves a
 manifest still matches the component it was derived from, so check by hand when either has
 moved.
 
@@ -628,8 +626,8 @@ shared `frameworks/tailwind/` recipes through the configured `tv`. Count the com
 behaviour only a browser can show also has `<Component>.card.html` + `.card.entry.ts` beside it,
 built by `bun run build:angular-demo` and recorded in `check:angular-demos`. Those pages carry
 **no** `@dsCard`: the bundle is git-ignored, and a blank page passes a viewport check by having
-nothing to overflow. Its layer root additionally holds the generated modules,
-`BehaviourDelegated.json`, and the internals belonging to no one category —
+nothing to overflow. Its layer root additionally holds the generated modules and the
+internals belonging to no one category —
 `frameworks/angular/README.md` names each and says why.
 
 `frameworks/tailwind/` is a **single shared** Tailwind v4 layer (`@theme` preset + per-component

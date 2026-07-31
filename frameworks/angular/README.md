@@ -57,16 +57,12 @@ each bare, with no `arena-` prefix, because the attribute is the contract member
 name, per `contracts/api/README.md`'s binding table) all have consumers in more than one category,
 so they sit at the layer root and `frameworks/angular/index.ts` names each of them
 directly. `DataVisuals.ts` (the chart maths and the identity-or-meaning colour contract)
-sits at the layer root beside them, and it is the one that is there by decision rather
-than by the rule: in this layer its consumers really are the three charts alone, so
-`components/charts/` would satisfy the rule. That narrow consumer set is an artifact of
-Angular having no `Calendar` at all — React's `Calendar` imports `catColor` from the same
-module, so React's copy belongs at the layer root by the rule, and leaving the two layers
-spelling one module at two different paths would make the eventual move a second
-migration instead of an import. Angular's `Calendar` binds pattern `absent`, and nothing
-has decided whether the layer should gain a schedule view; when one is built, this
-module is already where it needs to be. The name matches the placement: a module a
-schedule grid consumes is not "chart internals".
+sits at the layer root beside them, and the rule puts it there in both layers now: its
+consumers are the three charts **and** `arena-calendar-event`, which reads `catColor` for a
+chip's identity colour exactly as React's chip does. It used to be there by decision, against
+a consumer set narrowed only by Angular having no schedule view; building one converged that.
+The name matches the placement either way: a module a schedule grid consumes is not
+"chart internals".
 
 A primitive defines no styling of its own. Its recipe lives in
 `frameworks/tailwind/components/<category>/<component-kebab>/<Component>.manifest.json`
@@ -100,13 +96,13 @@ Parity here is parity of **outcome**, not of inventory: an Angular consumer can 
 interface an Arena React consumer can, and they build all of it from Arena's own primitives.
 No control in this layer is delegated to a third-party component library.
 
-**The two exceptions are absent rather than delegated, and `BehaviourDelegated.json` is the
-only trustworthy statement of that set** — `check:behaviour` fails the moment it disagrees
-with what this layer implements, where a list written here would rot in silence. Read it
-there, and count it with `python3 -c "import json;print(len(json.load(open('frameworks/angular/BehaviourDelegated.json'))))"`.
-Both entries bind pattern `absent`: React's `Calendar` is a day/hour schedule grid with
-absolutely-positioned `CalendarEvent` blocks, this layer has no such view, and nothing has
-decided whether it should gain one.
+**There are no exceptions left, and `BehaviourDelegated.json` is the only trustworthy
+statement of that** — `check:behaviour` fails the moment a component this layer lacks goes
+unrecorded, where a list written here would rot in silence. **The file does not exist**: this
+layer implements every component React ships, `arena-calendar` and `arena-calendar-event`
+included, and a record with nothing to record is the failure mode that retired `check:material`.
+The mechanism stays, so the next component React lands first fails loudly until it is written
+down there binding `absent`.
 
 **Arena writes the markup, the ARIA and the styling, and `@angular/cdk` supplies only what
 Arena should not hand-roll** — overlay positioning for a surface anchored to a trigger, and
@@ -157,7 +153,10 @@ overlay in a real browser, which is where a z-index that stacks wrongly is visib
 `bun run check:angular` compiles every primitive with `ngc` under `strictTemplates`
 (`tsconfig.check.json`), and it reaches a primitive **through the barrel** — a
 primitive missing from its own `index.ts`, its category's, `components/index.ts` or the
-layer's `index.ts` is not typechecked. Each manifest-backed
+layer's `index.ts` is not typechecked, and no adopter can import it from the layer root
+either. `test/Barrels.test.ts` walks that chain and fails on a gap; what a barrel
+deliberately withholds is named in its `PRIVATE`/`ROOT_PRIVATE` maps with a reason each,
+under the same bidirectional staleness rule the other records carry. Each manifest-backed
 primitive also has a static specimen at
 `frameworks/tailwind/components/<category>/<component-kebab>/<Component>.card.html`,
 which renders the real markup

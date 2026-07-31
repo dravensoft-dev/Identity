@@ -123,9 +123,12 @@ stale-proof; a present-tense component name is not.
   number the one I expect".
 - **The two script-readable gates leave a structural hole between them, and it is
   wider than it looks.** `check:script-tokens`' orphan rule is *imported by at
-  least one layer* — correct, because `calendarHourH` is legitimately React-only
-  (Angular has no `Calendar`). But once one layer imports a token, that gate says
-  nothing about whether the other still carries its own copy.
+  least one layer*, and that is deliberately loose: a token a component needs is
+  legitimately one-layer-only until the other layer builds that component. The
+  `calendar-*` five were the standing example and stopped being one when Angular
+  gained the family, which is exactly the shape the rule tolerates. But once one
+  layer imports a token, that gate says nothing about whether the other still
+  carries its own copy.
   `check:duplicate-constants` does not close it: it fires only when **both**
   layers declare a module-level named numeric `const`, so a layer that imports
   the token has no declaration left to pair with.
@@ -885,6 +888,18 @@ stale-proof; a present-tense component name is not.
   every invariant it asserts holds at any size from 2×2 up. Halving the cells roughly halved
   the bill.
 
+  **A future grid did inherit it, and the numbers are worth keeping beside the React ones.**
+  `frameworks/angular/components/display/calendar/Calendar.grid.test.ts` walks 6 columns by 2
+  hour slots in **17 presses**, half React's 34 against a 12-cell grid rather than a 30-cell
+  one, with `view`, `dayStart` and `dayEnd` all explicit for the same reason. Six columns is
+  the floor for a week view — `hideEmptyWeekend` only ever drops Sunday — and one hour slot
+  would make `Home`, `End`, `ArrowUp` and `ArrowDown` vacuous, so 6×2 is the smallest fixture
+  at which every invariant still means something. Mutating the component confirms the walk
+  bites: every cell `tabindex="0"`, `Home` behaving as `End`, and `Enter` doing nothing each
+  turn it red. Removing the `ArrowRight` clamp does **not**, because `CalendarState.clamped`
+  re-clamps independently — defence in depth rather than a hole in the suite, and the same
+  shape `Table` has.
+
   **The method, so a future grid inherits it rather than re-deriving it.** One mount per
   scenario, kept in a module-level variable and cleaned up once in an `after()`. A walk that
   visits every cell with one press per step, asserting at each that focus landed on the
@@ -982,13 +997,34 @@ stale-proof; a present-tense component name is not.
   that has gone stale here twice. Neither the deletion and restore of the React DOM test
   directory nor its later disappearance changed what is unpinned; none of them was ever
   what caused it.
-- **Angular has no `Calendar`, and nothing has decided whether it should.** React's
-  `Calendar` is a day/hour schedule grid with absolutely-positioned event blocks;
-  the Angular layer has no `arena-*` primitive for it.
-  `frameworks/angular/BehaviourDelegated.json`'s `Calendar` entry
-  binds pattern `absent` and records this as a fact, not a decision: it does not
-  commit Angular to gaining a schedule view, and it does not resolve whether the gap
-  should stay this way. It is simply open.
+- **Four Angular primitives take an `id` input and none clears the attribute off its
+  host.** `arena-input`, `arena-textarea`, `arena-side-nav-item` and
+  `arena-side-nav-collapsible` all declare `readonly id = input(...)`, and Angular writes a
+  static attribute to the DOM during the creation pass whether or not it also matches an
+  input. So `<arena-input id="email">` leaves `id="email"` on the host **and** puts it on the
+  real `<input>` inside — two elements with one id, where a `<label for="email">` resolves to
+  the host, which is not a labelable control. `arena-calendar-event` was the fifth and clears
+  it (`'[attr.id]': 'null'`), found by its own placement suite looking up a chip and getting
+  the host back. The guard that would catch the rest is
+  `GLOBAL_ATTRIBUTE_INPUTS` in `frameworks/angular/test/HostClassBinding.test.ts`, which lists
+  `title` and `name` and not `id`; adding `id` fails four components at once, which is why
+  this is filed rather than fixed. **Whoever fixes it should add `id` to that list in the same
+  change**, or the fifth recurrence is as silent as the first four.
+- **A barrel gap is invisible to every gate that is not looking for it, and one hid a real
+  name collision for as long as it lasted.** `frameworks/angular/components/display/index.ts`
+  exported six of its eleven primitives; `badge`, `card`, `table`, `table-row` and `table-cell`
+  were missing, so `check:angular` — whose `tsconfig.check.json` declares
+  `files: ["./index.ts"]` — never compiled them under `strictTemplates`, and no adopter could
+  import them from the layer root. Nothing was red, because `tsconfig.test.json` globs the tree
+  and compiled them anyway. **What the gap was hiding is the part worth keeping:**
+  `TableState` and `CalendarState` both exported an interface named `GridCursor`, with
+  different shapes (`{row, col}` and `{day, hour}`), and completing the barrel turned that into
+  the `TS2308` it always was. Calendar's is `CalendarCursor` now. Closed by
+  `frameworks/angular/test/Barrels.test.ts`, which walks the chain and carries `PRIVATE` and
+  `ROOT_PRIVATE` for the modules a barrel deliberately withholds — so the next omission is a
+  failing test rather than a silent one. **The remaining hole is that no equivalent exists for
+  `frameworks/tailwind/`**, whose manifests are reached by glob rather than by a barrel, so
+  there is nothing there to be missing from.
 
 - **A chart's `aria-label` is checked for existence, never for usefulness, and the
   charts fall back to a name that is only their type.** `figure-with-data-table`'s
@@ -2742,14 +2778,16 @@ narrowest-common-level rule puts the module at the layer root rather than in a c
 verify with `grep -rln DataVisuals frameworks/react/components`, which returns the three charts
 **and** `display/calendar/`.
 
-**Angular:** the consumers are the three charts alone, so the same rule would put its copy in
-`components/charts/`. It is at the layer root **by decision**, because that narrower consumer
-set is an artifact of Angular having no `Calendar` at all rather than a real difference between
-the layers — and `Calendar` is one of the two components this layer does not have, not a
-control anything provides in its place.
+**Angular:** the consumers are the three charts **and** `display/calendar-event/`, which reads
+`catColor` for a chip's identity colour exactly as React's does — so the same rule puts the copy
+at the layer root here too. Until `arena-calendar-event` existed the consumers were the three
+charts alone and the module sat at the root **by decision**, against a set narrowed only by
+Angular having no schedule view.
 
-**Converges:** it would converge only if Angular ever grew a schedule view, which nothing has
-decided.
+**Converges: yes, and it has.** This is the entry that closed itself: the decision it recorded
+was that the narrower consumer set was an artifact rather than a real difference, and building
+the family proved that reading right. Kept rather than deleted because the *reason* the module
+sat there before is what made the eventual convergence an import instead of a second migration.
 
 #### DataVisuals — the visually-hidden style carries its units in Angular
 
@@ -3394,6 +3432,88 @@ weaker of the two, and nothing schedules moving it.
 **Nothing gates any of this.** No check reads a contract's `description` prose, so a seventh
 contract could grow the phrase and no component would be obliged to notice.
 
+#### Calendar — the chips are not inside their day columns, and `aria-owns` is what pays for it
+
+**React:** `Calendar.jsx` distributes chips with `cloneElement`, so every `CalendarEvent`
+renders as a DOM child of its day's `role="row"` and inherits that column as its containing
+block. A chip's `left` and `width` are percentages **of its own column**.
+
+**Angular:** `<ng-content/>` projects once, in one place, and two with the same selector is
+rejected outright — so no arrangement of the template can put one chip in one column and the
+next in another. `arena-calendar` places a single bare `<ng-content/>` inside the
+`role="grid"` element; each chip's host declares `display: contents` and its absolutely
+positioned root resolves against the grid's own padding box. A chip's `left` and `right` are
+percentages **of the whole grid**, and each day column names its own chips through
+`[attr.aria-owns]` so the accessibility tree matches React's: a chip is a child of a row
+without being a cell, in both layers.
+
+Two consequences, both real:
+
+- **The day columns must be equal, and in React they are not.** React's columns are `flex: 1`
+  with `border-left` on all but the first, so under `flex-basis: 0%` column 0 is narrower than
+  the rest by one border width. React does not care, because its percentages are of whatever
+  that column turned out to be. Whole-grid percentages do care, so the Angular grid is a real
+  CSS grid with `repeat(N, minmax(0, 1fr))` tracks. **No gate can see this** — `check:dimensions`
+  is blind to `[style.x]`, and the grid suite asserts the keyboard rather than the geometry —
+  so it is measured in Chromium over CDP against the rendered track boundaries.
+- **Anything projected that is not an `arena-calendar-event` becomes a grid item** and adds a
+  column of its own, where React's `Children.toArray().filter(isValidElement)` plus its
+  placement lookup silently skips it. Both prompts carry the Don't; only one of them has teeth.
+
+**Converges:** no. The mechanism is `cloneElement` versus content projection, and neither layer
+can adopt the other's.
+
+#### CalendarEvent — the chip is always a button in Angular, and React has a third case
+
+**React:** the chip renders an inert `<div>` with no role when no `onClick` was passed, and a
+`<button>` when one was. Its binding declares three cases: `clickable`,
+`clickable-with-actions` and `inert`.
+
+**Angular:** there is no way to ask whether an `output()` has subscribers —
+`OutputEmitterRef.listeners` is private, and an `interactive` input would be a member no
+contract declares — so the interactive shape is unconditional and the binding declares two
+cases with `divergesFrom: "none"`.
+
+**This is the same wall `arena-table-row` hit, resolved the opposite way, and the asymmetry is
+the point.** `TableRow` renders the non-interactive shape because always-a-button would put a
+dead tab stop on every row of every table. A chip is `tabindex="-1"` and is never a page tab
+stop, so always-a-button costs no dead stop here — where always-a-div would delete
+Enter-into-the-chip, which is the whole keyboard story `arena-calendar`'s `grid` binding leans
+on. The bounded consequence: a chip whose consumer bound no `(click)` is announced as a button
+that does nothing, reachable only by Enter from the hour cell it overlaps.
+
+**Converges:** only if the contract grows a member for it, which would change React too.
+
+#### CalendarEvent — the horizontal geometry is a manifest class, and happy-dom decided that
+
+**React:** the chip's gutter to its neighbour is arithmetic in the injected value —
+`left: calc(X% + calc(var(--sp-1) * 0.5))`, `width: calc(W% - var(--sp-1))`.
+
+**Angular:** the chip sets `left` and `right` as **pure percentages** and no width, and the
+2px gutter each side is `mx-0.5` on the manifest's `chip` slot. The rendered geometry is
+identical, and `--sp-1` is still live and still never a number in JS.
+
+**The reason is a test-environment constraint, and it is worth knowing before anyone
+"restores" the calc form.** happy-dom's CSS value parser **rejects any `calc()` containing a
+`var()`** — `d.style.setProperty('left', 'calc(33% + var(--sp-1))')` leaves `style.left` as
+the empty string. Under the React shape no Angular suite could read a chip's placement at all,
+so the whole horizontal axis would have been unverifiable. The shape that happy-dom can hold
+is also the one `check:dimensions` can scan, so the change bought two things at once.
+
+**Converges:** it could, in React's direction, and nothing schedules it.
+
+#### CalendarEvent — a chip outside a calendar throws in Angular and renders in React
+
+**React:** `CalendarEvent` mounted alone renders an unplaced chip. `CalendarEvent.prompt.md`
+says it "means nothing", and that is the whole enforcement.
+
+**Angular:** `inject(CalendarState)` is not optional, so the same mistake throws `NG0201`
+before anything renders. The injection is deliberately not made optional: a chip has no
+geometry of its own, and a silent unplaced render is worse than the injector error.
+
+**Converges:** no, and Angular's is the better half. Recorded because the two layers fail
+differently on the same consumer mistake.
+
 ## 4. What the READMEs do not say
 
 The normative documents state rules. This section carries what those rules cost, what the
@@ -4004,7 +4124,9 @@ a 32px kebab and 4px of padding again to stack them without overlap — 55px, ro
 So the threshold is conservative under compact density and would go quietly short if the chip's
 padding grew or its title font did. Nothing checks the sum: `check:script-tokens` holds the
 token against its CSS twin, and `check:dimensions` never sees a comparison. What catches a
-regression here is the by-hand checklist in `CalendarEvent.prompt.md`, in a real browser,
-because `Calendar` binds the `grid` pattern and can have no render suite. Measured after the
+regression here is the by-hand checklist in `CalendarEvent.prompt.md`, in a real browser —
+not because a grid may have no render suite (that rule is retired and both layers have one)
+but because the sum is a rendered relationship between two boxes, which happy-dom cannot
+measure. Measured after the
 change, the margin is 15px: the title's bottom sits that far above the kebab's top on a 66px
 chip.

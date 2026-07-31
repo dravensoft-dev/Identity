@@ -374,7 +374,7 @@ manifests, `support.js`, `theme.js`, `jsx-loader.js`. No authored file moves.
      this one: every recipe authored against an incomplete preset is born needing
      arbitrary values, and parity would multiply today's six into hundreds.
   2. `2026-07-18-5-framework-layer-parity-design.md` — Angular 1 → 19 primitives,
-     Tailwind 1 → 35 manifests.
+     Tailwind 1 → one manifest per component, minus the SVG charts and plus the compound families' sharing (count from the tree).
 
   Then this spec's plan, then creating the npm organization and the first publish.
   **The packaging work itself does not wait**: every file map in the plan is a glob,
@@ -426,8 +426,11 @@ cheaper than it looked when this section was written:
   `frameworks/angular/BehaviourDelegated.json` records as `absent`. Count both layers from the
   tree rather than from a figure here — the option-3 conclusion below survives, because the
   cost it weighed was time before the first publish rather than a component count.
-- **Tailwind targets 35 manifests** — all but the 4 charts and `Calendar`, which are
-  SVG geometry and date logic rather than class strings.
+- **Tailwind targets one manifest per component, minus the three SVG charts**, which are
+  computed geometry rather than class strings. `Calendar` was a fourth exception until the
+  family was built in both layers and gained a shared manifest. Count them from the tree
+  (`find frameworks/tailwind/components -name '*.manifest.json' | wc -l`) rather than from a
+  figure here — a compound family shares one manifest, so the count is not the component count.
 
 The cost of option 3 is time before the first publish. What it buys is that
 `@dravensoft/arena-angular` never exists in a version containing one component —

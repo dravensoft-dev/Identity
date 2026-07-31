@@ -33,6 +33,7 @@ export const PAGED = new Set([
   'Tabs',
   'Pagination',
   'Table',
+  'Calendar',
 ]);
 
 export function pageProblems(tree, read, paged = PAGED) {
