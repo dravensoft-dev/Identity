@@ -231,3 +231,19 @@ test('a walk that reaches nothing is a failure, not a vacuous pass', () => {
   assert.match(zeroScanProblems({ documents: 1, sources: 0 })[0], /no source files at all/);
   assert.equal(zeroScanProblems({ documents: 0, sources: 0 }).length, 2);
 });
+
+test('a shebang may precede the header, because a bin entry point is run by the shell', () => {
+  const root = tree({
+    'scripts/run.mjs': '#!/usr/bin/env node\n/* what this command does */\nexport const a = 1;\n',
+  });
+  assert.deepEqual(commentRuleProblems(root).problems, []);
+  rmSync(root, { recursive: true });
+});
+
+test('a shebang buys no second comment, and no comment below the header', () => {
+  const root = tree({
+    'scripts/run.mjs': '#!/usr/bin/env node\nexport const a = 1;\n/* not the header */\n',
+  });
+  assert.equal(commentRuleProblems(root).problems.length, 1);
+  rmSync(root, { recursive: true });
+});

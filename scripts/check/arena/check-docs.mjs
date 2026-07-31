@@ -51,8 +51,10 @@ function walk(dir, keep, emitted) {
   return found;
 }
 
+export const SHEBANG = /^#![^\n]*\n/;
+
 function startsFile(source, comment) {
-  return source.slice(0, source.indexOf(comment.text)).trim() === '';
+  return source.slice(0, source.indexOf(comment.text)).replace(SHEBANG, '').trim() === '';
 }
 
 export function isGenerated(path) {
