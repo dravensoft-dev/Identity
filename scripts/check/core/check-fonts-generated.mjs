@@ -18,7 +18,7 @@ export function facesIn(css) {
 export function checkFonts(declared, faces) {
   return declared
     .filter((fam) => !faces.has(fam))
-    .map((fam) => `"${fam}" is declared in contracts/design/typography.json but contracts/design-generated/fonts.css has no @font-face for it — run bun scripts/fetch-fonts.mjs`);
+    .map((fam) => `"${fam}" is declared in contracts/design/typography.json but contracts/design-generated/fonts.css has no @font-face for it — run bun scripts/generate/core/fetch-fonts.mjs`);
 }
 
 function main() {

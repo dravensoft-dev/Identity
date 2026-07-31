@@ -51,7 +51,7 @@ export function testStep({ isBun, testFiles }) {
     { name: 'test (React DOM suites, isolated)',
       args: ['test', '--preload', './frameworks/react/test/Preload.js', '.dom.test.jsx'] },
   ];
-  return [{ name: 'test (node --test scripts/*.test.mjs)', args: ['--test', ...testFiles] }];
+  return [{ name: 'test (node --test over every scripts/**/*.test.mjs)', args: ['--test', ...testFiles] }];
 }
 
 export function stepStatus(code) {
