@@ -6,6 +6,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking for the copy-in kit: `assets/fonts/` is three files instead of fourteen.** All three
+  families are variable fonts and Google serves one binary covering the whole range, so the
+  generator was writing the same bytes once per weight under a different name. It now writes one
+  file per family and one `@font-face` with a `font-weight` range. **Re-copy `assets/` and take the
+  new `contracts/design-generated/fonts.generated.css`** — the old per-weight filenames are gone and
+  a stale stylesheet resolves to nothing, which renders unstyled with no console error. Rendering is
+  unchanged: ink per weight measured in Chromium is identical to before, for every family and every
+  weight. 431,136 bytes become 90,890. `assets/fonts/Fonts.generated.json` records each file's
+  sha256 and the weight range it really covers, and `check:fonts` verifies both.
+- **Breaking: `contracts/design/reset.css` sets `box-sizing: border-box` on every element**, and
+  `intro/styles.css` imports it first — seven `@import`s now, not six. React inherits the box model
+  the Angular layer has always had from Tailwind's preflight. If you copied `intro/styles.css`, take
+  the new one and the new file beside it. `Textarea` overran its container by 26px before this and
+  does not now.
+- **Breaking: four API members changed.** `seriesLabel` on the three charts and `label` on
+  `ProgressBar` are **required and guarded** — their old fallbacks named the chart TYPE and the word
+  "Progress", which satisfy the accessible-name requirement mechanically while telling a screen
+  reader user nothing, so two charts on one page announced identically. `ConfirmDialog.open` is
+  required, like the other three modals. `Select.multiple` is **removed**: a multi-selection is a set
+  of values and `change` carries one string, so the member could only ever set an attribute whose
+  result the event could not report.
+- **`TableRow.interactive` and `SideNavItem.disabled` are new members.** The first is what makes a
+  card-mode row a `role="button"` tab stop; it exists because Angular cannot ask whether an output
+  has subscribers, so a clickable card row there was reachable by pointer and not by keyboard. The
+  second draws a navigation destination that cannot be reached, announced with `aria-disabled`
+  rather than hidden.
+- **Accessibility fixes across both layers.** `Checkbox` and `Radio` had no visible focus indicator
+  at all — a WCAG 2.4.7 failure. React's `CommandPalette` had no focus trap, so an open modal
+  palette let a keyboard user Tab out of it. `Table`'s header row and its row hover were invisible,
+  because `--panel` and `--surface-card` resolve to the same colour. The `▾` caret was announced as
+  a bare symbol. React's doughnut legend was unreachable by keyboard, its `BulkActionBar` ignored
+  the danger convention, its `Switch` knob glyph was invisible against the knob, and its `Input`
+  status glyphs were announced beside the error text they duplicate. `ActivityFeed` gains
+  Control+End and Control+Home, which its own cited APG pattern requires and its contract had
+  omitted.
+- **Four new gates, bringing `bun run check` to thirty.** `check:contracts` holds the shape
+  `contracts/README.md` describes; `check:surface-parity` fails when a hand-duplicated surface
+  drifts from the manifest it mirrors; `check:focus-trap` walks each modal in real Chromium with
+  real Tab presses, which is what found the missing palette trap; and `check:text-contrast` — which
+  already existed, complete and passing, and was invoked by nothing.
+- **`check:api` reads the `.jsx`, not only the `.d.ts`.** A restored `{...rest}` spread now fails,
+  and a stated `default` must match the implementation. **`check:compliance` covers 100 of 100
+  bindings**, up from 78.
+
 ## [4.0.0] — 2026-07-18
 
 ### Changed

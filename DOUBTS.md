@@ -43,6 +43,13 @@ a reader can check it cheaply — a path with line numbers, or the command that 
 **Prefer no exemplar, a command, or an explicitly past-tense one.** All three are
 stale-proof; a present-tense component name is not.
 
+**And an entry is deleted when its debt is paid.** This file records what is wrong,
+incomplete or unverified *now*; a fixed defect is none of those, and a paragraph explaining
+how it was fixed turns the record into a changelog, which `CHANGELOG.md` and the commit log
+already are. What survives a payment is only what is still true: a standing hazard, a
+decision and why it was taken, or a limit nothing has closed. If a lesson generalises, it
+stays as a rule in the present tense rather than as the story of the batch that learned it.
+
 ## How this file is organised
 
 1. **Known debt** — things that are wrong or incomplete on purpose, one entry each.
@@ -59,72 +66,10 @@ stale-proof; a present-tense component name is not.
 
 ## 1. Known debt
 
-- **CLOSED: every travel now answers `prefers-reduced-motion`, and the sweep found less to do
-  than the entry predicted plus something it had not.** The claim was true of every `@keyframes`
-  and of no `transition`, in either layer: every reduced-motion answer Arena had was an
-  `@media (prefers-reduced-motion: reduce)` block around a keyframes rule in
-  `frameworks/tailwind/Animations.css`, no manifest used the `motion-reduce:` variant at all, and
-  React was in the same position with its durations inline.
-
-  **The rule the entry states is what bounded the work: how much of it is a defect depends on
-  the motion.** A background or border-colour crossfade is not travel and nothing asks for it to
-  stop, so `transition-[background]`, `transition-[color]` and `transition-[border-color,box-shadow]`
-  are all correct untouched — which is most of them. Only two sites travel, and both are answered:
-  `Button`'s press scale takes `motion-reduce:active:scale-100`, so the scale does not happen at
-  all rather than happening instantly, and `arena-switch`'s knob takes
-  `motion-reduce:transition-none`, so it jumps to its new position instead of sliding — the knob's
-  position IS its state, so it must still move.
-
-  **Three manifest slots declared a transition for a transform they never apply.**
-  `ErrorState.retry`, `ConfirmDialog.cancel` and `ConfirmDialog.confirm` each carried
-  `transition-[background,transform,box-shadow]` with no `scale-*` or `translate-*` anywhere in
-  the file — hand-rolled buttons that copied `Button`'s transition list without copying its
-  `active:scale-98`. The dead `transform` is dropped, which changes no rendering. What it leaves
-  is a real question this file already owns: three components hand-roll a button rather than
-  composing `Button`, so they do not press, and no gate compares a manifest against the component
-  it mirrors.
-
-  **React's answer moved the press scale INSIDE a gate that could not see it before.** The scale
-  was `transform: active ? 'scale(0.98)' : 'none'` — an expression binding, which
-  `check:dimensions` skips by design. Expressing the reduced-motion clause needs a media query,
-  which an inline style cannot hold, so it became an injected `.arena-btn-press` rule; and the
-  moment `0.98` was a literal in CSS text rather than in a ternary, the gate demanded a token for
-  it. It got one. `--press-scale` is a `number` (a transform scale is not a length, so it carries
-  no dimension type and does not re-densify), it is NOT script-readable because nothing does
-  arithmetic on it, and both layers read it as `var(--press-scale)` — React inside the injected
-  rule, the manifest as `active:scale-[var(--press-scale)]`. One design decision that used to be
-  written twice.
-
-- **CLOSED: `Checkbox` and `Radio` had no visible focus indicator in either layer, and `Radio`
-  was the same shape this entry predicted without looking.** Both hide a real input with
-  `absolute opacity-0 size-0` behind a decorative box, which is the right structure — it keeps
-  the role, the name and Space-to-toggle from the platform, and it keeps the input focusable
-  where `display: none` would not. Neither painted anything when that input took focus, so a
-  keyboard user tabbing through a form saw **nothing move**: a WCAG 2.4.7 failure invisible to
-  every gate, because the `checkbox` pattern requires `roles.element`, `roles.label`,
-  `keyboard.Space` and `states.checked` and the control met all four.
-
-  **The selector is the interesting part, and it is the same in both layers.** The input is a
-  *following sibling* of the box, not a descendant, so `focus-within:` — the idea `Input`'s
-  `field` slot uses — cannot reach it. `:has()` can, reading forward:
-  `.box:has(~ input:focus-visible)`. Angular gets it as a Tailwind arbitrary variant on the
-  manifest's `box`/`ring` slot; React injects the identical selector in a `<style>` tag, the
-  route this layer already takes for anything an inline style cannot express — and a
-  pseudo-class is exactly that. The ring itself is Arena's existing convention rather than a new
-  one: `0 0 0 var(--focus-width) var(--gold-soft)`, the same shadow `SegmentedControl` and `Tab`
-  already paint.
-
-  **Measured in real Chromium, both layers, by tabbing rather than by calling `.focus()`** —
-  programmatic focus does not reliably produce `:focus-visible`, which is the whole point of the
-  selector. Angular's checkbox rings after one Tab on its own card; React's after 33 on the
-  Forms card, which simply has that many controls before it. Both paint
-  `oklab(0.724545 0.0133235 0.0989409 / 0.16) 0px 0px 0px 2px` — the identical 2px ring, from
-  the identical token.
-
 - **A green run is only as good as what the gate looked at, and a gate that finds nothing
   reports zero violations either way.** This is a rule rather than an anecdote, because it has
-  now shipped three times in two batches of one refactor, each time in a different mechanism,
-  and each time the surviving evidence was a plausible-looking green line of output.
+  now shipped four times in four different mechanisms, and each time the surviving evidence was a
+  plausible-looking green line of output.
   `check:tailwind` iterated zero manifests after the Tailwind layer went nested and printed
   `0 manifest(s) … all resolve` over a tree it never opened. `check:api`'s `angularPath()`
   built the pre-move `frameworks/angular/primitives/<kebab>/<kebab>.ts`, wrapped the lookup in
@@ -146,12 +91,11 @@ stale-proof; a present-tense component name is not.
   question to ask is not "does it still pass" but "how many things did it look at, and is that
   number the one I expect".
 
-  **A fourth instance shipped, and it is the limit case of the shape: a gate that ran zero
-  times.** `scripts/check/core/check-text-contrast.mjs` existed, was complete, and passed — and
+  **The fourth is the limit case of the shape: a gate that ran zero times.** `scripts/check/core/check-text-contrast.mjs` existed, was complete, and passed — and
   was named in neither `package.json` nor `check-all.mjs`'s gate array, so `bun run check` never
   invoked it and `bun run check:text-contrast` answered *Script not found*. Nothing was red,
-  because nothing ran. The prose had already started leaning on it: this file's own `Switch`
-  divergence in section 3 argued that no new gate entry was owed for the knob glyph because
+  because nothing ran. The prose had already started leaning on it: a `Switch` divergence
+  in section 3 argued that no new gate entry was owed for its knob glyph because
   *"`check:text-contrast` already gates at 4.5 in its `primary`/`primary-content` row"* — true of
   the file's contents and false of the repository's behaviour, which is the gap this class is
   about. `check:ramp` was one step short of the same thing: present in the gate array, absent
@@ -161,63 +105,25 @@ stale-proof; a present-tense component name is not.
   invokes it — and only the second one is worth anything. Adding a gate means adding it to
   `package.json` **and** to `check-all.mjs`; a reader citing a gate as evidence should confirm it
   is in the array before trusting the citation.
-- **The two script-readable gates leave a structural hole between them, and it is
-  wider than it looks.** `check:script-tokens`' orphan rule is *imported by at
-  least one layer*, and that is deliberately loose: a token a component needs is
-  legitimately one-layer-only until the other layer builds that component. The
-  `calendar-*` five were the standing example and stopped being one when Angular
-  gained the family, which is exactly the shape the rule tolerates. But once one
-  layer imports a token, that gate says nothing about whether the other still
-  carries its own copy.
-  `check:duplicate-constants` does not close it: it fires only when **both**
-  layers declare a module-level named numeric `const`, so a layer that imports
-  the token has no declaration left to pair with.
-  The layers make this worse by having opposite idioms — React writes design
-  numbers inline in function bodies, Angular names them at module level — so the
-  gate requires a symmetry that is usually absent.
+- **The two script-readable gates leave a structural hole between them, and the sharper rule
+  narrows it rather than closing it.** `check:script-tokens`' orphan rule is *imported by at least
+  one layer*, and that is deliberately loose: a token a component needs is legitimately
+  one-layer-only until the other layer builds that component. `check:duplicate-constants` does not
+  close it either — it fires only when **both** layers declare a module-level named numeric
+  `const`, so a layer that imports the token has no declaration left to pair with, and the layers
+  have opposite idioms (React writes design numbers inline in function bodies, Angular names them
+  at module level) so the symmetry it needs is usually absent.
 
-  **The sharper rule is built.** `shadowedTokenProblems` in `check-script-tokens.mjs` collects
-  imports and module-level numeric constants **per layer** and fails when a layer that does not
-  import a flagged token declares a constant equal to its value. It finds nothing today — both
-  layers import all 27 — so it lands as a ratchet rather than a cleanup, and it was watched
-  failing against a probe constant of `8` in the React layer, where `sp2` is one of the two
-  tokens React does not import. `SHADOW_EXEMPT` is empty and a stale entry fails on its own.
-  **It does not close the hole, it narrows it to one shape**: a layer that encodes a token's
-  value in something other than a module-level numeric `const`. `Onboarding.manifest.json`'s
-  `w-80` — the worked example this entry used to cite — is exactly that shape and is still
-  outside: it is a Tailwind *utility* resolving to 320px, not a `const`, and `check:arbitrary`
-  cannot see it either because it is a core utility rather than a bracket.
-  **Of the values this entry listed as duplicated verbatim (`600`, an axis-label `8`, `0.34`,
-  `0.62`, `900`, `220`), the sharper rule still catches none, and re-reading them says why —
-  three of the six should never have been on the list.** `0.34` and `0.62` are the doughnut's
-  legend share and inner-radius ratio, and the recorded chart criterion excludes them by name: *a
-  multiplier that derives one dimension from another is not itself a design value*. `600` is the
-  charts' pre-measurement fallback width, an SSR assumption rather than a decision. What survives
-  as real is the **axis-label `8`**, which the chart-token entry above already owns, and
-  `Onboarding`'s `(view?.innerHeight ?? 900) - 220` — where `900` is another SSR fallback and
-  **`220` was a genuine design value with no token**, a popover height reserve sitting beside
-  `onboardingWidth`, which is one. Both are paid: `220` is `--onboarding-height-reserve`,
-  script-readable and read by both layers, and `900` is now a NAMED `SSR_VIEWPORT_H` in each
-  layer with an entry in `check:duplicate-constants`' `EXEMPT` explaining why it is deliberately
-  not a token — it stands in for `window.innerHeight` where there is no window, which is a
-  rendering assumption rather than a decision anybody made, and putting it in the token layer
-  would show a number nobody chose in the Overview beside values that were chosen. **That gate's
-  summary line lied while the exemption was silent**: it printed *"no numeric constant is declared
-  in both framework layers"* over a tree where one was, exempted. It now says how many are
-  exempted, which is the difference between a gate reporting a fact and a gate reporting its own
-  configuration. The axis-label `8` went with the chart tokens above; nothing on the original
-  list is left.
-- **CLOSED: the two 8px chart insets are tokens, and one of them was caught by a gate built two
-  batches earlier.** The doughnut's `rOuter` inset and the axis-label offset (`PAD.l - 8`,
-  `height - 8`) were spacing decisions in px, indistinguishable in kind from `--chart-pad-top`,
-  which is a token and is also 8. They are `--chart-ring-inset` and `--chart-label-gap` now, both
-  script-readable, read by both layers at all eight sites — **eight, not the six this entry
-  claimed**: two per chart per layer for the label gap, plus the doughnut's inset in each.
-  **The interesting part is how the last one was found.** Angular named its copy
-  `const RING_INSET = 8` at module level, and the moment `--chart-ring-inset` existed,
-  `check:script-tokens`' per-layer shadow rule — added by the debt-payment programme's batch 2,
-  finding nothing at the time — failed the build naming the file, the constant and the token. A
-  ratchet built with no violations to catch caught one on its first real opportunity.
+  **`shadowedTokenProblems` is the sharper rule**: for each flagged token, every layer either
+  imports it or contains no module-level numeric `const` equal to its value. It caught
+  `DoughnutChart.ts`'s `RING_INSET = 8` on its first real opportunity — a ratchet built with
+  nothing to catch, catching one.
+
+  **What it still cannot see is a layer encoding a token's value in something other than a
+  module-level `const`.** `Onboarding.manifest.json`'s `w-80` is exactly that shape: a Tailwind
+  utility resolving to 320px, which is `--onboarding-width`. `check:arbitrary` cannot see it
+  either, because it is a core utility rather than a bracket. Closing that means mapping the
+  spacing scale back to pixels and comparing, and nothing does.
 
 - **Two behaviour families were proposed and not shipped**, and the reasons
   should be re-read before anyone adds them. `debounce` is speculative:
@@ -226,85 +132,23 @@ stale-proof; a present-tense component name is not.
   `limit.results` would introduce a palette result cap that does not exist
   today, which is a product decision with a UX consequence rather than a
   tokenization of an existing value.
-- **CLOSED: a group-level `$description` in `contracts/design/` reaches the generated JS modules
-  now, and what it was losing was a constraint rather than a nicety.** `collectScriptTokens()`
-  skipped group nodes outright (`if (item.group || !isScript(item.token)) continue;`), so only a
-  leaf token's own description reached `Tokens.generated.js`/`.ts` and group prose survived in
-  the CSS alone. `walk()` now carries each enclosing group's description down to the leaves and
-  `buildScriptModules()` emits it once, before the first token of that group — the same shape the
-  CSS block already had. **What was being lost is the point**: `delay`'s group description says
-  these delays are pointer intent and that **a keyboard focus must reveal immediately**, which is
-  a rule about how to consume the token, and a reader of the generated module could not see it.
-  `chart.json`'s group description was lost the same way and now states the re-densification
-  price beside the values it applies to.
-- **`delay` and `dismiss` govern React only, and Angular is not silently exempt
-  — it just has no token-shaped seam yet.** Plan 7a's own Global Constraints
-  first misstated this as the same "Angular has no primitive" asymmetry that
-  is correct for `debounce`-style speculation, when it is not: Angular had no
-  `Tooltip`, `Toast` or `Pagination` **primitive**, but it provided all three
-  through Angular Material — the same "Material provides the control" bucket
-  most Tailwind manifests belonged to at the time (`Tooltip.manifest.json`,
-  `Toast.manifest.json` and `Pagination.manifest.json` all exist). *"Dressed by
-  `arena-material.css`"* was true of two of the three and never of
-  `Pagination`: the bridge had no `.mat-mdc-paginator` rule and never gained one,
-  so a delegated paginator rendered in Material's own colours the whole time.
-  `check:script-tokens` cannot see any of this — its orphan rule is "imported
-  by at least one layer," and it is satisfied by React alone by construction,
-  the same structural blind spot the first bullet in this section describes for
-  chart internals.
-  **`limit` is paid now, by the same route `delay` was.** `arena-pagination`
-  imports `limitPaginationSiblings` from `Tokens.generated` and derives its
-  window from it, so that token reaches both layers and the orphan rule is
-  satisfied by more than one of them for the first time. The blind spot is
-  unchanged — it is narrower by one token, not closed.
-  **`delay` is paid, and the way it was paid is the point: the primitive, not the seam.**
-  `arena-tooltip` imports `delayOpen` and `delayClose` from `Tokens.generated` and waits both,
-  revealing immediately on keyboard focus as the token's own `$description` demands. So the
-  flash-on-crossing defect is now fixed in both layers, and `MAT_TOOLTIP_DEFAULT_OPTIONS` — the
-  seam this entry proposed — was never wired and never will be: writing the control was the
-  cheaper fix, because it also brought the component inside `check:dimensions`,
-  `check:compliance` and the Angular arm of `check:api`, which no amount of default-options
-  wiring could have done.
-  **`dismiss` is paid, and by the same route `delay` was: the primitive, not the seam.**
-  `arena-toast` exists, and with it a host that owns the clock — `Toast.card.entry.ts` raises
-  notices and expires them on `dismissDefault` / `dismissActionable` from `Tokens.generated`,
-  skipping any toast the component pinned. So both `--dismiss-*` tokens reach both layers and
-  `MatSnackBarConfig.duration` — the seam this entry once proposed — was never wired and never
-  will be. The blind spot named in the first bullet is unchanged; it is narrower by two tokens,
-  not closed.
-- **Both grid components now navigate by keyboard, and neither claim has a suite behind
-  it.** `Table` and `Calendar` each bound `grid` with an exception on **all eight**
-  requirements — zero `role=`, zero `tabIndex`, zero key handling, in components that
-  render interactive data. That was invisible before the contract layer, which is the
-  clearest evidence that layer was worth building. Both are fixed: `Calendar` retired all
-  eight, and `Table` retired seven, keeping **one** — `focus.roving`, and it is true of
-  **card mode only**. Below `--bp-md` the table is one card per row — a list, not a grid,
-  where the rest of the pattern is *vacuous* rather than unmet — and a card whose
-  `TableRow` carries a `click` has no keyboard route at all. The obvious fix is invalid
-  ARIA (`tabIndex={0}` plus `role="button"` cannot go on a card that also contains the
-  consumer's own buttons, which is exactly what a `mobileLayout: 'block'` column draws
-  inside it), which is why it is recorded rather than done — and the exception reads as
-  unconditional and is not. A binding **can** scope a requirement now, since 8C9 built
-  `cases`, and `Table` HAS been converted since — `wide` → `grid`, `card` → `none`, both
-  rendered by `Table.cases.dom.test.jsx`. Two things had blocked it: card mode's
-  interactivity looked like the consumer's choice rather than a prop, and the grid hand-test
-  rule meant any case it declared could carry no suite. The rule is retired, and the
-  interactivity question turned out to belong to `TableRow` rather than to `Table`. The reasons are in the conditionality entry
-  below, and `Table.behaviour.json`'s own reason string now carries them too. **That reason
-  string cited a component twice and was wrong twice, and it now cites no exemplar.** It first named
-  `Skeleton` as proving a limit — that the schema could not scope a requirement to a variant —
-  which went stale when 8C9 built `cases`; 8C9's close-out rewrote it in place to name
-  `Skeleton` as demonstrating the *remedy*, which went stale in 8C10 when `Skeleton`'s defect
-  was fixed and its binding went flat again. Twice in two batches, in opposite directions, is a
-  structural signal rather than bad luck, and it generalises — the standing hazard, the
-  distinction from a harmless structural reference, and the change-time command that finds the
-  rest are the entry directly below this one. 8C10 removed the exemplar rather than replacing it
-  with a third, and left the capability stated on its own with a pointer to the command that
-  lists the cased bindings. **What stays true of both is the
-  verification, and it is no longer true**: `Calendar` and `Table` were both unverified
-  because the grid rule kept them out of `COVERED`. The rule is retired, both have render
-  suites, and both claims are backed. See the grid-rule entry below for the measurement that
-  retired it and for what the method costs.
+- **A claim about code this repository does not own is unfalsifiable here by construction, and
+  the durable fix is owning the code.** This is the lesson three token families and one
+  delegation record all arrived at independently, and it is worth stating once rather than
+  rediscovering.
+  `frameworks/angular/BehaviourDelegated.json` once asserted what a third-party library's controls
+  did — that a control applied one role rather than another, that a tooltip's show-delay defaulted
+  to zero — with no record of the version verified against. `check:behaviour` verifies that a
+  declaration names a pattern and a requirement that exist, never that a claim about somebody
+  else's package is still true, so the whole suite stays green while the reason strings quietly
+  become false. Two mitigations were proposed — pin the verified version, gate every `dressedBy`
+  path — and neither is what closed it: **writing Arena's own control did.**
+  The same shape settled the `delay`, `dismiss` and `limit` tokens. Each could have been delivered
+  to Angular through a third-party configuration seam; each was delivered by writing the primitive
+  instead, which also brought the component inside `check:dimensions`, `check:compliance` and the
+  Angular arm of `check:api` — reach no amount of default-options wiring could have bought.
+  **Any future delegation reopens this entry exactly as written.**
+
 - **A component name written into ANOTHER file's prose is a cross-file claim no gate checks,
   and it rots silently while every gate stays green.** This is a standing hazard rather than a
   list of defects, and it was diagnosed the hard way: `Table.behaviour.json`'s `focus.roving`
@@ -566,31 +410,9 @@ stale-proof; a present-tense component name is not.
   for. What stops it is the second half of `Table`'s argument alone: `TableRow` is in no
   suite, so a case declaration would be an unverified claim standing in for an accurate
   exception. Its `roles.element` reason says so in place, and converting it means writing
-  the suite first. `SideNavItem` is the third; see its own entry below. `Tab` is **not** one
+  the suite first. `Tab` is **not** one
   of these — its condition is being composed inside `Tabs` rather than any prop of its own,
   which is the parent-composition level `cases` do not reach.
-- **`check:dimensions` read a governed property out of the TAIL of a longer one, and the report
-  named a site that was not the defect.** `PROP_COLON` excluded a preceding word character or dot
-  and **not a hyphen**, so `stroke-width:` matched as `width`. Having matched, the value reader ran
-  past the closing quote of the string it was in and swallowed whatever followed — then judged
-  *that* as a bare literal. The reproduction is two lines:
-
-  ```js
-  const a = 'stroke-width: var(--bw);';
-  const b = 'p95 line chart';
-  ```
-
-  which reported `width` with a raw value of `var(--bw);';\nconst b = 'p95 line chart';`. Note
-  what it takes to surface: the second string must contain a digit, or the swallowed span holds
-  nothing the value scanner calls a literal and the whole thing passes silently. **So the defect
-  was latent for as long as no test file happened to put a number in a string near an SVG stroke
-  assertion** — it surfaced when a chart's demo series was named `p95 latency`.
-  `scanAttributes`, two functions below, already carried `(?<![\w.-])` with the hyphen: the
-  intended form was in the file the whole time and one of the two regexes had it. Fixed, with
-  both directions pinned — the tail case reports nothing, a real `{ width: 13 }` still reports.
-  **The lesson is about the message rather than the match**: a gate that mis-locates a defect is
-  worse than one that misses it, because the report sends a reader to a file that is correct.
-
 - **A behaviour text scan was designed, built, measured and rejected — do not
   re-propose it without reading this.** Plan 7c's spec proposed a static scan of
   component sources as the cheap tier beneath the render suites. It was
@@ -620,114 +442,26 @@ stale-proof; a present-tense component name is not.
   suites, so even that opening is gone: a scan's measured error rate
   is what it is regardless of what sits above or below it, and a 51% false-unmet rate
   is worse than an honest hole.
-- **Converting ONE layer to cases surfaces every place the two layers were quietly
-  different. It fired twice, and both are now closed.** The mechanism is the durable part and is not a fact about either component: a flat
-  binding on the far side can no longer silently agree with a cased one, so the cross-layer
+- **Converting ONE layer to cases surfaces every place the two layers were quietly different.**
+  A flat binding on the far side can no longer silently agree with a cased one, so the cross-layer
   check starts reporting differences nobody was looking for. Expect more as bindings are
-  converted. It fired on `Toast` and on `Skeleton`, in the batch that built cases.
+  converted; the mechanism is the durable part and it is not a fact about any component.
 
-  **`Skeleton` is CLOSED and its entry is retired.** It recorded that Angular announced every
-  variant while React's `circle` branch rendered `aria-hidden="true"` with no role, so a
-  screen-reader user meeting a circular skeleton heard "Loading" in Angular and **nothing** in
-  React. It was written up as *"both are defensible"* and left undecided; that framing was
-  wrong. A skeleton exists to announce that it will be replaced when asynchronous data
-  arrives, so a variant announcing nothing is not doing the job — the answer follows from the
-  definition and needed no judgement about noise. React's own code agreed three times in four,
-  which is the evidence the branch was an oddity rather than a strategy. 8C10 fixed React,
-  touched no Angular file, and the React binding went back to flat `status` with no cases and
-  no `divergesFrom`. Kept here rather than deleted because **the lesson is that an undecided
-  divergence can be a mis-triage**: two defensible-looking positions were two readings of a
-  component whose purpose settles it, and the cheapest test is whether the same layer already
-  contradicts itself elsewhere. The retired entry is in section 3.
+  **Two of those differences taught opposite lessons, and both are worth carrying.** One was a
+  **mis-triage**: two positions written up as "both defensible" turned out to be two readings of a
+  component whose own purpose settled it, and the cheapest test was whether the same layer already
+  contradicted itself elsewhere — it did, three branches out of four. The other was **correctly
+  undecided**: neither layer was wrong about a control one of them did not own, so no change to
+  either layer's own code could have closed it, and the tell was exactly that. When a divergence
+  looks undecidable, ask which of the two it is before writing "both are defensible".
 
-  **`Toast` is CLOSED too, and its entry is retired — but it took a different route, which is
-  the part worth keeping.** It recorded that a screen-reader user meeting a critical error toast
-  had it **queued** in Angular and **interrupting** in React, because `MatSnackBar` renders
-  `aria-live="polite"` and no role outside Firefox while React's danger toast renders
-  `role="alert"` with `aria-live="assertive"`. That was never the `Skeleton` case: Angular was
-  not wrong about a control it did not own, since Material has no tone axis to be wrong about,
-  so there was nothing to fix at this layer's level and it was deferred rather than triaged. Plan
-  D's batch 5 is what made it answerable — `arena-toast` owns the DOM and was born with the role
-  and the politeness per tone, under React's own two case names. **The lesson is the converse of
-  `Skeleton`'s**: an undecided divergence can also be correctly undecided, and the tell is that
-  no change to either layer's own code would have closed it. The retired entry is in section 3.
+  `divergesFrom` is the escape hatch for the second kind. Run `grep -rl divergesFrom frameworks/`
+  for the live set rather than trusting a figure here.
 
-  `divergesFrom` was **first exercised by these two** — `grep -rl divergesFrom frameworks/`
-  found nothing before them, so neither branch of that escape hatch had ever met a real
-  binding. Run that command for the live set rather than trusting a figure here; with both of
-  them closed, the only live user is `TableRow`, which acquired one for an unrelated reason.
-- **No gate typechecks `frameworks/angular/test/` — RETIRED as an entry, closed by batch 8C11.**
-  This recorded that `check:angular` compiled only `frameworks/angular/tsconfig.check.json`'s
-  `["./index.ts"]` — the layer barrel — and never opened the test directory, and that `bun
-  test` strips types rather than checking them, so a green suite had never been evidence about
-  types. It was not theoretical: during 8C9 a review compiled `frameworks/angular/test/Compliance.ts`
-  by hand and found **two TS2322 errors** in a directory reporting 340 passing tests, after a green
-  `check:angular` had already been read, in that same batch, as evidence the file typechecked. The
-  mitigation this entry proposed was "a second tsconfig covering the test directory, wired into
-  `check:angular`." What shipped is not that: `scripts/build/angular/build-angular-tests.mjs`
-  (`bun run build:angular-tests`) compiles the barrel and every `.ts` under `components/` and
-  `test/` together with
-  `ngc --strictTemplates` into git-ignored `build/angular-test/`, and `test:angular`, `test` and
-  `testStep()` all run the suites from that emit rather than from the `.ts` sources — so the
-  typecheck is a consequence of the build the tests already needed rather than a second gate beside
-  it, and a type error anywhere in the test surface now fails the build outright, with no test in
-  that run executing at all (see the *Architecture* paragraph above for the mechanism).
-  **What survives, because it was true before this and stays true after: a green compile is a claim
-  about TYPES, and never about behaviour.** The sharpest instance of that gap is in this very file
-  and this batch did not remove it — the `niceMax` induction in the suite now called
-  `frameworks/angular/DataVisuals.test.ts` (it was `ChartInternals.test.ts` when this was
-  written, and batch 3 renamed it), where
-  `-Number.INFINITY` (not a real property; it evaluates to `NaN`, the entry already adjacent to it
-  in the array) sat in a list the test claimed held six inputs and supplied five, and no runtime
-  assertion could report it, because both the intended `-Infinity` and the typo return `1`. It was
-  caught only because its vacuity happened to also be a type error, the moment a compiler was
-  finally pointed at the file.
-- **CLOSED: seven Angular suites justified themselves by a JIT limitation the move to AOT
-  retired, and the two halves of that entry closed by completely different routes.** Kept
-  because the routes are the lesson, and because one of them is a way debt can be discharged
-  that nothing schedules and nothing reports.
-
-  **The false prose is gone, and no batch ever set out to remove it.** The seven —
-  `BarChart.geometry.test.ts`, `LineChart.geometry.test.ts`,
-  `DoughnutChart.geometry.test.ts`, `CommandPalette.focusTrap.test.ts`,
-  `CommandPalette.keyboard.test.ts`, `ConfirmDialog.focusTrap.test.ts` and
-  `Onboarding.focusTrap.test.ts` — each carried a header saying, in the present tense, that a
-  signal input could not be driven through a template binding or `setInput()` under this
-  harness. Every one of those headers was deleted by the comment sweep, which was enforcing
-  *"the best comment is the one not written"* and had no interest in whether the sentences
-  were true. `grep -rlE "JIT|ngtsc" --include='*.ts' frameworks/angular/` now returns
-  **nothing at all** — not even the two files this entry recorded as correct past-tense
-  history, which lost their headers the same way. **A rule that deletes a class of text
-  discharges every debt written in that text, silently**, and the record has no way to notice:
-  a reader of the old entry would have gone looking for seven false clauses and found seven
-  files with no header. Re-run the command before trusting any entry whose subject is prose.
-
-  **The strategy question the entry reopened is answered, and the answer is uniform.** Each of
-  the seven tests a pure function (`barValueY`, `lineX`, `doughnutSlices`, `filterCommands`,
-  `nextActiveIndex`) or the shared `FocusTrap.ts` helpers against a hand-built DOM, rather than
-  driving the real component — a choice once forced by the harness and free since. It stands,
-  on evidence rather than on convenience: **every one of the six components involved has its
-  render proved by a suite in `COVERED`**, so no helper suite is standing in for a render.
-  `ChartDataTable.test.ts` covers all three charts, `CommandPalette.combobox.test.ts` covers
-  the palette, `ConfirmDialog.compliance.test.ts` covers the dialog, and
-  `AngularPatternCoverage.test.ts` covers `Onboarding` — verify with
-  `node -e "import('./scripts/check/arena/check-compliance.mjs').then(m=>console.log(m.COVERED))"`
-  rather than with this list. A pure function is the right thing to test directly; what would
-  have made these suites wrong is being the *only* thing tested, and none of them is.
-- **Comments in EVERY migrated layer still cite siblings by their pre-move
-  filenames, and nothing resolves them.** Batches 2 and 3 of the structure refactor each
-  renamed a layer's files and moved most of its suites (batch 1's layer, Tailwind, has no
-  suites to move, which is why this class starts at batch 2); each rewrote every
-  **import specifier**, which
-  a compiler or a test runner checks — but a bare filename in a sentence is not one. So
-  `host-class-binding.test.ts`, `testbed-env.ts`,
-  `tag-variants.test.ts`, `skeleton-dimensions.test.ts`, `bar-chart-geometry.test.ts` and
-  their siblings are still named across the Angular layer's own headers and inline comments,
-  and a reader who greps one finds nothing. **This entry was Angular-only until batch 3, and
-  that batch created the React half of the same class** — every React suite was renamed from
-  `<kebab>.test.jsx` to `<Component>[.<facet>][.dom].test.jsx`, so every header naming a
-  sibling by its old name went stale in one commit. Two commands, one per layer, because the
-  two spell a stale name differently:
+- **A comment citing a sibling by its filename is unchecked by anything, and a rename discharges
+  or falsifies it in silence.** A refactor rewrites every **import specifier**, which a compiler or
+  a test runner checks — but a bare filename in a sentence is not one, so a reader who greps it
+  finds nothing. Two commands, one per layer, because the two spell a stale name differently:
 
   ```bash
   # Angular: a kebab stem before .ts
@@ -742,148 +476,35 @@ stale-proof; a present-tense component name is not.
 
   **Two things about the React one are load-bearing.** Its path list is the whole repo, not
   `frameworks/react/` — **the class is "a comment cites a moved file by its old name", and the
-  citing file can live in any layer**, which a React-scoped search cannot see by construction;
-  the live proof is that a React-scoped sweep reported this half clean while
-  `frameworks/angular/components/display/tag/Tag.cases.test.ts` and two paragraphs of this very
-  file were still citing pre-move React names. And the negative lookbehind
-  `(?<![A-Za-z0-9.])` is what makes the result readable: without it every lowercase *secondary*
-  segment matches its own filename — `Tooltip.timer.dom.test.jsx` hits on `timer.dom.test.jsx`
-  — and the output goes from about 50 lines to about 230, nearly all of them noise.
-  **Neither command carries a `| grep -v` and neither should**: `CHANGELOG.md` is excluded by
-  not being in the path list, which is the only safe way, since a content filter on `-n` output
-  drops hits by their *text* — the trap recorded in the cross-file entry above.
+  citing file can live in any layer**, which a React-scoped search cannot see by construction. And
+  the negative lookbehind `(?<![A-Za-z0-9.])` is what makes the result readable: without it every
+  lowercase *secondary* segment matches its own filename and the output roughly quadruples.
+  **Neither command carries a `| grep -v` and neither should**: `CHANGELOG.md` is excluded by not
+  being in the path list, which is the only safe way, since a content filter on `-n` output drops
+  hits by their *text*.
 
-  Read each hit — both over-report, because a lowercase stem before an extension is also how
-  these files legitimately name a *component directory*, a still-correct history clause, a
-  synthetic test fixture (`scanFile('a.jsx', …)`, `covered: { 'Dialog:react': 'dialog-modal.test.jsx' }`),
-  or a genuinely deleted file (`grid-keyboard.test.jsx` is the standing example, and it must stay).
-  Count by reading, not by piping to `wc -l`. **It is a citation swap and
-  nothing more** — unlike the seven-suite entry above, which needs a design decision — so it
-  is the cheapest entry in this section to close and the easiest to close wrongly: a name is
-  only worth rewriting once you have opened the file it now names and confirmed the sentence
-  around it is still true.
-
-  **The React half is CLOSED, against the widened command above and nothing narrower** — which
-  is worth saying that precisely, because it was declared closed once already against a
-  React-scoped search that could not reach three live instances. Batch 3's close-out repointed
-  **fifteen** files: `test/UseDialogModal.dom.test.jsx`, `test/PlacementAndBranches.dom.test.jsx`,
-  `components/feedback/DialogModal.dom.test.jsx` (×4), `components/feedback/Behavioural.dom.test.jsx`
-  (×4), `components/feedback/onboarding/Onboarding.dom.test.jsx` (×4),
-  `components/feedback/tooltip/Tooltip.keyboard.dom.test.jsx` (×4),
-  `components/feedback/tooltip/Tooltip.test.jsx`, `components/navigation/menu/Menu.dom.test.jsx`,
-  `components/display/table/Table.test.jsx` (×2), `components/display/calendar/Calendar.test.jsx`,
-  `components/display/TagAndChipCases.dom.test.jsx`,
-  `components/navigation/side-nav/SideNavInject.jsx`, `components/forms/switch/Switch.test.jsx`,
-  `components/navigation/tabs/Tabs.prompt.md`
-  and `components/navigation/side-nav-collapsible/SideNavCollapsible.prompt.md` — **plus four
-  outside the React layer that only the widened command reaches**:
-  `frameworks/angular/components/display/tag/Tag.cases.test.ts`,
-  `frameworks/angular/components/display/stat-card/StatCard.variants.test.ts`,
-  `scripts/check/arena/check-card-viewports.mjs` (four card pages) and `scripts/check/arena/check-card-viewports.test.mjs`,
-  and two paragraphs of this file citing `tabs.test.jsx`. Each target
-  was opened first and the surrounding claim confirmed still true. Re-run the command rather
-  than trusting that list; everything it returns today is history, a synthetic fixture, or a
-  hit under `docs/superpowers/`, where the executed plan and the two unexecuted specs are
-  already recorded as carrying pre-move paths.
-  **On the Angular side four are CLOSED and the rest are not.** Batch 3 fixed the
-  `chart-internals.test.ts` citations in
-  `components/charts/bar-chart/BarChart.geometry.test.ts`,
-  `components/charts/line-chart/LineChart.geometry.test.ts` and
-  `components/charts/doughnut-chart/DoughnutChart.geometry.test.ts` (twice in the last, a
-  header clause and an inline comment). That file had been renamed **twice** — batch 2 made it
-  `ChartInternals.test.ts`, batch 3 made it `frameworks/angular/DataVisuals.test.ts` at the
-  layer root — and both times the `import` line one or two lines below was rewritten while the
-  header above it was not, which is precisely the shape this entry records. Each was checked by
-  opening `DataVisuals.test.ts` and confirming it really does cover the functions the header
-  claims (`barPath`, `arcPath`, `niceMax`, `ticks`, `resolveColors`), and each now carries the
-  rename chain in past tense so a third rename cannot silently falsify it. **The rest of the
-  Angular class closed itself, and how is the point.** Its command returns **zero** today, and no
-  batch swept it: the comment rule — *"the best comment is the one not written"* — deleted the
-  headers those stale filenames lived in, discharging the debt as a side effect of enforcing an
-  unrelated rule. The same sweep took the seven suites' false JIT clause and the wrong-reason
-  comment on `Compliance.ts`'s `c.name as string` cast, both recorded elsewhere in this section
-  as open. **A rule that deletes a class of text pays every debt written in that text, silently
-  and without a commit that says so**, which is worth knowing in both directions: re-run the
-  command before planning work against any entry whose subject is prose, and expect no credit in
-  the log for the batch that closed it. What the sweep cannot reach is a filename cited in a
-  `.md`, a `.json` or a string — hence the wider React command above, which still returns
-  thirty-five hits, all of them history, synthetic fixtures, or `docs/superpowers/`.
+  Read each hit — both over-report, because a lowercase stem before an extension is also how these
+  files legitimately name a *component directory*, a still-correct history clause, a synthetic test
+  fixture, or a genuinely deleted file. Count by reading, not by piping to `wc -l`. **It is a
+  citation swap and nothing more**, which makes it the cheapest class here to close and the easiest
+  to close wrongly: a name is only worth rewriting once you have opened the file it now names and
+  confirmed the sentence around it is still true.
 
   **A second shape belongs to this entry and is not a filename at all: a comment asserting a
-  property of its own DIRECTORY.** Eleven React suites opened with *"This directory renders
-  with renderToStaticMarkup and has no DOM"*, which was a property of `frameworks/react/test/`
-  and became a property of nothing when batch 3 colocated the suites — three of the eleven were
-  outright **false**, because `tooltip/`, `tabs/` and `menu/` each hold a `.dom.test.jsx`
-  sibling, and the other eight were one component away from it. `frameworks/react/test/Smoke.dom.test.jsx`
-  carried the sharpest form, *"This directory is separate from frameworks/react/test/ on
-  purpose"*, from inside `frameworks/react/test/`. All are converted to *"This suite carries no
-  `.dom.` infix"*, and **the rule is a property of the FILENAME now, never of the directory** —
-  any sentence stating it as a directory property is one sibling away from being false. A path
-  sweep cannot see this shape, and neither can a grep for renamed tokens; it is found by reading
-  the header of a file you are already editing.
+  property of its own DIRECTORY.** Eleven React suites once opened with *"This directory renders
+  with renderToStaticMarkup and has no DOM"*, which was a property of one directory and became a
+  property of nothing when the suites moved beside their components — three of the eleven were
+  outright false. **The rule is a property of the FILENAME, never of the directory**; any sentence
+  stating it as a directory property is one sibling away from being false. A path sweep cannot see
+  this shape, and neither can a grep for renamed tokens. It is found by reading the header of a
+  file you are already editing.
 
-  **Two narrower classes are CLOSED, and this entry described both wrongly at first, in
-  opposite directions.** It claimed batch 2 had rewritten "every path naming a file that no
-  longer exists, which the path-existence sweep finds"; **five full paths inside the layer
-  resolved to nothing** — `Skeleton.ts` citing `frameworks/angular/test/skeleton-dimensions.test.ts`,
-  and `ConfirmDialog.variants.test.ts`, `Onboarding.variants.test.ts`,
-  `BulkActionBar.variants.test.ts` and `CommandPalette.variants.test.ts` all citing
-  `frameworks/angular/test/host-class-binding.test.ts`. And it claimed cross-layer citations
-  "were corrected in that batch (six sites)"; **ten survived**, in
-  `scripts/lib/arena/api-surface.mjs`, `scripts/check/arena/check-api.mjs`, `scripts/lib/arena/api-surface.test.mjs`
-  (twice), `frameworks/react/test-dom/tag-and-chip-cases.test.jsx` (twice),
-  `frameworks/react/test-dom/onboarding-modal.test.jsx` (twice),
-  the layer divergences (section 3) and — a **gate-read artifact**, not a comment —
-  `frameworks/react/components/feedback/Toast.behaviour.json`. The close-out fix corrected
-  all fifteen. (Those three React paths are the names those files carried at the time and
-  are kept as the record; batch 3 moved them to
-  `frameworks/react/components/display/TagAndChipCases.dom.test.jsx`,
-  `frameworks/react/components/feedback/onboarding/Onboarding.dom.test.jsx` and
-  `frameworks/react/components/feedback/toast/Toast.behaviour.json`.) **Describing a class as closed when it is not turns a deferral into a false
-  all-clear**, which is worse than the deferral: the intra-layer class above is honestly
-  deferred and a reader knows to expect hits, while a reader of the old sentence would have
-  stopped looking. Re-derive both classes rather than trusting this paragraph — the paths
-  with a script that walks `git ls-files`, extracts every `frameworks/…` token and reports the
-  ones `os.path.exists` denies (it also reports deliberate past-tense history, such as
-  `check-duplicate-constants.mjs`'s "which was `frameworks/angular/primitives/chart-internals.ts`
-  when this happened", which is the correct form and must be left alone); the cross-layer
-  citations with the change-time command in the *"a component name written into ANOTHER file's
-  prose"* entry above, run for the moved component.
-- **CLOSED: `validateBinding` had two holes with one cause, and both are shut.**
-  `bindingCases()` normalises a binding into a uniform list, which is exactly what made the two
-  invisible: it maps a missing `name` to `null`, so a validator reading its output cannot tell a
-  flat binding from a `cases[]` entry that failed to name itself. **A duplicate case name** passed
-  `check:behaviour` outright while `crossLayerAgrees` built its per-name map last-write-wins, so
-  only the last declaration of a repeated name was ever compared across layers and the earlier
-  ones were invisible rather than wrong. **A nameless `cases[]` entry** was worse: the
-  `when`-required rule read `if (c.name !== null && !c.when)`, so a nameless entry skipped that
-  too, and `cases: [{ "pattern": "none" }]` cleared the gate with no name and no prose — a case
-  declaring nothing about which render it describes, which is the one thing a case is for.
-  Both are now checked against `binding.cases` **before** normalisation, which is where the
-  distinction still exists. The two test wrappers keep their own duplicate throw, and they must:
-  `Object.keys()` on a suite's case map can never carry a duplicate, so the key-set diff would
-  report a confusing missing/unknown pair instead of naming the real problem. But a wrapper only
-  guards a binding a suite covers, and most bindings are uncovered.
-  **The generalisation is about normalisers.** A function that makes two shapes look alike is
-  the right tool for the consumer and the wrong place to validate from — validate upstream of it,
-  on the shape the author actually wrote.
+  **And a rule that deletes a class of text pays every debt written in that text, silently.** The
+  comment sweep enforcing *"the best comment is the one not written"* removed headers that
+  contained several of this file's open entries, with no interest in whether the sentences inside
+  them were true. Re-run the commands before planning work against any entry whose subject is
+  prose; expect no commit that says the debt closed.
 
-  **Three smaller things the same batch left, recorded here rather than in the plan that gets
-  deleted.** `divergesFromReason` was a novel field with no repo precedent that **no gate
-  reads**, introduced on `Skeleton`'s and `Toast`'s bindings and left on `Toast`'s alone once
-  8C10 closed the `Skeleton` divergence. **It now has zero instances**: Plan D's batch 5 gave
-  Angular an `arena-toast` that carries the tone axis, so that divergence closed too and the
-  field went with it. The open question it raised is therefore answered by disappearance rather
-  than by decision — if a convention for divergence rationale is ever wanted it should be named
-  repo-wide, and there is no longer an unstated first instance to inherit from.
-  A comment in `frameworks/angular/test/Compliance.ts` explaining why a
-  `c.name as string` cast is safe **gives the wrong reason**: it cites the no-cases guard,
-  which only refuses the single-entry flat shape, when the real protection is that the
-  missing/unknown throw fires first — a null name can never match a real object key. The cast
-  is safe; the stated mechanism is not the one protecting it. And neither wrapper's
-  failure-path tests exercise the loop **body**, so the per-case binding synthesis and the
-  `case "<name>" (<when>): ` message prefixing are proved only by the real component suites
-  and by nothing that would survive their deletion.
 - **`Tooltip`'s `roles.describedby` is guarded at the two detectable ends, and the third is
   still open.** `aria-describedby` is added by `cloneElement` onto the consumer's own child,
   which only works when that child is a single element that accepts and forwards props. Two
@@ -920,97 +541,8 @@ stale-proof; a present-tense component name is not.
   implementation, not a string in a binding, so there is no grep for it — finding the next one
   means reading an implementation against its binding.
 
-- **The grid hand-test rule is RETIRED, and what replaces it is a measurement plus a
-  method.** `Calendar` and `Table` bound `grid` and were DOM-tested by hand — serve the
-  tree, operate the component on its `*.card.html` page — because the React DOM suites'
-  own directory had once been deleted whole for its RAM cost and restored minus one
-  suite. Both have render suites now
-  (`components/display/calendar/Calendar.gridKeyboard.dom.test.jsx`,
-  `components/display/table/Table.cases.dom.test.jsx`) and both are in `COVERED`.
-
-  **The old figure is not comparable to the new one, and that is the first thing to know.**
-  The retired rule cited `grid-keyboard.test.jsx` at 164 MiB against 109 for the six other
-  suites of that directory and 171 for the whole of it. Those numbers were taken on another
-  machine, with other versions of bun, React and happy-dom, against a harness baseline nobody
-  recorded — so "164" cannot be compared with anything measured today. Only a before/after
-  pair taken in one sitting means anything. Taken that way, sampling `VmHWM` of the process
-  tree:
-
-  | what | peak RSS |
-  |---|---|
-  | harness baseline — one tiny DOM suite alone | 89 MiB |
-  | the Calendar grid suite alone | 128 MiB |
-  | the whole DOM invocation, without it | ~143 MiB |
-  | the whole DOM invocation, with it | ~158 MiB |
-
-  The rule's own justification was that the grid cost more than every other suite combined.
-  It does not: 39 MiB above baseline against roughly 54 for the other nineteen together. That
-  is what retires it, on its own terms.
-
-  **What actually costs memory is the number of key presses, not the grid.** Measured
-  separately: mounting the 84-cell fixture is +15 MiB over baseline, walking it is +60 more.
-  Each press re-renders the whole grid through `act()`, and the garbage is not collected
-  during the run. So the sequential cell-by-cell walk — which is the method now, and which
-  proves strictly more than the old suite's sampled assertions — did **not** make the suite
-  cheap by itself. What makes it affordable is a small fixture: the Calendar suite renders a
-  6×5 grid by setting `dayStart`/`dayEnd` explicitly rather than taking the default 6×14, and
-  every invariant it asserts holds at any size from 2×2 up. Halving the cells roughly halved
-  the bill.
-
-  **A future grid did inherit it, and the numbers are worth keeping beside the React ones.**
-  `frameworks/angular/components/display/calendar/Calendar.grid.test.ts` walks 6 columns by 2
-  hour slots in **17 presses**, half React's 34 against a 12-cell grid rather than a 30-cell
-  one, with `view`, `dayStart` and `dayEnd` all explicit for the same reason. Six columns is
-  the floor for a week view — `hideEmptyWeekend` only ever drops Sunday — and one hour slot
-  would make `Home`, `End`, `ArrowUp` and `ArrowDown` vacuous, so 6×2 is the smallest fixture
-  at which every invariant still means something. Mutating the component confirms the walk
-  bites: every cell `tabindex="0"`, `Home` behaving as `End`, and `Enter` doing nothing each
-  turn it red. Removing the `ArrowRight` clamp does **not**, because `CalendarState.clamped`
-  re-clamps independently — defence in depth rather than a hole in the suite, and the same
-  shape `Table` has.
-
-  **The method, so a future grid inherits it rather than re-deriving it.** One mount per
-  scenario, kept in a module-level variable and cleaned up once in an `after()`. A walk that
-  visits every cell with one press per step, asserting at each that focus landed on the
-  expected cell **and** that exactly one `tabindex="0"` exists and is that cell. Edge clamps
-  as one extra press per edge, never a loop of forty. `Home`/`End` asserted inside the same
-  walk. `git show edb9f3e^:frameworks/react/test-dom/grid-keyboard.test.jsx` is still the
-  deleted original and is worth reading for the transposed-grid explanation, but its fixture
-  no longer matches `Calendar`'s API — it passes `events`/`onEventClick`, which are now
-  `CalendarEvent` children. **Do not modernise the path in that command**: `git show
-  <rev>:<path>` resolves inside that revision's tree.
-
-  **What was still checked by eye is not any more**, and the reason it could stop being is that
-  the tooling for it already existed: `check:cards` drives real Chromium over CDP, and the same
-  connection presses a real Tab. `check:focus-trap` walks each trap forward and back and asserts
-  focus never leaves the panel, reaches every control in it, and wraps at both ends. See its own
-  entry for what it found on its first run.
-- **CLOSED: compliance coverage is 100 of 100 bindings, and closing it meant refusing the obvious
-  work.** `bun run check:compliance` prints the live pair; it read 78 of 100 when the
-  debt-payment programme reached it, and every one of the 22 uncovered bindings was
-  `pattern: "none"` with no exceptions. **Writing 22 compliance suites would have proved
-  nothing**: `none`'s `requires` is empty, so a suite that binds it passes by having nothing to
-  check — the ceremony this file already warns about when it says a case bound to `none` verifies
-  nothing.
-
-  So the suites assert the sentence `none.json`'s own *description* makes and its `requires`
-  cannot: *"a component with no interactive affordance: it renders, and a user cannot act on it."*
-  `InertComponents` in each layer renders every genuinely inert component with no consumer content
-  and fails on any focusable element or interactive role it introduces — and carries a
-  counter-test proving the check sees a real button, so it cannot pass by looking at nothing. The
-  set is not uniform, and splitting it was the actual work: `Tab` and `TableCell` bind `none`
-  because the pattern lives on the PARENT, so they are covered where that parent is rendered and
-  asserted to add no affordance of their own; `SideNavItem` bound it because the pattern is
-  CONDITIONAL, and it is cased now.
-
-  **What a green run means has not changed.** `COVERED` guards the accuracy of what it claims,
-  never the accessibility of what it covers, and now that it claims everything the distinction
-  matters more rather than less: 100 of 100 says every binding has a suite that renders it, and
-  says nothing about whether the components are good. The `figure-with-data-table` half stays
-  unverifiable regardless — a suite can assert an `aria-label` exists, never that it is a good
-  name for the chart.
-- **Some exceptions rest on a `behavioural` verdict no suite in either layer
-  declares — RETIRED as a live list, kept for the lesson.** The last four were
+- **A BEHAVIOURAL requirement with no suite to pin it is unfalsifiable, not merely unverified.**
+  The live list is empty today and it will refill; what follows is why that matters. The last four were
   `ActivityFeed`'s `posinset`/`busy` in both layers, and both bindings now have cases
   suites. What the entry describes is still real: some requirements no single element can
   decide from the DOM, so
@@ -1056,22 +588,6 @@ stale-proof; a present-tense component name is not.
   that has gone stale here twice. Neither the deletion and restore of the React DOM test
   directory nor its later disappearance changed what is unpinned; none of them was ever
   what caused it.
-- **CLOSED: four Angular primitives leaked their `id` onto the host, and adding the attribute to
-  the guard is what made the fix stick.** `arena-input`, `arena-textarea`, `arena-side-nav-item`
-  and `arena-side-nav-collapsible` each declared `readonly id = input(...)`, and Angular writes a
-  static attribute to the DOM during the creation pass whether or not it also matches an input —
-  so `<arena-input id="email">` left `id="email"` on the host **and** put it on the real `<input>`
-  inside. Two elements with one id, where a `<label for="email">` resolves to the host, which is
-  not a labelable control. `arena-calendar-event` was the fifth and already cleared it, found by
-  its own placement suite looking up a chip and getting the host back.
-  All four clear it now, and **`id` is in `GLOBAL_ATTRIBUTE_INPUTS`** in
-  `frameworks/angular/test/HostClassBinding.test.ts`, which this entry asked for in the same
-  change so a fifth recurrence would not be as silent as the first four. The guard is symmetric —
-  it also fails a primitive that clears an attribute it takes no input for — and `arena-tab` is
-  the case that proves the symmetry is not too tight: it BINDS `[attr.id]` to a real value rather
-  than clearing it, takes no `id` input, and is correctly ignored. Watched failing against a
-  reverted `Input.ts`.
-
 - **A barrel gap is invisible to every gate that is not looking for it, and one hid a real
   name collision for as long as it lasted.** `frameworks/angular/components/display/index.ts`
   exported six of its eleven primitives; `badge`, `card`, `table`, `table-row` and `table-cell`
@@ -1088,67 +604,7 @@ stale-proof; a present-tense component name is not.
   `frameworks/tailwind/`**, whose manifests are reached by glob rather than by a barrel, so
   there is nothing there to be missing from.
 
-- **CLOSED: a name that is present is no longer allowed to be useless, for the charts and for
-  `ProgressBar`.** `figure-with-data-table`'s `roles.label` requires "aria-label naming the
-  chart", and a suite can assert a name resolves — never that it is a good one. All three charts
-  fell back to a name that was only their TYPE (`Bar chart`, `Line chart`, `Doughnut chart`) when
-  no `seriesLabel` was given, and `ProgressBar.jsx` fell back to `aria-label={label || 'Progress'}`.
-  Each satisfied its pattern mechanically while telling a screen-reader user only what the
-  component is: **two bar charts on one page announced identically, and so did two progress bars.**
-
-  `seriesLabel` and `ProgressBar.label` are **required and guarded** now, in both layers and in
-  the contract — the shape `Table.label` and `SegmentedControl.ariaLabel` already had, and which
-  this entry named as "what the fix looks like when it is taken". React throws with a message
-  saying what the member names and that nothing can derive it; Angular's `input.required` refuses
-  the render. The dead `?? 'Value'` fallback on each table's value-column header went with them.
-
-  **What made the change safe to take was the AOT compiler**, and it is worth recording as the
-  argument for that harness: making the input required turned every Angular call site that
-  omitted it into an NG8008 at **build** time, naming the file and the line, before a single test
-  ran. The React side had to be found by running suites. Same change, two very different
-  discovery costs.
-
-  **What is NOT closed is the general problem**, and it cannot be: no assertion separates a
-  present name from a useful one. A `seriesLabel` of `"Chart"` satisfies the requirement exactly
-  as the fallback did. What the change removes is Arena *shipping* the useless name by default;
-  the consumer can still supply one, and that is human judgement by construction.
-
-- **CLOSED, and it found a shipped defect on its first run: the interior of a focus trap is
-  gated now.** The boundary wrap is Arena's own `.focus()` call and happy-dom honours it, so the
-  suites assert it for real. The **interior** — that Tab from a control in the middle reaches the
-  next one — is the browser's native sequential focus navigation, which neither layer implements
-  and happy-dom does not have, so a suite asserting it there passes identically against a perfect
-  trap and against none. That is why this was recorded as a by-hand check against a written
-  checklist, with **no browser-driven gate**.
-
-  **The premise was wrong, and it was wrong about this repository rather than about the world.**
-  `check:cards` has driven real Chromium over CDP for as long as it has existed, and the same
-  connection dispatches a real `Tab`. `check:focus-trap` opens each trap on its own card page,
-  walks it forward one press at a time and back once, and asserts focus starts inside, never
-  leaves, reaches every focusable, and wraps at both ends. Four traps, both layers on purpose,
-  since `UseDialogModal.js` is a port of `FocusTrap.ts` and a walk that only ever ran on one side
-  would prove half of what it claims.
-
-  **What it found on its first run was a real defect nobody had recorded: React's
-  `CommandPalette` had no focus trap at all.** Angular's imports `FocusTrap`, holds a
-  `FocusTrapState`, calls `handleOpenTransition` on open and `trapTabKey` on Tab, and carries a
-  dedicated `CommandPalette.focusTrap.test.ts`. React's had none of it — no `useDialogModal`, no
-  Tab handling — so an open modal palette let a keyboard user Tab straight out of it into the page
-  underneath. Measured before the fix: focus left the panel on Tab presses 1, 2, 4, 5, 7 and 8.
-  It consumes `trapTabKey` now. **Section 3's `CommandPalette` entry read "RESOLVED: both layers
-  are accessible comboboxes", and that was true about the role and silent about the trap** — a
-  convergence claim scoped to what somebody checked.
-
-  **The gate reproduced a hazard this repository documents, while being written about the code
-  that documents it.** Its first selector was the loose form, `button:not([disabled]), …,
-  [tabindex]:not([tabindex="-1"])` — and a selector list is OR'd, so the palette's
-  `<button tabindex="-1">` option rows came back in and the gate reported a correct combobox as a
-  broken trap. `UseDialogModal.js` carries `:not([tabindex="-1"])` on **every** clause for exactly
-  that reason, and CLAUDE.md says so in a sentence. Reading it is not the same as having written
-  it.
-
-- **OPEN, and it is the last thing in this file that no gate in this repository can ever close:
-  whether the explicit `aria-live` on `ProgressBar` and `Spinner` causes any real announcement.**
+- **The last thing in this file no gate can ever close: whether the explicit `aria-live` on `ProgressBar` and `Spinner` causes any real announcement.**
   Both carry `aria-live="polite"`, and the `progressbar` pattern requires it because that role —
   unlike `status` — carries no implicit live region. What is verified is exactly that: the
   attribute is present, and a render suite says so. **What is not verified is the thing the
@@ -1180,25 +636,6 @@ stale-proof; a present-tense component name is not.
   `ProgressBar.label`, `Table.label` and `SegmentedControl.ariaLabel` required and guarded
   precisely because a present name is never checked for being a good one. Two charts on one page
   must not announce identically; nothing but a person listening can confirm they do not.
-- **The delegated declarations' unpinned claims about Angular Material are CLOSED, and how
-  they closed is the part worth keeping.** `frameworks/angular/BehaviourDelegated.json` once
-  asserted what a third-party library's controls did — that `MatButtonToggleGroup` applied
-  `role="group"` rather than `role="radiogroup"`, that `MatTable` added no keyboard handling,
-  that `matTooltip`'s `showDelay` defaulted to 0 — and which Material surfaces the bridge
-  dressed. **None of it recorded the version it had been verified against**
-  (`@angular/material` 22.0.5), so a release fixing one of those would have gone unnoticed:
-  `check:behaviour` verifies that a declaration names a pattern and a requirement that exist,
-  never that a claim about a third-party library is still true, and the whole suite stays
-  green while the reason strings quietly become false. Two cheap mitigations were proposed
-  and neither was ever built — record the verified version as one top-level field and check
-  it against `package.json`, and gate every `dressedBy` path the way `check:states` gates its
-  own map. **Neither is what closed it.** Plan D wrote an Arena primitive for every delegated
-  control, and the file now holds two `absent` entries with no third-party claim left in it
-  to rot. **The lesson generalises past Material**: a declaration about code this repository
-  does not own is unfalsifiable here by construction, so the durable fix is owning the code
-  rather than pinning the claim — and any future delegation reopens this entry exactly as
-  written.
-
 - **`check:api` asserts three of its five rules, not five.** R1 (an object is pure
   data) is enforced by the type schema, R4 (no platform types) by the reader
   recognising them by name, and R5 (no unions between forms) by a member carrying
@@ -1224,252 +661,15 @@ stale-proof; a present-tense component name is not.
   contracts/api/components/`, whose only hit is `Input.validate`'s `functionInput` — so R3 is
   today unchecked and also unexercised. That is not a mitigation: the moment a
   contract does declare one, the rule is exactly as unverifiable as this entry says.
-  **The two mechanical gaps beside them are CLOSED, and they closed together because each
-  was the other's excuse.** `spec.default` was read by nothing, and the stated reason for
-  leaving it that way was that React's default lives in a `.jsx` destructuring pattern the
-  gate never opened — so the comparison could only have run against Angular, which is worse
-  than not claiming it. `check-api.mjs` now reads the `.jsx` beside the `.d.ts`
-  (`reactImplementation` in `api-surface.mjs`, which also reaches a `forwardRef` component,
-  since `CalendarEvent` is not an `export function`), and with it both halves fall:
-  a **surviving `{...rest}` spread** is a failure, so the unguarded-loss shape this file
-  records for `SideNav`, `AppLogo` and the flattened `Button`/`IconButton` heritage now has a
-  gate behind it; and a **default the contract and the implementation both state must match**,
-  while a default the implementation states and the contract does not is reported as
-  undocumented API. Both were watched failing against a mutated `Skeleton.jsx`.
-  **It found three real defects on its first honest run, and the run before that was a false
-  green of my own making**: the reader iterated `contract.members`, and the key is
-  `contract.api`, so it checked nothing and reported clean — the exact shape the *"a green run
-  is only as good as what the gate looked at"* entry describes, caught by asking how many
-  members it compared rather than whether it passed. The three: `Dialog.width` defaulted to
-  `calc(var(--sp-1) * 120)` with a contract that said only *"Omit for the default"* and never
-  named it, `Avatar.name` defaulted to `""`, and `Skeleton.lines` to `3`. All three contracts
-  now state the value.
-  **What the rule deliberately does NOT claim** is the converse: a contract default with no
-  destructuring default is **not** reported, because the default may legitimately be applied
-  downstream — `BarChart.slot` and `LineChart.slot` declare `default: 1` and neither layer
-  destructures one, because `resolveColors` applies `catColor(slot ?? 1)`. A source-reading gate
-  cannot see that, and reporting it would have been three false positives dressed as findings.
+  **What the gate does read is both surfaces, not one.** `check-api.mjs` opens the `.jsx` beside
+  the `.d.ts`, so a restored `{...rest}` spread fails and a `spec.default` the implementation
+  contradicts fails with it. The comparison refuses one direction on purpose: a contract default
+  with no destructuring default is **not** reported, because the default may legitimately be
+  applied downstream — `BarChart.slot` declares `1` and neither layer destructures one, because
+  `resolveColors` does `catColor(slot ?? 1)`. A source-reading gate cannot see that, and reporting
+  it would be false positives dressed as findings.
 
-- **CLOSED: three Angular primitives imported a contract type as a value, and the fix is the
-  guard rather than the three lines.** The convention is
-  `import type { X } from '../../../Api.generated'` in both layers — every declaration in
-  `Api.generated.ts` is a type and none exists at runtime (`export type` for the enums,
-  `export interface` for the predefined objects), so a value import there is a type-only import
-  written without `type`. `Avatar.ts`, `Alert.ts` and `PageHead.ts` wrote the bare form. It
-  compiled, nothing ever broke, and no gate could see it: `check:api` compares members and
-  `ngc` elides the import either way. All three are converted, and
-  `frameworks/angular/test/ContractTypeImports.test.ts` now scans every component source and
-  fails the bare form, with the two zero-result guards this repo's other discovery gates carry —
-  no sources found, and no `Api.generated` import found at all. The guard was watched failing
-  against a reverted `Alert.ts` before it was trusted.
-  **The reason this was worth an entry is not the typo.** It had been written down **only inside
-  plan 8B3**, which was deleted when that plan was executed, so it had to be rediscovered — the
-  exact failure mode this file's preamble names, demonstrated on a defect small enough that
-  nobody would have noticed it staying lost.
-
-- **RESOLVED: a boolean variant's `defaultVariants` entry was written two different ways, and
-  the split was a detection split rather than a style one.** With `true`/`false` keys,
-  `tailwind-variants` infers a **boolean** variant, so the default must be `false`, not
-  `"false"`. Every manifest whose component had an Angular `<Component>.variants.ts` consumer
-  used the boolean; every manifest without one used the string, because `ngc --strictTemplates`
-  is what rejects the string form and a manifest no Angular component imports is compiled by
-  nothing. This entry recorded thirteen left alone deliberately, on the reasoning that changing
-  them fixed nothing measurable. **That reasoning expired the moment Plan D started**, and
-  batch 1 fixed all of them; the entry above under *Twelve Tailwind manifests carried a type
-  error nothing could see* is the live record, and it states the lesson — the blind spot, not
-  the typo. Kept here only so a reader who finds this paragraph quoted elsewhere knows it is
-  spent.
-
-- **CLOSED, and the re-read confirmed the guess while finding a gap nobody was looking for.**
-  This recorded that `ActivityFeed`'s articles carried `tabindex="0"` on recollection rather
-  than on a reading of APG, because `www.w3.org` was unreachable from the environment where the
-  component was written. It is reachable now, and it was re-read.
-
-  **The recollection was right.** APG's feed example states `tabindex="0"` on each article and
-  says the feed container itself is not focusable — exactly what both layers do. The alternative
-  this entry worried about (`-1` per article with the feed focusable) is not what APG shows, so
-  no component and no suite changed. Note where the answer lives: the *pattern* page specifies
-  no tabindex at all, and the *example* page's "Role, Property, State, and Tabindex Attributes"
-  table is what settles it — a distinction worth knowing before anyone re-checks this.
-
-  **What the re-read found is that Arena's own pattern file required LESS than the source it
-  cites.** `contracts/behaviour/feed.json` names `source` as the APG feed pattern and listed two
-  keys, `PageDown` and `PageUp`. APG's keyboard section lists **four**: Control+End moves focus
-  to the first focusable element after the feed, and Control+Home to the first before it.
-  Neither layer implemented them, and nothing could have noticed — a pattern file is the
-  authority, so a component meeting it fully is green however much of its cited source the
-  pattern left out. **A contract that under-states its own source is a quieter defect than a
-  component that under-implements its contract**, because every gate above it agrees.
-
-  Both keys are in the pattern and in both layers now, sharing the `focusableElements` helper
-  each layer already had for its focus trap. `keyboard.ControlEnd` and `keyboard.ControlHome`
-  are registered as BEHAVIOURAL, so each suite has to earn its verdict by acting on the tree —
-  which needed a fixture change worth recording: **the requirement is about LEAVING the feed, so
-  a feed alone in a document has nowhere to leave to.** Both suites now put a focusable element
-  on each side of the feed and assert focus lands on it. Watched failing against a disabled
-  handler before being trusted.
-
-- **CLOSED, and it had been closed for some time: Angular implements `Input.validate`.**
-  `frameworks/angular/components/forms/input/Input.ts` declares
-  `readonly validate = input<(value: string) => string>()` and calls it on both the blur and the
-  change path, and `check:api` compares that signature against the contract on every run. This
-  entry recorded the debt as *"what remains owed is an Angular `Input` that declares the member;
-  no Angular component was touched, here or in 8C2"*, and stayed that way after the component was
-  written. **The entry's own subject is a reader rather than a component**, which is how it
-  survived: the paragraph is mostly about `angularSurface()` learning to parse the bare-arrow
-  spelling, and that half was genuinely finished first, so the sentence read as current while its
-  last clause had gone false. What survives is the sequencing argument it was written to defend —
-  the API is settled and normative *before* the second layer has an implementation to defend, and
-  `check:api` compares the modelled signature, so a reshape at implementation time is a contract
-  change rather than a choice.
-- **CLOSED: `ControlSize`'s description was inaccurate for two of its four consumers, and the
-  reuse was correct throughout.** `contracts/api/types/control-size.json` said *"Heights come
-  from the density tokens, so a control inside `.arena-compact` re-densifies with the rows
-  around it."* True of `Button` and `IconButton`. False of `ProgressBar`, whose thickness is
-  `--sp-1`, `calc(var(--sp-1) * 1.5)` and `calc(var(--sp-1) * 2.5)`, and of `Spinner`, whose
-  diameters are `--icon-sm`, `--sp-5` and `--sp-8`: `.arena-compact` redefines only the `--dz-*`
-  family (`contracts/design-generated/spacing.generated.css`). The description now says that
-  what each step *measures* is the component's own decision and names which two re-densify.
-  **The lesson is about what an enum's description may promise.** The shared enum was never in
-  question — all four implement the same three steps, and the alternative was a fourth `sm md lg`
-  enum with an identical value set, exactly the duplication the reuse rule exists to prevent. The
-  defect was a description that described the *implementation* of two consumers as though it were
-  a property of the type. A shared type's description may state what the values mean and must not
-  state how any consumer resolves them, because a description is what a new platform target reads
-  first and nothing anywhere checks one.
-
-- **`Table.empty`'s real default is stated in two of its three surfaces, and the third cannot
-  carry it.** `Table.jsx` destructures `empty = 'No data.'`, and the contract and the
-  `.prompt.md` now both name the string, say that Angular projects nothing in the same case, and
-  say why the fallback is deliberately not mirrored — a table's empty state is editorial the way
-  `label` is, so two layers hardcoding one English sentence is worse than one of them being
-  visibly blank. **The `.d.ts` is structurally unable to state it**: a TypeScript interface
-  property carries no default value, and no `.d.ts` in the layer carries a comment — verify with
-  `grep -rln '/\*\|// ' --include='*.d.ts' frameworks/react/components/`, which returns nothing.
-  So "all three surfaces agree" is not an achievable state for any defaulted member, and a future
-  gate comparing them must read the `.jsx` rather than the declaration.
-  **What was NOT closed** is the mechanism: `spec.default` is documented in the contract format
-  and read by no gate, so nothing would catch the contract and the implementation drifting apart
-  again. That half is recorded with the rest of `check:api`'s reach.
-
-- **CLOSED: every required slot in the repo is guarded, and the "two-and-two split" this entry
-  described had already closed itself.** It recorded `Tooltip.content` as deliberately unguarded
-  and `AppLogo.mark` as guarded, called the two irreconcilable, and later added
-  `Menu.trigger` (unguarded) and `SideNavSection.content` (guarded) to make it two-and-two and
-  "settle nothing". **Rendered rather than read, all four throw.** `Tooltip` and `Menu` reject an
-  absent slot through `!React.isValidElement(children)`, because `React.isValidElement(undefined)`
-  is false — guards written to catch a *fragment*, which reject *absence* as a side effect.
-
-  So the rule holds by accident, and an accident is not a guarantee. It is one now:
-  `frameworks/react/test/RequiredSlots.test.jsx` **derives** the set from the contracts rather
-  than listing it, renders each component without its required slot, and asserts a throw whose
-  message names the component — so a fifth required slot joins by being declared, a retired one
-  cannot sit there unnoticed, and an empty set fails. Watched failing against a `Tooltip` whose
-  guard was made absence-tolerant.
-  **Why this needed a suite at all is the durable half**: `compareSurface` excludes slots from
-  its required-ness comparison, because Angular's `<ng-content>` cannot express mandatory. That
-  exclusion is correct and it means a contract declaring `"required": true` on a slot holds React
-  to something **no gate checks**. This is that check.
-
-- **`Tabs`'s total-exception `tabs` binding was paid down, and what that cost is worth
-  recording.** The prior entry here named a deliberate asymmetry: `Calendar` and `Table`
-  had their `grid` exceptions retired while `Tabs` sat untouched, because the component
-  that contracted its API in the same batch said in its own commit message that
-  contracting an API is orthogonal to accessibility. That asymmetry is now resolved rather
-  than merely explained — `Tabs.behaviour.json` reads `"exceptions": []` — and resolving it
-  needed an API change, not only a keyboard one: a component that rendered no tabpanel and
-  wired no `id`/`aria-controls` between a tab and its panel could not meet `roles.tabpanel`
-  or `roles.controls` however much arrow-key handling it grew, so the panel and its wiring
-  had to exist before the keyboard behaviour had anything to attach to. Unlike `Calendar`
-  and `Table`, `Tabs` binds `tabs` rather than `grid`, so it was never inside the hand-check
-  rule, and `frameworks/react/components/navigation/tabs/Tabs.dom.test.jsx` now backs the claim with a render
-  suite — `Tabs:react` is in `COVERED`. What the fix did **not** buy: the interior of the
-  roving tab stop (that Tab from elsewhere in the page actually lands on the active tab)
-  is still unverifiable in happy-dom, same as the rest of this repo's focus claims, and is
-  a by-hand check against `Tabs.prompt.md` rather than a gate.
-
-  **And the suite that backs it could not see the defect the binding's own wording names,
-  which is what batch 8C7 was for.** A requirement in `ATTRIBUTE_FOR` used to be evaluated as
-  `el.getAttribute(attr) !== null` — pure presence, on the ONE subject element the suite hands
-  it. So `roles.controls`, whose text is *"**each** tab has aria-controls referencing its
-  tabpanel"*, was satisfied by a strip in which N−1 tabs referenced ids nothing rendered: the
-  attribute was present, the suite passed it the first tab, and the fixture made the first tab
-  the selected one. Both halves of that are now closed, and closed differently, because they
-  failed for different reasons. **A reference is resolved rather than counted** — `IDREF` names
-  the reference-carrying requirement keys **among those that reach `ATTRIBUTE_FOR`**, which is
-  the one branch of `evaluate()` that consults it, and it is **derived** from `IDREF_ATTRIBUTES`
-  rather than hand-written beside it, which is what stops the set drifting out of scope again.
-  Be exact about what went wrong before, because the obvious reading is not it: 8C7 had exactly
-  **one** hand-written list, three requirement keys, and nothing anywhere disagreed with it. Its
-  defect was **reach** — a list of requirement KEYS cannot name `aria-labelledby` at all, since
-  `roles.label` carries no `ATTRIBUTE_FOR` entry — plus one strictness rule applied to all three
-  keys on a justification belonging to one. Keying the map by ATTRIBUTE is what fixes both.
-  `roles.label` has a reference form and takes a different
-  route entirely; 8C7 left that unresolved and 8C8 closed it, which is that batch's own entry
-  below. Each key `IDREF` does name is looked up through a
-  `resolveId` the *caller* injects, because the evaluator still touches only `tagName`,
-  `getAttribute`, `hasAttribute` and `textContent` and still runs in three runtimes one of
-  which has no DOM. Resolution had to arrive from outside rather than be done in place, so
-  each layer's wrapper builds the resolver from the render root itself and a suite cannot
-  forget to pass one; a requirement in `IDREF` that finds its attribute and no resolver
-  **throws**, since degrading to the old presence check would report a dangling reference as
-  met, which is the whole defect the parameter exists to catch. Note the scope: an attribute
-  that is simply *absent* is unmet and returns before the resolver is ever consulted, so the
-  throw is about a reference that exists and cannot be checked, never about a missing one.
-  **And *each* is quantified rather than sampled** — a subject may be an array, every element
-  in it must meet the requirement, and a quantified requirement handed a single element throws
-  as well. `Tabs.dom.test.jsx` hands over every tab **as well as** keeping its own hand-resolution
-  test, which the layer does not supersede: that test also asserts the reverse `aria-labelledby`
-  wiring — each panel labelled by the tab that controls it — and that exactly one panel is
-  unhidden while the rest are hidden rather than absent. Neither is a requirement key, so no
-  pattern can ask for either and no evaluator can decide them. Do not delete it as redundant.
-
-  What none of that buys, and none of it is scheduled. **A resolved reference is not proof it
-  landed on the RIGHT element.** A pattern states its requirement as prose written for a human,
-  and the schema has no way to say what *kind* of element a reference must reach — so an
-  `aria-controls` resolving to a `<span>` that is not the tabpanel passes exactly as the real
-  one does. Closing that is a change to the pattern schema, which this batch deliberately was
-  not. **And `aria-describedby` holding a LIST is met when ONE of its ids resolves**, so a
-  dangling id sitting beside a resolving one passes — the same family as the sentence above, one
-  step further out. 8C7 wrote that as a blanket rule over every reference; 8C8 narrowed it to the
-  one attribute that earns it, because the justification only ever belonged to that one:
-  `aria-describedby` legitimately carries the consumer's own description alongside Arena's, and
-  that id may name an element outside the component's rendered tree, so demanding that every id
-  resolve would fail a correct component. Every other reference attribute now requires that
-  **every** id resolve — read `IDREF_ATTRIBUTES` in `scripts/lib/core/behaviour-compliance.mjs` for
-  the live set, since strictness is a property of the attribute rather than of the requirement
-  key, and each entry carries its own reason. The cost survives, scoped to where it is earned:
-  within Arena's own `aria-describedby` wiring a typo'd second id is invisible.
-  **The quantified set is hand-curated, and nothing proves it complete.** Deriving it from
-  the word "each" was considered and rejected: the prose says "false on the **rest**" just as
-  readily, so a scan finds fewer requirements than a reader does, and deriving it would rebuild
-  the false-negative class the evaluator's header already rejected once. Its suite therefore
-  proves only that every entry names a real requirement and that a quantified requirement is
-  decidable per element — never that a requirement quantified in prose has an entry. One nobody
-  curated is still checked on the one element a suite chooses, exactly as before, and 8C7's own
-  close-out review found two the batch had missed — `radiogroup:states.checked` and
-  `feed:roles.article` — which is the curation gap demonstrating itself one review after being
-  written down. **And some requirements that do quantify are excluded for stated reasons
-  rather than closed**: read `NOT_QUANTIFIED` for the live set and its reasons, which are
-  listed rather than merely absent so the next reader meets the decision instead of the
-  silence. As written they are the two shapes worth knowing — a requirement that is
-  *behavioural*, its prose carrying a "when", so there is no per-element verdict to quantify
-  over at all; and one that quantifies over a *page* rather than over what the component
-  renders, which a component suite cannot satisfy without faking a second landmark.
-  **What quantifying buys is bounded by the selector that builds the collection**, and that
-  boundary is the mechanism's real edge rather than a defect in it. `Tabs.dom.test.jsx` passes
-  `querySelectorAll('[role="tab"]')`, so a tab rendered *without* `role="tab"` leaves the
-  collection silently and takes its dangling `aria-controls` with it, while every element that
-  remains still passes. Not live — `Tabs.jsx` renders the role uniformly — but the rule makes
-  "the first element answered for the collection" impossible and can never make a suite's
-  selector match the elements a pattern is about.
-
-  All of this reaches a binding only through a suite that renders it, so a binding outside
-  `COVERED` gains nothing from any of it — see the coverage entry above, which is where that
-  hole is recorded.
-
-- **`roles.label` resolves its reference now, and what stays open is the CONTENT at the far end
-  of it.** This entry recorded the opposite until batch 8C8: `roles.label` never reaches the
+- **`roles.label` resolves its reference, and what stays open is the CONTENT at the far end of it.** This entry recorded the opposite until batch 8C8: `roles.label` never reaches the
   `ATTRIBUTE_FOR` branch 8C7 taught to resolve, and `hasAccessibleName()` returned `true` the
   moment `aria-label` **or** `aria-labelledby` was non-empty, so a dangling `aria-labelledby`
   read as a name. That is closed. `hasAccessibleName(el, acceptsText, resolveId)` in
@@ -1516,35 +716,14 @@ stale-proof; a present-tense component name is not.
   which is the class of mistake this evaluator's own header records refusing once already, and
   whose cheapest silencer is a fabricated exception written into a binding. It belongs to the
   family the record has carried since before this layer
-  existed: a name that is **present** is never checked for being **useful**, which is the charts'
-  `aria-label` entry above, and the reason `Table.label` and `SegmentedControl.ariaLabel` are
-  guarded rather than defaulted. Its sibling limit — that a resolved reference is no proof it
+  existed: a name that is **present** is never checked for being **useful**, which is the reason
+  `Table.label`, `SegmentedControl.ariaLabel`, `ProgressBar.label` and the charts' `seriesLabel`
+  are required and guarded rather than defaulted — the only remedy there is, and it moves the
+  judgement to the consumer rather than removing it. Its sibling limit — that a resolved reference is no proof it
   landed on the RIGHT element, because a pattern cannot say what *kind* of element a reference
   must reach — is recorded in the 8C7 entry above and is untouched by this batch. And all of it
   reaches a binding only through a suite that renders it, so a binding outside `COVERED` gains
   nothing from any of it.
-
-- **`check:api` now compares a `primitive` member's `type`, and two prior live examples of
-  the gap are guarded because of it.** The entry used to read "does not compare" — probed in
-  five directions against a finished tree, the gate caught a required-ness change, a renamed
-  event, a changed `form` and an event's changed `payload` type, but let a `.d.ts` declaring
-  `width?: number` against a contract saying `string` stay green. Batch 8C6 closed exactly
-  that: `compareSurface` (`check-api.mjs`) now checks `spec.form === 'primitive' && m.type !==
-  spec.type`, so both of the cases this entry cited by name are caught if they regress.
-  `Dialog.width` — a `number` the `.d.ts` once declared against the `string` the implementation
-  always produced — would now fail the gate instead of reverting silently. `SideNav.indentStep`
-  is the sharper of the two: its contract spends four lines arguing that a caller-supplied
-  `"1.5rem"` string is neither a token nor a derivation of one, so it stops re-densifying inside
-  `.arena-compact`, and `check:dimensions` cannot catch it because that gate scans source and not
-  the values a caller passes in — the type comparison was the only mechanism that could ever
-  have enforced that refusal, and now it does. It is the clearest case in the repo for why the
-  clause was worth adding.
-  **What the entry recorded alongside the type gap outlived this fix by several batches and is
-  now closed too.** `spec.default` was read by nothing and React's checked surface was the
-  `.d.ts` alone, so a declaration agreeing with the contract passed regardless of what the
-  `.jsx` did. `check-api.mjs` reads both now; the entry at the head of this section carries what
-  that bought, the three undocumented defaults it found, and the one comparison it refuses to
-  make.
 
 - **`Onboarding`'s accessible name is positional when a step carries no editorial text, and
   it collides with its own progress dots.** The chain is `title ?? eyebrow ?? "Step N of M"`
@@ -1559,60 +738,7 @@ stale-proof; a present-tense component name is not.
   `frameworks/react/components/feedback/onboarding/Onboarding.dom.test.jsx` asserts the collision rather than
   papering over it.
 
-- **`SideNav`'s D1 flatten dropped every forwarded attribute, and the loss is gated now rather
-  than merely recorded.** `extends React.HTMLAttributes<HTMLElement>` and the `{...rest}` spread
-  are gone, so every global and ARIA attribute a consumer used to forward is unreachable — the
-  same unguarded-loss shape 8C1-8C3 each recorded, unguarded for the same reason: `check:api`
-  read the `.d.ts` and never opened the `.jsx`, so a restored spread left it green. Two things
-  changed since. That batch wrote **per-component regression tests** for its own four — `Dialog`,
-  `Menu`, `Pagination` and `SideNav`, two each, one per escape — and the debt-payment programme's
-  batch 2 taught `check:api` to read the `.jsx`, so **a restored spread now fails the gate for
-  every contracted component**, not only for the four with suites. **What the suites still buy
-  that the gate does not** is the `style` escape specifically: `style` is a named member in some
-  contracts and a spread is only one of the ways it can leak, so the pair below still proves
-  something the gate cannot.
-
-  **Those pairs are worth only what their induction proves, and the induction must be
-  DISJOINT.** With `style` unnamed in the destructuring it falls into `rest`, so a bare
-  `{...rest}` spread is a strict *superset* of the style escape and correctly fails **both**
-  tests at once. That is the escapes overlapping, not the tests failing to be independent —
-  and reading it as the latter is how a pair gets weakened until it proves nothing. Proving
-  independence takes two separate inductions: **(a)** `style` alone, where the style test
-  alone must fail, and **(b)** `style` destructured **and discarded** plus `...rest`, where
-  the attribute test alone must fail. Never weaken a test to make an induction come out
-  tidy. Established in plan 8C5 and re-measured against `SideNavItem` before this was
-  written here: (a) failed `SideNavItem drops a consumer style object` and nothing else,
-  (b) failed `SideNavItem drops a consumer attribute` and nothing else.
-
-- **`Menu.trigger` is the repo's THIRD required slot, and it landed on the unguarded side of
-  a question nothing has decided.** `AppLogo.mark` is guarded, `Tooltip.content` deliberately
-  is not — the contradiction already recorded above — and `Menu.trigger` now joins the second
-  camp without a note in its contract, its `.d.ts`, its `.prompt.md` or its commit. Defensible
-  on the `Tooltip` precedent, since `compareSurface` excludes slots from required-ness
-  comparison precisely because Angular's `<ng-content>` cannot express mandatory. Recorded
-  because a third instance makes the silence a pattern rather than an oversight.
-  **8C5 added a fourth, `SideNavSection.content`, and it went to the guarded camp** — a
-  childless section throws — which makes the split two-and-two and settles nothing. It shipped
-  declared *optional* in both the contract and the `.d.ts` while the implementation enforced it,
-  and 8C5's close-out review corrected that to match `AppLogo.mark`, the one prior precedent for
-  a slot both declared required and enforced. Note what the correction proves: **no gate saw
-  either the understatement or the fix**, because `compareSurface` excludes slots from
-  required-ness comparison, which is the same exclusion that lets both camps pass. **Count the
-  required slots (`grep -rn '"form": "slot", "required": true' contracts/api/components/`) rather than
-  trusting an ordinal here** — this entry's own "THIRD" went stale in one batch.
-
-- **CLOSED: `ConfirmDialog.open` is required and guarded, like the other three modals.** It was
-  the one modal of four that was neither: `Dialog`, `Onboarding` and `CommandPalette` all declared
-  `open` required and threw on absence, while `ConfirmDialog` declared `default: false` and
-  destructured `open = false` with no guard — **in both layers**, consistently, which is why
-  nothing had ever flagged it. It was defensible, and what it was not was written down anywhere as
-  a decision, while `Dialog.jsx`'s own guard comment named `CommandPalette` and `Onboarding` as
-  its precedent and pointedly omitted its nearest sibling.
-  The rule now applies to all four: **a modal's visibility is the host's state, and defaulting it
-  hides a wiring mistake** — a `ConfirmDialog` whose `open` was never wired renders nothing
-  forever and looks like a working closed dialog.
-
-- **DECIDED: `SideNavCollapsible` stays a stack of independent disclosures, and the reason the
+- **`SideNavCollapsible` is a stack of independent disclosures, and the reason the
   cheap half of the fix is not taken is the useful part.** With arbitrary nesting the rendered
   structure looks exactly like a tree, and APG's treeview would demand `aria-level` on every node,
   a roving tab stop and four-direction arrow navigation. None of it is designed, none of it is
@@ -1638,125 +764,9 @@ stale-proof; a present-tense component name is not.
   production sidebars ship it. It is fully compliant with the pattern it chose. **Choosing that
   pattern is the debt, and adopting `treeview` — the whole model, keyboard included — is the only
   thing that pays it.**
-- **CLOSED: `SideNavItem` is cased in both layers.** An item renders an `<a href>` or a
-  `<button>`, so no single interactive pattern always applies; `none` plus prose was chosen as the
-  less-false of two false options while the schema could not say *"this pattern applies only when
-  href is absent"*. It can, and both bindings now declare `link` → `none` and `button` → `button`,
-  with a render suite each and a `COVERED` key each. Converting one layer alone would have made
-  the two disagree, which is why neither had moved; they moved together.
-  **The `link` case binds `none` and that is not a placeholder.** There is no link pattern to
-  bind, and its absence is not an omission: a link's role, its keyboard activation and its
-  focusability all come from the platform the moment the element is an `<a href>`, so binding
-  `button` there would name a role the element does not have. What the item adds on top of the
-  anchor is `aria-current`, which is a clause of the `navigation` pattern the parent binds.
-  **Casing it made a gap visible, and the gap was worth paying rather than declaring.** The
-  `button` pattern requires `states.disabled`, and `SideNavItem` had no disabled concept at all —
-  so converting the binding produced the repository's **first and only exception declaration**,
-  against a tree that had carried `"exceptions": []` everywhere. The first reason written for it
-  was that *a navigation destination a consumer wants unavailable is one they do not render*, and
-  that is wrong: a destination behind a plan the user does not have is worth **showing**, because
-  seeing it is what tells them it exists. `TableRow` and `CalendarEvent`, its siblings, both have
-  `disabled` for the same reason.
-  So `SideNavItem` has one now, reflecting through `aria-disabled` rather than by disappearing,
-  with the anchor keeping its `href` so the case split stays what it is — activation is refused
-  and the state is announced. The exception is gone and the tree is back to zero.
-  **The lesson is about what an exception is for.** The defect was not created by casing the
-  binding; it was *revealed* by it, because bound to `none` the requirement never applied and a
-  real `<button>` with no disabled concept read as having no interactive pattern at all. An
-  exception is the right home for a gap that cannot be closed. This one could be, and a
-  well-argued exception is the most comfortable place for a defect to sit unfixed.
-- **The open question about `SideNav` is CLOSED, and which way it went is the useful part.**
-  `frameworks/angular/BehaviourDelegated.json`'s `SideNav` entry once claimed a third-party
-  control provided this component — its reason said `mat-nav-list` "already provides the
-  anchor-or-button distinction, the active state and the keyboard behaviour". That was
-  defensible for a flat list of links and stopped being defensible the moment 8C5 made the
-  React component compound: `mat-nav-list` had no named section group and no nested disclosure,
-  which was most of what that batch added. Two resolutions were on the table — an
-  `arena-side-nav` primitive that stopped delegating, or a narrowed delegated claim admitting
-  the control covered the flat case only — and Plan D took the first, writing all four
-  primitives. **The lesson is that a delegated claim ages against the component it mirrors, not
-  against the library it names**: nothing about `mat-nav-list` changed, and the claim went false
-  anyway because React's `SideNav` grew. `check:behaviour` cannot see that happen, so a
-  delegated reason is only ever as current as the last person who reread it. Section 3's
-  SideNav entry carries the rendering half of this; **keep the two consistent**, since nothing
-  checks that they agree.
-
-- **CLOSED: `SideNavCollapsible.id` stays required, and the two halves of the objection cancel
-  each other.** The contract originally justified required-ness by citing the `id`-member rule in
-  `contracts/api/README.md`, which says the *opposite* — that rule is about a component that
-  **generates** an id and thereby takes away the consumer's only path to the element, and its
-  remedy is an optional `id?` with the generated value as fallback. That false citation was
-  removed in review and the real reason put in its place, which the contract now states at
-  length: Arena derives `${id}-trigger` and `${id}-region`, the trigger's `aria-controls` and the
-  region's `aria-labelledby` must both resolve, and neither wiring is conditional.
-
-  **The reviewer's surviving point was that required-ness had been measured against the wrong
-  alternative** — a bare `useId()` with no member, which is indeed worse — rather than against an
-  *optional* member with a `useId` fallback, which gives both wirings and a way to address the
-  elements **without forcing every consumer to name a group nothing else addresses**. And it
-  added a second complaint: `id` is not in the `toggle` payload, so a consumer with several
-  collapsibles wiring one handler cannot tell which fired without closing over the id they were
-  forced to supply.
-
-  **Those two cancel, and that is the answer.** Being forced to supply the id is precisely what
-  makes the scalar payload sufficient: the consumer holds it at the binding site
-  (`onToggle={(open) => handle(myId, open)}`), which is the ordinary idiom in both layers. An
-  optional generated id would have created the payload problem the second complaint describes,
-  not solved it. `id` stays required, `toggle` stays a boolean, and the trade is now written down
-  as a decision rather than as an open question.
-- **The two unexecuted specs' stale paths are paid, and the three treatments they needed are
-  the durable part — a path in a process document is not one kind of thing.** Both name `api/`,
-  `behaviour/` and `tokens/` where the tree now has `contracts/api/`, `contracts/behaviour/` and
-  `contracts/design/`, and neither was a find-and-replace.
-
-  **Normative text is corrected.** `2026-07-23-8-api-contracts-design.md` had twenty-five such
-  lines outside its blockquotes and above `## The running count`, each telling a reader where
-  something IS; all are corrected, along with two more the path query could never have matched:
-  `tokens/src/TYPE-MAP.md`, a file that no longer exists and whose DTCG type table is now
-  `contracts/design/README.md`, and a lowercase `tokens.generated.js`/`.ts` that predates the
-  capital-initial rule. **The most dangerous line in either spec was not a path at all** — it told
-  a reader that making a member required is an NG0950 hazard "in the JIT test harness" and to
-  reuse `HostClassBinding.test.ts`'s query-child-and-overwrite bypass. The harness compiles AOT
-  and `setInput()` drives a required input directly; writing to an instance field is now
-  forbidden repo-wide with a grep asserting it stays empty. A stale spec does not merely age — it
-  can instruct.
-
-  **History is left.** A path inside a `>` block records what a shipped plan settled, and the
-  per-batch test-count records under `## The running count` are measurements of a tree that
-  existed; rewriting either would make the record lie. That split — blockquote or below the
-  measurement heading — is what made the correction mechanical *after* the reading, not instead
-  of it.
-
-  **An argument gets a wider warning instead of a rewrite.**
-  `2026-07-18-9-four-package-build-publish-design.md` is *about* where files live, so its
-  directory names are load-bearing to its own reasoning about package boundaries. Its header
-  already warned about the 2026-07-27 frameworks refactor; it now warns about the `contracts/`
-  refactor too, and says explicitly that the paths are left as written and why. Correcting them
-  would have produced a document that reads current and reasons from premises nobody re-checked.
-
-  **And one spec needed no treatment because it should not have existed.**
-  `2026-07-30-10-angular-calendar-parity-design.md` and its plan were fully executed — the tree
-  matches task for task, `BehaviourDelegated.json` is gone, `COVERED` carries both new keys, the
-  50/50 counter is updated, and the five divergences and the barrel gap the plan owed this file
-  are all filed. This repo deletes an executed plan and its spec, so both are deleted. **Check
-  that first**: the cheapest way to fix a stale process document is to notice it has finished.
-  What stays open is the class rather than any instance — nothing checks a path in a dated
-  process document, so the next structural move re-creates this in whatever specs are unexecuted
-  then. Re-derive with
-  `grep -nE '(^|[^a-zA-Z/])(api|behaviour|tokens)/' docs/superpowers/specs/*.md`.
-
-- **CLOSED for the shape, still open for the naming: `check:contracts` exists.** A stray file in
-  `contracts/`, a level missing its `README.md` and a fourth directory beside the three all used
-  to pass every gate. `scripts/check/arena/check-contracts.mjs` now encodes what
-  `contracts/README.md` states, literally and clause by clause: the three levels plus
-  `design-generated/` and the roof README and nothing else; each level's normative document
-  present; `api/`'s two vocabulary directories; **no unearned inner directory** in `behaviour/`
-  or `design/`, which is the README's own *"an inner directory is earned, never assumed"*; every
-  file in a level either a named exception or that level's source extension; every file in
-  `design-generated/` carrying the `.generated.` infix; and a zero-result guard at both the roof
-  and the entry count. It was watched failing against a real `contracts/behaviour/patterns/` and
-  a real `contracts/scratch.md` before being trusted.
-  **What stays open is the naming half of the original entry**, which no gate reaches: the
+- **Nothing checks the NAMING rule inside `contracts/`, only its shape.** `check:contracts`
+  encodes what `contracts/README.md` states about the SHAPE, clause by clause. It says nothing
+  about what anything is called, and the
   capital-initial naming rule is declared for the framework layers and does not reach
   `contracts/`, so `button.json` and `palette.dark.json` keep lowercase stems. That is
   **correct**, for two different reasons and neither is "identifiers stay lowercase" in
@@ -1791,7 +801,7 @@ stale-proof; a present-tense component name is not.
   build it depends on having nothing to read, just not via a guard shaped like the other
   four's.
 
-- **Three lessons this batch paid for, and all three generalise past this one refactor.** A moved
+- **Three ways a document goes quietly false, each learned the hard way.** A moved
   level's own normative README needs a direct read, not a grep. `contracts/behaviour/README.md`
   shipped citing "One file per pattern in `patterns/`" — a directory flattened away one commit
   earlier — and arguing "It is a sibling of `tokens/`, not a child" — describing the old
@@ -1821,7 +831,7 @@ stale-proof; a present-tense component name is not.
   thirty lines *above* the clause it contradicts, not below it — and the matching clause this
   file's own *Architecture* section carried before this batch.
 
-- **DECIDED: a chip that carries a kebab can still wrap its time label, in a band about 32px
+- **A chip that carries a kebab can still wrap its time label, in a band about 32px
   wide, and the band is accepted.** `showsTime()` compares a chip's column share against one
   threshold and does not ask whether the chip has actions. A chip without them has a content box
   of its share less 18px; one with them has its share less 46px, because the kebab's 34px reserve
@@ -1842,8 +852,7 @@ stale-proof; a present-tense component name is not.
   puts `CalendarEvent`'s 34px reserve back inside `Calendar` — laundered through a second token,
   but still a number that silently goes wrong if the reserve ever changes. What survives in the
   band is the pre-existing behaviour rather than a new defect, and it survives on purpose.
-- **DECIDED: a narrow chip under 56px tall has almost no title left, and accepting it is the
-  position.** Reserving the kebab's 34px band is what stopped the title being drawn underneath it,
+- **A narrow chip under 56px tall has almost no title left, and that is accepted.** Reserving the kebab's 34px band is what stopped the title being drawn underneath it,
   and on a full-width chip it costs nothing. On a chip sharing its slot — `cols: 2`, about 78px
   outer — it leaves a **36.58px** content box, which renders `Client review — Northwind` as
   `Clien…`.
@@ -1862,43 +871,6 @@ stale-proof; a present-tense component name is not.
   the only route to the consumer's actions — a member that sometimes does nothing is worse than a
   truncated title. Accepting it is the current position and it is defensible on its own terms: the
   chip is a hit target, and the detail lives behind the kebab.
-- **CLOSED: `Textarea` overran its container by 26px, and the fix was the system change this
-  entry put out of scope.** Three candidates read the same way in the source — `Textarea.jsx`,
-  `Select.jsx` and `Menu.jsx`, each `width: '100%'` on an element carrying its own horizontal
-  padding and a border — and **only one of the three was real**. Measured, the `<textarea>`
-  computed `content-box` and landed 26px past its parent's content edge, exactly its 12px of
-  padding a side plus its 1px border a side; the `<select>` and the menu's item `<button>`s
-  computed `border-box` and overran 0.
-
-  **The reason the other two were safe was the UA stylesheet, not anything Arena wrote** —
-  Chromium declares `box-sizing: border-box` for `<button>` and `<select>` and does not for
-  `<textarea>` or `<input type="text">`. That is why reading the source got this wrong, and it is
-  the same confounder that made the layer-divergence table in section 3 wrong in five rows.
-
-  This entry said the general answer was a repo-wide `box-sizing: border-box` reset, that it
-  "would fix this and probably several things nobody has measured", and that it was a system
-  change with its own spec rather than a rider on a Calendar fix. That was right on all three
-  counts, and it is taken now: `contracts/design/reset.css`, imported first by
-  `intro/styles.css`. The textarea overruns 0, all 71 `@dsCard` pages still fit their declared
-  viewports, and the guarantee stops resting on a vendor default. Section 3's border-box entry
-  carries the measurements and what the exercise taught about deriving a table by reading.
-
-- **Twelve Tailwind manifests carried a type error nothing could see, and the reason is
-  structural rather than careless.** Every manifest with a boolean variant axis
-  (`true`/`false` keys) spelled its `defaultVariants` value as the **string** `"false"`, which
-  `tv()` rejects: the keys make the axis boolean, so the default must be boolean too. All twelve
-  were manifests whose mirrored component Angular **delegated**, so no `tv(manifest)` call ever
-  typechecked one — `check:tailwind` only asks whether each class resolves, and `classesFor()` in
-  the specimen coerces the key either way, so the specimens rendered correctly the whole time. The
-  twelve are fixed. **The lesson is the blind spot, not the typo:** a manifest no component
-  imports is untyped by construction, and the first compile of the component that finally imports
-  it is where that class of bug surfaces — which is how each of the twelve was found, one Plan D
-  batch at a time. It is one line per manifest and changes no output. Nothing gates it, because
-  the gate is `ngc` and `ngc` cannot see a file no component imports. **The blind spot is empty
-  today and is not closed**: every manifest now has an Angular component reading it — verify by
-  pairing `find frameworks/tailwind/components -name '*.manifest.json'` against
-  `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d` — and the next manifest
-  written ahead of its component reopens it.
 - **`CLAUDE.md`'s ceiling is a standing constraint on every batch, and the way it is bought back
   is always the same.** Measure it the way the gate does —
   `node -e "console.log(require('fs').readFileSync('CLAUDE.md','utf8').length)"` — and never with
@@ -1936,76 +908,24 @@ stale-proof; a present-tense component name is not.
   `[Unreleased]` on top is expected and never a failure. The ceiling will return — `[Unreleased]`
   is the section that grows — and the archive split is the option left when it does.
 
-- **The Angular by-hand checklists named work nobody here could do, and batch 2 built the thing
-  that does it.** This entry recorded that `Button.prompt.md` and `Tooltip.prompt.md` each ended
-  with a "By hand, in real Chromium" block against a layer with **no demo page and no application
-  at all**, and that of the three possible resolutions — a harness, a browser-driven gate, or
-  deleting the blocks — none was taken. **The harness is the one that was taken.**
-  `<Component>.card.html` beside each covered primitive runs the real component: `ngc` compiles the
-  templates AOT and `Bun.build` bundles that output for a browser, one shared Angular chunk across
-  every page, built by `bun run build:angular-demo` and chained ahead of `bun run demos`.
-  **It paid for itself before this batch's own components landed.** `arena-button`'s `full`
-  variant did nothing: the carve-out host is bare, so as a flex item it blockifies to
-  shrink-to-fit, and the inner button's `w-full` measured the shrunk host rather than the row. No
-  suite could see it — happy-dom has no layout. The fix is `display: contents` on every bare
-  carve-out host, now asserted for the whole layer in `HostClassBinding.test.ts`.
-  **What is still open is smaller and is named here rather than in the prompts.** The pages carry
-  no `@dsCard`, because their script is git-ignored build output and a blank page passes a
-  viewport-overflow check by having nothing to overflow — so Angular primitives get no *published*
-  specimen card, and the Tailwind specimen stays the published visual for the recipe.
-  `check:angular-demos` is structural only: it proves a page exists, loads its own bundle and
-  mounts a zoneless app, never that what it renders is right.
-  **The checklists are smaller than they were, and the reason generalises.** Every line in one
-  that a real browser can decide is a line a gate can decide, because the browser is already being
-  driven: `check:cards` measures the render, and `check:focus-trap` now walks the traps with real
-  Tab presses — the item those checklists led with. What survives is what needs a **person's
-  judgement** rather than a person's browser: whether a name is a good name, whether motion reads
-  as intended, whether a colour carries the meaning it should. Before adding a line to a checklist,
-  ask which of the two it is; the first kind belongs in a gate, and putting it in a checklist is
-  how it stops being checked at all.
-
-- **CLOSED: `Table`'s header row and its row hover were invisible in BOTH layers, and counting the
-  consumers refuted the fix this entry preferred.** `--panel` and `--surface-card` are both
-  `var(--color-base-200)` (`contracts/design/colors.css:26` and `:71`). React painted the frame
-  `--surface-card` and the header row `--panel`, and painted an interactive row's hover `--panel`
-  against a transparent row on that same frame; `Table.manifest.json` mirrored it faithfully, so
-  the Angular layer inherited the defect by being correct about the layer it mirrors. All of it
-  resolved to one colour, so the header did not separate and a clickable row gave no feedback.
-
-  **This entry proposed re-aliasing `--panel` to `--color-base-300` as "the right shape", and
-  told whoever took it to count the consumers first. Counting them is what killed it.** There
-  are twelve, and two make the alias impossible: `Button.jsx` uses `--panel` as a secondary
-  button's RESTING background and `--color-base-300` as its hover, and `Skeleton`'s shimmer is a
-  gradient FROM `--panel` THROUGH `--color-base-300` and back. Aliasing them collapses both — a
-  button whose hover is its rest, and a shimmer with nothing to shimmer between. The fix would
-  have moved the defect into two components rather than removing it. **A token whose consumers
-  use it in opposition to another token cannot be aliased to that token, however well its name
-  reads** — and `--color-base-300`'s own `$description` is *"panel / border"*, which is the trap:
-  the naming says the alias is right and the usage says it is not.
-
-  So `Table` stops using `--panel` for these two jobs, in both layers: the header row and the
-  interactive row's hover are `--color-base-300` in React and `bg-base-300` / `hover:bg-base-300`
-  in the manifest. **Measured in real Chromium rather than inferred**, at a 1400px viewport: the
-  Angular table's frame reads `rgb(29, 23, 21)` and its header row `rgb(36, 28, 25)`, where both
-  read `rgb(29, 23, 21)` before; and on React's `TableAvatar.card.html`, moving a real pointer
-  over an interactive row takes it from `rgba(0, 0, 0, 0)` to `rgb(36, 28, 25)`, where it used to
-  paint the frame's own colour onto the frame. **What still has no gate is the class**: nothing
-  compares two token values for being distinct, and nothing could without knowing which pairs are
-  meant to contrast.
-
-- **CLOSED: `Select.multiple` is gone, which was the smaller of the two shapes and the right one.**
-  The contract declared `multiple` as a boolean and `change` as an event carrying a single
-  `string`. A multi-selection is a *set* of values and no set fits in one string, so a consumer
-  who turned it on got the attribute on the element and an event reporting only the first
-  selected option. Both layers did exactly that, which is why this was never a section-3
-  divergence and why nothing failed when the Angular primitive was written against the contract.
-  Nothing gated it and nothing could: `check:api` compares a member's *form* between the contract
-  and each layer, and has no way to ask whether one member's type can carry what another member's
-  flag implies. Both readings were internally consistent contracts.
-  Of the two available shapes — drop `multiple`, or give `change` an array payload and make every
-  single-select consumer unwrap — the first is taken. **A native multi-select is a list box shown
-  open, which is a different control from the "styled native dropdown selector" this contract
-  describes**, so the member was promising a control the component was never going to be.
+- **What the Angular demo pages prove, and what a green `bun run check` still says nothing
+  about.** `<Component>.card.html` beside each covered primitive runs the real component: `ngc`
+  compiles the templates AOT and `Bun.build` bundles that output for a browser, one shared Angular
+  chunk across every page, built by `bun run build:angular-demo` and chained ahead of
+  `bun run demos`. It is what a suite cannot be: `arena-button`'s `full` variant did nothing —
+  the carve-out host is bare, so as a flex item it blockified to shrink-to-fit and the inner
+  button's `w-full` measured the shrunk host rather than the row — and no suite could see it,
+  because happy-dom has no layout.
+  **The pages carry no `@dsCard`**, because their script is git-ignored build output and a blank
+  page passes a viewport-overflow check by having nothing to overflow — so Angular primitives get
+  no *published* specimen card, and the Tailwind specimen stays the published visual for the
+  recipe. `check:angular-demos` is structural only: it proves a page exists, loads its own bundle
+  and mounts a zoneless app, never that what it renders is right.
+  **A checklist line a real browser can decide belongs in a gate, not in a checklist.** That is
+  what `check:cards` and `check:focus-trap` between them took over. What is left for a person is
+  what needs their **judgement** rather than their browser: whether a name is a good name, whether
+  motion reads as intended, whether a colour carries the meaning it should. Running those is a
+  person's job, and a green `bun run check` still says nothing about whether anyone did.
 
 - **A projection marker the consumer forgets to import drops the whole slot in silence, and the
   guard for it had to go OUTSIDE the component.** Every gated `<ng-content select="[x]">` in the
@@ -2043,17 +963,8 @@ stale-proof; a present-tense component name is not.
   own pages from shipping the example. It affects `Dialog`, `UnauthCard`, `Card`, `PageHead`,
   `EmptyState` and `ErrorState` equally.
 
-- **CLOSED: the caret glyph is silent now.** Both layers rendered the `▾` as a real text node in
-  a `<span>` beside the control with no `aria-hidden`, so a screen reader in browse mode read a
-  symbol carrying nothing. It was not part of the control's accessible name — that comes from
-  the `<label for>` — so no pattern requirement caught it and `roles.label` passed either way.
-  One attribute in each layer, taken in both at once, because fixing one alone would have
-  manufactured a divergence out of a defect the two shared.
-
-### What the `.generated.` rename does not fix
-
-- **DECIDED, and it is a decision rather than an open item: `.gitignore` stops future churn and
-  does not shrink the repository, and `git filter-repo` is refused.** `.git` was 42 MB when the
+- **`.gitignore` stops future churn and does not shrink the repository, and `git filter-repo` is
+  refused outright.** `.git` was 42 MB when the
   rename landed, and every blob the untracked files ever had is still in history — roughly 1.26 MB
   of current content, rewritten on every component edit and every React bump for as long as it was
   tracked. A rewrite would remove it and **must not happen**: it changes every commit hash, and
@@ -2062,42 +973,6 @@ stale-proof; a present-tense component name is not.
   against the 1.26 MB; it is a promise already made to anyone who installed the plugin.
   The win claimed for the change is the **rate**, not the size. Anyone quoting a size reduction is
   quoting something that did not happen.
-- **CLOSED: `assets/fonts/` is three files instead of fourteen, and the 341 KB the checksums
-  measured is gone.** The binaries are downloaded from Google Fonts by `fetch-fonts.mjs`. A binary
-  can carry no header, and the `.generated.` infix is deliberately not applied: `assets/` is a
-  directory consumers copy wholesale, and a font file changes when a family or weight is added and
-  at no other time. It is named in `UNMARKED` in `check-generated.mjs` with that reason.
-
-  **Hashing them was what found the duplication, and collapsing it was what the record deferred.**
-  Fourteen files held **three** distinct contents: all three families are variable fonts, Google
-  serves one binary covering the whole range, and the generator wrote that one binary once per
-  weight under a different name. The generator now writes one file per family, emits one
-  `@font-face` with a `font-weight` **range**, and **refuses to** if Google ever serves more than
-  one distinct binary for a family — because the collapse is only correct while that holds.
-  `assets/fonts/` is 90,890 bytes where it was 431,136.
-
-  **The range is per family, and taking it from the token source would have been wrong.**
-  `contracts/design/typography.json` asks for 400–900 on all three; two of the three axes stop at
-  700. Measured twice, independently and in agreement: the weights Google actually served (six
-  files for Archivo, four for the other two, visible in git history) and rendered ink per weight
-  in Chromium, which rises to 900 for Archivo and flattens at 700 for the others. So
-  `assets/fonts/Fonts.generated.json` records the **served** range per file beside its sha256,
-  `--css-only` reads it, and `check:fonts` verifies both.
-
-  **Verified by re-measuring, not by reasoning:** ink per weight after the collapse is
-  byte-identical to ink per weight before it, for all three families across all six weights. One
-  file renders exactly what fourteen did.
-  **What is still not closed is reproducibility**: rebuilding these files needs the network, which
-  no other output in this repository does, and a checksum cannot change that.
-
-  **A false alarm is worth recording with it, because the mistake was mine and the shape is
-  common.** A first probe measured all six Archivo weights at an identical width and read as
-  *bold is not bold* — a shipped, catastrophic defect. It was the probe: Archivo had not loaded on
-  that page, so every measurement was the fallback font, and the fallback rendered every weight
-  the same. `document.fonts` said `unloaded` and `document.fonts.check` said false, both visible
-  in the same probe and both ignored on the first read. **Measuring the wrong thing precisely is
-  indistinguishable from measuring the right thing**, until you check that the thing you meant to
-  measure is present.
 - **`intro/support.js` can never be ignored, whatever the rule says.** Its generator is
   `dc-runtime`, whose source is not in this repository, so a clone cannot rebuild it and the
   infix would promise a `bun run build` that cannot deliver. It is the one file whose header
@@ -2316,52 +1191,6 @@ guard still applies and still passes.
 
 **Converges:** no.
 
-#### RETIRED as a divergence: both layers are border-box, and reading the source got the table wrong in both directions
-
-**This was the layer's largest recorded divergence, and it is closed by one file.**
-`contracts/design/reset.css` sets `box-sizing: border-box` on `*`, `intro/styles.css` imports it
-first, and every React page and every copied `.jsx` inherits it — the same rule Tailwind's
-preflight has always given the Angular layer through `theme/arena-tailwind.css`. The two layers
-now share the box model rather than agreeing element by element.
-
-**Measured before and after, on the component the entry named as the last one still overrunning.**
-On `frameworks/react/components/forms/RadioTextarea.card.html` at its declared 720×340, the
-`<textarea>` computed `content-box` and its border box landed **26px** past its parent's content
-edge — its 12px of padding a side plus its 1px border a side, exactly. After the reset it computes
-`border-box` and overruns **0**, its width falling 346 → 320. All 71 `@dsCard` pages still fit
-their declared viewports.
-
-**Five of the seven local `boxSizing: 'border-box'` opt-ins are gone**, because a redundant local
-declaration is how a reader concludes the systemic rule is not trusted. `Input`, `Button`,
-`Spinner` and `ConfirmDialog` dropped theirs and measure identically. **`CalendarEvent` keeps
-its, and the reason is the one that distinguishes it**: there the box model is load-bearing for
-layout arithmetic rather than for tidiness — `Calendar` injects `width: calc(100% - var(--sp-1))`
-and the chip must treat it as an outer edge — and a DOM-free suite can pin an inline declaration
-where it can never read a stylesheet. Removing it turned that suite red, which is the assertion
-doing its job. Re-measured after: every chip is `border-box` and sits inside its column with the
-2px gutter intact.
-
-**The lesson is worth more than the divergence, and it is about how the old table was built.**
-It was derived by reading each source and applying *"React declares no `box-sizing`, therefore
-content-box"*. That inference is invalid for a form control, because **Chromium's UA stylesheet
-declares `box-sizing: border-box` for `<button>` and `<select>` and does not for `<textarea>` or
-`<input type="text">`** — so the table was wrong in **both** directions at once: five rows
-claimed a divergence that did not exist (`Button`, `IconButton`, `Select`, `Pagination`'s `nav`,
-`Switch`'s track — all `<button>` or `<select>`), while the real overrun sat in `Textarea`, which
-had no row at all. A whole paragraph of thumb-inset arithmetic reasoned from a 22px content box
-its element never had. **Reading the source produced a table that was confidently wrong and
-internally consistent**, and only measurement separated it from the truth.
-
-The second half of that lesson is what the agreement used to rest on: for those five rows, "the
-layers agree here" was a fact about a **vendor default no specification Arena controls**, not
-about anything Arena had decided. It rests on `reset.css` now.
-
-**What the reset deliberately does NOT do** is copy the rest of Tailwind's preflight, which also
-zeroes margin, padding and border. That would restyle every page in `intro/` and every React
-demo, and it is a different change needing its own evidence.
-
-
-
 #### Animation CSS is compiled once for Angular, injected per component in React
 
 **React:** each animated component injects a `<style>` tag once, guarded by a module-level
@@ -2486,233 +1315,6 @@ secondary action is projected, on each.
 
 ### Per-component divergences
 
-#### ConfirmDialog — RESOLVED: the require-text input rings in both layers
-
-> **The accessibility half of this entry is closed, and plan 8C4 closed it.** This section used to
-> be titled *"ConfirmDialog — Angular is accessible, React is not yet"* and recorded that React
-> asserted `aria-modal="true"` over a free-roaming focus, with no accessible name, no trap, no
-> restore and no Escape. All of that is now met in both layers:
-> `frameworks/react/UseDialogModal.js` is a deliberate port of
-> `frameworks/angular/FocusTrap.ts`, `ConfirmDialog.title` is required and guarded in
-> both layers with `aria-labelledby` pointing at it, and `ConfirmDialog.behaviour.json` declares
-> `exceptions: []` in both layers against the `alertdialog` pattern — the single exception it used
-> to retain, `roles.element`, was never a defect but a catalogue gap, closed by adding the pattern
-> the component already implements rather than by changing the component.
-> What is left of the entry is one real difference and one shared limit.
-
-**What it was:** React's require-text `<input>` carried `outline: 'none'` and substituted nothing,
-so a keyboard user typing the confirmation word got no focus indication at all — on the one control
-that gates Arena's only filled danger surface. Angular had substituted a token-derived ring when the
-primitive was written; React was never touched, because plan 8C4 was about the `dialog-modal`
-pattern and a focus ring is not one of its seven requirements.
-
-**How it closed.** React converged on Angular's rule rather than inventing one:
-`.arena-confirm-input:focus-visible{box-shadow:0 0 0 var(--focus-width) var(--danger)}`, injected
-once into `<head>` behind a module-level guard. `:focus-visible` is a pseudo-class an inline style
-cannot express, which is exactly the carve-out CLAUDE.md grants the injected-`<style>` pattern, and
-it is the third use of it after `Input`'s picker indicator and the keyframes.
-
-**One thing measured rather than assumed, because the obvious reasoning is wrong here:**
-`:focus-visible` was chosen to match Angular's recipe verbatim, **not** to keep the ring off a mouse
-click. For a TEXT input Chromium matches `:focus-visible` after a plain click too — the element
-accepts keyboard input, so the modality heuristic does not apply — verified in real Chromium, where
-the ring is `rgb(232, 81, 81) 0 0 0 2px` whether the input was reached by Tab or by pointer. A
-comment claiming otherwise was written and then corrected.
-
-**What found it:** not a gate. `check:manifest-states` had this on its `EXEMPT` map, which recorded
-the divergence rather than flagging it, and no behaviour requirement covers a focus ring. It was
-seen by eye, in a by-hand pass in real Chromium. What DID bite, once React implemented it, was that
-same gate: a stale `EXEMPT` entry fails, so the record could not outlive the debt it described.
-
-**Also still missing, on BOTH layers, and therefore not a divergence:** `inert` on the background.
-The keyboard trap is what keeps focus in; a pointer-driven assistive technology that never goes
-through Tab is not covered by it. This was recorded here when it was half of a divergence; it is
-now a shared limit of both layers and is recorded here only because deleting it would lose it.
-
-**Tested how (Angular):** `frameworks/angular/components/feedback/confirm-dialog/ConfirmDialog.focusTrap.test.ts` asserts the
-trap's mechanics — `focusableElements`, `focusFirstFocusable`, `trapTabKey`,
-`handleOpenTransition` — against a hand-built, real DOM tree under happy-dom. It is deliberately
-*not* a TestBed render of `<arena-confirm-dialog open="true">`. **That used to be forced rather
-than chosen**: probed by hand under this repo's then-JIT-only harness, both the `[open]="true"`
-template binding and `componentRef.setInput('open', true)` failed — the first threw NG0303, the
-second logged it and then silently no-opped, so no TestBed-based test could render an
-actually-open dialog. Batch 8C11 moved this harness to AOT and retired that limitation:
-`frameworks/angular/test/HarnessCapabilities.test.ts` now drives `ConfirmDialog.open` through
-`setInput('open', true)` on a directly created fixture and asserts `[role="alertdialog"]` renders.
-This suite still tests the helpers directly rather than rendering the real component, which is now
-a design choice and not a forced one — see section 1's entry on the seven files that
-still justify a testing strategy by the retired limitation. **It no longer stands alone, and this
-is the first of those seven to gain a real-tree sibling rather than a rewrite:**
-`ConfirmDialog.compliance.test.ts` renders `<arena-confirm-dialog>` through TestBed and proves
-focus-on-open, both trap boundaries, Escape and restore-on-close against the rendered component,
-so the helper suite and the render suite now say different things instead of one standing in for
-the other. **Tested how (React):**
-`frameworks/react/components/feedback/Behavioural.dom.test.jsx` and
-`frameworks/react/components/feedback/DialogModal.dom.test.jsx`, which render the real
-component. Both layers are in `check:compliance`'s `COVERED` — `ConfirmDialog:react` and
-`ConfirmDialog:angular`.
-
-#### ErrorState — RESOLVED: both layers announce themselves
-
-> **This entry is closed.** React's `ErrorState.jsx` sets `role="alert"`, matching
-> `arena-error-state`'s host-bound one. Both bindings read `exceptions: []` and
-> `AlertTones.dom.test.jsx` renders the React one.
-
-**Why it mattered:** an error surface can mount without a page reload — a failed fetch swapping a
-loading state for an error in place — and a sighted user sees it instantly while a screen reader
-user got nothing, because nothing announced the mount. `role="alert"` is the correct, narrow tool
-for exactly that: an unprompted, important status change.
-
-**What the fix cost, and it is the part worth keeping:** one attribute, and the inversion of a test
-that asserted `doesNotMatch(/role="/)`. That assertion existed to PIN the defect, which is the
-mechanism this layer is built on — a defect nobody can quietly stop describing. It also means the
-React layer carried a one-attribute accessibility gap for as long as the exception described it
-accurately, which no gate would ever have escalated: `check:behaviour` is a coverage claim and
-never an accessibility one.
-
-**Not the same precedent as `Alert`:** React's own `Alert.jsx` already set
-`role={tone === 'danger' ? 'alert' : 'status'}` and Angular's `Alert.ts` mirrored it exactly, so no
-divergence there motivated this one.
-
-#### Skeleton — the circular variant's announcement, RETIRED as a divergence
-
-This section recorded that `Skeleton.jsx` branched by variant — `block`, `line` and `text`
-rendering `role="status"` with `aria-label="Loading"`, and `circle` rendering
-`aria-hidden="true"` with no role at all — while `Skeleton.ts` set `role: 'status'` and
-`'aria-label': 'Loading'` in its `host` bindings statically, with **no branch by variant**. The
-consequence was not a difference of shapes: meeting a circular skeleton, a screen-reader user
-heard "Loading" in Angular and heard nothing in React. It was recorded as *"both are
-defensible"* and left undecided.
-
-**Plan 8C10 closed it, and closed it under step 2 of *How to add an entry* below: one layer was
-simply wrong.** React was. Angular has announced every variant since it was written and needed
-no change; `Skeleton.ts` was not touched. `Skeleton.jsx`'s `circle` branch now renders
-`role="status"` and `aria-label="Loading"` like its three siblings.
-
-**What settled it was not a judgement call, which is the transferable part.** The undecided
-framing assumed the answer needed a design decision about whether a second "Loading" beside an
-announced name is noise. It did not. A skeleton exists to announce that it will be replaced by a
-functional component when asynchronous data arrives; a skeleton that announces nothing is not
-doing that job, whatever shape it is. The variant's behaviour follows from the definition, and
-no preference had to be weighed to reach it. **React's own code was the evidence**: `block`,
-`line` and `text` all announced unconditionally, so no noise-reduction strategy was ever applied
-across this component. The `circle` branch was the odd one out rather than the deliberate
-exception it read as.
-
-**How it was found, which is why this note replaces the section rather than deleting it.**
-Nothing was looking for it. Converting the React binding to cases made the cross-layer check
-compare a cased binding against a flat one, and a flat binding can no longer silently agree with
-a cased one. `Toast` surfaced the same way in the same batch and is retired below too. Expect
-more of these as bindings are converted — the property is a permanent one of the cases
-mechanism, not a fact about `Skeleton`, and it outlives the divergence it found.
-
-**Recorded how, now:** `frameworks/react/components/display/skeleton/Skeleton.behaviour.json` is back to
-the flat `{"pattern": "status", "exceptions": []}` — no cases, no `divergesFrom` — because all
-four variants meet `status` and there is nothing left for a case to scope.
-`frameworks/angular/components/display/skeleton/Skeleton.behaviour.json` is unchanged and still flat at
-`status`. That the split was built and then retired is the mechanism working rather than a
-retreat: splitting the variants is what made the defect visible, and fixing the defect retired
-the need for the split.
-
-**What is NOT proven, and it is the same limit the rest of this file carries.** The React claim
-is verified — `frameworks/react/test/PlacementAndBranches.dom.test.jsx` renders all four
-variants and `Skeleton:react` is in `check:compliance`'s `COVERED`. The Angular claim is not:
-`Skeleton.behaviour.json` says `status` with no exceptions and **no suite verifies that binding**,
-so Angular's side of the now-agreeing pair is an unverified claim, exactly as it was while the
-layers disagreed. Be precise about which claim is unverified, because **two** suites render this
-component and one of them asserts the announcement itself.
-`frameworks/angular/test/HostClassBinding.test.ts` imports `Skeleton` (:67), declares a
-`SkeletonHost` fixture (:147) and mounts a real `TestBed` tree of it in **three** tests. Two are
-host-class tests — the recipe's root classes land on the host (:632), a consumer's own class
-survives the `[class]` binding (:641). The third,
-*"arena-skeleton: the host itself carries the loading status, not a wrapper inside it"* (:649),
-asserts `role="status"` and `aria-label="Loading"` on the host, plus that the default variant
-renders no children of its own.
-`frameworks/angular/components/display/skeleton/Skeleton.dimensions.test.ts` mounts it too, in six
-tests, and reaches
-**every** variant: its `renderSkeleton` helper (:37-45) drives `variant` through
-`fixture.componentRef.setInput('variant', variant)` — the same `setInput()` technique every
-directly-created fixture in this AOT harness now uses — and renders `block`, `circle`, `line` and
-`text`. What it asserts is the inline `[style.*]` dimension
-bindings, never `role`, `aria-label`, or anything else the `status` pattern names. Those two are
-the whole set that renders it: `Skeleton.variants.test.ts` mounts nothing (it asserts the
-plain-TypeScript recipe and `skeletonRowSlot`), and the only other `.ts` files in this layer
-naming `Skeleton` at all — `frameworks/angular/test/Compliance.ts` and
-`frameworks/angular/components/feedback/confirm-dialog/ConfirmDialog.focusTrap.test.ts` —
-name it only in a comment, one line each; `grep -n Skeleton <file>` locates them, and a line
-number written here would not survive the next edit above it, as one written in this batch did
-not. Re-derive the whole set with
-`grep -rln Skeleton --include='*.ts' frameworks/angular/`: besides the five files named in this
-paragraph it returns the generated `Api.generated.ts` and the rest of the component's own
-directory (`index.ts`, `Skeleton.ts`, `Skeleton.variants.ts`), none of which is a suite.
-
-So the accurate statement is narrower than "nothing is checked". What no suite in this layer does
-is **evaluate the binding against the `status` pattern**: neither file calls `comparePattern` or
-`assertPattern`, so no requirement of `status` beyond those two attributes is checked anywhere, no
-exception could ever expire there, and nothing would notice if the pattern gained a requirement
-the component does not meet. The variant reach is **split between the two files** rather than
-absent, which is the correction an earlier version of this paragraph needed: the suite that
-asserts the announcement **stops at the default variant**, `block`, because its fixture is a
-template (`<arena-skeleton class="consumer-class" />`) with no `[variant]` binding. **That used to
-be a harness limitation and is not any more**: batch 8C11 moved this harness to AOT, and
-`HostClassBinding.test.ts`'s own header now calls the stop a scope decision rather than a
-limitation — the other three variants are covered elsewhere (`Skeleton.variants.test.ts` for the
-recipe, `Skeleton.dimensions.test.ts` for a real render of all four); the suite that does reach
-`circle` — the variant this batch changed — asserts dimensions instead. That split is softer than it looks in this one
-component's case, and the reason is worth stating rather than leaving a reader to assume the
-worst: `role` and `aria-label` are **static host attributes** in `Skeleton.ts` (`:45-46`, inside
-the `host:` object, with no branch by variant — unlike React's, which branched), so asserting them
-on `block` establishes them for every variant by construction rather than by coverage. Rendering a
-component is not verifying its binding, and `Skeleton:angular` is absent from
-`check:compliance`'s `COVERED` (`scripts/check/arena/check-compliance.mjs:113-129`) for that reason.
-
-**This paragraph is itself a worked example of the hazard it sits inside, twice over.** Its first
-version claimed that suite "says nothing about `role`, `aria-label` or the `status` pattern",
-which was false — written from a `grep` that found two of the three tests in that one file, in the
-same batch that recorded *a component name written into another file's prose is a cross-file claim
-no gate checks*. Its second version, written to correct exactly that, then claimed the other three
-variants were **"unreachable"** from this harness — also false, and false the same way, one step
-out: its author read the one file and generalised to a directory that already held
-`Skeleton.dimensions.test.ts` driving all four. A reviewer read the files both times; no gate
-caught either, in either direction. See section 1's entry for the class and the
-change-time command.
-
-#### Toast — RETIRED as a divergence: both layers announce a critical error assertively
-
-**What it was.** React's `Toast.jsx` branches on tone off a single ternary — `role={tone ===
-'danger' ? 'alert' : 'status'}` with the matching `aria-live` — so a danger toast interrupts and
-every other tone queues. Angular had no `arena-toast` at all: it delegated to Angular Material's
-`MatSnackBar`, which has no tone axis to branch on. Read against `@angular/material` 22.0.5's own
-`snack-bar.mjs`, `MatSnackBarConfig.politeness` defaults to `'polite'`, `_live` resolves to
-`'assertive'` only when politeness is set to it, and `_role` is assigned **only inside `if
-(this._platform.FIREFOX)`** — so outside Firefox a snackbar carried `aria-live="polite"` and no
-role whatever the message said.
-
-**The cost, while it stood:** meeting a critical error toast, a screen-reader user had it
-interrupt in React and queued behind whatever was already speaking in Angular. That is the
-safety-relevant case, and it was a real difference to a real person rather than a difference in
-how two files were shaped.
-
-**Why it is retired.** Plan D's batch 5 wrote `arena-toast`, and it was born with the tone axis
-because Arena owns the DOM now: the host binds `[attr.role]` and `[attr.aria-live]` off `tone()`,
-the same ternary React has, and the binding declares the same two cases under the same two names —
-`danger` → `alert`, `advisory` → `status`. `crossLayerAgrees` compares case names and then their
-patterns, so the agreement is machine-checked rather than asserted; React's `divergesFrom:
-"alert"` and its `divergesFromReason` are deleted, and **that was the last
-`divergesFromReason` in the repository** — the field now has zero instances, which settles the
-open question about whether it was ever a convention. It was not.
-
-**This is the Skeleton shape rather than the deferral it used to be.** The old entry said neither
-layer was wrong — Angular could not be wrong about a control it did not own — and deferred to
-Plan D. Plan D is what made the question answerable at all: the fix was never a
-`MatSnackBarConfig` seam, it was owning the component.
-
-**What the port also settles, from the section-1 `dismiss` entry:** the toast's clock is the
-host's, as `Toast`'s contract always said, and `Toast.card.entry.ts` runs it off `dismissDefault`
-and `dismissActionable` from `Tokens.generated`. So both `--dismiss-*` tokens now reach both
-layers, and the script-token orphan rule is satisfied by more than React alone for the second
-time (`--delay-*` was the first, through `arena-tooltip`).
-
 #### Onboarding — the scrim is a sibling in React and the host in Angular
 
 > **The naming half of this entry is closed, and plan 8C4 closed it.** This section used to be
@@ -2757,102 +1359,6 @@ a latent hazard rather than a live defect — the two layers behave identically 
 (`Onboarding.jsx`, `Onboarding.ts`). A screen reader announces the two the same. That is the price
 of a positional fallback and it is pinned by an assertion in
 `frameworks/react/components/feedback/onboarding/Onboarding.dom.test.jsx` rather than left to prose.
-
-#### Onboarding — the modal contract, RETIRED as a divergence
-
-This section recorded the largest of the three: React asserted `role="dialog" aria-modal="true"`
-and managed no focus whatsoever — nothing moved focus in on open, nothing restored it on close,
-Tab and Shift+Tab walked straight out of the panel into the page behind the scrim, and Escape did
-nothing, while `aria-modal="true"` had already told assistive technology the page behind was
-unavailable. Angular implemented the contract it asserted, through
-`frameworks/angular/FocusTrap.ts`.
-
-**Plan 8C4 closed it, and closed it by porting rather than by re-solving.**
-`frameworks/react/UseDialogModal.js` is a deliberate mirror of that Angular module — same
-focusable selector including its per-clause `:not([tabindex="-1"])` guard, same boundary-wrap rule,
-same never-cache rule, same open/close transition — consumed by all three React overlays. Escape
-reports through `onSkip`, which is the output Angular already routes its own Escape to, so the two
-layers agree by construction rather than by coincidence. `Onboarding.behaviour.json` reads
-`"exceptions": []` in both layers and `Onboarding:react` is in `check:compliance`'s `COVERED`.
-
-**What is NOT proven, in either layer, and is the reason this note replaces the section rather than
-deleting it.** A suite can prove the boundary wrap, because that is our own `.focus()` call and
-happy-dom honours it. It cannot prove the interior — that Tab from a *middle* element reaches the
-next one — because that is native sequential focus navigation, which neither layer implements and
-happy-dom does not have. Both layers check the interior in a real browser by hand. A browser-driven
-gate stays refused as this repo's fourth non-portable gate.
-
-**Also still missing, on both layers:** `inert` on the background — see the `ConfirmDialog` entry
-above, which now carries that shared limit for all three overlays.
-
-#### RETIRED from this section: Onboarding has no icon in either layer, which is not a divergence
-
-Both layers match exactly — no icon slot, no `icon` input — so there was never a difference here
-to record. It sat in the divergences because a Duotone coachmark icon had been flagged as worth
-double-checking, and the check came back negative: the brief carried no icon, React had no
-precedent, and adding one would have been a feature addition with neither behind it.
-`IconManifest.ts`'s `{ role: 'onboarding', phosphor: 'ph-sparkle', weight: 'duotone' }` entry is a
-registry seed for a consumer building their own icon usage, not something any primitive consumes
-— **no primitive imports from `IconManifest.ts` at all**; `EmptyState` and `ErrorState` take a
-plain `icon: string` the consumer fills from wherever they like. If a future revision wants one,
-that entry is the existing answer. **A question that was asked and answered no is not a
-divergence, and keeping it here made the section longer without making it truer.**
-#### RETIRED as a divergence: a destructive bulk action is bordered and hovers in `--danger-soft` in both layers
-
-**React** changed only the text colour (`var(--danger)` against `var(--bone-dim)`); the border
-stayed the neutral `var(--color-base-300)` for every action, destructive or not, and hover always
-set the same neutral background rather than a danger tint. Angular's `arena-bulk-action-bar`
-bordered in `--error` alongside the text and hovered in the soft danger tint.
-
-**Angular was right and React was a defect, which is why this converged rather than being
-recorded.** The README's danger convention names this exact shape — it applies to every risk
-trigger including "equivalents in lists, cards and toolbars", and specifies that hover lightens
-with `--danger-soft`. `Menu.jsx`'s own destructive item already did it correctly, so React's
-`BulkActionBar` contradicted both the normative rule and its own sibling. It carries the border
-and the `--danger-soft` hover now.
-#### CommandPalette — RESOLVED: both layers are accessible comboboxes
-
-> **This entry is closed.** React converged onto the Angular template rather than the other way
-> round, because Angular's was already right. Both bindings read `exceptions: []` and both layers
-> have a compliance suite.
-
-**What React was missing:** the search `<input>` carried no `role`, no `aria-expanded`, no
-`aria-controls` and no `aria-activedescendant`, and each row was a plain `<button>` with no
-`role="option"` and no `aria-selected`. A screen reader user got no indication that the input drove
-a filtered list, or which row the arrow keys had moved to — the highlight existed only as a
-background colour and a number in component state.
-
-**The part worth keeping is why the id plumbing is not optional.** `roles.controls` and
-`roles.activedescendant` carry `match: 'every'` in `IDREF_ATTRIBUTES`, so the evaluator RESOLVES
-them against the rendered tree: an id pointing at a row that is not rendered counts as unmet, not
-as met-with-a-typo. Both layers therefore emit the active-descendant id only while the index is in
-range, and both suites render a query matching nothing to prove the empty case leaves nothing
-dangling. That is the case a naive implementation gets wrong.
-
-**Still true and not part of this:** React focuses its input on open and does NOT restore focus to
-whatever opened it when it closes; Angular does, through `handleOpenTransition`. That divergence
-has its own entry.
-
-#### CommandPalette — RESOLVED: running a command closes the palette in both layers
-
-> **This entry is closed**, and how it closed is the useful part: the Angular idiom was kept, not
-> abandoned. `open` is still an input the component never writes. What changed is that Enter and a
-> row click now emit `close` BEFORE `run`, which is the same event the scrim click already emitted
-> — so the host still decides, it is simply told.
-
-**What it was:** `run.emit(command)` reported the command alone and nothing closed the palette, so
-a host that listened only to `run` was left with the palette sitting over the result it had just
-produced. The prompt file's own example wired `(run)="paletteOpen.set(false); dispatch($event)"`,
-which made the omission easy to copy.
-
-**Why it was not simply a bug:** every other controlled Angular primitive here puts the
-`open`-mutating decision on the host, matching `arena-confirm-dialog`'s confirm/cancel and
-`arena-onboarding`'s skip/done. Auto-closing would have made this the one primitive in the layer
-that manages its own visibility. Emitting `close` avoids that entirely — it is a report, not a
-write — which is why this resolved without either layer giving up its idiom.
-
-The API contract already said `run` is "emitted after close". The Angular suite asserts the ORDER
-rather than only that both fire, because the order is the half a consumer can observe.
 
 #### PageHead — behaviour matches React; the measurement helper is shared
 
@@ -3025,24 +1531,6 @@ together, and both this component and React's carry the pair.
 
 **Converges:** no. Each layer expresses the same box in its own idiom, and neither is wrong.
 
-#### RETIRED as a divergence: the doughnut legend is keyboard-reachable in both layers
-
-**React** rendered the legend column as `overflow: 'auto'` with nothing focusable inside it and
-no accessible name. Current Chrome and Firefox add a scrollable container to the tab order
-themselves, so on an up-to-date browser the column could be reached — but that is a recent
-default (Chrome shipped it in 127), it is absent on older engines, and the tab stop it supplies
-is unnamed. A slice past the visible rows of a long legend was unreachable by keyboard wherever
-the UA did not supply that stop.
-
-**Both layers now carry the same three attributes on the column** — `tabindex="0"`,
-`role="group"` and `aria-label="Doughnut chart legend"` — so the column is itself a tab stop and
-the browser's native scroll keys move it once focused. React was ported onto Angular's shape
-rather than the reverse, because Angular's already closed a real WCAG 2.1.1 defect the two used
-to share.
-
-**The lesson is the one about vendor defaults**, and it is the same one the box-model entry
-carries one section up: "the browser reaches it anyway" is a fact about a recent engine default,
-not about anything Arena decided, and it is not a reason to leave a control unreachable.
 #### AppLogo — React guards against a missing `mark` or `name`; Angular has no counterpart, and needs none
 
 **React:** `AppLogo.jsx`'s `if (!mark || !name) return null` (`AppLogo.jsx:15`) renders nothing
@@ -3269,32 +1757,7 @@ When you find a behavioural difference between layers:
 3. If both are defensible, or one leads and the other has debt, add an entry here with the reason
    and whether it is expected to converge.
 
-#### RETIRED as a divergence: the Switch knob glyph is inked in both layers
-
-**React** drew the per-state `<i>` with a font size and nothing else, so its colour inherited
-from the page. The knob under it is `var(--on-accent)` — near-white — and the page ink on a dark
-surface is near-white too, so **the glyph was all but invisible at every size**. It was shipping:
-`frameworks/react/ui-kits/console/Shell.jsx` renders the theme toggle with a sun glyph. What kept
-it unseen is that the *specimen* pages did not — React's `Forms.card.html` passes no icon, so the
-card a reviewer opens had no glyph in it at all.
-
-**`Switch.jsx` now sets the colour explicitly**, `var(--crimson)`, which is `--color-primary` —
-the same value Angular reaches through the manifest's `text-primary`. It is one utility rather
-than a judgement: the knob is `--on-accent`, which is `--color-primary-content`, so the pair is
-`primary` on `primary-content`, and that is a row `check:text-contrast` already gates at 4.5:1,
-read the other way round. No new gate entry was owed and none was added.
-
-**The demo page is what found it**, which is the case for the Angular harness in one sentence:
-five sizes rendered side by side with a glyph in each, and the `sm` one is where you look.
 #### Input — three differences, and the picker dressing moved into the shared layer
-
-**Status glyphs — CLOSED.** React's `Input.jsx` drew `ph-warning-circle` and `ph-check-circle`
-with a colour and no `aria-hidden`, while the leading `icon` beside them **was** hidden — an
-inconsistency inside one component. A Phosphor glyph is a font ligature, so an unhidden one is
-announced next to the error message it duplicates. `arena-input` hid all four and was the better
-side; React hides all four now. **What made this cheap to leave open is what makes it worth
-noting: the defect was visible from inside the file.** Two glyphs three lines apart, one hidden
-and one not, and no gate has an opinion about either.
 
 **The controlled value.** React re-renders the DOM value from the prop, so ignoring `onChange`
 visibly reverts the box. Angular's `[value]` binding writes only when the *bound* value changes,
@@ -3342,34 +1805,6 @@ carry the same term for the same reason, which is what a shared box model buys.
 correct; what it also does is invalidate every argument that rested on the old default, and those
 arguments are in prose that no gate reads. This one named its premise explicitly — *"React's
 textarea is content-box"* — which is the only reason it was findable at all.
-#### Select — RETIRED as a divergence: both layers are the native element
-
-**What it was.** Angular delegated `Select` to Angular Material's `MatSelect`, and the delegated
-entry bound `combobox` while carrying `divergesFrom: "select"`. That was not a description
-problem: `MatSelect` is an *authored* combobox — a trigger with `aria-expanded`,
-`aria-controls` and `aria-activedescendant` over a real `role="listbox"` popup in a CDK overlay —
-where React's `Select` is the native `<select>`, whose popup the browser renders and operates.
-Two genuinely different controls under one contract. The record said so and reconciled nothing,
-because there was nothing at that layer's level to reconcile: Arena did not own `MatSelect`.
-
-**Why it is retired rather than resolved-in-one-layer.** Plan D's batch 5 wrote
-`arena-select`, and the contract decided its shape before any implementation did:
-*"styled native dropdown selector"*, `options` *"drawn as native options"*, a `multiple` member
-only a native element has, and a `change` payload of one `string`. So the Angular primitive is
-the native element too, binds `select`, and the `divergesFrom` died with the delegated entry it
-lived in. `check:behaviour` now compares two flat `select` bindings with no exceptions on either
-side.
-
-**What did NOT survive the port, and is a real loss to name.** `MatSelect` gave an Angular
-consumer a popup styled in Arena's tokens on every platform. A native `<select>` gives the
-platform's own — a phone's wheel picker, a desktop's OS menu — which Arena cannot theme and does
-not try to. That is the same trade React has always made, and taking it is what made the two
-layers one control; it is a cost, not a free win. The gain on the other side is that the popup's
-keyboard, its type-ahead and its accessibility are the user agent's rather than any library's.
-
-**Related, and still open:** `multiple` is a member no `change` payload can report on, in both
-layers. It is section 1 above, as a contract defect rather than a divergence.
-
 #### Table — React's wide shape is a `<table>`, Angular's is a role-based grid, and a compiler rule forced it
 
 **React:** `Table.jsx` renders a real `<table role="grid">` with `<thead>`, `<tr>`, `<th>` and
@@ -3399,58 +1834,6 @@ narrow threshold trips a couple of pixels earlier than React's.
 **Converges:** no, and neither side is wrong. React should not be rewritten to match, and Angular
 cannot render the other shape without giving up the single `<ng-content>`.
 
-#### RETIRED as a divergence: a clickable card row is keyboard-reachable in both layers, and the contract now says so out loud
-
-**React** read whether `onClick` was passed and, below `--bp-md`, rendered the card as
-`role="button"` with `tabIndex={0}` and an Enter/Space handler. **Angular** carried no role and
-no tab stop, so a row with `(click)` was reachable by pointer and not by keyboard — a real WCAG
-2.1.1 gap, below `--bp-md` only.
-
-**The obstacle was never a defect either layer could fix on its own.** Angular has no way to ask
-whether an output has subscribers: `OutputEmitterRef.listeners` is private, and a consumer's
-`(click)` binding leaves nothing in the DOM to detect. The choice was between making **every**
-card row a button — a dead tab stop on every row of every table that is not clickable — and
-making none of them one, and the second shipped because noise scales with the common case and
-the gap does not.
-
-**What closed it is the fix this entry named and the record's own precedent finding it.** The
-answer was *"a contract member both layers implement, and the honest one, because React derives
-interactivity from a prop it can see and the contract has simply never said so out loud"* —
-and `CalendarEvent.actionsEnabled` had **already made exactly that argument**, in its own
-description, for its own slot: *a boolean rather than "is the actions slot filled?", because
-Angular cannot detect whether an ng-content was filled, so gating the drawing on that is a
-divergence waiting to happen.* The same sentence, one member over, unapplied.
-
-`TableRow.interactive` exists now, defaulting to `false`, and both layers gate the card's role,
-tab stop and key handling on it. Angular's binding is three cases matching React's — `row`,
-`card-interactive`, `card-inert` — `divergesFrom` is gone, and `TableRow.cases.test.ts` beside the
-component renders all three, where the Angular side used to be covered by a flat `assertPattern`
-inside `Table`'s suite.
-
-**`CalendarEvent` is deliberately NOT converted with it**, and the asymmetry is reasoned rather
-than left over: a chip is `tabindex="-1"` and never a page tab stop, so always-a-button costs no
-dead stop there, where always-a-div would delete Enter-into-the-chip, which is the whole keyboard
-story `arena-calendar`'s `grid` binding leans on. `TableRow` had a defect; `CalendarEvent` has a
-trade-off. Its entry below carries the reasoning.
-#### RETIRED as a divergence: both layers fall back to `No data.` for an empty table
-
-**React:** `Table.jsx` declares `empty = 'No data.'`. **Angular:** `<ng-content select="[empty]">`
-now carries the same string as fallback content, which is `ng-content`'s own counterpart to a
-destructuring default. A consumer who projects nothing gets the same sentence in both layers.
-
-**This was closed once as a decision and reopened, and the reopening was right.** The argument for
-leaving it was that mirroring the string would put a second hardcoded English sentence in the
-component whose `label` had just been made required and guarded for the opposite reason. That
-argument does not survive the distinction it leans on. `Table.label`, `ProgressBar.label` and the
-charts' `seriesLabel` were guarded because their fallbacks named **what the component is** —
-"Progress", "Bar chart" — which satisfies `roles.label` mechanically and tells a reader nothing.
-`No data.` names **what happened**: the query returned nothing. That is the useful sentence in the
-generic case, and it is exactly what a consumer with nothing better to say would write.
-
-So the rule is not "never default a string" but **"never default a string that only restates the
-component"**, and a blank box was the worse answer for the consumer either way. The contract now
-states the shared fallback and that distinction; a consumer with a better sentence — what to do
-next, why the list is empty — projects it.
 #### A compound family coordinates in the opposite direction in each layer
 
 **React:** the parent clones each child and pushes `name`, `checked` and a callback into it
@@ -3608,7 +1991,7 @@ that does nothing, reachable only by Enter from the hour cell it overlaps.
 
 **Converges:** only if the contract grows a member for it, which would change React too.
 
-#### DECIDED: CalendarEvent's horizontal geometry stays a manifest class in Angular and arithmetic in React
+#### CalendarEvent's horizontal geometry is a manifest class in Angular and arithmetic in React
 
 **React:** the chip's gutter to its neighbour is arithmetic in the injected value —
 `left: calc(X% + calc(var(--sp-1) * 0.5))`, `width: calc(W% - var(--sp-1))`.
@@ -3629,7 +2012,7 @@ without a width are a different layout contract from `left`/`width`, so the chan
 change to a shipped component made for a testability benefit that React does not need, because
 React's suites read the `calc()` fine. **A constraint of one layer's test environment is a reason
 for that layer's shape and not for the other's.**
-#### DECIDED: a chip outside a calendar throws in Angular and renders in React, and React is not converging
+#### A chip outside a calendar throws in Angular and renders in React
 
 **React:** `CalendarEvent` mounted alone renders an unplaced chip. `CalendarEvent.prompt.md` says
 it "means nothing", and that is the whole enforcement.
@@ -3705,57 +2088,41 @@ not prevent the second occurrence, and why `check:states` was built for P1's sha
 `components-divergences.md`'s border-box table; that file is now section 3 of this one, and
 the table lives under *The Tailwind layer is border-box; React is content-box*.
 
-### Tailwind CAN express Button's split transition timing, and this section said otherwise
+### An arbitrary PROPERTY is the fourth bracket shape, and it is earned rather than general
 
-This read *"Tailwind cannot express Button's split transition timing"* and it was wrong — not
-about the mechanism, which it described correctly, but about the conclusion. React gives
-`background` and `transform` the fast duration and `box-shadow` the slower `--dur-mid`, because
-each property gets its own line in the `transition` shorthand. Tailwind's `duration-` utility
-writes one `transition-duration` for the whole `transition-property` list and there is no second
-one to layer on, so the `transition-[...]`/`duration-[...]` pair genuinely cannot do it. All of
-that is true.
+A `transition-[...]`/`duration-[...]` pair sets one duration for every listed property, because
+Tailwind's `duration-` utility writes a single `transition-duration` for the whole list and there
+is no second one to layer on. `Button` needs `background` and `transform` fast and `box-shadow`
+slower, so `Button.manifest.json` writes the whole declaration as one bracket:
+`[transition:background_var(--dur-fast)_var(--ease-out),…]`, no `utility-` prefix.
 
-**What did not follow is that the split was inexpressible.** The section named the escape in its
-own last sentence — writing the declaration as one arbitrary **property**,
-`[transition:background_var(--dur-fast)_var(--ease-out),…]` with no `utility-` prefix — and then
-declined it as "a fourth bracket shape outside the three that layer documents". A shape being
-undocumented is a reason to document it, not evidence that a thing is impossible; the gap between
-*"we have not written this down"* and *"this cannot be done"* is where the false claim lived, and
-it survived several batches because the paragraph reads as a limitation rather than as a
-deferral.
+Every operand is a `var()` into a token, so `check:arbitrary` holds over it exactly as over the
+other three shapes — **the escape is the *property*, never the literal.** Reach for it only when
+no utility can express the declaration at all, which here means a per-property duration.
 
-`Button.manifest.json` takes it now. Every operand is a `var()` into a token, so `check:arbitrary`
-holds over it exactly as over the other three shapes — the escape is the *property*, never the
-literal — and `check:tailwind`, `check:dimensions` and `check:angular` all pass.
-**Measured in real Chromium** on `Button.card.html` at 1200px: the rendered button reports
-`transition-property: background, transform, box-shadow` with
-`transition-duration: 0.12s, 0.12s, 0.22s`, against `--dur-fast: 120ms` and `--dur-mid: 220ms`.
-The ~100ms early shadow this section recorded as the accepted cost is gone.
-`frameworks/tailwind/README.md` now documents the fourth shape and, more importantly, when it is
-earned: only when no utility can express the declaration at all.
+**This section used to say the split was inexpressible**, having named this exact escape in its
+own last sentence and declined it for being undocumented. A shape being undocumented is a reason
+to document it, not evidence that a thing is impossible, and the gap between *"we have not written
+this down"* and *"this cannot be done"* is where a false claim can live for a long time — a
+paragraph reads as a limitation when it is really a deferral.
 
 ### An Angular input named after a native attribute leaves the native attribute behind
 
 Angular writes a static attribute to the DOM during the creation pass whether or not it also
-matches an input, so `<arena-page-head title="Projects">` left a real `title` on the host and the
-browser drew a tooltip over the whole header. `confirm-dialog` was the worst case by a distance:
-its host is the fixed full-viewport scrim, so `<arena-confirm-dialog title="Delete?">` painted a
-tooltip over the **entire viewport** while the dialog was open.
+matches an input, so `<arena-page-head title="Projects">` would leave a real `title` on the host
+and the browser would draw a tooltip over the whole header. `confirm-dialog` is the worst case by
+a distance: its host is the fixed full-viewport scrim, so the tooltip would cover the **entire
+viewport** while the dialog is open.
 
-**The `title` and `name` half is closed and gated.** Every primitive taking either input carries
-`'[attr.title]': 'null'` or `'[attr.name]': 'null'` in its host block, and
-`GLOBAL_ATTRIBUTE_INPUTS` in `frameworks/angular/test/HostClassBinding.test.ts` asserts it both
-ways — a primitive that takes the input and does not clear it fails, and so does one that clears
-an attribute it takes no input for. Read the guard rather than a count; the figure here was wrong
-three times.
+**Every primitive taking such an input clears it**, and `GLOBAL_ATTRIBUTE_INPUTS` in
+`frameworks/angular/test/HostClassBinding.test.ts` asserts it **both ways** — a primitive that
+takes the input and does not clear it fails, and so does one that clears an attribute it takes no
+input for. `title`, `name` and `id` are on that list. Read the guard rather than a count; the
+figure here was wrong three times.
 
-**The `id` half is open, and it is not a second instance of this — it is the same defect with a
-worse consequence**, so it is recorded under *Known debt* rather than here: `id` is not in
-`GLOBAL_ATTRIBUTE_INPUTS`, four primitives take the input and leave the attribute on the host, and
-a duplicated id makes a `<label for>` resolve to a host that is not a labelable control.
-Whoever closes it adds `id` to that list in the same change, or the fifth recurrence is as silent
-as the first four.
-
+**The list is the thing to extend, not the components.** Any global attribute that becomes an
+input name joins the same trap, and adding it to `GLOBAL_ATTRIBUTE_INPUTS` is what makes the next
+recurrence loud instead of silent.
 ### `booleanAttribute` is not equivalent to a native boolean attribute
 
 Every boolean input in the Angular layer is a signal `input(false, { transform:
