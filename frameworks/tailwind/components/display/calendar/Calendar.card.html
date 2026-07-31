@@ -32,10 +32,11 @@ const paint = (slot) => ({
   borderLeftColor: `var(--color-cat-${slot})`,
 });
 
-const across = (day, col, cols) => ({
-  left: `calc(${(((day + col / cols) / DAYS.length) * 100).toFixed(4)}% + calc(var(--sp-1) * 0.5))`,
-  width: `calc(${((1 / (cols * DAYS.length)) * 100).toFixed(4)}% - var(--sp-1))`,
-});
+const across = (day, col, cols) => {
+  const left = ((day + col / cols) / DAYS.length) * 100;
+  const share = (1 / (cols * DAYS.length)) * 100;
+  return { left: `${left.toFixed(4)}%`, right: `${(100 - left - share).toFixed(4)}%` };
+};
 
 function chip(spec, showTime) {
   const node = el('div', {
@@ -84,12 +85,12 @@ function states() {
 
   const plain = el('div', {
     class: v({ clickable: true }).chip,
-    style: { top: '0px', height: '68px', left: '0%', width: '240px', ...paint(4) },
+    style: { top: '0px', height: '68px', left: '0%', right: '70%', ...paint(4) },
   }, el('span', { class: c.title, text: 'Inert chip' }), el('span', { class: c.time, text: '09:00 – 10:30' }));
 
   const reserved = el('div', {
     class: v({ clickable: true, reserve: true }).chip,
-    style: { top: '0px', height: '68px', left: '270px', width: '240px', ...paint(6) },
+    style: { top: '0px', height: '68px', left: '33%', right: '37%', ...paint(6) },
   },
     el('span', { class: c.title, text: 'Kebab beside the title' }),
     el('span', { class: c.time, text: '09:00 – 10:30' }),
@@ -98,7 +99,7 @@ function states() {
 
   const opened = el('div', {
     class: v({ clickable: true, reserve: true, panelOpen: true }).chip,
-    style: { top: '0px', height: '68px', left: '540px', width: '240px', ...paint(8) },
+    style: { top: '0px', height: '68px', left: '66%', right: '4%', ...paint(8) },
   },
     el('span', { class: c.title, text: 'Panel open' }),
     el('span', { class: c.time, text: '09:00 – 10:30' }),

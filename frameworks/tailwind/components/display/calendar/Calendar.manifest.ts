@@ -22,7 +22,7 @@ export default {
     "cell": "absolute left-0 right-0 outline-none focus-visible:shadow-[inset_0_0_0_var(--focus-width)_var(--focus-ring)]",
     "now": "absolute left-0 right-0 border-t-[length:var(--bw-strong)] border-primary pointer-events-none",
     "nowDot": "absolute -top-1 -left-1 size-1.5 rounded-pill bg-primary",
-    "chip": "absolute box-border flex flex-col overflow-hidden text-left font-body px-1.5 py-1 min-h-6.5 rounded-sm border-l-[length:var(--bw-strong)] border-t-0 border-r-0 border-b-0",
+    "chip": "absolute box-border flex flex-col overflow-hidden text-left font-body mx-0.5 px-1.5 py-1 min-h-6.5 rounded-sm border-l-[length:var(--bw-strong)] border-t-0 border-r-0 border-b-0",
     "chipBody": "flex flex-col bg-transparent border-none p-0 m-0 text-left font-body",
     "title": "text-ctl-sm font-semibold text-base-content whitespace-nowrap overflow-hidden text-ellipsis",
     "time": "font-mono text-ctl-2xs text-base-content/62",

@@ -366,6 +366,9 @@
   .m-0 {
     margin: 0px;
   }
+  .mx-0\.5 {
+    margin-inline: calc(var(--spacing) * 0.5);
+  }
   .my-1 {
     margin-block: var(--spacing-1);
   }

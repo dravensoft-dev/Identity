@@ -64,6 +64,8 @@ export const COVERED = {
   'Card:angular': 'Card.compliance.test.ts',
   'Table:angular': 'Table.cases.test.ts',
   'TableRow:angular': 'Table.cases.test.ts',
+  'Calendar:angular': 'Calendar.grid.test.ts',
+  'CalendarEvent:angular': 'CalendarEvent.cases.test.ts',
   'TableCell:angular': 'Table.cases.test.ts',
   'BarChart:angular': 'ChartDataTable.test.ts',
   'ActivityFeed:angular': 'ActivityFeed.cases.test.ts',

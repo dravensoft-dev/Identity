@@ -18,7 +18,7 @@ let seq = 0;
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IconButton],
-  host: { style: 'display: contents', '[attr.title]': 'null' },
+  host: { style: 'display: contents', '[attr.title]': 'null', '[attr.id]': 'null' },
   template: `
     @if (across(); as across) {
       @if (hasPanel()) {
@@ -100,10 +100,7 @@ export class CalendarEvent {
     const columns = this.state.days().length;
     const leftShare = ((at.dayIndex + at.col / at.cols) / columns) * 100;
     const widthShare = (1 / (at.cols * columns)) * 100;
-    return {
-      left: `calc(${leftShare}% + calc(var(--sp-1) * 0.5))`,
-      width: `calc(${widthShare}% - var(--sp-1))`,
-    };
+    return { left: `${leftShare}%`, right: `${100 - leftShare - widthShare}%` };
   });
 
   protected readonly showTime = computed(() => {
