@@ -5,12 +5,11 @@
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { buildApiModules } from './build-api-types.mjs';
 import { reactSurface, angularSurface, UnrecognisedShape } from './lib/api-surface.mjs';
-import { pascal, readLayer } from './check-structure.mjs';
-
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+import { pascal, readLayer } from './lib/layers.mjs';
+import { repoRoot as root } from './lib/repo-root.mjs';
 
 const FORMS = new Set(['primitive', 'enum', 'object', 'array', 'slot', 'event', 'consumerData', 'functionInput']);
 const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);

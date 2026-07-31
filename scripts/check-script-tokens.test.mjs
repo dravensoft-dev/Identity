@@ -1,12 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { cssCounterpart, importedNames, catSlotEnumProblems, zeroGeneratedCssProblems, cssDiscoveryProblems } from './check-script-tokens.mjs';
 import { buildScriptModules } from './build-tokens.mjs';
-
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+import { repoRoot as root } from './lib/repo-root.mjs';
 
 test('cssCounterpart strips the unit from a px declaration', () => {
   assert.equal(cssCounterpart('280px'), 280);

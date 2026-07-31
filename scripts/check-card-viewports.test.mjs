@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { startStaticServer } from './lib/static-server.mjs';
 import { findChromium, launchChromium } from './lib/chromium.mjs';
 import { connect } from './lib/cdp.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 import {
   parseDsCard, classify, summarizeCards, skipExitCode, findCardPages, UNDER_RUN_SLACK,
   measurePage, measureCardPage, mapWithConcurrency, interleaveForDispatch, MEASURE_SCRIPT,
@@ -230,7 +231,7 @@ test('skipExitCode is 2 normally and 1 under strict', () => {
 });
 
 test('findCardPages finds every page that declares, and nothing that does not', () => {
-  const pages = findCardPages(join(import.meta.dirname, '..'));
+  const pages = findCardPages(repoRoot);
   assert.ok(pages.includes('intro/guidelines/icons.html'));
   assert.ok(pages.includes('frameworks/react/components/charts/Charts.card.html'));
   assert.ok(!pages.includes('intro/Arena - Overview.html'), 'the Overview is not a card');

@@ -5,7 +5,8 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { manifestFiles, repoRoot } from './lib/tailwind-compile.mjs';
+import { manifestFiles } from './lib/tailwind-compile.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 import { classStringsBySlot } from './check-manifest-states.mjs';
 
 const COMPONENTS_DIR = join(repoRoot, 'frameworks/tailwind/components');

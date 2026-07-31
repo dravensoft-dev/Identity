@@ -1,17 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
+import { repoRoot as root } from './lib/repo-root.mjs';
 import {
   bindingName, validateTypes, validateContract, compareSurface,
   resolveAngularImplementations, resolveReactImplementations, zeroContractProblems,
 } from './check-api.mjs';
-import { pascal } from './check-structure.mjs';
+import { pascal } from './lib/layers.mjs';
 import { buildApiModules } from './build-api-types.mjs';
 import { reactSurface, UnrecognisedShape } from './lib/api-surface.mjs';
-
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 const TYPES = new Map([['Tone', 'enum'], ['Crumb', 'object']]);
 

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { repoRoot } from './lib/tailwind-compile.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 import { BANNER, generatedPath, drift } from './check-tailwind-generated.mjs';
 
 test('the committed stylesheet carries the generated banner', () => {

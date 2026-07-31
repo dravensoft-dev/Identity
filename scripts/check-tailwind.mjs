@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { parseDecls } from './lib/css-decls.mjs';
-import { compileLayer, manifestClasses, escapeClass, repoRoot } from './lib/tailwind-compile.mjs';
+import { compileLayer, manifestClasses, escapeClass } from './lib/tailwind-compile.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 
 const GENERATED = ['palette.css', 'typography.css', 'spacing.css', 'effects.css'];
 

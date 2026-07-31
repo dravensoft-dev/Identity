@@ -2,11 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { fontsCss, facesFromDisk } from './fetch-fonts.mjs';
 
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-const repoRoot = join(dirname(dirname(fileURLToPath(import.meta.url))), '.');
+import { repoRoot } from './lib/repo-root.mjs';
 
 test('a face becomes one @font-face rule with a two-hop url', () => {
   const css = fontsCss([{ family: 'Archivo', weight: 400, file: 'archivo-400.woff2' }]);

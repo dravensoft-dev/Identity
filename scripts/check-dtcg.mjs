@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
+import { repoRoot as root } from './lib/repo-root.mjs';
 
 const RESERVED = new Set(['$value', '$type', '$description', '$extensions', '$deprecated']);
 const DNS = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/;
@@ -103,7 +104,6 @@ export function zeroSourceProblems(count) {
 }
 
 function main() {
-  const root = join(dirname(fileURLToPath(import.meta.url)), '..');
   const src = join(root, 'contracts/design');
   const files = readdirSync(src).filter((f) => f.endsWith('.json')).sort();
   const zero = zeroSourceProblems(files.length);

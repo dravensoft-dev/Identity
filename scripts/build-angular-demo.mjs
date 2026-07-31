@@ -4,12 +4,11 @@
  * `splitting` keeps the Angular runtime in one shared chunk across every page. */
 
 import { spawnSync } from 'node:child_process';
-import { dirname, join, relative } from 'node:path';
+import { join, relative } from 'node:path';
 import { existsSync, readdirSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ngcBin } from './check-angular.mjs';
-
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+import { repoRoot } from './lib/repo-root.mjs';
 const PROJECT = 'frameworks/angular/tsconfig.demo.json';
 const OUT_DIR = join(repoRoot, 'build', 'angular-demo');
 const TSC_DIR = join(OUT_DIR, 'tsc');

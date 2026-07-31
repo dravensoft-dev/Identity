@@ -6,7 +6,7 @@ import {
   validatePattern, loadPatterns, validateBinding, reactComponents, angularPrimitives,
   angularBindingPath, reactBindingPath, crossLayerAgrees, loadBinding, bindingCases,
 } from './lib/behaviour-contracts.mjs';
-import { pascal } from './check-structure.mjs';
+import { pascal } from './lib/layers.mjs';
 
 const ok = {
   name: 'dialog-modal',

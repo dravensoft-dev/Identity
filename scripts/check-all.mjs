@@ -7,9 +7,9 @@ import { spawnSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { repoRoot } from './lib/repo-root.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const repoRoot = join(here, '..');
 
 export const GATES = [
   { name: 'check:docs', file: 'check-docs.mjs' },

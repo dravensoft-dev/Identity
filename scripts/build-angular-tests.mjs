@@ -1,10 +1,10 @@
 import { spawnSync } from 'node:child_process';
-import { dirname, join, relative } from 'node:path';
+import { join, relative } from 'node:path';
 import { existsSync, readdirSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ngcBin } from './check-angular.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'frameworks/angular/tsconfig.test.json';
 const OUT_DIR = join(repoRoot, 'build', 'angular-test');
 

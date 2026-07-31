@@ -1,9 +1,7 @@
 import { writeFileSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+import { repoRoot as root } from './lib/repo-root.mjs';
 
-const here = dirname(fileURLToPath(import.meta.url));
-const root = join(here, '..');
 const fontsDir = join(root, 'assets', 'fonts');
 const cssPath = join(root, 'contracts', 'design-generated', 'fonts.css');
 

@@ -9,7 +9,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { parseDecls } from './lib/css-decls.mjs';
-import { repoRoot } from './lib/tailwind-compile.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 import { arenaTokenNames, referencedTokens } from './lib/arena-tokens.mjs';
 
 const BRIDGE = join('frameworks', 'angular', 'theme', 'arena-cdk.css');

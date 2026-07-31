@@ -1,8 +1,7 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
-
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+import { join } from 'node:path';
+import { repoRoot as root } from './lib/repo-root.mjs';
 
 export const API_TARGETS = [
   'frameworks/react/Api.generated.d.ts',

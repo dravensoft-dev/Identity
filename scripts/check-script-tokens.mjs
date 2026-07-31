@@ -1,10 +1,9 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, extname } from 'node:path';
+import { join, extname } from 'node:path';
 import { buildScriptModules, collectScriptTokens, SCRIPT_TARGETS } from './build-tokens.mjs';
 import { parseDecls } from './lib/css-decls.mjs';
-
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+import { repoRoot as root } from './lib/repo-root.mjs';
 
 export function cssCounterpart(value) {
   const m = /^(-?\d+(?:\.\d+)?)(px|ms)?$/.exec(value.trim());

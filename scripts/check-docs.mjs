@@ -4,12 +4,9 @@
  * none. A file a script generates is outside the rule and is never read. */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, relative, basename, sep } from 'node:path';
 import { findComments } from './lib/comments.mjs';
-
-const here = fileURLToPath(new URL('.', import.meta.url));
-const ROOT = join(here, '..');
+import { repoRoot as ROOT } from './lib/repo-root.mjs';
 
 export const MAX_DOCUMENT_CHARS = 60_000;
 export const HEADER_MAX_LINES = 10;

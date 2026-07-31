@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { arenaTokens } from './check-tailwind.mjs';
-import { repoRoot } from './lib/tailwind-compile.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 
 export const EXCLUDED = new Map([
   ['sp-0', 'p-0 compiles to a literal 0px in v4 regardless of the theme'],

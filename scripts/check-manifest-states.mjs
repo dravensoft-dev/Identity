@@ -1,7 +1,8 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { basename, join, relative } from 'node:path';
-import { manifestFiles, repoRoot } from './lib/tailwind-compile.mjs';
+import { manifestFiles } from './lib/tailwind-compile.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 
 const COMPONENTS_DIR = join(repoRoot, 'frameworks/tailwind/components');
 const REACT_COMPONENTS_DIR = join(repoRoot, 'frameworks/react/components');

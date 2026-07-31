@@ -5,11 +5,9 @@
 
 import { writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
+import { repoRoot } from './lib/repo-root.mjs';
 
-const here = dirname(fileURLToPath(import.meta.url));
-const repoRoot = join(here, '..');
 const req = createRequire(import.meta.url);
 
 export const BANNER =

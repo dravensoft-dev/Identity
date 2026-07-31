@@ -1,9 +1,8 @@
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
-import { contrast } from './validate-palette.mjs';
+import { join } from 'node:path';
+import { contrast } from './lib/validate-palette.mjs';
+import { repoRoot as root } from './lib/repo-root.mjs';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const palette = readFileSync(join(root, 'contracts/design-generated/palette.css'), 'utf8');
 const colors = readFileSync(join(root, 'contracts/design/colors.css'), 'utf8');
 

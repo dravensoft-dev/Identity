@@ -1,34 +1,10 @@
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-
-export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-
-export const LAYERS = ['tailwind', 'angular', 'react'];
+import { repoRoot } from './lib/repo-root.mjs';
+import { LAYERS, kebab, readLayer } from './lib/layers.mjs';
 
 const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
-
-export function kebab(name) {
-  return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-}
-
-export function pascal(dir) {
-  return dir.replace(/(^|-)([a-z0-9])/g, (_, _sep, c) => c.toUpperCase());
-}
-
-export function readLayer(layer) {
-  const base = join(repoRoot, 'frameworks', layer, 'components');
-  if (!existsSync(base)) return {};
-  const out = {};
-  for (const cat of readdirSync(base, { withFileTypes: true })) {
-    if (!cat.isDirectory()) continue;
-    out[cat.name] = readdirSync(join(base, cat.name), { withFileTypes: true })
-      .filter((e) => e.isDirectory())
-      .map((e) => e.name)
-      .sort();
-  }
-  return out;
-}
 
 export function validateStructure({ categories, layers, complete = false }) {
   const problems = [];

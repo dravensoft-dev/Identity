@@ -4,9 +4,8 @@
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, extname, relative } from 'node:path';
-
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+import { join, extname, relative } from 'node:path';
+import { repoRoot as root } from './lib/repo-root.mjs';
 
 const EXEMPT = new Map([
 

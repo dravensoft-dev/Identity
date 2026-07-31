@@ -1,11 +1,8 @@
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { fileURLToPath } from 'node:url';
-import { basename, dirname, join, relative } from 'node:path';
-
-const here = dirname(fileURLToPath(import.meta.url));
-export const repoRoot = join(here, '..', '..');
+import { basename, join, relative } from 'node:path';
+import { repoRoot } from './repo-root.mjs';
 
 export function manifestClasses(manifest) {
   const out = new Set();

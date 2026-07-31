@@ -5,14 +5,12 @@
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, basename } from 'node:path';
+import { join, basename } from 'node:path';
 import {
   reactComponents, reactBindingPath, angularPrimitives, angularBindingPath, loadBinding, bindingCases,
 } from './lib/behaviour-contracts.mjs';
-import { kebab } from './check-structure.mjs';
-
-const here = dirname(fileURLToPath(import.meta.url));
-const repoRoot = join(here, '..');
+import { kebab } from './lib/layers.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 
 export const SUITE_DIRS = [
   { layer: 'react', dir: join(repoRoot, 'frameworks', 'react', 'components') },

@@ -1,10 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+import { repoRoot } from './lib/repo-root.mjs';
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const categories = JSON.parse(readFileSync(join(repoRoot, 'frameworks/Components.json'), 'utf8'));
 
 test('the six categories are exactly the React component group directories', () => {

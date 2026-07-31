@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { relative } from 'node:path';
 import { buildTailwind, buildManifestModules, generatedPath, BANNER } from './build-tailwind.mjs';
-import { repoRoot } from './lib/tailwind-compile.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 
 export { BANNER, generatedPath };
 

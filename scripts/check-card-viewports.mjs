@@ -1,11 +1,10 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, relative, sep } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { startStaticServer } from './lib/static-server.mjs';
 import { findChromium, launchChromium } from './lib/chromium.mjs';
 import { connect } from './lib/cdp.mjs';
-
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+import { repoRoot as root } from './lib/repo-root.mjs';
 
 const FRAME_FALLBACK_MS = 34;
 export const MEASURE_SCRIPT = `(async () => {

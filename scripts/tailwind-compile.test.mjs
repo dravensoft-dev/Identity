@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { manifestClasses, escapeClass, compileLayer, entryStylesheet, manifestFiles, repoRoot } from './lib/tailwind-compile.mjs';
+import { manifestClasses, escapeClass, compileLayer, entryStylesheet, manifestFiles } from './lib/tailwind-compile.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 
 test('collects classes from slots and from every variant value', () => {
   const m = {
