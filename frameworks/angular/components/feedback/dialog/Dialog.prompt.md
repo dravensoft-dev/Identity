@@ -24,7 +24,11 @@ default and a `92vw` cap, so a wide dialog still fits a narrow viewport. Pass a 
 (`width="calc(var(--sp-1) * 200)"`), never a bare number.
 
 The footer is projected through the `[footer]` marker and is **optional** — with nothing marked,
-the action row is not rendered at all rather than rendered empty.
+the action row is not rendered at all rather than rendered empty. **Import `ArenaFooter` from
+`frameworks/angular/ProjectionMarkers` in the component that writes the marker.** The gate is a
+`contentChild(ArenaFooter)`, which resolves the directive rather than the attribute, so an
+un-imported marker leaves the query null and the whole footer silently unrendered — no error, no
+template diagnostic. `DOUBTS.md` records it; nothing catches it.
 
 Focus is Arena's, in `frameworks/angular/FocusTrap.ts`, and it is a port of React's
 `UseDialogModal.js` rather than a second design. Opening moves focus to the first focusable

@@ -1803,6 +1803,29 @@ stale-proof; a present-tense component name is not.
   accept that every single-select consumer now unwraps. The first is the smaller one and
   probably right; neither is decided.
 
+- **A projection marker the consumer forgets to import drops the whole slot, in silence.** Every
+  gated `<ng-content select="[x]">` in the Angular layer is paired with a
+  `contentChild(ArenaX)` from `ProjectionMarkers.ts`, because that is the only way an
+  `ng-content` slot can report whether anything was projected. The query resolves the
+  **directive**, so it finds nothing unless the consumer's own component lists `ArenaX` in its
+  `imports` — and with the query null the `@if` never renders, the `<ng-content>` is never
+  instantiated, and the projected content vanishes. No error, no warning, no failing gate:
+  `ngc --strictTemplates` is happy, because a bare `footer` attribute on a `<div>` is valid HTML
+  whether or not a directive matches it.
+
+  **Found by opening the page, not by reading it.** `Menu.card.entry.ts` put a whole dialog
+  footer — a menu and its trigger — behind a `[footer]` marker without importing `ArenaFooter`,
+  and it rendered an empty dialog. Every suite stayed green, because the suites import the
+  markers.
+
+  **It is the Angular twin of React's fragment trap**, which `CLAUDE.md` already warns about:
+  both are a consumer-side spelling that looks right, compiles, and delivers nothing. The
+  React one is guarded by a throw in the components that can detect it. The Angular one is not
+  guarded anywhere, and it is not obvious that it can be: a component cannot distinguish "the
+  marker was not imported" from "nothing was projected", which is the case the query exists to
+  detect. Recorded rather than fixed. It affects `Dialog`, `UnauthCard`, `Card`, `PageHead`,
+  `EmptyState` and `ErrorState` equally.
+
 - **The caret glyph is announced.** Both layers render the `▾` as a real text node in a `<span>`
   beside the control, with no `aria-hidden`, so a screen reader in browse mode reads a symbol
   that carries nothing. It is not part of the control's accessible name — that comes from the
