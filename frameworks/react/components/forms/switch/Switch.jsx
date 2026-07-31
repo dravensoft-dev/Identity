@@ -59,7 +59,7 @@ export function Switch({
             ? (vertical ? 'translateY(100%)' : 'translateX(100%)')
             : (vertical ? 'translateY(0)' : 'translateX(0)'),
         }}>
-          {icon && <i aria-hidden="true" className={icon} style={{ fontSize: dims.icon, lineHeight: 'var(--lh-tight)' }} />}
+          {icon && <i aria-hidden="true" className={icon} style={{ fontSize: dims.icon, lineHeight: 'var(--lh-tight)', color: 'var(--crimson)' }} />}
         </span>
       </button>
       {label && (

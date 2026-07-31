@@ -39,11 +39,15 @@ export function BulkActionBar({ count, noun = 'items', actions, onRun, onClear, 
           <button key={i} onClick={() => onRun && onRun(a)}
             tabIndex={i === at ? 0 : -1} onFocus={() => setCursor(i)}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', height: 'calc(var(--sp-1) * 8.5)', padding: '0 calc(var(--sp-1) * 3)',
-              background: 'transparent', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-sm)', cursor: 'pointer',
+              background: 'transparent',
+              border: 'var(--bw) solid ' + (a.destructive ? 'var(--danger)' : 'var(--color-base-300)'),
+              borderRadius: 'var(--r-sm)', cursor: 'pointer',
               fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--dz-text-md)',
               color: a.destructive ? 'var(--danger)' : 'var(--bone-dim)',
               transition: 'background var(--dur-fast) var(--ease-out)' }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--panel)')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = a.destructive ? 'var(--danger-soft)' : 'var(--panel)';
+            }}
             onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}>
             {a.icon && <span style={{ fontSize: 'var(--icon-md)', display: 'inline-flex' }}><i className={a.icon} aria-hidden="true" /></span>}{a.label}
           </button>

@@ -95,24 +95,31 @@ stale-proof; a present-tense component name is not.
   rule, the manifest as `active:scale-[var(--press-scale)]`. One design decision that used to be
   written twice.
 
-- **`Checkbox` has no visible focus indicator, in either layer, and porting it to Angular did
-  not introduce that.** The control is a real `<input type="checkbox">` hidden with
-  `opacity-0 size-0` behind a decorative `<span>` box, which is the right structure — it keeps
+- **CLOSED: `Checkbox` and `Radio` had no visible focus indicator in either layer, and `Radio`
+  was the same shape this entry predicted without looking.** Both hide a real input with
+  `absolute opacity-0 size-0` behind a decorative box, which is the right structure — it keeps
   the role, the name and Space-to-toggle from the platform, and it keeps the input focusable
-  where `display: none` would not. What neither layer does is paint anything on the box when the
-  input takes focus, so a keyboard user tabbing through a form sees **nothing move**. That is a
-  WCAG 2.4.7 failure and it is invisible to every gate here: the `checkbox` pattern requires
-  `roles.element`, `roles.label`, `keyboard.Space` and `states.checked`, and this control meets
-  all four, so `check:compliance` is correctly green over it.
-  **The fix is known and is deliberately not in this batch.** In Angular it is one utility on the
-  manifest's `box` slot — `has-[:focus-visible]:` reaching the sibling input, the same idea
-  `Input`'s `field` slot already uses with `focus-within:`. But the manifest is shared, so that
-  moves the Tailwind specimen too, and React reads no manifest at all: its `Checkbox.jsx` is
-  inline styles with no focus state to hook, so the layers would diverge on an accessibility
-  property rather than on a cosmetic one. Fixing it properly means fixing both, and that is a
-  change to a shipped React component rather than a port. **`Radio` is almost certainly the same
-  shape** and has not been looked at — it uses the same hidden-input structure and Plan D's batch
-  3 is where it lands.
+  where `display: none` would not. Neither painted anything when that input took focus, so a
+  keyboard user tabbing through a form saw **nothing move**: a WCAG 2.4.7 failure invisible to
+  every gate, because the `checkbox` pattern requires `roles.element`, `roles.label`,
+  `keyboard.Space` and `states.checked` and the control met all four.
+
+  **The selector is the interesting part, and it is the same in both layers.** The input is a
+  *following sibling* of the box, not a descendant, so `focus-within:` — the idea `Input`'s
+  `field` slot uses — cannot reach it. `:has()` can, reading forward:
+  `.box:has(~ input:focus-visible)`. Angular gets it as a Tailwind arbitrary variant on the
+  manifest's `box`/`ring` slot; React injects the identical selector in a `<style>` tag, the
+  route this layer already takes for anything an inline style cannot express — and a
+  pseudo-class is exactly that. The ring itself is Arena's existing convention rather than a new
+  one: `0 0 0 var(--focus-width) var(--gold-soft)`, the same shadow `SegmentedControl` and `Tab`
+  already paint.
+
+  **Measured in real Chromium, both layers, by tabbing rather than by calling `.focus()`** —
+  programmatic focus does not reliably produce `:focus-visible`, which is the whole point of the
+  selector. Angular's checkbox rings after one Tab on its own card; React's after 33 on the
+  Forms card, which simply has that many controls before it. Both paint
+  `oklab(0.724545 0.0133235 0.0989409 / 0.16) 0px 0px 0px 2px` — the identical 2px ring, from
+  the identical token.
 
 - **A green run is only as good as what the gate looked at, and a gate that finds nothing
   reports zero violations either way.** This is a rule rather than an anecdote, because it has
@@ -1214,20 +1221,34 @@ stale-proof; a present-tense component name is not.
   the typo. Kept here only so a reader who finds this paragraph quoted elsewhere knows it is
   spent.
 
-- **`ActivityFeed`'s articles carry `tabindex="0"` on recollection, not on a re-read of APG.**
-  The `feed` pattern's own file in `contracts/behaviour/` states seven requirements and says
-  nothing about tabindex, so nothing in this repository decides the value — but a feed whose
-  articles cannot receive focus has no way to satisfy `keyboard.PageDown` either, so the
-  implementation had to pick one. It picked `0`, making each article a tab stop, on the reading
-  that a feed is a **browse** structure rather than a composite widget with one roving stop.
-  **www.w3.org is unreachable from the environment this was written in** — WebFetch is refused at
-  the domain level — so the APG feed example's markup was not re-read. A web search did confirm
-  the keyboard half in APG's own words (Page Down → next article, Page Up → previous, and a
-  Control+End the repo's pattern file does not require and neither layer implements). What is
-  unverified is narrow and specific: whether APG's example uses `tabindex="0"` per article or
-  `-1` with the feed itself focusable. Both suites assert `0` today, so a correction means
-  changing the suites as well as the components. Re-read
-  `https://www.w3.org/WAI/ARIA/apg/patterns/feed/` from an environment that can reach it.
+- **CLOSED, and the re-read confirmed the guess while finding a gap nobody was looking for.**
+  This recorded that `ActivityFeed`'s articles carried `tabindex="0"` on recollection rather
+  than on a reading of APG, because `www.w3.org` was unreachable from the environment where the
+  component was written. It is reachable now, and it was re-read.
+
+  **The recollection was right.** APG's feed example states `tabindex="0"` on each article and
+  says the feed container itself is not focusable — exactly what both layers do. The alternative
+  this entry worried about (`-1` per article with the feed focusable) is not what APG shows, so
+  no component and no suite changed. Note where the answer lives: the *pattern* page specifies
+  no tabindex at all, and the *example* page's "Role, Property, State, and Tabindex Attributes"
+  table is what settles it — a distinction worth knowing before anyone re-checks this.
+
+  **What the re-read found is that Arena's own pattern file required LESS than the source it
+  cites.** `contracts/behaviour/feed.json` names `source` as the APG feed pattern and listed two
+  keys, `PageDown` and `PageUp`. APG's keyboard section lists **four**: Control+End moves focus
+  to the first focusable element after the feed, and Control+Home to the first before it.
+  Neither layer implemented them, and nothing could have noticed — a pattern file is the
+  authority, so a component meeting it fully is green however much of its cited source the
+  pattern left out. **A contract that under-states its own source is a quieter defect than a
+  component that under-implements its contract**, because every gate above it agrees.
+
+  Both keys are in the pattern and in both layers now, sharing the `focusableElements` helper
+  each layer already had for its focus trap. `keyboard.ControlEnd` and `keyboard.ControlHome`
+  are registered as BEHAVIOURAL, so each suite has to earn its verdict by acting on the tree —
+  which needed a fixture change worth recording: **the requirement is about LEAVING the feed, so
+  a feed alone in a document has nowhere to leave to.** Both suites now put a focusable element
+  on each side of the feed and assert focus lands on it. Watched failing against a disabled
+  handler before being trusted.
 
 - **Plan D owes `functionInput` an Angular implementation. The spelling is no longer open;
   only the implementation is.** `Input.validate` is the repo's only `functionInput` and
@@ -1949,13 +1970,12 @@ stale-proof; a present-tense component name is not.
   detect. Recorded rather than fixed. It affects `Dialog`, `UnauthCard`, `Card`, `PageHead`,
   `EmptyState` and `ErrorState` equally.
 
-- **The caret glyph is announced.** Both layers render the `▾` as a real text node in a `<span>`
-  beside the control, with no `aria-hidden`, so a screen reader in browse mode reads a symbol
-  that carries nothing. It is not part of the control's accessible name — that comes from the
-  `<label for>` — so no pattern requirement catches it, and `roles.label` passes either way. One
-  attribute in each layer fixes it; it is recorded rather than taken because touching React's
-  `Select.jsx` is outside the batch that found it, and fixing one layer alone would manufacture
-  a divergence out of a defect the two currently share.
+- **CLOSED: the caret glyph is silent now.** Both layers rendered the `▾` as a real text node in
+  a `<span>` beside the control with no `aria-hidden`, so a screen reader in browse mode read a
+  symbol carrying nothing. It was not part of the control's accessible name — that comes from
+  the `<label for>` — so no pattern requirement caught it and `roles.label` passed either way.
+  One attribute in each layer, taken in both at once, because fixing one alone would have
+  manufactured a divergence out of a defect the two shared.
 
 ### What the `.generated.` rename does not fix
 
@@ -2685,32 +2705,19 @@ Duotone icon on the coachmark was flagged as worth double-checking. If a future 
 wants one, `ph-sparkle` duotone with the crimson accent on the primary layer is the
 existing registry answer.
 
-#### BulkActionBar — a destructive action is bordered and hovers in `--danger-soft`, React only recolors the text
+#### RETIRED as a divergence: a destructive bulk action is bordered and hovers in `--danger-soft` in both layers
 
-**React:** `BulkActionBar.jsx`'s destructive action changes only the text color
-(`var(--danger)` vs `var(--bone-dim)`); the border stays the neutral
-`var(--color-base-300)` for every action, destructive or not, and hover (driven by a
-`mouseenter`/`mouseleave` pair) always sets the same neutral `var(--panel)` background,
-never a danger tint.
+**React** changed only the text colour (`var(--danger)` against `var(--bone-dim)`); the border
+stayed the neutral `var(--color-base-300)` for every action, destructive or not, and hover always
+set the same neutral background rather than a danger tint. Angular's `arena-bulk-action-bar`
+bordered in `--error` alongside the text and hovered in the soft danger tint.
 
-**Angular:** `arena-bulk-action-bar`'s destructive action borders in `--error`
-(`border-error`) alongside the text, and its hover is the soft danger tint
-(`hover:bg-error/14`, `var(--danger-soft)`) rather than the neutral raise the
-non-destructive actions get.
-
-**Why:** README's own danger convention is explicit and names this exact shape —
-"Applies to every risk trigger or indicator: buttons..., icon buttons..., menu items...
-and equivalents in lists, cards and toolbars. Hover: lightens with `--danger-soft`."
-`Menu.jsx`'s own destructive item already does this correctly (danger text plus a
-`--danger-soft` hover), so React's `BulkActionBar` is inconsistent with both the
-system's normative rule and its own `Menu` sibling — this reads as a bug in
-`BulkActionBar.jsx`, not a considered simplification, and mirroring it would have
-shipped the same gap into a second layer.
-
-**Converges:** yes — React's `BulkActionBar.jsx` should gain the border and the
-`--danger-soft` hover to match `Menu.jsx` and the README. **Open debt on the React
-layer.**
-
+**Angular was right and React was a defect, which is why this converged rather than being
+recorded.** The README's danger convention names this exact shape — it applies to every risk
+trigger including "equivalents in lists, cards and toolbars", and specifies that hover lightens
+with `--danger-soft`. `Menu.jsx`'s own destructive item already did it correctly, so React's
+`BulkActionBar` contradicted both the normative rule and its own sibling. It carries the border
+and the `--danger-soft` hover now.
 #### CommandPalette — RESOLVED: both layers are accessible comboboxes
 
 > **This entry is closed.** React converged onto the Angular template rather than the other way
@@ -2926,28 +2933,24 @@ together, and both this component and React's carry the pair.
 
 **Converges:** no. Each layer expresses the same box in its own idiom, and neither is wrong.
 
-#### DoughnutChart — the legend is keyboard-reachable in Angular, not yet in React
+#### RETIRED as a divergence: the doughnut legend is keyboard-reachable in both layers
 
-**React:** `DoughnutChart.jsx:54` renders the legend column as `overflow: 'auto'` with nothing
-focusable inside it and no accessible name. Current Chrome and Firefox add a scrollable container
-to the tab order themselves, so on an up-to-date browser the column can be reached — but that is a
-recent default (Chrome shipped it in 127), it is absent on older engines, and the tab stop it
-supplies is unnamed. A slice past the visible rows of a long legend is unreachable by keyboard
-wherever the UA does not supply that stop.
+**React** rendered the legend column as `overflow: 'auto'` with nothing focusable inside it and
+no accessible name. Current Chrome and Firefox add a scrollable container to the tab order
+themselves, so on an up-to-date browser the column could be reached — but that is a recent
+default (Chrome shipped it in 127), it is absent on older engines, and the tab stop it supplies
+is unnamed. A slice past the visible rows of a long legend was unreachable by keyboard wherever
+the UA did not supply that stop.
 
-**Angular:** `arena-doughnut-chart`'s legend column carries the identical `overflow: auto`, plus
-`tabindex="0"`, `role="group"` and `aria-label="Doughnut chart legend"` (`DoughnutChart.ts`),
-so the column is itself a tab stop and the browser's native scroll keys move it once focused.
+**Both layers now carry the same three attributes on the column** — `tabindex="0"`,
+`role="group"` and `aria-label="Doughnut chart legend"` — so the column is itself a tab stop and
+the browser's native scroll keys move it once focused. React was ported onto Angular's shape
+rather than the reverse, because Angular's already closed a real WCAG 2.1.1 defect the two used
+to share.
 
-**Why:** the Angular fix closes a real WCAG 2.1.1 (Keyboard) defect that both layers used to share.
-React was out of scope for this branch and `DoughnutChart.jsx` was left unchanged, so it still has the
-defect the Angular legend no longer does. This is not a considered design difference — it is debt
-on the React side, and it is recorded rather than left silent because the two layers now visibly
-differ in an accessibility affordance.
-
-**Converges:** yes — React should get the same `tabindex`/`role`/`aria-label` treatment its legend
-column lacks today. **Open debt on the React layer**.
-
+**The lesson is the one about vendor defaults**, and it is the same one the box-model entry
+carries one section up: "the browser reaches it anyway" is a fact about a recent engine default,
+not about anything Arena decided, and it is not a reason to leave a control unreachable.
 #### AppLogo — React guards against a missing `mark` or `name`; Angular has no counterpart, and needs none
 
 **React:** `AppLogo.jsx`'s `if (!mark || !name) return null` (`AppLogo.jsx:15`) renders nothing
@@ -3174,35 +3177,32 @@ When you find a behavioural difference between layers:
 3. If both are defensible, or one leads and the other has debt, add an entry here with the reason
    and whether it is expected to converge.
 
-#### Switch — the knob glyph is inked in Angular and inherits the page ink in React
+#### RETIRED as a divergence: the Switch knob glyph is inked in both layers
 
-**React:** `Switch.jsx` draws the per-state `<i>` with a font size and nothing else, so its colour
-inherits from the page. The knob under it is `var(--on-accent)` — near-white — and the page ink on
-a dark surface is near-white too, so **the glyph is all but invisible**, at every size. It is
-shipping: `frameworks/react/ui-kits/console/Shell.jsx` renders the theme toggle with
-`iconOn="ph-bold ph-sun"`. What kept it unseen is that the *specimen* pages did not — React's
-`Forms.card.html` passes neither icon, so the card a reviewer opens has no glyph in it at all.
-**Angular:** `arena-switch` reads the shared manifest, whose `icon` slot now carries
-`text-primary`. Crimson on the near-white knob, legible down to `sm`.
+**React** drew the per-state `<i>` with a font size and nothing else, so its colour inherited
+from the page. The knob under it is `var(--on-accent)` — near-white — and the page ink on a dark
+surface is near-white too, so **the glyph was all but invisible at every size**. It was shipping:
+`frameworks/react/ui-kits/console/Shell.jsx` renders the theme toggle with a sun glyph. What kept
+it unseen is that the *specimen* pages did not — React's `Forms.card.html` passes no icon, so the
+card a reviewer opens had no glyph in it at all.
 
-**Why:** the fix is in the manifest, which Angular and the Tailwind specimen read and React does
-not — React's `Switch` is inline styles with no hook for it. It is one utility rather than a
-judgement: the knob is `bg-primary-content`, so the glyph must be `text-primary`, which is the
-same pair `check:text-contrast` already gates at 4.5 in its `primary`/`primary-content` row, read
-the other way round. No new gate entry is owed, and none was added.
+**`Switch.jsx` now sets the colour explicitly**, `var(--crimson)`, which is `--color-primary` —
+the same value Angular reaches through the manifest's `text-primary`. It is one utility rather
+than a judgement: the knob is `--on-accent`, which is `--color-primary-content`, so the pair is
+`primary` on `primary-content`, and that is a row `check:text-contrast` already gates at 4.5:1,
+read the other way round. No new gate entry was owed and none was added.
 
-**Converges: no, and Angular is the better side.** React's is a real legibility defect and closing
-it means giving `Switch.jsx` an explicit colour — a change to a shipped React component, not a
-port. **The demo page is what found it**, which is the case for the harness in one sentence: five
-sizes rendered side by side with a glyph in each, and the `sm` one is where you look.
-
+**The demo page is what found it**, which is the case for the Angular harness in one sentence:
+five sizes rendered side by side with a glyph in each, and the `sm` one is where you look.
 #### Input — three differences, and the picker dressing moved into the shared layer
 
-**Status glyphs.** React's `Input.jsx` draws `ph-warning-circle` and `ph-check-circle` with a
-colour and no `aria-hidden`, while the leading `icon` beside them **is** hidden — an
+**Status glyphs — CLOSED.** React's `Input.jsx` drew `ph-warning-circle` and `ph-check-circle`
+with a colour and no `aria-hidden`, while the leading `icon` beside them **was** hidden — an
 inconsistency inside one component. A Phosphor glyph is a font ligature, so an unhidden one is
-announced next to the error message it duplicates. `arena-input` hides all four.
-**Converges: no, and Angular is the better side.** One attribute on `Input.jsx` closes it.
+announced next to the error message it duplicates. `arena-input` hid all four and was the better
+side; React hides all four now. **What made this cheap to leave open is what makes it worth
+noting: the defect was visible from inside the file.** Two glyphs three lines apart, one hidden
+and one not, and no gate has an opinion about either.
 
 **The controlled value.** React re-renders the DOM value from the prop, so ignoring `onChange`
 visibly reverts the box. Angular's `[value]` binding writes only when the *bound* value changes,

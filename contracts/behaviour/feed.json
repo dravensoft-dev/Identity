@@ -9,6 +9,8 @@
     "states.posinset": "aria-posinset and aria-setsize on each article, or -1 for setsize when the total is not yet known",
     "states.busy": "aria-busy set to true on the feed during a multi-step update, false once it settles",
     "keyboard.PageDown": "moves focus to the next article",
-    "keyboard.PageUp": "moves focus to the previous article"
+    "keyboard.PageUp": "moves focus to the previous article",
+    "keyboard.ControlEnd": "Control+End moves focus to the first focusable element after the feed",
+    "keyboard.ControlHome": "Control+Home moves focus to the first focusable element before the feed"
   }
 }
