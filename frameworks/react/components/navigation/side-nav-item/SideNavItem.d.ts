@@ -7,6 +7,8 @@ export interface SideNavItemProps {
   icon?: string;
 
   href?: string;
+
+  disabled?: boolean;
 }
 
 export function SideNavItem(props: SideNavItemProps): JSX.Element;

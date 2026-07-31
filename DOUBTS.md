@@ -1604,12 +1604,22 @@ stale-proof; a present-tense component name is not.
   focusability all come from the platform the moment the element is an `<a href>`, so binding
   `button` there would name a role the element does not have. What the item adds on top of the
   anchor is `aria-current`, which is a clause of the `navigation` pattern the parent binds.
-  **The button case carries one exception, and finding it was the useful part**: the `button`
-  pattern requires `states.disabled`, and `SideNavItem` has no disabled concept at all — a
-  navigation destination a consumer wants unavailable is one they do not render. That is an
-  absence in the API rather than an unmet requirement in the DOM, and a BEHAVIOURAL requirement
-  needs a verdict either way, so the suites declare it `false` and the binding excepts it. The
-  exception justifies the false; it does not replace it.
+  **Casing it made a gap visible, and the gap was worth paying rather than declaring.** The
+  `button` pattern requires `states.disabled`, and `SideNavItem` had no disabled concept at all —
+  so converting the binding produced the repository's **first and only exception declaration**,
+  against a tree that had carried `"exceptions": []` everywhere. The first reason written for it
+  was that *a navigation destination a consumer wants unavailable is one they do not render*, and
+  that is wrong: a destination behind a plan the user does not have is worth **showing**, because
+  seeing it is what tells them it exists. `TableRow` and `CalendarEvent`, its siblings, both have
+  `disabled` for the same reason.
+  So `SideNavItem` has one now, reflecting through `aria-disabled` rather than by disappearing,
+  with the anchor keeping its `href` so the case split stays what it is — activation is refused
+  and the state is announced. The exception is gone and the tree is back to zero.
+  **The lesson is about what an exception is for.** The defect was not created by casing the
+  binding; it was *revealed* by it, because bound to `none` the requirement never applied and a
+  real `<button>` with no disabled concept read as having no interactive pattern at all. An
+  exception is the right home for a gap that cannot be closed. This one could be, and a
+  well-argued exception is the most comfortable place for a defect to sit unfixed.
 - **The open question about `SideNav` is CLOSED, and which way it went is the useful part.**
   `frameworks/angular/BehaviourDelegated.json`'s `SideNav` entry once claimed a third-party
   control provided this component — its reason said `mat-nav-list` "already provides the

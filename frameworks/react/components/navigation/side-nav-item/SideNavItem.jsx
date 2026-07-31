@@ -2,7 +2,7 @@ import React from 'react';
 import { rowStyle, rowGlyph } from '../side-nav/SideNavInject.jsx';
 
 export function SideNavItem({
-  id, label, icon, href,
+  id, label, icon, href, disabled = false,
   depth = 0, activeId, indentStep = 3, onActivate,
 }) {
 
@@ -12,11 +12,17 @@ export function SideNavItem({
 
   const shared = {
     'aria-current': on ? 'page' : undefined,
-    onClick: () => onActivate && onActivate(id),
+    'aria-disabled': disabled ? 'true' : undefined,
+    onClick: (e) => {
+      if (disabled) { e.preventDefault(); return; }
+      if (onActivate) onActivate(id);
+    },
     style: rowStyle({
       indentStep, depth,
       background: on ? 'var(--crimson-soft)' : 'transparent',
       color: on ? 'var(--crimson)' : 'var(--mute)',
+      opacity: disabled ? 0.5 : 1,
+      cursor: disabled ? 'not-allowed' : 'pointer',
 
       textDecoration: 'none',
       fontWeight: on ? 'var(--fw-semibold)' : 'var(--fw-medium)',
