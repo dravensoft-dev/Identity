@@ -1,4 +1,4 @@
-# Arena — Angular layer
+# Arena, the Angular layer
 
 Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
 
@@ -9,42 +9,42 @@ what members it presents is `contracts/api/components/<Name>.json`; what it must
 `contracts/behaviour/`; what a value is, `contracts/design/`. The single edge to another layer
 is styling: a `<Component>.variants.ts` imports the generated
 `<Component>.manifest.generated` beside its manifest in `frameworks/tailwind/`, through the
-configured `tv` in `frameworks/tailwind/Tv.ts`. A manifest is data — slots, variants and class
-strings — so nothing travels the other way. `bun run check:layer-independence` holds both
+configured `tv` in `frameworks/tailwind/Tv.ts`. A manifest is data, meaning slots, variants and class
+strings, so nothing travels the other way. `bun run check:layer-independence` holds both
 halves: that edge is `ALLOWED` with its reason, and everything else fails.
 
-**Bridge (foundation) — bring Arena's tokens, icons and theming into an existing Angular app:**
-- `theme/arena-tailwind.css` — one import that brings Arena's tokens (including
+**Bridge (foundation), to bring Arena's tokens, icons and theming into an existing Angular app:**
+- `theme/arena-tailwind.css`: one import that brings Arena's tokens (including
   the self-hosted fonts declared in `contracts/design-generated/fonts.generated.css`, binaries in `assets/fonts/`)
-  + the shared `frameworks/tailwind/Theme.css` `@theme` preset into scope.
-- `theme/arena-cdk.css` — the `@angular/cdk` overlay's structural stylesheet, re-based onto
+  plus the shared `frameworks/tailwind/Theme.css` `@theme` preset into scope.
+- `theme/arena-cdk.css`: the `@angular/cdk` overlay's structural stylesheet, re-based onto
   Arena's `--z-*` scale, needed once the app uses a primitive that positions itself with
   `@angular/cdk/overlay`. The file states why the container's z-index is overridden and why
   the four other hardcoded ones are left alone. **It is verified against the installed
-  `@angular/cdk` — read [CDK bridge](#cdk-bridge-supported-and-verified) for what that
+  `@angular/cdk`; read [CDK bridge](#cdk-bridge-supported-and-verified) for what that
   means and what it does not.**
-- `icons/IconManifest.ts` — canonical Phosphor role→glyph map.
-- `theme/ThemeService.ts` + `theme/no-fouc.html` — dark-first signal theme
+- `icons/IconManifest.ts`: the canonical Phosphor role→glyph map.
+- `theme/ThemeService.ts` and `theme/no-fouc.html`: the dark-first signal theme
   service (light = `.arena-light`) and the pre-paint snippet.
 
-**Primitives — Arena's own token-styled components**, and the whole of this layer's
+**Primitives are Arena's own token-styled components**, and the whole of this layer's
 rendering surface: Arena writes the markup, the ARIA and the styling for every control it
 ships, so every one of them is in reach of `check:dimensions`, `check:tailwind`,
-`check:compliance` and the Angular arm of `check:api` — where a control drawn by somebody
+`check:compliance` and the Angular arm of `check:api`, where a control drawn by somebody
 else's library is in reach of none of them. Each lives in
 `components/<category>/<component-kebab>/` and is a
 quartet: `<Component>.ts` (standalone, `OnPush`, signal I/O, `arena-` selector),
 `<Component>.variants.ts` (a `tailwind-variants` recipe built with the shared `tv`),
-`<Component>.prompt.md` (usage + Do/Don't), and an `index.ts` barrel.
+`<Component>.prompt.md` (usage and Do/Don't), and an `index.ts` barrel.
 `components/display/tag/` is the
 reference shape. The three SVG charts are the one exception and have no
-`<Component>.variants.ts` — see below. The category is the one
+`<Component>.variants.ts`; see below. The category is the one
 `frameworks/Components.json` declares, and the file-naming rule is the repo-wide one
 `CLAUDE.md` states: directories kebab-case, file names capital-initial. Each component's
 own tests sit in that same directory as `<Component>.<facet>.test.ts`.
 
-The layer spans all six categories the layout rule allows — `brand`, `charts`, `display`,
-`feedback`, `forms`, `navigation`; `forms` is the newest. **Read the set from the tree
+The layer spans all six categories the layout rule allows: `brand`, `charts`, `display`,
+`feedback`, `forms` and `navigation`. **Read the set from the tree
 rather than from a list here**, because a list here rots and nothing checks it:
 `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | sort`, and count it
 with the same command piped to `wc -l`.
@@ -52,7 +52,7 @@ with the same command piped to `wc -l`.
 **The three SVG charts are the declared exception**, and a missing chart manifest is a
 decision rather than an omission: a chart's visual identity is path data and attribute
 bindings, not class strings, so `bar-chart`, `line-chart` and `doughnut-chart` have no
-`*.variants.ts` and style themselves with token-valued style **objects** — the camelCase
+`*.variants.ts` and style themselves with token-valued style **objects**, meaning the camelCase
 `[style]` form, never a kebab-case string or attribute, because that is the only shape
 `check:dimensions` can actually read. `chart-card` is not one of them: it is a bordered
 tile with a microlabel, so it has a manifest like every other expressible component.
@@ -63,8 +63,8 @@ all of its consumers rather than in one shared bucket:
 `FocusTrap.ts` (the shared overlay focus trap, generalized out of `confirm-dialog` and
 used by it, `command-palette` and `onboarding`) and `ProjectionMarkers.ts` (the `[action]`,
 `[actions]`, `[brand]` and `[footer]` marker directives that let a component
-detect whether an optional slot was projected, so its spacing wrapper can be gated —
-each bare, with no `arena-` prefix, because the attribute is the contract member's
+detect whether an optional slot was projected, so its spacing wrapper can be gated, each
+bare with no `arena-` prefix, because the attribute is the contract member's
 name, per `contracts/api/README.md`'s binding table) all have consumers in more than one category,
 so they sit at the layer root and `frameworks/angular/index.ts` names each of them
 directly. `DataVisuals.ts` (the chart maths and the identity-or-meaning colour contract)
@@ -74,8 +74,8 @@ chip's identity colour. The name matches the placement: a module a schedule grid
 not "chart internals".
 
 A primitive defines no styling of its own. Its recipe lives in
-`frameworks/tailwind/components/<category>/<component-kebab>/<Component>.manifest.json`
-— the same category — and reaches the
+`frameworks/tailwind/components/<category>/<component-kebab>/<Component>.manifest.json`,
+under the same category, and reaches the
 component through the shared `tv`:
 
 ```ts
@@ -85,12 +85,12 @@ import manifest from '../../../../tailwind/components/display/tag/Tag.manifest.g
 export const tagStyles = tv(manifest);
 ```
 
-The manifest import is extensionless, and it now names a stem nothing else claims. It used to
-resolve to `Tag.manifest.ts` **only because** TS and bun probe `.ts` before `.json`, with
-`Tag.manifest.json` sitting beside it — so a bundler configured `.json`-first would silently
-widen every variant back to `string`. The `.generated` infix removed that: the build output is
-`Tag.manifest.generated.ts`, the source is `Tag.manifest.json`, and no probe order can confuse
-one for the other.
+The manifest import is extensionless, and it names a stem nothing else claims. An
+extensionless import of `Tag.manifest` would resolve to the `.ts` **only because** TS and bun
+probe `.ts` before `.json`, so a bundler configured `.json`-first would silently widen every
+variant back to `string`. The `.generated` infix is what removes the ambiguity: the build
+output is `Tag.manifest.generated.ts`, the source is `Tag.manifest.json`, and no probe order
+can confuse one for the other.
 
 ## Conventions
 
@@ -100,7 +100,7 @@ component `styles` (recipe owns styling), no comments beyond one JSDoc line,
 barrels with no `../` imports inside the layer. Dark-first (`.arena-light` for
 light). Danger is outline. Icons are Phosphor (Bold default). No gradients, no emoji.
 
-## What Arena implements, and the two components Angular does not have
+## What Arena implements
 
 Parity here is parity of **outcome**, not of inventory: a consumer of this layer can build
 every interface `frameworks/Components.json` declares a component for, and builds all of it
@@ -108,15 +108,14 @@ from Arena's own primitives. No control in this layer is delegated to a third-pa
 library.
 
 **There are no exceptions left, and `BehaviourDelegated.json` is the only trustworthy
-statement of that** — `check:behaviour` fails the moment a component this layer lacks goes
-unrecorded, where a list written here would rot in silence. **The file does not exist**: this
-layer implements every component `frameworks/Components.json` declares, and a record with
-nothing to record is the failure mode that retired `check:material`. The mechanism stays, so
-the next component this layer lacks fails loudly until it is written down there binding
-`absent`.
+statement of that**: `check:behaviour` fails the moment a component this layer lacks goes
+unrecorded, where a list written here would rot in silence. **The file does not exist**,
+because this layer implements every component `frameworks/Components.json` declares. The
+mechanism stays regardless, so the next component this layer lacks fails loudly until it is
+written down there binding `absent`.
 
 **Arena writes the markup, the ARIA and the styling, and `@angular/cdk` supplies only what
-Arena should not hand-roll** — overlay positioning for a surface anchored to a trigger, and
+Arena should not hand-roll**: overlay positioning for a surface anchored to a trigger, and
 the roving-focus key managers. Focus trapping stays Arena's own `FocusTrap.ts`, which implements
 `contracts/behaviour/dialog-modal.json` for this layer, and `arena-dialog` consumes it rather
 than `cdk/dialog`.
@@ -138,7 +137,7 @@ there. A primitive is inside all three the day it is written. The argument in fu
 ### CDK bridge: supported and verified
 
 **`@angular/cdk` is a declared dependency rather than an optional one**, and it is the only
-package a primitive's own source imports besides `@angular/core` — measure it rather than
+package a primitive's own source imports besides `@angular/core`; measure it rather than
 trusting this, with `grep -rho "from '@[a-z@/-]*'" --include='*.ts' --exclude='*.test.ts'
 --exclude='*.card.entry.ts' frameworks/angular/components/ | sort -u`. A primitive that
 positions an overlay imports it, so it is pinned in the root `package.json` at an exact
@@ -150,11 +149,11 @@ every `cdk-*` class it overrides is one the installed `@angular/cdk` really defi
 checks the **selectors** as well as the values, which it can because
 `@angular/cdk/overlay-prebuilt.css` ships installed and is the oracle: a class renamed
 upstream leaves the override matching nothing, and that is decidable against the sheet. It
-also carries four zero-result guards — no rule, no `cdk-*` class, no `var()`, no `@import` —
+also carries four zero-result guards (no rule, no `cdk-*` class, no `var()`, no `@import`)
 so a bridge that has stopped being a bridge cannot pass by having nothing left to check.
 
 **What the gate does not cover** is whether an override's *value* is the right one for the
-class it lands on — the gate reads names and selectors, never paint, so only a real render
+class it lands on: the gate reads names and selectors, never paint, so only a real render
 catches that. `Tooltip.card.html` and `Menu.card.html` are that render: both open a real CDK
 overlay in a real browser, which is where a z-index that stacks wrongly is visible at all.
 `check:cdk` fails the moment the bridge and the installed package disagree.
@@ -162,7 +161,7 @@ overlay in a real browser, which is where a z-index that stacks wrongly is visib
 ## Verifying the layer
 
 `bun run check:angular` compiles every primitive with `ngc` under `strictTemplates`
-(`tsconfig.check.json`), and it reaches a primitive **through the barrel** — a
+(`tsconfig.check.json`), and it reaches a primitive **through the barrel**, so a
 primitive missing from its own `index.ts`, its category's, `components/index.ts` or the
 layer's `index.ts` is not typechecked, and no adopter can import it from the layer root
 either. `test/Barrels.test.ts` walks that chain and fails on a gap; what a barrel
@@ -178,7 +177,7 @@ charts have no specimen at all, by the same exception that gives them no manifes
 
 **What proves the component is a demo page, and there is one per primitive that has earned
 it.** `<Component>.card.html` beside the component runs the real primitive in a real browser,
-which is where motion, focus rings and layout live — none of them observable in happy-dom.
+which is where motion, focus rings and layout live, none of them observable in happy-dom.
 `bun run demos` builds the pages and serves them; the build is `bun run build:angular-demo`,
 two steps because neither tool does the other's job: `ngc -p tsconfig.demo.json` compiles the
 templates AOT, and `Bun.build` bundles that output for a browser, one shared Angular chunk
@@ -187,15 +186,15 @@ compiled and its injectables need the JIT fallback; without it the page throws b
 
 The bundle is git-ignored build output, which is why **no Angular page declares `@dsCard`**: on
 a fresh clone the page renders blank, and `check:cards` would pass it for having nothing to
-overflow. `check:angular-demos` is the portable gate instead — it needs no browser and no
+overflow. `check:angular-demos` is the portable gate instead: it needs no browser and no
 bundler, and its `PAGED` set is the coverage record, so a page that exists undeclared and a
 declared page that is missing both fail. Coverage is partial and grows one component at a time.
 
 **`check:angular-demos` is structural only**, and the distinction is what the pages are for: it
 proves a page exists, loads its own bundle and mounts a zoneless app, never that what it renders
-is right. What the pages catch is what a suite cannot — `arena-button`'s `full` variant once did
-nothing at all, because a bare carve-out host blockified as a flex item and the inner button's
-`w-full` measured the shrunk host rather than the row, and happy-dom has no layout to see it.
+is right. What the pages catch is what a suite cannot. A carve-out host that blockifies as a flex item
+leaves an inner button's `w-full` measuring the shrunk host rather than the row, so a `full`
+variant renders as nothing at all, and happy-dom has no layout to see it.
 **A checklist line a real browser can decide belongs in a gate rather than in a checklist**,
 which is what `check:cards` and `check:focus-trap` between them took over. What is left for a
 person is what needs their **judgement**: whether a name is a good name, whether motion reads as
@@ -207,18 +206,18 @@ about whether anyone did that.
 Every gated `<ng-content select="[x]">` is paired with a `contentChild(ArenaX)` from
 `ProjectionMarkers.ts`, because that query is the only way an `ng-content` slot can report
 whether anything was projected. The query resolves the **directive**, so it finds nothing unless
-the consumer's own component lists `ArenaX` in its `imports` — and with the query null the `@if`
+the consumer's own component lists `ArenaX` in its `imports`, and with the query null the `@if`
 never renders, the `<ng-content>` is never instantiated, and the projected content vanishes. No
 error, no warning, no failing gate: `ngc --strictTemplates` is happy, because a bare `footer`
-attribute on a `<div>` is valid HTML whether or not a directive matches it. It was found by
-opening a page, not by reading one.
+attribute on a `<div>` is valid HTML whether or not a directive matches it. Only opening a page
+finds it.
 
-**The component still cannot detect it** — it cannot distinguish "the marker was not imported"
+**The component still cannot detect it**, because it cannot distinguish "the marker was not imported"
 from "nothing was projected", which is the case the query exists for. What is checked is every
 consumer *inside this repository*: `test/ProjectionMarkers.test.ts` walks the layer, pairs each
 marker use with the **nearest enclosing** `arena-*` element, and fails when that host gates the
-slot by a `contentChild` query and the consumer does not import the directive. Two refinements
-were forced by real false positives and both make the rule more honest: marker words inside an
+slot by a `contentChild` query and the consumer does not import the directive. Two refinements answer real false
+positives and both make the rule more honest: marker words inside an
 **attribute value** are stripped before matching, and a slot gated by an **input** rather than by
 a query owes no import. The real rule is *"you projected into a slot whose host gates it on a
 query"*, not *"you used a marker attribute"*, and the nearest-enclosing walk is what expresses
@@ -229,19 +228,19 @@ adopter's app; it can only stop Arena's own pages from shipping the example.
 
 ## The test harness
 
-**It compiles ahead of the run — AOT, not JIT — and that is a different guarantee, not merely a
-faster one.** The suites render real zoneless Angular trees under `bun test` via `happy-dom`,
-which needs three test-only devDependencies beyond the `node:test`/`node:assert` baseline —
+**It compiles ahead of the run, AOT rather than JIT, and that is a different guarantee rather
+than merely a faster one.** The suites render real zoneless Angular trees under `bun test` via `happy-dom`,
+which needs three test-only devDependencies beyond the `node:test`/`node:assert` baseline:
 `@angular/platform-browser`, `happy-dom` and `@happy-dom/global-registrator`. **Most suites sit
 beside the component they cover**; what stays in `test/` is the harness and the suites about no
-single component — and two of those files carry no `.test.` infix on purpose, because `bun test`
+single component, and two of those files carry no `.test.` infix on purpose, because `bun test`
 collects by that infix and a shared module must not be collected as a suite.
 
 `bun run build:angular-tests` compiles everything `tsconfig.test.json` includes under
 `ngc --strictTemplates`, into git-ignored `build/angular-test/`; `test:angular`, `test` and
 `testStep()` all run `bun test` over that emitted output, never over the `.ts` sources. A type
-error anywhere in the test surface — including a template diagnostic in an inline `template:`
-string — fails the *build* step, and no test in that run executes at all. Staleness is prevented
+error anywhere in the test surface, a template diagnostic in an inline `template:` string
+included, fails the *build* step, and no test in that run executes at all. Staleness is prevented
 by the build always running ahead of the tests that read it, and `build-angular-tests.mjs` prunes
 output whose source is gone, because `ngc` does not.
 
@@ -249,8 +248,8 @@ output whose source is gone, because `ngc` does not.
 
 `test/HarnessCapabilities.test.ts` pins what the harness supports: a template property binding
 reaches a required signal input; `contentChild()` resolves against real projected content; and
-`componentRef.setInput()` drives a required input — a plain string, and a boolean carrying a
-`booleanAttribute` transform — as well as an *optional* boolean input of the same transformed
+`componentRef.setInput()` drives a required input, both a plain string and a boolean carrying a
+`booleanAttribute` transform, as well as an *optional* boolean input of the same transformed
 shape, displacing its default. **Never write to a component's instance field directly** to stand
 in for an input: `grep -rn "\w\+\['[a-zA-Z]*'\] = " --include='*.ts' frameworks/angular/` must
 stay empty.
@@ -261,13 +260,13 @@ a reader sees a failing run and has to go find what else it dropped.
 
 ### One document and one TestBed per process
 
-`bun test` runs every file a single invocation matches in ONE process — which means the whole
-layer — and both happy-dom's document and Angular's `TestBed` environment can each be claimed
+`bun test` runs every file a single invocation matches in ONE process, which means the whole
+layer, and both happy-dom's document and Angular's `TestBed` environment can each be claimed
 only once per process: `GlobalRegistrator.register()` throws if already registered, and
 `TestBed.initTestEnvironment()` throws the second time it runs across files that share a process.
 `test/TestbedEnv.ts` claims both, once, for the whole run: `ensureDom()` and
-`useTestEnvironment()` are plain `if (claimed) return` guards, not a reset —
-`TestBed.resetTestEnvironment()` measurably does not work, because
+`useTestEnvironment()` are plain `if (claimed) return` guards rather than a reset, because
+`TestBed.resetTestEnvironment()` measurably does not work: because
 `BrowserDomAdapter.makeCurrent()` installs a process-wide DOM adapter on the FIRST platform
 creation that nothing resets, so a second document would render into one the adapter no longer
 points at.
@@ -275,10 +274,10 @@ points at.
 So every suite shares one real document and one TestBed environment for the whole run; any suite
 needing a real component render calls `useTestEnvironment()` (or `ensureDom()` alone, for a suite
 that needs a DOM but not TestBed). **The shared document means state written onto it outlives the
-file that wrote it** — a custom property on `documentElement.style`, an element appended to
-`document.body` — unless that file clears it, typically in a `finally`. Every directly-created
+file that wrote it**, whether a custom property on `documentElement.style` or an element
+appended to `document.body`, unless that file clears it, typically in a `finally`. Every directly-created
 fixture must still be `destroy()`-ed, because zoneless change detection sweeps all attached views,
-so a fixture left dirty throws out of an unrelated later test — and with one shared document that
+so a fixture left dirty throws out of an unrelated later test, and with one shared document that
 hazard crosses files.
 
 ## A host-bound root is the default, and its carve-outs are a growing set
@@ -291,7 +290,7 @@ must be a specific semantic or interactive element, keep it and leave the host b
 `<label>`, or it forfeits the activation, labelling and `:disabled` semantics the browser already
 supplies. **A bare host still declares `display: contents`**, or as a flex item it shrinks to fit
 and a `w-full` inside measures the host, not the row. **A host-bound root must carry a display
-utility** — `<arena-x>` is an unknown element defaulting to `display:inline`, where width and
+utility**, because `<arena-x>` is an unknown element defaulting to `display:inline`, where width and
 height do not apply, so a root slot without one renders a zero-area host. That is machine-guarded
 by a manifest-driven assertion in `test/HostClassBinding.test.ts`. Count the carve-outs rather
 than trusting a figure here:
@@ -303,22 +302,22 @@ grep -Lr "'\[class\]':" --include='[A-Z]*.ts' frameworks/angular/components/*/*/
 
 They fall into **four** groups, each with its own reason. The **SVG charts** have no manifest and
 no recipe, so there is no `root` slot to bind. The **form controls** each need their own
-`<button>`, `<input>` or `<label>`. Some **keep a specific semantic or structural element** — a
+`<button>`, `<input>` or `<label>`. Some **keep a specific semantic or structural element**: a
 real `<ul>` for a feed, a `<div role="tablist">` whose panels are siblings outside it, a real
 `<nav>` for a navigation landmark, since the `navigation` pattern offers `role="navigation"` only
 for when a `<nav>` cannot be used. The fourth group has one member and a reason unlike the other
 three: **a component that owns an output named after a DOM event it must be able to refuse needs
 an inner element to stop the event at.** An Angular output named after a native DOM event is
-delivered twice — once as the output, once as the bubbled DOM event Angular also listens for on
-the host — so with `stopPropagation()` removed one pointer click reaches the consumer twice and a
+delivered twice, once as the output and once as the bubbled DOM event Angular also listens for
+on the host, so with `stopPropagation()` removed one pointer click reaches the consumer twice and a
 disabled row activates. A host listener cannot fix it: `stopPropagation` does not reach a sibling
 listener on the same element, and `stopImmediatePropagation` would depend on registration order.
 So the rule has a second clause: **host-bind unless the root must be a specific element, or unless
 the component owns an output named after a DOM event it must be able to refuse.** The suites
 assert the delivery count, so a wrapper cannot be optimised away without a red run.
 
-**The consequence a carve-out pays** is that a consumer attribute written on `<arena-x>` — a
-static `class`, an ARIA attribute — lands on the inert host and never on the styled element
+**The consequence a carve-out pays** is that a consumer attribute written on `<arena-x>`, a
+static `class` or an ARIA attribute, lands on the inert host and never on the styled element
 inside it, and neither layer offers a second route to it. That follows from the carve-out, not
 from anything a contract could restate, and it is the argument for host-binding being the default.
 
@@ -332,39 +331,39 @@ The equivalence to a native HTML boolean attribute stops there: `booleanAttribut
 special-cases the literal string `"false"` as `false`, where a native attribute stays set
 on any present value. Binding (`[dismissible]="true"`) is the clearer form.
 
-**An input named after a native attribute leaves the native attribute behind — and every
-primitive that takes one now clears it.** Angular writes a static attribute to the DOM during
-the creation pass whether or not it also matches an input, so `<arena-page-head title="Projects">`
-left a real `title` on the host and the browser drew a tooltip over the whole header. Each
-affected primitive carries `'[attr.title]': 'null'` (or `'[attr.name]': 'null'`) in its host
+**An input named after a native attribute leaves the native attribute behind, and every
+primitive that takes one clears it.** Angular writes a static attribute to the DOM during
+the creation pass whether or not it also matches an input, so an uncleared
+`<arena-page-head title="Projects">` leaves a real `title` on the host and the browser draws a
+tooltip over the whole header. Each affected primitive carries `'[attr.title]': 'null'` (or `'[attr.name]': 'null'`) in its host
 block, and `HostClassBinding.test.ts` asserts it both ways: a primitive that takes the input and
 does not clear it fails, and so does one that clears an attribute it takes no input for. **Read
-the guard, not a count** — the figure here was wrong three times, most recently by measuring only
-host-bound primitives when the defect never depended on host-binding.
+the guard, not a count**: the defect does not depend on host-binding, so any figure derived from
+the host-bound primitives alone undercounts.
 
 **`(click)` on an element of a primitive fires for the DOM event AND for the primitive's `click`
 output.** Angular installs both: a native listener on the host element, and a subscription to the
-`output()` of the same name. It was **measured with a probe component** across all four
-combinations, because the reading that it binds one or the other is equally plausible and being
-wrong about which is undetectable by eye:
+`output()` of the same name. The counts below are **measured with a probe component** across all four
+combinations, because the reading that Angular binds one or the other is equally plausible and
+being wrong about which is undetectable by eye:
 
 | the primitive | what a consumer's `(click)` counts |
 | --- | --- |
 | emits and stops propagation | 1 |
 | emits, does not stop propagation | **2** |
-| does not emit, does not stop propagation | **1 — a phantom** |
+| does not emit, does not stop propagation | **1, a phantom** |
 | does not emit and stops propagation | 0 |
 
 **So a primitive declaring a `click` output stops propagation on every click it handles**, or a
 consumer's handler is called twice for one press. `arena-button`, `arena-icon-button`,
 `arena-table-row` and `arena-calendar-event` all do, in every branch, including the ones that
-deliberately do not emit — that is what turns the third row into the fourth and keeps a chip the
+deliberately do not emit, which is what turns the third row into the fourth and keeps a chip the
 consumer declared non-interactive from reporting an activation nobody made.
 
 **And a suite counting activations through a `(click)` binding is measuring the sum**, so it
 cannot tell an emit from a bubble and would read a doubled call as a passing one. The four
-suites assert **both** numbers — the output on the component instance, and what a template
-binding hears — because either alone is blind: the instance count cannot see a native event
+suites assert **both** numbers, the output on the component instance and what a template
+binding hears, because either alone is blind: the instance count cannot see a native event
 escaping to the consumer, and the binding count cannot see the output going silent.
 `CalendarEvent.cases.test.ts` is the shape.
 
@@ -376,8 +375,8 @@ grep -rhoE 'readonly (blur|cancel|change|click|close|focus|input|select|submit|t
     --include='*.ts' components | sort | uniq -c
 ```
 
-Every one of them carries the same double-fire risk, and only the four `click` ones have been
-measured. `change` is the widest — eight primitives — and `Checkbox.compliance.test.ts` and
+Every one of them carries the same double-fire risk, and only the four `click` ones are
+measured. `change` is the widest at eight primitives, and `Checkbox.compliance.test.ts` and
 `RadioGroup.compliance.test.ts` already assert their consumer hears it exactly once, which is
 half the pair above; the other six assert nothing about it.
 
@@ -387,5 +386,5 @@ Adopt it in the order the layer is built. Import `theme/arena-tailwind.css` once
 app's global stylesheet for the tokens and the `@theme` preset; add `theme/arena-cdk.css`
 when you first use a primitive that positions an overlay. Wire `ThemeService` and paste
 `theme/no-fouc.html`'s script contents into `index.html`. Then replace the app's own
-controls with `arena-*` primitives as you touch the files that use them — incrementally,
+controls with `arena-*` primitives as you touch the files that use them, incrementally and
 never as a sweep.
