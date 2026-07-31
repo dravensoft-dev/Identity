@@ -77,11 +77,5 @@
       }
     ],
     "reason": "MatProgressSpinner renders the indicator and its determinate/indeterminate/buffer/query modes, with aria-valuenow mirrored from value. The bridge dresses its active-indicator colour on the brand. Arena has no arena-spinner primitive and should not grow one."
-  },
-  "Toast": {
-    "pattern": "alert",
-    "delegatedTo": "Angular Material MatSnackBar",
-    "dressedBy": "frameworks/angular/theme/arena-material.css",
-    "reason": "MatSnackBar owns the surface, its enter/exit animation and its dismissal (action button, explicit dismiss(), or an optional duration). The bridge dresses the snack-bar container colour, --r-md radius and supporting-text colour. Arena has no arena-toast primitive and should not grow one."
   }
 }

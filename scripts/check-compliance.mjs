@@ -79,6 +79,7 @@ export const COVERED = {
   'ConfirmDialog:angular': 'ConfirmDialog.compliance.test.ts',
   'Dialog:angular': 'Dialog.compliance.test.ts',
   'Select:angular': 'Select.compliance.test.ts',
+  'Toast:angular': 'Toast.compliance.test.ts',
   'Tag:angular': 'Tag.cases.test.ts',
   'Tooltip:angular': 'Tooltip.compliance.test.ts',
   'IconButton:angular': 'IconButton.compliance.test.ts',

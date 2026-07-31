@@ -194,11 +194,13 @@ stale-proof; a present-tense component name is not.
   cheaper fix, because it also brought the component inside `check:dimensions`,
   `check:compliance` and the Angular arm of `check:api`, which no amount of default-options
   wiring could have done.
-  **`dismiss` is still unpaid.** React's Delivery Console runs the toast clock off
-  `--dismiss-default` / `--dismiss-actionable`; Angular has no consumer wiring
-  `MatSnackBarConfig.duration` to either value at all, and it will stay that way until
-  `arena-toast` exists — at which point the host owns the clock, as `Toast`'s contract already
-  says, and the seam is a consumer's `setTimeout` rather than a Material config token.
+  **`dismiss` is paid, and by the same route `delay` was: the primitive, not the seam.**
+  `arena-toast` exists, and with it a host that owns the clock — `Toast.card.entry.ts` raises
+  notices and expires them on `dismissDefault` / `dismissActionable` from `Tokens.generated`,
+  skipping any toast the component pinned. So both `--dismiss-*` tokens reach both layers and
+  `MatSnackBarConfig.duration` — the seam this entry once proposed — was never wired and never
+  will be. The blind spot named in the first bullet is unchanged; it is narrower by two tokens,
+  not closed.
 - **Both grid components now navigate by keyboard, and neither claim has a suite behind
   it.** `Table` and `Calendar` each bound `grid` with an exception on **all eight**
   requirements — zero `role=`, zero `tabIndex`, zero key handling, in components that
@@ -799,11 +801,14 @@ stale-proof; a present-tense component name is not.
   `validateBinding` together: distinct names, and a name required on every `cases[]` entry.
 
   **Three smaller things the same batch left, recorded here rather than in the plan that gets
-  deleted.** `divergesFromReason` (introduced on `Skeleton`'s and `Toast`'s bindings, and on
-  `Toast`'s alone since 8C10 closed the `Skeleton` divergence) is a novel field
-  with no repo precedent that **no gate reads** — if a convention for divergence rationale is
-  ever wanted it should be named repo-wide rather than inheriting an unstated first instance
-  from one batch. A comment in `frameworks/angular/test/Compliance.ts` explaining why a
+  deleted.** `divergesFromReason` was a novel field with no repo precedent that **no gate
+  reads**, introduced on `Skeleton`'s and `Toast`'s bindings and left on `Toast`'s alone once
+  8C10 closed the `Skeleton` divergence. **It now has zero instances**: Plan D's batch 5 gave
+  Angular an `arena-toast` that carries the tone axis, so that divergence closed too and the
+  field went with it. The open question it raised is therefore answered by disappearance rather
+  than by decision — if a convention for divergence rationale is ever wanted it should be named
+  repo-wide, and there is no longer an unstated first instance to inherit from.
+  A comment in `frameworks/angular/test/Compliance.ts` explaining why a
   `c.name as string` cast is safe **gives the wrong reason**: it cites the no-cases guard,
   which only refuses the single-entry flat shape, when the real protection is that the
   missing/unknown throw fires first — a null name can never match a real object key. The cast
@@ -2463,73 +2468,41 @@ out: its author read the one file and generalised to a directory that already he
 caught either, in either direction. See section 1's entry for the class and the
 change-time command.
 
-#### Toast — a critical error interrupts in React and is queued in Angular
+#### Toast — RETIRED as a divergence: both layers announce a critical error assertively
 
-**React:** `Toast.jsx` branches on tone off a single ternary — `role={tone === 'danger' ?
-'alert' : 'status'}` with the matching `aria-live` — so a danger toast renders `role="alert"`
-with `aria-live="assertive"` and every other tone renders `role="status"` with
-`aria-live="polite"`.
+**What it was.** React's `Toast.jsx` branches on tone off a single ternary — `role={tone ===
+'danger' ? 'alert' : 'status'}` with the matching `aria-live` — so a danger toast interrupts and
+every other tone queues. Angular had no `arena-toast` at all: it delegated to Angular Material's
+`MatSnackBar`, which has no tone axis to branch on. Read against `@angular/material` 22.0.5's own
+`snack-bar.mjs`, `MatSnackBarConfig.politeness` defaults to `'polite'`, `_live` resolves to
+`'assertive'` only when politeness is set to it, and `_role` is assigned **only inside `if
+(this._platform.FIREFOX)`** — so outside Firefox a snackbar carried `aria-live="polite"` and no
+role whatever the message said.
 
-**Angular:** there is no `arena-toast` primitive. Angular delegates to Angular Material's
-`MatSnackBar`, and `MatSnackBar` does not vary by tone at all — it has no tone. Read against the
-installed `@angular/material` 22.0.5, in
-`node_modules/@angular/material/fesm2022/snack-bar.mjs`:
+**The cost, while it stood:** meeting a critical error toast, a screen-reader user had it
+interrupt in React and queued behind whatever was already speaking in Angular. That is the
+safety-relevant case, and it was a real difference to a real person rather than a difference in
+how two files were shaped.
 
-- `MatSnackBarConfig.politeness = 'polite'` is the class-field default, and the container
-  resolves `_live` to `'assertive'` only when `politeness === 'assertive' && !announcementMessage`;
-- `_role` is assigned **only inside `if (this._platform.FIREFOX)`**, where `'polite'` maps to
-  `status` and `'assertive'` to `alert`;
-- the container template binds `<div [attr.aria-live]="_live" [attr.role]="_role" …>`.
+**Why it is retired.** Plan D's batch 5 wrote `arena-toast`, and it was born with the tone axis
+because Arena owns the DOM now: the host binds `[attr.role]` and `[attr.aria-live]` off `tone()`,
+the same ternary React has, and the binding declares the same two cases under the same two names —
+`danger` → `alert`, `advisory` → `status`. `crossLayerAgrees` compares case names and then their
+patterns, so the agreement is machine-checked rather than asserted; React's `divergesFrom:
+"alert"` and its `divergesFromReason` are deleted, and **that was the last
+`divergesFromReason` in the repository** — the field now has zero instances, which settles the
+open question about whether it was ever a convention. It was not.
 
-So on every non-Firefox browser the snackbar's live region renders `aria-live="polite"` and
-**no role at all**, whatever the message says.
+**This is the Skeleton shape rather than the deferral it used to be.** The old entry said neither
+layer was wrong — Angular could not be wrong about a control it did not own — and deferred to
+Plan D. Plan D is what made the question answerable at all: the fix was never a
+`MatSnackBarConfig` seam, it was owning the component.
 
-**The consequence, stated plainly, because it is what an entry is for:** meeting a critical
-error toast, a screen-reader user has it **interrupt** in React and **queued behind whatever is
-already speaking** in Angular. That is the safety-relevant case — the one the React binding's
-`danger` case exists for — and it is a real difference to a real person, not a difference in how
-two files are shaped.
-
-**Why:** the two layers did not disagree about this; only one of them ever decided it. React
-designed a tone axis and mapped the top of it onto the assertive live region. Angular took a
-third-party control that has no tone axis and never wired one, and `MatSnackBarConfig.politeness`
-is the seam that would carry it — the same unwired-`MatSnackBarConfig` shape already recorded in
-`CLAUDE.md` for `duration` and `--dismiss-*`.
-
-**Converges:** **deferred to Plan D**, which is a decision and not a resolution. `Skeleton` above
-was retired because one layer was simply wrong; this one is not that case. Angular is not wrong
-about a control it does not own — it delegates to a third-party component that has no tone axis
-to be wrong about — so there is nothing here to fix at this layer's level. Plan D removes Angular
-Material, and an `arena-toast` built on the CDK would be born with the right role and live-region
-politeness per tone, the way every other Arena primitive carries its own behaviour. That is where
-this converges.
-
-**Nothing is fixed for Angular users until Plan D lands, and this entry must not be read as
-though it were.** Until then, every Angular consumer of a critical error toast ships the
-behaviour described above: `aria-live="polite"` and, outside Firefox, no role at all, so the
-message is queued behind whatever is already speaking rather than interrupting it. A deferral
-moves the work; it does not reduce the cost anyone is paying in the meantime.
-
-Two interim resolutions exist and neither was taken. A consumer-side wiring setting `politeness:
-'assertive'` for a danger snackbar puts a component-level obligation on every host and is
-forgotten silently when a host misses it; a narrowed delegated claim admitting Angular has no
-tone axis here would make the record accurate without changing what a user hears. Both are
-available before Plan D if the cost above is judged too high to carry, and Plan D supersedes
-either.
-
-**Recorded how:** `frameworks/react/components/feedback/toast/Toast.behaviour.json` declares two cases,
-`danger` → `alert` and `advisory` → `status`, and carries `divergesFrom: "alert"` naming the flat
-delegated binding, so `check:behaviour` reports the divergence as declared rather than as two
-layers disagreeing. **`frameworks/angular/BehaviourDelegated.json`'s `Toast` entry is left
-untouched on purpose**, and it is not accurate: it binds `alert` with `"exceptions": []` while
-`MatSnackBar` renders no role outside Firefox. That inaccuracy is pre-existing and is already
-covered by `CLAUDE.md`'s standing *"every claim the delegated declarations make about Angular
-Material is unpinned"* entry — it is named here so no reader mistakes the silence for agreement,
-and so no fresh claim is stacked on top of it.
-
-**How it was found:** not by the cross-layer check, which reported this as declared and moved on.
-By a reviewer opening `snack-bar.mjs`. The check compares the *shape* of two bindings; nothing in
-this repository compares a binding against a third-party library's real behaviour.
+**What the port also settles, from the section-1 `dismiss` entry:** the toast's clock is the
+host's, as `Toast`'s contract always said, and `Toast.card.entry.ts` runs it off `dismissDefault`
+and `dismissActionable` from `Tokens.generated`. So both `--dismiss-*` tokens now reach both
+layers, and the script-token orphan rule is satisfied by more than React alone for the second
+time (`--delay-*` was the first, through `arena-tooltip`).
 
 #### Onboarding — the scrim is a sibling in React and the host in Angular
 

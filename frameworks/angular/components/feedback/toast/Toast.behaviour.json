@@ -1,8 +1,9 @@
 {
+  "component": "Toast",
   "cases": [
     {
       "name": "danger",
-      "when": "tone is \"danger\" -- role=\"alert\" with aria-live=\"assertive\"",
+      "when": "tone is \"danger\" -- role=\"alert\" with aria-live=\"assertive\", and persist is forced on whatever the host passed",
       "pattern": "alert",
       "exceptions": []
     },
