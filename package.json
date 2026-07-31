@@ -57,6 +57,7 @@
     "check:dimensions": "bun scripts/check/arena/check-dimension-literals.mjs",
     "check:states": "bun scripts/check/arena/check-manifest-states.mjs",
     "check:structure": "bun scripts/check/arena/check-structure.mjs",
+    "check:contracts": "bun scripts/check/arena/check-contracts.mjs",
     "check:behaviour": "bun scripts/check/arena/check-behaviour.mjs",
     "check:compliance": "bun scripts/check/arena/check-compliance.mjs",
     "check:api": "bun scripts/check/arena/check-api.mjs",
