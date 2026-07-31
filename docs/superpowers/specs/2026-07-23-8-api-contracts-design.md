@@ -268,7 +268,7 @@ reopened.
 
 ## The gate
 
-`check:api` (`scripts/check-api.mjs`), the twenty-first, makes five assertions:
+`check:api` (`scripts/check/arena/check-api.mjs`), the twenty-first, makes five assertions:
 
 1. **Coverage.** Every contract in `api/components/` names a component that exists in at
    least one layer. The contract's existence *is* the coverage claim, so no separate
@@ -294,7 +294,7 @@ contract. Do not rebuild the probe from this document: it is the exact lookup th
 when the layer moved, missed every contract and let `check:api` print
 "50 contract(s) hold across 50 layer implementation(s)" and exit 0 over twenty
 unread Angular implementations. `resolveAngularImplementations()` in
-`scripts/check-api.mjs` carries the replacement and the reason. A component
+`scripts/check/arena/check-api.mjs` carries the replacement and the reason. A component
 implemented in one layer only is absence, not divergence, and assertion 3 applies only to
 layers that implement it.
 
@@ -306,9 +306,9 @@ every contract in the directory is true of every layer implementing it. A green
 ### Runtime portability
 
 `check-all.mjs` also runs `scripts/` under plain node, so `check:api` uses no
-Bun-only API. The surface reader lives at `scripts/lib/api-surface.mjs` and is
+Bun-only API. The surface reader lives at `scripts/lib/arena/api-surface.mjs` and is
 deliberately generic — it takes source text and returns a declared member list, touching
-no DOM and no framework runtime, mirroring `scripts/lib/behaviour-compliance.mjs`'s
+no DOM and no framework runtime, mirroring `scripts/lib/core/behaviour-compliance.mjs`'s
 design so it can be exercised from its own test under node.
 
 Reading a `.d.ts` by regex is a real limitation and is stated rather than hidden: the
@@ -364,7 +364,7 @@ register as the behaviour-contract paragraphs.
 
 ## A.2 — `api/types/` and the generator
 
-`scripts/build-api-types.mjs` reads `api/types/*.json` and emits
+`scripts/generate/arena/generate-api-types.mjs` reads `api/types/*.json` and emits
 `frameworks/react/Api.generated.d.ts` and `frameworks/angular/Api.generated.ts`. Objects
 become interfaces, enums become string-literal unions, descriptions become doc comments.
 Committed output, guarded by drift assertion 5.
@@ -372,9 +372,9 @@ Committed output, guarded by drift assertion 5.
 Plan A declares only the types its three components need: `Crumb`, `StatDelta`,
 `Direction`, `DeltaTone`, `Tone`, `LogoSize`, `Orientation`.
 
-## A.3 — `scripts/lib/api-surface.mjs` and `scripts/check-api.mjs`
+## A.3 — `scripts/lib/arena/api-surface.mjs` and `scripts/check/arena/check-api.mjs`
 
-The reader and the gate, per the section above, plus `scripts/check-api.test.mjs`
+The reader and the gate, per the section above, plus `scripts/check/arena/check-api.test.mjs`
 asserting each of the five assertions fires — including the loud failure on an
 unrecognised member shape. Wired into `check-all.mjs`'s step list, and
 `check-all.test.mjs` asserts that array by literal value, so the addition must be made
@@ -439,7 +439,7 @@ Binding on Plans B, C and D. Each of these was an open question when this spec w
 written and is now closed; an audit that reopens one is wasting the maintainer's time.
 
 **The binding table is mechanical and normative.** It lives in `api/README.md` and is
-implemented by `bindingName()` in `scripts/check-api.mjs`. A contract member `x` of an
+implemented by `bindingName()` in `scripts/check/arena/check-api.mjs`. A contract member `x` of an
 inbound non-slot form binds as a React prop `x` and an Angular `input()` named `x`; the
 slot named `content` binds as React's `children` and a bare `<ng-content />`; a slot
 named `x` binds as a React node-valued prop `x` and `<ng-content select="[x]" />`; an
@@ -617,7 +617,7 @@ about them against the tree at `HEAD`, so 8B4 opens with measurements rather tha
 
 - **`valueFormatter` is declared in all three components in both layers**
   (`bar-chart.ts:186`, `line-chart.ts:212`, `doughnut-chart.ts:246`, and each React `.d.ts`) as an
-  inbound function returning `string`. `classify()` in `scripts/lib/api-surface.mjs` **throws**
+  inbound function returning `string`. `classify()` in `scripts/lib/arena/api-surface.mjs` **throws**
   `UnrecognisedShape` on exactly that shape — an inbound function that *returns* a value is none of
   the eight forms — so no chart contract can be written until it becomes `valueSuffix`, per
   `api/README.md`.
@@ -635,10 +635,10 @@ about them against the tree at `HEAD`, so 8B4 opens with measurements rather tha
   `CatSlot` alone, so whether the *name* survives as a back-compat alias is a decision, not a
   mechanical step.
 - **`LineChartProps extends Omit<BarChartProps, 'slots'>` must be flattened.**
-  `scripts/check-api.mjs:412` reports *any* heritage clause as the `{...rest}` R4 escape, with no
+  `scripts/check/arena/check-api.mjs:412` reports *any* heritage clause as the `{...rest}` R4 escape, with no
   special case for `Omit`. This is source work, not gate work — no reader change is needed.
 - **Of the three charts 8B4 will contract, `BarChart:angular` is the only one already in
-  `COVERED`** (`scripts/check-compliance.mjs:79`, `chart-data-table.test.ts`) — `LineChart` and
+  `COVERED`** (`scripts/check/arena/check-compliance.mjs:79`, `chart-data-table.test.ts`) — `LineChart` and
   `DoughnutChart` have no compliance suite at all. Re-verified against `HEAD`: `COVERED` holds six
   entries total (`Dialog:react`, `ConfirmDialog:react`, `Menu:react`, `Skeleton:react`,
   `Alert:angular`, `BarChart:angular`); none of B3's five components (`UnauthCard`,
@@ -651,7 +651,7 @@ about them against the tree at `HEAD`, so 8B4 opens with measurements rather tha
   have nothing to say about them.
 
 None of the five concerns the reader's handling of `input.required<T, TransformT>()` — Task 3b's
-mid-plan extension of `scripts/lib/api-surface.mjs` to classify that shape depth-aware — so
+mid-plan extension of `scripts/lib/arena/api-surface.mjs` to classify that shape depth-aware — so
 re-verifying against `HEAD` after 3b landed changed none of the wording above; it is recorded here
 because it was checked, not assumed.
 
@@ -747,14 +747,14 @@ rendered tree — does not read contracts.
 > time a batch flattens one.** Measure it with
 > `grep -c '^export interface .*Props extends' frameworks/react/components/*/*.d.ts`. B4's "six"
 > counted only the bare `extends React.*Attributes` clauses and missed the three wrapped in `Omit<>`
-> (`Checkbox`, `Textarea`, `Input`), which `scripts/check-api.mjs` reports as the R4 escape all the
+> (`Checkbox`, `Textarea`, `Input`), which `scripts/check/arena/check-api.mjs` reports as the R4 escape all the
 > same — the same fact B4's own D6 established for `LineChartProps extends Omit<BarChartProps,
 > 'slots'>`. Plan 8C1 flattened four of the nine (`Badge`, `Card`, `IconButton`, `Button`); the rest
 > — `Checkbox`, `Input`, `Select`, `Textarea`, `SideNav` — fall to C2 and C3. This is the fourth time
 > this figure has been written down and it had been wrong three times; re-run the grep rather than
 > trusting any count in this document.
 
-Plan A's reader (`scripts/lib/api-surface.mjs`) throws `UnrecognisedShape` on a shape it
+Plan A's reader (`scripts/lib/arena/api-surface.mjs`) throws `UnrecognisedShape` on a shape it
 cannot read, and a throw is a gate failure rather than a silent omission. Two React
 `.d.ts` files in the tree throw today. Neither is a defect — both are components Plan C
 exists to settle — but each means **Plan C must decide the API question before the gate
@@ -1253,7 +1253,7 @@ assertions folded into the two components that already had a suite (`unauth-card
 2, folded entirely into Task 2's existing `bulk-action-bar-variants.test.ts` and
 `host-class-binding.test.ts` rework, no new file (Tasks 3, 4 and 5 each held Angular's count exactly
 at 334, confirmed unmoved). `scripts/` gained 3 more than any earlier batch, all in
-`scripts/api-surface.test.mjs` (38 → 41) — Task 3b's pair, proving the reader now classifies
+`scripts/lib/arena/api-surface.test.mjs` (38 → 41) — Task 3b's pair, proving the reader now classifies
 `input.required<T, TransformT>()` depth-aware and still refuses the no-generic
 `input.required({transform})` form, plus the three-or-more-generic pin the final whole-branch review
 added when it found 3b had narrowed the module's own "unreadable shapes throw" rule. Those are the
@@ -1289,8 +1289,8 @@ ThemeToggle's own suite.
 
 Plan B0 added 7 tests and no file: 3 in `frameworks/react/test/stat-card.test.jsx` and
 `frameworks/angular/test/host-class-binding.test.ts` (StatCard's icon revised to a string, its
-render pinned in both layers), 2 in `scripts/api-surface.test.mjs` (the reader refusing an
-inbound function that returns a value), and 2 in `scripts/check-compliance.test.mjs` (COVERED's
+render pinned in both layers), 2 in `scripts/lib/arena/api-surface.test.mjs` (the reader refusing an
+inbound function that returns a value), and 2 in `scripts/check/arena/check-compliance.test.mjs` (COVERED's
 compound `<component>:<layer>` key). Its five audits were mostly prose and the two script tasks
 that shipped machinery each landed a couple of tests; every test is accounted for in the branch's
 commits.
@@ -1309,7 +1309,7 @@ comments rather than a `/* */` block on purpose: both regions contain doc commen
 `*/` would close an enclosing block early. `grep -rn PLAN-E-SUSPENDED scripts/` finds
 every one.
 
-**`scripts/check-card-viewports.test.mjs`, lines 19-224 — five tests, 33.59s.**
+**`scripts/check/arena/check-card-viewports.test.mjs`, lines 19-224 — five tests, 33.59s.**
 Each launches headless Chromium over CDP: `measurePage reports content that fits, and
 content that over-runs`; `contentHeight follows an absolutely positioned descendant at
 any depth`; `contentHeight follows a trailing block margin the body's own padding stops
@@ -1319,7 +1319,7 @@ CDP bound`. The file's other ~20 tests are pure functions — `parseDsCard`,
 `summarizeCards`, and the string assertions on `MEASURE_SCRIPT` — and stay live, which
 is why the file was cut surgically rather than suspended whole.
 
-**`scripts/check-angular.test.mjs`, lines 9-38 — two tests, 7.97s.**
+**`scripts/check/angular/check-angular.test.mjs`, lines 9-38 — two tests, 7.97s.**
 Both shell out to a full `ngc --strictTemplates` run over the Angular layer: `the Angular
 layer as committed typechecks`, and `a template referencing a member that does not
 exist fails`. The whole file is the `ngc` run, so there was nothing to keep.

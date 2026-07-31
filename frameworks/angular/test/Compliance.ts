@@ -24,8 +24,9 @@ const REPO = findRepoRoot(here);
 
 export const SCRIPTS = join(REPO, 'scripts');
 export const LIB = join(SCRIPTS, 'lib');
-const { comparePattern, isFocusable } = await import(pathToFileURL(join(LIB, 'behaviour-compliance.mjs')).href);
-const { loadBinding, loadPatterns, bindingCases } = await import(pathToFileURL(join(LIB, 'behaviour-contracts.mjs')).href);
+export const CHECKS = join(SCRIPTS, 'check');
+const { comparePattern, isFocusable } = await import(pathToFileURL(join(LIB, 'core', 'behaviour-compliance.mjs')).href);
+const { loadBinding, loadPatterns, bindingCases } = await import(pathToFileURL(join(LIB, 'arena', 'behaviour-contracts.mjs')).href);
 
 export { isFocusable };
 

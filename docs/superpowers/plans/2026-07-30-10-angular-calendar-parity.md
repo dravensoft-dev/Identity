@@ -72,7 +72,7 @@ Declare a viewport and let `check:cards` tell you the size to declare — do not
 
 **Then** `bun run build:tailwind` to emit `Calendar.manifest.ts`.
 
-**Also** add `Calendar` to `SOURCE_OVERRIDES` in `scripts/check-manifest-states.mjs`, mapping to
+**Also** add `Calendar` to `SOURCE_OVERRIDES` in `scripts/check/arena/check-manifest-states.mjs`, mapping to
 both React sources (`display/calendar/Calendar.jsx` and
 `display/calendar-event/CalendarEvent.jsx`) — the `Table` entry is the shape.
 
@@ -205,7 +205,7 @@ day column) and the fixture-size rule.
 `cols: 2` chip in day 3 of 6; `top`/`height` against `calendarHourH`; an out-of-window chip
 renders no element; `showTime` across `calendarTimeMinH` and a stubbed narrow container;
 `actionsBelow`; `aria-owns` matching the rendered ids; day view and week view. Plus the
-dimension guard: dynamically import `scanValue` from `scripts/check-dimension-literals.mjs` by
+dimension guard: dynamically import `scanValue` from `scripts/check/arena/check-dimension-literals.mjs` by
 file URL — the way `frameworks/angular/test/Compliance.ts` already imports `.mjs` — and assert
 it returns clean for the chip's rendered `style.left/width/top/height`, with a small local
 exempt map for the two px projections.
@@ -243,7 +243,7 @@ systemd-run --user --scope -q -p MemoryMax=4G -p MemorySwapMax=0 \
 `bun run build:angular-demo`. **No `@dsCard`** — the bundle is git-ignored and a blank page
 passes a viewport check by having nothing to overflow.
 
-Add `'Calendar'` to `PAGED` in `scripts/check-angular-demos.mjs` (19 → 20), and
+Add `'Calendar'` to `PAGED` in `scripts/check/angular/check-angular-demos.mjs` (19 → 20), and
 `'calendar-event': { manifest: 'Calendar.manifest.json', slot: 'chip' }` to `HOST_SLOT` in
 `frameworks/angular/test/HostClassBinding.test.ts`.
 
@@ -258,12 +258,12 @@ drive the Angular pair.
 
 - Delete `frameworks/angular/BehaviourDelegated.json`. Leave the reading loop and its message in
   `check-behaviour.mjs` alone, and leave the `delegatedTo` branch in
-  `scripts/lib/behaviour-contracts.mjs` alone — it runs for every binding, not only delegated
+  `scripts/lib/arena/behaviour-contracts.mjs` alone — it runs for every binding, not only delegated
   ones.
-- `scripts/behaviour-contracts.test.mjs:161` — `48` → `50`.
-- `scripts/check-compliance.mjs` `COVERED` — add `'Calendar:angular'` and
+- `scripts/lib/arena/behaviour-contracts.test.mjs:161` — `48` → `50`.
+- `scripts/check/arena/check-compliance.mjs` `COVERED` — add `'Calendar:angular'` and
   `'CalendarEvent:angular'`.
-- `scripts/check-tailwind-coverage.mjs` — the five `calendar-*` `EXCLUDED` reasons are written
+- `scripts/check/tailwind/check-tailwind-coverage.mjs` — the five `calendar-*` `EXCLUDED` reasons are written
   about React alone; make them name both layers.
 - Prose, each read as a claim that may now be false:
   - `CLAUDE.md` — the `BehaviourDelegated.json` sentences, and "The only components with no

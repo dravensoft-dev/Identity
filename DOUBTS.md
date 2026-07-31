@@ -159,7 +159,7 @@ stale-proof; a present-tense component name is not.
   today, which is a product decision with a UX consequence rather than a
   tokenization of an existing value.
 - **A group-level `$description` in `contracts/design/` never reaches the generated JS
-  modules.** `collectScriptTokens()` in `scripts/build-tokens.mjs` skips group
+  modules.** `collectScriptTokens()` in `scripts/generate/arena/generate-tokens.mjs` skips group
   nodes (`if (item.group || !isScript(item.token)) continue;`), so only a
   leaf token's own description is carried into
   `frameworks/react/Tokens.generated.js` and
@@ -245,7 +245,7 @@ stale-proof; a present-tense component name is not.
   variant (falsified when 8C9 built `cases`), then, after 8C9 rewrote the clause in place, as
   demonstrating that remedy (falsified when 8C10 fixed `Skeleton` and flattened its binding).
   Nothing failed either time. `check:behaviour` validates that a binding names a real pattern
-  and real requirements; and while `validateBinding` (`scripts/lib/behaviour-contracts.mjs`) does
+  and real requirements; and while `validateBinding` (`scripts/lib/arena/behaviour-contracts.mjs`) does
   read a `reason` for **presence** — `:156` requires one on a `none`/`absent` case, `:163` on every
   exception — **nothing anywhere reads its CONTENT, and no gate has an opinion about a comment at
   all**. So a citation asserting another component's current state is unfalsifiable
@@ -291,7 +291,7 @@ stale-proof; a present-tense component name is not.
   `scripts/lib/`), not `api/`, not `docs/`, and not a component's own `.jsx` source. A final
   review found surviving instances in three of those five — `behaviour/README.md` carried a
   present-tense twin of the very sentence 8C10 had past-tensed in
-  `scripts/lib/behaviour-contracts.mjs`, `scripts/behaviour-contracts.test.mjs` justified a test
+  `scripts/lib/arena/behaviour-contracts.mjs`, `scripts/lib/arena/behaviour-contracts.test.mjs` justified a test
   by a case that no longer exists, and `SideNavSection.jsx`'s header named **four** components —
   `Tag`, `Skeleton`, `Table`, `Pagination` — as carrying one limit, two of which had left it,
   **and** called that limit unfixable a batch after `cases` fixed it. So read **"8C10 corrected
@@ -301,7 +301,7 @@ stale-proof; a present-tense component name is not.
   the record, were `Table`'s and `Tab`'s reason strings (both exemplars **removed** rather than
   re-pointed at another name, because a replacement name is just the next thing to rot),
   `Toast`'s `divergesFromReason` (rewritten as explicit **history**, the one form that cannot go
-  stale), two doc comments in `scripts/lib/behaviour-contracts.mjs` — one past-tensed so
+  stale), two doc comments in `scripts/lib/arena/behaviour-contracts.mjs` — one past-tensed so
   `bindingCases()` keeps its origin story without asserting a tree that has moved, one re-pointed
   at the only live example that qualifies — and a sentence in the layer divergences (section 3
   of this file, then a separate `components-divergences.md`) describing what an Angular test
@@ -574,7 +574,7 @@ stale-proof; a present-tense component name is not.
   by hand and found **two TS2322 errors** in a directory reporting 340 passing tests, after a green
   `check:angular` had already been read, in that same batch, as evidence the file typechecked. The
   mitigation this entry proposed was "a second tsconfig covering the test directory, wired into
-  `check:angular`." What shipped is not that: `scripts/build-angular-tests.mjs`
+  `check:angular`." What shipped is not that: `scripts/build/angular/build-angular-tests.mjs`
   (`bun run build:angular-tests`) compiles the barrel and every `.ts` under `components/` and
   `test/` together with
   `ngc --strictTemplates` into git-ignored `build/angular-test/`, and `test:angular`, `test` and
@@ -715,7 +715,7 @@ stale-proof; a present-tense component name is not.
   outside the React layer that only the widened command reaches**:
   `frameworks/angular/components/display/tag/Tag.cases.test.ts`,
   `frameworks/angular/components/display/stat-card/StatCard.variants.test.ts`,
-  `scripts/check-card-viewports.mjs` (four card pages) and `scripts/check-card-viewports.test.mjs`,
+  `scripts/check/arena/check-card-viewports.mjs` (four card pages) and `scripts/check/arena/check-card-viewports.test.mjs`,
   and two paragraphs of this file citing `tabs.test.jsx`. Each target
   was opened first and the surrounding claim confirmed still true. Re-run the command rather
   than trusting that list; everything it returns today is history, a synthetic fixture, or a
@@ -757,7 +757,7 @@ stale-proof; a present-tense component name is not.
   `BulkActionBar.variants.test.ts` and `CommandPalette.variants.test.ts` all citing
   `frameworks/angular/test/host-class-binding.test.ts`. And it claimed cross-layer citations
   "were corrected in that batch (six sites)"; **ten survived**, in
-  `scripts/lib/api-surface.mjs`, `scripts/check-api.mjs`, `scripts/api-surface.test.mjs`
+  `scripts/lib/arena/api-surface.mjs`, `scripts/check/arena/check-api.mjs`, `scripts/lib/arena/api-surface.test.mjs`
   (twice), `frameworks/react/test-dom/tag-and-chip-cases.test.jsx` (twice),
   `frameworks/react/test-dom/onboarding-modal.test.jsx` (twice),
   the layer divergences (section 3) and — a **gate-read artifact**, not a comment —
@@ -777,7 +777,7 @@ stale-proof; a present-tense component name is not.
   citations with the change-time command in the *"a component name written into ANOTHER file's
   prose"* entry above, run for the moved component.
 - **Duplicate case names are rejected only by the two test wrappers, never by the gate.**
-  `validateBinding` in `scripts/lib/behaviour-contracts.mjs` loops over `bindingCases()` and
+  `validateBinding` in `scripts/lib/arena/behaviour-contracts.mjs` loops over `bindingCases()` and
   never asserts the names are distinct, so a binding declaring `danger` twice passes
   `check:behaviour`; and `crossLayerAgrees` builds its per-name map last-write-wins, so only
   the last declaration of a repeated name is ever compared across layers. Both wrappers do
@@ -989,7 +989,7 @@ stale-proof; a present-tense component name is not.
   not** — `TableRow` excepts `states.disabled`, `keyboard.Enter` and `keyboard.Space` and is
   in no suite at all, and it was absent from the seven. Read the current set with
   `grep -rHo '"requirement": "[^"]*"' --include='*.behaviour.json' frameworks/ | sort -u`
-  against `BEHAVIOURAL` in `scripts/lib/behaviour-compliance.mjs`, rather than any list
+  against `BEHAVIOURAL` in `scripts/lib/core/behaviour-compliance.mjs`, rather than any list
   written here; and read the other side — which verdicts a suite actually declares — with
   `grep -rho "'[a-z]*\.[A-Za-z]*': \(true\|false\)" --include='*.dom.test.jsx'
   --include='*.test.ts' frameworks/react/ frameworks/angular/ | sed "s/: .*//;s/'//g" |
@@ -1187,7 +1187,7 @@ stale-proof; a present-tense component name is not.
   string>()` as `{form:'functionInput', params:{value:'string'}, returns:'string'}` since the
   ninth form landed, and that bare arrow — with required-ness carried by `.required`, never by
   a `| undefined` arm — is the spelling `contracts/api/README.md` now states normatively and
-  `scripts/api-surface.test.mjs` pins. What did fail was the *optional* spelling
+  `scripts/lib/arena/api-surface.test.mjs` pins. What did fail was the *optional* spelling
   `input<((value: string) => string) | undefined>()`, and it failed on parse ORDER rather than
   on any rule: `classify()` tested its arrow pattern before reducing the annotation, backtracked
   onto the inner `)`, and read the return as `string)`. That is fixed — a nullable annotation is
@@ -1291,7 +1291,7 @@ stale-proof; a present-tense component name is not.
   `aria-describedby` legitimately carries the consumer's own description alongside Arena's, and
   that id may name an element outside the component's rendered tree, so demanding that every id
   resolve would fail a correct component. Every other reference attribute now requires that
-  **every** id resolve — read `IDREF_ATTRIBUTES` in `scripts/lib/behaviour-compliance.mjs` for
+  **every** id resolve — read `IDREF_ATTRIBUTES` in `scripts/lib/core/behaviour-compliance.mjs` for
   the live set, since strictness is a property of the attribute rather than of the requirement
   key, and each entry carries its own reason. The cost survives, scoped to where it is earned:
   within Arena's own `aria-describedby` wiring a typo'd second id is invisible.
@@ -1328,7 +1328,7 @@ stale-proof; a present-tense component name is not.
   `ATTRIBUTE_FOR` branch 8C7 taught to resolve, and `hasAccessibleName()` returned `true` the
   moment `aria-label` **or** `aria-labelledby` was non-empty, so a dangling `aria-labelledby`
   read as a name. That is closed. `hasAccessibleName(el, acceptsText, resolveId)` in
-  `scripts/lib/behaviour-compliance.mjs` now asks whether there is a NAME rather than whether
+  `scripts/lib/core/behaviour-compliance.mjs` now asks whether there is a NAME rather than whether
   there is an attribute, through three ordered alternative routes: `aria-label`; then the
   element's own text, but only where the pattern is in `LABEL_ACCEPTS_TEXT`; then
   `aria-labelledby`, which names the element only when **every** id resolves. A dangling
@@ -1914,7 +1914,7 @@ count written here, which would drift.
 
   Keep only the hits that quote a section **by name** — those are the ones a deletion
   breaks. A citation naming the file alone survives any edit to it.
-- **`scripts/check-dimension-literals.mjs`** — `EXEMPT` (a literal that is the
+- **`scripts/check/arena/check-dimension-literals.mjs`** — `EXEMPT` (a literal that is the
   true value at its site: a runtime data-to-pixel projection, a stacking context
   scoped to one container, the visually-hidden idiom) and `PASSTHROUGH`. Its two
   known blind spots — a kebab-case SVG attribute, and Angular's `[style.x]`
@@ -1929,20 +1929,20 @@ count written here, which would drift.
   it also means a key here is a cross-file claim of the kind this section's own
   rule is about, and the paired suite asserts on the map by name, so the rekey is
   a change to two files.
-- **`scripts/check-manifest-states.mjs`** — `EXEMPT` (a state delegated to a
+- **`scripts/check/arena/check-manifest-states.mjs`** — `EXEMPT` (a state delegated to a
   composed child, or a deliberate Angular-only accessibility addition) and
   `SOURCE_OVERRIDES` (the manifest-to-component mapping is not one-to-one).
   `SOURCE_OVERRIDES`' values are file paths and carry exactly the same rekeying
   liability: `Tag` now resolves to
   `frameworks/angular/components/display/tag/Tag.ts`.
-- **`scripts/check-tailwind-coverage.mjs`** — `EXCLUDED`, every token that
+- **`scripts/check/tailwind/check-tailwind-coverage.mjs`** — `EXCLUDED`, every token that
   deliberately reaches no Tailwind utility, with the reason. The gate asserts the
   entry exists, never that the reason is true — so a reason can rot silently, and
   one did: `onboarding-width`'s was written anticipatorily and was false for two
   commits.
-- **`scripts/check-duplicate-constants.mjs`** — `EXEMPT`, empty today, plus a
+- **`scripts/check/arena/check-duplicate-constants.mjs`** — `EXEMPT`, empty today, plus a
   header stating plainly what the gate does not catch.
-- **`scripts/build-tokens.mjs`** — `load()` reads one source file per call, so a
+- **`scripts/generate/arena/generate-tokens.mjs`** — `load()` reads one source file per call, so a
   DTCG alias cannot resolve across files. Three chart tokens restate `--sp-2` and
   `--sp-4` because of it. The constraint is self-imposed and removable; the fix is
   written on `load()` itself.
@@ -2522,7 +2522,7 @@ worst: `role` and `aria-label` are **static host attributes** in `Skeleton.ts` (
 the `host:` object, with no branch by variant — unlike React's, which branched), so asserting them
 on `block` establishes them for every variant by construction rather than by coverage. Rendering a
 component is not verifying its binding, and `Skeleton:angular` is absent from
-`check:compliance`'s `COVERED` (`scripts/check-compliance.mjs:113-129`) for that reason.
+`check:compliance`'s `COVERED` (`scripts/check/arena/check-compliance.mjs:113-129`) for that reason.
 
 **This paragraph is itself a worked example of the hazard it sits inside, twice over.** Its first
 version claimed that suite "says nothing about `role`, `aria-label` or the `status` pattern",
@@ -3082,7 +3082,7 @@ None of that is machine-checked, and the reason this entry keeps having to say s
 manifest-versus-component drift CLAUDE.md records as unclosed: `check:tailwind` proves every class
 in a manifest resolves to a token, and **nothing proves a manifest still matches the component it
 was derived from.** `check:states` is the one narrow slice that is, and this batch corrected where
-it reads: `SideNav` now has a `SOURCE_OVERRIDES` entry in `scripts/check-manifest-states.mjs`
+it reads: `SideNav` now has a `SOURCE_OVERRIDES` entry in `scripts/check/arena/check-manifest-states.mjs`
 naming all four `.jsx` files, the same reason `Table`'s entry names `Table.jsx` and `TableRow.jsx`
 — the naive same-name search resolves `SideNav.jsx`, which renders only the `root` slot, so a
 future hover on `item` or `trigger` would have been scanned against a file that can never
@@ -3553,7 +3553,7 @@ not prevent the second occurrence, and why `check:states` was built for P1's sha
   then shipped three of them (`nav`'s and `pageOther`'s `hover:bg-base-200`, `pageCurrent`'s
   `hover:shadow-2`) in the very next batch, one commit after the rule was first stated.
   `Pagination.jsx` has no `useState`, no `onMouseEnter`/`onMouseLeave`, and no hover branch.
-  `check:states` (`scripts/check-manifest-states.mjs`) now catches this shape; it says
+  `check:states` (`scripts/check/arena/check-manifest-states.mjs`) now catches this shape; it says
   nothing about whether a manifest's colours, sizes or slot structure still match the
   component it mirrors, which stays open.
 - **P2 — hover on a disableable slot.** `:hover` matches a disabled element's pseudo-class
@@ -3621,7 +3621,7 @@ constraint of a test environment, or an incident that explains why a check exist
 
 Entries are grouped by the file whose comment they came from.
 
-### `scripts/validate-palette.mjs` — vendored, and its thresholds are calibrated
+### `scripts/lib/core/validate-palette.mjs` — vendored, and its thresholds are calibrated
 
 Vendored from the `dataviz` Agent Skill (`scripts/validate_palette.js`) on 2026-07-16 and kept
 verbatim except for the CLI filename guard and usage string. **Do not "improve" the thresholds
@@ -3635,7 +3635,7 @@ The gate and the Angular Material bridge it guarded are both gone: this layer im
 control itself and imports no `@angular/material`. The entry stays because `check-cdk.mjs` was
 designed against it — its two blind spots are why that gate checks selectors, and its incident is
 why that gate carries zero-result guards. `referencedTokens` and `arenaTokenNames` outlived it, in
-`scripts/lib/arena-tokens.mjs`.
+`scripts/lib/core/arena-tokens.mjs`.
 
 `frameworks/angular/theme/arena-material.css` mapped Angular Material's custom properties onto
 Arena's tokens, and **both halves of that mapping failed silently**: a property name Material did
@@ -3669,7 +3669,7 @@ property rather than doubting the oracle, which is how a silent hole reopens. **
 sentence is the part that outlives the gate**, and any future bridge to a library this repository
 does not own inherits it whole.
 
-### `scripts/check-duplicate-constants.mjs` — what it catches is three of five
+### `scripts/check/arena/check-duplicate-constants.mjs` — what it catches is three of five
 
 The drift it exists for: `CAT_SLOTS`, `CHART_HEIGHT` and `PAD` were declared identically in both
 layers' chart-internals modules. Those three would have failed the day the second one was
@@ -3685,7 +3685,7 @@ design number lives — React writes it inline in a function body, Angular names
 whether a bare number in a JS object is a design value needs judgement no scanner has, which is
 also why `check:dimensions` cannot reach these. This gate takes the decidable half.
 
-### `scripts/build-vendor.mjs` — React 18.3.1 is CJS-only, and Bun's export detection is partial
+### `scripts/build/react/build-vendor.mjs` — React 18.3.1 is CJS-only, and Bun's export detection is partial
 
 React 18.3.1 ships CommonJS only — its `exports` map has no ESM condition and no `.mjs` — but a
 demo page's `<script type="importmap">` needs real ES modules to point a bare specifier at.
@@ -3706,7 +3706,7 @@ sharing no internal state, which breaks hooks and context in ways that are silen
 not. `NODE_ENV` is baked in as `"development"` via `define`, which also erases the production
 branch entirely, so no bare `process.env` reference reaches the browser.
 
-### `scripts/check-radius-tokens.mjs` — why `rounded-full` is the one class it names
+### `scripts/check/tailwind/check-radius-tokens.mjs` — why `rounded-full` is the one class it names
 
 Arena's whole radius vocabulary is wired in `frameworks/tailwind/Theme.css` to a `--r-*` token via
 `--radius-*`, and every other Tailwind default in a cleared namespace (`--radius-*: initial`)
@@ -3733,7 +3733,7 @@ onto an element directly passes unseen. Nothing in the tree does that today, and
 supposed to take every class from `classesFor()` anyway, but neither of those is this gate
 enforcing it.
 
-### `scripts/lib/behaviour-compliance.mjs` — the tri-state, and the false-OVERCLAIM it corrected
+### `scripts/lib/core/behaviour-compliance.mjs` — the tri-state, and the false-OVERCLAIM it corrected
 
 Three return values, and the third is the point. `true` and `false` are a verdict; **`null` means
 "no single element can decide this"** — focus behaviour, key handling, the auto-dismiss claim and
@@ -3764,7 +3764,7 @@ on the wrong element, in three of four branches, or behind a ternary reads ident
 correct one. A rendered DOM resolves all three. **Do not re-propose a scan**, including as a cheap
 tier beneath the grid rule: a measured 51% false-unmet rate is worse than an honest hole.
 
-### `scripts/lib/api-surface.mjs` — three known blind spots in a regex `.d.ts` reader
+### `scripts/lib/arena/api-surface.mjs` — three known blind spots in a regex `.d.ts` reader
 
 Reading a `.d.ts` by regex is a real limitation. The reader has three outcomes, and the third
 must never happen silently: a shape in the vocabulary is classified; a shape it knows and R4
@@ -3783,7 +3783,7 @@ Three blind spots, dormant against today's corpus and deliberately not fixed:
 
 A quote-aware scanner is a larger change than any of the three was written to make.
 
-### `scripts/check-all.mjs` — why it is not an `&&` chain, and how it picks a test command
+### `scripts/check/arena/check-all.mjs` — why it is not an `&&` chain, and how it picks a test command
 
 Every gate runs unconditionally: one failing does not stop the rest. Each step's output streams
 live (child stdio is inherited, not buffered), and the summary prints once every step has
@@ -3793,7 +3793,12 @@ identically under `bun` and under `node`.
 **The test-suite step has no such uniform invocation**: `bun test` is a bun-specific subcommand
 with no `node:test` equivalent, so the runner picks the command for the runtime it is itself
 executing under — `bun test scripts/` when `process.versions.bun` is set, `node --test` over the
-discovered `scripts/*.test.mjs` files otherwise.
+discovered `scripts/**/*.test.mjs` files otherwise.
+
+**That discovery walks, and the walk is load-bearing.** `bun test scripts` recurses on its own,
+so the bun path never noticed the shape of the tree; the node path read one directory. When the
+phase directories landed, a flat read would have found **zero** suites and reported the step
+green over a tree it never opened — a passing run is not evidence the suites ran.
 
 ### `frameworks/react/test/Preload.js` — the day it cost to find
 
@@ -3951,7 +3956,51 @@ So the helper removes the panes and leaves the container. An empty container is 
 costs nothing. This matters here specifically because `TestbedEnv.ts` shares one document across
 the whole `bun test build/angular-test/angular` run, so the hazard crosses files.
 
-### `scripts/check-cdk.mjs` — why it checks selectors where a custom-property bridge cannot
+### `check-docs.mjs` — why `isGenerated`'s third marker is a comment and not a window
+
+The third marker `isGenerated()` accepts is the text `GENERATED by` in the file's **first
+comment**, found by lexing, and the comment must open the file. The obvious cheaper spelling —
+that text anywhere in the first N characters — was the original, and it is wrong in a way that
+takes a while to see: a **generator** holds the banner it emits as a string literal, so it
+matches its own marker and exempts *itself* from the comment rule.
+
+The margin was nothing. Subdividing `scripts/lib/` lengthened two import lines in
+`generate-tokens.mjs` by sixteen characters, which moved its `HEADER` literal from character
+382 to 398; `slice(0, 400)` then cut the marker to `GE` and the file went from exempt to
+scanned. It passed in both states, but nobody had chosen either. **A file's exemption must not
+depend on how long its import block is.**
+
+Measured before the change, exactly three files were exempt by that marker —
+`build-demos.mjs`, `build-tailwind.mjs` and `generate-api-types.mjs` — and all three are
+generators, so every hit was a false positive. Nothing legitimately generated relied on it: the
+`.generated.` infix, the `.manifest.ts` suffix and the `.js`-beside-a-`.jsx` test already cover
+that, and `vendor/` is skipped as a directory. The stricter rule pulled those three into the
+scan, where they pass, and exempted nothing new. Lexing every scanned file rather than slicing
+400 characters costs nothing measurable: the gate still runs in under a fifth of a second.
+
+The general shape is worth keeping: **a marker that a file can contain is not a marker a file
+can be identified by.** The question is never whether the text is present but whether it is
+present *as the file's own declaration about itself*.
+
+### `scripts/build/` — a directory whose name two tools already reserved
+
+The phase directory is named `build`, and two things in this repository skip a directory of that
+name to avoid the emitted tree at the root. Both were silent, and neither was a failure:
+
+`.gitignore` carried `build/` unanchored, which git matches at **any** depth. The scripts moved
+in under `git mv`, which does not consult gitignore for already-tracked files, so nothing looked
+wrong — but the new `.gitkeep` files were dropped, and so would be every script added under
+`scripts/build/` afterwards. The three build-output rules are anchored to the root now (`/build/`).
+
+`check-docs.mjs` skipped by directory **name**, which took `scripts/build/` out of the comment
+rule's reach: those files would have been exempt from the one-header limit with the gate still
+green. It skips the emitted tree by path now, and a test pins the distinction by asserting a
+violation in `scripts/build/` while ignoring one in the root `build/`.
+
+The lesson generalises past this instance: **a skip list keyed by bare name is a claim about the
+whole tree**, and it silently widens the moment a directory of that name appears anywhere else.
+
+### `scripts/check/angular/check-cdk.mjs` — why it checks selectors where a custom-property bridge cannot
 
 A bridge that maps a library's custom properties onto Arena's tokens cannot examine the selectors
 those properties sit in — one of the two disclosed blind spots of the retired `check-material.mjs`
@@ -3968,7 +4017,7 @@ Its own suite exercises all four, and it caught a real defect while being writte
 `cdkClasses()` did not strip comments, so a class named in prose would have been checked as
 though it were an override.
 
-### `scripts/check-card-viewports.mjs` — why the content height takes a max of two metrics
+### `scripts/check/arena/check-card-viewports.mjs` — why the content height takes a max of two metrics
 
 Neither metric alone is the content bottom, and each is the true one in the case the other
 misses.

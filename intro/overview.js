@@ -9,8 +9,8 @@
  * Served over HTTP only — it fetches its source, which file:// forbids.
  * Run: bun run demos
  */
-import { flattenTokens, previewFor } from '../scripts/lib/token-preview.mjs';
-import { parseDecls } from '../scripts/lib/css-decls.mjs';
+import { flattenTokens, previewFor } from '../scripts/lib/core/token-preview.mjs';
+import { parseDecls } from '../scripts/lib/arena/css-decls.mjs';
 
 const root = document.documentElement;
 const host = document.getElementById('sections');

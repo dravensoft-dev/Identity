@@ -1,0 +1,31 @@
+/* The framework layers and the two name shapes every gate reads them through.
+ * LAYERS is an exhaustive enumeration rather than a walk of frameworks/, so a
+ * layer renamed or removed wholesale becomes loud instead of leaving scope. */
+
+import { readdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { repoRoot } from './repo-root.mjs';
+
+export const LAYERS = ['tailwind', 'angular', 'react'];
+
+export function kebab(name) {
+  return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+}
+
+export function pascal(dir) {
+  return dir.replace(/(^|-)([a-z0-9])/g, (_, _sep, c) => c.toUpperCase());
+}
+
+export function readLayer(layer) {
+  const base = join(repoRoot, 'frameworks', layer, 'components');
+  if (!existsSync(base)) return {};
+  const out = {};
+  for (const cat of readdirSync(base, { withFileTypes: true })) {
+    if (!cat.isDirectory()) continue;
+    out[cat.name] = readdirSync(join(base, cat.name), { withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name)
+      .sort();
+  }
+  return out;
+}

@@ -19,7 +19,7 @@ Every token in `contracts/design-generated/palette.css`, `typography.css`, `spac
 is a literal `0px` in v4), the three `--bp-*` (read by JS, never a media
 query), the three `--dur-*`, the six `--loop-*`, and the two `--bw-*` and the
 two `--focus-*` (v4 has no namespace for any of the five). Those seventeen are
-listed with their reason in `EXCLUDED` in `scripts/check-tailwind-coverage.mjs`,
+listed with their reason in `EXCLUDED` in `scripts/check/tailwind/check-tailwind-coverage.mjs`,
 and that gate fails the build if a token is added and reaches nothing.
 
 `contracts/design/colors.css` is excluded as a category. Its aliases (`--crimson`,
@@ -126,7 +126,7 @@ The category comes from `frameworks/Components.json`, which declares it once for
 framework layers, and `bun run check:structure` fails a component directory that sits
 anywhere else. That gate says nothing about whether the category is the *right* one — that
 is editorial judgement and no gate has it. **All three framework layers share this shape**,
-so the gate reads every layer unconditionally; `LAYERS` in `scripts/check-structure.mjs` is
+so the gate reads every layer unconditionally; `LAYERS` in `scripts/check/arena/check-structure.mjs` is
 the exhaustive enumeration, deliberately not a walk of `frameworks/`, so a layer renamed or
 removed wholesale becomes loud rather than quietly leaving the gate's scope. The root
 `CLAUDE.md` carries the naming rule and its mechanical exceptions in full; count them there
@@ -163,7 +163,7 @@ knowing about because the gate had the opposite failure mode. A gate iterating z
 manifests finds zero violations by construction, so when discovery still read one flat
 directory and the manifests had moved into the nested tree, it printed
 `0 manifest(s) … all resolve` and exited 0 over a layer it never looked at. Discovery is
-now one shared recursive walk, `manifestFiles()` in `scripts/lib/tailwind-compile.mjs`, and
+now one shared recursive walk, `manifestFiles()` in `scripts/lib/tailwind/tailwind-compile.mjs`, and
 an empty result is an explicit failure rather than a clean pass. Every site that needs to
 find manifests calls it — `compileLayer()` in that same file, which `check:tailwind` and
 `build:tailwind` go through; `check:radius` and `check:states` directly; and Angular's
@@ -350,7 +350,7 @@ is not evidence — it is the failure mode.
 A manifest authored by reading a neighbour instead of the component it mirrors
 is how this defect arrives; [`DOUBTS.md`](../../DOUBTS.md) section 4 records the
 two occurrences that produced the rule. `bun run check:states`
-(`scripts/check-manifest-states.mjs`) catches the shape this rule describes —
+(`scripts/check/arena/check-manifest-states.mjs`) catches the shape this rule describes —
 see below — but citing the source line is still the right first move, since the
 gate is crude by design and does not replace reading the component.
 

@@ -3,10 +3,11 @@ node_modules/
 .pnp
 .pnp.js
 
-# Build output
-dist/
-build/
-.cache/
+# Build output. Anchored: an unanchored build/ also matches scripts/build/, the
+# phase directory, and would silently drop a new script added there.
+/dist/
+/build/
+/.cache/
 
 
 # Logs

@@ -1,8 +1,7 @@
 import { readdirSync, statSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, join, normalize } from 'node:path';
+import { join, normalize } from 'node:path';
+import { repoRoot as root } from './lib/repo-root.mjs';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const port = Number(process.env.PORT) || 8000;
 
 const PAGES = [

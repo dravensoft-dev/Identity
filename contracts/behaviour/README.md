@@ -7,7 +7,7 @@ what dismisses it.
 It is a level under `contracts/`, beside `contracts/api/` — not a corner of the
 design one, and deliberately so. A contract is not a value: DTCG models colours,
 dimensions and durations, and does not model "Escape closes this". Putting a
-pattern under `contracts/design/` would mean relaxing `scripts/check-dtcg.mjs`, which
+pattern under `contracts/design/` would mean relaxing `scripts/check/core/check-dtcg.mjs`, which
 is one of the cleanest gates in the repo.
 
 ## Patterns
@@ -28,7 +28,7 @@ different patterns and not one.
 
 **That set is machine-checked**, which is what makes it safe to name here at
 all: `none aside, exactly the patterns with no APG pattern page cite something
-else`, in `scripts/behaviour-contracts.test.mjs`, asserts it by literal value.
+else`, in `scripts/lib/arena/behaviour-contracts.test.mjs`, asserts it by literal value.
 Adding a pattern that cites anything but an APG *patterns* page fails that test
 until the list follows, so the test is the authority and this paragraph is the
 explanation.
@@ -103,7 +103,7 @@ discriminator would be circular in every motivating case anyway — what marks
 `Alert`'s `danger` case is `role="alert"`, which is the very attribute the
 requirement under examination is about.
 
-`bindingCases()` in `scripts/lib/behaviour-contracts.mjs` is the one place the
+`bindingCases()` in `scripts/lib/arena/behaviour-contracts.mjs` is the one place the
 two shapes meet: a flat binding normalises to a single anonymous case (`name:
 null`), so every consumer — `check:behaviour`, `check:compliance`, both
 layers' render-suite wrappers — reads a binding as a list of cases and never
@@ -150,7 +150,7 @@ focus at all.
 
 `check:behaviour` still proves only that a declaration is well formed. What proves
 a declaration is *true* is a render suite: for a component listed in `COVERED`
-(`scripts/check-compliance.mjs`), a suite asserts per requirement that the rendered
+(`scripts/check/arena/check-compliance.mjs`), a suite asserts per requirement that the rendered
 DOM either meets it with no exception declared or fails it with one declared. That
 is bidirectional on purpose — it catches an overclaim and a stale exception with
 one statement — and it is why an exception can now expire. Coverage is partial:

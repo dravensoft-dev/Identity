@@ -33,7 +33,7 @@ Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default
 ## Why only design has a `-generated` sibling
 
 `design-generated/` holds the five CSS files built from `design/` — four by Style
-Dictionary (`bun run build:tokens`) and `fonts.css` by `scripts/fetch-fonts.mjs`, which can
+Dictionary (`bun run generate:tokens`) and `fonts.css` by `scripts/generate/core/fetch-fonts.mjs`, which can
 also rebuild that one file alone, from the binaries already committed under `assets/fonts/`
 and with no network involved, via `--css-only`. Never edit any of the five directly; edit
 the source and rebuild.

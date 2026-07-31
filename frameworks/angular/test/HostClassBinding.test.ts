@@ -9,7 +9,7 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { useTestEnvironment } from './TestbedEnv';
-import { ANGULAR_COMPONENTS, LIB, SCRIPTS, TAILWIND_COMPONENTS } from './Compliance';
+import { ANGULAR_COMPONENTS, LIB, TAILWIND_COMPONENTS } from './Compliance';
 import { ActivityFeed } from '../components/display/activity-feed/ActivityFeed';
 import { activityFeedStyles } from '../components/display/activity-feed/ActivityFeed.variants';
 import { AppLogo } from '../components/brand/app-logo/AppLogo';
@@ -744,10 +744,10 @@ const DISPLAY_UTILITY =
   /(?:^|\s)(?:block|inline-block|inline|flex|inline-flex|grid|inline-grid|table|inline-table|table-[a-z-]+|flow-root|contents|list-item|hidden)(?=\s|$)/;
 
 const { pascal: kebabToPascal } = await import(
-  pathToFileURL(join(SCRIPTS, 'check-structure.mjs')).href
+  pathToFileURL(join(LIB, 'arena', 'layers.mjs')).href
 ) as { pascal: (dirName: string) => string };
 
-const { manifestFiles } = await import(pathToFileURL(join(LIB, 'tailwind-compile.mjs')).href);
+const { manifestFiles } = await import(pathToFileURL(join(LIB, 'tailwind', 'tailwind-compile.mjs')).href);
 
 function findManifestFile(componentsDir: string, filename: string): string | undefined {
   const paths: string[] = manifestFiles(componentsDir);

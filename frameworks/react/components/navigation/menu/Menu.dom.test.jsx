@@ -10,7 +10,7 @@ import React from 'react';
 import { join } from 'node:path';
 import { mount, cleanup, act } from '../../../test/Harness.jsx';
 import { assertPattern, REACT_COMPONENTS } from '../../../test/AssertPattern.jsx';
-import { isFocusable } from '../../../../../scripts/lib/behaviour-compliance.mjs';
+import { isFocusable } from '../../../../../scripts/lib/core/behaviour-compliance.mjs';
 import { Menu } from './Menu.jsx';
 
 afterEach(cleanup);
