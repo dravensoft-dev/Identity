@@ -1,5 +1,5 @@
 /* The two container components of the family, together, because what they have to prove is
- * what happens BETWEEN them. React pushes depth down with cloneElement, one hop per level;
+ * what happens BETWEEN them. Depth could be pushed down a level at a time;
  * Angular cannot, so each container provides a fresh SideNavState whose depth is the parent's
  * plus one and the leaf pulls from the nearest ancestor. That is the whole design, no gate can
  * see it, and every indent assertion below is what stands in for one. keyboard.Enter and

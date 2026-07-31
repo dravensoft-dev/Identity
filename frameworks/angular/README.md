@@ -2,6 +2,17 @@
 
 Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
 
+## This layer stands on the contracts alone
+
+**It names no other framework layer, and imports from exactly one.** What a component is and
+what members it presents is `contracts/api/components/<Name>.json`; what it must do is
+`contracts/behaviour/`; what a value is, `contracts/design/`. The single edge to another layer
+is styling: a `<Component>.variants.ts` imports the generated
+`<Component>.manifest.generated` beside its manifest in `frameworks/tailwind/`, through the
+configured `tv` in `frameworks/tailwind/Tv.ts`. A manifest is data — slots, variants and class
+strings — so nothing travels the other way. `bun run check:layer-independence` holds both
+halves: that edge is `ALLOWED` with its reason, and everything else fails.
+
 **Bridge (foundation) — bring Arena's tokens, icons and theming into an existing Angular app:**
 - `theme/arena-tailwind.css` — one import that brings Arena's tokens (including
   the self-hosted fonts declared in `contracts/design-generated/fonts.generated.css`, binaries in `assets/fonts/`)
@@ -59,10 +70,8 @@ so they sit at the layer root and `frameworks/angular/index.ts` names each of th
 directly. `DataVisuals.ts` (the chart maths and the identity-or-meaning colour contract)
 sits at the layer root beside them, and the rule puts it there in both layers now: its
 consumers are the three charts **and** `arena-calendar-event`, which reads `catColor` for a
-chip's identity colour exactly as React's chip does. It used to be there by decision, against
-a consumer set narrowed only by Angular having no schedule view; building one converged that.
-The name matches the placement either way: a module a schedule grid consumes is not
-"chart internals".
+chip's identity colour. The name matches the placement: a module a schedule grid consumes is
+not "chart internals".
 
 A primitive defines no styling of its own. Its recipe lives in
 `frameworks/tailwind/components/<category>/<component-kebab>/<Component>.manifest.json`
@@ -93,23 +102,24 @@ light). Danger is outline. Icons are Phosphor (Bold default). No gradients, no e
 
 ## What Arena implements, and the two components Angular does not have
 
-Parity here is parity of **outcome**, not of inventory: an Angular consumer can build every
-interface an Arena React consumer can, and they build all of it from Arena's own primitives.
-No control in this layer is delegated to a third-party component library.
+Parity here is parity of **outcome**, not of inventory: a consumer of this layer can build
+every interface `frameworks/Components.json` declares a component for, and builds all of it
+from Arena's own primitives. No control in this layer is delegated to a third-party component
+library.
 
 **There are no exceptions left, and `BehaviourDelegated.json` is the only trustworthy
 statement of that** — `check:behaviour` fails the moment a component this layer lacks goes
 unrecorded, where a list written here would rot in silence. **The file does not exist**: this
-layer implements every component React ships, `arena-calendar` and `arena-calendar-event`
-included, and a record with nothing to record is the failure mode that retired `check:material`.
-The mechanism stays, so the next component React lands first fails loudly until it is written
-down there binding `absent`.
+layer implements every component `frameworks/Components.json` declares, and a record with
+nothing to record is the failure mode that retired `check:material`. The mechanism stays, so
+the next component this layer lacks fails loudly until it is written down there binding
+`absent`.
 
 **Arena writes the markup, the ARIA and the styling, and `@angular/cdk` supplies only what
 Arena should not hand-roll** — overlay positioning for a surface anchored to a trigger, and
-the roving-focus key managers. Focus trapping stays Arena's own `FocusTrap.ts`, a deliberate port
-of React's `UseDialogModal.js`, so the two layers keep solving that contract with the same
-code, and `arena-dialog` consumes it rather than `cdk/dialog`.
+the roving-focus key managers. Focus trapping stays Arena's own `FocusTrap.ts`, which implements
+`contracts/behaviour/dialog-modal.json` for this layer, and `arena-dialog` consumes it rather
+than `cdk/dialog`.
 
 **The CDK earns its place on an anchored surface and nowhere else, so count its users rather
 than assuming.** `grep -rl "@angular/cdk/overlay" frameworks/angular/components` is the answer;

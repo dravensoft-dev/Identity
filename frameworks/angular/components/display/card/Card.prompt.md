@@ -1,8 +1,7 @@
 Arena surface container — the hairline border on the base surface scale, with an
 optional header. Standalone, `OnPush`, signal inputs. Styling is the sibling
-`Card.variants.ts` recipe, read from the same `Card.manifest.json` React's
-Tailwind mirror reads; the component carries no CSS classes of its own and
-host-binds its root slot.
+`Card.variants.ts` recipe, read from `Card.manifest.json` in the shared Tailwind
+layer; the component carries no CSS classes of its own and host-binds its root slot.
 
 ```html
 <arena-card [eyebrow]="'Delivery'" [title]="'Client Portal'">

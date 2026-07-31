@@ -14,7 +14,7 @@ test('the root has no danger coloring -- an empty state is neutral, never an err
   assert.doesNotMatch(emptyStateStyles().root(), /error/);
 });
 
-test('the action slot carries the spacing React\'s marginTop applies above a present action', () => {
+test('the action slot carries the token spacing that separates a present action from the copy above it', () => {
   assert.match(emptyStateStyles().action(), /\bmt-1\.5\b/);
 });
 

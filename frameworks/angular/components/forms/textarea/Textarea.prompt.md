@@ -20,7 +20,7 @@ a real `<textarea>`, named by a real `<label for>`.
 
 **Do / Don't**
 - It is **controlled**, and Angular will not force the DOM back: ignore `change` and the box keeps
-  what the user typed, where React re-renders it away. Wire the signal.
+  what the user typed. Wire the signal.
 - There is **no validator here**, unlike `arena-input`. `error` is the only route to the error
   state, and it is the consumer's to compute — which is why the recipe has two state arms rather
   than three and there is no valid (green check) state at all.
@@ -30,8 +30,7 @@ a real `<textarea>`, named by a real `<label for>`.
 - `autoResize` forces `resize: none` and grows the box from its own `scrollHeight`.
   **It resizes on mount and on every programmatic change, not only while typing**, through an
   `afterRenderEffect` that reads `value()` — so a draft loaded from a server or a template
-  inserted by a button sizes the box immediately. React runs the same measurement from a
-  `useEffect` on `value`. **`scrollHeight` is content plus padding and never the border**, so a
+  inserted by a button sizes the box immediately. **`scrollHeight` is content plus padding and never the border**, so a
   border-box element needs `offsetHeight - clientHeight` added or the box lands short and keeps a
   permanent scrollbar: measured before the fix at 720x340, `scrollHeight` 199 set as the height
   left `clientHeight` 197 and a scrollbar on a box just grown past it. Both layers carry the term,
@@ -47,8 +46,9 @@ a real `<textarea>`, named by a real `<label for>`.
   `<arena-textarea>` itself; the native event never reaches an ancestor.
 - The error line **replaces** the hint. The foot keeps an empty placeholder when there is neither,
   so the counter stays hard right instead of sliding under the label.
-- `id` is derived from `label` as `ta-<slug>`, matching React exactly — note the prefix differs
-  from `arena-input`'s `in-`, so the two never collide on a form that labels both the same.
+- `id` is derived from `label` as `ta-<slug>` — the derivation `Textarea.json` states. Note the
+  prefix differs from `arena-input`'s `in-`, so the two never collide on a form that labels
+  both the same.
 
 **By hand, in real Chromium** — none of these is provable in happy-dom, and the first one cannot
 be: happy-dom has no layout, so `scrollHeight` is `0` and a growing box and a broken one look
@@ -56,7 +56,7 @@ identical to any suite. Run `bun run demos` and open
 `/frameworks/angular/components/forms/textarea/Textarea.card.html`:
 - **`autoResize`**: the box grows line by line as you type and shrinks again when you delete, with
   no scrollbar ever appearing. The one seeded with a long value is already tall on load — that is
-  the `afterRenderEffect`, and it is the part React does not do.
+  the `afterRenderEffect` at work: the box is sized before the first paint, not on first keystroke.
 - Without `autoResize` the grip in the corner resizes vertically and not horizontally.
 - The gold focus ring lands on the textarea itself, where `arena-input`'s lands on a wrapping
   group.

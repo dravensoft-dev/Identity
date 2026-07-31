@@ -9,10 +9,9 @@ import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
 
 const manifest = await (await fetch('./Checkbox.manifest.json')).json();
 
-// Token-valued, not hand-typed: `--sp-3` (12px) is the check glyph's box, `--bw-strong`
-// (2px) is its stroke — the same values `Checkbox.jsx` reads, bound as a camelCase
-// `[style]` object so a token change cannot drift silently under a literal `.card.html`
-// never scans (see the three Angular SVG charts for the same shape and the same reason).
+// Token-valued, not hand-typed: `--sp-3` (12px) is the check glyph's box and `--bw-strong`
+// (2px) is its stroke, bound as a camelCase `[style]` object so a token change cannot drift
+// silently under a literal that `check:dimensions` never scans in a `.card.html`.
 const CHECK_GLYPH_STYLE = { width: 'var(--sp-3)', height: 'var(--sp-3)' };
 const CHECK_STROKE_STYLE = { strokeWidth: 'var(--bw-strong)' };
 

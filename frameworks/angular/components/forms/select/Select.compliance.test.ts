@@ -1,6 +1,6 @@
 /* Both requirements of `select` are decidable from the element, so this file has no
  * `behavioural` map at all: the browser owns the popup, the keys and the focus, which
- * is the whole reason React binds `select` rather than `combobox`. What is NOT free is
+ * is the whole reason Select binds `select` rather than `combobox`. What is NOT free is
  * containment — `change` is an Arena output whose name a native <select> event already
  * carries, so the second test measures that the native one never leaves the host
  * instead of arguing that it cannot. */

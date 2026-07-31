@@ -1,4 +1,4 @@
-/* Mirrors the React suite of the same name, for the same reason: `none` says "a component with
+/* The counterpart of every layer's inert-component suite, for the reason the pattern gives: `none` says "a component with
  * no interactive affordance: it renders, and a user cannot act on it", its `requires` is empty,
  * and binding it therefore verifies NOTHING -- which is why every component here sat outside
  * COVERED. Each renders with no projected content and is asserted INERT, the sentence the

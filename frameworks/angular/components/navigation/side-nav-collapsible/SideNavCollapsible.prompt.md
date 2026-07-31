@@ -12,8 +12,8 @@ hides a group of destinations. Standalone, `OnPush`, signal I/O. Styling is the 
 
 The trigger is a native `<button type="button">` carrying `aria-expanded` and an `aria-controls`
 naming its region. **The region is always rendered** and hidden by the `hidden` attribute alone —
-the preflight's `[hidden] { display: none !important }` outranks the region's own `flex`, where
-React has to set both because its inline display would win. So `aria-controls` never points at
+the preflight's `[hidden] { display: none !important }` outranks the region's own `flex`, so
+nothing has to hide it a second time. `aria-controls` therefore never points at
 nothing, and a collapsed region's links are out of the tab order because `hidden` removes them.
 
 **It opens itself around the active destination, and that is not a press.** If any row anywhere in

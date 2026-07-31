@@ -1,6 +1,7 @@
 {
   "component": "PageHead",
   "description": "A page heading: a required title, an optional subtitle, and an optional actions slot.",
+  "affordances": [],
   "api": {
     "title": { "form": "primitive", "type": "string", "required": true,
                "description": "The page title. Required — a page head with no title is a bug, not a state." },

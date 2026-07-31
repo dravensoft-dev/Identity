@@ -39,7 +39,7 @@ served with `bun run demos`:
 - Walk the 20-page strip to the middle and watch the window elide on **both** sides, then to
   each end and watch it elide on one side only.
 - Tab through the strip. Every page and both arrows take focus in reading order, and each shows
-  the browser's own focus ring — this component adds none, the same as React's.
+  the browser's own focus ring — this component adds none of its own.
 - At page 1 and at page 20 the outward arrow is dimmed and does not respond to a click, and the
   strip does not change width.
 - The current page must be tellable from the others with the page desaturated, not by colour

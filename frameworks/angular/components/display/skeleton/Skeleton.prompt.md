@@ -54,6 +54,5 @@ labelled region and hide the individual placeholders from the accessibility tree
 ```
 
 That turns two announcements into one and gives a screen-reader user a name for *what* is
-loading rather than only that something is. The repetition and the fix are the same on
-React's side, so this is a composition decision you make per set, not a divergence between
-the layers.
+loading rather than only that something is. Nothing about it is particular to this layer:
+it is a composition decision you make per set.

@@ -30,7 +30,7 @@ paragraph does not. That is the entire argument for this order:
 
 1. **Pay it.** A defect that can be fixed is not debt; it is work.
 2. **A gate, with a reason-carrying map.** `EXEMPT`, `EXCLUDED`, `COVERED`, `UNTRACKED`,
-   `PASSTHROUGH`, `SOURCE_OVERRIDES`, `NOT_QUANTIFIED` — each entry names a case and says why,
+   `PASSTHROUGH`, `MANIFEST_COVERS`, `ALLOWED`, `NOT_QUANTIFIED` — each entry names a case and says why,
    as a string value rather than a comment, and each gate's paired suite asserts on the map by
    name. **A stale entry fails its own gate.** See [`scripts/check/README.md`](./scripts/check/README.md).
 3. **A suite assertion.** A limit a test can pin is pinned. An assertion that a collision does

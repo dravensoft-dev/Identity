@@ -54,11 +54,11 @@ own place in the page Tab sequence, so nothing you own is silenced.
 The grid is **not assumed rectangular**. A row may carry fewer or more cells than there are
 columns, and the cursor is clamped against the row it is actually in.
 
-Card mode answers none of this, and this layer answers less of it than React does: a card
-row here carries no role and no tab stop, so a row with `(click)` is pointer-only below
-`--bp-md`. That is not a choice — Angular cannot ask whether an output has subscribers, and
-making every card row a button would put a dead tab stop on every row of every table that is
-not clickable. `TableRow.behaviour.json` states it. The bounded consequence: a consumer who
+Card mode answers none of this: a card row here carries no role and no tab stop, so a row
+with `(click)` is pointer-only below `--bp-md`. That is not a choice — the shape cannot be
+derived from whether anything is listening (R6 in `contracts/api/README.md`), and making
+every card row a button would put a dead tab stop on every row of every table that is not
+clickable. `TableRow.behaviour.json` states it. The bounded consequence: a consumer who
 binds `(click)` on a card row gets a row a keyboard user cannot reach below `--bp-md`.
 
 ### Why the wide shape is not a `<table>` element
@@ -67,13 +67,13 @@ Angular indexes projection slots in template order and hands the content to the 
 matching one, so a `wide` branch and a `card` branch cannot each carry their own
 `<ng-content>` — one of the two would always render empty. The rows are therefore projected
 once, into a box whose display and role change with the shape, and the wide box is a
-`display: table` with `role="grid"` rather than a `<table>`. React's `<table>` already
-carries `role="grid"`, so the native table role was overridden in both layers; what differs
-is the element and `colspan`. Two real costs follow: `colspan` has no CSS equivalent, so the
+`display: table` with `role="grid"` rather than a `<table>`. A native `<table>` would carry
+`role="table"` and have to be overridden to `grid` anyway, so nothing is lost there; what a
+non-element table costs is `colspan`. Two real costs follow: `colspan` has no CSS equivalent, so the
 empty state is a block **beside** the grid box rather than a cell spanning it, and the grid in
 that state holds only its header row; and `display: table` on the host means the measured
 `contentRect` excludes the frame border, so the narrow threshold trips a couple of pixels
-earlier than React's.
+earlier than the declared breakpoint.
 
 **By hand, in a real browser** (`bun run build:angular-demo && bun run demos`, then
 `frameworks/angular/components/display/table/Table.card.html`). Steps 1–5 were checked in real
@@ -83,8 +83,7 @@ zero roles and zero tab stops in the squeezed card shape. Step 6 and every judge
 it *looks* were not, and are why this list stays:
 1. Tab reaches the grid ONCE, and one more Tab leaves it. No cell is a stop of its own.
 2. From a cell, Tab reaches a control inside a cell in **one** press, not two. Two means the
-   grid pulled focus back onto the cell — `focusin` bubbles, and this is the failure mode
-   React hit and only a real browser showed.
+   grid pulled focus back onto the cell — `focusin` bubbles, and only a real browser shows it.
 3. Arrows clamp at all four edges and focus never leaves the grid. `Home`/`End` stay inside
    the current row — walk a middle row, not only the first.
 4. `Enter` activates a row with `(click)` and does nothing on the header row or on the

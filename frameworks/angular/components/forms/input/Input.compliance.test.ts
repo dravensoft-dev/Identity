@@ -66,7 +66,7 @@ test('the control is a real <input>, and the label points at it by a derived id'
     assert.equal(control.tagName, 'INPUT');
     assert.equal(control.getAttribute('type'), 'text');
     assert.equal(control.getAttribute('id'), 'in-project-name',
-      'the id derivation must match React\'s, or the same markup gets two different ids per layer');
+      'the id derivation is contracted in Input.json, or the same markup gets two different ids per layer');
     const label = host.querySelector('label') as HTMLElement;
     assert.equal(label.getAttribute('for'), 'in-project-name');
   } finally {
@@ -204,7 +204,7 @@ test('a controlled error wins over the validator, and an empty string counts as 
     empty.fixture.detectChanges();
     assert.equal(empty.control.getAttribute('aria-invalid'), 'false',
       'error="" is present enough to suppress the validator and empty enough not to be an error, '
-      + 'which is React\'s own semantics: every use downstream reads its truthiness, not its nullness');
+      + 'which is what Input.json contracts: every use downstream reads its truthiness, not its nullness');
     assert.equal(empty.host.textContent?.includes('Too short'), false,
       'a controlled error, even blank, wins over the validator');
     assert.equal(empty.host.textContent?.includes('Lowercase, no spaces'), true,

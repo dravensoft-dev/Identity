@@ -13,7 +13,7 @@ import { Table } from './Table';
 })
 class EmptyHost { columns: TableColumn[] = [{ header: 'Service' }]; }
 
-test('a table with no rows and no projected empty content says the same thing React says', () => {
+test('a table with no rows and no projected empty content says what Table.json contracts it says', () => {
   const fixture = TestBed.createComponent(EmptyHost);
   fixture.detectChanges();
   try {

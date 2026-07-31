@@ -34,8 +34,8 @@ tooltip is positioned against.
   order; a ninth series folds into "Other" or becomes small multiples.
 - Don't add a second axis. Arena's charts are one axis, always.
 - Don't omit `labels` or `values`. Both are required inputs — Angular throws NG0950 on the
-  first read rather than drawing an empty box, and React throws from its render for the
-  same reason.
+  first read rather than drawing an empty box. A chart with no data is a caller bug, not a
+  state to render.
 - Don't pass more `labels` than `values`. A bar is drawn per value and takes the label
   at its own index, so a surplus label is silently dropped rather than drawn without a
   bar to sit under.

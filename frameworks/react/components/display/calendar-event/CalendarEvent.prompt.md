@@ -32,7 +32,9 @@ What "into the chip" means depends on the shape. A chip with no action panel *is
   </>} />
 ```
 
-**The boolean is what draws the kebab, not the slot being filled.** `actionsEnabled` with an empty `actions` draws a kebab over an empty panel; that is a consumer mistake rather than a state Arena hides, and it is deliberate. Angular cannot detect whether an `<ng-content>` was filled, so a React that quietly withheld the kebab when the slot was empty would behave differently from an Angular that could not — the same reason `Alert.dismissible` and `Toast.dismissible` are booleans.
+**The boolean is what draws the kebab, not the slot being filled.** `actionsEnabled` with an empty `actions` draws a kebab over an empty panel; that is a consumer mistake rather than a state Arena hides, and it is deliberate. Nothing here is derived from whether a slot was filled or a listener was bound — R6 in `contracts/api/README.md` — which is the same reason `Alert.dismissible` and `Toast.dismissible` are booleans.
+
+**The chip is a button in both of its shapes, whether or not you bind `onClick`.** R6 again: the rendered element cannot depend on whether anything is listening. The cost is bounded and accepted — a chip nobody listens to is announced as a button that does nothing — and it is the deliberate opposite of the call `TableRow` made. A row is a page tab stop and a dead one on every row of every table is worse than the gap; a chip is `tabindex="-1"` and never a page tab stop, so always-a-button costs no dead stop here, where always-a-div would delete Enter-into-the-chip that `Calendar`'s `grid` binding leans on.
 
 **The panel's content is in the tree only while the panel is open.** That is what keeps the schedule at one tab stop: your buttons are yours, Arena cannot silence them, and a permanently rendered row of them would be a permanent set of tab stops inside a grid that is supposed to have one. It also means the panel is not a place to keep state — it is unmounted and remounted with every open.
 

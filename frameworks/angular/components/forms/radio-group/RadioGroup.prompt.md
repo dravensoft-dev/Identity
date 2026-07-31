@@ -11,8 +11,7 @@ the accessible name and the column layout, so there is no wrapper inside it.
 </arena-radio-group>
 ```
 
-**The children pull; the parent does not push.** React's `RadioGroup` clones each child and hands
-it `name`, `checked` and a callback. Angular has no `cloneElement`, so `arena-radio` injects a
+**The children pull; the parent does not push.** `arena-radio` injects a
 `RadioGroupState` the group provides and reads the shared name and the selected value from it,
 reporting a choice back through it. Nothing is injected into the option, which is why none of that
 coordination is a member of either contract and why an option outside a group is a DI error rather
@@ -33,7 +32,7 @@ than a silently inert control.
   last choice itself. `change` fires either way.
 - Wrapping an `arena-radio` in your own component or a `@for` block is fine — projection reaches
   it however deep, because the child resolves the group through DI rather than by being a direct
-  child. That is the one place this family is *less* fragile than React's.
+  child. Nothing here inspects its own children, so nothing between them can break it.
 - Don't put a lone `arena-radio` outside a group. A single radio is a checkbox with worse
   semantics, and this one will throw for want of its provider.
 
@@ -48,4 +47,4 @@ so this is the only place it is checked at all. Run `bun run demos` and open
   is the `opacity-0 size-0` native input. The `ring` slot carries
   `[&:has(~input:focus-visible)]:shadow-[…]`, which reaches the input as a later sibling — so the
   input must stay after the ring in the template, and moving it removes the ring silently.
-  `arena-checkbox` and React's `Radio` draw the identical ring the identical way.
+  `arena-checkbox` draws the identical ring the identical way.

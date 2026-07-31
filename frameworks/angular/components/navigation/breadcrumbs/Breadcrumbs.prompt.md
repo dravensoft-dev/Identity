@@ -43,7 +43,7 @@ go(crumb: Crumb): void {
 - Don't reach for `(navigate)` to call `preventDefault()` -- it never receives the click
   event, so it cannot stop the anchor's own navigation. Intercept at the router instead.
 
-**Accessibility note:** the trail renders no `<ol>`/`<li>` wrapper (matching React), so a
+**Accessibility note:** the trail renders no `<ol>`/`<li>` wrapper, so a
 screen reader gets no "list, N items" orientation cue that the WAI-ARIA APG's breadcrumb
 structure would otherwise give. `nav[aria-label="Breadcrumb"]` and `aria-current="page"`
 are what make the trail operable and named; the list semantics were judged a secondary

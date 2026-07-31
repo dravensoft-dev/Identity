@@ -1,6 +1,7 @@
 {
   "component": "BulkActionBar",
   "description": "Appears when rows are selected and operates on the selection as a set. Renders nothing at a count of zero.",
+  "affordances": ["focus", "hover"],
   "api": {
     "count": { "form": "primitive", "type": "number", "required": true,
                "description": "How many rows are selected. Zero renders no bar at all." },
@@ -11,7 +12,7 @@
     "run": { "form": "event", "payload": "BulkAction",
              "description": "An action was activated, carrying which one." },
     "clearable": { "form": "primitive", "type": "boolean", "default": true,
-                   "description": "Whether the Clear control is drawn. Both layers gate on this — Angular cannot detect a `clear` listener." },
+                   "description": "Whether the Clear control is drawn. Every layer gates on this member and never on whether anything listens for `clear` — R6." },
     "clear": { "form": "event",
                "description": "The Clear control was activated." }
   }

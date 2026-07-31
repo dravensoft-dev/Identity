@@ -24,14 +24,14 @@ test('BarChart with no valueSuffix draws bare numbers, so the suffix is genuinel
   assert.doesNotMatch(html, /undefined/, 'an absent suffix must not render the string "undefined"');
 });
 
-test('BarChart throws when labels is absent, matching Angular input.required', () => {
+test('BarChart throws when labels is absent, which required-ness demands of every layer', () => {
   assert.throws(
     () => renderToStaticMarkup(<BarChart seriesLabel="Deployments per week" values={VALUES} />),
     /BarChart: `labels` is required/,
   );
 });
 
-test('BarChart throws when values is absent, matching Angular input.required', () => {
+test('BarChart throws when values is absent, which required-ness demands of every layer', () => {
   assert.throws(
     () => renderToStaticMarkup(<BarChart seriesLabel="Deployments per week" labels={LABELS} />),
     /BarChart: `values` is required/,

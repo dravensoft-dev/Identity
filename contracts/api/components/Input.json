@@ -1,11 +1,12 @@
 {
   "component": "Input",
   "kind": "input",
-  "description": "Text field with validation. Focus is a gold ring; error crimson; valid green with a check.",
+  "description": "Text field with validation. Focus is a gold ring; error crimson; valid green with a check. The four states are ordered and the order is normative: error, then focus, then valid, then neutral — an errored field stays crimson while it has focus, because the validation signal must not disappear at the moment the user acts on it.",
+  "affordances": ["focus", "hover"],
   "api": {
     "label": { "form": "primitive", "type": "string", "description": "Field label above the control." },
     "id": { "form": "primitive", "type": "string",
-            "description": "The control's id, and what the label's `for` points at. Generated from `label` when omitted." },
+            "description": "The control's id, and what the label's `for` points at. Generated from `label` when omitted, as `in-` followed by the label with each run of whitespace replaced by a single hyphen and the whole lowercased. The derivation is normative, and the prefix differs per component on purpose: the same markup must get the same id in every layer, and an Input and a Textarea sharing a label must not collide." },
     "hint": { "form": "primitive", "type": "string", "description": "A line of help under the field." },
     "error": { "form": "primitive", "type": "string", "description": "Controlled error message; wins over `validate`." },
     "valid": { "form": "primitive", "type": "boolean", "default": false, "description": "Force the valid (green check) state." },

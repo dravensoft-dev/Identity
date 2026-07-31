@@ -2,9 +2,15 @@
 
 A framework-neutral Tailwind v4 consumption layer for Arena. It is **shared**,
 not per-framework: the token→utility mapping is pure CSS and a component's
-Tailwind recipe is data (slots, variants, class strings), so React, Angular,
-or a `tailwind-variants` recipe all consume the same files. The thin binding —
-how a class string reaches the element — lives in each `frameworks/<fw>/` folder.
+Tailwind recipe is data — slots, variants, class strings — so every consumer
+reads the same files whatever it is written in. The thin binding, how a class
+string reaches an element, belongs to the consumer and never to this layer.
+
+**This layer names no other framework layer, and none of them is its authority.**
+What a component is, and what it presents, is stated once in `contracts/api/` and
+`contracts/behaviour/`; what a value is, in `contracts/design/`. A manifest is
+written by reading those, and `bun run check:layer-independence` fails a file here
+that cites a sibling layer instead.
 
 ## It derives from tokens; it adds no value
 
@@ -45,11 +51,9 @@ not the utilities it reaches.
 `arena-fade` (Tooltip), `arena-prog-indeterminate` (ProgressBar),
 `arena-btn-spin` (Button) and `arena-spinner` — because a manifest holds class
 names and keyframes are not one. That file's own header is the normative list;
-if it and this paragraph ever disagree, the file wins. It is the same boundary React
-already has: an inline style object cannot express keyframes either, so React
-injects a `<style>` once per component. Every value in it is a `var()` into a
-token, and each animation answers `prefers-reduced-motion` on its own terms —
-decorative motion stops, motion that reports work slows.
+if it and this paragraph ever disagree, the file wins. Every value in it is a
+`var()` into a token, and each animation answers `prefers-reduced-motion` on its
+own terms — decorative motion stops, motion that reports work slows.
 
 ## Arbitrary values are a build failure
 
@@ -79,9 +83,10 @@ sets one duration for every listed property, because Tailwind's `duration-` util
 writes a single `transition-duration` for the whole `transition-property` list and
 there is no second one to layer on for just one property. `Button` needs
 `background` and `transform` at `--dur-fast` and `box-shadow` at the slower
-`--dur-mid` — React expresses that freely, since each property gets its own line in
-the `transition` shorthand. `Button.manifest.json` writes the whole declaration as
-one bracket instead:
+`--dur-mid` — three properties, two durations, which the CSS `transition` shorthand
+expresses freely by giving each property its own clause and a utility pair cannot
+express at all. `Button.manifest.json` writes the whole declaration as one bracket
+instead:
 
 ```
 [transition:background_var(--dur-fast)_var(--ease-out),transform_var(--dur-fast)_var(--ease-out),box-shadow_var(--dur-mid)_var(--ease-out)]
@@ -159,13 +164,12 @@ check — `bun run demos` and open the page.
 
 ## What ships here
 
-`components/` holds **38 manifests** — count them with `find components -name
-'*.manifest.json' | wc -l` — one per component, each with a specimen page
-beside it that renders the real markup from the real recipe with no build step. Most now have
-an Angular primitive consuming them — count the consumers rather than trusting a figure here,
-with `grep -rl "tailwind/components" ../angular/components | wc -l` — and what holds the rest up
-is `bun run check:tailwind`: every class a manifest declares must produce a rule, so a manifest
-with no consumer cannot rot silently.
+`components/` holds one manifest per surface — count them with `find components -name
+'*.manifest.json' | wc -l`, and the components with none with the command below — each with a specimen page
+beside it that renders the real markup from the real recipe with no build step. **A manifest
+is held up by its own gates and never by having a consumer** — `bun run check:tailwind` demands
+that every class it declares produce a rule, so one nothing reads yet cannot rot silently, and
+the specimen renders it either way.
 
 **`check:tailwind` also fails when it finds no manifests at all**, and that guard is worth
 knowing about because the gate had the opposite failure mode. A gate iterating zero
@@ -175,30 +179,40 @@ directory and the manifests had moved into the nested tree, it printed
 now one shared recursive walk, `manifestFiles()` in `scripts/lib/tailwind/tailwind-compile.mjs`, and
 an empty result is an explicit failure rather than a clean pass. Every site that needs to
 find manifests calls it — `compileLayer()` in that same file, which `check:tailwind` and
-`build:tailwind` go through; `check:radius` and `check:states` directly; and Angular's
-`HostClassBinding.test.ts`, through the same dynamic-import-of-a-file-URL pattern
-`Compliance.ts` uses so the specifier resolves from both the source tree and the `ngc`
-emit — so nobody has a reason to write a fifth spelling of the walk.
+`build:tailwind` go through; `check:radius` and `check:states` directly; and a consuming
+layer's own suite, which reaches it by dynamically importing a file URL so the specifier
+resolves from a source tree and from a compiled emit alike — so nobody has a reason to write
+a fifth spelling of the walk.
 `compileLayer()`'s returned `manifests` map is keyed by **repo-relative path**
 rather than by basename, which is what a message naming a manifest in a nested tree needs;
 a consumer wanting the bare name calls `basename()`.
 
-**The three SVG charts and Calendar have no manifest, on purpose.** `BarChart`,
-`LineChart` and `DoughnutChart` are SVG geometry driven by measured container width:
-their identity is path data and attribute bindings, and a manifest that tried to hold it
-would be a lie about where the styling lives. `ChartCard` is not one of them and does
-have a manifest — it is a bordered tile. Calendar is date arithmetic and JS responsive
-branches; what a manifest could capture is a fraction of it, and that fraction would
-drift from the rest.
+**A manifest mirrors a SURFACE, not a component, so some contracted components have none.**
+Derive the set rather than trusting a list:
+
+```bash
+comm -13 <(find components -name '*.manifest.json' -exec basename {} .manifest.json \; | sort) \
+         <(python3 -c "import json;print('\n'.join(sorted(n for v in json.load(open('../Components.json')).values() for n in v)))")
+```
+
+Two reasons put a component in it. **A compound family draws one surface**, so the parent's
+manifest holds every level of it and its members have none of their own — that is `Tab`,
+`TableRow`, `TableCell`, `CalendarEvent`, `RadioGroup` and the three `SideNav*` children.
+`MANIFEST_COVERS` in `scripts/check/arena/check-manifest-states.mjs` is where that mapping
+is written down. **And the three SVG charts have no surface a class string can describe**:
+`BarChart`, `LineChart` and `DoughnutChart` are SVG geometry driven by measured container
+width, their identity is path data and attribute bindings, and a manifest holding it would
+be a lie about where the styling lives. `ChartCard` is not one of them and does have one —
+it is a bordered tile.
 
 `Utilities.generated.css` is **generated**, and **git-ignored** — `bun run build:tailwind`
 compiles the preset with the manifests as content, and `bun run check:tailwind-generated` fails
 when the file on disk and the source disagree, or when it is missing because the clone has not
-been built. Only the specimen pages link it; an adopter imports
-`frameworks/angular/theme/arena-tailwind.css` and compiles their own. The same build also emits
-a `<Component>.manifest.generated.ts` (`as const`) beside each `<Component>.manifest.json`, and
-**that half stays tracked**, because an Angular `<Component>.variants.ts` imports it and `ngc`
-needs it before the test surface will compile. The JSON stays the single source of truth either
+been built. Only the specimen pages link it; an adopter compiles their own against this
+preset. The same build also emits a `<Component>.manifest.generated.ts` (`as const`) beside
+each `<Component>.manifest.json`, and **that half stays tracked**, because a consuming
+layer's recipe imports it and a typed build needs it on disk before it will compile at all.
+The JSON stays the single source of truth either
 way, so a new manifest needs a `bun run build:tailwind` before the gates pass.
 
 **A variant name is scanned as a class name.** Tailwind reads a manifest as raw text, so
@@ -216,7 +230,7 @@ boolean variant.
 ## Three consumption paths
 
 - **Raw `className`** — read `slots`/`variants` and concatenate the strings yourself.
-- **`tailwind-variants`** (Angular/DAMA) — feed the manifest straight into `tv({ slots, variants, defaultVariants })`.
+- **`tailwind-variants`** — feed the manifest straight into `tv({ slots, variants, defaultVariants })`.
 - **`cva`** — map `variants`/`defaultVariants` onto a `cva` config.
 
 ## Invariants the manifests must reproduce
@@ -227,8 +241,8 @@ boolean variant.
   micro-labels. Charts carry identity (`--color-cat-*`) or meaning (status),
   never both.
 
-Authoring a manifest for a component whose React source uses a value not yet in
-a token is a spec violation — add the token first, then reference it here.
+Authoring a manifest that needs a value no token holds is a spec violation — add
+the token to `contracts/design/` first, then reference it here.
 
 ## A state modifier always outranks a variant on the same property
 
@@ -246,18 +260,17 @@ put `focus-within:border-secondary` / `focus-within:ring-secondary/16`
 on `Input`'s base `field` slot and all three `state` values (`neutral`, `error`,
 `valid`) inherit it. `error`'s own `border-error`/`ring-error` are plain classes
 with lower specificity, so focusing an errored field turns it gold —
-the validation signal disappears exactly when the user tries to fix it, even
-though React's own precedence (`shownError ? danger : focus ? gold : isValid ?
-success : …`) says error must win.
+the validation signal disappears exactly when the user tries to fix it, and
+`contracts/api/components/Input.json` states the opposite in as many words: the
+four states are ordered **error, focus, valid, neutral**, and error must win.
 
 The fix: move the `focus-within:` classes off the base and into the specific
 variant branches that are allowed to lose to them (`neutral` and `valid` here —
-both correctly turn gold on focus, matching React), and leave the branch that
-must win (`error`) with no focus-within rule to compete against, so its plain
-class holds regardless of focus. Read the React source's state-precedence
-ternary before writing the manifest — its order **is** the override order a
-state modifier is allowed to have, and the base slot is only a safe place for a
-modifier every variant branch is willing to lose to.
+both correctly turn gold on focus), and leave the branch that must win (`error`)
+with no focus-within rule to compete against, so its plain class holds regardless
+of focus. **Read the contract's state order before writing the manifest** — that
+order **is** the override order a state modifier is allowed to have, and the base
+slot is only a safe place for a modifier every variant branch is willing to lose to.
 
 ## Two classes at equal specificity are ordered alphabetically, not by manifest order
 
@@ -294,28 +307,29 @@ branch with `tailwind-merge`, which resolves same-property conflicts by
 config, not by generation order. The risk above is specifically about **named
 sibling slots** — extra `slots` keys, outside any `variants` block, that a
 consumer string-concatenates onto a base slot by hand (a specimen's `el()`
-call, or an Angular component's own template interpolation) — because that
+call, or a consumer's own template interpolation) — because that
 concatenation never goes through `tailwind-merge` at all, in the specimen
 *or* in the real component.
 
 Also written down here because it was almost missed twice more: `Tabs`'
 `selected: false` branch once carried `hover:text-base-content/82`, copied
 from `SegmentedControl.manifest.json`'s near-identical `selected` variant,
-whose component genuinely implements a hover state. `Tabs.jsx` has no hover
-state at all — no `useState`, no `onMouseEnter`, nothing. No gate compares a
-manifest to the component it mirrors (see "No gate compares a Tailwind
-manifest against the component it mirrors" in the root `CLAUDE.md`), so a
-manifest written by copying a neighbouring manifest, rather than by reading
-the component's own source, is how a divergence like this enters the layer
-and stays there permanently, undetected, until someone happens to read both
-side by side.
+whose contract genuinely declares a hover affordance. Neither `Tabs.json` nor
+`Tab.json` declares one. **That particular copy is caught now** —
+`bun run check:states` reads `affordances` in `contracts/api/` and fails a
+modifier no covered contract declares. What is still not caught is everything
+else a copy brings with it: no gate compares a manifest's colors, sizes or slot
+structure against anything. A manifest written by reading a neighbouring
+manifest rather than the contract is how such a divergence enters the layer and
+stays, undetected, until someone reads both side by side.
 
 ## A co-varying value belongs in the variant it co-varies with
 
-A value that must track another prop can look, briefly, like a constant — don't
+A value that must track another member can look, briefly, like a constant — don't
 flatten it to the constant of the "middle" case. `IconButton` is the worked example: an
-icon-only width looks like one number, but React sets `width: showLabel ? 'auto' : d`
-where `d` is the *size-specific* height (`sm` 32, `md` 40, `lg` 48). Pinning the `md`
+icon-only width looks like one number, but it is the *size-specific* control height —
+`--dz-ctl-h-sm` (32), `--dz-ctl-h` (40) and `--dz-ctl-h-lg` (48) — because an icon-only
+control is square at whatever height its size sets. Pinning the `md`
 value as `w-ctl-h` on the `showLabel: false` compound would render `sm` at 40×32, and
 only `lg` would look square — by accident, because its own `min-w-ctl-h-lg` (48)
 outranks the wrong 40px width.
@@ -327,42 +341,41 @@ three sizes, with no second width class to conflict with it. Before flattening a
 prop to one class, ask which *other* variant group it actually co-varies with,
 and put it there instead.
 
-## Both layers are border-box, and neither relies on the other's mechanism
+## This layer is border-box, and it relies on no other layer for it
 
-This layer gets it from `Utilities.generated.css`'s preflight, which sets
-`box-sizing: border-box` on every element inside `@layer base`. React gets it from
-`contracts/design/reset.css`, which `intro/styles.css` imports first. Two files, one box
-model, and a slot's declared size is its outer edge in both.
+It gets it from `Utilities.generated.css`'s preflight, which sets
+`box-sizing: border-box` on every element inside `@layer base`. `contracts/design/reset.css`
+sets the same thing for anything that imports `intro/styles.css` instead. Two files, one box
+model, and a slot's declared size is its outer edge either way.
 
-**It was not always so, and the way the divergence was described is worth knowing before
-you trust any table about box models.** React had no reset, so it was content-box except
-where a component opted in — five did — **or where Chromium's UA stylesheet had already
-made the element border-box**, which it does for `<button>` and `<select>` and does not
-for `<textarea>` or `<input type="text">`. A table derived by reading each source and
-applying *"React declares no `box-sizing`, therefore content-box"* was consequently wrong
-in both directions at once: it claimed divergences that did not exist for every slot that
-happened to be a `<button>`, and missed the one real overrun, which was `Textarea` running
-26px past its container. Measurement is what separated them.
+**Never derive a box model by reading a source and reasoning about what it does not say.**
+"No `box-sizing` is declared, therefore content-box" is wrong in both directions at once,
+because Chromium's UA stylesheet has already made `<button>` and `<select>` border-box and
+has not touched `<textarea>` or `<input type="text">`. A conclusion drawn that way claimed
+divergences that did not exist for every slot that happened to be a `<button>` and missed a
+real 26px overrun. Measure the rendered box.
 
-**Corollary, unchanged and now true for a second reason:** never add a `box-border` class
+**Corollary, and it has two independent reasons:** never add a `box-border` class
 to a manifest slot expecting it to change anything. Every slot is already border-box from
 the preflight, so the class is a no-op that only reads as if some *other* slot were missing
 it.
 
 ## P1 — invented states
 
-Before adding any state modifier a brief does not contain, cite the line of the
-mirrored React component that implements it. "Every other component has one"
-is not evidence — it is the failure mode.
+Before adding any state modifier a brief does not contain, read
+`contracts/api/components/<Name>.json` and check that its `affordances` array
+declares that family. "Every other component has one" is not evidence — it is the
+failure mode.
 
-A manifest authored by reading a neighbour instead of the component it mirrors
-is how this defect arrives, and it arrived twice: a `hover:` copied from a
+A manifest authored by reading a neighbouring manifest instead of the contract is
+how this defect arrives, and it arrived twice: a `hover:` copied from a
 near-identical variant of another component, and then three more in the very next
 batch, one commit after this rule was first written down — which is the evidence
 that prose alone did not prevent the second occurrence. `bun run check:states`
-(`scripts/check/arena/check-manifest-states.mjs`) catches the shape this rule describes —
-see below — but citing the source line is still the right first move, since the
-gate is crude by design and does not replace reading the component.
+(`scripts/check/arena/check-manifest-states.mjs`) now holds it: a modifier no contract
+the manifest covers declares fails the build. Read the contract anyway — the gate
+knows only that the affordance exists somewhere on the covered surface, never that
+this slot is where it belongs.
 
 ## P2 — hover on a disableable slot
 
@@ -394,7 +407,7 @@ from the actual utility values and the actual component source **before** writin
 that describes it, and state the arithmetic rather than the conclusion. A verdict of "does not
 apply" needs the same computation, not an assertion.
 
-**The reset is what makes this one rule instead of two.** Before it, the layers disagreed about
-the box model and every argument resting on the old default had to name its layer. Both are
-border-box now — which is also the trap: a repo-wide reset invalidates every argument that rested
-on the default it replaced, and those arguments are in prose that no gate reads.
+**The reset is what makes this one rule instead of one per layer**, and it is also the trap: a
+repo-wide reset invalidates every argument that rested on the default it replaced, and those
+arguments live in prose that no gate reads. An argument about a box model is only as current as
+the reset it assumes — state which one, or measure.

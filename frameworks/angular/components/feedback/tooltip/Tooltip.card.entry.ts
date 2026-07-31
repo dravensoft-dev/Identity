@@ -30,7 +30,7 @@ import { Tooltip } from './Tooltip';
       </arena-tooltip>
     </div>
 
-    <p class="sub">Inside overflow: hidden — the bubble escapes, where React's is clipped</p>
+    <p class="sub">Inside overflow: hidden — the CDK overlay pane escapes the clipping ancestor</p>
     <div class="clip">
       <arena-tooltip label="This bubble is rendered into an overlay pane on document.body">
         <arena-button variant="secondary">Clipped ancestor</arena-button>

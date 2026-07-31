@@ -1,6 +1,7 @@
 {
   "component": "BarChart",
   "description": "Categorical bars on one axis. Dependency-free SVG that reads the token layer directly, with a visually-hidden table of the same numbers.",
+  "affordances": ["hover"],
   "api": {
     "labels": { "form": "array", "of": "string", "required": true,
                 "description": "One label per bar, in the same order as `values`. A label with no value at its index is dropped." },

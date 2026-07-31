@@ -1,6 +1,7 @@
 {
   "component": "Card",
   "description": "Surface container. Hairline border on the base surface scale; depth comes from the shadow, never a gradient.",
+  "affordances": [],
   "api": {
     "content": { "form": "slot",
                  "description": "The card's body, below the optional header." },

@@ -18,12 +18,12 @@ the accessible name and the column layout all sit on it.
 `ariaLabel` is **required and guarded at runtime**, because `input.required` is a compile-time
 claim and a blank string satisfies it. Two navigation landmarks on one page must not share a name.
 
-**Depth is pulled, not pushed, and that is the whole design.** React clones its children to inject
-`depth + 1`; Angular has no `cloneElement`, so each container **provides** a fresh `SideNavState`
-whose depth is its parent's plus one, and a row reads its own indent from the nearest ancestor
-through DI. The consequence is worth knowing: **a consumer's own wrapper component between two
-levels is harmless here**, where in React it breaks the injection chain outright. So is a `@for`,
-and so is any depth of projection.
+**Depth is pulled, not pushed, and that is the whole design.** Each container **provides** a
+fresh `SideNavState` whose depth is its parent's plus one, and a row reads its own indent from
+the nearest ancestor through DI. The consequence is worth knowing: **a consumer's own wrapper
+component between two levels is harmless**, because DI walks past it — and so is a `@for`, and
+so is any depth of projection. Nothing here inspects its own children, so nothing here can be
+broken by what sits between them.
 
 `indentStep` is a **number**, never a CSS string — a multiplier on `--sp-1`, not a length. A row at
 depth N is padded `calc(var(--sp-1) * 3 + var(--sp-1) * indentStep * N)`, so the indent

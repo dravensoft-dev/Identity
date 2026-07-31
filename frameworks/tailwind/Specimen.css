@@ -3,9 +3,9 @@
    component. Every class a specimen puts on a component's own element comes
    from its manifest through classesFor(); what is left over is the page: a
    background, a micro-label per section, and a row to lay the examples out in.
-   The rules below are the ones the React card pages already use, so a
-   specimen and its React counterpart sit on the same surface and a difference
-   between them is a difference in the component. The `.row` modifiers exist
+   The rules below are the page chrome every Arena card page uses, so any two
+   cards of the same component sit on the same surface and a difference between
+   them is a difference in the component. The `.row` modifiers exist
    because a specimen sometimes has to lay its row out differently to make its
    point — see section()'s JSDoc in Specimen.js for what each one is for. */
 body {

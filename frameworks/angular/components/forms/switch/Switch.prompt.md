@@ -28,11 +28,10 @@ supplies the state.
 - `confirm` **replaces** the two: nothing is applied, `requestChange` fires instead, and the host
   opens a `ConfirmDialog` and sets `state` itself on confirmation. The requested value is always
   the negation of the current one, so the event carries no payload.
-- **Angular always requests under `confirm`; React falls back.** React's `Switch` diverts only
-  when an `onRequestChange` handler was actually passed, and otherwise applies the change as if
-  `confirm` were unset. Angular cannot see whether an output was subscribed, and does not try:
-  `confirm` set with no `(requestChange)` binding is a switch that does nothing. That is the
-  contract read literally, and it fails loudly rather than silently applying a guarded change.
+- **`confirm` alone diverts the activation**, never whether anything is listening — R6 in
+  `contracts/api/README.md`. `confirm` set with no `(requestChange)` binding is a switch that
+  does nothing. That is the contract read literally, and it fails loudly rather than silently
+  applying a change the contract says is guarded.
 - `iconOn` and `iconOff` are Phosphor class-name strings drawn inside the knob, and only the
   current state's glyph is in the DOM. They are decoration — the knob is `aria-hidden`, and
   `aria-checked` is what carries the state.
@@ -50,8 +49,7 @@ open `/frameworks/angular/components/forms/switch/Switch.card.html`:
 - Under `prefers-reduced-motion: reduce`, forced in DevTools' Rendering pane, **the knob stops
   travelling and the track colour still crossfades**. That is the intended answer for a state
   change: the travel is decorative and the colour is the report. `motion-reduce:transition-none`
-  on the `knob` slot is what does it, and React's `Switch` answers the same way through its own
-  injected `@media` block.
+  on the `knob` slot is what does it.
 - At every size the knob clears the track's padding on both ends, and the vertical transpose
   travels down rather than across.
 - The glyph is legible inside the knob at `sm`, which is the size that decides whether per-state

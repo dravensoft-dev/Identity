@@ -1,7 +1,7 @@
-/* Angular guards a contracted name with a `computed` that trims before it decides, so a name of
- * nothing but spaces is refused there. React tested falsiness and accepted it, which left the two
- * layers disagreeing about the one input the guard exists to catch. The set is derived from the
- * contracts rather than listed here, so an eighth guarded name joins by being declared. */
+/* contracts/api/README.md requires a guarded name to be refused when it is blank AFTER TRIMMING:
+ * a name of nothing but spaces satisfies a falsiness test and names nothing, and it is the one
+ * input the guard exists to catch. The set is derived from the contracts rather than listed here,
+ * so an eighth guarded name joins by being declared. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -45,7 +45,7 @@ export function guardedNames(dir, read = readFileSync, list = readdirSync) {
   return found;
 }
 
-test('a name of nothing but spaces is refused, the way Angular refuses it', () => {
+test('a name of nothing but spaces is refused, which is what the contract asks of a guard', () => {
   const declared = guardedNames(CONTRACTS);
   assert.ok(declared.length > 0, 'no contract declares a guarded name -- this suite matched nothing, so it proves nothing');
 
@@ -55,8 +55,8 @@ test('a name of nothing but spaces is refused, the way Angular refuses it', () =
     assert.throws(
       () => renderToStaticMarkup(render()),
       (error) => error instanceof Error && error.message.startsWith(`${component}:`),
-      `${component} accepted a \`${member}\` of nothing but spaces. Angular's guard trims, so the two layers `
-      + 'disagree about the one value a present-but-useless name arrives as.',
+      `${component} accepted a \`${member}\` of nothing but spaces. A guard trims before it decides, `
+      + 'or it misses the one value a present-but-useless name arrives as.',
     );
   }
 });

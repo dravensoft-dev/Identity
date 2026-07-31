@@ -27,9 +27,9 @@ function menu() {
   for (const item of ITEMS) {
     if (item.divider) { panel.append(el('div', { class: c.divider })); continue; }
     if (item.header) { panel.append(el('div', { class: c.header, text: item.header })); continue; }
-    /* Exactly one modifier is combined with the base `item`, mirroring React's own
-       ternary (`item.disabled ? mute : (hover && !destructive ? crimson : color)`,
-       where the disabled branch is checked first and wins unconditionally): stacking
+    /* Exactly one modifier is combined with the base `item`, and the order is
+       disabled first, then destructive, then default -- the disabled branch wins
+       unconditionally. Stacking
        itemDestructive's hover alongside itemDefault's would put two same-property
        hover rules on one row, and Tailwind's generated order — alphabetical by value,
        not by manifest order — lets the wrong one win the cascade. */

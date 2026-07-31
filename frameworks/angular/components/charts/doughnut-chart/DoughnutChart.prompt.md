@@ -40,8 +40,8 @@ measured.
   into "Other" instead.
 - Don't use it for change over time. That is `arena-line-chart`.
 - Don't omit `labels` or `values`. Both are required inputs — Angular throws NG0950 on the
-  first read rather than drawing an empty ring, and React throws from its render for the
-  same reason.
+  first read rather than drawing an empty ring. A chart with no data is a caller bug, not a
+  state to render.
 - Don't pass more `labels` than `values`. A slice is drawn per value and takes the label at
   its own index, so a surplus label is silently dropped rather than given a legend row with
   no slice behind it.
@@ -61,8 +61,7 @@ behaviour deterministic and names the region. `role="group"` was chosen over the
 this column is one row of a small chart, not a page landmark, and `aria-label` still
 gives it an accessible name either way. The visually-hidden numbers table does not
 substitute for this: it is invisible to a *sighted* keyboard user, who can see the
-legend and, before this fix, could not reach it. `DoughnutChart.jsx` gives its legend the
-same `tabIndex`, `role="group"` and `aria-label`, so both layers reach it. It was
+legend and would otherwise have no way to reach it. It was
 never needed on the other two charts: neither
 BarChart nor LineChart has a legend column at all, and their plot boxes are
 `overflow: visible` — re-derive with `grep -n 'overflow:visible'

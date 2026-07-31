@@ -16,9 +16,8 @@ sibling `BulkActionBar.variants.ts` recipe.
                        (run)="apply($event)" (clear)="selected.set([])" />
 ```
 
-`clearable` (default `true`) gates whether Clear is drawn; both layers gate on this
-member because Angular cannot detect a `clear` listener the way React can detect a
-passed callback.
+`clearable` (default `true`) gates whether Clear is drawn. Every layer gates on this member
+and never on whether anything listens for `clear` — R6 in `contracts/api/README.md`.
 
 **Do / Don't**
 - Always offer Clear. A selection the user cannot see the edges of is a selection they

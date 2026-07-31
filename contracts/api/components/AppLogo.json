@@ -1,6 +1,7 @@
 {
   "component": "AppLogo",
   "description": "Brand lock-up: a mark beside or above a product name.",
+  "affordances": [],
   "api": {
     "mark": { "form": "slot", "required": true,
               "description": "The mark, as an asset the consumer supplies. Required: Arena ships MIT and a default would ship Dravensoft's trademark to whoever never read the API. The slot sizes the mark; a mark that brings its own dimensions fights the lock-up." },

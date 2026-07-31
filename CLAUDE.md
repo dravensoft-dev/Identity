@@ -236,9 +236,16 @@ resolves.
 neutrally, the members that component's API presents; every layer implementing it implements
 exactly those members. A member is one of **nine forms** — primitive, enum, predefined object,
 array of primitives, array of predefined objects, consumer data, functionInput, slot, event —
-and five derived rules govern them (R1 an object is pure data with known fields, R2 who draws
+and six derived rules govern them (R1 an object is pure data with known fields, R2 who draws
 decides data versus slot, R3 a parameterised slot fills and never replaces, R4 no platform
-types and no escapes, R5 no unions between forms).
+types and no escapes, R5 no unions between forms, **R6 no render is derived from whether a
+listener is bound or a slot was filled** — a question at least one platform cannot ask, so the
+answer is a declared member and the six that exist for this reason each say so).
+
+**A contract also states the component's `affordances`**, from the closed set `hover`/`focus`:
+the pointer and focus states its own render reacts to. Not a member, and here anyway because
+the question is neutral and every layer needs the same answer — `behaviour/` is per pattern and
+`design/` holds values. The array is mandatory and empty means none.
 
 **Consumer data is the eighth**: a record whose keys the *consumer* names, which Arena routes
 and never inspects. It is exactly one spelling, `Record<string, unknown>`, and a record of a
@@ -393,20 +400,21 @@ blind spots are known and neither is fixed** — a kebab-case SVG attribute, and
 static styling as camelCase `[style]` **objects**: in that shape `strokeWidth` and `fontSize`
 are judged as themselves, which is strictly more coverage than an attribute.
 
-**No gate compares a Tailwind manifest against the component it mirrors, and the mapping is not
-one-to-one**: a manifest mirrors a React component and an `arena-*` primitive at once, and a
-compound family's one manifest mirrors several of each. The only components with no manifest
-are the three SVG charts. `check:tailwind` proves every class resolves; nothing proves a
-manifest still matches what it was derived from, so check by hand when either has moved.
+**No gate compares a Tailwind manifest against a rendered component, and the mapping is not
+one-to-one**: a manifest mirrors a *surface*, which a compound family draws with several
+contracted components and a composing component draws with someone else's. The only components
+with no manifest are the three SVG charts. `check:tailwind` proves every class resolves; nothing
+proves a manifest still matches the contract it was written from, so check by hand when either
+has moved.
 
-One narrow slice of that is machine-checked: `check:states` flags a `hover:`/`focus:`-family
-Tailwind state modifier in a manifest whose mirrored React component implements no hover/focus
-anywhere. It resolves the manifest-to-component mapping through a `SOURCE_OVERRIDES` map — a
-compound component maps to **every** `.jsx` its manifest mirrors, since a naive same-name search
-finds only the parent — and carries an `EXEMPT` map keyed `<Component>:<slot>:<family>` with a
-reason each, for hits a whole-file text scan cannot resolve. A stale entry fails the gate.
-**This checks states only** — nothing about whether a manifest's colors, sizes or slot structure
-still match the component it mirrors.
+One narrow slice of that is machine-checked: `check:states` fails a `hover:`/`focus:`-family
+modifier on a slot when no contract the manifest covers declares that affordance, and fails a
+React component that implements one its own contract does not declare. Both halves read
+`contracts/api/`; neither reads another layer, and neither runs the other way, because a
+declared affordance a layer leaves to the child it composes is not a divergence. Angular is
+structurally unaskable — it realises an affordance by rendering the manifest's own class.
+`MANIFEST_COVERS` carries the wider surfaces with a reason each. **This checks states only** —
+nothing about whether a manifest's colors, sizes or slot structure still match.
 
 **The Overview generates itself, and that is the point.** `intro/Arena - Overview.html` reads names
 and `$description`s from `contracts/design/*.json` and the alias names from `colors.css` (with
@@ -426,26 +434,22 @@ Colours are structured sRGB objects, dimensions and durations are
 `{value,unit}` objects, and letter spacing is a `number` carrying an `em` render hint in
 `$extensions`.
 
-**The two layers solve the modal focus contract with the same code, and that is deliberate
-rather than convergent.** `frameworks/react/UseDialogModal.js` is a PORT of
-`frameworks/angular/FocusTrap.ts`, not a second design — the same focusable selector (every
-natively-focusable clause carrying its own `:not([tabindex="-1"])`, because a selector list is
-OR'd and `button:not([disabled])` alone would pull a real `<button tabindex="-1">` back into the
-tab order), the same boundary-wrap rule, the same never-cache-the-focusables rule, the same
-open/close transition. `Dialog`, `ConfirmDialog` and `Onboarding` all consume it, and Escape
-always reports through the component's **own** dismissal channel — `onClose`, `onCancel`,
-`onSkip` — so meeting the pattern adds no member anywhere. **The rule that a component is
-self-contained is about CSS classes, not about JS helpers.** The React module is one shape wider
-than the Angular one: Angular handles Tab only and keeps Escape in each component's own
-`onKeydown`, where React folds Escape into the handler the hook returns.
+**Each layer implements the modal focus contract for itself, and `contracts/behaviour/dialog-modal.json`
+is the only authority either answers to.** Every focusable selector repeats
+`:not([tabindex="-1"])` on every clause, because a selector list is OR'd and
+`button:not([disabled])` alone would pull a real `<button tabindex="-1">` back into the tab
+order; none of them caches the focusables. Escape always reports through the component's
+**own** dismissal channel — `onClose`, `onCancel`, `onSkip` — so meeting the pattern adds no
+member anywhere. **The rule that a component is self-contained is about CSS classes, not about
+JS helpers.**
 
 **What a suite can prove about a focus trap, and what it cannot.** The boundary wrap is Arena's
 own `.focus()` call, and happy-dom honours `.focus()`, so it is asserted for real. The
 **interior** — that Tab from a control in the middle reaches the next one — is the browser's
 native sequential focus navigation, which neither layer implements and happy-dom does not have;
 a test asserting it would pass identically against a perfect trap and against none. So the
-interior is checked by a person in real Chromium against a written checklist in each component's
-`.prompt.md`. **No browser-driven gate**, on the same arrangement the grid rule uses.
+interior is `check:focus-trap`'s: real Chromium over each declared page, one real Tab press per
+stop, one page per layer that binds the pattern.
 
 **Components carry no CSS classes.** Each `frameworks/react/components/**/*.jsx` renders with
 inline `style` objects reading the custom properties (`background: 'var(--crimson)'`), and
@@ -547,6 +551,17 @@ sibling stale — but the demo pages load the sibling, so **`bun run demos` show
 component while the suites prove the fix**, which is exactly the by-hand check every
 `.prompt.md` checklist depends on.
 
+**The layers are peers, and no layer is any other's authority.** A file under
+`frameworks/<A>` may not name layer B nor any of B's source files, by import or in prose;
+`check:layer-independence` fails one that does, and `EXEMPT` is empty. **One edge is
+`ALLOWED`**: an Angular `<Component>.variants.ts` imports the generated
+`<Component>.manifest.generated` through `frameworks/tailwind/Tv.ts`, because a manifest is
+data travelling one way. Where two layers answer the same question differently, the contract
+is what makes the answers comparable — a cross-layer *gate* under `scripts/check/arena/`
+reading several layers is that mechanism rather than an instance of the coupling, which is why
+`scripts/` is outside the gate's scope. A fact only recorded as "matching the other layer" is
+a fact missing from a contract.
+
 **Framework layers live under `frameworks/`.** The root holds only the framework-agnostic language
 (`contracts/` — all three contract levels, `api/`, `behaviour/` and `design/`, plus
 `design-generated/` — `assets/`, `scripts/`, which sorts itself into `build/`, `generate/` and
@@ -567,8 +582,7 @@ as well is the layer root.
 `frameworks/angular/` holds the theme bridge (`theme/`), the Phosphor icon manifest (`icons/`),
 and standalone `OnPush` primitives under `components/<category>/<component-kebab>/`
 (`components/display/tag/` is the reference shape; the three SVG charts are the declared
-exception — no manifest, no `.variants.ts`, token-valued camelCase `[style]` objects like
-React's, and reviewed against React's `components/charts/Charts.card.html`), each styled by the
+exception — no manifest, no `.variants.ts`, token-valued camelCase `[style]` objects), each styled by the
 shared `frameworks/tailwind/` recipes through the configured `tv`. Count the components with
 `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l`. A primitive whose
 behaviour only a browser can show also has `<Component>.card.html` + `.card.entry.ts` beside it,

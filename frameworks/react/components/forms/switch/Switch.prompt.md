@@ -16,7 +16,11 @@ from which handler fired, not from an event argument.
 For **high-impact** toggles (H5) add `confirm`: an activate no longer fires
 `onFuncOn`/`onFuncOff` at all — it calls `onRequestChange()` instead (also payload-less;
 the requested value is always `!state`), so the host can open a ConfirmDialog and push
-`state` itself once the user confirms.
+`state` itself once the user confirms. **`confirm` alone is what diverts the activation**,
+never whether a handler was passed: `confirm` set with no `onRequestChange` is a switch that
+does nothing, which fails loudly rather than silently applying a change the contract says is
+guarded. That is R6 in `contracts/api/README.md` — no render or behaviour is derived from
+whether a listener is bound.
 
 ```jsx
 const [armed, setArmed] = useState(false);

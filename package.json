@@ -57,6 +57,7 @@
     "check:duplicate-constants": "bun scripts/check/arena/check-duplicate-constants.mjs",
     "check:dimensions": "bun scripts/check/arena/check-dimension-literals.mjs",
     "check:states": "bun scripts/check/arena/check-manifest-states.mjs",
+    "check:layer-independence": "bun scripts/check/arena/check-layer-independence.mjs",
     "check:structure": "bun scripts/check/arena/check-structure.mjs",
     "check:contracts": "bun scripts/check/arena/check-contracts.mjs",
     "check:behaviour": "bun scripts/check/arena/check-behaviour.mjs",

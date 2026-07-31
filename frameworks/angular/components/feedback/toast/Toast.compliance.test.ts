@@ -1,6 +1,6 @@
 /* The two cases are the point of this file: a danger toast is role="alert" with
  * aria-live="assertive" and every other tone is role="status" with "polite", which
- * is what React has always done and what MatSnackBar could not do at all. The
+ * is what the status pattern requires and what MatSnackBar could not do at all. The
  * noAutoDismiss verdict is earned by firing every timer the render schedules,
  * the way Alert's own suite does -- arena-toast owns no clock, and this is what
  * proves it rather than restates it. */

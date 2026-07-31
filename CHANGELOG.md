@@ -8,6 +8,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The three framework layers are independent of each other, and a gate holds it.** A file under
+  `frameworks/<A>` may no longer name layer B nor any of B's source files, by import or in prose.
+  The one edge that survives is Angular importing a Tailwind `*.manifest.generated` through
+  `frameworks/tailwind/Tv.ts`, on the record in `ALLOWED` with its reason. `check:layer-independence`
+  is the new gate and its `EXEMPT` map is empty.
+- **Breaking for a consumer relying on it: `Switch` with `confirm` set now always routes through
+  `onRequestChange`**, where it used to fall back to `onFuncOn`/`onFuncOff` when no handler was
+  passed. A guarded change that silently applied itself is what that fallback did; a switch with
+  `confirm` and nothing listening now does nothing, loudly.
+- **Breaking for a consumer relying on it: `CalendarEvent` renders a `<button>` whether or not
+  `onClick` is bound.** The element used to depend on it, which made the chip a `<div>` with no role
+  for a consumer who had not wired activation yet. Both layers now render one shape, the binding
+  drops its `inert` case, and a chip is `tabindex="-1"` so no page tab stop is added.
+- **`check:states` reads the contract instead of React.** A manifest's `hover:`/`focus:` modifier is
+  now judged against `affordances` in `contracts/api/components/<Name>.json`, and the same
+  declaration catches a state invented in a React component, which nothing caught before.
+
+### Added
+
+- **`affordances` in every API contract** — the closed set `hover`/`focus`, mandatory, empty where a
+  component presents neither.
+- **R6 in `contracts/api/README.md`** — no render is derived from whether a listener is bound or a
+  slot was filled. It is why `Alert.dismissible`, `Toast.dismissible`, `Tag.removable`,
+  `BulkActionBar.clearable`, `TableRow.interactive` and `CalendarEvent.actionsEnabled` exist.
+- **Derivations that were only ever recorded as "matching the other layer" are now contracted**:
+  `Input.id`'s and `Textarea.id`'s exact slug and why the prefixes differ, `Textarea.counter`'s
+  strictly-past-nine-tenths warning, `Skeleton.height` winning over `width` for a circle, `Input`'s
+  four-state order, and that a required name is refused when it is blank after trimming.
+
 - **Breaking for the copy-in kit: `assets/fonts/` is three files instead of fourteen.** All three
   families are variable fonts and Google serves one binary covering the whole range, so the
   generator was writing the same bytes once per weight under a different name. It now writes one

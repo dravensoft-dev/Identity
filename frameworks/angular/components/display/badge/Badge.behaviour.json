@@ -1,6 +1,6 @@
 {
   "component": "Badge",
   "pattern": "none",
-  "reason": "arena-badge renders a small labelled chip -- an optional tone dot plus projected content. There is no output, no focusable element and no role anywhere in the component. A user can read it and cannot act on it, which is the same shape React's own Badge records.",
+  "reason": "arena-badge renders a small labelled chip -- an optional tone dot plus projected content. There is no output, no focusable element and no role anywhere in the component. A user can read it and cannot act on it.",
   "exceptions": []
 }

@@ -1,4 +1,4 @@
-/* Mirrors the React suite of the same name. The item renders an <a href> or a <button>, so no
+/* The per-case suite this item's binding requires. It renders an <a href> or a <button>, so no
  * single interactive pattern always applies -- which is why it bound `none` with prose for as
  * long as the schema could not say "this pattern applies only when href is absent". It can, so it
  * does. The `link` case binds `none` on purpose: there is no link pattern, because a link's role,

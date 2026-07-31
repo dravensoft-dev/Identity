@@ -3,7 +3,7 @@
  * from the browser, and happy-dom implements none of it. A test dispatching ArrowDown would pass
  * identically against a working group and a broken one, so what is asserted is the structural
  * precondition the browser needs. RadioGroup and Radio bind the same pattern over the same DOM,
- * so one render answers both bindings -- the same arrangement React's suite uses. */
+ * so one render answers both bindings, which is the only arrangement the two patterns allow. */
 
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 useTestEnvironment();

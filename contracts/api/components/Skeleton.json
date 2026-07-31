@@ -1,13 +1,14 @@
 {
   "component": "Skeleton",
   "description": "A loading placeholder that reserves the space real content will take.",
+  "affordances": [],
   "api": {
     "variant": { "form": "enum", "type": "SkeletonVariant", "default": "block",
                  "description": "The shape the placeholder reserves." },
     "width": { "form": "primitive", "type": "string",
                "description": "CSS width, e.g. \"100%\" or \"12rem\". Defaults to full width." },
     "height": { "form": "primitive", "type": "string",
-                "description": "CSS height. Defaults per variant." },
+                "description": "CSS height. Defaults per variant. For the `circle` variant a single diameter is what is wanted, so `height` wins over `width` when both are set." },
     "lines": { "form": "primitive", "type": "number", "default": 3,
                "description": "Number of rows when variant=\"text\". The last runs short." },
     "radius": { "form": "primitive", "type": "string",

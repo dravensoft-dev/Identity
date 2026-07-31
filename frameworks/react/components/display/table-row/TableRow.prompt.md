@@ -14,7 +14,7 @@ One row of a `Table`. Write one per row, with one `TableCell` inside it per cell
 - Cells are **positional**: the nth `TableCell` reads the nth entry of `Table`'s `columns`. Keep them in the same order.
 - Don't write a bare `<td>` or a `<div>` as a child. `TableRow` injects a cell's column, layout and keyboard props into each child, and only `TableCell` knows what to do with them.
 - Don't reach for the row to style a cell — alignment, width and the mono/gold treatment are the **column's**, so they stay the same all the way down.
-- **Pass `interactive` alongside `onClick`, or the row is inert.** The flag is what makes the card shape a `role="button"` tab stop with an Enter/Space handler; without it the row draws and activates nothing. It is a member rather than "is `onClick` bound?" because Angular cannot ask whether an output has subscribers, and deriving the shape from that made a clickable card row pointer-only in that layer for as long as it went unnoticed.
+- **Pass `interactive` alongside `onClick`, or the row is inert.** The flag is what makes the card shape a `role="button"` tab stop with an Enter/Space handler; without it the row draws and activates nothing. It is a member rather than "is `onClick` bound?" because R6 in `contracts/api/README.md` forbids deriving a render from whether a listener is bound — deriving this one from it made a clickable card row pointer-only in a layer that could not ask, for as long as it went unnoticed.
 - Wire it only when the whole row means something to activate. A row with one actionable thing in it wants a `Button` in a cell instead, and a table whose rows are all `interactive` puts a tab stop on every one of them.
 
 ### What is injected, and therefore not yours

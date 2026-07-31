@@ -1,6 +1,7 @@
 {
   "component": "Alert",
   "description": "A tone-coloured message with an optional icon, a single action, and optional dismissal.",
+  "affordances": [],
   "api": {
     "tone": { "form": "enum", "type": "AlertTone", "default": "info",
               "description": "The severity — colour, default icon, and (for danger) the alert role." },
@@ -15,7 +16,7 @@
     "action": { "form": "event",
                 "description": "The inline action button was activated." },
     "dismissible": { "form": "primitive", "type": "boolean", "default": false,
-                     "description": "Whether the × is shown. Both layers gate the × on this — Angular cannot detect a `close` listener." },
+                     "description": "Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close` — R6." },
     "close": { "form": "event",
                "description": "The × was activated." }
   }

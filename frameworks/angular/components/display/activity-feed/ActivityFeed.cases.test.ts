@@ -1,4 +1,4 @@
-/* Mirrors the React suite of the same name, because the two bindings declare the
+/* The per-case suite this component's binding requires, because the cases declare the
  * same two cases and a divergence between them would be a defect rather than a
  * layer difference. `roles.article` is QUANTIFIED, so its subject is an array and
  * every element is judged; the four keyboard requirements are asserted by acting on

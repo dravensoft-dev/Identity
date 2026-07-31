@@ -1,6 +1,7 @@
 {
   "component": "Menu",
   "description": "Dropdown menu of actions on a trigger -- overflow, more actions, context.",
+  "affordances": ["hover"],
   "api": {
     "trigger": { "form": "slot", "required": true,
                  "description": "The element that opens the menu. The consumer draws it -- an IconButton with ph-dots-three-vertical, a secondary Button -- so it is a slot, and it carries its own accessible name." },

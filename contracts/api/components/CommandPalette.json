@@ -1,6 +1,7 @@
 {
   "component": "CommandPalette",
   "description": "Power-user accelerator (Cmd/Ctrl+K): search and run actions without a mouse. Controlled — the host owns whether it is open.",
+  "affordances": ["hover"],
   "api": {
     "open": { "form": "primitive", "type": "boolean", "required": true,
               "description": "Whether the palette is shown. Closed renders nothing." },
