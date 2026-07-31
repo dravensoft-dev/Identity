@@ -2062,34 +2062,42 @@ stale-proof; a present-tense component name is not.
   against the 1.26 MB; it is a promise already made to anyone who installed the plugin.
   The win claimed for the change is the **rate**, not the size. Anyone quoting a size reduction is
   quoting something that did not happen.
-- **`assets/fonts/*.woff2` is generated, says so nowhere, and adding checksums measured something
-  nobody had.** The binaries are downloaded from Google Fonts by `fetch-fonts.mjs`. A binary can
-  carry no header, and the `.generated.` infix was deliberately not applied: `assets/` is a
-  directory consumers copy wholesale, and the churn argument does not apply — a font file changes
-  when a family or weight is added and at no other time. It is named in `UNMARKED` in
-  `check-generated.mjs` with that reason, so it is machine-recorded rather than only stated here.
+- **CLOSED: `assets/fonts/` is three files instead of fourteen, and the 341 KB the checksums
+  measured is gone.** The binaries are downloaded from Google Fonts by `fetch-fonts.mjs`. A binary
+  can carry no header, and the `.generated.` infix is deliberately not applied: `assets/` is a
+  directory consumers copy wholesale, and a font file changes when a family or weight is added and
+  at no other time. It is named in `UNMARKED` in `check-generated.mjs` with that reason.
 
-  **The verification half is closed.** `assets/fonts/Checksums.generated.json` records a sha256
-  per binary, `fetch-fonts.mjs` writes it, and `check:fonts` verifies every file against it with a
-  zero-result guard — so a clone behind a firewall can now confirm it has what this repository
-  shipped even though it cannot re-download it. Watched failing against a corrupted binary.
-  **The reproducibility half is not closed and cannot be by a checksum**: reproducing these files
-  still needs the network, which no other output in the repository does.
+  **Hashing them was what found the duplication, and collapsing it was what the record deferred.**
+  Fourteen files held **three** distinct contents: all three families are variable fonts, Google
+  serves one binary covering the whole range, and the generator wrote that one binary once per
+  weight under a different name. The generator now writes one file per family, emits one
+  `@font-face` with a `font-weight` **range**, and **refuses to** if Google ever serves more than
+  one distinct binary for a family — because the collapse is only correct while that holds.
+  `assets/fonts/` is 90,890 bytes where it was 431,136.
 
-  **What the checksums found is worth more than what they guard.** This entry said "sixteen
-  binaries, 431 KB". Measured: **fourteen files, 431,136 bytes on disk — and only THREE distinct
-  contents, 90,320 bytes of them.** All three families are variable fonts, so Google serves one
-  file per family covering every weight, and the generator writes that one file once per weight
-  under a different name. Six identical `archivo-*.woff2`, four identical
-  `familjen-grotesk-*.woff2`, four identical `spline-sans-mono-*.woff2`. **About 341 KB of what
-  every consumer copies is the same three files written eleven extra times**, and nothing had ever
-  compared two of them because nothing had ever hashed one.
-  **It is recorded rather than fixed, and the reason is the audience.** The fix — one file per
-  family, with a `font-weight` range on a single `@font-face` — changes the shape of a directory
-  consumers copy wholesale and the stylesheet they link, so it is a change to the shipped payload
-  with its own consumer impact, not a rider on adding a gate. What it is not is unmeasured any
-  more.
+  **The range is per family, and taking it from the token source would have been wrong.**
+  `contracts/design/typography.json` asks for 400–900 on all three; two of the three axes stop at
+  700. Measured twice, independently and in agreement: the weights Google actually served (six
+  files for Archivo, four for the other two, visible in git history) and rendered ink per weight
+  in Chromium, which rises to 900 for Archivo and flattens at 700 for the others. So
+  `assets/fonts/Fonts.generated.json` records the **served** range per file beside its sha256,
+  `--css-only` reads it, and `check:fonts` verifies both.
 
+  **Verified by re-measuring, not by reasoning:** ink per weight after the collapse is
+  byte-identical to ink per weight before it, for all three families across all six weights. One
+  file renders exactly what fourteen did.
+  **What is still not closed is reproducibility**: rebuilding these files needs the network, which
+  no other output in this repository does, and a checksum cannot change that.
+
+  **A false alarm is worth recording with it, because the mistake was mine and the shape is
+  common.** A first probe measured all six Archivo weights at an identical width and read as
+  *bold is not bold* — a shipped, catastrophic defect. It was the probe: Archivo had not loaded on
+  that page, so every measurement was the fallback font, and the fallback rendered every weight
+  the same. `document.fonts` said `unloaded` and `document.fonts.check` said false, both visible
+  in the same probe and both ignored on the first read. **Measuring the wrong thing precisely is
+  indistinguishable from measuring the right thing**, until you check that the thing you meant to
+  measure is present.
 - **`intro/support.js` can never be ignored, whatever the rule says.** Its generator is
   `dc-runtime`, whose source is not in this repository, so a clone cannot rebuild it and the
   infix would promise a `bun run build` that cannot deliver. It is the one file whose header
@@ -3424,26 +3432,25 @@ than left over: a chip is `tabindex="-1"` and never a page tab stop, so always-a
 dead stop there, where always-a-div would delete Enter-into-the-chip, which is the whole keyboard
 story `arena-calendar`'s `grid` binding leans on. `TableRow` had a defect; `CalendarEvent` has a
 trade-off. Its entry below carries the reasoning.
-#### DECIDED: Table's `empty` default stays React-only, and the contract now says so
+#### RETIRED as a divergence: both layers fall back to `No data.` for an empty table
 
-**React:** `Table.jsx` declares `empty = 'No data.'`, so a table with no rows and no `empty`
-content still says something. **Angular:** `empty` is `<ng-content select="[empty]" />`, and a
-consumer who projects nothing gets an empty box.
+**React:** `Table.jsx` declares `empty = 'No data.'`. **Angular:** `<ng-content select="[empty]">`
+now carries the same string as fallback content, which is `ng-content`'s own counterpart to a
+destructuring default. A consumer who projects nothing gets the same sentence in both layers.
 
-**The contract was silent and is not any more.** `Table.json` names the string, says Angular
-projects nothing in the same case, and says why the fallback is deliberately not mirrored — so
-what used to be undocumented is now a stated asymmetry rather than an accident.
+**This was closed once as a decision and reopened, and the reopening was right.** The argument for
+leaving it was that mirroring the string would put a second hardcoded English sentence in the
+component whose `label` had just been made required and guarded for the opposite reason. That
+argument does not survive the distinction it leans on. `Table.label`, `ProgressBar.label` and the
+charts' `seriesLabel` were guarded because their fallbacks named **what the component is** —
+"Progress", "Bar chart" — which satisfies `roles.label` mechanically and tells a reader nothing.
+`No data.` names **what happened**: the query returned nothing. That is the useful sentence in the
+generic case, and it is exactly what a consumer with nothing better to say would write.
 
-**The cheap fix is real and stays refused.** `<ng-content select="[empty]">No data.</ng-content>`
-would close it in one line. What it would buy is two layers hardcoding one English sentence, and
-`Table.label`'s own reasoning — that a table's subject is editorial and nothing can derive it —
-applies to its empty state exactly as much. The debt-payment programme made `Table.label`,
-`ProgressBar.label` and the three charts' `seriesLabel` **required and guarded** for that reason;
-adding a second hardcoded English string in the same component would contradict the rule the same
-batch established.
-
-**Converges:** no, and this is now a decision rather than a deferral. What would change it is
-making `empty` required, which is a heavier promise than a table with no rows deserves.
+So the rule is not "never default a string" but **"never default a string that only restates the
+component"**, and a blank box was the worse answer for the consumer either way. The contract now
+states the shared fallback and that distinction; a consumer with a better sentence — what to do
+next, why the list is empty — projects it.
 #### A compound family coordinates in the opposite direction in each layer
 
 **React:** the parent clones each child and pushes `name`, `checked` and a callback into it

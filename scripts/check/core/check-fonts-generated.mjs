@@ -1,7 +1,8 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { families, CHECKSUMS, checksumsOf, checksumProblems } from '../../generate/core/fetch-fonts.mjs';
+import { createHash } from 'node:crypto';
+import { families, FONTS, recordProblems } from '../../generate/core/fetch-fonts.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 export function facesIn(css) {
@@ -30,8 +31,9 @@ function main() {
   if (present.length === 0) {
     errs.push('found 0 .woff2 under assets/fonts -- an empty result set is a failure, not a clean pass; check the discovery path');
   } else {
-    const recorded = JSON.parse(readFileSync(join(root, CHECKSUMS), 'utf8'));
-    errs.push(...checksumProblems(recorded, checksumsOf(root, present)));
+    const recorded = JSON.parse(readFileSync(join(root, FONTS), 'utf8'));
+    const hashOf = (file) => createHash('sha256').update(readFileSync(join(root, 'assets', 'fonts', file))).digest('hex');
+    errs.push(...recordProblems(recorded, present, hashOf));
   }
 
   if (errs.length) {
@@ -39,11 +41,10 @@ function main() {
     for (const e of errs) console.error(`  ${e}`);
     process.exit(1);
   }
-  const distinct = new Set(Object.values(checksumsOf(root, present))).size;
   console.log(
     `check-fonts-generated: ${declared.length} famil${declared.length === 1 ? 'y' : 'ies'} declared, every one has a face in `
-    + `contracts/design-generated/fonts.generated.css; ${present.length} binar${present.length === 1 ? 'y' : 'ies'} match their recorded `
-    + `sha256 (${distinct} distinct file${distinct === 1 ? '' : 's'} -- the families are variable fonts, so one file serves every weight)`,
+    + `contracts/design-generated/fonts.generated.css; ${present.length} variable binar${present.length === 1 ? 'y' : 'ies'} match `
+    + 'their recorded sha256 and weight range -- one file per family, because each covers its whole range',
   );
 }
 
