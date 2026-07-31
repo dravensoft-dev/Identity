@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { contrast } from '../../lib/core/validate-palette.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
-const palette = readFileSync(join(root, 'contracts/design-generated/palette.css'), 'utf8');
+const palette = readFileSync(join(root, 'contracts/design-generated/palette.generated.css'), 'utf8');
 const colors = readFileSync(join(root, 'contracts/design/colors.css'), 'utf8');
 
 function block(css, selector, file) {
@@ -13,14 +13,14 @@ function block(css, selector, file) {
 }
 function readHex(body, name) {
   const m = body.match(new RegExp(`--${name}\\s*:\\s*(#[0-9a-fA-F]{6})`));
-  if (!m) throw new Error(`palette.css: --${name} missing or not a #rrggbb literal`);
+  if (!m) throw new Error(`palette.generated.css: --${name} missing or not a #rrggbb literal`);
   return m[1];
 }
 
 function tryHex(body, name) {
   try { return readHex(body, name); } catch { return null; }
 }
-const MISSING = 'not declared in contracts/design-generated/palette.css — every theme block must define it';
+const MISSING = 'not declared in contracts/design-generated/palette.generated.css — every theme block must define it';
 
 const structure = block(colors, ':root,\\s*\\.arena-light', 'colors.css');
 
@@ -116,7 +116,7 @@ for (const { token, use } of REMOVED) {
   console.log(`\n[FAIL] --${token} is declared in contracts/design/colors.css. It was removed in 2.0.0 — use ${use}.`);
 }
 for (const t of THEMES) {
-  const body = block(palette, t.selector, 'palette.css');
+  const body = block(palette, t.selector, 'palette.generated.css');
   const content = readHex(body, 'color-base-content');
   const surfaces = [
     ['base-100', readHex(body, 'color-base-100')],

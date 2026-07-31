@@ -18,12 +18,12 @@ export function facesIn(css) {
 export function checkFonts(declared, faces) {
   return declared
     .filter((fam) => !faces.has(fam))
-    .map((fam) => `"${fam}" is declared in contracts/design/typography.json but contracts/design-generated/fonts.css has no @font-face for it — run bun scripts/generate/core/fetch-fonts.mjs`);
+    .map((fam) => `"${fam}" is declared in contracts/design/typography.json but contracts/design-generated/fonts.generated.css has no @font-face for it — run bun scripts/generate/core/fetch-fonts.mjs`);
 }
 
 function main() {
   const declared = families(root).map((f) => f.css);
-  const css = readFileSync(join(root, 'contracts', 'design-generated', 'fonts.css'), 'utf8');
+  const css = readFileSync(join(root, 'contracts', 'design-generated', 'fonts.generated.css'), 'utf8');
   const errs = checkFonts(declared, facesIn(css));
 
   if (errs.length) {
@@ -31,7 +31,7 @@ function main() {
     for (const e of errs) console.error(`  ${e}`);
     process.exit(1);
   }
-  console.log(`check-fonts-generated: ${declared.length} famil${declared.length === 1 ? 'y' : 'ies'} declared, every one has a face in contracts/design-generated/fonts.css`);
+  console.log(`check-fonts-generated: ${declared.length} famil${declared.length === 1 ? 'y' : 'ies'} declared, every one has a face in contracts/design-generated/fonts.generated.css`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

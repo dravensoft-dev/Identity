@@ -25,7 +25,8 @@
     "typescript": "6.0.3"
   },
   "scripts": {
-    "demos": "bun scripts/build/angular/build-angular-demo.mjs && bun scripts/serve.mjs",
+    "demos": "bun run build && bun scripts/serve.mjs",
+    "build": "bun run generate:tokens && bun run generate:api && bun run build:tailwind && bun run build:vendor && bun run build:demos && bun run build:angular-demo",
     "generate:tokens": "bun scripts/generate/arena/generate-tokens.mjs",
     "generate:api": "bun scripts/generate/arena/generate-api-types.mjs",
     "build:tailwind": "bun scripts/build/tailwind/build-tailwind.mjs",
@@ -48,6 +49,7 @@
     "check:radius": "bun scripts/check/tailwind/check-radius-tokens.mjs",
     "check:arbitrary": "bun scripts/check/tailwind/check-arbitrary-values.mjs",
     "check:docs": "bun scripts/check/arena/check-docs.mjs",
+    "check:generated": "bun scripts/check/arena/check-generated.mjs",
     "check:script-tokens": "bun scripts/check/arena/check-script-tokens.mjs",
     "check:duplicate-constants": "bun scripts/check/arena/check-duplicate-constants.mjs",
     "check:dimensions": "bun scripts/check/arena/check-dimension-literals.mjs",

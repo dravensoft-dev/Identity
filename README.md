@@ -55,13 +55,16 @@ To use the tokens and components directly in an app:
 Components render with **inline `style` objects that read the CSS custom properties** (e.g. `background: 'var(--crimson)'`). They do **not** expose utility classes — there is no `class="btn"`. `intro/styles.css` provides only the token variables and fonts; all component logic lives in the `.jsx`. This keeps each component self-contained and fully themeable: change a token and every component follows.
 
 ### Dependencies
-- **Fonts — self-hosted (bundled).** Arena ships the Archivo / Familjen Grotesk / Spline Sans Mono `.woff2` binaries in `assets/fonts/`; `contracts/design-generated/fonts.css` declares them with `@font-face`. No CDN request — copy `assets/` (which now includes `fonts/`) with the kit and fonts load from your own origin.
+- **Fonts — self-hosted (bundled).** Arena ships the Archivo / Familjen Grotesk / Spline Sans Mono `.woff2` binaries in `assets/fonts/`; `contracts/design-generated/fonts.generated.css` declares them with `@font-face`. No CDN request — copy `assets/` (which now includes `fonts/`) with the kit and fonts load from your own origin.
 - **Icons — [Phosphor Icons](https://phosphoricons.com) (MIT).** Not bundled. **Install the official package by default** — `@phosphor-icons/web` (webfont) or `@phosphor-icons/react` — for full weight/tree-shaking flexibility. The CDN is a prototype-only convenience, not the default. See [Iconography](./contracts/design/README.md#iconography).
 - **React** — the primitives in `frameworks/react/components/` are React (JSX). Tokens, guidelines and assets are framework-agnostic and can be used without React.
 
 
 ## Where to go next
 
+- [`scripts/build/README.md`](./scripts/build/README.md) — **compile Arena for the first
+  time**: what a fresh clone must build before `bun run demos` or `bun run check` mean
+  anything, and why some generated files are tracked and some are not.
 - [`contracts/README.md`](./contracts/README.md) — Arena's three contract levels, and a
   map of everything in this repository.
 - [`contracts/design/README.md`](./contracts/design/README.md) — **the normative design

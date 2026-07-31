@@ -12,6 +12,15 @@ scripts/
   check/      the gates
 ```
 
+Each phase has its own README, and each `<phase>/<domain>/` that holds scripts has a table
+saying why every file in it exists.
+
+- [`build/README.md`](./build/README.md) — **and how to compile Arena for the first time.**
+  A fresh clone must build before `bun run demos` or `bun run check` mean anything.
+- [`generate/README.md`](./generate/README.md) — why generate is not build.
+- [`check/README.md`](./check/README.md) — the shape of a gate, and the SKIP protocol.
+- [`lib/README.md`](./lib/README.md) — the bottom of the graph, and how a module is placed.
+
 `lib/` and the three phases all hold the same five domains, and **all five exist even when
 empty** — a `.gitkeep` marks a combination nothing occupies yet, so the shape stays legible
 rather than implied:
@@ -64,8 +73,16 @@ grants `scripts/` and test files. Everything else it has to say goes in `DOUBTS.
 also runs these suites under plain node, which cannot resolve the extensionless imports those
 toolchains expect.
 
+**A file a script writes is named `<stem>.generated.<ext>`**, so the name says so and no
+reader has to open it. Whether it is tracked is the separate question `.gitignore` answers:
+what only Arena's own tooling reads is ignored, and the payload a consumer copies stays
+committed, because the Claude Code plugin is served from the git tag. `check:generated` holds
+both halves, and records the one generated output that can carry neither the infix nor a
+header — the font binaries under `assets/fonts/`.
+
 ## Adding a gate
 
 Put it in `check/<domain>/`, add it to `GATES` in `check/arena/check-all.mjs` with its domain
-in the path, and give it an npm script. `check-all.test.mjs` asserts every gate names one of
-the five domains, so a gate landing outside the grid fails rather than running unnoticed.
+in the path, give it an npm script, and add a row to that domain's README table.
+`check-all.test.mjs` asserts every gate names one of the five domains, so a gate landing
+outside the grid fails rather than running unnoticed.

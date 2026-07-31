@@ -1,4 +1,4 @@
-/* Writes frameworks/react/vendor/*.js. React 18 is CommonJS-only, so this bundles it
+/* Writes frameworks/react/vendor/*.generated.js. React 18 is CommonJS-only, so this bundles it
  * to ESM for the demo pages' importmap, appending named exports Bun's static
  * detection misses and keeping `react` external so it stays a singleton.
  * See DOUBTS.md section 5 before changing any of that. */
@@ -17,9 +17,9 @@ export const BANNER =
   + ' * "development". See build-vendor.mjs for the full rationale. */\n';
 
 export const ENTRIES = [
-  { entry: 'react/index.js', specifier: 'react', out: 'React.js', real: 'react', external: [] },
-  { entry: 'react/jsx-runtime.js', specifier: 'react/jsx-runtime', out: 'ReactJsxRuntime.js', real: 'react/jsx-runtime.js', external: ['react'] },
-  { entry: 'react-dom/client.js', specifier: 'react-dom/client', out: 'ReactDomClient.js', real: 'react-dom/client.js', external: ['react'] },
+  { entry: 'react/index.js', specifier: 'react', out: 'React.generated.js', real: 'react', external: [] },
+  { entry: 'react/jsx-runtime.js', specifier: 'react/jsx-runtime', out: 'ReactJsxRuntime.generated.js', real: 'react/jsx-runtime.js', external: ['react'] },
+  { entry: 'react-dom/client.js', specifier: 'react-dom/client', out: 'ReactDomClient.generated.js', real: 'react-dom/client.js', external: ['react'] },
 ];
 
 function realExportNames(root, real) {

@@ -3,19 +3,19 @@ import { join } from 'node:path';
 import { validate } from '../../lib/core/validate-palette.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
-const css = readFileSync(join(root, 'contracts/design-generated/palette.css'), 'utf8');
+const css = readFileSync(join(root, 'contracts/design-generated/palette.generated.css'), 'utf8');
 
 const SLOTS = 8;
 
 function block(selector) {
   const re = new RegExp(`${selector}\\s*\\{([^}]*)\\}`);
   const m = css.match(re);
-  if (!m) throw new Error(`palette.css: no ${selector} block found`);
+  if (!m) throw new Error(`palette.generated.css: no ${selector} block found`);
   return m[1];
 }
 function readVar(body, name) {
   const m = body.match(new RegExp(`--${name}\\s*:\\s*(#[0-9a-fA-F]{6})`));
-  if (!m) throw new Error(`palette.css: --${name} missing or not a #rrggbb literal`);
+  if (!m) throw new Error(`palette.generated.css: --${name} missing or not a #rrggbb literal`);
   return m[1];
 }
 function theme(selector) {

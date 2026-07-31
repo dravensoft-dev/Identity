@@ -3,7 +3,20 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { findJsxFiles } from './build-demos.mjs';
+import { findJsxFiles, rewriteRelativeJsxImports } from './build-demos.mjs';
+
+test('a relative .jsx import points at the .generated.js sibling this script writes', () => {
+  const code = 'import { Button } from "./Button.jsx";\nimport { A } from "../a/A.jsx";\n';
+  assert.equal(
+    rewriteRelativeJsxImports(code),
+    'import { Button } from "./Button.generated.js";\nimport { A } from "../a/A.generated.js";\n',
+  );
+});
+
+test('a bare package specifier ending in .jsx is left alone', () => {
+  const code = 'import x from "some-pkg/thing.jsx";\n';
+  assert.equal(rewriteRelativeJsxImports(code), code);
+});
 
 test('findJsxFiles excludes a suite and keeps a demo entry', () => {
   const dir = mkdtempSync(join(tmpdir(), 'arena-find-jsx-'));

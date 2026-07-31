@@ -7,7 +7,7 @@ import { BANNER, generatedPath, drift } from './check-tailwind-generated.mjs';
 
 test('the committed stylesheet carries the generated banner', () => {
   const css = readFileSync(generatedPath(), 'utf8');
-  assert.ok(css.startsWith(BANNER), 'Utilities.css must start with the GENERATED banner');
+  assert.ok(css.startsWith(BANNER), 'Utilities.generated.css must start with the GENERATED banner');
 });
 
 test('the committed stylesheet is what the source compiles to', () => {

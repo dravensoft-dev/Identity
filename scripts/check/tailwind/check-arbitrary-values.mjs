@@ -101,7 +101,7 @@ function* walk(dir) {
     const p = join(dir, entry);
     if (statSync(p).isDirectory()) yield* walk(p);
 
-    else if (entry.endsWith('.manifest.ts')) continue;
+    else if (entry.endsWith('.manifest.generated.ts')) continue;
     else if (EXTENSIONS.some((e) => entry.endsWith(e))) yield p;
   }
 }

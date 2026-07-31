@@ -1,6 +1,6 @@
 /* frameworks/tailwind/Animations.css
    Keyframes and the utility that rides them. Imported by Theme.css, so
-   `bun run build:tailwind` compiles them into Utilities.css with everything
+   `bun run build:tailwind` compiles them into Utilities.generated.css with everything
    else and a manifest reaches them by name.
 
    This is the Tailwind layer's version of a boundary React already has: an

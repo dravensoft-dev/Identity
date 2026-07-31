@@ -31,10 +31,14 @@ export function drift(opts = {}) {
 function main() {
   const stale = drift();
   if (stale) {
-    console.error(`check-tailwind-generated: ${stale} is stale — run \`bun run build:tailwind\` and commit the result`);
+    const tracked = stale.endsWith('.manifest.generated.ts');
+    console.error(
+      `check-tailwind-generated: ${stale} is missing or stale — run \`bun run build:tailwind\``
+      + (tracked ? ' and commit the result' : '; it is git-ignored, so nothing to commit'),
+    );
     process.exit(1);
   }
-  console.log('check-tailwind-generated: Utilities.css and every manifest.ts match the preset and the manifests');
+  console.log('check-tailwind-generated: Utilities.generated.css and every manifest.generated.ts match the preset and the manifests');
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

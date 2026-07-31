@@ -1,0 +1,10 @@
+# scripts/check/angular/
+
+| gate | fails when |
+| --- | --- |
+| `check-angular.mjs` | the layer stops typechecking under `ngc --strictTemplates`. A green compile is a claim about **types**, and never about behaviour. |
+| `check-angular-demos.mjs` | a primitive whose behaviour only a browser can show has no `<Component>.card.html` + `.card.entry.ts` beside it, or `PAGED` names one that is gone. Structural and portable — no browser, no bundler — because the pages' script is git-ignored build output, and a blank page would pass a viewport check by having nothing to overflow. |
+| `check-assertions.mjs` | an Angular suite compares DOM nodes with an equality assertion. `node:assert` renders both operands into its diff, and a **connected** happy-dom node reaches the whole document from there — with one document shared across the run, a failing identity assertion is what exhausts the run rather than what reports the defect. |
+| `check-cdk.mjs` | the CDK overlay bridge overrides a rule that overrides nothing, names a token that resolves to nothing, or targets a class the CDK has renamed upstream. It examines the selectors, which it can because the prebuilt sheet is the oracle; what it still cannot check is whether the override is the **right** value. |
+
+Every `X.test.mjs` beside a gate covers that gate.

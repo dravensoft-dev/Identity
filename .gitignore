@@ -9,6 +9,22 @@ node_modules/
 /build/
 /.cache/
 
+# Build products a script under scripts/ rewrites. The .generated. infix says a script
+# writes the file; this block says which of those are untracked. Rebuild them with
+# `bun run build` -- see scripts/build/README.md.
+#
+# Only what Arena's own tooling reads is here. The consumer payload stays tracked --
+# contracts/design-generated/, assets/fonts/, Tokens.generated.*, Api.generated.* and
+# frameworks/tailwind/components/**/*.manifest.generated.ts -- because the Claude Code
+# plugin is served from the git tag. Ignoring those would ship a tag whose
+# intro/styles.css @imports resolve to nothing, and the page renders unstyled with no
+# console error. Each pattern is anchored for the same reason /build/ above is:
+# frameworks/react/ holds a TRACKED Tokens.generated.js at its layer root, so a bare
+# frameworks/react/**/*.generated.js would swallow it silently.
+/frameworks/react/vendor/*.generated.js
+/frameworks/react/components/**/*.generated.js
+/frameworks/react/ui-kits/**/*.generated.js
+/frameworks/tailwind/Utilities.generated.css
 
 # Logs
 *.log

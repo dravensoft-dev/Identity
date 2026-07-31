@@ -4,7 +4,7 @@ Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
 
 **Bridge (foundation) — bring Arena's tokens, icons and theming into an existing Angular app:**
 - `theme/arena-tailwind.css` — one import that brings Arena's tokens (including
-  the self-hosted fonts declared in `contracts/design-generated/fonts.css`, binaries in `assets/fonts/`)
+  the self-hosted fonts declared in `contracts/design-generated/fonts.generated.css`, binaries in `assets/fonts/`)
   + the shared `frameworks/tailwind/Theme.css` `@theme` preset into scope.
 - `theme/arena-cdk.css` — the `@angular/cdk` overlay's structural stylesheet, re-based onto
   Arena's `--z-*` scale, needed once the app uses a primitive that positions itself with
@@ -71,16 +71,17 @@ component through the shared `tv`:
 
 ```ts
 import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/display/tag/Tag.manifest';
+import manifest from '../../../../tailwind/components/display/tag/Tag.manifest.generated';
 
 export const tagStyles = tv(manifest);
 ```
 
-The manifest import is **extensionless on purpose**: the generated `Tag.manifest.ts`
-and its source `Tag.manifest.json` sit beside each other, and TS and bun probe `.ts`
-before `.json`, so this resolves to the literal-typed build output. A bundler
-configured `.json`-first would silently widen every variant back to `string`.
-`Tag.variants.ts` carries that warning in the file, as the doc comment on `tagStyles`.
+The manifest import is extensionless, and it now names a stem nothing else claims. It used to
+resolve to `Tag.manifest.ts` **only because** TS and bun probe `.ts` before `.json`, with
+`Tag.manifest.json` sitting beside it — so a bundler configured `.json`-first would silently
+widen every variant back to `string`. The `.generated` infix removed that: the build output is
+`Tag.manifest.generated.ts`, the source is `Tag.manifest.json`, and no probe order can confuse
+one for the other.
 
 ## Conventions
 

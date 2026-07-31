@@ -33,7 +33,7 @@ Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default
 ## Why only design has a `-generated` sibling
 
 `design-generated/` holds the five CSS files built from `design/` — four by Style
-Dictionary (`bun run generate:tokens`) and `fonts.css` by `scripts/generate/core/fetch-fonts.mjs`, which can
+Dictionary (`bun run generate:tokens`) and `fonts.generated.css` by `scripts/generate/core/fetch-fonts.mjs`, which can
 also rebuild that one file alone, from the binaries already committed under `assets/fonts/`
 and with no network involved, via `--css-only`. Never edit any of the five directly; edit
 the source and rebuild.
@@ -92,9 +92,9 @@ framework is added without touching the language.
 - `contracts/design/` — the DTCG 2025.10 source of every token value (`*.json`),
   `README.md` (the normative design specification and `$type` table), and `colors.css`
   (hand-authored: aliases and `color-mix` derivations).
-- `contracts/design-generated/` — the five built CSS files: `fonts.css` (from
-  `fetch-fonts.mjs`), plus `palette.css`, `typography.css`, `spacing.css` and
-  `effects.css` (from `build-tokens.mjs`). Never edit any of them.
+- `contracts/design-generated/` — the five built CSS files: `fonts.generated.css` (from
+  `fetch-fonts.mjs`), plus `palette.generated.css`, `typography.generated.css`, `spacing.generated.css` and
+  `effects.generated.css` (from `build-tokens.mjs`). Never edit any of them.
 - `assets/` — `rotor-crimson/bone/ink.svg`, `app-icon.svg`, and `fonts/` (the bundled
   self-hosted `.woff2` binaries).
 - `intro/guidelines/` — specimen cards (`@dsCard`): typography (`type-display`, `type-body`,

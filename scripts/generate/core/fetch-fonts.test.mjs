@@ -16,7 +16,7 @@ test('a face becomes one @font-face rule with a two-hop url', () => {
 
 test('the header names the generator and the file itself, not the old tokens/ path', () => {
   const css = fontsCss([{ family: 'Archivo', weight: 400, file: 'archivo-400.woff2' }]);
-  assert.match(css, /contracts\/design-generated\/fonts\.css/);
+  assert.match(css, /contracts\/design-generated\/fonts\.generated\.css/);
   assert.match(css, /scripts\/generate\/core\/fetch-fonts\.mjs/);
   assert.doesNotMatch(css, /tokens\//);
 });

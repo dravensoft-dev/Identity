@@ -14,7 +14,7 @@ GlobalRegistrator.register();
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-const spacing = readFileSync(join(repo, 'contracts', 'design-generated', 'spacing.css'), 'utf8');
+const spacing = readFileSync(join(repo, 'contracts', 'design-generated', 'spacing.generated.css'), 'utf8');
 for (const [, name, value] of spacing.matchAll(/(--bp-[a-z]+)\s*:\s*([^;]+);/g)) {
   document.documentElement.style.setProperty(name, value.trim());
 }

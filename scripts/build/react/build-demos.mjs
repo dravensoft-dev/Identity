@@ -23,7 +23,7 @@ export function findJsxFiles(dir) {
 }
 
 export function rewriteRelativeJsxImports(code) {
-  return code.replace(/(from\s*")(\.\.?\/[^"]+?)\.jsx"/g, '$1$2.js"');
+  return code.replace(/(from\s*")(\.\.?\/[^"]+?)\.jsx"/g, '$1$2.generated.js"');
 }
 
 export async function buildDemos(opts = {}) {
@@ -39,7 +39,7 @@ export async function buildDemos(opts = {}) {
       const source = readFileSync(absPath, 'utf8');
       const compiled = transpiler.transformSync(source);
       const rewritten = rewriteRelativeJsxImports(compiled);
-      const outRel = relative(root, absPath).replace(/\.jsx$/, '.js').split(sep).join('/');
+      const outRel = relative(root, absPath).replace(/\.jsx$/, '.generated.js').split(sep).join('/');
       files.set(outRel, BANNER + rewritten);
     }
   }

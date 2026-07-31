@@ -8,6 +8,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking for the copy-in kit: every file a script writes is renamed `<stem>.generated.<ext>`.**
+  The five token stylesheets become `contracts/design-generated/{palette,typography,spacing,
+  effects,fonts}.generated.css`, each Tailwind manifest module becomes
+  `<Name>.manifest.generated.ts`, `frameworks/tailwind/Utilities.css` becomes
+  `Utilities.generated.css`, the three React vendor bundles and all 74 compiled `.jsx` siblings
+  gain the infix. `Tokens.generated.*` and `Api.generated.*` already had it and are unchanged.
+  **If you copied `contracts/design-generated/` into an app, re-copy it and take the new
+  `intro/styles.css`** — its six `@import`s name the new files, and a stale stylesheet resolves
+  to nothing and renders unstyled with no console error.
+- **The dev-only build products are no longer tracked, so a fresh clone builds once.**
+  `frameworks/react/vendor/*.generated.js`, the compiled `.jsx` siblings under
+  `frameworks/react/components/` and `ui-kits/`, and `Utilities.generated.css` are git-ignored —
+  about 1.26 MB that was rewritten on every component edit. Run `bun run build`, a new npm
+  script that chains the six steps in order; `bun run demos` now runs it first. **The consumer
+  payload stays committed**: `contracts/design-generated/`, `assets/fonts/`, the `Tokens`/`Api`
+  modules and the manifest modules, because the Claude Code plugin is served from the git tag
+  and a tag without them would install a design system that renders unstyled.
+- `check:generated` is a new gate, the twenty-sixth: it fails a file whose header claims a
+  generator that its name does not, a `.generated.` file that is neither tracked nor covered by
+  a reason-carrying ignore entry, and a stale entry in either record. `check:docs` drops its
+  three generated-file heuristics for the one the name now provides.
+
 - **Breaking for any script or command naming a path under `scripts/`: the tooling sorts itself
   into three phases and five domains.** `build/` compiles, `generate/` emits source from data,
   `check/` verifies; each splits into `core` (only `contracts/`), `react`, `angular`, `tailwind`
@@ -65,6 +87,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`scripts/` carries a README at every level** — one per phase (`build/`, `generate/`,
+  `check/`, `lib/`) explaining that phase's shape, and one per populated `<phase>/<domain>/`
+  holding a table of why each script there exists. `scripts/build/README.md` is also the
+  **compile Arena for the first time** document, linked from the root README's *Where to go
+  next*, since a clone must now build before `bun run demos` or `bun run check` mean anything.
 - **Angular gains `arena-calendar` and `arena-calendar-event`, and the layers reach parity.**
   Every component React ships now exists in Angular. The chips cannot be nested inside their day
   columns — `<ng-content/>` projects once, in one place — so each chip pulls its own placement

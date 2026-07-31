@@ -11,7 +11,7 @@ export function manifestBanner(jsonFile) {
 }
 
 export function generatedPath(opts = {}) {
-  return join(opts.root ?? repoRoot, 'frameworks', 'tailwind', 'Utilities.css');
+  return join(opts.root ?? repoRoot, 'frameworks', 'tailwind', 'Utilities.generated.css');
 }
 
 export function buildTailwind(opts = {}) {
@@ -28,7 +28,7 @@ export function buildManifestModules(opts = {}) {
   const root = opts.root ?? repoRoot;
   const out = new Map();
   for (const [file, manifest] of manifests)
-    out.set(join(root, file.replace(/\.json$/, '.ts')), manifestModule(manifest, basename(file)));
+    out.set(join(root, file.replace(/\.json$/, '.generated.ts')), manifestModule(manifest, basename(file)));
   return out;
 }
 

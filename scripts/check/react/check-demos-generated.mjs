@@ -21,7 +21,7 @@ function findJsFiles(dir) {
     for (const entry of readdirSync(d, { withFileTypes: true })) {
       const path = join(d, entry.name);
       if (entry.isDirectory()) walk(path);
-      else if (entry.name.endsWith('.js')) found.push(path);
+      else if (entry.name.endsWith('.generated.js')) found.push(path);
     }
   };
   walk(dir);

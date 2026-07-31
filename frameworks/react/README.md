@@ -79,10 +79,14 @@ belongs to no one component, which is why it sits there rather than inside any o
 
 Each demo page's script is a real sibling source file (`<page>.entry.jsx`, e.g.
 `Alert.card.entry.jsx` beside `Alert.card.html`), and every component `.jsx` plus every
-`.entry.jsx` has a compiled `.js` sibling — same directory, same basename — that the page
-loads with a plain `<script type="module">`. `bun run build:demos` compiles them with Bun's
-own transpiler and rewrites each relative import's `.jsx` extension to `.js`;
+`.entry.jsx` has a compiled `<Name>.generated.js` sibling — same directory, same stem — that
+the page loads with a plain `<script type="module">`. `bun run build:demos` compiles them with
+Bun's own transpiler and rewrites each relative import's `.jsx` extension to `.generated.js`;
 `check:demos` guards drift and orphaned output.
+
+**Those siblings are git-ignored**, along with the `vendor/` bundles: only demo pages read
+them, and the `.jsx` is what a consumer copies. A fresh clone runs `bun run build` once — see
+[`../../scripts/build/README.md`](../../scripts/build/README.md).
 
 **Editing a component `.jsx` means running `bun run build:demos` in the same tree.** The
 React DOM suites import the `.jsx` directly, so every test stays green with a stale `.js`

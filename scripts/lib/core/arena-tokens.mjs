@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { parseDecls } from '../arena/css-decls.mjs';
 import { repoRoot } from '../arena/repo-root.mjs';
 
-const GENERATED = ['palette.css', 'typography.css', 'spacing.css', 'effects.css'];
+const GENERATED = ['palette.generated.css', 'typography.generated.css', 'spacing.generated.css', 'effects.generated.css'];
 
 export function arenaTokens(root = repoRoot) {
   const names = new Set();
