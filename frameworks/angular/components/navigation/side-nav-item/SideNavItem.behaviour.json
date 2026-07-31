@@ -1,6 +1,23 @@
 {
   "component": "SideNavItem",
-  "pattern": "none",
-  "reason": "An item renders an <a> when it has href and a <button> when it does not, so no single interactive pattern always applies to it -- the same reading React's own binding gives, and this layer keeps it rather than inventing a second one. What the element it renders does carry comes from the platform and from SideNav's own `navigation` binding: a link's or a button's implicit role, its native keyboard, and aria-current=\"page\" on the active one. React's binding records that the two shapes are expressible as `cases` and were simply never converted; that is true here too, and converting one layer alone would make the two disagree for no gain, so this binding stays flat until both move together.",
-  "exceptions": []
+  "cases": [
+    {
+      "name": "link",
+      "when": "href is set -- the item renders an <a href>, which the platform makes a link",
+      "pattern": "none",
+      "reason": "There is no link pattern to bind, and that is not an omission: a link's role, its keyboard activation and its focusability all come from the platform the moment the element is an <a href>. Binding `button` here would name a role this element does not have. What the item adds on top of the anchor is `aria-current` for the active destination, which is a clause of the `navigation` pattern arena-side-nav binds, and it is recorded there.",
+      "exceptions": []
+    },
+    {
+      "name": "button",
+      "when": "href is absent -- the item renders a <button type=\"button\">, which activates a handler rather than navigating",
+      "pattern": "button",
+      "exceptions": [
+        {
+          "requirement": "states.disabled",
+          "reason": "SideNavItem has no disabled concept to reflect: its contract declares `id`, `label`, `icon`, `href` and `activate`, and nothing that would turn a destination off. A navigation item a consumer wants unavailable is one they do not render. This is an absence in the API rather than an unmet requirement in the DOM, and it is declared here so a reader of the binding meets the decision instead of the silence."
+        }
+      ]
+    }
+  ]
 }

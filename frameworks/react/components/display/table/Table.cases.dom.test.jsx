@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import React from 'react';
 import { mount, cleanup, act } from '../../../test/Harness.jsx';
-import { assertPatternCases, REACT_COMPONENTS } from '../../../test/AssertPattern.jsx';
+import { assertPattern, assertPatternCases, REACT_COMPONENTS } from '../../../test/AssertPattern.jsx';
 import { Table } from './Table.jsx';
 import { TableRow } from '../table-row/TableRow.jsx';
 import { TableCell } from '../table-cell/TableCell.jsx';
@@ -131,5 +131,22 @@ test('Table meets both of its declared shapes', () => {
         return { root, subjects: { default: root.firstElementChild } };
       }),
     },
+  });
+});
+
+test('TableCell binds "none" because Table owns the grid, and it adds no affordance of its own', () => {
+  const root = mount(<Table label={LABEL} columns={COLUMNS} responsive={false}>{rows()}</Table>);
+  const cell = root.querySelector('[role="gridcell"]');
+
+  assert.ok(cell, 'the wide shape must render cells, or this assertion checked nothing');
+  assert.equal(cell.getAttribute('role'), 'gridcell',
+    'the role a cell carries is a clause of the `grid` pattern Table binds -- the cell does not choose it');
+  assert.equal(cell.hasAttribute('aria-haspopup'), false,
+    'a cell that grew an affordance of its own would need a pattern of its own, and its binding says it has none');
+
+  assertPattern({
+    root,
+    bindingPath: join(REACT_COMPONENTS, 'display/table-cell/TableCell.behaviour.json'),
+    subjects: { default: cell },
   });
 });
