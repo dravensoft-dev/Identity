@@ -983,42 +983,30 @@ stale-proof; a present-tense component name is not.
   **What is still checked by eye**, and this is unchanged: the interior of a focus trap, and
   anything needing a real browser's sequential focus navigation, which happy-dom does not
   implement.
-- **Compliance coverage is a small fraction of the bindings and nothing schedules the
-  rest.** `bun run check:compliance` prints the live pair; do not trust a figure written
-  here, which has drifted once already — every batch that adds a component adds a binding
-  and moves the denominator without touching this line.
-  `COVERED` guards the accuracy of what it claims, never the completeness of it, so the
-  uncovered bindings remain exactly as unverified as they were before this gate existed.
-  `Table` and `Calendar` used to head that list — the grid rule kept them out of a suite
-  permanently — and both are covered now, which moved them out of it rather than changing
-  what the gate promises. The gate was built
-  that way on purpose: one demanding a suite per binding on day one would have been
-  switched
-  off. The consequence is that the layer's headline property, *an exception can
-  expire*, holds for the handful of components in `COVERED` and nothing else.
-  `figure-with-data-table`'s `roles.label` half stays unverifiable regardless — a
-  suite can assert an `aria-label` exists, never that it is a good name for the
-  chart. **`COVERED` is keyed by `<component>:<layer>`, not by component name**: several components
-  (`ConfirmDialog`, `Skeleton`, `Alert`, `BarChart`) are bound in both layers, and a
-  name-only key let a mention of *either* layer's binding satisfy the claim — so `ConfirmDialog`'s
-  React suite marked its unverified Angular contract covered, and `Alert`'s Angular suite did the
-  same to its React one. Each entry names the one layer its suite verifies
-  (`Alert:angular`), and `validateCoverage()` resolves that layer's binding alone; the sibling layer
-  is simply uncovered, which the gate is silent about by charter but no longer reports as satisfied.
-  A key without a `:layer` suffix is rejected, so the old name-only shape cannot creep back.
-  **And which layer a suite belongs to is decided STRUCTURALLY now, not textually.**
-  `validateCoverage` makes two separate checks: first that the key's layer equals
-  `suite.layer` — a tag `collectSuites()` attaches from the `SUITE_DIRS` tree the file was
-  found under, a fact about the filesystem fixed at collection time — and only then that the
-  suite's text names that layer's binding path *tail*. The tail proves which **binding**
-  within a layer, and it can no longer prove the layer, because since batch 3 both layers
-  spell a dual-bound component's tail byte-identically (`display/tag/Tag.behaviour.json` on
-  both sides). Two textual accidents in a row had carried the discrimination — the bare stem
-  while Angular's binding was kebab-named, then the tail while Angular's carried a kebab
-  directory React's did not — and each expired with a layout change. Had the layer tag not
-  been in place first, batch 3 would have reverted the gate silently to the defect commit
-  `663b2e4` closed. `check-compliance.mjs`'s own comment beside `SUITE_DIRS` and `COVERED`
-  carries the full history.
+- **CLOSED: compliance coverage is 100 of 100 bindings, and closing it meant refusing the obvious
+  work.** `bun run check:compliance` prints the live pair; it read 78 of 100 when the
+  debt-payment programme reached it, and every one of the 22 uncovered bindings was
+  `pattern: "none"` with no exceptions. **Writing 22 compliance suites would have proved
+  nothing**: `none`'s `requires` is empty, so a suite that binds it passes by having nothing to
+  check — the ceremony this file already warns about when it says a case bound to `none` verifies
+  nothing.
+
+  So the suites assert the sentence `none.json`'s own *description* makes and its `requires`
+  cannot: *"a component with no interactive affordance: it renders, and a user cannot act on it."*
+  `InertComponents` in each layer renders every genuinely inert component with no consumer content
+  and fails on any focusable element or interactive role it introduces — and carries a
+  counter-test proving the check sees a real button, so it cannot pass by looking at nothing. The
+  set is not uniform, and splitting it was the actual work: `Tab` and `TableCell` bind `none`
+  because the pattern lives on the PARENT, so they are covered where that parent is rendered and
+  asserted to add no affordance of their own; `SideNavItem` bound it because the pattern is
+  CONDITIONAL, and it is cased now.
+
+  **What a green run means has not changed.** `COVERED` guards the accuracy of what it claims,
+  never the accessibility of what it covers, and now that it claims everything the distinction
+  matters more rather than less: 100 of 100 says every binding has a suite that renders it, and
+  says nothing about whether the components are good. The `figure-with-data-table` half stays
+  unverifiable regardless — a suite can assert an `aria-label` exists, never that it is a good
+  name for the chart.
 - **Some exceptions rest on a `behavioural` verdict no suite in either layer
   declares — RETIRED as a live list, kept for the lesson.** The last four were
   `ActivityFeed`'s `posinset`/`busy` in both layers, and both bindings now have cases
@@ -1579,59 +1567,49 @@ stale-proof; a present-tense component name is not.
   hides a wiring mistake** — a `ConfirmDialog` whose `open` was never wired renders nothing
   forever and looks like a working closed dialog.
 
-- **`SideNavCollapsible` is a stack of independent disclosures and is deliberately NOT a
-  treeview. What that costs a screen-reader user is real.** With arbitrary nesting the rendered
-  structure looks exactly like a tree, and APG's treeview would demand `aria-level` on every
-  node, a roving tab stop and four-direction arrow navigation. None of it is designed, none of
-  it is bound, and the refusal lives in `contracts/behaviour/disclosure.json`'s **own
-  description** rather than only in the binding — so every future component binding this pattern
-  inherits the refusal and a reader of any one binding meets it. The concrete cost: in a deeply
-  nested sidebar a screen-reader user is told a group is expanded and is told nothing about how
-  deep it sits, how many siblings it has, or which of them they are on — `aria-level`,
-  `aria-setsize` and `aria-posinset` are all absent — and reaching an item four levels down
-  means Tab through every trigger and every visible link above it, because there are no arrow
-  keys. This is a **deliberate trade, not an oversight**: what shipped is what a nav landmark
-  full of links actually is, and production sidebars ship it. But it is a trade with a loser,
-  and the loser should not have to be rediscovered by whoever next reads the clean
-  `"exceptions": []` on that binding and concludes the component is fully accessible. It is
-  fully *compliant with the pattern it chose*. Choosing that pattern is the debt.
+- **DECIDED: `SideNavCollapsible` stays a stack of independent disclosures, and the reason the
+  cheap half of the fix is not taken is the useful part.** With arbitrary nesting the rendered
+  structure looks exactly like a tree, and APG's treeview would demand `aria-level` on every node,
+  a roving tab stop and four-direction arrow navigation. None of it is designed, none of it is
+  bound, and the refusal lives in `contracts/behaviour/disclosure.json`'s **own description**
+  rather than only in the binding — so every future component binding this pattern inherits the
+  refusal and a reader of any one binding meets it.
 
-- **`SideNavItem` binds `none` with a prose reason, and that is now a CHOICE rather than a
-  limit — it is expressible as cases and was deliberately not converted.** An item renders an
-  `<a>` with `href` and a `<button>` without, so no single interactive pattern always applies.
-  When this was written the schema could not say so, and `none` plus prose was chosen as the
-  less-false of two false options: binding `button` with an exception — what `Tag` then did —
-  would have left a reader of the binding alone believing the pattern always holds. Since 8C9
-  the schema **can** say it: two cases split by `href` — the `<button>` shape binding `button`,
-  and the `<a href>` shape binding `none`, since there is no link pattern and a link's role and
-  keyboard come from the platform — is exactly the shape `Tag` and `CalendarEvent` now carry.
-  8C9 converted the seven bindings its spec named and no others, and **both `SideNavItem` reason
-  strings now say so**: it used to read *"The schema still cannot say…"*, and 8C9's close-out
-  rewrote it to state that the shape is expressible, that this binding is an **unconverted case**
-  rather than evidence of a limit, and what converting it would cost. A reader meeting the binding
-  alone now learns the option exists and that nothing has taken it.
-  Converting it now costs twice what that reason states, because Angular has a
-  `SideNavItem` too and its binding says so: two bindings, two render suites covering both
-  shapes, and two `COVERED` keys — and converting one layer alone would make the two disagree,
-  which is why neither has moved. Nothing schedules it. What is genuinely still open is the third conditionality
-  level — conditional on **consumer** usage, whose live instance is `Tooltip` — recorded in its
-  own entry above, which is also where the other two named here went: `Table`'s was misfiled and
-  `Pagination`'s was designed away by making the member required and guarded. **Count the `none` bindings rather than writing an
-  ordinal**, and note the count now includes `none` bound by a *case* rather than by a whole
-  binding (`Tag`'s `plain` and `CalendarEvent`'s `inert`; `Skeleton`'s `circle` was a third
-  until 8C10 retired that case, which is the count moving DOWN and another reason not to
-  write an ordinal)
-  — `grep -rho '"pattern": "none"' --include='*.json' frameworks/ | wc -l`, and the `-o` is the
-  point: `grep -rl` counts FILES, and one file can hold several bindings at once — which
-  `frameworks/angular/BehaviourDelegated.json` did while it still carried `none` entries, so the
-  file count was not the binding count and the measurement written here to replace a stale
-  ordinal was itself wrong. That file holds only `absent` now, and the hazard is unchanged: a
-  cased binding still puts several patterns in one file. 8C5 added two in one change, and this
-  file has now had three separate prose ordinals about this limit go stale, one of them inside
-  the batch that wrote it — `SideNavItem.behaviour.json` shipped saying "the fourth component to
-  meet it" while its own batch-mate `SideNavSection.jsx` counted five, and the close-out review
-  replaced both ordinals with a pointer here.
+  The concrete cost is real and stands: in a deeply nested sidebar a screen-reader user is told a
+  group is expanded and is told nothing about how deep it sits, how many siblings it has, or which
+  of them they are on, and reaching an item four levels down means Tab through every trigger and
+  every visible link above it.
 
+  **The obvious partial fix does not work, and that is why this closes as a decision rather than
+  as a half-measure.** Adding `aria-level`, `aria-setsize` and `aria-posinset` looks free — they
+  are descriptive rather than interactive, so they would cost none of the treeview keyboard model.
+  But `aria-setsize` and `aria-posinset` are meaningful only on an element with a role that is a
+  member of a set (`treeitem`, `listitem`, `option`), and the trigger is a plain `<button>` inside
+  a `nav` landmark. Adding them without the role produces attributes assistive technology has no
+  reason to read: **the appearance of a fix, which is worse than the honest gap**, because the
+  next reader would find the attributes and conclude the cost had been paid.
+
+  So the trade stands: what shipped is what a nav landmark full of links actually is, and
+  production sidebars ship it. It is fully compliant with the pattern it chose. **Choosing that
+  pattern is the debt, and adopting `treeview` — the whole model, keyboard included — is the only
+  thing that pays it.**
+- **CLOSED: `SideNavItem` is cased in both layers.** An item renders an `<a href>` or a
+  `<button>`, so no single interactive pattern always applies; `none` plus prose was chosen as the
+  less-false of two false options while the schema could not say *"this pattern applies only when
+  href is absent"*. It can, and both bindings now declare `link` → `none` and `button` → `button`,
+  with a render suite each and a `COVERED` key each. Converting one layer alone would have made
+  the two disagree, which is why neither had moved; they moved together.
+  **The `link` case binds `none` and that is not a placeholder.** There is no link pattern to
+  bind, and its absence is not an omission: a link's role, its keyboard activation and its
+  focusability all come from the platform the moment the element is an `<a href>`, so binding
+  `button` there would name a role the element does not have. What the item adds on top of the
+  anchor is `aria-current`, which is a clause of the `navigation` pattern the parent binds.
+  **The button case carries one exception, and finding it was the useful part**: the `button`
+  pattern requires `states.disabled`, and `SideNavItem` has no disabled concept at all — a
+  navigation destination a consumer wants unavailable is one they do not render. That is an
+  absence in the API rather than an unmet requirement in the DOM, and a BEHAVIOURAL requirement
+  needs a verdict either way, so the suites declare it `false` and the binding excepts it. The
+  exception justifies the false; it does not replace it.
 - **The open question about `SideNav` is CLOSED, and which way it went is the useful part.**
   `frameworks/angular/BehaviourDelegated.json`'s `SideNav` entry once claimed a third-party
   control provided this component — its reason said `mat-nav-list` "already provides the
