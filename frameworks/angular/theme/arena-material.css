@@ -2,17 +2,8 @@
    Import AFTER Angular Material's theme so these win. Every value is a var() into
    an existing Arena token: no new hex, no new value. Dark-first comes free — the
    tokens are dark-first. What is left is what BehaviourDelegated.json still delegates:
-   the two progress indicators and SideNav's list. A block dies when no delegated entry
-   needs it, not when its own Arena primitive lands. */
-
-/* Progress — spinner + bar on the brand */
-.mat-mdc-progress-spinner {
-  --mat-progress-spinner-active-indicator-color: var(--color-primary);
-}
-.mat-mdc-progress-bar {
-  --mat-progress-bar-active-indicator-color: var(--color-primary);
-  --mat-progress-bar-track-color: var(--border);
-}
+   SideNav's list, and nothing else. A block dies when no delegated entry needs it, not
+   when its own Arena primitive lands. */
 
 /* Nav list — Arena's SideNav. Material owns the list; these are its Arena values.
    The active item is crimson on crimson-soft, semibold; the rest are muted medium.

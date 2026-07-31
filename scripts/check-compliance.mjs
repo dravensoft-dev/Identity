@@ -94,6 +94,8 @@ export const COVERED = {
   'Tabs:angular': 'Tabs.compliance.test.ts',
   'Tab:angular': 'Tabs.compliance.test.ts',
   'Pagination:angular': 'Pagination.compliance.test.ts',
+  'ProgressBar:angular': 'ProgressBar.compliance.test.ts',
+  'Spinner:angular': 'Spinner.compliance.test.ts',
 };
 
 export function suiteMentions(source, tail) {
