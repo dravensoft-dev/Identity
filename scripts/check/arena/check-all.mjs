@@ -46,6 +46,7 @@ export const GATES = [
   { name: 'check:fonts', file: 'core/check-fonts-generated.mjs' },
   { name: 'check:vendor', file: 'react/check-vendor-generated.mjs' },
   { name: 'check:demos', file: 'react/check-demos-generated.mjs' },
+  { name: 'check:react-barrel', file: 'react/check-react-barrel.mjs' },
   { name: 'check:cards', file: 'arena/check-card-viewports.mjs' },
   { name: 'check:focus-trap', file: 'arena/check-focus-trap.mjs' },
   { name: 'check:packages', file: 'arena/check-packages.mjs' },
