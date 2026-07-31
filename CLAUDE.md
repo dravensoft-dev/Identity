@@ -240,7 +240,7 @@ and six derived rules govern them (R1 an object is pure data with known fields, 
 decides data versus slot, R3 a parameterised slot fills and never replaces, R4 no platform
 types and no escapes, R5 no unions between forms, **R6 no render is derived from whether a
 listener is bound or a slot was filled** — a question at least one platform cannot ask, so the
-answer is a declared member and the six that exist for this reason each say so).
+answer is a declared member and the eight that exist for this reason each say so).
 
 **A contract also states the component's `affordances`**, from the closed set `hover`/`focus`:
 the pointer and focus states its own render reacts to. Not a member, and here anyway because

@@ -33,14 +33,21 @@ const events = [
 
 function Demo(){
   const [picked, setPicked] = React.useState(null);
+  const [day, setDay] = React.useState(null);
   return (<div>
     <div className="sub">
       Wednesday shows three overlapping events sharing the width · Sunday is hidden until something lands on it
       {picked && <> · picked: {picked}</>}
     </div>
+    <div className="sub">
+      Days are activable: Tab reaches each header, Enter fires it, and the columns take the same click
+      {day && <> · date: {day}</>}
+    </div>
     <Calendar
       actions={<Button size="sm" variant="secondary" icon="ph-bold ph-plus">New event</Button>}
       dayEnd="18:00"
+      dayInteractive
+      onDateClick={setDay}
     >
       {
 

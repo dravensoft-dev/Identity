@@ -17,11 +17,11 @@ One event on an `arena-calendar`'s schedule. It is content of a calendar and not
 
 **A `(click)` binding on `<arena-calendar-event>` is the DOM event, not the output.** Angular binds a native event name to the DOM even when the component declares an output of that name, so a click that bubbles out of an inert chip still reaches your handler. An interactive chip stops propagation before it can; an inert one does not, because it claims nothing and the click belongs to the day underneath it. Listen for activation on a chip you have declared `interactive`.
 
-**An interactive chip is not a page-level tab stop, and that is on purpose.** The schedule is one tab stop; Enter from the hour cell an event overlaps steps into the chip, Escape steps back out to the cell.
+**An interactive chip is not a page-level tab stop, and that is on purpose.** The grid is one tab stop; Enter from the hour cell an event overlaps steps into the chip, Escape steps back out to the cell.
 
 What "into the chip" means depends on the shape. A chip with no action panel *is* the button. A chip with one cannot be — a kebab nested inside a button is invalid HTML — so the chip is a `<div>`, the title and time move into a body `<button>` inside it, and that body is what Enter focuses. The focus target registered with the calendar has to follow that element; a target left pointing at the chip sends Enter on a paneled chip nowhere at all.
 
-**The kebab is reachable by arrows rather than Tab.** With focus on a chip, `ArrowRight` steps to its kebab and `ArrowLeft` steps back. Tab has to *leave* a composite, and a tabbable kebab is precisely what would stop the calendar being the single tab stop its `grid` binding claims. Activating the kebab opens the panel and moves focus into it; `Escape` closes the panel and returns focus to the kebab, and stops there rather than also returning focus to the hour cell.
+**The kebab is reachable by arrows rather than Tab.** With focus on a chip, `ArrowRight` steps to its kebab and `ArrowLeft` steps back. Tab has to *leave* a composite, and a tabbable kebab is precisely what would stop the calendar's grid being the single tab stop its `grid` binding claims. Activating the kebab opens the panel and moves focus into it; `Escape` closes the panel and returns focus to the kebab, and stops there rather than also returning focus to the hour cell.
 
 **`actionsEnabled` draws a kebab; `[actions]` is what the panel behind it holds.**
 
@@ -35,7 +35,7 @@ What "into the chip" means depends on the shape. A chip with no action panel *is
 
 **The boolean is what draws the kebab, not the slot being filled**, and unlike the calendar's toolbar this slot needs no marker directive: `select="[actions]"` is a plain CSS selector, and only `contentChild` detection would need `ArenaActions` imported. `actionsEnabled` with nothing projected draws a kebab over an empty panel; that is a consumer mistake rather than a state Arena hides, and it is the same call `arena-alert`'s and `arena-toast`'s `dismissible` already record.
 
-**The panel's content is in the tree only while the panel is open.** That is what keeps the schedule at one tab stop. It also means the panel is not a place to keep state — it is created and destroyed with every open.
+**The panel's content is in the tree only while the panel is open.** That is what keeps the grid at one tab stop. It also means the panel is not a place to keep state — it is created and destroyed with every open.
 
 **Do**
 - Give the same entity the same `colorId` everywhere it appears.

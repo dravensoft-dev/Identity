@@ -40,10 +40,18 @@ const MINUTE = 60000;
 
       <div [class]="styles().headStrip()" [style.gridTemplateColumns]="tracks()">
         @for (day of days(); track day) {
-          <div [class]="styles().dayHead()" (click)="onDateClick(day)">
-            <div [class]="styles().weekday()">{{ weekdayOf(day) }}</div>
-            <div [class]="dayNumberClass(day)">{{ dayNumberOf(day) }}</div>
-          </div>
+          @if (dayInteractive()) {
+            <button type="button" [class]="dayHeadClass()" [attr.aria-label]="dayLabel(day)"
+                    (click)="onDateClick(day)">
+              <div [class]="styles().weekday()">{{ weekdayOf(day) }}</div>
+              <div [class]="dayNumberClass(day)">{{ dayNumberOf(day) }}</div>
+            </button>
+          } @else {
+            <div [class]="dayHeadClass()">
+              <div [class]="styles().weekday()">{{ weekdayOf(day) }}</div>
+              <div [class]="dayNumberClass(day)">{{ dayNumberOf(day) }}</div>
+            </div>
+          }
         }
       </div>
 
@@ -95,6 +103,7 @@ export class Calendar {
   readonly dayEnd = input('23:00');
   readonly weekStartsOn = input(1, { transform: numberAttribute });
   readonly hideEmptyWeekend = input(true, { transform: booleanAttribute });
+  readonly dayInteractive = input(false, { transform: booleanAttribute });
   readonly dateClick = output<string>();
   readonly rangeChange = output<string>();
 
@@ -245,8 +254,14 @@ export class Calendar {
     return calendarStyles({ today: day === this.today() }).dayNumber();
   }
 
+  protected dayHeadClass(): string {
+    return calendarStyles({ dayInteractive: this.dayInteractive() }).dayHead();
+  }
+
   protected columnClass(index: number): string {
-    return calendarStyles({ firstColumn: index === 0 }).column();
+    return calendarStyles({
+      firstColumn: index === 0, dayInteractive: this.dayInteractive(),
+    }).column();
   }
 
   protected goto(iso: string): void {
@@ -259,7 +274,7 @@ export class Calendar {
   }
 
   protected onDateClick(day: string): void {
-    this.dateClick.emit(day);
+    if (this.dayInteractive()) this.dateClick.emit(day);
   }
 
   protected moveTo(day: number, hour: number): void {

@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Calendar } from './Calendar.jsx';
 import { CalendarEvent } from '../calendar-event/CalendarEvent.jsx';
-import { showsTime, stacksActions } from './CalendarInternals.js';
+import { formatDate, showsTime, stacksActions } from './CalendarInternals.js';
 
 const EVENTS = [
   { id: 'a', title: 'Standup', start: '2026-07-20T09:00:00Z', end: '2026-07-20T09:30:00Z', colorId: 1 },
@@ -109,7 +109,25 @@ test('an event colours its chip from colorId, not from the old slot field', () =
   assert.ok(!stale.includes(two), 'the old `slot` field still picks a ramp colour -- the rename did not land');
 });
 
-test('a Calendar renders exactly one tab stop, kebab or no kebab', () => {
+test('the day affordance follows dayInteractive and never the listener -- R6', () => {
+  const dayLabel = formatDate('2026-07-20', { weekday: 'long', day: 'numeric', month: 'long' });
+  const head = new RegExp(`<button[^>]*aria-label="${dayLabel}"`);
+  const column = /role="row"[^>]*cursor:pointer/;
+
+  const bound = render({ onDateClick: () => {} });
+  assert.doesNotMatch(bound, column, 'binding the listener alone painted a pointer cursor over the day columns');
+  assert.doesNotMatch(bound, head, 'binding the listener alone turned the day headers into buttons');
+
+  const on = render({ dayInteractive: true });
+  assert.match(on, column, 'dayInteractive did not reach the day column cursor');
+  assert.match(on, head, 'dayInteractive did not make the day header a named button');
+
+  const off = render({});
+  assert.doesNotMatch(off, column, 'an inert day column still invites a click');
+  assert.doesNotMatch(off, head, 'an inert day header is still a button');
+});
+
+test('a Calendar grid renders exactly one roving tab stop, kebab or no kebab', () => {
   const plain = renderToStaticMarkup(
     <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">
       <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z" />

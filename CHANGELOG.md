@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking: `Calendar` gains `dayInteractive`, and it is what makes a day activable.** Binding
+  `onDateClick` (React) or `(dateClick)` (Angular) no longer activates anything on its own — pass
+  the boolean alongside it. This pays an R6 violation that the two layers had already diverged on
+  in public: React painted `cursor: pointer` over the days whenever a handler was bound, deriving a
+  render from a listener, while Angular painted nothing and emitted to nobody. With the boolean set,
+  each day header is now a `<button>` labelled with the full date — the keyboard's first route to a
+  day — and the column background keeps the same click as a pointer affordance. Both layers gained
+  their first suites for any of this; there were none.
 - **The three framework layers are independent of each other, and a gate holds it.** A file under
   `frameworks/<A>` may no longer name layer B nor any of B's source files, by import or in prose.
   The one edge that survives is Angular importing a Tailwind `*.manifest.generated` through

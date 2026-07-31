@@ -64,6 +64,16 @@ export default {
         "chip": "cursor-default"
       }
     },
+    "dayInteractive": {
+      "true": {
+        "dayHead": "cursor-pointer bg-transparent border-0 font-body w-full",
+        "column": "cursor-pointer"
+      },
+      "false": {
+        "dayHead": "cursor-default",
+        "column": "cursor-default"
+      }
+    },
     "disabled": {
       "true": {
         "chip": "opacity-50 cursor-not-allowed",
@@ -88,6 +98,7 @@ export default {
     "reserve": false,
     "panelOpen": false,
     "clickable": false,
+    "dayInteractive": false,
     "disabled": false,
     "actionsBelow": false
   }

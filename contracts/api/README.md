@@ -190,9 +190,9 @@ one of them. A component that asks it anyway is correct in the layer that can an
 different in the layer that cannot.
 
 So the answer is a **member**, and it is declared and gated on explicitly. `Alert.dismissible`,
-`Toast.dismissible`, `Tag.removable`, `BulkActionBar.clearable`, `TableRow.interactive` and
-`CalendarEvent.actionsEnabled` are the six that exist for this reason, and each one's
-description says so. The cost is stated rather than hidden: a consumer who binds the event and
+`Toast.dismissible`, `Tag.removable`, `BulkActionBar.clearable`, `TableRow.interactive`,
+`CalendarEvent.interactive`, `CalendarEvent.actionsEnabled` and `Calendar.dayInteractive` are the
+eight that exist for this reason, and each one's description says so. The cost is stated rather than hidden: a consumer who binds the event and
 forgets the boolean gets no control, in every layer alike — which is the point, since the
 alternative is *one* layer quietly doing something else.
 

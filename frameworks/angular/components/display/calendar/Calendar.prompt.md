@@ -18,7 +18,15 @@ The anchor is internal, so prev/Today/next work with nothing wired. `rangeChange
 
 **The toolbar's actions slot needs its marker directive.** `<ng-content select="[actions]">` is drawn only when `contentChild(ArenaActions)` resolves, so a consumer who writes `actions` on an element without importing `ArenaActions` from the layer root gets no toolbar actions and no error. That is the one failure mode of every marker slot in this layer.
 
-**Keyboard.** The schedule is one tab stop, not one per event. Tab lands on a single hour cell; **a row is a day**, so Left/Right move a day and Up/Down move an hour, Home/End jump to the first/last hour of the focused day, and focus clamps at every edge. Enter steps into the first event overlapping the focused hour, Escape steps back out to the cell.
+**A day is activable only if you say so.** `dateClick` emits the ISO date of the day a reader picked, and it emits for nobody unless `dayInteractive` is bound too:
+
+```html
+<arena-calendar dayInteractive (dateClick)="openDay($event)">
+```
+
+The boolean is not ceremony. What a component draws may never be derived from whether a listener is bound, because a subscriber list is private here — so the day's cursor, which is a render, follows the boolean and not your binding. **With it on, each day header becomes a `<button>`** carrying the full date as its label, so a keyboard reaches a day at the one element that already names it; the column background takes the same click but stays pointer-only, because it is the same date reachable above.
+
+**Keyboard.** The grid is one tab stop, not one per event (`dayInteractive` adds the header strip's, above it). Tab lands on a single hour cell; **a row is a day**, so Left/Right move a day and Up/Down move an hour, Home/End jump to the first/last hour of the focused day, and focus clamps at every edge. Enter steps into the first event overlapping the focused hour, Escape steps back out to the cell.
 
 **A chip is not a DOM child of its day column here, and `aria-owns` is why that does not matter.** Angular cannot project one set of children into several positions, so every chip is a child of the grid and each day column claims its own through `aria-owns` — which is what the `grid` pattern actually asks for, since it constrains the accessibility tree and not the DOM. Two consequences are real: the day columns are CSS grid **tracks** rather than flex items, because a chip's horizontal placement is a percentage of the whole grid and unequal columns would slide the last day's chips off; and anything projected that is not an `arena-calendar-event` becomes a **grid item** and adds a column, so project nothing else.
 
@@ -65,3 +73,8 @@ nowhere else. `bun run build:angular-demo && bun run demos`, then open
    panel in that case too: it hangs below the chip and every control is clickable.
 9. The now line is drawn over the chips, not under them — it is the last child of
    the grid and carries no z-index of its own.
+10. **Enter and Space on a focused day header fire `dateClick`.** That is the
+    browser's own activation of a `<button>`, so no suite can claim it — happy-dom
+    has no such behaviour and a test for it would pass against a `<div>` too. Tab
+    through the headers, fire both keys, and confirm one more Tab past the last one
+    lands on the grid's single roving cell.

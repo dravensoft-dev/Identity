@@ -21,6 +21,8 @@ export interface CalendarProps {
 
   hideEmptyWeekend?: boolean;
 
+  dayInteractive?: boolean;
+
   onDateClick?: (isoDate: string) => void;
 
   onRangeChange?: (isoDate: string) => void;

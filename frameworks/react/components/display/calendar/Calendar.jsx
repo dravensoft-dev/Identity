@@ -12,7 +12,7 @@ const GUTTER = 'var(--calendar-gutter-w)';
 export function Calendar({
   children, timeZone, anchorDate, view,
   dayStart, dayEnd = '23:00', weekStartsOn = 1, hideEmptyWeekend = true,
-  onDateClick, onRangeChange, actions,
+  dayInteractive = false, onDateClick, onRangeChange, actions,
 }) {
 
   const zone = timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -76,6 +76,8 @@ export function Calendar({
 
   const step = activeView === 'day' ? 1 : 7;
   const goto = (iso) => { setAnchor(iso); onRangeChange && onRangeChange(iso); };
+  const activateDay = (iso) =>
+    (dayInteractive ? () => { onDateClick && onDateClick(iso); } : undefined);
 
   const gridRef = useRef(null);
 
@@ -167,16 +169,20 @@ export function Calendar({
       <div style={{ display: 'flex', paddingLeft: GUTTER, borderBottom: 'var(--bw) solid var(--color-base-300)' }}>
         {days.map((d) => {
           const isToday = d === today;
+          const DayHead = dayInteractive ? 'button' : 'div';
           return (
-            <div key={d} onClick={onDateClick ? () => onDateClick(d) : undefined}
+            <DayHead key={d} onClick={activateDay(d)}
+              type={dayInteractive ? 'button' : undefined}
+              aria-label={dayInteractive ? formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' }) : undefined}
               style={{ flex: 1, minWidth: 0, padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2) 0', textAlign: 'center',
-                cursor: onDateClick ? 'pointer' : 'default' }}>
+                background: 'transparent', border: 'none', font: 'inherit',
+                cursor: dayInteractive ? 'pointer' : 'default' }}>
               <div style={label}>{formatDate(d, { weekday: 'short' })}</div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text)', fontWeight: 'var(--fw-bold)', marginTop: 'calc(var(--sp-1) * 0.5)',
                 color: isToday ? 'var(--crimson)' : 'var(--bone-dim)' }}>
                 {formatDate(d, { day: 'numeric' })}
               </div>
-            </div>
+            </DayHead>
           );
         })}
       </div>
@@ -211,10 +217,10 @@ export function Calendar({
             {days.map((d, di) => (
               <div key={d} role="row"
                 aria-label={formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' })}
-                onClick={onDateClick ? () => onDateClick(d) : undefined}
+                onClick={activateDay(d)}
                 style={{ flex: 1, minWidth: 0, position: 'relative',
                   borderLeft: di === 0 ? 'none' : 'var(--bw) solid var(--color-base-300)',
-                  cursor: onDateClick ? 'pointer' : 'default' }}>
+                  cursor: dayInteractive ? 'pointer' : 'default' }}>
 
                 {
 

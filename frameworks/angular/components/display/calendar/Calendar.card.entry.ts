@@ -17,7 +17,7 @@ import { CalendarEvent } from '../calendar-event/CalendarEvent';
     <p class="sub">Week — Tab once into the grid, walk it with the arrows, Enter into a chip, Escape back out</p>
     <div class="box">
       <arena-calendar timeZone="UTC" anchorDate="2027-03-15" view="week"
-                      dayStart="09:00" dayEnd="18:00"
+                      dayStart="09:00" dayEnd="18:00" dayInteractive
                       (dateClick)="picked.set($event)" (rangeChange)="moved.set($event)">
         <arena-button actions size="sm" variant="secondary">New class</arena-button>
 

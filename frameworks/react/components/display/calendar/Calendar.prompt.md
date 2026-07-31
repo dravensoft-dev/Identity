@@ -23,7 +23,15 @@ Copy `frameworks/react/DataVisuals.js` and `frameworks/react/UseContainerWidth.j
 
 The anchor is internal, so prev/Today/next work with nothing wired. `onRangeChange` reports the new anchor date — take it as the cue to refetch. Pass `anchorDate` only when you want to drive the date yourself; it wins whenever it changes.
 
-**Keyboard.** The schedule is one tab stop, not one per event. Tab lands on a single hour cell; a *row is a day*, so Left/Right move a day and Up/Down move an hour, Home/End jump to the first/last hour of the focused day, and focus clamps at every edge. Enter steps into the first event overlapping the focused hour, Escape steps back out to the cell.
+**Keyboard.** The grid is one tab stop, not one per event (`dayInteractive` adds the header strip's, above it). Tab lands on a single hour cell; a *row is a day*, so Left/Right move a day and Up/Down move an hour, Home/End jump to the first/last hour of the focused day, and focus clamps at every edge. Enter steps into the first event overlapping the focused hour, Escape steps back out to the cell.
+
+**A day is activable only if you say so.** `onDateClick` reports the ISO date of the day a reader picked, and it fires for nothing unless `dayInteractive` is also set. The boolean is not ceremony: what a component draws may never be derived from whether a listener is bound, because at least one platform cannot ask that question — so the day's cursor, which is a render, follows the boolean and not your handler. Bind one without the other and you get exactly half of what you asked for, in every layer alike.
+
+```jsx
+<Calendar dayInteractive onDateClick={(iso) => openDay(iso)}>
+```
+
+**With it on, the day headers become their own tab stops, and that is the point.** Each header is a `<button>` carrying the full date as its label, so a keyboard reaches a day at the one element that already names it. The column background takes the same click but stays pointer-only — it is the same date, reachable above. The grid below is still a single roving tab stop; the header strip is separate and always was.
 
 **The chip body is Arena's, and there is nothing you can put inside it.** A `CalendarEvent` carries `id`, `title`, `start`, `end` and `colorId`, and Arena draws all of it: the title, the time range and the identity colour. There is no per-event renderer — a function returning markup is not a member of any Arena contract, because per-item projection has no answer on every layer Arena targets. Writing `<CalendarEvent>` as an element does not change that: it is the element Arena draws, not a wrapper around markup of yours.
 
