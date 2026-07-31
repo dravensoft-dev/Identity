@@ -6,7 +6,7 @@ Progress bar (H1). Gives visible status to measurable processes outside the spla
 <ProgressBar indeterminate tone="accent" label="Connecting…" />
 ```
 
-`progressPercentage` is 0–100, clamped and rounded — it is not a form control's `value`,
+`progressPercentage` is 0–100, clamped and rounded; it is not a form control's `value`,
 which is what that name means everywhere else in this library. `showPercentage` (default
 `true`) shows the number beside the label; it is drawn in determinate mode only.
 
@@ -25,7 +25,7 @@ which is what that name means everywhere else in this library. `showPercentage` 
 - Don't expect the bar to narrate every step. It carries `aria-live="polite"` because
   `role="progressbar"` has no implicit live region, and the percentage is repeated inside that
   region as visually-hidden text so the announcement is an ordinary content change rather than
-  an attribute-only one — but a bar that ticks continuously is chatty by construction. Announce
+  an attribute-only one, but a bar that ticks continuously is chatty by construction. Announce
   a milestone that matters with a `Toast`.
 - Don't read `showPercentage={false}` as silence. It drops the number beside the label; the
   region keeps its own copy, because hiding a number visually is a layout choice and not a

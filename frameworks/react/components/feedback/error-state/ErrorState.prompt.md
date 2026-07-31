@@ -13,7 +13,7 @@ exposed as a mono chip.
 **Do / Don't**
 - Always pass `retryLabel` when a retry could work. An error state with no retry is a
   dead end the user has to navigate out of.
-- `icon` is a Phosphor class name (a string), never a JSX node — Arena draws the glyph.
+- `icon` is a Phosphor class name (a string), never a JSX node; Arena draws the glyph.
 - Don't put the raw exception in `message`. The code chip is where a machine-readable
   detail goes; the message is for a person.
-- Don't use this for a validation failure on a field — that belongs on the field.
+- Don't use this for a validation failure on a field: that belongs on the field.

@@ -1,5 +1,5 @@
 Arena guided tour. A coachmark with progress dots, Skip and Next, floating bottom-right
-over an unblurred scrim — a tour that blurs the product it is touring defeats itself.
+over an unblurred scrim, a tour that blurs the product it is touring defeats itself.
 It is controlled: the host owns `index` and answers `next`, `back`, `skip` and `done`.
 Clicking the scrim reports `skip`. It is a real modal, binding `dialog-modal`:
 focus moves into the panel when the tour opens and returns to whatever opened it when the
@@ -15,7 +15,7 @@ tour closes, Tab and Shift+Tab cycle inside the panel, and Escape reports `skip`
 **Do / Don't**
 - Keep a tour to three or four steps. The dots are a promise about how long this will
   take, and a tour that breaks that promise gets skipped.
-- Pass `anchor` (an `OnboardingAnchor` — `{ left, bottom }`; a `getBoundingClientRect()`
+- Pass `anchor` (an `OnboardingAnchor`, `{ left, bottom }`; a `getBoundingClientRect()`
   result satisfies it directly) when a step must point at a specific control; the
   coachmark clamps itself inside the viewport. Without it, it floats bottom-right.
 - Handle `skip` as a real dismissal: Escape reports it too, on every step including the
@@ -26,5 +26,5 @@ tour closes, Tab and Shift+Tab cycle inside the panel, and Escape reports `skip`
 - Don't express a condition as an attribute string. `open` carries the
   `booleanAttribute` transform, so a bare `open` and `[open]="true"` both
   mean true, and the one literal string `"false"` means false. Every *other* string is
-  true — `"0"`, `"off"` and `"no"` all leave the tour open. Bind the expression
+  true, `"0"`, `"off"` and `"no"` all leave the tour open. Bind the expression
   (`[open]="touring()"`) rather than relying on the literal.

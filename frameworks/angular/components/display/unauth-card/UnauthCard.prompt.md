@@ -21,7 +21,7 @@ the sibling `UnauthCard.variants.ts` recipe.
 ```
 
 Import `ArenaBrand` and `ArenaFooter` from `frameworks/angular/ProjectionMarkers`
-(or the layer barrel) alongside `UnauthCard` in the host component's `imports` —
+(or the layer barrel) alongside `UnauthCard` in the host component's `imports`,
 `brand` and `footer` are directives, not plain attributes, because they are how the panel
 detects that something was actually projected into each slot. Both wrappers carry their
 own margin, so a card that omits one ships no dead space for it.
@@ -32,7 +32,7 @@ own margin, so a card that omits one ships no dead space for it.
 - Don't put auth logic here. Submit handlers, validation and provider buttons belong to
   the screen; this is the frame around them.
 - Don't override the width. 454px is the figure this panel has always rendered at, and it
-  is arithmetic — content, padding and both hairlines added back together.
+  is arithmetic, content, padding and both hairlines added back together.
 - Don't forget to import `ArenaBrand` / `ArenaFooter` when projecting into `[brand]` /
-  `[footer]` — without them, the attribute is inert and the content silently fails to
+  `[footer]`, without them, the attribute is inert and the content silently fails to
   render inside its wrapper.

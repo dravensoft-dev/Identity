@@ -11,19 +11,19 @@ Rules: validates on `blur` by default; use `validateOn="change"` only for live f
 
 `validate` is the **ninth form**, a `functionInput`: the consumer hands Arena a function it calls on the field's value and whose result it uses. It takes the value as a string and returns the error message, or nothing when the value is valid. It is the only inbound function in the library, and it is legal only because `Input` is a data-entry control.
 
-`onChange` and `onBlur` carry the **value as a string**, not the `ChangeEvent`/`FocusEvent` — a platform event type is an R4 violation inside a payload, so the event does not travel. Read the value directly (`onChange={setEmail}`); there is no `e.target` and no `preventDefault()`.
+`onChange` and `onBlur` carry the **value as a string**, not the `ChangeEvent`/`FocusEvent`, because a platform event type is an R4 violation inside a payload, so the event does not travel. Read the value directly (`onChange={setEmail}`); there is no `e.target` and no `preventDefault()`.
 
 `icon` is a **Phosphor class name Arena draws** (`icon="ph-bold ph-magnifying-glass"`), not a node you pass in; Arena renders the `<i>` and hides it from assistive tech. `prefix` is likewise **static text Arena draws** before the value (`prefix="git@"`).
 
-The members are `label`, `id`, `hint`, `error`, `valid`, `required`, `validate`, `validateOn`, `type`, `icon`, `prefix`, `value`, `disabled`, `readOnly`, `placeholder`, `name`, `autoComplete`, `min`, `max`, `step`, `maxLength` and `pattern`, plus `onChange` and `onBlur`. That is the whole API: the `InputHTMLAttributes` heritage clause and the `{...rest}` spread are gone, so global attributes — `className`, `dir`, `tabIndex`, ARIA and `data-*` — no longer reach the `<input>`, and neither does a consumer `style` object. **`defaultValue` is gone too** — the contract is about a controlled value, so give the field `value` and an `onChange`.
+The members are `label`, `id`, `hint`, `error`, `valid`, `required`, `validate`, `validateOn`, `type`, `icon`, `prefix`, `value`, `disabled`, `readOnly`, `placeholder`, `name`, `autoComplete`, `min`, `max`, `step`, `maxLength` and `pattern`, plus `onChange` and `onBlur`. That is the whole API: the `InputHTMLAttributes` heritage clause and the `{...rest}` spread are gone, so global attributes, `className`, `dir`, `tabIndex`, ARIA and `data-*`, no longer reach the `<input>`, and neither does a consumer `style` object. **`defaultValue` is gone too**: the contract is about a controlled value, so give the field `value` and an `onChange`.
 
-**`id` is the one global attribute that survived as a member**, because the component generates one from `label` to wire the label's `htmlFor` and a consumer had no way to override it — which left an external `<label>`, an `aria-describedby` or a form library addressing the field by name with no path at all. Pass it and it wins; omit it and the label-derived value is still generated.
+**`id` is the one global attribute that survived as a member**, because the component generates one from `label` to wire the label's `htmlFor` and a consumer had no way to override it, which left an external `<label>`, an `aria-describedby` or a form library addressing the field by name with no path at all. Pass it and it wins; omit it and the label-derived value is still generated.
 
-**`readOnly` and `disabled` look different because they mean different things.** A disabled field is dimmed and out of the conversation. A read-only field is at **full contrast** — its value is the point — and drops to the panel surface so it reads as a fact rather than a well you can type into. Reach for `readOnly` whenever the value must stay legible and copyable, and for `disabled` only when the field is genuinely inapplicable right now.
+**`readOnly` and `disabled` look different because they mean different things.** A disabled field is dimmed and out of the conversation. A read-only field is at **full contrast**: its value is the point, and drops to the panel surface so it reads as a fact rather than a well you can type into. Reach for `readOnly` whenever the value must stay legible and copyable, and for `disabled` only when the field is genuinely inapplicable right now.
 
 ### Dates and times
 
-Use the native types. Arena deliberately ships **no `DatePicker` and no `TimePicker`** — the native control is the sanctioned approach: it is keyboard accessible, localized, and it is what a phone user already knows how to drive. Arena's job is to make it look like Arena, which it does, in both themes.
+Use the native types. Arena deliberately ships **no `DatePicker` and no `TimePicker`**: the native control is the sanctioned approach: it is keyboard accessible, localized, and it is what a phone user already knows how to drive. Arena's job is to make it look like Arena, which it does, in both themes.
 
 ```jsx
 <Input label="Deploy date" type="date" required />
@@ -31,7 +31,7 @@ Use the native types. Arena deliberately ships **no `DatePicker` and no `TimePic
 <Input label="Cutover" type="datetime-local" error="Pick a date in the future" />
 ```
 
-`type` is the `InputType` enum: `text`, `email`, `password`, `search`, `tel`, `url`, `number`, `date`, `time`, `datetime-local`. `checkbox` and `radio` are not among them — those are `Checkbox` and `Radio`, their own components.
+`type` is the `InputType` enum: `text`, `email`, `password`, `search`, `tel`, `url`, `number`, `date`, `time`, `datetime-local`. `checkbox` and `radio` are not among them: those are `Checkbox` and `Radio`, their own components.
 
 **Do**
 - Use `type="date"` / `"time"` / `"datetime-local"`. Label, focus ring, error and valid states all work on them.
@@ -40,4 +40,4 @@ Use the native types. Arena deliberately ships **no `DatePicker` and no `TimePic
 **Don't**
 - Don't build a custom calendar popover to replace it. That is a deliberate non-goal: a custom picker is a large accessibility surface to re-earn, and the native one already has it.
 - Don't fake a date field with `type="text"` and a mask. It loses the picker, the mobile keyboard and the locale.
-- Don't reach for a wrapper attribute or an inline `style` to size the field — wrap it in a container you control instead.
+- Don't reach for a wrapper attribute or an inline `style` to size the field; wrap it in a container you control instead.

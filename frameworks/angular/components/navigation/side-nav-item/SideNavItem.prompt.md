@@ -1,4 +1,4 @@
-Arena side-nav item — one destination in an `arena-side-nav`. Standalone, `OnPush`, signal I/O.
+Arena side-nav item, one destination in an `arena-side-nav`. Standalone, `OnPush`, signal I/O.
 Styling is the family's shared `SideNav.variants.ts` recipe. The host declares `display: contents`
 and the row itself is a real `<a>` or a real `<button>`, so the browser's own activation,
 navigation and focus semantics are never re-implemented.
@@ -18,7 +18,7 @@ to a component that renders two different elements. What the rendered element ca
 the platform and from `SideNav`'s own `navigation` binding.
 
 `id` and `label` are both **required and guarded at runtime**. `icon` is a Phosphor class name that
-Arena draws as an `aria-hidden` `<i>` — the single-icon convention, never a projected node.
+Arena draws as an `aria-hidden` `<i>`, the single-icon convention, never a projected node.
 
 `aria-current="page"` is present on the active row and **absent** on the rest, never `false`.
 
@@ -27,7 +27,7 @@ Arena draws as an `aria-hidden` `<i>` — the single-icon convention, never a pr
   and an item never declares its own.
 - **Do** use `href` when the destination is a real URL, even in a routed app. A nav made of buttons
   cannot be opened in a new tab.
-- **Don't** wrap it in anything expecting the indent to survive — it will, because depth is pulled
+- **Don't** wrap it in anything expecting the indent to survive, it will, because depth is pulled
   through DI rather than pushed, but a wrapper still changes the flex layout of the column.
 - **Don't** put a badge or a count inside it. The item takes no projected content; a row that needs
   one is a change to the contract, not to a caller.

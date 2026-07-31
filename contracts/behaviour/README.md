@@ -1,10 +1,10 @@
 # Arena behaviour contracts
 
 `contracts/design/` answers *what is this value*. This directory answers *what must this
-component do* — which roles it carries, which keys it answers, where focus goes,
+component do*: which roles it carries, which keys it answers, where focus goes,
 what dismisses it.
 
-It is a level under `contracts/`, beside `contracts/api/` — not a corner of the
+It is a level under `contracts/`, beside `contracts/api/`, rather than a corner of the
 design one, and deliberately so. A contract is not a value: DTCG models colours,
 dimensions and durations, and does not model "Escape closes this". Putting a
 pattern under `contracts/design/` would mean relaxing `scripts/check/core/check-dtcg.mjs`, which
@@ -14,8 +14,8 @@ is one of the cleanest gates in the repo.
 
 One file per pattern in this directory, each citing the source it was adopted
 from. Most cite an actual [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/patterns/)
-page — count them rather than trusting a figure here, which moves whenever a
-batch adds a pattern (`ls *.json | wc -l` for the total, run from this
+page. Count them rather than trusting a figure here, which moves whenever a
+pattern is added (`ls *.json | wc -l` for the total, run from this
 directory, and `grep -l 'apg/' *.json | wc -l` for the APG-derived share; note
 `navigation` cites an APG *practices* page rather than a *patterns* one, so a
 grep on `apg/patterns` alone undercounts by one). The exceptions are not a fixed
@@ -23,8 +23,8 @@ list and must not be written as one: `progressbar`, `status` and `textbox` cite
 the ARIA 1.2 role reference instead, because APG has no pattern page for any of
 those roles; `figure-with-data-table` cites WCAG because APG has no chart
 pattern; `none` and `absent` cite nothing, because there is nothing to adopt
-from when the claim is that no pattern applies — see below for why they are two
-different patterns and not one.
+from when the claim is that no pattern applies. See below for why those two are
+two patterns and not one.
 
 **That set is machine-checked**, which is what makes it safe to name here at
 all: `none aside, exactly the patterns with no APG pattern page cite something
@@ -33,16 +33,16 @@ Adding a pattern that cites anything but an APG *patterns* page fails that test
 until the list follows, so the test is the authority and this paragraph is the
 explanation.
 
-`none` and `absent` look alike — both cite nothing, both require nothing — but they
-answer different questions, and collapsing them was the exact bug this layer once
-had. `none` binds a component that **renders**: it exists, a user can see it, and it
+`none` and `absent` look alike, since both cite nothing and both require nothing, but they
+answer different questions, and one pattern for both answers is a defect rather than a
+simplification. `none` binds a component that **renders**: it exists, a user can see it, and it
 simply offers no interactive affordance (Angular's Card, a bordered surface with
 nothing to act on). `absent` binds the fact that **no such component exists in this
-layer at all**. Nothing binds it today — every component exists in both layers — which is
+layer at all**. Nothing binds it today, because every component exists in both layers, which is
 exactly why the pattern has to stay: the next component one layer lands first has somewhere
-to record itself. Before `absent` existed, both facts were recorded as `none`,
+to record itself. One pattern carrying both facts leaves them
 distinguishable only by reading the binding's prose `reason` rather than by anything
-a tool could check — the same "no entry means either verified-equivalent or nobody
+a tool can check, which is the same "no entry means either verified-equivalent or nobody
 looked" ambiguity this whole layer exists to end, one level down. Use `none` for a
 real, inert surface; use `absent` when the other layer has nothing to bind at all.
 
@@ -69,62 +69,62 @@ agree or the difference is written down.
 ### Flat bindings and cased bindings
 
 A binding describes a component; a render suite judges one render of it. A
-component that renders differently depending on its own props — `Alert`
-rendering `role="alert"` for a `danger` tone and `role="status"` for any other —
+component that renders differently depending on its own props, as `Alert` does by
+rendering `role="alert"` for a `danger` tone and `role="status"` for any other,
 is several renders, and no single flat exception list is correct for all of them.
 
 **Name no component here as a present-tense example of carrying cases.** A component
 name written into another file's prose is a claim no gate reads, so it rots while every
-gate stays green — `CLAUDE.md` carries the hazard and the change-time grep that finds
+gate stays green, and `CLAUDE.md` carries the hazard and the change-time grep that finds
 it. `Alert` is the one present-tense name this page keeps, because the
 paragraph on `when` below reasons from its `danger` case, so removing it would cost a
 worked example and buy nothing. For the live set, run the command at the end of this
 section rather than reading any name from this page.
 
 `pattern` and `exceptions` are one shape: `cases` is the other. They are
-alternatives, never both — a binding declaring both is rejected by
+alternatives, never both, and a binding declaring both is rejected by
 `validateBinding`. A flat binding (`pattern` plus `exceptions`) still means
 exactly what it always has, and stays the right shape for the common case of a
 component with one render worth judging. A cased binding replaces both with a
 `cases` array, and each entry carries:
 
-- `name` — a short identifier for the case (`"danger"`, `"circle"`);
-- `when` — prose stating the configuration that produces it (`"tone is
+- `name`: a short identifier for the case (`"danger"`, `"circle"`);
+- `when`: prose stating the configuration that produces it (`"tone is
   \"danger\""`, `"variant is \"circle\""`);
-- `pattern` — the pattern that case binds;
-- `exceptions` — that case's own exception list, exactly as a flat binding's;
-- `reason` — optional; required only when `pattern` is `none` or `absent`,
+- `pattern`: the pattern that case binds;
+- `exceptions`: that case's own exception list, exactly as a flat binding's;
+- `reason`: optional, and required only when `pattern` is `none` or `absent`,
   exactly as a flat binding's, and inherited from the binding's own `reason`
   when the case does not override it.
 
 `when` is prose, and prose is all that is possible: nothing can verify that a
 render suite actually rendered the configuration a case names. A DOM
-discriminator would be circular in every motivating case anyway — what marks
+discriminator would be circular in every motivating case anyway: what marks
 `Alert`'s `danger` case is `role="alert"`, which is the very attribute the
 requirement under examination is about.
 
 `bindingCases()` in `scripts/lib/arena/behaviour-contracts.mjs` is the one place the
 two shapes meet: a flat binding normalises to a single anonymous case (`name:
-null`), so every consumer — `check:behaviour`, `check:compliance`, both
-layers' render-suite wrappers — reads a binding as a list of cases and never
+null`), so every consumer (`check:behaviour`, `check:compliance` and both
+layers' render-suite wrappers) reads a binding as a list of cases and never
 tests for `cases` itself. `reason` rides along on each normalised case too,
 inherited from the binding unless the case overrides it, because a case may
 bind `none` or `absent`, and those require one exactly as a flat binding does.
 
 The flat shape stays valid and means one case, so the untouched majority is not
 churned to say so. Find the bindings that do declare `cases` with
-`grep -rl '"cases"' --include='*.behaviour.json' frameworks/` — read the list
-rather than a figure written here, which drifts the first time a batch converts
-another binding.
+`grep -rl '"cases"' --include='*.behaviour.json' frameworks/`. Read the list
+rather than a figure written here, which drifts the first time another binding
+is converted.
 
 ### What this layer cannot express, and what a green run does not claim
 
-Four limits are structural. None is a defect waiting on a batch; each is a property of what a
+Four limits are structural. None is a defect waiting to be fixed; each is a property of what a
 binding is, and knowing them is what stops a green run being read as more than it says.
 
 **Cases reach a component's own props and nothing further.** A requirement that holds only for
-some *consumer* usage — one that depends on how two components were assembled, or on what was
-passed in — is a different level, and a case cannot name it: a case describes a render the
+some *consumer* usage, one that depends on how two components are assembled or on what is
+passed in, is a different level, and a case cannot name it: a case describes a render the
 component's own API can produce. There is no grep for this class either, because it is a
 property of an implementation rather than a string in a binding; finding the next one means
 reading an implementation against its binding. `comparePattern`'s stale-exception message has
@@ -134,20 +134,20 @@ no vocabulary for it, offering only "delete it or name a subject".
 render its `when` admits.** A component with five meaningful renders may declare two and every
 gate stays green. `assertPatternCases` enforces one thunk per case *name*, never one render per
 configuration the prose names, so a `when` covering several shapes is proved by whichever one
-its suite mounted. Deriving cases from source was weighed and refused: a scan for prop branches
+its suite mounts. Deriving cases from source is refused: a scan for prop branches
 finds fewer renders than a reader does, which rebuilds the false-negative class the evaluator's
-own design already rejected once.
+own design exists to avoid.
 
 **A case bound to `none` verifies nothing**, because `none` has no requirements. The verdict can
-be correct — a label, or a chip with no click handler, has no interactive contract — but the
+be correct, since a label or a chip with no click handler has no interactive contract, but the
 suite can then only confirm the case was rendered, never that it is correctly inert.
 
 **A BEHAVIOURAL requirement with no suite to pin it is unfalsifiable, not merely unverified.**
 Some requirements no single element can decide from the DOM (`focus.*`, `keyboard.*`,
 `content.noAutoDismiss`, `alternative.table`); the evaluator returns `null` and the suite
 declares the verdict in its `behavioural` map. That verdict is trusted, never re-derived, so an
-unpinned one has nothing to compare against and stays green whatever the component does — which
-is how two exceptions once stayed false for several batches with nothing able to see it. Read
+unpinned one has nothing to compare against and stays green whatever the component does. An
+exception of this kind can be false indefinitely with nothing able to see it. Read
 the current set with
 
 ```bash
@@ -166,8 +166,8 @@ unnamed, and a requirement in `IDREF` that finds its attribute with no resolver 
 **throws** rather than degrading to a presence check.
 
 Two things stay beyond it, and both are limits rather than gaps. **A resolved `aria-labelledby`
-may name an EMPTY element** — the id resolves, the name reports as present, and the real
-accessible name is the empty string. Requiring text at the target was weighed and refused:
+may name an EMPTY element**: the id resolves, the name reports as present, and the real
+accessible name is the empty string. Requiring text at the target is refused, because
 `textContent` cannot see a name that legitimately comes from an image's `alt` or a nested
 `aria-label`, so the check would report correct components as unnamed, and the cheapest way to
 silence a false OVERCLAIM is a fabricated exception written into a binding. **And a resolved
@@ -177,38 +177,38 @@ of element a reference must reach.
 The only remedy either has is the one the API layer takes: a member that only a human can supply
 is **required and guarded at runtime** rather than defaulted, which moves the judgement to the
 consumer instead of removing it. Whether the names that produces are good ones is a question no
-assertion answers and no gate can — see the by-hand checklist in each component's `.prompt.md`.
+assertion answers and no gate can. See the by-hand checklist in each component's `.prompt.md`.
 
-### A static text scan was built, measured and cut — do not re-propose one
+### There is no static text scan, and one is not worth proposing
 
-A scan of component sources was implemented as the cheap tier beneath the render suites and run
-against the whole tree before being rejected. In the "claimed met but no textual evidence"
-direction it reported **60 of 118 true claims as unmet**, because of **implicit ARIA**: a native
+A scan of component sources is the obvious cheap tier beneath the render suites, and it was
+measured against the whole tree. In the "claimed met but no textual evidence"
+direction it reports **60 of 118 true claims as unmet**, because of **implicit ARIA**: a native
 `<button>` satisfies `roles.element`, `keyboard.Space` and `keyboard.Enter` while leaving nothing
 to grep, and `<input type="checkbox">` satisfies `states.checked`. A text scan penalises exactly
-the correctly-authored components. In the "exception is now stale" direction it wrongly retired
-**18 of 94 live exceptions**, and none of the eighteen was a regex that could be sharpened: each
-was a claim about *placement*, *branch*, *conditional value* or *semantic completeness*. A
-rendered DOM resolves all four at once, which is why the render suites absorbed the
-stale-exception check instead of sharing it with a scan. A 51% false-unmet rate is worse than an
-honest hole.
+the correctly-authored components. In the "exception is now stale" direction it wrongly retires
+**18 of 94 live exceptions**, and none of the eighteen is a regex that could be sharpened: each
+is a claim about *placement*, *branch*, *conditional value* or *semantic completeness*. A
+rendered DOM resolves all four at once, which is why the render suites carry the
+stale-exception check alone. A 51% false-unmet rate is worse than an honest hole.
 
 ### A claim about code this repository does not own cannot be checked here
 
-`BehaviourDelegated.json` once asserted what a third-party library's controls did — that a
-control applied one role rather than another, that a tooltip defaulted to no show-delay — with
-no record of the version verified against. `check:behaviour` verifies that a declaration names a
-pattern and a requirement that exist, never that a claim about somebody else's package is still
+A delegation asserts what somebody else's controls do, such as that a control applies one role
+rather than another or that a tooltip defaults to no show-delay, and it carries no record of the
+version verified against. `check:behaviour` verifies that a declaration names a
+pattern and a requirement that exist, never that a claim about another package is still
 true, so the suite stays green while the reason strings quietly become false. Pinning the
-verified version and gating every delegation path were both proposed; neither is what closed it.
-**Writing Arena's own control did**, which also brought the component inside `check:dimensions`,
-`check:compliance` and the Angular arm of `check:api`. Any future delegation reopens this whole
-paragraph.
+verified version and gating every delegation path both leave that hole open. **Writing Arena's
+own control is what closes it**, and it also brings the component inside `check:dimensions`,
+`check:compliance` and the Angular arm of `check:api`. Any delegation reopens this whole
+paragraph, which is why a `BehaviourDelegated.json` entry records an absence rather than a
+claim about what somebody else's control does.
 
 ### Native semantics vs. an absent capability
 
 A requirement met by the element's own native semantics counts as **met, with no
-exception** — whether the attribute is explicitly authored by the component
+exception**, whether the attribute is explicitly authored by the component
 (`disabled={disabled}`, `required={required}`, `checked={checked}`) or is simply
 implicit in rendering that native element at all, with no consumer action needed
 (a native `<select>`'s combobox role and expanded/controls/activedescendant
@@ -217,13 +217,13 @@ component asserted nothing; the browser's own accessibility mapping did the
 work, and that is exactly what the requirement asks for.
 
 A requirement is an **exception** when the component gives no supported,
-documented way to reach it — not merely "no explicit prop", since a generic
+documented way to reach it, which is not merely "no explicit prop", since a generic
 `...rest` spread can still land an arbitrary attribute on the underlying native
 element without the component ever having designed for it. The test is whether
 the component's own design acknowledges the capability: is it destructured, does
 it drive any of the component's own logic or styling, is it named in the
 `*.prompt.md`? `Input`'s `min`/`max` pass through `...rest` too, but
-`Input.prompt.md` calls them out by name as a supported feature — that
+`Input.prompt.md` calls them out by name as a supported feature, and that
 authorship is what makes them "met", not the passthrough alone. `readOnly`
 reaching the native `<input>`/`<textarea>` the same way, with no default, no
 effect on any rendered state, and no mention in the prompt, is not a designed
@@ -233,14 +233,13 @@ supported way to make the state true, whether or not a determined consumer
 could force it through.
 
 **What it does not assert is whether the component actually behaves as it says.**
-That is a later plan's work. A component can bind `dialog-modal` here and trap no
-focus at all.
+A component can bind `dialog-modal` here and trap no focus at all.
 
 `check:behaviour` still proves only that a declaration is well formed. What proves
 a declaration is *true* is a render suite: for a component listed in `COVERED`
 (`scripts/check/arena/check-compliance.mjs`), a suite asserts per requirement that the rendered
 DOM either meets it with no exception declared or fails it with one declared. That
-is bidirectional on purpose — it catches an overclaim and a stale exception with
-one statement — and it is why an exception can now expire. Coverage is partial:
+is bidirectional on purpose, catching an overclaim and a stale exception with
+one statement, and it is why an exception can expire. Coverage is partial:
 `check:compliance` guards that the record is accurate, never that it is complete.
 Neither gate is an accessibility claim about any component.

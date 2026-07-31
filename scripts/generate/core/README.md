@@ -2,7 +2,7 @@
 
 | script | emits | why it exists |
 | --- | --- | --- |
-| `fetch-fonts.mjs` | `contracts/design-generated/fonts.generated.css` and `assets/fonts/*.woff2` | Downloads the Latin subsets of the three families `contracts/design/typography.json` names, and declares them with `@font-face`, so a page loads fonts from its own origin and makes no CDN request. **The binaries carry no `.generated.` infix and no header**: they are binary, so a header is impossible, and reproducing them needs the network — the one generated output in the repository identified by its generator rather than by its name. `check:generated` records that exception by literal value with its reason. |
+| `fetch-fonts.mjs` | `contracts/design-generated/fonts.generated.css` and `assets/fonts/*.woff2` | Downloads the Latin subsets of the three families `contracts/design/typography.json` names, and declares them with `@font-face`, so a page loads fonts from its own origin and makes no CDN request. **The binaries carry no `.generated.` infix and no header**: they are binary, so a header is impossible, and reproducing them needs the network. They are the one generated output in the repository identified by its generator rather than by its name. `check:generated` records that exception by literal value with its reason. |
 
 `core` because it touches `contracts/` and `assets/`, which the design layer owns, and no
 framework layer.

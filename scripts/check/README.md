@@ -2,7 +2,7 @@
 
 **A gate states one claim about the tree and fails when it stops being true.** Twenty-six of
 them, registered in `GATES` in [`arena/check-all.mjs`](./arena/check-all.mjs), which
-`bun run check` runs unconditionally — one failure never stops the rest, so a full sweep
+`bun run check` runs unconditionally: one failure never stops the rest, so a full sweep
 reports every problem in one pass rather than the first.
 
 ## The shape of a gate
@@ -13,30 +13,30 @@ returning problem strings, and its `main()` prints them and exits non-zero. That
 suites can assert on a gate's exception map by name without running the gate.
 
 **A reason-carrying map is part of the gate, not documentation of it.** `EXEMPT`,
-`PASSTHROUGH`, `EXCLUDED`, `COVERED`, `UNTRACKED` — each entry names a case and says why, and a
+`PASSTHROUGH`, `EXCLUDED`, `COVERED`, `UNTRACKED`: each entry names a case and says why, and a
 **stale entry fails the gate itself**. That is what keeps the exception list from outliving the
 exception, and it is why a debt lives beside its gate rather than in prose.
 
 ## A green run is only as good as what the gate looked at
 
-**A gate that finds nothing reports zero violations either way**, and that failure mode has
-shipped in four different mechanisms here, each time behind a plausible line of output: a
-manifest walk that iterated zero manifests after the layer went nested, a per-component path
-probe that wrapped `existsSync` and returned `null` so `if (!path) continue` skipped a whole
-layer, a verification command that named a directory holding a fraction of the suites it
-claimed, and a gate that was complete, passing, and registered nowhere.
+**A gate that finds nothing reports zero violations either way**, and it does so behind a
+plausible line of output. Four mechanisms produce it: a walk that iterates zero files because
+the tree moved under it, a per-component path probe that wraps `existsSync` and returns `null`
+so `if (!path) continue` skips a whole layer, a verification command naming a directory that
+holds a fraction of the suites it claims, and a gate that is complete, passing, and registered
+nowhere.
 
 The shape is always one of two: **a lookup that cannot tell "absent" from "not found"**, or **a
 path that narrows a run without narrowing what the run claims**. Both have a remedy, and both
-are rules for a new gate rather than history:
+are rules a new gate holds to:
 
 - **Decide absence by walking the tree**, so "this layer does not implement it" and "this gate
-  cannot find it" stop being the same value. Resolving by constructed path is what made the
+  cannot find it" stop being the same value. Resolving by constructed path is what makes the
   per-component probe silent.
 - **Make a zero-result count an explicit failure** rather than a vacuous pass. `check:tailwind`,
   `check:radius`, `check:structure`, `check:api`, `check:behaviour`, `check:dtcg` and
   `check:script-tokens` each carry one, as an exported pure function with a suite.
-- **A gate has two existences — the file, and every place that invokes it — and only the second
+- **A gate has two existences, the file and every place that invokes it, and only the second
   is worth anything.** Adding a gate means adding it to `package.json` **and** to `GATES`.
   Citing a gate as evidence means confirming it is in `GATES` first.
 
@@ -48,10 +48,10 @@ pass" but "how many things did it look at, and is that the number I expect".
 Three gates need a runtime dependency that plain node does not have: `check:cards` needs a
 headless browser, `check:vendor` needs `Bun.build`, `check:demos` needs `Bun.Transpiler`. Where
 the dependency is missing the gate exits **2**, `check-all` marks it `SKIP`, and the whole run
-reports **INCOMPLETE** rather than passing. `ARENA_CHECK_STRICT=1` — or `CI=true`, so an
-automated run never skips quietly — turns that into a hard failure.
+reports **INCOMPLETE** rather than passing. `ARENA_CHECK_STRICT=1`, or `CI=true` so an
+automated run never skips quietly, turns that into a hard failure.
 
-## What three of these gates now claim
+## What a generator-comparing gate claims
 
 `check:tokens`, `check:fonts`, `check:vendor`, `check:demos` and `check:tailwind-generated` all
 compare what a generator *would* emit against what is on disk. For the first two the file is
@@ -63,7 +63,7 @@ run. See [`../build/README.md`](../build/README.md).
 ## The five domains
 
 Counts below are of **registered gates**; `arena/` and `core/` each hold one more script that
-is run by path and one — `check-all.mjs` — that is the runner rather than a gate.
+is run by path and one, `check-all.mjs`, that is the runner rather than a gate.
 
 | domain | gates | |
 | --- | --- | --- |

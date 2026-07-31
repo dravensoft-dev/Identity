@@ -1,4 +1,4 @@
-Guided in-product onboarding (H10). Complements `EmptyState`: presents features step by step the first time. Controlled — store `index` and whether it was already completed (e.g. in localStorage) so it isn't repeated.
+Guided in-product onboarding (H10). Complements `EmptyState`: presents features step by step the first time. Controlled: store `index` and whether it was already completed (e.g. in localStorage) so it isn't repeated.
 
 ```jsx
 const [step, setStep] = useState(0);
@@ -15,13 +15,13 @@ const [step, setStep] = useState(0);
 
 **Behaviour.** The coachmark is a modal dialog and behaves like one: opening moves focus to
 the first control inside it, Tab is trapped at both ends of that set, closing restores focus
-to whatever had it before, and **Escape dismisses through `onSkip`** — the same channel the
+to whatever had it before, and **Escape dismisses through `onSkip`**: the same channel the
 scrim click uses, so Escape joins the mouse path rather than replacing it. There is no
 separate "dismiss" callback to wire.
 
 **The accessible name is a fallback chain**, `step.title ?? step.eyebrow ?? "Step N of M"`,
 **A caller who wants a useful name still supplies a
-step `title`** — a positional name is a floor, not a substitute. The progress dots inside the
+step `title`**: a positional name is a floor, not a substitute. The progress dots inside the
 panel carry a name of their own, `Progress: step N of M`, so an untitled step announces the
 dialog and its dots as two different things rather than as the same string twice.
 
@@ -40,7 +40,7 @@ the interior is this check.
 
 ## Verifying the focus trap by hand
 
-A suite proves the boundary wrap — Arena's own `.focus()` call. It cannot prove the
+A suite proves the boundary wrap: Arena's own `.focus()` call. It cannot prove the
 **interior**, that Tab from a middle control reaches the next one: that is the
 browser's native sequential focus navigation, which happy-dom does not implement. A
 browser-driven gate stays refused, so this list is the check.
@@ -50,7 +50,7 @@ Serve the tree with `bun run demos` and open
 
 **Start by pressing Escape.** That card renders with the tour already open, because a
 specimen has to show something, and pressing "Start tour" while `open` is already
-`true` correctly does nothing — the hook keys its effect on `open` changing. Skipping
+`true` correctly does nothing, because the hook keys its effect on `open` changing. Skipping
 this step measures the closed-to-open transition that never happened.
 
 Then, with the tour closed:
@@ -61,9 +61,9 @@ Then, with the tour closed:
 2. **Tab once.** Focus moves to **Next**. Native navigation, not Arena's.
 3. **Tab again.** Focus wraps back to Skip.
 4. **Shift+Tab.** Focus wraps from Skip to Next.
-5. **Escape.** The tour closes through `onSkip` — the same channel the Skip button and
+5. **Escape.** The tour closes through `onSkip`, the same channel the Skip button and
    the scrim click use, which is how `dialog-modal`'s `keyboard.Escape` is met without adding
-   a member — and focus returns to "Start tour".
+   a member, and focus returns to "Start tour".
 
 Driving this through CDP: Enter must be `keyDown` with `text: '\r'`; a `rawKeyDown`
 does not activate a button.

@@ -1,4 +1,4 @@
-Brand lock-up: a mark paired with a product name. `mark` and `name` are required —
+Brand lock-up: a mark paired with a product name. `mark` and `name` are required,
 nothing defaults, so the first render is either your brand or a type error, never
 Dravensoft's by accident.
 
@@ -8,7 +8,7 @@ Dravensoft's by accident.
   name="Draven" dim="soft" />
 ```
 
-`size` picks both halves at once — the mark's slot and the wordmark's size. It is a
+`size` picks both halves at once, the mark's slot and the wordmark's size. It is a
 fixed repertoire, not a ratio: `sm` (30/17) sits beside a product name in an
 application frame, `md` (40/24) heads a signed-out panel, `lg` (54/34) is the brand
 manual's Primary · horizontal, and `xl` (124/78) is the hero case, where the lock-up
@@ -26,7 +26,7 @@ are two decisions and not three:
 ## Do / Don't
 
 - **Do** pass the mark as an asset, so the call site names which brand it renders.
-- **Do** give the mark an empty `alt` — the wordmark beside it is the accessible name,
+- **Do** give the mark an empty `alt`, the wordmark beside it is the accessible name,
   and a mark announced separately reads the brand twice.
 - **Don't** put a `width` or `height` on the node you pass as `mark`. `AppLogo` sizes
   the slot and the mark fills it; a mark that sizes itself fights the lock-up.
@@ -34,5 +34,5 @@ are two decisions and not three:
   the mark is a brand asset (`assets/rotor-*.svg`), and the lock-up is this component,
   which takes that asset as `mark` alongside a product `name`.
 - **Don't** mix the variants. A crimson mark beside an undivided `DRAVENSOFT` is half
-  of Primary and half of Monochrome — no variant at all, and precisely the defect that
+  of Primary and half of Monochrome, no variant at all, and precisely the defect that
   existed in the console before this component held the rule.

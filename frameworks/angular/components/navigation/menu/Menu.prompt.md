@@ -1,11 +1,11 @@
-Arena menu — a dropdown of actions hanging off a trigger the consumer draws. Standalone,
+Arena menu, a dropdown of actions hanging off a trigger the consumer draws. Standalone,
 `OnPush`, signal I/O. Styling is the sibling `Menu.variants.ts` recipe; the component carries no
-CSS classes of its own. The host wraps the trigger and nothing else — the panel lives in a
+CSS classes of its own. The host wraps the trigger and nothing else; the panel lives in a
 `@angular/cdk/overlay` pane on `document.body`.
 
 That is the whole reason for the overlay: a menu's canonical home is an overflow row in a table
 or a card, and an absolutely-positioned panel is clipped by the first `overflow: hidden`
-ancestor. Arena uses the CDK for **position only** — the roles, the keys and the focus are
+ancestor. Arena uses the CDK for **position only**: the roles, the keys and the focus are
 Arena's. The app must import `frameworks/angular/theme/arena-cdk.css` once, or the panel renders
 unpositioned.
 
@@ -26,7 +26,7 @@ protected readonly rowActions: MenuItem[] = [
 
 `trigger` is a **projected slot**, marked with the bare `trigger` attribute, because the consumer
 owns what the control looks like and what it is called. Arena writes `aria-haspopup="menu"` and
-`aria-expanded` onto it — onto the **focusable element**, resolved by search rather than by
+`aria-expanded` onto it, onto the **focusable element**, resolved by search rather than by
 taking the host's first child. That distinction is load-bearing: an `<arena-button>` is
 `display: contents`, so it is neither focusable nor in the accessibility tree, and the attributes
 on it would reach nobody. It also stops its own native click, so the activation is bound to the
@@ -37,7 +37,7 @@ also synthesize a click and open the menu twice. Escape closes and returns focus
 a pointer press outside the host **and** outside the pane closes without moving focus. Opening
 moves focus to the first enabled row.
 
-`select` carries the **whole item**, not a key — `MenuItem` deliberately has no `id`. A divider
+`select` carries the **whole item**, not a key, since `MenuItem` deliberately has no `id`. A divider
 and a header are not rows at all and render no `menuitem`; a disabled row renders one and reports
 nothing.
 
@@ -45,29 +45,29 @@ nothing.
 - **Do** mark exactly one element with `trigger`, and one that is or contains a focusable
   control. Arena has nothing to hang the menu on otherwise.
 - **Do** put the marker on the element `arena-menu` itself receives. Wrapping the control in
-  another Arena component — an `arena-tooltip`, say — means the marker goes on the **wrapper**,
+  another Arena component, an `arena-tooltip`, say, means the marker goes on the **wrapper**,
   since `<ng-content select="[trigger]">` matches what is projected and not what is nested
   inside it. The focusable control is still found by search, so the attributes land in the right
   place either way; what a misplaced marker loses is the projection, and the menu then renders no
   trigger at all.
 - **Do** put destructive entries last, behind a `divider`. `destructive: true` draws the row in
-  the danger ink and keeps it **outline** — a menu row is never a filled danger surface.
+  the danger ink and keeps it **outline**: a menu row is never a filled danger surface.
 - **Do** reach for `align="end"` when the trigger sits at the right edge of its row, so the panel
   hangs inward instead of off the page. The CDK will flip it above the trigger near the bottom of
   the viewport on its own.
 - **Don't** use `shortcut` expecting Arena to bind the key. It is display only, and the contract
-  says so — the host binds it or nothing does.
+  says so; the host binds it or nothing does.
 - **Don't** put a form, a submenu or anything focusable beyond the rows into `items`. `MenuItem`
   is three shapes and none of them projects content; a menu that needs more is a dialog.
 
-**By hand, in real Chromium** — none of this is provable in happy-dom, which has no layout and no
+**By hand, in real Chromium**: none of this is provable in happy-dom, which has no layout and no
 platform activation. Run `bun run demos` and open
 `/frameworks/angular/components/navigation/menu/Menu.card.html`:
 - The panel escapes an `overflow: hidden` ancestor and a scroll container, and repositions while
   that container scrolls.
 - Near the bottom of the viewport it flips above its trigger; `align="end"` hangs it from the
   trigger's right edge.
-- One Enter opens it **once**, and one Space does too — the double-open is exactly what the
+- One Enter opens it **once**, and one Space does too; the double-open is exactly what the
   `preventDefault` is there to stop, and only a browser synthesizes the click that would cause
   it.
 - A menu opened from inside an `arena-dialog` paints above the panel, and a tooltip on a row

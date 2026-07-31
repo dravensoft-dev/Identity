@@ -1,4 +1,4 @@
-Arena segmented control — a compact inline filter over mutually exclusive options. **A real radio
+Arena segmented control, a compact inline filter over mutually exclusive options. **A real radio
 group, never a tab list**, and it carries no crimson: a filter never outweighs the action beside
 it. Standalone, `OnPush`, signal I/O. The host **is** the track, so it carries `role="radiogroup"`,
 the accessible name and the focus ring.
@@ -20,20 +20,20 @@ readonly ranges: SegmentOption[] = [
 ```
 
 **It replaces a Material control that got one thing wrong, and this one must not inherit it.**
-`MatButtonToggleGroup` applies `role="group"` even in its exclusive single-selection mode — the
+`MatButtonToggleGroup` applies `role="group"` even in its exclusive single-selection mode, the
 delegated entry carried a `roles.group` exception saying so, citing Material's own docs. Arena
 renders `role="radiogroup"` itself, so this binding has **no exceptions**, and the compliance suite
 asserts the role by name rather than by pattern so that a regression reads as what it is.
 
 **Do / Don't**
-- **`ariaLabel` is required** and names what is being *filtered* — "Time range", not "Filter". A
+- **`ariaLabel` is required** and names what is being *filtered*, "Time range", not "Filter". A
   radio group with no accessible name is announced unlabelled, and a name that only says the
   control is a filter satisfies the requirement while telling a screen-reader user nothing.
 - **Two to four options with one-word labels.** The track stops being compact past that; a longer
   set is `arena-radio-group`, and a set that switches *views* rather than filtering one is
   `arena-tabs`.
 - It works controlled or not: pass `value` and it is yours, or pass `defaultValue` and the track
-  remembers its own choice. With neither, **the first option is selected** — a filter showing
+  remembers its own choice. With neither, **the first option is selected**: a filter showing
   nothing selected over an unfiltered list is lying about itself.
 - **The roving tab stop, the arrow keys and Space are the platform's.** Each segment is a native
   `<input type="radio">` inside its `<label>`, sharing one `name`. Arena authors no `tabindex`.
@@ -46,12 +46,12 @@ asserts the role by name rather than by pattern so that a regression reads as wh
 - Don't give the selected segment the brand colour. It lifts on `bg-neutral` with a shadow instead,
   and the variants suite asserts that no arm of this recipe touches `primary` at all.
 
-**By hand, in real Chromium** — the platform behaviour above is what happy-dom cannot show. Run
+**By hand, in real Chromium**: the platform behaviour above is what happy-dom cannot show. Run
 `bun run demos` and open
 `/frameworks/angular/components/navigation/segmented-control/SegmentedControl.card.html`:
 - Tab into the track **once**: the ring appears around the whole track, not around a segment, and
   Tab again leaves it rather than walking the segments.
 - Arrow keys move the selection along the track and wrap at both ends.
 - The selected segment's shadow reads as a lift against the track's own surface at `sm` as well as
-  `md` — `sm` is the size that decides whether the lift is visible at all.
+  `md`, `sm` is the size that decides whether the lift is visible at all.
 - Two tracks on the page select independently, which is the generated `name` working.

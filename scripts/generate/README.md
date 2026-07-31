@@ -1,7 +1,7 @@
 # scripts/generate/
 
-**Generate emits source from data.** The input is a declaration nobody wrote as code — DTCG
-JSON, an API contract, a font family list — and the output is source in a language a layer
+**Generate emits source from data.** The input is a declaration nobody wrote as code (DTCG
+JSON, an API contract, a font family list) and the output is source in a language a layer
 speaks. The distinction from [`../build/`](../build/README.md) is the input, not the output:
 build starts from something already written in the target's idiom, generate starts from a fact
 about the design system and picks the idiom itself.
@@ -12,7 +12,7 @@ constant and a TypeScript constant each have to look like to say it.
 
 Every output is named `<stem>.generated.<ext>`, with **one exception**: the font binaries under
 `assets/fonts/`. They are binary, so they can carry no header, and reproducing them needs the
-network — the only generated output in the repository identified by its generator rather than
+network. They are the only generated output in the repository identified by its generator rather than
 by its name. `check:generated` names it by literal value with that reason, so a second such
 case fails until it is argued for.
 
@@ -22,7 +22,7 @@ case fails until it is argued for.
 | --- | --- | --- |
 | [`arena/`](./arena/README.md) | 2 | writes into two framework layers at once, plus `contracts/` |
 | [`core/`](./core/README.md) | 1 | `contracts/` and `assets/`, which the design layer owns |
-| `react/`, `angular/`, `tailwind/` | — | empty; each layer's generated source is written by an `arena` script, because it lands in both layers at once |
+| `react/`, `angular/`, `tailwind/` | none | empty; each layer's generated source is written by an `arena` script, because it lands in both layers at once |
 
 The three empty domains keep a `.gitkeep`. A generator touching one layer alone is possible and
 has simply not been needed: emission is **per layer** precisely so a component's import never

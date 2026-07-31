@@ -1,6 +1,6 @@
 Arena breadcrumb trail. Mono, wide-tracked, with the last crumb as the current page --
 not a link, and carrying `aria-current="page"`. The landmark is a real `<nav>` inside a bare
-`display: contents` host, with `aria-label` bound to the required `ariaLabel` input — the same
+`display: contents` host, with `aria-label` bound to the required `ariaLabel` input, the same
 carve-out `arena-pagination` takes, because the `navigation` pattern offers `role="navigation"`
 only for when a `<nav>` cannot be used. Use it where a hierarchy is deeper than tabs can show.
 
@@ -8,9 +8,9 @@ only for when a `<nav>` cannot be used. Use it where a hierarchy is deeper than 
 styled `<nav>`**, which is the price every carve-out pays and is why the default is to
 host-bind.
 
-`ariaLabel` is **required** — `input.required`, so Angular throws when it is missing. It used
-to be the constant `"Breadcrumb"` written straight into the `host` block, which named the
-WIDGET rather than the trail and left two of these on one page indistinguishable as
+`ariaLabel` is **required**: `input.required`, so Angular throws when it is missing. A constant
+like `"Breadcrumb"` written straight into the `host` block names the
+WIDGET rather than the trail and leaves two of these on one page indistinguishable as
 landmarks. Say which hierarchy this is a trail through ("Project navigation").
 
 A crumb renders as a real `<a href>`, so a plain click still navigates the browser.
