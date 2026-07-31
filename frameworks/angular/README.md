@@ -24,8 +24,13 @@ halves: that edge is `ALLOWED` with its reason, and everything else fails.
   `@angular/cdk`; read [CDK bridge](#cdk-bridge-supported-and-verified) for what that
   means and what it does not.**
 - `icons/IconManifest.ts`: the canonical Phosphor role→glyph map.
-- `theme/ThemeService.ts` and `theme/no-fouc.html`: the dark-first signal theme
-  service (light = `.arena-light`) and the pre-paint snippet.
+- `theme/ThemeService.ts` and `theme/no-fouc.html`: the signal theme service and the
+  pre-paint snippet. It switches between **any number of named palettes**, because a
+  consumer's `arena.config.json` declares as many as they like: the default palette sits on
+  `:root` and wears no class, and every other one wears `.arena-<name>`. Declare them with
+  `provideArenaThemes({palettes, default})`; with no providers it answers `dark` and
+  `light`, which is what an adopter on the copy-in kit has. `set()` **throws** on a name no
+  palette declares, since a silently ignored theme switch looks like a broken toggle.
 
 **Primitives are Arena's own token-styled components**, and the whole of this layer's
 rendering surface: Arena writes the markup, the ARIA and the styling for every control it
@@ -384,7 +389,8 @@ half the pair above; the other six assert nothing about it.
 
 Adopt it in the order the layer is built. Import `theme/arena-tailwind.css` once from the
 app's global stylesheet for the tokens and the `@theme` preset; add `theme/arena-cdk.css`
-when you first use a primitive that positions an overlay. Wire `ThemeService` and paste
-`theme/no-fouc.html`'s script contents into `index.html`. Then replace the app's own
+when you first use a primitive that positions an overlay. Wire `ThemeService`, declaring
+your palettes with `provideArenaThemes` if there are more than two, and paste
+`theme/no-fouc.html`'s script contents into `index.html`, setting its two names to match. Then replace the app's own
 controls with `arena-*` primitives as you touch the files that use them, incrementally and
 never as a sweep.
