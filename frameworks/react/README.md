@@ -129,7 +129,7 @@ finished rather than before every commit.
 A bare literal is a bug, and `bun run check:dimensions` fails on each one. A value passes
 when it is `var(--token)`, a `calc()`/`min()`/`max()`/`clamp()` over one, zero, or a unit
 the token layer does not model. A handful of sites are exempt by name with a reason each —
-read `EXEMPT` in `scripts/check-dimension-literals.mjs` for the current set.
+read `EXEMPT` in `scripts/check/arena/check-dimension-literals.mjs` for the current set.
 
 Responsive branches are JS, not media queries — inline styles cannot hold one — and they
 measure the **container** via `useContainerWidth`, not the viewport.

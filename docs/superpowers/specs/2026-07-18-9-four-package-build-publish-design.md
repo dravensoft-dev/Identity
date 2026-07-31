@@ -239,7 +239,7 @@ and `arena-tailwind@3.3.0` — never a drifting minor.
   four `dist/*/package.json` `version` fields and every arena peer range. Package
   manifests are generated from a template in `packaging/packages.config.mjs`, never
   hand-versioned.
-- **New `scripts/check-packages.mjs`** asserts: four manifests exist, all four
+- **New `scripts/check/arena/check-packages.mjs`** asserts: four manifests exist, all four
   `version` == `plugin.json`, every arena peer range == that exact version,
   `exports` targets all resolve to emitted files, and no arena package leaked into
   `dependencies` (they must be `peerDependencies`). Exit 1 on any violation.
@@ -267,11 +267,11 @@ Bun-specific code:
 on: { push: { tags: ['v*'] } }
 ```
 
-Steps: checkout (at the tag) → install dev deps → `bun scripts/check-release.mjs`
-(tag ↔ version coherence, already the gate) → `bun run build:tokens` +
-`bun scripts/check-tokens-generated.mjs` (sub-project 1 sync gate) →
-`bun scripts/check-ramp.mjs` → `bun test` → `bun run build:packages` →
-`bun scripts/check-packages.mjs` → `bun scripts/smoke-packages.mjs` → per-package
+Steps: checkout (at the tag) → install dev deps → `bun scripts/check/arena/check-release.mjs`
+(tag ↔ version coherence, already the gate) → `bun run generate:tokens` +
+`bun scripts/check/core/check-tokens-generated.mjs` (sub-project 1 sync gate) →
+`bun scripts/check/core/check-ramp.mjs` → `bun test` → `bun run build:packages` →
+`bun scripts/check/arena/check-packages.mjs` → `bun scripts/check/arena/smoke-packages.mjs` → per-package
 `npm publish`. All four publish or the job fails; a partial publish is surfaced,
 never hidden (the "fails silently" concern that already shapes `check-release`).
 
@@ -321,7 +321,7 @@ adds to it (still `private: true`, still never published):
 ## Verification
 
 - `bun run build:packages` populates `dist/` with four packages.
-- `bun scripts/check-packages.mjs` → exit 0 (versions, peer ranges, exports,
+- `bun scripts/check/arena/check-packages.mjs` → exit 0 (versions, peer ranges, exports,
   no arena `dependencies`).
 - For each package: `npm publish --dry-run` and `npm pack` succeed; the tarball
   file list contains exactly the intended files (no source `.jsx`/`.ts` leakage
@@ -343,12 +343,12 @@ adds to it (still `private: true`, still never published):
 `packaging/assemble.mjs`, `packaging/token-formats.mjs`, `packaging/react.tsup.ts`,
 `packaging/tailwind.tsup.ts`, `packaging/angular/ng-package.json`,
 `packaging/angular/tsconfig.lib.json`, `packaging/angular/public-api.ts`,
-`packaging/*.test.mjs`, `scripts/check-packages.mjs`, `scripts/smoke-packages.mjs`,
+`packaging/*.test.mjs`, `scripts/check/arena/check-packages.mjs`, `scripts/check/arena/smoke-packages.mjs`,
 `.github/workflows/release-packages.yml`, `frameworks/react/index.js`,
 `frameworks/react/index.d.ts`.
 
 **Edited:** `package.json` (devDeps + scripts + test glob),
-`scripts/build-tokens.mjs` (export the loader — no output change), `README.md`,
+`scripts/generate/arena/generate-tokens.mjs` (export the loader — no output change), `README.md`,
 `CLAUDE.md`, `frameworks/*/ADOPTION.md`, `frameworks/*/README.md`, `CHANGELOG.md`.
 
 **Not edited, contrary to an earlier draft:** `.gitignore` already ignores `dist/`.

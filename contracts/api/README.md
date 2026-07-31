@@ -227,7 +227,7 @@ that it does.
 ### The binding table
 
 The gate needs the mapping to be mechanical rather than a matter of taste, so it is
-written down here and implemented in `bindingName()` in `scripts/check-api.mjs`.
+written down here and implemented in `bindingName()` in `scripts/check/arena/check-api.mjs`.
 
 | Contract member | React binds it as | Angular binds it as |
 |---|---|---|
@@ -463,7 +463,7 @@ this layer exists to remove.
 
 **So it may be an enum only while something machine-checks the restatement.**
 `contracts/api/types/cat-slot.json` declares `CatSlot = 1 | … | 8`, and `check:script-tokens`
-(`catSlotEnumProblems()` in `scripts/check-script-tokens.mjs`) asserts that set is exactly
+(`catSlotEnumProblems()` in `scripts/check/arena/check-script-tokens.mjs`) asserts that set is exactly
 1..`catSlots` **in order** — add a ninth colour to the ramp and the gate fails until the
 contract type follows. `enumLiteral()` in `build-api-types.mjs` renders a numeric set unquoted,
 which is what lets the type render at all.
@@ -493,7 +493,7 @@ holds the three in step; a member description can drift from its layer's prose a
 nothing here will notice. This is a known limit, not a gap left to close quietly — see
 `CLAUDE.md`'s Known debt.
 
-`bun run build:api` emits `frameworks/react/Api.generated.d.ts` and
+`bun run generate:api` emits `frameworks/react/Api.generated.d.ts` and
 `frameworks/angular/Api.generated.ts` from these files. Both are committed and both carry
 the same body; emission is **per layer** so a component's import never crosses the
 `contracts/api/` ↔ `frameworks/` boundary — the rule the script-readable token target established,
@@ -502,7 +502,7 @@ for the same reason.
 ## What the gate asserts, and what it cannot
 
 `bun run check:api` makes five assertions: coverage, form, agreement, the derived rules,
-and generated drift. See `scripts/check-api.mjs`.
+and generated drift. See `scripts/check/arena/check-api.mjs`.
 
 **Two of the five derived rules are authoring rules the audit applies, and no gate asserts
 them.** R2 — "who draws it" — is a fact about intent and markup ownership rather than about

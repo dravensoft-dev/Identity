@@ -1,7 +1,7 @@
 {
   "color": {
     "$type": "color",
-    "$description": "Arena — Dravensoft skin (palette), dark theme.\nThis is the source you swap to re-skin Arena. It holds only skin values:\nthe daisyUI --color-* set per theme and the categorical chart ramp.\nEverything else — the Arena aliases, the muted-text derivations — lives in\ncontracts/design/colors.css and follows automatically.\nAfter changing anything here, rebuild and re-run: bun scripts/check-ramp.mjs",
+    "$description": "Arena — Dravensoft skin (palette), dark theme.\nThis is the source you swap to re-skin Arena. It holds only skin values:\nthe daisyUI --color-* set per theme and the categorical chart ramp.\nEverything else — the Arena aliases, the muted-text derivations — lives in\ncontracts/design/colors.css and follows automatically.\nAfter changing anything here, rebuild and re-run: bun scripts/check/core/check-ramp.mjs",
     "base-100": { "$value": { "colorSpace": "srgb", "components": [0.0784, 0.0627, 0.0627], "hex": "#141010" }, "$description": "main background" },
     "base-200": { "$value": { "colorSpace": "srgb", "components": [0.1137, 0.0902, 0.0824], "hex": "#1d1715" }, "$description": "elevated surface / card" },
     "base-300": { "$value": { "colorSpace": "srgb", "components": [0.1412, 0.1098, 0.098], "hex": "#241c19" }, "$description": "panel / border" },

@@ -6,7 +6,7 @@
      the daisyUI --color-* set per theme and the categorical chart ramp.
      Everything else — the Arena aliases, the muted-text derivations — lives in
      contracts/design/colors.css and follows automatically.
-     After changing anything here, rebuild and re-run: bun scripts/check-ramp.mjs
+     After changing anything here, rebuild and re-run: bun scripts/check/core/check-ramp.mjs
    */
   --color-base-100:#141010; /* main background */
   --color-base-200:#1d1715; /* elevated surface / card */
