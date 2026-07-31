@@ -148,11 +148,10 @@ written in terms of patterns. `requires` is a flat map of **dotted** keys, and t
 an exception names exactly one requirement, so one entry cannot excuse a whole clause.
 
 Every component declares, in **every** layer, beside its own source — `<Name>.behaviour.json` —
-and the controls Material provides or lacks in `frameworks/angular/BehaviourDelegated.json`.
-**Delegation is a state, not an absence**: Angular has a progress bar, it is `MatProgressBar`,
-and a declaration reading "absent" would be false for it — `Calendar` and `CalendarEvent` are the
-two entries where "absent" is true, and they bind the `absent` pattern so that fact is
-machine-checkable rather than only stated in a `reason`.
+and what a layer has no component for at all in `frameworks/angular/BehaviourDelegated.json`.
+That file holds `Calendar` and `CalendarEvent`: Angular implements every other component itself,
+and those two carry date arithmetic no CDK primitive covers. They bind the `absent` pattern so
+the fact is machine-checkable rather than only stated in a `reason`.
 
 **A binding has two shapes, and the second exists because a binding describes a COMPONENT
 while the evaluator judges a RENDER.** A component that renders differently by its own props is
@@ -282,9 +281,11 @@ ship an invalid degenerate render**: with no children `Tabs` draws an empty tabl
 tabpanel, because a panel whose `aria-labelledby` points at a tab that does not exist is worse
 than an absent one.
 
-**The `SideNav` family is the recursive case.** Nesting is arbitrary — to any depth — with **no
-React context anywhere**, because injection is **direct children only, one hop**, and a section
-or a collapsible re-injects into its own children with `depth + 1`. The shared helper is
+**The `SideNav` family is the recursive case, and the layers solve it in opposite directions.**
+In React nesting is arbitrary — to any depth — with **no context anywhere**, because injection
+is **direct children only, one hop**, and a section or a collapsible re-injects into its own
+children with `depth + 1`. Angular pushes nothing: each container re-provides `SideNavState` at
+`depth + 1` and a row **pulls** the nearest. React's shared helper is
 `frameworks/react/components/navigation/side-nav/SideNavInject.jsx`; it covers that family and
 no more, so the placement rule sends it to the family's parent directory rather than up to
 `navigation/`. **Its `.jsx` extension is load-bearing**: `check:dimensions` never opens a
@@ -318,8 +319,8 @@ this, and `check:script-tokens` is what ties it back to the ramp — **a second 
 need its own tie before it may be an enum at all.**
 
 **Some contracts govern one layer only, and that is a property of the component, not a gap.**
-The controls Angular delegates to Material exist in React alone, so **count them rather than
-trusting a figure**: every component **directory** under
+The set is React's alone, so **count it rather than trusting a figure**: every component
+**directory** under
 `frameworks/react/components/<category>/` with no matching directory under
 `frameworks/angular/components/<category>/`, which is also the key set of
 `frameworks/angular/BehaviourDelegated.json`. **A change that makes an item a
@@ -408,9 +409,9 @@ static styling as camelCase `[style]` **objects**: in that shape `strokeWidth` a
 are judged as themselves, which is strictly more coverage than an attribute.
 
 **No gate compares a Tailwind manifest against the component it mirrors, and the mapping is not
-one-to-one**: some manifests mirror both a React component and an `arena-*` primitive; the rest
-mirror a React component alone, because Angular still delegates that control.
-`check:tailwind` proves every class resolves; nothing proves a
+one-to-one**: a manifest mirrors a React component and an `arena-*` primitive at once, and a
+compound family's one manifest mirrors several of each. The only components with no manifest
+are `Calendar` and `CalendarEvent`. `check:tailwind` proves every class resolves; nothing proves a
 manifest still matches the component it was derived from, so check by hand when either has
 moved.
 
@@ -507,7 +508,7 @@ The Angular layer's quartet is the analogue, in
 `<Component>.prompt.md`, and an `index.ts` barrel — plus `<Component>.behaviour.json` and the
 component's own suites, `<Component>.<facet>.test.ts`, in the same directory. The three SVG charts are the one
 exception and have no `<Component>.variants.ts`. Angular has **all six** of the categories the
-layout rule allows; `forms/` is the newest, and fills as Plan D moves the delegated controls in.
+layout rule allows, and implements every component the layer ships; `forms/` is the newest.
 
 **A host-bound root is the Angular layer's default, and its carve-outs are a growing set.** A
 primitive binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than
@@ -687,15 +688,15 @@ list** — `find frameworks -type f -printf '%f\n' | grep -E '^[^A-Z]' | sort -u
    toolchains recognise by convention. This is the softest of them, since `ngc -p <path>` is
    explicit and the rename would compile; the exception is for the reader.
 4. `.gitkeep` (`frameworks/angular/.gitkeep`), which has no stem to capitalise.
-5. **The five adopter-facing files under `frameworks/angular/theme/`** — `arena-tailwind.css`,
-   `arena-material.css`, `arena-cdk.css`, `no-fouc.html` and `arena-material.prompt.md` — which do
-   not share one reason. **The first three are named inside an *adopter's own* source, verbatim**:
+5. **The three adopter-facing files under `frameworks/angular/theme/`** — `arena-tailwind.css`,
+   `arena-cdk.css` and `no-fouc.html` — which do not share one reason. **The first two are named
+   inside an *adopter's own* source, verbatim**:
    each is an `@import` line in the host app's own `styles.css`, so renaming one is a breaking
    change to every app that has adopted Arena — a fact about deployed apps, not about any document
-   here. **`no-fouc.html` is not a fourth instance of that reason**: the adopter pastes the `<script>` tag's *contents* into their own
+   here. **`no-fouc.html` is not a third instance of that reason**: the adopter pastes the `<script>` tag's *contents* into their own
    `index.html` and never references the file by name, so renaming it breaks a documentation line
-   rather than any adopting app. `arena-material.prompt.md` is cited nowhere and takes the stem of
-   the file it documents. **Not exempt:** `theme/ThemeService.ts` and `icons/IconManifest.ts` are
+   rather than any adopting app.
+   **Not exempt:** `theme/ThemeService.ts` and `icons/IconManifest.ts` are
    reached through `frameworks/angular/index.ts`, and no adopter ever writes either path.
 6. **`frameworks/react/ui-kits/console/index.entry.jsx` and its compiled `index.entry.js`.** It
    inherits its exception — a demo page's composition script takes the stem of the page it

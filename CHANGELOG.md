@@ -6,8 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **Angular Material is gone.** `arena-material.css`, its prompt, the `check:material` gate and
+  the `@angular/material` devDependency are all deleted: Angular implements every Arena component
+  itself now, so there is nothing left to bridge. An adopting app drops the
+  `@import` of `arena-material.css` from its own stylesheet and keeps `arena-tailwind.css` and
+  `arena-cdk.css`, which are unchanged. `@angular/cdk` stays — `arena-tooltip` and `arena-menu`
+  position through it.
+
 ### Added
 
+- **Angular gains the `SideNav` family, `arena-progress-bar` and `arena-spinner`**, and with them
+  every control it used to delegate. `BehaviourDelegated.json` holds only `Calendar` and
+  `CalendarEvent`, which are components Angular has never had rather than delegations. The side
+  nav nests to any depth, and a consumer's own wrapper component between two levels is harmless —
+  depth is pulled through DI rather than pushed into cloned children.
 - **Angular gains `arena-dialog`, `arena-select`, `arena-toast` and `arena-menu`**, and stops
   delegating those four to Angular Material. Each is under all three contracts the day it
   lands — design, behaviour and API — where a delegated control was outside three of Arena's
@@ -16,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The two progress indicators announce their value changes.** `role="progressbar"` carries no
+  implicit politeness, and neither Material indicator set `aria-live` at all, so a screen-reader
+  user was told nothing as a bar advanced. `arena-progress-bar` and `arena-spinner` set it
+  explicitly, and an indeterminate bar omits `aria-valuenow` rather than reporting zero.
 - **A critical error toast interrupts in Angular, as it always has in React.** `MatSnackBar`
   has no tone axis, and outside Firefox it rendered `aria-live="polite"` and no role at all,
   so a danger message queued behind whatever a screen reader was already saying.

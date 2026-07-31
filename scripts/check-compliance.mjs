@@ -94,6 +94,10 @@ export const COVERED = {
   'Tabs:angular': 'Tabs.compliance.test.ts',
   'Tab:angular': 'Tabs.compliance.test.ts',
   'Pagination:angular': 'Pagination.compliance.test.ts',
+  'ProgressBar:angular': 'ProgressBar.compliance.test.ts',
+  'Spinner:angular': 'Spinner.compliance.test.ts',
+  'SideNav:angular': 'SideNav.compliance.test.ts',
+  'SideNavCollapsible:angular': 'SideNavNesting.test.ts',
 };
 
 export function suiteMentions(source, tail) {

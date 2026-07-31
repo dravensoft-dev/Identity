@@ -2,7 +2,7 @@
 export default {
   "component": "ProgressBar",
   "slots": {
-    "root": "w-full",
+    "root": "block w-full",
     "head": "flex items-baseline justify-between gap-3 mb-2",
     "label": "font-body text-ctl-md text-base-content/82",
     "value": "font-mono text-ctl-sm text-base-content/62",

@@ -4,5 +4,7 @@ export * from './dialog';
 export * from './empty-state';
 export * from './error-state';
 export * from './onboarding';
+export * from './progress-bar';
+export * from './spinner';
 export * from './toast';
 export * from './tooltip';

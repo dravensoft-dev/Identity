@@ -342,10 +342,10 @@ consumer's hands, and taken with it the only path to an external `<label>`, an
 never required. A component that generates no id has no such gap and adds no such member.
 
 `tabStop` is a member on `Button` and `IconButton` because the rule's own justification — a
-consumer writes it on the host directly — does not reach either. Neither has a host to reach at
-all: both are React-only, delegated to `matIconButton` and `MatButton` on the Angular side, with
-no `arena-icon-button` and no `arena-button` primitive — and
-`frameworks/angular/BehaviourDelegated.json`'s own entry says Arena "should not grow one".
+consumer writes it on the host directly — does not reach either. Neither has a host a consumer
+writes on: both render their own `<button>` inside a host that is `display: contents`, in both
+layers, so a `tabindex` written on `<arena-button>` reaches a node that lays nothing out and
+takes no focus. The member is how a consumer holds one out of the tab order at all.
 And for a component whose focusable element is a **descendant**
 of its host rather than the host itself, the justification fails even where a host exists —
 `tabindex="-1"` written on `<arena-icon-button>` would land on the custom element, not on the

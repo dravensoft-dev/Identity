@@ -1,16 +1,16 @@
-/* The CDK overlay bridge fails silently the same two ways the Material one does, plus a
- * third: a class the CDK renamed upstream leaves the override matching nothing. So unlike
- * check-material, this gate DOES examine the selectors — it can, because the bridge's whole
+/* The CDK overlay bridge fails silently three ways: a rule that overrides nothing, a token
+ * that resolves to nothing, and a class the CDK renamed upstream leaving the override
+ * matching nothing. This gate DOES examine the selectors — it can, because the bridge's whole
  * job is overriding a class the prebuilt sheet defines, and that sheet is the oracle.
  * What it still cannot check is whether the override is the RIGHT value for that class.
- * DOUBTS.md section 5 states that limit alongside the Material bridge's two. */
+ * DOUBTS.md section 5 states that limit. */
 
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { parseDecls } from './lib/css-decls.mjs';
 import { repoRoot } from './lib/tailwind-compile.mjs';
-import { arenaTokenNames, referencedTokens } from './check-material.mjs';
+import { arenaTokenNames, referencedTokens } from './lib/arena-tokens.mjs';
 
 const BRIDGE = join('frameworks', 'angular', 'theme', 'arena-cdk.css');
 const PREBUILT = join('node_modules', '@angular', 'cdk', 'overlay-prebuilt.css');

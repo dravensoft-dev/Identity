@@ -93,7 +93,7 @@ export function validateBinding(component, layer, binding, patterns) {
     }
   }
   if ('delegatedTo' in binding && !binding.delegatedTo) {
-    problems.push(`${where}: delegatedTo must name what provides the behaviour, e.g. "Angular Material matTooltip"`);
+    problems.push(`${where}: delegatedTo must name the third-party control that provides the behaviour, e.g. "SomeLibrary someControl". No entry declares one today; the branch stands so the first that does is checked.`);
   }
 
   if (layer === 'angular' && !binding.component) {

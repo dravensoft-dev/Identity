@@ -2,7 +2,7 @@
  * arena-radio-group: the segments are native radios sharing one `name`, so the browser supplies
  * the single tab stop and the arrow cycle and happy-dom supplies none of it. What is asserted is
  * the structural precondition, plus the one thing this component exists to get right --
- * role="radiogroup", where the Material control it replaces applied role="group". */
+ * role="radiogroup", where the third-party control it replaced applied role="group". */
 
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 useTestEnvironment();

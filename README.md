@@ -69,7 +69,7 @@ Components render with **inline `style` objects that read the CSS custom propert
   and theming, plus the DTCG token type map.
 - [`frameworks/react/README.md`](./frameworks/react/README.md) — the React layer.
 - [`frameworks/angular/README.md`](./frameworks/angular/README.md) — the Angular layer,
-  including how to adopt it and what is still bridged to Material.
+  including how to adopt it.
 - [`frameworks/tailwind/README.md`](./frameworks/tailwind/README.md) — the shared
   Tailwind layer.
 - [`DOUBTS.md`](./DOUBTS.md) — everything Arena knows is wrong, incomplete, or unverified.

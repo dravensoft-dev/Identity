@@ -70,7 +70,7 @@ async function main() {
     if (angular.has(component)) continue;
     const entry = delegated[component];
     if (!entry) {
-      problems.push(`angular/${component}: no primitive and no entry in BehaviourDelegated.json — say whether Material provides it or nothing does`);
+      problems.push(`angular/${component}: no primitive and no entry in BehaviourDelegated.json — build the primitive, or record it there binding "absent"`);
       continue;
     }
     problems.push(...validateBinding(component, 'angular-delegated', entry, patterns));
