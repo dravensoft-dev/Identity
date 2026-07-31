@@ -48,6 +48,7 @@
     "check:tailwind": "bun scripts/check/tailwind/check-tailwind.mjs",
     "check:tailwind-generated": "bun scripts/check/tailwind/check-tailwind-generated.mjs",
     "check:coverage": "bun scripts/check/tailwind/check-tailwind-coverage.mjs",
+    "check:surface-parity": "bun scripts/check/tailwind/check-surface-parity.mjs",
     "check:radius": "bun scripts/check/tailwind/check-radius-tokens.mjs",
     "check:arbitrary": "bun scripts/check/tailwind/check-arbitrary-values.mjs",
     "check:docs": "bun scripts/check/arena/check-docs.mjs",

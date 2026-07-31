@@ -1,0 +1,78 @@
+/* UnauthCard predates Card, and its `panel` slot types out by hand the same surface Card's `root`
+ * draws -- background, border width, border colour, radius, overflow. Nothing compares one
+ * manifest to another, so a change to Card's radius or border colour would move Card alone and
+ * leave UnauthCard on whatever it had, silently, until somebody noticed by eye. Sharing one
+ * recipe was rejected on its own terms: UnauthCard's padding split (panel p-5 holding a body p-4)
+ * is not Card's single body p-5, so `panel` is not a clean substitution for `root`. What was
+ * never rejected is checking that the surface halves agree, which is this. */
+
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+
+const MANIFESTS = join(root, 'frameworks/tailwind/components');
+
+export const SURFACE = ['bg-', 'border-', 'rounded-'];
+
+export const PAIRS = [
+  {
+    name: 'UnauthCard.panel mirrors Card.root',
+    a: { file: 'display/unauth-card/UnauthCard.manifest.json', slot: 'panel' },
+    b: { file: 'display/card/Card.manifest.json', slot: 'root', variant: ['accent', 'false'] },
+    reason: 'UnauthCard composes the same bordered surface Card draws, by hand. The two padding '
+      + 'scales differ on purpose and are not compared; the surface is.',
+  },
+];
+
+export function surfaceClasses(classes) {
+  return classes
+    .split(/\s+/)
+    .filter((c) => c && SURFACE.some((prefix) => c.startsWith(prefix)))
+    .sort();
+}
+
+export function slotClasses(manifest, slot, variant) {
+  const base = manifest.slots?.[slot] ?? '';
+  if (!variant) return base;
+  const [axis, value] = variant;
+  const extra = manifest.variants?.[axis]?.[value]?.[slot] ?? '';
+  return `${base} ${extra}`.trim();
+}
+
+export function parityProblems(pairs, read) {
+  const problems = [];
+  for (const { name, a, b, reason } of pairs) {
+    const left = surfaceClasses(slotClasses(read(a.file), a.slot, a.variant));
+    const right = surfaceClasses(slotClasses(read(b.file), b.slot, b.variant));
+    if (left.length === 0 || right.length === 0) {
+      problems.push(`${name}: one side declares no surface class at all, so this pair compared nothing`);
+      continue;
+    }
+    if (left.join(' ') === right.join(' ')) continue;
+    const onlyLeft = left.filter((c) => !right.includes(c));
+    const onlyRight = right.filter((c) => !left.includes(c));
+    problems.push(
+      `${name}: the two surfaces have drifted apart.\n`
+      + `    only in ${a.file} ${a.slot}: ${onlyLeft.join(' ') || '(none)'}\n`
+      + `    only in ${b.file} ${b.slot}: ${onlyRight.join(' ') || '(none)'}\n`
+      + `    ${reason}`,
+    );
+  }
+  return problems;
+}
+
+function main() {
+  const read = (file) => JSON.parse(readFileSync(join(MANIFESTS, file), 'utf8'));
+  const problems = parityProblems(PAIRS, read);
+  if (PAIRS.length === 0) problems.push('PAIRS is empty -- a gate with nothing to compare finds nothing by construction');
+
+  if (problems.length) {
+    console.error(`check-surface-parity: ${problems.length} problem(s)\n`);
+    for (const p of problems) console.error(`  ${p}`);
+    process.exit(1);
+  }
+  console.log(`check-surface-parity: ${PAIRS.length} hand-duplicated surface(s) still agree with the manifest they mirror`);
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) main();

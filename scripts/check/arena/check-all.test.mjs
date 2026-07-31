@@ -6,11 +6,11 @@ import { join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { testStep, summarize, stepStatus, GATES, DOMAINS, testFilesUnder } from './check-all.mjs';
 
-test('GATES lists the twenty-eight check gates', () => {
-  assert.equal(GATES.length, 28);
+test('GATES lists the twenty-nine check gates', () => {
+  assert.equal(GATES.length, 29);
   assert.deepEqual(
     GATES.map((g) => g.name),
-    ['check:docs', 'check:generated', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:text-contrast', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:structure', 'check:contracts', 'check:behaviour', 'check:compliance', 'check:api', 'check:fonts', 'check:vendor', 'check:demos', 'check:cards', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
+    ['check:docs', 'check:generated', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:text-contrast', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:surface-parity', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:structure', 'check:contracts', 'check:behaviour', 'check:compliance', 'check:api', 'check:fonts', 'check:vendor', 'check:demos', 'check:cards', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
   );
 });
 

@@ -26,6 +26,7 @@ export const GATES = [
   { name: 'check:tailwind', file: 'tailwind/check-tailwind.mjs' },
   { name: 'check:tailwind-generated', file: 'tailwind/check-tailwind-generated.mjs' },
   { name: 'check:coverage', file: 'tailwind/check-tailwind-coverage.mjs' },
+  { name: 'check:surface-parity', file: 'tailwind/check-surface-parity.mjs' },
   { name: 'check:radius', file: 'tailwind/check-radius-tokens.mjs' },
   { name: 'check:arbitrary', file: 'tailwind/check-arbitrary-values.mjs' },
   { name: 'check:dimensions', file: 'arena/check-dimension-literals.mjs' },

@@ -1776,49 +1776,47 @@ stale-proof; a present-tense component name is not.
   thirty lines *above* the clause it contradicts, not below it — and the matching clause this
   file's own *Architecture* section carried before this batch.
 
-- **A chip that carries a kebab can still wrap its time label, in a band about 32px wide.**
-  `showsTime()` compares a chip's column share against one threshold and does not ask whether
-  the chip has actions. A chip without them has a content box of its share less 18px; one with
-  them has its share less 46px, because the kebab's 34px reserve comes out too. So the
-  kebab-safe threshold is 124.02px where the plain one is 96.02px, and `calendar.time-min-w` is
-  set at the plain one.
+- **DECIDED: a chip that carries a kebab can still wrap its time label, in a band about 32px
+  wide, and the band is accepted.** `showsTime()` compares a chip's column share against one
+  threshold and does not ask whether the chip has actions. A chip without them has a content box
+  of its share less 18px; one with them has its share less 46px, because the kebab's 34px reserve
+  comes out too. So the kebab-safe threshold is 124.02px where the plain one is 96.02px, and
+  `calendar.time-min-w` is set at the plain one.
 
   Measured on `Calendar.card.html`, driving the viewport and reading the container beneath it —
   the container is the viewport less the card's 24px body padding a side, and `--bp-md` is
   compared against the **container**, so week view only begins at a 768px container. At a 782px
-  container a day column is 120.16px, `Release window`'s chip is 116.2px, and its time label
-  wraps onto **two lines**; at an 812px container the column is 125.16px, the chip 121.2px, and
-  the label fits on one. The arithmetic boundary is a container of about 800px. So the band is
-  roughly **a 768px to an 800px container**, in week view, on a chip that has actions.
+  container a day column is 120.16px, `Release window`'s chip is 116.2px, and its time label wraps
+  onto **two lines**; at an 812px container the column is 125.16px, the chip 121.2px, and the
+  label fits on one. The arithmetic boundary is a container of about 800px. So the band is roughly
+  **a 768px to an 800px container**, in week view, on a chip that has actions.
 
-  It is deliberate rather than overlooked. Setting the threshold at the kebab-safe value would
-  suppress the label on every ordinary chip through that band and well past it, which loses
-  information in the common case to serve the rare one. Making the threshold kebab-aware would
-  put `CalendarEvent`'s 34px reserve back inside `Calendar` — laundered through a second token,
+  **The alternatives were weighed and both are worse.** Setting the threshold at the kebab-safe
+  value suppresses the label on every ordinary chip through that band and well past it, which
+  loses information in the common case to serve the rare one. Making the threshold kebab-aware
+  puts `CalendarEvent`'s 34px reserve back inside `Calendar` — laundered through a second token,
   but still a number that silently goes wrong if the reserve ever changes. What survives in the
-  band is the pre-existing behaviour, not a new defect.
-
-- **A narrow chip under 56px tall still has almost no title left.** Reserving the kebab's 34px
-  band is what stopped the title being drawn underneath it, and on a full-width chip it costs
-  nothing. On a chip sharing its slot — `cols: 2`, about 78px outer — it leaves a **36.58px**
-  content box, which renders `Client review — Northwind` as `Clien…`.
+  band is the pre-existing behaviour rather than a new defect, and it survives on purpose.
+- **DECIDED: a narrow chip under 56px tall has almost no title left, and accepting it is the
+  position.** Reserving the kebab's 34px band is what stopped the title being drawn underneath it,
+  and on a full-width chip it costs nothing. On a chip sharing its slot — `cols: 2`, about 78px
+  outer — it leaves a **36.58px** content box, which renders `Client review — Northwind` as
+  `Clien…`.
 
   **A tall one no longer has this problem**: at 56px or more the kebab moves to the chip's
   bottom-right, the reserve is dropped, and the title gets the whole **64.6px**. Measured, its
   truncation falls from **74% to 54%** — not to the 18% its kebab-less neighbours show, because
   that figure belongs to their shorter titles and this one is 140px of text in a 64.6px box
-  however the kebab is placed. 56px is the sum that makes title and kebab fit without overlap,
-  so the fix reaches events of roughly 75 minutes or more. A shorter chip has nowhere to put
-  the kebab and keeps the reserve.
+  however the kebab is placed. 56px is the sum that makes title and kebab fit without overlap, so
+  the fix reaches events of roughly 75 minutes or more.
 
-  What remains is therefore a short, narrow chip with actions: a 30- or 60-minute event sharing
-  its column. The options for it all cost something and none is obviously right: show the kebab
-  only on hover or focus (fails a touch reader, and the chip is a `grid` cell whose hover is not
-  a given), or do not render it at all below some width (which makes `actionsEnabled` a request
-  rather than a guarantee and silently removes the only route to the consumer's actions).
-  Accepting it is the current position, and it is defensible: the chip is a hit target, and the
-  detail lives behind the kebab.
-
+  What remains is a short, narrow chip with actions: a 30- or 60-minute event sharing its column.
+  **Both remaining options cost more than the gap.** Showing the kebab only on hover or focus
+  fails a touch reader, and the chip is a `grid` cell whose hover is not a given. Not rendering it
+  below some width makes `actionsEnabled` a request rather than a guarantee and silently removes
+  the only route to the consumer's actions — a member that sometimes does nothing is worse than a
+  truncated title. Accepting it is the current position and it is defensible on its own terms: the
+  chip is a hit target, and the detail lives behind the kebab.
 - **CLOSED: `Textarea` overran its container by 26px, and the fix was the system change this
   entry put out of scope.** Three candidates read the same way in the source — `Textarea.jsx`,
   `Select.jsx` and `Menu.jsx`, each `width: '100%'` on an element carrying its own horizontal
@@ -2003,14 +2001,16 @@ stale-proof; a present-tense component name is not.
 
 ### What the `.generated.` rename does not fix
 
-- **`.gitignore` stops future churn; it does not shrink the repository.** `.git` was 42 MB when
-  the rename landed, and every blob the untracked files ever had is still in history — roughly
-  1.26 MB of current content, rewritten on every component edit and every React bump for as long
-  as it was tracked. A `git filter-repo` would remove it and is **deliberately not being done**:
-  it rewrites every commit hash, and the plugin is served from tags that must keep resolving to
-  the tree they resolved to when published. The win claimed for the change is the *rate*, not
-  the size. Anyone quoting a size reduction is quoting something that did not happen.
-
+- **DECIDED, and it is a decision rather than an open item: `.gitignore` stops future churn and
+  does not shrink the repository, and `git filter-repo` is refused.** `.git` was 42 MB when the
+  rename landed, and every blob the untracked files ever had is still in history — roughly 1.26 MB
+  of current content, rewritten on every component edit and every React bump for as long as it was
+  tracked. A rewrite would remove it and **must not happen**: it changes every commit hash, and
+  **the plugin is served from tags** (`marketplace.json` → `source.ref`), so every published tag
+  would stop resolving to the tree it resolved to when published. That is not a cost to weigh
+  against the 1.26 MB; it is a promise already made to anyone who installed the plugin.
+  The win claimed for the change is the **rate**, not the size. Anyone quoting a size reduction is
+  quoting something that did not happen.
 - **`assets/fonts/*.woff2` is generated, says so nowhere, and adding checksums measured something
   nobody had.** The binaries are downloaded from Google Fonts by `fetch-fonts.mjs`. A binary can
   carry no header, and the `.generated.` infix was deliberately not applied: `assets/` is a
@@ -2726,28 +2726,18 @@ gate stays refused as this repo's fourth non-portable gate.
 **Also still missing, on both layers:** `inert` on the background — see the `ConfirmDialog` entry
 above, which now carries that shared limit for all three overlays.
 
-#### Onboarding — no icon, on either layer
+#### RETIRED from this section: Onboarding has no icon in either layer, which is not a divergence
 
-**React:** `Onboarding.jsx` renders no icon anywhere — no `<i className="ph-...">` in the
-component, despite Duotone being licensed system-wide for "features and onboarding" per
-README's iconography convention and `frameworks/angular/icons/IconManifest.ts`'s
-`{ role: 'onboarding', phosphor: 'ph-sparkle', weight: 'duotone' }` entry.
-
-**Angular:** matches React exactly — no icon slot, no `icon` input. `IconManifest.ts`'s
-`onboarding` role is a registry seed for a consumer building their own icon usage, not
-something any primitive in this layer currently consumes directly (no primitive imports
-from `IconManifest.ts`; `EmptyState`/`ErrorState` instead take a plain `icon: string`
-input the consumer fills from wherever they like).
-
-**Why:** the task brief's own sample manifest and template carry no icon either, matching
-React. Adding one would have been a real feature addition with no brief authority and no
-React precedent — YAGNI.
-
-**Converges:** n/a — not a divergence between the layers, recorded here only because a
-Duotone icon on the coachmark was flagged as worth double-checking. If a future revision
-wants one, `ph-sparkle` duotone with the crimson accent on the primary layer is the
-existing registry answer.
-
+Both layers match exactly — no icon slot, no `icon` input — so there was never a difference here
+to record. It sat in the divergences because a Duotone coachmark icon had been flagged as worth
+double-checking, and the check came back negative: the brief carried no icon, React had no
+precedent, and adding one would have been a feature addition with neither behind it.
+`IconManifest.ts`'s `{ role: 'onboarding', phosphor: 'ph-sparkle', weight: 'duotone' }` entry is a
+registry seed for a consumer building their own icon usage, not something any primitive consumes
+— **no primitive imports from `IconManifest.ts` at all**; `EmptyState` and `ErrorState` take a
+plain `icon: string` the consumer fills from wherever they like. If a future revision wants one,
+that entry is the existing answer. **A question that was asked and answered no is not a
+divergence, and keeping it here made the section longer without making it truer.**
 #### RETIRED as a divergence: a destructive bulk action is bordered and hovers in `--danger-soft` in both layers
 
 **React** changed only the text colour (`var(--danger)` against `var(--bone-dim)`); the border
@@ -3077,34 +3067,34 @@ when the component was brought under contract, the same way `PageHead`'s was.
 
 **Converges:** n/a — no behavioural divergence found.
 
-#### UnauthCard's `panel` hand-duplicates Card's surface classes
+#### UnauthCard's `panel` hand-duplicates Card's surface classes, and that duplication is gated now
 
-**Not a framework divergence** — both sides of this coupling live in the Tailwind
-layer — but it is exactly the kind of thing that silently drifts if nothing records it,
-which is this file's whole purpose, so it is recorded here rather than nowhere.
+**Not a framework divergence** — both sides of this coupling live in the Tailwind layer — but it
+is exactly the kind of thing that silently drifts if nothing records it.
 
-`UnauthCard.manifest.json`'s `panel` slot is `bg-base-200 border-[length:var(--bw)]
-border-base-300 rounded-lg overflow-hidden shadow-3 p-5` — the surface classes
-(background, border, radius, overflow) are typed out by hand, and they are the same
-values `Card.manifest.json`'s `root` slot carries (`bg-base-200 border-[length:var(--bw)]
-rounded-lg overflow-hidden`, with `border-base-300` supplied by its `accent: "false"`
-variant). `UnauthCard` predates `Card.manifest.json`; now that `Card` exists, the two
-manifests describe the same surface twice, once each.
+`UnauthCard.manifest.json`'s `panel` slot types out by hand the background, border width, border
+colour, radius and overflow that `Card.manifest.json`'s `root` draws (with `border-base-300`
+supplied by its `accent: "false"` variant). `UnauthCard` predates `Card`; now that `Card` exists,
+the two manifests describe the same surface twice.
 
-**Deliberately not refactored to share one:** `UnauthCard`'s padding split — `panel`
-at `p-5` holding a separate `body` at `p-4` — was already litigated on its own terms and
-is not the same shape as `Card`'s single `body: p-5`, so collapsing `panel` onto `Card`'s
-`root` is not a clean substitution.
+**Sharing one recipe stays rejected, on its own terms:** `UnauthCard`'s padding split — `panel`
+at `p-5` holding a separate `body` at `p-4` — was litigated separately and is not the same shape
+as `Card`'s single `body: p-5`, so collapsing `panel` onto `root` is not a clean substitution.
 
-**Risk this creates:** no gate compares one manifest to another, so a future change to
-`Card`'s radius, border colour or border width updates `Card.manifest.json` alone —
-`UnauthCard.manifest.json`'s `panel` keeps whatever it had, silently, until someone
-notices the two surfaces no longer match by eye. Check `UnauthCard.manifest.json`'s
-`panel` by hand whenever `Card.manifest.json`'s `root` or its `accent` variant changes.
+**What was never rejected is checking that the surfaces agree, and that is what changed.**
+`check:surface-parity` compares the two slots' background, border and radius classes — the
+padding is deliberately outside the comparison, because that is the part that legitimately
+differs — and fails when they drift. It was watched failing against a `Card` whose radius was
+changed to `rounded-md`, which is the exact scenario this entry predicted: *"a future change to
+Card's radius, border colour or border width updates `Card.manifest.json` alone."* It no longer
+does.
 
-**Converges:** not planned — the padding split is the reason a shared recipe was
-rejected, not an oversight to fix later.
+**The gate is one named pair rather than a mechanism**, in the same spirit as `check:radius`
+naming one class: nothing derives which manifests mirror which, and `PAIRS` fails if it is ever
+empty. A second hand-duplicated surface is one entry away, and finding it is a reader's job.
 
+**Converges:** not planned — the padding split is the reason a shared recipe was rejected, not an
+oversight to fix later.
 #### SideNav is described twice, and the manifest is the Angular half
 
 **React:** `SideNav.jsx` renders a `<nav>` and nothing else. It is a **compound component**, and
@@ -3265,28 +3255,34 @@ better placed** — it serves the Tailwind specimen too, and it is measured by t
 every other class. React's injection is now a duplicate of it and is left alone: removing it
 would change a shipped component for no behavioural gain, since React reads no manifest.
 
-#### Textarea — autoResize measures on more occasions in Angular, and adds the border React forgets
+#### Textarea — autoResize measures on more occasions in Angular, and the border term CONVERGED when the box model did
 
 **React:** `Textarea.jsx` grows the box inside its own change handler and nowhere else, from
-`e.target.scrollHeight` exactly. So a value set programmatically — a draft loaded from a server, a
+`e.target.scrollHeight`. So a value set programmatically — a draft loaded from a server, a
 template inserted by a button — leaves the box at its old height until the user types into it.
 **Angular:** `arena-textarea` runs the same measurement in an `afterRenderEffect` that reads
-`value()`, so mount and every programmatic change size it too, and the `(input)` path stays for
-the case where a consumer never wires `change` back.
+`value()`, so mount and every programmatic change size it too. **Converges: no, and Angular is
+the better side.** That half is unchanged.
 
-**And the formula differs by one term, because the two layers are not the same box model.**
-`scrollHeight` is content plus padding and **never the border**. React's textarea is content-box,
-where `height` means content alone, so its `scrollHeight` is already generous and no scrollbar
-appears. The Tailwind layer is border-box, where `height` must cover the border too — so the same
-formula lands two pixels short and the box keeps a permanent scrollbar. `borderBoxSlack()` adds
-`offsetHeight - clientHeight`. **The demo page is what found this**: the seeded long value showed
-a scrollbar on a box that was supposed to have grown past it, and no suite could have seen it
-because happy-dom has no layout and reports `scrollHeight` as `0`.
+**The formula half is closed, and it closed by a change made two batches away that nothing
+connected to it.** `scrollHeight` is content plus padding and **never the border**, so a
+border-box element needs `offsetHeight - clientHeight` added or the box lands short and keeps a
+permanent scrollbar. This entry recorded that as an Angular-only term, on the reasoning that
+*"React's textarea is content-box, where `height` means content alone"* — true when written, and
+**false the moment `contracts/design/reset.css` shipped**. Nothing failed: happy-dom has no
+layout and reports `scrollHeight` as `0`, so no suite can see it, and `check:cards` measures a
+page overflowing its viewport rather than an element scrolling inside itself.
 
-**Converges: no, and Angular is the better side on both counts.** Neither difference is worth
-porting back blind — React's content-box textarea does not have the second problem at all, so
-copying the `+ borderBoxSlack` term there would make its box two pixels too tall.
+**Measured in Chromium on the component's own card page at 720×340**, after the reset and before
+the fix: `scrollHeight` 199, the height set to 199, `clientHeight` 197 — two pixels short, and
+`scrollHeight > clientHeight` still true, which is a scrollbar on a box that had just been grown
+past it. With `borderBoxSlack` added: height 201, `clientHeight` 199, no scroll. Both layers now
+carry the same term for the same reason, which is what a shared box model buys.
 
+**The lesson is about the reach of a systemic change.** A repo-wide reset is correct and is still
+correct; what it also does is invalidate every argument that rested on the old default, and those
+arguments are in prose that no gate reads. This one named its premise explicitly — *"React's
+textarea is content-box"* — which is the only reason it was findable at all.
 #### Select — RETIRED as a divergence: both layers are the native element
 
 **What it was.** Angular delegated `Select` to Angular Material's `MatSelect`, and the delegated
@@ -3377,24 +3373,26 @@ than left over: a chip is `tabindex="-1"` and never a page tab stop, so always-a
 dead stop there, where always-a-div would delete Enter-into-the-chip, which is the whole keyboard
 story `arena-calendar`'s `grid` binding leans on. `TableRow` had a defect; `CalendarEvent` has a
 trade-off. Its entry below carries the reasoning.
-#### Table — React defaults the `empty` slot to a string, and a slot cannot carry a default in Angular
+#### DECIDED: Table's `empty` default stays React-only, and the contract now says so
 
-**React:** `Table.jsx` declares `empty = 'No data.'`, so a table with no rows and no `empty` content
-still says something.
-**Angular:** `empty` is `<ng-content select="[empty]" />`, and a consumer who projects nothing gets
-an empty box.
+**React:** `Table.jsx` declares `empty = 'No data.'`, so a table with no rows and no `empty`
+content still says something. **Angular:** `empty` is `<ng-content select="[empty]" />`, and a
+consumer who projects nothing gets an empty box.
 
-**The contract is silent, which is the part worth recording.** `contracts/api/components/Table.json`
-declares `empty` as a `slot` with no `default`, and the format's `default` field is read by nothing
-anyway — so React's string is undocumented rather than contradicted, and Angular's absence breaks no
-declared promise. A default is expressible in React because a slot there is a value; in Angular a
-slot is a projection site, and `<ng-content>` fallback content would be the counterpart. Nothing
-schedules adding it.
+**The contract was silent and is not any more.** `Table.json` names the string, says Angular
+projects nothing in the same case, and says why the fallback is deliberately not mirrored — so
+what used to be undocumented is now a stated asymmetry rather than an accident.
 
-**Converges:** not yet, and the cheap fix is real — `<ng-content select="[empty]">No data.</ng-content>`
-would do it. It is left alone because the two layers would then both hardcode a string that
-`Table.label`'s own reasoning says only a human can supply.
+**The cheap fix is real and stays refused.** `<ng-content select="[empty]">No data.</ng-content>`
+would close it in one line. What it would buy is two layers hardcoding one English sentence, and
+`Table.label`'s own reasoning — that a table's subject is editorial and nothing can derive it —
+applies to its empty state exactly as much. The debt-payment programme made `Table.label`,
+`ProgressBar.label` and the three charts' `seriesLabel` **required and guarded** for that reason;
+adding a second hardcoded English string in the same component would contradict the rule the same
+batch established.
 
+**Converges:** no, and this is now a decision rather than a deferral. What would change it is
+making `empty` required, which is a heavier promise than a table with no rows deserves.
 #### A compound family coordinates in the opposite direction in each layer
 
 **React:** the parent clones each child and pushes `name`, `checked` and a callback into it
@@ -3552,36 +3550,45 @@ that does nothing, reachable only by Enter from the hour cell it overlaps.
 
 **Converges:** only if the contract grows a member for it, which would change React too.
 
-#### CalendarEvent — the horizontal geometry is a manifest class, and happy-dom decided that
+#### DECIDED: CalendarEvent's horizontal geometry stays a manifest class in Angular and arithmetic in React
 
 **React:** the chip's gutter to its neighbour is arithmetic in the injected value —
 `left: calc(X% + calc(var(--sp-1) * 0.5))`, `width: calc(W% - var(--sp-1))`.
+**Angular:** the chip sets `left` and `right` as **pure percentages** and no width, and the 2px
+gutter each side is `mx-0.5` on the manifest's `chip` slot. The rendered geometry is identical.
 
-**Angular:** the chip sets `left` and `right` as **pure percentages** and no width, and the
-2px gutter each side is `mx-0.5` on the manifest's `chip` slot. The rendered geometry is
-identical, and `--sp-1` is still live and still never a number in JS.
+**The reason is a test-environment constraint, and it is worth knowing before anyone "restores"
+the calc form.** happy-dom's CSS value parser **rejects any `calc()` containing a `var()`** —
+`d.style.setProperty('left', 'calc(33% + var(--sp-1))')` leaves `style.left` as the empty string.
+Under the React shape no Angular suite could read a chip's placement at all, so the whole
+horizontal axis would have been unverifiable.
 
-**The reason is a test-environment constraint, and it is worth knowing before anyone
-"restores" the calc form.** happy-dom's CSS value parser **rejects any `calc()` containing a
-`var()`** — `d.style.setProperty('left', 'calc(33% + var(--sp-1))')` leaves `style.left` as
-the empty string. Under the React shape no Angular suite could read a chip's placement at all,
-so the whole horizontal axis would have been unverifiable. The shape that happy-dom can hold
-is also the one `check:dimensions` can scan, so the change bought two things at once.
+**Converging React onto Angular's shape was weighed and refused.** It would buy one real thing —
+the gutter would move from a `calc()` the dimension gate cannot fully judge into a manifest class
+it can — and it would cost two. React's chip has no manifest, so the gutter would have to become
+an inline `margin` and a second place the chip's geometry lives; and `left`/`right` percentages
+without a width are a different layout contract from `left`/`width`, so the change is a rendering
+change to a shipped component made for a testability benefit that React does not need, because
+React's suites read the `calc()` fine. **A constraint of one layer's test environment is a reason
+for that layer's shape and not for the other's.**
+#### DECIDED: a chip outside a calendar throws in Angular and renders in React, and React is not converging
 
-**Converges:** it could, in React's direction, and nothing schedules it.
+**React:** `CalendarEvent` mounted alone renders an unplaced chip. `CalendarEvent.prompt.md` says
+it "means nothing", and that is the whole enforcement.
+**Angular:** `inject(CalendarState)` is not optional, so the same mistake throws `NG0201` before
+anything renders. The injection is deliberately not made optional: a chip has no geometry of its
+own, and a silent unplaced render is worse than the injector error.
 
-#### CalendarEvent — a chip outside a calendar throws in Angular and renders in React
+**Angular is the better half and React stays as it is, which needs a reason rather than an
+apology.** React has no injector to fail: the chip learns its placement from props `Calendar`
+pushes in with `cloneElement`, so a chip rendered alone simply receives none — there is no lookup
+to miss and nothing to throw from. Reproducing the guard would mean inventing a required context
+and a runtime check for a mistake the prompt already names, in a layer where the compound family
+deliberately uses **no context anywhere**. That is a structural rule this file records twice, and
+breaking it to catch one authoring error is the wrong trade.
 
-**React:** `CalendarEvent` mounted alone renders an unplaced chip. `CalendarEvent.prompt.md`
-says it "means nothing", and that is the whole enforcement.
-
-**Angular:** `inject(CalendarState)` is not optional, so the same mistake throws `NG0201`
-before anything renders. The injection is deliberately not made optional: a chip has no
-geometry of its own, and a silent unplaced render is worse than the injector error.
-
-**Converges:** no, and Angular's is the better half. Recorded because the two layers fail
-differently on the same consumer mistake.
-
+**Converges:** no. The two layers fail differently on the same consumer mistake because they
+coordinate in opposite directions, and that coordination is itself recorded above.
 ## 4. What the READMEs do not say
 
 The normative documents state rules. This section carries what those rules cost, what the
