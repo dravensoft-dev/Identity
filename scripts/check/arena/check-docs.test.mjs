@@ -36,6 +36,18 @@ test('a document exactly at the limit passes', () => {
   rmSync(root, { recursive: true });
 });
 
+test('a dist tree is assembled output and is read by nothing', () => {
+  const root = tree({
+    'README.md': 'a',
+    'frameworks/react/dist/README.md': 'an em dash — lands here, copied from a document that already passed',
+    'frameworks/react/dist/Button.jsx': '// one comment\n// and a second\nexport const a = 1;\n',
+  });
+  assert.deepEqual(punctuationProblems(root).problems, []);
+  assert.deepEqual(commentRuleProblems(root).problems, []);
+  assert.equal(documentSizeProblems(root).scanned, 1);
+  rmSync(root, { recursive: true });
+});
+
 test('both document rules report how many documents they actually read', () => {
   const root = tree({ 'README.md': 'a', 'docs/a.md': 'b', 'x/y/Z.md': 'c', 'notes.txt': 'd' });
   assert.equal(documentSizeProblems(root).scanned, 3);

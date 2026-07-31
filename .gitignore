@@ -9,6 +9,13 @@ node_modules/
 /build/
 /.cache/
 
+# The two assembled npm packages. Unlike the payload below, a package is served from
+# the registry rather than from the git tag, and CI rebuilds it from the tagged
+# sources, so committing it would only make every diff unreadable. Every gate that
+# walks frameworks/ skips a directory named dist for the same reason.
+/frameworks/react/dist/
+/frameworks/angular/dist/
+
 # Build products a script under scripts/ rewrites. The .generated. infix says a script
 # writes the file; this block says which of those are untracked. Rebuild them with
 # `bun run build` -- see scripts/build/README.md.

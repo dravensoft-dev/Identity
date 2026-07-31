@@ -79,9 +79,9 @@ export function cssDiscoveryProblems(existingProblems, cssFileCount) {
 
 const SCAN_EXT = new Set(['.js', '.jsx', '.ts', '.tsx']);
 
-function* sourceFiles(dir) {
+export function* sourceFiles(dir) {
   for (const entry of readdirSync(dir)) {
-    if (entry === 'node_modules' || entry === 'vendor') continue;
+    if (entry === 'node_modules' || entry === 'vendor' || entry === 'dist') continue;
     const path = join(dir, entry);
     if (statSync(path).isDirectory()) { yield* sourceFiles(path); continue; }
     if (!SCAN_EXT.has(extname(entry))) continue;

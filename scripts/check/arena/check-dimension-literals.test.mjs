@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scanValue, scanText, scanInjectedCss, scanAttributes, scanDefaultsAndCallSites, staleExemptions, stalePassthrough, expressionLeaves, EXEMPT } from './check-dimension-literals.mjs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { scanValue, scanText, scanInjectedCss, scanAttributes, scanDefaultsAndCallSites, staleExemptions, stalePassthrough, expressionLeaves, sourceFiles, EXEMPT } from './check-dimension-literals.mjs';
 
 test('a bare number is a violation for a dimension-valued property', () => {
   assert.ok(scanValue('fontSize', '13'));
@@ -598,4 +601,13 @@ test('the lookbehind matters because a mismatched property swallows past the str
   assert.deepEqual(scanText(src), [],
     'reading `width` out of `stroke-width` used to run the value past the closing quote and report a '
     + 'bare literal at a site that had none -- naming a file and a property that were not the defect');
+});
+
+test('a dist tree is assembled output, so the scan never opens it', () => {
+  const root = mkdtempSync(join(tmpdir(), 'arena-dimensions-'));
+  mkdirSync(join(root, 'react', 'dist', 'components'), { recursive: true });
+  writeFileSync(join(root, 'react', 'Widget.jsx'), 'const a = { height: 13 };\n');
+  writeFileSync(join(root, 'react', 'dist', 'components', 'Widget.jsx'), 'const a = { height: 13 };\n');
+  assert.deepEqual([...sourceFiles(root)], [join(root, 'react', 'Widget.jsx')]);
+  rmSync(root, { recursive: true });
 });

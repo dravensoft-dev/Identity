@@ -32,7 +32,7 @@ export const BANNED_PUNCTUATION = [['—', 'an em dash']];
 
 const SOURCE_EXTENSIONS = ['.mjs', '.jsx', '.tsx', '.ts', '.js'];
 const SCANNED_TREES = ['scripts', 'frameworks'];
-const SKIPPED_DIRECTORIES = new Set(['node_modules', '.git']);
+const SKIPPED_DIRECTORIES = new Set(['node_modules', '.git', 'dist']);
 
 export const emittedTree = (root) => join(root, 'build');
 
