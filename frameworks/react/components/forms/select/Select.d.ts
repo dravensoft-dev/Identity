@@ -15,7 +15,6 @@ export interface SelectProps {
 
   name?: string;
 
-  multiple?: boolean;
 
   onChange?: (value: string) => void;
 }

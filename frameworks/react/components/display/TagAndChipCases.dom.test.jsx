@@ -121,10 +121,22 @@ test('CalendarEvent meets all three of its declared shapes', () => {
         };
       },
 
-      inert: () => ({
-        root: mount(<CalendarEvent id="c" title="Standup" start="2026-07-20T09:00:00Z"
-          end="2026-07-20T09:30:00Z" {...CHIP} />),
-      }),
+      inert: () => {
+        const plain = mount(<CalendarEvent id="c" title="Standup" start="2026-07-20T09:00:00Z"
+          end="2026-07-20T09:30:00Z" {...CHIP} />);
+        assert.equal(plain.querySelector('button'), null,
+          'with no onClick there is nothing to press, so the chip renders no button at all');
+
+        const withActions = mount(<CalendarEvent id="d" title="Standup" start="2026-07-20T09:00:00Z"
+          end="2026-07-20T09:30:00Z" actionsEnabled {...CHIP} />);
+        const root = withActions.firstElementChild;
+        assert.equal(root.tagName, 'DIV',
+          'actionsEnabled draws a kebab but does not make the chip pressable -- the root stays a div');
+        assert.equal(root.hasAttribute('role'), false,
+          'and it claims no interactive role, which is what `none` asserts about this case');
+
+        return { root: withActions };
+      },
     },
   });
 });

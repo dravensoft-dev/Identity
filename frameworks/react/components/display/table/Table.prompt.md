@@ -32,6 +32,7 @@ It is a **compound** component: `columns` says how each column is headed and set
 - Mark the actions column `mobileLayout:'block'`. Its buttons name themselves, and pairing them with an "ACTIONS" label reads as a mistake.
 - Don't set `responsive={false}` to "keep it looking like a table" on a phone. A table narrower than its content is unreadable; card mode is the honest fallback.
 - Row activation is `onClick` on the `TableRow`, and it carries no payload — you wrote that element, so you already hold the row it is about.
+- Pass `empty` whenever the table can legitimately have no rows. With nothing passed React falls back to the string **`No data.`**, which is a placeholder rather than an answer: it says the query returned nothing and never says what was being asked for. The Angular layer projects nothing at all in the same case, deliberately — the fallback is not mirrored, because a table's empty state is editorial the way `label` is.
 
 ### Responsive
 

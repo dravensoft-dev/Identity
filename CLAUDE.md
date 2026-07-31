@@ -78,9 +78,10 @@ unstyled, **silently**.
 ## Architecture
 
 **Tokens are the only styling layer, and their values are DTCG JSON.** `intro/styles.css` does
-nothing but `@import` six files split across two directories: `contracts/design-generated/`,
-which holds five CSS files, and `contracts/design/`, which holds one hand-authored file,
-`colors.css`. Four of those five carry the `.generated.` infix, so the name says it: their
+nothing but `@import` seven files split across two directories: `contracts/design-generated/`,
+which holds five CSS files, and `contracts/design/`, which holds two hand-authored ones —
+`reset.css`, imported **first** so anything can override it, and `colors.css`. Four of those five
+carry the `.generated.` infix, so the name says it: their
 values are authored in strictly-conformant DTCG 2025.10 JSON under `contracts/design/` and
 emitted by `bun run generate:tokens`. Edit the JSON and rebuild.
 `contracts/design/README.md` is the normative table of
@@ -337,24 +338,15 @@ every global/ARIA attribute a `{...rest}` spread would forward, with no gate beh
 **React's suites run in two `bun test` invocations that must not merge.** A `.dom.test.jsx`
 suite renders into a real DOM; every other `*.test.jsx` asserts on `renderToStaticMarkup` — no
 DOM, by design, because those suites prove those components render correctly server-side. The
-DOM is installed by `--preload ./frameworks/react/test/Preload.js`, which registers
-`@happy-dom/global-registrator` **process-wide**, and `bun test` shares one process across
-every path a single invocation matches. So a DOM registered in the DOM-free invocation's
-process would quietly change what its suites prove with nothing failing to say so.
-
-The infix answers the question wherever the file sits: the first invocation passes
-`frameworks/react` with `--path-ignore-patterns='**/*.dom.test.jsx'`, and the second passes the
-bare string `.dom.test.jsx` as its one positional, which `bun test` matches as a path
-substring. `frameworks/react/test/` holds the harness plus the suites that are about no one
-component — and **those include DOM ones**, so that directory's contents answer nothing about
-which invocation a suite belongs to. Angular's suites likewise sit beside their components,
-with the run target the whole emitted layer (`build/angular-test/angular`).
-
-**What forces the split is `scripts/`.** Angular's single registration site,
-`frameworks/angular/test/TestbedEnv.ts`, is guarded rather than throwing on a second call, so
-merging it into the preloaded invocation does not itself collide. But a happy-dom installed
-process-wide for the whole invocation replaces Bun's own `fetch`, which turns a passing
-`scripts/lib/arena/static-server.test.mjs` fetch assertion into a cross-origin failure.
+DOM is installed process-wide by `--preload ./frameworks/react/test/Preload.js`, and `bun test`
+shares one process across every path an invocation matches, so a merged run would quietly change
+what the DOM-free suites prove with nothing failing to say so. **The preload must never reach the
+DOM-free invocation, and it is mandatory for the DOM one** — `react-dom` latches its `input`-event
+support at module evaluation, so without a DOM already installed an `onChange` handler receives a
+dispatched event **zero** times, silently. Angular's suites sit beside their components, with the
+run target the whole emitted layer (`build/angular-test/angular`).
+[`frameworks/react/README.md`](./frameworks/react/README.md) carries the mechanism in full,
+including what `scripts/` adds to the split.
 
 **A grid is verified by walking its cells, one key press per step.** `Calendar` and `Table` were
 hand-tested for one reason — memory — and both have suites in both layers now. A grid suite
@@ -362,19 +354,6 @@ asserts at every cell that focus landed where the arrow should take it and that 
 `tabindex="0"` exists and is that cell; each edge clamp is one extra press, never a blind loop.
 **The bill is the press count, not what is asserted** — each press re-renders the grid through
 `act()` — so the fixture stays small and explicitly sized. `DOUBTS.md` has the measurement.
-
-**The `.dom.test.jsx` suites must be run through `--preload ./frameworks/react/test/Preload.js`,
-and that is not a convenience.** react-dom decides **once, at its own module evaluation**,
-whether the browser supports the `input` event: `canUseDOM` gates the block computing
-`isInputEventSupported`, and if a DOM is not already installed the flag latches false and React
-falls back to its legacy change-detection polyfill, under which a dispatched `input` or
-`change` reaches an `onChange` handler **zero** times, silently. Registering happy-dom from
-`Harness.jsx`'s module body is too late (ES imports evaluate first) and — measured, so do not
-retry it — so is a **separate ES module imported ahead of `react-dom/client`**: bun evaluates
-`react-dom` before that module anyway. Only a preload is early enough. All three invocation
-sites pass it (`test:react-dom`, `test`, `testStep()`), and `Harness.jsx` **throws** when
-`document` is missing rather than installing a fallback, which would silently run those suites
-under the legacy semantics. The preload must never reach the DOM-free invocation.
 
 **A dimension in a framework layer is a token or a derivation of tokens. A bare literal is a
 bug.** This is machine-checked: `bun run check:dimensions` scans `frameworks/` for literals in
@@ -432,8 +411,9 @@ token source, which stays platform-neutral.
 When adding a colour, define the daisyUI token in `palette.dark.json` and `palette.light.json`
 first, rebuild, then alias to it in `colors.css` — never introduce a raw hex in a component.
 After any `contracts/design/` edit: rebuild, then run `check:dtcg` (source is valid DTCG
-2025.10), `check:tokens` (committed CSS matches the source) and `check:ramp` (the ramp still
-clears every gate). Colours are structured sRGB objects, dimensions and durations are
+2025.10), `check:tokens` (committed CSS matches the source), `check:ramp` (the ramp still
+clears every gate) and `check:text-contrast` (every gated level clears 4.5:1 in both themes).
+Colours are structured sRGB objects, dimensions and durations are
 `{value,unit}` objects, and letter spacing is a `number` carrying an `em` render hint in
 `$extensions`.
 
@@ -504,70 +484,23 @@ The Angular layer's quartet is the analogue, in
 component's own suites, `<Component>.<facet>.test.ts`, in the same directory. The three SVG charts are the one
 exception and have no `<Component>.variants.ts`. Angular has **all six** of the categories the
 layout rule allows, and implements every component the layer ships; `forms/` is the newest.
-
-**A host-bound root is the Angular layer's default, and its carve-outs are a growing set.** A
-primitive binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than
-rendering a wrapper div, so the host is the flex item its parent lays out and the measured
-element is the styled element. The rule targets elements that exist only to carry styling; when
-the root must be a specific semantic or interactive element, keep it and leave the host bare.
-`activity-feed` needs a real `<ul>`; a form control needs its own `<button>`, `<input>` or
-`<label>`, or it forfeits the activation, labelling and `:disabled` semantics the browser
-already supplies. **A bare host still declares `display: contents`**, or as a flex item it
-shrinks to fit and a `w-full` inside measures the host, not the row. **A host-bound root must carry
-a display utility** — `<arena-x>` is an unknown element defaulting to `display:inline`, where
-width and height do not apply, so a root slot without one renders a zero-area host. That is
-machine-guarded by a manifest-driven assertion in
-`frameworks/angular/test/HostClassBinding.test.ts`.
+**A primitive binds its root slot to the host rather than rendering a wrapper div**, with a
+growing carve-out set for roots that must be a specific semantic or interactive element;
+`frameworks/angular/README.md` states the rule, the carve-outs and the display-utility
+requirement `HostClassBinding.test.ts` guards.
 
 **The Angular test harness compiles ahead of the run — AOT, not JIT — and that is a different
-guarantee, not merely a faster one.** The Angular suites render real zoneless Angular trees
-under `bun test` via `happy-dom`, which needs three test-only devDependencies beyond the
-`node:test`/`node:assert` baseline — `@angular/platform-browser`, `happy-dom` and
-`@happy-dom/global-registrator`. **Most suites sit beside the component they cover**; what stays
-in `frameworks/angular/test/` is the harness and the suites about no single component — and two
-of those files carry no `.test.` infix on purpose, because `bun test` collects by that infix and
-a shared module must not be collected as a suite.
-
-`bun run build:angular-tests` compiles everything `frameworks/angular/tsconfig.test.json`
-includes under `ngc --strictTemplates`, into git-ignored `build/angular-test/`; `test:angular`,
-`test` and `testStep()` all run `bun test` over that emitted output, never over the `.ts`
-sources. A type error anywhere in the test surface — including a template diagnostic in an
-inline `template:` string — fails the *build* step, and no test in that run executes at all.
-Staleness is prevented by the build always running ahead of the tests that read it, and
-`build-angular-tests.mjs` prunes output whose source is gone, because `ngc` does not.
-
-**A green compile is a claim about TYPES, and never about behaviour.**
-
-`frameworks/angular/test/HarnessCapabilities.test.ts` pins what the AOT harness supports: a
-template property binding reaches a required signal input; `contentChild()` resolves against
-real projected content; and `componentRef.setInput()` drives a required input — a plain string,
-and a boolean carrying a `booleanAttribute` transform — as well as an *optional* boolean input of
-the same transformed shape, displacing its default. **Never write to a component's instance field
-directly** to stand in for an input: `grep -rn "\w\+\['[a-zA-Z]*'\] = " --include='*.ts'
-frameworks/angular/` must stay empty.
-
-A suite file that fails to *load* from the emit does not fail quietly: the run goes red, not
-merely one failing assertion. What stays silent is *which* tests or suite files never loaded, so
-a reader sees a failing run and has to go find what else it dropped.
-
-`bun test` runs every file a single invocation matches in ONE process — which means the whole
-Angular layer — and both happy-dom's document and Angular's `TestBed` environment can each be
-claimed only once per process: `GlobalRegistrator.register()` throws if already registered, and
-`TestBed.initTestEnvironment()` throws the second time it runs across files that share a process.
-`frameworks/angular/test/TestbedEnv.ts` claims both, once, for the whole run: `ensureDom()` and
-`useTestEnvironment()` are plain `if (claimed) return` guards, not a reset —
-`TestBed.resetTestEnvironment()` measurably does not work, because `BrowserDomAdapter.makeCurrent()`
-installs a process-wide DOM adapter on the FIRST platform creation that nothing resets, so a
-second document would render into one the adapter no longer points at.
-
-So every Angular suite shares one real document and one TestBed environment for the whole run;
-any suite needing a real component render calls `useTestEnvironment()` (or `ensureDom()` alone,
-for a suite that needs a DOM but not TestBed). **The shared document means state written onto
-it outlives the file that wrote it** — a custom property on `documentElement.style`, an element
-appended to `document.body` — unless that file clears it, typically in a `finally`. Every
-directly-created fixture must still be `destroy()`-ed, because zoneless change detection sweeps
-all attached views, so a fixture left dirty throws out of an unrelated later test — and with
-one shared document that hazard crosses files.
+guarantee, not merely a faster one.** `bun run build:angular-tests` compiles the whole test
+surface with `ngc --strictTemplates` into git-ignored `build/angular-test/`, and `test:angular`,
+`test` and `testStep()` all run `bun test` over that emit rather than over the `.ts` sources — so
+a type error anywhere in it fails the *build*, and no test in that run executes at all.
+**A green compile is a claim about TYPES, and never about behaviour.** One process means one
+document and one `TestBed` environment for the whole layer, claimed once by
+`frameworks/angular/test/TestbedEnv.ts`; **state written onto that shared document outlives the
+file that wrote it**, and every directly-created fixture must be `destroy()`-ed or it throws out
+of an unrelated later test. `frameworks/angular/README.md` carries all of it, including why
+`TestBed.resetTestEnvironment()` is not an option and what
+`HarnessCapabilities.test.ts` pins.
 
 **Specimen/demo pages** start with an HTML comment
 `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card
@@ -645,16 +578,12 @@ harness; and a component's three files — `<Name>.manifest.json`, the generated
 `find frameworks/tailwind/components -name '*.manifest.json' | wc -l`.
 
 **The Tailwind layer derives every utility from an existing token and introduces no new hex and
-no new value** — add the token first, then reference it. This is machine-checked:
-`check:tailwind` compiles the preset with the manifests as content and asserts every class emits
-a rule and every theme key resolves to a real token — **and that it found any manifests at
-all**, because a gate iterating zero manifests finds zero violations by construction.
-`check:coverage` asserts every token either reaches a utility or is named in `EXCLUDED` with a
-reason; `check:arbitrary` fails on a bracket carrying a raw literal; and `check:radius` fails on
-the one core Tailwind utility in this namespace that resolves without a token —
-`rounded-full` (`calc(infinity * 1px)`) where `rounded-pill` (`--r-pill`) belongs. That last is
-the converse of `check:coverage` and just as narrow: it does not attempt "every utility traces
-to a token" in general, only this one verified case.
+no new value** — add the token first, then reference it. Four gates hold it, and
+`frameworks/tailwind/README.md` states what each reaches: `check:tailwind` (every class emits a
+rule, every theme key resolves, **and it found any manifests at all**), `check:coverage` (every
+token reaches a utility or is named in `EXCLUDED` with a reason), `check:arbitrary` (no bracket
+carries a raw literal) and `check:radius` (`rounded-full` where `rounded-pill` belongs — one
+verified case, not "every utility traces to a token" in general).
 
 `bun run check` runs every gate plus the test suite, without stopping at the first failure.
 **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`,

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useContainerWidth } from '../../../UseContainerWidth.js';
 import { resolveColors, arcPath, srOnly, CHART_HEIGHT } from '../../../DataVisuals.js';
-import { chartLegendMin, chartLegendMax, chartLegendGap } from '../../../Tokens.generated.js';
+import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated.js';
 
 export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix }) {
+  if (!seriesLabel) throw new Error('DoughnutChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('DoughnutChart: `labels` is required');
   if (!values) throw new Error('DoughnutChart: `values` is required');
   const [ref, measured] = useContainerWidth();
@@ -21,10 +22,10 @@ export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix 
   const plotW = Math.max(1, width - legendW - chartLegendGap);
   const cx = plotW / 2;
   const cy = height / 2;
-  const rOuter = Math.max(1, Math.min(plotW, height) / 2 - 8);
+  const rOuter = Math.max(1, Math.min(plotW, height) / 2 - chartRingInset);
   const rInner = rOuter * 0.62;
 
-  const name = seriesLabel ? `${seriesLabel} — doughnut chart` : 'Doughnut chart';
+  const name = `${seriesLabel} — doughnut chart`;
 
   let angle = -Math.PI / 2;
   const segments = values.map((v, i) => {
@@ -58,7 +59,8 @@ export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix 
       {
 
 }
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 'calc(var(--sp-1) * 1.5)', overflow: 'auto' }}>
+      <div tabIndex={0} role="group" aria-label="Doughnut chart legend"
+        style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 'calc(var(--sp-1) * 1.5)', overflow: 'auto' }}>
         {values.map((_, i) => (
           <div key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
             style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', opacity: hover === null || hover === i ? 1 : 0.55 }}>
@@ -72,7 +74,7 @@ export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix 
 
       <table style={srOnly}>
         <caption>{name}</caption>
-        <thead><tr><th>Category</th><th>{seriesLabel || 'Value'}</th></tr></thead>
+        <thead><tr><th>Category</th><th>{seriesLabel}</th></tr></thead>
         <tbody>
           {values.map((v, i) => <tr key={i}><th scope="row">{labels[i]}</th><td>{fmt(v)}</td></tr>)}
         </tbody>

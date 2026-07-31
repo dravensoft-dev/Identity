@@ -1,9 +1,12 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join, extname } from 'node:path';
+import { join, extname, relative } from 'node:path';
 import { buildScriptModules, collectScriptTokens, SCRIPT_TARGETS } from '../../generate/arena/generate-tokens.mjs';
 import { parseDecls } from '../../lib/arena/css-decls.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { numericConstants } from './check-duplicate-constants.mjs';
+
+const LAYERS_WITH_MODULES = ['react', 'angular'];
 
 export function cssCounterpart(value) {
   const m = /^(-?\d+(?:\.\d+)?)(px|ms)?$/.exec(value.trim());
@@ -28,6 +31,40 @@ export function catSlotEnumProblems(catSlots, values) {
   const matches = actual.length === expected.length && expected.every((v, i) => actual[i] === v);
   if (matches) return [];
   return [`contracts/api/types/cat-slot.json: CatSlot is [${actual.join(', ')}], but the --color-cat-* ramp in contracts/design/palette.dark.json has ${catSlots} slot(s), so it must be [${expected.join(', ')}] — the contract type restates the ramp and has to follow it`];
+}
+
+export const SHADOW_EXEMPT = new Map([
+
+]);
+
+export function shadowedTokenProblems(flagged, layers) {
+  const problems = [];
+  for (const { jsName, value } of flagged) {
+    if (!/^-?\d+(\.\d+)?$/.test(String(value))) continue;
+    for (const { layer, imported, constants } of layers) {
+      if (imported.has(jsName)) continue;
+      for (const { name, value: declared, path } of constants) {
+        if (!/^-?\d+(\.\d+)?$/.test(declared)) continue;
+        if (Number(declared) !== Number(value)) continue;
+        const key = `${layer}:${name}`;
+        if (SHADOW_EXEMPT.has(key)) continue;
+        problems.push(
+          `${path}: ${name} is ${declared}, which is the value of the script-readable token ${jsName}, `
+          + `and the ${layer} layer does not import it. Import the token or record why this number is not that one. `
+          + `The orphan rule above cannot see this: it asks whether SOME layer imports the token, so one layer `
+          + `importing it satisfies the gate while another keeps its own copy.`,
+        );
+      }
+    }
+  }
+  return problems;
+}
+
+export function staleShadowExemptions(layers) {
+  const declared = new Set(layers.flatMap(({ layer, constants }) => constants.map((c) => `${layer}:${c.name}`)));
+  return [...SHADOW_EXEMPT.keys()]
+    .filter((key) => !declared.has(key))
+    .map((key) => `SHADOW_EXEMPT names "${key}", which declares no module-level numeric constant. Delete the entry.`);
 }
 
 export function zeroGeneratedCssProblems(count) {
@@ -98,14 +135,26 @@ async function main() {
   }
 
   const imported = new Set();
-  for (const path of sourceFiles(join(root, 'frameworks'))) {
-    for (const name of importedNames(readFileSync(path, 'utf8'))) imported.add(name);
+  const layers = [];
+  for (const layer of LAYERS_WITH_MODULES) {
+    const layerImported = new Set();
+    const constants = [];
+    for (const path of sourceFiles(join(root, 'frameworks', layer))) {
+      const source = readFileSync(path, 'utf8');
+      for (const name of importedNames(source)) { layerImported.add(name); imported.add(name); }
+      for (const [name, value] of numericConstants(source)) {
+        constants.push({ name, value, path: relative(root, path) });
+      }
+    }
+    layers.push({ layer, imported: layerImported, constants });
   }
   for (const { jsName } of flagged) {
     if (!imported.has(jsName)) {
       problems.push(`${jsName}: flagged script-readable but no framework layer imports it — remove the flag or use the token`);
     }
   }
+  problems.push(...shadowedTokenProblems(flagged, layers));
+  problems.push(...staleShadowExemptions(layers));
 
   const [, freshModule] = built.entries().next().value;
   const catSlots = Number(/^export const catSlots = (\d+);$/m.exec(freshModule)?.[1]);

@@ -1,8 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  classify, reactSurface, angularSurface, templateSlots, braceBody,
-  UnrecognisedShape, PLATFORM_TYPES,
+  classify, reactSurface, angularSurface, templateSlots, braceBody, UnrecognisedShape, PLATFORM_TYPES, reactImplementation, literalValue, defaultProblems,
 } from './api-surface.mjs';
 
 test('the three primitives classify as primitives', () => {
@@ -469,4 +468,59 @@ test('an inline enum with a nullable arm is still that enum, with every value it
 test('a union of two parenthesised arms is not mistaken for one wrapped annotation', () => {
   assert.deepEqual(classify('(DOMRect) | (HTMLElement)'),
     { form: 'union', parts: ['(DOMRect)', '(HTMLElement)'] });
+});
+
+test('reactImplementation reads a plain exported component and its destructuring defaults', () => {
+  const src = "export function Tag({ children, tone = 'neutral', removable = false, onRemove }) {\n  return null;\n}\n";
+  const impl = reactImplementation(src, 'Tag');
+  assert.equal(impl.destructures, true);
+  assert.equal(impl.rest, null);
+  assert.equal(impl.defaults.get('tone'), "'neutral'");
+  assert.equal(impl.defaults.get('removable'), 'false');
+  assert.equal(impl.defaults.get('onRemove'), null);
+});
+
+test('reactImplementation reaches a forwardRef component, which is not an "export function"', () => {
+  const src = "export const Chip = React.forwardRef(function Chip({ id, cols = 1 }, ref) {\n  return null;\n});\n";
+  const impl = reactImplementation(src, 'Chip');
+  assert.equal(impl.defaults.get('cols'), '1');
+});
+
+test('reactImplementation reports a surviving rest spread, which is the escape the .d.ts cannot show', () => {
+  const src = 'export function Card({ children, ...rest }) { return null; }\n';
+  assert.equal(reactImplementation(src, 'Card').rest, 'rest');
+});
+
+test('a component taking no object pattern is readable and simply has nothing to compare', () => {
+  const impl = reactImplementation('export function Rotor(props) { return null; }\n', 'Rotor');
+  assert.equal(impl.destructures, false);
+  assert.equal(impl.defaults.size, 0);
+});
+
+test('literalValue reads the literals a default can be, and refuses an expression', () => {
+  assert.equal(literalValue("'md'"), 'md');
+  assert.equal(literalValue('true'), true);
+  assert.equal(literalValue('3'), 3);
+  assert.equal(literalValue(''), undefined);
+  assert.equal(literalValue('calc(var(--sp-1) * 120)'), undefined);
+  assert.equal(literalValue(null), undefined);
+});
+
+test('a default the contract and the implementation both state must match', () => {
+  assert.deepEqual(defaultProblems('react/Skeleton', 'lines', 3, '3'), []);
+  assert.match(defaultProblems('react/Skeleton', 'lines', 3, '4')[0], /declares default 3, the implementation uses 4/);
+});
+
+test('an implementation default the contract does not name is undocumented API', () => {
+  const problems = defaultProblems('react/Dialog', 'width', undefined, "'480px'");
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /defaults to "480px" and the contract declares no default/);
+});
+
+test('a contract default with no destructuring default is NOT reported, because the default may be applied downstream', () => {
+  assert.deepEqual(defaultProblems('react/BarChart', 'slot', 1, null), []);
+});
+
+test('a non-literal default is not compared, because the gate reads source and does not evaluate it', () => {
+  assert.deepEqual(defaultProblems('react/Dialog', 'width', 'calc(var(--sp-1) * 120)', 'calc(var(--sp-1) * 120)'), []);
 });

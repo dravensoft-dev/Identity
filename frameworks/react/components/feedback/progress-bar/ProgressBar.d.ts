@@ -9,7 +9,7 @@ export interface ProgressBarProps {
 
   tone?: ProgressTone;
 
-  label?: string;
+  label: string;
 
   showPercentage?: boolean;
 

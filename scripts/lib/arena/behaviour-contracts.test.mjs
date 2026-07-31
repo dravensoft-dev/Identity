@@ -121,6 +121,40 @@ test('an exception without a reason is a problem', () => {
   assert.match(validateBinding('Dialog', 'react', b, patterns)[0], /reason/);
 });
 
+test('a cases entry that does not name itself is rejected, and it used to clear the gate entirely', () => {
+  const b = { cases: [{ pattern: 'none', reason: 'a label' }] };
+  const problems = validateBinding('Dialog', 'react', b, patterns);
+  assert.match(problems[0], /cases\[0\] declares no "name"/);
+});
+
+test('a nameless case skips the when rule too, so the name check must not depend on it', () => {
+  const nameless = { cases: [{ pattern: 'dialog-modal', when: 'open' }] };
+  assert.equal(validateBinding('Dialog', 'react', nameless, patterns).length, 1);
+
+  const named = { cases: [{ name: 'open', pattern: 'dialog-modal' }] };
+  assert.match(validateBinding('Dialog', 'react', named, patterns)[0], /must say WHEN it is produced/);
+});
+
+test('a duplicate case name is rejected, because crossLayerAgrees would compare only the last one', () => {
+  const b = {
+    cases: [
+      { name: 'open', when: 'open is true', pattern: 'dialog-modal' },
+      { name: 'open', when: 'open is true and inert', pattern: 'none', reason: 'inert' },
+    ],
+  };
+  assert.match(validateBinding('Dialog', 'react', b, patterns)[0], /declares the case name "open" more than once/);
+});
+
+test('distinct names on a well-formed cased binding are no problem', () => {
+  const b = {
+    cases: [
+      { name: 'closed', when: 'open is false', pattern: 'none', reason: 'nothing renders' },
+      { name: 'open', when: 'open is true', pattern: 'dialog-modal' },
+    ],
+  };
+  assert.deepEqual(validateBinding('Dialog', 'react', b, patterns), []);
+});
+
 test('a delegated binding must name what provides the behaviour', () => {
   const b = { pattern: 'dialog-modal', delegatedTo: '' };
   assert.match(validateBinding('Dialog', 'angular', b, patterns)[0], /delegatedTo/);

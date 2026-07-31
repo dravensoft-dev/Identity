@@ -70,6 +70,19 @@ export function validateBinding(component, layer, binding, patterns) {
     problems.push(`${where}: declares both "pattern" and "cases" — a binding declares one or the other. Two places for one fact is what deriving IDREF from IDREF_ATTRIBUTES fixed once already.`);
     return problems;
   }
+  if (Array.isArray(binding.cases)) {
+    const seen = new Set();
+    for (const [i, c] of binding.cases.entries()) {
+      if (!c.name) {
+        problems.push(`${where}: cases[${i}] declares no "name". A case exists to say WHICH render it describes, so a nameless one declares the only thing it is for. It also skips the "when" requirement, because that rule can only fire on a named case.`);
+        continue;
+      }
+      if (seen.has(c.name)) {
+        problems.push(`${where}: declares the case name "${c.name}" more than once. crossLayerAgrees builds its per-name map last-write-wins, so only the last declaration would ever be compared across layers, and the earlier ones would be invisible rather than wrong.`);
+      }
+      seen.add(c.name);
+    }
+  }
   for (const c of bindingCases(binding)) {
     const label = c.name ? `${where} case "${c.name}"` : where;
     if (c.name !== null && !c.when) {

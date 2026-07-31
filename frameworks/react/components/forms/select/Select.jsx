@@ -1,5 +1,5 @@
 import React, { useId, useState } from 'react';
-export function Select({ label, options = [], value, onChange, disabled = false, required = false, name, multiple = false }) {
+export function Select({ label, options = [], value, onChange, disabled = false, required = false, name }) {
   const [focus, setFocus] = useState(false);
   const selectId = `select-${useId().replace(/:/g, '')}`;
   return (
@@ -7,7 +7,7 @@ export function Select({ label, options = [], value, onChange, disabled = false,
       {label && <label htmlFor={selectId} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{label}</label>}
       <div style={{ position: 'relative' }}>
         <select id={selectId} value={value} onChange={(e) => onChange && onChange(e.target.value)} disabled={disabled}
-          required={required} name={name} multiple={multiple}
+          required={required} name={name}
           onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
           style={{ appearance: 'none', width: '100%', height: 'var(--dz-ctl-h)', padding: '0 calc(var(--sp-1) * 9) 0 calc(var(--sp-1) * 3)',
             background: 'var(--surface-input)', color: 'var(--bone)',
@@ -17,7 +17,7 @@ export function Select({ label, options = [], value, onChange, disabled = false,
             transition: 'border-color var(--dur-fast) var(--ease-out)' }}>
           {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
-        <span style={{ position: 'absolute', right: 'calc(var(--sp-1) * 3)', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--mute)', fontSize: 'var(--icon-sm)' }}>▾</span>
+        <span style={{ position: 'absolute', right: 'calc(var(--sp-1) * 3)', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--mute)', fontSize: 'var(--icon-sm)' }} aria-hidden="true">▾</span>
       </div>
     </div>
   );

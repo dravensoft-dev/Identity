@@ -179,9 +179,10 @@ class UnauthCardWithoutProjectionHost {}
   standalone: true,
   imports: [BarChart],
   host: { 'data-host': 'bar-chart' },
-  template: `<arena-bar-chart [labels]="labels" [values]="values" />`,
+  template: `<arena-bar-chart [seriesLabel]="seriesLabel" [labels]="labels" [values]="values" />`,
 })
 class BarChartHost {
+  seriesLabel = 'Deployments per week';
   labels: string[] = [];
   values: number[] = [];
 }
@@ -196,9 +197,10 @@ function createBarChartHost() {
   standalone: true,
   imports: [LineChart],
   host: { 'data-host': 'line-chart' },
-  template: `<arena-line-chart [labels]="labels" [values]="values" />`,
+  template: `<arena-line-chart [seriesLabel]="seriesLabel" [labels]="labels" [values]="values" />`,
 })
 class LineChartHost {
+  seriesLabel = 'p95 latency';
   labels: string[] = [];
   values: number[] = [];
 }
@@ -213,9 +215,10 @@ function createLineChartHost() {
   standalone: true,
   imports: [DoughnutChart],
   host: { 'data-host': 'doughnut-chart' },
-  template: `<arena-doughnut-chart [labels]="labels" [values]="values" />`,
+  template: `<arena-doughnut-chart [seriesLabel]="seriesLabel" [labels]="labels" [values]="values" />`,
 })
 class DoughnutChartHost {
+  seriesLabel = 'Traffic by region';
   labels: string[] = [];
   values: number[] = [];
 }
@@ -854,7 +857,13 @@ test('a primitive that does not host-bind its root takes its host out of layout 
   }
 });
 
-const GLOBAL_ATTRIBUTE_INPUTS = ['title', 'name'] as const;
+const GLOBAL_ATTRIBUTE_INPUTS = ['title', 'name', 'id'] as const;
+
+const HOST_COST: Record<(typeof GLOBAL_ATTRIBUTE_INPUTS)[number], string> = {
+  title: ' and the browser draws a tooltip over it',
+  name: '',
+  id: ' AND on the real control inside -- two elements with one id, where a <label for> resolves to the host, which is not a labelable control',
+};
 
 function hostBlockOf(source: string): string {
   const at = source.indexOf('host: {');
@@ -903,7 +912,7 @@ test('a primitive whose input is named after a global HTML attribute clears that
           `${path}: ${name} takes a \`${attribute}\` input and does not clear the attribute. `
           + 'Angular writes a static attribute to the DOM during the creation pass whether or not it '
           + `also matches an input, so <arena-${name.toLowerCase()} ${attribute}="…"> leaves a real `
-          + `${attribute} on the host` + (attribute === 'title' ? ' and the browser draws a tooltip over it' : '')
+          + `${attribute} on the host` + HOST_COST[attribute]
           + `. Add '[attr.${attribute}]': 'null' to the host block.`,
         );
       }
@@ -916,7 +925,7 @@ test('a primitive whose input is named after a global HTML attribute clears that
     }
   }
 
-  assert.ok(declared > 0, 'no primitive declares a title or name input -- the guard matched nothing, so it proves nothing');
+  assert.ok(declared > 0, 'no primitive declares a title, name or id input -- the guard matched nothing, so it proves nothing');
   assert.deepEqual(problems, [], `\n  ${problems.join('\n  ')}`);
 });
 
@@ -1000,9 +1009,9 @@ test('arena-bar-chart: the picture carries an accessible name and the numbers ca
   const svg = fixture.nativeElement.querySelector('arena-bar-chart svg') as SVGElement;
   assert.equal(svg.getAttribute('role'), 'img');
 
-  assert.equal(svg.getAttribute('aria-label'), 'Bar chart');
+  assert.equal(svg.getAttribute('aria-label'), 'Deployments per week — bar chart');
   const caption = fixture.nativeElement.querySelector('arena-bar-chart table caption') as HTMLElement;
-  assert.equal(caption.textContent?.trim(), 'Bar chart');
+  assert.equal(caption.textContent?.trim(), 'Deployments per week — bar chart');
 });
 
 test('arena-line-chart: the host is a block-level box, so the width it measures is a real content width', async () => {
@@ -1048,9 +1057,9 @@ test('arena-line-chart: the picture carries an accessible name and the numbers c
   const svg = fixture.nativeElement.querySelector('arena-line-chart svg') as SVGElement;
   assert.equal(svg.getAttribute('role'), 'img');
 
-  assert.equal(svg.getAttribute('aria-label'), 'Line chart');
+  assert.equal(svg.getAttribute('aria-label'), 'p95 latency — line chart');
   const caption = fixture.nativeElement.querySelector('arena-line-chart table caption') as HTMLElement;
-  assert.equal(caption.textContent?.trim(), 'Line chart');
+  assert.equal(caption.textContent?.trim(), 'p95 latency — line chart');
 });
 
 test('arena-doughnut-chart: the host is the flex row itself, so the box it measures is the box it lays out', async () => {
@@ -1103,9 +1112,9 @@ test('arena-doughnut-chart: the picture carries an accessible name and the numbe
   const svg = fixture.nativeElement.querySelector('arena-doughnut-chart svg') as SVGElement;
   assert.equal(svg.getAttribute('role'), 'img');
 
-  assert.equal(svg.getAttribute('aria-label'), 'Doughnut chart');
+  assert.equal(svg.getAttribute('aria-label'), 'Traffic by region — doughnut chart');
   const caption = fixture.nativeElement.querySelector('arena-doughnut-chart table caption') as HTMLElement;
-  assert.equal(caption.textContent?.trim(), 'Doughnut chart');
+  assert.equal(caption.textContent?.trim(), 'Traffic by region — doughnut chart');
 });
 
 test('arena-doughnut-chart: with no data it draws no slice at all, rather than an empty ring', async () => {

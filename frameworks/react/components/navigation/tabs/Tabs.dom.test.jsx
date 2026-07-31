@@ -197,3 +197,19 @@ test('the binding is honest: every `tabs` requirement, in both directions', () =
     },
   });
 });
+
+test('Tab binds "none" because Tabs owns the pattern, and it adds no affordance of its own', () => {
+  const root = mount(three());
+  const [first] = tabsOf(root);
+
+  assert.equal(first.getAttribute('role'), 'tab',
+    'the role a Tab carries is a clause of the `tabs` pattern Tabs binds -- the Tab does not choose it');
+  assert.equal(first.hasAttribute('aria-haspopup'), false,
+    'a Tab that grew an affordance of its own would need a pattern of its own, and its binding says it has none');
+
+  assertPattern({
+    root,
+    bindingPath: join(REACT_COMPONENTS, 'navigation/tab/Tab.behaviour.json'),
+    subjects: { default: first },
+  });
+});

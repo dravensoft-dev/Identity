@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useContainerWidth } from '../../../UseContainerWidth.js';
 import { resolveColors, niceMax, ticks, srOnly, PAD, CHART_HEIGHT } from '../../../DataVisuals.js';
-import { chartPointR, chartPointRHover } from '../../../Tokens.generated.js';
+import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.generated.js';
 
 export function LineChart({
   labels, values, seriesLabel, slot, tone, area = false, valueSuffix,
 }) {
+  if (!seriesLabel) throw new Error('LineChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('LineChart: `labels` is required');
   if (!values) throw new Error('LineChart: `values` is required');
   const [ref, measured] = useContainerWidth();
@@ -30,7 +31,7 @@ export function LineChart({
     ? `M${xOf(0)},${baseline} L${values.map((v, i) => `${xOf(i)},${yOf(v)}`).join(' L')} L${xOf(n - 1)},${baseline} Z`
     : '';
 
-  const name = seriesLabel ? `${seriesLabel} — line chart` : 'Line chart';
+  const name = `${seriesLabel} — line chart`;
 
   const onMove = (e) => {
     if (!n) return;
@@ -47,7 +48,7 @@ export function LineChart({
         {ticks(max).map((t, i) => (
           <g key={i}>
             <line x1={PAD.l} x2={width - PAD.r} y1={yOf(t)} y2={yOf(t)} stroke="var(--border)" style={{ strokeWidth: 'var(--bw)' }} />
-            <text x={PAD.l - 8} y={yOf(t)} textAnchor="end" dominantBaseline="middle"
+            <text x={PAD.l - chartLabelGap} y={yOf(t)} textAnchor="end" dominantBaseline="middle"
               fill="var(--text-muted)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-2xs)' }}>{fmt(t)}</text>
           </g>
         ))}
@@ -75,7 +76,7 @@ export function LineChart({
 
 }
         {values.map((_, i) => (
-          <text key={i} x={xOf(i)} y={height - 8} textAnchor="middle"
+          <text key={i} x={xOf(i)} y={height - chartLabelGap} textAnchor="middle"
             fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{labels[i] ?? ''}</text>
         ))}
 
@@ -99,7 +100,7 @@ export function LineChart({
 
       <table style={srOnly}>
         <caption>{name}</caption>
-        <thead><tr><th>Point</th><th>{seriesLabel || 'Value'}</th></tr></thead>
+        <thead><tr><th>Point</th><th>{seriesLabel}</th></tr></thead>
         <tbody>
           {values.map((v, i) => <tr key={i}><th scope="row">{labels[i]}</th><td>{fmt(v)}</td></tr>)}
         </tbody>

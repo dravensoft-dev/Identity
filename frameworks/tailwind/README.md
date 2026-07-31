@@ -73,18 +73,27 @@ missing — add it to `contracts/design/` first.
 
 <!-- check-arbitrary-values allow: text-[13px] bg-[#b52a20] duration-[200ms] w-[calc(var(--sp-4)+8px)] -->
 
-**A `transition-[...]`/`duration-[...]` pair is one duration for every listed
-property.** `Button.jsx` transitions `background` and `transform` at `--dur-fast`
-but `box-shadow` at the slower `--dur-mid` — React can do that because each CSS
-property gets its own line in the `transition` shorthand. `Button.manifest.json`'s
-`duration-[var(--dur-fast)]` cannot: Tailwind's `duration-` utility sets one
-`transition-duration` for the whole `transition-property` list, and there is no
-second `duration-` utility to layer on for just one property. Expressing the
-split would mean writing the whole `transition` declaration as one raw arbitrary
-**property** (`[transition:background_var(--dur-fast)_var(--ease-out),…]`,
-no `utility-` prefix) — a fourth bracket shape outside the three this file
-documents, so it stays undone rather than reached for quietly. What that costs
-is recorded in [`DOUBTS.md`](../../DOUBTS.md) section 4.
+**A fourth shape exists, and it is earned rather than general: an arbitrary
+PROPERTY, with no `utility-` prefix.** A `transition-[...]`/`duration-[...]` pair
+sets one duration for every listed property, because Tailwind's `duration-` utility
+writes a single `transition-duration` for the whole `transition-property` list and
+there is no second one to layer on for just one property. `Button` needs
+`background` and `transform` at `--dur-fast` and `box-shadow` at the slower
+`--dur-mid` — React expresses that freely, since each property gets its own line in
+the `transition` shorthand. `Button.manifest.json` writes the whole declaration as
+one bracket instead:
+
+```
+[transition:background_var(--dur-fast)_var(--ease-out),transform_var(--dur-fast)_var(--ease-out),box-shadow_var(--dur-mid)_var(--ease-out)]
+```
+
+Every operand is a `var()` into a token, so `check:arbitrary` holds over it exactly
+as it does over the other three shapes — the escape is the *property*, never the
+literal. **Reach for it only when a utility cannot express the declaration at all**,
+which here means a per-property duration; a value a normal utility could carry
+belongs in a normal utility. It was left undone for several batches on the reasoning
+that a fourth shape should not be reached for quietly; writing it down is what makes
+reaching for it not quiet.
 
 The gate scans `.md` too, because a `.prompt.md`'s Don't block is exactly
 where a bad example belongs, and an unflagged one is a bad example someone
@@ -318,30 +327,27 @@ three sizes, with no second width class to conflict with it. Before flattening a
 prop to one class, ask which *other* variant group it actually co-varies with,
 and put it there instead.
 
-## This layer is border-box; React is content-box, and that is expected
+## Both layers are border-box, and neither relies on the other's mechanism
 
-`Utilities.generated.css`'s preflight sets `box-sizing: border-box` on every element (`@layer
-base`). Nothing in `contracts/design/`, `contracts/design-generated/` or `intro/styles.css` does, so a React component is
-content-box unless it opts in itself — most do not. **A slot that combines an
-explicit size with a border, or an explicit size with padding, therefore
-renders a different total box in the two layers** — border-box subtracts
-border and padding alike from the declared size, content-box adds both
-outside it, and either one alone produces the same divergence, by exactly
-twice that border's or that padding's width. This is not a manifest defect to
-chase with a compensating `+2px` or a taller size utility: `size-5` at
-`border-[length:var(--bw)]` is a correct, deliberate 20×20 in this layer even
-though React's equivalent, unless it opts into `box-sizing: border-box`
-itself, renders 22×22 for the same nominal size — and the same holds for
-`Switch.manifest.json`'s `track` (`w-10 h-5.5 p-0.5`, no border at all: the
-padding alone is what shrinks its content box under border-box). See
-[`DOUBTS.md`](../../DOUBTS.md) section 3 → "The Tailwind layer is border-box; React is
-content-box" for the numbers this produced in Checkbox's `box`, Radio's
-`ring`, Select's `field` and Switch's `track`, and for why the fix is
-documentation, not a value change, in either layer.
+This layer gets it from `Utilities.generated.css`'s preflight, which sets
+`box-sizing: border-box` on every element inside `@layer base`. React gets it from
+`contracts/design/reset.css`, which `intro/styles.css` imports first. Two files, one box
+model, and a slot's declared size is its outer edge in both.
 
-**Corollary:** never add a `box-border` class to a manifest slot expecting it to
-change anything — every slot is already border-box from the preflight, so the
-class is a no-op that only reads as if some *other* slot were missing it.
+**It was not always so, and the way the divergence was described is worth knowing before
+you trust any table about box models.** React had no reset, so it was content-box except
+where a component opted in — five did — **or where Chromium's UA stylesheet had already
+made the element border-box**, which it does for `<button>` and `<select>` and does not
+for `<textarea>` or `<input type="text">`. A table derived by reading each source and
+applying *"React declares no `box-sizing`, therefore content-box"* was consequently wrong
+in both directions at once: it claimed divergences that did not exist for every slot that
+happened to be a `<button>`, and missed the one real overrun, which was `Textarea` running
+26px past its container. Measurement is what separated them.
+
+**Corollary, unchanged and now true for a second reason:** never add a `box-border` class
+to a manifest slot expecting it to change anything. Every slot is already border-box from
+the preflight, so the class is a no-op that only reads as if some *other* slot were missing
+it.
 
 ## P1 — invented states
 

@@ -7,7 +7,9 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { buildApiModules } from '../../generate/arena/generate-api-types.mjs';
-import { reactSurface, angularSurface, UnrecognisedShape } from '../../lib/arena/api-surface.mjs';
+import {
+  reactSurface, angularSurface, reactImplementation, defaultProblems, UnrecognisedShape,
+} from '../../lib/arena/api-surface.mjs';
 import { pascal, readLayer } from '../../lib/arena/layers.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
@@ -285,6 +287,41 @@ export function resolveReactImplementations(tree, exists) {
   return { implementations, problems };
 }
 
+export const COMPARABLE_DEFAULT = new Set(['primitive', 'enum']);
+
+export function reactImplementationProblems(contract, declarationPath, readFile = readFileSync) {
+  const sourcePath = declarationPath.replace(/\.d\.ts$/, '.jsx');
+  const where = `react/${contract.component}`;
+  let source;
+  try {
+    source = readFile(sourcePath, 'utf8');
+  } catch {
+    return [`${where}: no .jsx beside ${relative(root, declarationPath)}. check:api reads the declaration; without the implementation it can only check what the .d.ts agrees to.`];
+  }
+  let impl;
+  try {
+    impl = reactImplementation(source, contract.component);
+  } catch (error) {
+    if (!(error instanceof UnrecognisedShape)) throw error;
+    return [`${where}: the reader could not read the implementation — ${error.message}`];
+  }
+  const problems = [];
+  if (impl.rest) {
+    problems.push(
+      `${where}: the implementation spreads {...${impl.rest}} onto its element. Flattening a component's heritage `
+      + `dropped every global and ARIA attribute a spread forwards, and the .d.ts agreeing with the contract is `
+      + `what let a restored spread pass — this gate now reads the .jsx so it cannot.`,
+    );
+  }
+  if (!impl.destructures) return problems;
+  for (const [member, spec] of Object.entries(contract.api ?? {})) {
+    if (!COMPARABLE_DEFAULT.has(spec.form)) continue;
+    if (!impl.defaults.has(member)) continue;
+    problems.push(...defaultProblems(where, member, spec.default, impl.defaults.get(member)));
+  }
+  return problems;
+}
+
 function reactImplementations() {
   const { implementations, problems } = resolveReactImplementations(
     readLayer('react'),
@@ -380,6 +417,7 @@ function main() {
         problems.push(`${layer}/${contract.component}: extends "${base}" — the {...rest} escape is none of the nine forms, R4`);
       }
       problems.push(...compareSurface(contract, surface.members, layer, typesByName));
+      if (layer === 'react') problems.push(...reactImplementationProblems(contract, path));
     }
   }
 

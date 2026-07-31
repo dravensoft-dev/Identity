@@ -42,7 +42,7 @@ test('TableRow meets all three of its declared shapes', () => {
       row: () => {
         const root = mount(
           <table><tbody>
-            <TableRow layout="table" columns={COLUMNS} rowIndex={1} onClick={() => {}}>
+            <TableRow interactive layout="table" columns={COLUMNS} rowIndex={1} onClick={() => {}}>
               <TableCell>checkout-api</TableCell>
               <TableCell>Healthy</TableCell>
             </TableRow>
@@ -57,7 +57,7 @@ test('TableRow meets all three of its declared shapes', () => {
 
       'card-interactive': () => {
         let clicked = 0;
-        const root = card({ onClick: () => { clicked += 1; } });
+        const root = card({ interactive: true, onClick: () => { clicked += 1; } });
         const el = root.firstElementChild;
 
         assert.equal(el.tagName, 'DIV', 'the card shape is a div, which is why it CAN take role="button"');
@@ -75,7 +75,7 @@ test('TableRow meets all three of its declared shapes', () => {
           'Space must be prevented, or the page scrolls under the row the user just pressed');
 
         let blocked = 0;
-        const off = card({ disabled: true, onClick: () => { blocked += 1; } });
+        const off = card({ interactive: true, disabled: true, onClick: () => { blocked += 1; } });
         const offEl = off.firstElementChild;
         assert.equal(offEl.getAttribute('aria-disabled'), 'true',
           'a disabled row must announce itself rather than leave the tab order');

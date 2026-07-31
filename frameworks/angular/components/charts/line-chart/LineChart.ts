@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, 
 import { containerWidth } from '../../../ContainerSize';
 import { CHART_HEIGHT, PAD, SR_ONLY, niceMax, resolveColors, ticks } from '../../../DataVisuals';
 import type { SeriesTone } from '../../../Api.generated';
-import { chartPointR, chartPointRHover } from '../../../Tokens.generated';
+import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.generated';
 
 const ASSUMED_WIDTH = 600;
 
@@ -129,7 +129,7 @@ export function lineAreaPath(points: readonly ArenaLinePoint[], baseline: number
 
     <table [style]="srOnly">
       <caption>{{ name() }}</caption>
-      <thead><tr><th>Point</th><th>{{ seriesLabel() ?? 'Value' }}</th></tr></thead>
+      <thead><tr><th>Point</th><th>{{ seriesLabel() }}</th></tr></thead>
       <tbody>
         @for (point of points(); track point.index) {
           <tr><th scope="row">{{ point.label }}</th><td>{{ point.formatted }}</td></tr>
@@ -141,7 +141,7 @@ export function lineAreaPath(points: readonly ArenaLinePoint[], baseline: number
 export class LineChart {
   readonly labels = input.required<string[]>();
   readonly values = input.required<number[]>();
-  readonly seriesLabel = input<string>();
+  readonly seriesLabel = input.required<string>();
   readonly slot = input<number>();
   readonly tone = input<SeriesTone>();
   readonly area = input(false, { transform: booleanAttribute });
@@ -159,8 +159,8 @@ export class LineChart {
   protected readonly tooltipValueStyle = TOOLTIP_VALUE_STYLE;
   protected readonly pointR = POINT_R;
   protected readonly pointRHover = POINT_R_HOVER;
-  protected readonly tickLabelX = PAD.l - 8;
-  protected readonly pointLabelY = CHART_HEIGHT - 8;
+  protected readonly tickLabelX = PAD.l - chartLabelGap;
+  protected readonly pointLabelY = CHART_HEIGHT - chartLabelGap;
   protected readonly hover = signal<number | null>(null);
 
   private readonly suffix = computed(() => this.valueSuffix() ?? '');
@@ -175,7 +175,7 @@ export class LineChart {
 
   protected readonly name = computed(() => {
     const series = this.seriesLabel();
-    return series ? `${series} — line chart` : 'Line chart';
+    return `${series} — line chart`;
   });
 
   private readonly max = computed(() => niceMax(Math.max(0, ...this.values())));

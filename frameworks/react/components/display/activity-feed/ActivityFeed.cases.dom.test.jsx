@@ -2,8 +2,11 @@
  * update and false once it settles, so no single render decides it and both have
  * to be mounted. `roles.article` is QUANTIFIED -- its subject must be an array
  * and every element is checked, because a feed whose third row lost its role is
- * unmet however correct the first is. PageUp/PageDown are asserted by acting on
- * the tree; the verdicts below are what those assertions reached. */
+ * unmet however correct the first is. The four keyboard requirements are asserted
+ * by acting on the tree; the verdicts below are what those assertions reached.
+ * Control+End and Control+Home need focusable elements OUTSIDE the feed, so the
+ * fixture puts one on each side of it -- the requirement is about leaving the feed,
+ * and a feed alone in a document has nowhere to leave to. */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
@@ -12,7 +15,16 @@ import { mount, cleanup, act } from '../../../test/Harness.jsx';
 import { assertPatternCases, REACT_COMPONENTS } from '../../../test/AssertPattern.jsx';
 import { ActivityFeed } from './ActivityFeed.jsx';
 
-afterEach(cleanup);
+let before;
+let after;
+
+afterEach(() => {
+  cleanup();
+  before?.remove();
+  after?.remove();
+  before = undefined;
+  after = undefined;
+});
 
 const BINDING = join(REACT_COMPONENTS, 'display/activity-feed/ActivityFeed.behaviour.json');
 
@@ -23,14 +35,18 @@ const ITEMS = [
   { id: '3', actor: 'Alan', action: 'approved', target: 'release-482', time: '10:03' },
 ];
 
-function press(el, key) {
-  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+function press(el, key, ctrlKey = false) {
+  const event = new KeyboardEvent('keydown', { key, ctrlKey, bubbles: true, cancelable: true });
   act(() => { el.dispatchEvent(event); });
   return event;
 }
 
 function render(busy) {
+  before = document.createElement('button');
+  document.body.prepend(before);
   const root = mount(<ActivityFeed label={LABEL} items={ITEMS} busy={busy} />);
+  after = document.createElement('button');
+  document.body.append(after);
   const feed = root.querySelector('[role="feed"]');
   const articles = [...root.querySelectorAll('[role="article"]')];
   return { root, feed, articles };
@@ -73,10 +89,21 @@ test('ActivityFeed meets the feed pattern in both of its declared states', () =>
         assert.equal(document.activeElement, articles[0],
           'PageUp past the first article moved focus somewhere -- it must stop rather than wrap');
 
+        const end = press(articles[0], 'End', true);
+        assert.equal(document.activeElement, after,
+          'Control+End must leave the feed for the first focusable element after it');
+        assert.equal(end.defaultPrevented, true, 'Control+End was not claimed');
+
+        articles[1].focus();
+        const home = press(articles[1], 'Home', true);
+        assert.equal(document.activeElement, before,
+          'Control+Home must leave the feed for the first focusable element before it');
+        assert.equal(home.defaultPrevented, true, 'Control+Home was not claimed');
+
         return {
           root,
           subjects: { default: feed, 'roles.article': articles },
-          behavioural: { 'states.posinset': true, 'states.busy': true, 'keyboard.PageDown': true, 'keyboard.PageUp': true },
+          behavioural: { 'states.posinset': true, 'states.busy': true, 'keyboard.PageDown': true, 'keyboard.PageUp': true, 'keyboard.ControlEnd': true, 'keyboard.ControlHome': true },
         };
       },
 
@@ -87,7 +114,7 @@ test('ActivityFeed meets the feed pattern in both of its declared states', () =>
         return {
           root,
           subjects: { default: feed, 'roles.article': articles },
-          behavioural: { 'states.posinset': true, 'states.busy': true, 'keyboard.PageDown': true, 'keyboard.PageUp': true },
+          behavioural: { 'states.posinset': true, 'states.busy': true, 'keyboard.PageDown': true, 'keyboard.PageUp': true, 'keyboard.ControlEnd': true, 'keyboard.ControlHome': true },
         };
       },
     },

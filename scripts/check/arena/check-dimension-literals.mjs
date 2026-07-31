@@ -260,7 +260,7 @@ function lineOf(text, index) {
 
 const COLON_STOP = new Set([',', '}']);
 
-const PROP_COLON = /(?<![\w.])([a-zA-Z]+)\s*:\s*/g;
+const PROP_COLON = /(?<![\w.-])([a-zA-Z]+)\s*:\s*/g;
 
 function scanColonValues(text) {
   const out = [];

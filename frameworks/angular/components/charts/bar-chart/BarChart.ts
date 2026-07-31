@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
 import { containerWidth } from '../../../ContainerSize';
 import { CHART_HEIGHT, PAD, SR_ONLY, barPath, niceMax, resolveColors, ticks } from '../../../DataVisuals';
 import type { SeriesTone } from '../../../Api.generated';
-import { chartBarGap, chartBarRadius } from '../../../Tokens.generated';
+import { chartBarGap, chartBarRadius, chartLabelGap } from '../../../Tokens.generated';
 
 const BAR_GAP = chartBarGap;
 
@@ -111,7 +111,7 @@ export function barColumns(count: number, width: number): {
 
     <table [style]="srOnly">
       <caption>{{ name() }}</caption>
-      <thead><tr><th>Category</th><th>{{ seriesLabel() ?? 'Value' }}</th></tr></thead>
+      <thead><tr><th>Category</th><th>{{ seriesLabel() }}</th></tr></thead>
       <tbody>
         @for (bar of bars(); track bar.index) {
           <tr><th scope="row">{{ bar.label }}</th><td>{{ bar.value }}</td></tr>
@@ -123,7 +123,7 @@ export function barColumns(count: number, width: number): {
 export class BarChart {
   readonly labels = input.required<string[]>();
   readonly values = input.required<number[]>();
-  readonly seriesLabel = input<string>();
+  readonly seriesLabel = input.required<string>();
   readonly slot = input<number>();
   readonly slots = input<number[]>();
   readonly tone = input<SeriesTone>();
@@ -139,8 +139,8 @@ export class BarChart {
   protected readonly tooltipStyle = TOOLTIP_STYLE;
   protected readonly tooltipLabelStyle = TOOLTIP_LABEL_STYLE;
   protected readonly tooltipValueStyle = TOOLTIP_VALUE_STYLE;
-  protected readonly tickLabelX = PAD.l - 8;
-  protected readonly categoryLabelY = CHART_HEIGHT - 8;
+  protected readonly tickLabelX = PAD.l - chartLabelGap;
+  protected readonly categoryLabelY = CHART_HEIGHT - chartLabelGap;
   protected readonly hover = signal<number | null>(null);
 
   private readonly suffix = computed(() => this.valueSuffix() ?? '');
@@ -151,7 +151,7 @@ export class BarChart {
 
   protected readonly name = computed(() => {
     const series = this.seriesLabel();
-    return series ? `${series} — bar chart` : 'Bar chart';
+    return `${series} — bar chart`;
   });
 
   private readonly max = computed(() => niceMax(Math.max(0, ...this.values())));

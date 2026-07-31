@@ -1,4 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+
+let injected = false;
+function useKnobTransition() {
+  useEffect(() => {
+    if (injected || typeof document === 'undefined') return;
+    injected = true;
+    const s = document.createElement('style');
+    s.setAttribute('data-arena-switch', '');
+    s.textContent =
+      '.arena-switch-knob{transition:transform var(--dur-mid) var(--ease-out)}' +
+      '@media (prefers-reduced-motion:reduce){.arena-switch-knob{transition:none}}';
+    document.head.appendChild(s);
+  }, []);
+}
 
 const SIZES = {
   sm:  { track: 'calc(var(--sp-1) * 8)',  cross: 'calc(var(--sp-1) * 4.5)', knob: 'calc(var(--sp-1) * 3.5)', icon: 'calc(var(--sp-1) * 2.25)' },
@@ -17,6 +31,7 @@ export function Switch({
   if (!label) throw new Error('Switch: `label` is required (a switch must have an accessible name)');
   const dims = SIZES[size] || SIZES.md;
   const vertical = orientation === 'vertical';
+  useKnobTransition();
   const guarded = confirm && typeof onRequestChange === 'function';
   const icon = state ? iconOn : iconOff;
 
@@ -37,15 +52,14 @@ export function Switch({
           cursor: disabled ? 'not-allowed' : 'pointer',
           transition: 'background var(--dur-mid) var(--ease-out)',
         }}>
-        <span aria-hidden="true" style={{
+        <span aria-hidden="true" className="arena-switch-knob" style={{
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           width: dims.knob, height: dims.knob, borderRadius: '50%', background: 'var(--on-accent)',
           transform: state
             ? (vertical ? 'translateY(100%)' : 'translateX(100%)')
             : (vertical ? 'translateY(0)' : 'translateX(0)'),
-          transition: 'transform var(--dur-mid) var(--ease-out)',
         }}>
-          {icon && <i aria-hidden="true" className={icon} style={{ fontSize: dims.icon, lineHeight: 'var(--lh-tight)' }} />}
+          {icon && <i aria-hidden="true" className={icon} style={{ fontSize: dims.icon, lineHeight: 'var(--lh-tight)', color: 'var(--crimson)' }} />}
         </span>
       </button>
       {label && (

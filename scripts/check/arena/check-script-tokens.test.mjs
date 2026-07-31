@@ -2,7 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { cssCounterpart, importedNames, catSlotEnumProblems, zeroGeneratedCssProblems, cssDiscoveryProblems } from './check-script-tokens.mjs';
+import {
+  cssCounterpart, importedNames, catSlotEnumProblems, zeroGeneratedCssProblems, cssDiscoveryProblems,
+  shadowedTokenProblems, staleShadowExemptions, SHADOW_EXEMPT,
+} from './check-script-tokens.mjs';
 import { buildScriptModules } from '../../generate/arena/generate-tokens.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
@@ -114,4 +117,42 @@ test('cssDiscoveryProblems: a prior drift problem AND an empty directory -- both
   assert.equal(result.length, 2);
   assert.equal(result[0], drift);
   assert.match(result[1], /found 0 .css files/);
+});
+
+const sp2 = { jsName: 'sp2', value: '8' };
+const layerWith = (layer, imported, constants) => ({ layer, imported: new Set(imported), constants });
+
+test('a layer that imports the token may hold nothing that shadows it, because it holds no copy', () => {
+  const layers = [layerWith('react', ['sp2'], [{ name: 'GAP', value: '8', path: 'a.jsx' }])];
+  assert.deepEqual(shadowedTokenProblems([sp2], layers), []);
+});
+
+test('a layer that does NOT import the token and declares its value is the hole the orphan rule leaves', () => {
+  const layers = [layerWith('react', [], [{ name: 'GAP', value: '8', path: 'a.jsx' }])];
+  const problems = shadowedTokenProblems([sp2], layers);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /GAP is 8, which is the value of the script-readable token sp2/);
+  assert.match(problems[0], /the react layer does not import it/);
+});
+
+test('one layer importing the token does not excuse the other, which is the whole point of per-layer collection', () => {
+  const layers = [
+    layerWith('angular', ['sp2'], []),
+    layerWith('react', [], [{ name: 'GAP', value: '8', path: 'a.jsx' }]),
+  ];
+  assert.equal(shadowedTokenProblems([sp2], layers).length, 1);
+});
+
+test('a different number is not a shadow, and neither is a non-numeric constant', () => {
+  const layers = [layerWith('react', [], [
+    { name: 'OTHER', value: '9', path: 'a.jsx' },
+    { name: 'PAD', value: '{t:8,r:8}', path: 'b.jsx' },
+  ])];
+  assert.deepEqual(shadowedTokenProblems([sp2], layers), []);
+});
+
+test('SHADOW_EXEMPT is empty, and an entry naming no real constant fails rather than sitting there', () => {
+  assert.equal(SHADOW_EXEMPT.size, 0);
+  const layers = [layerWith('react', [], [{ name: 'GAP', value: '8', path: 'a.jsx' }])];
+  assert.deepEqual(staleShadowExemptions(layers), []);
 });

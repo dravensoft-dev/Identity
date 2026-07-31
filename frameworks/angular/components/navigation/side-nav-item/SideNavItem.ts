@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, forwardRef, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, booleanAttribute, computed, forwardRef, inject, input } from '@angular/core';
 import { SideNavChild, SideNavState, indentFor } from '../side-nav/SideNavState';
 import { sideNavStyles } from '../side-nav/SideNav.variants';
 
@@ -9,11 +9,13 @@ import { sideNavStyles } from '../side-nav/SideNav.variants';
   providers: [{ provide: SideNavChild, useExisting: forwardRef(() => SideNavItem) }],
   host: {
     style: 'display: contents',
+    '[attr.id]': 'null',
   },
   template: `
     @if (href(); as url) {
       <a [class]="styles().item()" [href]="url" [style.paddingInlineStart]="indent()"
-         [attr.aria-current]="current()" (click)="activate()">
+         [attr.aria-current]="current()" [attr.aria-disabled]="off()"
+         (click)="activate($event)">
         @if (icon(); as glyph) {
           <i [class]="styles().icon() + ' ' + glyph" aria-hidden="true"></i>
         }
@@ -21,7 +23,8 @@ import { sideNavStyles } from '../side-nav/SideNav.variants';
       </a>
     } @else {
       <button type="button" [class]="styles().item()" [style.paddingInlineStart]="indent()"
-              [attr.aria-current]="current()" (click)="activate()">
+              [attr.aria-current]="current()" [attr.aria-disabled]="off()"
+              (click)="activate($event)">
         @if (icon(); as glyph) {
           <i [class]="styles().icon() + ' ' + glyph" aria-hidden="true"></i>
         }
@@ -35,6 +38,7 @@ export class SideNavItem {
   readonly label = input.required<string>();
   readonly icon = input<string>();
   readonly href = input<string>();
+  readonly disabled = input(false, { transform: booleanAttribute });
 
   private readonly nav = inject(SideNavState);
 
@@ -58,7 +62,10 @@ export class SideNavItem {
   protected readonly indent = computed(() => indentFor(this.nav.indentStep(), this.nav.depth()));
   protected readonly styles = computed(() => sideNavStyles({ active: this.on() }));
 
-  protected activate(): void {
+  protected readonly off = computed(() => (this.disabled() ? 'true' : null));
+
+  protected activate(event: Event): void {
+    if (this.disabled()) { event.preventDefault(); return; }
     this.nav.activate(this.id());
   }
 }

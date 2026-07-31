@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useContainerWidth } from '../../../UseContainerWidth.js';
 import { resolveColors, niceMax, ticks, barPath, srOnly, PAD, CHART_HEIGHT } from '../../../DataVisuals.js';
-import { chartBarGap, chartBarRadius } from '../../../Tokens.generated.js';
+import { chartBarGap, chartBarRadius, chartLabelGap } from '../../../Tokens.generated.js';
 
 export function BarChart({
   labels, values, seriesLabel, slot, slots, tone, valueSuffix,
 }) {
+  if (!seriesLabel) throw new Error('BarChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('BarChart: `labels` is required');
   if (!values) throw new Error('BarChart: `values` is required');
   const [ref, measured] = useContainerWidth();
@@ -25,7 +26,7 @@ export function BarChart({
   const yOf = (v) => PAD.t + ih - (Math.max(0, v) / max) * ih;
   const baseline = PAD.t + ih;
 
-  const name = seriesLabel ? `${seriesLabel} — bar chart` : 'Bar chart';
+  const name = `${seriesLabel} — bar chart`;
 
   return (
     <div ref={ref} style={{ position: 'relative', width: '100%', height }}>
@@ -36,7 +37,7 @@ export function BarChart({
           <g key={i}>
             <line x1={PAD.l} x2={width - PAD.r} y1={yOf(t)} y2={yOf(t)}
               stroke="var(--border)" style={{ strokeWidth: 'var(--bw)' }} />
-            <text x={PAD.l - 8} y={yOf(t)} textAnchor="end" dominantBaseline="middle"
+            <text x={PAD.l - chartLabelGap} y={yOf(t)} textAnchor="end" dominantBaseline="middle"
               fill="var(--text-muted)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-2xs)' }}>{fmt(t)}</text>
           </g>
         ))}
@@ -63,7 +64,7 @@ export function BarChart({
 
 }
         {values.map((_, i) => (
-          <text key={i} x={PAD.l + i * step + step / 2} y={height - 8} textAnchor="middle"
+          <text key={i} x={PAD.l + i * step + step / 2} y={height - chartLabelGap} textAnchor="middle"
             fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{labels[i] ?? ''}</text>
         ))}
       </svg>
@@ -83,7 +84,7 @@ export function BarChart({
       {}
       <table style={srOnly}>
         <caption>{name}</caption>
-        <thead><tr><th>Category</th><th>{seriesLabel || 'Value'}</th></tr></thead>
+        <thead><tr><th>Category</th><th>{seriesLabel}</th></tr></thead>
         <tbody>
           {values.map((v, i) => <tr key={i}><th scope="row">{labels[i]}</th><td>{fmt(v)}</td></tr>)}
         </tbody>

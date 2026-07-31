@@ -3,7 +3,7 @@ export default {
   "component": "Checkbox",
   "slots": {
     "root": "inline-flex items-center gap-2.5",
-    "box": "inline-flex items-center justify-center size-5 rounded-xs border-[length:var(--bw)] transition-[background] duration-[var(--dur-fast)] ease-out",
+    "box": "inline-flex items-center justify-center size-5 rounded-xs border-[length:var(--bw)] transition-[background] duration-[var(--dur-fast)] ease-out [&:has(~input:focus-visible)]:shadow-[0_0_0_var(--focus-width)_var(--gold-soft)]",
     "check": "text-primary-content",
     "label": "font-body text-ctl text-base-content/82",
     "input": "absolute opacity-0 size-0"

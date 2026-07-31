@@ -20,13 +20,13 @@ let nextId = 0;
     }
     <div [class]="styles().wrap()">
       <select [class]="styles().field()" [attr.id]="selectId" [disabled]="disabled()"
-              [required]="required()" [attr.name]="name()" [multiple]="multiple()"
+              [required]="required()" [attr.name]="name()"
               (change)="onChange($event)">
         @for (option of options(); track option.value) {
           <option [value]="option.value" [selected]="option.value === value()">{{ option.label }}</option>
         }
       </select>
-      <span [class]="styles().caret()">&#9662;</span>
+      <span [class]="styles().caret()" aria-hidden="true">&#9662;</span>
     </div>
   `,
 })
@@ -37,7 +37,6 @@ export class Select {
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly required = input(false, { transform: booleanAttribute });
   readonly name = input<string>();
-  readonly multiple = input(false, { transform: booleanAttribute });
   readonly change = output<string>();
 
   protected readonly selectId = `arena-select-${nextId++}`;

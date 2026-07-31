@@ -57,17 +57,12 @@ for (const [name, Chart, tail] of CHARTS) {
     });
   });
 
-  test(`${name} still names itself with no seriesLabel, by type alone`, () => {
-    const root = mount(<Chart labels={LABELS} values={VALUES} />);
-    const graphic = root.querySelector('[role="img"]');
-    assert.match(graphic.getAttribute('aria-label') ?? '', /chart/i,
-      'the fallback names what the thing IS, which satisfies the requirement and tells a reader little');
-
-    assertPattern({
-      root,
-      bindingPath: join(REACT_COMPONENTS, tail),
-      subjects: { default: graphic },
-      behavioural: { 'alternative.table': true },
-    });
+  test(`${name} refuses to render without a seriesLabel rather than naming itself by type`, () => {
+    assert.throws(
+      () => mount(<Chart labels={LABELS} values={VALUES} />),
+      /`seriesLabel` is required/,
+      'a name that is only the chart TYPE satisfies roles.label mechanically while telling a reader nothing, '
+      + 'and two charts on one page then announce identically -- which is why this is guarded rather than defaulted',
+    );
   });
 }

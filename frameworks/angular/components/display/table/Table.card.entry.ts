@@ -19,7 +19,7 @@ import { TableCell } from '../table-cell/TableCell';
     <p class="sub">Wide — Tab once into the grid, then walk it with the arrows, Home and End</p>
     <div class="box">
       <arena-table [label]="'Recent deployments'" [columns]="columns">
-        <arena-table-row (click)="opened.set('checkout-api')">
+        <arena-table-row interactive (click)="opened.set('checkout-api')">
           <arena-table-cell>checkout-api</arena-table-cell>
           <arena-table-cell>4f2a1c9</arena-table-cell>
           <arena-table-cell><arena-badge tone="success" dot>Live</arena-badge></arena-table-cell>
@@ -27,7 +27,7 @@ import { TableCell } from '../table-cell/TableCell';
             <arena-button variant="ghost" size="sm" (click)="details.set('checkout-api')">Details</arena-button>
           </arena-table-cell>
         </arena-table-row>
-        <arena-table-row (click)="opened.set('billing-worker')">
+        <arena-table-row interactive (click)="opened.set('billing-worker')">
           <arena-table-cell>billing-worker</arena-table-cell>
           <arena-table-cell>9db3e07</arena-table-cell>
           <arena-table-cell><arena-badge tone="warning">Rolling out</arena-badge></arena-table-cell>
@@ -35,7 +35,7 @@ import { TableCell } from '../table-cell/TableCell';
             <arena-button variant="ghost" size="sm" (click)="details.set('billing-worker')">Details</arena-button>
           </arena-table-cell>
         </arena-table-row>
-        <arena-table-row disabled (click)="opened.set('auth-service')">
+        <arena-table-row interactive disabled (click)="opened.set('auth-service')">
           <arena-table-cell>auth-service</arena-table-cell>
           <arena-table-cell>c1e8a44</arena-table-cell>
           <arena-table-cell><arena-badge tone="danger">Failed</arena-badge></arena-table-cell>

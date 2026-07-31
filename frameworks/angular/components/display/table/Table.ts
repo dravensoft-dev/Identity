@@ -29,7 +29,7 @@ import { tableStyles } from './Table.variants';
       <ng-content />
     </div>
     @if (rows().length === 0) {
-      <div [class]="styles().empty()"><ng-content select="[empty]" /></div>
+      <div [class]="styles().empty()"><ng-content select="[empty]">No data.</ng-content></div>
     }
   `,
 })

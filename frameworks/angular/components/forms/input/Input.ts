@@ -16,6 +16,7 @@ export function inputIdFor(id: string | undefined, label: string | undefined): s
   host: {
     '[class]': 'styles().root()',
     '[attr.name]': 'null',
+    '[attr.id]': 'null',
   },
   template: `
     @if (label(); as text) {
