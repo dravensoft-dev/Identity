@@ -6,6 +6,8 @@
 | `build-vendor.mjs` | `frameworks/react/vendor/*.generated.js` | React 18 ships CommonJS only, and an importmap needs real ES modules. Bundles the three entry points, appends the named exports Bun's static detection misses, and keeps `react` external so it stays a singleton across the three files. |
 | `build-react-barrel.mjs` | `frameworks/react/Index.generated.js` and `.d.ts` | The layer's entry point: one `export *` per component directory, plus the four layer-root helpers. Derived from the tree rather than hand-listed, because a hand-listed barrel is how the Angular layer shipped five primitives nobody could import. `Tokens.generated` is deliberately absent, for the reason its Angular counterpart is. |
 
+| `build-react-package.mjs` | `frameworks/react/dist/` | Assembles `@dravensoft/arena-react`. The `.jsx` goes through `Bun.Transpiler`, the same path `build-demos.mjs` uses, and each hand-written `.d.ts` is copied rather than re-emitted, because those are the layer's real type contract. One rewrite and no others: a relative `.jsx` specifier becomes `.js`, since inside the package there is no JSX left to resolve. |
+
 Those first two outputs are git-ignored: only demo pages read them, and the `.jsx` is the
 source a consumer copies. `check:demos` and `check:vendor` compare them against a fresh
 compile. **The barrel is the exception and is tracked**, because a package consumer imports
