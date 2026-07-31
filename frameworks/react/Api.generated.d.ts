@@ -75,7 +75,7 @@ export interface Command {
   shortcut?: string;
 }
 
-/** The three-step size scale shared by Arena's controls. Heights come from the density tokens, so a control inside .arena-compact re-densifies with the rows around it. */
+/** The three-step size scale shared by Arena's controls. What each step measures is the component's own decision and only some of them re-densify: Button and IconButton take their heights from the density tokens, so they shrink with the rows around them inside .arena-compact, while ProgressBar's thickness and Spinner's diameter are spacing and icon tokens that .arena-compact does not redefine. The enum is shared because all four implement the same three steps, not because they resolve them the same way. */
 export type ControlSize = 'sm' | 'md' | 'lg';
 
 /** One entry in a breadcrumb trail. `href` is omitted for the current page, which is never rendered as a link. */

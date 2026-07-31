@@ -16,9 +16,9 @@ figures were re-measured rather than inherited.
 
 ## The problem
 
-Arena already states two of its three contracts well. `tokens/` is the normative source
+Arena already states two of its three contracts well. `contracts/design/` is the normative source
 for design values, DTCG-conformant and machine-checked from five angles.
-`behaviour/patterns/` states what a kind of component must do, every component binds a
+`contracts/behaviour/` states what a kind of component must do, every component binds a
 pattern in every layer, and `check:compliance` verifies six of those bindings by
 rendering the component and reading the DOM.
 
@@ -184,7 +184,7 @@ identical members, idiomatic binding.
 ## Where contracts live
 
 ```
-api/
+contracts/api/
   README.md                    the normative vocabulary: nine forms, R1-R5
   types/
     crumb.json                 predefined objects and enums, neutral and shared
@@ -193,20 +193,20 @@ api/
     Breadcrumbs.json           one neutral contract per component
 ```
 
-Generated per layer, on the same committed-generated-output contract `tokens.generated.js`
-and `tokens.generated.ts` already carry:
+Generated per layer, on the same committed-generated-output contract `Tokens.generated.js`
+and `Tokens.generated.ts` already carry:
 
 ```
 frameworks/react/Api.generated.d.ts
 frameworks/angular/Api.generated.ts
 ```
 
-Emission is **per layer** so a component's import never crosses the `api/` ↔
+Emission is **per layer** so a component's import never crosses the `contracts/api/` ↔
 `frameworks/` boundary — the same rule the script-readable token target established, and
 for the same reason.
 
 A single neutral file per component, not one per layer, is the structural difference from
-`behaviour/`. Behaviour files a binding beside each layer's source and has a gate compare
+`contracts/behaviour/`. Behaviour files a binding beside each layer's source and has a gate compare
 them, which admits two files that disagree and makes the gate's job to notice. A contract
 that forbids divergence has nowhere for a second opinion to live.
 
@@ -232,7 +232,7 @@ that forbids divergence has nowhere for a second opinion to live.
 an array of primitives, a declared type name (`"Crumb"`) makes it an array of predefined
 objects, and the form name `"consumerData"` makes it a list of consumer data. **Consumer
 data is spelled by form name in every position**, because nothing is declared in
-`api/types/` for it — a type there states its fields, and this form's whole content is that
+`contracts/api/types/` for it — a type there states its fields, and this form's whole content is that
 its fields are the consumer's.
 
 A slot declares its parameters, or none:
@@ -248,7 +248,7 @@ marker — is the member named `content`. React binds it to `children`, Angular 
 assertion 3 see it: a layer that accepts arbitrary children without the contract
 declaring a `content` slot is offering a member no contract governs.
 
-Types are declared once, in `api/types/`:
+Types are declared once, in `contracts/api/types/`:
 
 ```json
 { "name": "Crumb", "kind": "object",
@@ -262,7 +262,7 @@ Types are declared once, in `api/types/`:
 ```
 
 A `$description` on any node is carried into the generated modules. Group-level prose is
-lost in `tokens/`'s generator and that is recorded as debt; this generator carries
+lost in `contracts/design/`'s generator and that is recorded as debt; this generator carries
 descriptions on every node it emits, including type-level ones, so the same hole is not
 reopened.
 
@@ -270,7 +270,7 @@ reopened.
 
 `check:api` (`scripts/check/arena/check-api.mjs`), the twenty-first, makes five assertions:
 
-1. **Coverage.** Every contract in `api/components/` names a component that exists in at
+1. **Coverage.** Every contract in `contracts/api/components/` names a component that exists in at
    least one layer. The contract's existence *is* the coverage claim, so no separate
    record can go stale against it. A contract naming a component no layer implements
    fails.
@@ -283,7 +283,7 @@ reopened.
    this assertion like any other. **There is no exception map here.** An API divergence is
    a defect; that is the point of the layer.
 4. **Derived rules.** R1 through R5, asserted against the declared types.
-5. **Generated drift.** `Api.generated.d.ts` and `Api.generated.ts` match `api/types/`,
+5. **Generated drift.** `Api.generated.d.ts` and `Api.generated.ts` match `contracts/api/types/`,
    the same assertion `check:tokens` makes for the token layer.
 
 Which layers implement a component is resolved structurally, not from a list:
@@ -355,16 +355,16 @@ The deliverable is a working gate, not a document. Its scope is the vocabulary, 
 directory, the generator, the gate, and three components migrated end to end to prove all
 five work.
 
-## A.1 — `api/README.md`
+## A.1 — `contracts/api/README.md`
 
 The normative statement of the nine forms and R1-R5, written the way
-`tokens/src/TYPE-MAP.md` states the DTCG type table: the first thing a new platform
+`contracts/design/README.md` states the DTCG type table: the first thing a new platform
 target reads. `CLAUDE.md` gains an *Architecture* paragraph pointing at it, in the same
 register as the behaviour-contract paragraphs.
 
-## A.2 — `api/types/` and the generator
+## A.2 — `contracts/api/types/` and the generator
 
-`scripts/generate/arena/generate-api-types.mjs` reads `api/types/*.json` and emits
+`scripts/generate/arena/generate-api-types.mjs` reads `contracts/api/types/*.json` and emits
 `frameworks/react/Api.generated.d.ts` and `frameworks/angular/Api.generated.ts`. Objects
 become interfaces, enums become string-literal unions, descriptions become doc comments.
 Committed output, guarded by drift assertion 5.
@@ -427,8 +427,8 @@ to rot.
 
 ## A.6 — Explicit non-goals
 
-Plan A does not migrate the other 40 components, does not touch `tokens/` or
-`behaviour/patterns/`, does not resolve the divergences-document migration that plan 7d
+Plan A does not migrate the other 40 components, does not touch `contracts/design/` or
+`contracts/behaviour/`, does not resolve the divergences-document migration that plan 7d
 still owns, and does not change any published version or the plugin manifest.
 
 ---
@@ -438,7 +438,7 @@ still owns, and does not change any published version or the plugin manifest.
 Binding on Plans B, C and D. Each of these was an open question when this spec was
 written and is now closed; an audit that reopens one is wasting the maintainer's time.
 
-**The binding table is mechanical and normative.** It lives in `api/README.md` and is
+**The binding table is mechanical and normative.** It lives in `contracts/api/README.md` and is
 implemented by `bindingName()` in `scripts/check/arena/check-api.mjs`. A contract member `x` of an
 inbound non-slot form binds as a React prop `x` and an Angular `input()` named `x`; the
 slot named `content` binds as React's `children` and a bare `<ng-content />`; a slot
@@ -455,7 +455,7 @@ not an exception.
 R4 and R5. R2 ("who draws decides data versus slot") is a fact about markup ownership and
 R3 ("a parameterised slot fills, never replaces") is a fact about the rendered tree;
 neither is visible in a member list. Both are authoring rules the audit protocol applies,
-which means each is exactly as strong as the audit that applied it. `api/README.md` says
+which means each is exactly as strong as the audit that applied it. `contracts/api/README.md` says
 so and `CLAUDE.md`'s *Known debt* records it.
 
 **Three further things the gate does not assert**, and every later plan inherits them —
@@ -465,7 +465,7 @@ its `.jsx`**, so R4 is enforced against real source on the Angular side and agai
 declaration on the React side. A member `description` lives in the contract only and
 reaches no generated module, so it exists three times — contract, `.d.ts` JSDoc,
 `prompt.md` — with nothing holding the three in step. All three are written down in
-`api/README.md`'s "What the gate asserts, and what it cannot".
+`contracts/api/README.md`'s "What the gate asserts, and what it cannot".
 
 **Precedents the audits should follow rather than re-derive:**
 
@@ -620,7 +620,7 @@ about them against the tree at `HEAD`, so 8B4 opens with measurements rather tha
   inbound function returning `string`. `classify()` in `scripts/lib/arena/api-surface.mjs` **throws**
   `UnrecognisedShape` on exactly that shape — an inbound function that *returns* a value is none of
   the eight forms — so no chart contract can be written until it becomes `valueSuffix`, per
-  `api/README.md`.
+  `contracts/api/README.md`.
 
   > **Re-measured after Plan 8C2, Task 1b — the ninth form.** `classify()` no longer throws on
   > that shape: an inbound function that returns a value is a **`functionInput`** now. The
@@ -630,7 +630,7 @@ about them against the tree at `HEAD`, so 8B4 opens with measurements rather tha
   > read it. `valueSuffix` stands.
 - **React's `CatSlot = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8` reaches `classify()`'s union branch** with
   unquoted parts and is returned as `{ form: 'union' }` — an R5 violation. It becomes a bare
-  `number`, per `api/README.md`'s worked example. **Open for 8B4's audit:** `LineChart.d.ts`
+  `number`, per `contracts/api/README.md`'s worked example. **Open for 8B4's audit:** `LineChart.d.ts`
   re-exports both `CatSlot` and `SeriesTone` from `./BarChart`, and `DoughnutChart.d.ts` re-exports
   `CatSlot` alone, so whether the *name* survives as a back-compat alias is a decision, not a
   mechanical step.
@@ -765,7 +765,7 @@ can check the answer**, and one of the two may require extending the reader:
   exactly one payload. `Breadcrumbs` already answered this shape once: the DOM event
   leaves the payload (R4) and the item alone travels. Applying that answer here makes the
   member readable with no reader change; deciding otherwise means changing the convention,
-  which is a change to `api/README.md`, not to `SideNav`.
+  which is a change to `contracts/api/README.md`, not to `SideNav`.
 - **`Table.d.ts`** — a generic `TableColumn<T>`. Generics are outside the nine forms
   entirely, and no form in the vocabulary expresses one. This is the harder of the two:
   it is not a member that violates a rule, it is a shape the vocabulary has no word for.
@@ -929,10 +929,14 @@ Three things to carry in:
 
 - **Required-ness is contracted**, so `input.required<T>()` versus `input<T>(default)` is
   no longer a free choice per primitive — the contract Plan C wrote decides it, and the
-  gate compares it. Plan A hit this twice: making a member required is an NG0950 hazard
-  in the JIT test harness, and `frameworks/angular/test/HostClassBinding.test.ts`
-  carries the query-child-and-overwrite bypass that works around it. Reuse it rather than
-  rediscovering it.
+  gate compares it. Plan A hit this twice: making a member required was an NG0950 hazard
+  under the JIT harness of the time, and `frameworks/angular/test/HostClassBinding.test.ts`
+  carried a query-child-and-overwrite bypass around it. **Do not reuse that bypass.** The
+  harness compiles AOT now and `componentRef.setInput()` drives a required input directly —
+  `frameworks/angular/test/HarnessCapabilities.test.ts` pins exactly that, for a plain string
+  and for a boolean carrying a `booleanAttribute` transform. Writing to a component's
+  instance field is forbidden repo-wide, and `grep -rn "\w\+\['[a-zA-Z]*'\] = "
+  --include='*.ts' frameworks/angular/` must stay empty.
 
   > **Plan B measured the real cost, and it is worth carrying into D's estimates.** Batches
   > B1–B3 **over**estimated this hazard three times running — three consecutive plans predicted
@@ -1391,7 +1395,7 @@ repository is built to reject.
 where this layer will rot.** The gate has no exception map, and that sentence is stated
 forcefully in three places — it invites the reading that a green run means the two layers
 present the same API. It means something narrower in four specific ways, all now written
-down in `api/README.md`'s "What the gate asserts, and what it cannot": R2 and R3 are not
+down in `contracts/api/README.md`'s "What the gate asserts, and what it cannot": R2 and R3 are not
 asserted at all; `default` is in the format and read by nothing; and React's surface is a
 hand-written `.d.ts` the `.jsx` is never checked against. Restoring `style` and a
 `{...rest}` spread to any migrated React component's `.jsx` leaves the gate green today.
