@@ -980,9 +980,11 @@ stale-proof; a present-tense component name is not.
   `CalendarEvent` children. **Do not modernise the path in that command**: `git show
   <rev>:<path>` resolves inside that revision's tree.
 
-  **What is still checked by eye**, and this is unchanged: the interior of a focus trap, and
-  anything needing a real browser's sequential focus navigation, which happy-dom does not
-  implement.
+  **What was still checked by eye is not any more**, and the reason it could stop being is that
+  the tooling for it already existed: `check:cards` drives real Chromium over CDP, and the same
+  connection presses a real Tab. `check:focus-trap` walks each trap forward and back and asserts
+  focus never leaves the panel, reaches every control in it, and wraps at both ends. See its own
+  entry for what it found on its first run.
 - **CLOSED: compliance coverage is 100 of 100 bindings, and closing it meant refusing the obvious
   work.** `bun run check:compliance` prints the live pair; it read 78 of 100 when the
   debt-payment programme reached it, and every one of the 22 uncovered bindings was
@@ -1111,30 +1113,73 @@ stale-proof; a present-tense component name is not.
   as the fallback did. What the change removes is Arena *shipping* the useless name by default;
   the consumer can still supply one, and that is human judgement by construction.
 
-- **Whether the explicit `aria-live` on `ProgressBar` and `Spinner` causes any real
-  announcement is UNVERIFIED, and the batch that added it over-claimed.** Both components
-  now carry `aria-live="polite"`, and the `progressbar` pattern requires it because that
-  role — unlike `status` — carries no implicit live region. What is verified is exactly
-  that: the attribute is present, and the requirement is met by a render suite. **What is
-  not verified is the thing the attribute is for.** A live region is specified to announce
-  changes to the region's *content*; `ProgressBar` reports progress by mutating the
-  **attribute** `aria-valuenow`, and its visible percentage text sits in a sibling element
-  *outside* the region. Whether a screen reader announces an attribute-only change in a
-  polite region is not something this repository has tested with a real one, and it varies
-  by AT. So the claim in the batch's own commit message — that `ProgressBar` "announces
-  value changes where before it announced nothing" — is stronger than the evidence: what
-  changed for certain is that the widget now satisfies its pattern.
+- **CLOSED, and it found a shipped defect on its first run: the interior of a focus trap is
+  gated now.** The boundary wrap is Arena's own `.focus()` call and happy-dom honours it, so the
+  suites assert it for real. The **interior** — that Tab from a control in the middle reaches the
+  next one — is the browser's native sequential focus navigation, which neither layer implements
+  and happy-dom does not have, so a suite asserting it there passes identically against a perfect
+  trap and against none. That is why this was recorded as a by-hand check against a written
+  checklist, with **no browser-driven gate**.
+
+  **The premise was wrong, and it was wrong about this repository rather than about the world.**
+  `check:cards` has driven real Chromium over CDP for as long as it has existed, and the same
+  connection dispatches a real `Tab`. `check:focus-trap` opens each trap on its own card page,
+  walks it forward one press at a time and back once, and asserts focus starts inside, never
+  leaves, reaches every focusable, and wraps at both ends. Four traps, both layers on purpose,
+  since `UseDialogModal.js` is a port of `FocusTrap.ts` and a walk that only ever ran on one side
+  would prove half of what it claims.
+
+  **What it found on its first run was a real defect nobody had recorded: React's
+  `CommandPalette` had no focus trap at all.** Angular's imports `FocusTrap`, holds a
+  `FocusTrapState`, calls `handleOpenTransition` on open and `trapTabKey` on Tab, and carries a
+  dedicated `CommandPalette.focusTrap.test.ts`. React's had none of it — no `useDialogModal`, no
+  Tab handling — so an open modal palette let a keyboard user Tab straight out of it into the page
+  underneath. Measured before the fix: focus left the panel on Tab presses 1, 2, 4, 5, 7 and 8.
+  It consumes `trapTabKey` now. **Section 3's `CommandPalette` entry read "RESOLVED: both layers
+  are accessible comboboxes", and that was true about the role and silent about the trap** — a
+  convergence claim scoped to what somebody checked.
+
+  **The gate reproduced a hazard this repository documents, while being written about the code
+  that documents it.** Its first selector was the loose form, `button:not([disabled]), …,
+  [tabindex]:not([tabindex="-1"])` — and a selector list is OR'd, so the palette's
+  `<button tabindex="-1">` option rows came back in and the gate reported a correct combobox as a
+  broken trap. `UseDialogModal.js` carries `:not([tabindex="-1"])` on **every** clause for exactly
+  that reason, and CLAUDE.md says so in a sentence. Reading it is not the same as having written
+  it.
+
+- **OPEN, and it is the last thing in this file that no gate in this repository can ever close:
+  whether the explicit `aria-live` on `ProgressBar` and `Spinner` causes any real announcement.**
+  Both carry `aria-live="polite"`, and the `progressbar` pattern requires it because that role —
+  unlike `status` — carries no implicit live region. What is verified is exactly that: the
+  attribute is present, and a render suite says so. **What is not verified is the thing the
+  attribute is for.** A live region is specified to announce changes to the region's *content*;
+  `ProgressBar` reports progress by mutating the **attribute** `aria-valuenow`, and its visible
+  percentage text sits in a sibling element *outside* the region. Whether a screen reader
+  announces an attribute-only change in a polite region varies by AT and has not been tested here
+  with a real one. So the claim in the batch that added it — that `ProgressBar` "announces value
+  changes where before it announced nothing" — is stronger than the evidence: what changed for
+  certain is that the widget satisfies its pattern.
 
   **Two things this entry deliberately does not do.** It does not argue for removing the
-  attribute: the role genuinely has no implicit politeness, and for `Spinner` — whose label
-  IS inside the region — the announcement is the ordinary content case and the attribute
-  preserves exactly what `role="status"` used to provide implicitly. And it does not
-  propose a gate: no gate in this repository can test a screen reader, which is the same
-  boundary the focus-trap interior and the `grid` pattern both sit on. Closing it means a
-  person with NVDA, JAWS and VoiceOver in front of them, and the likely fix if it is real
-  is moving the percentage text inside the live region or announcing at thresholds rather
-  than continuously.
+  attribute: the role genuinely has no implicit politeness, and for `Spinner` — whose label IS
+  inside the region — the announcement is the ordinary content case. And it does not propose a
+  gate, because **no gate can run a screen reader**, which is a different kind of limit from the
+  one the focus-trap interior turned out to have. That one was a limit of the harness and fell to
+  a browser this repository was already driving. This one is a limit of what software can observe
+  about assistive technology it does not control.
 
+  **The procedure, so it is a job rather than a wish.** With NVDA, JAWS and VoiceOver in turn:
+  open `frameworks/react/components/feedback/progress-bar/ProgressBar.card.html`, drive the value
+  through several updates, and record whether anything is spoken. If it is not — the expected
+  answer — the fix is to move the percentage text inside the live region, or to announce at
+  thresholds rather than continuously, and the choice between them is a product decision about
+  how chatty a long upload should be.
+
+  **The same session should answer the other question no assertion can**: whether the names this
+  repository now requires are USEFUL. The debt-payment programme made `seriesLabel`,
+  `ProgressBar.label`, `Table.label` and `SegmentedControl.ariaLabel` required and guarded
+  precisely because a present name is never checked for being a good one. Two charts on one page
+  must not announce identically; nothing but a person listening can confirm they do not.
 - **The delegated declarations' unpinned claims about Angular Material are CLOSED, and how
   they closed is the part worth keeping.** `frameworks/angular/BehaviourDelegated.json` once
   asserted what a third-party library's controls did — that `MatButtonToggleGroup` applied
@@ -1909,9 +1954,15 @@ stale-proof; a present-tense component name is not.
   viewport-overflow check by having nothing to overflow — so Angular primitives get no *published*
   specimen card, and the Tailwind specimen stays the published visual for the recipe.
   `check:angular-demos` is structural only: it proves a page exists, loads its own bundle and
-  mounts a zoneless app, never that what it renders is right. And **the checklists remain
-  checklists** — running them is a person's job, and a green `bun run check` still says nothing
-  about whether anyone did.
+  mounts a zoneless app, never that what it renders is right.
+  **The checklists are smaller than they were, and the reason generalises.** Every line in one
+  that a real browser can decide is a line a gate can decide, because the browser is already being
+  driven: `check:cards` measures the render, and `check:focus-trap` now walks the traps with real
+  Tab presses — the item those checklists led with. What survives is what needs a **person's
+  judgement** rather than a person's browser: whether a name is a good name, whether motion reads
+  as intended, whether a colour carries the meaning it should. Before adding a line to a checklist,
+  ask which of the two it is; the first kind belongs in a gate, and putting it in a checklist is
+  how it stops being checked at all.
 
 - **CLOSED: `Table`'s header row and its row hover were invisible in BOTH layers, and counting the
   consumers refuted the fix this entry preferred.** `--panel` and `--surface-card` are both

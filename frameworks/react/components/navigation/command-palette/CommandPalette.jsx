@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { trapTabKey } from '../../../UseDialogModal.js';
 
 let nextId = 0;
 
@@ -8,6 +9,7 @@ export function CommandPalette({ open, commands, placeholder = 'Search for an ac
   const [q, setQ] = useState('');
   const [i, setI] = useState(0);
   const inputRef = useRef(null);
+  const panelRef = useRef(null);
   const uid = useRef(null);
   if (uid.current === null) uid.current = `arena-command-palette-${nextId++}`;
   const listboxId = `${uid.current}-listbox`;
@@ -23,10 +25,14 @@ export function CommandPalette({ open, commands, placeholder = 'Search for an ac
     else if (e.key === 'Enter') { e.preventDefault(); run(filtered[i]); }
     else if (e.key === 'Escape') { e.preventDefault(); onClose && onClose(); }
   };
+  const onPanelKeyDown = (e) => {
+    if (e.key === 'Tab' && panelRef.current) trapTabKey(panelRef.current, e, document.activeElement);
+  };
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 'var(--z-palette)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
       paddingTop: '12vh', background: 'var(--scrim)', backdropFilter: 'blur(var(--scrim-blur))', WebkitBackdropFilter: 'blur(var(--scrim-blur))' }}>
-      <div onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Command palette"
+      <div ref={panelRef} onKeyDown={onPanelKeyDown}
+        onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Command palette"
         style={{ width: 'calc(var(--sp-1) * 140)', maxWidth: '92vw', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', overflow: 'hidden' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2.5)', padding: 'calc(var(--sp-1) * 3.5) calc(var(--sp-1) * 4)', borderBottom: 'var(--bw) solid var(--color-base-300)' }}>
           <i className="ph-bold ph-magnifying-glass" aria-hidden="true" style={{ color: 'var(--mute)', fontSize: 'var(--icon-lg)' }} />
