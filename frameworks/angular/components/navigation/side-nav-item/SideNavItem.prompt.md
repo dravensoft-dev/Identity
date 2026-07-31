@@ -31,3 +31,8 @@ Arena draws as an `aria-hidden` `<i>` — the single-icon convention, never a pr
   through DI rather than pushed, but a wrapper still changes the flex layout of the column.
 - **Don't** put a badge or a count inside it. The item takes no projected content; a row that needs
   one is a change to the contract, not to a caller.
+
+- **`disabled` draws the destination and refuses it.** It reflects through `aria-disabled` rather
+  than by not rendering the item: an unavailable destination a user can see, and hear announced as
+  unavailable, is what tells them it exists. The anchor keeps its `href`, so the shape does not
+  change; what changes is that the click is prevented and the nav is never told to activate.

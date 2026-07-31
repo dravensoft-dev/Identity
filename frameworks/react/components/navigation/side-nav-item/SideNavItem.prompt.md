@@ -34,3 +34,9 @@ is active, the indent step and the handler that reports `nav` — is injected by
   it is the same limit `Table` and `RadioGroup` already carry.
 - **Don't** render one outside a `SideNav`. It renders, but nothing injects the active
   id or the handler, so it is a link that reports nothing and never marks itself current.
+
+- **`disabled` draws the destination and refuses it.** It reflects through `aria-disabled` rather
+  than by not rendering the item: an unavailable destination a user can see, and hear announced as
+  unavailable, is what tells them it exists — a feature behind a plan they do not have is worth
+  showing. The anchor keeps its `href`, so the shape does not change; what changes is that the
+  click is prevented and `onActivate` never fires.

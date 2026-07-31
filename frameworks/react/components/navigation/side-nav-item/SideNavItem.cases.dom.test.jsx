@@ -4,9 +4,10 @@
  * there is no link pattern, because a link's role, keyboard and focusability all come from the
  * platform, and `none` there means "verified presentational" only in the sense that this
  * component adds no affordance of its own beyond the anchor.
- * `states.disabled` is declared FALSE on the button case and excepted on the binding: the
- * component has no disabled concept to reflect, and a BEHAVIOURAL requirement needs a verdict
- * either way -- the exception justifies the false rather than replacing it. */
+ * `states.disabled` is BEHAVIOURAL, so the verdict below is earned by rendering a disabled item
+ * and acting on it rather than declared. The component gained `disabled` because casing it made
+ * the gap visible: bound to `none` the requirement never applied, and a real <button> with no
+ * disabled concept read as having no interactive pattern at all. */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
@@ -61,13 +62,25 @@ test('SideNavItem meets both of the shapes href chooses between', () => {
         act(() => { el.click(); });
         assert.equal(activated, 1, 'the button did not reach onActivate');
 
+        let blocked = 0;
+        const off = mount(
+          <SideNavItem id="billing" label="Billing" disabled onActivate={() => { blocked += 1; }} />,
+        );
+        const offEl = off.firstElementChild;
+        assert.equal(offEl.getAttribute('aria-disabled'), 'true',
+          'an unavailable destination must announce itself rather than vanish -- seeing it is what tells a user it exists');
+        assert.equal(offEl.tagName, 'BUTTON',
+          'it is still a button: a disabled control that stops being one cannot be found at all');
+        act(() => { offEl.click(); });
+        assert.equal(blocked, 0, 'a disabled item activated anyway');
+
         return {
           root,
           subjects: { default: el },
           behavioural: {
             'keyboard.Enter': true,
             'keyboard.Space': true,
-            'states.disabled': false,
+            'states.disabled': true,
           },
         };
       },

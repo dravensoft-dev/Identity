@@ -12,12 +12,7 @@
       "name": "button",
       "when": "href is absent -- the item renders a <button type=\"button\">, which activates a handler rather than navigating",
       "pattern": "button",
-      "exceptions": [
-        {
-          "requirement": "states.disabled",
-          "reason": "SideNavItem has no disabled concept to reflect: its contract declares `id`, `label`, `icon`, `href` and `activate`, and nothing that would turn a destination off. A navigation item a consumer wants unavailable is one they do not render. This is an absence in the API rather than an unmet requirement in the DOM, and it is declared here so a reader of the binding meets the decision instead of the silence."
-        }
-      ]
+      "exceptions": []
     }
   ]
 }
