@@ -5,5 +5,5 @@ Icon-only button for toolbars and rows. Always pass `label` (accessible name in 
 <IconButton variant="solid" showLabel label="New project" icon="ph-bold ph-plus" />
 ```
 
-- Pass `icon` as a Phosphor class name — `icon="ph-bold ph-plus"`. Arena draws the `<i>` and hides it; `label` is what a screen reader announces.
+- Pass `icon` as a Phosphor class name: `icon="ph-bold ph-plus"`. Arena draws the `<i>` and hides it; `label` is what a screen reader announces.
 - Don't pass an element as the icon. A single icon is a class name in Arena, which keeps the glyph inside `check:compliance`'s reach and inside Arena's own iconography.

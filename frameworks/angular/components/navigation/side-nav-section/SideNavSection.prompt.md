@@ -1,4 +1,4 @@
-Arena side-nav section — a labelled group of destinations inside an `arena-side-nav`. Standalone,
+Arena side-nav section, a labelled group of destinations inside an `arena-side-nav`. Standalone,
 `OnPush`, signal I/O. Styling is the family's shared `SideNav.variants.ts` recipe. The host **is**
 the group: `role="group"` and the `aria-labelledby` that names it sit on it, with the heading
 rendered inside.
@@ -11,7 +11,7 @@ rendered inside.
 ```
 
 **Its content is required, and it is the only slot in the repository that is.** A section renders a
-heading naming the group, so a childless one labels nothing — it **throws** at content-init rather
+heading naming the group, so a childless one labels nothing, it **throws** at content-init rather
 than rendering. Slot required-ness is not comparable between layers and no gate can catch a caller
 who omits it, which is why the guard is runtime code and not a declaration.
 
@@ -23,7 +23,7 @@ The binding is `none`: the group carries no interactive affordance of its own, a
 inside it belongs to a child.
 
 **Do / Don't**
-- **Do** give it a `label` that names the group rather than describing it — "Workspace", not
+- **Do** give it a `label` that names the group rather than describing it, "Workspace", not
   "Workspace links".
 - **Do** nest sections when the hierarchy genuinely has two levels. The indent compounds and
   nothing needs configuring.

@@ -1,4 +1,4 @@
-Arena confirmation for a high-consequence action. It does not close on click-outside —
+Arena confirmation for a high-consequence action. It does not close on click-outside,
 losing a half-finished decision to a stray click is the failure this component exists
 to prevent. `requireText` makes the user type a word before the confirm button
 enables. `destructive` turns the eyebrow red and gives the confirm button Arena's
@@ -25,22 +25,22 @@ close, and Tab wraps at the panel's edges.
 - Say what will be destroyed, in the body, in plain words. "Are you sure?" is not a
   confirmation, it is a speed bump.
 - **Bind `title`, never write it as a static attribute.** `title="Delete project X"`
-  compiles and does set the input — and it also lands on the host as the native HTML
+  compiles and does set the input, and it also lands on the host as the native HTML
   `title` attribute, whose host here is the fixed full-viewport scrim, so the browser
   paints a tooltip over the **entire viewport** for as long as the dialog is open.
   `[title]="'Delete project X'"` or `[title]="projectName()"` sets the input alone.
   This host clears the attribute (`'[attr.title]': 'null'`) and
-  `test/HostClassBinding.test.ts` holds that layer-wide in both directions — a primitive
+  `test/HostClassBinding.test.ts` holds that layer-wide in both directions, a primitive
   taking the input and not clearing it fails, and so does one clearing an attribute it
   takes no input for. The binding above is the clearer spelling, not a workaround.
 - Use `requireText` when the action is genuinely irreversible, and use the name of the
   thing being destroyed as the word.
 - Don't reach for `destructive` on a merely inconvenient action. The filled red is the
   system's loudest surface and it stops working once it is common.
-- Don't use this for a routine question — that is `MatDialog` wearing Arena.
+- Don't use this for a routine question: that is `MatDialog` wearing Arena.
 - Don't express a condition as an attribute string. `destructive` carries the
   `booleanAttribute` transform, so a bare `destructive` and `[destructive]="true"` both
   mean true, and the one literal string `"false"` means false. Every *other* string is
-  true — `"0"`, `"off"` and `"no"` all give you the destructive button. Whether an
+  true, `"0"`, `"off"` and `"no"` all give you the destructive button. Whether an
   action is irreversible is a computed fact, so bind it:
   `[destructive]="isIrreversible"`. Keep the bare attribute for a constant true.

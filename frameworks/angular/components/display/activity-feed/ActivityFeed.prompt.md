@@ -11,19 +11,19 @@ time; `tone` colours the leading dot from Badge's vocabulary. Styling is the sib
 ```
 
 **Do / Don't**
-- Keep the grammar. The actor is bold, the action is prose, the target is mono — a feed
+- Keep the grammar. The actor is bold, the action is prose, the target is mono, a feed
   whose rows each read differently is a list, not a feed.
 - Use `tone` for what the event *means*, not for variety. Seven tones cycling by row is
   decoration, and it makes the one row that matters invisible.
 - Don't put controls in a row. A feed reports; an action on an event belongs on the thing
   itself.
 - The dot is filled (`bg-current`, coloured by `tone`) even for `tone="danger"`, though
-  danger is outline everywhere else — a tone dot is an identity mark, the same family as
+  danger is outline everywhere else, a tone dot is an identity mark, the same family as
   `Tag`'s own dot and `Avatar`'s presence dot, not a danger surface. See README's Danger
   convention section.
 
 **No row escape hatch**, on either layer. The API contract declares no per-item renderer,
-because Angular has no binding for per-item projection — that would need a structural
+because Angular has no binding for per-item projection, that would need a structural
 directive and `ngTemplateOutlet`, which no row of the binding table covers. A consumer
 needing a different row imports the exported `activityFeedStyles` and composes the slots
 themselves.

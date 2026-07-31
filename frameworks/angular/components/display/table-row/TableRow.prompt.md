@@ -18,7 +18,7 @@ that is a DI error rather than a silently inert row.
 - Don't write a bare element as a child. A row's cells are read as `arena-table-cell`
   components, and anything else renders but takes no column, no alignment and no place in
   the keyboard order.
-- Don't reach for the row to style a cell — alignment, width and the mono/gold treatment are
+- Don't reach for the row to style a cell: alignment, width and the mono/gold treatment are
   the **column's**, so they stay the same all the way down.
 - `disabled` draws the row and refuses to activate it, by either route: the pointer and the
   grid's `Enter`. It reflects through `aria-disabled` rather than the native attribute, so a
@@ -30,25 +30,25 @@ that is a DI error rather than a silently inert row.
   has to be declared rather than detected. Before it existed, a clickable card row here was
   reachable by pointer and not by keyboard.
 - Wire `(click)` only when the whole row means something to activate. A row with one
-  actionable thing in it wants an `arena-button` in a cell instead — see the keyboard note
+  actionable thing in it wants an `arena-button` in a cell instead; see the keyboard note
   below.
 
 ### Why this one is not host-bound
 
 Every other primitive in this family binds its root slot onto the host. This one renders a
 real element inside a bare host, for the same reason `arena-button` does: an Angular output
-named after a native DOM event is delivered **twice** — once as the output and once as the
+named after a native DOM event is delivered **twice**: once as the output and once as the
 bubbled DOM event Angular also listens for. Measured on this component rather than inherited:
 with the inner element's `stopPropagation()` removed, one pointer click reaches the consumer
 **2** times, and a `disabled` row activates, because the native path never passes the guard.
 The inner element is where that event is stopped, which is what makes both routes single and
-both refusable — and `Table.cases.test.ts` asserts the count so it cannot drift back.
+both refusable, and `Table.cases.test.ts` asserts the count so it cannot drift back.
 
 ### Card mode is pointer-only here, and that is a divergence
 
 Below `--bp-md` the row renders as a card with **no role and no tab stop**, so a row carrying
 `(click)` is reachable by pointer and not by keyboard. The row cannot decide the shape from
-whether anything is listening — R6 in `contracts/api/README.md` forbids exactly that, and
+whether anything is listening, R6 in `contracts/api/README.md` forbids exactly that, and
 `OutputEmitterRef.listeners` is private here anyway. Making every card row a button instead would
 put a dead tab stop on every row of every table that is not clickable. The binding declares
 `divergesFrom: "button"`, and the bounded consequence is that a card row with `(click)` bound
@@ -60,5 +60,5 @@ so always-a-button costs no dead stop there, where always-a-div would delete Ent
 
 Where the row sits, which columns its cells are set against, and where the grid's cursor is
 all live on `TableState`, which the table provides and this component injects. None of it is
-a member of `contracts/api/components/TableRow.json`, and a consumer never writes one — the
+a member of `contracts/api/components/TableRow.json`, and a consumer never writes one, the
 same shape as `arena-radio` pulling its group's state. Nothing is pushed down: the child asks.

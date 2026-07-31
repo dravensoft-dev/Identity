@@ -19,11 +19,11 @@ the sibling `Alert.variants.ts` recipe.
 - Use `tone="danger"` only for a condition the user must act on. It renders
   `role="alert"`, which interrupts a screen reader; every other tone renders
   `role="status"`, which does not.
-- Don't use an alert for something transient — that is `MatSnackBar` wearing Arena.
+- Don't use an alert for something transient: that is `MatSnackBar` wearing Arena.
 - Don't stack more than one alert in the same region. Two competing alerts read as
   one broken page; summarise instead.
 - Don't express a condition as an attribute string. `dismissible` carries the
   `booleanAttribute` transform, so a bare `dismissible` and `[dismissible]="true"` both
   mean true, and the one literal string `"false"` means false. Every *other* string is
-  true — `"0"`, `"off"` and `"no"` all suppress nothing. Bind the expression
+  true, `"0"`, `"off"` and `"no"` all suppress nothing. Bind the expression
   (`[dismissible]="canDismiss"`) and keep the bare attribute for a constant true.

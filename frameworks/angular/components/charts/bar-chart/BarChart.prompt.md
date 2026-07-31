@@ -1,4 +1,4 @@
-Arena bar chart. One axis, hand-written SVG, every colour a token — so it re-themes
+Arena bar chart. One axis, hand-written SVG, every colour a token, so it re-themes
 with the rest of Arena and costs no dependency. Identity comes from `slot` (one colour
 for the series) or `slots` (a colour per bar, **in ramp order, never cycled**); meaning
 comes from `tone`. Passing both warns and `tone` wins, because a chart carries identity
@@ -10,7 +10,7 @@ or meaning, never both.
 ```
 
 `valueSuffix` is appended to the tick labels, the tooltip and the numbers table together,
-so a unit written once appears everywhere. It is appended verbatim — write the space
+so a unit written once appears everywhere. It is appended verbatim, write the space
 yourself:
 
 ```html
@@ -20,20 +20,20 @@ yourself:
 It appends and does not format: no rounding, no thousands separator, no currency. Format
 the numbers before binding them.
 
-The chart sizes itself to its container — give it a parent with a width (an
+The chart sizes itself to its container, give it a parent with a width (an
 `arena-chart-card` is the usual one) rather than setting a width on the chart. The host
 is a block-level, positioned box: it is what gets measured, and it is what the hover
 tooltip is positioned against.
 
 **Do / Don't**
-- Give `seriesLabel` — it names the chart for a screen reader and titles the numbers
+- Give `seriesLabel`, because it names the chart for a screen reader and titles the numbers
   table underneath.
 - Use `tone` only when the series genuinely *is* a state. A red bar means "bad", and a
   red bar that just means "the second category" makes the chart lie.
 - Don't pass a ninth `slots` entry expecting a ninth colour. The ramp is eight, in
   order; a ninth series folds into "Other" or becomes small multiples.
 - Don't add a second axis. Arena's charts are one axis, always.
-- Don't omit `labels` or `values`. Both are required inputs — Angular throws NG0950 on the
+- Don't omit `labels` or `values`. Both are required inputs, Angular throws NG0950 on the
   first read rather than drawing an empty box. A chart with no data is a caller bug, not a
   state to render.
 - Don't pass more `labels` than `values`. A bar is drawn per value and takes the label

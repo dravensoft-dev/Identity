@@ -4,13 +4,13 @@ Brief tooltip over icons/actions.
 <Tooltip label="Roll back to the previous build"><IconButton label="Roll back" icon="ph-bold ph-arrow-counter-clockwise" /></Tooltip>
 ```
 
-`label` is the bubble's text and is required — Arena draws the bubble, the consumer
+`label` is the bubble's text and is required; Arena draws the bubble, the consumer
 names it. It is a plain string, so markup inside a tooltip is not possible; a bubble
 is a short label, not a paragraph. The children are the element the tooltip describes
 and attaches to.
 
 The tooltip is a deferred affordance: it waits for the pointer to rest, and does not
-appear for a pointer merely passing over it. A focus reveals it immediately instead —
+appear for a pointer merely passing over it. A focus reveals it immediately instead,
 a keyboard user has already paid to reach the control.
 
 **Escape dismisses it from anywhere**, whether a pointer or a focus revealed it, for
@@ -22,7 +22,7 @@ was, so the key is listened for on the document rather than on the trigger.
 appears on hover or focus, and only after `--delay-open` for a pointer, is a
 poor substitute for a name on the control itself.
 
-**Do** hand `Tooltip` a single element that accepts props — that is where
+**Do** hand `Tooltip` a single element that accepts props, because that is where
 `aria-describedby` lands, added only while the bubble is shown. A description of
 your own on that element is **kept**, not replaced: `aria-describedby` is a
 space-separated id list, so an input keeps its password rules and gains the bubble
@@ -47,10 +47,10 @@ focus, but the description never reaches anyone.
 **How `aria-describedby` reaches the trigger, and the one shape it still cannot.** The attribute
 is written twice on purpose: `cloneElement` puts it in the server-rendered HTML before hydration,
 and an effect writes it onto the **resolved node** afterwards. The effect is what covers a child
-that accepts the prop and drops it — invisible to a clone, and perfectly visible in the DOM.
+that accepts the prop and drops it, invisible to a clone, and perfectly visible in the DOM.
 Arena's own components forward the props they *declare* and drop the rest, so every suite
 assertion using a raw `<button>` proved a case the demo pages did not have. Two failing shapes now
-throw outright: a bare string, and a **fragment** — the trap, because `React.isValidElement` is
+throw outright: a bare string, and a **fragment**: the trap, because `React.isValidElement` is
 true for one, so the clone succeeded and the attribute reached nothing at all, in silence.
 **Unpromised:** a child rendering no DOM node of its own at the wrapper's first position, or one
 that re-parents its content, is outside what an effect reading `firstElementChild` can reach.

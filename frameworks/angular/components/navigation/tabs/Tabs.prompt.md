@@ -1,4 +1,4 @@
-Arena tabs — a row of tabs and the panels they switch between, for **views of one subject**, never
+Arena tabs, a row of tabs and the panels they switch between, for **views of one subject**, never
 for steps in a flow. Standalone, `OnPush`, signal I/O. A compound family: write one `arena-tab` per
 view and `arena-tabs` draws the tablist, places the panels, and owns the keyboard.
 
@@ -16,12 +16,12 @@ view and `arena-tabs` draws the tablist, places the panels, and owns the keyboar
 ```
 
 **The children pull; the parent pushes nothing.** `arena-tabs` provides an injectable
-`TabsState` and each `arena-tab` injects it and pulls — its selected state, and the two ids
+`TabsState` and each `arena-tab` injects it and pulls, its selected state, and the two ids
 wiring it to its button. Nothing is pushed, and **no member of either contract describes any of it**. The state
 object is not exported from the barrel: it is coordination, not API.
 
 **Every panel mounts.** One `arena-tab` renders one tabpanel, and the unselected ones are hidden
-rather than removed, because each tab's `aria-controls` must reference a tabpanel that exists —
+rather than removed, because each tab's `aria-controls` must reference a tabpanel that exists,
 a reference pointing at nothing is worse than an absent one. The consequence is real and the
 contract states it: **a panel's side effects run immediately**, not on first selection. If a view
 is expensive, guard it inside the view rather than expecting the tab to defer it.
@@ -53,12 +53,12 @@ is expensive, guard it inside the view rather than expecting the tab to defer it
 - Don't fill the selected tab. It is marked by a crimson underline and by weight; a filled tab
   spends the view's primary accent on navigation.
 
-**By hand, in real Chromium** — the keyboard is asserted for real, but the ink and the ring are not.
+**By hand, in real Chromium**: the keyboard is asserted for real, but the ink and the ring are not.
 Run `bun run demos` and open
 `/frameworks/angular/components/navigation/tabs/Tabs.card.html`:
 - Tab into the strip **once**: the ring lands on the selected tab, and Tab again leaves the strip
   rather than walking the tabs.
 - Left and Right walk the strip and wrap at both ends, and the panel below changes with them.
 - The crimson underline sits flush on the strip's own hairline rule rather than floating above it.
-- The panel's top gap does not change when switching tabs — the layout must not shift.
+- The panel's top gap does not change when switching tabs, the layout must not shift.
 - Two strips on the page switch independently, which is the generated id base working.

@@ -22,7 +22,7 @@ and a divider or a header cannot be activated at all.
 
 `icon` is a **Phosphor class-name string**, never markup: Arena draws the `<i>`
 and the caller names the glyph. What that costs is the general price of the
-single-icon convention -- an entry can no longer carry a consumer's own markup,
+single-icon convention: an entry carries no markup of a consumer's own,
 so a row with an avatar, a coloured dot or a two-line body has no expression
 here. `items` is required and throws when absent; an empty array is a caller
 saying "no entries right now" and renders.

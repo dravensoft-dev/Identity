@@ -1,11 +1,11 @@
-Arena tooltip — a short label revealed on pointer intent, bone over dark. Standalone, `OnPush`,
+Arena tooltip, a short label revealed on pointer intent, bone over dark. Standalone, `OnPush`,
 signal I/O. Styling is the sibling `Tooltip.variants.ts` recipe; the component carries no CSS
 classes of its own. Wrap the element the tooltip describes; Arena draws the bubble and names it
 from `label`.
 
 The bubble is positioned by `@angular/cdk/overlay`, not by the wrapper, so it escapes an
 `overflow: hidden` ancestor and stays anchored while the page scrolls. That is the one thing
-Arena does not hand-roll here — focus and roles stay Arena's. The app must import
+Arena does not hand-roll here; focus and roles stay Arena's. The app must import
 `frameworks/angular/theme/arena-cdk.css` once, or the bubble renders unpositioned.
 
 ```html
@@ -24,7 +24,7 @@ Arena does not hand-roll here — focus and roles stay Arena's. The app must imp
   siblings leave the bubble naming nothing. The trigger's own `aria-describedby` is preserved:
   the bubble's id is appended on reveal and removed on withdrawal.
 - Project something **focusable**. A tooltip on an unfocusable element is unreachable without a
-  pointer — give it `tabindex="0"` if it is not natively focusable, as the `p95` example does.
+  pointer, give it `tabindex="0"` if it is not natively focusable, as the `p95` example does.
 - A pointer waits `--delay-open` (400 ms) before the bubble appears and `--delay-close` (120 ms)
   before it withdraws, so crossing a toolbar reveals nothing. **Keyboard focus reveals
   immediately**, and that asymmetry is deliberate: a delay on focus reads as an unresponsive
@@ -33,14 +33,14 @@ Arena does not hand-roll here — focus and roles stay Arena's. The app must imp
 - Escape dismisses, and the listener is on the document rather than the host, because a
   pointer-invoked tooltip leaves focus somewhere else entirely.
 - Don't put interactive content in a tooltip. It never receives focus, so a button inside it is
-  unreachable — that is `focus.never` in the pattern, not a limitation of this implementation.
+  unreachable: that is `focus.never` in the pattern, not a limitation of this implementation.
   Reach for `arena-menu` or a dialog instead.
 - Don't use a tooltip to carry information the user needs to complete a task. It is
   supplementary by definition; a field's own `hint` is where a requirement belongs.
 - Don't set `label` to the trigger's own text. `aria-describedby` is read **in addition** to the
   name, so a bubble repeating the label just says everything twice.
 
-**By hand, in real Chromium** — none of these is provable in happy-dom. Run `bun run demos` and
+**By hand, in real Chromium**: none of these is provable in happy-dom. Run `bun run demos` and
 open `/frameworks/angular/components/feedback/tooltip/Tooltip.card.html`, which lays out one
 section per item below:
 - The bubble sits centred above the trigger with a `--sp-2` gap, and **flips below** when the

@@ -1,4 +1,4 @@
-Arena tab — one view inside an `arena-tabs` strip. Standalone, `OnPush`, signal I/O. It exists
+Arena tab, one view inside an `arena-tabs` strip. Standalone, `OnPush`, signal I/O. It exists
 because a consumer's own content has to go inside **one** item of something Arena draws: the
 moment there is one element per view, per-item projection stops being the problem it would be
 otherwise.
@@ -14,7 +14,7 @@ otherwise.
 
 **It draws the panel, not the button.** `arena-tabs` renders the tablist and every tab button in
 it from this component's `label`; `arena-tab`'s own host **is** the tabpanel. That split is not a
-style choice — a tabpanel may not sit inside a tablist, so the two cannot be one element.
+style choice, a tabpanel may not sit inside a tablist, so the two cannot be one element.
 
 **Do / Don't**
 - **`value` and `label` are both required.** `value` is what the parent's `change` carries;
@@ -31,7 +31,7 @@ style choice — a tabpanel may not sit inside a tablist, so the two cannot be o
 - Don't reach for `arena-tab` to make a panel you place yourself. It renders where the parent puts
   it, which is after the tablist and nowhere else.
 
-**By hand, in real Chromium** — checked from the parent's page, since a tab alone renders nothing
+**By hand, in real Chromium**: checked from the parent's page, since a tab alone renders nothing
 useful. Run `bun run demos` and open
 `/frameworks/angular/components/navigation/tabs/Tabs.card.html`, then walk the checklist in
 `Tabs.prompt.md`.

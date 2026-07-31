@@ -1,4 +1,4 @@
-Arena surface container — the hairline border on the base surface scale, with an
+Arena surface container, the hairline border on the base surface scale, with an
 optional header. Standalone, `OnPush`, signal inputs. Styling is the sibling
 `Card.variants.ts` recipe, read from `Card.manifest.json` in the shared Tailwind
 layer; the component carries no CSS classes of its own and host-binds its root slot.
@@ -9,13 +9,13 @@ layer; the component carries no CSS classes of its own and host-binds its root s
   <p>Everything the client can see, in one place.</p>
 </arena-card>
 
-<arena-card floating>Just a surface — no header block at all.</arena-card>
+<arena-card floating>Just a surface, with no header block at all.</arena-card>
 ```
 
 The `action` slot is an attribute selector, which is this layer's whole projection
 convention: write `action` on the element that goes beside the title. With no
 `title`, no `eyebrow` and nothing marked `action`, the header block does not
-render — the card is a plain surface.
+render, the card is a plain surface.
 
 **Do / Don't**
 - **Bind `title`, don't write it as a static attribute.** `<arena-card title="X">`
@@ -35,7 +35,7 @@ render — the card is a plain surface.
 - Don't nest a card inside a card. The surface scale has three steps and a card is
   one of them; a card on a card reads as a mistake rather than as depth.
 
-**By hand, in a real browser** (`bun run demos`, on any page composing it —
+**By hand, in a real browser** (`bun run demos`, on any page composing it,
 `arena-card` has no demo page of its own because nothing about it needs one):
 - `floating` casts the warm shadow and the borderless variant does not, with no
   gradient on either.

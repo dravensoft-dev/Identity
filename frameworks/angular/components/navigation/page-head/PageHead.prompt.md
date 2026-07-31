@@ -1,5 +1,5 @@
 Arena page header: the display-weight title, an optional subtitle, and the page's
-actions. It measures **itself**, not the viewport, and stacks below `--bp-sm` — a page
+actions. It measures **itself**, not the viewport, and stacks below `--bp-sm`, a page
 head inside a narrow panel stacks there too, on any screen. Actions are projected, so
 they are real `mat-button`s wearing Arena.
 
@@ -12,13 +12,13 @@ they are real `mat-button`s wearing Arena.
 </arena-page-head>
 ```
 
-`title` is required — a page head with no title is a bug, not a state. `align` (default
+`title` is required: a page head with no title is a bug, not a state. `align` (default
 `start`) governs only the wide layout's cross-axis alignment of the actions block against
 the title; below `--bp-sm` the row always stacks and `align` has no effect. `arena-page-head`
-applies no outer bottom margin — the parent composes that spacing.
+applies no outer bottom margin; the parent composes that spacing.
 
 Import `ArenaActions` from `frameworks/angular/ProjectionMarkers` (or the
-layer barrel) alongside `PageHead` in the host component's `imports` —
+layer barrel) alongside `PageHead` in the host component's `imports`,
 `actions` is a directive, not a plain attribute, because it is how the page head
 detects that actions were projected at all. Without it the attribute is inert, the
 actions wrapper never renders, and the buttons silently disappear. `ArenaActions` is

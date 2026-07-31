@@ -1,4 +1,4 @@
-Arena text field — label above, hint or error below, and a validation state the field wears.
+Arena text field, label above, hint or error below, and a validation state the field wears.
 Standalone, `OnPush`, signal I/O. Styling is the sibling `Input.variants.ts` recipe; the host binds
 the root slot, so `<arena-input>` is itself the column its parent lays out. The control is a real
 `<input>`, named by a real `<label for>`.
@@ -39,12 +39,12 @@ Return the message, or the empty string when the value is good.
   `Input.json` contracts. Pass `undefined`, not `''`, to mean "no controlled error".
 - `validate` runs on blur by default. Its message appears only once the field is **touched**, so
   an untouched form never accuses the user of anything. `validateOn="change"` touches on the
-  first keystroke instead — reach for it on a field with a cheap, obvious rule.
+  first keystroke instead; reach for it on a field with a cheap, obvious rule.
 - The valid state (green ring, check) is either `valid` set by the consumer, or a touched field
   whose validator returned nothing. It is not "the field has a value".
 - The focus ring is the recipe's, not the component's: the `field` slot carries `focus-within:`,
   so there is no focus signal to keep in sync with the DOM.
-- `id` is derived from `label` as `in-<slug>` when you do not pass one — the derivation
+- `id` is derived from `label` as `in-<slug>` when you do not pass one; the derivation
   `Input.json` states, so the same markup gets the same id in every layer. Pass `id` when two
   fields share a label.
 - `required` and `readOnly` land on the native attributes rather than on `aria-required` and
@@ -55,12 +55,12 @@ Return the message, or the empty string when the value is good.
   ligature beside the message it duplicates.
 - The error line **replaces** the hint rather than stacking under it. Two lines of guidance under
   one field is one too many.
-- `type` is the `InputType` enum. `checkbox` and `radio` are not among them — those are
+- `type` is the `InputType` enum. `checkbox` and `radio` are not among them: those are
   `<arena-checkbox>` and `Radio`, their own components.
 - Don't reach for `change` to run an expensive query. It fires per keystroke by design; debounce
   in the consumer, where the interval is a decision about that query rather than about the field.
 
-**By hand, in real Chromium** — none of these is provable in happy-dom. Run `bun run demos` and
+**By hand, in real Chromium**: none of these is provable in happy-dom. Run `bun run demos` and
 open `/frameworks/angular/components/forms/input/Input.card.html`:
 - `type="date"`: the picker indicator is **visible** on the dark field and brightens on hover.
   That is the shared manifest's `[&::-webkit-calendar-picker-indicator]:` block reading

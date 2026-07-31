@@ -1,4 +1,4 @@
-Arena switch — an on/off setting that takes effect immediately, not a pending form value.
+Arena switch, an on/off setting that takes effect immediately, not a pending form value.
 Standalone, `OnPush`, signal I/O. Styling is the sibling `Switch.variants.ts` recipe. The host
 binds the root slot, so `<arena-switch>` is itself the flex row its parent lays out. The control
 is a real `<button type="button" role="switch">`: the platform supplies activation, the role
@@ -21,21 +21,21 @@ supplies the state.
 **Do / Don't**
 - It is **controlled**. `state` is what the consumer owns; the component holds no copy, so a
   `funcOn` you ignore is a switch that visibly does not move.
-- **`label` is required** and is the accessible name — the `aria-label` on the control and the
+- **`label` is required** and is the accessible name, the `aria-label` on the control and the
   text beside it. There is no unlabelled shape, which is why the input has no default.
 - The events are three, and they are directional rather than a single toggle: `funcOn` and
   `funcOff` say which way it went, so a handler needs no copy of the old value to read.
 - `confirm` **replaces** the two: nothing is applied, `requestChange` fires instead, and the host
   opens a `ConfirmDialog` and sets `state` itself on confirmation. The requested value is always
   the negation of the current one, so the event carries no payload.
-- **`confirm` alone diverts the activation**, never whether anything is listening — R6 in
+- **`confirm` alone diverts the activation**, never whether anything is listening, R6 in
   `contracts/api/README.md`. `confirm` set with no `(requestChange)` binding is a switch that
   does nothing at all. That is the accepted cost of R6 and the one worth paying, because what
   it replaced applied a guarded change silently. **No runtime guard can catch it**: "is anything
   subscribed?" is precisely the question R6 says a component may not ask.
   `Switch.compliance.test.ts` pins it, so the fallback cannot come back unnoticed.
 - `iconOn` and `iconOff` are Phosphor class-name strings drawn inside the knob, and only the
-  current state's glyph is in the DOM. They are decoration — the knob is `aria-hidden`, and
+  current state's glyph is in the DOM. They are decoration; the knob is `aria-hidden`, and
   `aria-checked` is what carries the state.
 - Use a switch for an immediate effect and `<arena-checkbox>` for a pending form value. A switch
   inside a form that only applies on submit is the wrong control.
@@ -44,7 +44,7 @@ supplies the state.
 - Don't disable a switch to mean "you may not change this yet". A disabled switch is unreachable
   by Tab and announces no reason; `confirm` is the affordance for a change that needs a gate.
 
-**By hand, in real Chromium** — none of these is provable in happy-dom. Run `bun run demos` and
+**By hand, in real Chromium**: none of these is provable in happy-dom. Run `bun run demos` and
 open `/frameworks/angular/components/forms/switch/Switch.card.html`:
 - The knob **slides** across the track over `--dur-mid` rather than jumping, and the track's
   colour crossfades with it.

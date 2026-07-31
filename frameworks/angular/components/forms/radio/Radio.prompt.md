@@ -19,17 +19,17 @@ of authored ARIA.
 - `label` is optional in the contract, and an option without one is announced by its value at
   best. Pass it.
 - `hint` is a second line under the label, at the smaller type level. Use it for the consequence of
-  choosing — "Serves real traffic" — not to restate the label. The ring aligns to the top of the
+  choosing, "Serves real traffic", not to restate the label. The ring aligns to the top of the
   text precisely so a hint does not push it off centre.
 - `disabled` sets the native attribute, so the browser skips this option while arrowing and it
   cannot be reached by Tab. The JS guard beside it exists because the `<label>` is clickable and a
   label carries no disabled state of its own.
-- The ring and the dot are decoration; the input is the control. Don't attach a handler to either —
+- The ring and the dot are decoration; the input is the control. Don't attach a handler to either:
   the `<label>` already forwards a click, and a second handler double-reports.
 - To toggle one thing on and off, this is the wrong control: use `arena-switch` for an immediate
   effect and `arena-checkbox` for a pending form value.
 
-**By hand, in real Chromium** — the option's own visuals, on the group's page (`bun run demos`,
+**By hand, in real Chromium**: the option's own visuals, on the group's page (`bun run demos`,
 `/frameworks/angular/components/forms/radio-group/RadioGroup.card.html`):
 - Selecting changes **only** the ring's border colour and adds the dot; the ring's size and
   surface do not move, so the row does not shift by a pixel.

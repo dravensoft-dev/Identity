@@ -1,4 +1,4 @@
-Arena line chart — one series over time, hand-written SVG, every colour a token. An
+Arena line chart, one series over time, hand-written SVG, every colour a token. An
 optional 18% area tint sits under the line. The crosshair snaps to the nearest point
 rather than drifting between them, and the numbers are also a real table for anyone who
 cannot see the line. Identity comes from `slot`, meaning from `tone`; passing both warns
@@ -11,7 +11,7 @@ and `tone` wins, because a chart carries identity or meaning, never both.
 ```
 
 `valueSuffix` is appended to the tick labels, the tooltip and the numbers table together,
-so a unit written once appears everywhere. It is appended verbatim — write the space
+so a unit written once appears everywhere. It is appended verbatim, write the space
 yourself:
 
 ```html
@@ -21,13 +21,13 @@ yourself:
 It appends and does not format: no rounding, no thousands separator, no currency. Format
 the numbers before binding them.
 
-The chart sizes itself to its container — give it a parent with a width (an
+The chart sizes itself to its container, give it a parent with a width (an
 `arena-chart-card` is the usual one) rather than setting a width on the chart. The host
 is a block-level, positioned box: it is what gets measured, and it is what the hover
 tooltip is positioned against.
 
 **Do / Don't**
-- Give `seriesLabel` — it names the chart for a screen reader and titles the numbers
+- Give `seriesLabel`, because it names the chart for a screen reader and titles the numbers
   table underneath.
 - Use `area` for a volume or a total, not for a rate. A filled area says "this much of
   something"; a rate has nothing to fill.
@@ -36,7 +36,7 @@ tooltip is positioned against.
 - Don't plot two series by stacking two line charts. One axis, one series; two series
   that share a scale need a chart Arena does not ship yet, and two that do not share one
   are two charts.
-- Don't omit `labels` or `values`. Both are required inputs — Angular throws NG0950 on the
+- Don't omit `labels` or `values`. Both are required inputs, Angular throws NG0950 on the
   first read rather than drawing an empty box. A chart with no data is a caller bug, not a
   state to render.
 - Don't pass more `labels` than `values`. A point is drawn per value and takes the label
@@ -44,6 +44,6 @@ tooltip is positioned against.
   point above it.
 - Don't express a condition as an attribute string. `area` carries the
   `booleanAttribute` transform, so a bare `area` and `[area]="true"` both mean true, and
-  the one literal string `"false"` means false. Every *other* string is true — `"0"`,
+  the one literal string `"false"` means false. Every *other* string is true, `"0"`,
   `"off"` and `"no"` all draw the fill. Bind a computed value instead:
   `[area]="isVolume"`. Keep the bare attribute for a constant true.

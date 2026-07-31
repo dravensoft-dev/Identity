@@ -1,4 +1,4 @@
-Arena side nav — the primary navigation landmark, and the root of a compound family that nests to
+Arena side nav, the primary navigation landmark, and the root of a compound family that nests to
 any depth. Standalone, `OnPush`, signal I/O. Styling is the sibling `SideNav.variants.ts` recipe;
 the component carries no CSS classes of its own. The host **is** the landmark: `role="navigation"`,
 the accessible name and the column layout all sit on it.
@@ -21,18 +21,18 @@ claim and a blank string satisfies it. Two navigation landmarks on one page must
 **Depth is pulled, not pushed, and that is the whole design.** Each container **provides** a
 fresh `SideNavState` whose depth is its parent's plus one, and a row reads its own indent from
 the nearest ancestor through DI. The consequence is worth knowing: **a consumer's own wrapper
-component between two levels is harmless**, because DI walks past it — and so is a `@for`, and
+component between two levels is harmless**, because DI walks past it, and so is a `@for`, and
 so is any depth of projection. Nothing here inspects its own children, so nothing here can be
 broken by what sits between them.
 
-`indentStep` is a **number**, never a CSS string — a multiplier on `--sp-1`, not a length. A row at
+`indentStep` is a **number**, never a CSS string, a multiplier on `--sp-1`, not a length. A row at
 depth N is padded `calc(var(--sp-1) * 3 + var(--sp-1) * indentStep * N)`, so the indent
 re-densifies and re-themes with the token. `check:dimensions` cannot see this: it is a
 `[style.paddingInlineStart]` binding, which is the gate's declared blind spot, and
 `indentFor` is unit-tested at every depth instead.
 
 `active` is the id of the current destination and `nav` reports the id of the row pressed. An item
-with `href` keeps its **native navigation** — ctrl-click and open-in-new-tab still work — and
+with `href` keeps its **native navigation**: ctrl-click and open-in-new-tab still work, and
 reports through `nav` as well; a router-driven app usually wants one or the other, not both.
 
 **Do / Don't**
@@ -42,11 +42,11 @@ reports through `nav` as well; a router-driven app usually wants one or the othe
   Arena sidebar uses.
 - **Don't** put a heading, a divider or a search box in as a child. The family is three components
   and the landmark holds nothing else.
-- **Don't** expect a treeview. Each collapsible is an independent disclosure — no `aria-level`, no
-  roving tab stop, no arrow navigation — and that is refused rather than missing;
+- **Don't** expect a treeview. Each collapsible is an independent disclosure, no `aria-level`, no
+  roving tab stop, no arrow navigation, and that is refused rather than missing;
   `SideNavCollapsible.behaviour.json` states the cost.
 
-**By hand, in real Chromium** — run `bun run demos` and open
+**By hand, in real Chromium**: run `bun run demos` and open
 `/frameworks/angular/components/navigation/side-nav/SideNav.card.html`:
 - Each level steps in by exactly one `--sp-1 * indentStep`, and a row's icon stays aligned with its
   siblings' rather than with its parent's.

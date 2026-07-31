@@ -1,12 +1,12 @@
-Arena select — a styled **native** `<select>`. Standalone, `OnPush`, signal I/O. Styling is the
+Arena select, a styled **native** `<select>`. Standalone, `OnPush`, signal I/O. Styling is the
 sibling `Select.variants.ts` recipe; the component carries no CSS classes of its own. The host is
-the field's column — label above, control below — so put `<arena-select>` straight into a form
+the field's column, label above, control below, so put `<arena-select>` straight into a form
 row.
 
 Native is the whole design, not a shortcut. The browser draws the popup, runs its keyboard and
 gives a phone its own platform picker; Arena supplies the surface, the caret and the focus ring.
 That is why it binds the `select` pattern rather than `combobox`, and why `aria-expanded`,
-`aria-controls` and `aria-activedescendant` are absent — authoring them would be a claim about a
+`aria-controls` and `aria-activedescendant` are absent, because authoring them would be a claim about a
 popup this component does not own.
 
 ```html
@@ -21,7 +21,7 @@ protected readonly environments: SelectOption[] = [
 ];
 ```
 
-`label` is what names the control for assistive technology — Arena renders a real `<label for>`
+`label` is what names the control for assistive technology; Arena renders a real `<label for>`
 pointing at the control's own generated id. It is optional in the contract, but a select with no
 label and no surrounding `<label>` has no accessible name at all, so supply one or name it from
 outside.
@@ -39,16 +39,16 @@ rather than asserting it in prose.
 - **There is no `multiple`, and that is a decision rather than an omission.** A multi-selection
   is a *set* of values and `change` carries one `string`, so the member could only ever have set
   an attribute whose result the event could not report. A native multi-select is a list box shown
-  open — a different control from the styled dropdown this is.
+  open, a different control from the styled dropdown this is.
 - **Don't** put more than a handful of options in it. A long or searchable list is
   `arena-command-palette`'s job, and a set of three or four mutually exclusive choices already
   visible on the page is `arena-segmented-control`'s.
 
-**By hand, in real Chromium** — the popup is the browser's and happy-dom has none, so nothing
+**By hand, in real Chromium**: the popup is the browser's and happy-dom has none, so nothing
 below is provable by a suite. Run `bun run demos` and open
 `/frameworks/angular/components/forms/select/Select.card.html`:
 - The popup opens on click and on Space, walks with the arrow keys and type-ahead, and commits on
-  Enter — all of it the platform's, none of it Arena's.
+  Enter, all of it the platform's, none of it Arena's.
 - The caret sits inside the field's right padding and swallows no click: pressing it opens the
   control beneath it.
 - The focus ring is Arena's `--focus-width` in `--color-secondary`, and the platform outline is
