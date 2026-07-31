@@ -54,9 +54,9 @@ What "into the chip" means depends on the shape. A chip with no action panel *is
 
 ## Verifying the panel by hand
 
-`Calendar` binds the `grid` pattern, so by Arena's rule it is DOM-tested by hand
-rather than by a render suite — the measured RAM cost of a grid fixture is why.
-Serve the tree with `bun run demos`, open
+`Calendar` has a render suite that walks its grid, and everything below is what
+that suite cannot reach: layout, motion and focus rings, which happy-dom does not
+implement. Serve the tree with `bun run demos`, open
 `frameworks/react/components/display/calendar/Calendar.card.html`, and check all of:
 
 1. Tab reaches the schedule ONCE, and one more Tab leaves it. No chip and no

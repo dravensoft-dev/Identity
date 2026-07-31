@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **`frameworks/angular/BehaviourDelegated.json` is gone**, and with it the last statement that
+  Angular lacked anything React ships. It recorded `Calendar` and `CalendarEvent` as `absent`;
+  both are built now, so the file had nothing left to declare, and a record with nothing to
+  record is the failure mode that retired `check:material` in the same cycle. The mechanism
+  stays — `check:behaviour` still reads the file when present and still names any React
+  component the Angular layer lacks and has not recorded there — so the next component one
+  layer lands first fails loudly until it is written down.
 - **Angular Material is gone.** `arena-material.css`, its prompt, the `check:material` gate and
   the `@angular/material` devDependency are all deleted: Angular implements every Arena component
   itself now, so there is nothing left to bridge. An adopting app drops the
@@ -17,9 +24,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Angular gains `arena-calendar` and `arena-calendar-event`, and the layers reach parity.**
+  Every component React ships now exists in Angular. The chips cannot be nested inside their day
+  columns — `<ng-content/>` projects once, in one place — so each chip pulls its own placement
+  out of the calendar instead of being handed one, and each day column claims its chips through
+  `aria-owns` so the accessibility tree matches React's. The day columns are CSS grid tracks
+  rather than flex items, because a chip's horizontal placement is a percentage of the whole
+  grid and unequal columns would slide the last day's chips off. The family shares one Tailwind
+  manifest, the arrangement `arena-table-row` and `arena-table-cell` already have.
+  `arena-calendar-event` declares two of React's three cases: Angular cannot ask whether an
+  output has subscribers, so a chip is always the interactive shape, which its binding records
+  as a `divergesFrom`.
 - **Angular gains the `SideNav` family, `arena-progress-bar` and `arena-spinner`**, and with them
-  every control it used to delegate. `BehaviourDelegated.json` holds only `Calendar` and
-  `CalendarEvent`, which are components Angular has never had rather than delegations. The side
+  every control it used to delegate. The side
   nav nests to any depth, and a consumer's own wrapper component between two levels is harmless —
   depth is pulled through DI rather than pushed into cloned children.
 - **Angular gains `arena-dialog`, `arena-select`, `arena-toast` and `arena-menu`**, and stops
