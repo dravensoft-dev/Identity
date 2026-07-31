@@ -28,15 +28,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **A `(click)` binding on an Angular primitive's element is the DOM event, not the primitive's
-  `click` output.** Angular resolves a native event name to the DOM even when the component
-  declares an `output()` of that name. Measured with a probe rather than inferred. The consequence
-  a consumer meets: a click bubbling out of an element the primitive did not emit for still reaches
-  the handler. `arena-calendar-event` stops propagation while `interactive` and does not while
-  inert, because an inert chip claims nothing. `CalendarEvent.cases.test.ts` now subscribes to the
-  output on the component instance instead of counting through the template binding, which is what
-  a suite has to do to tell an emit from a bubble; `frameworks/angular/README.md` names the three
-  primitives whose suites still count the old way.
+- **A `(click)` binding on an Angular primitive's element fires for the DOM event AND for the
+  primitive's `click` output.** Angular installs both. Measured with a probe across all four
+  combinations rather than inferred. A primitive that emits without stopping propagation calls a
+  consumer's handler **twice** for one press; one that stops without emitting calls it **zero**
+  times, correctly. So every primitive declaring a `click` output now stops propagation in every
+  branch it renders, including the ones that deliberately do not emit —
+  `arena-calendar-event`'s inert chip did not, and a consumer bound to it heard an activation
+  nobody made. React's chip follows, so the layers agree on what a click on an inert chip does.
+- **The four `click` suites assert both numbers now** — the output on the component instance and
+  what a template binding hears — because either alone is blind. `frameworks/angular/README.md`
+  carries the table and the command that derives the outputs still unaudited: `change` across
+  eight primitives, `close` across four, plus `blur`, `cancel`, `select` and `toggle`.
 
 ### Added
 

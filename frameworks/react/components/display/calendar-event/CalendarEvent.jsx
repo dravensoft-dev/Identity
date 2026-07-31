@@ -21,6 +21,11 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
 
   const bodyIsButton = interactive && hasPanel;
 
+  const activate = (e) => {
+    e.stopPropagation();
+    if (interactive && !disabled && onClick) onClick();
+  };
+
   const focusableRef = React.useRef(null);
   const kebabWrapRef = React.useRef(null);
   const panelRef = React.useRef(null);
@@ -58,7 +63,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
 
       type={interactive && !hasPanel ? 'button' : undefined}
       tabIndex={bodyIsButton ? undefined : tabIndex}
-      onClick={interactive && !hasPanel && !disabled ? (e) => { e.stopPropagation(); onClick && onClick(); } : undefined}
+      onClick={hasPanel ? undefined : activate}
       aria-label={interactive && !hasPanel ? `${title}, ${dateLabel}, ${timeLabel}` : undefined}
       aria-disabled={interactive && !hasPanel && disabled ? 'true' : undefined}
       onKeyDown={hasPanel ? (e) => {
@@ -93,7 +98,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
         <>
           {interactive ? (
             <button type="button" ref={setFocusable} tabIndex={tabIndex}
-              onClick={disabled ? undefined : (e) => { e.stopPropagation(); onClick && onClick(); }}
+              onClick={activate}
               aria-label={`${title}, ${dateLabel}, ${timeLabel}`}
               aria-disabled={disabled ? 'true' : undefined}
 
@@ -103,7 +108,12 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
                 cursor: disabled ? 'not-allowed' : 'pointer' }}>
               {body}
             </button>
-          ) : body}
+          ) : (
+            <span ref={setFocusable} tabIndex={tabIndex} onClick={activate}
+              style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+              {body}
+            </span>
+          )}
           <span ref={kebabWrapRef} style={{ position: 'absolute', right: 0, ...(actionsBelow ? { bottom: 0 } : { top: 0 }) }}>
             <IconButton icon="ph-bold ph-dots-three-vertical" label="Actions" size="sm"
               tabStop={false}

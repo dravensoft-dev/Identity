@@ -36,7 +36,7 @@ let seq = 0;
               }
             </button>
           } @else {
-            <span #focusable tabindex="-1" [class]="bodyClass()">
+            <span #focusable tabindex="-1" [class]="bodyClass()" (click)="onActivate($event)">
               <span [class]="styles().title()">{{ heading() }}</span>
               @if (showTime()) {
                 <span [class]="styles().time()">{{ timeLabel() }}</span>
@@ -67,7 +67,8 @@ let seq = 0;
       } @else {
         <div #focusable [id]="domId" tabindex="-1" [class]="chipClass()"
              [style]="across" [style.top.px]="topPx()" [style.height.px]="heightPx()"
-             [style.background]="tint()" [style.borderLeftColor]="ink()">
+             [style.background]="tint()" [style.borderLeftColor]="ink()"
+             (click)="onActivate($event)">
           <span [class]="styles().title()">{{ heading() }}</span>
           @if (showTime()) {
             <span [class]="styles().time()">{{ timeLabel() }}</span>

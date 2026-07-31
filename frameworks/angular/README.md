@@ -342,21 +342,44 @@ does not clear it fails, and so does one that clears an attribute it takes no in
 the guard, not a count** — the figure here was wrong three times, most recently by measuring only
 host-bound primitives when the defect never depended on host-binding.
 
-**`(click)` on an element of a primitive binds the DOM event, not the primitive's `click`
-output.** Angular resolves a binding whose name is a native event to the DOM listener even when
-the component declares an `output()` of that name, and the output emit is invisible to it. That
-was **measured with a probe component**, not inferred, because both readings are plausible and
-the wrong one is undetectable by eye. Two consequences, both real:
+**`(click)` on an element of a primitive fires for the DOM event AND for the primitive's `click`
+output.** Angular installs both: a native listener on the host element, and a subscription to the
+`output()` of the same name. It was **measured with a probe component** across all four
+combinations, because the reading that it binds one or the other is equally plausible and being
+wrong about which is undetectable by eye:
 
-- **A consumer's handler fires on any click that bubbles out of the element**, including one the
-  primitive deliberately did not emit. A primitive that stops propagation hides this;
-  `arena-calendar-event` stops it while `interactive`, and does not while inert, because an inert
-  chip claims nothing and the click belongs to what is under it.
-- **A suite that counts activations through a `(click)` binding is measuring the DOM**, so it
-  cannot tell an emit from a bubble and will not notice a primitive that stops emitting. Subscribe
-  to the output on the component instance instead — `CalendarEvent.cases.test.ts` is the shape.
-  `arena-table-row`, `arena-button` and `arena-icon-button` also declare a `click` output, and
-  their suites still count through the template binding.
+| the primitive | what a consumer's `(click)` counts |
+| --- | --- |
+| emits and stops propagation | 1 |
+| emits, does not stop propagation | **2** |
+| does not emit, does not stop propagation | **1 — a phantom** |
+| does not emit and stops propagation | 0 |
+
+**So a primitive declaring a `click` output stops propagation on every click it handles**, or a
+consumer's handler is called twice for one press. `arena-button`, `arena-icon-button`,
+`arena-table-row` and `arena-calendar-event` all do, in every branch, including the ones that
+deliberately do not emit — that is what turns the third row into the fourth and keeps a chip the
+consumer declared non-interactive from reporting an activation nobody made.
+
+**And a suite counting activations through a `(click)` binding is measuring the sum**, so it
+cannot tell an emit from a bubble and would read a doubled call as a passing one. The four
+suites assert **both** numbers — the output on the component instance, and what a template
+binding hears — because either alone is blind: the instance count cannot see a native event
+escaping to the consumer, and the binding count cannot see the output going silent.
+`CalendarEvent.cases.test.ts` is the shape.
+
+**`click` is not the only output named after a native event, and the rest are unaudited.**
+Derive the set rather than trusting a list:
+
+```bash
+grep -rhoE 'readonly (blur|cancel|change|click|close|focus|input|select|submit|toggle) = output<' \
+    --include='*.ts' components | sort | uniq -c
+```
+
+Every one of them carries the same double-fire risk, and only the four `click` ones have been
+measured. `change` is the widest — eight primitives — and `Checkbox.compliance.test.ts` and
+`RadioGroup.compliance.test.ts` already assert their consumer hears it exactly once, which is
+half the pair above; the other six assert nothing about it.
 
 ## Adopting it
 

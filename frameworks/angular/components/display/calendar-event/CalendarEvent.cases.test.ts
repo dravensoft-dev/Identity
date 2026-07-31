@@ -1,10 +1,10 @@
 /* Every chip is mounted INSIDE a calendar: CalendarState is a non-optional injection, so a
  * bare chip throws NG0201, and that is asserted here rather than designed away. The three
  * cases are picked by `interactive` and by `actionsEnabled`, never by whether (click) is
- * subscribed. Activation is measured on the OUTPUT through the component instance, because
- * `(click)` on an element of a component that declares a `click` output binds the DOM event
- * and not the output -- measured, not assumed -- so a template counter rises on a bubbling
- * click the component never emitted. */
+ * subscribed. `heard` counts what a CONSUMER hears through a template (click) binding, and
+ * emissionsOf() counts the OUTPUT on the instance: Angular installs both a DOM listener and an
+ * output subscription for a native event name, so the binding counts the sum and one is the
+ * only passing number, while the sum alone cannot tell an emit from a bubble. */
 
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 useTestEnvironment();
@@ -31,7 +31,7 @@ const BINDING = join(ANGULAR_COMPONENTS, 'display/calendar-event/CalendarEvent.b
       <arena-calendar-event id="a" title="Standup" start="2027-03-15T09:00:00Z"
                             end="2027-03-15T10:00:00Z" [colorId]="1"
                             [disabled]="locked()" [actionsEnabled]="withActions()"
-                            [interactive]="live()">
+                            [interactive]="live()" (click)="heard = heard + 1">
         <button actions type="button">Delete</button>
       </arena-calendar-event>
     </arena-calendar>
@@ -41,6 +41,7 @@ class ChipHost {
   readonly locked = signal(false);
   readonly withActions = signal(false);
   readonly live = signal(true);
+  heard = 0;
 }
 
 const open: ComponentFixture<ChipHost>[] = [];
@@ -108,6 +109,8 @@ test('arena-calendar-event meets all three of its declared shapes, and `interact
           chip.dispatchEvent(new MouseEvent('click', { bubbles: true }));
           fixture.detectChanges();
           assert.equal(emitted.count, 1, 'sanity: a real click must reach the output');
+          assert.equal(fixture.componentInstance.heard, 1,
+            'a consumer must hear it exactly once -- two would be the emit plus the native event');
 
           const off = render({ locked: true });
           const offEmitted = emissionsOf(off);
@@ -119,6 +122,8 @@ test('arena-calendar-event meets all three of its declared shapes, and `interact
           locked.dispatchEvent(new MouseEvent('click', { bubbles: true }));
           off.detectChanges();
           assert.equal(offEmitted.count, 0, 'a disabled chip still emitted click');
+          assert.equal(off.componentInstance.heard, 0,
+            'and nothing reached the consumer, so the native event did not escape either');
 
           return {
             root: chip,
@@ -139,6 +144,8 @@ test('arena-calendar-event meets all three of its declared shapes, and `interact
           body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
           fixture.detectChanges();
           assert.equal(emitted.count, 1, 'sanity: a click on the body reaches the output');
+          assert.equal(fixture.componentInstance.heard, 1,
+            'a consumer must hear it exactly once -- two would be the emit plus the native event');
 
           const off = render({ withActions: true, locked: true });
           const offEmitted = emissionsOf(off);
@@ -148,6 +155,8 @@ test('arena-calendar-event meets all three of its declared shapes, and `interact
           offBody.dispatchEvent(new MouseEvent('click', { bubbles: true }));
           off.detectChanges();
           assert.equal(offEmitted.count, 0, 'a disabled chip body still emitted click');
+          assert.equal(off.componentInstance.heard, 0,
+            'and nothing reached the consumer, so the native event did not escape either');
 
           return {
             root: chip,
@@ -167,6 +176,9 @@ test('arena-calendar-event meets all three of its declared shapes, and `interact
           chip.dispatchEvent(new MouseEvent('click', { bubbles: true }));
           fixture.detectChanges();
           assert.equal(emitted.count, 0, 'a non-interactive chip must not emit click');
+          assert.equal(fixture.componentInstance.heard, 0,
+            'and the consumer heard nothing either: an inert chip stops the click, or the native '
+            + 'event would reach them as an activation nobody made');
 
           const withActions = render({ live: false, withActions: true });
           const root = chipOf(withActions);

@@ -1,13 +1,13 @@
-/* Reaching the card case needs two levers: happy-dom ships no ResizeObserver that ever
- * fires, so the width stays null and every render is wide; and readBreakpoint reads
- * --bp-md through getComputedStyle, which is empty here and returns NaN. Both are set
- * below and undone in a finally -- the document is shared by the whole run, and the
- * breakpoint CACHE is shared too, which is why this file caches 768 and no other number:
- * PageHead.variants.test.ts asserts that value on a cache hit.
- * No key event sets keyCode on purpose. Nothing here goes through a CDK key manager, so
- * nothing reads it; the grid's cursor is Arena's own and switches on event.key.
- * The walk is one press per step against a deliberately small fixture -- 3 rows by 2
- * columns -- because the bill is the press count: each press re-renders the grid. */
+/* Reaching the card case needs two levers: happy-dom ships no ResizeObserver that ever fires,
+ * so the width stays null and every render is wide; and readBreakpoint reads --bp-md through
+ * getComputedStyle, which is empty here and returns NaN. Both are undone in a finally -- the
+ * document and the breakpoint CACHE are shared by the whole run, which is why this file caches
+ * 768 and no other number: PageHead.variants.test.ts asserts that value on a cache hit. No key
+ * event sets keyCode: nothing here goes through a CDK key manager, and the grid's cursor is
+ * Arena's own and switches on event.key. The walk is one press per step against 3 rows by 2
+ * columns, because the bill is the press count. Angular installs BOTH a DOM listener and an
+ * output subscription for a native event name, so `activated` counts the sum and one is the
+ * only passing number, while emissionsOf() counts the output alone -- assert both or be blind. */
 
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 useTestEnvironment();
@@ -16,6 +16,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { Component } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { assertNoNode, assertSameNode } from '../../../test/NodeAssert';
 import type { TableColumn } from '../../../Api.generated';
@@ -95,6 +96,14 @@ async function render(patch: Partial<TableHost> = {}): Promise<ComponentFixture<
   fixture.detectChanges();
   await fixture.whenStable();
   return fixture;
+}
+
+function emissionsOf(fixture: ComponentFixture<TableHost>): { count: number } {
+  const seen = { count: 0 };
+  for (const found of fixture.debugElement.queryAll(By.directive(TableRow))) {
+    (found.componentInstance as TableRow).click.subscribe(() => { seen.count += 1; });
+  }
+  return seen;
 }
 
 function tableOf(fixture: ComponentFixture<unknown>): HTMLElement {
@@ -240,8 +249,10 @@ test('a pointer click on a row reaches the consumer exactly once -- twice would 
     const table = tableOf(fixture);
     const row = table.querySelectorAll('[role="row"]')[1] as HTMLElement;
 
+    const emitted = emissionsOf(fixture);
     row.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     fixture.detectChanges();
+    assert.equal(emitted.count, 1, 'the click OUTPUT did not emit exactly once');
     assert.equal(fixture.componentInstance.activated, 1,
       'the consumer heard the click a number of times other than one');
   } finally {
@@ -255,12 +266,15 @@ test('Enter on a cell activates the row it belongs to, and no other', async () =
     const table = tableOf(fixture);
     const rows = [...table.querySelectorAll<HTMLElement>('[role="row"]')];
 
+    const emitted = emissionsOf(fixture);
     await focusCell(fixture, cellsOf(rows[2])[0]);
     await press(fixture, 'Enter');
+    assert.equal(emitted.count, 1, 'Enter on a data cell did not reach the click OUTPUT');
     assert.equal(fixture.componentInstance.activated, 1, 'Enter on a data cell did not activate its row');
 
     await focusCell(fixture, cellsOf(rows[0])[0]);
     await press(fixture, 'Enter');
+    assert.equal(emitted.count, 1, 'Enter on a COLUMN HEADER reached a row output');
     assert.equal(fixture.componentInstance.activated, 1,
       'Enter on a COLUMN HEADER activated a row -- the header is row 0 and belongs to no record');
   } finally {
@@ -280,13 +294,17 @@ test('a disabled row announces itself and refuses both routes -- the pointer and
     assert.equal(locked.hasAttribute('disabled'), false,
       'the row reflects through aria-disabled, never the native attribute');
 
+    const emitted = emissionsOf(fixture);
     locked.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     fixture.detectChanges();
-    assert.equal(fixture.componentInstance.activated, 0, 'a pointer click activated a disabled row');
+    assert.equal(emitted.count, 0, 'a disabled row emitted click');
+    assert.equal(fixture.componentInstance.activated, 0,
+      'and nothing reached the consumer, so the native event did not escape either');
 
     await focusCell(fixture, cellsOf(locked)[0]);
     await press(fixture, 'Enter');
-    assert.equal(fixture.componentInstance.activated, 0, 'Enter activated a disabled row');
+    assert.equal(emitted.count, 0, 'Enter activated a disabled row');
+    assert.equal(fixture.componentInstance.activated, 0, 'Enter reached the consumer through a disabled row');
   } finally {
     fixture.destroy();
   }
