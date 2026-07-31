@@ -6,7 +6,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Arena is installable: two npm packages, `@dravensoft/arena-react` and
+  `@dravensoft/arena-angular`.** `bun run build:packages` assembles them from the sources in
+  place into `frameworks/<layer>/dist/`, with no authored file moved and the three existing
+  channels untouched. Every component ships, with its types. React carries no runtime
+  dependency at all; Angular carries the shared Tailwind recipes it reads plus the compiled
+  utility sheet, so a consumer needs no Tailwind. Phosphor is a peer in both and is never
+  bundled. Publishing is not wired up: the packages build and verify locally.
+  [`frameworks/PACKAGING.md`](./frameworks/PACKAGING.md) is the normative statement of the
+  channel.
+- **A published Arena carries the language and never the skin.** The palettes and the fonts
+  arrive as an `arena.config.json` the consuming project writes, and `arena-theme`, a command
+  each package ships, turns it into the palette blocks and the `@font-face` rules. A colour is
+  a plain hex string, a palette declares its `polarity`, and one palette reaches `:root` while
+  every other becomes `.arena-<name>`. A font `src` takes either a binary or a stylesheet URL,
+  so a Google Fonts link works as pasted. It reports contrast and ramp problems rather than
+  refusing to write, with `--strict` for a consumer who wants the discipline in CI.
+- **`check:packages`**, which holds `arena-theme` equivalent to the Style Dictionary pipeline
+  it duplicates, across every `--color-*` declaration in both theme blocks, and holds an
+  assembled package registry-standard: the version stamped from `plugin.json`, every `exports`
+  target emitted, no install script, a README, and Phosphor a peer.
+- **`check:react-barrel` and the generated `frameworks/react/Index.generated.js`**, the React
+  layer's entry point, derived from the component directories rather than hand-listed. The
+  copy-in kit gains an index with it, and the three layer-root helpers gain the `.d.ts` they
+  never had.
+
 ### Changed
+
+- **A theme is a name, not one of two.** Both layers switch between any number of declared
+  palettes: `provideArenaThemes({palettes, default})` in Angular, `initArenaTheme` and
+  `useArenaTheme` in the new `frameworks/react/Theme.js`. The default palette wears no class
+  and every other wears `.arena-<name>`; the previous one is removed rather than left to fight
+  over the same custom property. With nothing configured both answer `dark` and `light`, so an
+  adopter on the copy-in kit sees no change. Setting a name no palette declares now throws,
+  since a silently ignored theme switch is indistinguishable from a broken toggle.
+- **`frameworks/angular/tsconfig.test.json` covers `theme/` and `icons/`.** It listed
+  `components/`, `test/` and the layer root, so a suite beside either directory would have
+  compiled nowhere and run never.
 
 - **Breaking: `Calendar` gains `dayInteractive`, and it is what makes a day activable.** Binding
   `onDateClick` (React) or `(dateClick)` (Angular) no longer activates anything on its own, pass

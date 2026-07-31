@@ -4,8 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-Arena is Dravensoft's design system. It is **not a published npm package**, but it does have
-a **dev-only, private `package.json`** at the root: the token layer is built from DTCG JSON
+Arena is Dravensoft's design system. **The repository itself is not an npm package**, and its
+root `package.json` is **dev-only and private**; what npm gets is two packages *assembled*
+from this tree into `frameworks/<layer>/dist/`, which is a different thing and is described
+below. In the root manifest: the token layer is built from DTCG JSON
 by Style Dictionary, and the scripts are tested with `bun test`, as is each framework layer
 from its own suites (`bun run test:scripts` / `test:react` / `test:react-dom` /
 `test:angular`, or `bun run test` for all four).
@@ -28,11 +30,25 @@ the extensionless imports those toolchains expect. A property worth asserting ag
 recipe or component is asserted from that layer's own suites, which in both layers sit beside
 the component they cover.
 
-Nothing here is published to npm. It ships as three things at once from the same tree:
+It ships as four things at once from the same tree:
 
 - a **Claude Code plugin** (`.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`, registering the `design` skill defined by the root `SKILL.md`);
+- two **npm packages**, `@dravensoft/arena-react` and `@dravensoft/arena-angular`, assembled by `bun run build:packages` into `frameworks/<layer>/dist/`;
 - a **copy-in kit** (consumers copy `contracts/design/`, `contracts/design-generated/`, `assets/`, `intro/styles.css` and the `.jsx` files they need);
 - a standalone **Agent Skill** (`SKILL.md`).
+
+**A published Arena carries the language and never the skin**, which is the decision the
+whole npm channel follows from: the palettes and the fonts arrive as an `arena.config.json`
+the consuming project writes, and the `arena-theme` command each package ships turns it into
+the one stylesheet a package cannot carry. Phosphor is a peer dependency in both, never a
+bundled asset. **`dist/` is git-ignored and six gates skip a directory of that name**, because
+it puts a copy of each layer inside the tree they walk; the exclusion is asserted in each
+gate's own suite. Nothing is published yet: `check:packages` holds the manifests and holds
+`arena-theme` equivalent to the Style Dictionary pipeline it duplicates.
+[`frameworks/PACKAGING.md`](./frameworks/PACKAGING.md) is the normative statement of the
+channel, and each package's consumer-facing README is authored as
+`frameworks/<layer>/PACKAGE.md` and copied into `dist/` at assembly, so `check:docs` reads
+the page npm shows.
 
 `contracts/design/README.md` is the normative design specification (voice, color, spacing,
 danger convention, iconography, theming). Treat it as the source of truth for any design
@@ -723,7 +739,10 @@ can afford at one run per commit.
   the release commit. Do all of it in the release commit, then tag it. **Because a published tag
   is a promise about the tree it resolves to, history is never rewritten.** `git filter-repo` and
   every equivalent are refused outright, whatever a repository-size argument says, because every
-  published tag would stop resolving to the tree it resolved to at install time.
+  published tag would stop resolving to the tree it resolved to at install time. **The two npm
+  packages take that same version and are never hand-versioned**: `baseManifest()` stamps it from
+  `plugin.json` at assembly, and `check:packages` fails a manifest that disagrees. Publishing is
+  not wired up yet, so a release today moves the same four things it always did.
 - **Anything landing on `main` after a tag goes under `## [Unreleased]`**, and a release is cut by
   renaming that heading to the version. Filing it under the last version instead describes a tree
   nobody has: the plugin is served from the tag, so the release is frozen the moment it is cut.

@@ -5,7 +5,7 @@
 **Arena** is the single interface language under which every Dravensoft software product is built. It takes its name from the venue where a performance is put on display and applauded: every Arena interface should feel *worthy of being exalted*, the same promise the brand makes.
 
 ## Getting started
-Arena ships three ways: as a **Claude Code plugin**, as a **copy-in reference kit**, and as a downloadable **Agent Skill** (`SKILL.md`). It is not an npm package.
+Arena ships four ways: as a **Claude Code plugin**, as two **npm packages**, as a **copy-in reference kit**, and as a downloadable **Agent Skill** (`SKILL.md`).
 
 ### Install as a Claude Code plugin
 Inside Claude Code, add the marketplace and install the plugin:
@@ -31,6 +31,33 @@ This registers the `design` skill under the `arena` plugin. Invoke it explicitly
 **Nothing arrives on its own.** Claude Code enables plugin auto-update for Anthropic's own marketplaces and leaves it **off** for third-party ones like this. To let releases land in the background, turn it on once: `/plugin` → **Marketplaces** → `dravensoft` → **Enable auto-update**. For a whole organization, set `"autoUpdate": true` on the marketplace's `extraKnownMarketplaces` entry in managed settings.
 
 **A version means one commit.** Each release is served from its git tag, with the marketplace entry pinning `source.ref` to `vX.Y.Z`, so a version resolves to the same tree today and in a year, never to whatever `main` happens to hold. The catalog itself is still read from `main`, which is how a new release announces itself.
+
+### Install from npm
+
+```bash
+bun add @dravensoft/arena-react     # or @dravensoft/arena-angular
+bun add @phosphor-icons/web         # required: Arena renders icon class names, never SVG
+```
+
+**The package carries the language and not the skin.** Your palettes and your fonts are
+yours, declared in one `arena.config.json`, and the `arena-theme` command each package ships
+turns that file into the stylesheet Arena reads:
+
+```bash
+bunx arena-theme arena.config.json -o src/arena.generated.css
+```
+
+Import that file last, and its values win over the package's. Each package's own README is
+the step by step, with a complete config to copy; the Angular one needs no Tailwind, since
+the compiled utility sheet ships with it.
+
+**These packages work with this repository rather than instead of it.** Install the plugin
+above, or hand any other agent `SKILL.md`, and the agent gets the guidelines, the contracts
+and every component's usage document, which is what turns "integrate Arena" into a task it
+finishes on its own.
+
+[`frameworks/PACKAGING.md`](./frameworks/PACKAGING.md) is how the packages are built, what
+they exclude and why, and what `check:packages` holds.
 
 ### Use in a project (copy-in kit)
 To use the tokens and components directly in an app:
@@ -65,6 +92,9 @@ Components render with **inline `style` objects that read the CSS custom propert
 - [`scripts/build/README.md`](./scripts/build/README.md): **compile Arena for the first
   time**, meaning what a fresh clone must build before `bun run demos` or `bun run check`
   mean anything, and why some generated files are tracked and some are not.
+- [`frameworks/PACKAGING.md`](./frameworks/PACKAGING.md): the npm channel, meaning how the
+  two packages are assembled from the tree in place, why a published Arena carries no skin,
+  and what the consumer declares instead.
 - [`contracts/README.md`](./contracts/README.md): Arena's three contract levels, and a
   map of everything in this repository.
 - [`contracts/design/README.md`](./contracts/design/README.md): **the normative design

@@ -5,6 +5,10 @@ Every value here comes from `contracts/design/`; this layer introduces no design
 of its own. For what those values mean, read
 [`contracts/design/README.md`](../../contracts/design/README.md).
 
+**Published as `@dravensoft/arena-react`.** [`PACKAGE.md`](./PACKAGE.md) is what a consumer
+reads, and the assembly copies it into `dist/` as the package README;
+[`../PACKAGING.md`](../PACKAGING.md) is how the package is built and what it leaves out.
+
 ## This layer stands on the contracts alone
 
 **It names no other framework layer and imports from none.** What a component is and what

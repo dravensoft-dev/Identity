@@ -1,5 +1,9 @@
 # Arena, the Angular layer
 
+**Published as `@dravensoft/arena-angular`.** [`PACKAGE.md`](./PACKAGE.md) is what a consumer
+reads, and the assembly copies it into `dist/` as the package README;
+[`../PACKAGING.md`](../PACKAGING.md) is how the package is built and what it leaves out.
+
 Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
 
 ## This layer stands on the contracts alone

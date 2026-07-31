@@ -124,6 +124,9 @@ framework is added without touching the language.
 - [`frameworks/tailwind/`](../frameworks/tailwind/README.md): a **shared**,
   token-derived Tailwind v4 layer, authored once rather than per framework because the
   token→utility mapping is pure CSS and a component's Tailwind recipe is data.
+- [`frameworks/PACKAGING.md`](../frameworks/PACKAGING.md): the npm channel, which belongs to
+  no one layer. Two packages, assembled from the two framework layers in place into a
+  git-ignored `dist/`, carrying the language and never the skin.
 
 Pick the layer you need: raw tokens, a framework's primitives, or the Tailwind layer on
 top.
