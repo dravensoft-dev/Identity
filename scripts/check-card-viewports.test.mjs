@@ -123,7 +123,7 @@ test('parseDsCard returns null when viewport is not WxH', () => {
 
 test('content that fits exactly is ok', () => {
   const r = classify({
-    file: 'guidelines/icons.html',
+    file: 'intro/guidelines/icons.html',
     declared: { width: 700, height: 200 },
     measured: { scrollWidth: 700, scrollHeight: 200, clientWidth: 700, clientHeight: 200, contentHeight: 200, rendered: true, timedOut: false },
   });
@@ -154,7 +154,7 @@ test('content wider than the declared box clips too', () => {
 
 test(`content shorter than the declared box by more than ${UNDER_RUN_SLACK}px warns, and never fails`, () => {
   const r = classify({
-    file: 'guidelines/colors-status.html',
+    file: 'intro/guidelines/colors-status.html',
     declared: { width: 700, height: 600 },
     measured: { scrollWidth: 700, scrollHeight: 600, clientWidth: 700, clientHeight: 600, contentHeight: 150, rendered: true, timedOut: false },
   });
@@ -164,7 +164,7 @@ test(`content shorter than the declared box by more than ${UNDER_RUN_SLACK}px wa
 
 test('a small under-run is not worth a word', () => {
   const r = classify({
-    file: 'guidelines/colors-status.html',
+    file: 'intro/guidelines/colors-status.html',
     declared: { width: 700, height: 200 },
     measured: { scrollWidth: 700, scrollHeight: 200, clientWidth: 700, clientHeight: 200, contentHeight: 140, rendered: true, timedOut: false },
   });
@@ -231,10 +231,10 @@ test('skipExitCode is 2 normally and 1 under strict', () => {
 
 test('findCardPages finds every page that declares, and nothing that does not', () => {
   const pages = findCardPages(join(import.meta.dirname, '..'));
-  assert.ok(pages.includes('guidelines/icons.html'));
+  assert.ok(pages.includes('intro/guidelines/icons.html'));
   assert.ok(pages.includes('frameworks/react/components/charts/Charts.card.html'));
-  assert.ok(!pages.includes('Arena - Overview.html'), 'the Overview is not a card');
-  assert.ok(!pages.includes('Dravensoft Identity.dc.html'), 'the brand manual is not a card');
+  assert.ok(!pages.includes('intro/Arena - Overview.html'), 'the Overview is not a card');
+  assert.ok(!pages.includes('intro/Dravensoft Identity.dc.html'), 'the brand manual is not a card');
   assert.ok(pages.every((p) => !p.includes('node_modules')));
   assert.deepEqual(pages, [...pages].sort(), 'pages come back sorted, so output is stable');
 });

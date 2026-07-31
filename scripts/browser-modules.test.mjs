@@ -5,7 +5,7 @@ import { join } from 'node:path';
 
 const root = join(import.meta.dirname, '..');
 
-const MODULES = ['overview.js', 'theme.js'];
+const MODULES = ['intro/overview.js', 'intro/theme.js'];
 
 const BROWSER_GLOBAL = /\b(document|window|navigator|location|fetch)\b.*(is not defined|undefined)|Can't find variable/i;
 

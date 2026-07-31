@@ -99,7 +99,7 @@ extension, it is itself a failure.
 
 ## Consumption order
 
-1. Bring Arena's tokens into scope — `@import "../../styles.css";` (or the
+1. Bring Arena's tokens into scope — `@import "../../intro/styles.css";` (or the
    individual `contracts/design-generated/*.css`).
 2. `@import "./Theme.css";` — the Tailwind `@theme` preset.
 3. Consume a component manifest from
@@ -133,7 +133,7 @@ removed wholesale becomes loud rather than quietly leaving the gate's scope. The
 rather than here.
 
 A specimen sits two directories below the layer root, so every reference it makes out of
-its own directory — the repo-root `styles.css`, and this layer's `Utilities.css`,
+its own directory — `intro/styles.css`, and this layer's `Utilities.css`,
 `Specimen.css` and `Specimen.js` — carries two `../` segments.
 
 **Be exact about what catches a miscount, because `check:cards` catches less of it than
@@ -142,7 +142,7 @@ it *fails* on is `clip` — content over-running the declared box. So a broken *
 path (`Specimen.js`, or the page's own manifest `fetch`) leaves `#root` empty, which
 `classify()` reports as `unrendered`; `main()` routes that to `skip()`, which exits 2, and
 `check-all` marks the gate SKIP and the whole run INCOMPLETE — **not failed**, unless
-`ARENA_CHECK_STRICT=1` or `CI=true`. And a broken **stylesheet** path (`styles.css`,
+`ARENA_CHECK_STRICT=1` or `CI=true`. And a broken **stylesheet** path (`intro/styles.css`,
 `Utilities.css`, `Specimen.css`) is not caught at all: the page still renders, so an
 unstyled specimen that happens to fit its declared box passes outright, and one that
 under-runs only warns. What actually stands behind a correct specimen is the by-hand
@@ -319,7 +319,7 @@ and put it there instead.
 ## This layer is border-box; React is content-box, and that is expected
 
 `Utilities.css`'s preflight sets `box-sizing: border-box` on every element (`@layer
-base`). Nothing in `contracts/design/`, `contracts/design-generated/` or `styles.css` does, so a React component is
+base`). Nothing in `contracts/design/`, `contracts/design-generated/` or `intro/styles.css` does, so a React component is
 content-box unless it opts in itself — most do not. **A slot that combines an
 explicit size with a border, or an explicit size with padding, therefore
 renders a different total box in the two layers** — border-box subtracts

@@ -17,7 +17,7 @@ any one of them while failing the other two.
 
 ## Audience and scope
 - **Audience of the language: general public.** Arena is meant to give identity to **every kind of Dravensoft software**, regardless of who the end user is — from consumer apps to internal tools. Its foundations (color, typography, spacing, accessibility, voice) are general-purpose and don't assume a technical profile.
-- **The example application is `frameworks/react/ui-kits/console/`**, not the language itself. It illustrates Arena applied to the **Delivery Console, a product aimed at developers/technical teams**. That's why it includes data density, domain terminology (build, deploy, p95) and keyboard accelerators specific to that audience. `Arena - Overview.html` is the opposite: the framework-agnostic token language, and it deliberately shows no components.
+- **The example application is `frameworks/react/ui-kits/console/`**, not the language itself. It illustrates Arena applied to the **Delivery Console, a product aimed at developers/technical teams**. That's why it includes data density, domain terminology (build, deploy, p95) and keyboard accelerators specific to that audience. `intro/Arena - Overview.html` is the opposite: the framework-agnostic token language, and it deliberately shows no components.
 - **Implication for audits and evaluations:** findings observed on the example should be split into (a) those that apply to the **language** (tokens, components, patterns — universal) and (b) those specific to the **example's technical context** (jargon, density, shortcuts). The latter are not defects of the language: in a product for a general audience they would be replaced with plain copy, comfortable density and fewer shortcuts. When evaluating Arena for another kind of software, calibrate against that general audience, not against the Console.
 
 ## Why a language of our own (and not Material/Fluent as-is)
@@ -26,7 +26,7 @@ Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default
 - **Rewrites the aesthetic decisions** for the identity: dark-first, contained radii, deep warm shadows, crimson as the voice and gold as distinction, and the **Rotor** as the signature mark.
 
 ## Sources
-- Approved identity manual: `Dravensoft Identity.dc.html`.
+- Approved identity manual: `intro/Dravensoft Identity.dc.html`.
 - Brand: Dravensoft — custom software development / B2B consulting.
 - Concept: pride, spectacle, mastery. Motto: *"Software worthy of being exalted."*
 
@@ -42,8 +42,8 @@ The other two levels have no such directory because they emit nothing outside
 `frameworks/`. `api/` generates `Api.generated.*` and `design/` also generates
 `Tokens.generated.*`, but those are emitted **per layer**, into the layer that consumes
 them, so a component's import never crosses a contract boundary. What makes `design`
-different is that its CSS ships to consumers directly: `styles.css` at the repository
-root imports all five, plus the hand-authored `design/colors.css`.
+different is that its CSS ships to consumers directly: `intro/styles.css` imports all
+five, plus the hand-authored `design/colors.css`.
 
 So `design-generated/` is a fact about what this one level emits, not a convention
 waiting to be applied to the other two. `contracts/api-generated/` would be empty.
@@ -81,13 +81,14 @@ any component *does*.
 ## Where everything lives
 
 Arena's pure design language — `contracts/` (all three levels plus `design-generated/`),
-`guidelines/`, `assets/`, `scripts/`, `styles.css` — sits at the repository root and is
-framework-agnostic. Everything framework-bound sits under `frameworks/`, so a new
+`assets/`, `scripts/`, and `intro/` (the entry stylesheet, the specimen cards and the two
+browsable pages) — sits at the repository root and is framework-agnostic. Everything framework-bound sits under `frameworks/`, so a new
 framework is added without touching the language.
 
 **The language**
 
-- `styles.css` — the global entry point, `@import`s only. Consumers link this file.
+- `intro/styles.css` — the global entry point, `@import`s only. Consumers link this file.
+  Its six `@import`s resolve as `../contracts/…`, so it stays one directory below that parent.
 - `contracts/design/` — the DTCG 2025.10 source of every token value (`*.json`),
   `README.md` (the normative design specification and `$type` table), and `colors.css`
   (hand-authored: aliases and `color-mix` derivations).
@@ -96,7 +97,7 @@ framework is added without touching the language.
   `effects.css` (from `build-tokens.mjs`). Never edit any of them.
 - `assets/` — `rotor-crimson/bone/ink.svg`, `app-icon.svg`, and `fonts/` (the bundled
   self-hosted `.woff2` binaries).
-- `guidelines/` — specimen cards (`@dsCard`): typography (`type-display`, `type-body`,
+- `intro/guidelines/` — specimen cards (`@dsCard`): typography (`type-display`, `type-body`,
   `type-mono`), color (`colors-neutrals`, `colors-accents`, `colors-status`,
   `colors-categorical`), spacing (`spacing-scale`, `spacing-density`), effects
   (`effects-radius`, `effects-shadow`), iconography (`icons`), brand (`brand-logo`) and
@@ -124,12 +125,17 @@ framework is added without touching the language.
 Pick the layer you need: raw tokens, a framework's primitives, or the Tailwind layer on
 top.
 
-**At the root**
+**In `intro/`**
 
 - `Arena - Overview.html` — the token language, generated at runtime from
   `contracts/design/` and `contracts/design/colors.css`. Serve it with `bun run demos`.
-- `Dravensoft Identity.dc.html` — the approved identity manual. It sits at the root
-  because it loads `support.js`, `styles.css` and `assets/` by relative path.
+- `Dravensoft Identity.dc.html` — the approved identity manual.
+- Both load `styles.css`, `toggle.css` and their runtime (`theme.js`, `overview.js`,
+  `support.js`) as siblings, and reach `assets/`, `node_modules/` and `contracts/` with a
+  single `../` — which is why neither may leave this directory.
+
+**At the root**
+
 - `SKILL.md` — the plugin-root Agent Skill, also usable standalone.
 - `.claude-plugin/` — the Claude Code plugin manifest and marketplace catalog.
 - `DOUBTS.md` — everything Arena knows is wrong, incomplete, or unverified.

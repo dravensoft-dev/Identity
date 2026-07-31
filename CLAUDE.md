@@ -31,7 +31,7 @@ which in both layers sit beside the component they cover.
 Nothing here is published to npm. It ships as three things at once from the same tree:
 
 - a **Claude Code plugin** (`.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`, registering the `design` skill defined by the root `SKILL.md`);
-- a **copy-in kit** (consumers copy `contracts/design/`, `contracts/design-generated/`, `assets/`, `styles.css` and the `.jsx` files they need);
+- a **copy-in kit** (consumers copy `contracts/design/`, `contracts/design-generated/`, `assets/`, `intro/styles.css` and the `.jsx` files they need);
 - a standalone **Agent Skill** (`SKILL.md`).
 
 `contracts/design/README.md` is the normative design specification (voice, color, spacing,
@@ -65,18 +65,19 @@ Everything is static, but the demos `fetch()` their JSX, so `file://` will not w
 bun run demos   # serves the repo root on :8000 and prints the entry points
 ```
 
-- `guidelines/*.html` — token specimen cards (type, color, spacing, effects, icons, brand, danger convention).
+- `intro/guidelines/*.html` — token specimen cards (type, color, spacing, effects, icons, brand, danger convention).
 - `frameworks/react/components/**/*.card.html` — live component demos. A page sits either **inside one component's own directory** (`display/skeleton/Skeleton.card.html`) or **beside the directories at its category level** when it composes several components onto one card (`display/Display.card.html`, `navigation/MenuPagination.card.html`). List them with `find frameworks/react/components -name '*.card.html'`.
 - `frameworks/react/ui-kits/console/index.html` — the Delivery Console example app (login → dashboard → project).
-- `Arena - Overview.html` (repo root) — the token language, generated at runtime. **It shows no components on purpose** — those belong to the framework layers.
-- `Dravensoft Identity.dc.html` (repo root) — the approved brand manual, and the only `dc-runtime` page.
+- `intro/Arena - Overview.html` — the token language, generated at runtime. **It shows no components on purpose** — those belong to the framework layers.
+- `intro/Dravensoft Identity.dc.html` — the approved brand manual, and the only `dc-runtime` page.
 
-**Neither root page may move.** Each loads `styles.css`, `assets/` and its own runtime by
-relative path; from a subdirectory it 404s, no token resolves, and the page renders unstyled.
+**`intro/` is one unit and neither page may leave it.** Each loads `styles.css` and its runtime as
+siblings and reaches `assets/`, `node_modules/`, `contracts/` with one `../`; moved, it renders
+unstyled, **silently**.
 
 ## Architecture
 
-**Tokens are the only styling layer, and their values are DTCG JSON.** `styles.css` does
+**Tokens are the only styling layer, and their values are DTCG JSON.** `intro/styles.css` does
 nothing but `@import` six files split across two directories: `contracts/design-generated/`,
 which holds five CSS files, and `contracts/design/`, which holds one hand-authored file,
 `colors.css`. Four of those five — `palette.css`, `typography.css`, `spacing.css`,
@@ -397,8 +398,8 @@ exemption fails the gate itself, and **a change to `EXEMPT` or `PASSTHROUGH` is 
 `scripts/check-dimension-literals.test.mjs` too**, since that suite asserts on both maps by
 name.
 
-It scans `.jsx`, `.ts` and `.tsx` under `frameworks/` — not `.html`, so the root-level and
-`guidelines/` pages stay clean only because they were tokenized by hand. The `*.card.html`
+It scans `.jsx`, `.ts` and `.tsx` under `frameworks/` — not `.html`, and nothing under `intro/`,
+so those pages stay clean only because they were tokenized by hand. The `*.card.html`
 specimens under `frameworks/tailwind/` are the one family of unscanned pages that stays clean
 structurally: every class they render comes from the manifest through `classesFor()`. **Two
 blind spots are known and neither is fixed** — a kebab-case SVG attribute, and Angular's
@@ -423,7 +424,7 @@ whole-file text scan cannot resolve. A stale `EXEMPT` entry fails the gate. **Th
 only** — it says nothing about whether a manifest's colors, sizes or slot structure still match
 the component it mirrors.
 
-**The Overview generates itself, and that is the point.** `Arena - Overview.html` reads names
+**The Overview generates itself, and that is the point.** `intro/Arena - Overview.html` reads names
 and `$description`s from `contracts/design/*.json` and the alias names from `colors.css` (with
 `scripts/lib/css-decls.mjs`, the same parser the drift gate uses), but it reads **values** from
 `getComputedStyle` on the live document. So it exercises the whole chain — JSON, build, CSS,
@@ -598,13 +599,14 @@ it is easy to conclude the rebuild is unnecessary. It is not — the demo pages 
 stale sibling means **`bun run demos` shows the pre-fix component while the suites prove the
 fix**, which is exactly the by-hand check every `.prompt.md` checklist depends on.
 
-`support.js` is a generated bundle (`dc-runtime`, whose source is not in this repo) used only by
-the root `*.dc.html` pages. Do not edit it.
+`intro/support.js` is a generated bundle (`dc-runtime`, whose source is not in this repo) used
+only by the `*.dc.html` page beside it. Do not edit it.
 
 **Framework layers live under `frameworks/`.** The root holds only the framework-agnostic language
 (`contracts/` — all three contract levels, `api/`, `behaviour/` and `design/`, plus
-`design-generated/` — `guidelines/`, `assets/`, `scripts/`, `styles.css`) plus the demo runtime
-(`theme.js`, `support.js`) and brand (`*.dc.html`).
+`design-generated/` — `assets/`, `scripts/`) plus `intro/`, the browsable front: `styles.css`,
+`guidelines/`, the runtime (`theme.js`, `toggle.css`, `overview.js`, `support.js`) and the two
+pages it serves. **No `.html`, `.css` or `.js` sits loose at the repository root.**
 
 Each layer has its own README; read it for the layer's shape.
 `frameworks/react/` puts components under `components/<category>/<component-kebab>/`, the
@@ -741,7 +743,7 @@ one run per commit.
 - **No emoji**, in product or docs.
 - **Danger is outline, never filled** — transparent background, border and content in
   `--error`/`--danger`. The only filled danger surface in the whole system is the final irreversible
-  confirmation inside `ConfirmDialog`. See `guidelines/components-danger.html`.
+  confirmation inside `ConfirmDialog`. See `intro/guidelines/components-danger.html`.
 - **A commit message containing a backtick is written with a quoted here-doc**, never
   `git commit -m "…"`. A backtick inside a double-quoted shell string opens command substitution and
   is silently spliced away — the message lands with the name it was quoting missing, and nothing

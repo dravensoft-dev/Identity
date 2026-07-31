@@ -1,6 +1,6 @@
 /* frameworks/tailwind/Theme.css
    Arena's Tailwind v4 preset. Consume AFTER Arena's tokens are in scope
-   (import ../../styles.css, or the individual contracts/design-generated/*.css, first).
+   (import ../../intro/styles.css, or the individual contracts/design-generated/*.css, first).
    Every value here is a var() into an existing Arena token — no literals,
    no new hex, no new value. Re-skinning Arena (swap contracts/design-generated/palette.css)
    re-skins these utilities for free.

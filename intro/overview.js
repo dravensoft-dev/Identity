@@ -9,8 +9,8 @@
  * Served over HTTP only — it fetches its source, which file:// forbids.
  * Run: bun run demos
  */
-import { flattenTokens, previewFor } from './scripts/lib/token-preview.mjs';
-import { parseDecls } from './scripts/lib/css-decls.mjs';
+import { flattenTokens, previewFor } from '../scripts/lib/token-preview.mjs';
+import { parseDecls } from '../scripts/lib/css-decls.mjs';
 
 const root = document.documentElement;
 const host = document.getElementById('sections');
@@ -26,7 +26,7 @@ const el = (tag, className, text) => {
 };
 
 async function loadTokens(file) {
-  const res = await fetch(`contracts/design/${file}`);
+  const res = await fetch(`../contracts/design/${file}`);
   if (!res.ok) throw new Error(`cannot load contracts/design/${file}: ${res.status}`);
   return flattenTokens(await res.json());
 }
@@ -296,7 +296,7 @@ async function main() {
   /* The 40 aliases have no JSON source — they are hand-authored CSS. Their names
    * are read with the same parser the drift gate uses, so there is one
    * implementation rather than a list duplicated here. */
-  const colorsCss = await (await fetch('contracts/design/colors.css')).text();
+  const colorsCss = await (await fetch('../contracts/design/colors.css')).text();
   const aliasNames = new Set();
   for (const [, decls] of parseDecls(colorsCss)) for (const name of decls.keys()) aliasNames.add(name);
   const aliases = [...aliasNames].map((name) => ({

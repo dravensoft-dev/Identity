@@ -3,5 +3,5 @@
    global stylesheet; it brings Arena's tokens and the shared @theme preset into
    scope so the app deletes its hand-authored @theme block. Adds no value of its
    own — both imports are token-only. */
-@import '../../../styles.css';            /* Arena tokens: fonts, palette, colors, type, spacing, effects */
+@import '../../../intro/styles.css';            /* Arena tokens: fonts, palette, colors, type, spacing, effects */
 @import '../../tailwind/Theme.css';       /* the shared @theme → utility mapping */

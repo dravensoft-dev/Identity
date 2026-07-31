@@ -6,9 +6,9 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const port = Number(process.env.PORT) || 8000;
 
 const PAGES = [
-  ['Overview  ', '/Arena%20-%20Overview.html'],
-  ['Identity  ', '/Dravensoft%20Identity.dc.html'],
-  ['Guidelines', '/guidelines/'],
+  ['Overview  ', '/intro/Arena%20-%20Overview.html'],
+  ['Identity  ', '/intro/Dravensoft%20Identity.dc.html'],
+  ['Guidelines', '/intro/guidelines/'],
 ];
 
 function resolve(pathname) {

@@ -6,6 +6,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **The repository root holds no loose `.html`, `.css` or `.js` file any more.** The browsable
+  front of the system moves into `intro/`, as one unit: the entry stylesheet `styles.css`, the
+  specimen cards `guidelines/`, the demo runtime (`theme.js`, `toggle.css`, `overview.js`,
+  `support.js`) and the two pages they serve, `Arena - Overview.html` and
+  `Dravensoft Identity.dc.html`. `bun run demos` still serves the repository root and prints the
+  three entry points, now under `/intro/`. The pages keep their runtime as siblings and reach
+  `assets/`, `node_modules/` and `contracts/` with a single `../`, which is why neither may leave
+  that directory — one step in either direction and every reference resolves to nothing, and the
+  page renders unstyled with no console error.
+- **Breaking for anyone who has adopted the copy-in kit: the entry point is `intro/styles.css`.**
+  Its six `@import`s now resolve as `../contracts/design/…` and `../contracts/design-generated/…`,
+  so the stylesheet sits exactly one directory *below* the shared `contracts/` parent —
+  `/arena/intro/styles.css` beside `/arena/contracts/`. Flatten it back to `/arena/styles.css` and
+  every import resolves to nothing, silently. Re-point the `<link>` and, if your app's layout
+  can't keep that shape, edit the six `@import` lines to match your own. Angular adopters need no
+  edit of their own: `frameworks/angular/theme/arena-tailwind.css` is what imports the stylesheet,
+  and it has been re-pointed.
+
 ### Removed
 
 - **`frameworks/angular/BehaviourDelegated.json` is gone**, and with it the last statement that
