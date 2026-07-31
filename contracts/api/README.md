@@ -224,6 +224,34 @@ Like R2 and R3, the runtime half is an **authoring rule the audit applies, not a
 the render, so it cannot see whether a component actually throws — the audit protocol enforces
 that it does.
 
+### Affordances are contracted, and they are not members
+
+Every component contract carries an `affordances` array beside `api`, from the closed set
+`hover` and `focus`. It names the pointer and focus states **the component's own render
+reacts to** — a button that tints under the pointer declares `hover`; a field that shows a
+ring when focus lands in it declares `focus`. An empty array is the answer for a component
+that presents neither, and the key is **mandatory** so that an absence can never be read as
+"not stated yet".
+
+It is not a member, and it is here anyway, because the question is neutral and every layer
+needs the same answer to it. Neither of the other two contracts can hold it: `behaviour/` is
+one file per **pattern** rather than per component, and a hover state is not an ARIA
+requirement; `design/` holds values. A component's affordances are a decision about the
+component, which is what this directory states.
+
+**What a layer may not do is invent one.** `check:states` reads this declaration and nothing
+else, in two one-way halves: a Tailwind manifest slot carrying a `hover:`/`focus:` modifier
+no covered contract declares is invented, and a React component implementing a state its
+contract does not declare is invented. Neither half reads the other layer. Neither runs the
+other way, because a declared affordance a layer does not implement itself may be the child it
+composes: `ConfirmDialog` declares `focus` for its own input and renders Arena `Button`s for
+the rest, and a manifest — which has no composition and types those buttons out as its own
+slots — is licensed for `hover` by `Button`'s declaration through the gate's `MANIFEST_COVERS`.
+
+**Angular is structurally unaskable here**, and that is worth stating so nobody adds a third
+half: an Angular primitive realises an affordance by rendering the manifest's own class, so
+asking the layer would be asking the manifest.
+
 ### The binding table
 
 The gate needs the mapping to be mechanical rather than a matter of taste, so it is

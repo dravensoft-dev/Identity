@@ -1,6 +1,7 @@
 {
   "component": "ActivityFeed",
   "description": "An event feed — someone did something to something, then. Arena draws every row.",
+  "affordances": [],
   "api": {
     "label": { "form": "primitive", "type": "string", "required": true,
                "description": "Names the feed for assistive technology. Required, and guarded at runtime: nothing can derive it, and a feed is a landmark a reader navigates BY — say what the events are about (\"Deployment activity\"), never \"Activity feed\"." },

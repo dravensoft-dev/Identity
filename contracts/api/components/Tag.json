@@ -1,6 +1,7 @@
 {
   "component": "Tag",
   "description": "A pill for filters, technologies and statuses. Optional tone, optional dismiss.",
+  "affordances": [],
   "api": {
     "content": { "form": "slot",
                  "description": "The tag's label." },

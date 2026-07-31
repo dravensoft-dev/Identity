@@ -1,6 +1,7 @@
 {
   "component": "Tab",
   "description": "One tab in a Tabs strip, and the panel it shows. Tab draws the button; its content fills the tabpanel Tabs renders beside the tablist.",
+  "affordances": ["focus"],
   "api": {
     "value": { "form": "primitive", "type": "string", "required": true,
                "description": "What this tab selects, and what the parent's `change` carries." },

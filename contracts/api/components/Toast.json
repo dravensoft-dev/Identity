@@ -1,6 +1,7 @@
 {
   "component": "Toast",
   "description": "Ephemeral notification with a tone-coloured side bar and one optional action.",
+  "affordances": [],
   "api": {
     "title": { "form": "primitive", "type": "string",
                "description": "The bold lead line." },

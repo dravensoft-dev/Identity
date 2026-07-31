@@ -1,6 +1,7 @@
 {
   "component": "Spinner",
   "description": "Indeterminate wait indicator. For a measurable process use ProgressBar instead.",
+  "affordances": [],
   "api": {
     "size": { "form": "enum", "type": "ControlSize", "default": "md",
               "description": "Diameter. 'sm' is --icon-sm exactly, so a spinner at that size sits inline with control text." },

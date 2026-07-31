@@ -1,6 +1,7 @@
 {
   "component": "Button",
   "description": "Action button. One primary per view; danger stays outline.",
+  "affordances": ["hover"],
   "api": {
     "content": { "form": "slot",
                  "description": "The button's label. Sits between the two icons when both are given." },

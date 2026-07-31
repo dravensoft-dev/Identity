@@ -1,17 +1,30 @@
+/* The two halves are asserted separately because they are one-way rules pointing opposite
+ * directions, and a bidirectional one would be wrong in both: a manifest slot may name an
+ * affordance no single contracted component owns only if some component the manifest covers
+ * does, and a React component may leave a declared affordance to the child it composes. */
+
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   stateFamilies,
   sourceImplements,
   classStringsBySlot,
-  findReactSource,
-  resolveSources,
+  coveredContracts,
+  affordancesFor,
+  declaredAffordances,
+  manifestProblems,
+  reactProblems,
+  reactSourceFor,
   staleExemptions,
-  evaluateManifest,
+  staleCovers,
   collect,
-  SOURCE_OVERRIDES,
+  MANIFEST_COVERS,
+  FAMILIES,
   EXEMPT,
 } from './check-manifest-states.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 test('a plain class carries no state family', () => {
   assert.deepEqual([...stateFamilies('bg-primary text-base-content rounded-sm')], []);
@@ -32,7 +45,6 @@ test('a stacked modifier still matches its family', () => {
 });
 
 test('a substring that is not modifier-shaped does not false-positive', () => {
-
   assert.deepEqual([...stateFamilies('overflow-hidden shadow-2')], []);
 });
 
@@ -46,11 +58,6 @@ test('a component with onFocus/onBlur implements focus, not hover', () => {
   assert.deepEqual(sourceImplements(src), { hover: false, focus: true });
 });
 
-test('a component with neither implements neither', () => {
-  const src = "function X() { return <button onClick={go} disabled={dis} />; }";
-  assert.deepEqual(sourceImplements(src), { hover: false, focus: false });
-});
-
 test('an injected :hover in a template-literal style string counts as implementing hover', () => {
   const src = "const css = '.arena-input::-webkit-calendar-picker-indicator:hover{opacity:1}';";
   assert.equal(sourceImplements(src).hover, true);
@@ -59,116 +66,84 @@ test('an injected :hover in a template-literal style string counts as implementi
 test('classStringsBySlot reads both slots and every variant branch, merging same-named slots', () => {
   const manifest = {
     slots: { root: 'flex', nav: 'inline-flex hover:bg-base-200' },
-    variants: {
-      variant: {
-        primary: { root: 'bg-primary hover:shadow-2' },
-        ghost: { root: 'bg-transparent' },
-      },
-    },
+    variants: { variant: { primary: { root: 'bg-primary hover:shadow-2' }, ghost: { root: 'bg-transparent' } } },
   };
   const bySlot = classStringsBySlot(manifest);
   assert.deepEqual(bySlot.get('root'), ['flex', 'bg-primary hover:shadow-2', 'bg-transparent']);
   assert.deepEqual(bySlot.get('nav'), ['inline-flex hover:bg-base-200']);
 });
 
-test('findReactSource finds Pagination.jsx by a recursive search', () => {
-  const found = findReactSource('Pagination');
-  assert.ok(found, 'expected a match');
-  assert.ok(found.endsWith('frameworks/react/components/navigation/pagination/Pagination.jsx'));
+test('a manifest covers its own contract unless MANIFEST_COVERS says it draws a wider surface', () => {
+  assert.deepEqual(coveredContracts('Button'), ['Button']);
+  assert.deepEqual(coveredContracts('Table'), ['Table', 'TableRow', 'TableCell']);
+  assert.deepEqual(coveredContracts('ConfirmDialog'), ['ConfirmDialog', 'Button']);
+  for (const [, { reason }] of MANIFEST_COVERS) assert.ok(reason.length > 40, 'every entry states why');
 });
 
-test('findReactSource returns null for a name with no matching file', () => {
-  assert.equal(findReactSource('NoSuchComponentAtAll'), null);
+test('every contract MANIFEST_COVERS names exists, so no entry is stale', () => {
+  assert.deepEqual(staleCovers(), []);
 });
 
-test('Tag resolves through SOURCE_OVERRIDES to the Angular primitive, not React\'s Tag.jsx', () => {
-  assert.deepEqual(resolveSources('Tag'), SOURCE_OVERRIDES.get('Tag'));
-  assert.deepEqual(resolveSources('Tag'), ['frameworks/angular/components/display/tag/Tag.ts']);
+test('the affordance union is what licenses a slot, which is the whole point of covering several', () => {
+  assert.deepEqual([...affordancesFor(['Table', 'TableRow', 'TableCell'])].sort(), ['focus', 'hover']);
+  assert.deepEqual([...affordancesFor(['Table'])], ['focus']);
+  assert.deepEqual([...affordancesFor(['Card'])], []);
 });
 
-test('a manifest with no override and no matching React source throws rather than resolving silently', () => {
-  assert.throws(() => resolveSources('DefinitelyNotARealComponentName'), /no React source found/);
+test('a contract with no affordances array throws rather than reading as none', () => {
+  assert.throws(() => declaredAffordances({}, 'X'), /declares no `affordances` array/);
+  assert.throws(() => declaredAffordances({ affordances: ['press'] }, 'X'), /unknown affordance/);
+  assert.deepEqual([...declaredAffordances({ affordances: [] }, 'X')], []);
 });
 
-test('staleExemptions reports nothing when every EXEMPT key appears in matchedKeys', () => {
-  assert.deepEqual(staleExemptions([...EXEMPT.keys()]), []);
-});
-
-test('staleExemptions reports every EXEMPT key when matchedKeys is empty', () => {
-  assert.deepEqual(staleExemptions([]).sort(), [...EXEMPT.keys()].sort());
-});
-
-test('staleExemptions reports only the keys missing from matchedKeys, not the ones present', () => {
-  const keys = [...EXEMPT.keys()];
-  if (keys.length < 1) return;
-  const [first, ...rest] = keys;
-  assert.deepEqual(staleExemptions(rest), [first]);
-});
-
-test('THE CORE CLAIM: the gate rejects a fabricated manifest carrying a hover its component does not implement', () => {
-
-  const fabricatedManifest = {
-    component: 'Pagination',
-    slots: { nav: 'inline-flex items-center hover:bg-base-200' },
-  };
-  const fabricatedSource = "export function Pagination({ page, onChange }) { return <button onClick={()=>onChange(page)} disabled={page<=1} aria-label='Previous' />; }";
-
-  const { findings } = evaluateManifest(fabricatedManifest, fabricatedSource, ['<fabricated>']);
-  assert.equal(findings.length, 1);
-  assert.deepEqual(findings[0], { component: 'Pagination', slot: 'nav', family: 'hover', sources: ['<fabricated>'] });
-});
-
-test('evaluateManifest does NOT flag a state family the source genuinely implements', () => {
-  const manifest = { component: 'Widget', slots: { root: 'hover:bg-base-200' } };
-  const source = "function Widget(){ const [h,setH]=useState(false); return <div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} />; }";
-  const { findings } = evaluateManifest(manifest, source, ['<fabricated>']);
-  assert.deepEqual(findings, []);
-});
-
-test('evaluateManifest honours an EXEMPT entry by key, and still records the matchedKey', () => {
-
-  const [key] = [...EXEMPT.keys()];
-  if (!key) return;
-  const [component, slot, family] = key.split(':');
-  const manifest = { component, slots: { [slot]: `${family}:something` } };
-  const source = 'function X(){ return <div />; }';
-  const { findings, matchedKeys } = evaluateManifest(manifest, source, ['<fabricated>']);
-  assert.deepEqual(findings, [], `${key} should have been exempted, not flagged`);
-  assert.ok(matchedKeys.includes(key), 'an exempted hit must still count as matched, so staleExemptions can see it was exercised');
-});
-
-test('running against the real tree today produces no findings and no stale exemptions', () => {
-  const { findings, matchedKeys } = collect();
-  if (findings.length) {
-    const detail = findings.map((f) => `${f.component}:${f.slot}:${f.family} (source: ${f.sources.join(', ')})`).join('\n  ');
-    assert.fail(`unexpected invented state(s):\n  ${detail}`);
+test('every contract declares the key, and only from the closed set', () => {
+  const dir = join(repoRoot, 'contracts/api/components');
+  const files = readdirSync(dir).filter((f) => f.endsWith('.json'));
+  assert.ok(files.length > 40, 'expected the contracted set, not an empty directory');
+  for (const f of files) {
+    const contract = JSON.parse(readFileSync(join(dir, f), 'utf8'));
+    assert.ok(Array.isArray(contract.affordances), `${f} declares no affordances array`);
+    for (const a of contract.affordances) assert.ok(FAMILIES.includes(a), `${f} declares ${a}`);
   }
-  const stale = staleExemptions(matchedKeys);
-  if (stale.length) assert.fail(`stale EXEMPT entries: ${stale.join(', ')}`);
 });
 
-test('every EXEMPT entry is exercised by the real tree (none is dead weight)', () => {
-  const { matchedKeys } = collect();
-  const stale = staleExemptions(matchedKeys);
-  assert.deepEqual(stale, []);
+test('THE CORE CLAIM: a manifest hover no covered contract declares is invented', () => {
+  const manifest = { component: 'Pagination', slots: { nav: 'inline-flex items-center hover:bg-base-200' } };
+  const { findings } = manifestProblems(manifest, new Set());
+  assert.equal(findings.length, 1);
+  assert.deepEqual(findings[0], { half: 'manifest', component: 'Pagination', slot: 'nav', family: 'hover' });
 });
 
-test('a key stops being matched once its source implements the family', () => {
-  const manifest = { component: 'Fab', slots: { root: 'inline-flex hover:bg-primary' } };
+test('and the same modifier passes once a contract declares the affordance', () => {
+  const manifest = { component: 'Pagination', slots: { nav: 'hover:bg-base-200' } };
+  assert.deepEqual(manifestProblems(manifest, new Set(['hover'])).findings, []);
+});
 
-  const withoutHover = evaluateManifest(manifest, 'export function Fab() { return null; }', ['<x>']);
-  assert.ok(
-    withoutHover.matchedKeys.includes('Fab:root:hover'),
-    'a source implementing no hover leaves the key an exemption candidate',
-  );
+test('THE OTHER HALF: React implementing an affordance its contract does not declare is invented too', () => {
+  const findings = reactProblems('Card', 'display').findings;
+  assert.deepEqual(findings, [], 'Card implements neither and declares neither');
 
-  const withHover = evaluateManifest(manifest, 'onMouseEnter={() => setHover(true)}', ['<x>']);
-  assert.ok(
-    !withHover.matchedKeys.includes('Fab:root:hover'),
-    'once the source implements hover the key is no longer a candidate, so an EXEMPT naming it goes stale',
-  );
-  assert.deepEqual(withHover.findings, [], 'and it is not a finding either -- the source implements it');
+  const contract = JSON.parse(readFileSync(join(repoRoot, 'contracts/api/components/Button.json'), 'utf8'));
+  assert.deepEqual(contract.affordances, ['hover'], 'Button hovers, and the contract is where that is said');
+  assert.deepEqual(reactProblems('Button', 'forms').findings, []);
+});
 
-  assert.equal(withoutHover.sites, 1, 'both are still counted as sites examined');
-  assert.equal(withHover.sites, 1);
+test('a name with no React source is not a finding -- a layer may simply not implement it', () => {
+  assert.equal(reactSourceFor('NoSuchComponentAtAll', 'display'), null);
+  assert.deepEqual(reactProblems('NoSuchComponentAtAll', 'display'), { findings: [], sites: 0 });
+});
+
+test('running against the real tree today produces no findings and no stale entries', () => {
+  const { findings, matchedKeys, sites } = collect();
+  if (findings.length) {
+    const detail = findings.map((f) => `${f.half} ${f.component}:${f.slot ?? '-'}:${f.family}`).join('\n  ');
+    assert.fail(`unexpected undeclared affordance(s):\n  ${detail}`);
+  }
+  assert.ok(sites > 0, 'a gate examining zero sites finds zero violations by construction');
+  assert.deepEqual(staleExemptions(matchedKeys), []);
+});
+
+test('EXEMPT is empty, and that is a claim: composition is expressed by MANIFEST_COVERS instead', () => {
+  assert.equal(EXEMPT.size, 0);
+  assert.deepEqual(staleExemptions([]), []);
 });

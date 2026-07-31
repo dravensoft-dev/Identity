@@ -1,6 +1,7 @@
 {
   "component": "Select",
   "description": "Styled native dropdown selector.",
+  "affordances": ["focus"],
   "api": {
     "label": { "form": "primitive", "type": "string", "description": "Field label above the control." },
     "options": { "form": "array", "of": "SelectOption", "description": "The choices, drawn as native options." },

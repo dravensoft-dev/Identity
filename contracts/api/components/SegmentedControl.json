@@ -1,6 +1,7 @@
 {
   "component": "SegmentedControl",
   "description": "A compact inline filter over mutually exclusive options. A real radio group, never a tab list, and it carries no crimson.",
+  "affordances": ["focus", "hover"],
   "api": {
     "options": { "form": "array", "of": "SegmentOption", "required": true, "description": "The options, in order. Two to four with one-word labels." },
     "value": { "form": "primitive", "type": "string", "description": "The selected option's value. Omit and pass `defaultValue` to let it govern itself." },

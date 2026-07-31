@@ -1,6 +1,7 @@
 {
   "component": "ConfirmDialog",
   "description": "Confirmation of a high-consequence action. Never closes on click-outside. `requireText` locks the confirm button until a word is typed.",
+  "affordances": ["focus"],
   "api": {
     "open": { "form": "primitive", "type": "boolean", "required": true,
               "description": "Whether the dialog is shown. The host owns it, as in the other three modals: defaulting it would let a ConfirmDialog whose open was never wired render nothing forever and look like a working closed dialog." },

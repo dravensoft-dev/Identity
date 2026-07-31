@@ -1,6 +1,7 @@
 {
   "component": "Badge",
   "description": "Status label: mono, uppercase, short. Carries an object's actual state or an editorial emphasis, never decoration.",
+  "affordances": [],
   "api": {
     "content": { "form": "slot",
                  "description": "The label text. Short — a badge is a chip, not a sentence." },

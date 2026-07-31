@@ -1,6 +1,7 @@
 {
   "component": "Dialog",
   "description": "Modal dialog over a blurred scrim. Takes the whole interaction until dismissed.",
+  "affordances": [],
   "api": {
     "open": { "form": "primitive", "type": "boolean", "required": true, "description": "Whether the dialog is shown. The host owns it." },
     "title": { "form": "primitive", "type": "string", "required": true, "description": "Names the dialog for assistive technology and heads it visually. Required: aria-labelledby points at it, and a modal with no name is worse than none at all." },

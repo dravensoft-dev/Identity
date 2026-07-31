@@ -1,6 +1,7 @@
 {
   "component": "ErrorState",
   "description": "Section/screen-level failure, with recovery and an optional diagnostic code.",
+  "affordances": [],
   "api": {
     "icon": { "form": "primitive", "type": "string",
               "description": "A Phosphor class name for the danger glyph Arena draws." },

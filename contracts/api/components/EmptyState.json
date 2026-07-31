@@ -1,6 +1,7 @@
 {
   "component": "EmptyState",
   "description": "A placeholder for an empty collection: an icon, a title, a message, and an optional action.",
+  "affordances": [],
   "api": {
     "icon": { "form": "primitive", "type": "string",
               "description": "A Phosphor class name for the glyph Arena draws, muted." },

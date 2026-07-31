@@ -1,6 +1,7 @@
 {
   "component": "StatCard",
   "description": "One metric on a card surface: a micro-label, the number, an optional delta pill and a sub-line.",
+  "affordances": [],
   "api": {
     "label": { "form": "primitive", "type": "string", "required": true,
                "description": "Short uppercase microlabel, two words at most." },

@@ -1,6 +1,7 @@
 {
   "component": "ProgressBar",
   "description": "Determinate progress by default; indeterminate for a wait with no percentage.",
+  "affordances": [],
   "api": {
     "progressPercentage": { "form": "primitive", "type": "number", "default": 0,
                             "description": "How far along, 0-100. Clamped and rounded. Ignored when `indeterminate`." },

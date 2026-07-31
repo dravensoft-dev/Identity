@@ -1,6 +1,7 @@
 {
   "component": "Avatar",
   "description": "A person or entity mark: the image when `src` is set, initials from `name` otherwise, with an optional presence dot.",
+  "affordances": [],
   "api": {
     "src": { "form": "primitive", "type": "string",
              "description": "Image URL. Absent renders initials from `name`." },

@@ -2,6 +2,7 @@
   "component": "Input",
   "kind": "input",
   "description": "Text field with validation. Focus is a gold ring; error crimson; valid green with a check.",
+  "affordances": ["focus", "hover"],
   "api": {
     "label": { "form": "primitive", "type": "string", "description": "Field label above the control." },
     "id": { "form": "primitive", "type": "string",
