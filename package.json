@@ -37,6 +37,8 @@
     "check:dtcg": "bun scripts/check/core/check-dtcg.mjs",
     "check:tokens": "bun scripts/check/core/check-tokens-generated.mjs",
     "check:fonts": "bun scripts/check/core/check-fonts-generated.mjs",
+    "check:ramp": "bun scripts/check/core/check-ramp.mjs",
+    "check:text-contrast": "bun scripts/check/core/check-text-contrast.mjs",
     "check:demos": "bun scripts/check/react/check-demos-generated.mjs",
     "check:vendor": "bun scripts/check/react/check-vendor-generated.mjs",
     "check:angular": "bun scripts/check/angular/check-angular.mjs",

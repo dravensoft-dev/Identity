@@ -22,6 +22,7 @@ export const GATES = [
   { name: 'check:script-tokens', file: 'arena/check-script-tokens.mjs' },
   { name: 'check:duplicate-constants', file: 'arena/check-duplicate-constants.mjs' },
   { name: 'check:ramp', file: 'core/check-ramp.mjs' },
+  { name: 'check:text-contrast', file: 'core/check-text-contrast.mjs' },
   { name: 'check:tailwind', file: 'tailwind/check-tailwind.mjs' },
   { name: 'check:tailwind-generated', file: 'tailwind/check-tailwind-generated.mjs' },
   { name: 'check:coverage', file: 'tailwind/check-tailwind-coverage.mjs' },
