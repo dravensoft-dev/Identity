@@ -826,7 +826,17 @@ and reports it — so for those three the gate is ready before the audit is.
 > has subscribers, so a clickable card row is pointer-only there, and `TableRow` keeps a
 > `divergesFrom` rather than claiming a `button` it does not render; **5** the remaining overlays — `Menu`, `Select`,
 > `Dialog`, `Toast`, and `Toast` owes `role` per tone so a danger toast interrupts rather than
-> queues; **6** the `SideNav` family, which inherits a decision rather than a task (see
+> queues — **`Toast` paid it, and two of the other three were mis-labelled here**: `Select` is
+> **not** an overlay at all. The contract calls it a *"styled native dropdown selector"*, so the
+> primitive is the native `<select>`, it takes no CDK, and the `divergesFrom: "select"` the
+> delegated entry carried against `MatSelect` closed rather than moved. So batch 5 left the layer
+> with **two** CDK primitives, not four: `Tooltip` and `Menu`. The clause below was right that
+> `Dialog` and `Toast` need no overlay, and it missed the thing that made the batch worth doing
+> anyway — **the CDK container's own z slot was wrong for every in-flow overlay Arena has**. Pinned
+> to `--z-dropdown` it sat under all four of them, and the CDK's own hardcoded 1000 merely ties
+> with `--z-modal`; a tooltip inside an `arena-confirm-dialog` had been painting behind the dialog
+> the whole time. It takes `calc(var(--z-toast) - 10)` now, and a menu opened from inside a dialog
+> is what proves it; **6** the `SideNav` family, which inherits a decision rather than a task (see
 > `DOUBTS.md`); **7** cleanup — delete `arena-material.css`, `check:material` and the
 > `@angular/material` devDependency. `Dialog` and `Toast` are expected to need no overlay at
 > all: the CDK earns its place on surfaces anchored to a trigger, and Arena's three existing
@@ -980,8 +990,9 @@ Plan 8C3 carried Plan C forward with its third batch: `Tabs`, `SegmentedControl`
 `Toast`, `Tooltip`, `Calendar`, `CalendarEvent`, `Table`, `TableRow` and `TableCell` — ten
 components, taking `check:api` from 32 contracts across 52 layer implementations to **42 across 62**.
 **Every contract is single-layer for the same reason 8C1's and 8C2's were**, though the reason has
-two halves here: Angular delegates `Tabs`, `SegmentedControl`, `ProgressBar`, `Toast`, `Tooltip` and
-`Table` to Material, and has no equivalent of `Calendar` at all — `BehaviourDelegated.json` binds
+two halves here: at the time Angular delegated `Tabs`, `SegmentedControl`, `ProgressBar`, `Toast`,
+`Tooltip` and `Table` to Material — Plan D has since taken all but `ProgressBar` back — and has no
+equivalent of `Calendar` at all — `BehaviourDelegated.json` binds
 that one to pattern `absent`. So the batch moves the layer count by exactly as many contracts as it
 writes, ten and not twenty.
 

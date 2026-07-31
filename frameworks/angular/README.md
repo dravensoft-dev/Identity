@@ -7,9 +7,9 @@ Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
   the self-hosted fonts declared in `contracts/design-generated/fonts.css`, binaries in `assets/fonts/`)
   + the shared `frameworks/tailwind/Theme.css` `@theme` preset into scope.
 - `theme/arena-material.css` — maps Arena tokens onto Angular Material's
-  `--mat-*` custom properties so the components below render in Arena. What it covers:
-  the outlined form
-  field, cards, dialogs, tables, tabs, the snackbar, spinner/progress-bar, and
+  `--mat-*` custom properties so the components below render in Arena. **What it covers is
+  its own selector list and shrinks with every Plan D batch** — read the file rather than a
+  list here. What is left today is the progress pair and
   **SideNav** — `mat-nav-list` with `<a mat-list-item [activated]>`. **The bridge is
   verified against Angular Material 22.0.5 — read
   [Material bridge](#material-bridge-supported-and-verified) for what that means and
@@ -131,21 +131,26 @@ Two of its entries are `absent` rather than delegated: `Calendar` and `CalendarE
 Material's datepicker is a month/date-selection grid, not Arena's day/hour schedule view
 with event blocks, so there is no control for those two to delegate to.
 
-`arena-material.css` dresses only a subset of the delegated set:
-Select (outlined appearance only — a form field left on Material's default
-fill appearance keeps Material's own styling), Dialog, Toast,
-ProgressBar, Spinner and SideNav. The rest still render with Material's own defaults. A
-dressing block dies when no delegated entry still needs it, not when its own primitive
-lands, so the list shrinks a batch behind the primitives. A
-`dressedBy` key on a delegated entry is the per-component record, and **nothing checks
-it** — `check:material` reads the CSS and never that file.
+`arena-material.css` dresses only a subset of the delegated set: `ProgressBar`, `Spinner` and
+`SideNav`. The rest still render with Material's own defaults. A dressing block dies when no
+delegated entry still needs it, not when its own primitive lands, so the list shrinks a batch
+behind the primitives — and the bridge is now small enough that reading it is faster than
+reading about it. A `dressedBy` key on a delegated entry is the per-component record, and
+**nothing checks it** — `check:material` reads the CSS and never that file.
 
-**The direction is Arena's own primitives, built on the CDK.** `Button` and `Tooltip` are
-the first two, and they set the shape the rest follow: Arena writes the markup, the ARIA
-and the styling, and `@angular/cdk` supplies only what Arena should not hand-roll —
-overlay positioning for a surface anchored to a trigger, and the roving-focus key
-managers. Focus trapping stays Arena's own `FocusTrap.ts`, a deliberate port of React's
-`UseDialogModal.js`, so the two layers keep solving that contract with the same code.
+**The direction is Arena's own primitives, built on the CDK.** `Button` and `Tooltip` were the
+first two, and they set the shape the rest follow: Arena writes the markup, the ARIA and the
+styling, and `@angular/cdk` supplies only what Arena should not hand-roll — overlay positioning
+for a surface anchored to a trigger, and the roving-focus key managers. Focus trapping stays
+Arena's own `FocusTrap.ts`, a deliberate port of React's `UseDialogModal.js`, so the two layers
+keep solving that contract with the same code, and `arena-dialog` consumes it rather than
+`cdk/dialog`.
+
+**The CDK earns its place on an anchored surface and nowhere else, so count its users rather
+than assuming.** `grep -rl "@angular/cdk/overlay" frameworks/angular/components` is the answer;
+a modal centres in flow and a toast is a card the host places, and neither goes near an overlay.
+A styled **native** control does not either: `arena-select` is a real `<select>`, so the popup,
+its keyboard and its type-ahead are the user agent's.
 
 Delegation is not free, and the three prices are why this is moving. A delegated
 component sits outside `check:dimensions` and `check:tailwind`, because Material's
@@ -172,13 +177,11 @@ is overridden and why the four other hardcoded ones are left alone. `check:cdk` 
 the bridge the way `check:material` verifies the other, and additionally checks the
 selectors, which it can because the prebuilt sheet is the oracle.
 
-**Material remains the bridge for what is still delegated**, and `arena-material.css`
-carries rules for these: the
-outlined form field, cards, dialogs, tables (plus the header cell), tabs, the
-snackbar, the progress spinner and bar, and SideNav's nav list. It maps Arena tokens
-onto Angular Material's `--mat-*` custom properties so those render in Arena instead
-of stock Material; the rest of Material's components still render with Material's own
-defaults.
+**Material remains the bridge for what is still delegated**, and `arena-material.css` carries a
+rule per dressed control — **read its selectors, do not trust a list here**, because the file
+loses blocks every batch and nothing ties prose to it. It maps Arena tokens onto Angular
+Material's `--mat-*` custom properties so those render in Arena instead of stock Material; the
+rest of Material's components still render with Material's own defaults.
 
 **The bridge is verified, not rendered.** `bun run check:material` pulls every custom
 property `arena-material.css` sets out of the file with `scripts/lib/css-decls.mjs` and

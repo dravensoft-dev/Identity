@@ -11,7 +11,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
-import { assertSameNode } from '../../../test/NodeAssert';
+import { assertNoNode, assertSameNode } from '../../../test/NodeAssert';
 import { assertPatternCases, ANGULAR_COMPONENTS, isFocusable } from '../../../test/Compliance';
 import type { ToastTone } from '../../../Api.generated';
 import { Toast } from './Toast';
@@ -79,7 +79,8 @@ test('danger implies persist and ignores an explicit false -- a critical message
 test('the close button is gated on dismissible, because Angular cannot ask whether close has a listener', () => {
   const bare = renderToast('neutral');
   try {
-    assert.equal((bare.nativeElement as Element).querySelector('button[aria-label="Close"]'), null);
+    assertNoNode((bare.nativeElement as Element).querySelector('button[aria-label="Close"]'),
+      'a toast that is not dismissible must render no close control');
   } finally {
     bare.destroy();
   }

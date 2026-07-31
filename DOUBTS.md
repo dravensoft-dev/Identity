@@ -528,8 +528,7 @@ stale-proof; a present-tense component name is not.
   is what it is regardless of what sits above or below it, and a 51% false-unmet rate
   is worse than an honest hole.
 - **Converting ONE layer to cases surfaces every place the two layers were quietly
-  different. It fired twice; one of the two is now fixed and the other is deferred to Plan
-  D.** The mechanism is the durable part and is not a fact about either component: a flat
+  different. It fired twice, and both are now closed.** The mechanism is the durable part and is not a fact about either component: a flat
   binding on the far side can no longer silently agree with a cased one, so the cross-layer
   check starts reporting differences nobody was looking for. Expect more as bindings are
   converted. It fired on `Toast` and on `Skeleton`, in the batch that built cases.
@@ -548,25 +547,22 @@ stale-proof; a present-tense component name is not.
   component whose purpose settles it, and the cheapest test is whether the same layer already
   contradicts itself elsewhere. The retired entry is in section 3.
 
-  **`Toast` is OPEN and is deferred to Plan D.** It was first recorded as structural and
-  harmless — "nobody is worse off" — and that was written without reading what `MatSnackBar`
-  renders. It is the same shape `Skeleton` was, not a lesser one: in `@angular/material`
-  22.0.5, `MatSnackBarConfig.politeness` defaults to `'polite'`, and `_role` is assigned
-  **only** inside `if (this._platform.FIREFOX)`, so outside Firefox the snackbar's live region
-  carries `aria-live="polite"` and **no role at all**. React's danger toast renders
-  `role="alert"` with `aria-live="assertive"`. So a screen-reader user meeting a critical error
-  toast has it **queued** in Angular and **interrupting** in React — a real cost to a real
-  person, in the safety-relevant case. It is not the `Skeleton` case, because Angular is not
-  wrong about a control it does not own: Material has no tone axis to be wrong about. Plan D
-  removes Material, and an `arena-toast` on the CDK would be born with the right role per tone.
-  **Nothing is fixed for Angular users until then**, and a deferral moves the work rather than
-  reducing what anyone pays meanwhile. Its entry in section 3 carries the two
-  interim resolutions that exist and were not taken.
+  **`Toast` is CLOSED too, and its entry is retired — but it took a different route, which is
+  the part worth keeping.** It recorded that a screen-reader user meeting a critical error toast
+  had it **queued** in Angular and **interrupting** in React, because `MatSnackBar` renders
+  `aria-live="polite"` and no role outside Firefox while React's danger toast renders
+  `role="alert"` with `aria-live="assertive"`. That was never the `Skeleton` case: Angular was
+  not wrong about a control it did not own, since Material has no tone axis to be wrong about,
+  so there was nothing to fix at this layer's level and it was deferred rather than triaged. Plan
+  D's batch 5 is what made it answerable — `arena-toast` owns the DOM and was born with the role
+  and the politeness per tone, under React's own two case names. **The lesson is the converse of
+  `Skeleton`'s**: an undecided divergence can also be correctly undecided, and the tell is that
+  no change to either layer's own code would have closed it. The retired entry is in section 3.
 
   `divergesFrom` was **first exercised by these two** — `grep -rl divergesFrom frameworks/`
   found nothing before them, so neither branch of that escape hatch had ever met a real
-  binding. Run that command for the live set rather than trusting a figure here; with
-  `Skeleton` closed, `Toast` is the only user left.
+  binding. Run that command for the live set rather than trusting a figure here; with both of
+  them closed, the only live user is `TableRow`, which acquired one for an unrelated reason.
 - **No gate typechecks `frameworks/angular/test/` — RETIRED as an entry, closed by batch 8C11.**
   This recorded that `check:angular` compiled only `frameworks/angular/tsconfig.check.json`'s
   `["./index.ts"]` — the layer barrel — and never opened the test directory, and that `bun
@@ -2416,7 +2412,7 @@ exception it read as.
 **How it was found, which is why this note replaces the section rather than deleting it.**
 Nothing was looking for it. Converting the React binding to cases made the cross-layer check
 compare a cased binding against a flat one, and a flat binding can no longer silently agree with
-a cased one. `Toast` surfaced the same way in the same batch and is still open below. Expect
+a cased one. `Toast` surfaced the same way in the same batch and is retired below too. Expect
 more of these as bindings are converted — the property is a permanent one of the cases
 mechanism, not a fact about `Skeleton`, and it outlives the divergence it found.
 
@@ -3103,8 +3099,11 @@ comparing the two does not read the divergence as Angular drifting.
 **Two consequences worth carrying.** The shared `Tooltip.manifest.json` grew an `anchored` variant
 axis so one recipe serves both models: the wrapper-relative utilities live under
 `anchored: false` — which `classesFor()` applies by default, so the Tailwind specimen and React's
-mirror are untouched — and Angular asks for `anchored: true` and gets appearance only. Any future
-anchored primitive (`Menu`, `Select`) reuses that axis rather than inventing a second convention.
+mirror are untouched — and Angular asks for `anchored: true` and gets appearance only.
+**`arena-menu` reused that axis rather than inventing a second convention**, on the same terms and
+with the same divergence from React, which is what an axis rather than a one-off was for. It is
+likely to be the last: `arena-select` anchors nothing, because it is the native element and the
+browser draws its popup.
 And the compliance suite is the first in the layer to pass `root: document.body`, because
 `roles.describedby` resolves an IDREF and no element inside the fixture contains both the trigger
 and the bubble.

@@ -6,6 +6,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Angular gains `arena-dialog`, `arena-select`, `arena-toast` and `arena-menu`**, and stops
+  delegating those four to Angular Material. Each is under all three contracts the day it
+  lands — design, behaviour and API — where a delegated control was outside three of Arena's
+  gates. The Material bridge loses the dialog surface, the outlined form field and the
+  snack-bar container with them.
+
+### Fixed
+
+- **A critical error toast interrupts in Angular, as it always has in React.** `MatSnackBar`
+  has no tone axis, and outside Firefox it rendered `aria-live="polite"` and no role at all,
+  so a danger message queued behind whatever a screen reader was already saying.
+  `arena-toast` carries `role`/`aria-live` per tone, and the layers now declare the same two
+  cases under the same two names.
+- **A CDK overlay no longer paints behind the surface it was opened from.** The overlay
+  container was pinned to `--z-dropdown` (900), under every one of Arena's in-flow overlays —
+  so a tooltip on a control inside an `arena-confirm-dialog` rendered behind the dialog. It
+  takes `calc(var(--z-toast) - 10)` now: above every in-flow overlay, below a toast.
+- **An Angular menu panel escapes an `overflow: hidden` ancestor.** `arena-menu` positions
+  through the CDK, so an overflow menu in a table row or a card is no longer clipped, and it
+  flips above its trigger near the foot of the viewport. Its ARIA lands on the real focusable
+  control rather than on a `display: contents` wrapper around it.
+
 ### Changed
 
 - **`Switch`'s knob glyph is legible.** The shared manifest set the glyph's size and no colour,
