@@ -1176,6 +1176,14 @@ stale-proof; a present-tense component name is not.
   rendered tree; `check:compliance` is the only layer that can see a rendered tree,
   and it does not read contracts. Both are authoring rules the audit protocol
   applies, which means they are exactly as strong as the audit that applied them.
+  **That is now stated as a settled position rather than as an open item.** Neither is a fact
+  about source text, so no reader of source can decide either: R2 asks who DRAWS the content,
+  which is intent, and R3 asks what the rendered tree looks like, which only `check:compliance`
+  can see and it does not read contracts. A gate for either would have to be a renderer that also
+  read the contract, and building one to decide two authoring rules is not worth what it would
+  cost. The honest form of the claim is the one `contracts/api/README.md` carries: **five rules,
+  three of them machine-checked, and the other two exactly as strong as the audit that applied
+  them** -- not a gap waiting to be closed.
   `TableColumn.render` was named here as the member where R3 would first matter; it never
   did, because the per-item convention removed it rather than modelling it, and the
   reader refuses that shape on the convention's authority and not R3's. **No shipped
@@ -1268,29 +1276,19 @@ stale-proof; a present-tense component name is not.
   on each side of the feed and assert focus lands on it. Watched failing against a disabled
   handler before being trusted.
 
-- **Plan D owes `functionInput` an Angular implementation. The spelling is no longer open;
-  only the implementation is.** `Input.validate` is the repo's only `functionInput` and
-  `Input` the only contract carrying `kind: "input"`, and both exist in React alone, because
-  every contract in Plan C is single-layer. Angular's signal idiom discourages a function
-  input — the reflex is an output plus a validator service, or a `ControlValueAccessor` wired
-  into Angular Forms — but the contract's modelled signature (`params: {value: string}`,
-  `returns: string`) is not negotiable at implementation time: `check:api` compares that
-  signature between the contract and each layer, so a reshape is a contract change, not an
-  implementation choice. That is the whole point of sequencing Plan C ahead of Plan D — the
-  API is settled and normative *before* Angular has an implementation to defend.
-  **8C2 recorded this as more open than it was, and 8C3 measured it.** The reader was never
-  the obstacle: `angularSurface()` has read `readonly validate = input<(value: string) =>
-  string>()` as `{form:'functionInput', params:{value:'string'}, returns:'string'}` since the
-  ninth form landed, and that bare arrow — with required-ness carried by `.required`, never by
-  a `| undefined` arm — is the spelling `contracts/api/README.md` now states normatively and
-  `scripts/lib/arena/api-surface.test.mjs` pins. What did fail was the *optional* spelling
-  `input<((value: string) => string) | undefined>()`, and it failed on parse ORDER rather than
-  on any rule: `classify()` tested its arrow pattern before reducing the annotation, backtracked
-  onto the inner `)`, and read the return as `string)`. That is fixed — a nullable annotation is
-  now reduced to the annotation it wraps before any form is tested — so both spellings read
-  identically and Plan D has nothing left to discover about the reader. What remains owed is an
-  Angular `Input` that declares the member; no Angular component was touched, here or in 8C2.
-
+- **CLOSED, and it had been closed for some time: Angular implements `Input.validate`.**
+  `frameworks/angular/components/forms/input/Input.ts` declares
+  `readonly validate = input<(value: string) => string>()` and calls it on both the blur and the
+  change path, and `check:api` compares that signature against the contract on every run. This
+  entry recorded the debt as *"what remains owed is an Angular `Input` that declares the member;
+  no Angular component was touched, here or in 8C2"*, and stayed that way after the component was
+  written. **The entry's own subject is a reader rather than a component**, which is how it
+  survived: the paragraph is mostly about `angularSurface()` learning to parse the bare-arrow
+  spelling, and that half was genuinely finished first, so the sentence read as current while its
+  last clause had gone false. What survives is the sequencing argument it was written to defend —
+  the API is settled and normative *before* the second layer has an implementation to defend, and
+  `check:api` compares the modelled signature, so a reshape at implementation time is a contract
+  change rather than a choice.
 - **CLOSED: `ControlSize`'s description was inaccurate for two of its four consumers, and the
   reuse was correct throughout.** `contracts/api/types/control-size.json` said *"Heights come
   from the density tokens, so a control inside `.arena-compact` re-densifies with the rows
@@ -1650,24 +1648,29 @@ stale-proof; a present-tense component name is not.
   SideNav entry carries the rendering half of this; **keep the two consistent**, since nothing
   checks that they agree.
 
-- **`SideNavCollapsible.id` is required, and the alternative was never properly weighed.** The
-  contract originally justified required-ness by citing `contracts/api/README.md`'s `id`-member rule, which
-  says the *opposite*: that rule is about a component that **generates** an id and thereby takes
-  away the consumer's only path to the element, and its remedy is an **optional** `id?: string`
-  with the generated value as fallback — never a required member. The false citation was removed
-  in review and the real reason put in its place: Arena derives `${id}-trigger` and `${id}-region`,
-  the trigger's `aria-controls` and the region's `aria-labelledby` must both resolve, and neither
-  wiring is conditional. **But the reviewer's point survives the correction and is recorded rather
-  than lost.** Required-ness was measured against the wrong alternative — "a bare `useId()` with no
-  member at all", which is indeed worse — instead of against "an **optional** member with a `useId`
-  fallback", which gives everything a required id gives (both wirings resolve; a consumer who wants
-  to address the elements can) **without forcing every consumer to invent a name for a group nothing
-  else addresses**. That is the `Input`/`Textarea` shape, and it is what the rule the contract
-  wrongly cited actually prescribes. `id` is also **not in the `toggle` payload**, so a consumer with
-  several collapsibles wiring one handler cannot tell which fired without closing over the id they
-  were forced to supply. **`id` stays required — that is the approved spec's decision and 8C5 did not
-  reopen it.** The question is recorded, not the answer.
+- **CLOSED: `SideNavCollapsible.id` stays required, and the two halves of the objection cancel
+  each other.** The contract originally justified required-ness by citing the `id`-member rule in
+  `contracts/api/README.md`, which says the *opposite* — that rule is about a component that
+  **generates** an id and thereby takes away the consumer's only path to the element, and its
+  remedy is an optional `id?` with the generated value as fallback. That false citation was
+  removed in review and the real reason put in its place, which the contract now states at
+  length: Arena derives `${id}-trigger` and `${id}-region`, the trigger's `aria-controls` and the
+  region's `aria-labelledby` must both resolve, and neither wiring is conditional.
 
+  **The reviewer's surviving point was that required-ness had been measured against the wrong
+  alternative** — a bare `useId()` with no member, which is indeed worse — rather than against an
+  *optional* member with a `useId` fallback, which gives both wirings and a way to address the
+  elements **without forcing every consumer to name a group nothing else addresses**. And it
+  added a second complaint: `id` is not in the `toggle` payload, so a consumer with several
+  collapsibles wiring one handler cannot tell which fired without closing over the id they were
+  forced to supply.
+
+  **Those two cancel, and that is the answer.** Being forced to supply the id is precisely what
+  makes the scalar payload sufficient: the consumer holds it at the binding site
+  (`onToggle={(open) => handle(myId, open)}`), which is the ordinary idiom in both layers. An
+  optional generated id would have created the payload problem the second complaint describes,
+  not solved it. `id` stays required, `toggle` stays a boolean, and the trade is now written down
+  as a decision rather than as an open question.
 - **The two unexecuted specs' stale paths are paid, and the three treatments they needed are
   the durable part — a path in a process document is not one kind of thing.** Both name `api/`,
   `behaviour/` and `tokens/` where the tree now has `contracts/api/`, `contracts/behaviour/` and
@@ -3353,34 +3356,39 @@ narrow threshold trips a couple of pixels earlier than React's.
 **Converges:** no, and neither side is wrong. React should not be rewritten to match, and Angular
 cannot render the other shape without giving up the single `<ng-content>`.
 
-#### TableRow — a clickable card row is keyboard-reachable in React and pointer-only in Angular
+#### RETIRED as a divergence: a clickable card row is keyboard-reachable in both layers, and the contract now says so out loud
 
-**React:** `TableRow.jsx` reads whether `onClick` was passed, and below `--bp-md` renders the card
-as `role="button"` with `tabIndex={0}` and an Enter/Space handler. Its binding declares three cases
-— `row`, `card-interactive`, `card-inert` — and the middle one binds `button` cleanly.
-**Angular:** the card carries no role and no tab stop, so a row with `(click)` is reachable by
-pointer and not by keyboard, below `--bp-md` only. Its binding is flat `none` with
-`divergesFrom: "button"`.
+**React** read whether `onClick` was passed and, below `--bp-md`, rendered the card as
+`role="button"` with `tabIndex={0}` and an Enter/Space handler. **Angular** carried no role and
+no tab stop, so a row with `(click)` was reachable by pointer and not by keyboard — a real WCAG
+2.1.1 gap, below `--bp-md` only.
 
-**Why this is not a defect that can simply be fixed.** Angular has no way to ask whether an output
-has subscribers: `OutputEmitterRef.listeners` is `private`, and the consumer's `(click)` binding
-leaves nothing in the DOM to detect. An `interactive` input would close it, and `check:api` would
-reject it — the contract declares `content`, `disabled` and `click`, and a layer implements exactly
-those members. So the choice is between making **every** card row a button, which puts a dead tab
-stop on every row of every table that is not clickable, and making none of them one. The second is
-what shipped, on the grounds that noise scales with the common case and the gap does not.
+**The obstacle was never a defect either layer could fix on its own.** Angular has no way to ask
+whether an output has subscribers: `OutputEmitterRef.listeners` is private, and a consumer's
+`(click)` binding leaves nothing in the DOM to detect. The choice was between making **every**
+card row a button — a dead tab stop on every row of every table that is not clickable — and
+making none of them one, and the second shipped because noise scales with the common case and
+the gap does not.
 
-**What would close it** is either an Angular API for output subscription, or a contract member both
-layers implement — and the second is the honest one, because React derives interactivity from a
-prop it can see and the contract has simply never said so out loud. Nothing schedules either.
+**What closed it is the fix this entry named and the record's own precedent finding it.** The
+answer was *"a contract member both layers implement, and the honest one, because React derives
+interactivity from a prop it can see and the contract has simply never said so out loud"* —
+and `CalendarEvent.actionsEnabled` had **already made exactly that argument**, in its own
+description, for its own slot: *a boolean rather than "is the actions slot filled?", because
+Angular cannot detect whether an ng-content was filled, so gating the drawing on that is a
+divergence waiting to happen.* The same sentence, one member over, unapplied.
 
-**Worth knowing before reading React's side as the better one**: `DOUBTS.md` already records that
-`tabIndex={0}` plus `role="button"` on a card that also contains the consumer's own buttons — which
-is exactly what a `mobileLayout: 'block'` actions column draws — is invalid ARIA. React's
-`card-interactive` case is that shape.
+`TableRow.interactive` exists now, defaulting to `false`, and both layers gate the card's role,
+tab stop and key handling on it. Angular's binding is three cases matching React's — `row`,
+`card-interactive`, `card-inert` — `divergesFrom` is gone, and `TableRow.cases.test.ts` beside the
+component renders all three, where the Angular side used to be covered by a flat `assertPattern`
+inside `Table`'s suite.
 
-**Converges:** no, and this is the batch-4 divergence most worth revisiting.
-
+**`CalendarEvent` is deliberately NOT converted with it**, and the asymmetry is reasoned rather
+than left over: a chip is `tabindex="-1"` and never a page tab stop, so always-a-button costs no
+dead stop there, where always-a-div would delete Enter-into-the-chip, which is the whole keyboard
+story `arena-calendar`'s `grid` binding leans on. `TableRow` had a defect; `CalendarEvent` has a
+trade-off. Its entry below carries the reasoning.
 #### Table — React defaults the `empty` slot to a string, and a slot cannot carry a default in Angular
 
 **React:** `Table.jsx` declares `empty = 'No data.'`, so a table with no rows and no `empty` content

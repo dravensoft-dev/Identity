@@ -4,6 +4,8 @@ export interface TableRowProps {
 
   children?: React.ReactNode;
 
+  interactive?: boolean;
+
   disabled?: boolean;
 
   onClick?: () => void;

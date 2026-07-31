@@ -1,7 +1,7 @@
 import React from 'react';
 
 export function TableRow({
-  children, onClick, disabled = false,
+  children, onClick, interactive = false, disabled = false,
   rowIndex = 0, columns = [], layout = 'table', cursorCol = null, gridFocused = false, onCellFocus,
 }) {
 
@@ -18,15 +18,15 @@ export function TableRow({
       : child
   ));
 
-  const activate = onClick && !disabled ? onClick : undefined;
-  const cursor = onClick ? (disabled ? 'not-allowed' : 'pointer') : 'default';
+  const activate = interactive && onClick && !disabled ? onClick : undefined;
+  const cursor = interactive ? (disabled ? 'not-allowed' : 'pointer') : 'default';
 
   if (layout === 'card') {
     return (
       <div onClick={activate}
-        role={onClick ? 'button' : undefined}
-        tabIndex={onClick ? 0 : undefined}
-        aria-disabled={onClick && disabled ? 'true' : undefined}
+        role={interactive ? 'button' : undefined}
+        tabIndex={interactive ? 0 : undefined}
+        aria-disabled={interactive && disabled ? 'true' : undefined}
         onKeyDown={activate ? (e) => {
           if (e.key !== 'Enter' && e.key !== ' ') return;
           e.preventDefault();
