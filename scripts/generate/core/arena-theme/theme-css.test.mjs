@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { configProblems, themeCss, paletteReports, defaultPalette } from './theme-css.mjs';
+import { configProblems, themeCss, paletteReports, defaultPalette, isStylesheet } from './theme-css.mjs';
 import { PALETTE_KEYS } from './palette-keys.mjs';
 import { parseDecls } from '../../../lib/arena/css-decls.mjs';
 
@@ -158,4 +158,35 @@ test('a palette whose text fails 4.5:1 is reported rather than refused', () => {
 test('a ramp of one repeated colour is reported as indistinguishable', () => {
   const [report] = paletteReports(config());
   assert.ok(report.messages.some((m) => m.startsWith('ramp,')));
+});
+
+test('a stylesheet src becomes an @import, because Google Fonts serves CSS and not a binary', () => {
+  const c = config();
+  c.fonts.display.src = 'https://fonts.googleapis.com/css2?family=Archivo:wght@400..900&display=swap';
+  const css = themeCss(c);
+  assert.match(css, /@import url\('https:\/\/fonts\.googleapis\.com\/css2\?family=Archivo[^']*'\);/);
+  assert.doesNotMatch(css, /font-family:'Archivo';\n/);
+  assert.match(css, /--font-display:'Archivo',system-ui,sans-serif/);
+});
+
+test('one stylesheet serving several families is imported once', () => {
+  const c = config();
+  const sheet = 'https://fonts.googleapis.com/css2?family=Archivo&family=Familjen+Grotesk&display=swap';
+  c.fonts.display.src = sheet;
+  c.fonts.body.src = sheet;
+  assert.equal(themeCss(c).match(/@import url\(/g).length, 1);
+});
+
+test('every @import precedes the first rule, which is what CSS requires', () => {
+  const c = config();
+  c.fonts.display.src = 'https://fonts.googleapis.com/css2?family=Archivo';
+  const css = themeCss(c);
+  assert.ok(css.lastIndexOf('@import') < css.indexOf('@font-face'));
+  assert.ok(css.lastIndexOf('@import') < css.indexOf(':root{'));
+});
+
+test('a .css path is a stylesheet however it is hosted', () => {
+  assert.equal(isStylesheet('./fonts/faces.css'), true);
+  assert.equal(isStylesheet('https://cdn.example.com/f.css?v=2'), true);
+  assert.equal(isStylesheet('./fonts/a.woff2'), false);
 });

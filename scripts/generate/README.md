@@ -21,7 +21,7 @@ case fails until it is argued for.
 | domain | scripts | |
 | --- | --- | --- |
 | [`arena/`](./arena/README.md) | 2 | writes into two framework layers at once, plus `contracts/` |
-| [`core/`](./core/README.md) | 1 | `contracts/` and `assets/`, which the design layer owns |
+| [`core/`](./core/README.md) | 2 | `contracts/` and `assets/`, which the design layer owns |
 | `react/`, `angular/`, `tailwind/` | none | empty; each layer's generated source is written by an `arena` script, because it lands in both layers at once |
 
 The three empty domains keep a `.gitkeep`. A generator touching one layer alone is possible and

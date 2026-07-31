@@ -65,6 +65,7 @@
     "check:api": "bun scripts/check/arena/check-api.mjs",
     "check:focus-trap": "bun scripts/check/arena/check-focus-trap.mjs",
     "check:cards": "bun scripts/check/arena/check-card-viewports.mjs",
+    "check:packages": "bun scripts/check/arena/check-packages.mjs",
     "check": "bun scripts/check/arena/check-all.mjs",
     "test:scripts": "bun test scripts",
     "test:react": "bun test frameworks/react --path-ignore-patterns='**/*.dom.test.jsx'",
