@@ -45,6 +45,8 @@ test('the version is stamped from plugin.json rather than written here', () => {
 test('react, react-dom and Phosphor are peers, and nothing is a dependency', () => {
   const m = manifest(repoRoot);
   assert.deepEqual(Object.keys(m.peerDependencies).sort(), ['@phosphor-icons/web', 'react', 'react-dom']);
+  assert.equal(m.peerDependencies.react, '^18 || ^19',
+    'the range is the two majors a real tarball install was rendered under; an open >=18 would promise React 20');
   assert.equal(m.dependencies, undefined,
     'the components style themselves with inline tokens, so there is nothing to depend on');
 });

@@ -41,8 +41,8 @@ export function manifest(root = repoRoot) {
       './package.json': './package.json',
     },
     peerDependencies: {
-      react: '>=18',
-      'react-dom': '>=18',
+      react: '^18 || ^19',
+      'react-dom': '^18 || ^19',
       '@phosphor-icons/web': '^2.1.2',
     },
   };
