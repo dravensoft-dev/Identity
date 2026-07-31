@@ -164,8 +164,8 @@ check — `bun run demos` and open the page.
 
 ## What ships here
 
-`components/` holds **38 manifests** — count them with `find components -name
-'*.manifest.json' | wc -l` — one per component, each with a specimen page
+`components/` holds one manifest per surface — count them with `find components -name
+'*.manifest.json' | wc -l`, and the components with none with the command below — each with a specimen page
 beside it that renders the real markup from the real recipe with no build step. **A manifest
 is held up by its own gates and never by having a consumer** — `bun run check:tailwind` demands
 that every class it declares produce a rule, so one nothing reads yet cannot rot silently, and
@@ -187,13 +187,23 @@ a fifth spelling of the walk.
 rather than by basename, which is what a message naming a manifest in a nested tree needs;
 a consumer wanting the bare name calls `basename()`.
 
-**The three SVG charts and Calendar have no manifest, on purpose.** `BarChart`,
-`LineChart` and `DoughnutChart` are SVG geometry driven by measured container width:
-their identity is path data and attribute bindings, and a manifest that tried to hold it
-would be a lie about where the styling lives. `ChartCard` is not one of them and does
-have a manifest — it is a bordered tile. Calendar is date arithmetic and JS responsive
-branches; what a manifest could capture is a fraction of it, and that fraction would
-drift from the rest.
+**A manifest mirrors a SURFACE, not a component, so some contracted components have none.**
+Derive the set rather than trusting a list:
+
+```bash
+comm -13 <(find components -name '*.manifest.json' -exec basename {} .manifest.json \; | sort) \
+         <(python3 -c "import json;print('\n'.join(sorted(n for v in json.load(open('../Components.json')).values() for n in v)))")
+```
+
+Two reasons put a component in it. **A compound family draws one surface**, so the parent's
+manifest holds every level of it and its members have none of their own — that is `Tab`,
+`TableRow`, `TableCell`, `CalendarEvent`, `RadioGroup` and the three `SideNav*` children.
+`MANIFEST_COVERS` in `scripts/check/arena/check-manifest-states.mjs` is where that mapping
+is written down. **And the three SVG charts have no surface a class string can describe**:
+`BarChart`, `LineChart` and `DoughnutChart` are SVG geometry driven by measured container
+width, their identity is path data and attribute bindings, and a manifest holding it would
+be a lie about where the styling lives. `ChartCard` is not one of them and does have one —
+it is a bordered tile.
 
 `Utilities.generated.css` is **generated**, and **git-ignored** — `bun run build:tailwind`
 compiles the preset with the manifests as content, and `bun run check:tailwind-generated` fails
