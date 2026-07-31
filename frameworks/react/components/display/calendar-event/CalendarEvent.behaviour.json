@@ -2,14 +2,21 @@
   "cases": [
     {
       "name": "clickable",
-      "when": "actionsEnabled is false or absent -- the chip root itself renders as <button>",
+      "when": "interactive is true and actionsEnabled is false or absent -- the chip root itself renders as <button>",
       "pattern": "button",
       "exceptions": []
     },
     {
       "name": "clickable-with-actions",
-      "when": "actionsEnabled is true -- a kebab cannot nest inside a button, so the root becomes a <div> and the interactive attributes move down to the chip BODY, a descendant <button>",
+      "when": "interactive is true and actionsEnabled is true -- a kebab cannot nest inside a button, so the root becomes a <div> and the interactive attributes move down to the chip BODY, a descendant <button>",
       "pattern": "button",
+      "exceptions": []
+    },
+    {
+      "name": "inert",
+      "when": "interactive is false or absent, regardless of actionsEnabled -- the consumer has declared the chip is not activated",
+      "pattern": "none",
+      "reason": "A chip the consumer has declared non-interactive is a <div> with no role, no activation and nothing to disable. It is true whether or not actionsEnabled renders a kebab beside it -- the kebab is its own IconButton with its own accessible name and is not the subject of this binding -- so this whole pattern does not apply to the chip itself in this shape. `interactive` is a DECLARED member and never inferred from whether `click` is bound, which is what R6 asks and what the old inference got wrong.",
       "exceptions": []
     }
   ]

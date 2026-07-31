@@ -51,6 +51,7 @@ test('Tag meets both of its declared cases', () => {
           behavioural: { 'states.disabled': true, 'keyboard.Space': true, 'keyboard.Enter': true },
         };
       },
+
     },
   });
 });
@@ -60,7 +61,7 @@ const CHIP = {
   dateLabel: 'Monday 20 July', tabIndex: -1,
 };
 
-test('CalendarEvent meets both of its declared shapes, whether or not anything listens', () => {
+test('CalendarEvent meets all three of its declared shapes, and `interactive` is what picks one', () => {
   assertPatternCases({
     bindingPath: join(REACT_COMPONENTS, 'display/calendar-event/CalendarEvent.behaviour.json'),
     cases: {
@@ -68,7 +69,7 @@ test('CalendarEvent meets both of its declared shapes, whether or not anything l
       clickable: () => {
         let clicked = false;
         const root = mount(<CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z"
-          end="2026-07-20T09:30:00Z" onClick={() => { clicked = true; }} {...CHIP} />);
+          end="2026-07-20T09:30:00Z" interactive onClick={() => { clicked = true; }} {...CHIP} />);
         assertKeysUnintercepted(root.firstElementChild);
         assert.equal(root.firstElementChild.hasAttribute('aria-disabled'), false,
           'an activatable chip must not announce itself as disabled');
@@ -77,16 +78,16 @@ test('CalendarEvent meets both of its declared shapes, whether or not anything l
 
         let blocked = false;
         const off = mount(<CalendarEvent id="a-off" title="Standup" start="2026-07-20T09:00:00Z"
-          end="2026-07-20T09:30:00Z" disabled onClick={() => { blocked = true; }} {...CHIP} />);
+          end="2026-07-20T09:30:00Z" interactive disabled onClick={() => { blocked = true; }} {...CHIP} />);
         assert.equal(off.firstElementChild.getAttribute('aria-disabled'), 'true',
           'a disabled chip must say so through aria-disabled, keeping its place in the grid\'s Tab sequence');
         act(() => { off.firstElementChild.click(); });
         assert.equal(blocked, false, 'a disabled chip still reported through onClick');
 
         const unbound = mount(<CalendarEvent id="a-unbound" title="Standup" start="2026-07-20T09:00:00Z"
-          end="2026-07-20T09:30:00Z" {...CHIP} />);
+          end="2026-07-20T09:30:00Z" interactive {...CHIP} />);
         assert.equal(unbound.firstElementChild.tagName, 'BUTTON',
-          'the shape is never derived from whether onClick was passed -- R6 in contracts/api/README.md');
+          'the shape follows `interactive` and never whether onClick was passed -- R6');
         act(() => { unbound.firstElementChild.click(); });
 
         return {
@@ -98,7 +99,7 @@ test('CalendarEvent meets both of its declared shapes, whether or not anything l
       'clickable-with-actions': () => {
         let clicked = false;
         const root = mount(<CalendarEvent id="b" title="Standup" start="2026-07-20T09:00:00Z"
-          end="2026-07-20T09:30:00Z" onClick={() => { clicked = true; }} actionsEnabled
+          end="2026-07-20T09:30:00Z" interactive onClick={() => { clicked = true; }} actionsEnabled
           actions={<button type="button">Delete</button>} {...CHIP} />);
         const body = [...root.querySelectorAll('button')]
           .find((b) => /^Standup,/.test(b.getAttribute('aria-label') || ''));
@@ -111,7 +112,7 @@ test('CalendarEvent meets both of its declared shapes, whether or not anything l
 
         let blocked = false;
         const off = mount(<CalendarEvent id="b-off" title="Standup" start="2026-07-20T09:00:00Z"
-          end="2026-07-20T09:30:00Z" disabled onClick={() => { blocked = true; }} actionsEnabled
+          end="2026-07-20T09:30:00Z" interactive disabled onClick={() => { blocked = true; }} actionsEnabled
           actions={<button type="button">Delete</button>} {...CHIP} />);
         const offBody = [...off.querySelectorAll('button')]
           .find((b) => /^Standup,/.test(b.getAttribute('aria-label') || ''));
@@ -127,6 +128,28 @@ test('CalendarEvent meets both of its declared shapes, whether or not anything l
         };
       },
 
+
+      inert: () => {
+        let clicked = false;
+        const plain = mount(<CalendarEvent id="c" title="Standup" start="2026-07-20T09:00:00Z"
+          end="2026-07-20T09:30:00Z" onClick={() => { clicked = true; }} {...CHIP} />);
+        assert.equal(plain.firstElementChild.tagName, 'DIV',
+          'a chip the consumer declared non-interactive is a div, even with onClick bound -- '
+          + '`interactive` decides the shape, which is the whole point of it being a member');
+        assert.equal(plain.querySelector('button'), null, 'and it renders no button at all');
+        act(() => { plain.firstElementChild.click(); });
+        assert.equal(clicked, false, 'a non-interactive chip must not activate');
+
+        const withActions = mount(<CalendarEvent id="d" title="Standup" start="2026-07-20T09:00:00Z"
+          end="2026-07-20T09:30:00Z" actionsEnabled {...CHIP} />);
+        const root = withActions.firstElementChild;
+        assert.equal(root.tagName, 'DIV',
+          'actionsEnabled draws a kebab but does not make the chip pressable -- the root stays a div');
+        assert.equal(root.hasAttribute('role'), false,
+          'and it claims no interactive role, which is what `none` asserts about this case');
+
+        return { root: withActions };
+      },
     },
   });
 });

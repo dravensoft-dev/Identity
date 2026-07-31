@@ -17,13 +17,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `onRequestChange`**, where it used to fall back to `onFuncOn`/`onFuncOff` when no handler was
   passed. A guarded change that silently applied itself is what that fallback did; a switch with
   `confirm` and nothing listening now does nothing, loudly.
-- **Breaking for a consumer relying on it: `CalendarEvent` renders a `<button>` whether or not
-  `onClick` is bound.** The element used to depend on it, which made the chip a `<div>` with no role
-  for a consumer who had not wired activation yet. Both layers now render one shape, the binding
-  drops its `inert` case, and a chip is `tabindex="-1"` so no page tab stop is added.
+- **Breaking: `CalendarEvent` gains `interactive`, and it is what makes the chip a button.** The
+  element used to depend on whether `onClick` was bound, which is what R6 forbids. **Pass
+  `interactive` alongside `onClick`** — without it the chip is inert, a `<div>` with no role and
+  nothing to activate, which is what a read-only schedule wants. It is the member `TableRow`
+  already carries, for the same reason, so the two compound-item families now have one shape.
 - **`check:states` reads the contract instead of React.** A manifest's `hover:`/`focus:` modifier is
   now judged against `affordances` in `contracts/api/components/<Name>.json`, and the same
   declaration catches a state invented in a React component, which nothing caught before.
+
+### Fixed
+
+- **A `(click)` binding on an Angular primitive's element is the DOM event, not the primitive's
+  `click` output.** Angular resolves a native event name to the DOM even when the component
+  declares an `output()` of that name. Measured with a probe rather than inferred. The consequence
+  a consumer meets: a click bubbling out of an element the primitive did not emit for still reaches
+  the handler. `arena-calendar-event` stops propagation while `interactive` and does not while
+  inert, because an inert chip claims nothing. `CalendarEvent.cases.test.ts` now subscribes to the
+  output on the component instance instead of counting through the template binding, which is what
+  a suite has to do to tell an emit from a bubble; `frameworks/angular/README.md` names the three
+  primitives whose suites still count the old way.
 
 ### Added
 
@@ -32,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **R6 in `contracts/api/README.md`** — no render is derived from whether a listener is bound or a
   slot was filled. It is why `Alert.dismissible`, `Toast.dismissible`, `Tag.removable`,
   `BulkActionBar.clearable`, `TableRow.interactive` and `CalendarEvent.actionsEnabled` exist.
+- **The accepted cost of R6 is pinned by a suite in both layers rather than by prose**: a `Switch`
+  with `confirm` and nothing listening applies nothing, and no runtime guard can catch it, because
+  "is anything listening?" is the question R6 says a component may not ask.
 - **Derivations that were only ever recorded as "matching the other layer" are now contracted**:
   `Input.id`'s and `Textarea.id`'s exact slug and why the prefixes differ, `Textarea.counter`'s
   strictly-past-nine-tenths warning, `Skeleton.height` winning over `width` for a circle, `Input`'s

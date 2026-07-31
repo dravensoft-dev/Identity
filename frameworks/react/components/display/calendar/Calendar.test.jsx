@@ -160,7 +160,7 @@ test('a chip carrying a kebab is not a button inside a button', () => {
   const html = renderToStaticMarkup(
     <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">
       <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z"
-        onClick={() => {}} actionsEnabled actions={<button type="button">Delete</button>} />
+        interactive onClick={() => {}} actionsEnabled actions={<button type="button">Delete</button>} />
     </Calendar>,
   );
   assert.doesNotMatch(html, /<button[^>]*>(?:(?!<\/button>)[\s\S])*<button/,
@@ -171,7 +171,7 @@ test('a paneled chip carries a focusable body for Enter to land on', () => {
   const html = renderToStaticMarkup(
     <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week">
       <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z"
-        onClick={() => {}} actionsEnabled actions={<button type="button">Delete</button>} />
+        interactive onClick={() => {}} actionsEnabled actions={<button type="button">Delete</button>} />
     </Calendar>,
   );
 

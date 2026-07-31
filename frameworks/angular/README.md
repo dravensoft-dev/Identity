@@ -322,9 +322,9 @@ static `class`, an ARIA attribute — lands on the inert host and never on the s
 inside it, and neither layer offers a second route to it. That follows from the carve-out, not
 from anything a contract could restate, and it is the argument for host-binding being the default.
 
-## Two traps this layer's idiom sets
+## Three traps this layer's idiom sets
 
-Both are layer-wide and silent.
+All three are layer-wide and silent.
 
 **A bare boolean attribute resolves to `true`.** Every boolean input here is a signal
 `input(false, { transform: booleanAttribute })`, so `<arena-alert dismissible>` is `true`.
@@ -341,6 +341,22 @@ block, and `HostClassBinding.test.ts` asserts it both ways: a primitive that tak
 does not clear it fails, and so does one that clears an attribute it takes no input for. **Read
 the guard, not a count** — the figure here was wrong three times, most recently by measuring only
 host-bound primitives when the defect never depended on host-binding.
+
+**`(click)` on an element of a primitive binds the DOM event, not the primitive's `click`
+output.** Angular resolves a binding whose name is a native event to the DOM listener even when
+the component declares an `output()` of that name, and the output emit is invisible to it. That
+was **measured with a probe component**, not inferred, because both readings are plausible and
+the wrong one is undetectable by eye. Two consequences, both real:
+
+- **A consumer's handler fires on any click that bubbles out of the element**, including one the
+  primitive deliberately did not emit. A primitive that stops propagation hides this;
+  `arena-calendar-event` stops it while `interactive`, and does not while inert, because an inert
+  chip claims nothing and the click belongs to what is under it.
+- **A suite that counts activations through a `(click)` binding is measuring the DOM**, so it
+  cannot tell an emit from a bubble and will not notice a primitive that stops emitting. Subscribe
+  to the output on the component instance instead — `CalendarEvent.cases.test.ts` is the shape.
+  `arena-table-row`, `arena-button` and `arena-icon-button` also declare a `click` output, and
+  their suites still count through the template binding.
 
 ## Adopting it
 

@@ -138,6 +138,34 @@ test('confirm diverts to requestChange and applies nothing, which is the whole p
   }
 });
 
+@Component({
+  standalone: true,
+  imports: [Switch],
+  template: `<arena-switch label="Auto-deploy on merge" confirm
+                           (funcOn)="on = on + 1" (funcOff)="off = off + 1" />`,
+})
+class UnwiredGuardHost {
+  on = 0;
+  off = 0;
+}
+
+test('confirm with NOTHING listening applies nothing -- the cost R6 leaves, pinned', () => {
+  const fixture = TestBed.createComponent(UnwiredGuardHost);
+  try {
+    fixture.detectChanges();
+    (fixture.nativeElement as HTMLElement).querySelector('button')!.click();
+    fixture.detectChanges();
+    assert.equal(fixture.componentInstance.on, 0,
+      'confirm alone diverts the activation, so a switch with confirm and no (requestChange) is a '
+      + 'control that does nothing. That is the contract read literally and it is the accepted cost of '
+      + 'R6: no runtime guard can take the place of the fallback this replaced, because "is anything '
+      + 'listening?" is the question R6 says a component may not ask.');
+    assert.equal(fixture.componentInstance.off, 0);
+  } finally {
+    fixture.destroy();
+  }
+});
+
 test('the label toggles too, and disabled stops it -- a span is not natively disabled', () => {
   const { fixture, host } = render({ disabled: true });
   try {

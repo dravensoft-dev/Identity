@@ -33,9 +33,9 @@ const HOUR_SLOTS = 2;
     <arena-calendar timeZone="UTC" anchorDate="2027-03-15" view="week"
                     dayStart="09:00" dayEnd="11:00">
       <arena-calendar-event id="a" title="Standup" start="2027-03-15T09:00:00Z"
-                            end="2027-03-15T09:30:00Z" [colorId]="1" />
+                            end="2027-03-15T09:30:00Z" [colorId]="1" interactive />
       <arena-calendar-event id="b" title="Review" start="2027-03-16T10:00:00Z"
-                            end="2027-03-16T11:00:00Z" [colorId]="2" />
+                            end="2027-03-16T11:00:00Z" [colorId]="2" interactive />
     </arena-calendar>
   `,
 })

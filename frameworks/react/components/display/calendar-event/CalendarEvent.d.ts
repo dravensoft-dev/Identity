@@ -13,6 +13,8 @@ export interface CalendarEventProps {
 
   colorId?: CatSlot;
 
+  interactive?: boolean;
+
   disabled?: boolean;
 
   actionsEnabled?: boolean;

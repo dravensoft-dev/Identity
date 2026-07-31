@@ -1,8 +1,10 @@
 /* Every chip is mounted INSIDE a calendar: CalendarState is a non-optional injection, so a
- * bare chip throws NG0201, and that is asserted here rather than designed away. A layer that
- * declares a third case, `inert`; this layer cannot produce it, which is what the binding's
- * divergesFrom records -- so assertPatternCases drives exactly two, and would fail on a
- * never-rendered or an undeclared one before anything mounts. */
+ * bare chip throws NG0201, and that is asserted here rather than designed away. The three
+ * cases are picked by `interactive` and by `actionsEnabled`, never by whether (click) is
+ * subscribed. Activation is measured on the OUTPUT through the component instance, because
+ * `(click)` on an element of a component that declares a `click` output binds the DOM event
+ * and not the output -- measured, not assumed -- so a template counter rises on a bubbling
+ * click the component never emitted. */
 
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 useTestEnvironment();
@@ -12,6 +14,7 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { Component, signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { assertNoNode, assertSameNode } from '../../../test/NodeAssert';
 import { assertPatternCases, ANGULAR_COMPONENTS } from '../../../test/Compliance';
 import { Calendar } from '../calendar/Calendar';
@@ -28,7 +31,7 @@ const BINDING = join(ANGULAR_COMPONENTS, 'display/calendar-event/CalendarEvent.b
       <arena-calendar-event id="a" title="Standup" start="2027-03-15T09:00:00Z"
                             end="2027-03-15T10:00:00Z" [colorId]="1"
                             [disabled]="locked()" [actionsEnabled]="withActions()"
-                            (click)="activated = activated + 1">
+                            [interactive]="live()">
         <button actions type="button">Delete</button>
       </arena-calendar-event>
     </arena-calendar>
@@ -37,18 +40,26 @@ const BINDING = join(ANGULAR_COMPONENTS, 'display/calendar-event/CalendarEvent.b
 class ChipHost {
   readonly locked = signal(false);
   readonly withActions = signal(false);
-  activated = 0;
+  readonly live = signal(true);
 }
 
 const open: ComponentFixture<ChipHost>[] = [];
 
-function render(patch: { locked?: boolean; withActions?: boolean } = {}): ComponentFixture<ChipHost> {
+function render(patch: { locked?: boolean; withActions?: boolean; live?: boolean } = {}): ComponentFixture<ChipHost> {
   const fixture = TestBed.createComponent(ChipHost);
   open.push(fixture);
   if (patch.locked !== undefined) fixture.componentInstance.locked.set(patch.locked);
   if (patch.withActions !== undefined) fixture.componentInstance.withActions.set(patch.withActions);
+  if (patch.live !== undefined) fixture.componentInstance.live.set(patch.live);
   fixture.detectChanges();
   return fixture;
+}
+
+function emissionsOf(fixture: ComponentFixture<ChipHost>): { count: number } {
+  const seen = { count: 0 };
+  const chip = fixture.debugElement.query(By.directive(CalendarEvent)).componentInstance as CalendarEvent;
+  chip.click.subscribe(() => { seen.count += 1; });
+  return seen;
 }
 
 const closeAll = (): void => { for (const fixture of open.splice(0)) fixture.destroy(); };
@@ -81,13 +92,14 @@ function assertKeysUnintercepted(el: HTMLElement): void {
   }
 }
 
-test('arena-calendar-event meets both of the shapes this layer can produce', () => {
+test('arena-calendar-event meets all three of its declared shapes, and `interactive` picks one', () => {
   try {
     assertPatternCases({
       bindingPath: BINDING,
       cases: {
         clickable: () => {
           const fixture = render();
+          const emitted = emissionsOf(fixture);
           const chip = chipOf(fixture);
           assert.equal(chip.tagName, 'BUTTON', 'with no kebab the chip root IS the button');
           assertKeysUnintercepted(chip);
@@ -95,9 +107,10 @@ test('arena-calendar-event meets both of the shapes this layer can produce', () 
             'an activatable chip must not announce itself as disabled');
           chip.dispatchEvent(new MouseEvent('click', { bubbles: true }));
           fixture.detectChanges();
-          assert.equal(fixture.componentInstance.activated, 1, 'sanity: a real click must reach the output');
+          assert.equal(emitted.count, 1, 'sanity: a real click must reach the output');
 
           const off = render({ locked: true });
+          const offEmitted = emissionsOf(off);
           const locked = chipOf(off);
           assert.equal(locked.getAttribute('aria-disabled'), 'true',
             'a disabled chip must say so through aria-disabled, keeping its place in the grid sequence');
@@ -105,7 +118,7 @@ test('arena-calendar-event meets both of the shapes this layer can produce', () 
             'the chip reflects through aria-disabled, never the native attribute');
           locked.dispatchEvent(new MouseEvent('click', { bubbles: true }));
           off.detectChanges();
-          assert.equal(off.componentInstance.activated, 0, 'a disabled chip still reported through click');
+          assert.equal(offEmitted.count, 0, 'a disabled chip still emitted click');
 
           return {
             root: chip,
@@ -115,6 +128,7 @@ test('arena-calendar-event meets both of the shapes this layer can produce', () 
 
         'clickable-with-actions': () => {
           const fixture = render({ withActions: true });
+          const emitted = emissionsOf(fixture);
           const chip = chipOf(fixture);
           assert.equal(chip.tagName, 'DIV',
             'a kebab cannot nest inside a button, so the root drops to a div');
@@ -124,21 +138,44 @@ test('arena-calendar-event meets both of the shapes this layer can produce', () 
             'an activatable chip body must not announce itself as disabled');
           body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
           fixture.detectChanges();
-          assert.equal(fixture.componentInstance.activated, 1, 'sanity: a click on the body reaches the output');
+          assert.equal(emitted.count, 1, 'sanity: a click on the body reaches the output');
 
           const off = render({ withActions: true, locked: true });
+          const offEmitted = emissionsOf(off);
           const offBody = bodyOf(chipOf(off));
           assert.equal(offBody.getAttribute('aria-disabled'), 'true',
             'the disabled state must reach the BODY button, which is where the interactivity moved');
           offBody.dispatchEvent(new MouseEvent('click', { bubbles: true }));
           off.detectChanges();
-          assert.equal(off.componentInstance.activated, 0, 'a disabled chip body still reported through click');
+          assert.equal(offEmitted.count, 0, 'a disabled chip body still emitted click');
 
           return {
             root: chip,
             subjects: { default: body },
             behavioural: { 'states.disabled': true, 'keyboard.Space': true, 'keyboard.Enter': true },
           };
+        },
+
+        inert: () => {
+          const fixture = render({ live: false });
+          const emitted = emissionsOf(fixture);
+          const chip = chipOf(fixture);
+          assert.equal(chip.tagName, 'DIV',
+            'a chip the consumer declared non-interactive is a div, even with (click) subscribed -- '
+            + '`interactive` decides the shape, which is the whole point of it being a member');
+          assertNoNode(chip.querySelector('button'), 'an inert chip rendered a button');
+          chip.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+          fixture.detectChanges();
+          assert.equal(emitted.count, 0, 'a non-interactive chip must not emit click');
+
+          const withActions = render({ live: false, withActions: true });
+          const root = chipOf(withActions);
+          assert.equal(root.tagName, 'DIV',
+            'actionsEnabled draws a kebab but does not make the chip pressable -- the root stays a div');
+          assert.equal(root.hasAttribute('role'), false,
+            'and it claims no interactive role, which is what `none` asserts about this case');
+
+          return { root };
         },
       },
     });

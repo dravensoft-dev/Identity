@@ -30,8 +30,10 @@ supplies the state.
   the negation of the current one, so the event carries no payload.
 - **`confirm` alone diverts the activation**, never whether anything is listening — R6 in
   `contracts/api/README.md`. `confirm` set with no `(requestChange)` binding is a switch that
-  does nothing. That is the contract read literally, and it fails loudly rather than silently
-  applying a change the contract says is guarded.
+  does nothing at all. That is the accepted cost of R6 and the one worth paying, because what
+  it replaced applied a guarded change silently. **No runtime guard can catch it**: "is anything
+  subscribed?" is precisely the question R6 says a component may not ask.
+  `Switch.compliance.test.ts` pins it, so the fallback cannot come back unnoticed.
 - `iconOn` and `iconOff` are Phosphor class-name strings drawn inside the knob, and only the
   current state's glyph is in the DOM. They are decoration — the knob is `aria-hidden`, and
   `aria-checked` is what carries the state.
