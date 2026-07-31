@@ -30,8 +30,9 @@ Tailwind manifests carry the Angular layer's styling. What is missing is the ass
 
 ## Non-goals
 
-- Publishing. No workflow, no npm organization, no `npm publish`. This design leaves the
-  packages buildable and verifiable locally.
+- Publishing. No workflow, no trusted publisher, no `npm publish`. This design leaves the
+  packages buildable and verifiable locally. The `@dravensoft` scope is registered and both
+  names are free; what is missing is the automation, not the account.
 - Tests inside the packages. A consumer installs components, not suites.
 - A tokens package or a Tailwind package. The Tailwind layer travels inside the Angular
   package, which is the only layer that consumes it.

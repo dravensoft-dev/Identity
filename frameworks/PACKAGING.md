@@ -129,11 +129,28 @@ correctly; that is `check:compliance`, and it runs against the sources.
 
 ## Publishing
 
-Not yet. The packages build and verify locally; the release workflow, npm trusted publishing
-and the `@dravensoft` organization are a later step, and until they exist nothing here
-reaches a registry.
+Not yet, and what is left is the automation rather than the account. **The `@dravensoft`
+scope is registered**, and both names are free: nothing is published under either. Confirm it
+without an npm login, since the org page answers 403 to everyone and proves nothing either
+way:
 
-When that step comes it inherits the existing release rule: the version moves in
+```bash
+curl -s https://registry.npmjs.org/-/org/dravensoft/user      # {} means the scope is taken
+curl -s https://registry.npmjs.org/-/org/zzq-not-a-real/user  # "Scope not found" is the other answer
+curl -s -o /dev/null -w '%{http_code}\n' https://registry.npmjs.org/@dravensoft%2farena-react
+```
+
+An empty object is the scope existing with a membership npm does not show anonymously, which
+is what `@vuejs` answers too; a name that is free answers 404.
+
+What is still missing is the release workflow and npm trusted publishing (OIDC), which needs
+`permissions: id-token: write` on a GitHub-hosted runner. **One thing to settle before the
+first release rather than inside CI**: a trusted publisher is configured in a *package's*
+settings on npmjs.com, and a package that has never been published has no settings to
+configure, so the bootstrap is likely one manual authenticated `npm publish` each.
+
+Whenever that step comes it inherits the existing release rule: the version moves in
 `plugin.json`, `marketplace.json` and the README header together, `CHANGELOG.md` records it,
 `source.ref` names the tag, and `check-release.mjs` refuses the combination that fails
-silently.
+silently. The two manifests take that same version from `plugin.json` at assembly, so a
+published package can never disagree with the tag it was cut from.
