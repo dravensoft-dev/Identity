@@ -29,7 +29,7 @@ test('a danger value tone colors text only -- the value slot carries no backgrou
   assert.doesNotMatch(value, /\bbg-/);
 });
 
-test('tone and deltaTone are independent: a danger value can carry a positive delta, matching React\'s own demo', () => {
+test('tone and deltaTone are independent: a danger value can carry a positive delta, which is why StatCard.json declares them separately', () => {
   const styles = statCardStyles({ tone: 'danger', deltaTone: 'positive' });
   assert.match(styles.value(), /text-error/);
   assert.match(styles.delta(), /border-success/);

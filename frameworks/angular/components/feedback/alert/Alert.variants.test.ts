@@ -45,7 +45,7 @@ test('the message slot carries the title-separating margin when a title is prese
   assert.match(alertStyles({ titled: true }).message(), /\bmt-1\b/);
 });
 
-test('the message slot carries no margin when there is no title -- the default, matching React\'s unset marginTop', () => {
+test('the message slot carries no margin when there is no title -- nothing separates it from a heading that is not there', () => {
   assert.doesNotMatch(alertStyles({ titled: false }).message(), /\bmt-1\b/);
   assert.doesNotMatch(alertStyles().message(), /\bmt-1\b/);
 });

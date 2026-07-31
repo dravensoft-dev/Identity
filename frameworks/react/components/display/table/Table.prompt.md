@@ -32,7 +32,7 @@ It is a **compound** component: `columns` says how each column is headed and set
 - Mark the actions column `mobileLayout:'block'`. Its buttons name themselves, and pairing them with an "ACTIONS" label reads as a mistake.
 - Don't set `responsive={false}` to "keep it looking like a table" on a phone. A table narrower than its content is unreadable; card mode is the honest fallback.
 - Row activation is `onClick` on the `TableRow`, and it carries no payload — you wrote that element, so you already hold the row it is about.
-- Pass `empty` whenever the table can legitimately have no rows. With nothing passed React falls back to the string **`No data.`**, which is a placeholder rather than an answer: it says the query returned nothing and never says what was being asked for. The Angular layer projects nothing at all in the same case, deliberately — the fallback is not mirrored, because a table's empty state is editorial the way `label` is.
+- Pass `empty` whenever the table can legitimately have no rows. With nothing passed React falls back to the string **`No data.`**, which is a placeholder rather than an answer: it says the query returned nothing and never says what was being asked for. The fallback is this layer's own convenience and nothing contracts it, because a table's empty state is editorial the way `label` is — a layer that renders nothing instead is equally correct.
 
 ### Responsive
 
@@ -112,6 +112,5 @@ Serve the tree with `bun run demos`, open
    renders the SAME table twice, the second time in a 340px container, so card mode is
    already on screen — check that a card whose row has `onClick` is a single tab stop
    that announces itself as a button and activates on Enter and Space, and that a card
-   whose row has none took no `role`, `tabindex` or key handler by accident. Angular
-   renders neither: it cannot see whether `onClick` was passed, so its card rows are
-   pointer-only, because it cannot ask whether an output has subscribers.
+   whose row has none took no `role`, `tabindex` or key handler by accident. `interactive`
+   is what decides that, never whether `onClick` was passed -- R6.

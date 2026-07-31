@@ -9,10 +9,9 @@ questions about the same number, and neither implies the other:
   says which way it pointed — colors the delta pill. Revenue down is bad, latency
   down is good, and the tile cannot know which metric it is showing.
 
-`delta` is one object (`StatDelta`), not three flat inputs — the same object React's
-`StatCard` takes, per the API capability contract (`contracts/api/components/StatCard.json`). The
-pill renders only when `delta.value` is truthy; a `delta` carrying a `tone`/`direction`
-but an empty `value` renders no pill at all, matching React exactly.
+`delta` is one object (`StatDelta`), not three flat inputs, per the API capability contract
+(`contracts/api/components/StatCard.json`). The pill renders only when `delta.value` is
+truthy; a `delta` carrying a `tone`/`direction` but an empty `value` renders no pill at all.
 
 A tile can legitimately show `tone="danger"` with `delta.tone="positive"` in the
 same breath — a bad state that is improving is still a bad state. Styling is the

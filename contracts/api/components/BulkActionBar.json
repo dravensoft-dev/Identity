@@ -12,7 +12,7 @@
     "run": { "form": "event", "payload": "BulkAction",
              "description": "An action was activated, carrying which one." },
     "clearable": { "form": "primitive", "type": "boolean", "default": true,
-                   "description": "Whether the Clear control is drawn. Both layers gate on this — Angular cannot detect a `clear` listener." },
+                   "description": "Whether the Clear control is drawn. Every layer gates on this member and never on whether anything listens for `clear` — R6." },
     "clear": { "form": "event",
                "description": "The Clear control was activated." }
   }

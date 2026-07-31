@@ -38,7 +38,7 @@ test('the last line is narrower than the rest, the way a paragraph ends', () => 
   assert.match(lastLine, /w-\[62%\]/);
 });
 
-test('a lone text line runs full width, matching React -- it is not treated as "last"', () => {
+test('a lone text line runs full width -- "the last runs short" needs a line before it', () => {
   assert.equal(skeletonRowSlot(1, 1), 'line');
 });
 

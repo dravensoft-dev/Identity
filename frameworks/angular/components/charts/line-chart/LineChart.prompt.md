@@ -37,8 +37,8 @@ tooltip is positioned against.
   that share a scale need a chart Arena does not ship yet, and two that do not share one
   are two charts.
 - Don't omit `labels` or `values`. Both are required inputs — Angular throws NG0950 on the
-  first read rather than drawing an empty box, and React throws from its render for the
-  same reason.
+  first read rather than drawing an empty box. A chart with no data is a caller bug, not a
+  state to render.
 - Don't pass more `labels` than `values`. A point is drawn per value and takes the label
   at its own index, so a surplus label is silently dropped rather than drawn with no
   point above it.

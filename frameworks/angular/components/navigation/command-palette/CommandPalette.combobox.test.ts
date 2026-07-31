@@ -1,4 +1,4 @@
-/* Mirrors the React suite of the same shape. What is new here is Enter: it used
+/* The combobox-pattern suite this component's binding requires. What is particular here is Enter: it used
  * to emit `run` alone, so a host that forgot to close left the palette over the
  * result it had just produced. It emits `close` first now -- the same event the
  * scrim click emits, so the host still owns `open` and the layer's controlled

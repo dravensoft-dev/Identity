@@ -23,11 +23,11 @@ test('LineChart with no valueSuffix draws bare numbers', () => {
   assert.doesNotMatch(html, /undefined/, 'an absent suffix must not render the string "undefined"');
 });
 
-test('LineChart throws when labels is absent, matching Angular input.required', () => {
+test('LineChart throws when labels is absent, which required-ness demands of every layer', () => {
   assert.throws(() => renderToStaticMarkup(<LineChart seriesLabel="p95 latency" values={VALUES} />), /LineChart: `labels` is required/);
 });
 
-test('LineChart throws when values is absent, matching Angular input.required', () => {
+test('LineChart throws when values is absent, which required-ness demands of every layer', () => {
   assert.throws(() => renderToStaticMarkup(<LineChart seriesLabel="p95 latency" labels={LABELS} />), /LineChart: `values` is required/);
 });
 

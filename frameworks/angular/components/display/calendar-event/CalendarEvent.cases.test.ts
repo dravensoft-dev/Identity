@@ -1,5 +1,5 @@
 /* Every chip is mounted INSIDE a calendar: CalendarState is a non-optional injection, so a
- * bare chip throws NG0201, and that is asserted here rather than designed away. React
+ * bare chip throws NG0201, and that is asserted here rather than designed away. A layer that
  * declares a third case, `inert`; this layer cannot produce it, which is what the binding's
  * divergesFrom records -- so assertPatternCases drives exactly two, and would fail on a
  * never-rendered or an undeclared one before anything mounts. */

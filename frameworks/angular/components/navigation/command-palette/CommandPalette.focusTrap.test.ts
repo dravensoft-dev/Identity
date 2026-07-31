@@ -38,7 +38,7 @@ test('opening the palette moves DOM focus into the search input, with no relianc
   assertSameNode(document.activeElement, input, 'opening must move focus into the search input, never into a tabindex="-1" row');
 });
 
-test('closing the palette restores focus to whatever opened it -- a divergence from React, which never restores focus', () => {
+test('closing the palette restores focus to whatever opened it, which is beyond what combobox requires', () => {
   const trigger = document.createElement('button');
   document.body.appendChild(trigger);
   trigger.focus();

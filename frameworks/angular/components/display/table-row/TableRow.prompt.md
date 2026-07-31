@@ -47,10 +47,9 @@ both refusable — and `Table.cases.test.ts` asserts the count so it cannot drif
 ### Card mode is pointer-only here, and that is a divergence
 
 Below `--bp-md` the row renders as a card with **no role and no tab stop**, so a row carrying
-`(click)` is reachable by pointer and not by keyboard. React makes that card a
-`role="button"` because it can see whether `onClick` was passed; Angular cannot ask whether
-an output has subscribers — `OutputEmitterRef.listeners` is private, and an `interactive`
-input would be a member no contract declares. Making every card row a button instead would
+`(click)` is reachable by pointer and not by keyboard. The row cannot decide the shape from
+whether anything is listening — R6 in `contracts/api/README.md` forbids exactly that, and
+`OutputEmitterRef.listeners` is private here anyway. Making every card row a button instead would
 put a dead tab stop on every row of every table that is not clickable. The binding declares
 `divergesFrom: "button"`, and the bounded consequence is that a card row with `(click)` bound
 is pointer-only below `--bp-md`. `arena-calendar-event` hit the same wall and resolved it the
@@ -62,5 +61,4 @@ so always-a-button costs no dead stop there, where always-a-div would delete Ent
 Where the row sits, which columns its cells are set against, and where the grid's cursor is
 all live on `TableState`, which the table provides and this component injects. None of it is
 a member of `contracts/api/components/TableRow.json`, and a consumer never writes one — the
-same shape as `arena-radio` pulling its group's state, and the opposite direction from
-React, where the parent pushes into each child instead.
+same shape as `arena-radio` pulling its group's state. Nothing is pushed down: the child asks.

@@ -1,4 +1,4 @@
-/* Mirrors the React suite of the same name. The row injects TableState, so it cannot be
+/* The per-case suite this row's binding requires. The row injects TableState, so it cannot be
  * rendered alone -- every case mounts a real arena-table around it. Reaching the card shape
  * needs the same two levers Table.cases.test.ts uses and for the same reasons: happy-dom ships
  * no ResizeObserver that ever fires, and readBreakpoint reads --bp-md through getComputedStyle,

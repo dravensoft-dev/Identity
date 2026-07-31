@@ -2,7 +2,7 @@
  * token rather than the arithmetic: a re-authored --limit-pagination-siblings must fail
  * here and be re-derived, not silently reshape every window. `threshold` stays a function
  * and never a named number, because check:duplicate-constants pairs module-level numeric
- * consts across the two layers by NAME and React's file declares none. */
+ * consts across the layers by NAME, and a window computed inline declares none. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -30,7 +30,7 @@ test('a window at the end elides on the left only', () => {
   assert.deepEqual(pageWindow(20, 20), [1, ELLIPSIS, 19, 20]);
 });
 
-test('the Angular window is the React one, page for page', () => {
+test('the window is the one Pagination.json contracts, page for page', () => {
   for (const [current, total] of [[1, 7], [1, 8], [10, 20], [1, 20], [20, 20], [4, 12], [1, 1]]) {
     const window = pageWindow(current, total);
     const numbers = window.filter((slot): slot is number => slot !== ELLIPSIS);

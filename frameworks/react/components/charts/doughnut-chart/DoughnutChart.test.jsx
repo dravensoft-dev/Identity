@@ -47,11 +47,11 @@ test('DoughnutChart names itself from seriesLabel, and an absent one throws rath
   );
 });
 
-test('DoughnutChart throws when labels is absent, matching Angular input.required', () => {
+test('DoughnutChart throws when labels is absent, which required-ness demands of every layer', () => {
   assert.throws(() => renderToStaticMarkup(<DoughnutChart seriesLabel="Traffic by region" values={VALUES} />), /DoughnutChart: `labels` is required/);
 });
 
-test('DoughnutChart throws when values is absent, matching Angular input.required', () => {
+test('DoughnutChart throws when values is absent, which required-ness demands of every layer', () => {
   assert.throws(() => renderToStaticMarkup(<DoughnutChart seriesLabel="Traffic by region" labels={LABELS} />), /DoughnutChart: `values` is required/);
 });
 

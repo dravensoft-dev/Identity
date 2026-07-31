@@ -30,7 +30,7 @@ const PROJECTED = new Map([
     + 'computes from the same constant. A calc() against var(--calendar-hour-h) here would slide '
     + 'the chip off its cell under an override with nothing failing.'],
   ['height', 'the other end of the same projection: an event\'s duration in minutes mapped to '
-    + 'pixels. The floor that used to be a max() in React is min-h-6.5 on the chip slot, which '
+    + 'pixels. The floor is min-h-6.5 on the chip slot, which '
     + 'stays governed by the manifest.'],
 ]);
 

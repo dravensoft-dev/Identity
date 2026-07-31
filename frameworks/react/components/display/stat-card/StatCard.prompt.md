@@ -2,8 +2,7 @@ Single metric on the card surface: uppercase label, one big tabular-nums value, 
 
 `label` and `value` are required. `delta` is optional, and the pill renders only when
 `delta.value` is truthy — a `delta` object carrying a `tone`/`direction` but an empty
-`value` renders nothing at all, matching Angular's `arena-stat-card` exactly (both layers
-gate on the same fact, per `contracts/api/components/StatCard.json`).
+`value` renders nothing at all, per `contracts/api/components/StatCard.json`.
 
 `value` and `delta.value` are **preformatted strings** — StatCard does no rounding, no locale, no unit. Format upstream where the units are known.
 

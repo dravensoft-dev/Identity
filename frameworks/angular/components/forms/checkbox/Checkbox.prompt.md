@@ -44,4 +44,4 @@ open `/frameworks/angular/components/forms/checkbox/Checkbox.card.html`:
   browser focused is the `opacity-0 size-0` native input. The `box` slot carries
   `[&:has(~input:focus-visible)]:shadow-[…]`, which reaches the input as a later sibling inside
   the same `<label>` — so the input must stay after the box in the template, and moving it
-  removes the ring with nothing failing. React draws the identical ring from an injected rule.
+  removes the ring with nothing failing.

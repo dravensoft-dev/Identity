@@ -18,7 +18,7 @@ test('danger stays a soft resting tint, never the full-strength fill -- this is 
   assert.doesNotMatch(errorStateStyles().root(), /bg-error-fill/);
 });
 
-test('the actions slot carries the spacing React\'s marginTop applies above the actions row', () => {
+test('the actions slot carries the token spacing that separates the actions row from the copy above it', () => {
   assert.match(errorStateStyles().actions(), /\bmt-1\.5\b/);
 });
 

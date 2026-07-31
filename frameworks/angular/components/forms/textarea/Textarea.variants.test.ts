@@ -59,12 +59,12 @@ test('the foot spreads the message and the counter to opposite ends', () => {
 test('counterIsNear turns over at nine tenths of the cap, exclusive', () => {
   assert.equal(COUNTER_WARNING_SHARE, 0.9);
   assert.equal(counterIsNear(89, 100), false);
-  assert.equal(counterIsNear(90, 100), false, 'exactly at the share is not yet near -- React uses >, not >=');
+  assert.equal(counterIsNear(90, 100), false, 'exactly at the share is not yet near -- Textarea.json contracts STRICTLY past nine tenths');
   assert.equal(counterIsNear(91, 100), true);
   assert.equal(counterIsNear(100, 100), true);
 });
 
-test('textareaIdFor derives React\'s exact ta- slug, which is a different prefix from Input\'s', () => {
+test('textareaIdFor derives the contracted ta- slug, which is a different prefix from Input\'s', () => {
   assert.equal(textareaIdFor('release-notes', 'Release notes'), 'release-notes');
   assert.equal(textareaIdFor(undefined, 'Release notes'), 'ta-release-notes');
   assert.equal(textareaIdFor(undefined, undefined), null);

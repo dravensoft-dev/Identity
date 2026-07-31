@@ -318,8 +318,8 @@ stays, undetected, until someone reads both side by side.
 A value that must track another member can look, briefly, like a constant — don't
 flatten it to the constant of the "middle" case. `IconButton` is the worked example: an
 icon-only width looks like one number, but it is the *size-specific* control height —
-`--dz-ctl-h-{sm,md,lg}`, 32, 40 and 48 — because an icon-only control is square at
-whatever height its size sets. Pinning the `md`
+`--dz-ctl-h-sm` (32), `--dz-ctl-h` (40) and `--dz-ctl-h-lg` (48) — because an icon-only
+control is square at whatever height its size sets. Pinning the `md`
 value as `w-ctl-h` on the `showLabel: false` compound would render `sm` at 40×32, and
 only `lg` would look square — by accident, because its own `min-w-ctl-h-lg` (48)
 outranks the wrong 40px width.

@@ -56,8 +56,6 @@ true for one, so the clone succeeded and the attribute reached nothing at all, i
 that re-parents its content, is outside what an effect reading `firstElementChild` can reach.
 
 **The bubble is in flow, so an ancestor with `overflow: hidden` clips it** and it cannot leave a
-scroll container. `arena-tooltip` renders through a `@angular/cdk/overlay` pane on `document.body`
-and escapes both — that layer took the CDK dependency precisely so trigger-anchored positioning,
-viewport flipping and reposition-on-scroll are not hand-rolled. Fixing React means a portal or a
-popover, which is a new capability rather than a defect: place a tooltip where its trigger is not
-inside a clipping ancestor, or move to the Angular layer where it matters.
+scroll container. Nothing in `contracts/behaviour/tooltip.json` requires it to escape one, so this
+is a bounded capability limit rather than a defect: fixing it means a portal or a popover, which is
+a new capability. Place a tooltip where its trigger is not inside a clipping ancestor.

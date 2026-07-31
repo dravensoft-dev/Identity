@@ -1,6 +1,7 @@
-/* `compareSurface` excludes slots from its required-ness comparison, because Angular's
- * <ng-content> cannot express mandatory -- so a contract declaring `"required": true` on a slot
- * holds React to something no gate checks. This is that check. It is derived from the contracts
+/* check:api excludes slots from its required-ness comparison, for the reason
+ * contracts/api/README.md gives -- no platform-neutral syntax declares projected content
+ * mandatory -- so a contract declaring `"required": true` on a slot is held by nothing else.
+ * This is that check. It is derived from the contracts
  * rather than listed here, so a fifth required slot joins it by being declared, and the count
  * assertion fails if the set ever empties. */
 import test from 'node:test';
@@ -45,8 +46,8 @@ test('every slot a contract declares required throws in React when it is omitted
     assert.throws(
       () => renderToStaticMarkup(render()),
       (error) => error instanceof Error && error.message.startsWith(`${component}:`),
-      `${component} rendered without its required \`${member}\` slot instead of throwing. Angular cannot express a `
-      + 'mandatory <ng-content>, so React is the only layer that can hold this contract, and nothing else checks it.',
+      `${component} rendered without its required \`${member}\` slot instead of throwing. A required slot is `
+      + 'held at runtime or by nothing at all, since check:api compares no slot for required-ness.',
     );
   }
 });

@@ -60,12 +60,12 @@ label on every ordinary chip through that band and well past it, and a kebab-awa
 `CalendarEvent`'s 34px reserve back inside `Calendar`, laundered through a second token but still
 a number that silently goes wrong if the reserve changes.
 
-**The chips are not inside their day columns in Angular, and `aria-owns` is what pays for it.**
-React distributes them with `cloneElement`, so a chip is a DOM child of its day's `role="row"` and
-its `left`/`width` are percentages of its own column. Angular projects once, into the grid, so a
-chip's percentages are of the whole grid and each column names its own chips through `aria-owns`
-— the accessibility tree matches either way. Two consequences follow: the Angular grid must use
-real equal tracks, because React's `flex: 1` columns differ by one border width and React does not
-care; and anything projected that is not a chip becomes a grid item there, where React's placement
-lookup silently skips it. **No gate sees either** — `check:dimensions` is blind to `[style.x]` and
+**A chip is a DOM child of its day's `role="row"` here**, distributed with `cloneElement`, so
+its `left`/`width` are percentages of its own column. The `grid` pattern constrains the
+accessibility tree and not the DOM, so a layer that cannot distribute children may put every chip
+in the grid and have each column claim its own through `aria-owns` and meet the same pattern —
+which is worth knowing before assuming this component's DOM shape is the contracted one. Two
+things follow from the shape here: `flex: 1` columns may differ by one border width without
+consequence, because a chip's percentages are of its own column; and anything projected that is
+not a chip is silently skipped by the placement lookup. **No gate sees either** — `check:dimensions` is blind to `[style.x]` and
 the grid suite asserts the keyboard rather than the geometry.

@@ -70,7 +70,7 @@ test('the root carries a display utility, because the host binds it', () => {
   assert.match(inputStyles().root(), /flex-col/);
 });
 
-test('inputIdFor prefers an explicit id and otherwise derives React\'s exact in- slug', () => {
+test('inputIdFor prefers an explicit id and otherwise derives the contracted in- slug', () => {
   assert.equal(inputIdFor('project-name', 'Project name'), 'project-name');
   assert.equal(inputIdFor(undefined, 'Project name'), 'in-project-name');
   assert.equal(inputIdFor(undefined, 'Repository   URL'), 'in-repository-url');

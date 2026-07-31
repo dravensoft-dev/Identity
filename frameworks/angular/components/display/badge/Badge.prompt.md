@@ -1,7 +1,7 @@
 Arena status label — mono, uppercase, short. Standalone, `OnPush`, signal input.
-Styling is the sibling `Badge.variants.ts` recipe, read from the same
-`Badge.manifest.json` React's Tailwind mirror reads; the component carries no CSS
-classes of its own and host-binds its root slot.
+Styling is the sibling `Badge.variants.ts` recipe, read from `Badge.manifest.json`
+in the shared Tailwind layer; the component carries no CSS classes of its own and
+host-binds its root slot.
 
 ```html
 <arena-badge tone="success" dot>Deployed</arena-badge>

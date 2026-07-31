@@ -145,10 +145,10 @@ test('the require-text input substitutes a focus ring for the outline it removes
   const tags = [...document.head.querySelectorAll('style[data-arena-confirm-dialog]')];
   assert.equal(tags.length, 1, 'the rule is injected ONCE per process, not once per instance');
   assert.match(tags[0].textContent, /\.arena-confirm-input:focus-visible/,
-    'the selector matches the Angular recipe verbatim, which is what convergence means here; '
-    + 'for a TEXT input :focus-visible also matches a mouse click, so this is not about hiding a ring');
+    'the ring is keyed to :focus-visible on the hook class; for a TEXT input :focus-visible also '
+    + 'matches a mouse click, so this is not about hiding a ring');
   assert.match(tags[0].textContent, /var\(--focus-width\)/, 'the ring width must be the token');
-  assert.match(tags[0].textContent, /var\(--danger\)/, 'and its colour the danger token, as Angular does');
+  assert.match(tags[0].textContent, /var\(--danger\)/, 'and its colour the danger token');
 
   assert.equal(container.querySelectorAll('style').length, 0,
     'the tag belongs in <head>: rendered inline it ships one per instance and leaks into textContent');

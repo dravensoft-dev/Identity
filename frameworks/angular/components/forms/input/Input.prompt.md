@@ -32,11 +32,11 @@ Return the message, or the empty string when the value is good.
 **Do / Don't**
 - It is **controlled**. `value` is what the consumer owns; `change` fires on every keystroke and
   carries the text. **Angular will not force the DOM back**: ignore `change` and the box keeps
-  what the user typed, where React re-renders it away. Wire the signal.
+  what the user typed. Wire the signal.
 - `error` **wins over `validate`**, and it wins even when it is the empty string: a controlled
   error that is present-and-blank suppresses the validator and shows the hint. Every use of the
-  resolved error reads its truthiness, which is React's own semantics rather than an Angular
-  reading of it. Pass `undefined`, not `''`, to mean "no controlled error".
+  resolved error reads its truthiness rather than its nullness, which is what
+  `Input.json` contracts. Pass `undefined`, not `''`, to mean "no controlled error".
 - `validate` runs on blur by default. Its message appears only once the field is **touched**, so
   an untouched form never accuses the user of anything. `validateOn="change"` touches on the
   first keystroke instead — reach for it on a field with a cheap, obvious rule.
@@ -44,14 +44,15 @@ Return the message, or the empty string when the value is good.
   whose validator returned nothing. It is not "the field has a value".
 - The focus ring is the recipe's, not the component's: the `field` slot carries `focus-within:`,
   so there is no focus signal to keep in sync with the DOM.
-- `id` is derived from `label` as `in-<slug>` when you do not pass one, matching React exactly, so
-  the same markup gets the same id in both layers. Pass `id` when two fields share a label.
+- `id` is derived from `label` as `in-<slug>` when you do not pass one — the derivation
+  `Input.json` states, so the same markup gets the same id in every layer. Pass `id` when two
+  fields share a label.
 - `required` and `readOnly` land on the native attributes rather than on `aria-required` and
   `aria-readonly`. Those are what a native control's accessibility tree already reports, and
   writing both would be two claims that can disagree.
 - `icon`, `prefix` and the status glyphs are decoration and all four are `aria-hidden`. The error
-  message beside the glyph is what carries the state. **React leaves its two status glyphs
-  hidden too**, so neither layer announces a Phosphor ligature beside the message it duplicates.
+  message beside the glyph is what carries the state, so nothing announces a Phosphor
+  ligature beside the message it duplicates.
 - The error line **replaces** the hint rather than stacking under it. Two lines of guidance under
   one field is one too many.
 - `type` is the `InputType` enum. `checkbox` and `radio` are not among them — those are

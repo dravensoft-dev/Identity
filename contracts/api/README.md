@@ -144,7 +144,7 @@ the contract's modelled signature, in the spelling above.
 contract that used it would already have chosen a layer. A contract declares *members*;
 each layer binds them in its own idiom.
 
-## The five derived rules
+## The six derived rules
 
 **R1 — A predefined object is pure data with known fields.** No functions and no slots
 inside it. A field that is a function becomes an **event of the component**, carrying the
@@ -181,6 +181,21 @@ record of a known type, which is a predefined object, and it is still an R4 viol
 
 **R5 — No unions between forms.** A member is one form. `(string | SegmentOption)[]` picks one.
 
+**R6 — What a component renders is never derived from whether a listener is bound, or from
+whether a slot was filled.** A component that draws a dismiss × only when someone is listening
+for the dismissal, or an action button only when a slot has content, has made its rendered
+shape depend on a question a platform may be unable to ask: an outbound member's subscriber
+list is private in at least one of them, and projected content is not inspectable in at least
+one of them. A component that asks it anyway is correct in the layer that can and silently
+different in the layer that cannot.
+
+So the answer is a **member**, and it is declared and gated on explicitly. `Alert.dismissible`,
+`Toast.dismissible`, `Tag.removable`, `BulkActionBar.clearable`, `TableRow.interactive` and
+`CalendarEvent.actionsEnabled` are the six that exist for this reason, and each one's
+description says so. The cost is stated rather than hidden: a consumer who binds the event and
+forgets the boolean gets no control, in every layer alike — which is the point, since the
+alternative is *one* layer quietly doing something else.
+
 ## What the contract governs, and what it does not
 
 The contract governs the **member surface** — its name, its form, its type, its
@@ -211,6 +226,12 @@ platform syntax limit rather than a real divergence. An **event's** required-nes
 comparable because the concept does not apply to either platform: an outbound member is
 never "required" — a consumer is always free not to listen — and neither React's optional
 function prop nor Angular's `output()` has a notion of a mandatory listener.
+
+**A required name is refused when it is blank after trimming.** `Table.label`,
+`SegmentedControl.ariaLabel` and the rest of the members only a human can supply are guarded at
+runtime, and the value the guard exists to catch is not `undefined` — a caller who forgets is
+caught by the type — but a present-and-useless one. A name of nothing but spaces satisfies a
+falsiness test and names nothing, so the guard trims before it decides, in every layer.
 
 **Required-ness governs the implementation and the runtime.** `check:api` proves both layers
 *declare* a member identically required — the implementation half, which already held. The
@@ -533,12 +554,14 @@ for the same reason.
 `bun run check:api` makes five assertions: coverage, form, agreement, the derived rules,
 and generated drift. See `scripts/check/arena/check-api.mjs`.
 
-**Two of the five derived rules are authoring rules the audit applies, and no gate asserts
+**Three of the six derived rules are authoring rules the audit applies, and no gate asserts
 them.** R2 — "who draws it" — is a fact about intent and markup ownership rather than about
 a declaration, so a contract naming a slot for content Arena draws passes. R3 — whether a
 parameterised slot fills a cell or replaces a row — is a fact about the rendered tree;
 `check:compliance` is the only layer that sees a rendered tree, and it does not read
-contracts.
+contracts. R6 — whether a render was derived from a bound listener — is a fact about the
+implementation's control flow, and a declared boolean looks identical to a gate whether or
+not the component actually gates on it.
 
 **One thing sits outside the gate's reach rather than outside machine-checking:** `default` is
 part of the contract format and is read by nothing on its own. The comparison also refuses one

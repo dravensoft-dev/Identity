@@ -8,7 +8,7 @@ test('the default variants are md, circle, no presence dot', () => {
   assert.equal(defaults.box(), avatarStyles({ size: 'md', shape: 'circle', status: 'none' }).box());
 });
 
-test('the initials font size is exactly diameter * 0.4, matching Avatar.jsx', () => {
+test('the initials font size is exactly diameter * 0.4, the ratio spacing.json declares', () => {
   const sizes: Record<'xs' | 'sm' | 'md' | 'lg', string> = {
     xs: '--avatar-xs', sm: '--avatar-sm', md: '--avatar-md', lg: '--avatar-lg',
   };
@@ -18,7 +18,7 @@ test('the initials font size is exactly diameter * 0.4, matching Avatar.jsx', ()
   }
 });
 
-test('the presence dot diameter is exactly max(8px, diameter * 0.28), matching Avatar.jsx', () => {
+test('the presence dot diameter is exactly max(8px, diameter * 0.28), the ratio spacing.json declares', () => {
   const sizes = ['xs', 'sm', 'md', 'lg'] as const;
   for (const size of sizes) {
     const status = avatarStyles({ size, status: 'online' }).status();
@@ -43,7 +43,7 @@ test('every presence tone maps to the status color taxonomy, not a series color'
   assert.match(avatarStyles({ status: 'offline' }).status(), /bg-base-content\/52/);
 });
 
-test('the image slot fills the box and crops to it, matching Avatar.jsx', () => {
+test('the image slot fills the box and crops to it, so a non-square source never distorts', () => {
   const image = avatarStyles().image();
   assert.match(image, /\bw-full\b/);
   assert.match(image, /\bh-full\b/);

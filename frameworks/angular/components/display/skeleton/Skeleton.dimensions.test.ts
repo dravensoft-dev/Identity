@@ -67,7 +67,7 @@ test('arena-skeleton: variant="circle" uses height||width as one diameter for bo
 
   const both = renderSkeleton('circle', '40px', '64px');
   const b = both.nativeElement as HTMLElement;
-  assert.equal(b.style.width, '64px', 'height wins over width, matching React\'s `height || width`');
+  assert.equal(b.style.width, '64px', 'height wins over width for a circle, which Skeleton.json contracts -- a circle wants one diameter');
   assert.equal(b.style.height, '64px');
   both.destroy();
 });

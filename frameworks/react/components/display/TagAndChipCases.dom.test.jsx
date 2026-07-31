@@ -60,7 +60,7 @@ const CHIP = {
   dateLabel: 'Monday 20 July', tabIndex: -1,
 };
 
-test('CalendarEvent meets all three of its declared shapes', () => {
+test('CalendarEvent meets both of its declared shapes, whether or not anything listens', () => {
   assertPatternCases({
     bindingPath: join(REACT_COMPONENTS, 'display/calendar-event/CalendarEvent.behaviour.json'),
     cases: {
@@ -82,6 +82,12 @@ test('CalendarEvent meets all three of its declared shapes', () => {
           'a disabled chip must say so through aria-disabled, keeping its place in the grid\'s Tab sequence');
         act(() => { off.firstElementChild.click(); });
         assert.equal(blocked, false, 'a disabled chip still reported through onClick');
+
+        const unbound = mount(<CalendarEvent id="a-unbound" title="Standup" start="2026-07-20T09:00:00Z"
+          end="2026-07-20T09:30:00Z" {...CHIP} />);
+        assert.equal(unbound.firstElementChild.tagName, 'BUTTON',
+          'the shape is never derived from whether onClick was passed -- R6 in contracts/api/README.md');
+        act(() => { unbound.firstElementChild.click(); });
 
         return {
           root,
@@ -121,22 +127,6 @@ test('CalendarEvent meets all three of its declared shapes', () => {
         };
       },
 
-      inert: () => {
-        const plain = mount(<CalendarEvent id="c" title="Standup" start="2026-07-20T09:00:00Z"
-          end="2026-07-20T09:30:00Z" {...CHIP} />);
-        assert.equal(plain.querySelector('button'), null,
-          'with no onClick there is nothing to press, so the chip renders no button at all');
-
-        const withActions = mount(<CalendarEvent id="d" title="Standup" start="2026-07-20T09:00:00Z"
-          end="2026-07-20T09:30:00Z" actionsEnabled {...CHIP} />);
-        const root = withActions.firstElementChild;
-        assert.equal(root.tagName, 'DIV',
-          'actionsEnabled draws a kebab but does not make the chip pressable -- the root stays a div');
-        assert.equal(root.hasAttribute('role'), false,
-          'and it claims no interactive role, which is what `none` asserts about this case');
-
-        return { root: withActions };
-      },
     },
   });
 });

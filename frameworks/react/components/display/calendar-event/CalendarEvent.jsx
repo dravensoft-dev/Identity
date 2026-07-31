@@ -14,11 +14,11 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
   if (!end) throw new Error('CalendarEvent: `end` is required');
 
   const hasPanel = actionsEnabled;
-  const Tag = onClick && !hasPanel ? 'button' : 'div';
+  const Tag = hasPanel ? 'div' : 'button';
 
   const [panelOpen, setPanelOpen] = React.useState(Boolean(defaultPanelOpen));
 
-  const bodyIsButton = Boolean(onClick) && hasPanel;
+  const bodyIsButton = hasPanel;
 
   const focusableRef = React.useRef(null);
   const kebabWrapRef = React.useRef(null);
@@ -55,11 +55,11 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
   return (
     <Tag ref={bodyIsButton ? undefined : setFocusable}
 
-      type={onClick && !hasPanel ? 'button' : undefined}
+      type={hasPanel ? undefined : 'button'}
       tabIndex={bodyIsButton ? undefined : tabIndex}
-      onClick={onClick && !hasPanel && !disabled ? (e) => { e.stopPropagation(); onClick(); } : undefined}
-      aria-label={onClick && !hasPanel ? `${title}, ${dateLabel}, ${timeLabel}` : undefined}
-      aria-disabled={onClick && !hasPanel && disabled ? 'true' : undefined}
+      onClick={!hasPanel && !disabled ? (e) => { e.stopPropagation(); onClick && onClick(); } : undefined}
+      aria-label={hasPanel ? undefined : `${title}, ${dateLabel}, ${timeLabel}`}
+      aria-disabled={!hasPanel && disabled ? 'true' : undefined}
       onKeyDown={hasPanel ? (e) => {
 
         if (e.key === 'Escape' && panelOpen) {
@@ -85,14 +85,13 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
         paddingRight: hasPanel && !actionsBelow ? KEBAB_RESERVE : 'calc(var(--sp-1) * 1.5)',
         background: `color-mix(in oklab, ${color} 16%, var(--surface-card))`,
         borderLeft: `var(--bw-strong) solid ${color}`, borderTop: 'none', borderRight: 'none', borderBottom: 'none',
-        borderRadius: 'var(--r-sm)', cursor: onClick ? (disabled ? 'not-allowed' : 'pointer') : 'default',
-        opacity: onClick && disabled ? 0.5 : 1,
+        borderRadius: 'var(--r-sm)', cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.5 : 1,
         font: 'inherit' }}>
       {hasPanel ? (
         <>
-          {onClick ? (
-            <button type="button" ref={setFocusable} tabIndex={tabIndex}
-              onClick={disabled ? undefined : (e) => { e.stopPropagation(); onClick(); }}
+          <button type="button" ref={setFocusable} tabIndex={tabIndex}
+              onClick={disabled ? undefined : (e) => { e.stopPropagation(); onClick && onClick(); }}
               aria-label={`${title}, ${dateLabel}, ${timeLabel}`}
               aria-disabled={disabled ? 'true' : undefined}
 
@@ -101,8 +100,7 @@ export const CalendarEvent = React.forwardRef(function CalendarEvent({
                 font: 'inherit', color: 'inherit', textAlign: 'left',
                 cursor: disabled ? 'not-allowed' : 'pointer' }}>
               {body}
-            </button>
-          ) : body}
+          </button>
           <span ref={kebabWrapRef} style={{ position: 'absolute', right: 0, ...(actionsBelow ? { bottom: 0 } : { top: 0 }) }}>
             <IconButton icon="ph-bold ph-dots-three-vertical" label="Actions" size="sm"
               tabStop={false}

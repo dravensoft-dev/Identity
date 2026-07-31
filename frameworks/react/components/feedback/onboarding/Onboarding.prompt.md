@@ -20,7 +20,7 @@ scrim click uses, so Escape joins the mouse path rather than replacing it. There
 separate "dismiss" callback to wire.
 
 **The accessible name is a fallback chain**, `step.title ?? step.eyebrow ?? "Step N of M"`,
-matching what the Angular layer computes. **A caller who wants a useful name still supplies a
+**A caller who wants a useful name still supplies a
 step `title`** — a positional name is a floor, not a substitute. The progress dots inside the
 panel carry a name of their own, `Progress: step N of M`, so an untitled step announces the
 dialog and its dots as two different things rather than as the same string twice.
@@ -62,8 +62,8 @@ Then, with the tour closed:
 3. **Tab again.** Focus wraps back to Skip.
 4. **Shift+Tab.** Focus wraps from Skip to Next.
 5. **Escape.** The tour closes through `onSkip` — the same channel the Skip button and
-   the scrim click use, and the one Angular's `arena-onboarding` also routes Escape to
-   — and focus returns to "Start tour".
+   the scrim click use, which is how `dialog-modal`'s `keyboard.Escape` is met without adding
+   a member — and focus returns to "Start tour".
 
 Driving this through CDP: Enter must be `keyDown` with `text: '\r'`; a `rawKeyDown`
 does not activate a button.

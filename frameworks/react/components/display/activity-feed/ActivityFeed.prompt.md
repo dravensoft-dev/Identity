@@ -13,10 +13,9 @@ each row.
 `tone` is Badge's vocabulary — `neutral · accent · gold · success · warning · danger ·
 info` — and defaults to `accent`.
 
-**There is no row escape hatch.** `renderItem` was removed from the API contract:
-Angular has no binding for per-item projection (it would need a structural directive
-and `ngTemplateOutlet`, which no row of the binding table covers), so React cannot keep
-a capability the other layer cannot implement. A consumer can no longer place their own
+**There is no row escape hatch.** `renderItem` is not in the API contract: a per-item
+render function is not one of the nine forms, because no row of the contract's binding table
+covers per-item projection in every platform. Arena declares only what every layer can implement. A consumer can no longer place their own
 markup inside one row — the event must fit `actor` / `action` / `target` / `time` / `tone`,
 or it does not belong in this component.
 

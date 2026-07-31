@@ -64,7 +64,7 @@ test('narrow always stretches, regardless of align', () => {
   assert.doesNotMatch(narrowStart.root(), /\bitems-start\b/);
 });
 
-test('the title is the display-weight heading React renders, with its own margin reset', () => {
+test('the title is a display-weight heading with its own margin reset', () => {
   const title = pageHeadStyles().title();
   assert.match(title, /\bfont-display\b/);
   assert.match(title, /\bfont-extrabold\b/);
@@ -72,7 +72,7 @@ test('the title is the display-weight heading React renders, with its own margin
   assert.match(title, /\bm-0\b/);
 });
 
-test('the subtitle carries only the top margin React applies -- the paragraph\'s UA bottom margin is reset', () => {
+test('the subtitle carries only a top margin -- the paragraph\'s UA bottom margin is reset', () => {
   const subtitle = pageHeadStyles().subtitle();
   assert.match(subtitle, /\bmt-0\.5\b/);
   assert.match(subtitle, /\bmb-0\b/);

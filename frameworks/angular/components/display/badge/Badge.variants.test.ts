@@ -26,7 +26,7 @@ test('the seven tones resolve to seven distinct roots -- none silently collapses
   assert.equal(roots.size, TONES.length, `two tones resolved to the same classes: ${[...roots].join(' | ')}`);
 });
 
-test('danger carries the error ink, on the soft tint React paints rather than a full-strength surface', () => {
+test('danger carries the error ink on a soft tint, never a full-strength surface -- danger is outline', () => {
   const root = badgeStyles({ tone: 'danger' }).root();
   assert.match(root, /\btext-error\b/);
   assert.match(root, /\bbg-error\/\d+\b/, 'the danger surface is a tint of --error, never the token at full strength');

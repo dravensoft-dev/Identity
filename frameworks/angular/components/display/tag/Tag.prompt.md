@@ -7,7 +7,7 @@ Arena-drawn dismiss `×` that emits `remove` on click.
 <arena-tag>Neutral</arena-tag>
 <arena-tag tone="primary">Active</arena-tag>
 <arena-tag tone="danger">Blocked</arena-tag>
-<arena-tag removable (remove)="drop('react')">React</arena-tag>
+<arena-tag removable (remove)="drop('staging')">Staging</arena-tag>
 ```
 
 **Do / Don't**

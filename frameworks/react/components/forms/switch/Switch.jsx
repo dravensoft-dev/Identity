@@ -32,12 +32,11 @@ export function Switch({
   const dims = SIZES[size] || SIZES.md;
   const vertical = orientation === 'vertical';
   useKnobTransition();
-  const guarded = confirm && typeof onRequestChange === 'function';
   const icon = state ? iconOn : iconOff;
 
   const activate = () => {
     if (disabled) return;
-    if (guarded) { onRequestChange(); return; }
+    if (confirm) { onRequestChange && onRequestChange(); return; }
     if (state) { onFuncOff && onFuncOff(); } else { onFuncOn && onFuncOn(); }
   };
 
