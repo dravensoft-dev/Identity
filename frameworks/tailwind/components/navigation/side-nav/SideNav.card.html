@@ -10,7 +10,7 @@ import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
 const manifest = await (await fetch('./SideNav.manifest.json')).json();
 const c = classesFor(manifest);
 
-/* One destination. `href` decides the element, exactly as SideNavItem.jsx does,
+/* One destination. `href` decides the element, as SideNavItem.json contracts,
    and the glyph carries the manifest's `icon` slot alongside the Phosphor class
    name the consumer supplies -- the single-icon convention: Arena styles the
    element, the consumer names it. */
@@ -29,7 +29,7 @@ function nav(children, ariaLabel) {
   return el('nav', { class: c.root, 'aria-label': ariaLabel }, ...children);
 }
 
-/* SideNavSection.jsx's role=group wrapper and the heading that names it. */
+/* The labelled role=group wrapper SideNavSection binds, and the heading that names it. */
 function group(label, children) {
   const id = `sn-${label.toLowerCase().replace(/\W+/g, '-')}`;
   return el('div', { class: c.section, role: 'group', 'aria-labelledby': id },
@@ -37,11 +37,10 @@ function group(label, children) {
     ...children);
 }
 
-/* SideNavCollapsible.jsx's disclosure: a real <button> carrying aria-expanded
+/* The disclosure SideNavCollapsible binds: a real <button> carrying aria-expanded
    and aria-controls, and the region it names. Collapsed is the `hidden`
    attribute alone -- the preflight's `[hidden] { display: none !important }`
-   outranks the region slot's `flex`, which is the Tailwind-layer counterpart of
-   React setting both `hidden` and an inline `display: none`. */
+   outranks the region slot's `flex`, so nothing else has to hide it. */
 function collapsible(label, icon, expanded, children) {
   const id = `sn-${label.toLowerCase().replace(/\W+/g, '-')}`;
   const trigger = el('button', {

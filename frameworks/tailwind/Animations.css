@@ -3,13 +3,10 @@
    `bun run build:tailwind` compiles them into Utilities.generated.css with everything
    else and a manifest reaches them by name.
 
-   This is the Tailwind layer's version of a boundary React already has: an
-   inline style object cannot express @keyframes, so React injects a <style>
-   once per component; a manifest cannot express them either, so they are
-   authored here rather than smuggled into a bracket. Every value below is a
-   var() into a token, the durations included: plan 4.5 named them in the
-   --loop-* family precisely because a loop is not a transition, so nothing here
-   restates a number React also states.
+   A manifest holds class names and a keyframe is not one, so they are authored
+   here rather than smuggled into a bracket. Every value below is a var() into a
+   token, the durations included: they are the --loop-* family precisely because
+   a loop is not a transition, so nothing here restates a number stated elsewhere.
 
    Reduced motion is answered per animation, on the terms the motion sets: the
    shimmer is decorative, so it stops outright; ProgressBar's indeterminate
@@ -81,9 +78,8 @@
   animation: arena-fade var(--dur-fast) var(--ease-out);
 }
 
-/* The indeterminate sweep is a pseudo-element, which is the one thing an inline
-   style genuinely cannot reach — the same reason ProgressBar.jsx injects a class
-   rather than keeping its animation inline. Slows under reduced motion; a frozen
+/* The indeterminate sweep is a pseudo-element, so no utility and no inline style
+   can reach it and it has to be a rule. Slows under reduced motion; a frozen
    progress bar reads as a hung process. */
 @utility arena-prog-indeterminate {
   &::after {

@@ -10,7 +10,7 @@ import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
 const manifest = await (await fetch('./Pagination.manifest.json')).json();
 const c = classesFor(manifest);
 
-/* The same page list React computes: first, last, the current page and its
+/* The page list Pagination.json contracts: first, last, the current page and its
    neighbours, with an ellipsis wherever the run breaks. */
 function pages(current, total) {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
