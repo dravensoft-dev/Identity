@@ -152,12 +152,11 @@ check — `bun run demos` and open the page.
 
 `components/` holds **38 manifests** — count them with `find components -name
 '*.manifest.json' | wc -l` — one per component, each with a specimen page
-beside it that renders the real markup from the real recipe with no build step. Seventeen
-have an Angular primitive consuming them; twenty-one do not, and what holds those up is
-`bun run check:tailwind` — every class a manifest declares must produce a rule, so a
-manifest with no consumer cannot rot silently. `SideNav` is the odd one in that second
-group: Angular consumes it through Material's `mat-nav-list`, dressed by
-`arena-material.css`, rather than through an `arena-*` primitive.
+beside it that renders the real markup from the real recipe with no build step. Most now have
+an Angular primitive consuming them — count the consumers rather than trusting a figure here,
+with `grep -rl "tailwind/components" ../angular/components | wc -l` — and what holds the rest up
+is `bun run check:tailwind`: every class a manifest declares must produce a rule, so a manifest
+with no consumer cannot rot silently.
 
 **`check:tailwind` also fails when it finds no manifests at all**, and that guard is worth
 knowing about because the gate had the opposite failure mode. A gate iterating zero

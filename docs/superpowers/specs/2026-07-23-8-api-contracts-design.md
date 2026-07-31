@@ -341,9 +341,9 @@ contract replaces it, and the divergence no longer exists to record. Entries cov
 rendering or behaviour stay. Plan A deletes the `StatCard` entry (`:1058`) and the API
 paragraphs of the `Breadcrumbs` (`:1035`) and `AppLogo` (`:914`) entries.
 
-Three bindings cite this document as supporting evidence
-(`command-palette.behaviour.json`, the `SideNav` delegated entry, and
-`frameworks/angular/components/feedback/onboarding/Onboarding.ts`). None of the three sections
+Bindings cite this document as supporting evidence — count them rather than trusting a figure,
+since one citer already died with the `SideNav` delegated entry Plan D deleted, and the document
+itself is now section 3 of `DOUBTS.md`. None of the three sections
 Plan A touches is cited, but any later plan deleting a cited section must redirect the
 citation in the same change.
 
@@ -689,7 +689,8 @@ because it was checked, not assumed.
 migrate React to it — so that each component's API is settled and normative *before*
 Angular has an implementation to defend, rather than after.
 
-The subjects are exactly the twenty-two Angular currently delegates to Material:
+The subjects are exactly the twenty-two Angular delegated to Material when this was written —
+Plan D has since built every one of them, and the set is empty:
 `Badge`, `Button`, `Calendar`, `Card`, `Checkbox`, `Dialog`, `IconButton`, `Input`,
 `Menu`, `Pagination`, `ProgressBar`, `Radio`, `SegmentedControl`, `Select`, `SideNav`,
 `Spinner`, `Switch`, `Table`, `Tabs`, `Textarea`, `Toast`, `Tooltip`. The two sets
@@ -842,6 +843,20 @@ and reports it — so for those three the gate is ready before the audit is.
 > all: the CDK earns its place on surfaces anchored to a trigger, and Arena's three existing
 > modals already centre in flow.
 >
+> **This list was wrong twice, and batch 6 closed the plan rather than handing on to a seventh.**
+> `ProgressBar` and `Spinner` are named in the subject set above and in **no batch at all** — an
+> omission nothing would have caught until batch 7 tried to delete a bridge two live entries still
+> needed, so batch 6 took them. And the decision batch 6 "inherits" was stale: the argument for
+> leaving `SideNav` on `mat-nav-list` was that Material already brings the anchor-or-button
+> distinction, the active state and the keyboard behaviour, and two of those three are the
+> platform's rather than Material's while the third is a requirement of nothing — the `navigation`
+> pattern has no focus or keyboard clause. With the last four delegations gone the bridge held no
+> rule, and `check:material` has no zero-result guard, so it would have passed green over an empty
+> file for a whole batch; deleting the file, the gate and the devDependency inside batch 6 was the
+> only reading that leaves nothing lying. **Plan D ends here, at six batches.**
+> `BehaviourDelegated.json` survives holding exactly `Calendar` and `CalendarEvent`, which is what
+> the note at the top of this section predicted.
+>
 > **A dressing block in `arena-material.css` dies when no delegated entry still needs it, not
 > when its own component lands.** Batch 1 hit this immediately: deleting the `MatButton` blocks
 > would have degraded an adopter's remaining Material buttons and falsified `IconButton`'s
@@ -871,7 +886,8 @@ against the compiled source of CDK 22.0.5, `cdk/dialog` applies `role`, `aria-mo
 Arena writes the markup and the styling, which it must own regardless — the CDK ships no
 colour, no typography and no radius, only positional CSS.
 
-Why this satisfies all three contracts, and why no other option did:
+Why this satisfies all three contracts, and why no other option did — **written before the plan
+ran, and every clause below came true**:
 
 - **Design.** Material's compiled CSS is invisible to `check:dimensions` and
   `check:tailwind`, so these twenty-two controls sit outside the design contract today.
@@ -991,7 +1007,7 @@ Plan 8C3 carried Plan C forward with its third batch: `Tabs`, `SegmentedControl`
 components, taking `check:api` from 32 contracts across 52 layer implementations to **42 across 62**.
 **Every contract is single-layer for the same reason 8C1's and 8C2's were**, though the reason has
 two halves here: at the time Angular delegated `Tabs`, `SegmentedControl`, `ProgressBar`, `Toast`,
-`Tooltip` and `Table` to Material — Plan D has since taken all but `ProgressBar` back — and has no
+`Tooltip` and `Table` to Material — Plan D has since taken all of them back — and has no
 equivalent of `Calendar` at all — `BehaviourDelegated.json` binds
 that one to pattern `absent`. So the batch moves the layer count by exactly as many contracts as it
 writes, ten and not twenty.
@@ -1013,8 +1029,8 @@ handing Arena a render function — and neither needed the vocabulary widened.
 **Plan 8C4 finished Plan C.** `Dialog`, `Menu`, `Pagination` and `SideNav` were the four subjects
 left, and the ladder reconciles one contract and one layer per commit: 42 → **43** (`b4b8a9c`,
 `Dialog`) → **44** (`d2c9748`, `Menu`) → **45** (`ae8fcaf`, `Pagination`) → **46** (`7640db2`,
-`SideNav`). All four are single-layer for the reason every Plan C batch has been: Angular delegates
-each to Material. **`check:api` now stands at 46 contracts across 66 layer implementations, and
+`SideNav`). All four were single-layer for the reason every Plan C batch was: Angular delegated
+each to Material at the time. **`check:api` now stands at 46 contracts across 66 layer implementations, and
 there is no fifth batch** — the set is exhausted, which is the first time that sentence has been
 true since Plan A.
 
@@ -1395,8 +1411,10 @@ APIs can still be settled — an API for a component that does not yet trap focu
 thereby wrong — but Plan D must not read a Plan C contract as a specification of
 behaviour.
 
-**Removing Material is a one-way door.** Once `arena-material.css` and
-`BehaviourDelegated.json` are gone and twenty-two primitives exist, returning to Material
-means undoing all of it. The gate that makes this survivable is that Plan D happens last,
-after every contract it implements against is already settled and proven by Plans A
-through C.
+**Removing Material is a one-way door, and Plan D walked through it.** `arena-material.css`,
+its prompt, `check:material` and the `@angular/material` devDependency are deleted; returning to
+Material means undoing all of it. The gate that made this survivable is that Plan D happened
+last, after every contract it implements against was already settled and proven by Plans A
+through C. `BehaviourDelegated.json` did **not** go — it holds `Calendar` and `CalendarEvent`,
+which are components Angular has never had rather than delegations, exactly as the note at the
+top of the Plan D section predicted.

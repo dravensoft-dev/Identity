@@ -30,7 +30,7 @@ something to override — see the table below. Styling is the sibling
   small radius.
 - Don't animate a skeleton that will be on screen for more than a moment or two: the
   shimmer stops entirely under `prefers-reduced-motion`, and it is decoration, not a
-  progress report. Use `mat-progress-bar` when there is real progress to report.
+  progress report. Use `<arena-progress-bar>` when there is real progress to report.
 - Don't wrap a single `<arena-skeleton>` in a live region of your own — it already
   carries `role="status"`. A set of several is a different case: see below.
 

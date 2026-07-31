@@ -2,18 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { testStep, summarize, stepStatus, GATES } from './check-all.mjs';
 
-test('GATES lists the twenty-six check gates', () => {
-  assert.equal(GATES.length, 26);
+test('GATES lists the twenty-five check gates', () => {
+  assert.equal(GATES.length, 25);
   assert.deepEqual(
     GATES.map((g) => g.name),
-    ['check:docs', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:structure', 'check:behaviour', 'check:compliance', 'check:api', 'check:fonts', 'check:vendor', 'check:demos', 'check:cards', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:material', 'check:cdk'],
+    ['check:docs', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:structure', 'check:behaviour', 'check:compliance', 'check:api', 'check:fonts', 'check:vendor', 'check:demos', 'check:cards', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
   );
 });
 
-test('the five Angular-layer gates run last -- the compile gate, the demo pages, the assertion shape, then the two dependency bridges', () => {
+test('the four Angular-layer gates run last -- the compile gate, the demo pages, the assertion shape, then the one dependency bridge left', () => {
   assert.deepEqual(
-    GATES.slice(-5).map((g) => g.name),
-    ['check:angular', 'check:angular-demos', 'check:assertions', 'check:material', 'check:cdk'],
+    GATES.slice(-4).map((g) => g.name),
+    ['check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
   );
 });
 

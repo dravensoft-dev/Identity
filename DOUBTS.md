@@ -172,10 +172,10 @@ stale-proof; a present-tense component name is not.
   is correct for `debounce`-style speculation, when it is not: Angular had no
   `Tooltip`, `Toast` or `Pagination` **primitive**, but it provided all three
   through Angular Material — the same "Material provides the control" bucket
-  most Tailwind manifests belong to (`Tooltip.manifest.json`,
+  most Tailwind manifests belonged to at the time (`Tooltip.manifest.json`,
   `Toast.manifest.json` and `Pagination.manifest.json` all exist). *"Dressed by
   `arena-material.css`"* was true of two of the three and never of
-  `Pagination`: the bridge has no `.mat-mdc-paginator` rule and never had one,
+  `Pagination`: the bridge had no `.mat-mdc-paginator` rule and never gained one,
   so a delegated paginator rendered in Material's own colours the whole time.
   `check:script-tokens` cannot see any of this — its orphan rule is "imported
   by at least one layer," and it is satisfied by React alone by construction,
@@ -984,9 +984,8 @@ stale-proof; a present-tense component name is not.
   what caused it.
 - **Angular has no `Calendar`, and nothing has decided whether it should.** React's
   `Calendar` is a day/hour schedule grid with absolutely-positioned event blocks;
-  Angular has no equivalent from either an `arena-*` primitive or Angular Material —
-  `mat-calendar` is a month/date-selection grid, a different widget solving a
-  different problem. `frameworks/angular/BehaviourDelegated.json`'s `Calendar` entry
+  the Angular layer has no `arena-*` primitive for it.
+  `frameworks/angular/BehaviourDelegated.json`'s `Calendar` entry
   binds pattern `absent` and records this as a fact, not a decision: it does not
   commit Angular to gaining a schedule view, and it does not resolve whether the gap
   should stay this way. It is simply open.
@@ -1047,22 +1046,24 @@ stale-proof; a present-tense component name is not.
   is moving the percentage text inside the live region or announcing at thresholds rather
   than continuously.
 
-- **Every claim the delegated declarations make about Angular Material is unpinned.**
-  `frameworks/angular/BehaviourDelegated.json` asserts what Material's controls do —
-  that `MatButtonToggleGroup` applies `role="group"` rather than `role="radiogroup"`,
-  that `MatTable` adds no keyboard handling, that `matTooltip`'s `showDelay` defaults to
-  0 — and which Material surfaces `arena-material.css` dresses. **None of it records the
-  Material version it was verified against**, which was `@angular/material` 22.0.5. If a
-  Material release fixes one of those, nothing notices: `check:behaviour` verifies that a
-  declaration names a pattern and requirement that exist, never that a claim about a
-  third-party library is still true, and the whole suite stays green while the reason
-  strings quietly become false. The `dressedBy` claims rot the same way from the other
-  side — add a `.mat-mdc-checkbox` rule to the bridge tomorrow and eight entries still
-  assert the bridge has none. Two cheap mitigations, neither yet done: record the
-  verified Material version as one top-level field and check it against `package.json`,
-  and have `check:material` assert that every `dressedBy` path really contains a rule
-  matching the named control's host class — the same shape as `check:states`' own
-  staleness rule.
+- **The delegated declarations' unpinned claims about Angular Material are CLOSED, and how
+  they closed is the part worth keeping.** `frameworks/angular/BehaviourDelegated.json` once
+  asserted what a third-party library's controls did — that `MatButtonToggleGroup` applied
+  `role="group"` rather than `role="radiogroup"`, that `MatTable` added no keyboard handling,
+  that `matTooltip`'s `showDelay` defaulted to 0 — and which Material surfaces the bridge
+  dressed. **None of it recorded the version it had been verified against**
+  (`@angular/material` 22.0.5), so a release fixing one of those would have gone unnoticed:
+  `check:behaviour` verifies that a declaration names a pattern and a requirement that exist,
+  never that a claim about a third-party library is still true, and the whole suite stays
+  green while the reason strings quietly become false. Two cheap mitigations were proposed
+  and neither was ever built — record the verified version as one top-level field and check
+  it against `package.json`, and gate every `dressedBy` path the way `check:states` gates its
+  own map. **Neither is what closed it.** Plan D wrote an Arena primitive for every delegated
+  control, and the file now holds two `absent` entries with no third-party claim left in it
+  to rot. **The lesson generalises past Material**: a declaration about code this repository
+  does not own is unfalsifiable here by construction, so the durable fix is owning the code
+  rather than pinning the claim — and any future delegation reopens this entry exactly as
+  written.
 
 - **`check:api` asserts three of its five rules, not five.** R1 (an object is pure
   data) is enforced by the type schema, R4 (no platform types) by the reader
@@ -1452,13 +1453,15 @@ stale-proof; a present-tense component name is not.
   the schema **can** say it: two cases split by `href` — the `<button>` shape binding `button`,
   and the `<a href>` shape binding `none`, since there is no link pattern and a link's role and
   keyboard come from the platform — is exactly the shape `Tag` and `CalendarEvent` now carry.
-  8C9 converted the seven bindings its spec named and no others, and **`SideNavItem`'s own reason
-  string now says so**: it used to read *"The schema still cannot say…"*, and 8C9's close-out
+  8C9 converted the seven bindings its spec named and no others, and **both `SideNavItem` reason
+  strings now say so**: it used to read *"The schema still cannot say…"*, and 8C9's close-out
   rewrote it to state that the shape is expressible, that this binding is an **unconverted case**
   rather than evidence of a limit, and what converting it would cost. A reader meeting the binding
   alone now learns the option exists and that nothing has taken it.
-  Converting it means writing a render suite for both shapes and adding `SideNavItem:react` to
-  `COVERED`; nothing schedules that. What is genuinely still open is the third conditionality
+  Converting it now costs twice what that reason states, because Angular has a
+  `SideNavItem` too and its binding says so: two bindings, two render suites covering both
+  shapes, and two `COVERED` keys — and converting one layer alone would make the two disagree,
+  which is why neither has moved. Nothing schedules it. What is genuinely still open is the third conditionality
   level — conditional on **consumer** usage, whose live instance is `Tooltip` — recorded in its
   own entry above, which is also where the other two named here went: `Table`'s was misfiled and
   `Pagination`'s was designed away by making the member required and guarded. **Count the `none` bindings rather than writing an
@@ -1467,27 +1470,31 @@ stale-proof; a present-tense component name is not.
   until 8C10 retired that case, which is the count moving DOWN and another reason not to
   write an ordinal)
   — `grep -rho '"pattern": "none"' --include='*.json' frameworks/ | wc -l`, and the `-o` is the
-  point: `grep -rl` counts FILES, and `frameworks/angular/BehaviourDelegated.json` holds several
-  `none` entries at once, so the file count is not the binding count and the measurement written
-  here to replace a stale ordinal was itself wrong. 8C5 added two in one change, and this
+  point: `grep -rl` counts FILES, and one file can hold several bindings at once — which
+  `frameworks/angular/BehaviourDelegated.json` did while it still carried `none` entries, so the
+  file count was not the binding count and the measurement written here to replace a stale
+  ordinal was itself wrong. That file holds only `absent` now, and the hazard is unchanged: a
+  cased binding still puts several patterns in one file. 8C5 added two in one change, and this
   file has now had three separate prose ordinals about this limit go stale, one of them inside
   the batch that wrote it — `SideNavItem.behaviour.json` shipped saying "the fourth component to
   meet it" while its own batch-mate `SideNavSection.jsx` counted five, and the close-out review
   replaced both ordinals with a pointer here.
 
-- **Plan D inherits an open question about `SideNav`, registered here so it is not inherited
-  silently.** `frameworks/angular/BehaviourDelegated.json`'s `SideNav` entry claims Material
-  provides this control — its reason says `mat-nav-list` "already provides the anchor-or-button
-  distinction, the active state and the keyboard behaviour". **That is defensible for a flat list
-  of links and questionable now**: `mat-nav-list` provides no named section group and no nested
-  disclosure group, which is most of what 8C5 added. The two resolutions are Plan D's to choose,
-  not this batch's to pre-empt — an `arena-side-nav` primitive that stops delegating, or a
-  narrowed delegated claim admitting Material covers the flat case only. Section 3's
-  SideNav entry states the same thing; **keep the two consistent**, since nothing checks
-  that they agree. Two adjacent facts a Plan D reader should have with this: the delegated file
-  records no Material version for any of its claims (`@angular/material` 22.0.5 at the time), and
-  `check:behaviour` never re-checks a claim about a third-party library — so these reasons can
-  quietly become false while the whole suite stays green.
+- **The open question about `SideNav` is CLOSED, and which way it went is the useful part.**
+  `frameworks/angular/BehaviourDelegated.json`'s `SideNav` entry once claimed a third-party
+  control provided this component — its reason said `mat-nav-list` "already provides the
+  anchor-or-button distinction, the active state and the keyboard behaviour". That was
+  defensible for a flat list of links and stopped being defensible the moment 8C5 made the
+  React component compound: `mat-nav-list` had no named section group and no nested disclosure,
+  which was most of what that batch added. Two resolutions were on the table — an
+  `arena-side-nav` primitive that stopped delegating, or a narrowed delegated claim admitting
+  the control covered the flat case only — and Plan D took the first, writing all four
+  primitives. **The lesson is that a delegated claim ages against the component it mirrors, not
+  against the library it names**: nothing about `mat-nav-list` changed, and the claim went false
+  anyway because React's `SideNav` grew. `check:behaviour` cannot see that happen, so a
+  delegated reason is only ever as current as the last person who reread it. Section 3's
+  SideNav entry carries the rendering half of this; **keep the two consistent**, since nothing
+  checks that they agree.
 
 - **`SideNavCollapsible.id` is required, and the alternative was never properly weighed.** The
   contract originally justified required-ness by citing `contracts/api/README.md`'s `id`-member rule, which
@@ -1697,10 +1704,15 @@ stale-proof; a present-tense component name is not.
   were manifests whose mirrored component Angular **delegated**, so no `tv(manifest)` call ever
   typechecked one — `check:tailwind` only asks whether each class resolves, and `classesFor()` in
   the specimen coerces the key either way, so the specimens rendered correctly the whole time. The
-  twelve are fixed. **The lesson is the blind spot, not the typo:** a manifest for a delegated
-  component is untyped by construction, so the first compile of each remaining Plan D batch is
-  where that class of bug surfaces. Expect it; it is one line per manifest and changes no output.
-  Nothing gates it, because the gate is `ngc` and `ngc` cannot see a file no component imports.
+  twelve are fixed. **The lesson is the blind spot, not the typo:** a manifest no component
+  imports is untyped by construction, and the first compile of the component that finally imports
+  it is where that class of bug surfaces — which is how each of the twelve was found, one Plan D
+  batch at a time. It is one line per manifest and changes no output. Nothing gates it, because
+  the gate is `ngc` and `ngc` cannot see a file no component imports. **The blind spot is empty
+  today and is not closed**: every manifest now has an Angular component reading it — verify by
+  pairing `find frameworks/tailwind/components -name '*.manifest.json'` against
+  `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d` — and the next manifest
+  written ahead of its component reopens it.
 - **`CLAUDE.md` is 54 characters from its 60,000 limit.** Measure it rather than trusting this
   number, which two batches have now moved — and measure it the way the gate does:
   `node -e "console.log(require('fs').readFileSync('CLAUDE.md','utf8').length)"`. **`wc -m` is not
@@ -1719,8 +1731,8 @@ stale-proof; a present-tense component name is not.
   than a solution to it. Two claims in the file were measurably false and correcting them was
   net-negative: the carve-out paragraph said the layer had *one* carve-out when `arena-button`
   had already made a second, and the React-only-set paragraph said that set was
-  `BehaviourDelegated.json`'s key set *minus `Switch`* when the two sets are identical, 28 members
-  each. The `DataVisuals` placement paragraph then moved to this file wholesale — it is a
+  `BehaviourDelegated.json`'s key set *minus `Switch`* when the two sets were identical, 28 members
+  each at the time. The `DataVisuals` placement paragraph then moved to this file wholesale — it is a
   recorded decision with no gate behind it, which is this file's material. That bought about 600
   characters and the harness and carve-out rules spent them.
   **The candidates left are the same ones**: the Angular-layer paragraphs that
@@ -2732,12 +2744,12 @@ verify with `grep -rln DataVisuals frameworks/react/components`, which returns t
 
 **Angular:** the consumers are the three charts alone, so the same rule would put its copy in
 `components/charts/`. It is at the layer root **by decision**, because that narrower consumer
-set is an artifact of Angular's `Calendar` being delegated to Material rather than a real
-difference between the layers — and Plan D does not close it, since `Calendar` is one of the two
-`absent` entries that survive Plan D rather than a delegation Plan D removes.
+set is an artifact of Angular having no `Calendar` at all rather than a real difference between
+the layers — and `Calendar` is one of the two components this layer does not have, not a
+control anything provides in its place.
 
-**Converges:** not by Plan D. It would converge only if Angular ever grew a schedule view, which
-nothing has decided.
+**Converges:** it would converge only if Angular ever grew a schedule view, which nothing has
+decided.
 
 #### DataVisuals — the visually-hidden style carries its units in Angular
 
@@ -2989,7 +3001,7 @@ notices the two surfaces no longer match by eye. Check `UnauthCard.manifest.json
 **Converges:** not planned — the padding split is the reason a shared recipe was
 rejected, not an oversight to fix later.
 
-#### SideNav is described three times, and only the colours agree
+#### SideNav is described twice, and the manifest is the Angular half
 
 **React:** `SideNav.jsx` renders a `<nav>` and nothing else. It is a **compound component**, and
 the geometry lives in the children rather than in it: `SideNavItem.jsx` owns a row entirely —
@@ -3001,8 +3013,8 @@ the button controls. A reader who opens `SideNav.jsx` looking for a padding or a
 one there — that is the file attribution this entry got wrong until now, and it was wrong for the
 values as well as for the shape.
 
-**Tailwind:** `SideNav.manifest.json` was added by plan 5b so a consumer on neither React nor
-Material has something to build against, and it mirrored `SideNav.jsx` property for property,
+**Tailwind:** `SideNav.manifest.json` was added by plan 5b so a consumer on the raw-`className`
+path had something to build against, and it mirrored `SideNav.jsx` property for property,
 geometry and all. It fell behind twice. Plan 8C4 took ownership of the glyph under the single-icon
 convention — `<i className={icon} aria-hidden="true">` with its own `fontSize: var(--icon-lg)` and
 `display: inline-flex`, where the icon used to be a consumer-supplied node Arena never styled — and
@@ -3039,45 +3051,31 @@ future hover on `item` or `trigger` would have been scanned against a file that 
 implement one. The gate is silent today either way: no slot carries a state modifier, because none
 of the four components implements a hover or a focus state.
 
-**Angular:** there is no `arena-side-nav` primitive. The Angular path is the Material bridge —
-`arena-material.css`'s `.arena-side-nav` rules dressing `mat-nav-list` — because `mat-nav-list`
-already provides the anchor-or-button distinction, the active state and the keyboard behaviour.
+**Angular:** the same four components — `arena-side-nav`, `arena-side-nav-item`,
+`arena-side-nav-section` and `arena-side-nav-collapsible` — and they read the **same** manifest,
+`sideNavStyles = tv(SideNav.manifest)`. So the manifest is not a third description of the
+geometry — it **is** the Angular geometry, and the only copy that can drift from it is React's
+inline one, which mirrors it by hand and which nothing checks.
 
-**Why the three differ, and where:** the bridge declares **only colour, weight, font and
-shape**. It declares **no geometry at all**, so on the Angular path an item's padding, gap and
-row height are `mat-list-item`'s Material defaults, not React's and not the manifest's. The
-bridge also uniquely sets `--mat-list-list-item-focus-label-text-color: var(--crimson)`, a focus
-affordance neither of the other two has.
+**Where the two still differ is the mechanism, not the result.** React injects `depth`,
+`activeId` and `indentStep` down one hop with `cloneElement`; Angular cannot, so
+`SideNavState.ts` is an injectable each level re-provides and each child **pulls** — a section
+providing its own `SideNavState` whose `depth` is `computed(() => parent.depth() + 1)`, with
+`skipSelf` reaching the level above. Nothing is pushed at all, which is why React's fragment and
+wrapper hazards have no Angular counterpart: a consumer's own wrapper component between two
+levels breaks React's chain and leaves Angular's injector chain intact.
 
-**The React-versus-Angular difference is not a defect in either.** It would be wrong for the
-bridge to invent the focus colour's counterpart in React — `check:states` exists precisely to
-catch a state a manifest asserts that its source does not implement — and the bridge is
-deliberately partial: it dresses what Material renders rather than re-specifying Material's
-layout, which is the whole reason SideNav stays a bridge.
+**The runtime indent is the one thing neither the manifest nor the gate can hold.**
+`indentFor()` returns `calc(var(--sp-1) * 3 + var(--sp-1) * N)` per row, so Angular writes it as
+`[style.paddingInlineStart]="indent()"` — the `[style.x]` binding form that is one of
+`check:dimensions`' two known blind spots, named in section 2 above and in CLAUDE.md's
+`check:dimensions` paragraph. The value it computes is token-derived, but the gate cannot see
+it either way.
 
-**What is newly true of the Angular half: `mat-nav-list` is a flat list of links, and that is all
-it is.** It provides no named section group and no nested disclosure, so the two shapes this batch
-added to React have no counterpart inside the control the bridge dresses. Angular's declarations
-reach *outside* `mat-nav-list` for both — `frameworks/angular/BehaviourDelegated.json` delegates
-`SideNavSection` to the `matSubheader` directive and `SideNavCollapsible` to `MatExpansionPanel` —
-and both of those entries state honestly that `arena-material.css` has no rule for their host
-classes, so a subheader or an expansion panel used in an Arena sidebar renders in Material's own
-colours, surface and typography rather than Arena's tokens. The single `.arena-side-nav` bridge
-that dresses the list does not reach either of them.
-
-**That is a question this batch registers and does not answer.** Whether Angular should gain an
-`arena-side-nav` primitive covering the whole compound shape, or the bridge should grow rules for
-the two undressed hosts, or the delegated claim should simply be narrowed to what `mat-nav-list`
-really provides, is Plan D's decision — it is a decision about what the Angular layer *is*, not a
-divergence to record, and nothing here commits it either way.
-
-**Converges:** the colours already do, and the manifest now does — the debt this entry recorded as
-the one thing to fix rather than record is paid, less the runtime indent, which is named above as
-unmirrorable rather than outstanding. The geometry does not converge and should not — reconciling
-that would mean overriding Material's own list metrics from the bridge, which is exactly the
-duplication the bridge exists to avoid. The section and disclosure shapes are open, and open at
-Plan D's level rather than this entry's. Recorded so that a reader comparing the three does not
-mistake the Material gap for drift.
+**Converges:** done. The colours, the geometry and the compound shape all agree, through the one
+manifest both layers read. What remains is the injection mechanism, which does not converge and
+should not — it is the difference between a framework that clones elements and one that has an
+injector.
 
 #### Angular's Tooltip is positioned by an overlay and React's is in flow
 
@@ -3307,10 +3305,13 @@ option outside a group is a DI error rather than a silently inert control.
 the contract's members — a public `select()` or a public `selected` signal on `RadioGroup` fails the
 gate, correctly, because a consumer could reach it. So the coordination cannot live on the
 component. It lives on a class the component `provides`, which no gate reads as a surface and no
-consumer can name. **That is the pattern for every remaining compound family**: `Tabs`/`Tab`,
+consumer can name. **That is the pattern for every compound family**: `Tabs`/`Tab`,
 then `Table`/`TableRow`/`TableCell` (`TableState` and `TableRowState`, landed by batch 4 — the
 first family to need TWO state objects, because a cell's column index is its row's to know and
-its cursor position is the table's), and the `SideNav` family in batch 6.
+its cursor position is the table's), and the `SideNav` family (`SideNavState`, landed by batch 6
+— the first to need `skipSelf`, because it is the first family that NESTS: every container
+re-provides the same class at `depth + 1`, so a child's nearest one is the level above it and a
+container reaching its own parent has to step over the one it just provided).
 
 **Converges: no, and neither side is wrong.** Each is its framework's idiom. What both keep is the
 rule that the coordination is a member of no contract.
@@ -3320,7 +3321,12 @@ React's mechanism — "RadioGroup injects each one's selected state" — which i
 the word *prop* appearing in a contract. `RadioGroup` and `Tabs` were reworded first; `Table`,
 `TableRow` and `TableCell` followed when batch 4 implemented them, on the principle that rewording
 a contract for a layer that does not exist yet is a guess about what that layer will do.
-**`SideNavItem` is the last one still saying "injects"**, and it is batch 6's.
+**The `SideNav` family's four are the ones still saying "injects"** — `SideNav.json` in both its
+description and its `content` slot, and `SideNavSection.json` and `SideNavCollapsible.json` in
+theirs. The premise that held them is spent: batch 6 built the layer, so there is no longer a
+guess to avoid, and what stands in the way is only that nobody has rewritten them. Angular's
+mechanism is the opposite word — a child **pulls** its depth from the nearest provided state —
+so the contracts describe one layer's verb and neither layer's contract.
 
 **Two claims this entry made about that set were false, and the correction is the point.** It said
 `TableRow`'s and `TableCell`'s prose "even names `cloneElement`". Neither did — **no contract has
@@ -3353,9 +3359,10 @@ currently the fixture's own element and would become an element inside it. Nothi
 and no gate notices: `check:behaviour` compares bindings and both bind `navigation` cleanly, while
 the evaluator asks whether there is a navigation landmark and never which element carries it.
 
-#### `input.required` is not the runtime guard, and four components now say so in code
+#### `input.required` is not the runtime guard, and every component that needs one says so in code
 
-Six API contracts say a member is **"required, and guarded at runtime"**. Angular's
+Seven API contracts say a member is **"required, and guarded at runtime"** — count them with
+`grep -rl "guarded at runtime" contracts/api/components/`. Angular's
 `input.required` is not that guard: it throws when nothing was bound at all (NG0950) and says
 nothing about what was bound. `[ariaLabel]="row.title"` with an empty title satisfies it, and
 `[pageCount]="0"` satisfies it, and each leaves the component in exactly the state the member was
@@ -3364,9 +3371,8 @@ made required to prevent — the first an unnamed landmark, the second a window 
 So the guard is a `computed` that validates and throws, placed where the template or the host
 binding already reads it, which is what makes it run on the first change detection instead of
 waiting for something to ask. `Pagination` (`ariaLabel`, `pageCount`), `Breadcrumbs`
-(`ariaLabel`), `ActivityFeed` (`label`), `RadioGroup` (`ariaLabel`) and `Table` (`label`) carry
-it. The remaining two contracts with the phrase — `SideNav` and `SideNavSection` — are still
-delegated and arrive with batch 6.
+(`ariaLabel`), `ActivityFeed` (`label`), `RadioGroup` (`ariaLabel`), `Table` (`label`), `SideNav`
+(`ariaLabel`) and `SideNavSection` (`label`) carry it — every contract with the phrase.
 
 `Table` is the one that shows what the guard buys, because its member is the hardest to derive:
 a grid's name is editorial, `input.required` is satisfied by `[label]="row.title"` over an empty
@@ -3503,37 +3509,45 @@ or the CVD matrices**: they are calibrated to the Machado-Oliveira-Fernandes (20
 model, and changing one silently invalidates the measured numbers published in the design
 specification. Upstream is the authority — **re-vendor rather than patch**.
 
-### `scripts/check-material.mjs` — the incident that produced it, and its two blind spots
+### `scripts/check-material.mjs` — retired with the bridge it guarded, and the lesson it leaves
 
-`frameworks/angular/theme/arena-material.css` maps Angular Material's custom properties onto
-Arena's tokens, and **both halves of that mapping fail silently**: a property name Material does
-not read applies nothing, and a `var()` naming no Arena token resolves to nothing. Neither
-throws, neither logs, and `check:dimensions` does not scan `.css`. When Material renamed its
-tokens, **24 of the bridge's 34 names went inert and nothing noticed for a whole major version.**
+The gate and the Angular Material bridge it guarded are both gone: this layer implements every
+control itself and imports no `@angular/material`. The entry stays because `check-cdk.mjs` was
+designed against it — its two blind spots are why that gate checks selectors, and its incident is
+why that gate carries zero-result guards. `referencedTokens` and `arenaTokenNames` outlived it, in
+`scripts/lib/arena-tokens.mjs`.
 
-Two things the gate still does not do, stated because a gate implying more coverage than it has
-is how the bridge rotted in the first place:
+`frameworks/angular/theme/arena-material.css` mapped Angular Material's custom properties onto
+Arena's tokens, and **both halves of that mapping failed silently**: a property name Material did
+not read applied nothing, and a `var()` naming no Arena token resolved to nothing. Neither threw,
+neither logged, and `check:dimensions` does not scan `.css`. When Material renamed its tokens,
+**24 of the bridge's 34 names went inert and nothing noticed for a whole major version.**
 
-- **It checks that a name EXISTS, not that it is the right name for the element being styled.**
-  The bridge once set `--mat-list-list-item-container-{shape,color}` on the active nav item; both
-  names exist, but `mat-nav-list` reads `--mat-list-active-indicator-{shape,color}` and the
-  `container-*` pair belongs to `mat-selection-list`. Catching that needs to know which selector
-  reads which property.
-- **It reads property NAMES only and never the SELECTORS they sit in** —
+Two things that gate never did, recorded because a gate implying more coverage than it has is how
+the bridge rotted in the first place:
+
+- **It checked that a name EXISTED, not that it was the right name for the element being
+  styled.** The bridge once set `--mat-list-list-item-container-{shape,color}` on the active nav
+  item; both names existed, but `mat-nav-list` read `--mat-list-active-indicator-{shape,color}`
+  and the `container-*` pair belonged to `mat-selection-list`. Catching that needs to know which
+  selector reads which property.
+- **It read property NAMES only and never the SELECTORS they sat in** —
   `.mat-mdc-unelevated-button`, `.mat-form-field-appearance-outline`, `.mdc-list-item--activated`
   and the other 12 of the bridge's 15. All 15 were hand-verified present in Material 22, so
-  nothing is broken today, but **a selector rename upstream would kill the bridge by the
-  identical silent mechanism, with this gate still green.**
+  nothing was broken, but **a selector rename upstream would have killed the bridge by the
+  identical silent mechanism, with the gate still green.**
 
-Its existence oracle reads **both** places a Material custom property can be named, because
-measured against the pinned 22.0.5 neither alone is the whole set: 102 names appear only in
+Its existence oracle read **both** places a Material custom property could be named, because
+measured against the pinned 22.0.5 neither alone was the whole set: 102 names appeared only in
 `prebuilt-themes/*.css` (71 `--mat-sys-*`, 27 `--mat-app-*`, three component-level names, and
-`--mdc-icon-button-state-layer-size`), while 17 appear only in `fesm2022/*.mjs` (the
+`--mdc-icon-button-state-layer-size`), while 17 appeared only in `fesm2022/*.mjs` (the
 `--mat-focus-indicator-*` family, `--mat-dialog-transition-duration`, the animation multipliers).
 Reading only `fesm2022` was never wrong in practice and its error direction was the safe one — it
 could over-reject a live name, never silently pass a dead one — but it was widened anyway,
 because the hazard was second-order: someone "fixing" a red gate by deleting a legitimate
-property rather than doubting the oracle, which is how the silent hole reopens.
+property rather than doubting the oracle, which is how a silent hole reopens. **That last
+sentence is the part that outlives the gate**, and any future bridge to a library this repository
+does not own inherits it whole.
 
 ### `scripts/check-duplicate-constants.mjs` — what it catches is three of five
 
@@ -3817,14 +3831,15 @@ So the helper removes the panes and leaves the container. An empty container is 
 costs nothing. This matters here specifically because `TestbedEnv.ts` shares one document across
 the whole `bun test build/angular-test/angular` run, so the hazard crosses files.
 
-### `scripts/check-cdk.mjs` — why it checks selectors where `check-material.mjs` cannot
+### `scripts/check-cdk.mjs` — why it checks selectors where a custom-property bridge cannot
 
-`check-material.mjs` deliberately never examines the selectors its properties sit in, and that is
-one of its two disclosed blind spots. `check-cdk.mjs` does check them, and the difference is that
-it **has an oracle**: the CDK bridge's whole job is overriding a class the prebuilt stylesheet
-defines, and that stylesheet is installed and readable, so `.cdk-overlay-kontainer` is decidably
-wrong. Material's bridge has no equivalent — a `--mat-*` property name can be verified against the
-package, but which selector *should* carry it is a judgement no file states.
+A bridge that maps a library's custom properties onto Arena's tokens cannot examine the selectors
+those properties sit in — one of the two disclosed blind spots of the retired `check-material.mjs`
+recorded above. `check-cdk.mjs` does check them, and the difference is that it **has an oracle**:
+the CDK bridge's whole job is overriding a class the prebuilt stylesheet defines, and that
+stylesheet is installed and readable, so `.cdk-overlay-kontainer` is decidably wrong. A
+custom-property bridge has no equivalent — a property name can be verified against the package,
+but which selector *should* carry it is a judgement no file states.
 
 What this gate still cannot check is whether the override's **value** is right for that class. It
 also carries four zero-result guards, because a bridge that stops being a bridge — no rule, no

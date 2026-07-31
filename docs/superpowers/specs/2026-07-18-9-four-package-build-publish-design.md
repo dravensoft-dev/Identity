@@ -418,11 +418,14 @@ surface, specified in `2026-07-18-5-framework-layer-parity-design.md`.
 Two things about that spec change what "parity" costs here, and both make option 3
 cheaper than it looked when this section was written:
 
-- **Angular targets 19 primitives, not 40.** Parity is of *outcome*, not inventory.
-  Angular Material provides 21 of Arena's 40 and already wears Arena through
-  `arena-material.css`; Arena implements only what Material lacks. That is the purpose
-  `frameworks/angular/README.md` already declares, so this is the layer growing into
-  its own design rather than being redefined.
+- **Angular targets fewer primitives than React, and parity is of *outcome* rather than
+  inventory.** This bullet read "19 primitives, not 40" on the argument that Angular Material
+  provided 21 of Arena's 40 and already wore Arena through `arena-material.css`. **Plan D
+  removed Angular Material entirely**, so that argument is gone and the arithmetic with it:
+  Angular now implements everything itself, and what it does not have is what
+  `frameworks/angular/BehaviourDelegated.json` records as `absent`. Count both layers from the
+  tree rather than from a figure here — the option-3 conclusion below survives, because the
+  cost it weighed was time before the first publish rather than a component count.
 - **Tailwind targets 35 manifests** — all but the 4 charts and `Calendar`, which are
   SVG geometry and date logic rather than class strings.
 
