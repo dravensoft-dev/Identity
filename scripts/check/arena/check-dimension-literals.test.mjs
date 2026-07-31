@@ -583,3 +583,19 @@ test('a hyphen-prefixed attribute whose tail matches a governed name is not misr
 
   assert.deepEqual(scanAttributes('<div data-width="20" data-height="10" />'), []);
 });
+
+test('a governed property name at the tail of a longer one is not that property', () => {
+  assert.deepEqual(scanText("const a = 'stroke-width: var(--bw);';"), []);
+  assert.deepEqual(scanText("const a = { strokeWidth: 'var(--bw)' };"), []);
+  assert.deepEqual(scanText('const a = `max-width: 13px`;'), [],
+    'a kebab-case declaration in a bare string is nobody\'s: scanText reads camelCase and scanInjectedCss '
+    + 'requires a rule body, which is the blind spot DOUBTS.md already records rather than one this fix adds');
+  assert.deepEqual(scanText('const a = { maxWidth: 13 };').map((f) => f.prop), ['maxWidth']);
+});
+
+test('the lookbehind matters because a mismatched property swallows past the string it was found in', () => {
+  const src = "const a = 'stroke-width: var(--bw);';\nconst b = 'p95 line chart';\n";
+  assert.deepEqual(scanText(src), [],
+    'reading `width` out of `stroke-width` used to run the value past the closing quote and report a '
+    + 'bare literal at a site that had none -- naming a file and a property that were not the defect');
+});

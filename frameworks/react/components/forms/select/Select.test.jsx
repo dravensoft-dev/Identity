@@ -13,13 +13,12 @@ test('an option draws its label as the text and its value as the attribute, and 
   assert.doesNotMatch(html, />prod</, 'the option drew its value as its text, not its label');
 });
 
-test('required, name and multiple each reach the native select', () => {
+test('required and name each reach the native select', () => {
   const html = renderToStaticMarkup(
-    <Select label="Environment" name="env" required multiple options={[{ value: 'qa', label: 'QA' }]} />,
+    <Select label="Environment" name="env" required options={[{ value: 'qa', label: 'QA' }]} />,
   );
   assert.match(html, /required=""/);
   assert.match(html, /name="env"/);
-  assert.match(html, /multiple=""/);
 });
 
 test('value marks the matching option selected and disabled reaches the native select', () => {

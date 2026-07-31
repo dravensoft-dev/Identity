@@ -25,7 +25,6 @@ import { TableCell } from '../table-cell/TableCell';
 import { assertPattern, assertPatternCases, ANGULAR_COMPONENTS } from '../../../test/Compliance';
 
 const BINDING = join(ANGULAR_COMPONENTS, 'display/table/Table.behaviour.json');
-const ROW_BINDING = join(ANGULAR_COMPONENTS, 'display/table-row/TableRow.behaviour.json');
 const CELL_BINDING = join(ANGULAR_COMPONENTS, 'display/table-cell/TableCell.behaviour.json');
 
 const LABEL = 'Recent deployments';
@@ -209,7 +208,8 @@ test('arena-table meets both of its declared shapes', async () => {
           assert.equal(cardTable.querySelectorAll('[role="gridcell"]').length, 0,
             'no cells means no roving tab stop to claim -- the requirement does not apply rather than going unmet');
           assert.equal(cardTable.querySelectorAll('[tabindex]').length, 0,
-            'a card row is not a tab stop in this layer, which is what its binding diverges about');
+            'a card row that is not `interactive` claims no tab stop -- which is what keeps a dead stop off '
+            + 'every row of every table that is not clickable');
           return { root: cardTable, subjects: { default: cardTable } };
         },
       },
@@ -222,14 +222,12 @@ test('arena-table meets both of its declared shapes', async () => {
   }
 });
 
-test('arena-table-row owns none of the grid it sits in, and arena-table-cell owns none of its own', async () => {
+test('arena-table-cell owns none of the grid it sits in -- the row has its own cases suite', async () => {
   const fixture = await render();
   try {
     const table = tableOf(fixture);
-    const row = table.querySelectorAll('[role="row"]')[1] as HTMLElement;
     const cell = table.querySelector('[role="gridcell"]') as HTMLElement;
 
-    assertPattern({ root: table, bindingPath: ROW_BINDING, subjects: { default: row } });
     assertPattern({ root: table, bindingPath: CELL_BINDING, subjects: { default: cell } });
   } finally {
     fixture.destroy();

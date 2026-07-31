@@ -111,7 +111,7 @@ export function barColumns(count: number, width: number): {
 
     <table [style]="srOnly">
       <caption>{{ name() }}</caption>
-      <thead><tr><th>Category</th><th>{{ seriesLabel() ?? 'Value' }}</th></tr></thead>
+      <thead><tr><th>Category</th><th>{{ seriesLabel() }}</th></tr></thead>
       <tbody>
         @for (bar of bars(); track bar.index) {
           <tr><th scope="row">{{ bar.label }}</th><td>{{ bar.value }}</td></tr>
@@ -123,7 +123,7 @@ export function barColumns(count: number, width: number): {
 export class BarChart {
   readonly labels = input.required<string[]>();
   readonly values = input.required<number[]>();
-  readonly seriesLabel = input<string>();
+  readonly seriesLabel = input.required<string>();
   readonly slot = input<number>();
   readonly slots = input<number[]>();
   readonly tone = input<SeriesTone>();
@@ -151,7 +151,7 @@ export class BarChart {
 
   protected readonly name = computed(() => {
     const series = this.seriesLabel();
-    return series ? `${series} — bar chart` : 'Bar chart';
+    return `${series} — bar chart`;
   });
 
   private readonly max = computed(() => niceMax(Math.max(0, ...this.values())));

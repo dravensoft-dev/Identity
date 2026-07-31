@@ -129,7 +129,7 @@ export function lineAreaPath(points: readonly ArenaLinePoint[], baseline: number
 
     <table [style]="srOnly">
       <caption>{{ name() }}</caption>
-      <thead><tr><th>Point</th><th>{{ seriesLabel() ?? 'Value' }}</th></tr></thead>
+      <thead><tr><th>Point</th><th>{{ seriesLabel() }}</th></tr></thead>
       <tbody>
         @for (point of points(); track point.index) {
           <tr><th scope="row">{{ point.label }}</th><td>{{ point.formatted }}</td></tr>
@@ -141,7 +141,7 @@ export function lineAreaPath(points: readonly ArenaLinePoint[], baseline: number
 export class LineChart {
   readonly labels = input.required<string[]>();
   readonly values = input.required<number[]>();
-  readonly seriesLabel = input<string>();
+  readonly seriesLabel = input.required<string>();
   readonly slot = input<number>();
   readonly tone = input<SeriesTone>();
   readonly area = input(false, { transform: booleanAttribute });
@@ -175,7 +175,7 @@ export class LineChart {
 
   protected readonly name = computed(() => {
     const series = this.seriesLabel();
-    return series ? `${series} — line chart` : 'Line chart';
+    return `${series} — line chart`;
   });
 
   private readonly max = computed(() => niceMax(Math.max(0, ...this.values())));

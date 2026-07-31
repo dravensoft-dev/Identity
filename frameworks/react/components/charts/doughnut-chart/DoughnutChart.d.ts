@@ -4,7 +4,7 @@ export interface DoughnutChartProps {
 
   values: number[];
 
-  seriesLabel?: string;
+  seriesLabel: string;
 
   slots?: number[];
 

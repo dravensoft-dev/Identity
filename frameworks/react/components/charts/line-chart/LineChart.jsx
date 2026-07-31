@@ -6,6 +6,7 @@ import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.ge
 export function LineChart({
   labels, values, seriesLabel, slot, tone, area = false, valueSuffix,
 }) {
+  if (!seriesLabel) throw new Error('LineChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('LineChart: `labels` is required');
   if (!values) throw new Error('LineChart: `values` is required');
   const [ref, measured] = useContainerWidth();
@@ -30,7 +31,7 @@ export function LineChart({
     ? `M${xOf(0)},${baseline} L${values.map((v, i) => `${xOf(i)},${yOf(v)}`).join(' L')} L${xOf(n - 1)},${baseline} Z`
     : '';
 
-  const name = seriesLabel ? `${seriesLabel} — line chart` : 'Line chart';
+  const name = `${seriesLabel} — line chart`;
 
   const onMove = (e) => {
     if (!n) return;
@@ -99,7 +100,7 @@ export function LineChart({
 
       <table style={srOnly}>
         <caption>{name}</caption>
-        <thead><tr><th>Point</th><th>{seriesLabel || 'Value'}</th></tr></thead>
+        <thead><tr><th>Point</th><th>{seriesLabel}</th></tr></thead>
         <tbody>
           {values.map((v, i) => <tr key={i}><th scope="row">{labels[i]}</th><td>{fmt(v)}</td></tr>)}
         </tbody>

@@ -4,6 +4,7 @@ import { resolveColors, arcPath, srOnly, CHART_HEIGHT } from '../../../DataVisua
 import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated.js';
 
 export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix }) {
+  if (!seriesLabel) throw new Error('DoughnutChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('DoughnutChart: `labels` is required');
   if (!values) throw new Error('DoughnutChart: `values` is required');
   const [ref, measured] = useContainerWidth();
@@ -24,7 +25,7 @@ export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix 
   const rOuter = Math.max(1, Math.min(plotW, height) / 2 - chartRingInset);
   const rInner = rOuter * 0.62;
 
-  const name = seriesLabel ? `${seriesLabel} — doughnut chart` : 'Doughnut chart';
+  const name = `${seriesLabel} — doughnut chart`;
 
   let angle = -Math.PI / 2;
   const segments = values.map((v, i) => {
@@ -73,7 +74,7 @@ export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix 
 
       <table style={srOnly}>
         <caption>{name}</caption>
-        <thead><tr><th>Category</th><th>{seriesLabel || 'Value'}</th></tr></thead>
+        <thead><tr><th>Category</th><th>{seriesLabel}</th></tr></thead>
         <tbody>
           {values.map((v, i) => <tr key={i}><th scope="row">{labels[i]}</th><td>{fmt(v)}</td></tr>)}
         </tbody>

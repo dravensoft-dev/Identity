@@ -57,7 +57,7 @@ export function isConfirmLocked(required: string | undefined, typed: string): bo
   `,
 })
 export class ConfirmDialog {
-  readonly open = input(false, { transform: booleanAttribute });
+  readonly open = input.required<boolean, unknown>({ transform: booleanAttribute });
 
   readonly title = input.required<string>();
   readonly eyebrow = input('Confirm');

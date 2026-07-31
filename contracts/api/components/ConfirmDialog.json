@@ -2,8 +2,8 @@
   "component": "ConfirmDialog",
   "description": "Confirmation of a high-consequence action. Never closes on click-outside. `requireText` locks the confirm button until a word is typed.",
   "api": {
-    "open": { "form": "primitive", "type": "boolean", "default": false,
-              "description": "Whether the dialog is shown. Closed when absent." },
+    "open": { "form": "primitive", "type": "boolean", "required": true,
+              "description": "Whether the dialog is shown. The host owns it, as in the other three modals: defaulting it would let a ConfirmDialog whose open was never wired render nothing forever and look like a working closed dialog." },
     "title": { "form": "primitive", "type": "string", "required": true,
                "description": "The dialog heading, and the name the panel's aria-labelledby points at. Required: nothing can derive a name for a confirmation, because its subject is editorial, and a modal announcing only its role is worse than none at all." },
     "eyebrow": { "form": "primitive", "type": "string", "default": "Confirm",

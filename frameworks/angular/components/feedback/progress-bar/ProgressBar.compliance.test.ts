@@ -86,10 +86,15 @@ test('the value is clamped and rounded, so a caller cannot report 143% or -8%', 
   }
 });
 
-test('the accessible name falls back to Progress, so a bar with no label is still named', () => {
-  const unlabelled = renderBar({ progressPercentage: 10 });
+test('the accessible name comes from label alone, and a bar without one refuses to render', () => {
+  const unlabelled = TestBed.createComponent(ProgressBar);
+  unlabelled.componentRef.setInput('progressPercentage', 10);
   try {
-    assert.equal(track(unlabelled).getAttribute('aria-label'), 'Progress');
+    assert.throws(
+      () => unlabelled.detectChanges(),
+      /NG0950/,
+      'a fallback of "Progress" names what the component IS, so two bars on one page announce identically',
+    );
   } finally {
     unlabelled.destroy();
   }
@@ -101,12 +106,12 @@ test('the accessible name falls back to Progress, so a bar with no label is stil
     labelled.destroy();
   }
 });
-
-test('the head appears only when it has something to say, and never shows a percentage for a bar that has none', () => {
-  const bare = renderBar({ progressPercentage: 10, showPercentage: false });
+test('the head always carries the label, and never shows a percentage for a bar that has none', () => {
+  const bare = renderBar({ progressPercentage: 10, showPercentage: false, label: 'Uploading' });
   try {
-    assertNoNode(bare.nativeElement.querySelector('span:not([style])'),
-      'no label and no percentage means no head row at all');
+    const text = (bare.nativeElement as Element).textContent ?? '';
+    assert.ok(text.includes('Uploading'), 'label is required, so the head always has something to say');
+    assert.ok(!text.includes('%'), 'showPercentage false means no percentage, whatever the value is');
   } finally {
     bare.destroy();
   }

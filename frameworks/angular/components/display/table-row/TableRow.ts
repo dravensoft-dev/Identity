@@ -15,12 +15,14 @@ import { tableRowStyles } from './TableRow.variants';
   host: { style: 'display: contents' },
   template: `
     <div [class]="rowClass()" [attr.role]="role()" [attr.aria-disabled]="inert()"
+         [attr.tabindex]="cardStop()" (keydown)="onKeydown($event)"
          (click)="onClick($event)">
       <ng-content />
     </div>
   `,
 })
 export class TableRow {
+  readonly interactive = input(false, { transform: booleanAttribute });
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly click = output<void>();
 
@@ -30,7 +32,12 @@ export class TableRow {
 
   protected readonly cells = contentChildren(TableCell);
 
-  protected readonly role = computed(() => (this.table.narrow() ? null : 'row'));
+  protected readonly role = computed(() => {
+    if (!this.table.narrow()) return 'row';
+    return this.interactive() ? 'button' : null;
+  });
+
+  protected readonly cardStop = computed(() => (this.table.narrow() && this.interactive() ? 0 : null));
 
   protected readonly inert = computed(() => (this.disabled() ? 'true' : null));
 
@@ -52,6 +59,14 @@ export class TableRow {
   }
 
   protected onClick(event: MouseEvent): void {
+    event.stopPropagation();
+    this.emit();
+  }
+
+  protected onKeydown(event: KeyboardEvent): void {
+    if (!this.table.narrow() || !this.interactive()) return;
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
     event.stopPropagation();
     this.emit();
   }

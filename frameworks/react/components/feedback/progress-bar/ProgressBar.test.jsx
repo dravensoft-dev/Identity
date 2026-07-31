@@ -11,14 +11,14 @@ test('progressPercentage drives the fill width and aria-valuenow', () => {
 });
 
 test('progressPercentage above 100 is clamped to 100', () => {
-  const html = renderToStaticMarkup(<ProgressBar progressPercentage={150} />);
+  const html = renderToStaticMarkup(<ProgressBar label="Uploading build" progressPercentage={150} />);
   assert.match(html, /aria-valuenow="100"/);
   assert.match(html, /width:100%/);
   assert.doesNotMatch(html, /150/, 'the out-of-range percentage reached the page unclamped');
 });
 
 test('progressPercentage below 0 is clamped to 0', () => {
-  const html = renderToStaticMarkup(<ProgressBar progressPercentage={-20} />);
+  const html = renderToStaticMarkup(<ProgressBar label="Uploading build" progressPercentage={-20} />);
   assert.match(html, /aria-valuenow="0"/);
   assert.match(html, /width:0%/);
   assert.doesNotMatch(html, /-20/, 'the out-of-range percentage reached the page unclamped');
@@ -52,9 +52,14 @@ test('label is drawn above the bar AND is the bar aria-label', () => {
   assert.doesNotMatch(html, /aria-label="Progress"/, 'a labelled bar still fell back to the generic name');
 });
 
-test('an absent label falls back to a generic name rather than leaving the bar unnamed', () => {
-  const html = renderToStaticMarkup(<ProgressBar progressPercentage={10} />);
-  assert.match(html, /aria-label="Progress"/, 'a bar with no label was left with no accessible name');
+test('an absent label throws rather than falling back to a name that says only what the component is', () => {
+  assert.throws(
+    () => renderToStaticMarkup(<ProgressBar progressPercentage={10} />),
+    /`label` is required/,
+    'a generic fallback satisfies roles.label mechanically and tells a screen-reader user nothing',
+  );
+  const html = renderToStaticMarkup(<ProgressBar label="Uploading build" progressPercentage={10} />);
+  assert.match(html, /aria-label="Uploading build"/);
 });
 
 test('every tone reaches the bar as its own token', () => {
@@ -63,19 +68,19 @@ test('every tone reaches the bar as its own token', () => {
     danger: 'var(--danger)', info: 'var(--info)',
   };
   for (const [tone, token] of Object.entries(expected)) {
-    const html = renderToStaticMarkup(<ProgressBar tone={tone} progressPercentage={50} />);
+    const html = renderToStaticMarkup(<ProgressBar label="Uploading build" tone={tone} progressPercentage={50} />);
     assert.ok(html.includes(token), `tone="${tone}" did not reach the bar as ${token}`);
   }
 
-  assert.ok(renderToStaticMarkup(<ProgressBar progressPercentage={50} />).includes('var(--crimson)'));
+  assert.ok(renderToStaticMarkup(<ProgressBar label="Uploading build" progressPercentage={50} />).includes('var(--crimson)'));
 });
 
 test('ProgressBar drops a consumer style object -- the ...style escape is gone', () => {
-  const html = renderToStaticMarkup(<ProgressBar progressPercentage={50} style={{ color: '#ff00ff' }} />);
+  const html = renderToStaticMarkup(<ProgressBar label="Uploading build" progressPercentage={50} style={{ color: '#ff00ff' }} />);
   assert.doesNotMatch(html, /#ff00ff/, 'a consumer style reached the rendered root -- the R4 escape is back');
 });
 
 test('ProgressBar drops a consumer attribute -- no {...rest} spread reaches the root', () => {
-  const html = renderToStaticMarkup(<ProgressBar progressPercentage={50} data-stray="x" />);
+  const html = renderToStaticMarkup(<ProgressBar label="Uploading build" progressPercentage={50} data-stray="x" />);
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- a {...rest} escape is back');
 });

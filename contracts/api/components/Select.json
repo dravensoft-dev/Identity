@@ -8,7 +8,6 @@
     "disabled": { "form": "primitive", "type": "boolean", "default": false, "description": "Blocks the control and dims it." },
     "required": { "form": "primitive", "type": "boolean", "default": false, "description": "Must have a value for the form to submit." },
     "name": { "form": "primitive", "type": "string", "description": "Submitted with the form." },
-    "multiple": { "form": "primitive", "type": "boolean", "default": false, "description": "Allow multiple selection." },
     "change": { "form": "event", "payload": "string", "description": "A different option was chosen; carries its value." }
   }
 }

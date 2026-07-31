@@ -8,7 +8,7 @@ export interface LineChartProps {
 
   values: number[];
 
-  seriesLabel?: string;
+  seriesLabel: string;
 
   slot?: number;
 

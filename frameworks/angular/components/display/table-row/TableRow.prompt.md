@@ -3,7 +3,7 @@ cell. It only makes sense inside a table: it injects the shared `TableState`, an
 that is a DI error rather than a silently inert row.
 
 ```html
-<arena-table-row (click)="openDeploy(d)">
+<arena-table-row interactive (click)="openDeploy(d)">
   <arena-table-cell>{{ d.build }}</arena-table-cell>
   <arena-table-cell>{{ d.project }}</arena-table-cell>
   <arena-table-cell><arena-badge tone="success" dot>Deployed</arena-badge></arena-table-cell>
@@ -24,6 +24,11 @@ that is a DI error rather than a silently inert row.
   grid's `Enter`. It reflects through `aria-disabled` rather than the native attribute, so a
   locked row still announces itself. With no `(click)` there is nothing to disable and the
   row is inert already.
+- **Pass `interactive` alongside `(click)`, or the row is inert.** The flag is what makes the card
+  shape a `role="button"` tab stop with an Enter/Space handler. It exists because this layer cannot
+  ask whether an output has subscribers -- `OutputEmitterRef.listeners` is private -- so the shape
+  has to be declared rather than detected. Before it existed, a clickable card row here was
+  reachable by pointer and not by keyboard.
 - Wire `(click)` only when the whole row means something to activate. A row with one
   actionable thing in it wants an `arena-button` in a cell instead — see the keyboard note
   below.

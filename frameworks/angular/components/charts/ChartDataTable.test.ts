@@ -83,27 +83,21 @@ test('arena-bar-chart matches its figure-with-data-table binding, which excepts 
   }
 });
 
-test('arena-bar-chart with no seriesLabel still names itself, though only by type -- the label\'s quality is not machine-checkable', () => {
+test('arena-bar-chart REFUSES to render without a seriesLabel, where it used to name itself by type', () => {
   const fixture = TestBed.createComponent(BarChart);
   fixture.componentRef.setInput('labels', LABELS);
   fixture.componentRef.setInput('values', VALUES);
-  fixture.detectChanges();
   try {
-    const host = fixture.nativeElement as Element;
-
-    const graphic = host.querySelector('[role="img"]') as Element;
-    assert.equal(graphic.getAttribute('aria-label'), 'Bar chart');
-    assertPattern({
-      root: host,
-      bindingPath: BINDING,
-      subjects: { default: graphic },
-      behavioural: { 'alternative.table': true },
-    });
+    assert.throws(
+      () => fixture.detectChanges(),
+      /NG0950/,
+      'a name that is only the chart TYPE satisfies roles.label mechanically and tells a reader nothing; '
+      + 'seriesLabel is input.required now, so Angular refuses the render rather than inventing one',
+    );
   } finally {
     fixture.destroy();
   }
 });
-
 test('arena-bar-chart appends valueSuffix to the axis ticks and to the accessible table alike', () => {
   const fixture = TestBed.createComponent(BarChart);
   fixture.componentRef.setInput('labels', LABELS);

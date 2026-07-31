@@ -45,7 +45,7 @@ const SIZES: ControlSize[] = ['sm', 'md', 'lg'];
 
     <p class="sub">No label and no percentage means no head row at all</p>
     <div class="col">
-      <arena-progress-bar [progressPercentage]="62" [showPercentage]="false" />
+      <arena-progress-bar label="Uploading build" [progressPercentage]="62" [showPercentage]="false" />
     </div>
   `,
 })
