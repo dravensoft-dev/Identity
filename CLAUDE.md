@@ -42,29 +42,45 @@ maps the rest of the repository.
 
 ## Documentation rules
 
-- **Every `.md` file stays under 60,000 characters.** The one exception is `DOUBTS.md`. Measure
-  it the way the gate does — `node -e "console.log(require('fs').readFileSync('X','utf8').length)"`
-  — and never with `wc -m`, which counts bytes: a file once read 60,282 bytes against 59,946
-  characters and looked 282 over a limit it was comfortably under. `check:docs` fails hard rather
-  than warning, so an overrun surfaces at the end of a batch rather than as a calm decision. The
-  way it is bought back is always the same: move a layer's own tour into that layer's README and
-  leave the cross-layer rule with a pointer. What spends the budget is a new **rule**, not a new
-  component — this file carries no literal count of anything, only the commands that produce them.
+- **Every `.md` file stays under 60,000 characters.** Three are exempt, each by charter:
+  `DOUBTS.md`, which is the definition of a debt rather than a description of the tree;
+  `CHANGELOG.md`, which grows by one entry per release and cannot be trimmed without deleting
+  history; and everything under `docs/`, which is dated process material. Measure the way the
+  gate does, with
+  `node -e "console.log(require('fs').readFileSync('X','utf8').length)"`, and never with
+  `wc -m`, which counts bytes: a file of multi-byte characters reads hundreds over a limit it
+  is comfortably under. `check:docs` fails hard rather than warning, so an overrun surfaces at
+  the end of a batch rather than as a calm decision. The way it is bought back is always the
+  same: move a layer's own tour into that layer's README and leave the cross-layer rule with a
+  pointer. What spends the budget is a new **rule**, not a new component; this file carries no
+  literal count of anything, only the commands that produce them.
+- **Documentation punctuates with a colon, a comma, a semicolon or a full stop, never with an
+  em dash.** A dash reads as an aside in speech and as a seam in prose, and a document that
+  leans on it says less clearly what it means. Where a dash pair encloses an aside, use commas,
+  or parentheses when commas would nest; where a dash amplifies or introduces a list, use a
+  colon; where it marks a turn, use a semicolon or a second sentence. An en dash between two
+  numbers is a range and stays. The rule reaches a document's prose only, so a fenced block and
+  a code span keep whatever the code they quote contains.
 - **Documentation is written in the present tense** and describes what Arena is, never what
-  it was. A retired token, a fixed defect, a former directory layout and a batch number belong
-  in the commit log and `CHANGELOG.md`, which is where the history already is.
+  it was, when a part of it arrived, or which part is newest. A retired token, a fixed defect,
+  a former directory layout and a batch number belong in the commit log and `CHANGELOG.md`,
+  which is where the history already is. The reason a rule exists is not history and stays:
+  state it as a property of the thing, not as an incident.
 - **The best comment is the one not written.** A method carries its own context through its
-  name. The only exception is `scripts/` and test files, which may carry **one** comment —
-  inline or block — as a file header, **at most 10 lines**. Files a script generates are
+  name. The only exception is `scripts/` and test files, which may carry **one** comment,
+  inline or block, as a file header, **at most 10 lines**. Files a script generates are
   outside the rule entirely and keep their comments.
-- Knowledge a rename cannot express — a measurement, a vendor's behaviour, a pinned version,
-  a constraint of a test environment — goes in the one header `scripts/` and test files are
-  allowed, in a gate's own reason string, or in the component's `.prompt.md`. Somewhere a stale
-  copy of it fails something.
+- Knowledge a rename cannot express, such as a measurement, a vendor's behaviour, a pinned
+  version or a constraint of a test environment, goes in the one header `scripts/` and test
+  files are allowed, in a gate's own reason string, or in the component's `.prompt.md`.
+  Somewhere a stale copy of it fails something.
 
-`bun run check:docs` holds both rules. It finds comments by lexing, so a `//` inside a string,
-a regex or a template literal is never mistaken for one, and a `@ts-`/`eslint-` directive is a
-directive rather than the file's one allowance.
+`bun run check:docs` holds the size rule, the punctuation rule and the comment rule. It reads
+both by lexing rather than by matching: a `//` inside a string, a regex or a template literal
+is never mistaken for a comment, a `@ts-`/`eslint-` directive is a directive rather than the
+file's one allowance, and a Markdown fence closes only on a run of its own character at least
+as long as the one that opened it. The present-tense rule is the one no gate holds, because
+nothing mechanical can judge it.
 
 ## Viewing things
 

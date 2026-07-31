@@ -7,8 +7,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
-  MAX_DOCUMENT_CHARS, HEADER_MAX_LINES, SIZE_EXEMPT,
-  documentSizeProblems, commentRuleProblems, zeroScanProblems,
+  MAX_DOCUMENT_CHARS, HEADER_MAX_LINES, SIZE_EXEMPT, PROSE_EXEMPT, BANNED_PUNCTUATION,
+  documentSizeProblems, commentRuleProblems, punctuationProblems, zeroScanProblems,
   isGenerated, allowsHeader,
 } from './check-docs.mjs';
 
@@ -36,12 +36,65 @@ test('a document exactly at the limit passes', () => {
   rmSync(root, { recursive: true });
 });
 
-test('DOUBTS.md and docs/ are exempt from the size limit', () => {
+test('DOUBTS.md, CHANGELOG.md and docs/ are exempt from the size limit', () => {
   const over = 'x'.repeat(MAX_DOCUMENT_CHARS + 1);
-  const root = tree({ 'DOUBTS.md': over, 'docs/superpowers/specs/a.md': over });
+  const root = tree({
+    'DOUBTS.md': over,
+    'CHANGELOG.md': over,
+    'docs/superpowers/specs/a.md': over,
+  });
   assert.deepEqual(documentSizeProblems(root).problems, []);
-  assert.deepEqual(SIZE_EXEMPT[0], 'DOUBTS.md');
+  assert.deepEqual(SIZE_EXEMPT, ['DOUBTS.md', 'CHANGELOG.md', join('docs', '')]);
   rmSync(root, { recursive: true });
+});
+
+test('an em dash in prose is reported with its position and the whole run', () => {
+  const root = tree({ 'README.md': 'The gate — it holds.\n' });
+  const { problems } = punctuationProblems(root);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /README\.md:1:10: an em dash/);
+  assert.match(problems[0], /The gate — it holds\./);
+  rmSync(root, { recursive: true });
+});
+
+test('every em dash on a line is reported, not just the first', () => {
+  const root = tree({ 'README.md': 'a — b — c\n' });
+  assert.equal(punctuationProblems(root).problems.length, 2);
+  rmSync(root, { recursive: true });
+});
+
+test('an em dash inside a fence or a code span is the document quoting code', () => {
+  const root = tree({
+    'a.md': '```jsx\n<Radio hint="Real users — approval" />\n```\n',
+    'b.md': 'the token `--a — b` resolves\n',
+  });
+  assert.deepEqual(punctuationProblems(root).problems, []);
+  rmSync(root, { recursive: true });
+});
+
+test('a colon, a comma and an en dash between numbers are all fine', () => {
+  const root = tree({ 'README.md': 'It holds: one, two. Steps 1–5 run.\n' });
+  assert.deepEqual(punctuationProblems(root).problems, []);
+  rmSync(root, { recursive: true });
+});
+
+test('docs/ is exempt from the punctuation rule and DOUBTS.md is not', () => {
+  const root = tree({
+    'docs/superpowers/plans/a.md': 'a — b\n',
+    'DOUBTS.md': 'a — b\n',
+    'CHANGELOG.md': 'a — b\n',
+  });
+  const { problems } = punctuationProblems(root);
+  assert.equal(problems.length, 2);
+  assert.ok(problems.some((p) => p.startsWith('DOUBTS.md')));
+  assert.ok(problems.some((p) => p.startsWith('CHANGELOG.md')));
+  rmSync(root, { recursive: true });
+});
+
+test('the two maps the punctuation rule reads are asserted by name', () => {
+  assert.deepEqual(Object.keys(PROSE_EXEMPT), [join('docs', '')]);
+  for (const reason of Object.values(PROSE_EXEMPT)) assert.match(reason, /\w/);
+  assert.deepEqual(BANNED_PUNCTUATION, [['—', 'an em dash']]);
 });
 
 test('a framework source carrying any comment is a problem', () => {
