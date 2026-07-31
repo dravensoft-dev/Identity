@@ -37,6 +37,7 @@ export const GATES = [
   { name: 'check:arbitrary', file: 'tailwind/check-arbitrary-values.mjs' },
   { name: 'check:dimensions', file: 'arena/check-dimension-literals.mjs' },
   { name: 'check:states', file: 'arena/check-manifest-states.mjs' },
+  { name: 'check:layer-independence', file: 'arena/check-layer-independence.mjs' },
   { name: 'check:structure', file: 'arena/check-structure.mjs' },
   { name: 'check:contracts', file: 'arena/check-contracts.mjs' },
   { name: 'check:behaviour', file: 'arena/check-behaviour.mjs' },

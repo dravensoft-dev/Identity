@@ -2,6 +2,17 @@
 
 Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
 
+## This layer stands on the contracts alone
+
+**It names no other framework layer, and imports from exactly one.** What a component is and
+what members it presents is `contracts/api/components/<Name>.json`; what it must do is
+`contracts/behaviour/`; what a value is, `contracts/design/`. The single edge to another layer
+is styling: a `<Component>.variants.ts` imports the generated
+`<Component>.manifest.generated` beside its manifest in `frameworks/tailwind/`, through the
+configured `tv` in `frameworks/tailwind/Tv.ts`. A manifest is data — slots, variants and class
+strings — so nothing travels the other way. `bun run check:layer-independence` holds both
+halves: that edge is `ALLOWED` with its reason, and everything else fails.
+
 **Bridge (foundation) — bring Arena's tokens, icons and theming into an existing Angular app:**
 - `theme/arena-tailwind.css` — one import that brings Arena's tokens (including
   the self-hosted fonts declared in `contracts/design-generated/fonts.generated.css`, binaries in `assets/fonts/`)

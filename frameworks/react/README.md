@@ -5,6 +5,15 @@ Every value here comes from `contracts/design/`; this layer introduces no design
 of its own. For what those values mean, read
 [`contracts/design/README.md`](../../contracts/design/README.md).
 
+## This layer stands on the contracts alone
+
+**It names no other framework layer and imports from none.** What a component is and what
+members it presents is `contracts/api/components/<Name>.json`; what it must do is
+`contracts/behaviour/`; what a value is, `contracts/design/`. Where another layer solves the
+same problem differently, the contract is what makes the two answers comparable, and neither
+implementation is the other's record. `bun run check:layer-independence` fails a file here that
+cites a sibling layer, by import or in prose.
+
 ## Components carry no CSS classes
 
 Each component renders with **inline `style` objects that read the CSS custom properties**
