@@ -77,6 +77,7 @@ export const COVERED = {
   'CommandPalette:angular': 'CommandPalette.combobox.test.ts',
   'Button:angular': 'Button.compliance.test.ts',
   'ConfirmDialog:angular': 'ConfirmDialog.compliance.test.ts',
+  'Dialog:angular': 'Dialog.compliance.test.ts',
   'Tag:angular': 'Tag.cases.test.ts',
   'Tooltip:angular': 'Tooltip.compliance.test.ts',
   'IconButton:angular': 'IconButton.compliance.test.ts',

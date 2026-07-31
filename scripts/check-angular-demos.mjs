@@ -16,6 +16,7 @@ export const BUNDLE_DIR = 'build/angular-demo/js';
 export const PAGED = new Set([
   'Button',
   'Tooltip',
+  'Dialog',
   'IconButton',
   'Checkbox',
   'Switch',

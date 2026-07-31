@@ -14,18 +14,9 @@ import {
   viewChild,
 } from '@angular/core';
 import { confirmDialogStyles } from './ConfirmDialog.variants';
-import {
-  type FocusTrapState,
-  focusFirstFocusable,
-  focusableElements,
-  handleOpenTransition,
-  trapTabKey,
-} from '../../../FocusTrap';
+import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../FocusTrap';
 
 let nextId = 0;
-
-export type { FocusTrapState };
-export { focusFirstFocusable, focusableElements, handleOpenTransition, trapTabKey };
 
 export function isConfirmLocked(required: string | undefined, typed: string): boolean {
   return required !== undefined && required !== '' && typed.trim() !== required;

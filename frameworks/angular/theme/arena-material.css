@@ -12,12 +12,6 @@
   --mat-form-field-outlined-label-text-color: var(--mute);
 }
 
-/* Dialog — surface + large radius */
-.mat-mdc-dialog-surface {
-  --mat-dialog-container-shape: var(--r-lg);
-  --mat-dialog-container-color: var(--surface-card);
-}
-
 /* Snackbar / toast surface — medium radius */
 .mat-mdc-snack-bar-container {
   --mat-snack-bar-container-shape: var(--r-md);

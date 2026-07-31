@@ -9,5 +9,16 @@ export default {
     "title": "font-display font-extrabold text-h3 text-base-content tracking-tight",
     "body": "px-6 py-4 font-body text-md leading-body text-base-content/82",
     "foot": "flex justify-end gap-2.5 px-6 pb-5.5"
+  },
+  "variants": {
+    "open": {
+      "true": {},
+      "false": {
+        "scrim": "hidden"
+      }
+    }
+  },
+  "defaultVariants": {
+    "open": false
   }
 } as const;
