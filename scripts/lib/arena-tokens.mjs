@@ -1,11 +1,22 @@
-/* The two readers a CSS bridge needs: which Arena tokens a stylesheet reads, and which
- * token names exist. They lived in check-material.mjs until Plan D deleted that gate with
- * the bridge it verified; check-cdk.mjs is the remaining consumer. */
+/* Which Arena tokens a stylesheet reads, which names the generated CSS defines, and
+ * the union of those with the hand-authored aliases. They sit in lib rather than in
+ * any one gate because check-cdk, check-tailwind and check-tailwind-coverage all
+ * read them, and a library must not reach up into a gate to do it. */
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseDecls } from './css-decls.mjs';
-import { arenaTokens } from '../check-tailwind.mjs';
+import { repoRoot } from './repo-root.mjs';
+
+const GENERATED = ['palette.css', 'typography.css', 'spacing.css', 'effects.css'];
+
+export function arenaTokens(root = repoRoot) {
+  const names = new Set();
+  for (const f of GENERATED)
+    for (const decls of parseDecls(readFileSync(join(root, 'contracts', 'design-generated', f), 'utf8')).values())
+      for (const name of decls.keys()) names.add(name);
+  return names;
+}
 
 export function referencedTokens(css) {
   const out = new Set();

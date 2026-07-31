@@ -15,13 +15,13 @@ import { pathToFileURL } from 'node:url';
 import { Component, signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { assertNoNode } from '../../../test/NodeAssert';
-import { SCRIPTS } from '../../../test/Compliance';
+import { CHECKS } from '../../../test/Compliance';
 import { calendarHourH } from '../../../Tokens.generated';
 import { Calendar } from './Calendar';
 import { CalendarEvent } from '../calendar-event/CalendarEvent';
 
 const { scanValue } = await import(
-  pathToFileURL(join(SCRIPTS, 'check-dimension-literals.mjs')).href
+  pathToFileURL(join(CHECKS, 'arena', 'check-dimension-literals.mjs')).href
 ) as { scanValue: (prop: string, value: string) => { reason: string } | null };
 
 const PROJECTED = new Map([
