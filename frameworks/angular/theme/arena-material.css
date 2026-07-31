@@ -4,14 +4,6 @@
    tokens are dark-first. Radius: --r-sm for controls, --r-lg for cards/dialogs.
    Danger is OUTLINE (border + text in --color-error), never a fill. */
 
-/* Form field — outline appearance */
-.mat-mdc-form-field.mat-form-field-appearance-outline {
-  --mat-form-field-outlined-outline-color: var(--border);
-  --mat-form-field-outlined-focus-outline-color: var(--color-primary);
-  --mat-form-field-outlined-container-shape: var(--r-sm);
-  --mat-form-field-outlined-label-text-color: var(--mute);
-}
-
 /* Snackbar / toast surface — medium radius */
 .mat-mdc-snack-bar-container {
   --mat-snack-bar-container-shape: var(--r-md);

@@ -1776,6 +1776,36 @@ stale-proof; a present-tense component name is not.
   both layers. The first is the right shape and the larger blast radius; whoever takes it should
   count the consumers first (`grep -rn 'var(--panel)' frameworks/ contracts/`).
 
+- **`Select.multiple` is a member no event can report on, and it is a CONTRACT defect rather
+  than an implementation one.** `contracts/api/components/Select.json` declares `multiple` as a
+  boolean and `change` as an event carrying a single `string`. A multi-selection is a *set* of
+  values, and no set can be expressed as one string, so a consumer who turns `multiple` on gets
+  the attribute on the element and an event reporting only `select.value` — the first selected
+  option. Both layers do exactly this: React's `onChange` unwraps `e.target.value`, and
+  `arena-select` emits the same. So the two agree, which is why this is **not** a section 3
+  divergence, and why nothing failed when the Angular primitive was written against the
+  contract.
+
+  **Nothing gates it and nothing could.** `check:api` compares a member's *form* between the
+  contract and each layer; it has no way to ask whether one member's type can carry what another
+  member's flag implies. Both readings — `multiple: false` and a scalar event, or `multiple:
+  true` and an array one — are internally consistent contracts.
+
+  **Not fixed here**, because it is a contract change and Plan D's authority is to implement the
+  contract rather than to rewrite it. Two shapes are available: drop `multiple` (a native
+  multi-select is a list box shown open, which is a different control from the one this contract
+  describes as a *"styled native dropdown selector"*), or give `change` an array payload and
+  accept that every single-select consumer now unwraps. The first is the smaller one and
+  probably right; neither is decided.
+
+- **The caret glyph is announced.** Both layers render the `▾` as a real text node in a `<span>`
+  beside the control, with no `aria-hidden`, so a screen reader in browse mode reads a symbol
+  that carries nothing. It is not part of the control's accessible name — that comes from the
+  `<label for>` — so no pattern requirement catches it, and `roles.label` passes either way. One
+  attribute in each layer fixes it; it is recorded rather than taken because touching React's
+  `Select.jsx` is outside the batch that found it, and fixing one layer alone would manufacture
+  a divergence out of a defect the two currently share.
+
 ## 2. Where the rest of the debt lives
 
 Each of these is a record with its own stale-entry rule: an entry that no longer
@@ -3162,6 +3192,34 @@ because happy-dom has no layout and reports `scrollHeight` as `0`.
 **Converges: no, and Angular is the better side on both counts.** Neither difference is worth
 porting back blind — React's content-box textarea does not have the second problem at all, so
 copying the `+ borderBoxSlack` term there would make its box two pixels too tall.
+
+#### Select — RETIRED as a divergence: both layers are the native element
+
+**What it was.** Angular delegated `Select` to Angular Material's `MatSelect`, and the delegated
+entry bound `combobox` while carrying `divergesFrom: "select"`. That was not a description
+problem: `MatSelect` is an *authored* combobox — a trigger with `aria-expanded`,
+`aria-controls` and `aria-activedescendant` over a real `role="listbox"` popup in a CDK overlay —
+where React's `Select` is the native `<select>`, whose popup the browser renders and operates.
+Two genuinely different controls under one contract. The record said so and reconciled nothing,
+because there was nothing at that layer's level to reconcile: Arena did not own `MatSelect`.
+
+**Why it is retired rather than resolved-in-one-layer.** Plan D's batch 5 wrote
+`arena-select`, and the contract decided its shape before any implementation did:
+*"styled native dropdown selector"*, `options` *"drawn as native options"*, a `multiple` member
+only a native element has, and a `change` payload of one `string`. So the Angular primitive is
+the native element too, binds `select`, and the `divergesFrom` died with the delegated entry it
+lived in. `check:behaviour` now compares two flat `select` bindings with no exceptions on either
+side.
+
+**What did NOT survive the port, and is a real loss to name.** `MatSelect` gave an Angular
+consumer a popup styled in Arena's tokens on every platform. A native `<select>` gives the
+platform's own — a phone's wheel picker, a desktop's OS menu — which Arena cannot theme and does
+not try to. That is the same trade React has always made, and taking it is what made the two
+layers one control; it is a cost, not a free win. The gain on the other side is that the popup's
+keyboard, its type-ahead and its accessibility are the user agent's rather than any library's.
+
+**Related, and still open:** `multiple` is a member no `change` payload can report on, in both
+layers. It is section 1 above, as a contract defect rather than a divergence.
 
 #### Table — React's wide shape is a `<table>`, Angular's is a role-based grid, and a compiler rule forced it
 

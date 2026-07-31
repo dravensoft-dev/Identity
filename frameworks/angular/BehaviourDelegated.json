@@ -41,13 +41,6 @@
     "dressedBy": "frameworks/angular/theme/arena-material.css",
     "reason": "MatProgressBar renders the indicator, its determinate/indeterminate/buffer/query modes and its value plumbing (aria-valuenow, aria-valuemin, aria-valuemax). The bridge dresses its active-indicator and track colour on the brand and border tokens. Arena has no arena-progress-bar primitive and should not grow one."
   },
-  "Select": {
-    "pattern": "combobox",
-    "divergesFrom": "select",
-    "delegatedTo": "Angular Material MatSelect",
-    "dressedBy": "frameworks/angular/theme/arena-material.css",
-    "reason": "MatSelect follows the ARIA 1.2 combobox pattern directly (Angular Material's own accessibility docs say so in those words): the trigger controls a role=\"listbox\" popup, with aria-expanded, aria-controls and aria-activedescendant wired by the component rather than left implicit the way React's native <select> leaves them. Like Input, it is composed inside <mat-form-field appearance=\"outline\">, and the bridge dresses that field, not the select element itself. Arena has no arena-select primitive and should not grow one. `divergesFrom` names `select` because React's Select is the NATIVE element: a <select> whose popup the browser renders and operates, so aria-expanded, aria-controls and aria-activedescendant are the user agent's business and authoring them would be a claim the component cannot keep true. MatSelect is the opposite -- an authored combobox with a real listbox in the overlay -- so the two layers implement genuinely different things under one contract. Neither is wrong, and the difference is not cosmetic: a native select gets the platform's own mobile picker, while MatSelect gets consistent styling and Arena's tokens. Recorded rather than reconciled."
-  },
   "SideNav": {
     "pattern": "navigation",
     "delegatedTo": "Angular Material mat-nav-list",
