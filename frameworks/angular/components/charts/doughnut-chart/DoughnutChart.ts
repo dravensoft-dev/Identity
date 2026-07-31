@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { containerWidth } from '../../../ContainerSize';
 import { CHART_HEIGHT, SR_ONLY, arcPath, resolveColors } from '../../../DataVisuals';
-import { chartLegendMin, chartLegendMax, chartLegendGap } from '../../../Tokens.generated';
+import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated';
 
 const ASSUMED_WIDTH = 600;
 
@@ -13,7 +13,6 @@ const LEGEND_SHARE = 0.34;
 
 const LEGEND_GAP = chartLegendGap;
 
-const RING_INSET = 8;
 
 const INNER_RATIO = 0.62;
 
@@ -84,7 +83,7 @@ export function doughnutPlotWidth(width: number): number {
 }
 
 export function doughnutRadii(plotWidth: number, height: number): { outer: number; inner: number } {
-  const outer = Math.max(1, Math.min(plotWidth, height) / 2 - RING_INSET);
+  const outer = Math.max(1, Math.min(plotWidth, height) / 2 - chartRingInset);
   return { outer, inner: outer * INNER_RATIO };
 }
 

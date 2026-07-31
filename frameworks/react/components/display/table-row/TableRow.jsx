@@ -48,7 +48,7 @@ export function TableRow({
       style={{ borderTop: rowIndex <= 1 ? 'none' : 'var(--bw) solid var(--color-base-300)',
         cursor,
         transition: 'background var(--dur-fast) var(--ease-out)' }}
-      onMouseEnter={activate ? (e) => (e.currentTarget.style.background = 'var(--panel)') : undefined}
+      onMouseEnter={activate ? (e) => (e.currentTarget.style.background = 'var(--color-base-300)') : undefined}
       onMouseLeave={activate ? (e) => (e.currentTarget.style.background = 'transparent') : undefined}>
       {cells}
     </tr>

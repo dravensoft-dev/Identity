@@ -65,6 +65,14 @@ export const calendarActionsBelowMinH = 56;
    comment. One token now, read both ways.
  */
 export const onboardingWidth = 320;
+/*
+   How much room the popover keeps below its anchor before it stops following it
+   down the viewport. Script-readable for the same reason width is: it is compared
+   against window.innerHeight in JS. It sat inline in both layers as a bare 220
+   beside a bare 900, and only one of the two is a design value -- 900 is an
+   SSR fallback for a viewport height nobody chose.
+ */
+export const onboardingHeightReserve = 220;
 
 /*
    Chart plot geometry. Script-readable: JS arithmetic must consume these
@@ -91,6 +99,21 @@ export const chartPadRight = 8;
 export const chartPadBottom = 28;
 /* Holds the value labels. A consequence of the type scale, like pad-bottom. */
 export const chartPadLeft = 44;
+/*
+   Between an axis label and the plot it labels: a y-axis tick label ends this far
+   left of pad-left, and an x-axis category label sits this far above the bottom
+   edge. Equals --sp-2, like pad-top. It is a spacing decision in px, so it is a
+   token by the same criterion the pads are -- it was left inline through several
+   batches because the arithmetic reads as an offset rather than as a value.
+ */
+export const chartLabelGap = 8;
+/*
+   Breathing room between the doughnut's outer radius and its box, so a slice's
+   stroke is not clipped. Not a multiplier deriving one dimension from another --
+   those stay inline by the recorded criterion -- but a chosen gap, which is why
+   this one is a token and the 0.62 inner-radius ratio beside it is not.
+ */
+export const chartRingInset = 8;
 /*
    A bar's data end. Deliberately NOT --r-sm (6px): naming the value Arena
    already renders is free, snapping to the radius scale is a visible 2px design

@@ -35,6 +35,11 @@
       "$value": { "value": 320, "unit": "px" },
       "$description": "The popover's width. Script-readable because Math.min/Math.max compare it\nagainst window.innerWidth. This ALSO replaces the calc(var(--sp-1) * 80) the\ncomponent rendered: the value existed twice in two idioms, held in step by a\ncomment. One token now, read both ways.",
       "$extensions": { "com.dravensoft.arena": { "script": true } }
+    },
+    "height-reserve": {
+      "$value": { "value": 220, "unit": "px" },
+      "$description": "How much room the popover keeps below its anchor before it stops following it\ndown the viewport. Script-readable for the same reason width is: it is compared\nagainst window.innerHeight in JS. It sat inline in both layers as a bare 220\nbeside a bare 900, and only one of the two is a design value -- 900 is an\nSSR fallback for a viewport height nobody chose.",
+      "$extensions": { "com.dravensoft.arena": { "script": true } }
     }
   }
 }

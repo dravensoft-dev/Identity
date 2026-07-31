@@ -1,5 +1,7 @@
 import React, { useRef } from 'react';
-import { onboardingWidth, sp3, sp4 } from '../../../Tokens.generated.js';
+import { onboardingWidth, onboardingHeightReserve, sp3, sp4 } from '../../../Tokens.generated.js';
+
+const SSR_VIEWPORT_H = 900;
 import { useDialogModal } from '../../../UseDialogModal.js';
 
 export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onDone, anchor }) {
@@ -20,7 +22,7 @@ export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onD
   let pos = { position: 'fixed', right: 'calc(var(--sp-1) * 6)', bottom: 'calc(var(--sp-1) * 6)', zIndex: 'var(--z-onboarding)' };
   if (anchor) {
 
-    const top = Math.min(anchor.bottom + sp3, (typeof window !== 'undefined' ? window.innerHeight : 900) - 220);
+    const top = Math.min(anchor.bottom + sp3, (typeof window !== 'undefined' ? window.innerHeight : SSR_VIEWPORT_H) - onboardingHeightReserve);
     let left = anchor.left;
     if (typeof window !== 'undefined') left = Math.min(left, window.innerWidth - W - EDGE);
     pos = { position: 'fixed', top, left: Math.max(EDGE, left), zIndex: 'var(--z-onboarding)' };

@@ -27,6 +27,16 @@
       "$description": "Holds the value labels. A consequence of the type scale, like pad-bottom.",
       "$extensions": { "com.dravensoft.arena": { "script": true } }
     },
+    "label-gap": {
+      "$value": { "value": 8, "unit": "px" },
+      "$description": "Between an axis label and the plot it labels: a y-axis tick label ends this far\nleft of pad-left, and an x-axis category label sits this far above the bottom\nedge. Equals --sp-2, like pad-top. It is a spacing decision in px, so it is a\ntoken by the same criterion the pads are -- it was left inline through several\nbatches because the arithmetic reads as an offset rather than as a value.",
+      "$extensions": { "com.dravensoft.arena": { "script": true } }
+    },
+    "ring-inset": {
+      "$value": { "value": 8, "unit": "px" },
+      "$description": "Breathing room between the doughnut's outer radius and its box, so a slice's\nstroke is not clipped. Not a multiplier deriving one dimension from another --\nthose stay inline by the recorded criterion -- but a chosen gap, which is why\nthis one is a token and the 0.62 inner-radius ratio beside it is not.",
+      "$extensions": { "com.dravensoft.arena": { "script": true } }
+    },
     "bar-radius": {
       "$value": { "value": 4, "unit": "px" },
       "$description": "A bar's data end. Deliberately NOT --r-sm (6px): naming the value Arena\nalready renders is free, snapping to the radius scale is a visible 2px design\nchange and must be taken as one.",

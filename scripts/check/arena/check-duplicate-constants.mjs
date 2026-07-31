@@ -8,7 +8,13 @@ import { join, extname, relative } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 const EXEMPT = new Map([
-
+  ['SSR_VIEWPORT_H',
+   'Not a design value and so not a token: it stands in for window.innerHeight where there is no '
+   + 'window, which is a rendering assumption rather than a decision anybody made. Both layers need '
+   + 'the same stand-in for the same reason, and authoring it in contracts/design/ would put a '
+   + 'number nobody chose into the Overview beside values that were chosen. Onboarding is the one '
+   + 'component that compares against viewport HEIGHT; the reserve it subtracts IS a token '
+   + '(--onboarding-height-reserve).'],
 ]);
 
 export function numericConstants(source) {
@@ -85,7 +91,12 @@ function main() {
     for (const p of problems) console.error(`  ${p}`);
     process.exit(1);
   }
-  console.log('check-duplicate-constants: no numeric constant is declared in both framework layers');
+  const exempt = EXEMPT.size;
+  console.log(
+    exempt === 0
+      ? 'check-duplicate-constants: no numeric constant is declared in both framework layers'
+      : `check-duplicate-constants: no numeric constant is declared in both framework layers except ${exempt} named in EXEMPT with a reason`,
+  );
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();
