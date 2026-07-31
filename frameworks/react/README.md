@@ -108,14 +108,30 @@ registers happy-dom **process-wide**, and `bun test` shares one process across e
 single invocation matches. A DOM registered in the DOM-free invocation's process would
 quietly change what its suites prove with nothing failing to say so.
 
+`test/` holds the harness plus the suites that are about no one component — and **those
+include DOM ones**, so that directory's contents answer nothing about which invocation a
+suite belongs to. Only the infix does.
+
+**What forces the split all the way out to a third suite is `scripts/`.** Angular's single
+registration site, `frameworks/angular/test/TestbedEnv.ts`, is guarded rather than throwing on
+a second call, so merging it into the preloaded invocation does not itself collide. But a
+happy-dom installed process-wide for the whole invocation replaces Bun's own `fetch`, which
+turns a passing `scripts/lib/arena/static-server.test.mjs` fetch assertion into a cross-origin
+failure. **The single authority for the whole command is `testStep()` in
+`scripts/check/arena/check-all.mjs`**, whose `.test.mjs` sibling asserts the args array by
+literal value; read it there rather than reconstructing one.
+
 **The preload is not a convenience.** `react-dom` decides once, at its own module
 evaluation, whether the browser supports the `input` event. If a DOM is not already
 installed the flag latches false and React falls back to its legacy change-detection
 polyfill, under which a dispatched `input` or `change` reaches an `onChange` handler
 **zero** times, silently. Registering happy-dom from a module body is too late — ES imports
 evaluate first — and so is registering it from a separate module imported ahead of
-`react-dom/client`. Only a preload is early enough. `Harness.jsx` **throws** when
-`document` is missing rather than installing a fallback.
+`react-dom/client`. Only a preload is early enough — both alternatives were measured, so do
+not retry them. All three invocation sites pass it (`test:react-dom`, `test`, `testStep()`),
+and `Harness.jsx` **throws** when `document` is missing rather than installing a fallback,
+which would silently run those suites under the legacy semantics. The preload must never
+reach the DOM-free invocation.
 
 ## Running it
 

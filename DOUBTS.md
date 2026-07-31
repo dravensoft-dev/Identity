@@ -121,6 +121,22 @@ stale-proof; a present-tense component name is not.
   pure functions with suites. When you write or move anything a gate resolves by path, the
   question to ask is not "does it still pass" but "how many things did it look at, and is that
   number the one I expect".
+
+  **A fourth instance shipped, and it is the limit case of the shape: a gate that ran zero
+  times.** `scripts/check/core/check-text-contrast.mjs` existed, was complete, and passed — and
+  was named in neither `package.json` nor `check-all.mjs`'s gate array, so `bun run check` never
+  invoked it and `bun run check:text-contrast` answered *Script not found*. Nothing was red,
+  because nothing ran. The prose had already started leaning on it: this file's own `Switch`
+  divergence in section 3 argued that no new gate entry was owed for the knob glyph because
+  *"`check:text-contrast` already gates at 4.5 in its `primary`/`primary-content` row"* — true of
+  the file's contents and false of the repository's behaviour, which is the gap this class is
+  about. `check:ramp` was one step short of the same thing: present in the gate array, absent
+  from `package.json`, so the `CLAUDE.md` line instructing a reader to run it after a
+  `contracts/design/` edit named a command that did not exist. Both are wired now.
+  **The generalisation is that a gate has two existences** — the file, and every place that
+  invokes it — and only the second one is worth anything. Adding a gate means adding it to
+  `package.json` **and** to `check-all.mjs`; a reader citing a gate as evidence should confirm it
+  is in the array before trusting the citation.
 - **The two script-readable gates leave a structural hole between them, and it is
   wider than it looks.** `check:script-tokens`' orphan rule is *imported by at
   least one layer*, and that is deliberately loose: a token a component needs is
@@ -1749,32 +1765,42 @@ stale-proof; a present-tense component name is not.
   pairing `find frameworks/tailwind/components -name '*.manifest.json'` against
   `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d` — and the next manifest
   written ahead of its component reopens it.
-- **`CLAUDE.md` is 54 characters from its 60,000 limit.** Measure it rather than trusting this
-  number, which two batches have now moved — and measure it the way the gate does:
-  `node -e "console.log(require('fs').readFileSync('CLAUDE.md','utf8').length)"`. **`wc -m` is not
-  that measurement** and this entry used to prescribe it; the file is 60,282 *bytes* against 59,946
-  characters, so a byte count reads as 282 characters over a limit the file is comfortably under.
-  `check:docs` reads `.length`, which is UTF-16 code units. It fails hard rather than warning, so
-  this surfaces as a red gate at the end of a batch rather than as a decision made calmly.
-  **Batch 3 spent nothing**, which is the first useful data point this entry has: the assumption
-  that *every* remaining batch must touch the file is false. Landing `arena-pagination` moved no
-  claim in it, because the file carries no literal count of Angular primitives or delegated
-  entries — it names the `find` and the `python3 -c` that produce them — the six-category sentence
-  stayed true, and the React-only-set paragraph describes both sets by method rather than by
-  number, so they shrink together. `frameworks/angular/README.md` survived for the same reason.
-  **What would spend it is a new rule, not a new component.**
-  **Batch 2 bought its own room and spent all of it**, which is the shape of the problem rather
-  than a solution to it. Two claims in the file were measurably false and correcting them was
-  net-negative: the carve-out paragraph said the layer had *one* carve-out when `arena-button`
-  had already made a second, and the React-only-set paragraph said that set was
-  `BehaviourDelegated.json`'s key set *minus `Switch`* when the two sets were identical, 28 members
-  each at the time. The `DataVisuals` placement paragraph then moved to this file wholesale — it is a
-  recorded decision with no gate behind it, which is this file's material. That bought about 600
-  characters and the harness and carve-out rules spent them.
-  **The candidates left are the same ones**: the Angular-layer paragraphs that
-  `frameworks/angular/README.md` already states in more detail, since `CLAUDE.md`'s job is the
-  cross-layer rule and not the layer's own tour. **54 characters is not a sentence, so the next
-  batch that does need to add a claim moves something out first.**
+- **`CLAUDE.md`'s ceiling is a standing constraint on every batch, and the way it is bought back
+  is always the same.** Measure it the way the gate does —
+  `node -e "console.log(require('fs').readFileSync('CLAUDE.md','utf8').length)"` — and never with
+  `wc -m`, which this entry used to prescribe: the file was once 60,282 *bytes* against 59,946
+  characters, so a byte count read as 282 over a limit the file was comfortably under. `check:docs`
+  reads `.length`, which is UTF-16 code units, and it fails hard rather than warning, so an
+  overrun surfaces as a red gate at the end of a batch rather than as a decision made calmly.
+  **The file reached 59,993 — seven characters of room — and the debt-payment programme's batch 0
+  bought about 5,300 back.** The method is the durable part and it is the only one that has ever
+  worked: move a layer's own tour into that layer's README and leave the cross-layer rule with a
+  pointer. Batch 0 moved the AOT test harness, the one-document/one-TestBed rule and the
+  host-bound-root rule into `frameworks/angular/README.md`; the two-invocation mechanism and the
+  `canUseDOM` reason the preload is mandatory into `frameworks/react/README.md` (which already
+  carried most of both, so `CLAUDE.md` had been duplicating them outright); and compressed the
+  four Tailwind gate descriptions to their claims plus a pointer.
+  **What spends the budget is a new rule, not a new component.** A batch landing a primitive
+  typically moves nothing here, because the file carries no literal count of components — it names
+  the `find` that produces them — and describes the per-layer sets by method rather than by number,
+  so they shrink and grow together. **What remains as a candidate** is the rest of the
+  Angular-layer prose that `frameworks/angular/README.md` already states in more detail, on the
+  standing principle that `CLAUDE.md`'s job is the cross-layer rule and not the layer's own tour.
+
+- **`CHANGELOG.md` has the same 60,000-character ceiling and cannot be paid for the same way**,
+  because a released entry is a frozen record of what shipped at a tag and is never back-edited.
+  It hit the limit at 60,357 characters during the debt-payment programme's batch 0, and the two
+  moves available were not equivalent: archiving the released history into a second file, which
+  relocates the record without rewriting it, or **emptying `[Unreleased]`**, which is what was
+  taken. That section held about 25,400 characters of notes for work already on `main` and not
+  yet in any tag — the `.generated.` rename, the untracking of the dev-only build products, the
+  `scripts/` reorganisation, the Angular Calendar family — and those notes are gone from this
+  file. The record of that work survives in the commits and in this file; what does not survive
+  is the release-note prose that would have been renamed to a version heading at the next cut, so
+  **whoever cuts the release after 4.0.0 writes those notes from the log rather than finding them
+  waiting.** `check-release.mjs` is unaffected: it reads the first *versioned* entry, so an empty
+  `[Unreleased]` on top is expected and never a failure. The ceiling will return — `[Unreleased]`
+  is the section that grows — and the archive split is the option left when it does.
 
 - **The Angular by-hand checklists named work nobody here could do, and batch 2 built the thing
   that does it.** This entry recorded that `Button.prompt.md` and `Tooltip.prompt.md` each ended
@@ -1911,11 +1937,6 @@ stale-proof; a present-tense component name is not.
   entries in two hand-maintained places (`.gitignore` and `UNTRACKED`), tied together only by
   `check:generated` refusing a `.generated.` file that neither claims.
 
-- **`CLAUDE.md` sits 7 characters under its 60,000-character ceiling.** The `.generated.`
-  convention paragraph was paid for by compressing eight passages elsewhere, and the file is now
-  effectively full: the next paragraph added anywhere in it fails `check:docs` on arrival. That
-  is a real constraint on the next change, not a rounding error, and the fix when it bites is to
-  move a section into the README that owns it rather than to raise the limit.
 
 ## 2. Where the rest of the debt lives
 
@@ -3632,18 +3653,24 @@ arrives about 100ms early against React**, left undone rather than reached for q
 ### An Angular input named after a native attribute leaves the native attribute behind
 
 Angular writes a static attribute to the DOM during the creation pass whether or not it also
-matches an input, so `<arena-page-head title="Projects">` leaves a real `title` on the host
-and the browser draws a tooltip over the whole header. **Nine primitives are affected** —
-`title` on `alert`, `chart-card`, `confirm-dialog`, `empty-state`, `error-state`, `page-head`
-and `unauth-card`, and `name` on `app-logo` and `avatar`.
+matches an input, so `<arena-page-head title="Projects">` left a real `title` on the host and the
+browser drew a tooltip over the whole header. `confirm-dialog` was the worst case by a distance:
+its host is the fixed full-viewport scrim, so `<arena-confirm-dialog title="Delete?">` painted a
+tooltip over the **entire viewport** while the dialog was open.
 
-`confirm-dialog` is the worst case by a distance: its host is the fixed full-viewport scrim,
-so `<arena-confirm-dialog title="Delete?">` paints a tooltip over the **entire viewport**
-while the dialog is open.
+**The `title` and `name` half is closed and gated.** Every primitive taking either input carries
+`'[attr.title]': 'null'` or `'[attr.name]': 'null'` in its host block, and
+`GLOBAL_ATTRIBUTE_INPUTS` in `frameworks/angular/test/HostClassBinding.test.ts` asserts it both
+ways — a primitive that takes the input and does not clear it fails, and so does one that clears
+an attribute it takes no input for. Read the guard rather than a count; the figure here was wrong
+three times.
 
-Binding the input (`[title]="…"`) avoids it, and so would a host binding of
-`'[attr.title]': 'null'` — which, if taken, must be applied to all nine at once rather than
-one primitive at a time, or the layer becomes unpredictable. **Not yet done.**
+**The `id` half is open, and it is not a second instance of this — it is the same defect with a
+worse consequence**, so it is recorded under *Known debt* rather than here: `id` is not in
+`GLOBAL_ATTRIBUTE_INPUTS`, four primitives take the input and leave the attribute on the host, and
+a duplicated id makes a `<label for>` resolve to a host that is not a labelable control.
+Whoever closes it adds `id` to that list in the same change, or the fifth recurrence is as silent
+as the first four.
 
 ### `booleanAttribute` is not equivalent to a native boolean attribute
 

@@ -181,6 +181,75 @@ overflow. `check:angular-demos` is the portable gate instead — it needs no bro
 bundler, and its `PAGED` set is the coverage record, so a page that exists undeclared and a
 declared page that is missing both fail. Coverage is partial and grows one component at a time.
 
+## The test harness
+
+**It compiles ahead of the run — AOT, not JIT — and that is a different guarantee, not merely a
+faster one.** The suites render real zoneless Angular trees under `bun test` via `happy-dom`,
+which needs three test-only devDependencies beyond the `node:test`/`node:assert` baseline —
+`@angular/platform-browser`, `happy-dom` and `@happy-dom/global-registrator`. **Most suites sit
+beside the component they cover**; what stays in `test/` is the harness and the suites about no
+single component — and two of those files carry no `.test.` infix on purpose, because `bun test`
+collects by that infix and a shared module must not be collected as a suite.
+
+`bun run build:angular-tests` compiles everything `tsconfig.test.json` includes under
+`ngc --strictTemplates`, into git-ignored `build/angular-test/`; `test:angular`, `test` and
+`testStep()` all run `bun test` over that emitted output, never over the `.ts` sources. A type
+error anywhere in the test surface — including a template diagnostic in an inline `template:`
+string — fails the *build* step, and no test in that run executes at all. Staleness is prevented
+by the build always running ahead of the tests that read it, and `build-angular-tests.mjs` prunes
+output whose source is gone, because `ngc` does not.
+
+**A green compile is a claim about TYPES, and never about behaviour.**
+
+`test/HarnessCapabilities.test.ts` pins what the harness supports: a template property binding
+reaches a required signal input; `contentChild()` resolves against real projected content; and
+`componentRef.setInput()` drives a required input — a plain string, and a boolean carrying a
+`booleanAttribute` transform — as well as an *optional* boolean input of the same transformed
+shape, displacing its default. **Never write to a component's instance field directly** to stand
+in for an input: `grep -rn "\w\+\['[a-zA-Z]*'\] = " --include='*.ts' frameworks/angular/` must
+stay empty.
+
+A suite file that fails to *load* from the emit does not fail quietly: the run goes red, not
+merely one failing assertion. What stays silent is *which* tests or suite files never loaded, so
+a reader sees a failing run and has to go find what else it dropped.
+
+### One document and one TestBed per process
+
+`bun test` runs every file a single invocation matches in ONE process — which means the whole
+layer — and both happy-dom's document and Angular's `TestBed` environment can each be claimed
+only once per process: `GlobalRegistrator.register()` throws if already registered, and
+`TestBed.initTestEnvironment()` throws the second time it runs across files that share a process.
+`test/TestbedEnv.ts` claims both, once, for the whole run: `ensureDom()` and
+`useTestEnvironment()` are plain `if (claimed) return` guards, not a reset —
+`TestBed.resetTestEnvironment()` measurably does not work, because
+`BrowserDomAdapter.makeCurrent()` installs a process-wide DOM adapter on the FIRST platform
+creation that nothing resets, so a second document would render into one the adapter no longer
+points at.
+
+So every suite shares one real document and one TestBed environment for the whole run; any suite
+needing a real component render calls `useTestEnvironment()` (or `ensureDom()` alone, for a suite
+that needs a DOM but not TestBed). **The shared document means state written onto it outlives the
+file that wrote it** — a custom property on `documentElement.style`, an element appended to
+`document.body` — unless that file clears it, typically in a `finally`. Every directly-created
+fixture must still be `destroy()`-ed, because zoneless change detection sweeps all attached views,
+so a fixture left dirty throws out of an unrelated later test — and with one shared document that
+hazard crosses files.
+
+## A host-bound root is the default, and its carve-outs are a growing set
+
+A primitive binds its root slot to the host (`host: { '[class]': 'styles().root()' }`) rather than
+rendering a wrapper div, so the host is the flex item its parent lays out and the measured element
+is the styled element. The rule targets elements that exist only to carry styling; when the root
+must be a specific semantic or interactive element, keep it and leave the host bare.
+`activity-feed` needs a real `<ul>`; a form control needs its own `<button>`, `<input>` or
+`<label>`, or it forfeits the activation, labelling and `:disabled` semantics the browser already
+supplies. **A bare host still declares `display: contents`**, or as a flex item it shrinks to fit
+and a `w-full` inside measures the host, not the row. **A host-bound root must carry a display
+utility** — `<arena-x>` is an unknown element defaulting to `display:inline`, where width and
+height do not apply, so a root slot without one renders a zero-area host. That is machine-guarded
+by a manifest-driven assertion in `test/HostClassBinding.test.ts`. Count the carve-outs rather
+than trusting a figure here; the command is in [`DOUBTS.md`](../../DOUBTS.md) section 3.
+
 ## Two traps this layer's idiom sets
 
 Both are layer-wide and silent, and both are recorded in [`DOUBTS.md`](../../DOUBTS.md) —

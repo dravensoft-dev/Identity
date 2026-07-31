@@ -1,16 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { testStep, summarize, stepStatus, GATES, DOMAINS, testFilesUnder } from './check-all.mjs';
 
-test('GATES lists the twenty-six check gates', () => {
-  assert.equal(GATES.length, 26);
+test('GATES lists the twenty-seven check gates', () => {
+  assert.equal(GATES.length, 27);
   assert.deepEqual(
     GATES.map((g) => g.name),
-    ['check:docs', 'check:generated', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:structure', 'check:behaviour', 'check:compliance', 'check:api', 'check:fonts', 'check:vendor', 'check:demos', 'check:cards', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
+    ['check:docs', 'check:generated', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:text-contrast', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:structure', 'check:behaviour', 'check:compliance', 'check:api', 'check:fonts', 'check:vendor', 'check:demos', 'check:cards', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
   );
+});
+
+test('every gate in the array is also an npm script -- a gate a reader cannot invoke by name is the shape check:text-contrast shipped in', () => {
+  const scripts = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8')).scripts;
+  for (const { name } of GATES) {
+    assert.ok(name in scripts, `${name} is in the gate array and not in package.json, so \`bun run ${name}\` answers "Script not found"`);
+  }
 });
 
 test('every gate sits in one of the five domains, so a new one cannot land outside the grid', () => {
