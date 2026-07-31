@@ -9,6 +9,7 @@ import { sideNavStyles } from '../side-nav/SideNav.variants';
   providers: [{ provide: SideNavChild, useExisting: forwardRef(() => SideNavItem) }],
   host: {
     style: 'display: contents',
+    '[attr.id]': 'null',
   },
   template: `
     @if (href(); as url) {
