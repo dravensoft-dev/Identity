@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 
+export function borderBoxSlack(element) {
+  return element.offsetHeight - element.clientHeight;
+}
+
 export function Textarea({
   label, id, hint, error, required = false, rows = 4, maxLength, counter = false,
   disabled = false, readOnly = false, autoResize = false, placeholder, name, value, onChange,
@@ -9,7 +13,12 @@ export function Textarea({
   const borderColor = error ? 'var(--danger)' : focus ? 'var(--gold)' : 'var(--color-base-300)';
   const ring = error ? '0 0 0 var(--focus-width) var(--danger-soft)' : focus ? '0 0 0 var(--focus-width) var(--gold-soft)' : 'none';
   const len = typeof value === 'string' ? value.length : 0;
-  const grow = (e) => { if (autoResize) { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; } };
+  const grow = (e) => {
+    if (!autoResize) return;
+    const el = e.target;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight + borderBoxSlack(el)}px`;
+  };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 1.5)' }}>
       {label && (
