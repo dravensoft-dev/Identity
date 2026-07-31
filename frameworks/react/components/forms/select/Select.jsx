@@ -17,7 +17,7 @@ export function Select({ label, options = [], value, onChange, disabled = false,
             transition: 'border-color var(--dur-fast) var(--ease-out)' }}>
           {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
-        <span style={{ position: 'absolute', right: 'calc(var(--sp-1) * 3)', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--mute)', fontSize: 'var(--icon-sm)' }}>▾</span>
+        <span style={{ position: 'absolute', right: 'calc(var(--sp-1) * 3)', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--mute)', fontSize: 'var(--icon-sm)' }} aria-hidden="true">▾</span>
       </div>
     </div>
   );

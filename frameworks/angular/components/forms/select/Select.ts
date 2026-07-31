@@ -26,7 +26,7 @@ let nextId = 0;
           <option [value]="option.value" [selected]="option.value === value()">{{ option.label }}</option>
         }
       </select>
-      <span [class]="styles().caret()">&#9662;</span>
+      <span [class]="styles().caret()" aria-hidden="true">&#9662;</span>
     </div>
   `,
 })

@@ -196,6 +196,7 @@ export const BEHAVIOURAL = new Set([
   'keyboard.ArrowLeft', 'keyboard.ArrowRight',
   'keyboard.Home', 'keyboard.End',
   'keyboard.PageUp', 'keyboard.PageDown',
+  'keyboard.ControlEnd', 'keyboard.ControlHome',
   'keyboard.TypeAhead',
 
   'content.noAutoDismiss',

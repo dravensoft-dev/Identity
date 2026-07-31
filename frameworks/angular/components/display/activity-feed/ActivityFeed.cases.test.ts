@@ -1,8 +1,11 @@
 /* Mirrors the React suite of the same name, because the two bindings declare the
  * same two cases and a divergence between them would be a defect rather than a
  * layer difference. `roles.article` is QUANTIFIED, so its subject is an array and
- * every element is judged; PageUp/PageDown are asserted by acting on the tree,
- * and the verdicts below are what those assertions reached. */
+ * every element is judged; the four keyboard requirements are asserted by acting on
+ * the tree, and the verdicts below are what those assertions reached. Control+End and
+ * Control+Home need focusable elements OUTSIDE the feed, so the fixture puts one on
+ * each side of it in the document -- the requirement is about leaving the feed, and a
+ * feed alone in a document has nowhere to leave to. */
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 useTestEnvironment();
 
@@ -23,17 +26,23 @@ const ITEMS = [
   { id: '3', actor: 'Alan', action: 'approved', target: 'release-482', time: '10:03' },
 ];
 
-function press(el: Element, key: string): KeyboardEvent {
-  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+function press(el: Element, key: string, ctrlKey = false): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', { key, ctrlKey, bubbles: true, cancelable: true });
   el.dispatchEvent(event);
   return event;
 }
 
 test('arena-activity-feed meets the feed pattern in both of its declared states', () => {
   const fixtures: ReturnType<typeof TestBed.createComponent<ActivityFeed>>[] = [];
+  const before = document.createElement('button');
+  const after = document.createElement('button');
+  document.body.append(before);
+  const anchor = document.createElement('div');
+  document.body.append(anchor, after);
   const render = (busy: boolean) => {
     const fixture = TestBed.createComponent(ActivityFeed);
     fixtures.push(fixture);
+    anchor.append(fixture.nativeElement as Element);
     fixture.componentRef.setInput('label', LABEL);
     fixture.componentRef.setInput('items', ITEMS);
     fixture.componentRef.setInput('busy', busy);
@@ -82,12 +91,24 @@ test('arena-activity-feed meets the feed pattern in both of its declared states'
           assertSameNode(document.activeElement, articles[0],
             'PageUp past the first article moved focus -- it must stop rather than wrap');
 
+          const end = press(articles[0], 'End', true);
+          assertSameNode(document.activeElement, after,
+            'Control+End must leave the feed for the first focusable element after it');
+          assert.equal(end.defaultPrevented, true, 'Control+End was not claimed');
+
+          articles[1].focus();
+          const home = press(articles[1], 'Home', true);
+          assertSameNode(document.activeElement, before,
+            'Control+Home must leave the feed for the first focusable element before it');
+          assert.equal(home.defaultPrevented, true, 'Control+Home was not claimed');
+
           return {
             root: host,
             subjects: { default: feed, 'roles.article': articles },
             behavioural: {
               'states.posinset': true, 'states.busy': true,
               'keyboard.PageDown': true, 'keyboard.PageUp': true,
+              'keyboard.ControlEnd': true, 'keyboard.ControlHome': true,
             },
           };
         },
@@ -102,6 +123,7 @@ test('arena-activity-feed meets the feed pattern in both of its declared states'
             behavioural: {
               'states.posinset': true, 'states.busy': true,
               'keyboard.PageDown': true, 'keyboard.PageUp': true,
+              'keyboard.ControlEnd': true, 'keyboard.ControlHome': true,
             },
           };
         },
@@ -109,6 +131,9 @@ test('arena-activity-feed meets the feed pattern in both of its declared states'
     });
   } finally {
     for (const fixture of fixtures) fixture.destroy();
+    before.remove();
+    anchor.remove();
+    after.remove();
   }
 });
 

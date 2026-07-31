@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input } from '@angular/core';
 import type { ActivityItem } from '../../../Api.generated';
+import { focusableElements } from '../../../FocusTrap';
 import { activityFeedStyles } from './ActivityFeed.variants';
 
 export interface ActivityFeedRow {
@@ -58,10 +59,20 @@ export class ActivityFeed {
   protected readonly rows = computed(() => resolveActivityFeedRows(this.items()));
 
   protected onKeydown(event: KeyboardEvent): void {
+    const feed = event.currentTarget as HTMLElement;
+    if (event.ctrlKey && (event.key === 'End' || event.key === 'Home')) {
+      const after = event.key === 'End';
+      const outside = focusableElements(feed.ownerDocument.body).filter((el) => !feed.contains(el));
+      const position = after ? Node.DOCUMENT_POSITION_FOLLOWING : Node.DOCUMENT_POSITION_PRECEDING;
+      const reachable = outside.filter((el) => feed.compareDocumentPosition(el) & position);
+      const target = after ? reachable[0] : reachable[reachable.length - 1];
+      if (!target) return;
+      event.preventDefault();
+      target.focus();
+      return;
+    }
     if (event.key !== 'PageDown' && event.key !== 'PageUp') return;
-    const articles = Array.from(
-      (event.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('[role="article"]'),
-    );
+    const articles = Array.from(feed.querySelectorAll<HTMLElement>('[role="article"]'));
     if (articles.length === 0) return;
     const target = event.target as Element | null;
     const here = articles.indexOf(target?.closest('[role="article"]') as HTMLElement);
