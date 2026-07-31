@@ -1044,19 +1044,22 @@ stale-proof; a present-tense component name is not.
   that has gone stale here twice. Neither the deletion and restore of the React DOM test
   directory nor its later disappearance changed what is unpinned; none of them was ever
   what caused it.
-- **Four Angular primitives take an `id` input and none clears the attribute off its
-  host.** `arena-input`, `arena-textarea`, `arena-side-nav-item` and
-  `arena-side-nav-collapsible` all declare `readonly id = input(...)`, and Angular writes a
-  static attribute to the DOM during the creation pass whether or not it also matches an
-  input. So `<arena-input id="email">` leaves `id="email"` on the host **and** puts it on the
-  real `<input>` inside — two elements with one id, where a `<label for="email">` resolves to
-  the host, which is not a labelable control. `arena-calendar-event` was the fifth and clears
-  it (`'[attr.id]': 'null'`), found by its own placement suite looking up a chip and getting
-  the host back. The guard that would catch the rest is
-  `GLOBAL_ATTRIBUTE_INPUTS` in `frameworks/angular/test/HostClassBinding.test.ts`, which lists
-  `title` and `name` and not `id`; adding `id` fails four components at once, which is why
-  this is filed rather than fixed. **Whoever fixes it should add `id` to that list in the same
-  change**, or the fifth recurrence is as silent as the first four.
+- **CLOSED: four Angular primitives leaked their `id` onto the host, and adding the attribute to
+  the guard is what made the fix stick.** `arena-input`, `arena-textarea`, `arena-side-nav-item`
+  and `arena-side-nav-collapsible` each declared `readonly id = input(...)`, and Angular writes a
+  static attribute to the DOM during the creation pass whether or not it also matches an input —
+  so `<arena-input id="email">` left `id="email"` on the host **and** put it on the real `<input>`
+  inside. Two elements with one id, where a `<label for="email">` resolves to the host, which is
+  not a labelable control. `arena-calendar-event` was the fifth and already cleared it, found by
+  its own placement suite looking up a chip and getting the host back.
+  All four clear it now, and **`id` is in `GLOBAL_ATTRIBUTE_INPUTS`** in
+  `frameworks/angular/test/HostClassBinding.test.ts`, which this entry asked for in the same
+  change so a fifth recurrence would not be as silent as the first four. The guard is symmetric —
+  it also fails a primitive that clears an attribute it takes no input for — and `arena-tab` is
+  the case that proves the symmetry is not too tight: it BINDS `[attr.id]` to a real value rather
+  than clearing it, takes no `id` input, and is correctly ignored. Watched failing against a
+  reverted `Input.ts`.
+
 - **A barrel gap is invisible to every gate that is not looking for it, and one hid a real
   name collision for as long as it lasted.** `frameworks/angular/components/display/index.ts`
   exported six of its eleven primitives; `badge`, `card`, `table`, `table-row` and `table-cell`
@@ -1947,27 +1950,40 @@ stale-proof; a present-tense component name is not.
   accept that every single-select consumer now unwraps. The first is the smaller one and
   probably right; neither is decided.
 
-- **A projection marker the consumer forgets to import drops the whole slot, in silence.** Every
-  gated `<ng-content select="[x]">` in the Angular layer is paired with a
-  `contentChild(ArenaX)` from `ProjectionMarkers.ts`, because that is the only way an
-  `ng-content` slot can report whether anything was projected. The query resolves the
-  **directive**, so it finds nothing unless the consumer's own component lists `ArenaX` in its
-  `imports` — and with the query null the `@if` never renders, the `<ng-content>` is never
-  instantiated, and the projected content vanishes. No error, no warning, no failing gate:
-  `ngc --strictTemplates` is happy, because a bare `footer` attribute on a `<div>` is valid HTML
-  whether or not a directive matches it.
+- **A projection marker the consumer forgets to import drops the whole slot in silence, and the
+  guard for it had to go OUTSIDE the component.** Every gated `<ng-content select="[x]">` in the
+  Angular layer is paired with a `contentChild(ArenaX)` from `ProjectionMarkers.ts`, because that
+  query is the only way an `ng-content` slot can report whether anything was projected. The query
+  resolves the **directive**, so it finds nothing unless the consumer's own component lists
+  `ArenaX` in its `imports` — and with the query null the `@if` never renders, the `<ng-content>`
+  is never instantiated, and the projected content vanishes. No error, no warning, no failing
+  gate: `ngc --strictTemplates` is happy, because a bare `footer` attribute on a `<div>` is valid
+  HTML whether or not a directive matches it. It was found by opening a page, not by reading one:
+  `Menu.card.entry.ts` put a whole dialog footer behind a `[footer]` marker without importing
+  `ArenaFooter`, and rendered an empty dialog while every suite stayed green.
 
-  **Found by opening the page, not by reading it.** `Menu.card.entry.ts` put a whole dialog
-  footer — a menu and its trigger — behind a `[footer]` marker without importing `ArenaFooter`,
-  and it rendered an empty dialog. Every suite stayed green, because the suites import the
-  markers.
+  **The component still cannot detect it** — it cannot distinguish "the marker was not imported"
+  from "nothing was projected", which is the case the query exists for — and that has not
+  changed. What has is that every consumer **inside this repository** is now checked:
+  `frameworks/angular/test/ProjectionMarkers.test.ts` walks the layer, pairs each marker use with
+  the **nearest enclosing** `arena-*` element, and fails when that host gates the slot by a
+  `contentChild` query and the consumer does not import the directive. It reproduces the original
+  defect when `ArenaFooter` is removed from `Menu.card.entry.ts`, naming the file, the marker, the
+  host and the directive.
 
-  **It is the Angular twin of React's fragment trap**, which `CLAUDE.md` already warns about:
-  both are a consumer-side spelling that looks right, compiles, and delivers nothing. The
-  React one is guarded by a throw in the components that can detect it. The Angular one is not
-  guarded anywhere, and it is not obvious that it can be: a component cannot distinguish "the
-  marker was not imported" from "nothing was projected", which is the case the query exists to
-  detect. Recorded rather than fixed. It affects `Dialog`, `UnauthCard`, `Card`, `PageHead`,
+  **Two refinements were forced by real false positives, and both are the rule getting more
+  honest rather than the gate getting quieter.** A first version matched the marker word inside
+  an **attribute value** — `label="Every action for this build"` — so values are stripped before
+  matching. And it flagged `<button actions>` inside `<arena-calendar-event>`, whose `actions`
+  slot is gated by an **input** (`actionsEnabled`) rather than by a query: no directive is needed
+  there, so no import is owed. That is the real rule — *"you projected into a slot whose host
+  gates it on a query"*, not *"you used a marker attribute"* — and the nearest-enclosing-host walk
+  is what expresses it, since `contentChild` reaches direct content only and cannot see a marker
+  nested one component deeper.
+
+  **What stays uncovered is every consumer outside this repository**, which is the population the
+  original entry was about. A gate here cannot reach an adopter's app; it can only stop Arena's
+  own pages from shipping the example. It affects `Dialog`, `UnauthCard`, `Card`, `PageHead`,
   `EmptyState` and `ErrorState` equally.
 
 - **CLOSED: the caret glyph is silent now.** Both layers rendered the `▾` as a real text node in
@@ -1987,14 +2003,33 @@ stale-proof; a present-tense component name is not.
   the tree they resolved to when published. The win claimed for the change is the *rate*, not
   the size. Anyone quoting a size reduction is quoting something that did not happen.
 
-- **`assets/fonts/*.woff2` is generated and says so nowhere.** Sixteen binaries, 431 KB,
-  downloaded from Google Fonts by `fetch-fonts.mjs`. A binary can carry no header, and the
-  `.generated.` infix was deliberately not applied: `assets/` is a directory consumers copy
-  wholesale, and the churn argument does not apply — a font file changes when a family or weight
-  is added and at no other time. It is named in `UNMARKED` in `check-generated.mjs` with that
-  reason, so it is machine-recorded rather than only stated here. **The real cost is that
-  reproducing it needs the network**, which no other output in the repository does: a clone
-  behind a firewall can run `bun run build` but not `fetch-fonts.mjs`.
+- **`assets/fonts/*.woff2` is generated, says so nowhere, and adding checksums measured something
+  nobody had.** The binaries are downloaded from Google Fonts by `fetch-fonts.mjs`. A binary can
+  carry no header, and the `.generated.` infix was deliberately not applied: `assets/` is a
+  directory consumers copy wholesale, and the churn argument does not apply — a font file changes
+  when a family or weight is added and at no other time. It is named in `UNMARKED` in
+  `check-generated.mjs` with that reason, so it is machine-recorded rather than only stated here.
+
+  **The verification half is closed.** `assets/fonts/Checksums.generated.json` records a sha256
+  per binary, `fetch-fonts.mjs` writes it, and `check:fonts` verifies every file against it with a
+  zero-result guard — so a clone behind a firewall can now confirm it has what this repository
+  shipped even though it cannot re-download it. Watched failing against a corrupted binary.
+  **The reproducibility half is not closed and cannot be by a checksum**: reproducing these files
+  still needs the network, which no other output in the repository does.
+
+  **What the checksums found is worth more than what they guard.** This entry said "sixteen
+  binaries, 431 KB". Measured: **fourteen files, 431,136 bytes on disk — and only THREE distinct
+  contents, 90,320 bytes of them.** All three families are variable fonts, so Google serves one
+  file per family covering every weight, and the generator writes that one file once per weight
+  under a different name. Six identical `archivo-*.woff2`, four identical
+  `familjen-grotesk-*.woff2`, four identical `spline-sans-mono-*.woff2`. **About 341 KB of what
+  every consumer copies is the same three files written eleven extra times**, and nothing had ever
+  compared two of them because nothing had ever hashed one.
+  **It is recorded rather than fixed, and the reason is the audience.** The fix — one file per
+  family, with a `font-weight` range on a single `@font-face` — changes the shape of a directory
+  consumers copy wholesale and the stylesheet they link, so it is a change to the shipped payload
+  with its own consumer impact, not a rider on adding a gate. What it is not is unmeasured any
+  more.
 
 - **`intro/support.js` can never be ignored, whatever the rule says.** Its generator is
   `dc-runtime`, whose source is not in this repository, so a clone cannot rebuild it and the

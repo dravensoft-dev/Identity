@@ -854,7 +854,13 @@ test('a primitive that does not host-bind its root takes its host out of layout 
   }
 });
 
-const GLOBAL_ATTRIBUTE_INPUTS = ['title', 'name'] as const;
+const GLOBAL_ATTRIBUTE_INPUTS = ['title', 'name', 'id'] as const;
+
+const HOST_COST: Record<(typeof GLOBAL_ATTRIBUTE_INPUTS)[number], string> = {
+  title: ' and the browser draws a tooltip over it',
+  name: '',
+  id: ' AND on the real control inside -- two elements with one id, where a <label for> resolves to the host, which is not a labelable control',
+};
 
 function hostBlockOf(source: string): string {
   const at = source.indexOf('host: {');
@@ -903,7 +909,7 @@ test('a primitive whose input is named after a global HTML attribute clears that
           `${path}: ${name} takes a \`${attribute}\` input and does not clear the attribute. `
           + 'Angular writes a static attribute to the DOM during the creation pass whether or not it '
           + `also matches an input, so <arena-${name.toLowerCase()} ${attribute}="…"> leaves a real `
-          + `${attribute} on the host` + (attribute === 'title' ? ' and the browser draws a tooltip over it' : '')
+          + `${attribute} on the host` + HOST_COST[attribute]
           + `. Add '[attr.${attribute}]': 'null' to the host block.`,
         );
       }
@@ -916,7 +922,7 @@ test('a primitive whose input is named after a global HTML attribute clears that
     }
   }
 
-  assert.ok(declared > 0, 'no primitive declares a title or name input -- the guard matched nothing, so it proves nothing');
+  assert.ok(declared > 0, 'no primitive declares a title, name or id input -- the guard matched nothing, so it proves nothing');
   assert.deepEqual(problems, [], `\n  ${problems.join('\n  ')}`);
 });
 

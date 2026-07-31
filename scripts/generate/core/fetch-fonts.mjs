@@ -1,4 +1,5 @@
 import { writeFileSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
@@ -68,6 +69,31 @@ export function fontsCss(faces) {
   return `${header}\n${rules.join('\n\n')}\n`;
 }
 
+export const CHECKSUMS = 'assets/fonts/Checksums.generated.json';
+
+export function checksumsOf(root, files) {
+  const out = {};
+  for (const file of [...files].sort()) {
+    out[file] = createHash('sha256').update(readFileSync(join(root, 'assets', 'fonts', file))).digest('hex');
+  }
+  return out;
+}
+
+export function checksumProblems(recorded, actual) {
+  const problems = [];
+  for (const [file, hash] of Object.entries(recorded)) {
+    if (!(file in actual)) {
+      problems.push(`${file}: recorded in ${CHECKSUMS} and not present in assets/fonts/ -- a clone behind a firewall cannot re-download it, so a missing binary is a broken checkout rather than a rebuildable one`);
+      continue;
+    }
+    if (actual[file] !== hash) problems.push(`${file}: sha256 ${actual[file]}, recorded ${hash} -- the binary on disk is not the one this repository shipped`);
+  }
+  for (const file of Object.keys(actual)) {
+    if (!(file in recorded)) problems.push(`${file}: present in assets/fonts/ and not recorded in ${CHECKSUMS} -- run fetch-fonts.mjs, or delete it`);
+  }
+  return problems;
+}
+
 export function facesFromDisk(root) {
   const present = new Set(readdirSync(join(root, 'assets', 'fonts')));
   const faces = [];
@@ -99,6 +125,8 @@ async function main() {
 
   writeFileSync(cssPath, fontsCss(faces));
   console.log('wrote contracts/design-generated/fonts.generated.css');
+  writeFileSync(join(root, CHECKSUMS), `${JSON.stringify(checksumsOf(root, faces.map((f) => f.file)), null, 2)}\n`);
+  console.log(`wrote ${CHECKSUMS}`);
 }
 
 if (import.meta.main) {

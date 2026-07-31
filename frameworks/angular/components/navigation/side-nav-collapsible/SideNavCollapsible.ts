@@ -16,6 +16,7 @@ import { SideNavItem } from '../side-nav-item/SideNavItem';
   ],
   host: {
     '[class]': 'styles().section()',
+    '[attr.id]': 'null',
   },
   template: `
     <button type="button" [id]="triggerId()" [class]="styles().trigger()"
