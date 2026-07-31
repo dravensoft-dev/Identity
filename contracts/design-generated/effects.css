@@ -64,7 +64,7 @@
      to most interruptible: dropdown < tooltip < modal < modal-nested < palette <
      onboarding < toast.
    */
-  --z-dropdown:900; /* Menu, Select's popover layer */
+  --z-dropdown:900; /* Menu's panel — a dropdown anchored to its trigger */
   --z-tooltip:950; /* above dropdown, so a tooltip on a menu item wins */
   --z-modal:1000; /* Dialog */
   --z-modal-nested:1050; /* ConfirmDialog, which opens from a Dialog */

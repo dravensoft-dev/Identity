@@ -1,29 +1,9 @@
 /* frameworks/angular/theme/arena-material.css — Arena tokens → Angular Material --mat-* vars.
    Import AFTER Angular Material's theme so these win. Every value is a var() into
    an existing Arena token: no new hex, no new value. Dark-first comes free — the
-   tokens are dark-first. Radius: --r-sm for controls, --r-lg for cards/dialogs.
-   Danger is OUTLINE (border + text in --color-error), never a fill. */
-
-/* Form field — outline appearance */
-.mat-mdc-form-field.mat-form-field-appearance-outline {
-  --mat-form-field-outlined-outline-color: var(--border);
-  --mat-form-field-outlined-focus-outline-color: var(--color-primary);
-  --mat-form-field-outlined-container-shape: var(--r-sm);
-  --mat-form-field-outlined-label-text-color: var(--mute);
-}
-
-/* Dialog — surface + large radius */
-.mat-mdc-dialog-surface {
-  --mat-dialog-container-shape: var(--r-lg);
-  --mat-dialog-container-color: var(--surface-card);
-}
-
-/* Snackbar / toast surface — medium radius */
-.mat-mdc-snack-bar-container {
-  --mat-snack-bar-container-shape: var(--r-md);
-  --mat-snack-bar-container-color: var(--surface-card);
-  --mat-snack-bar-supporting-text-color: var(--color-base-content);
-}
+   tokens are dark-first. What is left is what BehaviourDelegated.json still delegates:
+   the two progress indicators and SideNav's list. A block dies when no delegated entry
+   needs it, not when its own Arena primitive lands. */
 
 /* Progress — spinner + bar on the brand */
 .mat-mdc-progress-spinner {

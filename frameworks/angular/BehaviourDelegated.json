@@ -7,17 +7,6 @@
     "pattern": "absent",
     "reason": "Absent for the same reason Calendar is, one level down: a CalendarEvent is a chip inside Arena's schedule grid, and Angular has no schedule grid for one to live in. It is not delegated -- Material has no per-event chip because it has no day/hour view, and arena-material.css dresses none. This entry exists because CalendarEvent became a React component in plan 8C3 (it had been a predefined object in api/types/), and every React component declares for every layer. It records the same open question Calendar's entry does and answers it no further: if Angular ever gains a schedule view, this is the second component that decision creates."
   },
-  "Dialog": {
-    "pattern": "dialog-modal",
-    "delegatedTo": "Angular Material MatDialog",
-    "dressedBy": "frameworks/angular/theme/arena-material.css",
-    "reason": "MatDialog (the CDK dialog underneath it) provides the modal surface, aria-modal, first-focus-on-open, restore-focus-on-close and Escape-to-close -- the entire requirement list React's own Dialog binding records as unmet. The bridge dresses the surface colour and --r-lg radius on .mat-mdc-dialog-surface. Arena has no arena-dialog primitive and should not grow one."
-  },
-  "Menu": {
-    "pattern": "menu-button",
-    "delegatedTo": "Angular Material MatMenu (matMenuTriggerFor, mat-menu-item)",
-    "reason": "The matMenuTriggerFor directive sets aria-haspopup and aria-expanded on the actual focusable trigger element (not a wrapping node, which is exactly where React's own Menu binding records this as unmet), moves focus to the first item on open, and the CDK overlay under it implements Escape and arrow-key navigation inside the panel. arena-material.css has no rule for the menu panel or its items, so it renders in Material's own colours, not Arena's tokens, today."
-  },
   "ProgressBar": {
     "cases": [
       {
@@ -46,13 +35,6 @@
     "delegatedTo": "Angular Material MatProgressBar",
     "dressedBy": "frameworks/angular/theme/arena-material.css",
     "reason": "MatProgressBar renders the indicator, its determinate/indeterminate/buffer/query modes and its value plumbing (aria-valuenow, aria-valuemin, aria-valuemax). The bridge dresses its active-indicator and track colour on the brand and border tokens. Arena has no arena-progress-bar primitive and should not grow one."
-  },
-  "Select": {
-    "pattern": "combobox",
-    "divergesFrom": "select",
-    "delegatedTo": "Angular Material MatSelect",
-    "dressedBy": "frameworks/angular/theme/arena-material.css",
-    "reason": "MatSelect follows the ARIA 1.2 combobox pattern directly (Angular Material's own accessibility docs say so in those words): the trigger controls a role=\"listbox\" popup, with aria-expanded, aria-controls and aria-activedescendant wired by the component rather than left implicit the way React's native <select> leaves them. Like Input, it is composed inside <mat-form-field appearance=\"outline\">, and the bridge dresses that field, not the select element itself. Arena has no arena-select primitive and should not grow one. `divergesFrom` names `select` because React's Select is the NATIVE element: a <select> whose popup the browser renders and operates, so aria-expanded, aria-controls and aria-activedescendant are the user agent's business and authoring them would be a claim the component cannot keep true. MatSelect is the opposite -- an authored combobox with a real listbox in the overlay -- so the two layers implement genuinely different things under one contract. Neither is wrong, and the difference is not cosmetic: a native select gets the platform's own mobile picker, while MatSelect gets consistent styling and Arena's tokens. Recorded rather than reconciled."
   },
   "SideNav": {
     "pattern": "navigation",
@@ -90,11 +72,5 @@
       }
     ],
     "reason": "MatProgressSpinner renders the indicator and its determinate/indeterminate/buffer/query modes, with aria-valuenow mirrored from value. The bridge dresses its active-indicator colour on the brand. Arena has no arena-spinner primitive and should not grow one."
-  },
-  "Toast": {
-    "pattern": "alert",
-    "delegatedTo": "Angular Material MatSnackBar",
-    "dressedBy": "frameworks/angular/theme/arena-material.css",
-    "reason": "MatSnackBar owns the surface, its enter/exit animation and its dismissal (action button, explicit dismiss(), or an optional duration). The bridge dresses the snack-bar container colour, --r-md radius and supporting-text colour. Arena has no arena-toast primitive and should not grow one."
   }
 }

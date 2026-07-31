@@ -1,6 +1,7 @@
 export * from './breadcrumbs';
 export * from './bulk-action-bar';
 export * from './command-palette';
+export * from './menu';
 export * from './page-head';
 export * from './pagination';
 export * from './segmented-control';

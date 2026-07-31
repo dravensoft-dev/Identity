@@ -6,6 +6,8 @@
  * two carry the same value. A value bound at import time cannot re-theme or
  * re-densify — that is the accepted price of reading it in JS at all. */
 
+/* Script-readable: Menu's gap from its trigger is one and a half of this, and that gap is the offset a CDK overlay position strategy computes in JS, so no stylesheet can hold it. */
+export const sp1 = 4;
 /* Script-readable: Tooltip's gap from its trigger is the offset a CDK overlay position strategy computes in JS, so no stylesheet can hold it. */
 export const sp2 = 8;
 /* Script-readable: Onboarding's gap below its anchor is arithmetic on a DOMRect. */

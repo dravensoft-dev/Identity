@@ -1,0 +1,4 @@
+import { tv } from '../../../../tailwind/Tv';
+import manifest from '../../../../tailwind/components/feedback/toast/Toast.manifest';
+
+export const toastStyles = tv(manifest);

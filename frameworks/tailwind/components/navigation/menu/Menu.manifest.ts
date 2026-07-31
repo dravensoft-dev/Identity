@@ -2,8 +2,8 @@
 export default {
   "component": "Menu",
   "slots": {
-    "root": "relative inline-flex",
-    "panel": "arena-menu absolute top-full left-0 mt-1.5 z-dropdown min-w-50 p-1.5 bg-base-200 border-[length:var(--bw)] border-neutral rounded-md shadow-2",
+    "root": "inline-flex",
+    "panel": "arena-menu z-dropdown min-w-50 p-1.5 bg-base-200 border-[length:var(--bw)] border-neutral rounded-md shadow-2",
     "panelEnd": "left-auto right-0",
     "item": "flex items-center gap-2.5 w-full text-left px-2.5 py-2 border-none rounded-sm bg-transparent font-body text-md",
     "itemDefault": "cursor-pointer text-base-content/82 hover:bg-primary/14 hover:text-primary",
@@ -14,5 +14,17 @@ export default {
     "shortcut": "font-mono text-ctl-xs text-base-content/62",
     "divider": "h-px my-1 bg-base-300",
     "header": "font-mono text-ctl-2xs tracking-field-label uppercase text-base-content/62 px-2.5 pt-2 pb-1"
+  },
+  "variants": {
+    "anchored": {
+      "false": {
+        "root": "relative",
+        "panel": "absolute top-full left-0 mt-1.5"
+      },
+      "true": {}
+    }
+  },
+  "defaultVariants": {
+    "anchored": false
   }
 } as const;

@@ -149,10 +149,10 @@ an exception names exactly one requirement, so one entry cannot excuse a whole c
 
 Every component declares, in **every** layer, beside its own source — `<Name>.behaviour.json` —
 and the controls Material provides or lacks in `frameworks/angular/BehaviourDelegated.json`.
-**Delegation is a state, not an absence**: Angular has a tooltip, it is `matTooltip`, and a
-declaration reading "absent" would be false for it — `Calendar` is the one entry where "absent"
-is true, and it binds the `absent` pattern precisely so that fact is machine-checkable rather
-than only stated in its `reason`.
+**Delegation is a state, not an absence**: Angular has a progress bar, it is `MatProgressBar`,
+and a declaration reading "absent" would be false for it — `Calendar` and `CalendarEvent` are the
+two entries where "absent" is true, and they bind the `absent` pattern so that fact is
+machine-checkable rather than only stated in a `reason`.
 
 **A binding has two shapes, and the second exists because a binding describes a COMPONENT
 while the evaluator judges a RENDER.** A component that renders differently by its own props is
