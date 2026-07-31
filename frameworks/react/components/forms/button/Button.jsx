@@ -84,7 +84,7 @@ export function Button({
       }}
     >
       {loading
-        ? <span className="arena-btn-spin" aria-hidden="true" style={{ width: 'calc(var(--sp-1) * 3.5)', height: 'calc(var(--sp-1) * 3.5)', boxSizing: 'border-box', border: 'var(--bw-strong) solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block' }} />
+        ? <span className="arena-btn-spin" aria-hidden="true" style={{ width: 'calc(var(--sp-1) * 3.5)', height: 'calc(var(--sp-1) * 3.5)', border: 'var(--bw-strong) solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block' }} />
         : icon && <i className={icon} aria-hidden="true" />}
       {children}
       {iconRight && <i className={iconRight} aria-hidden="true" />}

@@ -52,7 +52,7 @@ export function ConfirmDialog({ open = false, onCancel, onConfirm, title, eyebro
 }
               <input value={typed} onChange={(e) => setTyped(e.target.value)}
                 className="arena-confirm-input"
-                style={{ width: '100%', height: 'var(--dz-ctl-h)', boxSizing: 'border-box', padding: '0 calc(var(--sp-1) * 3)', background: 'var(--surface-input)',
+                style={{ width: '100%', height: 'var(--dz-ctl-h)', padding: '0 calc(var(--sp-1) * 3)', background: 'var(--surface-input)',
                   border: 'var(--bw) solid ' + (locked && typed ? 'var(--danger)' : 'var(--color-base-300)'), borderRadius: 'var(--r-sm)',
                   color: 'var(--bone)', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text)', outline: 'none' }} />
             </div>

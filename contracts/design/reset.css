@@ -1,0 +1,39 @@
+/* ============================================================
+   Arena — box model.
+   Hand-authored, like colors.css, and for the same reason: DTCG
+   owns VALUES, and how a value is combined at runtime belongs to
+   each platform's own idiom. A box model is not a value.
+
+   Every padded, explicitly-sized box in Arena is authored as
+   though its declared width were its outer edge. That is what
+   border-box means, and it was true of the Tailwind layer only:
+   Tailwind's preflight sets it on `*`, so every Angular primitive
+   inherited it, while React -- which loads intro/styles.css and no
+   preflight -- was left with the CSS default, content-box.
+
+   The consequence was not theoretical. A `width: 100%` on a padded,
+   bordered element overran its parent by exactly its horizontal
+   padding plus its borders, and Arena carried SEVEN hand-written
+   `boxSizing: 'border-box'` opt-ins across its React components --
+   one per place somebody had hit it and patched it locally. The
+   ones nobody hit stayed wrong: `Textarea` overran its container by
+   26px on a 720px card, measured in Chromium.
+
+   Why the other candidates looked safe and were not Arena's doing:
+   Chromium's UA stylesheet declares border-box for <button> and
+   <select> and does NOT for <textarea> or <input type="text">. So
+   reading the source got this wrong in both directions, and the
+   guarantee rested on a vendor default rather than on anything
+   Arena controls. It rests here now.
+
+   This file sets box-sizing and NOTHING else. Tailwind's preflight
+   also zeroes margin, padding and border; copying that would
+   restyle every page in intro/ and every React demo, which is a
+   different change with different evidence behind it.
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
