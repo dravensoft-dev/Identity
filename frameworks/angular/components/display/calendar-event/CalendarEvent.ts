@@ -26,14 +26,23 @@ let seq = 0;
              [style.top.px]="topPx()" [style.height.px]="heightPx()"
              [style.background]="tint()" [style.borderLeftColor]="ink()"
              (keydown)="onKeydown($event)">
-          <button #focusable type="button" tabindex="-1" [class]="bodyClass()"
-                  [attr.aria-label]="label()" [attr.aria-disabled]="inert()"
-                  (click)="onActivate($event)">
-            <span [class]="styles().title()">{{ heading() }}</span>
-            @if (showTime()) {
-              <span [class]="styles().time()">{{ timeLabel() }}</span>
-            }
-          </button>
+          @if (interactive()) {
+            <button #focusable type="button" tabindex="-1" [class]="bodyClass()"
+                    [attr.aria-label]="label()" [attr.aria-disabled]="inert()"
+                    (click)="onActivate($event)">
+              <span [class]="styles().title()">{{ heading() }}</span>
+              @if (showTime()) {
+                <span [class]="styles().time()">{{ timeLabel() }}</span>
+              }
+            </button>
+          } @else {
+            <span #focusable tabindex="-1" [class]="bodyClass()" (click)="onActivate($event)">
+              <span [class]="styles().title()">{{ heading() }}</span>
+              @if (showTime()) {
+                <span [class]="styles().time()">{{ timeLabel() }}</span>
+              }
+            </span>
+          }
           <span #kebabWrap [class]="kebabClass()">
             <arena-icon-button icon="ph-bold ph-dots-three-vertical" label="Actions" size="sm"
                                [tabStop]="false" (click)="togglePanel()" />
@@ -44,7 +53,7 @@ let seq = 0;
             }
           </span>
         </div>
-      } @else {
+      } @else if (interactive()) {
         <button #focusable [id]="domId" type="button" tabindex="-1" [class]="chipClass()"
                 [style]="across" [style.top.px]="topPx()" [style.height.px]="heightPx()"
                 [style.background]="tint()" [style.borderLeftColor]="ink()"
@@ -55,6 +64,16 @@ let seq = 0;
             <span [class]="styles().time()">{{ timeLabel() }}</span>
           }
         </button>
+      } @else {
+        <div #focusable [id]="domId" tabindex="-1" [class]="chipClass()"
+             [style]="across" [style.top.px]="topPx()" [style.height.px]="heightPx()"
+             [style.background]="tint()" [style.borderLeftColor]="ink()"
+             (click)="onActivate($event)">
+          <span [class]="styles().title()">{{ heading() }}</span>
+          @if (showTime()) {
+            <span [class]="styles().time()">{{ timeLabel() }}</span>
+          }
+        </div>
       }
     }
   `,
@@ -65,6 +84,7 @@ export class CalendarEvent {
   readonly start = input.required<string>();
   readonly end = input.required<string>();
   readonly colorId = input<CatSlot>();
+  readonly interactive = input(false, { transform: booleanAttribute });
   readonly actionsEnabled = input(false, { transform: booleanAttribute });
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly click = output<void>();
@@ -147,12 +167,12 @@ export class CalendarEvent {
   protected readonly chipClass = computed(() => calendarEventStyles({
     reserve: this.hasPanel() && !this.actionsBelow(),
     panelOpen: this.panelOpen(),
-    clickable: !this.disabled(),
-    disabled: this.disabled(),
+    clickable: this.interactive() && !this.disabled(),
+    disabled: this.interactive() && this.disabled(),
   }).chip());
 
   protected readonly bodyClass = computed(
-    () => calendarEventStyles({ disabled: this.disabled() }).chipBody(),
+    () => calendarEventStyles({ disabled: this.interactive() && this.disabled() }).chipBody(),
   );
 
   protected readonly kebabClass = computed(
@@ -180,7 +200,7 @@ export class CalendarEvent {
 
   protected onActivate(event: MouseEvent): void {
     event.stopPropagation();
-    if (!this.disabled()) this.click.emit();
+    if (this.interactive() && !this.disabled()) this.click.emit();
   }
 
   protected onKeydown(event: KeyboardEvent): void {

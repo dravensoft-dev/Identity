@@ -3,7 +3,11 @@
  * needs the same two levers Table.cases.test.ts uses and for the same reasons: happy-dom ships
  * no ResizeObserver that ever fires, and readBreakpoint reads --bp-md through getComputedStyle,
  * which is empty here. Both are set below and undone in a finally, because the document and the
- * breakpoint cache are shared by the whole run -- 768 is the value the cache already holds. */
+ * breakpoint cache are shared by the whole run -- 768 is the value the cache already holds.
+ * `activated` counts what a CONSUMER hears: Angular installs BOTH a DOM listener and an output
+ * subscription for a native event name, so a template (click) binding counts the sum and one is
+ * the only passing number. emissionsOf() counts the OUTPUT on the component instance, because
+ * the sum alone cannot tell an emit from a bubble. Both are asserted; either alone is blind. */
 
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 useTestEnvironment();
@@ -12,6 +16,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { Component } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import type { TableColumn } from '../../../Api.generated';
 import { Table } from '../table/Table';
@@ -73,6 +78,13 @@ async function render(patch: Partial<RowHost>): Promise<ComponentFixture<RowHost
   return fixture;
 }
 
+function emissionsOf(fixture: ComponentFixture<RowHost>): { count: number } {
+  const seen = { count: 0 };
+  const row = fixture.debugElement.query(By.directive(TableRow)).componentInstance as TableRow;
+  row.click.subscribe(() => { seen.count += 1; });
+  return seen;
+}
+
 function rowOf(fixture: ComponentFixture<RowHost>): HTMLElement {
   const table = fixture.nativeElement.querySelector('arena-table') as HTMLElement;
   return table.querySelectorAll<HTMLElement>('arena-table-row > div')[0];
@@ -118,18 +130,23 @@ test('arena-table-row meets all three of its declared shapes', async () => {
           assert.match(el.textContent ?? '', /checkout-api/,
             'the button pattern accepts text content as its name, and the cells are that text');
 
+          const emitted = emissionsOf(interactive);
           const before = interactive.componentInstance.activated;
           const enter = press(el, 'Enter');
           interactive.detectChanges();
-          assert.equal(interactive.componentInstance.activated, before + 1, 'Enter did not activate the card row');
+          assert.equal(emitted.count, 1, 'Enter did not reach the click OUTPUT');
+          assert.equal(interactive.componentInstance.activated, before + 1,
+            'Enter must reach a consumer exactly once -- two would be the emit plus the native event');
           assert.equal(enter.defaultPrevented, true, 'Enter was not claimed by the row');
 
           const space = press(el, ' ');
           interactive.detectChanges();
+          assert.equal(emitted.count, 2, 'Space did not reach the click OUTPUT');
           assert.equal(interactive.componentInstance.activated, before + 2, 'Space did not activate the card row');
           assert.equal(space.defaultPrevented, true,
             'Space must be prevented, or the page scrolls under the row the user just pressed');
 
+          const lockedEmitted = emissionsOf(locked);
           const offEl = rowOf(locked);
           assert.equal(offEl.getAttribute('aria-disabled'), 'true',
             'a disabled row must announce itself rather than leave the tab order');
@@ -138,7 +155,9 @@ test('arena-table-row meets all three of its declared shapes', async () => {
           press(offEl, 'Enter');
           offEl.click();
           locked.detectChanges();
-          assert.equal(locked.componentInstance.activated, 0, 'a disabled row activated anyway');
+          assert.equal(lockedEmitted.count, 0, 'a disabled row emitted click');
+          assert.equal(locked.componentInstance.activated, 0,
+            'and nothing reached the consumer, so the native event did not escape either');
 
           return {
             root: el,
@@ -153,9 +172,11 @@ test('arena-table-row meets all three of its declared shapes', async () => {
           assert.equal(el.hasAttribute('tabindex'), false,
             'and no tab stop -- a dead stop on every row of every table is worse than the gap it would close');
 
+          const emitted = emissionsOf(inert);
           const before = inert.componentInstance.activated;
           press(el, 'Enter');
           inert.detectChanges();
+          assert.equal(emitted.count, 0, 'an inert row emitted click');
           assert.equal(inert.componentInstance.activated, before,
             'Enter reached the consumer through a row that declares itself inert');
 

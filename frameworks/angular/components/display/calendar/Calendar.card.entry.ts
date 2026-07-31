@@ -21,27 +21,27 @@ import { CalendarEvent } from '../calendar-event/CalendarEvent';
                       (dateClick)="picked.set($event)" (rangeChange)="moved.set($event)">
         <arena-button actions size="sm" variant="secondary">New class</arena-button>
 
-        <arena-calendar-event id="standup" title="Standup" [colorId]="1"
+        <arena-calendar-event interactive id="standup" title="Standup" [colorId]="1"
                               start="2027-03-15T09:00:00Z" end="2027-03-15T09:30:00Z"
                               (click)="opened.set('Standup')" />
-        <arena-calendar-event id="review" title="Design review, a long title that has to ellipsise"
+        <arena-calendar-event interactive id="review" title="Design review, a long title that has to ellipsise"
                               [colorId]="2" start="2027-03-16T10:00:00Z" end="2027-03-16T12:00:00Z"
                               actionsEnabled (click)="opened.set('Design review')">
           <arena-button actions size="sm" variant="ghost" icon="ph-bold ph-pencil">Edit</arena-button>
           <arena-button actions size="sm" variant="ghost" icon="ph-bold ph-trash">Delete</arena-button>
         </arena-calendar-event>
-        <arena-calendar-event id="vendor" title="Vendor sync" [colorId]="3"
+        <arena-calendar-event interactive id="vendor" title="Vendor sync" [colorId]="3"
                               start="2027-03-16T10:30:00Z" end="2027-03-16T13:00:00Z"
                               actionsEnabled (click)="opened.set('Vendor sync')">
           <arena-button actions size="sm" variant="ghost" icon="ph-bold ph-pencil">Edit</arena-button>
         </arena-calendar-event>
-        <arena-calendar-event id="onboarding" title="Onboarding" [colorId]="4"
+        <arena-calendar-event interactive id="onboarding" title="Onboarding" [colorId]="4"
                               start="2027-03-17T14:00:00Z" end="2027-03-17T17:00:00Z"
                               (click)="opened.set('Onboarding')" />
-        <arena-calendar-event id="retro" title="Retro" [colorId]="5" disabled
+        <arena-calendar-event interactive id="retro" title="Retro" [colorId]="5" disabled
                               start="2027-03-18T11:00:00Z" end="2027-03-18T11:30:00Z"
                               (click)="opened.set('Retro')" />
-        <arena-calendar-event id="all-hands" title="All hands" [colorId]="6"
+        <arena-calendar-event interactive id="all-hands" title="All hands" [colorId]="6"
                               start="2027-03-19T09:00:00Z" end="2027-03-19T18:00:00Z"
                               actionsEnabled (click)="opened.set('All hands')">
           <arena-button actions size="sm" variant="ghost" icon="ph-bold ph-pencil">Edit</arena-button>
@@ -55,12 +55,12 @@ import { CalendarEvent } from '../calendar-event/CalendarEvent';
     <div class="squeezed">
       <arena-calendar timeZone="UTC" anchorDate="2027-03-16" view="day"
                       dayStart="09:00" dayEnd="14:00">
-        <arena-calendar-event id="review-day" title="Design review" [colorId]="2"
+        <arena-calendar-event interactive id="review-day" title="Design review" [colorId]="2"
                               start="2027-03-16T10:00:00Z" end="2027-03-16T12:00:00Z"
                               actionsEnabled (click)="opened.set('Design review')">
           <arena-button actions size="sm" variant="ghost" icon="ph-bold ph-pencil">Edit</arena-button>
         </arena-calendar-event>
-        <arena-calendar-event id="vendor-day" title="Vendor sync" [colorId]="3"
+        <arena-calendar-event interactive id="vendor-day" title="Vendor sync" [colorId]="3"
                               start="2027-03-16T10:30:00Z" end="2027-03-16T13:00:00Z"
                               (click)="opened.set('Vendor sync')" />
       </arena-calendar>

@@ -26,6 +26,23 @@ test('confirm routes a click to onRequestChange and does not fire onFuncOn', () 
   assert.deepEqual(seen, ['requestChange']);
 });
 
+test('confirm with NOTHING listening applies nothing -- the cost R6 leaves, pinned', () => {
+  const seen = [];
+  const root = mount(
+    <Switch
+      state={false} confirm label="Dark theme"
+      onFuncOn={() => seen.push('funcOn')}
+      onFuncOff={() => seen.push('funcOff')}
+    />,
+  );
+  track(root).click();
+  assert.deepEqual(seen, [],
+    'confirm alone diverts the activation, so a switch with confirm and no onRequestChange is a '
+    + 'control that does nothing. That is the contract read literally and it is the accepted cost of '
+    + 'R6: the fallback this replaced applied a guarded change silently, and no runtime guard can '
+    + 'take its place, because "is anything listening?" is the question R6 says a component may not ask.');
+});
+
 test('a plain click fires onFuncOn when off and onFuncOff when on', () => {
   const seenOff = [];
   const off = mount(
