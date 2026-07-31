@@ -1,7 +1,7 @@
 # scripts/build/
 
 **Build compiles an existing source into another form.** The input is already something a
-person wrote — a `.jsx`, a `.ts`, a Tailwind preset, a CommonJS package — and the output says
+person wrote, a `.jsx`, a `.ts`, a Tailwind preset or a CommonJS package, and the output says
 the same thing in a form a browser or a test runner can load. Nothing here decides a value;
 that is [`../generate/`](../generate/README.md).
 
@@ -16,7 +16,7 @@ bun install
 bun run build
 ```
 
-That runs the six steps in order — the token layer first, because the Tailwind preset compiles
+That runs the six steps in order, the token layer first, because the Tailwind preset compiles
 against the token CSS:
 
 ```
@@ -34,7 +34,7 @@ clone has none of them:
 | `build/angular-demo/` | the Angular `*.card.html` pages; `check:angular-demos` |
 
 So on a clone with no build, `bun run demos` serves unstyled or blank pages and three gates
-report their subject missing. **That is the intended signal, not a failure** — the message each
+report their subject missing. **That is the intended signal, not a failure**: the message each
 prints names the command to run. `bun run demos` builds first for exactly this reason.
 
 `bun run build` is idempotent: running it on a clean tree leaves `git status` empty. If it does
@@ -55,8 +55,8 @@ A script's domain is decided by what it **touches**, never by what it is about.
 | [`angular/`](./angular/README.md) | 2 | the AOT emits: demo bundles and the test surface |
 | [`react/`](./react/README.md) | 2 | JSX to JS, and the CommonJS→ESM vendor bundle |
 | [`tailwind/`](./tailwind/README.md) | 1 | the utility layer and the manifest modules |
-| `core/` | — | empty; `.gitkeep` marks the combination as unoccupied |
-| `arena/` | — | empty; a build touching two layers at once has not been needed |
+| `core/` | none | empty; `.gitkeep` marks the combination as unoccupied |
+| `arena/` | none | empty; no build touches two layers at once |
 
 `core` and `arena` exist even while empty so the grid stays legible rather than implied. See
 [`../README.md`](../README.md) for what each domain is allowed to read and write.

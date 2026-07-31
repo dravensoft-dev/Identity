@@ -10,7 +10,7 @@ consumer copies. `check:demos` and `check:vendor` compare them against a fresh c
 
 **Editing a component `.jsx` means running `bun run build:demos` in the same tree.** The React
 DOM suites import the `.jsx` directly, so every test stays green with the `.generated.js`
-sibling stale — and the demo pages load the sibling, so `bun run demos` would show the
+sibling stale, and the demo pages load the sibling, so `bun run demos` would show the
 pre-fix component while the suites prove the fix.
 
 Every `X.test.mjs` beside a script covers that script.
