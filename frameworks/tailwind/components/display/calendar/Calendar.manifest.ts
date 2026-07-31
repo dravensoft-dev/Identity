@@ -44,16 +44,6 @@ export default {
       },
       "false": {}
     },
-    "datePickable": {
-      "true": {
-        "dayHead": "cursor-pointer",
-        "column": "cursor-pointer"
-      },
-      "false": {
-        "dayHead": "cursor-default",
-        "column": "cursor-default"
-      }
-    },
     "reserve": {
       "true": {
         "chip": "pr-[calc(var(--dz-ctl-h-sm)+var(--bw)*2)]"
@@ -95,7 +85,6 @@ export default {
   "defaultVariants": {
     "today": false,
     "firstColumn": false,
-    "datePickable": false,
     "reserve": false,
     "panelOpen": false,
     "clickable": false,
