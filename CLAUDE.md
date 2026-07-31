@@ -43,8 +43,9 @@ the consuming project writes, and the `arena-theme` command each package ships t
 the one stylesheet a package cannot carry. Phosphor is a peer dependency in both, never a
 bundled asset. **`dist/` is git-ignored and six gates skip a directory of that name**, because
 it puts a copy of each layer inside the tree they walk; the exclusion is asserted in each
-gate's own suite. Nothing is published yet: `check:packages` holds the manifests and holds
-`arena-theme` equivalent to the Style Dictionary pipeline it duplicates.
+gate's own suite. Both packages are **live on npm** and **published by hand**, one
+`npm publish` per package at the end of a release; `check:packages` holds the manifests and
+holds `arena-theme` equivalent to the Style Dictionary pipeline it duplicates.
 [`frameworks/PACKAGING.md`](./frameworks/PACKAGING.md) is the normative statement of the
 channel, and each package's consumer-facing README is authored as
 `frameworks/<layer>/PACKAGE.md` and copied into `dist/` at assembly, so `check:docs` reads
@@ -732,7 +733,7 @@ can afford at one run per commit.
   is silently spliced away: the message lands with the name it was quoting missing, and nothing
   errors. Use `git commit -q -F - <<'MSG' … MSG` and verify with `git log -1 --format=%B`.
   **`git merge` does not accept `-F -`**, so use `--no-commit`, then commit.
-- **A release moves four things, and the tag is one of them.** The version string lives in
+- **A release moves six things, and the tag is the one the other five are pinned to.** The version string lives in
   `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` and the README header; log the
   change in `CHANGELOG.md`; and because the plugin is served **from the tag**
   (`marketplace.json` → `source.ref`), that ref must name the release tag and the tag must exist on
@@ -741,8 +742,9 @@ can afford at one run per commit.
   every equivalent are refused outright, whatever a repository-size argument says, because every
   published tag would stop resolving to the tree it resolved to at install time. **The two npm
   packages take that same version and are never hand-versioned**: `baseManifest()` stamps it from
-  `plugin.json` at assembly, and `check:packages` fails a manifest that disagrees. Publishing is
-  not wired up yet, so a release today moves the same four things it always did.
+  `plugin.json` at assembly, and `check:packages` fails a manifest that disagrees. They are
+  published **last**, by hand, after the tag is pushed, and `frameworks/PACKAGING.md` carries
+  the sequence and the traps.
 - **Anything landing on `main` after a tag goes under `## [Unreleased]`**, and a release is cut by
   renaming that heading to the version. Filing it under the last version instead describes a tree
   nobody has: the plugin is served from the tag, so the release is frozen the moment it is cut.

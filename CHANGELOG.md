@@ -4,6 +4,21 @@ All notable changes to Arena, the Dravensoft Design System, are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **`@dravensoft/arena-react` and `@dravensoft/arena-angular` are on npm at 5.0.0**, published
+  by hand. The 5.0.0 entry below says publishing is not wired up, which was true at the moment
+  that tag was cut and stopped being true minutes later; the entry stays as it was, because a
+  released entry describes the tree its tag resolves to. Automating it over OIDC is available
+  and deliberately not taken: a release is already a user-triggered act, and two
+  `npm publish` calls cost less than a workflow to maintain.
+- **`frameworks/PACKAGING.md` carries the release sequence and the one trap that reads as a
+  failure**: for minutes after a successful publish `npm view` answers 404, because the read
+  CDN lags behind the write path. `npm access list packages @dravensoft` answers from the
+  authenticated API and is what to believe.
+
 ## [5.0.0] - 2026-07-31
 
 ### Added

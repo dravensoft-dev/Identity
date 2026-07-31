@@ -129,27 +129,67 @@ correctly; that is `check:compliance`, and it runs against the sources.
 
 ## Publishing
 
-Not yet, and what is left is the automation rather than the account. **The `@dravensoft`
-scope is registered**, and both names are free: nothing is published under either. Confirm it
-without an npm login, since the org page answers 403 to everyone and proves nothing either
-way:
+**Both packages are on npm, under the `@dravensoft` scope, and publishing is done by hand.**
+That is a choice rather than a gap: a release is already a deliberate, user-triggered act
+here, and one `npm publish` per package at the end of it costs less than a workflow to
+maintain. Trusted publishing over OIDC stays available whenever the cost flips; the note at
+the end of this section says what it would take.
+
+A release publishes the packages last, after the tag exists, because the tag is what every
+other surface is pinned to:
 
 ```bash
-curl -s https://registry.npmjs.org/-/org/dravensoft/user      # {} means the scope is taken
-curl -s https://registry.npmjs.org/-/org/zzq-not-a-real/user  # "Scope not found" is the other answer
-curl -s -o /dev/null -w '%{http_code}\n' https://registry.npmjs.org/@dravensoft%2farena-react
+# 1. the four surfaces, in one commit, then the tag on it
+#    plugin.json (the authority), marketplace.json version AND source.ref,
+#    the README header, and CHANGELOG's [Unreleased] renamed to the version
+git tag -a vX.Y.Z -m "Arena vX.Y.Z"
+git push origin main --follow-tags
+
+# 2. prove the release before anything leaves the machine
+bun scripts/check/arena/check-release.mjs
+bun run build:packages          # the manifests take the version from plugin.json here
+bun run check:packages          # and this fails if they did not
+
+# 3. publish, from INSIDE each dist, never from the repository root
+npm login                       # a two-hour session; 2FA is enforced on publish
+cd frameworks/react/dist   && npm publish --dry-run && npm publish
+cd ../../angular/dist      && npm publish
 ```
 
-An empty object is the scope existing with a membership npm does not show anonymously, which
-is what `@vuejs` answers too; a name that is free answers 404.
+Four things about that last step, each of which has a way of going wrong:
 
-What is still missing is the release workflow and npm trusted publishing (OIDC), which needs
-`permissions: id-token: write` on a GitHub-hosted runner. **One thing to settle before the
-first release rather than inside CI**: a trusted publisher is configured in a *package's*
-settings on npmjs.com, and a package that has never been published has no settings to
-configure, so the bootstrap is likely one manual authenticated `npm publish` each.
+- **Publish from inside `dist/`.** The root `package.json` is private and npm would refuse it.
+- **Do not pass `--access public`.** Both manifests already carry it in `publishConfig`.
+- **Do not pass `--provenance`.** It needs OIDC and fails from a laptop.
+- **React first.** If something is wrong, find it in the 73 kB package rather than halfway
+  through.
 
-Whenever that step comes it inherits the existing release rule: the version moves in
+### A 404 right after publishing is not a failure
+
+**The registry has two read paths and they do not move together.** For several minutes after
+a successful publish, `npm view` and `npm owner ls` answer 404 while the package is perfectly
+published, because those read a CDN that has not caught up. Measured on the 5.0.0 release:
+five minutes, with the two packages appearing a minute apart from each other.
+
+The authenticated API is what answers truthfully, and it is the only check worth running:
+
+```bash
+npm access list packages @dravensoft   # lists what EXISTS, whatever the CDN says
+```
+
+Read the publish log rather than the next command's output. A publish that worked ends with
+`PUT 200`, `exit 0` and `info ok`, and the `401` above it is not an error: it is the 2FA
+handshake starting, before npm retries with the validated session.
+
+### What trusted publishing would take
+
+`permissions: id-token: write` on a GitHub-hosted runner, plus a trusted publisher configured
+in **each package's** settings on npmjs.com. That configuration is why the first publish had
+to be manual: a package nobody has published has no settings to configure. Now that both
+exist, the bootstrap problem is gone and the switch can be made at any time. Self-hosted
+runners are not supported.
+
+Whatever the mechanism, it inherits the existing release rule: the version moves in
 `plugin.json`, `marketplace.json` and the README header together, `CHANGELOG.md` records it,
 `source.ref` names the tag, and `check-release.mjs` refuses the combination that fails
 silently. The two manifests take that same version from `plugin.json` at assembly, so a
