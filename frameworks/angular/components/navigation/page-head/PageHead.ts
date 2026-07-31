@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, contentChild, input } fro
 import { containerWidth, readBreakpoint } from '../../../ContainerSize';
 import { ArenaActions } from '../../../ProjectionMarkers';
 import { pageHeadStyles } from './PageHead.variants';
-import { PageHeadAlign } from '../../../Api.generated';
+import type { PageHeadAlign } from '../../../Api.generated';
 
 @Component({
   selector: 'arena-page-head',

@@ -608,64 +608,38 @@ stale-proof; a present-tense component name is not.
   assertion could report it, because both the intended `-Infinity` and the typo return `1`. It was
   caught only because its vacuity happened to also be a type error, the moment a compiler was
   finally pointed at the file.
-- **Seven Angular suites still justify themselves by a JIT limitation
-  that batch 8C11's move to AOT retired, and no batch since has touched the JIT clause.**
-  (Batch 2 of the structure refactor edited the headers of **five** of the seven, and not
-  only paths: two of the five — `BarChart.geometry.test.ts` and
-  `CommandPalette.keyboard.test.ts` — had no path in their comments at all, and what changed
-  was a sibling named in prose, `confirm-dialog.ts` → `ConfirmDialog.ts`. The two chart
-  suites it did *not* edit, `LineChart.geometry.test.ts` and `DoughnutChart.geometry.test.ts`,
-  had their imports rewritten and their comments left alone. Re-derive it rather than trusting
-  this — compare each file's content across the batch, since a `git log` on the paths counts
-  the pure-rename commit and tells you nothing:
-  `git show effbc00:frameworks/angular/test/<old-name>.ts` against
-  `git show 90133e1:frameworks/angular/<new-path>`. What survives all of that is the load-bearing
-  half: no changed line in any of the five mentions `JIT`, `ngtsc`, `NG0303` or `setInput`, so
-  not one word of the limitation itself moved.)
-  Find the live set with `grep -rlE "JIT|ngtsc" --include='*.ts' frameworks/angular/` and drop
-  the two
-  hits that are already correct, past-tense history (`test/HarnessCapabilities.test.ts`,
-  `test/HostClassBinding.test.ts`) — what is left, re-derived after the structure refactor's
-  batch 2 moved every one of them beside its component, is
-  `components/charts/bar-chart/BarChart.geometry.test.ts`,
-  `components/charts/line-chart/LineChart.geometry.test.ts`,
-  `components/charts/doughnut-chart/DoughnutChart.geometry.test.ts`,
-  `components/navigation/command-palette/CommandPalette.focusTrap.test.ts`,
-  `components/navigation/command-palette/CommandPalette.keyboard.test.ts`,
-  `components/feedback/confirm-dialog/ConfirmDialog.focusTrap.test.ts` and
-  `components/feedback/onboarding/Onboarding.focusTrap.test.ts`. Each still says, in
-  the present tense, that a signal input cannot be driven through a template binding or
-  `setInput()` under this harness — false now, per the *Architecture* paragraph above and the
-  suite that backs it. **The command reads the whole layer, and that widening is a correction
-  rather than tidying**: it was `frameworks/angular/test/*.ts`, which was the right scope while
-  every suite lived in that one directory and became the wrong one the moment they moved — run
-  today it returns the two past-tense files and **none** of the seven, so it would have read as
-  "this debt is paid" while all seven were untouched. That is the same false-green shape the
-  rule at the end of this section records. **The reach is still only `.ts` files under the
-  Angular layer, and the same false claim was not confined to them.**
-  The layer divergences in section 3
-  restated this exact limitation for `ConfirmDialog`, `CommandPalette` and `Skeleton`, in prose
-  this grep cannot see. Those three were found and corrected by reading the file, not by
-  widening this grep, and are not a fourth thing still to find here — a future stale restatement
-  of this limitation anywhere outside this layer needs the cross-file command in the
-  *"a component name written into ANOTHER file's prose"* entry above, not this one.
-  **This is not a typo sweep, on purpose.** Several of these files justify
-  testing plain exported functions (chart geometry, focus-trap helpers) *by* the limitation
-  they cite — extracting the logic and testing it directly, rather than driving the real
-  component. Correcting only the false clause and leaving the extraction in place is defensible
-  on its own terms — a pure function is often the right thing to test directly regardless of what
-  the harness can drive — but it is a design choice now, not a forced one, and six of the seven
-  have not been revisited against the question of whether they should instead render a real tree
-  the way `HarnessCapabilities.test.ts` and the migrated `HostClassBinding.test.ts` fixtures now
-  do. The seventh, `ConfirmDialog.focusTrap.test.ts`, was answered **by addition rather than by
-  rewrite**: `ConfirmDialog.compliance.test.ts` now renders the real component beside it, so the
-  helper suite keeps testing helpers and no longer stands in for a render. Its own prose still
-  carries the false clause, so it remains on this list; what changed is that the strategy question
-  behind it has an answer for one component. Rewriting seven suites' test
-  strategy was judged out of scope for 8C11, a close-out batch whose subject was the harness, and
-  out of scope again for the structure refactor, which moved files and renamed them and changed
-  no test's strategy; recorded here rather than fixed so the false
-  prose has a pointer and the reopened question is not lost with it.
+- **CLOSED: seven Angular suites justified themselves by a JIT limitation the move to AOT
+  retired, and the two halves of that entry closed by completely different routes.** Kept
+  because the routes are the lesson, and because one of them is a way debt can be discharged
+  that nothing schedules and nothing reports.
+
+  **The false prose is gone, and no batch ever set out to remove it.** The seven —
+  `BarChart.geometry.test.ts`, `LineChart.geometry.test.ts`,
+  `DoughnutChart.geometry.test.ts`, `CommandPalette.focusTrap.test.ts`,
+  `CommandPalette.keyboard.test.ts`, `ConfirmDialog.focusTrap.test.ts` and
+  `Onboarding.focusTrap.test.ts` — each carried a header saying, in the present tense, that a
+  signal input could not be driven through a template binding or `setInput()` under this
+  harness. Every one of those headers was deleted by the comment sweep, which was enforcing
+  *"the best comment is the one not written"* and had no interest in whether the sentences
+  were true. `grep -rlE "JIT|ngtsc" --include='*.ts' frameworks/angular/` now returns
+  **nothing at all** — not even the two files this entry recorded as correct past-tense
+  history, which lost their headers the same way. **A rule that deletes a class of text
+  discharges every debt written in that text, silently**, and the record has no way to notice:
+  a reader of the old entry would have gone looking for seven false clauses and found seven
+  files with no header. Re-run the command before trusting any entry whose subject is prose.
+
+  **The strategy question the entry reopened is answered, and the answer is uniform.** Each of
+  the seven tests a pure function (`barValueY`, `lineX`, `doughnutSlices`, `filterCommands`,
+  `nextActiveIndex`) or the shared `FocusTrap.ts` helpers against a hand-built DOM, rather than
+  driving the real component — a choice once forced by the harness and free since. It stands,
+  on evidence rather than on convenience: **every one of the six components involved has its
+  render proved by a suite in `COVERED`**, so no helper suite is standing in for a render.
+  `ChartDataTable.test.ts` covers all three charts, `CommandPalette.combobox.test.ts` covers
+  the palette, `ConfirmDialog.compliance.test.ts` covers the dialog, and
+  `AngularPatternCoverage.test.ts` covers `Onboarding` — verify with
+  `node -e "import('./scripts/check/arena/check-compliance.mjs').then(m=>console.log(m.COVERED))"`
+  rather than with this list. A pure function is the right thing to test directly; what would
+  have made these suites wrong is being the *only* thing tested, and none of them is.
 - **Comments in EVERY migrated layer still cite siblings by their pre-move
   filenames, and nothing resolves them.** Batches 2 and 3 of the structure refactor each
   renamed a layer's files and moved most of its suites (batch 1's layer, Tailwind, has no
@@ -749,8 +723,17 @@ stale-proof; a present-tense component name is not.
   opening `DataVisuals.test.ts` and confirming it really does cover the functions the header
   claims (`barPath`, `arcPath`, `niceMax`, `ticks`, `resolveColors`), and each now carries the
   rename chain in past tense so a third rename cannot silently falsify it. **The rest of the
-  Angular class is untouched** — re-run its command rather than assuming these four were most
-  of it.
+  Angular class closed itself, and how is the point.** Its command returns **zero** today, and no
+  batch swept it: the comment rule — *"the best comment is the one not written"* — deleted the
+  headers those stale filenames lived in, discharging the debt as a side effect of enforcing an
+  unrelated rule. The same sweep took the seven suites' false JIT clause and the wrong-reason
+  comment on `Compliance.ts`'s `c.name as string` cast, both recorded elsewhere in this section
+  as open. **A rule that deletes a class of text pays every debt written in that text, silently
+  and without a commit that says so**, which is worth knowing in both directions: re-run the
+  command before planning work against any entry whose subject is prose, and expect no credit in
+  the log for the batch that closed it. What the sweep cannot reach is a filename cited in a
+  `.md`, a `.json` or a string — hence the wider React command above, which still returns
+  thirty-five hits, all of them history, synthetic fixtures, or `docs/superpowers/`.
 
   **A second shape belongs to this entry and is not a filename at all: a comment asserting a
   property of its own DIRECTORY.** Eleven React suites opened with *"This directory renders
@@ -1149,16 +1132,22 @@ stale-proof; a present-tense component name is not.
   that claim against real source on one layer and against a hand-written declaration on
   the other.
 
-- **Three Angular primitives import a contract type with a value import, and nothing
-  checks it.** The convention is `import type { X } from '../../../Api.generated'` in both
-  layers — every declaration in `Api.generated.ts` is a type and none of them exists at
-  runtime (`export type` for the enums, `export interface` for the predefined objects), so
-  a value import there is a type-only import written without `type`. `Avatar.ts`,
-  `Alert.ts` and `PageHead.ts`
-  each write the bare form instead. It compiles and nothing has ever broken because of it;
-  it is recorded because it is a live inconsistency no gate can see, and because it was
-  previously written down **only inside plan 8B3**, which was deleted when that plan was
-  executed. That is the exact failure mode this section's preamble names.
+- **CLOSED: three Angular primitives imported a contract type as a value, and the fix is the
+  guard rather than the three lines.** The convention is
+  `import type { X } from '../../../Api.generated'` in both layers — every declaration in
+  `Api.generated.ts` is a type and none exists at runtime (`export type` for the enums,
+  `export interface` for the predefined objects), so a value import there is a type-only import
+  written without `type`. `Avatar.ts`, `Alert.ts` and `PageHead.ts` wrote the bare form. It
+  compiled, nothing ever broke, and no gate could see it: `check:api` compares members and
+  `ngc` elides the import either way. All three are converted, and
+  `frameworks/angular/test/ContractTypeImports.test.ts` now scans every component source and
+  fails the bare form, with the two zero-result guards this repo's other discovery gates carry —
+  no sources found, and no `Api.generated` import found at all. The guard was watched failing
+  against a reverted `Alert.ts` before it was trusted.
+  **The reason this was worth an entry is not the typo.** It had been written down **only inside
+  plan 8B3**, which was deleted when that plan was executed, so it had to be rediscovered — the
+  exact failure mode this file's preamble names, demonstrated on a defect small enough that
+  nobody would have noticed it staying lost.
 
 - **RESOLVED: a boolean variant's `defaultVariants` entry was written two different ways, and
   the split was a detection split rather than a style one.** With `true`/`false` keys,
@@ -1211,25 +1200,35 @@ stale-proof; a present-tense component name is not.
   identically and Plan D has nothing left to discover about the reader. What remains owed is an
   Angular `Input` that declares the member; no Angular component was touched, here or in 8C2.
 
-- **`ControlSize`'s description is inaccurate for two of its four consumers, and the
-  reuse is still correct.** `contracts/api/types/control-size.json` says *"Heights come from the
-  density tokens, so a control inside `.arena-compact` re-densifies with the rows around
-  it."* True of `Button` and `IconButton`. False of `ProgressBar`, whose thickness is
-  `--sp-1`, `calc(var(--sp-1) * 1.5)` and `calc(var(--sp-1) * 2.5)`, and of `Spinner`,
-  whose diameters are `--icon-sm`, `--sp-5` and `--sp-8`. `.arena-compact` redefines only
-  the `--dz-*` family (`contracts/design-generated/spacing.generated.css`), so neither re-densifies. **The shared enum is
-  the right one either way** — both implement all three steps, and the alternative is a
-  fourth `sm md lg` enum with an identical value set, which is exactly the duplication the
-  enum-reuse rule exists to prevent. Only the description is wrong, and a description is
-  what a new platform target reads first.
+- **CLOSED: `ControlSize`'s description was inaccurate for two of its four consumers, and the
+  reuse was correct throughout.** `contracts/api/types/control-size.json` said *"Heights come
+  from the density tokens, so a control inside `.arena-compact` re-densifies with the rows
+  around it."* True of `Button` and `IconButton`. False of `ProgressBar`, whose thickness is
+  `--sp-1`, `calc(var(--sp-1) * 1.5)` and `calc(var(--sp-1) * 2.5)`, and of `Spinner`, whose
+  diameters are `--icon-sm`, `--sp-5` and `--sp-8`: `.arena-compact` redefines only the `--dz-*`
+  family (`contracts/design-generated/spacing.generated.css`). The description now says that
+  what each step *measures* is the component's own decision and names which two re-densify.
+  **The lesson is about what an enum's description may promise.** The shared enum was never in
+  question — all four implement the same three steps, and the alternative was a fourth `sm md lg`
+  enum with an identical value set, exactly the duplication the reuse rule exists to prevent. The
+  defect was a description that described the *implementation* of two consumers as though it were
+  a property of the type. A shared type's description may state what the values mean and must not
+  state how any consumer resolves them, because a description is what a new platform target reads
+  first and nothing anywhere checks one.
 
-- **`Table.empty`'s real default is stated in none of its three surfaces.**
-  `Table.jsx` destructures `empty = 'No data.'`; the contract, the `.d.ts` and the
-  `.prompt.md` all describe the member and none of them names the string. Pre-existing —
-  inherited from before `Table` was contracted, not introduced by contracting it — and
-  related to the already-recorded fact that `spec.default` is documented in the contract
-  format and read by no gate, so nothing would have caught the omission or would catch the
-  three surfaces disagreeing once one of them is filled in.
+- **`Table.empty`'s real default is stated in two of its three surfaces, and the third cannot
+  carry it.** `Table.jsx` destructures `empty = 'No data.'`, and the contract and the
+  `.prompt.md` now both name the string, say that Angular projects nothing in the same case, and
+  say why the fallback is deliberately not mirrored — a table's empty state is editorial the way
+  `label` is, so two layers hardcoding one English sentence is worse than one of them being
+  visibly blank. **The `.d.ts` is structurally unable to state it**: a TypeScript interface
+  property carries no default value, and no `.d.ts` in the layer carries a comment — verify with
+  `grep -rln '/\*\|// ' --include='*.d.ts' frameworks/react/components/`, which returns nothing.
+  So "all three surfaces agree" is not an achievable state for any defaulted member, and a future
+  gate comparing them must read the `.jsx` rather than the declaration.
+  **What was NOT closed** is the mechanism: `spec.default` is documented in the contract format
+  and read by no gate, so nothing would catch the contract and the implementation drifting apart
+  again. That half is recorded with the rest of `check:api`'s reach.
 
 - **The two required slots in the repo are treated oppositely at runtime, and only one of
   the two treatments has a stated reason.** `Tooltip.content` deliberately takes **no**
@@ -1566,40 +1565,46 @@ stale-proof; a present-tense component name is not.
   were forced to supply. **`id` stays required — that is the approved spec's decision and 8C5 did not
   reopen it.** The question is recorded, not the answer.
 
-- **Two specs cite the pre-`contracts/` paths and are left that way on purpose — but the
-  re-derive command returns more than two files, and both of the others need their own
-  accounting rather than being folded silently into "two."**
-  `docs/superpowers/specs/2026-07-23-8-api-contracts-design.md` (36 hits) and
-  `2026-07-18-9-four-package-build-publish-design.md` (8) name `api/`, `behaviour/` and
-  `tokens/` throughout and are the two left alone. Both mix historical uses — a path inside
-  a `>` block recording what a shipped plan settled, correct **as history** — with normative
-  text that a reader would follow today, and separating the two is a reading of each spec's
-  argument rather than a find-and-replace. The four-package spec is the sharper case: it is
-  *about* where files live, so its paths are load-bearing to its argument, and its own
-  header already warns they are stale in the other direction (the pre-refactor
-  `frameworks/tailwind/` layout). This is the same treatment the first of them already
-  carries for its pre-move `frameworks/` paths, recorded above; read this paragraph before
-  reading either spec.
+- **The two unexecuted specs' stale paths are paid, and the three treatments they needed are
+  the durable part — a path in a process document is not one kind of thing.** Both name `api/`,
+  `behaviour/` and `tokens/` where the tree now has `contracts/api/`, `contracts/behaviour/` and
+  `contracts/design/`, and neither was a find-and-replace.
 
-  Re-derive with `grep -nE '(^|[^a-zA-Z/])(api|behaviour|tokens)/' docs/superpowers/specs/*.md`
-  and, run today, it returns **two** files — the same two left alone above. A **third** file
-  matched until this batch's own close-out deleted it: this refactor's own design spec,
-  `2026-07-29-contracts-directory-design.md` (30 hits), needed no "left that way on purpose"
-  treatment while it existed — it was the document that specified the move, so its
-  `api/`/`behaviour/`/`tokens/` citations were the correct BEFORE-state of the migration it
-  argued for, never a claim about the tree at the time. The plan itself,
-  `docs/superpowers/plans/2026-07-29-contracts-directory.md` — outside this grep's `specs/`
-  scope, but matched the same way and for the same reason by the path-existence sweep — was
-  deleted alongside it, per this repo's convention that an executed plan and its spec are
-  removed once their content is migrated into this file. A **fourth** file
-  matched until this same batch closed it:
-  `2026-07-29-calendar-chip-box-and-header-gap-pending-1.md` carried one live, present-tense
-  citation — *"not in `styles.css`, not in `tokens/`"* — with no historical reading available,
-  the same false claim already fixed in `frameworks/tailwind/README.md` and in the layer
-  divergences (section 3). Unlike the two specs left alone above, that one was a plain
-  defect rather than an argument needing to stay intact, so it was fixed in place — both
-  current directories now stand in for the one that no longer exists — rather than recorded
-  as debt.
+  **Normative text is corrected.** `2026-07-23-8-api-contracts-design.md` had twenty-five such
+  lines outside its blockquotes and above `## The running count`, each telling a reader where
+  something IS; all are corrected, along with two more the path query could never have matched:
+  `tokens/src/TYPE-MAP.md`, a file that no longer exists and whose DTCG type table is now
+  `contracts/design/README.md`, and a lowercase `tokens.generated.js`/`.ts` that predates the
+  capital-initial rule. **The most dangerous line in either spec was not a path at all** — it told
+  a reader that making a member required is an NG0950 hazard "in the JIT test harness" and to
+  reuse `HostClassBinding.test.ts`'s query-child-and-overwrite bypass. The harness compiles AOT
+  and `setInput()` drives a required input directly; writing to an instance field is now
+  forbidden repo-wide with a grep asserting it stays empty. A stale spec does not merely age — it
+  can instruct.
+
+  **History is left.** A path inside a `>` block records what a shipped plan settled, and the
+  per-batch test-count records under `## The running count` are measurements of a tree that
+  existed; rewriting either would make the record lie. That split — blockquote or below the
+  measurement heading — is what made the correction mechanical *after* the reading, not instead
+  of it.
+
+  **An argument gets a wider warning instead of a rewrite.**
+  `2026-07-18-9-four-package-build-publish-design.md` is *about* where files live, so its
+  directory names are load-bearing to its own reasoning about package boundaries. Its header
+  already warned about the 2026-07-27 frameworks refactor; it now warns about the `contracts/`
+  refactor too, and says explicitly that the paths are left as written and why. Correcting them
+  would have produced a document that reads current and reasons from premises nobody re-checked.
+
+  **And one spec needed no treatment because it should not have existed.**
+  `2026-07-30-10-angular-calendar-parity-design.md` and its plan were fully executed — the tree
+  matches task for task, `BehaviourDelegated.json` is gone, `COVERED` carries both new keys, the
+  50/50 counter is updated, and the five divergences and the barrel gap the plan owed this file
+  are all filed. This repo deletes an executed plan and its spec, so both are deleted. **Check
+  that first**: the cheapest way to fix a stale process document is to notice it has finished.
+  What stays open is the class rather than any instance — nothing checks a path in a dated
+  process document, so the next structural move re-creates this in whatever specs are unexecuted
+  then. Re-derive with
+  `grep -nE '(^|[^a-zA-Z/])(api|behaviour|tokens)/' docs/superpowers/specs/*.md`.
 
 - **Nothing checks that `contracts/` has the shape `contracts/README.md` describes.** A
   stray file in `contracts/`, a level missing its `README.md`, a fourth directory added
@@ -2021,24 +2026,27 @@ Arena's design language is one thing; its framework layers are several. **For co
 `contracts/design/` and `contracts/design-generated/` are the only source of truth.** A layer that disagrees with the token
 layer is wrong, and that is not negotiable.
 
-Behaviour is different. Arena is in an implementation phase across frameworks, and the layers will
-not always do the same thing — a framework's idiom, its accessibility affordances, or the order in
-which components were built can all pull a layer away from its counterpart. **No layer is the
-absolute authority for component behaviour.** Where the layers genuinely differ, the difference is
-recorded here rather than treated as a defect in whichever layer was written second.
+**Behaviour has an authority, and it is not either layer.** `contracts/behaviour/*.json` settles
+it: the pattern is the authority, a component's gap against it is a defect or a declared
+exception, and `check:behaviour` names both layers and picks no winner when they disagree. This
+section used to open by saying the opposite — *"no layer is the absolute authority for component
+behaviour"* — which was true only while there was nothing above the layers to appeal to, and it
+survived as a live sentence for several batches after the contract layer removed the condition it
+rested on. It is retired here rather than deleted, because a reader meeting a divergence entry
+that predates the bindings should know which policy it was written under.
 
-This file is the record. A divergence that is not written down is a bug; a divergence that is
-written down, with its reason, is a decision.
+**So what belongs in this section is narrower than it once was: a difference the binding layer
+cannot express.** Every component is bound in both layers — count with
+`find frameworks -name '*.behaviour.json' | wc -l` against `frameworks/Components.json` — so a
+behavioural gap against a pattern is no longer recorded here at all; it is an exception on the
+binding, where a render suite can expire it. What is left is the residue no pattern has an
+opinion about: which element a layer renders, how a compound family coordinates, where a scrim
+sits, what an idiom forces (`cloneElement` against content projection, an `output()` whose
+subscribers cannot be queried), and a defect one layer has fixed and the other has not.
 
-**The "no absolute authority" claim above is superseded.** `contracts/behaviour/*.json` now
-settles the authority question this file leaves open: the pattern is the authority, and a
-component's gap against it is a defect or a declared exception, not a symmetric difference
-between equally-valid layers. The per-component entries below predate that layer and are
-pending migration into `.behaviour.json` bindings — a citation of this file from a binding is
-pointing at a divergence still awaiting that migration, not evidence that the old policy
-still holds.
-
-Each entry states: what differs, in which layers, why, and whether it is expected to converge.
+A divergence that is not written down is a bug; a divergence that is written down, with its
+reason, is a decision. Each entry states: what differs, in which layers, why, and whether it is
+expected to converge.
 
 ---
 

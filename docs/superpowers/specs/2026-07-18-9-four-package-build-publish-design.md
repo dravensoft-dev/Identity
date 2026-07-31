@@ -1,7 +1,13 @@
-**This spec predates the 2026-07-27 frameworks file-structure refactor and is stale in
-both directions that refactor touches: every Tailwind path it names reflects the old flat
-`frameworks/tailwind/components/` layout, and the token counts it cites no longer hold.**
-Read it for its decisions, not for its numbers or its paths.
+**This spec predates two structural refactors and is stale in every direction they touched.**
+The 2026-07-27 frameworks refactor: every Tailwind path it names reflects the old flat
+`frameworks/tailwind/components/` layout, and the token counts it cites no longer hold. The
+2026-07-29 `contracts/` refactor: the three contract levels this spec places at the repo root
+as `tokens/`, `behaviour/` and `api/` are now `contracts/design/`, `contracts/behaviour/` and
+`contracts/api/`, with the generated stylesheets in `contracts/design-generated/`.
+**Read it for its decisions, not for its numbers or its paths.** The paths are deliberately
+left as written rather than rewritten, because this spec is *about* where files live — its
+directory names are load-bearing to its own argument about package boundaries, and a
+find-and-replace would leave an argument reasoning from premises nobody re-checked.
 
 # Four atomic npm packages — build + publish — design
 

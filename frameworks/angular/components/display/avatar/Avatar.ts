@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { avatarStyles } from './Avatar.variants';
-import { AvatarSize, AvatarShape, AvatarStatus } from '../../../Api.generated';
+import type { AvatarSize, AvatarShape, AvatarStatus } from '../../../Api.generated';
 
 @Component({
   selector: 'arena-avatar',

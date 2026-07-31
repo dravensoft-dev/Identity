@@ -9,7 +9,7 @@
     "content": { "form": "slot",
                  "description": "The rows. One TableRow per row. Where a row sits, the columns its cells are set against and how the keyboard reaches them are Table's to decide and no row's to declare; how that reaches a row is each layer's own idiom." },
     "empty": { "form": "slot",
-               "description": "What shows when no row is written." },
+               "description": "What shows when no row is written. React falls back to the string 'No data.' when nothing is passed; Angular projects nothing, because a slot there is a projection site rather than a value. The fallback is deliberately not mirrored: a table's empty state is editorial the same way its label is, and two layers hardcoding one English sentence is worse than one of them being visibly blank." },
     "responsive": { "form": "primitive", "type": "boolean", "default": true,
                     "description": "Card mode below --bp-md. Set false only when the columns are meaningless apart." }
   }

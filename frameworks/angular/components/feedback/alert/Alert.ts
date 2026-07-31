@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, output } from '@angular/core';
 import { alertStyles } from './Alert.variants';
-import { AlertTone } from '../../../Api.generated';
+import type { AlertTone } from '../../../Api.generated';
 
 const TONE_ICONS: Record<AlertTone, string> = {
   info: 'ph-fill ph-info',
