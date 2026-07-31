@@ -58,24 +58,24 @@ shared internals: `DataVisuals.js`, `UseContainerWidth.js` and `UseDialogModal.j
 last one because its suite counts as a consumer: its three component consumers are all in
 `feedback/`, but `test/UseDialogModal.dom.test.jsx` is one too.
 
-**`UseDialogModal.js` is a PORT of `frameworks/angular/FocusTrap.ts`, not a second design** —
-the same focusable selector, the same boundary-wrap rule, the same never-cache-the-focusables
-rule, the same open/close transition. It is one shape wider: Angular handles Tab only and keeps
-Escape in each component's own `onKeydown`, where this hook folds Escape into the handler it
-returns, always reporting through the component's **own** dismissal channel (`onClose`,
-`onCancel`, `onSkip`), so meeting the pattern adds no member anywhere.
+**`UseDialogModal.js` implements `contracts/behaviour/dialog-modal.json` for this layer, and
+that contract is its only authority** — `focus.trap`, `focus.onOpen`, `focus.onClose` and
+`keyboard.Escape`, in one hook because all three consumers need all four. Escape always reports
+through the component's **own** dismissal channel (`onClose`, `onCancel`, `onSkip`), so meeting
+the pattern adds no member to any contract.
 
 **Every natively-focusable clause in the selector carries its own `:not([tabindex="-1"])`**,
 because a selector list is OR'd: `button:not([disabled])` alone would pull a real
-`<button tabindex="-1">` back into the tab order. **The rule that a component is self-contained
-is about CSS classes, not about JS helpers.**
+`<button tabindex="-1">` back into the tab order. **Never cache the focusables** — a dialog's
+content changes under it, and a cached list wraps to an element that has gone. **The rule that a
+component is self-contained is about CSS classes, not about JS helpers.**
 
 **What a suite can prove about the trap, and what it cannot.** The boundary wrap is Arena's own
 `.focus()` call and happy-dom honours `.focus()`, so it is asserted for real. The **interior** —
 that Tab from a control in the middle reaches the next one — is the browser's native sequential
-focus navigation, which neither layer implements and happy-dom does not have; a test asserting it
-would pass identically against a perfect trap and against none. So the interior is checked by a
-person in real Chromium against the written checklist in each component's `.prompt.md`.
+focus navigation, which nothing here implements and happy-dom does not have; a test asserting it
+would pass identically against a perfect trap and against none. `bun run check:focus-trap` is
+what covers it: real Chromium over each declared page, one real Tab press per stop.
 
 - `ui-kits/console/` — the Delivery Console example app (login → dashboard → project).
 - `vendor/` — a committed, generated CommonJS→ESM bundle of React for the demo pages'
@@ -133,14 +133,11 @@ quietly change what its suites prove with nothing failing to say so.
 include DOM ones**, so that directory's contents answer nothing about which invocation a
 suite belongs to. Only the infix does.
 
-**What forces the split all the way out to a third suite is `scripts/`.** Angular's single
-registration site, `frameworks/angular/test/TestbedEnv.ts`, is guarded rather than throwing on
-a second call, so merging it into the preloaded invocation does not itself collide. But a
-happy-dom installed process-wide for the whole invocation replaces Bun's own `fetch`, which
-turns a passing `scripts/lib/arena/static-server.test.mjs` fetch assertion into a cross-origin
-failure. **The single authority for the whole command is `testStep()` in
-`scripts/check/arena/check-all.mjs`**, whose `.test.mjs` sibling asserts the args array by
-literal value; read it there rather than reconstructing one.
+**The split reaches past this layer**, because a process-wide happy-dom also replaces Bun's own
+`fetch` and so decides which invocation `scripts/` may ride in. **The single authority for the
+whole command is `testStep()` in `scripts/check/arena/check-all.mjs`**, whose header carries
+that reasoning and whose `.test.mjs` sibling asserts the args array by literal value; read it
+there rather than reconstructing one.
 
 **The preload is not a convenience.** `react-dom` decides once, at its own module
 evaluation, whether the browser supports the `input` event. If a DOM is not already

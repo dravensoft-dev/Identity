@@ -107,9 +107,9 @@ down there binding `absent`.
 
 **Arena writes the markup, the ARIA and the styling, and `@angular/cdk` supplies only what
 Arena should not hand-roll** — overlay positioning for a surface anchored to a trigger, and
-the roving-focus key managers. Focus trapping stays Arena's own `FocusTrap.ts`, a deliberate port
-of React's `UseDialogModal.js`, so the two layers keep solving that contract with the same
-code, and `arena-dialog` consumes it rather than `cdk/dialog`.
+the roving-focus key managers. Focus trapping stays Arena's own `FocusTrap.ts`, which implements
+`contracts/behaviour/dialog-modal.json` for this layer, and `arena-dialog` consumes it rather
+than `cdk/dialog`.
 
 **The CDK earns its place on an anchored surface and nowhere else, so count its users rather
 than assuming.** `grep -rl "@angular/cdk/overlay" frameworks/angular/components` is the answer;

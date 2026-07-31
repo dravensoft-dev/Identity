@@ -1,7 +1,13 @@
 /* Runs every gate and the test suite unconditionally: one failure does not stop the
  * rest. A gate whose runtime dependency is missing exits 2 and is reported SKIP,
  * making the whole run INCOMPLETE rather than green.
- * testStep() below is the single authority for how the test suite is invoked. */
+ * testStep() below is the single authority for how the test suite is invoked, and
+ * why it is two bun processes: --preload installs happy-dom PROCESS-wide, and a DOM
+ * installed for a whole invocation also replaces Bun's own fetch, which turns
+ * scripts/lib/arena/static-server.test.mjs's fetch assertion into a cross-origin
+ * failure -- so scripts/ rides the DOM-free invocation, not the preloaded one. The
+ * Angular emit is safe in either: its TestBed registration site is guarded rather
+ * than throwing on a second call. Read the args here, never reconstruct them. */
 
 import { spawnSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
