@@ -40,6 +40,7 @@ export const GATES = [
   { name: 'check:vendor', file: 'react/check-vendor-generated.mjs' },
   { name: 'check:demos', file: 'react/check-demos-generated.mjs' },
   { name: 'check:cards', file: 'arena/check-card-viewports.mjs' },
+  { name: 'check:focus-trap', file: 'arena/check-focus-trap.mjs' },
   { name: 'check:angular', file: 'angular/check-angular.mjs' },
   { name: 'check:angular-demos', file: 'angular/check-angular-demos.mjs' },
   { name: 'check:assertions', file: 'angular/check-assertions.mjs' },

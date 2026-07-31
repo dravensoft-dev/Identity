@@ -62,6 +62,7 @@
     "check:behaviour": "bun scripts/check/arena/check-behaviour.mjs",
     "check:compliance": "bun scripts/check/arena/check-compliance.mjs",
     "check:api": "bun scripts/check/arena/check-api.mjs",
+    "check:focus-trap": "bun scripts/check/arena/check-focus-trap.mjs",
     "check:cards": "bun scripts/check/arena/check-card-viewports.mjs",
     "check": "bun scripts/check/arena/check-all.mjs",
     "test:scripts": "bun test scripts",
