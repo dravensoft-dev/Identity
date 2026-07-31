@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { numericConstants } from './check-duplicate-constants.mjs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { numericConstants, sourceFiles } from './check-duplicate-constants.mjs';
 
 test('finds a module-level numeric const', () => {
   assert.deepEqual(numericConstants('export const CHART_HEIGHT = 280;'), new Map([['CHART_HEIGHT', '280']]));
@@ -35,4 +38,13 @@ test('ignores a string const', () => {
 test('ignores a const declared inside a function body', () => {
   const src = 'function f() {\n  const W = 320;\n}';
   assert.deepEqual(numericConstants(src), new Map());
+});
+
+test('a dist tree is assembled output, so its copy of a constant is never a duplicate', () => {
+  const root = mkdtempSync(join(tmpdir(), 'arena-dup-'));
+  mkdirSync(join(root, 'react', 'dist', 'components'), { recursive: true });
+  writeFileSync(join(root, 'react', 'Widget.jsx'), 'const HOUR_H = 44;\n');
+  writeFileSync(join(root, 'react', 'dist', 'components', 'Widget.jsx'), 'const HOUR_H = 44;\n');
+  assert.deepEqual([...sourceFiles(root)], [join(root, 'react', 'Widget.jsx')]);
+  rmSync(root, { recursive: true });
 });

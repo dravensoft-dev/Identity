@@ -4,52 +4,34 @@ All notable changes to Arena, the Dravensoft Design System, are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Changed
-
-- **Breaking: `Calendar` gains `dayInteractive`, and it is what makes a day activable.** Binding
-  `onDateClick` (React) or `(dateClick)` (Angular) no longer activates anything on its own, pass
-  the boolean alongside it. This pays an R6 violation that the two layers had already diverged on
-  in public: React painted `cursor: pointer` over the days whenever a handler was bound, deriving a
-  render from a listener, while Angular painted nothing and emitted to nobody. With the boolean set,
-  each day header is now a `<button>` labelled with the full date, the keyboard's first route to a
-  day, and the column background keeps the same click as a pointer affordance. Both layers gained
-  their first suites for any of this; there were none.
-- **The three framework layers are independent of each other, and a gate holds it.** A file under
-  `frameworks/<A>` may no longer name layer B nor any of B's source files, by import or in prose.
-  The one edge that survives is Angular importing a Tailwind `*.manifest.generated` through
-  `frameworks/tailwind/Tv.ts`, on the record in `ALLOWED` with its reason. `check:layer-independence`
-  is the new gate and its `EXEMPT` map is empty.
-- **Breaking for a consumer relying on it: `Switch` with `confirm` set now always routes through
-  `onRequestChange`**, where it used to fall back to `onFuncOn`/`onFuncOff` when no handler was
-  passed. A guarded change that silently applied itself is what that fallback did; a switch with
-  `confirm` and nothing listening now does nothing, loudly.
-- **Breaking: `CalendarEvent` gains `interactive`, and it is what makes the chip a button.** The
-  element used to depend on whether `onClick` was bound, which is what R6 forbids. **Pass
-  `interactive` alongside `onClick`**: without it the chip is inert, a `<div>` with no role and
-  nothing to activate, which is what a read-only schedule wants. It is the member `TableRow`
-  already carries, for the same reason, so the two compound-item families now have one shape.
-- **`check:states` reads the contract instead of React.** A manifest's `hover:`/`focus:` modifier is
-  now judged against `affordances` in `contracts/api/components/<Name>.json`, and the same
-  declaration catches a state invented in a React component, which nothing caught before.
-
-### Fixed
-
-- **A `(click)` binding on an Angular primitive's element fires for the DOM event AND for the
-  primitive's `click` output.** Angular installs both. Measured with a probe across all four
-  combinations rather than inferred. A primitive that emits without stopping propagation calls a
-  consumer's handler **twice** for one press; one that stops without emitting calls it **zero**
-  times, correctly. So every primitive declaring a `click` output now stops propagation in every
-  branch it renders, including the ones that deliberately do not emit:
-  `arena-calendar-event`'s inert chip did not, and a consumer bound to it heard an activation
-  nobody made. React's chip follows, so the layers agree on what a click on an inert chip does.
-- **The four `click` suites assert both numbers now**, the output on the component instance and
-  what a template binding hears, because either alone is blind. `frameworks/angular/README.md`
-  carries the table and the command that derives the outputs still unaudited: `change` across
-  eight primitives, `close` across four, plus `blur`, `cancel`, `select` and `toggle`.
+## [5.0.0] - 2026-07-31
 
 ### Added
+
+- **Arena is installable: two npm packages, `@dravensoft/arena-react` and
+  `@dravensoft/arena-angular`.** `bun run build:packages` assembles them from the sources in
+  place into `frameworks/<layer>/dist/`, with no authored file moved and the three existing
+  channels untouched. Every component ships, with its types. React carries no runtime
+  dependency at all; Angular carries the shared Tailwind recipes it reads plus the compiled
+  utility sheet, so a consumer needs no Tailwind. Phosphor is a peer in both and is never
+  bundled. Publishing is not wired up: the packages build and verify locally.
+  [`frameworks/PACKAGING.md`](./frameworks/PACKAGING.md) is the normative statement of the
+  channel.
+- **A published Arena carries the language and never the skin.** The palettes and the fonts
+  arrive as an `arena.config.json` the consuming project writes, and `arena-theme`, a command
+  each package ships, turns it into the palette blocks and the `@font-face` rules. A colour is
+  a plain hex string, a palette declares its `polarity`, and one palette reaches `:root` while
+  every other becomes `.arena-<name>`. A font `src` takes either a binary or a stylesheet URL,
+  so a Google Fonts link works as pasted. It reports contrast and ramp problems rather than
+  refusing to write, with `--strict` for a consumer who wants the discipline in CI.
+- **`check:packages`**, which holds `arena-theme` equivalent to the Style Dictionary pipeline
+  it duplicates, across every `--color-*` declaration in both theme blocks, and holds an
+  assembled package registry-standard: the version stamped from `plugin.json`, every `exports`
+  target emitted, no install script, a README, and Phosphor a peer.
+- **`check:react-barrel` and the generated `frameworks/react/Index.generated.js`**, the React
+  layer's entry point, derived from the component directories rather than hand-listed. The
+  copy-in kit gains an index with it, and the three layer-root helpers gain the `.d.ts` they
+  never had.
 
 - **`affordances` in every API contract**, the closed set `hover`/`focus`, mandatory, empty where a
   component presents neither.
@@ -107,6 +89,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`check:api` reads the `.jsx`, not only the `.d.ts`.** A restored `{...rest}` spread now fails,
   and a stated `default` must match the implementation. **`check:compliance` covers 100 of 100
   bindings**, up from 78.
+
+### Changed
+
+- **A theme is a name, not one of two.** Both layers switch between any number of declared
+  palettes: `provideArenaThemes({palettes, default})` in Angular, `initArenaTheme` and
+  `useArenaTheme` in the new `frameworks/react/Theme.js`. The default palette wears no class
+  and every other wears `.arena-<name>`; the previous one is removed rather than left to fight
+  over the same custom property. With nothing configured both answer `dark` and `light`, so an
+  adopter on the copy-in kit sees no change. Setting a name no palette declares now throws,
+  since a silently ignored theme switch is indistinguishable from a broken toggle.
+- **`frameworks/angular/tsconfig.test.json` covers `theme/` and `icons/`.** It listed
+  `components/`, `test/` and the layer root, so a suite beside either directory would have
+  compiled nowhere and run never.
+
+- **Breaking: `Calendar` gains `dayInteractive`, and it is what makes a day activable.** Binding
+  `onDateClick` (React) or `(dateClick)` (Angular) no longer activates anything on its own, pass
+  the boolean alongside it. This pays an R6 violation that the two layers had already diverged on
+  in public: React painted `cursor: pointer` over the days whenever a handler was bound, deriving a
+  render from a listener, while Angular painted nothing and emitted to nobody. With the boolean set,
+  each day header is now a `<button>` labelled with the full date, the keyboard's first route to a
+  day, and the column background keeps the same click as a pointer affordance. Both layers gained
+  their first suites for any of this; there were none.
+- **The three framework layers are independent of each other, and a gate holds it.** A file under
+  `frameworks/<A>` may no longer name layer B nor any of B's source files, by import or in prose.
+  The one edge that survives is Angular importing a Tailwind `*.manifest.generated` through
+  `frameworks/tailwind/Tv.ts`, on the record in `ALLOWED` with its reason. `check:layer-independence`
+  is the new gate and its `EXEMPT` map is empty.
+- **Breaking for a consumer relying on it: `Switch` with `confirm` set now always routes through
+  `onRequestChange`**, where it used to fall back to `onFuncOn`/`onFuncOff` when no handler was
+  passed. A guarded change that silently applied itself is what that fallback did; a switch with
+  `confirm` and nothing listening now does nothing, loudly.
+- **Breaking: `CalendarEvent` gains `interactive`, and it is what makes the chip a button.** The
+  element used to depend on whether `onClick` was bound, which is what R6 forbids. **Pass
+  `interactive` alongside `onClick`**: without it the chip is inert, a `<div>` with no role and
+  nothing to activate, which is what a read-only schedule wants. It is the member `TableRow`
+  already carries, for the same reason, so the two compound-item families now have one shape.
+- **`check:states` reads the contract instead of React.** A manifest's `hover:`/`focus:` modifier is
+  now judged against `affordances` in `contracts/api/components/<Name>.json`, and the same
+  declaration catches a state invented in a React component, which nothing caught before.
+
+### Fixed
+
+- **A `(click)` binding on an Angular primitive's element fires for the DOM event AND for the
+  primitive's `click` output.** Angular installs both. Measured with a probe across all four
+  combinations rather than inferred. A primitive that emits without stopping propagation calls a
+  consumer's handler **twice** for one press; one that stops without emitting calls it **zero**
+  times, correctly. So every primitive declaring a `click` output now stops propagation in every
+  branch it renders, including the ones that deliberately do not emit:
+  `arena-calendar-event`'s inert chip did not, and a consumer bound to it heard an activation
+  nobody made. React's chip follows, so the layers agree on what a click on an inert chip does.
+- **The four `click` suites assert both numbers now**, the output on the component instance and
+  what a template binding hears, because either alone is blind. `frameworks/angular/README.md`
+  carries the table and the command that derives the outputs still unaudited: `change` across
+  eight primitives, `close` across four, plus `blur`, `cancel`, `select` and `toggle`.
 
 ## [4.0.0] - 2026-07-18
 

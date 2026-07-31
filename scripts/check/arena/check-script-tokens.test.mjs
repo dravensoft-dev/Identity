@@ -1,10 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   cssCounterpart, importedNames, catSlotEnumProblems, zeroGeneratedCssProblems, cssDiscoveryProblems,
-  shadowedTokenProblems, staleShadowExemptions, SHADOW_EXEMPT,
+  shadowedTokenProblems, staleShadowExemptions, SHADOW_EXEMPT, sourceFiles,
 } from './check-script-tokens.mjs';
 import { buildScriptModules } from '../../generate/arena/generate-tokens.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
@@ -155,4 +156,13 @@ test('SHADOW_EXEMPT is empty, and an entry naming no real constant fails rather 
   assert.equal(SHADOW_EXEMPT.size, 0);
   const layers = [layerWith('react', [], [{ name: 'GAP', value: '8', path: 'a.jsx' }])];
   assert.deepEqual(staleShadowExemptions(layers), []);
+});
+
+test('a dist tree is assembled output, so the gate never reads its copy of a layer', () => {
+  const root = mkdtempSync(join(tmpdir(), 'arena-script-tokens-'));
+  mkdirSync(join(root, 'angular', 'dist'), { recursive: true });
+  writeFileSync(join(root, 'angular', 'Widget.ts'), 'export const gap = 8;\n');
+  writeFileSync(join(root, 'angular', 'dist', 'Widget.ts'), 'export const gap = 8;\n');
+  assert.deepEqual([...sourceFiles(root)], [join(root, 'angular', 'Widget.ts')]);
+  rmSync(root, { recursive: true });
 });

@@ -32,7 +32,7 @@ export const BANNED_PUNCTUATION = [['—', 'an em dash']];
 
 const SOURCE_EXTENSIONS = ['.mjs', '.jsx', '.tsx', '.ts', '.js'];
 const SCANNED_TREES = ['scripts', 'frameworks'];
-const SKIPPED_DIRECTORIES = new Set(['node_modules', '.git']);
+const SKIPPED_DIRECTORIES = new Set(['node_modules', '.git', 'dist']);
 
 export const emittedTree = (root) => join(root, 'build');
 
@@ -51,8 +51,10 @@ function walk(dir, keep, emitted) {
   return found;
 }
 
+export const SHEBANG = /^#![^\n]*\n/;
+
 function startsFile(source, comment) {
-  return source.slice(0, source.indexOf(comment.text)).trim() === '';
+  return source.slice(0, source.indexOf(comment.text)).replace(SHEBANG, '').trim() === '';
 }
 
 export function isGenerated(path) {

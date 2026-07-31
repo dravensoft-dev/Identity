@@ -3,7 +3,9 @@
  * because `bun test scripts` loads *.test.mjs and whatever those reach, and no suite reaches
  * serve.mjs -- it calls Bun.serve() at module top level, so importing it starts a server.
  * A *.test.mjs is excluded on the opposite reasoning: running it proves its imports, and its
- * fixtures are import statements inside STRING literals, which a text scan cannot tell apart. */
+ * fixtures are import statements inside STRING literals, which a text scan cannot tell apart.
+ * An interpolated specifier is that same class in a generator, and is skipped by the one thing
+ * that tells the two apart for certain: a real static specifier never contains a `${`. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -24,9 +26,12 @@ export function scriptsUnder(dir) {
   return found;
 }
 
+export const isInterpolated = (specifier) => specifier.includes('${');
+
 export function unresolvedSpecifiers(path) {
   const bad = [];
   for (const m of readFileSync(path, 'utf8').matchAll(SPECIFIER)) {
+    if (isInterpolated(m[1])) continue;
     if (!existsSync(join(dirname(path), m[1]))) bad.push(m[1]);
   }
   return bad;
@@ -39,6 +44,11 @@ test('every relative import in a non-suite script resolves to a file that is the
   const broken = scripts.flatMap((p) =>
     unresolvedSpecifiers(p).map((s) => `${relative(repoRoot, p)} imports ${s}`));
   assert.deepEqual(broken, []);
+});
+
+test('a specifier a generator is writing into its output is not one this script imports', () => {
+  assert.equal(isInterpolated('./${helper}.js'), true);
+  assert.equal(isInterpolated('./lib/arena/repo-root.mjs'), false);
 });
 
 test('serve.mjs is in scope, and it is the reason this suite exists', () => {

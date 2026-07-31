@@ -36,6 +36,18 @@ test('a document exactly at the limit passes', () => {
   rmSync(root, { recursive: true });
 });
 
+test('a dist tree is assembled output and is read by nothing', () => {
+  const root = tree({
+    'README.md': 'a',
+    'frameworks/react/dist/README.md': 'an em dash — lands here, copied from a document that already passed',
+    'frameworks/react/dist/Button.jsx': '// one comment\n// and a second\nexport const a = 1;\n',
+  });
+  assert.deepEqual(punctuationProblems(root).problems, []);
+  assert.deepEqual(commentRuleProblems(root).problems, []);
+  assert.equal(documentSizeProblems(root).scanned, 1);
+  rmSync(root, { recursive: true });
+});
+
 test('both document rules report how many documents they actually read', () => {
   const root = tree({ 'README.md': 'a', 'docs/a.md': 'b', 'x/y/Z.md': 'c', 'notes.txt': 'd' });
   assert.equal(documentSizeProblems(root).scanned, 3);
@@ -218,4 +230,20 @@ test('a walk that reaches nothing is a failure, not a vacuous pass', () => {
   assert.match(zeroScanProblems({ documents: 0, sources: 1 })[0], /no \.md files at all/);
   assert.match(zeroScanProblems({ documents: 1, sources: 0 })[0], /no source files at all/);
   assert.equal(zeroScanProblems({ documents: 0, sources: 0 }).length, 2);
+});
+
+test('a shebang may precede the header, because a bin entry point is run by the shell', () => {
+  const root = tree({
+    'scripts/run.mjs': '#!/usr/bin/env node\n/* what this command does */\nexport const a = 1;\n',
+  });
+  assert.deepEqual(commentRuleProblems(root).problems, []);
+  rmSync(root, { recursive: true });
+});
+
+test('a shebang buys no second comment, and no comment below the header', () => {
+  const root = tree({
+    'scripts/run.mjs': '#!/usr/bin/env node\nexport const a = 1;\n/* not the header */\n',
+  });
+  assert.equal(commentRuleProblems(root).problems.length, 1);
+  rmSync(root, { recursive: true });
 });

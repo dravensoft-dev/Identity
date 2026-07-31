@@ -433,10 +433,11 @@ export function stalePassthrough(seenComponents) {
   return [...PASSTHROUGH.keys()].filter((k) => !seenComponents.has(k));
 }
 
-function* walk(dir) {
+export function* sourceFiles(dir) {
   for (const entry of readdirSync(dir).sort()) {
+    if (entry === 'dist') continue;
     const p = join(dir, entry);
-    if (statSync(p).isDirectory()) { yield* walk(p); continue; }
+    if (statSync(p).isDirectory()) { yield* sourceFiles(p); continue; }
 
     if (entry.endsWith('.d.ts')) continue;
     if (EXTENSIONS.some((e) => entry.endsWith(e))) yield p;
@@ -451,7 +452,7 @@ function collect() {
   const found = [];
   const matchedKeys = new Set();
   const seenComponents = new Set();
-  for (const file of walk(join(repoRoot, 'frameworks'))) {
+  for (const file of sourceFiles(join(repoRoot, 'frameworks'))) {
     const rel = relative(repoRoot, file);
     const text = readFileSync(file, 'utf8');
     for (const name of passthroughSightings(text)) seenComponents.add(name);

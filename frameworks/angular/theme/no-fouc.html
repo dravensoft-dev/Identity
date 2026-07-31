@@ -1,16 +1,20 @@
 <!-- frameworks/angular/theme/no-fouc.html
      Paste this <script> into index.html's <head>, BEFORE the app's stylesheet,
-     so the stored theme is applied before first paint (no flash). It shares the
-     `arena-theme` storage key with ThemeService.ts. Dark is the default:
-     .arena-light is added only when light is chosen or preferred. -->
+     so the stored palette is applied before first paint (no flash). It shares the
+     `arena-theme` storage key with ThemeService.ts, and the same rule: the default
+     palette sits on :root and wears no class, every other one wears .arena-<name>.
+     Set the two names below to match the palettes arena.config.json declares. -->
 <script>
   (function () {
+    var DEFAULT = 'dark';
+    var PREFERS_LIGHT = 'light';
     try {
       var stored = localStorage.getItem('arena-theme');
-      var light =
-        stored === 'light' ||
-        (!stored && window.matchMedia('(prefers-color-scheme: light)').matches);
-      if (light) document.documentElement.classList.add('arena-light');
+      var name = stored ||
+        (window.matchMedia('(prefers-color-scheme: light)').matches ? PREFERS_LIGHT : DEFAULT);
+      if (name !== DEFAULT && /^[a-z][a-z0-9-]*$/.test(name)) {
+        document.documentElement.classList.add('arena-' + name);
+      }
     } catch (e) {}
   })();
 </script>

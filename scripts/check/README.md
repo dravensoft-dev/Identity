@@ -1,9 +1,10 @@
 # scripts/check/
 
-**A gate states one claim about the tree and fails when it stops being true.** Twenty-six of
-them, registered in `GATES` in [`arena/check-all.mjs`](./arena/check-all.mjs), which
-`bun run check` runs unconditionally: one failure never stops the rest, so a full sweep
-reports every problem in one pass rather than the first.
+**A gate states one claim about the tree and fails when it stops being true.** They are
+registered in `GATES` in [`arena/check-all.mjs`](./arena/check-all.mjs), which `bun run check`
+runs unconditionally: one failure never stops the rest, so a full sweep reports every problem
+in one pass rather than the first. That array is the count, and its suite asserts the number by
+literal value; a figure written here instead would rot the next time a gate lands.
 
 ## The shape of a gate
 

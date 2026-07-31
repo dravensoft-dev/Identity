@@ -13,6 +13,7 @@ What belongs to no one layer: the parsers, the browser harness, and the tree's o
 | `behaviour-contracts.mjs` | Loads and validates the behaviour patterns and each layer's bindings. `bindingCases()` is the **single** place the flat and cased binding shapes are reconciled. |
 | `chromium.mjs` | Finds and launches a headless browser from `CHROME_PATH` or the usual paths. Returns nothing rather than throwing when there is none, so the gate that needs it can exit 2 and be reported SKIP. |
 | `cdp.mjs` | The Chrome DevTools Protocol dispatcher the viewport gate drives the browser with. |
+| `package-assembly.mjs` | What both npm package builds share: the exclusion list deciding what never ships, the copy that honours it, the CSS chain each package carries, and the manifest template that stamps the version from `plugin.json`. `arena` because it reads two framework layers and the repository root. It compiles nothing; each layer's builder does that with its own toolchain. |
 | `static-server.mjs` | The static file server behind `bun run demos`, and the fixture the card gate loads pages from. Its own suite asserts a real `fetch`, which is why the DOM-free test invocation must stay DOM-free. |
 
 Every `X.test.mjs` beside a module covers that module.

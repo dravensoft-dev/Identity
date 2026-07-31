@@ -1,0 +1,168 @@
+/* Assembles @dravensoft/arena-angular into frameworks/angular/dist/. ng-packagr infers
+ * rootDir from the entry file's directory and refuses a source outside it, and the layer's
+ * .variants.ts files import a Tailwind manifest four directories up. So the layer is staged
+ * AT the staging root, with that slice of frameworks/tailwind/ beside it and each specifier
+ * repointed to the depth it now sits at. The staging tree is the whole reason this build is
+ * not two lines; nothing else here transforms anything. */
+
+import { readFileSync, existsSync, mkdirSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { join, relative, sep } from 'node:path';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { arenaConfig } from '../../lib/core/arena-config.mjs';
+import {
+  collectFiles, reset, write, copy, writeCssChain, copyCli, baseManifest, report,
+} from '../../lib/arena/package-assembly.mjs';
+
+export const NAME = '@dravensoft/arena-angular';
+export const LAYER = 'frameworks/angular';
+export const STAGING = 'build/angular-package';
+
+export const TAILWIND_SPECIFIER = /(from\s*['"])\.\.\/\.\.\/\.\.\/\.\.\/tailwind\//g;
+
+export function repointTailwind(code, depth) {
+  return code.replace(TAILWIND_SPECIFIER, `$1${'../'.repeat(depth)}tailwind/`);
+}
+
+export function manifest(root = repoRoot) {
+  return {
+    name: NAME,
+    description: 'Arena, the Dravensoft design system: standalone Angular components on a shared Tailwind recipe layer.',
+    keywords: ['design-system', 'angular', 'ui', 'arena', 'dravensoft', 'design-tokens'],
+    sideEffects: false,
+    ...baseManifest(root),
+    peerDependencies: {
+      '@angular/core': '>=20',
+      '@angular/common': '>=20',
+      '@angular/platform-browser': '>=20',
+      '@angular/cdk': '>=20',
+      '@phosphor-icons/web': '^2.1.2',
+    },
+    dependencies: RUNTIME_DEPENDENCIES,
+  };
+}
+
+export const RUNTIME_DEPENDENCIES = {
+  'tailwind-variants': '^3.2.2',
+  'tailwind-merge': '^3.6.0',
+  tslib: '^2.8.1',
+};
+
+export function ngPackageConfig() {
+  return {
+    $schema: '../../node_modules/ng-packagr/ng-package.schema.json',
+    dest: '../../frameworks/angular/dist',
+    lib: { entryFile: 'index.ts' },
+    allowedNonPeerDependencies: Object.keys(RUNTIME_DEPENDENCIES),
+    assets: [],
+  };
+}
+
+export function libTsconfig() {
+  return {
+    compilerOptions: {
+      target: 'ES2022',
+      module: 'ES2022',
+      moduleResolution: 'bundler',
+      lib: ['ES2022', 'DOM'],
+      strict: true,
+      skipLibCheck: true,
+      experimentalDecorators: false,
+      useDefineForClassFields: false,
+      resolveJsonModule: true,
+      esModuleInterop: true,
+      declaration: true,
+    },
+    angularCompilerOptions: { strictTemplates: true, compilationMode: 'partial' },
+  };
+}
+
+function stage(root) {
+  const dir = join(root, STAGING);
+  reset(dir);
+
+  const layer = join(root, LAYER);
+  const staged = [];
+  for (const file of collectFiles(layer, (p) => !p.endsWith('.card.html'))) {
+    const rel = relative(layer, file).split(sep).join('/');
+    const depth = rel.split('/').length - 1;
+    const text = readFileSync(file, 'utf8');
+    staged.push(write(dir, rel, file.endsWith('.ts') ? repointTailwind(text, depth) : text));
+  }
+
+  const tailwind = join(root, 'frameworks', 'tailwind');
+  for (const file of collectFiles(tailwind, (p) => p.endsWith('.ts'))) {
+    staged.push(write(dir, join('tailwind', relative(tailwind, file)).split(sep).join('/'), readFileSync(file, 'utf8')));
+  }
+
+  write(dir, 'ng-package.json', `${JSON.stringify(ngPackageConfig(), null, 2)}\n`);
+  write(dir, 'tsconfig.lib.json', `${JSON.stringify(libTsconfig(), null, 2)}\n`);
+  write(dir, 'package.json', `${JSON.stringify({ ...manifest(root), $schema: undefined }, null, 2)}\n`);
+  return { dir, staged };
+}
+
+export function ngPackagrBin(root = repoRoot) {
+  const bin = join(root, 'node_modules', '.bin', 'ng-packagr');
+  return existsSync(bin) ? bin : null;
+}
+
+export function buildAngularPackage(root = repoRoot) {
+  const bin = ngPackagrBin(root);
+  if (!bin) throw new Error('build-angular-package: ng-packagr is not installed; run bun install');
+
+  const { dir: staging, staged } = stage(root);
+  if (staged.length === 0) throw new Error('build-angular-package: staged 0 files; the layer moved');
+
+  const dist = join(root, LAYER, 'dist');
+  mkdirSync(dist, { recursive: true });
+
+  const result = spawnSync(bin, ['-p', 'ng-package.json', '-c', 'tsconfig.lib.json'], {
+    cwd: staging, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  if (result.status !== 0) {
+    throw new Error(`build-angular-package: ng-packagr failed\n${result.stdout ?? ''}${result.stderr ?? ''}`);
+  }
+
+  const written = [];
+  for (const to of writeCssChain(dist, NAME, [
+    { from: 'frameworks/tailwind/Utilities.generated.css', to: 'css/utilities.css' },
+    { from: 'frameworks/angular/theme/arena-cdk.css', to: 'css/arena-cdk.css' },
+  ], root)) written.push(join(dist, to));
+  written.push(join(dist, 'arena.css'));
+  written.push(copy(join(root, 'frameworks/tailwind/Theme.css'), dist, 'css/theme-preset.css'));
+  written.push(copy(join(root, 'frameworks/tailwind/Animations.css'), dist, 'css/animations.css'));
+
+  for (const rel of copyCli(dist, root)) written.push(join(dist, rel));
+
+  written.push(write(dist, 'arena.config.example.json', `${JSON.stringify(arenaConfig(root), null, 2)}\n`));
+  written.push(copy(join(root, LAYER, 'PACKAGE.md'), dist, 'README.md'));
+  written.push(copy(join(root, 'LICENSE'), dist, 'LICENSE'));
+
+  const emitted = JSON.parse(readFileSync(join(dist, 'package.json'), 'utf8'));
+  write(dist, 'package.json', `${JSON.stringify(withAssets(emitted), null, 2)}\n`);
+
+  return { dir: dist, written, staged: staged.length, log: result.stdout };
+}
+
+export function withAssets(emitted) {
+  return {
+    ...emitted,
+    exports: {
+      ...emitted.exports,
+      './arena.css': { default: './arena.css' },
+      './css/*': { default: './css/*' },
+      './arena.config.example.json': { default: './arena.config.example.json' },
+    },
+    bin: { 'arena-theme': './bin/arena-theme.mjs' },
+    sideEffects: emitted.sideEffects ?? false,
+  };
+}
+
+function main() {
+  const { dir, written, staged } = buildAngularPackage();
+  console.log(report('build-angular-package', dir, written));
+  console.log(`build-angular-package: ${staged} source(s) staged and compiled by ng-packagr`);
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) main();
