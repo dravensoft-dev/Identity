@@ -195,6 +195,54 @@ export function reactSurface(source, interfaceName) {
   };
 }
 
+export function reactImplementation(source, componentName) {
+  const decl = new RegExp(`(?:export\\s+)?function\\s+${componentName}\\s*\\(`).exec(source);
+  if (!decl) throw new UnrecognisedShape(`no "function ${componentName}(" in this source -- neither a bare export nor a forwardRef wrapper`);
+  const afterParen = source.slice(decl.index + decl[0].length);
+  const open = afterParen.search(/\S/);
+  if (afterParen[open] !== '{') {
+    return { destructures: false, defaults: new Map(), rest: null };
+  }
+  const body = braceBody(source, decl.index + decl[0].length + open);
+  const defaults = new Map();
+  let rest = null;
+  for (const raw of splitTopLevel(body, ',')) {
+    const entry = raw.trim();
+    if (!entry) continue;
+    if (entry.startsWith('...')) { rest = entry.slice(3).trim(); continue; }
+    const named = /^([A-Za-z_$][\w$]*)\s*=\s*([\s\S]+)$/.exec(entry);
+    if (named) { defaults.set(named[1], named[2].trim()); continue; }
+    if (/^[A-Za-z_$][\w$]*$/.test(entry)) { defaults.set(entry, null); continue; }
+    throw new UnrecognisedShape(`unreadable destructuring entry in ${componentName}: ${entry}`);
+  }
+  return { destructures: true, defaults, rest };
+}
+
+export function literalValue(raw) {
+  if (raw === null || raw === undefined) return undefined;
+  const t = raw.trim();
+  if (t === 'true') return true;
+  if (t === 'false') return false;
+  if (/^-?\d+(\.\d+)?$/.test(t)) return Number(t);
+  const quoted = /^'([^']*)'$/.exec(t) ?? /^"([^"]*)"$/.exec(t);
+  if (quoted) return quoted[1];
+  return undefined;
+}
+
+export function defaultProblems(where, member, contractDefault, rawImplementationDefault) {
+  const declared = contractDefault !== undefined;
+  const implemented = literalValue(rawImplementationDefault);
+  if (implemented === undefined) return [];
+
+  if (declared && implemented !== contractDefault) {
+    return [`${where}.${member}: the contract declares default ${JSON.stringify(contractDefault)}, the implementation uses ${JSON.stringify(implemented)}.`];
+  }
+  if (!declared) {
+    return [`${where}.${member}: the implementation defaults to ${JSON.stringify(implemented)} and the contract declares no default. A default a consumer can observe and the contract does not name is undocumented API.`];
+  }
+  return [];
+}
+
 function interfaceMembers(body) {
   const members = [];
 

@@ -8,7 +8,7 @@
                "description": "CSS width, e.g. \"100%\" or \"12rem\". Defaults to full width." },
     "height": { "form": "primitive", "type": "string",
                 "description": "CSS height. Defaults per variant." },
-    "lines": { "form": "primitive", "type": "number",
+    "lines": { "form": "primitive", "type": "number", "default": 3,
                "description": "Number of rows when variant=\"text\". The last runs short." },
     "radius": { "form": "primitive", "type": "string",
                 "description": "CSS border radius. Defaults to a small token radius." }

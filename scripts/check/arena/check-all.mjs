@@ -31,6 +31,7 @@ export const GATES = [
   { name: 'check:dimensions', file: 'arena/check-dimension-literals.mjs' },
   { name: 'check:states', file: 'arena/check-manifest-states.mjs' },
   { name: 'check:structure', file: 'arena/check-structure.mjs' },
+  { name: 'check:contracts', file: 'arena/check-contracts.mjs' },
   { name: 'check:behaviour', file: 'arena/check-behaviour.mjs' },
   { name: 'check:compliance', file: 'arena/check-compliance.mjs' },
   { name: 'check:api', file: 'arena/check-api.mjs' },

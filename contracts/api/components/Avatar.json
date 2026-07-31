@@ -4,7 +4,7 @@
   "api": {
     "src": { "form": "primitive", "type": "string",
              "description": "Image URL. Absent renders initials from `name`." },
-    "name": { "form": "primitive", "type": "string",
+    "name": { "form": "primitive", "type": "string", "default": "",
               "description": "The person or entity name. Its first two words' initials render when there is no `src`, and it is the image's alt text." },
     "size": { "form": "enum", "type": "AvatarSize", "default": "md",
               "description": "The avatar's diameter." },

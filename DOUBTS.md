@@ -150,14 +150,29 @@ stale-proof; a present-tense component name is not.
   the token has no declaration left to pair with.
   The layers make this worse by having opposite idioms — React writes design
   numbers inline in function bodies, Angular names them at module level — so the
-  gate requires a symmetry that is usually absent. **Of the values still
-  duplicated verbatim across the layers today (`600`, an axis-label `8`, `0.34`,
-  `0.62`, `900`, `220`), it catches none.** It caught three of the historical
-  five only because `chart-internals` happened to be symmetric in both layers.
-  The sharper rule, if this is ever worth closing: for each flagged token, assert
-  that **every** layer either imports it or contains no module-level `const`
-  whose value equals it. That would have caught `Onboarding.manifest.json`'s
-  `w-80`, which shipped and had to be fixed by hand.
+  gate requires a symmetry that is usually absent.
+
+  **The sharper rule is built.** `shadowedTokenProblems` in `check-script-tokens.mjs` collects
+  imports and module-level numeric constants **per layer** and fails when a layer that does not
+  import a flagged token declares a constant equal to its value. It finds nothing today — both
+  layers import all 27 — so it lands as a ratchet rather than a cleanup, and it was watched
+  failing against a probe constant of `8` in the React layer, where `sp2` is one of the two
+  tokens React does not import. `SHADOW_EXEMPT` is empty and a stale entry fails on its own.
+  **It does not close the hole, it narrows it to one shape**: a layer that encodes a token's
+  value in something other than a module-level numeric `const`. `Onboarding.manifest.json`'s
+  `w-80` — the worked example this entry used to cite — is exactly that shape and is still
+  outside: it is a Tailwind *utility* resolving to 320px, not a `const`, and `check:arbitrary`
+  cannot see it either because it is a core utility rather than a bracket.
+  **Of the values this entry listed as duplicated verbatim (`600`, an axis-label `8`, `0.34`,
+  `0.62`, `900`, `220`), the sharper rule still catches none, and re-reading them says why —
+  three of the six should never have been on the list.** `0.34` and `0.62` are the doughnut's
+  legend share and inner-radius ratio, and the recorded chart criterion excludes them by name: *a
+  multiplier that derives one dimension from another is not itself a design value*. `600` is the
+  charts' pre-measurement fallback width, an SSR assumption rather than a decision. What survives
+  as real is the **axis-label `8`**, which the chart-token entry above already owns, and
+  `Onboarding`'s `(view?.innerHeight ?? 900) - 220` — where `900` is another SSR fallback and
+  **`220` is a genuine design value with no token**, a popover height reserve sitting beside
+  `onboardingWidth`, which IS one. That asymmetry is the live remainder.
 - **Two 8px insets meet the chart-token criterion and were left out.** The
   doughnut's `rOuter` inset (`DoughnutChart.jsx`, `DoughnutChart.ts`), commented
   as *"breathing room so a slice's stroke is not clipped"*, and the axis-label
@@ -174,17 +189,17 @@ stale-proof; a present-tense component name is not.
   `limit.results` would introduce a palette result cap that does not exist
   today, which is a product decision with a UX consequence rather than a
   tokenization of an existing value.
-- **A group-level `$description` in `contracts/design/` never reaches the generated JS
-  modules.** `collectScriptTokens()` in `scripts/generate/arena/generate-tokens.mjs` skips group
-  nodes (`if (item.group || !isScript(item.token)) continue;`), so only a
-  leaf token's own description is carried into
-  `frameworks/react/Tokens.generated.js` and
-  `frameworks/angular/Tokens.generated.ts`. Group prose survives only in the
-  CSS. This is pre-existing and not caused by this plan — `chart.json`'s group
-  description is lost the same way — but it bit here: `delay`'s group
-  description carries the constraint that these delays are pointer intent and
-  that a keyboard focus must reveal immediately, and someone reading only the
-  generated module will not see it.
+- **CLOSED: a group-level `$description` in `contracts/design/` reaches the generated JS modules
+  now, and what it was losing was a constraint rather than a nicety.** `collectScriptTokens()`
+  skipped group nodes outright (`if (item.group || !isScript(item.token)) continue;`), so only a
+  leaf token's own description reached `Tokens.generated.js`/`.ts` and group prose survived in
+  the CSS alone. `walk()` now carries each enclosing group's description down to the leaves and
+  `buildScriptModules()` emits it once, before the first token of that group — the same shape the
+  CSS block already had. **What was being lost is the point**: `delay`'s group description says
+  these delays are pointer intent and that **a keyboard focus must reveal immediately**, which is
+  a rule about how to consume the token, and a reader of the generated module could not see it.
+  `chart.json`'s group description was lost the same way and now states the re-densification
+  price beside the values it applies to.
 - **`delay` and `dismiss` govern React only, and Angular is not silently exempt
   — it just has no token-shaped seam yet.** Plan 7a's own Global Constraints
   first misstated this as the same "Angular has no primitive" asymmetry that
@@ -775,28 +790,24 @@ stale-proof; a present-tense component name is not.
   when this happened", which is the correct form and must be left alone); the cross-layer
   citations with the change-time command in the *"a component name written into ANOTHER file's
   prose"* entry above, run for the moved component.
-- **Duplicate case names are rejected only by the two test wrappers, never by the gate.**
-  `validateBinding` in `scripts/lib/arena/behaviour-contracts.mjs` loops over `bindingCases()` and
-  never asserts the names are distinct, so a binding declaring `danger` twice passes
-  `check:behaviour`; and `crossLayerAgrees` builds its per-name map last-write-wins, so only
-  the last declaration of a repeated name is ever compared across layers. Both wrappers do
-  throw on a duplicate, and they must: `Object.keys()` on a suite's own case map can never
-  carry one, so the key-set diff would report a confusing missing/unknown pair instead of
-  naming the real problem. But a binding no suite covers is unguarded, and most bindings are
-  uncovered. Cheap to close in `validateBinding`; it was left open because the batch that
-  found it had that file closed by its own constraints.
-
-  **The same function has a second hole with the same cause, and it is worse: a `cases[]`
-  entry that does not NAME itself passes the gate entirely.** `bindingCases()` normalises a
-  missing `name` to `null` (`c.name ?? null`), and `validateBinding`'s `when`-required rule
-  is written `if (c.name !== null && !c.when)` — so a nameless entry skips the `when`
-  requirement too, and `cases: [{ "pattern": "none" }]` clears `check:behaviour` with no name
-  and no prose. It is not merely an unnamed case; it is a case that declares nothing about
-  which render it describes, which is the one thing a case is for. Both wrappers catch it
-  downstream — a `null` name can never match a real key of a suite's case map, so it is
-  reported as an always-missing case — but only for the minority of bindings a suite covers,
-  and the message names a missing render rather than the missing name. Close both in
-  `validateBinding` together: distinct names, and a name required on every `cases[]` entry.
+- **CLOSED: `validateBinding` had two holes with one cause, and both are shut.**
+  `bindingCases()` normalises a binding into a uniform list, which is exactly what made the two
+  invisible: it maps a missing `name` to `null`, so a validator reading its output cannot tell a
+  flat binding from a `cases[]` entry that failed to name itself. **A duplicate case name** passed
+  `check:behaviour` outright while `crossLayerAgrees` built its per-name map last-write-wins, so
+  only the last declaration of a repeated name was ever compared across layers and the earlier
+  ones were invisible rather than wrong. **A nameless `cases[]` entry** was worse: the
+  `when`-required rule read `if (c.name !== null && !c.when)`, so a nameless entry skipped that
+  too, and `cases: [{ "pattern": "none" }]` cleared the gate with no name and no prose — a case
+  declaring nothing about which render it describes, which is the one thing a case is for.
+  Both are now checked against `binding.cases` **before** normalisation, which is where the
+  distinction still exists. The two test wrappers keep their own duplicate throw, and they must:
+  `Object.keys()` on a suite's case map can never carry a duplicate, so the key-set diff would
+  report a confusing missing/unknown pair instead of naming the real problem. But a wrapper only
+  guards a binding a suite covers, and most bindings are uncovered.
+  **The generalisation is about normalisers.** A function that makes two shapes look alike is
+  the right tool for the consumer and the wrong place to validate from — validate upstream of it,
+  on the shape the author actually wrote.
 
   **Three smaller things the same batch left, recorded here rather than in the plan that gets
   deleted.** `divergesFromReason` was a novel field with no repo precedent that **no gate
@@ -1117,20 +1128,31 @@ stale-proof; a present-tense component name is not.
   contracts/api/components/`, whose only hit is `Input.validate`'s `functionInput` — so R3 is
   today unchecked and also unexercised. That is not a mitigation: the moment a
   contract does declare one, the rule is exactly as unverifiable as this entry says.
-  Two more gaps, neither an authoring rule and both closeable in
-  principle: **`default` is documented in the contract format and read by nothing** —
-  most shipped contracts carry one, but `spec.default` is referenced nowhere in
-  `scripts/`, so a contract's stated default can disagree with both layers' real
-  defaults with nothing to say so. Left unimplemented on purpose: React's default lives
-  in a `.jsx` destructuring pattern the gate never reads (the next point), so the
-  comparison could only run against Angular, which is worse than not claiming it. And
-  **React's checked surface is its `.d.ts`, never its `.jsx`** — `check-api.mjs` reads
-  `<Name>.d.ts` and never opens the implementation, while Angular's surface comes from
-  its real `<name>.ts` component; restoring `style, ...rest` to `AppLogo.jsx` right now
-  would leave `check:api` green, since nothing looks at the `.jsx` again once the `.d.ts`
-  agrees with the contract. A gate whose claim is "an API divergence is a defect" enforces
-  that claim against real source on one layer and against a hand-written declaration on
-  the other.
+  **The two mechanical gaps beside them are CLOSED, and they closed together because each
+  was the other's excuse.** `spec.default` was read by nothing, and the stated reason for
+  leaving it that way was that React's default lives in a `.jsx` destructuring pattern the
+  gate never opened — so the comparison could only have run against Angular, which is worse
+  than not claiming it. `check-api.mjs` now reads the `.jsx` beside the `.d.ts`
+  (`reactImplementation` in `api-surface.mjs`, which also reaches a `forwardRef` component,
+  since `CalendarEvent` is not an `export function`), and with it both halves fall:
+  a **surviving `{...rest}` spread** is a failure, so the unguarded-loss shape this file
+  records for `SideNav`, `AppLogo` and the flattened `Button`/`IconButton` heritage now has a
+  gate behind it; and a **default the contract and the implementation both state must match**,
+  while a default the implementation states and the contract does not is reported as
+  undocumented API. Both were watched failing against a mutated `Skeleton.jsx`.
+  **It found three real defects on its first honest run, and the run before that was a false
+  green of my own making**: the reader iterated `contract.members`, and the key is
+  `contract.api`, so it checked nothing and reported clean — the exact shape the *"a green run
+  is only as good as what the gate looked at"* entry describes, caught by asking how many
+  members it compared rather than whether it passed. The three: `Dialog.width` defaulted to
+  `calc(var(--sp-1) * 120)` with a contract that said only *"Omit for the default"* and never
+  named it, `Avatar.name` defaulted to `""`, and `Skeleton.lines` to `3`. All three contracts
+  now state the value.
+  **What the rule deliberately does NOT claim** is the converse: a contract default with no
+  destructuring default is **not** reported, because the default may legitimately be applied
+  downstream — `BarChart.slot` and `LineChart.slot` declare `default: 1` and neither layer
+  destructures one, because `resolveColors` applies `catColor(slot ?? 1)`. A source-reading gate
+  cannot see that, and reporting it would have been three false positives dressed as findings.
 
 - **CLOSED: three Angular primitives imported a contract type as a value, and the fix is the
   guard rather than the three lines.** The convention is
@@ -1409,13 +1431,12 @@ stale-proof; a present-tense component name is not.
   the values a caller passes in — the type comparison was the only mechanism that could ever
   have enforced that refusal, and now it does. It is the clearest case in the repo for why the
   clause was worth adding.
-  **What the entry recorded alongside the type gap is untouched by this fix and still true.**
-  `spec.default` is documented in the contract format and read by nothing — no gate compares a
-  contract's stated default against either layer's real one. And React's checked surface is
-  still its `.d.ts`, never its `.jsx`: `check-api.mjs` reads the declaration file and never opens
-  the implementation, so a `.d.ts` that agrees with the contract passes regardless of what the
-  `.jsx` actually does — the same class of gap the `{...rest}`-spread loss elsewhere in this
-  section depends on.
+  **What the entry recorded alongside the type gap outlived this fix by several batches and is
+  now closed too.** `spec.default` was read by nothing and React's checked surface was the
+  `.d.ts` alone, so a declaration agreeing with the contract passed regardless of what the
+  `.jsx` did. `check-api.mjs` reads both now; the entry at the head of this section carries what
+  that bought, the three undocumented defaults it found, and the one comparison it refuses to
+  make.
 
 - **`Onboarding`'s accessible name is positional when a step carries no editorial text, and
   it collides with its own progress dots.** The chain is `title ?? eyebrow ?? "Step N of M"`
@@ -1430,15 +1451,18 @@ stale-proof; a present-tense component name is not.
   `frameworks/react/components/feedback/onboarding/Onboarding.dom.test.jsx` asserts the collision rather than
   papering over it.
 
-- **`SideNav`'s D1 flatten dropped every forwarded attribute and no gate stands behind the
-  loss.** `extends React.HTMLAttributes<HTMLElement>` and the `{...rest}` spread are gone, so
-  every global and ARIA attribute a consumer used to be able to forward is unreachable. This
-  is the same unguarded-loss shape 8C1-8C3 each recorded, and it is unguarded for the same
-  reason: `check:api` reads the `.d.ts` and never opens the `.jsx`, so a restored spread
-  would leave it green. **This batch narrowed the hole for its own four**, though: `Dialog`,
-  `Menu`, `Pagination` and `SideNav` each carry two dedicated regression tests, one per
-  escape, so a restored spread now goes red in a suite even while the gate stays green. The
-  general problem is untouched for every component the four do not cover.
+- **`SideNav`'s D1 flatten dropped every forwarded attribute, and the loss is gated now rather
+  than merely recorded.** `extends React.HTMLAttributes<HTMLElement>` and the `{...rest}` spread
+  are gone, so every global and ARIA attribute a consumer used to forward is unreachable — the
+  same unguarded-loss shape 8C1-8C3 each recorded, unguarded for the same reason: `check:api`
+  read the `.d.ts` and never opened the `.jsx`, so a restored spread left it green. Two things
+  changed since. That batch wrote **per-component regression tests** for its own four — `Dialog`,
+  `Menu`, `Pagination` and `SideNav`, two each, one per escape — and the debt-payment programme's
+  batch 2 taught `check:api` to read the `.jsx`, so **a restored spread now fails the gate for
+  every contracted component**, not only for the four with suites. **What the suites still buy
+  that the gate does not** is the `style` escape specifically: `style` is a named member in some
+  contracts and a spread is only one of the ways it can leak, so the pair below still proves
+  something the gate cannot.
 
   **Those pairs are worth only what their induction proves, and the induction must be
   DISJOINT.** With `style` unnamed in the destructuring it falls into `rest`, so a bare
@@ -1606,11 +1630,18 @@ stale-proof; a present-tense component name is not.
   then. Re-derive with
   `grep -nE '(^|[^a-zA-Z/])(api|behaviour|tokens)/' docs/superpowers/specs/*.md`.
 
-- **Nothing checks that `contracts/` has the shape `contracts/README.md` describes.** A
-  stray file in `contracts/`, a level missing its `README.md`, a fourth directory added
-  beside the three — all pass every gate. `check:structure` is the analogue for
-  `frameworks/` and has no counterpart here, and a `check:contracts` was judged out of
-  scope for a batch whose subject was moving files. Related and also open: the
+- **CLOSED for the shape, still open for the naming: `check:contracts` exists.** A stray file in
+  `contracts/`, a level missing its `README.md` and a fourth directory beside the three all used
+  to pass every gate. `scripts/check/arena/check-contracts.mjs` now encodes what
+  `contracts/README.md` states, literally and clause by clause: the three levels plus
+  `design-generated/` and the roof README and nothing else; each level's normative document
+  present; `api/`'s two vocabulary directories; **no unearned inner directory** in `behaviour/`
+  or `design/`, which is the README's own *"an inner directory is earned, never assumed"*; every
+  file in a level either a named exception or that level's source extension; every file in
+  `design-generated/` carrying the `.generated.` infix; and a zero-result guard at both the roof
+  and the entry count. It was watched failing against a real `contracts/behaviour/patterns/` and
+  a real `contracts/scratch.md` before being trusted.
+  **What stays open is the naming half of the original entry**, which no gate reaches: the
   capital-initial naming rule is declared for the framework layers and does not reach
   `contracts/`, so `button.json` and `palette.dark.json` keep lowercase stems. That is
   **correct**, for two different reasons and neither is "identifiers stay lowercase" in
@@ -3613,9 +3644,11 @@ no gate asserts them**:
   both unchecked and unexercised. That is not a mitigation: the moment a contract declares
   one, the rule is exactly as unverifiable as this says.
 
-Two further gaps are in the gate's own reach rather than in human judgement, and both are
-recorded at greater length under *Known debt*: `default` is documented in the contract format
-and read by nothing, and React's checked surface is its `.d.ts` rather than its `.jsx`.
+Two further gaps were in the gate's own reach rather than in human judgement, and both are
+closed: the gate now reads the `.jsx` beside the `.d.ts` as well, so `spec.default` is compared
+against the implementation's own destructuring default and a restored `{...rest}` spread fails.
+*Known debt* carries what that found and what the comparison deliberately refuses to claim.
+R2 and R3 are unaffected — neither is a fact about source text.
 
 ### The Tailwind layer's three pitfalls each shipped before they were written down
 

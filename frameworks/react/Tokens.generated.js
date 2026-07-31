@@ -6,6 +6,7 @@
  * two carry the same value. A value bound at import time cannot re-theme or
  * re-densify — that is the accepted price of reading it in JS at all. */
 
+/* 4px base grid */
 /* Script-readable: Menu's gap from its trigger is one and a half of this, and that gap is the offset a CDK overlay position strategy computes in JS, so no stylesheet can hold it. */
 export const sp1 = 4;
 /* Script-readable: Tooltip's gap from its trigger is the offset a CDK overlay position strategy computes in JS, so no stylesheet can hold it. */
@@ -14,6 +15,8 @@ export const sp2 = 8;
 export const sp3 = 12;
 /* Script-readable: Onboarding's minimum gutter from either viewport edge, compared against window.innerWidth. */
 export const sp4 = 16;
+
+/* Calendar time grid. */
 /*
    The pixel height of one hour. Script-readable because
    y = ((min - startMin) / 60) * hour-h is arithmetic, and no CSS expression
@@ -53,6 +56,8 @@ export const calendarTimeMinW = 100;
    because it is compared against a projected pixel height.
  */
 export const calendarActionsBelowMinH = 56;
+
+/* Onboarding coachmark. */
 /*
    The popover's width. Script-readable because Math.min/Math.max compare it
    against window.innerWidth. This ALSO replaces the calc(var(--sp-1) * 80) the
@@ -60,6 +65,15 @@ export const calendarActionsBelowMinH = 56;
    comment. One token now, read both ways.
  */
 export const onboardingWidth = 320;
+
+/*
+   Chart plot geometry. Script-readable: JS arithmetic must consume these
+   to produce an SVG position, and no CSS expression can compute a y attribute
+   from a data value. They are emitted to both targets — the custom property and
+   the per-layer JS module — so they still appear in the Overview. Accepted cost:
+   a value bound at import time cannot re-densify, so chart geometry does not
+   respond to .arena-compact. It never did.
+ */
 /* Plot height before padding. */
 export const chartHeight = 280;
 /*
@@ -98,6 +112,16 @@ export const chartLegendMin = 120;
 export const chartLegendMax = 180;
 /* Between the doughnut plot and its legend. Equals --sp-4. */
 export const chartLegendGap = 16;
+
+/*
+   Pointer intent — how long a pointer must rest on a target before a
+   deferred affordance appears, and how long it may leave before that affordance
+   withdraws. Deliberately not part of dur: dur measures how long a transition
+   takes once it has been decided, delay measures how long we wait before
+   deciding. These apply to the POINTER only. A keyboard focus must reveal its
+   tooltip immediately — a delay there reads as an unresponsive control, and a
+   future plan adding focus support must not route it through these.
+ */
 /* Rest time before a tooltip appears. Long enough that crossing a toolbar reveals nothing. */
 export const delayOpen = 400;
 /*
@@ -106,6 +130,12 @@ export const delayOpen = 400;
    not to keep the tooltip around.
  */
 export const delayClose = 120;
+
+/*
+   Automatic permanence — how long a transient notice remains before it
+   withdraws itself. The HOST owns dismissal, not Toast: Toast renders and exposes
+   persist, the host runs the clock.
+ */
 /*
    A toast that only has to be read. This is the value the Delivery Console
    shipped hard-coded before it was a token.
@@ -118,6 +148,12 @@ export const dismissDefault = 4200;
    critical states.
  */
 export const dismissActionable = 7000;
+
+/*
+   Quantity bounds — system-wide invariants about how much is shown. Not
+   geometry, and the twin of z: same $type, same character. The family declares the
+   invariant; a component derives its own consequences from it.
+ */
 /*
    How many page numbers flank the current one before the list elides. The
    window's total width is a CONSEQUENCE and is derived at the point of use, never

@@ -62,6 +62,7 @@ export async function collectScriptTokens() {
         jsName: scriptName(item.token.name),
         value: serializeScript(item.token),
         $description: item.token.$description,
+        groups: item.groups,
       });
     }
   }
@@ -79,7 +80,14 @@ async function catSlotCount() {
 export async function buildScriptModules() {
   const tokens = await collectScriptTokens();
   const lines = [SCRIPT_HEADER, ''];
+  let emitted = null;
   for (const t of tokens) {
+    const groups = (t.groups ?? []).join('\n');
+    if (groups && groups !== emitted) {
+      if (lines.at(-1) !== '') lines.push('');
+      lines.push(...comment(groups).split('\n').map((l) => l.replace(/^ {2}/, '')));
+    }
+    emitted = groups;
     if (t.$description) lines.push(...comment(t.$description).split('\n').map((l) => l.replace(/^ {2}/, '')));
     lines.push(`export const ${t.jsName} = ${t.value};`);
   }
@@ -116,12 +124,13 @@ function render(token) {
   return `${comment(d)}\n${decl}`;
 }
 
-function* walk(node) {
+function* walk(node, groups = []) {
   for (const [key, child] of Object.entries(node)) {
     if (key.startsWith('$') || child === null || typeof child !== 'object') continue;
-    if (child.$value !== undefined) { yield { group: false, token: child }; continue; }
-    if (child.$description) yield { group: true, description: child.$description };
-    yield* walk(child);
+    if (child.$value !== undefined) { yield { group: false, token: child, groups }; continue; }
+    if (!child.$description) { yield* walk(child, groups); continue; }
+    yield { group: true, description: child.$description };
+    yield* walk(child, [...groups, child.$description]);
   }
 }
 
