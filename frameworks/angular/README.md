@@ -153,7 +153,10 @@ overlay in a real browser, which is where a z-index that stacks wrongly is visib
 `bun run check:angular` compiles every primitive with `ngc` under `strictTemplates`
 (`tsconfig.check.json`), and it reaches a primitive **through the barrel** — a
 primitive missing from its own `index.ts`, its category's, `components/index.ts` or the
-layer's `index.ts` is not typechecked. Each manifest-backed
+layer's `index.ts` is not typechecked, and no adopter can import it from the layer root
+either. `test/Barrels.test.ts` walks that chain and fails on a gap; what a barrel
+deliberately withholds is named in its `PRIVATE`/`ROOT_PRIVATE` maps with a reason each,
+under the same bidirectional staleness rule the other records carry. Each manifest-backed
 primitive also has a static specimen at
 `frameworks/tailwind/components/<category>/<component-kebab>/<Component>.card.html`,
 which renders the real markup

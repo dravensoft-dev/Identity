@@ -1010,13 +1010,21 @@ stale-proof; a present-tense component name is not.
   `title` and `name` and not `id`; adding `id` fails four components at once, which is why
   this is filed rather than fixed. **Whoever fixes it should add `id` to that list in the same
   change**, or the fifth recurrence is as silent as the first four.
-- **`frameworks/angular/components/display/index.ts` exports six of the eleven `display`
-  primitives.** `badge`, `card`, `table`, `table-row` and `table-cell` are missing from it.
-  This layer's README states that a primitive missing from its barrels is not typechecked, and
-  an adopter importing from the layer root cannot reach any of the five. They are reachable
-  through `tsconfig.demo.json`'s glob, which is why nothing is red. Found while adding
-  `calendar` and `calendar-event` to that same barrel; not fixed there, because five
-  components' worth of newly-typechecked surface is its own change.
+- **A barrel gap is invisible to every gate that is not looking for it, and one hid a real
+  name collision for as long as it lasted.** `frameworks/angular/components/display/index.ts`
+  exported six of its eleven primitives; `badge`, `card`, `table`, `table-row` and `table-cell`
+  were missing, so `check:angular` — whose `tsconfig.check.json` declares
+  `files: ["./index.ts"]` — never compiled them under `strictTemplates`, and no adopter could
+  import them from the layer root. Nothing was red, because `tsconfig.test.json` globs the tree
+  and compiled them anyway. **What the gap was hiding is the part worth keeping:**
+  `TableState` and `CalendarState` both exported an interface named `GridCursor`, with
+  different shapes (`{row, col}` and `{day, hour}`), and completing the barrel turned that into
+  the `TS2308` it always was. Calendar's is `CalendarCursor` now. Closed by
+  `frameworks/angular/test/Barrels.test.ts`, which walks the chain and carries `PRIVATE` and
+  `ROOT_PRIVATE` for the modules a barrel deliberately withholds — so the next omission is a
+  failing test rather than a silent one. **The remaining hole is that no equivalent exists for
+  `frameworks/tailwind/`**, whose manifests are reached by glob rather than by a barrel, so
+  there is nothing there to be missing from.
 
 - **A chart's `aria-label` is checked for existence, never for usefulness, and the
   charts fall back to a name that is only their type.** `figure-with-data-table`'s

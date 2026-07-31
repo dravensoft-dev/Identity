@@ -1,7 +1,7 @@
 import { Injectable, type Signal, computed, signal } from '@angular/core';
 import { calendarGutterW, calendarHourH } from '../../../Tokens.generated';
 
-export interface GridCursor {
+export interface CalendarCursor {
   day: number;
   hour: number;
 }
@@ -36,9 +36,9 @@ export class CalendarState {
 
   focusCursorCell: () => void = () => {};
 
-  readonly cursor = signal<GridCursor>({ day: 0, hour: 0 });
+  readonly cursor = signal<CalendarCursor>({ day: 0, hour: 0 });
 
-  readonly clamped = computed<GridCursor>(() => {
+  readonly clamped = computed<CalendarCursor>(() => {
     const days = Math.max(this.days().length - 1, 0);
     const hours = Math.max(this.slots().length - 1, 0);
     const at = this.cursor();

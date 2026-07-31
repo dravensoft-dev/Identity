@@ -22,6 +22,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `arena-cdk.css`, which are unchanged. `@angular/cdk` stays — `arena-tooltip` and `arena-menu`
   position through it.
 
+### Fixed
+
+- **The Angular `display` barrel exported six of its eleven primitives**, so `badge`, `card`,
+  `table`, `table-row` and `table-cell` were never compiled by `check:angular` — which
+  typechecks the transitive closure of `index.ts` and nothing else — and no adopter could
+  import any of the five from the layer root. All eleven are exported now, and
+  `test/Barrels.test.ts` walks the whole chain so the next gap fails instead of hiding.
+  Completing the barrel surfaced a name collision it had been hiding: `TableState` and
+  `CalendarState` both exported a `GridCursor`, with different shapes. Calendar's is
+  `CalendarCursor`.
+
 ### Added
 
 - **Angular gains `arena-calendar` and `arena-calendar-event`, and the layers reach parity.**
