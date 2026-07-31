@@ -306,9 +306,9 @@ every contract in the directory is true of every layer implementing it. A green
 ### Runtime portability
 
 `check-all.mjs` also runs `scripts/` under plain node, so `check:api` uses no
-Bun-only API. The surface reader lives at `scripts/lib/api-surface.mjs` and is
+Bun-only API. The surface reader lives at `scripts/lib/arena/api-surface.mjs` and is
 deliberately generic — it takes source text and returns a declared member list, touching
-no DOM and no framework runtime, mirroring `scripts/lib/behaviour-compliance.mjs`'s
+no DOM and no framework runtime, mirroring `scripts/lib/core/behaviour-compliance.mjs`'s
 design so it can be exercised from its own test under node.
 
 Reading a `.d.ts` by regex is a real limitation and is stated rather than hidden: the
@@ -372,7 +372,7 @@ Committed output, guarded by drift assertion 5.
 Plan A declares only the types its three components need: `Crumb`, `StatDelta`,
 `Direction`, `DeltaTone`, `Tone`, `LogoSize`, `Orientation`.
 
-## A.3 — `scripts/lib/api-surface.mjs` and `scripts/check/arena/check-api.mjs`
+## A.3 — `scripts/lib/arena/api-surface.mjs` and `scripts/check/arena/check-api.mjs`
 
 The reader and the gate, per the section above, plus `scripts/check/arena/check-api.test.mjs`
 asserting each of the five assertions fires — including the loud failure on an
@@ -617,7 +617,7 @@ about them against the tree at `HEAD`, so 8B4 opens with measurements rather tha
 
 - **`valueFormatter` is declared in all three components in both layers**
   (`bar-chart.ts:186`, `line-chart.ts:212`, `doughnut-chart.ts:246`, and each React `.d.ts`) as an
-  inbound function returning `string`. `classify()` in `scripts/lib/api-surface.mjs` **throws**
+  inbound function returning `string`. `classify()` in `scripts/lib/arena/api-surface.mjs` **throws**
   `UnrecognisedShape` on exactly that shape — an inbound function that *returns* a value is none of
   the eight forms — so no chart contract can be written until it becomes `valueSuffix`, per
   `api/README.md`.
@@ -651,7 +651,7 @@ about them against the tree at `HEAD`, so 8B4 opens with measurements rather tha
   have nothing to say about them.
 
 None of the five concerns the reader's handling of `input.required<T, TransformT>()` — Task 3b's
-mid-plan extension of `scripts/lib/api-surface.mjs` to classify that shape depth-aware — so
+mid-plan extension of `scripts/lib/arena/api-surface.mjs` to classify that shape depth-aware — so
 re-verifying against `HEAD` after 3b landed changed none of the wording above; it is recorded here
 because it was checked, not assumed.
 
@@ -754,7 +754,7 @@ rendered tree — does not read contracts.
 > this figure has been written down and it had been wrong three times; re-run the grep rather than
 > trusting any count in this document.
 
-Plan A's reader (`scripts/lib/api-surface.mjs`) throws `UnrecognisedShape` on a shape it
+Plan A's reader (`scripts/lib/arena/api-surface.mjs`) throws `UnrecognisedShape` on a shape it
 cannot read, and a throw is a gate failure rather than a silent omission. Two React
 `.d.ts` files in the tree throw today. Neither is a defect — both are components Plan C
 exists to settle — but each means **Plan C must decide the API question before the gate
@@ -1253,7 +1253,7 @@ assertions folded into the two components that already had a suite (`unauth-card
 2, folded entirely into Task 2's existing `bulk-action-bar-variants.test.ts` and
 `host-class-binding.test.ts` rework, no new file (Tasks 3, 4 and 5 each held Angular's count exactly
 at 334, confirmed unmoved). `scripts/` gained 3 more than any earlier batch, all in
-`scripts/lib/api-surface.test.mjs` (38 → 41) — Task 3b's pair, proving the reader now classifies
+`scripts/lib/arena/api-surface.test.mjs` (38 → 41) — Task 3b's pair, proving the reader now classifies
 `input.required<T, TransformT>()` depth-aware and still refuses the no-generic
 `input.required({transform})` form, plus the three-or-more-generic pin the final whole-branch review
 added when it found 3b had narrowed the module's own "unreadable shapes throw" rule. Those are the
@@ -1289,7 +1289,7 @@ ThemeToggle's own suite.
 
 Plan B0 added 7 tests and no file: 3 in `frameworks/react/test/stat-card.test.jsx` and
 `frameworks/angular/test/host-class-binding.test.ts` (StatCard's icon revised to a string, its
-render pinned in both layers), 2 in `scripts/lib/api-surface.test.mjs` (the reader refusing an
+render pinned in both layers), 2 in `scripts/lib/arena/api-surface.test.mjs` (the reader refusing an
 inbound function that returns a value), and 2 in `scripts/check/arena/check-compliance.test.mjs` (COVERED's
 compound `<component>:<layer>` key). Its five audits were mostly prose and the two script tasks
 that shipped machinery each landed a couple of tests; every test is accounted for in the branch's

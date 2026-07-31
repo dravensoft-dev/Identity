@@ -2,14 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { repoRoot as root } from '../../lib/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import {
   bindingName, validateTypes, validateContract, compareSurface,
   resolveAngularImplementations, resolveReactImplementations, zeroContractProblems,
 } from './check-api.mjs';
-import { pascal } from '../../lib/layers.mjs';
+import { pascal } from '../../lib/arena/layers.mjs';
 import { buildApiModules } from '../../generate/arena/generate-api-types.mjs';
-import { reactSurface, UnrecognisedShape } from '../../lib/api-surface.mjs';
+import { reactSurface, UnrecognisedShape } from '../../lib/arena/api-surface.mjs';
 
 const TYPES = new Map([['Tone', 'enum'], ['Crumb', 'object']]);
 

@@ -1,10 +1,10 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
-import { startStaticServer } from '../../lib/static-server.mjs';
-import { findChromium, launchChromium } from '../../lib/chromium.mjs';
-import { connect } from '../../lib/cdp.mjs';
-import { repoRoot as root } from '../../lib/repo-root.mjs';
+import { startStaticServer } from '../../lib/arena/static-server.mjs';
+import { findChromium, launchChromium } from '../../lib/arena/chromium.mjs';
+import { connect } from '../../lib/arena/cdp.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 const FRAME_FALLBACK_MS = 34;
 export const MEASURE_SCRIPT = `(async () => {

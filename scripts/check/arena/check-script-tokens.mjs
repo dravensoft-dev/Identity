@@ -2,8 +2,8 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, extname } from 'node:path';
 import { buildScriptModules, collectScriptTokens, SCRIPT_TARGETS } from '../../generate/arena/generate-tokens.mjs';
-import { parseDecls } from '../../lib/css-decls.mjs';
-import { repoRoot as root } from '../../lib/repo-root.mjs';
+import { parseDecls } from '../../lib/arena/css-decls.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 export function cssCounterpart(value) {
   const m = /^(-?\d+(?:\.\d+)?)(px|ms)?$/.exec(value.trim());

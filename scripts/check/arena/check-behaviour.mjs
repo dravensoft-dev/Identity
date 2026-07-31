@@ -5,9 +5,9 @@ import {
   loadPatterns, validatePattern, validateBinding,
   reactComponents, reactBindingPath, angularPrimitives, angularBindingPath,
   crossLayerAgrees, bindingCases, PATTERN_DIR,
-} from '../../lib/behaviour-contracts.mjs';
-import { pascal, kebab } from '../../lib/layers.mjs';
-import { repoRoot as root } from '../../lib/repo-root.mjs';
+} from '../../lib/arena/behaviour-contracts.mjs';
+import { pascal, kebab } from '../../lib/arena/layers.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 

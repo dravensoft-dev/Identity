@@ -5,15 +5,16 @@ phase** the script belongs to, and **what it is allowed to know about**.
 
 ```
 scripts/
-  serve.mjs   the dev server; none of the three phases
+  serve.mjs   the dev server; neither a phase nor a library
   lib/        shared modules, and every test that covers one, beside it
   build/      compiles: JSX to JS, TypeScript to ESM, a CSS layer, a vendor bundle
   generate/   emits source from data: DTCG JSON to CSS, contracts to types, fonts
   check/      the gates
 ```
 
-Each phase holds the same five domains, and **all five exist even when empty** — a `.gitkeep`
-marks a combination nothing occupies yet, so the shape stays legible rather than implied:
+`lib/` and the three phases all hold the same five domains, and **all five exist even when
+empty** — a `.gitkeep` marks a combination nothing occupies yet, so the shape stays legible
+rather than implied:
 
 | domain | what a script there is allowed to read and write |
 | --- | --- |
@@ -27,21 +28,34 @@ The domain is decided by what a script **touches**, never by what it is about.
 `generate/arena/generate-tokens.mjs` reads `contracts/design/` but writes
 `Tokens.generated.*` into both framework layers, so it is `arena` and not `core`.
 
+**A library that touches nothing is placed by the vocabulary it speaks**, because most of
+`lib/` is pure functions and the reads-and-writes test cannot separate them.
+`core/serialize-token.mjs` opens no file, but every name in it is a DTCG one, so it is `core`;
+`core/behaviour-compliance.mjs` is the same, in `contracts/behaviour`'s vocabulary of
+requirement keys. What is left over is `arena` — the parsers, the browser harness, `layers.mjs`
+and `repo-root.mjs` — because it belongs to no layer in particular. Never place a library by
+**who imports it**: `behaviour-compliance.mjs` is read from both framework layers' harnesses
+and is still `core`.
+
 **An npm script's prefix names its phase directory.** `bun run generate:tokens` runs something
 under `generate/`, `bun run build:demos` something under `build/`. Three gates have no npm
 script and are run by path: `check-ramp`, `check-text-contrast` and `check-release`.
 
 ## Rules a script here holds to
 
-**Never count `..` to find the repository root.** Import `repoRoot` from `lib/repo-root.mjs`.
-Twenty-five scripts once derived it from their own location, which made every one of them
-break on a move, silently — the wrong path still exists.
+**Never count `..` to find the repository root.** Import `repoRoot` from
+`lib/arena/repo-root.mjs`. Twenty-five scripts once derived it from their own location, which
+made every one of them break on a move, silently — the wrong path still exists. That module is
+the one place that counts, which is why moving *it* is the one move needing care.
 
-**A library never imports a gate.** `lib/` is the bottom of the graph: `layers.mjs`,
-`arena-tokens.mjs` and the rest are there because more than one gate reads them, and a gate
-reaching down is the only direction allowed.
+**A library never imports a gate.** `lib/` is the bottom of the graph: `arena/layers.mjs`,
+`core/arena-tokens.mjs` and the rest are there because more than one gate reads them, and a
+gate reaching down is the only direction allowed. Across domains the same holds in both
+directions — `core/arena-tokens.mjs` imports `../arena/css-decls.mjs` and nothing forbids it,
+because a domain is a statement about subject matter, not a visibility boundary.
 
-**A test lives beside what it tests**, which puts the tests for `lib/` modules inside `lib/`.
+**A test lives beside what it tests** — in the same directory, which for a `lib/` module means
+the same domain, not merely somewhere under `lib/`.
 
 **A file here may carry one header comment, at most ten lines** — the exception `check:docs`
 grants `scripts/` and test files. Everything else it has to say goes in `DOUBTS.md`.

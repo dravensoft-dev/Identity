@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { manifestClasses, escapeClass, compileLayer, entryStylesheet, manifestFiles } from './tailwind-compile.mjs';
-import { repoRoot } from './repo-root.mjs';
+import { repoRoot } from '../arena/repo-root.mjs';
 
 test('collects classes from slots and from every variant value', () => {
   const m = {

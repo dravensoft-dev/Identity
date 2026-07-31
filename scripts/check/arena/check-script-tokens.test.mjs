@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cssCounterpart, importedNames, catSlotEnumProblems, zeroGeneratedCssProblems, cssDiscoveryProblems } from './check-script-tokens.mjs';
 import { buildScriptModules } from '../../generate/arena/generate-tokens.mjs';
-import { repoRoot as root } from '../../lib/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 test('cssCounterpart strips the unit from a px declaration', () => {
   assert.equal(cssCounterpart('280px'), 280);

@@ -8,8 +8,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { pascal, readLayer } from '../../lib/layers.mjs';
-import { repoRoot } from '../../lib/repo-root.mjs';
+import { pascal, readLayer } from '../../lib/arena/layers.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export const BUNDLE_DIR = 'build/angular-demo/js';
 

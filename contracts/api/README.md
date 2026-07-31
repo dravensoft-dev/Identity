@@ -72,7 +72,7 @@ with the same status R2 and R3 carry.
 **An inbound function is none of the eight — and `functionInput` is the ninth, for data-entry
 controls only.** `event` is the only *outbound* function-shaped member, and it returns nothing. A
 member the component *calls* and whose result it uses — a validator, a parser — is inbound and
-returns a value, so it was none of the eight, and `classify()` in `scripts/lib/api-surface.mjs`
+returns a value, so it was none of the eight, and `classify()` in `scripts/lib/arena/api-surface.mjs`
 refused one rather than reading it as an event with the parameter as its payload. Where such a
 member existed outside a data-entry control it was replaced by data the component renders itself:
 the charts' `valueFormatter` became `valueSuffix`, a primitive Arena appends to every number it

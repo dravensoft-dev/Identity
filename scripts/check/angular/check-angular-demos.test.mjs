@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { BUNDLE_DIR, PAGED, pageProblems } from './check-angular-demos.mjs';
-import { readLayer } from '../../lib/layers.mjs';
-import { repoRoot } from '../../lib/repo-root.mjs';
+import { readLayer } from '../../lib/arena/layers.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 const TREE = { forms: ['button'] };
 

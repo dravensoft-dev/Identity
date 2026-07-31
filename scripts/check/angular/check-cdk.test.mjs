@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { bridgeSelectors, cdkClasses, importedSheets, checkBridge } from './check-cdk.mjs';
-import { repoRoot } from '../../lib/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 const PREBUILT = readFileSync(
   join(repoRoot, 'node_modules', '@angular', 'cdk', 'overlay-prebuilt.css'), 'utf8',

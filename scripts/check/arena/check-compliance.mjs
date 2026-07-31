@@ -8,9 +8,9 @@ import { fileURLToPath } from 'node:url';
 import { join, basename } from 'node:path';
 import {
   reactComponents, reactBindingPath, angularPrimitives, angularBindingPath, loadBinding, bindingCases,
-} from '../../lib/behaviour-contracts.mjs';
-import { kebab } from '../../lib/layers.mjs';
-import { repoRoot } from '../../lib/repo-root.mjs';
+} from '../../lib/arena/behaviour-contracts.mjs';
+import { kebab } from '../../lib/arena/layers.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export const SUITE_DIRS = [
   { layer: 'react', dir: join(repoRoot, 'frameworks', 'react', 'components') },

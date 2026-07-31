@@ -163,7 +163,7 @@ knowing about because the gate had the opposite failure mode. A gate iterating z
 manifests finds zero violations by construction, so when discovery still read one flat
 directory and the manifests had moved into the nested tree, it printed
 `0 manifest(s) … all resolve` and exited 0 over a layer it never looked at. Discovery is
-now one shared recursive walk, `manifestFiles()` in `scripts/lib/tailwind-compile.mjs`, and
+now one shared recursive walk, `manifestFiles()` in `scripts/lib/tailwind/tailwind-compile.mjs`, and
 an empty result is an explicit failure rather than a clean pass. Every site that needs to
 find manifests calls it — `compileLayer()` in that same file, which `check:tailwind` and
 `build:tailwind` go through; `check:radius` and `check:states` directly; and Angular's

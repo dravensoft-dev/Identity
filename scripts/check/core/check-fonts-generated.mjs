@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { families } from '../../generate/core/fetch-fonts.mjs';
-import { repoRoot as root } from '../../lib/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 export function facesIn(css) {
   const faces = new Set();

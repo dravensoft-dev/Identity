@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { pathToFileURL } from 'node:url';
 import { join } from 'node:path';
-import { repoRoot as root } from '../../lib/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 const MODULES = ['intro/overview.js', 'intro/theme.js'];
 

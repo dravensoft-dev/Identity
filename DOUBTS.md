@@ -245,7 +245,7 @@ stale-proof; a present-tense component name is not.
   variant (falsified when 8C9 built `cases`), then, after 8C9 rewrote the clause in place, as
   demonstrating that remedy (falsified when 8C10 fixed `Skeleton` and flattened its binding).
   Nothing failed either time. `check:behaviour` validates that a binding names a real pattern
-  and real requirements; and while `validateBinding` (`scripts/lib/behaviour-contracts.mjs`) does
+  and real requirements; and while `validateBinding` (`scripts/lib/arena/behaviour-contracts.mjs`) does
   read a `reason` for **presence** — `:156` requires one on a `none`/`absent` case, `:163` on every
   exception — **nothing anywhere reads its CONTENT, and no gate has an opinion about a comment at
   all**. So a citation asserting another component's current state is unfalsifiable
@@ -291,7 +291,7 @@ stale-proof; a present-tense component name is not.
   `scripts/lib/`), not `api/`, not `docs/`, and not a component's own `.jsx` source. A final
   review found surviving instances in three of those five — `behaviour/README.md` carried a
   present-tense twin of the very sentence 8C10 had past-tensed in
-  `scripts/lib/behaviour-contracts.mjs`, `scripts/lib/behaviour-contracts.test.mjs` justified a test
+  `scripts/lib/arena/behaviour-contracts.mjs`, `scripts/lib/arena/behaviour-contracts.test.mjs` justified a test
   by a case that no longer exists, and `SideNavSection.jsx`'s header named **four** components —
   `Tag`, `Skeleton`, `Table`, `Pagination` — as carrying one limit, two of which had left it,
   **and** called that limit unfixable a batch after `cases` fixed it. So read **"8C10 corrected
@@ -301,7 +301,7 @@ stale-proof; a present-tense component name is not.
   the record, were `Table`'s and `Tab`'s reason strings (both exemplars **removed** rather than
   re-pointed at another name, because a replacement name is just the next thing to rot),
   `Toast`'s `divergesFromReason` (rewritten as explicit **history**, the one form that cannot go
-  stale), two doc comments in `scripts/lib/behaviour-contracts.mjs` — one past-tensed so
+  stale), two doc comments in `scripts/lib/arena/behaviour-contracts.mjs` — one past-tensed so
   `bindingCases()` keeps its origin story without asserting a tree that has moved, one re-pointed
   at the only live example that qualifies — and a sentence in the layer divergences (section 3
   of this file, then a separate `components-divergences.md`) describing what an Angular test
@@ -757,7 +757,7 @@ stale-proof; a present-tense component name is not.
   `BulkActionBar.variants.test.ts` and `CommandPalette.variants.test.ts` all citing
   `frameworks/angular/test/host-class-binding.test.ts`. And it claimed cross-layer citations
   "were corrected in that batch (six sites)"; **ten survived**, in
-  `scripts/lib/api-surface.mjs`, `scripts/check/arena/check-api.mjs`, `scripts/lib/api-surface.test.mjs`
+  `scripts/lib/arena/api-surface.mjs`, `scripts/check/arena/check-api.mjs`, `scripts/lib/arena/api-surface.test.mjs`
   (twice), `frameworks/react/test-dom/tag-and-chip-cases.test.jsx` (twice),
   `frameworks/react/test-dom/onboarding-modal.test.jsx` (twice),
   the layer divergences (section 3) and — a **gate-read artifact**, not a comment —
@@ -777,7 +777,7 @@ stale-proof; a present-tense component name is not.
   citations with the change-time command in the *"a component name written into ANOTHER file's
   prose"* entry above, run for the moved component.
 - **Duplicate case names are rejected only by the two test wrappers, never by the gate.**
-  `validateBinding` in `scripts/lib/behaviour-contracts.mjs` loops over `bindingCases()` and
+  `validateBinding` in `scripts/lib/arena/behaviour-contracts.mjs` loops over `bindingCases()` and
   never asserts the names are distinct, so a binding declaring `danger` twice passes
   `check:behaviour`; and `crossLayerAgrees` builds its per-name map last-write-wins, so only
   the last declaration of a repeated name is ever compared across layers. Both wrappers do
@@ -989,7 +989,7 @@ stale-proof; a present-tense component name is not.
   not** — `TableRow` excepts `states.disabled`, `keyboard.Enter` and `keyboard.Space` and is
   in no suite at all, and it was absent from the seven. Read the current set with
   `grep -rHo '"requirement": "[^"]*"' --include='*.behaviour.json' frameworks/ | sort -u`
-  against `BEHAVIOURAL` in `scripts/lib/behaviour-compliance.mjs`, rather than any list
+  against `BEHAVIOURAL` in `scripts/lib/core/behaviour-compliance.mjs`, rather than any list
   written here; and read the other side — which verdicts a suite actually declares — with
   `grep -rho "'[a-z]*\.[A-Za-z]*': \(true\|false\)" --include='*.dom.test.jsx'
   --include='*.test.ts' frameworks/react/ frameworks/angular/ | sed "s/: .*//;s/'//g" |
@@ -1187,7 +1187,7 @@ stale-proof; a present-tense component name is not.
   string>()` as `{form:'functionInput', params:{value:'string'}, returns:'string'}` since the
   ninth form landed, and that bare arrow — with required-ness carried by `.required`, never by
   a `| undefined` arm — is the spelling `contracts/api/README.md` now states normatively and
-  `scripts/lib/api-surface.test.mjs` pins. What did fail was the *optional* spelling
+  `scripts/lib/arena/api-surface.test.mjs` pins. What did fail was the *optional* spelling
   `input<((value: string) => string) | undefined>()`, and it failed on parse ORDER rather than
   on any rule: `classify()` tested its arrow pattern before reducing the annotation, backtracked
   onto the inner `)`, and read the return as `string)`. That is fixed — a nullable annotation is
@@ -1291,7 +1291,7 @@ stale-proof; a present-tense component name is not.
   `aria-describedby` legitimately carries the consumer's own description alongside Arena's, and
   that id may name an element outside the component's rendered tree, so demanding that every id
   resolve would fail a correct component. Every other reference attribute now requires that
-  **every** id resolve — read `IDREF_ATTRIBUTES` in `scripts/lib/behaviour-compliance.mjs` for
+  **every** id resolve — read `IDREF_ATTRIBUTES` in `scripts/lib/core/behaviour-compliance.mjs` for
   the live set, since strictness is a property of the attribute rather than of the requirement
   key, and each entry carries its own reason. The cost survives, scoped to where it is earned:
   within Arena's own `aria-describedby` wiring a typo'd second id is invisible.
@@ -1328,7 +1328,7 @@ stale-proof; a present-tense component name is not.
   `ATTRIBUTE_FOR` branch 8C7 taught to resolve, and `hasAccessibleName()` returned `true` the
   moment `aria-label` **or** `aria-labelledby` was non-empty, so a dangling `aria-labelledby`
   read as a name. That is closed. `hasAccessibleName(el, acceptsText, resolveId)` in
-  `scripts/lib/behaviour-compliance.mjs` now asks whether there is a NAME rather than whether
+  `scripts/lib/core/behaviour-compliance.mjs` now asks whether there is a NAME rather than whether
   there is an attribute, through three ordered alternative routes: `aria-label`; then the
   element's own text, but only where the pattern is in `LABEL_ACCEPTS_TEXT`; then
   `aria-labelledby`, which names the element only when **every** id resolves. A dangling
@@ -3621,7 +3621,7 @@ constraint of a test environment, or an incident that explains why a check exist
 
 Entries are grouped by the file whose comment they came from.
 
-### `scripts/lib/validate-palette.mjs` — vendored, and its thresholds are calibrated
+### `scripts/lib/core/validate-palette.mjs` — vendored, and its thresholds are calibrated
 
 Vendored from the `dataviz` Agent Skill (`scripts/validate_palette.js`) on 2026-07-16 and kept
 verbatim except for the CLI filename guard and usage string. **Do not "improve" the thresholds
@@ -3635,7 +3635,7 @@ The gate and the Angular Material bridge it guarded are both gone: this layer im
 control itself and imports no `@angular/material`. The entry stays because `check-cdk.mjs` was
 designed against it — its two blind spots are why that gate checks selectors, and its incident is
 why that gate carries zero-result guards. `referencedTokens` and `arenaTokenNames` outlived it, in
-`scripts/lib/arena-tokens.mjs`.
+`scripts/lib/core/arena-tokens.mjs`.
 
 `frameworks/angular/theme/arena-material.css` mapped Angular Material's custom properties onto
 Arena's tokens, and **both halves of that mapping failed silently**: a property name Material did
@@ -3733,7 +3733,7 @@ onto an element directly passes unseen. Nothing in the tree does that today, and
 supposed to take every class from `classesFor()` anyway, but neither of those is this gate
 enforcing it.
 
-### `scripts/lib/behaviour-compliance.mjs` — the tri-state, and the false-OVERCLAIM it corrected
+### `scripts/lib/core/behaviour-compliance.mjs` — the tri-state, and the false-OVERCLAIM it corrected
 
 Three return values, and the third is the point. `true` and `false` are a verdict; **`null` means
 "no single element can decide this"** — focus behaviour, key handling, the auto-dismiss claim and
@@ -3764,7 +3764,7 @@ on the wrong element, in three of four branches, or behind a ternary reads ident
 correct one. A rendered DOM resolves all three. **Do not re-propose a scan**, including as a cheap
 tier beneath the grid rule: a measured 51% false-unmet rate is worse than an honest hole.
 
-### `scripts/lib/api-surface.mjs` — three known blind spots in a regex `.d.ts` reader
+### `scripts/lib/arena/api-surface.mjs` — three known blind spots in a regex `.d.ts` reader
 
 Reading a `.d.ts` by regex is a real limitation. The reader has three outcomes, and the third
 must never happen silently: a shape in the vocabulary is classified; a shape it knows and R4
@@ -3955,6 +3955,25 @@ So the helper removes the panes and leaves the container. An empty container is 
 (`overlay-prebuilt.css` carries `.cdk-overlay-container:empty { display: none }`), so leaving it
 costs nothing. This matters here specifically because `TestbedEnv.ts` shares one document across
 the whole `bun test build/angular-test/angular` run, so the hazard crosses files.
+
+### `check-docs.mjs` — `isGenerated` reads a window, and a generator can fall into it
+
+The third marker `isGenerated()` accepts is the text `GENERATED by` in the **first 400
+characters** of a file. That is meant for generated output, which carries the banner as its
+first line. But a **generator** holds the same text as a string literal — the banner it emits —
+and if its imports are short enough, that literal lands inside the window and the generator
+exempts *itself* from the comment rule.
+
+This is not hypothetical and the margin is nothing. Subdividing `scripts/lib/` lengthened two
+import lines in `generate-tokens.mjs` by sixteen characters, which moved its `HEADER` literal
+from character 382 to 398. `slice(0, 400)` then cuts the marker to `GE` and the file went from
+exempt to scanned — it passes, but nobody chose either state. **A file's exemption should not
+depend on how long its import block is.**
+
+The fix, unmade: require the marker to sit inside the file's **first comment** rather than
+inside a character count. `findComments` from `lib/arena/comments.mjs` is already imported here,
+so the machinery is present; what is missing is a check of which files the stricter rule newly
+pulls in, and whether any of them then fail.
 
 ### `scripts/build/` — a directory whose name two tools already reserved
 

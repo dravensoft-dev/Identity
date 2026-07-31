@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, cpSync, rmSync, symlinkSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { repoRoot } from '../../lib/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { PROJECTS, typecheck } from './check-angular.mjs';
 
 const BUILD_ONLY_OPTIONS = ['outDir', 'sourceMap', 'incremental', 'tsBuildInfoFile'];

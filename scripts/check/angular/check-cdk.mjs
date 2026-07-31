@@ -8,9 +8,9 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { parseDecls } from '../../lib/css-decls.mjs';
-import { repoRoot } from '../../lib/repo-root.mjs';
-import { arenaTokenNames, referencedTokens } from '../../lib/arena-tokens.mjs';
+import { parseDecls } from '../../lib/arena/css-decls.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { arenaTokenNames, referencedTokens } from '../../lib/core/arena-tokens.mjs';
 
 const BRIDGE = join('frameworks', 'angular', 'theme', 'arena-cdk.css');
 const PREBUILT = join('node_modules', '@angular', 'cdk', 'overlay-prebuilt.css');

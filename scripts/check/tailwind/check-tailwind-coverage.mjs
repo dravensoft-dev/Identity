@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { arenaTokens } from '../../lib/arena-tokens.mjs';
-import { repoRoot } from '../../lib/repo-root.mjs';
+import { arenaTokens } from '../../lib/core/arena-tokens.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export const EXCLUDED = new Map([
   ['sp-0', 'p-0 compiles to a literal 0px in v4 regardless of the theme'],

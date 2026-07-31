@@ -744,10 +744,10 @@ const DISPLAY_UTILITY =
   /(?:^|\s)(?:block|inline-block|inline|flex|inline-flex|grid|inline-grid|table|inline-table|table-[a-z-]+|flow-root|contents|list-item|hidden)(?=\s|$)/;
 
 const { pascal: kebabToPascal } = await import(
-  pathToFileURL(join(LIB, 'layers.mjs')).href
+  pathToFileURL(join(LIB, 'arena', 'layers.mjs')).href
 ) as { pascal: (dirName: string) => string };
 
-const { manifestFiles } = await import(pathToFileURL(join(LIB, 'tailwind-compile.mjs')).href);
+const { manifestFiles } = await import(pathToFileURL(join(LIB, 'tailwind', 'tailwind-compile.mjs')).href);
 
 function findManifestFile(componentsDir: string, filename: string): string | undefined {
   const paths: string[] = manifestFiles(componentsDir);

@@ -1,6 +1,6 @@
 import { writeFileSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { repoRoot as root } from '../../lib/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 const fontsDir = join(root, 'assets', 'fonts');
 const cssPath = join(root, 'contracts', 'design-generated', 'fonts.css');

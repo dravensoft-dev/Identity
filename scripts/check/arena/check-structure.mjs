@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { repoRoot } from '../../lib/repo-root.mjs';
-import { LAYERS, kebab, readLayer } from '../../lib/layers.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { LAYERS, kebab, readLayer } from '../../lib/arena/layers.mjs';
 
 const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 

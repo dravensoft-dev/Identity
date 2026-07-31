@@ -6,7 +6,7 @@
 import { writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
-import { repoRoot } from '../../lib/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 const req = createRequire(import.meta.url);
 

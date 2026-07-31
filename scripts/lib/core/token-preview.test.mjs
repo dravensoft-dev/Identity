@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { flattenTokens, previewFor } from './token-preview.mjs';
-import { parseDecls } from './css-decls.mjs';
-import { FILES } from '../generate/arena/generate-tokens.mjs';
+import { parseDecls } from '../arena/css-decls.mjs';
+import { FILES } from '../../generate/arena/generate-tokens.mjs';
 
 test('flattens a nested group into dash-joined custom-property names', () => {
   const out = flattenTokens({

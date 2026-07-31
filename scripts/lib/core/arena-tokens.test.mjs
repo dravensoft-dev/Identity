@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { referencedTokens, arenaTokenNames } from './arena-tokens.mjs';
-import { repoRoot } from './repo-root.mjs';
+import { repoRoot } from '../arena/repo-root.mjs';
 
 test('referencedTokens collects the Arena tokens a stylesheet reads, from any property', () => {
   const css = '.x { --mat-thing: var(--crimson); color: var( --bone , red); background: #fff }';

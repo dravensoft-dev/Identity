@@ -5,8 +5,8 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseDecls } from './css-decls.mjs';
-import { repoRoot } from './repo-root.mjs';
+import { parseDecls } from '../arena/css-decls.mjs';
+import { repoRoot } from '../arena/repo-root.mjs';
 
 const GENERATED = ['palette.css', 'typography.css', 'spacing.css', 'effects.css'];
 

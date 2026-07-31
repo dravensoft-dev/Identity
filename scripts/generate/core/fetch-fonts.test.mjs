@@ -5,7 +5,7 @@ import { fontsCss, facesFromDisk } from './fetch-fonts.mjs';
 import { join } from 'node:path';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { repoRoot } from '../../lib/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 test('a face becomes one @font-face rule with a two-hop url', () => {
   const css = fontsCss([{ family: 'Archivo', weight: 400, file: 'archivo-400.woff2' }]);

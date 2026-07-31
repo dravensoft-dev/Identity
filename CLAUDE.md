@@ -142,7 +142,7 @@ role reference, because APG has no pattern page for any of those roles;
 `figure-with-data-table` is Arena's own and cites WCAG, because APG has no chart pattern; and
 `none` and `absent` cite nothing, because there is nothing to adopt from when the claim is that
 no pattern applies. **That set is asserted by literal value** — `none aside, exactly the patterns
-with no APG pattern page cite something else`, in `scripts/lib/behaviour-contracts.test.mjs` — so a
+with no APG pattern page cite something else`, in `scripts/lib/arena/behaviour-contracts.test.mjs` — so a
 new pattern citing anything but an APG *patterns* page fails that test until the list follows. It
 is the one claim in this paragraph a grep for a component name can never catch, because it is
 written in terms of patterns. `requires` is a flat map of **dotted** keys, and that shape is load-bearing:
@@ -162,7 +162,7 @@ configurations, each with its own `when` in prose, its own `pattern` and its own
 Declaring both is rejected. **The flat shape stays valid and means one case**, so the untouched
 majority is not churned to say so; count the cased ones with
 `grep -rl '"cases"' --include='*.behaviour.json' frameworks/ | wc -l`. `bindingCases()` in
-`scripts/lib/behaviour-contracts.mjs` is the **single** place the two shapes are reconciled.
+`scripts/lib/arena/behaviour-contracts.mjs` is the **single** place the two shapes are reconciled.
 `behaviour-compliance.mjs` knows nothing about cases — `comparePattern` reads
 `binding.exceptions` and nothing else, so each test wrapper synthesizes a per-case binding,
 which keeps the one file that runs in three runtimes out of it. `when` is prose and can only be
@@ -196,7 +196,7 @@ component's bound pattern, that the rendered DOM either meets it with no excepti
 fails it with one declared. That single bidirectional statement is the stale-exception rule:
 **an exception can expire.** No pattern is excluded: `grid` was, and is not now.
 
-The shared evaluator is `scripts/lib/behaviour-compliance.mjs`, DOM-generic on purpose — it
+The shared evaluator is `scripts/lib/core/behaviour-compliance.mjs`, DOM-generic on purpose — it
 touches only `tagName`, `getAttribute`, `hasAttribute` and `textContent`, because it is
 consumed from three runtimes, one of them plain node in its own test, which has no DOM. It
 returns a third value, `null`, for requirements no single element can decide (`focus.*`,
@@ -355,7 +355,7 @@ with the run target the whole emitted layer (`build/angular-test/angular`).
 `frameworks/angular/test/TestbedEnv.ts`, is guarded rather than throwing on a second call, so
 merging it into the preloaded invocation does not itself collide. But a happy-dom installed
 process-wide for the whole invocation replaces Bun's own `fetch`, which turns a passing
-`scripts/lib/static-server.test.mjs` fetch assertion into a cross-origin failure.
+`scripts/lib/arena/static-server.test.mjs` fetch assertion into a cross-origin failure.
 
 **A grid is verified by walking its cells, one key press per step.** `Calendar` and `Table` were
 hand-tested for one reason — memory — and both have suites in both layers now. A grid suite asserts at every cell
@@ -426,11 +426,11 @@ the component it mirrors.
 
 **The Overview generates itself, and that is the point.** `intro/Arena - Overview.html` reads names
 and `$description`s from `contracts/design/*.json` and the alias names from `colors.css` (with
-`scripts/lib/css-decls.mjs`, the same parser the drift gate uses), but it reads **values** from
+`scripts/lib/arena/css-decls.mjs`, the same parser the drift gate uses), but it reads **values** from
 `getComputedStyle` on the live document. So it exercises the whole chain — JSON, build, CSS,
 browser — instead of restating the JSON, and a token that resolves empty is flagged as stale
 rather than shown as if it were in effect. Add a token and it appears there with no edit to the
-page. The group-to-preview mapping lives in `scripts/lib/token-preview.mjs` and **never** in the
+page. The group-to-preview mapping lives in `scripts/lib/core/token-preview.mjs` and **never** in the
 token source, which stays platform-neutral.
 
 When adding a colour, define the daisyUI token in `palette.dark.json` and `palette.light.json`
@@ -493,7 +493,7 @@ is why the placement rule puts it there rather than inside any of them. Adding a
 adding all four.
 
 **A new React component also moves a literal count outside its own layer, and the React suite
-alone cannot see it move.** `scripts/lib/behaviour-contracts.test.mjs` asserts
+alone cannot see it move.** `scripts/lib/arena/behaviour-contracts.test.mjs` asserts
 `reactComponents('.').length` by literal value; a new component **directory** moves it by one
 and the assertion must be updated **in the same commit**. **Verify with the merged process** —
 the args array in `testStep()` — because `bun test frameworks/react` never matches `scripts/`,
@@ -717,7 +717,7 @@ in no layer. **It says nothing about whether the category is the RIGHT one** —
 judgement and no gate has it. Nor does a directory existing prove the component inside it is
 complete: `check:api` and `check:behaviour` hold that.
 
-`LAYERS` in `scripts/lib/layers.mjs` is an exhaustive enumeration, deliberately **not** a walk of
+`LAYERS` in `scripts/lib/arena/layers.mjs` is an exhaustive enumeration, deliberately **not** a walk of
 `frameworks/`, so that a layer renamed or removed wholesale becomes loud (`zeroLayerProblems`)
 instead of quietly leaving the gate's scope. **What a green `check:structure` does *not* warrant** is
 that every sentence elsewhere in this file about a layer is current — nothing derives that and

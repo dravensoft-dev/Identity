@@ -258,9 +258,9 @@ drive the Angular pair.
 
 - Delete `frameworks/angular/BehaviourDelegated.json`. Leave the reading loop and its message in
   `check-behaviour.mjs` alone, and leave the `delegatedTo` branch in
-  `scripts/lib/behaviour-contracts.mjs` alone — it runs for every binding, not only delegated
+  `scripts/lib/arena/behaviour-contracts.mjs` alone — it runs for every binding, not only delegated
   ones.
-- `scripts/lib/behaviour-contracts.test.mjs:161` — `48` → `50`.
+- `scripts/lib/arena/behaviour-contracts.test.mjs:161` — `48` → `50`.
 - `scripts/check/arena/check-compliance.mjs` `COVERED` — add `'Calendar:angular'` and
   `'CalendarEvent:angular'`.
 - `scripts/check/tailwind/check-tailwind-coverage.mjs` — the five `calendar-*` `EXCLUDED` reasons are written

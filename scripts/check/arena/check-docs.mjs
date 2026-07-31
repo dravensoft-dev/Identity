@@ -5,8 +5,8 @@
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, relative, basename, sep } from 'node:path';
-import { findComments } from '../../lib/comments.mjs';
-import { repoRoot as ROOT } from '../../lib/repo-root.mjs';
+import { findComments } from '../../lib/arena/comments.mjs';
+import { repoRoot as ROOT } from '../../lib/arena/repo-root.mjs';
 
 export const MAX_DOCUMENT_CHARS = 60_000;
 export const HEADER_MAX_LINES = 10;

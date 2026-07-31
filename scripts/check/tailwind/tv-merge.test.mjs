@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { getDefaultConfig } from 'tailwind-merge';
 import { tv, ARENA_SPACING_SUFFIXES, spacingConsumingGroups } from '../../../frameworks/tailwind/Tv.ts';
-import { parseDecls } from '../../lib/css-decls.mjs';
+import { parseDecls } from '../../lib/arena/css-decls.mjs';
 
 const merge = (classString) => tv({ slots: { root: classString } })().root();
 const classes = (s) => s.split(/\s+/);

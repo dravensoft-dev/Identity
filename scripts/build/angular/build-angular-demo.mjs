@@ -8,7 +8,7 @@ import { join, relative } from 'node:path';
 import { existsSync, readdirSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ngcBin } from '../../check/angular/check-angular.mjs';
-import { repoRoot } from '../../lib/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
 const PROJECT = 'frameworks/angular/tsconfig.demo.json';
 const OUT_DIR = join(repoRoot, 'build', 'angular-demo');
 const TSC_DIR = join(OUT_DIR, 'tsc');

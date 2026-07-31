@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { repoRoot as root } from '../../lib/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 const RESERVED = new Set(['$value', '$type', '$description', '$extensions', '$deprecated']);
 const DNS = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/;

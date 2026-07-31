@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildAll } from '../../generate/arena/generate-tokens.mjs';
-import { parseDecls } from '../../lib/css-decls.mjs';
-import { repoRoot as root } from '../../lib/repo-root.mjs';
+import { parseDecls } from '../../lib/arena/css-decls.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 const built = await buildAll();
 const drift = [];

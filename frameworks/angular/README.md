@@ -134,7 +134,7 @@ positions an overlay imports it, so it is pinned in the root `package.json` at a
 version, and the app must import `theme/arena-cdk.css` once.
 
 **The bridge is verified, not rendered.** `bun run check:cdk` reads the bridge with
-`scripts/lib/css-decls.mjs` and asserts that every Arena token it references exists and that
+`scripts/lib/arena/css-decls.mjs` and asserts that every Arena token it references exists and that
 every `cdk-*` class it overrides is one the installed `@angular/cdk` really defines. It
 checks the **selectors** as well as the values, which it can because
 `@angular/cdk/overlay-prebuilt.css` ships installed and is the oracle: a class renamed

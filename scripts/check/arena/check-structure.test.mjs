@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { validateStructure, zeroLayerProblems } from './check-structure.mjs';
-import { kebab, pascal, LAYERS } from '../../lib/layers.mjs';
-import { repoRoot } from '../../lib/repo-root.mjs';
+import { kebab, pascal, LAYERS } from '../../lib/arena/layers.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 const categories = { display: ['Badge', 'Tag'], forms: ['Button'] };
 
