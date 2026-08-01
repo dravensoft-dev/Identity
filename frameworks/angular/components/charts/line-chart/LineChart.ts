@@ -1,7 +1,13 @@
-import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, booleanAttribute, computed,
+  input, signal, viewChild,
+} from '@angular/core';
 import { containerWidth } from '../../../ContainerSize';
-import { CHART_HEIGHT, PAD, SR_ONLY, areaFill, niceMax, resolveColors, ticks } from '../../../DataVisuals';
-import type { SeriesTone } from '../../../Api.generated';
+import {
+  CHART_HEIGHT, PAD, RAIL_STYLE, SR_ONLY, areaFill, niceMax, plotWidth, resolveColors, ticks,
+  valueWriter,
+} from '../../../DataVisuals';
+import type { NumberFormat, SeriesTone } from '../../../Api.generated';
 import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.generated';
 
 const ASSUMED_WIDTH = 600;
@@ -72,10 +78,12 @@ export function lineAreaPath(points: readonly ArenaLinePoint[], baseline: number
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     style: 'display:block;position:relative',
-    '[style.height.px]': 'height',
+    '[style.height.px]': 'height()',
   },
   template: `
-    <svg width="100%" [attr.height]="height" role="img" [attr.aria-label]="name()"
+    <div #rail [style]="railStyle" [attr.tabindex]="scrolls() ? 0 : null"
+         [attr.role]="scrolls() ? 'group' : null" [attr.aria-label]="scrolls() ? name() : null">
+    <svg [attr.width]="scrolls() ? width() : '100%'" [attr.height]="height()" role="img" [attr.aria-label]="name()"
          style="display:block;overflow:visible">
       @for (tick of gridLines(); track tick.value) {
         <g>
@@ -110,7 +118,7 @@ export function lineAreaPath(points: readonly ArenaLinePoint[], baseline: number
       }
 
       @for (point of points(); track point.index) {
-        <text [attr.x]="point.x" [attr.y]="pointLabelY" text-anchor="middle"
+        <text [attr.x]="point.x" [attr.y]="pointLabelY()" text-anchor="middle"
               fill="var(--text-muted)" font-family="var(--font-body)"
               [style]="pointLabelStyle">{{ point.label }}</text>
       }
@@ -118,6 +126,7 @@ export function lineAreaPath(points: readonly ArenaLinePoint[], baseline: number
       <rect [attr.x]="pad.l" [attr.y]="pad.t" [attr.width]="innerWidth()" [attr.height]="innerHeight()"
             fill="transparent" (mousemove)="onMove($event)" (mouseleave)="hover.set(null)" />
     </svg>
+    </div>
 
     @if (active(); as point) {
       <div [style]="tooltipStyle" [style.left.px]="point.x"
@@ -153,10 +162,18 @@ export class LineChart {
   readonly area = input(false, { transform: booleanAttribute });
   /** Appended verbatim to every number the chart draws — the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
   readonly valueSuffix = input<string>();
+  /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */
+  readonly valuePrefix = input<string>();
+  /** How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. */
+  readonly valueFormat = input<NumberFormat>();
+  /** The plot's height in px, the --chart-height token by default. A number rather than a dimension string, because the chart does arithmetic with it to place every mark, and a caller-supplied "20rem" is neither a token nor a derivation of one. */
+  readonly height = input<number>(CHART_HEIGHT);
+  /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is a keyboard-reachable region, because an overflow box nothing can focus is a trap. */
+  readonly minPointSpacing = input<number>();
 
-  protected readonly height = CHART_HEIGHT;
   protected readonly pad = PAD;
   protected readonly srOnly = SR_ONLY;
+  protected readonly railStyle = RAIL_STYLE;
   protected readonly lineStyle = LINE_STYLE;
   protected readonly seriesStrokeStyle = SERIES_STROKE_STYLE;
   protected readonly tickLabelStyle = TICK_LABEL_STYLE;
@@ -167,14 +184,24 @@ export class LineChart {
   protected readonly pointR = POINT_R;
   protected readonly pointRHover = POINT_R_HOVER;
   protected readonly tickLabelX = PAD.l - chartLabelGap;
-  protected readonly pointLabelY = CHART_HEIGHT - chartLabelGap;
+  protected readonly pointLabelY = computed(() => this.height() - chartLabelGap);
   protected readonly hover = signal<number | null>(null);
 
-  private readonly suffix = computed(() => this.valueSuffix() ?? '');
+  private readonly write = computed(() => valueWriter({
+    prefix: this.valuePrefix(), suffix: this.valueSuffix(), format: this.valueFormat(),
+  }));
 
   private readonly measured = containerWidth();
 
-  protected readonly width = computed(() => this.measured() ?? ASSUMED_WIDTH);
+  private readonly available = computed(() => this.measured() ?? ASSUMED_WIDTH);
+
+  protected readonly width = computed(
+    () => plotWidth(this.available(), this.values().length, this.minPointSpacing()),
+  );
+
+  protected readonly scrolls = computed(() => this.width() > this.available());
+
+  private readonly rail = viewChild<ElementRef<HTMLElement>>('rail');
 
   protected readonly color = computed(() => resolveColors({ slot: this.slot(), tone: this.tone(), count: 1 })[0]);
 
@@ -187,14 +214,14 @@ export class LineChart {
 
   private readonly max = computed(() => niceMax(Math.max(0, ...this.values())));
   protected readonly innerWidth = computed(() => Math.max(1, this.width() - PAD.l - PAD.r));
-  protected readonly innerHeight = computed(() => Math.max(1, this.height - PAD.t - PAD.b));
+  protected readonly innerHeight = computed(() => Math.max(1, this.height() - PAD.t - PAD.b));
   protected readonly baseline = computed(() => PAD.t + this.innerHeight());
 
   protected readonly gridLines = computed(() => {
     const max = this.max();
     const innerHeight = this.innerHeight();
-    const suffix = this.suffix();
-    return ticks(max).map((value) => ({ value, y: lineValueY(value, max, innerHeight), label: `${value}${suffix}` }));
+    const write = this.write();
+    return ticks(max).map((value) => ({ value, y: lineValueY(value, max, innerHeight), label: write(value) }));
   });
 
   protected readonly points = computed(() => {
@@ -202,13 +229,13 @@ export class LineChart {
     const max = this.max();
     const innerWidth = this.innerWidth();
     const innerHeight = this.innerHeight();
-    const suffix = this.suffix();
+    const write = this.write();
     return values.map((value, index) => ({
       index,
       x: lineX(index, values.length, innerWidth),
       y: lineValueY(value, max, innerHeight),
       label: this.labels()[index] ?? '',
-      formatted: `${value}${suffix}`,
+      formatted: write(value),
     }));
   });
 
@@ -219,6 +246,15 @@ export class LineChart {
     const index = this.hover();
     return index === null ? null : this.points()[index] ?? null;
   });
+
+  constructor() {
+
+    afterRenderEffect(() => {
+      const rail = this.rail()?.nativeElement;
+      if (!rail || !this.scrolls()) return;
+      rail.scrollLeft = rail.scrollWidth - rail.clientWidth;
+    });
+  }
 
   protected onMove(event: MouseEvent): void {
 

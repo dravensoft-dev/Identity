@@ -11,8 +11,14 @@ the ring.
 ```
 
 `valueSuffix` is appended verbatim to the legend value and to the numbers table, write the
-space yourself. It appends and does not format: no rounding, no thousands separator, no
-currency. Format the numbers before binding them.
+space yourself. `valuePrefix` is drawn before the number the same way, for a currency that precedes its
+amount. Between them, `valueFormat` says how the number itself is written: the locale, the
+fraction digits, whether thousands are grouped, whether large numbers compact to `48,2K`.
+Every field is data rather than a function, which is what keeps it a member at all, and
+`Intl.NumberFormat` does the work. Formatting the values before binding them is not an option
+and never was: what you bind is `number[]`, and the writing happens on labels Arena generates
+afterwards. With no `valueFormat` the raw JavaScript number is drawn, which is the old
+behaviour.
 
 `seriesLabel` names the chart for a screen reader, titles the numbers table and names its
 value column; without it the chart announces as "Doughnut chart", which identifies the

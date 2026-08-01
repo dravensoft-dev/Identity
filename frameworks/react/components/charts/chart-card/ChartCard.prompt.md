@@ -21,3 +21,8 @@ The card a chart sits on: an uppercase muted microlabel, optional actions on the
 **Don't**
 - Don't pass a heading into `title` expecting an `h2`: it renders a label on purpose. A dashboard is a grid of tiles, not a document outline.
 - Don't nest a `ChartCard` inside a `Card`. It *is* the card surface; nesting doubles the border and the padding.
+
+The card's own inner padding is not something a chart inside it needs to know. A chart that
+overflows scrolls in its own rail rather than in the card's box, so `minPointSpacing` needs no
+cooperation from here, and there is no member for the padding because nothing outside has to
+reproduce it.

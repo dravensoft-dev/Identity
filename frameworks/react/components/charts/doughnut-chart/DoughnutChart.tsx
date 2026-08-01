@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useContainerWidth } from '../../../UseContainerWidth.ts';
-import { resolveColors, arcPath, srOnly, CHART_HEIGHT } from '../../../DataVisuals.ts';
+import { resolveColors, arcPath, srOnly, valueWriter, CHART_HEIGHT } from '../../../DataVisuals.ts';
 import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated.js';
+
+import type { NumberFormat } from '../../../Api.generated';
 
 export interface DoughnutChartProps {
 
@@ -19,10 +21,18 @@ export interface DoughnutChartProps {
 
   /** Appended verbatim to every number the chart draws — the legend value and the accessible table. Not the centre label, which is a percentage rather than a value. */
   valueSuffix?: string;
+
+  /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */
+  valuePrefix?: string;
+
+  /** How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. */
+  valueFormat?: NumberFormat;
 }
 
 
-export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix }: DoughnutChartProps) {
+export function DoughnutChart({
+  labels, values, seriesLabel, slots, valueSuffix, valuePrefix, valueFormat,
+}: DoughnutChartProps) {
   if (!seriesLabel) throw new Error('DoughnutChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('DoughnutChart: `labels` is required');
   if (!values) throw new Error('DoughnutChart: `values` is required');
@@ -32,7 +42,7 @@ export function DoughnutChart({ labels, values, seriesLabel, slots, valueSuffix 
   const width = measured ?? 600;
   const height = CHART_HEIGHT;
   const n = values.length;
-  const fmt = (v: number) => `${v}${valueSuffix ?? ''}`;
+  const fmt = valueWriter({ prefix: valuePrefix, suffix: valueSuffix, format: valueFormat });
   const colors = resolveColors({ slots: slots ?? Array.from({ length: n }, (_, i) => i + 1), count: n });
 
   const total = values.reduce((a, b) => a + Math.max(0, b), 0);

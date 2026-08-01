@@ -30,3 +30,8 @@ With neither, no empty row ships dead space above the chart.
 - Keep the title short and in the tile's own words. It is a label, not a sentence.
 - Don't put two charts in one card. A card is one question answered once.
 - Don't reach for this as a general card: that is `mat-card` wearing Arena.
+
+The card's own inner padding is not something a chart inside it needs to know. A chart that
+overflows scrolls in its own rail rather than in the card's box, so `minPointSpacing` needs no
+cooperation from here, and there is no member for the padding because nothing outside has to
+reproduce it.

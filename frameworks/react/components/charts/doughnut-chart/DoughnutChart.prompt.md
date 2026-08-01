@@ -16,7 +16,7 @@ Parts of one whole, a share breakdown across a handful of categories. Always dra
 
 **Don't**
 - Don't reach for `tone`: it doesn't exist here. Slices are categories by definition; a doughnut has no state to report.
-- Don't expect `valueSuffix` to format. It appends a unit and nothing else, no rounding, no thousands separator, no currency. Format the numbers before you pass them.
+- Use `valuePrefix` for a currency that goes in front, and `valueFormat` for the number itself: locale, fraction digits, grouping, compaction. Formatting before you pass them is not an option, because what you pass is `number[]` and the writing happens on labels Arena generates afterwards. With no `valueFormat` the raw JavaScript number is drawn, which is what a chart always did.
 - Don't go past eight categories. The ramp is eight slots and is never cycled: a ninth slice would repeat slot 1 and claim two categories are one.
 - Don't compare two doughnuts side by side. Reading angle differences across charts is the thing people are worst at; use grouped bars.
 - Don't omit `labels` or `values`. Both are required props, `DoughnutChart` throws from its render rather than drawing an empty ring. A required member absent is a caller bug that fails hard in every layer, which `contracts/api/README.md` states under required-ness. A chart with no data is a caller bug, not a state to render.

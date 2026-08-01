@@ -17,6 +17,14 @@
     "tone": { "form": "enum", "type": "SeriesTone",
               "description": "Semantic colour, for a series that IS a state. Mutually exclusive with slot/slots — passing both warns in development and tone wins." },
     "valueSuffix": { "form": "primitive", "type": "string",
-                     "description": "Appended verbatim to every number the chart draws — the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted." }
+                     "description": "Appended verbatim to every number the chart draws — the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted." },
+    "valuePrefix": { "form": "primitive", "type": "string",
+                     "description": "Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, \"1234.5 Bs.\" is what a chart drew where the table beside it read \"Bs. 1.234,50\", and the accessible table inherited the disagreement." },
+    "valueFormat": { "form": "object", "type": "NumberFormat",
+                     "description": "How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed." },
+    "height": { "form": "primitive", "type": "number", "default": 280,
+                "description": "The plot's height in px, the --chart-height token by default. A number rather than a dimension string, because the chart does arithmetic with it to place every mark, and a caller-supplied \"20rem\" is neither a token nor a derivation of one." },
+    "minPointSpacing": { "form": "primitive", "type": "number",
+                         "description": "The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is a keyboard-reachable region, because an overflow box nothing can focus is a trap." }
   }
 }

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { containerWidth } from '../../../ContainerSize';
-import { CHART_HEIGHT, SR_ONLY, arcPath, resolveColors } from '../../../DataVisuals';
+import { CHART_HEIGHT, SR_ONLY, arcPath, resolveColors, valueWriter } from '../../../DataVisuals';
+import type { NumberFormat } from '../../../Api.generated';
 import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated';
 
 const ASSUMED_WIDTH = 600;
@@ -146,6 +147,10 @@ export class DoughnutChart {
   readonly slots = input<number[]>();
   /** Appended verbatim to every number the chart draws — the legend value and the accessible table. Not the centre label, which is a percentage rather than a value. */
   readonly valueSuffix = input<string>();
+  /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */
+  readonly valuePrefix = input<string>();
+  /** How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. */
+  readonly valueFormat = input<NumberFormat>();
 
   protected readonly height = CHART_HEIGHT;
   protected readonly srOnly = SR_ONLY;
@@ -160,7 +165,9 @@ export class DoughnutChart {
   protected readonly dimOpacity = DIM_OPACITY;
   protected readonly hover = signal<number | null>(null);
 
-  private readonly suffix = computed(() => this.valueSuffix() ?? '');
+  private readonly write = computed(() => valueWriter({
+    prefix: this.valuePrefix(), suffix: this.valueSuffix(), format: this.valueFormat(),
+  }));
 
   private readonly measured = containerWidth();
 
@@ -182,7 +189,7 @@ export class DoughnutChart {
       slots: this.slots() ?? values.map((_, index) => index + 1),
       count: values.length,
     });
-    const suffix = this.suffix();
+    const write = this.write();
     const centreX = this.centreX();
     const centreY = this.centreY();
     const { outer, inner } = doughnutRadii(this.plotWidth(), this.height);
@@ -190,7 +197,7 @@ export class DoughnutChart {
       ...slice,
       color: colors[slice.index],
       label: this.labels()[slice.index] ?? '',
-      formatted: `${values[slice.index]}${suffix}`,
+      formatted: write(values[slice.index]),
       path: slice.to > slice.from ? arcPath(centreX, centreY, outer, inner, slice.from, slice.to) : '',
     }));
   });

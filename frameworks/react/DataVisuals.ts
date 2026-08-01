@@ -1,5 +1,5 @@
 import type * as React from 'react';
-import type { SeriesTone, Tone } from './Api.generated';
+import type { NumberFormat, SeriesTone, Tone } from './Api.generated';
 import {
   chartHeight, chartPadTop, chartPadRight, chartPadBottom, chartPadLeft, catSlots,
   tintArea, tintSoft, tintEdge,
@@ -77,6 +77,45 @@ export function resolveColors({ slot, slots, tone, count }: ResolveColorsOptions
   if (slots) return Array.from({ length: count }, (_, i) => catColor(slots[i] ?? i + 1));
   return Array.from({ length: count }, () => catColor(slot ?? 1));
 }
+
+export interface ValueWriterOptions {
+  prefix?: string;
+  suffix?: string;
+  format?: NumberFormat;
+}
+
+export function valueWriter({ prefix, suffix, format }: ValueWriterOptions): (value: number) => string {
+  const head = prefix ?? '';
+  const tail = suffix ?? '';
+  if (!format) return (value) => `${head}${value}${tail}`;
+
+  const options: Intl.NumberFormatOptions = {};
+  if (format.fractionDigits !== undefined) {
+    options.minimumFractionDigits = format.fractionDigits;
+    options.maximumFractionDigits = format.fractionDigits;
+  }
+  if (format.grouping === false) options.useGrouping = false;
+  if (format.compact) options.notation = 'compact';
+
+  let intl: Intl.NumberFormat | null = null;
+  try {
+    intl = new Intl.NumberFormat(format.locale, options);
+  } catch {
+    warnOnce(`chart: valueFormat.locale "${format.locale}" is not a tag Intl accepts, so every number`
+      + ' the chart writes falls back to the raw JavaScript one. A tick, a tooltip and the accessible'
+      + ' table all read differently from the table beside them until it is a BCP-47 tag.');
+  }
+  return (value) => `${head}${intl ? intl.format(value) : value}${tail}`;
+}
+
+export function plotWidth(available: number, count: number, minPointSpacing: number | undefined): number {
+  if (!minPointSpacing || !(minPointSpacing > 0) || count < 2) return available;
+  const needed = PAD.l + PAD.r + minPointSpacing * (count - 1);
+  return Math.max(available, needed);
+}
+export const railStyle: React.CSSProperties = {
+  overflowX: 'auto', overflowY: 'hidden', display: 'block',
+};
 
 export function niceMax(max: number): number {
   if (!(max > 0)) return 1;

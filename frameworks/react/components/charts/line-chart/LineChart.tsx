@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useContainerWidth } from '../../../UseContainerWidth.ts';
 import {
-  resolveColors, catColor, niceMax, ticks, srOnly, areaFill, PAD, CHART_HEIGHT,
+  resolveColors, catColor, niceMax, ticks, srOnly, areaFill, plotWidth, railStyle, valueWriter,
+  PAD, CHART_HEIGHT,
 } from '../../../DataVisuals.ts';
 import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.generated.js';
 
-import type { SeriesTone } from '../../../Api.generated';
+import type { NumberFormat, SeriesTone } from '../../../Api.generated';
 
 export type { SeriesTone };
 
@@ -31,22 +32,43 @@ export interface LineChartProps {
 
   /** Appended verbatim to every number the chart draws — the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
   valueSuffix?: string;
+
+  /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */
+  valuePrefix?: string;
+
+  /** How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. */
+  valueFormat?: NumberFormat;
+
+  /** The plot's height in px, the --chart-height token by default. A number rather than a dimension string, because the chart does arithmetic with it to place every mark, and a caller-supplied "20rem" is neither a token nor a derivation of one. */
+  height?: number;
+
+  /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is a keyboard-reachable region, because an overflow box nothing can focus is a trap. */
+  minPointSpacing?: number;
 }
 
 
 export function LineChart({
-  labels, values, seriesLabel, slot, tone, area = false, valueSuffix,
+  labels, values, seriesLabel, slot, tone, area = false, valueSuffix, valuePrefix, valueFormat,
+  height = CHART_HEIGHT, minPointSpacing,
 }: LineChartProps) {
   if (!seriesLabel) throw new Error('LineChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('LineChart: `labels` is required');
   if (!values) throw new Error('LineChart: `values` is required');
   const [ref, measured] = useContainerWidth();
+  const rail = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<number | null>(null);
 
-  const width = measured ?? 600;
-  const height = CHART_HEIGHT;
+  const available = measured ?? 600;
   const n = values.length;
-  const fmt = (v: number) => `${v}${valueSuffix ?? ''}`;
+  const width = plotWidth(available, n, minPointSpacing);
+  const scrolls = width > available;
+  const fmt = valueWriter({ prefix: valuePrefix, suffix: valueSuffix, format: valueFormat });
+
+  useEffect(() => {
+    const box = rail.current;
+    if (!box || !scrolls) return;
+    box.scrollLeft = box.scrollWidth - box.clientWidth;
+  }, [scrolls, width]);
 
   const [color = catColor(1)] = resolveColors({ slot, tone, count: 1 });
 
@@ -76,7 +98,9 @@ export function LineChart({
 
   return (
     <div ref={ref} style={{ position: 'relative', width: '100%', height }}>
-      <svg width="100%" height={height} role="img" aria-label={name} style={{ display: 'block', overflow: 'visible' }}>
+      <div ref={rail} style={railStyle} tabIndex={scrolls ? 0 : undefined}
+        role={scrolls ? 'group' : undefined} aria-label={scrolls ? name : undefined}>
+      <svg width={scrolls ? width : '100%'} height={height} role="img" aria-label={name} style={{ display: 'block', overflow: 'visible' }}>
         {ticks(max).map((t, i) => (
           <g key={i}>
             <line x1={PAD.l} x2={width - PAD.r} y1={yOf(t)} y2={yOf(t)} stroke="var(--border)" style={{ strokeWidth: 'var(--bw)' }} />
@@ -117,6 +141,7 @@ export function LineChart({
         <rect x={PAD.l} y={PAD.t} width={iw} height={ih} fill="transparent"
           onMouseMove={onMove} onMouseLeave={() => setHover(null)} />
       </svg>
+      </div>
 
       {hover !== null && values[hover] !== undefined && (
         <div style={{
