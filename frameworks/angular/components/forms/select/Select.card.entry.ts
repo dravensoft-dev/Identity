@@ -50,6 +50,21 @@ const REGIONS: SelectOption[] = [
       </div>
     </div>
 
+    <p class="sub">The state order Input declares: error, then focus, then valid, then neutral</p>
+    <div class="row">
+      <div class="col">
+        <arena-select label="Customer" [options]="regions" placeholder="Choose a customer"
+                      icon="ph-bold ph-user" hint="Only customers with an open account" />
+      </div>
+      <div class="col">
+        <arena-select label="Customer" [options]="regions" placeholder="Choose a customer"
+                      icon="ph-bold ph-user" error="Pick a customer" />
+      </div>
+      <div class="col">
+        <arena-select label="Customer" [options]="regions" value="us-east-1" valid />
+      </div>
+    </div>
+
     <p class="sub">No label — the control has no accessible name, which is why one belongs here</p>
     <div class="row">
       <div class="col">

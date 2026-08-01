@@ -105,3 +105,107 @@ test('the name input does not leave a stray global attribute on the host element
     fixture.destroy();
   }
 });
+
+@Component({
+  standalone: true,
+  imports: [Select],
+  template: `
+    <arena-select label="Customer" [options]="options" [placeholder]="placeholder"
+                  [hint]="hint" [error]="error" [valid]="valid" [icon]="icon" />
+  `,
+})
+class NotedHost {
+  readonly options = OPTIONS;
+  placeholder: string | undefined = undefined;
+  hint: string | undefined = undefined;
+  error: string | undefined = undefined;
+  valid = false;
+  icon: string | undefined = undefined;
+}
+
+function noted(patch: Partial<NotedHost> = {}) {
+  const fixture = TestBed.createComponent(NotedHost);
+  Object.assign(fixture.componentInstance, patch);
+  fixture.detectChanges();
+  const host = fixture.nativeElement.querySelector('arena-select') as HTMLElement;
+  return { fixture, host, field: host.querySelector('select') as HTMLSelectElement };
+}
+
+test('error takes the crimson state and names itself to the control, so the failure is announced', () => {
+  const { fixture, host, field } = noted({ error: 'Pick a customer' });
+  try {
+    assert.equal(field.getAttribute('aria-invalid'), 'true', 'an errored select did not announce itself as invalid');
+    const id = field.getAttribute('aria-describedby');
+    assert.ok(id, 'the message is drawn but nothing points at it, so a screen reader never reaches it');
+    const note = host.querySelector(`#${id}`);
+    assert.ok(note, 'aria-describedby names an id the render does not contain');
+    assert.equal(note.textContent?.trim(), 'Pick a customer');
+    assert.match(field.getAttribute('class') ?? '', /\bborder-error\b/, 'the error state did not reach the border');
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('error wins over hint, which is the same state order Input declares', () => {
+  const { fixture, host } = noted({ hint: 'Start typing', error: 'Pick a customer' });
+  try {
+    assert.match(host.textContent ?? '', /Pick a customer/);
+    assert.doesNotMatch(host.textContent ?? '', /Start typing/,
+      'both notes rendered: an errored field that still shows its hint buries the failure under advice');
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('a hint alone is neutral, and is still named to the control', () => {
+  const { fixture, host, field } = noted({ hint: 'Start typing' });
+  try {
+    assert.equal(field.getAttribute('aria-invalid'), 'false', 'a hint is help, not a failure');
+    assert.ok(field.getAttribute('aria-describedby'), 'the hint is not named to the control');
+    assert.match(host.textContent ?? '', /Start typing/);
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('valid takes the green state, and error still beats it', () => {
+  const ok = noted({ valid: true });
+  try {
+    assert.match(ok.field.getAttribute('class') ?? '', /\bborder-success\b/);
+  } finally {
+    ok.fixture.destroy();
+  }
+
+  const both = noted({ valid: true, error: 'No' });
+  try {
+    assert.match(both.field.getAttribute('class') ?? '', /\bborder-error\b/,
+      'valid won over error, so a field reports success while it is failing');
+  } finally {
+    both.fixture.destroy();
+  }
+});
+
+test('placeholder is a disabled empty first option, so "nothing chosen" is not the first choice', () => {
+  const { fixture, field } = noted({ placeholder: 'Choose a customer' });
+  try {
+    const first = field.querySelector('option') as HTMLOptionElement;
+    assert.equal(first.getAttribute('value'), '');
+    assert.equal(first.disabled, true, 'a selectable placeholder is a choice nobody meant to offer');
+    assert.equal(first.textContent?.trim(), 'Choose a customer');
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('icon is drawn hidden and pushes the text clear of it', () => {
+  const { fixture, host, field } = noted({ icon: 'ph-bold ph-user' });
+  try {
+    const glyph = host.querySelector('i') as HTMLElement;
+    assert.ok(glyph, 'no <i> was drawn for the icon');
+    assert.match(glyph.getAttribute('class') ?? '', /ph-bold ph-user/);
+    assert.equal(glyph.getAttribute('aria-hidden'), 'true');
+    assert.match(field.getAttribute('class') ?? '', /\bpl-9\b/, 'the text runs under the glyph');
+  } finally {
+    fixture.destroy();
+  }
+});
