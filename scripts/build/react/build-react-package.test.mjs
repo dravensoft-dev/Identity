@@ -33,6 +33,16 @@ test('the word jsx inside a path is not an extension', () => {
   assert.equal(rewriteSourceSpecifiers(source), source);
 });
 
+test('a .ts specifier reaches the tarball as .js, because dist holds no TypeScript', () => {
+  assert.equal(rewriteSourceSpecifiers("from './UseDialogModal.ts'"), "from './UseDialogModal.js'");
+  assert.equal(rewriteSourceSpecifiers("from '../../../DataVisuals.ts'"), "from '../../../DataVisuals.js'");
+  assert.equal(rewriteSourceSpecifiers("from './Button.tsx'"), "from './Button.js'");
+  assert.equal(rewriteSourceSpecifiers("from './Tokens.generated.js'"), "from './Tokens.generated.js'",
+    'already .js, so the rewrite is a no-op rather than a doubling');
+  assert.equal(rewriteSourceSpecifiers("from 'react'"), "from 'react'",
+    'a bare specifier is the consumer\'s peer dependency and is never touched');
+});
+
 test('the manifest names the package, its entry and its types', () => {
   const m = manifest(repoRoot);
   assert.equal(m.name, NAME);

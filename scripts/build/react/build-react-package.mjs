@@ -1,8 +1,8 @@
 /* Assembles @dravensoft/arena-react into frameworks/react/dist/. A component source goes
  * through Bun.Transpiler, the same path build-demos.mjs uses, and its declaration is EMITTED
- * by tsc rather than copied, so it cannot disagree with the implementation. Every relative
- * source specifier becomes .js, in the emitted declarations too: rewriteRelativeImportExtensions
- * does not reach declaration output, so an unrewritten one names a file the package lacks. */
+ * by tsc rather than copied, so it cannot disagree with the implementation. A relative source
+ * specifier ending in .ts, .tsx, .jsx or .js becomes .js: rewriteRelativeImportExtensions does
+ * not reach declaration output, so an unrewritten one names a file the package lacks. */
 
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, rmSync } from 'node:fs';
@@ -53,7 +53,7 @@ export function untypedProblems(compiled, dir) {
 }
 
 export function rewriteSourceSpecifiers(code) {
-  return code.replace(/(from\s*['"])(\.[^'"]+?)\.[jt]sx(['"])/g, '$1$2.js$3');
+  return code.replace(/(from\s*['"])(\.[^'"]+?)\.[jt]sx?(['"])/g, '$1$2.js$3');
 }
 
 export function kitSpecifiers(code, infix) {
