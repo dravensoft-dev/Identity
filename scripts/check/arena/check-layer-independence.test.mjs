@@ -48,7 +48,7 @@ test('a citation of another layer is a hit, and a script name of any layer is no
   const tokens = foreignTokens('angular');
   assert.deepEqual(textualHits('bun run check:angular && bun run test:react', tokens), []);
   assert.equal(textualHits('matching React exactly', tokens).length, 1);
-  assert.equal(textualHits('the same values Checkbox.jsx reads', tokens)[0].token, '.jsx');
+  assert.equal(textualHits('the same values Checkbox.tsx reads', tokens)[0].token, '.tsx');
 });
 
 test('tailwind may name neither sibling, and react may name neither either', () => {

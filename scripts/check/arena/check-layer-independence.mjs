@@ -15,7 +15,7 @@ import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 export const LAYER_TOKENS = {
   react: [
     ['React', /\bReact\b/],
-    ['.jsx', /\.jsx\b/],
+    ['.tsx', /\.tsx\b/],
     ['frameworks/react', /frameworks\/react\b/],
     ['UseDialogModal', /\bUseDialogModal\b/],
   ],

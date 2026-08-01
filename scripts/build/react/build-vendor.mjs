@@ -4,7 +4,7 @@
  * `exports.x = y` assignments at the CJS wrapper's top level, and React's sit inside an IIFE,
  * so the raw output is `export default` and nothing else. */
 
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
@@ -59,6 +59,7 @@ export async function buildVendor(opts = {}) {
 async function main() {
   const files = await buildVendor();
   const dir = join(repoRoot, 'frameworks/react/vendor');
+  mkdirSync(dir, { recursive: true });
   for (const [name, content] of files) {
     writeFileSync(join(dir, name), content);
     console.log(`wrote frameworks/react/vendor/${name}`);

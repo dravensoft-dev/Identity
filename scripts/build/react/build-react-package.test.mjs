@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { rewriteSourceSpecifiers, kitSpecifiers, manifest, NAME, ROOT_JS, ROOT_TS, ROOT_TYPES, LAYER } from './build-react-package.mjs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { rewriteSourceSpecifiers, kitSpecifiers, untypedProblems, isSource, manifest, NAME, ROOT_JS, ROOT_TS, ROOT_TYPES, LAYER } from './build-react-package.mjs';
 import { version } from '../../lib/arena/package-assembly.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
@@ -86,4 +89,26 @@ test('a relative .tsx specifier becomes .js too, so both extensions land on one 
     rewriteSourceSpecifiers("import { sp1 } from '../../../Tokens.generated.js';"),
     "import { sp1 } from '../../../Tokens.generated.js';",
   );
+});
+
+test('a compiled module with no declaration beside it never ships', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'arena-untyped-'));
+  try {
+    mkdirSync(join(dir, 'components'), { recursive: true });
+    writeFileSync(join(dir, 'components', 'A.js'), 'export const a = 1;\n');
+    writeFileSync(join(dir, 'components', 'A.d.ts'), 'export declare const a: number;\n');
+    writeFileSync(join(dir, 'components', 'B.js'), 'export const b = 2;\n');
+    const problems = untypedProblems(['components/A.js', 'components/B.js'], dir);
+    assert.equal(problems.length, 1);
+    assert.match(problems[0], /components\/B\.js ships with no declaration/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('a declaration is not mistaken for a source to compile', () => {
+  assert.equal(isSource('a/Button.tsx'), true);
+  assert.equal(isSource('a/Internals.ts'), true);
+  assert.equal(isSource('a/Button.d.ts'), false);
+  assert.equal(isSource('a/Tokens.generated.js'), false);
 });
