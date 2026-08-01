@@ -36,8 +36,10 @@ explanation.
 `none` and `absent` look alike, since both cite nothing and both require nothing, but they
 answer different questions, and one pattern for both answers is a defect rather than a
 simplification. `none` binds a component that **renders**: it exists, a user can see it, and it
-simply offers no interactive affordance (Angular's Card, a bordered surface with
-nothing to act on). `absent` binds the fact that **no such component exists in this
+simply offers no interactive affordance, or offers one the platform already names: a bordered
+surface with nothing to act on binds it, and so does a case that renders a real `<a href>`,
+because there is no link pattern to bind and naming another role would take the anchor's own
+away. `absent` binds the fact that **no such component exists in this
 layer at all**. Nothing binds it today, because every component exists in both layers, which is
 exactly why the pattern has to stay: the next component one layer lands first has somewhere
 to record itself. One pattern carrying both facts leaves them

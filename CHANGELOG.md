@@ -8,6 +8,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`Table` sorts and pages.** `TableColumn.sortable` plus `Table.sort`/`sortChange` and
+  `Table.page`/`pageChange`. Both are controlled, because Table does not hold the rows: it draws
+  the caret, sets `aria-sort`, draws its own `Pagination` named from `label`, and says what was
+  asked for. Sorting costs no tab stop, since the header row is already row 0 of the grid's
+  roving cursor. `Table` emits `pageChange(1)` when the total drops far enough that the current
+  page is past the end, which is the reset otherwise written by hand beside every filter.
+- **The charts write their numbers.** `valuePrefix` and `valueFormat` on `LineChart`,
+  `BarChart` and `DoughnutChart`. `valueFormat` is a `NumberFormat` of four primitive fields, so
+  it stays data rather than a function, and it reaches the axis tick, the tooltip and the
+  accessible table identically. "Format the numbers before binding them" was never possible:
+  what is bound is `number[]`, and the writing happens on labels the chart generates afterwards.
+- **The charts stop compressing.** `minPointSpacing` on `LineChart` and `BarChart`: below that
+  gap the plot overflows sideways in a rail anchored to the most recent point, computing its own
+  minimum width from its own axis padding. The rail is keyboard-reachable only while it actually
+  overflows. `height` is a member now, defaulting to the `--chart-height` token.
+- **`Card.href`**, so a card can be the whole link: openable in a new tab, address copyable,
+  announced as a link.
+- **`SideNavItem.badge`**, a count at the row's trailing edge. Zero draws nothing, above 99
+  reads `99+`.
+- **`Command.group` and `Command.route`**: a palette has sections, and a destination in it opens
+  in a new tab.
+- **The breakpoints reach CSS.** `Breakpoints.generated.css` emits `--breakpoint-sm/md/lg` from
+  the `bp` tokens as Tailwind literals, so a consumer writes `sm:`, `md:` and `lg:` instead of
+  inventing a threshold. They are literals because a media query condition holds no `var()`.
+- **`--tint-area`, `--tint-soft` and `--tint-edge`**, the ratios a `color-mix()` keeps of a
+  colour. `DataVisuals` gains `catSlotFor` (one key, always the same ramp slot), `catSurface`
+  and `areaFill`, and `toneColor` widens from `SeriesTone` to `Tone`.
 - **`check:react-types` compiles the React layer**, strict, across every component, helper and
   suite. It is the first `tsc` this repository has ever run, and the only thing that can catch a
   component disagreeing with the interface declared beside it. It runs under plain node, so it
@@ -15,6 +42,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **An empty `Table` draws no grid at all**, header row included, in both layers. A `role="grid"`
+  holding neither a header nor a row is a degenerate render, and a column head over a "no
+  results" sentence describes a table that is not there. Measured rather than argued: across
+  sixteen tables in a real consumer the `empty` slot had zero uses and twenty-five hand-written
+  replacements.
+- **An actions row is projected one control per element.** `PageHead`'s recipe always wrapped
+  its row, but the prompt asked for a single `<div actions>` holding every button, which is one
+  flex item and can never wrap, so three buttons overflowed the page at 390px. `ChartCard` did
+  not wrap at all, in either layer, and now does in both its head row and its actions row.
+- **`containerWidth()` and `useContainerWidth()` take the element to measure**, so a component
+  whose responsive question is about an inner panel no longer has to make that panel a component
+  to ask it.
 - **The React layer is TypeScript.** 157 sources become `.tsx` and six modules `.ts`, and the 54
   hand-written `.d.ts` are gone: each component's interface sits in the file it describes, and
   the declaration a consumer installs is emitted from that source at assembly time. A React

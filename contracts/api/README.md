@@ -74,9 +74,13 @@ member the component *calls* and whose result it uses, a validator or a parser, 
 returns a value, so it is none of the eight, and `classify()` in `scripts/lib/arena/api-surface.mjs`
 refuses one rather than reading it as an event with the parameter as its payload. Outside a
 data-entry control such a member is replaced by data the component renders itself: the charts
-declare `valueSuffix`, a primitive Arena appends to every number it
-draws, the axis tick, the tooltip and the accessible data table alike. A chart declaring a
-formatter fails the gate: the ninth form is for data-entry controls alone, which
+declare `valuePrefix` and `valueSuffix`, primitives Arena draws either side of every number,
+and `valueFormat`, a predefined object of four primitive fields saying how the number itself is
+written, all of it reaching the axis tick, the tooltip and the accessible data table alike. The
+substitution is not a consolation prize: it also settles WHERE the formatting happens, which a
+caller-supplied function leaves open and which matters here, because the three places have to
+agree. A chart declaring a
+formatter still fails the gate: the ninth form is for data-entry controls alone, which
 `check:api` enforces by rejecting a `functionInput` in any contract not declaring
 `"kind": "input"` at top level.
 
