@@ -15,7 +15,7 @@ const HEADER =
   + ' * contract names. The same body is emitted into both layers so a component\'s\n'
   + ' * import never crosses the contracts/api/ <-> frameworks/ boundary — the rule\n'
   + ' * tokens.generated.* already carries. scripts/check/arena/check-api.mjs asserts the\n'
-  + ' * committed files match contracts/api/types/. See contracts/api/README.md for the vocabulary. */';
+  + ' * emitted files match contracts/api/types/. See contracts/api/README.md for the vocabulary. */';
 
 const PRIMITIVE_TS = { string: 'string', number: 'number', boolean: 'boolean' };
 

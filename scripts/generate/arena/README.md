@@ -8,9 +8,10 @@
 Both are `arena` rather than `core` because both **write into two framework layers**, however
 much their input lives under `contracts/`. The domain is decided by what a script touches.
 
-Only the CSS is tracked: `contracts/design-generated/` is served to a browser straight from the
-git tag the Claude Code plugin is installed from, while everything either script writes under
-`frameworks/` is git-ignored and rebuilt by `bun run build`. `check:tokens`,
-`check:script-tokens` and `check:api` compare the files on disk against a fresh emit.
+Of what these two scripts emit, only the CSS is tracked: `contracts/design-generated/` is
+served to a browser straight from the git tag the Claude Code plugin is installed from, while
+everything either script writes under `frameworks/` is git-ignored and rebuilt by
+`bun run build`. `check:tokens`, `check:script-tokens` and `check:api` compare the files on
+disk against a fresh emit.
 
 Every `X.test.mjs` beside a script covers that script.

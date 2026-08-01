@@ -390,8 +390,8 @@ function main() {
   for (const [path, expected] of buildApiModules()) {
     let actual;
     try { actual = readFileSync(join(root, path), 'utf8'); }
-    catch { problems.push(`${path}: missing — run bun run build:api`); continue; }
-    if (actual !== expected) problems.push(`${path}: stale — run bun run build:api`);
+    catch { problems.push(`${path}: missing — run bun run generate:api`); continue; }
+    if (actual !== expected) problems.push(`${path}: stale — run bun run generate:api`);
   }
 
   const typeDir = join(root, 'contracts/api/types');

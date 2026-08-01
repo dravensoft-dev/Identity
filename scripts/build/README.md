@@ -8,8 +8,9 @@ that is [`../generate/`](../generate/README.md).
 Every output is named `<stem>.generated.<ext>`, so the name says a script writes it. Which of
 those are tracked and which are not is the separate question `.gitignore` answers: a generated
 file is tracked when the git tag has to serve it to a browser directly, which is
-`contracts/design-generated/` and the `assets/fonts/` binaries, and everything a script writes
-under `frameworks/` is ignored. `check:generated` holds both halves.
+`contracts/design-generated/`, the `assets/fonts/` binaries and the manifest recording them,
+and everything a script writes under `frameworks/` is ignored. `check:generated` holds both
+halves.
 
 ## Compile Arena for the first time
 
@@ -46,8 +47,8 @@ signal, not a failure**: the message each prints names the command to run. `bun 
 builds first for exactly this reason.
 
 `bun run build` is idempotent: running it on a clean tree leaves `git status` empty. If it does
-not, a generator and a committed file disagree, which is what `check:tokens`, `check:fonts` and
-`check:tailwind-generated` exist to say out loud.
+not, a generator and a committed file disagree, which is what `check:tokens` and `check:fonts`
+exist to say out loud.
 
 `build:angular-tests` is deliberately **not** part of `bun run build`. It emits into
 git-ignored `build/angular-test/` and is run by `bun run test` and `bun run check` themselves,
@@ -60,8 +61,8 @@ A script's domain is decided by what it **touches**, never by what it is about.
 
 | domain | scripts | |
 | --- | --- | --- |
-| [`angular/`](./angular/README.md) | 2 | the AOT emits: demo bundles and the test surface |
-| [`react/`](./react/README.md) | 2 | JSX to JS, and the CommonJS→ESM vendor bundle |
+| [`angular/`](./angular/README.md) | 3 | the AOT emits: demo bundles, the package and the test surface |
+| [`react/`](./react/README.md) | 4 | JSX to JS, the barrel, the package, and the CommonJS→ESM vendor bundle |
 | [`tailwind/`](./tailwind/README.md) | 1 | the utility layer and the manifest modules |
 | `core/` | none | empty; `.gitkeep` marks the combination as unoccupied |
 | `arena/` | none | empty; no build touches two layers at once |

@@ -76,9 +76,10 @@ toolchains expect.
 
 **A file a script writes is named `<stem>.generated.<ext>`**, so the name says so and no
 reader has to open it. Whether it is tracked is the separate question `.gitignore` answers: a
-generated file is tracked when the git tag has to serve it to a browser directly, because the
-Claude Code plugin is served from that tag, and everything a script writes under `frameworks/`
-is ignored. `check:generated` holds
+generated file is tracked when the git tag has to serve it to a browser directly, which is
+`contracts/design-generated/`, the `assets/fonts/` binaries and the manifest recording them,
+because the Claude Code plugin is served from that tag, and everything a script writes under
+`frameworks/` is ignored. `check:generated` holds
 both halves, and records the one generated output that can carry neither the infix nor a
 header: the font binaries under `assets/fonts/`.
 

@@ -63,16 +63,17 @@ run. See [`../build/README.md`](../build/README.md).
 
 ## The five domains
 
-Counts below are of **registered gates**; `arena/` and `core/` each hold one more script that
-is run by path and one, `check-all.mjs`, that is the runner rather than a gate.
+Counts below are of **registered gates**; `arena/` alone holds two files that are not one:
+`check-release.mjs`, run by path rather than registered, and `check-all.mjs`, the runner
+rather than a gate.
 
 | domain | gates | |
 | --- | --- | --- |
-| [`arena/`](./arena/README.md) | 11 | two or more layers at once, or the repository root |
-| [`tailwind/`](./tailwind/README.md) | 5 | the shared Tailwind layer |
+| [`arena/`](./arena/README.md) | 15 | two or more layers at once, or the repository root |
+| [`tailwind/`](./tailwind/README.md) | 6 | the shared Tailwind layer |
 | [`angular/`](./angular/README.md) | 4 | the Angular layer |
-| [`core/`](./core/README.md) | 4 | `contracts/` and `assets/` only |
-| [`react/`](./react/README.md) | 2 | the React layer |
+| [`core/`](./core/README.md) | 5 | `contracts/` and `assets/` only |
+| [`react/`](./react/README.md) | 4 | the React layer |
 
 `check-all.test.mjs` asserts every gate names one of the five domains and points at
 `<domain>/<gate>.mjs`, so a gate landing outside the grid fails rather than running unnoticed.

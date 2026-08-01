@@ -10,6 +10,7 @@ and this document is that one: **two npm packages a project installs with `bun a
 | `@dravensoft/arena-angular` | `frameworks/angular/dist/` | `frameworks/angular/` plus the slice of `frameworks/tailwind/` its recipes read |
 
 ```bash
+bun run build               # the generated sources build:packages reads
 bun run build:packages     # both, from the sources in place
 bun run check:packages     # the manifests, and the CLI against the token pipeline
 ```
@@ -60,8 +61,9 @@ Neither half compiles anything, because the two layers need different compilers.
 
 **React** goes through `Bun.Transpiler`, the same path `build-demos.mjs` already uses, and
 each declaration is EMITTED by `tsc` rather than copied, so it cannot disagree with the
-implementation it describes. There is exactly one rewrite: a relative `.tsx` specifier becomes `.js`,
-because inside the package there is no JSX left to resolve. The entry point is
+implementation it describes. There is exactly one rewrite: a relative source specifier, in any of `.ts`, `.tsx`, `.jsx`
+or `.js`, becomes `.js`, because inside the package none of those extensions resolves; only
+the compiled `.js` does. The entry point is
 `Index.generated.ts`, the barrel `build:react-barrel` derives from the component
 directories, and it goes through that same compile, so the package exports
 `Index.generated.js` beside the declaration `tsc` emits for it.
@@ -148,6 +150,7 @@ git push origin main --follow-tags
 
 # 2. prove the release before anything leaves the machine
 bun scripts/check/arena/check-release.mjs
+bun run build                   # the generated sources build:packages reads
 bun run build:packages          # the manifests take the version from plugin.json here
 bun run check:packages          # and this fails if they did not
 

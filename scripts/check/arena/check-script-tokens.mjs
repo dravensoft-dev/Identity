@@ -99,10 +99,10 @@ async function main() {
     try {
       actual = readFileSync(join(root, path), 'utf8');
     } catch {
-      problems.push(`${path}: missing — run bun run build:tokens`);
+      problems.push(`${path}: missing — run bun run generate:tokens`);
       continue;
     }
-    if (actual !== expected) problems.push(`${path}: stale — run bun run build:tokens`);
+    if (actual !== expected) problems.push(`${path}: stale — run bun run generate:tokens`);
   }
 
   const cssFiles = readdirSync(join(root, 'contracts', 'design-generated')).filter((f) => extname(f) === '.css');

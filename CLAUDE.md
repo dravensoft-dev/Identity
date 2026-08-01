@@ -563,9 +563,9 @@ with its own scroll area, not a card.
 the whole rule**: `check:docs` reads it and never opens the file. Whether it is *tracked* is a
 separate question `.gitignore` answers, and the line is audience, not provenance: **a
 generated file is tracked when the git tag the plugin is served from has to hand it to a
-browser directly**, which is `contracts/design-generated/` and the `assets/fonts/` binaries:
-ignoring the token CSS would ship a tag whose `intro/styles.css` `@import`s resolve to nothing,
-unstyled and silent. Everything a script writes under `frameworks/` is ignored, by one pattern,
+browser directly**, which is `contracts/design-generated/`, the `assets/fonts/` binaries and
+the manifest recording them: ignoring the token CSS would ship a tag whose `intro/styles.css`
+`@import`s resolve to nothing, unstyled and silent. Everything a script writes under `frameworks/` is ignored, by one pattern,
 with a reason per family in `UNTRACKED`. So a fresh clone
 runs `bun run build` first; [`scripts/build/README.md`](./scripts/build/README.md) is the
 first-compile document, linked from the root README. `check:generated` holds both halves and

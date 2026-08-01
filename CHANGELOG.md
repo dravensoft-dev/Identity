@@ -32,11 +32,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   fonts in an `arena.config.json` that each package's `arena-theme` turns into the one stylesheet
   a package cannot carry.
 - **Nothing a script writes under `frameworks/` is tracked.** A generated file is tracked when
-  the git tag has to serve it to a browser directly, which leaves `contracts/design-generated/`
-  and the `assets/fonts/` binaries; both layers' `Api.generated.*` and `Tokens.generated.*`, the
-  React barrel and the Tailwind manifest modules are git-ignored, and `.gitignore` holds one
-  pattern where it held eight. **A fresh clone runs `bun run build` before a page, a gate or a
-  type-check resolves anything**, and `build` gains `build:react-barrel` for that reason.
+  the git tag has to serve it to a browser directly, which leaves `contracts/design-generated/`,
+  the `assets/fonts/` binaries and the manifest recording them; both layers' `Api.generated.*`
+  and `Tokens.generated.*`, the React barrel and the Tailwind manifest modules are git-ignored,
+  and `.gitignore` holds one pattern where it held eight. **A fresh clone runs `bun run build`
+  before a page, a gate or a type-check resolves anything**, and `build` gains
+  `build:react-barrel` for that reason.
 - **The React layer's two hand-emitted declarations are ordinary sources.** `Api.generated.d.ts`
   is `Api.generated.ts`, the name the Angular layer already uses, and the barrel is one
   `Index.generated.ts`. The package is unchanged: it still exports `Index.generated.js` with
