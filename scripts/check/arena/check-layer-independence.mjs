@@ -138,10 +138,35 @@ export function staleExemptions(matchedKeys) {
   return [...EXEMPT.keys()].filter((k) => !matched.has(k));
 }
 
+export function staleLayerTokens(base = root) {
+  const stale = [];
+  for (const [layer, tokens] of Object.entries(LAYER_TOKENS)) {
+    const unseen = new Map(tokens);
+    for (const path of layerFiles(join(base, 'frameworks', layer))) {
+      if (!unseen.size) break;
+      const text = readFileSync(path, 'utf8');
+      for (const [token, re] of [...unseen]) if (re.test(text)) unseen.delete(token);
+    }
+    for (const token of unseen.keys())
+      stale.push(`${layer}: "${token}" matches nothing under frameworks/${layer}/, so it identifies `
+        + 'that layer nowhere and every other layer may now cite it freely');
+  }
+  return stale;
+}
+
 function main() {
   const { findings, matchedKeys, scanned } = collect();
   const stale = staleExemptions(matchedKeys);
+  const staleTokens = staleLayerTokens();
   let failed = false;
+
+  if (staleTokens.length) {
+    failed = true;
+    console.error(`check-layer-independence: ${staleTokens.length} stale LAYER_TOKENS entr`
+      + `${staleTokens.length === 1 ? 'y' : 'ies'}\n`);
+    for (const entry of staleTokens) console.error(`  ${entry}`);
+    console.error('');
+  }
 
   if (findings.length) {
     failed = true;

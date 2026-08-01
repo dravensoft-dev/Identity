@@ -153,6 +153,19 @@ export function reactSourceFor(name, category) {
   return existsSync(path) ? path : null;
 }
 
+export function missingReactSource(name, category) {
+  const dir = join(REACT_COMPONENTS_DIR, category, kebab(name));
+  if (!existsSync(dir) || reactSourceFor(name, category)) return null;
+  return `${name}: frameworks/react/components/${category}/${kebab(name)}/ holds no ${name}.jsx, so `
+    + 'its affordances were never read and this half reported clean over nothing';
+}
+
+export function zeroReactSourceProblems(count) {
+  if (count > 0) return [];
+  return ['read 0 React sources; the react half of this gate checked nothing, which is a failure '
+    + 'rather than a clean pass'];
+}
+
 export function reactProblems(name, category) {
   const path = reactSourceFor(name, category);
   if (!path) return { findings: [], sites: 0 };
@@ -186,14 +199,25 @@ export function collect() {
   }
 
   const categories = JSON.parse(readFileSync(join(repoRoot, 'frameworks/Components.json'), 'utf8'));
+  const missingSources = [];
+  let sourcesRead = 0;
   for (const [category, names] of Object.entries(categories))
     for (const name of names) {
+      const missing = missingReactSource(name, category);
+      if (missing) missingSources.push(missing);
+      if (reactSourceFor(name, category)) sourcesRead += 1;
       const result = reactProblems(name, category);
       findings.push(...result.findings);
       sites += result.sites;
     }
 
-  return { findings, matchedKeys, sites };
+  return {
+    findings,
+    matchedKeys,
+    sites,
+    missingSources,
+    zeroSources: zeroReactSourceProblems(sourcesRead),
+  };
 }
 
 export function staleExemptions(matchedKeys) {
@@ -209,10 +233,17 @@ export function staleCovers() {
 }
 
 function main() {
-  const { findings, matchedKeys, sites } = collect();
+  const { findings, matchedKeys, sites, missingSources, zeroSources } = collect();
   const stale = staleExemptions(matchedKeys);
   const staleCoverage = staleCovers();
   let failed = false;
+
+  if (missingSources.length || zeroSources.length) {
+    failed = true;
+    for (const problem of [...zeroSources, ...missingSources])
+      console.error(`check-manifest-states: ${problem}`);
+    console.error('');
+  }
 
   if (findings.length) {
     failed = true;

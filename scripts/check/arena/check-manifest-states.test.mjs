@@ -17,6 +17,8 @@ import {
   manifestProblems,
   reactProblems,
   reactSourceFor,
+  missingReactSource,
+  zeroReactSourceProblems,
   staleExemptions,
   staleCovers,
   collect,
@@ -133,8 +135,19 @@ test('a name with no React source is not a finding -- a layer may simply not imp
   assert.deepEqual(reactProblems('NoSuchComponentAtAll', 'display'), { findings: [], sites: 0 });
 });
 
+test('a component directory holding no source is a finding, not a silent skip', () => {
+  assert.equal(missingReactSource('NoSuchComponentAtAll', 'display'), null,
+    'an absent directory is check:structure\'s claim, not this one\'s');
+  assert.equal(missingReactSource('Button', 'forms'), null);
+  assert.equal(zeroReactSourceProblems(0).length, 1);
+  assert.match(zeroReactSourceProblems(0)[0], /checked nothing/);
+  assert.deepEqual(zeroReactSourceProblems(1), []);
+});
+
 test('running against the real tree today produces no findings and no stale entries', () => {
-  const { findings, matchedKeys, sites } = collect();
+  const { findings, matchedKeys, sites, missingSources, zeroSources } = collect();
+  assert.deepEqual(missingSources, []);
+  assert.deepEqual(zeroSources, []);
   if (findings.length) {
     const detail = findings.map((f) => `${f.half} ${f.component}:${f.slot ?? '-'}:${f.family}`).join('\n  ');
     assert.fail(`unexpected undeclared affordance(s):\n  ${detail}`);

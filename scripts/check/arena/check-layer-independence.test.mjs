@@ -13,6 +13,7 @@ import {
   LAYER_TOKENS,
   collect,
   escapingSpecifiers,
+  staleLayerTokens,
   foreignTokens,
   isAllowedSpecifier,
   staleExemptions,
@@ -67,4 +68,9 @@ test('EXEMPT is answerable to the real tree: every key it holds is matched, and 
   const { matchedKeys } = collect();
   assert.deepEqual(staleExemptions(matchedKeys), [],
     'an EXEMPT entry naming a file or token the tree no longer carries is a stale allowance');
+});
+
+test('every LAYER_TOKENS entry still identifies its own layer, or it forbids nothing', () => {
+  assert.deepEqual(staleLayerTokens(), [],
+    'a token matching nothing in the layer it names cannot catch another layer citing that layer');
 });

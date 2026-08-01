@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { scanValue, scanText, scanInjectedCss, scanAttributes, scanDefaultsAndCallSites, staleExemptions, stalePassthrough, expressionLeaves, sourceFiles, EXEMPT } from './check-dimension-literals.mjs';
+import { scanValue, scanText, scanInjectedCss, scanAttributes, scanDefaultsAndCallSites, staleExemptions, stalePassthrough, expressionLeaves, sourceFiles, componentParamCount, zeroComponentParamProblems, EXEMPT } from './check-dimension-literals.mjs';
 
 test('a bare number is a violation for a dimension-valued property', () => {
   assert.ok(scanValue('fontSize', '13'));
@@ -186,6 +186,23 @@ test('a default parameter on a named passthrough component resolves through the 
   assert.deepEqual(found.map((f) => ({ prop: f.prop, raw: f.raw })), [
     { prop: 'width', raw: '18' },
   ]);
+});
+
+test('a typed parameter list is read like an untyped one, in both the named and the inline form', () => {
+  const named = "function Dialog({ open, width = 480 }: DialogProps) {\n  return null;\n}";
+  const inline = "function Dialog({ open, width = 480 }: { width?: number }) {\n  return null;\n}";
+  for (const src of [named, inline])
+    assert.deepEqual(scanDefaultsAndCallSites(src).map((f) => ({ prop: f.prop, raw: f.raw })), [
+      { prop: 'width', raw: '480' },
+    ], src);
+});
+
+test('matching no parameter list at all fails the gate, because every default then reads as clean', () => {
+  assert.equal(componentParamCount("function Dialog({ width = 480 }: DialogProps) {\n}"), 1);
+  assert.equal(componentParamCount('const x = 1;'), 0);
+  assert.equal(zeroComponentParamProblems(0).length, 1);
+  assert.match(zeroComponentParamProblems(0)[0], /every default value in the tree reports clean/);
+  assert.deepEqual(zeroComponentParamProblems(1), []);
 });
 
 test('a default parameter whose name is neither a governed prop nor a registered passthrough is ignored', () => {

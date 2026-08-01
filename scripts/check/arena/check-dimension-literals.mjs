@@ -391,8 +391,18 @@ const PASSTHROUGH = new Map([
   ['AppLogo', { prop: 'size', governs: 'width' }],
 ]);
 
-const COMPONENT_PARAMS = /function\s+([A-Za-z_]\w*)\s*\(\{([\s\S]*?)\}\)\s*\{/g;
+const COMPONENT_PARAMS = /function\s+([A-Za-z_]\w*)\s*\(\{([\s\S]*?)\}(?:\s*:\s*[^)]+)?\)\s*\{/g;
 const PARAM_DEFAULT = /(?<![\w.])([a-zA-Z]+)\s*=\s*('[^']*'|"[^"]*"|`[^`]*`|[-\w.%]+)(?=[,\s]|$)/g;
+
+export function componentParamCount(rawText) {
+  return [...blankComments(rawText).matchAll(COMPONENT_PARAMS)].length;
+}
+
+export function zeroComponentParamProblems(count) {
+  if (count > 0) return [];
+  return ['matched 0 destructured component parameter lists under frameworks/; the default-value '
+    + 'scanner read nothing, so every default value in the tree reports clean'];
+}
 
 export function scanDefaultsAndCallSites(rawText) {
   const text = blankComments(rawText);
@@ -452,9 +462,11 @@ function collect() {
   const found = [];
   const matchedKeys = new Set();
   const seenComponents = new Set();
+  let paramLists = 0;
   for (const file of sourceFiles(join(repoRoot, 'frameworks'))) {
     const rel = relative(repoRoot, file);
     const text = readFileSync(file, 'utf8');
+    paramLists += componentParamCount(text);
     for (const name of passthroughSightings(text)) seenComponents.add(name);
     const hits = [...scanText(text), ...scanDefaultsAndCallSites(text), ...scanInjectedCss(text), ...scanAttributes(text)];
     for (const hit of hits) {
@@ -464,7 +476,12 @@ function collect() {
       found.push({ file: rel, ...hit });
     }
   }
-  return { found, stale: staleExemptions(matchedKeys), stalePassthrough: stalePassthrough(seenComponents) };
+  return {
+    found,
+    stale: staleExemptions(matchedKeys),
+    stalePassthrough: stalePassthrough(seenComponents),
+    zeroParams: zeroComponentParamProblems(paramLists),
+  };
 }
 
 function report(found) {
@@ -490,11 +507,16 @@ function reportSites(found) {
 }
 
 function main() {
-  const { found, stale, stalePassthrough: stalePT } = collect();
+  const { found, stale, stalePassthrough: stalePT, zeroParams } = collect();
   if (process.argv.includes('--report=sites')) { reportSites(found); return; }
   if (process.argv.includes('--report')) { report(found); return; }
   let failed = false;
+  if (zeroParams.length) {
+    failed = true;
+    for (const problem of zeroParams) console.error(`check-dimension-literals: ${problem}`);
+  }
   if (stale.length) {
+    if (failed) console.error('');
     failed = true;
     console.error(`check-dimension-literals: ${stale.length} stale EXEMPT entr${stale.length === 1 ? 'y' : 'ies'} — named a site that no longer produces a violation\n`);
     for (const key of stale) console.error(`  ${key} — ${EXEMPT.get(key)}`);
