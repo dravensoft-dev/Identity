@@ -28,7 +28,7 @@ consumed from three runtimes (plain node, happy-dom under Bun, and the Angular A
 is why it touches only `tagName`, `getAttribute`, `hasAttribute` and `textContent`, and takes
 its id resolver from the caller instead of reaching for a `document` it may not have.
 `arena/comments.mjs` is kept dependency-free for the same reason. Both are also why **a test
-under `scripts/` may not import a framework layer's `.ts` or `.jsx`**: `check-all.mjs` runs
+under `scripts/` may not import a framework layer's `.ts` or `.tsx`**: `check-all.mjs` runs
 these suites under plain node too, which cannot resolve the extensionless imports those
 toolchains expect.
 

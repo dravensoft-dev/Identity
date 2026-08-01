@@ -1,6 +1,6 @@
 Single selection among options that are all visible at once. `RadioGroup` holds the `value` and distributes each child's selected state; each `Radio` declares its own `value`.
 
-```jsx
+```tsx
 <RadioGroup ariaLabel="Deployment target" value={env} onChange={setEnv}>
   <Radio value="prod" label="Production" hint="Real users, requires approval" />
   <Radio value="staging" label="Staging" />

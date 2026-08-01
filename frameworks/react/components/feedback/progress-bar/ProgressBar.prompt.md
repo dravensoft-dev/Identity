@@ -1,6 +1,6 @@
 Progress bar (H1). Gives visible status to measurable processes outside the splash: deployments, uploads, migrations. Respects `prefers-reduced-motion` in indeterminate mode.
 
-```jsx
+```tsx
 <ProgressBar label="Deploying build #4821" progressPercentage={64} />
 <ProgressBar tone="success" progressPercentage={100} label="Published" />
 <ProgressBar indeterminate tone="accent" label="Connecting…" />

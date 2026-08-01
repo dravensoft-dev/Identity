@@ -1,6 +1,6 @@
 Visual identity of a person or entity. With `src` it shows the image; without it, initials from `name`.
 
-```jsx
+```tsx
 <Avatar name="Lucy Fernandez" status="online" />
 <Avatar src="/u/marco.jpg" name="Marco Ruiz" size="lg" />
 <Avatar name="Aurora Bank" shape="rounded" />  {/* entity/team */}

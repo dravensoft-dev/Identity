@@ -1,6 +1,6 @@
 A single checkbox. Checked shows a crimson fill with a check. `onChange` carries the **new checked state** as a boolean, not the DOM event, so a `useState` setter can be passed straight to it. `name` and `value` are what a native form submits when the box is ticked, and `required` makes the tick mandatory for submission.
 
-```jsx
+```tsx
 <Checkbox checked={notify} onChange={setNotify} label="Notify on approval" />
 <Checkbox checked={terms} onChange={setTerms} required name="terms" value="accepted" label="I accept the terms" />
 <Checkbox checked disabled label="Locked by policy" />

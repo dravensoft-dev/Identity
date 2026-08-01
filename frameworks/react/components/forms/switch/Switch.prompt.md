@@ -2,7 +2,7 @@ Controlled on/off switch showing an icon per state (`iconOn`/`iconOff`, Phosphor
 strings, Arena draws the `<i>`). `state` is the CURRENT value; the host owns it and
 pushes it back on every render.
 
-```jsx
+```tsx
 const [dark, setDark] = useState(false);
 
 <Switch state={dark} onFuncOn={() => setDark(true)} onFuncOff={() => setDark(false)}
@@ -22,9 +22,9 @@ does nothing at all. That is the accepted cost of R6 in `contracts/api/README.md
 or behaviour is derived from whether a listener is bound, and it is the one worth paying,
 because what it replaced applied a guarded change silently. **No runtime guard can catch it**:
 "is anything listening?" is precisely the question R6 says a component may not ask.
-`Switch.dom.test.jsx` pins it, so the fallback cannot come back unnoticed.
+`Switch.dom.test.` pins it, so the fallback cannot come back unnoticed.
 
-```jsx
+```tsx
 const [armed, setArmed] = useState(false);
 const [pending, setPending] = useState(false);
 
@@ -48,7 +48,7 @@ unchanged.
 **Do** own `state` in the parent and push it back from `onFuncOn`/`onFuncOff` (or from
 `ConfirmDialog`'s `onConfirm` when `confirm` is set), Switch never changes its own value.
 
-```jsx
+```tsx
 <Switch state={notify} onFuncOn={() => setNotify(true)} onFuncOff={() => setNotify(false)} label="Notify on approval" />
 ```
 
@@ -56,7 +56,7 @@ unchanged.
 payload, and reaching for `e.target.checked` or a boolean argument is reaching for a
 member this API does not have.
 
-```jsx
+```tsx
 {/* Wrong: there is no event object and no boolean argument to read. */}
 <Switch state={notify} onFuncOn={(e) => setNotify(e.target.checked)} label="Notify on approval" />
 ```

@@ -8,7 +8,7 @@ Two things this default is not. It is not a `'UTC'` fallback, which would be arb
 
 Copy `frameworks/react/DataVisuals.js` and `frameworks/react/UseContainerWidth.js` alongside it: `Calendar` reads the categorical ramp through the same `catColor` the charts use, and measures its container to pick the view.
 
-```jsx
+```tsx
 <Calendar
   timeZone="Europe/Madrid"
   onRangeChange={(iso) => refetch(iso)}
@@ -27,7 +27,7 @@ The anchor is internal, so prev/Today/next work with nothing wired. `onRangeChan
 
 **A day is activable only if you say so.** `onDateClick` reports the ISO date of the day a reader picked, and it fires for nothing unless `dayInteractive` is also set. The boolean is not ceremony: what a component draws may never be derived from whether a listener is bound, because at least one platform cannot ask that question, so the day's cursor, which is a render, follows the boolean and not your handler. Bind one without the other and you get exactly half of what you asked for, in every layer alike.
 
-```jsx
+```tsx
 <Calendar dayInteractive onDateClick={(iso) => openDay(iso)}>
 ```
 

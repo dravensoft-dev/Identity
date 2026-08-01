@@ -6,6 +6,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`check:react-types` compiles the React layer**, strict, across every component, helper and
+  suite. It is the first `tsc` this repository has ever run, and the only thing that can catch a
+  component disagreeing with the interface declared beside it. It runs under plain node, so it
+  has no skip path.
+- **`frameworks/react/kit/` is the copy-in payload, built rather than maintained.** `build:kit`
+  derives it from the layer as plain JavaScript with an emitted declaration per module, so a
+  consumer copies a component without a TypeScript toolchain of their own; `check:kit` holds it
+  to a fresh build in both directions.
+
+### Changed
+
+- **The React layer is TypeScript.** 157 sources become `.tsx` and six modules `.ts`, and the 54
+  hand-written `.d.ts` are gone: each component's interface sits in the file it describes, and
+  the declaration a consumer installs is emitted from that source at assembly time. A React
+  component is a trio now rather than a quartet. The suites prove exactly what they did before,
+  at the same counts.
+- **The two-invocation React test split stops naming an extension.** The filter is `.dom.test.`
+  and the ignore pattern `**/*.dom.test.*`, so the split survives a rename of the layer's sources.
+
+### Fixed
+
+- **`ConfirmDialog`'s `destructive` renders again.** The dialog handed `Button` a `style`, and
+  `Button` forwards nothing, so Arena's one filled danger surface changed no markup in React
+  while Angular and the Tailwind manifest both drew it. The dialog now draws that action itself,
+  and its contract declares the hover affordance it had only borrowed.
+- **`useContainerWidth`'s declared return type could not be used.** It declared
+  `RefObject<T | null>`, and `RefObject` is covariant, so that type is not assignable to any
+  `ref` attribute.
+- **`resolveColors` declared `CatSlot` where the chart contracts declare `number`**, which is
+  also what `catColor` clamps. The declaration contradicted both.
+- **Three gates reported clean over a tree they never read.** `check:states` probed for a
+  component source by name and found nothing to say when the probe missed; `check:dimensions`
+  matched a parameter list with a regex that an annotation defeats; `check:layer-independence`
+  identified a layer by tokens nothing held to the tree.
+
 ### Changed
 
 - **`@dravensoft/arena-react` and `@dravensoft/arena-angular` are on npm at 5.0.0**, published

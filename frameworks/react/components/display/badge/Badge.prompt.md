@@ -1,6 +1,6 @@
 Status label in mono uppercase. Short text (1–2 words); if it's longer, it's not a Badge.
 
-```jsx
+```tsx
 <Badge tone="success" dot>Deployed</Badge>
 <Badge tone="warning">In review</Badge>
 ```

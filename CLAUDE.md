@@ -21,10 +21,10 @@ literal value. Read it there rather than reconstructing one; a narrowed invocati
 fewer files is indistinguishable from one matching all of them, so a stale path reports green
 over a tree it never opened.
 
-**The criterion that decides which invocation a suite belongs to is the `.dom.test.jsx`
+**The criterion that decides which invocation a suite belongs to is the `.dom.test.`
 filename infix, wherever the file sits.**
 
-**A test under `scripts/` may not import a framework layer's `.ts` or `.jsx`**, because
+**A test under `scripts/` may not import a framework layer's `.ts` or `.tsx`**, because
 `scripts/` is the one suite `check-all.mjs` also runs under plain node, which does not resolve
 the extensionless imports those toolchains expect. A property worth asserting against a real
 recipe or component is asserted from that layer's own suites, which in both layers sit beside
@@ -34,7 +34,7 @@ It ships as four things at once from the same tree:
 
 - a **Claude Code plugin** (`.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`, registering the `design` skill defined by the root `SKILL.md`);
 - two **npm packages**, `@dravensoft/arena-react` and `@dravensoft/arena-angular`, assembled by `bun run build:packages` into `frameworks/<layer>/dist/`;
-- a **copy-in kit** (consumers copy `contracts/design/`, `contracts/design-generated/`, `assets/`, `intro/styles.css` and the `.jsx` files they need);
+- a **copy-in kit** (`contracts/design/`, `contracts/design-generated/`, `assets/`, `intro/styles.css` and `frameworks/react/kit/`, which `build:kit` derives);
 - a standalone **Agent Skill** (`SKILL.md`).
 
 **A published Arena carries the language and never the skin**, which is the decision the
@@ -104,7 +104,7 @@ bun run demos   # builds, serves the repo root on :8000, prints the entry points
 ```
 
 - `intro/guidelines/*.html`: token specimen cards (type, color, spacing, effects, icons, brand, danger convention).
-- `frameworks/react/components/**/*.card.html`: live component demos; the two shapes a page takes are under *Every component is a quartet*. List them with `find frameworks/react/components -name '*.card.html'`.
+- `frameworks/react/components/**/*.card.html`: live component demos; the two shapes a page takes are under *Every React component is a trio*. List them with `find frameworks/react/components -name '*.card.html'`.
 - `frameworks/react/ui-kits/console/index.html`: the Delivery Console example app.
 - `intro/Arena - Overview.html`: the token language, generated at runtime. **It shows no components on purpose**, because those belong to the framework layers.
 - `intro/Dravensoft Identity.dc.html`: the approved brand manual, and the only `dc-runtime` page.
@@ -334,11 +334,11 @@ In React nesting is arbitrary, to any depth, with **no context anywhere**, becau
 is **direct children only, one hop**, and a section or a collapsible re-injects into its own
 children with `depth + 1`. Angular pushes nothing: each container re-provides `SideNavState` at
 `depth + 1` and a row **pulls** the nearest. React's shared helper is
-`frameworks/react/components/navigation/side-nav/SideNavInject.jsx`; it covers that family and
+`frameworks/react/components/navigation/side-nav/SideNavInject.tsx`; it covers that family and
 no more, so the placement rule sends it to the family's parent directory rather than up to
-`navigation/`. **Its `.jsx` extension is load-bearing**: `check:dimensions` never opens a
+`navigation/`. **Its `.tsx` extension is load-bearing**: `check:dimensions` never opens a
 `.js`, and the helper's `indentFor()` produces a governed `padding-inline-start`. It is a
-`.jsx` under `components/` that is **not a component**, since a component is a **directory**, both
+`.tsx` under `components/` that is **not a component**, since a component is a **directory**, both
 in `reactComponents()` and in every measurement of the set.
 
 Every compound family shares one limit: **a consumer's own wrapper component between two levels
@@ -379,21 +379,23 @@ Phosphor class-name string Arena draws, never a slot, so `IconButton` presents n
 and a per-item or single icon is one system across the library. The price is recorded rather
 than hidden. Flattening each `<button>`'s heritage clause drops the five `form*` overrides and
 every global/ARIA attribute a `{...rest}` spread would forward, with no gate behind the loss:
-`check:api` reads both the `.d.ts` and the `.jsx` beside it, so a restored spread fails, but
-nothing re-derives which native members the flattening dropped.
+`check:api` reads the `.tsx`, so a restored spread fails, but nothing re-derives which native
+members the flattening dropped.
 
-**React's suites run in two `bun test` invocations that must not merge.** A `.dom.test.jsx`
-suite renders into a real DOM; every other `*.test.jsx` asserts on `renderToStaticMarkup`, with no
-DOM, by design, because those suites prove those components render correctly server-side. The
-DOM is installed process-wide by `--preload ./frameworks/react/test/Preload.js`, and `bun test`
-shares one process across every path an invocation matches, so a merged run would quietly change
-what the DOM-free suites prove with nothing failing to say so. **The preload must never reach the
-DOM-free invocation, and it is mandatory for the DOM one**: `react-dom` latches its `input`-event
-support at module evaluation, so without a DOM already installed an `onChange` handler receives a
-dispatched event **zero** times, silently. Angular's suites sit beside their components, with the
-run target the whole emitted layer (`build/angular-test/angular`).
+**React's suites run in two `bun test` invocations that must not merge.** A `.dom.test.`
+suite renders into a real DOM; every other `*.test.tsx` asserts on `renderToStaticMarkup`, with
+no DOM, by design, because those suites prove those components render correctly server-side.
+**The preload must never reach the DOM-free invocation, and it is mandatory for the DOM one**:
+`react-dom` latches its `input`-event support at module evaluation, so without a DOM already
+installed an `onChange` handler receives a dispatched event **zero** times, silently. Angular's
+suites sit beside their components, with the run target the whole emitted layer
+(`build/angular-test/angular`).
 [`frameworks/react/README.md`](./frameworks/react/README.md) carries the mechanism in full,
-including what `scripts/` adds to the split.
+why one process forces the split, and what `scripts/` adds to it.
+
+**`check:react-types` compiles the layer and `check:kit` holds the tracked copy-in payload to a
+fresh build.** That README says what each reaches, and which two compiler options are
+load-bearing rather than stylistic.
 
 **A grid is verified by walking its cells, one key press per step.** `Calendar` and `Table` have
 suites in both layers. A grid suite
@@ -482,11 +484,11 @@ a test asserting it would pass identically against a perfect trap and against no
 interior is `check:focus-trap`'s: real Chromium over each declared page, one real Tab press per
 stop, one page per layer that binds the pattern.
 
-**Components carry no CSS classes.** Each `frameworks/react/components/**/*.jsx` renders with
+**Components carry no CSS classes.** Each `frameworks/react/components/**/*.tsx` renders with
 inline `style` objects reading the custom properties (`background: 'var(--crimson)'`), and
 handles hover/active/focus with local `useState`. There is no `.btn` class to target; theming
 happens entirely through token values. Keep new components self-contained the same way, with
-`Button.jsx` as the reference shape.
+`Button.tsx` as the reference shape.
 
 **The one exception: a `<style>` tag injected once**, for what an inline style genuinely cannot
 express, meaning `@keyframes` and vendor pseudo-elements such as `Input`'s
@@ -502,9 +504,11 @@ means: motion reporting work in progress *slows* rather than stops, decorative m
 outright, an entrance keeps its fade and drops its travel, and an opacity-only animation needs
 no clause at all. `frameworks/react/README.md` carries both rules in full.
 
-**Every component is a quartet, and the four files live in the component's own directory**,
-`frameworks/react/components/<category>/<component-kebab>/`: `X.jsx` (implementation), `X.d.ts`
-(types), `X.prompt.md` (usage, examples, Do/Don't) and an entry in a `*.card.html` demo. **That
+**Every React component is a trio, and the three files live in the component's own directory**,
+`frameworks/react/components/<category>/<component-kebab>/`: `X.tsx` (implementation and its
+exported `XProps`), `X.prompt.md` (usage, examples, Do/Don't) and an entry in a `*.card.html`
+demo. **The layer carries no hand-written `.d.ts`**: the published one is emitted from the
+source, so the two cannot disagree. **That
 demo page is one of two shapes**: `X.card.html` in the component's own directory when the card
 is about that component alone, or a page one level up, beside the directories at its category
 level, when it composes several components onto one card (`display/Display.card.html`,
@@ -520,7 +524,7 @@ the args array in `testStep()`, because `bun test frameworks/react` never matche
 so it reports green over a tree whose test run is red. That is a different hazard from the
 two-invocation rule above: this one is about a path a narrowed invocation never matched.
 
-The Angular layer's quartet is the analogue, in
+The Angular layer is a quartet, the same three plus its recipe, in
 `frameworks/angular/components/<category>/<component-kebab>/`: `<Component>.ts` (standalone
 `OnPush` component, `arena-` selector, signal I/O, no component `styles`),
 `<Component>.variants.ts` (a `tailwind-variants` recipe built with `frameworks/tailwind/Tv.ts`),
@@ -560,7 +564,7 @@ with its own scroll area, not a card.
 **A file a script under `scripts/` writes is named `<stem>.generated.<ext>`, and that name is
 the whole rule**: `check:docs` reads it and never opens the file. Whether it is *tracked* is a
 separate question `.gitignore` answers, and the line is audience, not provenance: what only
-Arena's tooling reads is ignored (`frameworks/react/vendor/`, the compiled `.jsx` siblings,
+Arena's tooling reads is ignored (`frameworks/react/vendor/`, the compiled `.tsx` siblings,
 `Utilities.generated.css`), and the payload a consumer copies stays committed, because **the
 plugin is served from the git tag**: ignoring `contracts/design-generated/` would ship a tag
 whose `intro/styles.css` `@import`s resolve to nothing, unstyled and silent. So a fresh clone
@@ -575,12 +579,12 @@ Component demos load React from a local importmap pointing at
 devDependencies, since React 18 ships CommonJS only (`build:vendor`, guarded by
 `check:vendor`), and pull `@phosphor-icons/web` straight from `node_modules/`.
 
-**JSX is compiled ahead of time, not in the browser**, so every component `.jsx` and every demo
-`<page>.entry.jsx` has a `.generated.js` sibling the page loads directly (`build:demos`,
-guarded by `check:demos`). **So editing a `.jsx` means running `bun run build:demos` in the
-same tree.** The DOM suites import the `.jsx` directly, so every test stays green with the
-sibling stale, but the demo pages load the sibling, so **`bun run demos` shows the pre-fix
-component while the suites prove the fix**, which is exactly the by-hand check every
+**A component is compiled ahead of time, not in the browser**, so every component `.tsx` and
+every demo `<page>.entry.tsx` has a `.generated.js` sibling the page loads directly
+(`build:demos`, guarded by `check:demos`). **So editing a `.tsx` means running
+`bun run build:demos` in the same tree.** The suites import the `.tsx` directly and stay green
+with the sibling stale, but the demo pages load the sibling, so **`bun run demos` shows the
+pre-fix component while the suites prove the fix**, which is exactly the by-hand check every
 `.prompt.md` checklist depends on.
 
 **The layers are peers, and no layer is any other's authority.** A file under
@@ -605,11 +609,11 @@ Each layer has its own README; read it for the layer's shape.
 `frameworks/react/` puts components under `components/<category>/<component-kebab>/`, the
 Delivery Console under `ui-kits/console/`, the vendor bundles under `vendor/`, and the
 harness plus the suites belonging to no one component under `test/`. Its layer root holds the
-generated `Api.generated.d.ts` and `Tokens.generated.js` plus `DataVisuals.js`,
-`UseContainerWidth.js` and `UseDialogModal.js`, that last one **because its suite counts as a
+generated `Api.generated.d.ts` and `Tokens.generated.js` plus `DataVisuals.ts`, `Theme.ts`,
+`UseContainerWidth.ts` and `UseDialogModal.ts`, that last one **because its suite counts as a
 consumer**: its three component consumers are all in `feedback/`, but
-`test/UseDialogModal.dom.test.jsx` is a consumer too, and the narrowest level containing that one
-as well is the layer root.
+`test/UseDialogModal.dom.test.tsx` is a consumer too, and the narrowest level containing that
+one as well is the layer root.
 
 `frameworks/angular/` holds the theme bridge (`theme/`), the Phosphor icon manifest (`icons/`),
 and standalone `OnPush` primitives under `components/<category>/<component-kebab>/`
@@ -682,7 +686,7 @@ list**, with `find frameworks -type f -printf '%f\n' | grep -E '^[^A-Z]' | sort 
    pastes the `<script>`'s *contents* and never names the file, so renaming it breaks a
    documentation line rather than an app. **Not exempt:** `theme/ThemeService.ts` and
    `icons/IconManifest.ts` are reached through `frameworks/angular/index.ts`, which no adopter writes.
-6. **`frameworks/react/ui-kits/console/index.entry.jsx` and its `index.entry.generated.js`.** It
+6. **`frameworks/react/ui-kits/console/index.entry.tsx` and its `index.entry.generated.js`.** It
    inherits its exception, because a demo page's composition script takes the stem of the page it
    composes, and that page is `index.html`, already exempt above. Renaming the pair would break
    the HTTP directory index that serves the app at `/frameworks/react/ui-kits/console/`.
@@ -787,7 +791,7 @@ When you change component `X`, read every hit of:
 ```bash
 X=Skeleton   # the component you just changed
 grep -rn --binary-files=without-match "\b$X\b" \
-    --include='*.md' --include='*.json' --include='*.mjs' --include='*.jsx' --include='*.ts' \
+    --include='*.md' --include='*.json' --include='*.mjs' --include='*.tsx' --include='*.ts' \
     CLAUDE.md DOUBTS.md contracts/api/ contracts/behaviour/ docs/ frameworks/ scripts/
 ```
 

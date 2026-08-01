@@ -1,6 +1,6 @@
 Actions menu on a trigger (overflow "⋮", more actions, context). Don't confuse with `CommandPalette` (global search ⌘K) or with `Select` (choosing a form value).
 
-```jsx
+```tsx
 <Menu align="end" trigger={<IconButton label="More options" icon="ph-bold ph-dots-three-vertical" />}
   onSelect={(item) => run(item.label)}
   items={[

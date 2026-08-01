@@ -24,7 +24,7 @@ Each component renders with **inline `style` objects that read the CSS custom pr
 (`background: 'var(--crimson)'`), and handles hover, active and focus with local
 `useState`. There is no `.btn` class to target; theming happens entirely through token
 values, so changing a token moves every component that reads it.
-`components/forms/button/Button.jsx` is the reference shape.
+`components/forms/button/Button.tsx` is the reference shape.
 
 **The one exception is a `<style>` tag injected once**, for what an inline style genuinely
 cannot express: `@keyframes`, and vendor pseudo-elements such as `Input`'s
@@ -66,10 +66,10 @@ BarChart, LineChart, DoughnutChart, all dependency-free SVG) and `brand/` (AppLo
 
 A file that is not one component's rises to the narrowest level containing all of its
 consumers, and a compound family counts as its parent rather than as the category. The
-layer root holds the generated `Api.generated.d.ts` and `Tokens.generated.js` plus three
-shared internals: `DataVisuals.js`, `UseContainerWidth.js` and `UseDialogModal.js`, that
-last one because its suite counts as a consumer: its three component consumers are all in
-`feedback/`, but `test/UseDialogModal.dom.test.jsx` is one too.
+layer root holds the generated `Api.generated.d.ts` and `Tokens.generated.js` plus four
+shared internals: `DataVisuals.ts`, `UseContainerWidth.ts`, `Theme.ts` and `UseDialogModal.ts`,
+that last one because its suite counts as a consumer: its three component consumers are all in
+`feedback/`, but `test/UseDialogModal.dom.test.tsx` is one too.
 
 **`UseDialogModal.js` implements `contracts/behaviour/dialog-modal.json` for this layer, and
 that contract is its only authority**, covering `focus.trap`, `focus.onOpen`, `focus.onClose` and
@@ -93,13 +93,18 @@ what covers it: real Chromium over each declared page, one real Tab press per st
 - `ui-kits/console/`: the Delivery Console example app (login → dashboard → project).
 - `vendor/`: a committed, generated CommonJS→ESM bundle of React for the demo pages'
   importmap (`build-vendor.mjs`, guarded by `check:vendor`).
-- `test/`: the harness (`Harness.jsx`, `Preload.js`, `AssertPattern.jsx`) and the suites
+- `test/`: the harness (`Harness.tsx`, `Preload.js`, `AssertPattern.tsx`) and the suites
   that belong to no one component.
 
-## Every component is a quartet
+## Every component is a trio
 
-`<Name>.jsx` (implementation), `<Name>.d.ts` (types), `<Name>.prompt.md` (usage and
-examples) and an entry in a `*.card.html` demo. Adding a component means adding all four.
+`<Name>.tsx` (implementation and its exported `<Name>Props`), `<Name>.prompt.md` (usage and
+examples) and an entry in a `*.card.html` demo. Adding a component means adding all three.
+
+**There is no hand-written `.d.ts`, and that is the point.** The interface sits in the file
+it describes, so it cannot disagree with the implementation beside it, and the declaration a
+consumer installs is emitted from that source at assembly time rather than maintained by
+hand. Angular's quartet is the analogue with one more file, because its recipe is separate.
 
 **The demo page is one of two shapes.** `<Name>.card.html` sits in the component's own
 directory when the card is about that component alone; a page one level up, beside the
@@ -109,33 +114,75 @@ belongs to no one component, which is why it sits there rather than inside any o
 
 **Every `.prompt.md` carries examples and, where it adds value, a Do / Don't section.**
 
+## The layer answers to a compiler
+
+`bun run check:react-types` runs `tsc` over `tsconfig.check.json`, strict, across every
+component, helper and suite. It is the only thing that can catch a component disagreeing
+with the interface declared beside it, and until the layer was TypeScript nothing could.
+`tsc` runs under plain node, so unlike `check:demos` and `check:vendor` this gate never
+skips a run.
+
+**Two compiler options are load-bearing rather than stylistic, and both look deletable.**
+
+`verbatimModuleSyntax` is on because Bun's `tsx` loader elides an `import type` and *keeps*
+a value-form import used only as a type. `Api.generated` has no runtime counterpart, so
+such an import survives into the compiled demo sibling and the browser asks for a module
+that does not exist: a 404 on the page, with every gate green. With the option on it is a
+compile error instead.
+
+`erasableSyntaxOnly` is on because two transpilers compile this layer: `tsc` emits the
+declarations and `Bun.Transpiler` emits the JavaScript. The option forbids `enum`,
+`namespace` and parameter properties, which are the constructs that emit runtime code and
+so the only ones where the two could disagree about what the module does.
+
+**A test that violates a contract on purpose says so with `@ts-expect-error`.** A suite that
+renders without a required member, to prove the runtime guard throws, is passing something
+the contract refuses, and the directive is what tells the compiler that is the point. It
+also expires by itself: when the error stops happening the directive becomes the error, so
+the claim cannot go stale. `check:docs` reads it as a directive rather than as the file's
+one allowed comment.
+
+## The copy-in kit is built, not maintained
+
+`bun run build:kit` writes `kit/`: the same modules the npm package ships, as plain
+JavaScript with an emitted declaration each, **tracked**, so a consumer who clones the tag
+copies a component without a TypeScript toolchain of their own. It is derived from this
+layer, so it cannot drift from it the way a second hand-maintained copy would, and
+`check:kit` compares it against a fresh build in a temporary directory.
+
+Every file in it carries the `.generated.` infix. That is this repository's rule for a file
+a script writes, and here it earns its keep twice: it tells the consumer which file is not
+the one to edit.
+
 ## Demos are compiled ahead of time
 
-Each demo page's script is a real sibling source file (`<page>.entry.jsx`, e.g.
-`Alert.card.entry.jsx` beside `Alert.card.html`), and every component `.jsx` plus every
-`.entry.jsx` has a compiled `<Name>.generated.js` sibling, same directory and same stem, that
+Each demo page's script is a real sibling source file (`<page>.entry.tsx`, e.g.
+`Alert.card.entry.tsx` beside `Alert.card.html`), and every component `.tsx` plus every
+`.entry.tsx` has a compiled `<Name>.generated.js` sibling, same directory and same stem, that
 the page loads with a plain `<script type="module">`. `bun run build:demos` compiles them with
-Bun's own transpiler and rewrites each relative import's `.jsx` extension to `.generated.js`;
+Bun's own transpiler and rewrites each relative import's `.tsx` extension to `.generated.js`;
 `check:demos` guards drift and orphaned output.
 
 **Those siblings are git-ignored**, along with the `vendor/` bundles: only demo pages read
-them, and the `.jsx` is what a consumer copies. A fresh clone runs `bun run build` once; see
+them. What a consumer copies is `kit/`, which is tracked and which `build:kit` derives from
+this layer. A fresh clone runs `bun run build` once; see
 [`../../scripts/build/README.md`](../../scripts/build/README.md).
 
-**Editing a component `.jsx` means running `bun run build:demos` in the same tree.** The
-React DOM suites import the `.jsx` directly, so every test stays green with a stale `.js`
+**Editing a component `.tsx` means running `bun run build:demos` in the same tree.** The
+React DOM suites import the `.tsx` directly, so every test stays green with a stale `.js`
 sibling while the demo pages render the old component.
 
 ## Two test invocations that must not merge
 
-A `.dom.test.jsx` suite renders into a real DOM; every other `*.test.jsx` asserts on
+A `.dom.test.` suite renders into a real DOM; every other `*.test.tsx` asserts on
 `renderToStaticMarkup` with no DOM, by design, because those suites prove those components
 render correctly server-side.
 
 **What decides which invocation a suite belongs to is its filename, wherever the file
-sits**, meaning the `.dom.test.jsx` infix. The first invocation passes `frameworks/react` with
-`--path-ignore-patterns='**/*.dom.test.jsx'`; the second passes the bare string
-`.dom.test.jsx`, which `bun test` matches as a path substring.
+sits**, meaning the `.dom.test.` infix. The first invocation passes `frameworks/react` with
+`--path-ignore-patterns='**/*.dom.test.*'`; the second passes the bare string
+`.dom.test.`, which `bun test` matches as a path substring. Neither names an extension, so
+the split survives a rename of the layer's sources.
 
 They cannot merge because the DOM is installed by `--preload ./test/Preload.js`, which
 registers happy-dom **process-wide**, and `bun test` shares one process across every path a
@@ -160,7 +207,7 @@ polyfill, under which a dispatched `input` or `change` reaches an `onChange` han
 imports evaluate first, and so is registering it from a separate module imported ahead of
 `react-dom/client`. Only a preload is early enough: both alternatives are measured and
 neither works, so do not retry them. All three invocation sites pass it (`test:react-dom`, `test`, `testStep()`),
-and `Harness.jsx` **throws** when `document` is missing rather than installing a fallback,
+and `Harness.tsx` **throws** when `document` is missing rather than installing a fallback,
 which would silently run those suites under the legacy semantics. The preload must never
 reach the DOM-free invocation.
 

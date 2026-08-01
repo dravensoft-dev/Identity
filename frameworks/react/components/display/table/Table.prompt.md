@@ -2,7 +2,7 @@ Data table for dense surfaces. Headers in mono/uppercase, rows separated by hair
 
 It is a **compound** component: `columns` says how each column is headed and set, and you write one `<TableRow>` per row with one `<TableCell>` per cell inside it. Cells are **positional**: the nth `TableCell` takes the nth column.
 
-```jsx
+```tsx
 <Table
   label="Recent deployments"
   columns={[
@@ -40,7 +40,7 @@ Below `--bp-md` the table renders one card per row. The threshold is measured on
 
 Each column picks its card-mode layout with `mobileLayout`:
 
-```jsx
+```tsx
 <Table
   label="Active projects"
   columns={[
@@ -70,8 +70,8 @@ Card mode answers none of this. A card is a list item, and a list is traversed w
 
 ## Verifying the grid by hand
 
-`Table` has a render suite: `Table.cases.dom.test.jsx` walks the grid cell by cell and
-renders both declared shapes, and `Table.test.jsx` covers the markup: the roles, the
+`Table` has a render suite: `Table.cases.dom.test.` walks the grid cell by cell and
+renders both declared shapes, and `Table.test.tsx` covers the markup: the roles, the
 name, the `label` guard, the tab-stop count, and that the removed members reach nothing.
 The rule that a `grid` component was hand-tested *instead* is retired: a grid suite asserts at
 every cell that focus landed where the arrow should take it and that exactly one `tabindex="0"`

@@ -1,6 +1,6 @@
 One row of a `Table`. Write one per row, with one `TableCell` inside it per cell. It only makes sense as a child of `Table`, which injects where the row sits, which columns its cells are set against, and how the keyboard reaches them.
 
-```jsx
+```tsx
 <TableRow key={d.build} interactive onClick={() => openDeploy(d)}>
   <TableCell>{d.build}</TableCell>
   <TableCell>{d.project}</TableCell>

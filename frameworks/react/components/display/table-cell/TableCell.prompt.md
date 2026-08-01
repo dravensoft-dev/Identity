@@ -1,6 +1,6 @@
 One cell of a `TableRow`. It draws the cell box, the padding, the alignment and the mono/gold treatment its column asks for, and in card mode either a label/value pair or a full-width block, and shows whatever you put in it.
 
-```jsx
+```tsx
 <TableCell>{d.p95}</TableCell>
 <TableCell><Badge tone="danger" dot>Failed</Badge></TableCell>
 <TableCell><Button variant="ghost" size="sm">Details</Button></TableCell>

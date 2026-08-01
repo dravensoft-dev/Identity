@@ -1,6 +1,6 @@
 Brief tooltip over icons/actions.
 
-```jsx
+```tsx
 <Tooltip label="Roll back to the previous build"><IconButton label="Roll back" icon="ph-bold ph-arrow-counter-clockwise" /></Tooltip>
 ```
 
@@ -28,7 +28,7 @@ your own on that element is **kept**, not replaced: `aria-describedby` is a
 space-separated id list, so an input keeps its password rules and gains the bubble
 beside them.
 
-```jsx
+```tsx
 <Tooltip label="Roll back to the previous build"><IconButton label="Roll back" icon="ph-bold ph-arrow-counter-clockwise" /></Tooltip>
 ```
 
@@ -36,7 +36,7 @@ beside them.
 a component that swallows its props. The tooltip still shows on hover or
 focus, but the description never reaches anyone.
 
-```jsx
+```tsx
 <Tooltip label="Roll back to the previous build">
   <>
     <IconButton label="Roll back" icon="ph-bold ph-arrow-counter-clockwise" />

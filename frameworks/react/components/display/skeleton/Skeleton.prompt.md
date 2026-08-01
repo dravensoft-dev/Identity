@@ -1,6 +1,6 @@
 Loading placeholder for asynchronous data (H1). Use it in tables and dashboards while the response arrives; respect `prefers-reduced-motion`.
 
-```jsx
+```tsx
 {loading
   ? <Skeleton variant="text" lines={4} />
   : <Article data={data} />}

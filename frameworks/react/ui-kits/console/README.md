@@ -8,10 +8,10 @@ Interactive recreation of an internal Dravensoft product: the console where the 
 3. **Project**: Overview / Deployments / Activity / Settings tabs; the **Deploy** button opens a confirmation dialog and fires a toast.
 
 ## Screens (JSX)
-- `LoginScreen.jsx`: sign-in.
-- `Shell.jsx`: base layout (navigation sidebar plus topbar) reused by the dashboard and project screens.
-- `DashboardScreen.jsx`: metrics and project grid.
-- `ProjectScreen.jsx`: detail view with tabs, deployment table, activity, and settings.
+- `LoginScreen.tsx`: sign-in.
+- `Shell.tsx`: base layout (navigation sidebar plus topbar) reused by the dashboard and project screens.
+- `DashboardScreen.tsx`: metrics and project grid.
+- `ProjectScreen.tsx`: detail view with tabs, deployment table, activity, and settings.
 
 ## Arena components used
 Button, IconButton, Input, Switch, Card, Badge, Tag, Tabs, Dialog, Toast, AppLogo.

@@ -2,7 +2,7 @@ Brand lock-up: a mark paired with a product name. `mark` and `name` are required
 nothing defaults, so the first render is either your brand or a type error, never
 Dravensoft's by accident.
 
-```jsx
+```tsx
 <AppLogo size="sm"
   mark={<img src="../../../assets/rotor-crimson.svg" alt="" />}
   name="Draven" dim="soft" />

@@ -1,6 +1,6 @@
 Styled native dropdown selector. `options` is an array of `{value, label}` objects.
 
-```jsx
+```tsx
 <Select label="Environment" value={env} onChange={setEnv}
   options={[{value:'prod',label:'Production'},
             {value:'stg',label:'Staging'},

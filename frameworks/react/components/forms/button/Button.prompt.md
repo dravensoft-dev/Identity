@@ -1,6 +1,6 @@
 Action button. The main action uses `variant="primary"` (crimson), maximum one per view.
 
-```jsx
+```tsx
 <Button variant="primary" onClick={deploy}>Deploy</Button>
 <Button variant="secondary" icon="ph-bold ph-arrow-counter-clockwise">Roll back</Button>
 <Button variant="secondary" iconRight="ph-bold ph-caret-down">Actions</Button>

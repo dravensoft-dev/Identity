@@ -1,6 +1,6 @@
 Indeterminate wait indicator, for the waits with no known percentage. Respects `prefers-reduced-motion` by slowing down rather than stopping, because a frozen spinner reads as a hung process.
 
-```jsx
+```tsx
 <Spinner label="Loading projects" />
 <Spinner size="sm" tone="on-accent" />        {/* inside a filled button */}
 <Spinner size="lg" tone="neutral" label="Connecting to the build server" />

@@ -1,6 +1,6 @@
 Ephemeral notification. Use `actionLabel` + `onAction` to give the user an out: **Undo** after an action (H3) or **Retry / View logs** after an error (H9). Error/critical toasts carry **`persist`** so the host does NOT auto-dismiss them (H1); they only close via the × or an action.
 
-```jsx
+```tsx
 <Toast tone="neutral" title="Deployment archived" actionLabel="Undo" onAction={undo} dismissible onClose={dismiss} />
 <Toast tone="danger" persist title="Pipeline failed" message="e2e tests in checkout" actionLabel="View logs" onAction={openLogs} dismissible onClose={dismiss} />
 ```

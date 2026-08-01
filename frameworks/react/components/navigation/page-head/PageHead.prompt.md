@@ -1,6 +1,6 @@
 The title block at the top of a page: an `h1`, an optional muted subtitle, and the page's actions pushed to the far side. Below `--bp-sm` it stacks and the actions stretch full width, measured on its own container, so it stacks inside a narrow panel too.
 
-```jsx
+```tsx
 <PageHead title="Deployments" />
 
 <PageHead
@@ -18,7 +18,7 @@ The title block at the top of a page: an `h1`, an optional muted subtitle, and t
 actions block against the title, `"start"` keeps actions top-aligned with a tall title,
 `"center"` vertically centers them against it. Below `--bp-sm` the row always stacks and
 `align` has no effect. `PageHead` applies no outer bottom margin; the parent composes
-that spacing, the way `Shell.jsx`'s header owns its own padding.
+that spacing, the way `Shell.tsx`'s header owns its own padding.
 
 **Do**
 - Use exactly one `PageHead` per page: it renders the `h1`, and a page has one.

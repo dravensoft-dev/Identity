@@ -1,6 +1,6 @@
 Persistent message on the page (status notice, system condition, context). Stays until the condition is resolved, unlike `Toast`, which is ephemeral.
 
-```jsx
+```tsx
 <Alert tone="warning" title="Staging environment"
   actionLabel="Go to production" onAction={goProd}>
   Changes here don't affect real users.

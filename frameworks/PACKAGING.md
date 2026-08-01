@@ -60,8 +60,8 @@ the exclusion list, the copy that honours it, the CSS chain and the manifest tem
 Neither half compiles anything, because the two layers need different compilers.
 
 **React** goes through `Bun.Transpiler`, the same path `build-demos.mjs` already uses, and
-each hand-written `.d.ts` is copied rather than re-emitted, since those are the layer's real
-type contract. There is exactly one rewrite: a relative `.jsx` specifier becomes `.js`,
+each declaration is EMITTED by `tsc` rather than copied, so it cannot disagree with the
+implementation it describes. There is exactly one rewrite: a relative `.tsx` specifier becomes `.js`,
 because inside the package there is no JSX left to resolve. The entry point is
 `Index.generated.js`, which `build:react-barrel` derives from the component directories.
 

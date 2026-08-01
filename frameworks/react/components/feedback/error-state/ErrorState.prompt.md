@@ -3,7 +3,7 @@ Error state with a recovery path (H9). Arena draws the retry button itself from
 is a slot beside it for a consumer-supplied extra control, and `code` is a diagnostic
 exposed as a mono chip.
 
-```jsx
+```tsx
 <ErrorState icon="ph-fill ph-warning-octagon" title="Couldn't load the panel"
   message="No connection to the metrics service." code="ERR_UPSTREAM_504"
   retryLabel="Retry" onRetry={reload}

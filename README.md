@@ -62,29 +62,29 @@ they exclude and why, and what `check:packages` holds.
 ### Use in a project (copy-in kit)
 To use the tokens and components directly in an app:
 
-1. **Copy** `contracts/design/`, `contracts/design-generated/`, `assets/`, `intro/styles.css`, `frameworks/react/UseContainerWidth.js` and `frameworks/react/Tokens.generated.js` into your app (e.g. under `/arena`), **keeping the shape they have here**: `/arena/contracts/design/`, `/arena/contracts/design-generated/` and `/arena/intro/styles.css`. The stylesheet's seven `@import`s resolve as `../contracts/design/reset.css`, `../contracts/design/colors.css` and `../contracts/design-generated/…`, so it must sit exactly one directory *below* the shared `contracts/` parent. Flatten it to `/arena/styles.css`, or drop the `contracts/` parent, and every import resolves to nothing: the page renders **unstyled with no console error**. If your app's layout can't keep that shape, edit the seven `@import` lines to match your own instead. `UseContainerWidth.js` is the shared hook `Table` (and any responsive component) imports; copy it whenever you copy one of those. `Tokens.generated.js` is the design values JavaScript reads as numbers rather than through CSS; it is generated from `contracts/design/`, so never edit it.
+1. **Copy** `contracts/design/`, `contracts/design-generated/`, `assets/` and `intro/styles.css` into your app (e.g. under `/arena`), **keeping the shape they have here**: `/arena/contracts/design/`, `/arena/contracts/design-generated/` and `/arena/intro/styles.css`. The stylesheet's seven `@import`s resolve as `../contracts/design/reset.css`, `../contracts/design/colors.css` and `../contracts/design-generated/…`, so it must sit exactly one directory *below* the shared `contracts/` parent. Flatten it to `/arena/styles.css`, or drop the `contracts/` parent, and every import resolves to nothing: the page renders **unstyled with no console error**. If your app's layout can't keep that shape, edit the seven `@import` lines to match your own instead. Components come separately, in step 4.
 2. **Link the entry point.** `intro/styles.css` only `@import`s the token files, exposing every design token as a CSS custom property (`--color-*`, `--font-*`, `--r-*`, `--shadow-*`, …) and loading the fonts:
    ```html
    <link rel="stylesheet" href="/arena/intro/styles.css" />
    ```
 3. **Pick the theme.** Dark is the default (`:root`). Add `class="arena-light"` on `<html>` for the warm light theme, or wire the built-in toggle with `intro/theme.js`.
-4. **Use the components.** Copy the `.jsx` files you need from `frameworks/react/components/` and import them:
+4. **Use the components.** Copy what you need from `frameworks/react/kit/`, which is plain JavaScript with a TypeScript declaration beside each module, so it needs no toolchain of yours:
    ```jsx
-   import { Button } from './frameworks/react/components/forms/button/Button.jsx';
+   import { Button } from './arena/kit/components/forms/button/Button.generated.js';
 
    <Button variant="primary" size="md">Deploy</Button>
    ```
-   Every component ships a `.d.ts` (types) and a `.prompt.md` (usage, examples, Do/Don't).
+   Every component ships its declaration beside it, and its `.prompt.md` (usage, examples, Do/Don't) stays in `frameworks/react/components/`. The `.generated.` in the name is the point: the kit is built from the layer, so a copied file edited in place is one the next build overwrites.
 
-   A few components build on another one rather than restating it, so copy the dependency with them: `ConfirmDialog` and `ErrorState` need `forms/button/Button.jsx`, and `Calendar` needs `frameworks/react/DataVisuals.js` for the categorical ramp. The charts, `Calendar` and `Onboarding` also need `frameworks/react/Tokens.generated.js`, the design values JavaScript reads as numbers rather than through CSS (a chart's plot height, an hour's height on the time grid, the coachmark's width). Copy it beside `UseContainerWidth.js`; it is generated from `contracts/design/`, so never edit it.
+   Copying the whole `kit/` is the simple route. Copying one component means copying what it imports: `ConfirmDialog` and `ErrorState` reach `forms/button/Button.generated.js`, `Calendar` reaches `DataVisuals.generated.js` for the categorical ramp, and the charts, `Calendar` and `Onboarding` reach `Tokens.generated.js`, the design values JavaScript reads as numbers rather than through CSS (a chart's plot height, an hour's height on the time grid, the coachmark's width). Anything responsive reaches `UseContainerWidth.generated.js`.
 
 ### How components are styled
-Components render with **inline `style` objects that read the CSS custom properties** (e.g. `background: 'var(--crimson)'`). They do **not** expose utility classes: there is no `class="btn"`. `intro/styles.css` provides only the token variables and fonts; all component logic lives in the `.jsx`. This keeps each component self-contained and fully themeable: change a token and every component follows.
+Components render with **inline `style` objects that read the CSS custom properties** (e.g. `background: 'var(--crimson)'`). They do **not** expose utility classes: there is no `class="btn"`. `intro/styles.css` provides only the token variables and fonts; all component logic lives in the component's own module. This keeps each component self-contained and fully themeable: change a token and every component follows.
 
 ### Dependencies
 - **Fonts are self-hosted and bundled.** Arena ships the Archivo / Familjen Grotesk / Spline Sans Mono `.woff2` binaries in `assets/fonts/`; `contracts/design-generated/fonts.generated.css` declares them with `@font-face`. No CDN request is made: copy `assets/`, which includes `fonts/`, with the kit, and fonts load from your own origin.
 - **Icons are [Phosphor Icons](https://phosphoricons.com) (MIT)**, and are not bundled. **Install the official package by default**, either `@phosphor-icons/web` (webfont) or `@phosphor-icons/react`, for full weight and tree-shaking flexibility. The CDN is a prototype-only convenience, not the default. See [Iconography](./contracts/design/README.md#iconography).
-- **React** is what the primitives in `frameworks/react/components/` are written in (JSX). Tokens, guidelines and assets are framework-agnostic and can be used without React.
+- **React** is what the primitives in `frameworks/react/components/` are written in (TypeScript and JSX). Tokens, guidelines and assets are framework-agnostic and can be used without React.
 
 
 ## Where to go next

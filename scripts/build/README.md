@@ -1,7 +1,7 @@
 # scripts/build/
 
 **Build compiles an existing source into another form.** The input is already something a
-person wrote, a `.jsx`, a `.ts`, a Tailwind preset or a CommonJS package, and the output says
+person wrote, a `.tsx`, a `.ts`, a Tailwind preset or a CommonJS package, and the output says
 the same thing in a form a browser or a test runner can load. Nothing here decides a value;
 that is [`../generate/`](../generate/README.md).
 

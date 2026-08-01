@@ -1,6 +1,6 @@
 Guided in-product onboarding (H10). Complements `EmptyState`: presents features step by step the first time. Controlled: store `index` and whether it was already completed (e.g. in localStorage) so it isn't repeated.
 
-```jsx
+```tsx
 const [step, setStep] = useState(0);
 <Onboarding open={showTour} index={step}
   onNext={() => setStep((s) => s + 1)}
@@ -29,7 +29,7 @@ dialog and its dots as two different things rather than as the same string twice
 and no suite in this repo drives one: with the tour open, Tab repeatedly through Back / Skip /
 Next and confirm focus never leaves the coachmark, then Shift+Tab back through it. The
 boundary wraps at either end are covered by
-`frameworks/react/components/feedback/onboarding/Onboarding.dom.test.jsx`;
+`frameworks/react/components/feedback/onboarding/Onboarding.dom.test.tsx`;
 the interior is this check.
 
 **Do / Don't**

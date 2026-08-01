@@ -1,7 +1,7 @@
 A named group of items inside a `SideNav` -- a subheading plus the items under it. It
 **wraps** what you write; it never replaces it.
 
-```jsx
+```tsx
 <SideNav ariaLabel="Primary" active={route} onNav={(id) => setRoute(id)}>
   <SideNavItem id="dashboard" icon="ph-bold ph-squares-four" label="Projects" href="/projects" />
   <SideNavSection label="Workspace">

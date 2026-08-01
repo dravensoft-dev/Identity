@@ -7,7 +7,7 @@ inbox", "This link expired" and "Enter your two-factor code".
 microlabel, the display-weight heading), so there is no markup for a consumer to
 supply. `brand`, `footer` and the children default slot stay nodes.
 
-```jsx
+```tsx
 <UnauthCard
   brand={<AppLogo size="md" mark={<img src="/assets/rotor-crimson.svg" alt="" />} name="Draven" dim="soft" />}
   eyebrow="Delivery console"
@@ -22,7 +22,7 @@ supply. `brand`, `footer` and the children default slot stay nodes.
 **It does not centre itself**: the product owns the page. The wrapper is three lines,
 and writing them is what keeps a split layout beside an illustration possible:
 
-```jsx
+```tsx
 <div style={{ minHeight: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'calc(var(--sp-1) * 6)' }}>
   <UnauthCard …>…</UnauthCard>
 </div>

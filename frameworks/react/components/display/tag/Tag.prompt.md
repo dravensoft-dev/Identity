@@ -3,7 +3,7 @@ the pill's border, text and leading dot together. `removable` shows a dismiss
 `×`, which uses the standard Phosphor icon `ph-x` (H4), the same close as
 Toast.
 
-```jsx
+```tsx
 <Tag>TypeScript</Tag>
 <Tag tone="success">Shipped</Tag>
 <Tag tone="danger">Blocked</Tag>

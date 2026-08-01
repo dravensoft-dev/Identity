@@ -6,7 +6,7 @@ Single metric on the card surface: uppercase label, one big tabular-nums value, 
 
 `value` and `delta.value` are **preformatted strings**: StatCard does no rounding, no locale, no unit. Format upstream where the units are known.
 
-```jsx
+```tsx
 <StatCard label="Deploys" value="128" delta={{ value: '+12%', direction: 'up', tone: 'positive' }} sub="vs last week" />
 <StatCard label="p95 latency" value="340 ms" delta={{ value: '-18%', direction: 'down', tone: 'positive' }} sub="vs last week" />
 <StatCard label="Open incidents" value="3" delta={{ value: '+2', direction: 'up', tone: 'negative' }} />
@@ -15,7 +15,7 @@ Single metric on the card surface: uppercase label, one big tabular-nums value, 
 
 `tone` on the card colors the **value**; `delta.tone` colors the **pill**. They answer different questions: what the number *is* versus how it *moved*, and either can be set without the other:
 
-```jsx
+```tsx
 <StatCard label="Average uptime" value="99.98%" tone="success" />
 <StatCard label="Incidents" value="2" tone="danger" />
 <StatCard label="Error rate" value="0.02%" tone="gold" sub="within budget" />

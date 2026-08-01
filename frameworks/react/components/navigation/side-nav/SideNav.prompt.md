@@ -6,7 +6,7 @@ walks its direct children and injects where each sits, which `id` is active and 
 handler that reports `nav`. None of what it injects is a member of any contract,
 the same shape as `Table`/`TableRow` and `RadioGroup`/`Radio`, one size down.
 
-```jsx
+```tsx
 <SideNav ariaLabel="Primary" active={route} onNav={(id) => setRoute(id)}>
   <SideNavItem id="dashboard" icon="ph-bold ph-squares-four" label="Projects" href="/projects" />
   <SideNavItem id="deploys" icon="ph-bold ph-rocket-launch" label="Deployments" href="/deploys" />
@@ -32,7 +32,7 @@ nesting level indents one step deeper, and `indentStep` (default `3`) is the mul
 supply a length of their own, so the indent keeps re-densifying inside `.arena-compact` no
 matter how far it is nested.
 
-```jsx
+```tsx
 <SideNav ariaLabel="Primary" active={route} onNav={(id) => setRoute(id)}>
   <SideNavItem id="dashboard" icon="ph-bold ph-squares-four" label="Projects" href="/projects" />
   <SideNavSection label="Workspace">
@@ -51,7 +51,7 @@ That saves you computing `defaultExpanded` from the route, and `onToggle` stays 
 it, because the automatic expansion is Arena's decision rather than the user's. See
 `SideNavCollapsible.prompt.md`.
 
-```jsx
+```tsx
 <SideNav ariaLabel="Primary" active={route} onNav={(id) => setRoute(id)}>
   <SideNavItem id="dashboard" icon="ph-bold ph-squares-four" label="Projects" href="/projects" />
   <SideNavSection label="Workspace">

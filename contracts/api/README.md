@@ -238,7 +238,7 @@ Angular's `input.required` throws by construction; React throws from its render 
 reason (`AppLogo`, `StatCard` and `Breadcrumbs` all do), so an absent required member fails
 identically on both layers, and a consumer honouring the declared type reaches neither path.
 Like R2 and R3, the runtime half is an **authoring rule the audit applies, not a gate check**:
-`check:api` reads only the declared surface (React's `.d.ts`, Angular's `input.required`), never
+`check:api` reads only the declared surface (React's `.tsx` interface, Angular's `input.required`), never
 the render, so it cannot see whether a component actually throws. The audit protocol is what
 enforces that it does.
 
@@ -288,9 +288,9 @@ implicit is what lets the agreement assertion see it: a layer that accepts arbit
 children without the contract declaring a `content` slot is offering a member no contract
 governs.
 
-### Re-exporting a shared type from React's `.d.ts`
+### Re-exporting a shared type from React's source
 
-A React component's `.d.ts` imports its enum and object types from
+A React component's `.tsx` imports its enum and object types from
 `../../api.generated`, and **re-exports exactly the names a consumer can already
 import from that component**, no more and no less. A type a component's own file
 names and exports (`StatCard`'s `StatDelta`, `Breadcrumbs`'s `Crumb`) keeps a
@@ -308,7 +308,7 @@ declares nothing locally to preserve.
 **One deliberate exception: the rule drops when the name is not a type at all.**
 `SideNavItem` is a component, not a predefined object type, and a file
 cannot both import a type called `SideNavItem` and export a component called
-`SideNavItem`, since one name cannot mean both. `SideNav.d.ts` therefore carries no
+`SideNavItem`, since one name cannot mean both. `SideNav.tsx` therefore carries no
 re-export rather than resolving the collision.
 
 ## Settled conventions
@@ -367,9 +367,9 @@ beyond the `content` slot it already accepted through `children`.
 Two consequences are stated rather than hidden. A heritage clause is a **narrower documented claim
 sitting on top of a wider real behaviour**, since `{...rest}` forwards any prop the platform will
 render, declared or not, so flattening removes capability that is reachable and undocumented, and
-the component's `.prompt.md` says which. And there is no type to read it off: this repository declares
-no React types package and runs no `tsc` over `frameworks/react/`, so the enumeration is transcribed
-from the specification and checked by the audit, never resolved by a compiler.
+the component's `.prompt.md` says which. And there is no type to read it off: `check:react-types`
+compiles the layer, but it holds the layer to itself, so the enumeration is transcribed from the
+specification and checked by the audit, never resolved by a compiler.
 
 **Two global attributes are members, not one, and both pass the same test.** The rule above
 stands for the rest, so `className`, `dir`, `tabIndex`, ARIA and `data-*` are not members, because
@@ -560,7 +560,7 @@ not the component actually gates on it.
 part of the contract format and is read by nothing on its own. The comparison also refuses one
 direction on purpose, since a contract default with no destructuring default is **not** reported,
 because the default may legitimately be applied downstream, and a source-reading gate cannot see
-that. React's surface is read from both files, so a restored `{...rest}` spread in the `.jsx`
+that. React's surface is read from both files, so a restored `{...rest}` spread in the `.tsx`
 fails and a `spec.default` the implementation contradicts fails with it.
 
 R1, R4 and R5 *are* asserted: R1 by the type schema (a field may only be a primitive or an

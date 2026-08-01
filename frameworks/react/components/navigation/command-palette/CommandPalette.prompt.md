@@ -5,7 +5,7 @@ Activating a command emits `onRun` with the command that ran, after `onClose` ha
 fired, the host discriminates which command ran by switching on `id`, which is required on
 every `Command`.
 
-```jsx
+```tsx
 const [open, setOpen] = useState(false);
 useEffect(() => {
   const h = (e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setOpen(true); } };

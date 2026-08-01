@@ -1,6 +1,6 @@
 Multi-line text input. Shares the same visual states as `Input`.
 
-```jsx
+```tsx
 <Textarea label="Deployment notes" rows={5} maxLength={280} counter
   value={notes} onChange={setNotes}
   hint="Attached to the delivery log." />

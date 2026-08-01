@@ -152,7 +152,7 @@ import './arena.generated.css';
 
 ## Use it
 
-```jsx
+```tsx
 import { Button, Tag, StatCard, Table, TableRow, TableCell } from '@dravensoft/arena-react';
 
 export function Fleet({ rotors }) {
@@ -180,7 +180,7 @@ component rather than inferred, so an editor tells you what a component takes.
 
 ## Switch palettes
 
-```jsx
+```tsx
 import { initArenaTheme, useArenaTheme } from '@dravensoft/arena-react';
 
 initArenaTheme({

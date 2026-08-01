@@ -1,7 +1,7 @@
 One tab in a `Tabs` strip, and the panel it shows. The tab draws the button; its children fill the
 panel `Tabs` renders below the strip.
 
-```jsx
+```tsx
 <Tabs defaultValue="overview" onChange={setView}>
   <Tab value="overview" label="Overview"><ServiceHealth /></Tab>
   <Tab value="activity" label="Activity"><ActivityFeed items={items} /></Tab>

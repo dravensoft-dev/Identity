@@ -1,6 +1,6 @@
 The card a chart sits on: an uppercase muted microlabel, optional actions on the right, and the chart itself. Arena's charts are hand-written SVG with no dependency, they read the ramp tokens directly, so they re-theme with the page and need no configuration to do it.
 
-```jsx
+```tsx
 <ChartCard title="Deploys per day">
   <BarChart labels={['Mon','Tue','Wed','Thu','Fri']} values={[12,19,9,22,17]} seriesLabel="Deploys" />
 </ChartCard>

@@ -1,6 +1,6 @@
 Base container. Use `eyebrow` (crimson mono) + `title` (Archivo) for the header.
 
-```jsx
+```tsx
 <Card eyebrow="Delivery" title="Client Portal" action={<Badge tone="success">Deployed</Badge>}>
   …
 </Card>

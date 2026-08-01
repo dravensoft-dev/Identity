@@ -1,6 +1,6 @@
 Jumps between pages of a large set (accompanies `Table` or long lists). Collapses with "…" when there are many pages.
 
-```jsx
+```tsx
 <Pagination page={p} pageCount={12} ariaLabel="Deployments" onChange={setP} />
 ```
 

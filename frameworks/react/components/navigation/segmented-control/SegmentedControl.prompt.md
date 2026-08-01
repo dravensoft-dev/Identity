@@ -1,12 +1,12 @@
 A compact inline filter over mutually exclusive options: a scope, a range, a density. An enclosed track with a neutral raised thumb on the selected option. It is a real radio group under the hood, so the keyboard works the way a radio group works: one tab stop, arrows move and select.
 
-```jsx
+```tsx
 <SegmentedControl ariaLabel="Time range"
   options={[{ value: '24h', label: '24h' }, { value: '7d', label: '7d' }, { value: '30d', label: '30d' }]}
   value={range} onChange={setRange} />
 ```
 
-```jsx
+```tsx
 <SegmentedControl ariaLabel="Deployment status" size="sm"
   options={[{ value: 'all', label: 'All' }, { value: 'live', label: 'Live' }, { value: 'failed', label: 'Failed' }]}
   value={status} onChange={setStatus} />

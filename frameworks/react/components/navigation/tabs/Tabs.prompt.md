@@ -1,6 +1,6 @@
 A row of tabs and the one panel they switch between. The active tab has a crimson underline.
 
-```jsx
+```tsx
 <Tabs defaultValue="overview" onChange={setView}>
   <Tab value="overview" label="Overview"><ServiceHealth /></Tab>
   <Tab value="deployments" label="Deployments"><DeployTable /></Tab>

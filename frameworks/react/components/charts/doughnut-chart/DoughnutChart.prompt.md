@@ -1,6 +1,6 @@
 Parts of one whole, a share breakdown across a handful of categories. Always draws a legend with the label and value beside each swatch: the slices are the series, and identity is never carried by color alone. Hovering a slice or a legend row highlights both and shows the share in the hole.
 
-```jsx
+```tsx
 <ChartCard title="Traffic by service">
   <DoughnutChart labels={['Web','API','Worker','Static']} values={[420,310,140,90]}
     seriesLabel="Traffic" valueSuffix=" rps" />

@@ -1,6 +1,6 @@
 Protects irreversible actions (H3, H5). Does not close on click-outside. For the most destructive actions, require typing a word with `requireText`.
 
-```jsx
+```tsx
 <ConfirmDialog open={o} destructive requireText="DELETE"
   title="Delete project" confirmLabel="Delete permanently"
   onCancel={close} onConfirm={remove}>

@@ -1,6 +1,6 @@
 A line for a value over an ordered sequence, time, builds, releases. Hovering anywhere snaps a crosshair to the nearest point and shows its tooltip. Dependency-free SVG; it re-themes with the page for free.
 
-```jsx
+```tsx
 <LineChart labels={days} values={[120,138,131,142,180,164,150]} seriesLabel="p95 ms" />
 
 {/* area: one series, a tint of the line */}

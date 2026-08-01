@@ -1,6 +1,6 @@
 One event on a `Calendar`'s schedule. It is a child of `Calendar` and nothing else: everything about where the chip lands (its top, its height, the column it shares with its overlaps, its ramp colour, its place in the grid's keyboard order) is worked out by `Calendar` and injected into this element. On its own it renders an unplaced chip and means nothing.
 
-```jsx
+```tsx
 <Calendar timeZone="Europe/Madrid">
   {classes.map((c) => (
     <CalendarEvent key={c.id} id={c.id} title={c.name} start={c.start} end={c.end}
@@ -23,7 +23,7 @@ What "into the chip" means depends on the shape. A chip with no action panel *is
 
 **`actionsEnabled` draws a kebab on the chip; `actions` is what the panel behind it holds.**
 
-```jsx
+```tsx
 <CalendarEvent id={c.id} title={c.name} start={c.start} end={c.end} onClick={() => open(c)}
   actionsEnabled
   actions={<>
@@ -52,7 +52,7 @@ What "into the chip" means depends on the shape. A chip with no action panel *is
 - Don't use `disabled` to make a chip inert. Omit `onClick` for that: an inert chip is a `<div>` with nothing to press, where a disabled one is a button that announces it cannot be pressed right now. They read differently to a screen reader on purpose.
 - Don't reach past `colorId: 8`. There are eight ramp slots and they never cycle; a ninth entity wrapping to slot 1 claims two different things are the same thing.
 - Don't reach for `style` or `className`. It takes neither, the same as every other Arena component under the API contract.
-- Don't write `defaultPanelOpen`. It is reachable and it is not API: it exists so a static render can assert the open branch, since `renderToStaticMarkup` cannot click. It is in no contract and no `.d.ts`, and it can be removed without a major.
+- Don't write `defaultPanelOpen`. It is reachable and it is not API: it exists so a static render can assert the open branch, since `renderToStaticMarkup` cannot click. It is in no contract and in no exported interface, and it can be removed without a major.
 
 ## Verifying the panel by hand
 
@@ -72,7 +72,7 @@ implement. Serve the tree with `bun run demos`, open
    and every control in it is clickable. Check a SHORT event, 30 minutes or
    less, not only a long one. The geometry is what this step is for; the
    keyboard route beside it is pinned by
-   `frameworks/react/test/PlacementAndBranches.dom.test.jsx`, because
+   `frameworks/react/test/PlacementAndBranches.dom.test.tsx`, because
    `CalendarEvent` binds `button` rather than `grid` and a chip mounted alone
    costs none of the RAM the grid rule exists to avoid.
 4. Escape with the panel open CLOSES the panel and puts focus back on the

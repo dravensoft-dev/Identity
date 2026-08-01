@@ -1,6 +1,6 @@
 One destination in a `SideNav`. Write one per destination, as a direct child.
 
-```jsx
+```tsx
 <SideNav ariaLabel="Primary" active={route} onNav={(id) => setRoute(id)}>
   <SideNavItem id="projects" icon="ph-bold ph-squares-four" label="Projects" href="/projects" />
   <SideNavItem id="filters" label="Filters" />
