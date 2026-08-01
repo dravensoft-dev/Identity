@@ -2,8 +2,8 @@
  * Derived from the tree rather than hand-listed, because a hand-listed barrel is how the
  * Angular layer shipped five primitives nobody could import. Tokens.generated is left out
  * for the reason its Angular counterpart is: a value bound at import time cannot re-theme
- * and cannot re-densify, and nobody types data with it. Both outputs are tracked, so the
- * copy-in kit gets an index too, and check-react-barrel.mjs holds them to a fresh run. */
+ * and cannot re-densify, and nobody types data with it. The output is tracked, and
+ * check-react-barrel.mjs holds it to a fresh run. */
 
 import { readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -87,24 +87,14 @@ export function duplicateExportProblems(modules, root = repoRoot) {
 
 const reExport = (specifier) => `export * from '${specifier}';`;
 
-export function barrelJs(modules, root = repoRoot) {
+export function barrel(modules, root = repoRoot) {
   const lines = [
     BANNER,
+    ...TYPE_ONLY.map((t) => `export type * from './${t}.ts';`),
+    '',
     ...modules.map(({ path, ext }) => reExport(`${path}${ext ?? '.jsx'}`)),
     '',
     ...HELPERS.map((h) => reExport(`./${h}${sourceExtension(join(root, 'frameworks', 'react', h)) ?? '.js'}`)),
-  ];
-  return `${lines.join('\n')}\n`;
-}
-
-export function barrelTypes(modules) {
-  const lines = [
-    BANNER,
-    ...TYPE_ONLY.map((t) => reExport(`./${t}`)),
-    '',
-    ...modules.map(({ path }) => reExport(path)),
-    '',
-    ...HELPERS.map((h) => reExport(`./${h}`)),
   ];
   return `${lines.join('\n')}\n`;
 }
@@ -117,8 +107,7 @@ export function buildBarrel(root = repoRoot) {
     ...duplicateExportProblems(modules, root),
   ];
   const files = new Map([
-    ['frameworks/react/Index.generated.js', barrelJs(modules, root)],
-    ['frameworks/react/Index.generated.d.ts', barrelTypes(modules)],
+    ['frameworks/react/Index.generated.ts', barrel(modules, root)],
   ]);
   return { files, problems, count: modules.length };
 }

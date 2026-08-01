@@ -18,8 +18,8 @@ import {
 export const NAME = '@dravensoft/arena-react';
 export const LAYER = 'frameworks/react';
 
-export const ROOT_JS = ['Index.generated.js', 'Tokens.generated.js'];
-export const ROOT_TS = ['DataVisuals.ts', 'UseContainerWidth.ts', 'UseDialogModal.ts', 'Theme.ts', 'Api.generated.ts'];
+export const ROOT_JS = ['Tokens.generated.js'];
+export const ROOT_TS = ['DataVisuals.ts', 'UseContainerWidth.ts', 'UseDialogModal.ts', 'Theme.ts', 'Api.generated.ts', 'Index.generated.ts'];
 export const DIST_PROJECT = 'frameworks/react/tsconfig.dist.json';
 
 export function isSource(path) {
@@ -79,7 +79,7 @@ export function assembleModules(root, dir) {
     if (!existsSync(from)) throw new Error(`build-react-package: ${name} is missing from the layer root`);
     emit(from, name.replace(/\.ts$/, '.js'));
   }
-  for (const name of [...ROOT_JS, 'Index.generated.d.ts']) {
+  for (const name of ROOT_JS) {
     const from = join(layer, name);
     if (!existsSync(from)) throw new Error(`build-react-package: ${name} is missing from the layer root`);
     written.push(write(dir, name, rewriteSourceSpecifiers(readFileSync(from, 'utf8'))));

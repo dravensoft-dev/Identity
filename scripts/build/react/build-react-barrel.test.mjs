@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
-  componentModules, barrelJs, barrelTypes, buildBarrel, zeroComponentProblems,
+  componentModules, barrel, buildBarrel, zeroComponentProblems,
   missingSourceProblems, duplicateExportProblems, HELPERS, TYPE_ONLY, ROOT_PRIVATE, BANNER,
 } from './build-react-barrel.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
@@ -53,25 +53,21 @@ test('a helper that is not a component is never exported, because it is not a di
   rmSync(root, { recursive: true });
 });
 
-test('the JS barrel keeps whichever source extension the component is written in', () => {
-  const js = barrelJs([{ component: 'Tag', path: './components/display/tag/Tag', ext: '.jsx' }]);
-  assert.match(js, /export \* from '\.\/components\/display\/tag\/Tag\.jsx';/);
-  const tsx = barrelJs([{ component: 'Badge', path: './components/display/badge/Badge', ext: '.tsx' }]);
+test('the barrel keeps whichever source extension each module is written in', () => {
+  const jsx = barrel([{ component: 'Tag', path: './components/display/tag/Tag', ext: '.jsx' }]);
+  assert.match(jsx, /export \* from '\.\/components\/display\/tag\/Tag\.jsx';/);
+  const tsx = barrel([{ component: 'Badge', path: './components/display/badge/Badge', ext: '.tsx' }]);
   assert.match(tsx, /export \* from '\.\/components\/display\/badge\/Badge\.tsx';/);
-  for (const helper of HELPERS) assert.match(js, new RegExp(`export \\* from '\\./${helper}\\.(js|ts)';`));
+  for (const helper of HELPERS) assert.match(jsx, new RegExp(`export \\* from '\\./${helper}\\.(js|ts)';`));
 });
 
-test('the type barrel drops every extension and leads with the contract types', () => {
-  const types = barrelTypes([{ component: 'Tag', path: './components/display/tag/Tag', ext: '.tsx' }]);
-  assert.match(types, /export \* from '\.\/components\/display\/tag\/Tag';/);
-  assert.doesNotMatch(types, /\.jsx'/);
-  for (const t of TYPE_ONLY) assert.ok(types.indexOf(`'./${t}'`) < types.indexOf('/tag/Tag'));
-});
-
-test('both files carry the banner naming the generator', () => {
-  const modules = [{ component: 'Tag', path: './components/display/tag/Tag', ext: '.jsx' }];
-  assert.ok(barrelJs(modules).startsWith(BANNER));
-  assert.ok(barrelTypes(modules).startsWith(BANNER));
+test('the contract types lead, and as a type-only export, so the runtime emit drops them', () => {
+  const one = barrel([{ component: 'Tag', path: './components/display/tag/Tag', ext: '.tsx' }]);
+  for (const t of TYPE_ONLY) {
+    assert.match(one, new RegExp(`export type \\* from '\\./${t}\\.ts';`));
+    assert.ok(one.indexOf(`'./${t}.ts'`) < one.indexOf('/tag/Tag'));
+  }
+  assert.ok(one.startsWith(BANNER));
 });
 
 test('an empty tree is a failure rather than an empty barrel', () => {
@@ -129,5 +125,5 @@ test('the repository builds a barrel over every component it has, and no problem
   const { problems, count, files } = buildBarrel(repoRoot);
   assert.deepEqual(problems, []);
   assert.ok(count > 0);
-  assert.equal(files.size, 2);
+  assert.equal(files.size, 1);
 });

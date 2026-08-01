@@ -74,7 +74,8 @@ test('the stylesheet and the example config are reachable by subpath', () => {
 test('every layer-root module the package needs is named, and Tokens is among them', () => {
   assert.ok(ROOT_JS.includes('Tokens.generated.js'),
     'DataVisuals imports it, so it ships even though the barrel does not export it');
-  assert.ok(ROOT_JS.includes('Index.generated.js'));
+  assert.ok(ROOT_TS.includes('Index.generated.ts'),
+    'the barrel is a source now, so the same tsc run emits the declaration the manifest names');
   assert.ok(ROOT_TS.includes('Api.generated.ts'),
     'the contract types are a source in both layers, compiled like any other');
   for (const name of ROOT_TS)
